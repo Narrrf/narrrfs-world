@@ -122,6 +122,9 @@
           connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
 
+          // ✅ Show the user avatar
+          document.getElementById('user-avatar').classList.remove('hidden');
+
           // 📝 Debug: Log address
           console.log("📝 Sending wallet log:", walletAddress);
 
