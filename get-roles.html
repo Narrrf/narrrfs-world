@@ -111,33 +111,38 @@
 <footer class="text-center py-6 text-sm text-purple-700">
   Made with 🧪 in Narrrf’s Lab | Join us on Discord: <a href="https://discord.gg/mJrt9h7z" class="underline text-pink-600">discord.gg/mJrt9h7z</a>
 </footer>
-<!-- Wallet Connect Script for Global Button -->
+<!-- Global Wallet Connect + PFP Script (Excluding Mint Page) -->
 <script>
   async function connectWallet() {
-    const button = document.getElementById('top-connect-wallet-btn');
-    if (!button) return;
+    const connectButton = document.getElementById('top-connect-wallet-btn');
+    const userAvatar = document.getElementById('user-avatar');
 
     if ('solana' in window) {
       const provider = window.solana;
+
       if (provider.isPhantom) {
         try {
-          const res = await provider.connect();
-          const wallet = res.publicKey.toString();
-          button.innerText = `🟢 ${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
-          button.disabled = true;
-        } catch (e) {
-          console.error("Wallet connect failed:", e);
-          alert("Failed to connect wallet. Try again.");
+          console.log("🔌 Connecting to Phantom...");
+          const response = await provider.connect();
+          const walletAddress = response.publicKey.toString();
+          console.log("🟢 Connected:", walletAddress);
+
+          // Hide connect button
+          connectButton.classList.add('hidden');
+
+          // Show avatar (cheese or future NFT)
+          userAvatar.classList.remove('hidden');
+
+        } catch (err) {
+          console.error("❌ Connection error:", err);
         }
       } else {
-        alert("Phantom not found. Please install it at https://phantom.app");
+        alert("Phantom Wallet not detected.");
       }
     } else {
-      alert("No Solana wallet detected.");
+      alert("Phantom Wallet not found! Get it at https://phantom.app");
     }
   }
 </script>
-
-
 </body>
 </html>
