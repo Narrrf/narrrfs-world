@@ -72,6 +72,7 @@
 </footer>
 
 <!-- Wallet Connect Script -->
+<!-- Wallet Connect Script -->
 <script>
   async function connectWallet() {
     if ('solana' in window) {
@@ -82,8 +83,6 @@
           console.log("Phantom detected, connecting...");
           const response = await provider.connect();
           const walletAddress = response.publicKey.toString();
-          console.log("Connected wallet:", walletAddress);
-
           const connectButton = document.getElementById('connect-wallet-btn');
           connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
@@ -106,6 +105,9 @@
           const responseData = await result.json();
           console.log("Sheety response:", responseData);
 
+          // ✅ OPTIONAL UX POLISH
+          alert("✅ Wallet connected and logged to Narrrf’s Lab!");
+
         } catch (err) {
           console.error("Connection failed or Sheety error:", err);
         }
@@ -117,6 +119,7 @@
     }
   }
 </script>
+
 
 
 </body>
