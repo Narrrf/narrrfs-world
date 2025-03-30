@@ -73,52 +73,57 @@
 
 <!-- Wallet Connect Script -->
 <!-- Wallet Connect Script -->
+<!-- Wallet Connect Script with VIP Check -->
 <script>
+  let connectedWallet = null;
+
   async function connectWallet() {
+    const connectButton = document.getElementById('connect-wallet-btn');
+    const mintButton = document.getElementById('mint-now-btn');
+    const vipMessage = document.getElementById('vip-message');
+
     if ('solana' in window) {
       const provider = window.solana;
 
       if (provider.isPhantom) {
         try {
-          console.log("Phantom detected, connecting...");
+          console.log("🧠 Connecting to Phantom...");
           const response = await provider.connect();
-          const walletAddress = response.publicKey.toString();
-          const connectButton = document.getElementById('connect-wallet-btn');
-          connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+          connectedWallet = response.publicKey.toString();
+          connectButton.innerText = `🟢 Connected: ${connectedWallet.slice(0, 4)}...${connectedWallet.slice(-4)}`;
           connectButton.disabled = true;
 
-          const logData = {
-            tabellenblatt1: {
-              wallet: walletAddress,
-              timestamp: new Date().toISOString()
-            }
-          };
+          // ✅ Fetch VIP list
+          const vipListResponse = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/vipMintList/wallets');
+          const vipData = await vipListResponse.json();
+          const vipWallets = vipData.wallets.map(entry => entry.wallet.toLowerCase());
 
-          console.log("Sending to Sheety:", logData);
+          console.log("🧾 Checking against VIP list...");
+          const isVIP = vipWallets.includes(connectedWallet.toLowerCase());
 
-          const result = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/walletLog/tabellenblatt1', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(logData)
-          });
-
-          const responseData = await result.json();
-          console.log("Sheety response:", responseData);
-
-          // ✅ OPTIONAL UX POLISH
-          alert("✅ Wallet connected and logged to Narrrf’s Lab!");
+          if (isVIP) {
+            mintButton.style.display = 'inline-block';
+            vipMessage.innerText = "✅ VIP Wallet Verified. You may mint!";
+            vipMessage.classList.remove("text-red-600");
+            vipMessage.classList.add("text-green-600");
+          } else {
+            vipMessage.innerText = "❌ This wallet is not on the VIP list. Access denied.";
+            vipMessage.classList.remove("text-green-600");
+            vipMessage.classList.add("text-red-600");
+          }
 
         } catch (err) {
-          console.error("Connection failed or Sheety error:", err);
+          console.error("❌ Wallet connect or VIP check failed:", err);
         }
       } else {
         alert('Phantom Wallet not detected.');
       }
     } else {
-      alert('Please install Phantom Wallet from https://phantom.app');
+      alert('Phantom Wallet not found! Please install it from https://phantom.app');
     }
   }
 </script>
+
 
 
 
