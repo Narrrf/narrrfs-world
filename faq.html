@@ -132,13 +132,15 @@
     const avatar = document.getElementById('user-avatar');
     const connectButton = document.getElementById('top-connect-wallet-btn');
 
-    if (storedWallet && avatar && connectButton) {
-      avatar.classList.remove('hidden');
+    if (storedWallet && avatar) {
+       avatar.classList.remove('hidden');
+     }
+    if (storedWallet && connectButton) {
       connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
       connectButton.disabled = true;
-    }
+}
+
   });
 </script>
-
 </body>
 </html>
