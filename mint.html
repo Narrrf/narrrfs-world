@@ -71,7 +71,7 @@
   <a href="https://discord.gg/mJrt9h7z" class="underline text-pink-600">Join us on Discord</a>
 </footer>
 
-<!-- Wallet Connect Script -->
+<!-- Wallet Connect + Sheety Logging Script -->
 <script>
   async function connectWallet() {
     if ('solana' in window) {
@@ -84,6 +84,19 @@
           const connectButton = document.getElementById('connect-wallet-btn');
           connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
+
+          // Send to Sheety
+          await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/walletLog/tabellenblatt1', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tabellenblatt1: {
+                wallet: walletAddress,
+                timestamp: new Date().toISOString()
+              }
+            })
+          });
+
         } catch (err) {
           console.error("Connection failed:", err);
         }
@@ -98,4 +111,3 @@
 
 </body>
 </html>
-
