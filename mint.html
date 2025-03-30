@@ -75,16 +75,17 @@
           console.log("📝 Sending wallet log:", walletAddress);
 
           // ✅ Log to Sheety
-          await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/narrrfWalletLog/2025', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              2025: {
-                wallet: walletAddress,
-                timestamp: new Date().toISOString()
-              }
-            })
-          });
+await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/narrrfWalletLog/2025', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    2025: {
+      wallet: walletAddress,
+      timestamp: new Date().toISOString()
+    }
+  })
+});
+
 
           // 🔍 Check VIP List
           const vipRes = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/vipMintList/wallets');
