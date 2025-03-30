@@ -25,49 +25,35 @@
 <!-- Hero Section -->
 <section class="bg-pink-600 text-white text-center py-20 px-6">
   <h1 class="text-5xl font-extrabold mb-4">🧪 Mint Your GEN1 NFT</h1>
-  <p class="text-md max-w-xl mx-auto mb-8">Each NFT comes packed with Web3 utility, plot access, staking power, and your place in the madness of Narrrf’s World. Supply: 3333 only.</p>
+  <p class="text-md max-w-xl mx-auto mb-8">
+    Each NFT comes packed with Web3 utility, plot access, staking power, and your place in the madness of Narrrf’s World. Supply: 3333 only.
+  </p>
+
+ <!------- Wallet Connect Section ------>
+<!-- VIP Mint + Wallet Connect Section -->
+<section class="text-center py-16 px-6 bg-pink-100 rounded-2xl shadow max-w-3xl mx-auto my-10">
+  <h2 class="text-3xl font-bold mb-4">🔐 VIP Mint Access</h2>
+  <p class="mb-6 max-w-xl mx-auto text-md text-gray-700">
+    Only approved wallets can mint GEN1 NFTs during this VIP phase. Connect your Phantom wallet below to verify access.
+  </p>
+
+  <!-- Connect Wallet Button -->
   <button id="connect-wallet-btn" onclick="connectWallet()"
-    class="bg-white text-pink-600 px-6 py-3 rounded-xl shadow text-lg hover:bg-gray-100 transition">
-    🔌 Connect Phantom Wallet
+    class="bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition">
+    🎟️ Connect Phantom Wallet
   </button>
-  <p id="vip-message" class="mt-4 text-md font-semibold"></p>
-  <div class="mt-6">
-    <a href="https://truffle.wtf/" target="_blank" id="mint-now-btn"
-      class="hidden bg-purple-600 text-white px-6 py-3 rounded-xl shadow-lg text-lg hover:bg-purple-700 transition">
-      🧠 Mint Now
-    </a>
-  </div>
+
+  <!-- VIP Check Result Message -->
+  <p id="vip-message" class="mt-6 text-lg font-semibold"></p>
+
+  <!-- Hidden Mint Button -->
+  <a href="https://truffle.wtf/" target="_blank" id="mint-now-btn"
+     class="hidden mt-6 inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl text-lg shadow">
+    🧠 Mint Now
+  </a>
 </section>
 
-<!-- Mint Details Section -->
-<section class="max-w-4xl mx-auto py-12 px-6 grid md:grid-cols-2 gap-6">
-  <div class="bg-white border border-pink-400 rounded-2xl p-6 shadow">
-    <h2 class="text-xl font-bold mb-2">Mint Tiers</h2>
-    <ul class="list-disc list-inside space-y-2">
-      <li>🎯 1–4 NFTs = Entry Access</li>
-      <li>🏠 5–10 NFTs = Small Plot</li>
-      <li>🏘️ 11–25 NFTs = Medium Plot</li>
-      <li>🏙️ 26–50 NFTs = Large Plot</li>
-      <li>🏗️ 50+ NFTs = Custom Shop + API Access</li>
-    </ul>
-  </div>
-  <div class="bg-white border border-purple-400 rounded-2xl p-6 shadow">
-    <h2 class="text-xl font-bold mb-2">Mint Pricing</h2>
-    <ul class="list-disc list-inside space-y-2">
-      <li>🔓 Whitelist: $25 in SOL</li>
-      <li>🌐 Public: $50</li>
-      <li>🎁 Redemption: $75</li>
-    </ul>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer class="text-center text-sm text-purple-700 py-6">
-  Made with 🧀 & Web3 love in Narrrf's Lab | 
-  <a href="https://discord.gg/mJrt9h7z" class="underline text-pink-600" target="_blank">Join us on Discord</a>
-</footer>
-
-<!-- Wallet Connect + VIP Logic + Logging -->
+<!-- Wallet Connect + VIP + Log Script -->
 <script>
   async function connectWallet() {
     const connectButton = document.getElementById('connect-wallet-btn');
@@ -85,8 +71,10 @@
           connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
 
+          // 📝 Debug: Log address
           console.log("📝 Sending wallet log:", walletAddress);
 
+          // ✅ Log to Sheety
           await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/narrrfWalletLog/2025', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -98,12 +86,10 @@
             })
           });
 
+          // 🔍 Check VIP List
           const vipRes = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/vipMintList/wallets');
           const vipJson = await vipRes.json();
           const vipList = vipJson.wallets.map(entry => entry.wallet.toLowerCase());
-
-          console.log("💎 VIP List:", vipList);
-          console.log("🔍 Checking wallet:", walletAddress.toLowerCase());
 
           const isVIP = vipList.includes(walletAddress.toLowerCase());
 
@@ -126,10 +112,12 @@
         alert("Phantom Wallet not detected.");
       }
     } else {
-      alert("Phantom Wallet not found! Please install it from https://phantom.app");
+      alert("Phantom Wallet not found! Install it at https://phantom.app");
     }
   }
 </script>
 
+
 </body>
 </html>
+
