@@ -56,7 +56,7 @@
       </div>
 
       <div class="bg-white border-l-4 border-yellow-400 p-6 rounded-xl shadow">
-        <h2 class="text-xl font-semibold">🎯 March 28, 2025 – Final Web Polish + VIP Updates</h2>
+        <h2 class="text-xl font-semibold">🎯 March 28-30, 2025 – Final Web Polish + Discord Updates</h2>
         <p>- Gameboard now includes Partner Channels & Poker links</p>
         <p>- New "Coming Up Next" timeline launched</p>
         <p>- Minting Lab button now properly links</p>
@@ -82,35 +82,43 @@
 <!-- Global Wallet Connect + PFP Script (Excluding Mint Page) -->
 <script>
   async function connectWallet() {
+    const avatar = document.getElementById('user-avatar');
     const connectButton = document.getElementById('top-connect-wallet-btn');
-    const userAvatar = document.getElementById('user-avatar');
 
     if ('solana' in window) {
       const provider = window.solana;
-
       if (provider.isPhantom) {
         try {
-          console.log("🔌 Connecting to Phantom...");
           const response = await provider.connect();
           const walletAddress = response.publicKey.toString();
-          console.log("🟢 Connected:", walletAddress);
 
-          // Hide connect button
-          connectButton.classList.add('hidden');
+          // Store wallet in localStorage ✅
+          localStorage.setItem('walletAddress', walletAddress);
 
-          // Show avatar (cheese or future NFT)
-          userAvatar.classList.remove('hidden');
-
+          // Update UI
+          connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+          connectButton.disabled = true;
+          avatar.classList.remove('hidden');
         } catch (err) {
-          console.error("❌ Connection error:", err);
+          console.error("❌ Wallet connect error:", err);
         }
-      } else {
-        alert("Phantom Wallet not detected.");
       }
-    } else {
-      alert("Phantom Wallet not found! Get it at https://phantom.app");
     }
   }
+
+  // Auto-load wallet avatar if connected before
+  window.addEventListener('DOMContentLoaded', () => {
+    const storedWallet = localStorage.getItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('top-connect-wallet-btn');
+
+    if (storedWallet && avatar && connectButton) {
+      avatar.classList.remove('hidden');
+      connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
+      connectButton.disabled = true;
+    }
+  });
 </script>
+
 </body>
 </html>

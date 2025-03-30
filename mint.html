@@ -104,12 +104,13 @@
   </a>
 </section>
 
-<!-- Wallet Connect + VIP + Log Script -->
+<!-- Wallet Connect + VIP + Log Script+ Cheese login-->
 <script>
   async function connectWallet() {
     const connectButton = document.getElementById('connect-wallet-btn');
     const mintButton = document.getElementById('mint-now-btn');
     const vipMessage = document.getElementById('vip-message');
+    const avatar = document.getElementById('user-avatar');
 
     if ('solana' in window) {
       const provider = window.solana;
@@ -119,14 +120,13 @@
           console.log("🧠 Connecting to Phantom...");
           const response = await provider.connect();
           const walletAddress = response.publicKey.toString();
+
+          // Store wallet for persistence
+          localStorage.setItem('walletAddress', walletAddress);
+
           connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
-
-          // ✅ Show the user avatar
-          document.getElementById('user-avatar').classList.remove('hidden');
-
-          // 📝 Debug: Log address
-          console.log("📝 Sending wallet log:", walletAddress);
+          avatar.classList.remove('hidden');
 
           // ✅ Log to Sheety
           await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/narrrfWalletLog/2025', {
@@ -169,8 +169,20 @@
       alert("Phantom Wallet not found! Install it at https://phantom.app");
     }
   }
-</script>
 
+  // Auto-load avatar if wallet is stored
+  window.addEventListener('DOMContentLoaded', () => {
+    const wallet = localStorage.getItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('connect-wallet-btn');
+
+    if (wallet) {
+      avatar.classList.remove('hidden');
+      connectButton.innerText = `🟢 Connected: ${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
+      connectButton.disabled = true;
+    }
+  });
+</script>
 
 </body>
 </html>
