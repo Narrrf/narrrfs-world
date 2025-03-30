@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Narrrf's World | Financial Vision</title>
+  <title>Narrrf's World | Finances</title>
   <link rel="icon" type="image/png" href="favicon.png" />
   <meta name="theme-color" content="#f472b6" />
   <meta name="title" content="Narrrf's World" />
-  <meta name="description" content="Transparent Web3 finances for community trust and NFT utility." />
+  <meta name="description" content="Web3 transparency meets utility — explore Narrrf's financial engine." />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900">
 
@@ -23,85 +24,73 @@
       <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
       <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
       <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+      <button id="top-connect-wallet-btn" onclick="connectWallet()" class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">🔌 Connect</button>
+      <img id="user-avatar" src="cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
     </nav>
   </div>
 </header>
 
-<!-- Header -->
-<header class="text-center py-12 bg-pink-600 text-white">
-  <h1 class="text-4xl font-extrabold">📊 Financial Vision & Token Flow</h1>
-  <p class="mt-2 text-sm">How Narrrf's World powers growth while rewarding its true heroes — the community.</p>
-</header>
+<!-- Finance Intro -->
+<section class="text-center py-12 px-6">
+  <h1 class="text-4xl font-extrabold mb-2">💸 Narrrf's Financial Transparency</h1>
+  <p class="text-md max-w-2xl mx-auto">We’re building a fair and fun ecosystem — where capital flows back to those who drive it. Here’s how it works.</p>
+</section>
 
-<main class="max-w-4xl mx-auto py-12 px-6 space-y-12">
-
-  <section>
-    <h2 class="text-2xl font-bold mb-4">🌍 Our Financial Ethos</h2>
-    <p class="text-md text-gray-800">
-      Narrrf's World is built to reward participation — not extract value. 80% of all capital generated through NFT mints is reinvested directly into the community through Benefit Seasons, rewards, trait perks, and ecosystem bonuses. 
-    </p>
-  </section>
-
-  <section>
-    <h2 class="text-2xl font-bold mb-4">🧮 Capital Allocation Breakdown</h2>
-    <ul class="list-disc list-inside space-y-2">
-      <li><strong>80%</strong> — Community Rewards (Benefit Showdowns, raffles, wheel spins, staking bonuses)</li>
-      <li><strong>15%</strong> — Marketing & Growth (Web3 forums, collab deals, exchange listing, Hytopia dev)</li>
-      <li><strong>10%</strong> — Operations & Dev (Server costs, bots, platform tools, API services)</li>
-      <li><strong>5%</strong> — Support Crew (moderators, tech support, security layers)</li>
-    </ul>
-  </section>
-
-  <section>
-    <h2 class="text-2xl font-bold mb-6">📈 Visual Allocation</h2>
-    <div class="max-w-md mx-auto">
-      <canvas id="financeChart"></canvas>
-    </div>
-  </section>
-
-  <section>
-    <h2 class="text-2xl font-bold mb-4">🔐 Founder Transparency</h2>
-    <p class="text-sm text-gray-700">
-      The founder of Narrrf's World takes no salary. All time, art direction, coding, and partnership building is community-driven. 
-      The only returns are earned through organic ownership (NFTs, staking, and trait advantages). Server utilities and small essentials are covered under the operations pool.
-    </p>
-  </section>
-
-  <section>
-    <h2 class="text-2xl font-bold mb-4">🔄 Revenue Streams (External)</h2>
+<!-- Revenue Phases Grid -->
+<section class="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-6">
+  <div class="bg-white rounded-xl shadow p-6 border-l-4 border-pink-400">
+    <h2 class="text-xl font-bold mb-2">🧪 Phase 1 – Genesis Revenue</h2>
     <ul class="list-disc list-inside text-sm space-y-1">
-      <li>Royalties from secondary NFT sales</li>
-      <li>$SPOINC utility and swap services</li>
-      <li>Real-world partner integrations in Hytopia World</li>
-      <li>Limited edition merch & licensing (non-core revenue)</li>
+      <li>GEN1 NFT Mint – Primary source of launch funds</li>
+      <li>Trait Redemption Mint – Special NFTs or upgrades ("Alien," etc.)</li>
+      <li>GEN1 Public Mint – Long-term holder strategy</li>
+	  <li>GEN1 VIP NFT Airdrop – Long-term holder strategy</li>
     </ul>
-  </section>
-
-  <!-- Mint Button -->
-  <div class="text-center my-10">
-    <a href="mint.html" class="inline-block bg-purple-600 hover:bg-purple-700 text-white text-lg px-6 py-3 rounded-xl shadow">
-      🧠 Go to Mint Lab
-    </a>
   </div>
-</main>
 
-<footer class="text-center py-6 text-sm text-purple-700">
-  Made with 🧀 & Transparency | <a href="https://discord.gg/mJrt9h7z" class="underline text-pink-600">Join Discord</a>
-</footer>
+  <div class="bg-white rounded-xl shadow p-6 border-l-4 border-yellow-400">
+    <h2 class="text-xl font-bold mb-2">💸 Phase 2 – Ecosystem Growth</h2>
+    <ul class="list-disc list-inside text-sm space-y-1">
+      <li>Secondary Market Royalties – 5% SOL standard</li>
+      <li>$DSPOINC Utility Fees – Spins, staking, raffles, etc.</li>
+      <li>Benefit Seasons – Gamified NFT utility cycles</li>
+      <li>GEN2 Mint – 2027 collection drop</li>
+    </ul>
+  </div>
 
-<!-- Chart.js Script -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <div class="bg-white rounded-xl shadow p-6 border-l-4 border-green-400">
+    <h2 class="text-xl font-bold mb-2">🌍 Phase 3 – Hytopia Revenue (2026–2030)</h2>
+    <ul class="list-disc list-inside text-sm space-y-1">
+      <li>Real-World Partner Tabs – Merch & services in Discord</li>
+      <li>Land NFTs – Digital ownership, shop features</li>
+      <li>Retail Collabs – % of tokenized product sales</li>
+      <li>API Access – Paid dashboards for Web3 retail</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Allocation Pie Chart Section -->
+<section class="max-w-4xl mx-auto py-12 px-6 text-center">
+  <h2 class="text-3xl font-bold mb-4">📊 Updated Funding Distribution</h2>
+  <p class="mb-6 text-sm max-w-xl mx-auto">Our mission is to redistribute value to those who contribute most to the ecosystem. Here's how every dollar flows:</p>
+  <canvas id="financeChart" class="mx-auto max-w-md"></canvas>
+</section>
+
+<!-- Chart Script -->
 <script>
-  const ctx = document.getElementById('financeChart').getContext('2d');
+  const ctx = document.getElementById('financeChart');
   new Chart(ctx, {
-    type: 'pie',
+    type: 'doughnut',
     data: {
-      labels: ['Community Rewards', 'Marketing & Growth', 'Operations & Dev', 'Support Crew'],
+      labels: [
+        '💰 Benefit Seasons & Rewards (70%)',
+        '📈 Marketing & PR (15%)',
+        '🏗️ Hytopia Development (7%)',
+        '💼 Web3 Tools & Ops (5%)',
+        '👥 Core Team (3%)'
+      ],
       datasets: [{
-        label: 'Funds Allocation',
-        data: [70, 15, 10, 5],
-        backgroundColor: ['#ec4899', '#8b5cf6', '#facc15', '#10b981'],
-        borderColor: '#fff',
+        data: [70, 15, 7, 5, 3],
         borderWidth: 2
       }]
     },
@@ -109,19 +98,61 @@
       responsive: true,
       plugins: {
         legend: {
-          position: 'bottom',
-          labels: {
-            color: '#4b5563',
-            font: {
-              size: 14,
-              weight: 'bold'
-            }
-          }
+          position: 'bottom'
         }
       }
     }
   });
 </script>
+
+<!-- Call to Action -->
+<section class="text-center py-12">
+  <a href="mint.html" class="inline-block bg-purple-700 text-white text-lg font-semibold px-8 py-3 rounded-xl shadow hover:bg-purple-800 transition">
+    🚀 Go to Mint Lab
+  </a>
+</section>
+
+<!-- Footer -->
+<footer class="text-center py-6 text-sm text-purple-700">
+  Built with 💜 & Web3 clarity | <a href="https://discord.gg/mJrt9h7z" class="underline text-pink-600">Join us on Discord</a>
+</footer>
+
+<!-- Global Wallet Connect + PFP Script -->
+<script>
+  async function connectWallet() {
+    const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('top-connect-wallet-btn');
+
+    if ('solana' in window) {
+      const provider = window.solana;
+      if (provider.isPhantom) {
+        try {
+          const response = await provider.connect();
+          const walletAddress = response.publicKey.toString();
+          localStorage.setItem('walletAddress', walletAddress);
+          connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+          connectButton.disabled = true;
+          avatar?.classList.remove('hidden');
+        } catch (err) {
+          console.error("❌ Wallet connect error:", err);
+        }
+      }
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const storedWallet = localStorage.getItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('top-connect-wallet-btn');
+
+    if (storedWallet && connectButton) {
+      connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
+      connectButton.disabled = true;
+      avatar?.classList.remove('hidden');
+    }
+  });
+</script>
 </body>
 </html>
+
 
