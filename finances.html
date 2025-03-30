@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Narrrf's World | Financial Vision</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="theme-color" content="#f472b6" />
+  <meta name="title" content="Narrrf's World" />
+  <meta name="description" content="Transparent Web3 finances for community trust and NFT utility." />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900">
+
+<!-- Navigation Bar -->
+<header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
+    <nav class="space-x-4 text-sm md:text-base flex items-center">
+      <a href="index.html" class="hover:text-pink-400">Home</a>
+      <a href="mint.html" class="hover:text-pink-400">Mint</a>
+      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
+      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
+      <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
+      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Header -->
+<header class="text-center py-12 bg-pink-600 text-white">
+  <h1 class="text-4xl font-extrabold">📊 Financial Vision & Token Flow</h1>
+  <p class="mt-2 text-sm">How Narrrf's World powers growth while rewarding its true heroes — the community.</p>
+</header>
+
+<main class="max-w-4xl mx-auto py-12 px-6 space-y-12">
+
+  <section>
+    <h2 class="text-2xl font-bold mb-4">🌍 Our Financial Ethos</h2>
+    <p class="text-md text-gray-800">
+      Narrrf's World is built to reward participation — not extract value. 80% of all capital generated through NFT mints is reinvested directly into the community through Benefit Seasons, rewards, trait perks, and ecosystem bonuses. 
+    </p>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold mb-4">🧮 Capital Allocation Breakdown</h2>
+    <ul class="list-disc list-inside space-y-2">
+      <li><strong>80%</strong> — Community Rewards (Benefit Showdowns, raffles, wheel spins, staking bonuses)</li>
+      <li><strong>15%</strong> — Marketing & Growth (Web3 forums, collab deals, exchange listing, Hytopia dev)</li>
+      <li><strong>10%</strong> — Operations & Dev (Server costs, bots, platform tools, API services)</li>
+      <li><strong>5%</strong> — Support Crew (moderators, tech support, security layers)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold mb-6">📈 Visual Allocation</h2>
+    <div class="max-w-md mx-auto">
+      <canvas id="financeChart"></canvas>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold mb-4">🔐 Founder Transparency</h2>
+    <p class="text-sm text-gray-700">
+      The founder of Narrrf's World takes no salary. All time, art direction, coding, and partnership building is community-driven. 
+      The only returns are earned through organic ownership (NFTs, staking, and trait advantages). Server utilities and small essentials are covered under the operations pool.
+    </p>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold mb-4">🔄 Revenue Streams (External)</h2>
+    <ul class="list-disc list-inside text-sm space-y-1">
+      <li>Royalties from secondary NFT sales</li>
+      <li>$SPOINC utility and swap services</li>
+      <li>Real-world partner integrations in Hytopia World</li>
+      <li>Limited edition merch & licensing (non-core revenue)</li>
+    </ul>
+  </section>
+
+  <!-- Mint Button -->
+  <div class="text-center my-10">
+    <a href="mint.html" class="inline-block bg-purple-600 hover:bg-purple-700 text-white text-lg px-6 py-3 rounded-xl shadow">
+      🧠 Go to Mint Lab
+    </a>
+  </div>
+</main>
+
+<footer class="text-center py-6 text-sm text-purple-700">
+  Made with 🧀 & Transparency | <a href="https://discord.gg/mJrt9h7z" class="underline text-pink-600">Join Discord</a>
+</footer>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('financeChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Community Rewards', 'Marketing & Growth', 'Operations & Dev', 'Support Crew'],
+      datasets: [{
+        label: 'Funds Allocation',
+        data: [70, 15, 10, 5],
+        backgroundColor: ['#ec4899', '#8b5cf6', '#facc15', '#10b981'],
+        borderColor: '#fff',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#4b5563',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>

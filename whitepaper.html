@@ -140,12 +140,13 @@
 
     if ('solana' in window) {
       const provider = window.solana;
+
       if (provider.isPhantom) {
         try {
           const response = await provider.connect();
           const walletAddress = response.publicKey.toString();
 
-          // Store wallet in localStorage ✅
+          // Store wallet
           localStorage.setItem('walletAddress', walletAddress);
 
           // Update UI
@@ -159,7 +160,7 @@
     }
   }
 
-  // Auto-load wallet avatar if connected before
+  // Auto-show avatar if logged in
   window.addEventListener('DOMContentLoaded', () => {
     const storedWallet = localStorage.getItem('walletAddress');
     const avatar = document.getElementById('user-avatar');
@@ -171,6 +172,12 @@
       connectButton.disabled = true;
     }
   });
+
+  function disconnectWallet() {
+    localStorage.removeItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    if (avatar) avatar.classList.add('hidden');
+  }
 </script>
 
 </body>

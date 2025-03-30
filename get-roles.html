@@ -119,19 +119,20 @@
   Made with 🧪 in Narrrf’s Lab | Join us on Discord: <a href="https://discord.gg/mJrt9h7z" class="underline text-pink-600">discord.gg/mJrt9h7z</a>
 </footer>
 <!-- Global Wallet Connect + PFP Script (Excluding Mint Page) -->
-<script>
+<<script>
   async function connectWallet() {
     const avatar = document.getElementById('user-avatar');
     const connectButton = document.getElementById('top-connect-wallet-btn');
 
     if ('solana' in window) {
       const provider = window.solana;
+
       if (provider.isPhantom) {
         try {
           const response = await provider.connect();
           const walletAddress = response.publicKey.toString();
 
-          // Store wallet in localStorage ✅
+          // Store wallet
           localStorage.setItem('walletAddress', walletAddress);
 
           // Update UI
@@ -145,7 +146,7 @@
     }
   }
 
-  // Auto-load wallet avatar if connected before
+  // Auto-show avatar if logged in
   window.addEventListener('DOMContentLoaded', () => {
     const storedWallet = localStorage.getItem('walletAddress');
     const avatar = document.getElementById('user-avatar');
@@ -157,6 +158,12 @@
       connectButton.disabled = true;
     }
   });
+
+  function disconnectWallet() {
+    localStorage.removeItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    if (avatar) avatar.classList.add('hidden');
+  }
 </script>
 
 </body>
