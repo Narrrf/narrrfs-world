@@ -72,7 +72,7 @@
           connectButton.disabled = true;
 
           // 🔍 Check VIP status
-          const vipRes = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/vipMintList/wallets');
+          const vipRes = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/narrrfWalletLog/2025');
           const vipJson = await vipRes.json();
           const vipList = vipJson.wallets.map(entry => entry.wallet.toLowerCase());
 
