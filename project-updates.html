@@ -13,7 +13,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900">
-<!-- Navigation Bar -->
+<!-- Navigation Bar (Project Updates Page) -->
 <header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
@@ -22,18 +22,23 @@
       <a href="mint.html" class="hover:text-pink-400">Mint</a>
       <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
       <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
-      <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
+      <a href="project-updates.html" class="text-pink-400 font-semibold">Updates</a>
       <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+
+      <!-- Connect Wallet Button -->
       <button id="top-connect-wallet-btn"
         onclick="connectWallet()"
         class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
         🔌 Connect
       </button>
+
+      <!-- Avatar Placeholder (Cheese fallback) -->
+      <img id="user-avatar" src="cheese.png" alt="PFP"
+        class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
     </nav>
   </div>
 </header>
 
-</header>
 
 <!-- Project Updates Page -->
 <section class="bg-gradient-to-br from-gray-50 to-purple-100 py-16 px-6">
