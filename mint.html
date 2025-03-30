@@ -22,7 +22,7 @@
   </div>
 </header>
 
-<!-- Hero Section with Pink Background -->
+<!-- Hero Section -->
 <section class="bg-pink-600 text-white text-center py-20 px-6">
   <h1 class="text-5xl font-extrabold mb-4">🧪 Mint Your GEN1 NFT</h1>
   <p class="text-md max-w-xl mx-auto mb-8">
@@ -34,7 +34,7 @@
     🔌 Connect Phantom Wallet
   </button>
 
-  <!-- Mint Button -->
+  <!-- Mint Now Button -->
   <div class="mt-6">
     <a href="https://mint.narrrfs.world" target="_blank" class="bg-white text-purple-700 px-8 py-3 rounded-xl shadow text-lg animate-bounce hover:animate-none hover:bg-gray-100 transition">
       🧠 Mint Now
@@ -42,7 +42,7 @@
   </div>
 </section>
 
-<!-- Mint Details Section -->
+<!-- Mint Details -->
 <section class="max-w-4xl mx-auto py-12 px-6 grid md:grid-cols-2 gap-6">
   <div class="bg-white border border-pink-400 rounded-2xl p-6 shadow">
     <h2 class="text-xl font-bold mb-2">Mint Tiers</h2>
@@ -67,11 +67,11 @@
 
 <!-- Footer -->
 <footer class="text-center text-sm text-purple-700 py-6">
-  Made with 🧀 & Web3 love in Narrrf's Lab | 
+  Made with 🧀 & Web3 love in Narrrf's Lab |
   <a href="https://discord.gg/mJrt9h7z" class="underline text-pink-600">Join us on Discord</a>
 </footer>
 
-<!-- Wallet Connect + Sheety Logging Script -->
+<!-- Wallet Connect Script -->
 <script>
   async function connectWallet() {
     if ('solana' in window) {
@@ -85,7 +85,7 @@
           connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
 
-          // Send to Sheety
+          // ✅ Send to Sheety
           await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/walletLog/tabellenblatt1', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -111,3 +111,4 @@
 
 </body>
 </html>
+
