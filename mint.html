@@ -21,13 +21,18 @@
 <header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
-    <nav class="space-x-6 text-sm md:text-base">
-        <a href="index.html" class="hover:text-pink-400">Home</a>
-        <a href="mint.html" class="hover:text-pink-400">Mint</a>
-        <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
-        <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
-        <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
-        <a href="faq.html" class="hover:text-pink-400 font-semibold underline">FAQ</a>
+    <nav class="space-x-4 text-sm md:text-base flex items-center">
+      <a href="index.html" class="hover:text-pink-400">Home</a>
+      <a href="mint.html" class="hover:text-pink-400">Mint</a>
+      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
+      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
+      <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
+      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+      <button id="top-connect-wallet-btn"
+        onclick="connectWallet()"
+        class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
+        🔌 Connect
+      </button>
     </nav>
   </div>
 </header>
