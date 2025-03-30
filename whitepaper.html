@@ -124,30 +124,32 @@
   <footer class="bg-purple-950 text-white text-center py-6 text-sm">
     "Same thing we do every night, Narrrf... Try to take over Web3." | © 2025
   </footer>
-  <!-- Wallet Connect Script -->
-  <script>
-    async function connectWallet() {
-      const button = document.getElementById('top-connect-wallet-btn');
-      if (!button) return;
+<!-- Wallet Connect Script for Global Button -->
+<script>
+  async function connectWallet() {
+    const button = document.getElementById('top-connect-wallet-btn');
+    if (!button) return;
 
-      if ('solana' in window) {
-        const provider = window.solana;
-        if (provider.isPhantom) {
-          try {
-            const res = await provider.connect();
-            const addr = res.publicKey.toString();
-            button.innerText = `🟢 ${addr.slice(0, 4)}...${addr.slice(-4)}`;
-            button.disabled = true;
-          } catch (e) {
-            console.error("Wallet connect error:", e);
-          }
-        } else {
-          alert("Phantom Wallet not detected.");
+    if ('solana' in window) {
+      const provider = window.solana;
+      if (provider.isPhantom) {
+        try {
+          const res = await provider.connect();
+          const wallet = res.publicKey.toString();
+          button.innerText = `🟢 ${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
+          button.disabled = true;
+        } catch (e) {
+          console.error("Wallet connect failed:", e);
+          alert("Failed to connect wallet. Try again.");
         }
       } else {
-        alert("Please install Phantom Wallet: https://phantom.app");
+        alert("Phantom not found. Please install it at https://phantom.app");
       }
+    } else {
+      alert("No Solana wallet detected.");
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>

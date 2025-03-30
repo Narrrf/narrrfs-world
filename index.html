@@ -287,3 +287,33 @@
     <p class="text-xs text-gray-500">&copy; 2025 Narrrf's World. Built with brain & cheese 🧠🧀</p>
   </div>
 </footer>
+<!-- Wallet Connect Script for Global Button -->
+<script>
+  async function connectWallet() {
+    const button = document.getElementById('top-connect-wallet-btn');
+    if (!button) return;
+
+    if ('solana' in window) {
+      const provider = window.solana;
+      if (provider.isPhantom) {
+        try {
+          const res = await provider.connect();
+          const wallet = res.publicKey.toString();
+          button.innerText = `🟢 ${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
+          button.disabled = true;
+        } catch (e) {
+          console.error("Wallet connect failed:", e);
+          alert("Failed to connect wallet. Try again.");
+        }
+      } else {
+        alert("Phantom not found. Please install it at https://phantom.app");
+      }
+    } else {
+      alert("No Solana wallet detected.");
+    }
+  }
+</script>
+
+
+</body>
+</html>
