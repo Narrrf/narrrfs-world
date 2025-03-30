@@ -23,18 +23,20 @@
     <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
     <nav class="space-x-4 text-sm md:text-base flex items-center">
       <a href="index.html" class="hover:text-pink-400">Home</a>
-      <a href="mint.html" class="text-pink-400 font-semibold">Mint</a> <!-- active page highlight -->
+      <a href="mint.html" class="text-pink-400 font-semibold">Mint</a>
       <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
       <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
       <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
       <a href="faq.html" class="hover:text-pink-400">FAQ</a>
 
-      <!-- Avatar Placeholder (Cheese fallback) -->
+      <!-- Avatar (Cheese) with logout -->
       <img id="user-avatar" src="cheese.png" alt="PFP"
-           class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
+        class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg cursor-pointer"
+        onclick="disconnectWallet()" />
     </nav>
   </div>
 </header>
+
 
 
 <!-- Hero Section -->
@@ -104,7 +106,7 @@
   </a>
 </section>
 
-<!-- Wallet Connect + VIP + Log Script+ Cheese login-->
+<!-- Wallet Connect + VIP + Log Script + Avatar Logic -->
 <script>
   async function connectWallet() {
     const connectButton = document.getElementById('connect-wallet-btn');
@@ -121,9 +123,10 @@
           const response = await provider.connect();
           const walletAddress = response.publicKey.toString();
 
-          // Store wallet for persistence
+          // Store wallet
           localStorage.setItem('walletAddress', walletAddress);
 
+          // Update UI
           connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
           avatar.classList.remove('hidden');
@@ -170,16 +173,28 @@
     }
   }
 
-  // Auto-load avatar if wallet is stored
+  function disconnectWallet() {
+    localStorage.removeItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('connect-wallet-btn');
+    if (avatar) avatar.classList.add('hidden');
+    if (connectButton) {
+      connectButton.innerText = '🎟️ Connect Phantom Wallet';
+      connectButton.disabled = false;
+    }
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
-    const wallet = localStorage.getItem('walletAddress');
+    const storedWallet = localStorage.getItem('walletAddress');
     const avatar = document.getElementById('user-avatar');
     const connectButton = document.getElementById('connect-wallet-btn');
 
-    if (wallet) {
-      avatar.classList.remove('hidden');
-      connectButton.innerText = `🟢 Connected: ${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
-      connectButton.disabled = true;
+    if (storedWallet) {
+      if (avatar) avatar.classList.remove('hidden');
+      if (connectButton) {
+        connectButton.innerText = `🟢 Connected: ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
+        connectButton.disabled = true;
+      }
     }
   });
 </script>
