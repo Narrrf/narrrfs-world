@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mint Your Narrrfs World GEN1 NFT</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    window.solana = window.solana || {};
+  </script>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900">
 
@@ -28,9 +31,16 @@
   <p class="text-md max-w-xl mx-auto mb-8">
     Each NFT comes packed with Web3 utility, plot access, staking power, and your place in the madness of Narrrf’s World. Supply: 3333 only.
   </p>
-  <a href="https://mint.narrrfs.world" target="_blank" class="bg-white text-purple-700 px-8 py-3 rounded-xl shadow text-lg animate-bounce hover:animate-none hover:bg-gray-100 transition">
-    🧠 Mint Now
-  </a>
+  <!-- Connect Wallet Button -->
+  <button id="connect-wallet-btn" onclick="connectWallet()" class="bg-black text-white px-6 py-2 rounded-xl mt-4 hover:bg-gray-900 transition">
+    🔌 Connect Phantom Wallet
+  </button>
+  <!-- Mint Button -->
+  <div class="mt-6">
+    <a href="https://mint.narrrfs.world" target="_blank" class="bg-white text-purple-700 px-8 py-3 rounded-xl shadow text-lg animate-bounce hover:animate-none hover:bg-gray-100 transition">
+      🧠 Mint Now
+    </a>
+  </div>
 </section>
 
 <!-- Mint Details Section -->
@@ -58,4 +68,32 @@
 
 <!-- Footer -->
 <footer class="text-center text-sm text-purple-700 py-6">
-  Made with 🧀
+  Made with 🧀 & Web3 love in Narrrf's Lab | <a href="https://discord.gg/mJrt9h7z" class="underline text-pink-600">Join us on Discord</a>
+</footer>
+
+<!-- Wallet Connect Script -->
+<script>
+  const connectButton = document.getElementById('connect-wallet-btn');
+
+  async function connectWallet() {
+    if ('solana' in window) {
+      const provider = window.solana;
+
+      if (provider.isPhantom) {
+        try {
+          const response = await provider.connect();
+          const walletAddress = response.publicKey.toString();
+          connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+          connectButton.disabled = true;
+        } catch (err) {
+          console.error("Connection failed:", err);
+        }
+      }
+    } else {
+      alert('Phantom Wallet not found! Please install it from https://phantom.app');
+    }
+  }
+</script>
+
+</body>
+</html>
