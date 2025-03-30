@@ -30,7 +30,7 @@
   </p>
 
  <!------- Wallet Connect Section ------>
-<!-- Wallet Connect Section -->
+<!-- VIP Mint + Wallet Connect Section -->
 <section class="text-center py-16 px-6 bg-pink-100 rounded-2xl shadow max-w-3xl mx-auto my-10">
   <h2 class="text-3xl font-bold mb-4">🔐 VIP Mint Access</h2>
   <p class="mb-6 max-w-xl mx-auto text-md text-gray-700">
@@ -46,14 +46,14 @@
   <!-- VIP Check Result Message -->
   <p id="vip-message" class="mt-6 text-lg font-semibold"></p>
 
-  <!-- Hidden Mint Button with updated URL -->
+  <!-- Hidden Mint Button -->
   <a href="https://truffle.wtf/" target="_blank" id="mint-now-btn"
      class="hidden mt-6 inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl text-lg shadow">
     🧠 Mint Now
   </a>
 </section>
 
-<!-- VIP Wallet Check Script -->
+<!-- Wallet Connect + VIP + Log Script -->
 <script>
   async function connectWallet() {
     const connectButton = document.getElementById('connect-wallet-btn');
@@ -71,8 +71,23 @@
           connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
 
-          // 🔍 Check VIP status
-          const vipRes = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/narrrfWalletLog/2025');
+          // 📝 Debug: Log address
+          console.log("📝 Sending wallet log:", walletAddress);
+
+          // ✅ Log to Sheety
+          await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/narrrfWalletLog/2025', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              2025: {
+                wallet: walletAddress,
+                timestamp: new Date().toISOString()
+              }
+            })
+          });
+
+          // 🔍 Check VIP List
+          const vipRes = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/vipMintList/wallets');
           const vipJson = await vipRes.json();
           const vipList = vipJson.wallets.map(entry => entry.wallet.toLowerCase());
 
@@ -101,7 +116,6 @@
     }
   }
 </script>
-
 
 
 </body>
