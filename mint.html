@@ -79,35 +79,45 @@
 
       if (provider.isPhantom) {
         try {
+          console.log("Phantom detected, connecting...");
           const response = await provider.connect();
           const walletAddress = response.publicKey.toString();
+          console.log("Connected wallet:", walletAddress);
+
           const connectButton = document.getElementById('connect-wallet-btn');
           connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
 
-          // ✅ Send to Sheety
-          await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/walletLog/tabellenblatt1', {
+          const logData = {
+            tabellenblatt1: {
+              wallet: walletAddress,
+              timestamp: new Date().toISOString()
+            }
+          };
+
+          console.log("Sending to Sheety:", logData);
+
+          const result = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/walletLog/tabellenblatt1', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              tabellenblatt1: {
-                wallet: walletAddress,
-                timestamp: new Date().toISOString()
-              }
-            })
+            body: JSON.stringify(logData)
           });
 
+          const responseData = await result.json();
+          console.log("Sheety response:", responseData);
+
         } catch (err) {
-          console.error("Connection failed:", err);
+          console.error("Connection failed or Sheety error:", err);
         }
       } else {
         alert('Phantom Wallet not detected.');
       }
     } else {
-      alert('Phantom Wallet not found! Please install it from https://phantom.app');
+      alert('Please install Phantom Wallet from https://phantom.app');
     }
   }
 </script>
+
 
 </body>
 </html>
