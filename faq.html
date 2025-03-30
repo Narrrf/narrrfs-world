@@ -93,5 +93,31 @@
     Made with 🧀 & Web3 love in Narrrf’s Lab | <a href="https://discord.gg/mJrt9h7z" class="underline text-pink-600">Join us on Discord</a>
   </footer>
 
+  <!-- Wallet Connect Script -->
+  <script>
+    async function connectWallet() {
+      const button = document.getElementById('top-connect-wallet-btn');
+      if (!button) return;
+
+      if ('solana' in window) {
+        const provider = window.solana;
+        if (provider.isPhantom) {
+          try {
+            const res = await provider.connect();
+            const addr = res.publicKey.toString();
+            button.innerText = `🟢 ${addr.slice(0, 4)}...${addr.slice(-4)}`;
+            button.disabled = true;
+          } catch (e) {
+            console.error("Wallet connect error:", e);
+          }
+        } else {
+          alert("Phantom Wallet not detected.");
+        }
+      } else {
+        alert("Please install Phantom Wallet: https://phantom.app");
+      }
+    }
+  </script>
+
 </body>
 </html>
