@@ -73,8 +73,6 @@
 
 <!-- Wallet Connect Script -->
 <script>
-  const connectButton = document.getElementById('connect-wallet-btn');
-
   async function connectWallet() {
     if ('solana' in window) {
       const provider = window.solana;
@@ -83,17 +81,21 @@
         try {
           const response = await provider.connect();
           const walletAddress = response.publicKey.toString();
+          const connectButton = document.getElementById('connect-wallet-btn');
           connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
         } catch (err) {
           console.error("Connection failed:", err);
         }
+      } else {
+        alert('Phantom Wallet not detected.');
       }
     } else {
       alert('Phantom Wallet not found! Please install it from https://phantom.app');
     }
   }
 </script>
+
 
 </body>
 </html>
