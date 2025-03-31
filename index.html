@@ -10,24 +10,34 @@
   <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 font-sans">
 
-<!-- Navigation Bar -->
-<header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50 w-full">
-  <div class="max-w-6xl mx-auto flex justify-between items-center">
-    <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
-    <nav class="space-x-4 text-sm md:text-base flex items-center">
-      <a href="index.html" class="text-pink-400 font-semibold">Home</a>
-      <a href="mint.html" class="hover:text-pink-400">Mint</a>
-      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
-      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
-      <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
-      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
-      <button id="top-connect-wallet-btn" onclick="connectWallet()" class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">🔌 Connect</button>
-      <img id="user-avatar" src="cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
-    </nav>
+
+<body class="bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 font-sans overflow-x-hidden min-h-screen">
+
+  <!-- 🔔 Pre-Launch Banner -->
+  <div class="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-800 text-sm text-center py-2 px-4 font-semibold shadow-md z-50">
+    🚧 Narrrf’s World is in PRE-LAUNCH — Final tweaks underway. You’re early, fren 🧠🧪
   </div>
-</header>
+
+  <!-- ✅ Spacer to push nav down below the banner -->
+  <div class="pt-10"></div>
+
+  <!-- 🔧 Navigation Bar -->
+  <header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-40 w-full">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
+      <nav class="space-x-4 text-sm md:text-base flex items-center">
+        <a href="index.html" class="text-pink-400 font-semibold">Home</a>
+        <a href="mint.html" class="hover:text-pink-400">Mint</a>
+        <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
+        <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
+        <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
+        <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+        <button id="top-connect-wallet-btn" onclick="connectWallet()" class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">🔌 Connect</button>
+        <img id="user-avatar" src="cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
+      </nav>
+    </div>
+  </header>
 
 <!-- Hero Header with Lab Bottle -->
 <header class="relative py-12 bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 overflow-hidden">
