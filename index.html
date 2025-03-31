@@ -41,19 +41,37 @@
 </header>
 
 
-  <!-- Hero Header -->
-  <header class="text-center py-12">
+<!-- Hero Header -->
+<header class="relative text-center py-12 overflow-hidden">
+  <!-- SVG Lab Bottle (Background Visual) -->
+  <img src="lab-bottle.svg" alt="Cartoon Lab Bottle"
+    class="hidden md:block absolute right-6 top-4 w-32 md:w-44 lg:w-52 opacity-80 pointer-events-none animate-bounce-slow z-0" />
+
+  <!-- Hero Content -->
+  <div class="relative z-10">
     <h1 class="text-5xl font-extrabold mb-4">Narrrf's World</h1>
     <p class="text-lg max-w-xl mx-auto">
       Let's leave the matrix... and take over Web3. A cartoon-chaotic Web3 universe powered by NFTs, poker, and pure community.
     </p>
-       <div class="mt-6 flex justify-center gap-4">
-         <a href="https://discord.gg/mJrt9h7z" target="_blank" class="bg-pink-600 text-white px-6 py-2 rounded-2xl shadow">Join Discord</a>
-         <a href="mint.html" class="bg-white border border-pink-600 text-pink-600 px-6 py-2 rounded-2xl shadow">Mint Now</a>
-         <a href="whitepaper.html" class="bg-purple-700 text-white px-6 py-2 rounded-2xl shadow hover:bg-purple-800">📜 Whitepaper</a>
-       </div>
+    <div class="mt-6 flex justify-center gap-4">
+      <a href="https://discord.gg/mJrt9h7z" target="_blank" class="bg-pink-600 text-white px-6 py-2 rounded-2xl shadow">Join Discord</a>
+      <a href="mint.html" class="bg-white border border-pink-600 text-pink-600 px-6 py-2 rounded-2xl shadow">Mint Now</a>
+      <a href="whitepaper.html" class="bg-purple-700 text-white px-6 py-2 rounded-2xl shadow hover:bg-purple-800">📜 Whitepaper</a>
+    </div>
+  </div>
+</header>
 
-  </header>
+<!-- Bouncy Animation -->
+<style>
+  @keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .animate-bounce-slow {
+    animation: bounce-slow 3s infinite ease-in-out;
+  }
+</style>
+
   <!-- What is Narrrf's World -->
   <section class="bg-white py-16 px-6">
     <div class="max-w-4xl mx-auto">
