@@ -48,6 +48,15 @@
     .mouse-glow {
       animation: glowMouse 2s ease-in-out infinite alternate;
     }
+	@keyframes floatMouse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.floaty {
+  animation: floatMouse 3s ease-in-out infinite;
+}
+
+	
   </style>
 </head>
 
@@ -382,7 +391,8 @@
       <div>
         <h4 class="font-semibold text-white mb-2">Contact</h4>
         <ul class="space-y-1">
-          <<li><span>Email: Open a Ticket in Discord</span></li>
+          <li><span>Email: Open a Ticket in Discord</span></li>
+
           <li><span>Web3 Only – Austria Based</span></li>
         </ul>
       </div>
@@ -394,8 +404,7 @@
 
 
   <!-- Site content goes here -->
-
-  <!-- Global Wallet Connect + PFP Script (used across all non-mint pages) -->
+ <!-- Global Wallet Connect + PFP Script (used across all non-mint pages) -->
   <script>
     async function connectWallet() {
       const avatar = document.getElementById('user-avatar');
@@ -412,7 +421,7 @@
             localStorage.setItem('walletAddress', walletAddress);
             connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
             connectButton.disabled = true;
-            avatar?.classList.remove('hidden');
+            avatar.classList.remove('hidden');
           } catch (err) {
             console.error("❌ Wallet connect error:", err);
           }
@@ -420,23 +429,41 @@
       }
     }
 
+    // Auto-show avatar if already logged in
     window.addEventListener('DOMContentLoaded', () => {
       const storedWallet = localStorage.getItem('walletAddress');
       const avatar = document.getElementById('user-avatar');
       const connectButton = document.getElementById('top-connect-wallet-btn');
 
-      if (storedWallet && connectButton) {
+      if (storedWallet && avatar && connectButton) {
+        avatar.classList.remove('hidden');
         connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
         connectButton.disabled = true;
-        avatar?.classList.remove('hidden');
       }
     });
 
     function disconnectWallet() {
       localStorage.removeItem('walletAddress');
       const avatar = document.getElementById('user-avatar');
-      avatar?.classList.add('hidden');
+      if (avatar) avatar.classList.add('hidden');
     }
-  </script>
+  // Your wallet connect + disconnect logic
+<script>
+  function disconnectWallet() {
+    localStorage.removeItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    if (avatar) avatar.classList.add('hidden');
+  }
+</script> <!-- ✅ Properly closes the script block -->
+
+<!-- 🐭 Home Mouse Mascot -->
+<div class="fixed bottom-8 right-8 z-40">
+  <img src="home-mouse1.png" alt="Home Mouse Mascot"
+       class="floaty w-28 md:w-36 hover:scale-105 transition-transform duration-300 drop-shadow-xl mouse-glow"
+       title="Powered by Narrrf's Labs 🔬"
+       onclick="window.location.href='https://discord.gg/jwYWh2dU'"
+       style="cursor: pointer;" />
+</div>
+
 </body>
 </html>
