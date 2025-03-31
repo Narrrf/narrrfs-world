@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Narrrf Style Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes labBubble {
+      0% { transform: translateY(0) scale(1); opacity: 0.7; }
+      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+    }
+    .animate-lab-bubble {
+      animation: labBubble 5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans">
+
+  <!-- 🎨 STYLE GUIDE HEADER -->
+  <header class="text-center py-10 bg-pink-600 text-white">
+    <h1 class="text-4xl font-bold">🧠 Narrrf's Lab: Style Guide</h1>
+    <p class="text-sm mt-2">Structure & Comment System for Consistent Building</p>
+  </header>
+
+  <main class="max-w-4xl mx-auto py-12 px-6 space-y-12">
+
+    <!-- 🧩 HTML SECTION FORMAT -->
+    <section class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-2xl font-bold mb-4">🧩 Section Structure</h2>
+      <pre class="text-xs bg-gray-100 p-4 rounded overflow-x-auto">
+<!-- ✅ SECTION START -->
+<section class="bg-white py-16 px-6">
+  <div class="max-w-4xl mx-auto text-center">
+    <h2 class="text-2xl font-bold mb-4">Section Title</h2>
+    <p class="text-sm">Short explanation...</p>
+  </div>
+</section>
+<!-- ✅ SECTION END -->
+      </pre>
+    </section>
+
+    <!-- 🎯 COMMENT SYSTEM -->
+    <section class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-2xl font-bold mb-4">🎯 Comment Tags</h2>
+      <ul class="list-disc list-inside space-y-2 text-sm">
+        <li><code><!-- ✅ CLOSES THE <main> TAG CORRECTLY --></code> — closing tag confirmations</li>
+        <li><code><!-- 🔥 Bubble Effects Start --></code> — visual fx zones</li>
+        <li><code><!-- 📜 MINT PAGE LAB SECTION --></code> — feature identifiers</li>
+        <li><code><!-- 🧠 Discord Roles Card Grid --></code> — exact component notes</li>
+      </ul>
+    </section>
+
+    <!-- 🌈 TAILWIND COMPONENTS -->
+    <section class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-2xl font-bold mb-4">🌈 Tailwind Utility Patterns</h2>
+      <ul class="list-disc list-inside space-y-2 text-sm">
+        <li><code>bg-gradient-to-br from-pink-200 to-purple-300</code> — background aesthetic</li>
+        <li><code>rounded-xl</code> — soft edge containers</li>
+        <li><code>shadow</code> — clean lab glow</li>
+        <li><code>max-w-4xl mx-auto</code> — page centering for readability</li>
+      </ul>
+    </section>
+
+    <!-- 🧪 BUBBLE ANIMATIONS -->
+    <section class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-2xl font-bold mb-4">🧪 Bubble Animations</h2>
+      <pre class="text-xs bg-gray-100 p-4 rounded overflow-x-auto">
+<!-- BUBBLE FX -->
+<div class="absolute w-4 h-4 bg-pink-400 blur-md rounded-full animate-lab-bubble"></div>
+<div class="absolute w-5 h-5 bg-purple-400 blur-lg rounded-full animate-lab-bubble delay-1000"></div>
+      </pre>
+    </section>
+
+  </main>
+
+  <footer class="text-center py-6 text-sm text-purple-700">
+    🧪 Lab Certified by Narrrf | Last Updated: 2025
+  </footer>
+
+</body>
+</html>
