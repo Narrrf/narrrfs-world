@@ -1,57 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Get Roles & Game Guide | Narrrf's World</title>
-
-  <!-- Favicon & Meta -->
   <link rel="icon" type="image/png" href="favicon.png" />
   <meta name="theme-color" content="#f472b6" />
   <meta name="title" content="Narrrf's World" />
   <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
-
-  <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Neon Lab Style & Bubbles -->
   <style>
-    /* Neon Bubbles */
-    @keyframes labBubble {
-      0% { transform: translateY(0) scale(1); opacity: 0.7; }
-      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
-    }
-    .animate-lab-bubble {
-      animation: labBubble 5s ease-in-out infinite;
-    }
-
-    /* Glowing Pulse Badge */
-    @keyframes pulse {
+    @keyframes pulseGlow {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(1.05); }
+      50% { opacity: 0.7; transform: scale(1.02); }
     }
-    .animate-pulse {
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-
-    /* Background Image Overlay */
-    body::before {
-      content: "";
-      background: url('roles_bottle.png') no-repeat center center / cover;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      z-index: -1;
-      opacity: 0.25;
+    .animate-pulse-glow {
+      animation: pulseGlow 6s ease-in-out infinite;
     }
   </style>
 </head>
 
 
-<body class="relative text-gray-900 font-sans overflow-x-hidden bg-no-repeat bg-cover bg-center min-h-screen" style="background-image: url('roles_bottle.png');">
+<!-- ✅ SINGLE source of background here -->
+<body class="relative bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans bg-cover bg-center bg-no-repeat min-h-screen overflow-x-hidden animate-pulse-glow" style="background-image: url('roles_bottle.png');">
 
-<!-- Fog Overlay -->
+<!-- ✅ Optional fog layer -->
 <div class="absolute inset-0 bg-white opacity-10 z-0 pointer-events-none"></div>
 
 
