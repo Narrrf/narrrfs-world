@@ -1,15 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Narrrf's World</title>
+
+  <!-- Favicon & Metadata -->
   <link rel="icon" type="image/png" href="favicon.png" />
   <meta name="theme-color" content="#f472b6" />
   <meta name="title" content="Narrrf's World" />
   <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 🔬 Lab Animations & Effects -->
+  <style>
+    @keyframes labBubble {
+      0% { transform: translateY(0) scale(1); opacity: 0.7; }
+      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+    }
+    .animate-lab-bubble {
+      animation: labBubble 5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+    .animate-pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-bounce-slow {
+      animation: bounce-slow 3s ease-in-out infinite;
+    }
+
+    @keyframes glowMouse {
+      0% { filter: drop-shadow(0 0 4px #ff69b4); }
+      100% { filter: drop-shadow(0 0 10px #ff6bd6); }
+    }
+    .mouse-glow {
+      animation: glowMouse 2s ease-in-out infinite alternate;
+    }
+  </style>
 </head>
+
 
 
 <body class="bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 font-sans overflow-x-hidden min-h-screen">
