@@ -4,17 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Narrrf's World Whitepaper</title>
-  <!-- Favicon & Wallet Icon -->
-<link rel="icon" type="image/png" href="favicon.png" />
-<meta name="theme-color" content="#f472b6" />
-<meta name="title" content="Narrrf's World" />
-<meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
-
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="theme-color" content="#f472b6" />
+  <meta name="title" content="Narrrf's World" />
+  <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes labBubble {
+      0% { transform: translateY(0) scale(1); opacity: 0.7; }
+      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+    }
+    .animate-lab-bubble {
+      animation: labBubble 5s ease-in-out infinite;
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-purple-100 to-pink-200 text-gray-900 font-sans">
-<!-- Navigation Bar (Whitepaper Page) -->
-<header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
+<body class="bg-gradient-to-br from-purple-100 to-pink-200 text-gray-900 font-sans relative overflow-hidden">
+
+<!-- Bubbling Background Beaker Effect -->
+<div class="absolute inset-0 z-0 pointer-events-none">
+  <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-64 h-64 bg-pink-300 opacity-20 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+    <!-- Flask / Beaker SVG -->
+    <svg width="100" height="150" viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M40 0H60V50L90 120C95 130 85 140 75 140H25C15 140 5 130 10 120L40 50V0Z" fill="#f472b6" stroke="#000" stroke-width="2"/>
+    </svg>
+    <!-- Bubbles -->
+    <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+      <div class="w-3 h-3 bg-pink-400 rounded-full blur-sm animate-lab-bubble absolute" style="left:-10px"></div>
+      <div class="w-4 h-4 bg-purple-400 rounded-full blur-md animate-lab-bubble absolute delay-1000" style="left:10px"></div>
+      <div class="w-2.5 h-2.5 bg-lime-300 rounded-full blur-sm animate-lab-bubble absolute delay-2000" style="left:0px"></div>
+    </div>
+  </div>
+</div>
+
+<header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50 relative z-10">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
     <nav class="space-x-4 text-sm md:text-base flex items-center">
@@ -39,6 +63,30 @@
   </div>
 </header>
 
+<!-- Header -->
+<header class="text-center py-12 bg-pink-600 text-white relative z-10">
+  <h1 class="text-4xl font-extrabold mb-2">📜 Narrrf's World Whitepaper</h1>
+  <p class="text-md">Cooked with $SPOINC in the Lab | Last Updated: 2025</p>
+</header>
+
+<main class="max-w-5xl mx-auto py-12 px-6 space-y-12 relative z-10">
+
+  <!-- Whitepaper Sections -->
+  <section>
+    <h2 class="text-2xl font-bold mb-2">1. Introduction</h2>
+    <p>Narrrf’s World is a Pinky-and-the-Brain inspired, community-driven Web3 project fusing NFTs, $SPOINC tokenomics, weekly poker events, and land ownership in our upcoming Hytopia metaverse.</p>
+  </section>
+  
+  <section>
+    <h2 class="text-2xl font-bold mb-2">2. Tokenomics</h2>
+    <ul class="list-disc list-inside">
+      <li><strong>Primary Token:</strong> $SPOINC (Max Supply: 500M)</li>
+      <li><strong>Play Currency:</strong> $DSPOINC (1 $SPOINC = 10,000 $DSPOINC)</li>
+      <li><strong>Staking:</strong> Freeze your NFT and earn 1 $SPOINC per day</li>
+      <li><strong>Utility:</strong> Stake, swap, shop, play games, buy raffles, and more</li>
+    </ul>
+  </section>
+
 
   <header class="text-center py-12 bg-pink-600 text-white">
     <h1 class="text-4xl font-extrabold mb-2">📜 Narrrf's World Whitepaper</h1>
@@ -47,92 +95,90 @@
 
   <main class="max-w-5xl mx-auto py-12 px-6 space-y-12">
 
-    <!-- Section 1: Introduction -->
-    <section>
-      <h2 class="text-2xl font-bold mb-2">1. Introduction</h2>
-      <p>Narrrf’s World is a Pinky-and-the-Brain inspired, community-driven Web3 project fusing NFTs, $SPOINC tokenomics, weekly poker events, and land ownership in our upcoming Hytopia metaverse.</p>
-    </section>
+<!-- Section 1: Introduction -->
+<section>
+  <h2 class="text-2xl font-bold mb-2">1. Introduction</h2>
+  <p>
+    Narrrf’s World is a Pinky-and-the-Brain inspired, community-driven Web3 project. Powered by NFTs, $SPOINC tokenomics, poker showdowns, and land ownership in our upcoming Hytopia metaverse.
+  </p>
+</section>
 
-    <!-- Section 2: Tokenomics -->
-    <section>
-      <h2 class="text-2xl font-bold mb-2">2. Tokenomics</h2>
-      <ul class="list-disc list-inside">
-        <li><strong>Primary Token:</strong> $SPOINC (Max Supply: 500M)</li>
-        <li><strong>Play Currency:</strong> $DSPOINC (1 $SPOINC = 10,000 $DSPOINC)</li>
-        <li><strong>Staking:</strong> Freeze your NFT and earn 1 $SPOINC per day</li>
-        <li><strong>Utility:</strong> Stake, swap, shop, play games, buy raffles, and more</li>
-      </ul>
-    </section>
+<!-- Section 2: Tokenomics -->
+<section>
+  <h2 class="text-2xl font-bold mb-2">2. Tokenomics</h2>
+  <ul class="list-disc list-inside space-y-1">
+    <li><strong>Primary Token:</strong> $SPOINC (Max Supply: 500M)</li>
+    <li><strong>Utility Token:</strong> $DSPOINC (1 $SPOINC = 10,000 $DSPOINC)</li>
+    <li><strong>Staking:</strong> Freeze NFTs and earn 1 $SPOINC daily</li>
+    <li><strong>Utility:</strong> Shop, stake, raffles, wheel bonuses, and role boosts</li>
+  </ul>
+</section>
 
-    <!-- Section 3: Mint Tiers & Pricing -->
-    <section>
-      <h2 class="text-2xl font-bold mb-2">3. Mint Tiers & Plot System</h2>
-      <p>Based on how many NFTs you mint or hold, you'll be assigned land in Hytopia:</p>
-      <ul class="list-disc list-inside">
-        <li>🎯 1–4 NFTs: Entry Access</li>
-        <li>🏠 5–10 NFTs: Small Plot</li>
-        <li>🏘️ 11–25 NFTs: Medium Plot</li>
-        <li>🏙️ 26–50 NFTs: Massive Plot</li>
-        <li>🏗️ 50+ NFTs: Custom Shop + API Access</li>
-      </ul>
-      <p class="mt-2"><strong>Pricing:</strong> Whitelist $25 | Public $50 | Redemption $75</p>
-    </section>
+<!-- Section 3: Mint Tiers & Plot System -->
+<section>
+  <h2 class="text-2xl font-bold mb-2">3. Mint Tiers & Plot System</h2>
+  <p>Land in Hytopia is assigned based on how many NFTs you mint or hold:</p>
+  <ul class="list-disc list-inside space-y-1 mt-2">
+    <li>🎯 1–4 NFTs: Entry Access</li>
+    <li>🏠 5–10 NFTs: Small Plot</li>
+    <li>🏘️ 11–25 NFTs: Medium Plot</li>
+    <li>🏙️ 26–50 NFTs: Large Plot</li>
+    <li>🏗️ 50+ NFTs: Custom Shop + API Access</li>
+  </ul>
+  <p class="mt-2"><strong>Pricing:</strong> Whitelist $25 | Public $50 | Redemption $75</p>
+</section>
 
-    <!-- Section 4: Roadmap Summary -->
-    <section>
-      <h2 class="text-2xl font-bold mb-2">4. Roadmap Overview (2024–2030)</h2>
-      <ul class="list-disc list-inside">
-        <li><strong>2024:</strong> Founding, Discord, first collabs (CryptoCorn, Kaleido, Weedery)</li>
-        <li><strong>2025:</strong> Minting, VIP events, staking, plot sales, Season 1–2</li>
-        <li><strong>2026:</strong> Real-world contracts, LP pool, SWAP portal</li>
-        <li><strong>2027:</strong> 2nd NFT collection, exchanges, Season 4</li>
-        <li><strong>2028:</strong> Hytopia World launch, business APIs</li>
-        <li><strong>2029–2030:</strong> B2B sales, first live Web3 events, company formation</li>
-      </ul>
-    </section>
+<!-- Section 4: Roadmap Overview -->
+<section>
+  <h2 class="text-2xl font-bold mb-2">4. Roadmap (2024–2030)</h2>
+  <ul class="list-disc list-inside space-y-1">
+    <li><strong>2024:</strong> Project reboot, early collabs, Discord builds</li>
+    <li><strong>2025:</strong> Minting, staking, plot drops, Benefit Season 1</li>
+    <li><strong>2026:</strong> Retail onboarding, utility expansion, $DSPOINC SWAP</li>
+    <li><strong>2027:</strong> GEN2 Collection, CEX/DEX listings, Game partnerships</li>
+    <li><strong>2028–30:</strong> Real-life Web3 events, Hytopia full map, brand APIs</li>
+  </ul>
+</section>
 
-    <!-- Section 5: DSPOINC Utility -->
-    <section>
-      <h2 class="text-2xl font-bold mb-2">5. What is $DSPOINC?</h2>
-      <p>$DSPOINC is your Discord/play reward coin. Earn it by:</p>
-      <ul class="list-disc list-inside">
-        <li>Attending events, winning raffles, playing poker, and doing missions</li>
-        <li>Swap 10k $DSPOINC = 1 $SPOINC</li>
-        <li>Use $DSPOINC in the shop, raffles, rewards, and upgrades</li>
-      </ul>
-    </section>
+<!-- Section 5: What is $DSPOINC -->
+<section>
+  <h2 class="text-2xl font-bold mb-2">5. What is $DSPOINC?</h2>
+  <p>$DSPOINC is our in-community power coin. You earn it by:</p>
+  <ul class="list-disc list-inside mt-2 space-y-1">
+    <li>Joining poker events, completing quests, being active in Discord</li>
+    <li>Using it for raffles, wheel spins, roles, shop items, and upgrades</li>
+    <li>Swapping 10,000 $DSPOINC → 1 $SPOINC through the lab portal</li>
+  </ul>
+</section>
 
-    <!-- Section 6: Partnerships -->
-    <section>
-      <h2 class="text-2xl font-bold mb-2">6. Partners & Collabs</h2>
-      <p>Official Partners:</p>
-      <ul class="list-disc list-inside">
-        <li>🦄 CryptoCorn</li>
-        <li>♠️ Kaleido Poker</li>
-        <li>🐰 Robotic Rabbit Syndicate</li>
-        <li>🌿 Weedery.com</li>
-      </ul>
-      <p>We carefully select and vet all partner projects. All benefits and prizes are honored individually by each partner.</p>
-    </section>
+<!-- Section 6: Partners -->
+<section>
+  <h2 class="text-2xl font-bold mb-2">6. Partners & Collabs</h2>
+  <ul class="list-disc list-inside space-y-1">
+    <li>🦄 CryptoCorn</li>
+    <li>♠️ Kaleido Poker</li>
+    <li>🐰 Robotic Rabbit Syndicate</li>
+    <li>🌿 Weedery.com</li>
+  </ul>
+  <p class="mt-2">All collabs are vetted and responsible for their own drops. Collab benefits will be visible via Discord tabs.</p>
+</section>
 
-    <!-- Section 7: Legal Notice -->
-    <section>
-      <h2 class="text-2xl font-bold mb-2">7. Legal Disclaimer</h2>
-      <p>Narrrf’s World is a decentralized community-driven Web3 project based in Austria 🇦🇹 with no formal registered company. All token distributions, NFT utility, and rewards are managed by the community.</p>
-      <ul class="list-disc list-inside">
-        <li>Participants are responsible for compliance with local regulations</li>
-        <li>No financial advice or investment guarantees are provided</li>
-        <li>Collab partners are responsible for their own rewards</li>
-      </ul>
-    </section>
-
+<!-- Section 7: Legal -->
+<section>
+  <h2 class="text-2xl font-bold mb-2">7. Legal Disclaimer</h2>
+  <ul class="list-disc list-inside space-y-1">
+    <li>Narrrf’s World is a decentralized community project (Austria-based 🇦🇹)</li>
+    <li>No formal entity (yet) – all drops and rewards are community-managed</li>
+    <li>Participants are responsible for following local laws</li>
+    <li>No financial advice or guarantees provided</li>
+  </ul>
+</section>
   </main>
 
-  <footer class="bg-purple-950 text-white text-center py-6 text-sm">
-    "Same thing we do every night, Narrrf... Try to take over Web3." | © 2025
-  </footer>
-<!-- Wallet Connect Script for Global Button -->
-<!-- Global Wallet Connect + PFP Script (Excluding Mint Page) -->
+<footer class="bg-purple-950 text-white text-center py-6 text-sm z-10 relative">
+  "Same thing we do every night, Narrrf... Try to take over Web3." | © 2025
+</footer>
+
 <script>
   async function connectWallet() {
     const avatar = document.getElementById('user-avatar');
@@ -140,7 +186,6 @@
 
     if ('solana' in window) {
       const provider = window.solana;
-
       if (provider.isPhantom) {
         try {
           const response = await provider.connect();
@@ -152,7 +197,7 @@
           // Update UI
           connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
           connectButton.disabled = true;
-          avatar.classList.remove('hidden');
+          if (avatar) avatar.classList.remove('hidden');
         } catch (err) {
           console.error("❌ Wallet connect error:", err);
         }
@@ -160,23 +205,28 @@
     }
   }
 
-  // Auto-show avatar if logged in
   window.addEventListener('DOMContentLoaded', () => {
     const storedWallet = localStorage.getItem('walletAddress');
     const avatar = document.getElementById('user-avatar');
     const connectButton = document.getElementById('top-connect-wallet-btn');
 
-    if (storedWallet && avatar && connectButton) {
-      avatar.classList.remove('hidden');
+    if (storedWallet && connectButton) {
       connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
       connectButton.disabled = true;
+      if (avatar) avatar.classList.remove('hidden');
     }
   });
 
   function disconnectWallet() {
     localStorage.removeItem('walletAddress');
     const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('top-connect-wallet-btn');
+
     if (avatar) avatar.classList.add('hidden');
+    if (connectButton) {
+      connectButton.innerText = '🔌 Connect';
+      connectButton.disabled = false;
+    }
   }
 </script>
 
