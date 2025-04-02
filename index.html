@@ -58,6 +58,14 @@
 .floaty {
   animation: floatMouse 3s ease-in-out infinite;
 }
+@keyframes glowCheese {
+  0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
+  50% { filter: drop-shadow(0 0 12px #fde047); }
+}
+
+#cheese-egg img {
+  animation: glowCheese 2s ease-in-out infinite;
+}
 
 	
   </style>
@@ -474,6 +482,36 @@
   }
 </script> <!-- ✅ Properly closes the script block -->
 
+<!-- 🧀 Hidden Cheese Egg -->
+<a id="cheese-egg" href="experiment-x.html" title="Cheesy secret unlocked!">
+  <img src="img/cheese-egg1.png" alt="Cheese Egg" class="w-10 h-10 fixed z-50 transition-all duration-700 ease-in-out drop-shadow-lg" />
+</a>
+
+
+<script>
+  // 🧀 Hidden Cheese Egg Teleport Script
+  // Role: Moves the small cheese icon across screen at intervals, linking to the secret lab page.
+  // Ideal For: Gamified exploration, lore hunts, VIP funnels, or surprise drops.
+
+  const cheese = document.getElementById('cheese-egg');
+
+  const intervalTiming = 5000; // ⏱️ Change this for faster or slower cheese movement (in ms)
+  const boundaryBuffer = 50;   // 📏 Padding from screen edge in px
+
+  function moveCheese() {
+    const maxX = window.innerWidth - boundaryBuffer;
+    const maxY = window.innerHeight - boundaryBuffer;
+    const x = Math.random() * maxX;
+    const y = Math.random() * maxY;
+    cheese.style.left = `${x}px`;
+    cheese.style.top = `${y}px`;
+  }
+
+  setInterval(moveCheese, intervalTiming);       // Reposition every 5 sec
+  window.addEventListener('DOMContentLoaded', moveCheese); // First placement
+</script>
+
+
 <!-- 🐭 Home Mouse Mascot -->
 <div class="fixed bottom-8 right-8 z-40">
   <img src="home-mouse1.png" alt="Home Mouse Mascot"
@@ -482,6 +520,8 @@
        onclick="window.location.href='https://discord.gg/jwYWh2dU'"
        style="cursor: pointer;" />
 </div>
+
+
 
 </body>
 </html>
