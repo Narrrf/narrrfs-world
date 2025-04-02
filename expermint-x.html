@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- 🧠 Final Lab-Synced Head -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧪 Experiment-X | Narrrf's Trait Vault</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="theme-color" content="#f472b6" />
+  <meta name="title" content="Narrrf's World" />
+  <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 10px #facc15, 0 0 20px #facc15; }
+      50% { box-shadow: 0 0 25px #fde68a, 0 0 40px #facc15; }
+    }
+    .glow {
+      animation: glowPulse 2s infinite ease-in-out;
+    }
+    @keyframes floatMouse {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .floaty {
+      animation: floatMouse 3s ease-in-out infinite;
+    }
+    @keyframes labBubble {
+      0% { transform: translateY(0) scale(1); opacity: 0.7; }
+      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+    }
+    .animate-lab-bubble {
+      animation: labBubble 5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 font-sans overflow-x-hidden min-h-screen">
+
+  <!-- ✅ SECTION START: Vault II Hero Banner -->
+  <header class="relative py-12">
+    <div class="max-w-6xl mx-auto flex flex-col items-center px-6">
+      <h1 class="text-5xl font-extrabold text-yellow-400 glow mb-4">🧀 Experiment-X: Trait Carousel</h1>
+      <p class="text-gray-800 max-w-2xl text-center">
+        You've unlocked the second vault. These are not just traits. They're cheese-fueled mutations.
+      </p>
+    </div>
+  </header>
+  <!-- ✅ SECTION END -->
+
+  <!-- ✅ SECTION START: Carousel Wrapper -->
+  <section class="overflow-x-auto whitespace-nowrap px-6 py-8">
+    <div class="flex gap-6 pb-10">
+
+      <!-- 🧬 Trait Card: Lab Rat -->
+      <div class="inline-block w-64 bg-yellow-100/10 rounded-2xl p-4 shadow-2xl border border-yellow-400 glow">
+        <img src="/assets/img/traits/lab_rat.png" alt="Lab Rat" class="rounded-xl mb-3 mx-auto" />
+        <h3 class="text-yellow-300 text-xl font-bold">Lab Rat</h3>
+        <p class="text-sm text-yellow-100">Common Cheese Agent</p>
+      </div>
+
+      <!-- 🧬 Trait Card: Cheese Crown -->
+      <div class="inline-block w-64 bg-yellow-100/10 rounded-2xl p-4 shadow-2xl border border-yellow-400 glow">
+        <img src="/assets/img/traits/cheese_crown.png" alt="Cheese Crown" class="rounded-xl mb-3 mx-auto" />
+        <h3 class="text-yellow-300 text-xl font-bold">Cheese Crown</h3>
+        <p class="text-sm text-yellow-100">Legendary Mutation</p>
+      </div>
+
+      <!-- 🧬 Trait Card: Brain Jar -->
+      <div class="inline-block w-64 bg-yellow-100/10 rounded-2xl p-4 shadow-2xl border border-yellow-400 glow">
+        <img src="/assets/img/traits/brain_jar.png" alt="Brain Jar" class="rounded-xl mb-3 mx-auto" />
+        <h3 class="text-yellow-300 text-xl font-bold">Brain Jar</h3>
+        <p class="text-sm text-yellow-100">Synaptic Chaos</p>
+      </div>
+
+      <!-- 🧬 Add more trait cards above by duplicating the entire card block -->
+
+    </div>
+  </section>
+  <!-- ✅ SECTION END -->
+
+  <!-- ✅ SECTION START: Footer -->
+  <footer class="bg-black text-white py-8 text-center text-xs">
+    You weren’t supposed to find this. Vault II active. 🧠<br/>
+    <span class="text-gray-400">&copy; 2025 Narrrf's World. Powered by brain & cheese.</span>
+  </footer>
+  <!-- ✅ SECTION END -->
+
+  <!-- 🐭 Floating Mascot with glow fx -->
+  <div class="fixed bottom-8 right-8 z-40">
+    <img src="home-mouse1.png" alt="Lab Mouse" title="Vault Guardian"
+         class="floaty w-20 md:w-28 hover:scale-105 transition drop-shadow-xl animate-pulse" />
+  </div>
+
+</body>
+</html>
