@@ -1,15 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
 <head>
+  <!-- Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Experiment X | Narrrf's World</title>
-  <link rel="icon" type="image/png" href="favicon.png" />
-  <meta name="theme-color" content="#f472b6" />
+
+  <!-- Favicon & Metadata -->
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <meta name="theme-color" content="#facc15" />
+  <meta name="msapplication-TileColor" content="#facc15" />
+  <meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
   <meta name="title" content="Narrrf's World" />
   <meta name="description" content="Mutant visuals & future chaos from Narrrf's Lab." />
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Carousel & Lab Animations -->
+  <style>
+    @keyframes labBubble {
+      0% { transform: translateY(0) scale(1); opacity: 0.7; }
+      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+    }
+    .animate-lab-bubble {
+      animation: labBubble 5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+    .animate-pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes floatMouse {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .floaty {
+      animation: floatMouse 3s ease-in-out infinite;
+    }
+  </style>
 </head>
+
 
 <body class="relative bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans min-h-screen overflow-x-hidden">
 
