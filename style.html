@@ -28,9 +28,23 @@
 #cheese-egg img {
   animation: glowCheese 2s ease-in-out infinite;
 }
+/* 🔮 MasterChief Glow Title Animation */
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px #f472b6); }
+  50% { filter: drop-shadow(0 0 12px #fb7185); }
+}
 
+.drop-shadow-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
   </style>
 </head>
+
+<!-- 🧠 MasterChief Style Log -->
+<!-- ✅ pulse-glow = used for glowing headers like on project-updates.html -->
+<!-- ✅ drop-shadow-glow = applies animated pink shadow glow -->
+<!-- 🎯 Stack with animate-pulse + font-bold for max brainwave boost -->
+
 
 <body class="bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans">
 
