@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Narrrf Style Guide</title>
+    <title>Narrrf Style Guide</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @keyframes labBubble {
@@ -52,10 +52,10 @@
     <section class="bg-white rounded-xl shadow p-6">
       <h2 class="text-2xl font-bold mb-4">🎯 Comment Tags</h2>
       <ul class="list-disc list-inside space-y-2 text-sm">
-        <li><code><!-- ✅ CLOSES THE <main> TAG CORRECTLY --></code> — closing tag confirmations</li>
-        <li><code><!-- 🔥 Bubble Effects Start --></code> — visual fx zones</li>
-        <li><code><!-- 📜 MINT PAGE LAB SECTION --></code> — feature identifiers</li>
-        <li><code><!-- 🧠 Discord Roles Card Grid --></code> — exact component notes</li>
+        <li>&lt;!-- ✅ CLOSES THE &lt;main&gt; TAG CORRECTLY --&gt; — closing tag confirmations</li>
+        <li>&lt;!-- 🔥 Bubble Effects Start --&gt; — visual fx zones</li>
+        <li>&lt;!-- 📜 MINT PAGE LAB SECTION --&gt; — feature identifiers</li>
+        <li>&lt;!-- 🧠 Discord Roles Card Grid --&gt; — exact component notes</li>
       </ul>
     </section>
 
@@ -78,6 +78,50 @@
 <div class="absolute w-4 h-4 bg-pink-400 blur-md rounded-full animate-lab-bubble"></div>
 <div class="absolute w-5 h-5 bg-purple-400 blur-lg rounded-full animate-lab-bubble delay-1000"></div>
       </pre>
+    </section>
+
+    <!-- 🧠 Masterchief Notes for SQL, DB & Backend -->
+    <section class="bg-white rounded-xl shadow p-6 border-l-4 border-blue-400 mt-12">
+      <h2 class="text-2xl font-bold mb-4">🧠 Masterchief Notes for SQL, DB & Backend</h2>
+      <p class="text-sm mb-4">These notes serve as key references for any backend or database developers joining Narrrf's Lab — especially our new expert Masterchief who's taking point on SQL modeling.</p>
+      <ul class="list-disc list-inside space-y-2 text-sm">
+        <li>📦 The project centers around a cartoon NFT ecosystem called Narrrf's World, focused on storytelling, minting, and gamification.</li>
+        <li>🎭 We have over 1000 NFT traits generated across GEN1/GEN2 collections — needs to be modeled in a tbl_traits table.</li>
+        <li>👤 Users interact via wallet connect (Phantom/Solana) — we’ll need tbl_users with wallet address, roles, VIP status, and point balance ($DSPOINC).</li>
+        <li>🧪 Points system includes roles, raffles, and upgrades — link wallets and Discord IDs.</li>
+        <li>🏆 We track missions, roles, giveaways, and wheel spins. Suggested relational tables:
+          <ul class="list-disc list-inside ml-4">
+            <li>tbl_roles</li>
+            <li>tbl_wallets</li>
+            <li>tbl_rewards</li>
+            <li>tbl_raffle_entries</li>
+          </ul>
+        </li>
+        <li>🧠 All code must be commented thoroughly with lab-style notes like this:</li>
+      </ul>
+
+<pre class="bg-gray-100 text-xs p-4 rounded overflow-x-auto mt-4">
+<?php
+// Lab Note 🧪: Define DB connection settings for Narrrf's Lab
+$host = '127.0.0.1';
+$db   = 'narrrf_lab';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+
+// Lab Note 🧪: Build DSN (data source name)
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+try {
+    // Lab Note 🧪: Connect to DB using PDO
+    $pdo = new PDO($dsn, $user, $pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    echo "✅ Connected to Narrrf's Lab DB!";
+} catch (\PDOException $e) {
+    throw new \PDOException($e->getMessage(), (int)$e->getCode());
+}
+?>
+</pre>
     </section>
 
   </main>
