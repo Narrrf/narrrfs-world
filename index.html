@@ -502,7 +502,12 @@
   }
 </script> <!-- ✅ Properly closes the script block -->
 
-<!-- 🧀 Hidden Cheese Egg (inside #roadmap section) -->
+<!-- 🧀 Hidden Cheese Egg (inside #roadmap section) **
+ * 🧠 This egg hides in the roadmap and moves.
+ * 🧰 Modify:
+ * - MOVE_INTERVAL for speed
+ * - CHEESE_SIZE to adjust boundary margin
+ *-->
 <a id="cheese-egg" href="experiment-x.html" title="Cheesy secret unlocked!">
   <img src="img/cheese-egg1.png" alt="Cheese Egg"
        class="w-10 h-10 fixed z-50 transition-all duration-700 ease-in-out drop-shadow-lg" />
@@ -524,8 +529,8 @@
    * - CHEESE_SIZE: Used to keep it inside boundaries
    */
 
-  const MOVE_INTERVAL = 6000; // 🕑 Moves every 6 seconds
-  const CHEESE_SIZE = 40;     // 📏 Cheese icon dimension
+  const MOVE_INTERVAL = 6000; // ⏱️ 6s
+  const CHEESE_SIZE = 40;     // 🍴 pixel size
 
   const roadmap = document.getElementById('roadmap');
   const cheeseEgg = document.getElementById('cheese-egg');
