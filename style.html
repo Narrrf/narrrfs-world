@@ -20,6 +20,15 @@
     .animate-pulse {
       animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
+	
+	@keyframes glowCheese {
+  0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
+  50% { filter: drop-shadow(0 0 12px #fde047); }
+}
+#cheese-egg img {
+  animation: glowCheese 2s ease-in-out infinite;
+}
+
   </style>
 </head>
 
