@@ -1,30 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Meta Essentials -->
+  <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Narrrf's World</title>
 
-  <!-- Favicon & Metadata -->
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
-  <meta name="theme-color" content="#facc15" />
+  <!-- 🧀 Favicon & Metadata -->
+  <!-- ✅ Local favicon setup (fast & reliable) -->
+  <link rel="icon" type="image/png" href="img/favicon2.png" />
+  <link rel="shortcut icon" type="image/png" href="img/favicon2.png" />
+
+  <!-- 🌈 Theming for Microsoft tiles (optional but clean) -->
   <meta name="msapplication-TileColor" content="#facc15" />
-  <meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+
+  <!-- 🧾 SEO & Social Preview -->
   <meta name="title" content="Narrrf's World" />
   <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
 
-<!-- 🧠 Cheese Engine Meta Identifier (for backend indexing & AI readers SQL ) -->
-<meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4" />
-<meta name="egg-count" content="3" />
-<meta name="egg-tracking" content="enabled" />
+  <!-- 🧪 Cheese Engine Meta ID Block (for AI & backend indexing) -->
+  <meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4" />
+  <meta name="egg-count" content="3" />
+  <meta name="egg-tracking" content="enabled" />
 
-
-  <!-- Tailwind CSS -->
+  <!-- 🎨 TailwindCSS Core (in development only) -->
+  <!-- ⚠️ Replace with PostCSS in production for performance: https://tailwindcss.com/docs/installation -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- 🔬 Lab Animations & Effects -->
   <style>
+    /* 💨 Bubble floating */
     @keyframes labBubble {
       0% { transform: translateY(0) scale(1); opacity: 0.7; }
       100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
@@ -32,6 +37,8 @@
     .animate-lab-bubble {
       animation: labBubble 5s ease-in-out infinite;
     }
+
+    /* 💓 UI Pulse */
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.6; transform: scale(1.05); }
@@ -39,6 +46,8 @@
     .animate-pulse {
       animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
+
+    /* 🧃 Slow floating motion (bottle/lab elements) */
     @keyframes bounce-slow {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-6px); }
@@ -46,6 +55,8 @@
     .animate-bounce-slow {
       animation: bounce-slow 3s ease-in-out infinite;
     }
+
+    /* 🐭 Floaty mouse stuff */
     @keyframes floatMouse {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-6px); }
@@ -53,6 +64,8 @@
     .floaty {
       animation: floatMouse 3s ease-in-out infinite;
     }
+
+    /* 🌟 Glow for cheese eggs */
     @keyframes glowCheese {
       0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
       50% { filter: drop-shadow(0 0 12px #fde047); }
