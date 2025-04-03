@@ -479,13 +479,11 @@
   </div>
 </section>
 
-<!-- Footer Section -->
-<!-- Footer Section with Twitter Embed -->
+<!-- 🧠 Lab Footer Section with Social Links & Contact -->
 <footer class="bg-black text-white py-12 px-6 mt-16">
   <div class="max-w-6xl mx-auto text-center">
 
-
-    <!-- Footer Nav Links -->
+    <!-- Footer Nav -->
     <div class="grid md:grid-cols-3 gap-6 mb-8 text-sm text-gray-300">
       <div>
         <h4 class="font-semibold text-white mb-2">Quick Links</h4>
@@ -496,22 +494,18 @@
           <li><a href="get-roles.html" class="hover:underline">Get Roles</a></li>
         </ul>
       </div>
-
-       <div>
-         <h4 class="font-semibold text-white mb-2">Socials</h4>
-         <ul class="space-y-1">
-           <li><a href="https://twitter.com/narrrf12345" target="_blank" class="hover:underline">Twitter / X</a></li>
-           <li><a href="https://discord.gg/jwYWh2dU" target="_blank" class="hover:underline">Join Discord</a></li>
-           <li><a href="https://play.clubgg.com/dlink/TN4oRnWBK356PWat5" target="_blank" class="hover:underline">Poker ClubGG</a></li>
-         </ul>
-       </div>
-
-
+      <div>
+        <h4 class="font-semibold text-white mb-2">Socials</h4>
+        <ul class="space-y-1">
+          <li><a href="https://twitter.com/narrrf12345" target="_blank" class="hover:underline">Twitter / X</a></li>
+          <li><a href="https://discord.gg/jwYWh2dU" target="_blank" class="hover:underline">Join Discord</a></li>
+          <li><a href="https://play.clubgg.com/dlink/TN4oRnWBK356PWat5" target="_blank" class="hover:underline">Poker ClubGG</a></li>
+        </ul>
+      </div>
       <div>
         <h4 class="font-semibold text-white mb-2">Contact</h4>
         <ul class="space-y-1">
           <li><span>Email: Open a Ticket in Discord</span></li>
-
           <li><span>Web3 Only – Austria Based</span></li>
         </ul>
       </div>
@@ -521,171 +515,79 @@
   </div>
 </footer>
 
+<!-- ✅ Wallet Connect & Avatar -->
+<script>
+  async function connectWallet() {
+    const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('top-connect-wallet-btn');
 
-  <!-- Site content goes here -->
- <!-- Global Wallet Connect + PFP Script (used across all non-mint pages) -->
-  <script>
-    async function connectWallet() {
-      const avatar = document.getElementById('user-avatar');
-      const connectButton = document.getElementById('top-connect-wallet-btn');
-
-      if ('solana' in window) {
-        const provider = window.solana;
-
-        if (provider.isPhantom) {
-          try {
-            const response = await provider.connect();
-            const walletAddress = response.publicKey.toString();
-
-            localStorage.setItem('walletAddress', walletAddress);
-            connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
-            connectButton.disabled = true;
-            avatar.classList.remove('hidden');
-          } catch (err) {
-            console.error("❌ Wallet connect error:", err);
-          }
+    if ('solana' in window) {
+      const provider = window.solana;
+      if (provider.isPhantom) {
+        try {
+          const response = await provider.connect();
+          const walletAddress = response.publicKey.toString();
+          localStorage.setItem('walletAddress', walletAddress);
+          connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+          connectButton.disabled = true;
+          avatar.classList.remove('hidden');
+        } catch (err) {
+          console.error("❌ Wallet connect error:", err);
         }
       }
     }
+  }
 
-    // Auto-show avatar if already logged in
-    window.addEventListener('DOMContentLoaded', () => {
-      const storedWallet = localStorage.getItem('walletAddress');
-      const avatar = document.getElementById('user-avatar');
-      const connectButton = document.getElementById('top-connect-wallet-btn');
+  window.addEventListener('DOMContentLoaded', () => {
+    const storedWallet = localStorage.getItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('top-connect-wallet-btn');
 
-      if (storedWallet && avatar && connectButton) {
-        avatar.classList.remove('hidden');
-        connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
-        connectButton.disabled = true;
-      }
-    });
-
-    function disconnectWallet() {
-      localStorage.removeItem('walletAddress');
-      const avatar = document.getElementById('user-avatar');
-      if (avatar) avatar.classList.add('hidden');
+    if (storedWallet && avatar && connectButton) {
+      avatar.classList.remove('hidden');
+      connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
+      connectButton.disabled = true;
     }
-  // Your wallet connect + disconnect logic
-<script>
+  });
+
   function disconnectWallet() {
     localStorage.removeItem('walletAddress');
     const avatar = document.getElementById('user-avatar');
     if (avatar) avatar.classList.add('hidden');
   }
-</script> <!-- ✅ Properly closes the script block -->
+</script>
 
-<!-- 🧀 Hidden Cheese Egg (inside #roadmap section) **
- * 🧠 This egg hides in the roadmap and moves.
- * 🧰 Modify:
- * - MOVE_INTERVAL for speed
- * - CHEESE_SIZE to adjust boundary margin
- *-->
-<a id="cheese-egg" href="experiment-x.html" title="Cheesy secret unlocked!">
-  <img src="img/cheese-egg1.png" alt="Cheese Egg"
-       class="w-10 h-10 fixed z-50 transition-all duration-700 ease-in-out drop-shadow-lg" />
+<!-- 🧀 Cheese Eggs (Placed INSIDE #roadmap!) -->
+<a id="cheese-egg" href="experiment-x.html" title="Cheesy secret unlocked!" class="absolute z-40">
+  <img src="img/cheese-egg1.png" alt="Cheese Egg" class="w-10 h-10 drop-shadow-lg" />
+</a>
+<a id="cheese-egg-finance" href="finances.html" title="Found the Finance Cheese! 💰" class="absolute z-40">
+  <img src="img/cheese-finance.png" alt="Finance Cheese Egg" class="w-10 h-10 drop-shadow-lg" />
+</a>
+<a id="cheese-egg-blue" href="whitepaper-pro.html" title="Sniffed the Blue Cheese! 🧠📜" class="absolute z-40">
+  <img src="img/blue-cheese.png" alt="Blue Cheese Egg" class="w-10 h-10 drop-shadow-lg" />
 </a>
 
-<!-- 🔁 Cheese Egg Movement Script -->
-
-<script>
-  const CHEESE_SIZE = 40;
-  const MOVE_INTERVAL = 6000;
-
-  function moveEgg(id, parentId) {
-    const egg = document.getElementById(id);
-    const parent = document.getElementById(parentId);
-
-    if (!egg || !parent) return;
-
-    const maxLeft = parent.clientWidth - CHEESE_SIZE;
-    const maxTop = parent.clientHeight - CHEESE_SIZE;
-
-    const left = Math.floor(Math.random() * maxLeft);
-    const top = Math.floor(Math.random() * maxTop);
-
-    egg.style.left = `${left}px`;
-    egg.style.top = `${top}px`;
-  }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    setInterval(() => moveEgg('cheese-egg-finance', 'roadmap'), MOVE_INTERVAL);
-    setInterval(() => moveEgg('cheese-egg-blue', 'roadmap'), MOVE_INTERVAL);
-  });
-</script>
-
-
-
-<script>
-  /**
-   * 🧀 Cheese Egg Easter Egg
-   * --------------------------------------------
-   * MasterChief Dev Notes:
-   * - Target Element: #cheese-egg
-   * - Must be placed *inside* an element with ID: #roadmap
-   * - It randomly moves the cheese within the roadmap section
-   * - Great for hiding clickable fun — make it glow, move, reward
-   *
-   * 🔧 Config:
-   * - MOVE_INTERVAL: How often it moves (in ms)
-   * - CHEESE_SIZE: Used to keep it inside boundaries
-   */
-
-  const MOVE_INTERVAL = 6000; // ⏱️ 6s
-  const CHEESE_SIZE = 40;     // 🍴 pixel size
-
-  const roadmap = document.getElementById('roadmap');
-  const cheeseEgg = document.getElementById('cheese-egg');
-
-  function moveCheese() {
-    if (!roadmap || !cheeseEgg) return;
-
-    const maxLeft = roadmap.clientWidth - CHEESE_SIZE;
-    const maxTop = roadmap.clientHeight - CHEESE_SIZE;
-
-    const left = Math.floor(Math.random() * maxLeft);
-    const top = Math.floor(Math.random() * maxTop);
-
-    cheeseEgg.style.left = `${left}px`;
-    cheeseEgg.style.top = `${top}px`;
-  }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    moveCheese();                          // 🧀 Initial drop
-    setInterval(moveCheese, MOVE_INTERVAL); // 🔁 Ongoing teleport
-  });
-</script>
-
 <!-- 
-  🧠 All Eggs Setup (movement + sound for all eggs) 
-  -----------------------------------------------
-  🍽️ MasterChief Dev Notes:
+  🧪 Cheese Egg Engine
+  --------------------
+  ✅ 5yo Dev Notes:
+    - Eggs are little pictures that move around like magic.
+    - Click them for a funny "pop!" sound and secret surprises!
+    - They hide in the roadmap zone like hide-and-seek. 🎯
 
-  ✅ This block handles everything: movement & sound.
-  ✅ Supports multiple cheese eggs (just add IDs to the list).
-  ✅ All eggs teleport inside the #roadmap section.
-  ✅ Sound comes from: /sounds/cheese-egg-click.wav
-  ✅ Movement keeps eggs inside boundaries (CHEESE_SIZE sets padding).
-  ✅ Add fun, random easter links with each egg (like finance.html or whitepaper-pro.html).
+  ✅ MasterChief Dev Notes:
+    - Auto-moves cheese inside roadmap bounds (with CHEESE_SIZE padding)
+    - Click plays preloaded sound
+    - Eggs must live inside a container with `position: relative`
 -->
-
 <script>
-  // ⏱️ How often the cheese moves (in milliseconds)
-  const MOVE_INTERVAL = 6000;
+  const MOVE_INTERVAL = 6000; // 🕒 Every 6 seconds
+  const CHEESE_SIZE = 40;     // 🍴 Size buffer to prevent overflow
 
-  // 🧀 Size of the cheese icon, used to prevent it from going off the edge
-  const CHEESE_SIZE = 40;
-
-  // 🔊 Audio when cheese is clicked (must match <head> preload path!)
   const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
   cheeseClickSound.volume = 0.8;
 
-  /**
-   * 🎯 moveEgg(id, parentId)
-   * Moves a cheese egg to a random spot inside the given parent container.
-   * @param {string} id - The ID of the egg element.
-   * @param {string} parentId - The ID of the container the egg should move inside.
-   */
   function moveEgg(id, parentId) {
     const egg = document.getElementById(id);
     const parent = document.getElementById(parentId);
@@ -693,7 +595,6 @@
 
     const maxLeft = parent.clientWidth - CHEESE_SIZE;
     const maxTop = parent.clientHeight - CHEESE_SIZE;
-
     const left = Math.floor(Math.random() * maxLeft);
     const top = Math.floor(Math.random() * maxTop);
 
@@ -701,18 +602,16 @@
     egg.style.top = `${top}px`;
   }
 
-  // 🧠 Setup once everything is loaded
   window.addEventListener('DOMContentLoaded', () => {
-    // 📦 List all egg IDs here — they will all animate!
     const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
 
-    // 🔁 Move each egg randomly at regular intervals
+    // 🧀 Drop & Move Each Cheese
     eggIds.forEach(id => {
-      moveEgg(id, 'roadmap'); // initial position
+      moveEgg(id, 'roadmap');
       setInterval(() => moveEgg(id, 'roadmap'), MOVE_INTERVAL);
     });
 
-    // 🔊 Play sound when any egg is clicked
+    // 🔊 Click = play cheese sound
     eggIds.forEach(id => {
       const egg = document.getElementById(id);
       if (egg) {
