@@ -7,7 +7,8 @@
   <title>Project Updates | Narrrf's World</title>
 
   <!-- Favicon & Metadata -->
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <link rel="icon" type="image/png" href="img/favicon-browser.png" />
+  <link rel="shortcut icon" type="image/png" href="img/favicon-browser.png" />
   <meta name="theme-color" content="#facc15" />
   <meta name="msapplication-TileColor" content="#facc15" />
   <meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
@@ -38,6 +39,62 @@
 
 
 <body class="relative bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans overflow-x-hidden min-h-screen">
+
+<!-- 
+🧪 LAB NOTE: PROJECT-UPDATES.HTML (Ultra Edition)
+------------------------------------------------------------
+🌉 Web3-to-Web2 Bridge — connecting trait-based wallets to HTML content.
+
+📌 Purpose:
+- Display dynamic project updates
+- Optionally hide/show parts of this page based on wallet traits, NFT class, or Discord roles
+- Can be powered fully with PHP + SQL — no JS required
+
+💾 Backend Systems:
+- `wallet_traits`: (wallet, trait)
+- `trait_content_access`: (trait, content_id, visible)
+- `project_updates`: (title, body, visibleTo)
+
+🧠 SQL STRUCTURE IDEA
+-- Who owns what trait
+Table: wallet_traits
+wallet TEXT
+trait TEXT -- e.g., "oracle", "map-unlocked"
+
+-- What content is linked to which trait
+Table: trait_content_access
+trait TEXT
+content_id TEXT
+visible BOOLEAN
+
+Then in PHP:
+
+php
+
+<?php
+$wallet = $_SESSION['wallet']; // Already connected?
+$traits = getTraits($wallet);  // e.g. ['oracle', 'easter-map']
+
+if (in_array('easter-map', $traits)) {
+  include('map-easteregg.php');
+}
+?>
+
+🧠 Interactions You Can Build:
+- Unlock maps, lore, visuals based on NFT traits
+- Gate sections with PHP: if user has trait → show special HTML
+- Use walletConnect only to grab walletAddress, then switch to PHP
+- Players with role "Chaos Cartographer" = unlock secret dev map
+- Users with trait "riddle-solved-3" = see bonus update or easter egg
+
+🔥 5-Year-Old Dev Reminder:
+“If I want something to show only for someone special, I write a PHP if-statement with their trait name. No JS needed. Just cheese and logic.”
+
+✅ No blockchain interaction needed — traits come from synced DB (backed by snapshot or API).
+
+🗂️ All paths: /img/ + /sounds/
+-->
+
 
   <!-- 🧪 $SPOINC Badge -->
   <div class="fixed top-4 left-4 z-50 bg-pink-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg animate-pulse">
@@ -205,6 +262,15 @@
 
 <!-- Footer -->
 <footer class="text-center py-6 text-sm text-purple-700">
+
+<!-- 🧠 5-Year-Old Dev Reminder for Masterchief SQL :
+If you ever want to make this list dynamic, ask the SQL wizard (Brian 3.1 style):
+"Can we load these dev logs from a table called project_updates or cheese_tasks?"
+Then let the PHP file echo each one. Or just ping Brain 3.1.
+-->
+
+
+
   Made with 🧀 & Dev Logs in Narrrf's Lab | <a href="https://discord.gg/jwYWh2dU" class="underline text-pink-600">Join us on Discord</a>
 </footer>
 
@@ -256,6 +322,9 @@
     if (avatar) avatar.classList.add('hidden');
   }
 </script>
+
+<!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
+
 
 </body>
 </html>

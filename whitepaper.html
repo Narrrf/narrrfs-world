@@ -1,24 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Meta Essentials -->
+  <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Narrrf's World Whitepaper</title>
 
-  <!-- Favicon & Metadata -->
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
-  <meta name="theme-color" content="#facc15" />
+  <!-- 🧀 Favicon & Metadata -->
+  <!-- ✅ Using local version instead of GitHub raw link -->
+  <link rel="icon" type="image/png" href="img/favicon-browser.png" />
+  <link rel="shortcut icon" type="image/png" href="img/favicon-browser.png" />
   <meta name="msapplication-TileColor" content="#facc15" />
-  <meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
-  <meta name="title" content="Narrrf's World" />
-  <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
+  <meta name="msapplication-TileImage" content="img/favicon-browser.png" />
+  <meta name="theme-color" content="#facc15" />
+  <meta name="title" content="Narrrf's World Whitepaper" />
+  <meta name="description" content="Enter the lore vault of Narrrf's World — vision, roles, and the cheese-based future." />
 
-  <!-- Tailwind CSS -->
+  <!-- 🧵 OpenGraph & Twitter Preview -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Narrrf's World: Whitepaper" />
+  <meta property="og:description" content="Discover the lore, structure, and tech powering Narrrf's World." />
+  <meta property="og:image" content="img/whitepaper-mouse1.png" />
+  <meta property="og:url" content="https://narrrfs.world/whitepaper.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Narrrf's World Whitepaper" />
+  <meta name="twitter:description" content="A creative-first, lore-driven decentralized experience. Read the cheese scroll." />
+  <meta name="twitter:image" content="img/whitepaper-mouse1.png" />
+
+  <!-- 🎨 Tailwind (CDN Dev Mode) -->
+  <!-- Replace with PostCSS pipeline in production for better performance -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- 🔬 Whitepaper Animations -->
   <style>
+    /* 💨 Floating lab bubble (used in lore sections or mouse) */
     @keyframes labBubble {
       0% { transform: translateY(0) scale(1); opacity: 0.7; }
       50% { transform: translateY(-30px) scale(1.1); opacity: 1; }
@@ -28,6 +43,7 @@
       animation: labBubble 5s ease-in-out infinite;
     }
 
+    /* 💓 Lore pulse glow */
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.6; transform: scale(1.05); }
@@ -36,16 +52,35 @@
       animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
   </style>
+
+  <!-- 🧾 Dev Note: This is the lore root document. If extending, preserve tone and theming. -->
 </head>
 
 
 
 <body class="relative bg-gradient-to-br from-purple-100 to-pink-200 text-gray-900 font-sans overflow-x-hidden min-h-screen">
 
+<!-- 
+🧪 LAB NOTE: WHITEPAPER.HTML
+------------------------------------------------------------
+📜 This is the lore + mechanics guide for Narrrf's World.
+
+📌 Purpose:
+- Explains role system, staking, DSPOINC, SPOINC
+- Foundation for backend devs to understand the logic of the world
+- No wallet connection, SQL, or dynamic scripts (yet)
+
+🧠 Developer Notes:
+- May be used by future AI systems for glossary or content analysis
+- Optional: Add interactive FAQ, expand to `/api/whitepaper.json` or glossary bot
+
+🗂️ Uses /img/ path system. Ensure image references use `img/` folder.
+-->
+
 
 <!-- 🐭 Whitepaper Mouse Mascot -->
 <div class="fixed bottom-8 left-8 z-40">
-  <img src="whitepaper-mouse1.png" alt="Whitepaper Mouse"
+  <img src="img/whitepaper-mouse1.png" alt="Whitepaper Mouse"
        class="floaty w-28 md:w-36 hover:scale-105 transition-transform duration-300 drop-shadow-xl mouse-glow"
        title="Smartest mouse in the lab 🧠📜"
        onclick="window.location.href='https://discord.gg/jwYWh2dU'"
@@ -78,12 +113,13 @@
   </div>
 </div>
 
-<!-- Navigation -->
-
+<!-- 🧭 Main Navigation (Sticky Top) -->
 <header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50 relative z-10">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
-    <nav class="space-x-4 text-sm md:text-base flex items-center">
+
+    <!-- 🧭 Navigation for screen readers too! -->
+    <nav aria-label="Main Navigation" class="space-x-4 text-sm md:text-base flex items-center">
       <a href="index.html" class="hover:text-pink-400">Home</a>
       <a href="mint.html" class="hover:text-pink-400">Mint</a>
       <a href="whitepaper.html" class="text-pink-400 font-semibold">Whitepaper</a>
@@ -91,19 +127,18 @@
       <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
       <a href="faq.html" class="hover:text-pink-400">FAQ</a>
 
-      <!-- Connect Wallet Button -->
       <button id="top-connect-wallet-btn"
         onclick="connectWallet()"
         class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
         🔌 Connect
       </button>
 
-      <!-- Avatar Placeholder (Cheese fallback) -->
-      <img id="user-avatar" src="cheese.png" alt="PFP"
+      <img id="user-avatar" src="img/cheese.png" alt="PFP"
         class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
     </nav>
   </div>
 </header>
+
 
 <!-- Header -->
 <header class="text-center py-12 bg-pink-600 text-white relative z-10">
@@ -267,6 +302,9 @@
     }
   }
 </script>
+
+<!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
+
 
 </body>
 </html>

@@ -1,69 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+  <!-- 
+  ===========================================================
+  🧠 MASTER LAB NOTE: THE CHEESE EGG ENGINE – DO NOT DELETE
+  🧀 Core Brain of Narrrf's World Riddle & Puzzle System
+  🎯 Purpose:
+  This script controls ALL hidden riddle cheese eggs in Narrrf’s World.
+  Each egg is a moving clickable element used for unlocking secrets, XP boosts, and story paths.
+  
+  🔁 Modular Expansion (2025+):
+  - Hidden lore activations
+  - Inventory item triggers
+  - Trait-bound egg rewards
+  - Backend-linked egg conditions
+  - SQL tracking of solved riddles
+  
+  🧰 Requirements:
+  - Section with id="roadmap" must have class="relative"
+  - Eggs = <a id="cheese-egg-id" class="absolute"> with no inline top/left
+  - Sound file: /sounds/cheese-egg-click.wav
+  
+  📌 This file is the **core brain** behind interactive lore & puzzle flow.
+  All future riddle actions (backend or frontend) connect here.
+  
+  🛡️ Dev Notes:
+  - Never add inline styles to cheese egg top/left
+  - Use `z-50` for cheese layering above content
+  - Add new eggs by simply appending IDs to the `eggIds` array
+  
+  👨‍🚀 MasterChef Note:
+  Mark this block as sacred. Future devs — extend, don’t overwrite. 
+  ============================================================
+  -->
 
-<!-- 
-===========================================================
-🧠 MASTER LAB NOTE: THE CHEESE EGG ENGINE – DO NOT DELETE
-🧀 Core Brain of Narrrf's World Riddle & Puzzle System
-🎯 Purpose:
-This script controls ALL hidden riddle cheese eggs in Narrrf’s World.
-Each egg is a moving clickable element used for unlocking secrets, XP boosts, and story paths.
-
-🔁 Modular Expansion (2025+):
-- Hidden lore activations
-- Inventory item triggers
-- Trait-bound egg rewards
-- Backend-linked egg conditions
-- SQL tracking of solved riddles
-
-🧰 Requirements:
-- Section with id="roadmap" must have class="relative"
-- Eggs = <a id="cheese-egg-id" class="absolute"> with no inline top/left
-- Sound file: /sounds/cheese-egg-click.wav
-
-📌 This file is the **core brain** behind interactive lore & puzzle flow.
-All future riddle actions (backend or frontend) connect here.
-
-🛡️ Dev Notes:
-- Never add inline styles to cheese egg top/left
-- Use `z-50` for cheese layering above content
-- Add new eggs by simply appending IDs to the `eggIds` array
-
-👨‍🚀 MasterChief Note:
-Mark this block as sacred. Future devs — extend, don’t overwrite. 
-===========================================================
--->
-
-<!-- 
+  <!-- 
   ==============================
   🧠 CHEESE ENGINE: RIDDLE SYSTEM MANIFEST
   ==============================
-
+  
   🎯 Purpose:
   This frontend system powers a map-wide, trait-aware, modular riddle game.
   All egg interactions can log to SQL, enabling unlocks, missions, lore events, and item drops.
-
+  
   🔐 Powered By:
   - JS Cheese Engine (v1.4)
   - SQL table: tbl_cheese_clicks
   - API endpoint: /api/track-egg-click
-
+  
   🧩 Eggs Are:
   - Positioned randomly in #roadmap
   - Clickable: play sound + trigger tracking
   - Expandable: Easily tied to NFT traits or XP
-
+  
+  🧠 Game Features:
+  - Users with **NFT traits** can access **Hytopia land** in **Experiment X**.
+  - Rewards and **staking stats** tied to **NFT ownership**
+  
   🛡️ Master Dev Rule:
-  This is a living system. Respect the cheese.look at index.html infos!
-
+  This is a living system. Respect the cheese!
   ============================================
   -->
 
-<!-- 🧬 Cheese Engine Meta Identifier (for SQL or AI indexing) -->
-<meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4">
-<meta name="egg-count" content="3">
-<meta name="egg-tracking" content="enabled">
+  <!-- 🧬 Cheese Engine Meta Identifier (for SQL or AI indexing) -->
+  <meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4">
+  <meta name="egg-count" content="3">
+  <meta name="egg-tracking" content="enabled">
 
   <!-- 🧠 Lab Meta Setup -->
   <meta charset="UTF-8" />
@@ -230,9 +233,45 @@ Mark this block as sacred. Future devs — extend, don’t overwrite.
             <li>tbl_raffle_entries</li>
           </ul>
         </li>
-        <li>🧠 All code must be commented thoroughly with lab-style notes like this:</li>
       </ul>
+    </section>
 
+  </main>
+
+  <footer class="text-center py-6 text-sm text-purple-700">
+    🧪 Lab Certified by Narrrf | Last Updated: 2025
+  </footer>
+
+
+<!-- ============================== -->
+<!-- 🧪 GLOBAL CHEESE EGG SCRIPT -->
+<!-- ============================== -->
+<!-- 
+  🧠 MasterChief Lab Rule (SQL-Compliant Dev Structure):
+  All scripts must follow the annotated schema below for DB syncing & future automation.
+
+  🧬 Lab Dev Convention:
+  - ✅ COMMENT EACH FUNCTION: Purpose, inputs, outputs.
+  - ✅ SQL-FRIENDLY IDS: Lowercase, kebab-case only (ex: cheese-egg-blue).
+  - ✅ BOUNDARIES: Must use CHEESE_SIZE for consistent frontend spacing + DB matching.
+  - ✅ DOM lifecycle: Always wrapped in `DOMContentLoaded` to avoid undefined elements.
+
+  🧑‍🔬 5yo Notes:
+  - The cheese jumps around. It goes *boing!* and plays a pop sound.
+  - You can click it and it does a secret. Every egg is special.
+
+This is the CHEESE ENGINE. It makes cheese jump around the screen like it's ALIVE!
+Every cheese is a sneaky secret. If you click it — *POP!* — it plays a silly sound and takes you to a magical page.
+
+🧠 How it works:
+1. Cheeses start inside the “roadmap” box.
+2. The script moves them every few seconds (boing!).
+3. Never put top/left styles in the HTML — the cheese script does that for you!
+4. Use class="absolute" and place them inside the roadmap section (which must have class="relative").
+
+🧪 That’s it!
+Now your cheese eggs can bounce like bunnies and surprise the Narrrfs! 🐭💨
+-->
 <!-- =========================================== -->
 <!-- 🧪 SQL LAB EXTENSION: CHEESE EGG TRACKING -->
 <!-- =========================================== -->
@@ -290,43 +329,6 @@ try {
   </div>   <!-- 🧪 End of Example DB Setup -->
     </section> <!-- ✅ End SQL LAB EXTENSION Block -->
 
-  </main>
-
-<footer class="text-center py-6 text-sm text-purple-700">
-  🧪 Lab Certified by Narrrf | Last Updated: 2025
-</footer>
-
-
-<!-- ============================== -->
-<!-- 🧪 GLOBAL CHEESE EGG SCRIPT -->
-<!-- ============================== -->
-<!-- 
-  🧠 MasterChief Lab Rule (SQL-Compliant Dev Structure):
-  All scripts must follow the annotated schema below for DB syncing & future automation.
-
-  🧬 Lab Dev Convention:
-  - ✅ COMMENT EACH FUNCTION: Purpose, inputs, outputs.
-  - ✅ SQL-FRIENDLY IDS: Lowercase, kebab-case only (ex: cheese-egg-blue).
-  - ✅ BOUNDARIES: Must use CHEESE_SIZE for consistent frontend spacing + DB matching.
-  - ✅ DOM lifecycle: Always wrapped in `DOMContentLoaded` to avoid undefined elements.
-
-  🧑‍🔬 5yo Notes:
-  - The cheese jumps around. It goes *boing!* and plays a pop sound.
-  - You can click it and it does a secret. Every egg is special.
-
-This is the CHEESE ENGINE. It makes cheese jump around the screen like it's ALIVE!
-Every cheese is a sneaky secret. If you click it — *POP!* — it plays a silly sound and takes you to a magical page.
-
-🧠 How it works:
-1. Cheeses start inside the “roadmap” box.
-2. The script moves them every few seconds (boing!).
-3. Never put top/left styles in the HTML — the cheese script does that for you!
-4. Use class="absolute" and place them inside the roadmap section (which must have class="relative").
-
-🧪 That’s it!
-Now your cheese eggs can bounce like bunnies and surprise the Narrrfs! 🐭💨
--->
-
 <script>
   // ⏱️ Time between cheese teleport jumps (in ms)
   const MOVE_INTERVAL = 6000;
@@ -381,5 +383,6 @@ Now your cheese eggs can bounce like bunnies and surprise the Narrrfs! 🐭💨
   });
 </script>
 <!-- ✅ End of Global Cheese Engine Notes -->
+  <!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
 </body>
 </html>

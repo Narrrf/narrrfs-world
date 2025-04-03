@@ -1,23 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Meta Essentials -->
+  <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FAQ | Narrrf's World</title>
 
-  <!-- Favicon & Metadata -->
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <!-- 🧀 Favicon & Metadata -->
+  <link rel="icon" type="image/png" href="img/favicon-browser.png" />
+  <link rel="shortcut icon" type="image/png" href="img/favicon-browser.png" />
   <meta name="theme-color" content="#facc15" />
   <meta name="msapplication-TileColor" content="#facc15" />
-  <meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <meta name="msapplication-TileImage" content="img/favicon-browser.png" />
   <meta name="title" content="Narrrf's World" />
   <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
 
-  <!-- Tailwind CSS -->
+  <!-- 🧵 OpenGraph & Twitter Meta -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="FAQ – Narrrf's World" />
+  <meta property="og:description" content="Find answers to common cheese mysteries, minting, staking, and riddle lore." />
+  <meta property="og:image" content="img/faq-mouse1.png" />
+  <meta property="og:url" content="https://narrrfs.world/faq.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="FAQ – Narrrf's World" />
+  <meta name="twitter:description" content="Learn how to mint, unlock cheese powers, and decode the Narrrf lab." />
+  <meta name="twitter:image" content="img/faq-mouse1.png" />
+
+  <!-- 🎨 Tailwind CSS (Dev CDN Mode) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Lab Bubble Animation -->
+  <!-- 🔬 Lab Bubble Animation -->
   <style>
     @keyframes labBubble {
       0% { transform: translateY(0) scale(1); opacity: 0.7; }
@@ -27,10 +39,37 @@
       animation: labBubble 5s ease-in-out infinite;
     }
   </style>
+
+  <!-- 📜 Dev Note: Static FAQ page — may convert to dynamic answer/role system in v2. -->
+  <!-- 🗂️ PATH NOTE: All images must use /img/, all sounds in /sounds/. -->
 </head>
 
-
 <body class="relative bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans overflow-x-hidden min-h-screen">
+
+<!-- 
+🧪 LAB NOTE: FAQ.HTML
+------------------------------------------------------------
+📚 Frequently Asked Cheese — this is the static question scroll.
+
+📌 Purpose:
+- Provide user support without Discord dependency
+- Explain minting, staking, wallet issues, lore hints
+
+💾 Backend Possibilities:
+- Table: `faq_entries` (question, answer, category, visible)
+- Can be turned dynamic using PHP: loop through `faq_entries` table
+- Optional user interaction: thumbs up/down → store in `faq_feedback`
+
+🧠 Upgrade Ideas:
+- Unlock bonus answers if wallet owns "faq-glow" trait
+- Riddle #3 might trigger hidden FAQ section
+
+🐭 5-Year-Old Dev Reminder:
+“If I see too many <div>s and want to clean up, I make each FAQ a block with a question and answer inside.”
+
+✅ Current version is static — update manually or turn into loop later.
+-->
+
 
 <!-- 🧪 $SPOINC Badge -->
 <div class="fixed top-4 left-4 z-50 bg-pink-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg animate-pulse">
@@ -235,6 +274,8 @@ bottom-0 → Moves it up/down (e.g. try bottom-8 to nudge it upward)-->
     onclick="window.open('https://discord.gg/jwYWh2dU', '_blank')"
     style="cursor: pointer;" />
 </div>
+
+<!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
 
 
 </body>

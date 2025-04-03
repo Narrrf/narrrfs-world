@@ -8,8 +8,9 @@
 
   <!-- 🧀 Favicon & Metadata -->
   <!-- ✅ Local favicon setup (fast & reliable) -->
-  <link rel="icon" type="image/png" href="img/favicon2.png" />
-  <link rel="shortcut icon" type="image/png" href="img/favicon2.png" />
+<link rel="icon" type="image/png" href="img/favicon-browser.png" />
+<link rel="shortcut icon" type="image/png" href="img/favicon-browser.png" />
+
 
   <!-- 🌈 Theming for Microsoft tiles (optional but clean) -->
   <meta name="msapplication-TileColor" content="#facc15" />
@@ -78,16 +79,58 @@
 
 <body class="bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 font-sans overflow-x-hidden min-h-screen">
 
+
+<body class="bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900 font-sans antialiased scroll-smooth">
+
+<!-- 
+🧪 LAB NOTE: INDEX.HTML
+------------------------------------------------------------
+🌐 This is the main portal to Narrrf's World.
+
+📌 Purpose:
+- Entry page to mint, roles, lore, and project status
+- Shows animated eggs, chaos UI, and clickable cheese
+
+💡 Notes for Backend Devs:
+- The cheese-click logic is powered by the "Cheese Egg Engine v1.4.1"
+- Currently no SQL or API injection on this page
+- Egg tracking may be upgraded to API calls in v2.x
+- Connects to wallet logic only via top nav (no mutation here)
+
+🗂️ Uses the new /img/ and /sounds/ folder system
+-->
+
+
+
+<!-- Navigation Bar -->
+<!-- 🧭 Navigation Bar (top sticky) -->
+
+
 <!-- 🧀 Cheese Click Sound (Preloaded + Hidden) -->
+
 <audio id="cheese-click-audio" src="sounds/cheese-egg-click.wav" preload="auto"></audio>
 
 <!-- 
   🧠 NARRRF CORE MODULE: CHEESE EGG ENGINE v1.4.1
   ===============================================
-  🧀 Moves cheese eggs randomly.
-  🎯 Tracks riddle actions via backend.
-  🧬 MasterChef-Approved SQL Integration Ready.
+  Description:
+  - Animates cheese eggs on homepage with movement and glow
+  - Plays SFX from /sounds/cheese-egg-click.wav on click
+  - Tracks interactions via local events only (no backend logging yet)
+
+  🔮 Upgrade Paths:
+  - Add AJAX/Fetch to log interactions via /api/log-cheese.php
+  - Store egg count in localStorage or session for user experience
+  - Hook into wallet-connect to make eggs unlockable by wallet role
+
+  🧾 Future SQL Ideas:
+  - Track egg clicks per wallet
+  - Store egg rarity per wallet
+  - Connect egg logic to riddle unlock system in database
+
+  ✅ Safe for production as standalone. Future-ready for backend logging.
 -->
+
 
 <script>
   const MOVE_INTERVAL = 6000;       // ⏱️ Cheese hop time (ms)
@@ -768,6 +811,10 @@ Use this structure to support massive map-wide riddle hunts, time-locked eggs, o
 
 Signed: The Cheesiest Lab of 2025 🧀💾
 -->
+
+
+<!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
+
 
 </body>
 </html>

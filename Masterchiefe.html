@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masterchief's SQL Workbench - Narrrf's Lab</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9fafb;
+      color: #333;
+      line-height: 1.6;
+      padding: 20px;
+    }
+    h1, h2, h3 {
+      color: #3b82f6;
+    }
+    pre {
+      background-color: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 1rem;
+      overflow-x: auto;
+    }
+    code {
+      font-family: monospace, monospace;
+      background-color: #f3f4f6;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+    }
+    ul {
+      list-style: disc;
+      margin-left: 20px;
+    }
+    li {
+      margin-bottom: 10px;
+    }
+    footer {
+      font-size: 0.85rem;
+      color: #6b7280;
+      text-align: center;
+    }
+    .important-note {
+      background-color: #fef2f2;
+      padding: 10px;
+      border-left: 5px solid #ef4444;
+      color: #ef4444;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Welcome Masterchief! Your SQL Workbench</h1>
+  <p>Here’s your private SQL workbench for Narrrf's World. Let's keep the magic flowing and ensure everything works as it should!</p>
+
+  <div class="important-note">
+    <strong>IMPORTANT:</strong> This page contains real-time logs, setup instructions, and SQL optimization tasks for maintaining the Narrrf database. This page is private, and the content is for your review and action only.
+  </div>
+
+  <h2>🔐 Access to SQL Setup</h2>
+  <p>To make sure you're always on top of things, here’s the current SQL structure for Narrrf’s World:</p>
+
+  <h3>🧩 tbl_users</h3>
+  <pre>
+CREATE TABLE tbl_users (
+  wallet_address TEXT PRIMARY KEY,
+  role TEXT,
+  staking_balance INT,
+  nft_count INT
+);
+  </pre>
+
+  <h3>🎮 tbl_traits</h3>
+  <pre>
+CREATE TABLE tbl_traits (
+  wallet_address TEXT,
+  trait TEXT,
+  PRIMARY KEY (wallet_address, trait)
+);
+  </pre>
+
+  <h3>💰 tbl_rewards</h3>
+  <pre>
+CREATE TABLE tbl_rewards (
+  wallet_address TEXT,
+  reward_amount INT,
+  last_updated TIMESTAMP
+);
+  </pre>
+
+  <h3>🧀 tbl_cheese_clicks</h3>
+  <pre>
+CREATE TABLE tbl_cheese_clicks (
+  user_wallet TEXT,
+  egg_id TEXT,
+  timestamp TIMESTAMP
+);
+  </pre>
+
+  <h2>⚙️ Tasks to Optimize and Improve</h2>
+  <ul>
+    <li>🎯 <strong>Indexing</strong>: Ensure the fields like <code>user_wallet</code> and <code>egg_id</code> are indexed for faster queries.</li>
+    <li>🚀 <strong>Staking Rewards</strong>: Track all staking rewards efficiently in the <code>tbl_rewards</code> table.</li>
+    <li>💡 <strong>Database Integrity</strong>: Regularly check if all data synced from Discord (roles, traits) is accurate and clean.</li>
+    <li>⚡️ <strong>Optimizing JOIN queries</strong>: Review and optimize queries that join multiple tables to improve performance, especially for the role assignment and rewards calculations.</li>
+    <li>🔧 <strong>Scalability</strong>: Ensure the database structure is scalable as we add more NFTs and roles, and as the game grows in size.</li>
+  </ul>
+
+  <h2>📊 Real-Time Logs</h2>
+  <div>
+    <h3>Latest SQL Activity</h3>
+    <p>Below is a live feed of the most recent database changes:</p>
+    <ul id="sql-log-list">
+      <li><strong>Optimized Queries:</strong> Speed up role assignments and query join performance.</li>
+      <li><strong>New Table Added:</strong> Created <code>tbl_cheese_clicks</code> to track interactive egg clicks for puzzles.</li>
+      <li><strong>Indexes Added:</strong> Indexing added for <code>user_wallet</code> in the <code>tbl_users</code> table for faster lookups.</li>
+    </ul>
+  </div>
+
+  <h2>🧑‍💻 Next Steps for the Backend</h2>
+  <ul>
+    <li>🛠️ Add additional functionality for the <code>tbl_cheese_clicks</code> table to support new interactive features like trait-based rewards and puzzle-solving mechanics.</li>
+    <li>🔑 Implement real-time updates for staking rewards and role syncing with the backend.</li>
+    <li>🌍 Expand the Hytopia integration by adding database tables for land ownership and upgrades.</li>
+  </ul>
+
+  <h2>📝 Conclusion</h2>
+  <p>We’ve come a long way, Masterchief! This page is meant to be your central hub for reviewing and optimizing Narrrf’s World database. From indexing to adding new tables for game mechanics, you have everything you need right here.</p>
+
+  <footer>
+    🧪 Lab Certified by Narrrf | Last Updated: 2025
+  </footer>
+
+  <!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
+
+</body>
+</html>

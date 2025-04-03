@@ -1,26 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Meta Essentials -->
+  <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Finances | Narrrf's World</title>
 
-  <!-- Favicon & Metadata -->
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <!-- 🧀 Favicon & Metadata -->
+  <link rel="icon" type="image/png" href="img/favicon-browser.png" />
+  <link rel="shortcut icon" type="image/png" href="img/favicon-browser.png" />
   <meta name="theme-color" content="#facc15" />
   <meta name="msapplication-TileColor" content="#facc15" />
-  <meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <meta name="msapplication-TileImage" content="img/favicon-browser.png" />
   <meta name="title" content="Narrrf's World" />
   <meta name="description" content="Web3 transparency meets utility — explore Narrrf's financial engine." />
 
-  <!-- 📊 Chart.js CDN -->
+  <!-- 🧵 OpenGraph & Twitter Preview -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Narrrf Finances" />
+  <meta property="og:description" content="Track SPOINC. Unlock cheese metrics. Control the economy." />
+  <meta property="og:image" content="img/cheese-finance.png" />
+  <meta property="og:url" content="https://narrrfs.world/finances.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Narrrf Finances" />
+  <meta name="twitter:description" content="Track SPOINC. Unlock cheese metrics. Control the economy." />
+  <meta name="twitter:image" content="img/cheese-finance.png" />
+
+  <!-- 📊 Chart.js (for visualizing SPOINC) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Tailwind CSS -->
+  <!-- 🎨 Tailwind CSS (Dev CDN Mode) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Lab Bubble Animation -->
+  <!-- 💫 Bubble Animation for charts or easter effects -->
   <style>
     @keyframes labBubble {
       0% { transform: translateY(0) scale(1); opacity: 0.7; }
@@ -30,11 +42,81 @@
       animation: labBubble 5s ease-in-out infinite;
     }
   </style>
+
+  <!-- 📜 Dev Notes: Finance portal for charting SPOINC + riddle-based unlockables. Future API ready. -->
+  <!-- 🗂️ PATH NOTE: All assets must be loaded via /img/ and /sounds/ folders. -->
 </head>
+
+<!-- 
+🧪 LAB NOTE: FINANCES.HTML
+------------------------------------------------------------
+📊 Narrrf's World Treasury Dashboard & Secret Economic Layer
+
+📌 Purpose:
+- Visualizes $SPOINC flow, mint revenue, treasury balances
+- Shows financial data via Chart.js (static or dynamic in future)
+- May serve as economic API dashboard or staking view
+
+💾 Backend Touchpoints:
+- Future API: `/api/treasury.json`, `/sql/spoinc-ledger`, or `/rpc/staking-data`
+- Chart.js should eventually receive live data (via JS fetch or PHP echo)
+- Optional: Track page view per wallet for stat-logging
+
+🧠 SQL Dev Ideas:
+- Table: `cheese_finance_log` (wallet, page, timestamp, chartViewed)
+- Table: `spoinc_mint_events` (wallet, txHash, amount, method)
+- Future backend role-based chart visibility (e.g., only "Investor Mice" can see Pie #2)
+
+🎮 Lore Integration:
+- Unlock hidden cheese charts via roles or riddles
+- Link to get-roles.html for deeper financial view permissions
+
+🗂️ Uses /img/ and /sounds/ path standard
+
+⚠️ Chart graphics must not use hardcoded external assets
+🐭🧠 5-YEAR-OLD DEV JEDI REMINDER:
+"If I see a file like cheese.png, I ask: is it in img/? If no, I go fix it now. If yes, I eat a snack and keep coding."
+
+🔥 Jedi Tip from Brain 3.1:
+If you're too stoned to think about SQL, just leave a comment that says:
+
+<!-- TODO: Ask SQL Master for how this connects
+and move on like a cheese ninja. ASk our Brain 3.1. SQL expert for this spot ;-)
+
+-->
 
 
 <body class="relative bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900 font-sans overflow-x-hidden min-h-screen">
 
+<!-- 
+🧪 CRITICAL LAB NOTES: THE CHEESE WORLD SYSTEM OVERVIEW
+------------------------------------------------------------
+This section covers **NFTs**, **staking rewards**, **plots in Hytopia**, **DAO shares**, and **Web3-to-Web2 bridging** for financial tracking in the game world.
+
+💡 **SQL Schema for Plots**:
+- Users will be able to **own plots** in the **Hytopia server**, each linked to their **NFT**.
+- Plot status (under construction, completed) will be tracked dynamically.
+- User’s financial rewards (e.g., $SPOINC) are tied to plot ownership, enabling **real-time game mechanics**.
+
+🧠 **The SQL Flow**:
+- **User Data**: `user_wallet`, `nft_count`, `plot_id`, `plot_coordinates`, `plot_status`
+- **Dynamic Rendering**: Fetch **NFT ownership**, **plot data**, and **staking rewards** dynamically for each user.
+- **DAO Shares**: Integrate **DAO rewards** based on plot size and NFT rarity.
+
+🧩 **Core Features**:
+- **Users with NFT roles** will unlock **plot sizes** and **game mechanics** like access to **premium areas**.
+- Financial dashboard inside Hytopia will display **$SPOINC** rewards dynamically based on **plot size** and **NFT type**.
+- **DAO shares** and **staking rewards** for users are **displayed in the virtual world** in real-time.
+
+🧪 **Future SQL/Back-End Expansion**:
+- Implement **roles** and **NFT traits** affecting **plot enhancements**.
+- **API Sync with Discord**: Track **NFT ownership** and use it to **map plots** and **reward progression**.
+- Data driven by **SQL** will power the **user experience**.
+
+⚡ **Final Goal**:  
+To create a **self-sustaining virtual world** powered by **Web3 principles**, **DAO-driven economy**, and **NFT-powered gamification**.
+
+-->
 
 
 <!-- 🧪 $SPOINC Badge -->
@@ -221,6 +303,9 @@
        onclick="window.location.href='https://discord.gg/jwYWh2dU'"
        style="cursor: pointer;" />
 </div>
+
+<!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
+
 
 </body>
 </html>
