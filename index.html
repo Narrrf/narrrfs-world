@@ -649,7 +649,9 @@ so the JS script knows where to bounce them inside.
   🧩 Extendable:
   - Just add new cheese IDs to the eggIds list below.
   - This script is modular: ready for DB-driven cheese nodes.
+More Infos about the riddle egg machine in the style.html file in root! 
 -->
+
 <script>
   const CHEESE_SIZE = 40; // 🍴 Padding so cheese stays in the roadmap box
   const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
@@ -677,30 +679,63 @@ so the JS script knows where to bounce them inside.
 
   /**
    * 🚀 Main Cheese Logic (runs once DOM is ready)
-   * Loops through all egg IDs and:
-   * - Drops them in random spots
-   * - Starts randomized movement intervals
-   * - Binds click sounds
+   * - Randomizes timing
+   * - Moves eggs
+   * - Binds sound + backend tracking
    */
   window.addEventListener('DOMContentLoaded', () => {
     const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
 
     eggIds.forEach((id, index) => {
-      const delay = 500 + Math.random() * 1000; // 🐢 Staggered delay
-      const interval = 4000 + Math.floor(Math.random() * 4000); // ⏱️ 4–8 sec
+      const delay = 500 + Math.random() * 1000;
+      const interval = 4000 + Math.floor(Math.random() * 4000);
 
       setTimeout(() => {
-        moveEgg(id, 'roadmap'); // 🧀 First cheese drop
-        setInterval(() => moveEgg(id, 'roadmap'), interval); // 🧀 Keep bouncing
-      }, delay + index * 200); // 🎳 Slight offset for dev clarity
+        moveEgg(id, 'roadmap');
+        setInterval(() => moveEgg(id, 'roadmap'), interval);
+      }, delay + index * 200);
 
       const egg = document.getElementById(id);
       if (egg) {
-        egg.addEventListener('click', () => cheeseClickSound.play());
-        egg.style.position = 'absolute'; // 🛡️ Fallback if class is missed
+        egg.addEventListener('click', () => {
+          cheeseClickSound.play();
+
+          // 🧠 🧪 FUTURE BACKEND CLICK TRACKING
+          const currentUserWallet = localStorage.getItem('walletAddress') || 'unknown';
+          fetch('/api/track-egg-click', {
+            method: 'POST',
+            body: JSON.stringify({
+              user_wallet: currentUserWallet,
+              egg_id: id,
+              timestamp: Date.now(),
+            }),
+            headers: { 'Content-Type': 'application/json' }
+          });
+        });
+
+        egg.style.position = 'absolute'; // 🛡️ Fallback if missing
       }
     });
   });
 </script>
+<!-- 
+🧪 NARRRF'S RIDDLE SYSTEM CORE
+This page uses the Cheese Engine v1.4 to manage moving riddle nodes.
+
+All cheese clicks are tracked and used for:
+- Lore progression
+- Inventory events
+- Trait-gated puzzles
+
+📦 DB Dev:
+Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`
+→ Use wallet address from localStorage + timestamp + egg ID
+
+🚀 Future:
+Use this structure to support massive map-wide riddle hunts, time-locked eggs, or rotating cheese dungeons (yes really).
+
+Signed: The Cheesiest Lab of 2025 🧀💾
+-->
+
 </body>
 </html>

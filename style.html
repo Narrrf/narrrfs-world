@@ -1,6 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+<!-- 
+===========================================================
+🧠 MASTER LAB NOTE: THE CHEESE EGG ENGINE – DO NOT DELETE
+🧀 Core Brain of Narrrf's World Riddle & Puzzle System
+🎯 Purpose:
+This script controls ALL hidden riddle cheese eggs in Narrrf’s World.
+Each egg is a moving clickable element used for unlocking secrets, XP boosts, and story paths.
+
+🔁 Modular Expansion (2025+):
+- Hidden lore activations
+- Inventory item triggers
+- Trait-bound egg rewards
+- Backend-linked egg conditions
+- SQL tracking of solved riddles
+
+🧰 Requirements:
+- Section with id="roadmap" must have class="relative"
+- Eggs = <a id="cheese-egg-id" class="absolute"> with no inline top/left
+- Sound file: /sounds/cheese-egg-click.wav
+
+📌 This file is the **core brain** behind interactive lore & puzzle flow.
+All future riddle actions (backend or frontend) connect here.
+
+🛡️ Dev Notes:
+- Never add inline styles to cheese egg top/left
+- Use `z-50` for cheese layering above content
+- Add new eggs by simply appending IDs to the `eggIds` array
+
+👨‍🚀 MasterChief Note:
+Mark this block as sacred. Future devs — extend, don’t overwrite. 
+===========================================================
+-->
+
+<!-- 
+  ==============================
+  🧠 CHEESE ENGINE: RIDDLE SYSTEM MANIFEST
+  ==============================
+
+  🎯 Purpose:
+  This frontend system powers a map-wide, trait-aware, modular riddle game.
+  All egg interactions can log to SQL, enabling unlocks, missions, lore events, and item drops.
+
+  🔐 Powered By:
+  - JS Cheese Engine (v1.4)
+  - SQL table: tbl_cheese_clicks
+  - API endpoint: /api/track-egg-click
+
+  🧩 Eggs Are:
+  - Positioned randomly in #roadmap
+  - Clickable: play sound + trigger tracking
+  - Expandable: Easily tied to NFT traits or XP
+
+  🛡️ Master Dev Rule:
+  This is a living system. Respect the cheese.look at index.html infos!
+
+  ============================================
+  -->
+
+<!-- 🧬 Cheese Engine Meta Identifier (for SQL or AI indexing) -->
+<meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4">
+<meta name="egg-count" content="3">
+<meta name="egg-tracking" content="enabled">
+
   <!-- 🧠 Lab Meta Setup -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
