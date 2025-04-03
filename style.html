@@ -5,7 +5,108 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Narrrf Style Guide</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
+ 
+<!-- ============================================= -->
+<!-- 🧪 style.html | Narrrf's World Master Lab File -->
+<!-- ============================================= -->
+<!-- This file contains all custom animations and global JS for hidden eggs -->
+
+<!-- ============================== -->
+<!-- 🎨 CSS LAB ANIMATIONS (Visual) -->
+<!-- ============================== -->
+<style>
+  @keyframes glowCheese {
+    0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
+    50% { filter: drop-shadow(0 0 12px #fde047); }
+  }
+
+  @keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  @keyframes floatMouse {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .animate-glow-cheese {
+    animation: glowCheese 2s ease-in-out infinite;
+  }
+  .animate-bounce-slow {
+    animation: bounce-slow 3s ease-in-out infinite;
+  }
+  .floaty {
+    animation: floatMouse 3s ease-in-out infinite;
+  }
+</style>
+
+<!-- ============================== -->
+<!-- 🧠 GLOBAL CHEESE EGG SCRIPT -->
+<!-- ============================== -->
+<script>
+  /**
+   * NARRRF'S WORLD – CHEESE ENGINE v1.3
+   * -----------------------------------
+   * Handles all cheese egg movement + sound click triggers
+   * Must be included in all pages where cheese eggs are active
+   *
+   * 📦 Requirements:
+   * - Container with id="roadmap" and style="relative"
+   * - Eggs with ids in [cheese-egg, cheese-egg-finance, cheese-egg-blue]
+   * - Each egg: class="absolute w-10 h-10 drop-shadow-lg"
+   * - Sound file at: sounds/cheese-egg-click.wav
+   */
+
+  const MOVE_INTERVAL = 6000;  // ⏱️ Time between cheese jumps
+  const CHEESE_SIZE = 40;      // 🧀 Prevents cheese flying out of roadmap
+
+  const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
+  cheeseClickSound.volume = 0.8;
+
+  /**
+   * 🎯 moveEgg()
+   * @desc - Randomly teleports cheese egg inside roadmap bounds
+   */
+  function moveEgg(id, parentId) {
+    const egg = document.getElementById(id);
+    const parent = document.getElementById(parentId);
+    if (!egg || !parent) return;
+
+    const maxLeft = parent.clientWidth - CHEESE_SIZE;
+    const maxTop = parent.clientHeight - CHEESE_SIZE;
+
+    const left = Math.floor(Math.random() * maxLeft);
+    const top = Math.floor(Math.random() * maxTop);
+
+    egg.style.left = `${left}px`;
+    egg.style.top = `${top}px`;
+  }
+
+  // 🚀 On page load: launch egg logic
+  window.addEventListener('DOMContentLoaded', () => {
+    const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
+
+    // 🐭 Initial drop + interval bouncing
+    eggIds.forEach(id => {
+      moveEgg(id, 'roadmap');
+      setInterval(() => moveEgg(id, 'roadmap'), MOVE_INTERVAL);
+    });
+
+    // 🔊 Click sound effect for all eggs
+    eggIds.forEach(id => {
+      const egg = document.getElementById(id);
+      if (egg) {
+        egg.addEventListener('click', () => cheeseClickSound.play());
+      }
+    });
+  });
+</script>
+
+<!-- END OF MASTER STYLE.HTML LAB FILE 🧠 -->
+
+
+ <style>
     @keyframes labBubble {
       0% { transform: translateY(0) scale(1); opacity: 0.7; }
       100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
