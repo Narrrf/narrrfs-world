@@ -1,86 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- 🧠 Meta Essentials -->
+  <!-- Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Narrrf's World</title>
+  <meta name="description" content="Narrrf’s World: The Future of Web3 and Web2 Integration" />
+  <meta name="author" content="Narrrf Team" />
+  <meta name="robots" content="index, follow" />
+  <title>Welcome to Narrrf's World – Genesis 2.0 Portal</title>
 
-  <!-- 🧀 Favicon & Metadata -->
-  <!-- ✅ Local favicon setup (fast & reliable) -->
-<link rel="icon" type="image/png" href="img/favicon-browser.png" />
-<link rel="shortcut icon" type="image/png" href="img/favicon-browser.png" />
-
-
-  <!-- 🌈 Theming for Microsoft tiles (optional but clean) -->
+  <!-- Favicon & Metadata -->
+  <link rel="icon" href="img/favicon-phantom.png" type="image/png" />
+  <link rel="shortcut icon" href="img/favicon-browser.png" type="image/png" />
+  <meta name="theme-color" content="#facc15" />
   <meta name="msapplication-TileColor" content="#facc15" />
-
-  <!-- 🧾 SEO & Social Preview -->
-  <meta name="title" content="Narrrf's World" />
-  <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
-
-  <!-- 🧪 Cheese Engine Meta ID Block (for AI & backend indexing) -->
-  <meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4" />
-  <meta name="egg-count" content="3" />
-  <meta name="egg-tracking" content="enabled" />
-
-  <!-- 🎨 TailwindCSS Core (in development only) -->
-  <!-- ⚠️ Replace with PostCSS in production for performance: https://tailwindcss.com/docs/installation -->
+  <meta name="msapplication-TileImage" content="img/favicon2.png" />
+  
+  <!-- Open Graph & Twitter Metadata -->
+  <meta property="og:title" content="Narrrf's World – Genesis 2.0" />
+  <meta property="og:description" content="Explore, mint, and shape the future of Narrrf’s World." />
+  <meta property="og:image" content="img/narrrfs_world_logo.png" />
+  <meta property="og:url" content="https://narrrfs.world" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Narrrf's World – Genesis 2.0" />
+  <meta name="twitter:description" content="Join the chaos and mint your future." />
+  <meta name="twitter:image" content="img/narrrfs_world_logo.png" />
+  
+  <!-- Tailwind CSS for Styling -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- 🔬 Lab Animations & Effects -->
+  <!-- Lab Animations & Custom Styles -->
   <style>
-    /* 💨 Bubble floating */
-    @keyframes labBubble {
-      0% { transform: translateY(0) scale(1); opacity: 0.7; }
-      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+    /* Add animations for bubbles and glowing effects for the lab */
+    @keyframes labGlow {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.1); opacity: 1; }
     }
-    .animate-lab-bubble {
-      animation: labBubble 5s ease-in-out infinite;
-    }
-
-    /* 💓 UI Pulse */
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(1.05); }
-    }
-    .animate-pulse {
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    .animate-glow {
+      animation: labGlow 2s infinite;
     }
 
-    /* 🧃 Slow floating motion (bottle/lab elements) */
-    @keyframes bounce-slow {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
-    }
-    .animate-bounce-slow {
-      animation: bounce-slow 3s ease-in-out infinite;
-    }
-
-    /* 🐭 Floaty mouse stuff */
-    @keyframes floatMouse {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
-    }
-    .floaty {
-      animation: floatMouse 3s ease-in-out infinite;
-    }
-
-    /* 🌟 Glow for cheese eggs */
-    @keyframes glowCheese {
-      0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
-      50% { filter: drop-shadow(0 0 12px #fde047); }
-    }
-    #cheese-egg img {
-      animation: glowCheese 2s ease-in-out infinite;
+    /* Custom colors for the portal theme */
+    :root {
+      --primary-color: #f472b6; /* Pink */
+      --secondary-color: #3b82f6; /* Blue */
     }
   </style>
 </head>
-
-<body class="bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 font-sans overflow-x-hidden min-h-screen">
-
-
-<body class="bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900 font-sans antialiased scroll-smooth">
+<body class="bg-gradient-to-br from-purple-50 via-pink-100 to-yellow-50 text-gray-900 font-sans min-h-screen">
 
 <!-- 
 🧪 LAB NOTE: INDEX.HTML
@@ -793,6 +760,7 @@ More Infos about the riddle egg machine in the style.html file in root!
     });
   });
 </script>
+<script>
 <!-- 
 🧪 NARRRF'S RIDDLE SYSTEM CORE
 This page uses the Cheese Engine v1.4 to manage moving riddle nodes.
@@ -811,10 +779,37 @@ Use this structure to support massive map-wide riddle hunts, time-locked eggs, o
 
 Signed: The Cheesiest Lab of 2025 🧀💾
 -->
+</script>
+<!-- 🧪 NARRRF'S RIDDLE SYSTEM CORE
+This page uses the Cheese Engine v1.4 to manage moving riddle nodes.
 
+All cheese clicks are tracked and used for:
+- Lore progression
+- Inventory events
+- Trait-gated puzzles
 
-<!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
+📦 DB Dev:
+Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`
+→ Use wallet address from localStorage + timestamp + egg ID
 
+🚀 Future:
+Use this structure to support massive map-wide riddle hunts, time-locked eggs, or rotating cheese dungeons (yes really).
+
+Signed: The Cheesiest Lab of 2025 🧀💾
+-->
+<!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0
+---------------------------------------------------------
+🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien 
+🌍 This page marks the **Genesis 2.0** version of Narrrf’s World, the **Web2/Web3 bridge**.
+💾 Stored in the **digital archives** for future generations.
+⚡ Officially ready for scaling, integration, and real-time deployment.
+🎮 Masterchief will lead the backend SQL and Web3 operations into the future.
+
+🧪 Future devs: Add your mark here, continue to scale and refine, and build on this legendary platform.
+---------------------------------------------------------
+🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
+---------------------------------------------------------
+-->
 
 </body>
 </html>
