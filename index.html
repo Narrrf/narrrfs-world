@@ -68,36 +68,24 @@
 <!-- 🧀 Cheese Click Sound (Preloaded + Hidden) -->
 <audio id="cheese-click-audio" src="sounds/cheese-egg-click.wav" preload="auto"></audio>
 
+<!-- 
+  🧠 NARRRF CORE MODULE: CHEESE EGG ENGINE v1.4.1
+  ===============================================
+  🧀 Moves cheese eggs randomly.
+  🎯 Tracks riddle actions via backend.
+  🧬 MasterChef-Approved SQL Integration Ready.
+-->
+
 <script>
-  /**
-   * 🧠 Cheese Engine v1.3 | Init Block
-   * ----------------------------------
-   * 🧪 For Devs, DB Architects & Mouse Jedi  🐭⚔️
-   *
-   * This script:
-   * - Moves cheese eggs randomly inside the `#roadmap` container.
-   * - Plays sound on click.
-   * - Avoids layout bugs by programmatically applying `.style.left` & `.style.top`.
-   * - Sets `position: absolute` in JS if class missing (safety net).
-   *
-   * 📦 Requirements:
-   * - `#roadmap` MUST have class="relative"
-   * - Cheese eggs are links with IDs:
-   *     - cheese-egg
-   *     - cheese-egg-finance
-   *     - cheese-egg-blue
-   * - Eggs MUST be inside #roadmap, NOT fixed or inline-styled
-   * - JS sets position — DO NOT override with inline styles or fixed classes
-   * 
-   * 📊 SQL Lab Rule: All moving elements should follow ID-naming standards
-   *                 for traceability in frontend/backend bridges (e.g. tbl_ui_tracking)
-   */
-
-  const MOVE_INTERVAL = 6000; // Time between cheese jumps (ms)
+  const MOVE_INTERVAL = 6000;       // ⏱️ Cheese hop time (ms)
+  const CHEESE_SIZE = 40;           // 🧀 Egg dimension buffer
   const cheeseClickSound = document.getElementById('cheese-click-audio');
-  cheeseClickSound.volume = 0.8;
+  if (cheeseClickSound) cheeseClickSound.volume = 0.8;
 
-
+  /**
+   * 🎯 moveEgg()
+   * Randomly places cheese egg within roadmap bounds
+   */
   function moveEgg(id, parentId) {
     const egg = document.getElementById(id);
     const parent = document.getElementById(parentId);
@@ -108,32 +96,54 @@
     const left = Math.floor(Math.random() * maxLeft);
     const top = Math.floor(Math.random() * maxTop);
 
-    // Jedi Safety: Set position to absolute in JS
-    egg.style.position = 'absolute';
+    egg.style.position = 'absolute'; // 🛡️ Fallback
     egg.style.left = `${left}px`;
     egg.style.top = `${top}px`;
   }
 
+  /**
+   * 🚀 Cheese Engine Boot
+   * Initializes cheese drops, sound, and tracking
+   */
   window.addEventListener('DOMContentLoaded', () => {
     const roadmap = document.getElementById("roadmap");
     if (!roadmap) return;
 
-// 🧬 eggIds could also come from a backend-configured list in future expansions
-
     const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
 
-    eggIds.forEach(id => {
-      moveEgg(id, 'roadmap');
-      setInterval(() => moveEgg(id, 'roadmap'), MOVE_INTERVAL);
+    eggIds.forEach((id, index) => {
+      const delay = 500 + Math.random() * 1000;
+      const interval = 4000 + Math.floor(Math.random() * 4000);
+
+      setTimeout(() => {
+        moveEgg(id, 'roadmap');
+        setInterval(() => moveEgg(id, 'roadmap'), interval);
+      }, delay + index * 200);
 
       const egg = document.getElementById(id);
       if (egg) {
-        egg.addEventListener('click', () => cheeseClickSound.play());
-        egg.style.position = 'absolute'; // fallback in case dev forgot Tailwind
+        egg.addEventListener('click', () => {
+          if (cheeseClickSound) cheeseClickSound.play();
+
+          // 🔐 Optional: Track to backend
+          const currentUserWallet = localStorage.getItem('walletAddress') || 'unknown';
+          fetch('/api/track-egg-click', {
+            method: 'POST',
+            body: JSON.stringify({
+              user_wallet: currentUserWallet,
+              egg_id: id,
+              timestamp: Date.now()
+            }),
+            headers: { 'Content-Type': 'application/json' }
+          });
+        });
+
+        egg.style.position = 'absolute'; // extra fallback
       }
     });
   });
 </script>
+
 <!-- ✅ End Cheese Engine -->
 <!-- 🧀 Cheese Eggs (INSIDE #roadmap!) -->
 <!-- ✅ Do NOT use class="fixed" here! -->
