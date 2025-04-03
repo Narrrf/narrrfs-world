@@ -84,6 +84,19 @@
   });
 </script>
 
+<!-- 🧀 Finance Cheese Egg -->
+<a id="cheese-egg-finance" href="finances.html" title="Found the Finance Cheese! 💰">
+  <img src="img/cheese-finance.png" alt="Finance Cheese Egg"
+       class="w-10 h-10 fixed z-50 transition-all duration-700 ease-in-out drop-shadow-lg" />
+</a>
+
+<!-- 🧀 Blue Cheese Egg -->
+<a id="cheese-egg-blue" href="whitepaper-pro.html" title="Sniffed the Blue Cheese! 🧠📜">
+  <img src="img/blue-cheese.png" alt="Blue Cheese Egg"
+       class="w-10 h-10 fixed z-50 transition-all duration-700 ease-in-out drop-shadow-lg" />
+</a>
+
+
 
   <!-- 🔔 Pre-Launch Banner -->
   <div class="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-800 text-sm text-center py-2 px-4 font-semibold shadow-md z-50">
@@ -550,6 +563,35 @@
 </a>
 
 <!-- 🔁 Cheese Egg Movement Script -->
+
+<script>
+  const CHEESE_SIZE = 40;
+  const MOVE_INTERVAL = 6000;
+
+  function moveEgg(id, parentId) {
+    const egg = document.getElementById(id);
+    const parent = document.getElementById(parentId);
+
+    if (!egg || !parent) return;
+
+    const maxLeft = parent.clientWidth - CHEESE_SIZE;
+    const maxTop = parent.clientHeight - CHEESE_SIZE;
+
+    const left = Math.floor(Math.random() * maxLeft);
+    const top = Math.floor(Math.random() * maxTop);
+
+    egg.style.left = `${left}px`;
+    egg.style.top = `${top}px`;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    setInterval(() => moveEgg('cheese-egg-finance', 'roadmap'), MOVE_INTERVAL);
+    setInterval(() => moveEgg('cheese-egg-blue', 'roadmap'), MOVE_INTERVAL);
+  });
+</script>
+
+
+
 <script>
   /**
    * 🧀 Cheese Egg Easter Egg
@@ -590,27 +632,71 @@
   });
 </script>
 
+<!-- 
+  🧠 All Eggs Setup (movement + sound for all eggs) 
+  -----------------------------------------------
+  🍽️ MasterChief Dev Notes:
+
+  ✅ This block handles everything: movement & sound.
+  ✅ Supports multiple cheese eggs (just add IDs to the list).
+  ✅ All eggs teleport inside the #roadmap section.
+  ✅ Sound comes from: /sounds/cheese-egg-click.wav
+  ✅ Movement keeps eggs inside boundaries (CHEESE_SIZE sets padding).
+  ✅ Add fun, random easter links with each egg (like finance.html or whitepaper-pro.html).
+-->
+
 <script>
-  /**
-   * 🧀 Cheese Click Sound Effect
-   * --------------------------------------------
-   * MasterChief Dev Notes:
-   * - Audio plays once on click
-   * - File must live at: /sounds/cheese-egg-click.wav
-   * - Works best when preloaded in <head> for snappy feedback
-   */
+  // ⏱️ How often the cheese moves (in milliseconds)
+  const MOVE_INTERVAL = 6000;
 
+  // 🧀 Size of the cheese icon, used to prevent it from going off the edge
+  const CHEESE_SIZE = 40;
+
+  // 🔊 Audio when cheese is clicked (must match <head> preload path!)
   const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
-  cheeseClickSound.volume = 0.8; // Optional: adjust as needed
+  cheeseClickSound.volume = 0.8;
 
+  /**
+   * 🎯 moveEgg(id, parentId)
+   * Moves a cheese egg to a random spot inside the given parent container.
+   * @param {string} id - The ID of the egg element.
+   * @param {string} parentId - The ID of the container the egg should move inside.
+   */
+  function moveEgg(id, parentId) {
+    const egg = document.getElementById(id);
+    const parent = document.getElementById(parentId);
+    if (!egg || !parent) return;
+
+    const maxLeft = parent.clientWidth - CHEESE_SIZE;
+    const maxTop = parent.clientHeight - CHEESE_SIZE;
+
+    const left = Math.floor(Math.random() * maxLeft);
+    const top = Math.floor(Math.random() * maxTop);
+
+    egg.style.left = `${left}px`;
+    egg.style.top = `${top}px`;
+  }
+
+  // 🧠 Setup once everything is loaded
   window.addEventListener('DOMContentLoaded', () => {
-    const cheese = document.getElementById('cheese-egg');
-    if (cheese) {
-      cheese.addEventListener('click', () => {
-        cheeseClickSound.play();
-      });
-    }
+    // 📦 List all egg IDs here — they will all animate!
+    const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
+
+    // 🔁 Move each egg randomly at regular intervals
+    eggIds.forEach(id => {
+      moveEgg(id, 'roadmap'); // initial position
+      setInterval(() => moveEgg(id, 'roadmap'), MOVE_INTERVAL);
+    });
+
+    // 🔊 Play sound when any egg is clicked
+    eggIds.forEach(id => {
+      const egg = document.getElementById(id);
+      if (egg) {
+        egg.addEventListener('click', () => cheeseClickSound.play());
+      }
+    });
   });
 </script>
 </body>
 </html>
+
