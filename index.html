@@ -59,7 +59,11 @@
     }
   </style>
 </head>
+
 <body class="bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 font-sans overflow-x-hidden min-h-screen">
+
+<!-- 🧀 Cheese Click Sound (Preloaded + Hidden) -->
+<audio id="cheese-click-audio" src="sounds/cheese-egg-click.wav" preload="auto"></audio>
 
 <script>
   /**
@@ -87,10 +91,9 @@
    */
 
   const MOVE_INTERVAL = 6000; // Time between cheese jumps (ms)
-  const CHEESE_SIZE = 40;     // Safety margin from edges
-
-  const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
+  const cheeseClickSound = document.getElementById('cheese-click-audio');
   cheeseClickSound.volume = 0.8;
+
 
   function moveEgg(id, parentId) {
     const egg = document.getElementById(id);
