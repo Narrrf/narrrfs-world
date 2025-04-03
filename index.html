@@ -623,42 +623,44 @@ so the JS script knows where to bounce them inside.
 </script>
 <!-- 
   🧪 CHEESE EGG ENGINE: NARRRF CORE MODULE
-  ----------------------------------------
-  
+  ========================================
+  🧀 Version: v1.4 – Chaos Enabled
+  📆 Created: 2025 | 🧠 Certified: MasterChief DB Dev Team
+
   🧒 5yo Dev Notes:
   - These are magic cheese buttons.
-  - They go *BOING* and move around randomly.
-  - When you click them: *POP!* — secret page opens + sound plays.
-  - Like hide-and-seek but with dairy. 🍕💨
+  - They go *BOING* and teleport around like little chaos goblins.
+  - When clicked: *POP!* – sound plays + secret page opens.
+  - Cheese is life.
 
   🧠 MasterChief Dev Notes:
   - This engine:
-    ✅ Randomly teleports eggs every 6s (MOVE_INTERVAL)
-    ✅ Keeps them inside the #roadmap section using CHEESE_SIZE buffer
-    ✅ Plays "click" sound on interaction
-  - Eggs MUST:
-    🔸 Use `position: absolute`
-    🔸 Be placed inside a container with `position: relative` (usually #roadmap)
-    🔸 Avoid inline `style="top/left"` — the JS handles that.
-  - Extending?
-    Just add new IDs to the `eggIds` list in the script.
-    Works great for Easter eggs, lore links, or reward mechanics.
+    ✅ Randomly moves each cheese egg every 4–8 seconds
+    ✅ Keeps cheese inside the #roadmap container using CHEESE_SIZE
+    ✅ Avoids top/left inline styles — uses JS only for positioning
+    ✅ Click sound support + fallback position safety
 
-  📦 Requirements:
-  - `#roadmap` section with `relative` class
-  - Egg elements like:
-      <a id="cheese-egg" class="absolute z-50">
-        <img src="img/cheese-egg1.png" class="w-10 h-10 drop-shadow-lg" />
-      </a>
-  - Sound file: /sounds/cheese-egg-click.wav
+  🔧 Setup:
+  - Eggs must have:
+    → `class="absolute"` (no `fixed`)
+    → IDs like `cheese-egg`, `cheese-egg-finance`, `cheese-egg-blue`
+    → Live inside `#roadmap` with `class="relative"`
+
+  🧩 Extendable:
+  - Just add new cheese IDs to the eggIds list below.
+  - This script is modular: ready for DB-driven cheese nodes.
 -->
-
 <script>
-  const MOVE_INTERVAL = 6000;
-  const CHEESE_SIZE = 40;
+  const CHEESE_SIZE = 40; // 🍴 Padding so cheese stays in the roadmap box
   const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
   cheeseClickSound.volume = 0.8;
 
+  /**
+   * 🎯 moveEgg()
+   * Randomly moves an egg to a position inside its container.
+   * @param {string} id - The ID of the egg element
+   * @param {string} parentId - The container element (usually "roadmap")
+   */
   function moveEgg(id, parentId) {
     const egg = document.getElementById(id);
     const parent = document.getElementById(parentId);
@@ -666,7 +668,6 @@ so the JS script knows where to bounce them inside.
 
     const maxLeft = parent.clientWidth - CHEESE_SIZE;
     const maxTop = parent.clientHeight - CHEESE_SIZE;
-
     const left = Math.floor(Math.random() * maxLeft);
     const top = Math.floor(Math.random() * maxTop);
 
@@ -674,23 +675,32 @@ so the JS script knows where to bounce them inside.
     egg.style.top = `${top}px`;
   }
 
-  // 🚀 Wait until EVERYTHING is loaded (images, CSS, layout)
-  window.addEventListener('load', () => {
+  /**
+   * 🚀 Main Cheese Logic (runs once DOM is ready)
+   * Loops through all egg IDs and:
+   * - Drops them in random spots
+   * - Starts randomized movement intervals
+   * - Binds click sounds
+   */
+  window.addEventListener('DOMContentLoaded', () => {
     const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
 
-    eggIds.forEach(id => {
-      moveEgg(id, 'roadmap');
-      setInterval(() => moveEgg(id, 'roadmap'), MOVE_INTERVAL);
-    });
+    eggIds.forEach((id, index) => {
+      const delay = 500 + Math.random() * 1000; // 🐢 Staggered delay
+      const interval = 4000 + Math.floor(Math.random() * 4000); // ⏱️ 4–8 sec
 
-    eggIds.forEach(id => {
+      setTimeout(() => {
+        moveEgg(id, 'roadmap'); // 🧀 First cheese drop
+        setInterval(() => moveEgg(id, 'roadmap'), interval); // 🧀 Keep bouncing
+      }, delay + index * 200); // 🎳 Slight offset for dev clarity
+
       const egg = document.getElementById(id);
       if (egg) {
         egg.addEventListener('click', () => cheeseClickSound.play());
+        egg.style.position = 'absolute'; // 🛡️ Fallback if class is missed
       }
     });
   });
 </script>
-
 </body>
 </html>
