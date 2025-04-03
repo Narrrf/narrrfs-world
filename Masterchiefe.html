@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masterchief's Easy SQL Workbench</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9fafb;
+      color: #333;
+      line-height: 1.6;
+      padding: 20px;
+    }
+    h1, h2, h3 {
+      color: #3b82f6;
+    }
+    pre {
+      background-color: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 1rem;
+      overflow-x: auto;
+    }
+    code {
+      font-family: monospace, monospace;
+      background-color: #f3f4f6;
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+    }
+    ul {
+      list-style: disc;
+      margin-left: 20px;
+    }
+    li {
+      margin-bottom: 10px;
+    }
+    a {
+      color: #3b82f6;
+    }
+    footer {
+      font-size: 0.85rem;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Welcome Masterchief! Your SQL Workbench</h1>
+  <p>Here’s your private SQL workbench for Narrrf's World. Let’s get to work and make magic happen! 😎</p>
+
+  <h2>🔐 Password Protected</h2>
+  <p>To ensure security, please enter your password to continue:</p>
+
+  <script>
+    var password = "Masterchiefe2025";  // Password you gave to Masterchief
+    var enteredPassword = prompt("Enter the password to access the SQL Workbench:");
+
+    if (enteredPassword !== password) {
+      alert("Access Denied");
+      window.location.href = "https://narrrfs.world"; // Redirect to homepage if wrong password
+    }
+  </script>
+
+  <div>
+    <h2>🔧 Masterchief’s Tasks</h2>
+    <p>Here's your checklist to improve the backend and optimize the SQL database:</p>
+    <ul>
+      <li><strong>Optimize Queries:</strong> Check if the queries for role assignment, minting, and rewards are fast enough. Use indexes where needed.</li>
+      <li><strong>Database Integrity:</strong> Make sure all data synced from Discord (roles, etc.) is correct and efficiently stored.</li>
+      <li><strong>Scaling the Database:</strong> The game will grow, so make sure the database can handle a large number of NFTs, users, and interactions.</li>
+      <li><strong>SQL Query Performance:</strong> Test and optimize any queries that handle heavy lifting, like joining multiple tables for role assignment.</li>
+    </ul>
+
+    <h2>🧑‍💻 Quick Guide: SQL Structure</h2>
+    <p>Here’s a quick view of the most important SQL tables. You can use this as a guide:</p>
+
+    <h3>🧩 tbl_users</h3>
+    <pre>
+      CREATE TABLE tbl_users (
+        wallet_address TEXT PRIMARY KEY,
+        role TEXT,
+        staking_balance INT,
+        nft_count INT
+      );
+    </pre>
+
+    <h3>🎮 tbl_traits</h3>
+    <pre>
+      CREATE TABLE tbl_traits (
+        wallet_address TEXT,
+        trait TEXT,
+        PRIMARY KEY (wallet_address, trait)
+      );
+    </pre>
+
+    <h3>💰 tbl_rewards</h3>
+    <pre>
+      CREATE TABLE tbl_rewards (
+        wallet_address TEXT,
+        reward_amount INT,
+        last_updated TIMESTAMP
+      );
+    </pre>
+
+    <h3>🧀 tbl_cheese_clicks</h3>
+    <pre>
+      CREATE TABLE tbl_cheese_clicks (
+        user_wallet TEXT,
+        egg_id TEXT,
+        timestamp TIMESTAMP
+      );
+    </pre>
+
+    <h2>⚙️ Tasks to Improve Backend</h2>
+    <ul>
+      <li>🎯 Index important fields like <code>user_wallet</code> and <code>egg_id</code> to speed up queries.</li>
+      <li>🚀 Ensure all actions, like staking rewards, are efficiently tracked in <code>tbl_rewards</code>.</li>
+      <li>💡 Add new puzzles or features easily by extending the <code>tbl_cheese_clicks</code> and <code>tbl_rewards</code> tables.</li>
+      <li>⚡️ Optimize JOIN queries between tables for fast retrieval of user data (roles, rewards, etc.).</li>
+    </ul>
+
+    <h2>📊 Future Enhancements</h2>
+    <ul>
+      <li>🔑 Add more puzzle types to <code>tbl_cheese_clicks</code> and make them trait-based (connected to NFT traits).</li>
+      <li>💬 Enable real-time updates of staking rewards and role changes via an API sync (using /api/sync-role).</li>
+      <li>🌍 Integrate land ownership and upgrades into the backend (expand Hytopia world via database tables).</li>
+    </ul>
+
+    <h2>📝 Conclusion</h2>
+    <p>This page is designed for you to easily navigate through the project’s SQL tasks and optimize them for performance. If you have any questions or need changes, just let me know! We’ll make Narrrf’s World even more amazing! 🚀</p>
+
+  </div>
+
+  <footer>
+    🧪 Lab Certified by Narrrf | Last Updated: 2025
+  </footer>
+  <!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
+</body>
+</html>
+
+
