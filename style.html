@@ -1,78 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- 🧠 Lab Meta Setup -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Narrrf Style Guide</title>
+  <title>Narrrf Style Guide</title>
+
+  <!-- 🎨 TailwindCSS Framework -->
   <script src="https://cdn.tailwindcss.com"></script>
- 
-<!-- ============================================= -->
-<!-- 🧪 style.html | Narrrf's World Master Lab File -->
-<!-- ============================================= -->
-<!-- This file contains all custom animations and global JS for hidden eggs -->
 
-<!-- ============================== -->
-<!-- 🎨 CSS LAB ANIMATIONS (Visual) -->
-<!-- ============================== -->
-<style>
-  @keyframes glowCheese {
-    0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
-    50% { filter: drop-shadow(0 0 12px #fde047); }
-  }
+  <!-- ============================================= -->
+  <!-- 🧪 style.html | Narrrf's World Master Lab File -->
+  <!-- ============================================= -->
+  <!-- This file contains all core animations, glowing fx, floating cheese, 
+       and long-term system notes for Frontend + SQL Devs -->
+  
+  <!-- ============================== -->
+  <!-- 🎨 CSS LAB ANIMATIONS (Visual) -->
+  <!-- ============================== -->
+  <style>
+    /* 🔄 General Glow Loop */
+    @keyframes glowCheese {
+      0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
+      50% { filter: drop-shadow(0 0 12px #fde047); }
+    }
 
-  @keyframes bounce-slow {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
 
-  @keyframes floatMouse {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
+    @keyframes floatMouse {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
 
-  .animate-glow-cheese {
-    animation: glowCheese 2s ease-in-out infinite;
-  }
-  .animate-bounce-slow {
-    animation: bounce-slow 3s ease-in-out infinite;
-  }
-  .floaty {
-    animation: floatMouse 3s ease-in-out infinite;
-  }
-</style>
+    /* 🧠 Cheese Animation Classes */
+    .animate-glow-cheese {
+      animation: glowCheese 2s ease-in-out infinite;
+    }
+    .animate-bounce-slow {
+      animation: bounce-slow 3s ease-in-out infinite;
+    }
+    .floaty {
+      animation: floatMouse 3s ease-in-out infinite;
+    }
 
- <style>
+    /* 🧀 Cheese Movement Smoothness */
+    a[id^="cheese-egg"] img {
+      transition: top 0.4s ease-in-out, left 0.4s ease-in-out;
+    }
+  </style>
+
+  <!-- ============================== -->
+  <!-- 🔬 Extra Lab Effects & Glow UI -->
+  <!-- ============================== -->
+  <style>
     @keyframes labBubble {
       0% { transform: translateY(0) scale(1); opacity: 0.7; }
       100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
     }
+
     .animate-lab-bubble {
       animation: labBubble 5s ease-in-out infinite;
     }
+
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.6; transform: scale(1.05); }
     }
+
     .animate-pulse {
       animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
-	
-	@keyframes glowCheese {
-  0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
-  50% { filter: drop-shadow(0 0 12px #fde047); }
-}
-#cheese-egg img {
-  animation: glowCheese 2s ease-in-out infinite;
-}
-/* 🔮 MasterChief Glow Title Animation */
-@keyframes pulse-glow {
-  0%, 100% { filter: drop-shadow(0 0 4px #f472b6); }
-  50% { filter: drop-shadow(0 0 12px #fb7185); }
-}
 
-.drop-shadow-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
+    /* 🔮 MasterChief Glow Title Animation */
+    @keyframes pulse-glow {
+      0%, 100% { filter: drop-shadow(0 0 4px #f472b6); }
+      50% { filter: drop-shadow(0 0 12px #fb7185); }
+    }
+
+    .drop-shadow-glow {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    /* 🍟 Lab Cheese Glow Override (legacy support for single cheese egg) */
+    #cheese-egg img {
+      animation: glowCheese 2s ease-in-out infinite;
+    }
   </style>
 </head>
 
@@ -199,6 +214,18 @@ try {
   🧑‍🔬 5yo Notes:
   - The cheese jumps around. It goes *boing!* and plays a pop sound.
   - You can click it and it does a secret. Every egg is special.
+
+This is the CHEESE ENGINE. It makes cheese jump around the screen like it's ALIVE!
+Every cheese is a sneaky secret. If you click it — *POP!* — it plays a silly sound and takes you to a magical page.
+
+🧠 How it works:
+1. Cheeses start inside the “roadmap” box.
+2. The script moves them every few seconds (boing!).
+3. Never put top/left styles in the HTML — the cheese script does that for you!
+4. Use class="absolute" and place them inside the roadmap section (which must have class="relative").
+
+🧪 That’s it!
+Now your cheese eggs can bounce like bunnies and surprise the Narrrfs! 🐭💨
 -->
 
 <script>
@@ -254,6 +281,6 @@ try {
     });
   });
 </script>
-
+<!-- ✅ End of Global Cheese Engine Notes -->
 </body>
 </html>
