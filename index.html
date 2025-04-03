@@ -14,8 +14,11 @@
   <meta name="title" content="Narrrf's World" />
   <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
 
-  <!-- Preload cheese sound -->
-  <link rel="preload" href="sounds/cheese-egg-click.wav" as="audio">
+<!-- 🧠 Cheese Engine Meta Identifier (for backend indexing & AI readers SQL ) -->
+<meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4" />
+<meta name="egg-count" content="3" />
+<meta name="egg-tracking" content="enabled" />
+
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -114,6 +117,8 @@
   window.addEventListener('DOMContentLoaded', () => {
     const roadmap = document.getElementById("roadmap");
     if (!roadmap) return;
+
+// 🧬 eggIds could also come from a backend-configured list in future expansions
 
     const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
 
@@ -657,8 +662,9 @@ More Infos about the riddle egg machine in the style.html file in root!
 
 <script>
   const CHEESE_SIZE = 40; // 🍴 Padding so cheese stays in the roadmap box
-  const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
+  const cheeseClickSound = document.getElementById('cheese-click-audio');
   cheeseClickSound.volume = 0.8;
+
 
   /**
    * 🎯 moveEgg()

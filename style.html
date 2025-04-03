@@ -233,7 +233,39 @@ Mark this block as sacred. Future devs — extend, don’t overwrite.
         <li>🧠 All code must be commented thoroughly with lab-style notes like this:</li>
       </ul>
 
-<pre class="bg-gray-100 text-xs p-4 rounded overflow-x-auto mt-4">
+<!-- =========================================== -->
+<!-- 🧪 SQL LAB EXTENSION: CHEESE EGG TRACKING -->
+<!-- =========================================== -->
+<pre class="bg-yellow-50 text-xs p-4 rounded overflow-x-auto mt-4">
+📦 Table: tbl_cheese_clicks
+
+🔁 Each click logs:
+- user_wallet (from localStorage)
+- egg_id (HTML ID)
+- timestamp (epoch ms)
+
+🎯 Purpose:
+Tracks riddle progression, XP, lore events, and item unlocks.
+Supports trait-based eggs, rotating puzzles, and rare finds.
+
+✅ Dev Rules:
+1. Consistent egg IDs (kebab-case)
+2. Do not reuse IDs across pages
+3. No inline styles — use JS positioning
+4. Place eggs inside <section id="roadmap" class="relative">
+5. Backend: /api/track-egg-click → tbl_cheese_clicks
+
+🚀 Ready for:
+- Trait-based puzzles
+- Timed rare eggs
+- Web3-linked reward logic
+
+🛡️ MasterChief DB Tip:
+Index `egg_id` + `user_wallet` for fast riddle tracking
+
+<!-- 🧪 Example DB Connection Setup -->
+<div class="bg-gray-100 text-xs p-4 rounded overflow-x-auto mt-4">
+<code>
 <?php
 // Lab Note 🧪: Define DB connection settings for Narrrf's Lab
 $host = '127.0.0.1';
@@ -254,14 +286,17 @@ try {
     throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }
 ?>
-</pre>
-    </section>
+  </code>
+  </div>   <!-- 🧪 End of Example DB Setup -->
+    </section> <!-- ✅ End SQL LAB EXTENSION Block -->
 
   </main>
 
-  <footer class="text-center py-6 text-sm text-purple-700">
-    🧪 Lab Certified by Narrrf | Last Updated: 2025
-  </footer>
+<footer class="text-center py-6 text-sm text-purple-700">
+  🧪 Lab Certified by Narrrf | Last Updated: 2025
+</footer>
+
+
 <!-- ============================== -->
 <!-- 🧪 GLOBAL CHEESE EGG SCRIPT -->
 <!-- ============================== -->
