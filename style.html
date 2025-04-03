@@ -41,71 +41,6 @@
   }
 </style>
 
-<!-- ============================== -->
-<!-- 🧠 GLOBAL CHEESE EGG SCRIPT -->
-<!-- ============================== -->
-<script>
-  /**
-   * NARRRF'S WORLD – CHEESE ENGINE v1.3
-   * -----------------------------------
-   * Handles all cheese egg movement + sound click triggers
-   * Must be included in all pages where cheese eggs are active
-   *
-   * 📦 Requirements:
-   * - Container with id="roadmap" and style="relative"
-   * - Eggs with ids in [cheese-egg, cheese-egg-finance, cheese-egg-blue]
-   * - Each egg: class="absolute w-10 h-10 drop-shadow-lg"
-   * - Sound file at: sounds/cheese-egg-click.wav
-   */
-
-  const MOVE_INTERVAL = 6000;  // ⏱️ Time between cheese jumps
-  const CHEESE_SIZE = 40;      // 🧀 Prevents cheese flying out of roadmap
-
-  const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
-  cheeseClickSound.volume = 0.8;
-
-  /**
-   * 🎯 moveEgg()
-   * @desc - Randomly teleports cheese egg inside roadmap bounds
-   */
-  function moveEgg(id, parentId) {
-    const egg = document.getElementById(id);
-    const parent = document.getElementById(parentId);
-    if (!egg || !parent) return;
-
-    const maxLeft = parent.clientWidth - CHEESE_SIZE;
-    const maxTop = parent.clientHeight - CHEESE_SIZE;
-
-    const left = Math.floor(Math.random() * maxLeft);
-    const top = Math.floor(Math.random() * maxTop);
-
-    egg.style.left = `${left}px`;
-    egg.style.top = `${top}px`;
-  }
-
-  // 🚀 On page load: launch egg logic
-  window.addEventListener('DOMContentLoaded', () => {
-    const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
-
-    // 🐭 Initial drop + interval bouncing
-    eggIds.forEach(id => {
-      moveEgg(id, 'roadmap');
-      setInterval(() => moveEgg(id, 'roadmap'), MOVE_INTERVAL);
-    });
-
-    // 🔊 Click sound effect for all eggs
-    eggIds.forEach(id => {
-      const egg = document.getElementById(id);
-      if (egg) {
-        egg.addEventListener('click', () => cheeseClickSound.play());
-      }
-    });
-  });
-</script>
-
-<!-- END OF MASTER STYLE.HTML LAB FILE 🧠 -->
-
-
  <style>
     @keyframes labBubble {
       0% { transform: translateY(0) scale(1); opacity: 0.7; }
@@ -140,11 +75,6 @@
 }
   </style>
 </head>
-
-<!-- 🧠 MasterChief Style Log -->
-<!-- ✅ pulse-glow = used for glowing headers like on project-updates.html -->
-<!-- ✅ drop-shadow-glow = applies animated pink shadow glow -->
-<!-- 🎯 Stack with animate-pulse + font-bold for max brainwave boost -->
 
 
 <body class="bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans">
@@ -253,6 +183,77 @@ try {
   <footer class="text-center py-6 text-sm text-purple-700">
     🧪 Lab Certified by Narrrf | Last Updated: 2025
   </footer>
+<!-- ============================== -->
+<!-- 🧪 GLOBAL CHEESE EGG SCRIPT -->
+<!-- ============================== -->
+<!-- 
+  🧠 MasterChief Lab Rule (SQL-Compliant Dev Structure):
+  All scripts must follow the annotated schema below for DB syncing & future automation.
+
+  🧬 Lab Dev Convention:
+  - ✅ COMMENT EACH FUNCTION: Purpose, inputs, outputs.
+  - ✅ SQL-FRIENDLY IDS: Lowercase, kebab-case only (ex: cheese-egg-blue).
+  - ✅ BOUNDARIES: Must use CHEESE_SIZE for consistent frontend spacing + DB matching.
+  - ✅ DOM lifecycle: Always wrapped in `DOMContentLoaded` to avoid undefined elements.
+
+  🧑‍🔬 5yo Notes:
+  - The cheese jumps around. It goes *boing!* and plays a pop sound.
+  - You can click it and it does a secret. Every egg is special.
+-->
+
+<script>
+  // ⏱️ Time between cheese teleport jumps (in ms)
+  const MOVE_INTERVAL = 6000;
+
+  // 🧀 Cheese icon size for positioning limits
+  const CHEESE_SIZE = 40;
+
+  // 🔊 Sound effect that plays when cheese is clicked
+  const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
+  cheeseClickSound.volume = 0.8;
+
+  /**
+   * 🎯 moveEgg()
+   * @param {string} id - The egg element ID to move
+   * @param {string} parentId - The ID of the container to move inside
+   * @desc Moves an egg to a random location inside a parent container.
+   *       Ensures padding via CHEESE_SIZE to prevent overflow.
+   */
+  function moveEgg(id, parentId) {
+    const egg = document.getElementById(id);
+    const parent = document.getElementById(parentId);
+    if (!egg || !parent) return;
+
+    const maxLeft = parent.clientWidth - CHEESE_SIZE;
+    const maxTop = parent.clientHeight - CHEESE_SIZE;
+
+    const left = Math.floor(Math.random() * maxLeft);
+    const top = Math.floor(Math.random() * maxTop);
+
+    egg.style.left = `${left}px`;
+    egg.style.top = `${top}px`;
+  }
+
+  // 🚀 On DOM ready, begin cheese movement + sound logic
+  window.addEventListener('DOMContentLoaded', () => {
+    // 🧀 List of all cheese egg element IDs (must match HTML + SQL spec)
+    const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
+
+    // 🎲 Randomly move each egg every MOVE_INTERVAL
+    eggIds.forEach(id => {
+      moveEgg(id, 'roadmap');
+      setInterval(() => moveEgg(id, 'roadmap'), MOVE_INTERVAL);
+    });
+
+    // 🔊 Attach click sound to each cheese egg
+    eggIds.forEach(id => {
+      const egg = document.getElementById(id);
+      if (egg) {
+        egg.addEventListener('click', () => cheeseClickSound.play());
+      }
+    });
+  });
+</script>
 
 </body>
 </html>
