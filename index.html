@@ -250,16 +250,15 @@ so the JS script knows where to bounce them inside.
 -->
 
 
+<!-- Inside #roadmap (class="relative") -->
 <a id="cheese-egg" href="experiment-x.html" class="absolute z-50">
   <img src="img/cheese-egg1.png" alt="Cheese Egg" class="w-10 h-10 drop-shadow-lg" />
 </a>
 
-<!-- 💰 Finance Cheese -->
 <a id="cheese-egg-finance" href="finances.html" class="absolute z-50">
   <img src="img/cheese-finance.png" alt="Finance Cheese Egg" class="w-10 h-10 drop-shadow-lg" />
 </a>
 
-<!-- 🧠 Blue Cheese -->
 <a id="cheese-egg-blue" href="whitepaper-pro.html" class="absolute z-50">
   <img src="img/blue-cheese.png" alt="Blue Cheese Egg" class="w-10 h-10 drop-shadow-lg" />
 </a>
@@ -574,22 +573,40 @@ so the JS script knows where to bounce them inside.
   }
 </script>
 <!-- 
-  🧪 Cheese Egg Engine
-  --------------------
-  ✅ 5yo Dev Notes:
-    - Eggs are little pictures that move around like magic.
-    - Click them for a funny "pop!" sound and secret surprises!
-    - They hide in the roadmap zone like hide-and-seek. 🎯
+  🧪 CHEESE EGG ENGINE: NARRRF CORE MODULE
+  ----------------------------------------
+  
+  🧒 5yo Dev Notes:
+  - These are magic cheese buttons.
+  - They go *BOING* and move around randomly.
+  - When you click them: *POP!* — secret page opens + sound plays.
+  - Like hide-and-seek but with dairy. 🍕💨
 
-  ✅ MasterChief Dev Notes:
-    - Auto-moves cheese inside roadmap bounds (with CHEESE_SIZE padding)
-    - Click plays preloaded sound
-    - Eggs must live inside a container with `position: relative`
+  🧠 MasterChief Dev Notes:
+  - This engine:
+    ✅ Randomly teleports eggs every 6s (MOVE_INTERVAL)
+    ✅ Keeps them inside the #roadmap section using CHEESE_SIZE buffer
+    ✅ Plays "click" sound on interaction
+  - Eggs MUST:
+    🔸 Use `position: absolute`
+    🔸 Be placed inside a container with `position: relative` (usually #roadmap)
+    🔸 Avoid inline `style="top/left"` — the JS handles that.
+  - Extending?
+    Just add new IDs to the `eggIds` list in the script.
+    Works great for Easter eggs, lore links, or reward mechanics.
+
+  📦 Requirements:
+  - `#roadmap` section with `relative` class
+  - Egg elements like:
+      <a id="cheese-egg" class="absolute z-50">
+        <img src="img/cheese-egg1.png" class="w-10 h-10 drop-shadow-lg" />
+      </a>
+  - Sound file: /sounds/cheese-egg-click.wav
 -->
-<script>
-  const MOVE_INTERVAL = 6000; // 🕒 Every 6 seconds
-  const CHEESE_SIZE = 40;     // 🍴 Size buffer to prevent overflow
 
+<script>
+  const MOVE_INTERVAL = 6000;
+  const CHEESE_SIZE = 40;
   const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
   cheeseClickSound.volume = 0.8;
 
@@ -600,6 +617,7 @@ so the JS script knows where to bounce them inside.
 
     const maxLeft = parent.clientWidth - CHEESE_SIZE;
     const maxTop = parent.clientHeight - CHEESE_SIZE;
+
     const left = Math.floor(Math.random() * maxLeft);
     const top = Math.floor(Math.random() * maxTop);
 
@@ -607,16 +625,15 @@ so the JS script knows where to bounce them inside.
     egg.style.top = `${top}px`;
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
+  // 🚀 Wait until EVERYTHING is loaded (images, CSS, layout)
+  window.addEventListener('load', () => {
     const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
 
-    // 🧀 Drop & Move Each Cheese
     eggIds.forEach(id => {
       moveEgg(id, 'roadmap');
       setInterval(() => moveEgg(id, 'roadmap'), MOVE_INTERVAL);
     });
 
-    // 🔊 Click = play cheese sound
     eggIds.forEach(id => {
       const egg = document.getElementById(id);
       if (egg) {
@@ -625,5 +642,6 @@ so the JS script knows where to bounce them inside.
     });
   });
 </script>
+
 </body>
 </html>
