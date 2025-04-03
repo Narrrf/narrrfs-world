@@ -6,15 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Narrrf's World</title>
 
-<!-- Favicon & Metadata -->
-<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
-<meta name="theme-color" content="#facc15" />
-<meta name="msapplication-TileColor" content="#facc15" />
-<meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
-<meta name="title" content="Narrrf's World" />
-<meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
+  <!-- Favicon & Metadata -->
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <meta name="theme-color" content="#facc15" />
+  <meta name="msapplication-TileColor" content="#facc15" />
+  <meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <meta name="title" content="Narrrf's World" />
+  <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
 
-<link rel="preload" href="sounds/cheese-egg-click.wav" as="audio">
+  <!-- Preload cheese sound -->
+  <link rel="preload" href="sounds/cheese-egg-click.wav" as="audio">
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -27,15 +29,13 @@
     .animate-lab-bubble {
       animation: labBubble 5s ease-in-out infinite;
     }
-
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.6; transform: scale(1.05); }
     }
     .animate-pulse {
-      animation: pulse 2s ease-in-out infinite;
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
-
     @keyframes bounce-slow {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-6px); }
@@ -43,59 +43,100 @@
     .animate-bounce-slow {
       animation: bounce-slow 3s ease-in-out infinite;
     }
-
-    @keyframes glowMouse {
-      0% { filter: drop-shadow(0 0 4px #ff69b4); }
-      100% { filter: drop-shadow(0 0 10px #ff6bd6); }
+    @keyframes floatMouse {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
     }
-    .mouse-glow {
-      animation: glowMouse 2s ease-in-out infinite alternate;
+    .floaty {
+      animation: floatMouse 3s ease-in-out infinite;
     }
-	@keyframes floatMouse {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-.floaty {
-  animation: floatMouse 3s ease-in-out infinite;
-}
-@keyframes glowCheese {
-  0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
-  50% { filter: drop-shadow(0 0 12px #fde047); }
-}
-
-#cheese-egg img {
-  animation: glowCheese 2s ease-in-out infinite;
-}
-
-	
+    @keyframes glowCheese {
+      0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
+      50% { filter: drop-shadow(0 0 12px #fde047); }
+    }
+    #cheese-egg img {
+      animation: glowCheese 2s ease-in-out infinite;
+    }
   </style>
 </head>
-
-
-
 <body class="bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 font-sans overflow-x-hidden min-h-screen">
 
 <script>
-  // 🧀 Cheese Egg Click Sound Script
-  const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
+  /**
+   * 🧠 Cheese Engine v1.3 | Init Block
+   * ----------------------------------
+   * 🧪 For Devs, DB Architects & Mouse Jedi  🐭⚔️
+   *
+   * This script:
+   * - Moves cheese eggs randomly inside the `#roadmap` container.
+   * - Plays sound on click.
+   * - Avoids layout bugs by programmatically applying `.style.left` & `.style.top`.
+   * - Sets `position: absolute` in JS if class missing (safety net).
+   *
+   * 📦 Requirements:
+   * - `#roadmap` MUST have class="relative"
+   * - Cheese eggs are links with IDs:
+   *     - cheese-egg
+   *     - cheese-egg-finance
+   *     - cheese-egg-blue
+   * - Eggs MUST be inside #roadmap, NOT fixed or inline-styled
+   * - JS sets position — DO NOT override with inline styles or fixed classes
+   * 
+   * 📊 SQL Lab Rule: All moving elements should follow ID-naming standards
+   *                 for traceability in frontend/backend bridges (e.g. tbl_ui_tracking)
+   */
 
-  document.getElementById('cheese-egg')?.addEventListener('click', () => {
-    cheeseClickSound.play();
+  const MOVE_INTERVAL = 6000; // Time between cheese jumps (ms)
+  const CHEESE_SIZE = 40;     // Safety margin from edges
+
+  const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
+  cheeseClickSound.volume = 0.8;
+
+  function moveEgg(id, parentId) {
+    const egg = document.getElementById(id);
+    const parent = document.getElementById(parentId);
+    if (!egg || !parent) return;
+
+    const maxLeft = parent.clientWidth - CHEESE_SIZE;
+    const maxTop = parent.clientHeight - CHEESE_SIZE;
+    const left = Math.floor(Math.random() * maxLeft);
+    const top = Math.floor(Math.random() * maxTop);
+
+    // Jedi Safety: Set position to absolute in JS
+    egg.style.position = 'absolute';
+    egg.style.left = `${left}px`;
+    egg.style.top = `${top}px`;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const roadmap = document.getElementById("roadmap");
+    if (!roadmap) return;
+
+    const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
+
+    eggIds.forEach(id => {
+      moveEgg(id, 'roadmap');
+      setInterval(() => moveEgg(id, 'roadmap'), MOVE_INTERVAL);
+
+      const egg = document.getElementById(id);
+      if (egg) {
+        egg.addEventListener('click', () => cheeseClickSound.play());
+        egg.style.position = 'absolute'; // fallback in case dev forgot Tailwind
+      }
+    });
   });
 </script>
+<!-- ✅ End Cheese Engine -->
+<!-- 🧀 Cheese Eggs (INSIDE #roadmap!) -->
+<!-- ✅ Do NOT use class="fixed" here! -->
+<!-- ✅ These must live inside the <section id="roadmap" class="relative"> -->
 
-<!-- 🧀 Finance Cheese Egg -->
-<a id="cheese-egg-finance" href="finances.html" title="Found the Finance Cheese! 💰">
-  <img src="img/cheese-finance.png" alt="Finance Cheese Egg"
-       class="w-10 h-10 fixed z-50 transition-all duration-700 ease-in-out drop-shadow-lg" />
+<!-- Example (place this in the roadmap section, not top of body!) -->
+<!--
+<a id="cheese-egg" href="experiment-x.html" class="z-50">
+  <img src="img/cheese-egg1.png" alt="Cheese Egg" class="w-10 h-10 drop-shadow-lg" />
 </a>
-
-<!-- 🧀 Blue Cheese Egg -->
-<a id="cheese-egg-blue" href="whitepaper-pro.html" title="Sniffed the Blue Cheese! 🧠📜">
-  <img src="img/blue-cheese.png" alt="Blue Cheese Egg"
-       class="w-10 h-10 fixed z-50 transition-all duration-700 ease-in-out drop-shadow-lg" />
-</a>
-
+-->
 
 
   <!-- 🔔 Pre-Launch Banner -->
@@ -225,7 +266,10 @@
   
 <!-- 🗺️ Roadmap Section: The Takeover Plan -->
 
-<section id="roadmap" class="bg-gradient-to-b from-purple-100 to-white py-16 px-6 relative">
+<section id="roadmap" class="relative bg-gradient-to-b from-purple-100 to-white py-16 px-6">
+
+
+
   <!-- 🔍 Dev Note: This entire section is where the cheese eggs bounce around.
        ✅ VERY IMPORTANT: class="relative" keeps all egg positions locked inside here.
        ✅ z-40 makes them float on top of content.
@@ -251,16 +295,21 @@ so the JS script knows where to bounce them inside.
 
 
 <!-- Inside #roadmap (class="relative") -->
+<!-- ✅ Correct: class="absolute z-50" without inline top/left -->
+<!-- 🧀 Yellow Cheese -->
+<!-- 🧀 Yellow Cheese -->
 <a id="cheese-egg" href="experiment-x.html" class="absolute z-50">
-  <img src="img/cheese-egg1.png" alt="Cheese Egg" class="w-10 h-10 drop-shadow-lg" />
+  <img src="img/cheese-egg1.png" alt="Cheese Egg" class="w-10 h-10 drop-shadow-lg transition-all duration-300 ease-in-out" />
 </a>
 
+<!-- 💰 Finance Cheese -->
 <a id="cheese-egg-finance" href="finances.html" class="absolute z-50">
-  <img src="img/cheese-finance.png" alt="Finance Cheese Egg" class="w-10 h-10 drop-shadow-lg" />
+  <img src="img/cheese-finance.png" alt="Finance Cheese Egg" class="w-10 h-10 drop-shadow-lg transition-all duration-300 ease-in-out" />
 </a>
 
+<!-- 🧠 Blue Cheese -->
 <a id="cheese-egg-blue" href="whitepaper-pro.html" class="absolute z-50">
-  <img src="img/blue-cheese.png" alt="Blue Cheese Egg" class="w-10 h-10 drop-shadow-lg" />
+  <img src="img/blue-cheese.png" alt="Blue Cheese Egg" class="w-10 h-10 drop-shadow-lg transition-all duration-300 ease-in-out" />
 </a>
 
 
