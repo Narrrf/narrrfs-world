@@ -166,7 +166,74 @@
   <footer class="text-center py-6 text-sm text-purple-700">
     🧪 Lab Certified by Narrrf | Last Updated: 2025
   </footer>
-  <!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
-</body>
-</html> 
 
+  <!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
+
+## Minting Process (GEN1)
+- **Mint Page**: The GEN1 mint page is live and fully functional.
+- **Minting Details**: Users can mint up to 3,333 NFTs, with various tiers of access. Whitelist minting, public minting, and redemption minting are all enabled.
+- **Wallet Integration**: Minting is connected with Phantom wallet and Solana blockchain for wallet authentication and tracking.
+- **Important Notes for Future Devs**:
+  - Ensure that minting functionality is always tested with Phantom and Solana wallets.
+  - Always check wallet syncing and tracking with **SQL** after every mint transaction.
+  - Validate that minting tiers and NFT supply are properly updated in the backend.
+
+## Dynamic Project Updates & Dev Log
+
+- **Purpose**: The Project Updates page is designed to dynamically show updates and tasks based on user traits or roles.
+- **SQL**: `wallet_traits` and `trait_content_access` tables allow for content visibility based on user traits.
+- **PHP Integration**: Use PHP `if` statements to dynamically include content for users with specific traits (e.g., "Chaos Cartographer").
+- **Styling**: All content must follow the `max-w-xl mx-auto` format for centered text, and interactive elements should scale using Tailwind's hover transition utilities for a clean, responsive look.
+
+<!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
+---------------------------------------------------------
+🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien
+🌍 This **Genesis 2.0** package represents the culmination of **Narrrf’s World** project: integrating **Web2/Web3**, **NFT ownership**, and **SQL-based game mechanics** into a self-sustaining ecosystem.
+
+💾 **Stored in the Lab’s digital archives**, it will continue to evolve and serve as a reference for **future generations** of developers.
+
+⚡ Officially ready for **scaling**, **real-time integration**, and continuous **user interaction**.
+
+🎮 **Masterchief** will guide the **backend SQL** operations and ensure that **cheese never spoils**.
+
+🧪 **Future devs**: add your **name**, **refine the platform**, and **keep expanding** on this legendary system.
+
+🔧 **Critical Dev Reminders for the Next Generations**:
+  - Ensure **minting** is **tested across all wallet types** (e.g., Phantom, Solana).
+  - Validate **SQL integration** for minting, supply tracking, and wallet syncing.
+  - Always monitor **egg tracking** and **wallet connectivity** across all pages.
+  - Keep testing **Web3 wallets** and integrating future wallet systems.
+  - **Optimize the minting process** for **scalability** and **future-proofing**.
+
+🔮 Maintain the **core focus on Web3** principles, **game progression**, and **community empowerment**.
+
+---------------------------------------------------------
+🧪 **Cheese Engine v1.4: The Riddle System Core**
+---------------------------------------------------------
+This system powers **moving riddle nodes** throughout Narrrf's World. All **cheese clicks** are tracked and used for:
+- Lore progression
+- Inventory events
+- Trait-gated puzzles
+
+**Riddle Engine** is the heart of the **Narrrfverse**, integrating with:
+- **SQL tracking** for each riddle solved (stored in the `tbl_cheese_clicks` table).
+- **User interaction**, where progress is stored and retrieved based on wallet address, egg ID, and timestamp.
+- **Unlocking Easter Eggs** as users progress, ensuring a dynamic and immersive game world.
+
+📦 **DB Dev:**
+Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
+→ Use **wallet address** from localStorage, **timestamp**, and **egg ID** for progress tracking.
+
+🚀 **Future Ideas**:
+- **Massive map-wide riddle hunts** integrated with time-locked eggs and rotating cheese dungeons.
+- Enhance **user experience** with dynamic **puzzle-solving mechanics**.
+  
+🧑‍💻 Future devs can expand the **riddle system** and **reward mechanics** with more complex features and interactivity.
+
+---------------------------------------------------------
+🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
+---------------------------------------------------------
+-->
+
+</body>
+</html>
