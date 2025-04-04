@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <!-- 🧠 META ESSENTIALS -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Mint your GEN1 Narrrf NFT and enter the chaos lab." />
+  <meta name="author" content="Narrrf Team" />
+  <meta name="robots" content="index, follow" />
   <title>Mint Your Narrrf's World GEN1 NFT</title>
 
   <!-- 🧀 FAVICON & BROWSER THEMING -->
-  <!-- Used for browser tab, social previews, Microsoft tiles -->
   <link rel="icon" type="image/png" href="img/favicon-browser.png" />
   <link rel="shortcut icon" type="image/png" href="img/favicon-browser.png" />
   <meta name="msapplication-TileColor" content="#facc15" />
@@ -39,11 +42,11 @@
   <meta name="realms" content="Hytopia, The Pink Pool, Brain Vats" />
 
   <!-- 🎨 TAILWIND CSS DEV (CDN for staging only) -->
-  <!-- In production: replace with compiled PostCSS via Tailwind CLI -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- 🧪 LAB ANIMATIONS (BUBBLE BURSTS, ETC.) -->
   <style>
+    /* Animations for smooth visual transitions */
     @keyframes bubble-burst {
       0% { transform: translateY(0) scale(1); opacity: 0.7; }
       50% { transform: translateY(-20px) scale(1.3); opacity: 1; }
@@ -54,7 +57,7 @@
     }
     .delay-1000 { animation-delay: 1s; }
     .delay-2000 { animation-delay: 2s; }
-    .delay-300  { animation-delay: 0.3s; }
+    .delay-300 { animation-delay: 0.3s; }
   </style>
 
   <!-- 📜 DEV NOTES -->
@@ -62,15 +65,13 @@
   <!-- If you’re a new dev joining Narrrf's World, please see README.md and lore-portal.html -->
 </head>
 
-
-
 <body class="bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900 font-sans antialiased scroll-smooth">
+
+<!-- This file structure ensures that everything is modular and can be easily updated for future versions of the platform. It is important to continue adding proper references and documentation for future generations of devs. -->
 
 
 
 <!-- Navigation Bar -->
-<!-- 🧭 Navigation Bar (top sticky) -->
-
 <header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
@@ -133,8 +134,6 @@
 
 <!-- Mint Access Section with Neon Bubble Background -->
 <section class="text-center py-16 px-6 bg-pink-100 rounded-2xl shadow max-w-3xl mx-auto my-10 relative overflow-hidden">
-
-  <!-- Neon Bubbles -->
   <div class="absolute inset-0 pointer-events-none z-0">
     <div class="absolute w-4 h-4 bg-pink-400 blur-md rounded-full animate-bubble-burst" style="top: 20%; left: 15%;"></div>
     <div class="absolute w-6 h-6 bg-purple-400 blur-lg rounded-full animate-bubble-burst delay-1000" style="top: 60%; left: 80%;"></div>
@@ -175,7 +174,6 @@
 
 
 <!-- Wallet Connect Script -->
-
 
 <script>
   async function connectWallet() {
@@ -265,9 +263,44 @@
     }
   });
 </script>
+<!-- 🧪 NARRRF'S RIDDLE SYSTEM CORE
+This page uses the Cheese Engine v1.4 to manage moving riddle nodes.
 
-<!-- ✅ LAB CLEANED & BACKUP READY – 2025-04-03 – Brain 3.1 Approved -->
+All cheese clicks are tracked and used for:
+- Lore progression
+- Inventory events
+- Trait-gated puzzles
 
+📦 DB Dev:
+Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`
+→ Use wallet address from localStorage + timestamp + egg ID
+
+🚀 Future:
+Use this structure to support massive map-wide riddle hunts, time-locked eggs, or rotating cheese dungeons (yes really).
+-->
+
+<!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 - MINT PAGE
+---------------------------------------------------------
+🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien 
+🌍 This page represents the **Genesis 2.0 Mint Page** for Narrrf’s World, linking **Web2/Web3** and **SQL** systems.
+💾 Stored in the Lab’s **digital archives** for **future generations**.
+⚡ Officially ready for **scaling**, **integration**, and **real-time deployment**.
+🎮 Masterchief will continue to guide the **backend SQL** and **Web3 operations** into the future.
+
+🧪 Future devs, make sure to add your **name**, continue to **scale** and **refine**, and **build on this legendary platform**.
+
+🔧 **Critical Reminders for Future Updates**:
+  - Always ensure **minting is tested** with all wallet types (e.g., Phantom, Solana).
+  - **Check SQL integration** for minting supply, pricing, and wallet syncing.
+  - Verify that **egg tracking** and **wallet connectivity** are working across multiple pages.
+  - **Monitor the minting process** for possible **bug fixes** related to Web3 wallets.
+
+🔮 Keep the **minting process optimized** and **future-proofed** for **scalability**.
+
+---------------------------------------------------------
+🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
+---------------------------------------------------------
+-->
 
 </body>
 </html>
