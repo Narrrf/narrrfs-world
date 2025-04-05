@@ -1,19 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Narrrf's Cheese Profile</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🧠 Your Narrrf Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="theme-color" content="#fcd34d">
+  <link rel="icon" href="img/cheese-egg.png" type="image/png">
+
   <style>
-    body {
-      background: #2f3136;
-      color: #ffffff;
-      font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px;
-    }
     .card {
       background: #36393f;
       border-radius: 12px;
@@ -49,15 +44,57 @@
     }
   </style>
 </head>
-<body>
-  <div class="card">
-    <img id="avatar" class="avatar" src="" alt="User avatar">
-    <div class="username" id="username">Loading...</div>
-    <div class="tagline" id="email"></div>
-    <div class="guilds" id="guilds"></div>
-    <div class="cheese">🧀 Powered by the Cheese of Narrrf</div>
-  </div>
 
+<!-- ✅ Move this outside the <head> tag -->
+<body class="bg-[#2f3136] text-white font-sans flex flex-col items-center py-10 px-4">
+
+
+<header class="w-full bg-black py-4 px-6 text-yellow-400 text-center shadow-md">
+  <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Phase 2 Portal</h1>
+  <p class="text-xs text-gray-400 mt-1">Profile Synced via Discord OAuth · Powered by Cheese Architect 4.0</p>
+</header>
+
+
+
+<!-- 🔗 Profile Bridge Card -->
+  <main class="flex-grow flex items-center justify-center px-4 py-12">
+    <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center border-4 border-yellow-400">
+
+      <!-- 👤 Avatar -->
+      <img id="avatar" class="w-24 h-24 mx-auto rounded-full border-4 border-yellow-500 shadow mb-4 animate-bounce" src="" alt="User Avatar" />
+
+      <!-- 🧠 Username -->
+      <h1 id="username" class="text-2xl font-bold text-yellow-300">Loading...</h1>
+      <p id="email" class="text-sm text-gray-400">...</p>
+
+      <!-- 🎮 Discord Guilds Info -->
+      <p id="guilds" class="mt-2 text-sm text-yellow-100 italic">Guilds loading...</p>
+
+      <!-- 🧪 Wallet & Trait Slot -->
+      <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner">
+        <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
+        <p id="wallet-address">🔗 Linked wallet: <em class="text-sm">coming soon</em></p>
+        <p>🧬 Traits: <span id="traits">pending sync</span></p>
+      </div>
+
+      <!-- 🔄 Discord Status Placeholder -->
+      <div class="mt-4 text-xs text-gray-300 italic">
+        OAuth session live · Verified via Discord
+      </div>
+
+      <!-- 🧀 Footer Cheese -->
+      <div class="mt-6 text-yellow-400 text-sm">
+        🧠 Profile powered by Cheese Architect 4.0 · Phase 2 Bridge Online
+      </div>
+    </div>
+  </main>
+  
+<footer class="text-center text-xs text-yellow-600 py-6 mt-16">
+  🧠 Powered by Cheese Architect 4.0 — HTML Brain of Narrrf’s World<br>
+  🧀 Brain Sync 4.0 Confirmed · Profile UX Last Update: 2025 · Guided by Coreforge + Corebrain 📊
+</footer>
+
+  <!-- 🔐 Dynamic Fetch Script -->
   <script>
     async function loadProfile() {
       try {
@@ -73,17 +110,16 @@
         document.getElementById('avatar').src = user.avatarUrl || '';
         document.getElementById('username').innerText = `${user.username}#${user.discriminator}`;
         document.getElementById('email').innerText = user.email || 'No email provided';
-        if (user.guilds && user.guilds.length) {
-          document.getElementById('guilds').innerText = `Guilds: ${user.guilds.length}`;
-        } else {
-          document.getElementById('guilds').innerText = 'No guild data';
-        }
+        document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
+
+        // Optional future wallet sync UI
+        document.getElementById('wallet-address').innerText = `🔗 Linked wallet: ${localStorage.getItem('walletAddress') || 'not connected'}`;
+        document.getElementById('traits').innerText = "Alien, Chaos, Mutant"; // ⏳ Later fetched from /api/user/traits
       } catch (e) {
         console.error('Profile fetch failed', e);
         document.getElementById('username').innerText = 'Login Required';
       }
     }
-
     loadProfile();
   </script>
 </body>
