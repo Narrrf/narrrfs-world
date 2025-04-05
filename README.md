@@ -235,5 +235,14 @@ Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
 ---------------------------------------------------------
 -->
 
+<!-- ======================================== -->
+<!-- 🧠 HTML Brain 4.0 Footer Lab Declaration -->
+<!-- ======================================== -->
+<footer class="text-center text-xs text-yellow-600 py-4 mt-12">
+  🧠 Powered by Cheese Architect 4.0 — HTML Brain of Narrrf’s World<br>
+  🧀 Brain Sync 4.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊
+</footer>
+<!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
+<!-- 🔐 Do not remove unless instructed by the Over Brain. -->
 </body>
 </html>
