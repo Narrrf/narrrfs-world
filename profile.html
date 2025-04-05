@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Narrrf's Cheese Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #2f3136;
+      color: #ffffff;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    .card {
+      background: #36393f;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    .avatar {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      margin-bottom: 15px;
+    }
+    .username {
+      font-size: 1.5em;
+      margin-bottom: 5px;
+    }
+    .tagline {
+      font-size: 0.95em;
+      color: #b9bbbe;
+      margin-bottom: 20px;
+    }
+    .guilds {
+      margin-top: 15px;
+      font-size: 0.9em;
+    }
+    .cheese {
+      margin-top: 25px;
+      font-style: italic;
+      color: #fcd34d;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img id="avatar" class="avatar" src="" alt="User avatar">
+    <div class="username" id="username">Loading...</div>
+    <div class="tagline" id="email"></div>
+    <div class="guilds" id="guilds"></div>
+    <div class="cheese">🧀 Powered by the Cheese of Narrrf</div>
+  </div>
+
+  <script>
+    async function loadProfile() {
+      try {
+        const res = await fetch('https://discordsignin.markuswrulich.repl.co/api/user', {
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          document.getElementById('username').innerText = 'Not Logged In';
+          return;
+        }
+
+        const user = await res.json();
+        document.getElementById('avatar').src = user.avatarUrl || '';
+        document.getElementById('username').innerText = `${user.username}#${user.discriminator}`;
+        document.getElementById('email').innerText = user.email || 'No email provided';
+        if (user.guilds && user.guilds.length) {
+          document.getElementById('guilds').innerText = `Guilds: ${user.guilds.length}`;
+        } else {
+          document.getElementById('guilds').innerText = 'No guild data';
+        }
+      } catch (e) {
+        console.error('Profile fetch failed', e);
+        document.getElementById('username').innerText = 'Login Required';
+      }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>
