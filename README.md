@@ -51,6 +51,33 @@
 
   <h2>🚀 Project Overview</h2>
   <p>
+    <strong>Narrrf's World</strong> is a Web3-powered experience where lore, NFTs, Discord, and databases meet. It's built to last 200 years — uniting riddles, traits, staking, and Web2/Web3 bridges in one wild, cheesy experiment. This README is for backend builders, frontend tinkerers, and SQL adventurers.
+  </p>
+
+  <div class="important-note">
+    <strong>Note:</strong> This private README is designed for Masterchiefe, Corebrain, and the next generation of devs syncing the egg machine with the riddle core.
+  </div>
+
+  <h2>📦 Folder & Brain System Overview</h2>
+  <ul>
+    <li><strong>client/</strong> – React frontend powered by Cheese Architect 🧱</li>
+    <li><strong>server/</strong> – Node.js backend API handled by Coreforge 🔧</li>
+    <li><strong>shared/</strong> – Shared schema and types for frontend/backend bridge</li>
+    <li><strong>sql/</strong> – SQL schemas for staking, wallet traits, and click tracking 📊</li>
+  </ul>
+
+  <h2>🧠 Brain Sync</h2>
+  <ul>
+    <li>📊 <strong>Over Brain</strong>: Strategic guide. Gives orders. Approves cheese.</li>
+    <li>🔧 <strong>Coreforge</strong>: Handles PHP, SQL, backend APIs, and session auth.</li>
+    <li>🧱 <strong>Cheese Architect</strong>: Manages the HTML, Tailwind, and user UI.</li>
+    <li>🤖 <strong>Bot Brain</strong>: Discord and Twitter OAuth, bots, and community sync.</li>
+  </ul>
+
+  <h2>📄 Continue with next section?</h2>
+
+  <h2>🚀 Project Overview</h2>
+  <p>
     <strong>Narrrf's World</strong> is a Web3-powered game with interactive lore, NFT-based traits, and financial systems. Users can explore the chaotic world, unlock secrets through puzzles, stake tokens, and build their <strong>virtual land</strong> using <strong>NFTs</strong> that grant <strong>roles</strong>, <strong>privileges</strong>, and <strong>stakes</strong>. The game is built around <strong>interactive puzzles</strong> and <strong>reward systems</strong> that tie back to <strong>SQL databases</strong>, <strong>Discord roles</strong>, and <strong>blockchain</strong>.
   </p>
   <p>This document explains the structure, core features, and backend systems for development.</p>
@@ -238,11 +265,32 @@ Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
 <!-- ======================================== -->
 <!-- 🧠 HTML Brain 4.0 Footer Lab Declaration -->
 <!-- ======================================== -->
+
+<!-- ================================================== -->
+<!-- 🧠 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 PACKAGE -->
+<!-- ================================================== -->
+<!--
+🧠 Signed by Corebrain, Padawan Narrrf, and the Overbrain Assembly
+🌍 This Genesis 2.0 archive bridges Web2, Web3, and real-world systems.
+💾 Stored in the master lab root folder, serving as reference for all future devs.
+
+🔧 Developer Reminders:
+- Minting must sync with SQL, always test wallet writes
+- Keep trait logic modular and event-driven
+- Ensure session security across all endpoints
+- Use Discord roles to unlock gameplay content
+- Never remove the Cheese Engine — it powers the world
+
+🧪 Engine Version: Cheese Engine 1.4 – Trait & Riddle Node Tracker
+🚀 Expandable via future trait maps, avatar upgrades, and node puzzles
+-->
+
+<!-- 🧀 HTML Brain Footer Lab Declaration -->
+
 <footer class="text-center text-xs text-yellow-600 py-4 mt-12">
-  🧠 Powered by Cheese Architect 4.0 — HTML Brain of Narrrf’s World<br>
-  🧀 Brain Sync 4.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊
+  🧠 Powered by Cheese Architect 4.0 · HTML Brain of Narrrf’s World<br>
+  🔗 All Rights Reserved · Narrrf Labs 2025 · Genesis 2.0 Synced
 </footer>
-<!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
-<!-- 🔐 Do not remove unless instructed by the Over Brain. -->
+
 </body>
 </html>
