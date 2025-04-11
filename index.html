@@ -219,22 +219,43 @@
       </div>
     </div>
 
-    <!-- Hero Text -->
-    <div class="text-center md:text-left">
-      <h1 class="text-5xl font-extrabold mb-4">Narrrf's World</h1>
-      <p class="text-lg max-w-xl">
-        Let's leave the matrix... and take over Web3. A cartoon-chaotic Web3 universe powered by NFTs, poker, and pure community.
-      </p>
-      <div class="mt-6 flex flex-wrap justify-center md:justify-start gap-4">
-        <a href="https://discord.gg/ZSx7f8Bc" target="_blank" class="bg-pink-600 text-white px-6 py-2 rounded-2xl shadow hover:bg-pink-700 transition">Join Discord</a>
-        <a href="mint.html" class="bg-white border border-pink-600 text-pink-600 px-6 py-2 rounded-2xl shadow hover:bg-pink-100 transition">Mint Now</a>
-        <a href="whitepaper.html" class="bg-purple-700 text-white px-6 py-2 rounded-2xl shadow hover:bg-purple-800 transition">📜 Whitepaper</a>
+<!-- Hero Text -->
+<div class="text-center md:text-left">
+  <h1 class="text-5xl font-extrabold mb-4">Narrrf's World</h1>
+  <p class="text-lg max-w-xl">
+    Let's leave the matrix... and take over Web3. A cartoon-chaotic Web3 universe powered by NFTs, poker, and pure community.
+  </p>
+  
+  <!-- Button Section -->
+  <div class="mt-6 flex flex-wrap justify-center md:justify-start gap-4">
+    <!-- 🧠 Discord Login + VIP Cheese Reveal -->
+    <div class="mt-8 text-center md:text-left" id="discordLoginSection">
+      <a href="/api/auth/login.php" class="inline-block bg-indigo-600 text-white font-bold py-2 px-5 rounded-xl shadow hover:bg-indigo-700 transition">
+        🔐 Login with Discord
+      </a>
+
+      <!-- VIP Cheese Reveal -->
+      <div id="goldenCheeseGate" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 font-bold rounded-xl shadow-lg animate-pulse">
+        <img src="img/big-cheese.svg" class="w-8 h-8 inline mr-2" alt="Big Cheese" />
+        Welcome, VIP! You found the Golden Cheese 🧀
+      </div>
+
+      <!-- No VIP Role Joke -->
+      <div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
+        😅 You’re logged in, but... no VIP pass? That’s nacho cheese!
       </div>
     </div>
+    
+    <a href="https://discord.gg/ZSx7f8Bc" target="_blank" class="bg-pink-600 text-white px-6 py-2 rounded-2xl shadow hover:bg-pink-700 transition">Join Discord</a>
+    <a href="mint.html" class="bg-white border border-pink-600 text-pink-600 px-6 py-2 rounded-2xl shadow hover:bg-pink-100 transition">Mint Now</a>
+    <a href="whitepaper.html" class="bg-purple-700 text-white px-6 py-2 rounded-2xl shadow hover:bg-purple-800 transition">📜 Whitepaper</a>
   </div>
+</div>
+</div>
 </header>
 
 <!-- Bubble Animations -->
+
 <style>
   @keyframes bounce-slow {
     0%, 100% { transform: translateY(0) rotate(8deg); }
