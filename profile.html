@@ -54,6 +54,16 @@
   <p class="text-xs text-gray-400 mt-1">Profile Synced via Discord OAuth · Powered by Cheese Architect 4.0</p>
 </header>
 
+<!-- VIP Golden Cheese Gate -->
+<div id="goldenCheeseGate" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 font-bold rounded-xl shadow-lg animate-pulse">
+  <img src="img/big-cheese.svg" class="w-8 h-8 inline mr-2" alt="Big Cheese" />
+  Welcome, VIP! You found the Golden Cheese 🧀
+</div>
+
+<!-- No VIP Role Joke -->
+<div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
+  😅 You’re logged in, but... no VIP pass? That’s nacho cheese!
+</div>
 
 
 <!-- 🔗 Profile Bridge Card -->
@@ -122,5 +132,30 @@
     }
     loadProfile();
   </script>
+  <script>
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    // Fetch user roles from /api/user/roles.php
+    const res = await fetch('/api/user/roles.php');
+    const data = await res.json();
+    
+    // Check if roles are returned successfully
+    const roles = data.roles || [];
+    
+    // If the user has the VIP role, show the Golden Cheese gate
+    if (roles.includes("Golden Cheese Hunter") || roles.includes("VIP_pass")) {
+      document.getElementById('goldenCheeseGate').classList.remove('hidden');
+      console.log("%c🧀 VIP Access: Golden Cheese Unlocked!", "color: gold; font-weight: bold;");
+    } else {
+      // If not, show the No VIP Joke
+      document.getElementById('noCheeseJoke').classList.remove('hidden');
+      console.log("😅 Logged in, but VIP role not found.");
+    }
+  } catch (err) {
+    console.error("Role check failed:", err);
+  }
+});
+</script>
+
 </body>
 </html>

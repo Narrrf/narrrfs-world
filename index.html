@@ -233,23 +233,22 @@
     <div class="mt-8 text-center md:text-left" id="discordLoginSection">
       <!-- Updated Discord OAuth2 Login URL -->
 <!-- Discord Login Button in index.html -->
-<a href="https://https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2F38f5-2001-871-268-d865-c808-d1b5-59d9-3bf9.ngrok-free.app%2Fapi%2Fauth%2Fcallback.php&scope=guilds+guilds.members.read+identify"
+<a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2F38f5-2001-871-268-d865-c808-d1b5-59d9-3bf9.ngrok-free.app%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
    class="inline-block bg-indigo-600 text-white font-bold py-2 px-5 rounded-xl shadow hover:bg-indigo-700 transition">
   🔐 Login with Discord
 </a>
 
+<!-- VIP Golden Cheese Gate -->
+<div id="goldenCheeseGate" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 font-bold rounded-xl shadow-lg animate-pulse">
+  <img src="img/big-cheese.svg" class="w-8 h-8 inline mr-2" alt="Big Cheese" />
+  Welcome, VIP! You found the Golden Cheese 🧀
+</div>
 
-      <!-- VIP Cheese Reveal -->
-      <div id="goldenCheeseGate" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 font-bold rounded-xl shadow-lg animate-pulse">
-        <img src="img/big-cheese.svg" class="w-8 h-8 inline mr-2" alt="Big Cheese" />
-        Welcome, VIP! You found the Golden Cheese 🧀
-      </div>
+<!-- No VIP Role Joke -->
+<div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
+  😅 You’re logged in, but... no VIP pass? That’s nacho cheese!
+</div>
 
-      <!-- No VIP Role Joke -->
-      <div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
-        😅 You’re logged in, but... no VIP pass? That’s nacho cheese!
-      </div>
-    </div>
     
     <!-- Other Buttons -->
     <a href="https://discord.gg/ZSx7f8Bc" target="_blank" class="bg-pink-600 text-white px-6 py-2 rounded-2xl shadow hover:bg-pink-700 transition">Join Discord</a>
@@ -815,6 +814,31 @@ Use this structure to support massive map-wide riddle hunts, time-locked eggs, o
 Signed: The Cheesiest Lab of 2025 🧀💾
 -->
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    // Fetch user roles from /api/user/roles.php
+    const res = await fetch('/api/user/roles.php');
+    const data = await res.json();
+    
+    // Check if roles are returned successfully
+    const roles = data.roles || [];
+    
+    // If the user has the VIP role, show the Golden Cheese gate
+    if (roles.includes("Golden Cheese Hunter") || roles.includes("VIP_pass")) {
+      document.getElementById('goldenCheeseGate').classList.remove('hidden');
+      console.log("%c🧀 VIP Access: Golden Cheese Unlocked!", "color: gold; font-weight: bold;");
+    } else {
+      // If not, show the No VIP Joke
+      document.getElementById('noCheeseJoke').classList.remove('hidden');
+      console.log("😅 Logged in, but VIP role not found.");
+    }
+  } catch (err) {
+    console.error("Role check failed:", err);
+  }
+});
+</script>
+
 <!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
 ---------------------------------------------------------
 🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien
