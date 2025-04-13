@@ -233,7 +233,7 @@
     <div class="mt-8 text-center md:text-left" id="discordLoginSection">
       <!-- Updated Discord OAuth2 Login URL -->
 <!-- Discord Login Button in index.html -->
-<a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2F38f5-2001-871-268-d865-c808-d1b5-59d9-3bf9.ngrok-free.app%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
+<a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2F38f5-2001-871-268-d865-c808-d1b5-59d9-3bf9.ngrok-free.app%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read+guilds.join"
    class="inline-block bg-indigo-600 text-white font-bold py-2 px-5 rounded-xl shadow hover:bg-indigo-700 transition">
   🔐 Login with Discord
 </a>
@@ -825,7 +825,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const roles = data.roles || [];
     
     // If the user has the VIP role, show the Golden Cheese gate
-    if (roles.includes("Golden Cheese Hunter") || roles.includes("VIP_pass")) {
+    if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
       document.getElementById('goldenCheeseGate').classList.remove('hidden');
       console.log("%c🧀 VIP Access: Golden Cheese Unlocked!", "color: gold; font-weight: bold;");
     } else {
@@ -837,6 +837,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Role check failed:", err);
   }
 });
+
 </script>
 
 <!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE

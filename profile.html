@@ -66,6 +66,7 @@
 </div>
 
 
+
 <!-- 🔗 Profile Bridge Card -->
   <main class="flex-grow flex items-center justify-center px-4 py-12">
     <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center border-4 border-yellow-400">
@@ -143,7 +144,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const roles = data.roles || [];
     
     // If the user has the VIP role, show the Golden Cheese gate
-    if (roles.includes("Golden Cheese Hunter") || roles.includes("VIP_pass")) {
+    if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
       document.getElementById('goldenCheeseGate').classList.remove('hidden');
       console.log("%c🧀 VIP Access: Golden Cheese Unlocked!", "color: gold; font-weight: bold;");
     } else {
@@ -155,6 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Role check failed:", err);
   }
 });
+
 </script>
 
 </body>
