@@ -275,7 +275,14 @@ document.getElementById("pause-tetris-btn")?.addEventListener("click", () => {
   isTetrisPaused = !isTetrisPaused;
   const btn = document.getElementById("pause-tetris-btn");
   btn.textContent = isTetrisPaused ? "▶️ Resume" : "⏸️ Pause";
+
+  clearInterval(gameInterval); // Always clear first
+
+  if (!isTetrisPaused) {
+    gameInterval = setInterval(drop, dropInterval); // ✅ Restart interval on resume
+  }
 });
+
 
 // 🧱 Drop Function
 function drop() {
