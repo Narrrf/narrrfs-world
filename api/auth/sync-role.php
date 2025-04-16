@@ -62,7 +62,7 @@ echo "🧪 Mapped Roles: " . implode(', ', $userRoles) . "\n";
 
 // ✅ Write to DB
 try {
-    $pdo = new PDO('sqlite:' . __DIR__ . '/../../db/narrrf_world.sqlite');
+$pdo = new PDO('sqlite:' . __DIR__ . '/../../db/narrrf_world.sqlite');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Clear old roles
