@@ -3,7 +3,7 @@ session_start();
 
 // ✅ Load credentials securely from environment variables
 $clientId = getenv('DISCORD_CLIENT_ID');         // 🧠 Discord App ID from Render
-$clientSecret = getenv('DISCORD_SECRET');        // 🧀 Secret Sauce from Render
+$clientSecret = getenv('DISCORD_SECRET');        // 🧀 Secret Sauce from Render look at enviroment
 
 // 🌐 Render redirect URI
 $redirectUri = 'https://narrrfs.world/api/auth/callback.php';
