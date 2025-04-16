@@ -6,13 +6,13 @@ $clientId = getenv('DISCORD_CLIENT_ID');
 $clientSecret = getenv('DISCORD_SECRET');
 $redirectUri = 'https://narrrfs.world/api/auth/callback.php';
 
-// ✅ Step 1: Get code from Discord
+// ✅ Step 1: Get code
 if (!isset($_GET['code'])) {
     die('❌ No code returned from Discord');
 }
 $code = $_GET['code'];
 
-// ✅ Step 2: Exchange code for access token
+// ✅ Step 2: Exchange code for token
 $tokenRequest = curl_init();
 curl_setopt_array($tokenRequest, [
     CURLOPT_URL => 'https://discord.com/api/oauth2/token',
@@ -28,17 +28,17 @@ curl_setopt_array($tokenRequest, [
     ]),
     CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded']
 ]);
+
 $response = curl_exec($tokenRequest);
 curl_close($tokenRequest);
 $token = json_decode($response, true);
 
-// ❌ Access token missing?
 if (!isset($token['access_token'])) {
     die("❌ Failed to get access token:\n$response");
 }
 $accessToken = $token['access_token'];
 
-// ✅ Step 3: Get user info from Discord
+// ✅ Step 3: Fetch user info
 $userRequest = curl_init();
 curl_setopt_array($userRequest, [
     CURLOPT_URL => 'https://discord.com/api/v10/users/@me',
@@ -55,11 +55,11 @@ if (!isset($user['id'])) {
     die("❌ Failed to get user info:\n$userResponse");
 }
 
-// ✅ Store user info in session
+// ✅ Store in session
 $_SESSION['discord_id'] = $user['id'];
 $_SESSION['access_token'] = $accessToken;
 
-// ✅ Save to DB
+// ✅ Save user to DB
 $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 try {
     $pdo = new PDO("sqlite:$dbPath");
@@ -74,9 +74,13 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$user['id'], $user['username'], $user['avatar']]);
 
-// ✅ Sync roles (tbl_user_roles)
+// ✅ Sync roles
 include_once(__DIR__ . '/sync-role.php');
 
-// ✅ Redirect home
-header('Location: https://narrrfs.world/profile.html');
+// ✅ Redirect
+$redirectTarget = ($_SERVER['HTTP_HOST'] === 'localhost')
+    ? 'http://localhost/profile.html'
+    : 'https://narrrfs.world/profile.html';
+
+header("Location: $redirectTarget");
 exit;
