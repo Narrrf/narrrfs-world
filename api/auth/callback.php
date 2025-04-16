@@ -3,7 +3,7 @@ session_start();
 
 // 🧠 DISCORD APP CREDS
 $clientId = '1357927342265204858';
-$clientSecret = 'g4xN1p_uovPq1cZ_LHd9P-iM38lt_xRP';
+$clientSecret = 'CLIENT_SECRET';
 
 // 🌐 RENDER REDIRECT URL
 $redirectUri = 'https://narrrfs.world/api/auth/callback.php';
