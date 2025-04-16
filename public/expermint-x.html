@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<head>
+  <!-- Meta Essentials -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Experiment X | Narrrf's World</title>
+
+  <!-- Favicon & Metadata -->
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <meta name="theme-color" content="#facc15" />
+  <meta name="msapplication-TileColor" content="#facc15" />
+  <meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <meta name="title" content="Narrrf's World" />
+  <meta name="description" content="Mutant visuals & future chaos from Narrrf's Lab." />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Carousel & Lab Animations -->
+  <style>
+    @keyframes labBubble {
+      0% { transform: translateY(0) scale(1); opacity: 0.7; }
+      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+    }
+    .animate-lab-bubble {
+      animation: labBubble 5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+    .animate-pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes floatMouse {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .floaty {
+      animation: floatMouse 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+
+<body class="relative bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans min-h-screen overflow-x-hidden">
+
+  <!-- 🧪 Navigation -->
+  <header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
+      <nav class="space-x-4 text-sm md:text-base flex items-center">
+        <a href="index.html" class="hover:text-pink-400">Home</a>
+        <a href="mint.html" class="hover:text-pink-400">Mint</a>
+        <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
+        <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
+        <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
+        <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+        <button id="top-connect-wallet-btn" onclick="connectWallet()" class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">🔌 Connect</button>
+        <img id="user-avatar" src="cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
+      </nav>
+    </div>
+  </header>
+
+
+  <!-- Hero -->
+  <section class="text-center py-16 px-6">
+    <h1 class="text-4xl font-bold mb-4">🧬 Welcome to Experiment X</h1>
+    <p class="text-md text-gray-700 max-w-xl mx-auto">Lab preview of upcoming maps, scenes, and mouseverse mutations.</p>
+  </section>
+
+  <!-- 🧪 Main Content -->
+  <main class="max-w-5xl mx-auto px-6 py-12 space-y-12 z-10 relative">
+    <h1 class="text-4xl font-extrabold text-center mb-6">🧬 Experiment X: The Mutant Chronicles</h1>
+    <p class="text-center max-w-xl mx-auto text-gray-700 mb-8">
+      Deep from the Narrrf Labs, a genetic experiment gave rise to the legends. Dive into the visuals and meet the freaks born from cheese, time, and a sprinkle of chaos.
+    </p>
+	
+    <!-- Carousel -->
+    <section class="max-w-3xl mx-auto px-6 relative">
+      <div class="overflow-hidden rounded-xl shadow-lg">
+	  
+<!-- Slides (shortened GitHub Pages paths - GIVE NEW PICTURES FOR THE CAROUSEL HERE EASY FIX ) -->
+<img src="img/Carusel1 (1).png" class="carousel-slide block w-full" />
+<img src="img/Carusel1 (2).png" class="carousel-slide hidden w-full" />
+<img src="img/Carusel1 (3).png" class="carousel-slide hidden w-full" />
+<img src="img/Carusel1 (4).png" class="carousel-slide hidden w-full" />
+<img src="img/Carusel1 (5).png" class="carousel-slide hidden w-full" />
+
+
+      <!-- Controls -->
+      <div class="flex justify-between items-center mt-4">
+        <button onclick="showSlide(-1)" class="bg-pink-500 text-white px-4 py-2 rounded-full shadow hover:bg-pink-600">← Prev</button>
+        <button onclick="showSlide(1)" class="bg-purple-500 text-white px-4 py-2 rounded-full shadow hover:bg-purple-600">Next →</button>
+      </div>
+    </section>
+
+    <!-- Outro -->
+    <section class="text-center py-16 px-6 mt-20">
+      <h2 class="text-2xl font-bold mb-4">🧠 What Are You Seeing?</h2>
+      <p class="max-w-xl mx-auto text-gray-600">
+        These scenes are early visual experiments — testing future mechanics for terrain, plot, character integrations and gamified lore drops. The Narrrfverse is mutating rapidly.
+      </p>
+    </section>
+	
+    <!-- Carousel Preview -->
+    <div class="text-center">
+      <img src="experiment_carousel_preview.gif" alt="Experiment X Carousel"
+        class="mx-auto rounded-2xl shadow-lg border-4 border-pink-200" />
+      <p class="text-xs mt-2 text-gray-500">Lab render previews (GIF format)</p>
+    </div>
+
+    <!-- Lab Notes -->
+    <div class="bg-white p-6 rounded-xl shadow border-l-4 border-yellow-400">
+      <h2 class="text-2xl font-bold mb-2">🧠 Experiment Log</h2>
+      <ul class="list-disc list-inside text-sm space-y-1">
+        <li>🧪 Carusel1 (1–5).png rendered from GEN1 models + cheese terrain simulation</li>
+        <li>🎨 Style: Mix of AI cartooning, matte texture blending, and experimental gradients</li>
+        <li>🐭 Characters: Based on core Narrrf avatars with mutated expressions and lore themes</li>
+        <li>🌍 Worldbuilding: Hytopia-inspired alt zones (mountains, desert, labs)</li>
+      </ul>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-6 text-sm text-purple-700">
+    Built in the Lab with 🧀 | <a href="https://discord.gg/jwYWh2dU" class="underline text-pink-600">Join us on Discord</a>
+  </footer>
+
+<!-- Wallet + Carousel Scripts -->
+  <script>
+    async function connectWallet() {
+      const avatar = document.getElementById('user-avatar');
+      const connectButton = document.getElementById('top-connect-wallet-btn');
+
+      if ('solana' in window) {
+        const provider = window.solana;
+        if (provider.isPhantom) {
+          try {
+            const response = await provider.connect();
+            const walletAddress = response.publicKey.toString();
+            localStorage.setItem('walletAddress', walletAddress);
+            connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+            connectButton.disabled = true;
+            avatar?.classList.remove('hidden');
+          } catch (err) {
+            console.error("❌ Wallet connect error:", err);
+          }
+        }
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const storedWallet = localStorage.getItem('walletAddress');
+      const avatar = document.getElementById('user-avatar');
+      const connectButton = document.getElementById('top-connect-wallet-btn');
+
+      if (storedWallet && connectButton) {
+        connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
+        connectButton.disabled = true;
+        avatar?.classList.remove('hidden');
+      }
+
+      showSlide(0); // start at first carousel slide
+    });
+
+    let index = 0;
+    function showSlide(step) {
+      const slides = document.querySelectorAll(".carousel-slide");
+      index = (index + step + slides.length) % slides.length;
+      slides.forEach((slide, i) => {
+        slide.classList.toggle("hidden", i !== index);
+      });
+    }
+  </script>
+
+</body>
+</html>

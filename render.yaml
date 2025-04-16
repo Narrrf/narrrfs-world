@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: narrrfs-world-portal
+    env: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: DISCORD_CLIENT_ID
+        value: YOUR_DISCORD_CLIENT_ID
+      - key: DISCORD_SECRET
+        value: YOUR_DISCORD_SECRET
+
+  - type: worker
+    name: tor-onionpipe
+    env: docker
+    dockerfilePath: Dockerfile
+    startCommand: |
+      ./onionpipe 80~80

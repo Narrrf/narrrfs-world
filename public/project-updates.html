@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Meta Essentials -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Updates | Narrrf's World</title>
+
+  <!-- Favicon & Metadata -->
+  <link rel="icon" type="image/png" href="img/favicon-browser.png" />
+  <link rel="shortcut icon" type="image/png" href="img/favicon-browser.png" />
+  <meta name="theme-color" content="#facc15" />
+  <meta name="msapplication-TileColor" content="#facc15" />
+  <meta name="msapplication-TileImage" content="https://raw.githubusercontent.com/Narrrf/narrrfs-world/main/img/favicon2.png" />
+  <meta name="title" content="Narrrf's World" />
+  <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 🔬 Lab Animations -->
+  <style>
+    @keyframes labBubble {
+      0% { transform: translateY(0) scale(1); opacity: 0.7; }
+      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+    }
+    .animate-lab-bubble {
+      animation: labBubble 5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+    .animate-pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+
+<body class="relative bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans overflow-x-hidden min-h-screen">
+
+<!-- 
+🧪 LAB NOTE: PROJECT-UPDATES.HTML (Ultra Edition)
+------------------------------------------------------------
+🌉 Web3-to-Web2 Bridge — connecting trait-based wallets to HTML content.
+
+📌 Purpose:
+- Display dynamic project updates
+- Optionally hide/show parts of this page based on wallet traits, NFT class, or Discord roles
+- Can be powered fully with PHP + SQL — no JS required
+
+💾 Backend Systems:
+- `wallet_traits`: (wallet, trait)
+- `trait_content_access`: (trait, content_id, visible)
+- `project_updates`: (title, body, visibleTo)
+
+🧠 SQL STRUCTURE IDEA
+-- Who owns what trait
+Table: wallet_traits
+wallet TEXT
+trait TEXT -- e.g., "oracle", "map-unlocked"
+
+-- What content is linked to which trait
+Table: trait_content_access
+trait TEXT
+content_id TEXT
+visible BOOLEAN
+
+Then in PHP:
+
+php
+
+<?php
+$wallet = $_SESSION['wallet']; // Already connected?
+$traits = getTraits($wallet);  // e.g. ['oracle', 'easter-map']
+
+if (in_array('easter-map', $traits)) {
+  include('map-easteregg.php');
+}
+?>
+
+🧠 Interactions You Can Build:
+- Unlock maps, lore, visuals based on NFT traits
+- Gate sections with PHP: if user has trait → show special HTML
+- Use walletConnect only to grab walletAddress, then switch to PHP
+- Players with role "Chaos Cartographer" = unlock secret dev map
+- Users with trait "riddle-solved-3" = see bonus update or easter egg
+
+🔥 5-Year-Old Dev Reminder:
+“If I want something to show only for someone special, I write a PHP if-statement with their trait name. No JS needed. Just cheese and logic.”
+
+✅ No blockchain interaction needed — traits come from synced DB (backed by snapshot or API).
+
+🗂️ All paths: /img/ + /sounds/
+-->
+<!-- 🧪 $SPOINC Badge -->
+<div class="fixed top-4 left-4 z-50 bg-pink-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg animate-pulse">
+  🧪 Cooked with $SPOINC
+</div>
+
+<!-- 🔥 Lab Flask + Bubbles -->
+<div class="absolute inset-0 z-10 pointer-events-none">
+  <!-- 🔮 Glow Effect Behind the Flask -->
+  <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-64 h-64 bg-pink-300 opacity-20 rounded-full blur-3xl"></div>
+
+  <!-- 🧪 Flask Itself (SVG) -->
+  <div class="absolute bottom-24 left-1/2 transform -translate-x-1/2">
+    <svg width="100" height="150" viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M40 0 H60 V50 L85 120 Q90 135 75 140 H25 Q10 135 15 120 L40 50 Z" fill="#f472b6" stroke="#000" stroke-width="2" />
+    </svg>
+    <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+      <div class="w-3 h-3 bg-pink-400 rounded-full blur-sm animate-lab-bubble absolute" style="left:-10px"></div>
+      <div class="w-4 h-4 bg-purple-400 rounded-full blur-md animate-lab-bubble absolute delay-1000" style="left:10px"></div>
+      <div class="w-2.5 h-2.5 bg-lime-300 rounded-full blur-sm animate-lab-bubble absolute delay-2000" style="left:0px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 🧠 Navigation Bar -->
+<header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
+    <nav class="space-x-4 text-sm md:text-base flex items-center">
+      <a href="index.html" class="hover:text-pink-400">Home</a>
+      <a href="mint.html" class="hover:text-pink-400">Mint</a>
+      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
+      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
+      <a href="project-updates.html" class="text-pink-400 font-semibold">Updates</a>
+      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+      <button id="top-connect-wallet-btn" onclick="connectWallet()" class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">🔌 Connect</button>
+      <img id="user-avatar" src="cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
+    </nav>
+  </div>
+</header>
+
+<!-- Fix Duplicate Button -->
+<!-- Removed duplicate button and made the code cleaner -->
+
+<!-- 🧠 MasterChief Style: Lab Neon Header Frame -->
+<div class="relative bg-gradient-to-r from-pink-100 via-purple-100 to-yellow-50 p-8 rounded-3xl shadow-xl border-4 border-yellow-300 drop-shadow-md mb-12">
+  <div class="absolute top-[-20px] left-10 w-3 h-3 bg-pink-400 rounded-full animate-bounce-slow blur-sm"></div>
+  <div class="absolute top-[-30px] left-20 w-4 h-4 bg-yellow-300 rounded-full animate-pulse blur-sm"></div>
+  <div class="absolute top-[-25px] right-16 w-2 h-2 bg-purple-300 rounded-full animate-bounce blur-sm"></div>
+
+  <!-- 🔮 Animated Title -->
+  <h1 class="text-4xl md:text-5xl font-extrabold text-pink-700 drop-shadow-glow animate-pulse mb-2">
+    📚 Project Updates & Dev Log
+  </h1>
+  <!-- 🧠 Subtext -->
+  <p class="text-md md:text-lg text-gray-700 max-w-xl mx-auto">
+    Tracking cheese leaks, trait tweaks & Narrrf brainwaves — logged and pulsing.
+  </p>
+</div>
+
+    <!-- 🧠 MasterChief Notes:
+    ✅ This block lists active dev tasks in a glowing card format.
+    ✅ Hover effect gently scales the card using Tailwind's transition utilities.
+    ✅ This should ALWAYS mirror the same section on index.html.
+    ✅ Modify tasks here for dev transparency (think daily scrum).
+    ✅ Each task should include:
+       - A clear emoji
+       - Real deliverables
+       - Cheese if applicable
+    ✅ Keep class "max-w-xl mx-auto" for centered appearance.
+    ✅ Style is intentionally playful – fits lab vibes & mobile.
+    -->
+
+<!-- ✅ Entry Template (Removed Duplicate Button) -->
+
+
+<!-- ✅ Active Dev Tasks – Phase 3 Rollout -->
+<div class="bg-white border-l-4 border-pink-400 p-6 rounded-xl shadow mb-8 text-left max-w-xl mx-auto transition-transform duration-500 hover:scale-[1.01]">
+  <h3 class="text-lg font-semibold mb-2">🔥 Active Dev Tasks – Phase 3 Rollout</h3>
+  <ul class="list-disc list-inside text-sm space-y-1 text-gray-800">
+    <li>🔗 **Discord OAuth role mapping** to wallet now complete and live</li>
+    <li>📡 **Coreforge 4.2.2 SQLite API** for traits is operational and fully integrated</li>
+    <li>🧪 **Patch logs** added to masterchiefe.html console for debugging and progress monitoring</li>
+    <li>🧬 **CryptoCorn Partner Gate** now activated (event: **cornstorm_7**) with trait-based lore filtering</li>
+    <li>🧱 **/sync-role.php launch** completed for full role automation across all modules</li>
+    <li>📡 **Puzzle logic** connected to role data for **puzzle gating** (working with **Riddle Brain 4.2.2**)</li>
+  </ul>
+  <p class="mt-4 text-xs italic text-gray-500">
+    Lab systems running at stable temps. Trait engine humming. 🧀
+  </p>
+</div>
+
+<!-- ✅ Timeline Update – April 10–11, 2025 – Phase 3.4 Activation -->
+<div class="bg-white border-l-4 border-yellow-400 p-6 rounded-xl shadow mb-8">
+  <h2 class="text-xl font-semibold">🔮 April 10–11, 2025 – Phase 3.4 Activation</h2>
+  <ul class="list-disc list-inside mt-2 text-sm">
+    <li>🧠 **Corebrain 4.2.2** completes full trait-to-role sync and puzzle gate logic</li>
+    <li>🌽 **CryptoCorn gate** fully integrated with **role-based lore triggers** for puzzle unlocks</li>
+    <li>💾 **Masterchiefe** dev log updated to include schema and role sync confirmation</li>
+    <li>🔐 **Discord session testing** complete. **Role sync** and **trait validation** ready for user interactions</li>
+    <li>📣 **Social Brain 4.2** activated for **role-based lore signal broadcasting** in the community</li>
+  </ul>
+</div>
+
+
+<!-- ✅ entry template  – April 4–7 -->
+
+<!-- 🧾 Lab Entry #004 – Role Sync & Puzzle Integration Complete -->
+<div class="bg-white border-l-4 border-yellow-400 p-6 rounded-xl shadow mb-8">
+  <h2 class="text-xl font-semibold">🧾 Lab Entry #004 – Role Sync & Puzzle Integration Complete</h2>
+  <ul class="list-disc list-inside mt-2 text-sm">
+    <li>🧠 **Corebrain 4.2.2** ensures full role sync integration for **Riddle Brain** puzzle logic</li>
+    <li>🧩 **Riddle Brain** puzzle unlocks now function based on **trait and role combinations**</li>
+    <li>🔄 **Cheese Architect** UI is now **DOM-gated** and synced with role-based triggers</li>
+  </ul>
+</div>
+
+</section>
+
+<!-- ✅ Entry Template 2 -->
+
+<!-- ✅ Upcoming Plans for April 12-17, 2025 -->
+<div class="grid md:grid-cols-2 gap-8 text-left mt-12">
+  <div class="bg-white rounded-2xl shadow p-6 border-l-4 border-pink-400">
+    <h3 class="text-xl font-bold">🌐 April 12–14 – Trait Gated Puzzle Launch</h3>
+    <p>Full **puzzle gating logic** to unlock new puzzle nodes in **Riddle Brain** based on trait/role triggers</p>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow p-6 border-l-4 border-purple-400">
+    <h3 class="text-xl font-bold">🧬 April 15–17 – Role-Based UI Finalization</h3>
+    <p>**Cheese Architect** completes **DOM gating** for user role interactions, unlocking role-dependent content.</p>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow p-6 border-l-4 border-yellow-400">
+    <h3 class="text-xl font-bold">💬 April 17–20 – Lore Event Activation</h3>
+    <p>**Social Brain** fully operational, emitting lore triggers based on role assignments from **Coreforge**.</p>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow p-6 border-l-4 border-blue-400">
+    <h3 class="text-xl font-bold">🔮 April 21–23 – Puzzle Phase Testing</h3>
+    <p>**Riddle Brain** tests advanced puzzle unlock conditions, based on trait + role matchmaking.</p>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow p-6 border-l-4 border-indigo-400">
+    <h3 class="text-xl font-bold">💥 April 24 – Genesis 3.0 Activation</h3>
+    <p>The final milestone: **Genesis 3.0** unlocks with full role syncing, puzzle gating, and lore integration complete.</p>
+  </div>
+</div>
+</section>
+
+</main> <!-- ✅ CLOSES THE <main> TAG CORRECTLY -->
+
+<!-- ✅ Footer -->
+<footer class="text-center py-6 text-sm text-purple-700">
+  <!-- 🧠 5-Year-Old Dev Reminder for Masterchief SQL :
+If you ever want to make this list dynamic, ask the SQL wizard (Brian 3.1 style):
+"Can we load these dev logs from a table called project_updates or cheese_tasks?"
+Then let the PHP file echo each one. Or just ping Brain 3.1.
+-->
+  Made with 🧀 & Dev Logs in Narrrf's Lab | <a href="https://discord.gg/jwYWh2dU" class="underline text-pink-600">Join us on Discord</a>
+</footer>
+
+<!-- Global Wallet Connect + PFP Script -->
+<script>
+  async function connectWallet() {
+    const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('top-connect-wallet-btn');
+
+    if ('solana' in window) {
+      const provider = window.solana;
+
+      if (provider.isPhantom) {
+        try {
+          const response = await provider.connect();
+          const walletAddress = response.publicKey.toString();
+
+          // Store wallet
+          localStorage.setItem('walletAddress', walletAddress);
+
+          // Update UI
+          connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+          connectButton.disabled = true;
+          avatar.classList.remove('hidden');
+        } catch (err) {
+          console.error("❌ Wallet connect error:", err);
+        }
+      }
+    }
+  }
+
+  // Auto-show avatar if logged in
+  window.addEventListener('DOMContentLoaded', () => {
+    const storedWallet = localStorage.getItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('top-connect-wallet-btn');
+
+    if (storedWallet && avatar && connectButton) {
+      avatar.classList.remove('hidden');
+      connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
+      connectButton.disabled = true;
+    }
+  });
+
+  function disconnectWallet() {
+    localStorage.removeItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    if (avatar) avatar.classList.add('hidden');
+  }
+</script>
+<!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
+---------------------------------------------------------
+🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien
+🌍 This **Genesis 2.0** package represents the culmination of **Narrrf’s World** project: integrating **Web2/Web3**, **NFT ownership**, and **SQL-based game mechanics** into a self-sustaining ecosystem.
+
+💾 **Stored in the Lab’s digital archives**, it will continue to evolve and serve as a reference for **future generations** of developers.
+
+⚡ Officially ready for **scaling**, **real-time integration**, and continuous **user interaction**.
+
+🎮 **Masterchief** will guide the **backend SQL** operations and ensure that **cheese never spoils**.
+
+🧪 **Future devs**: add your **name**, **refine the platform**, and **keep expanding** on this legendary system.
+
+🔧 **Critical Dev Reminders for the Next Generations**:
+  - Ensure **minting** is **tested across all wallet types** (e.g., Phantom, Solana).
+  - Validate **SQL integration** for minting, supply tracking, and wallet syncing.
+  - Always monitor **egg tracking** and **wallet connectivity** across all pages.
+  - Keep testing **Web3 wallets** and integrating future wallet systems.
+  - **Optimize the minting process** for **scalability** and **future-proofing**.
+
+🔮 Maintain the **core focus on Web3** principles, **game progression**, and **community empowerment**.
+
+---------------------------------------------------------
+🧪 **Cheese Engine v1.4: The Riddle System Core**
+---------------------------------------------------------
+This system powers **moving riddle nodes** throughout Narrrf's World. All **cheese clicks** are tracked and used for:
+- Lore progression
+- Inventory events
+- Trait-gated puzzles
+
+**Riddle Engine** is the heart of the **Narrrfverse**, integrating with:
+- **SQL tracking** for each riddle solved (stored in the `tbl_cheese_clicks` table).
+- **User interaction**, where progress is stored and retrieved based on wallet address, egg ID, and timestamp.
+- **Unlocking Easter Eggs** as users progress, ensuring a dynamic and immersive game world.
+
+📦 **DB Dev:**
+Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
+→ Use **wallet address** from localStorage, **timestamp**, and **egg ID** for progress tracking.
+
+🚀 **Future Ideas**:
+- **Massive map-wide riddle hunts** integrated with time-locked eggs and rotating cheese dungeons.
+- Enhance **user experience** with dynamic **puzzle-solving mechanics**.
+  
+🧑‍💻 Future devs can expand the **riddle system** and **reward mechanics** with more complex features and interactivity.
+
+---------------------------------------------------------
+🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
+---------------------------------------------------------
+-->
+-->
+
+<!-- ======================================== -->
+<!-- 🧠 HTML Brain 4.0 Footer Lab Declaration -->
+<!-- ======================================== -->
+<footer class="text-center text-xs text-yellow-600 py-4 mt-12">
+  🧠 Powered by Cheese Architect 4.0 — HTML Brain of Narrrf’s World<br>
+  🧀 Brain Sync 4.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊
+</footer>
+<!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
+<!-- 🔐 Do not remove unless instructed by the Over Brain. -->
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- 
+  ===========================================================
+  🧠 MASTER LAB NOTE: THE CHEESE EGG ENGINE – DO NOT DELETE
+  🧀 Core Brain of Narrrf's World Riddle & Puzzle System
+  🎯 Purpose:
+  This script controls ALL hidden riddle cheese eggs in Narrrf’s World.
+  Each egg is a moving clickable element used for unlocking secrets, XP boosts, and story paths.
+  
+  🔁 Modular Expansion (2025+):
+  - Hidden lore activations
+  - Inventory item triggers
+  - Trait-bound egg rewards
+  - Backend-linked egg conditions
+  - SQL tracking of solved riddles
+  
+  🧰 Requirements:
+  - Section with id="roadmap" must have class="relative"
+  - Eggs = <a id="cheese-egg-id" class="absolute"> with no inline top/left
+  - Sound file: /sounds/cheese-egg-click.wav
+  
+  📌 This file is the **core brain** behind interactive lore & puzzle flow.
+  All future riddle actions (backend or frontend) connect here.
+  
+  🛡️ Dev Notes:
+  - Never add inline styles to cheese egg top/left
+  - Use `z-50` for cheese layering above content
+  - Add new eggs by simply appending IDs to the `eggIds` array
+  
+  👨‍🚀 MasterChef Note:
+  Mark this block as sacred. Future devs — extend, don’t overwrite. 
+  ============================================================
+  -->
+
+  <!-- 
+  ==============================
+  🧠 CHEESE ENGINE: RIDDLE SYSTEM MANIFEST
+  ==============================
+  
+  🎯 Purpose:
+  This frontend system powers a map-wide, trait-aware, modular riddle game.
+  All egg interactions can log to SQL, enabling unlocks, missions, lore events, and item drops.
+  
+  🔐 Powered By:
+  - JS Cheese Engine (v1.4)
+  - SQL table: tbl_cheese_clicks
+  - API endpoint: /api/track-egg-click
+  
+  🧩 Eggs Are:
+  - Positioned randomly in #roadmap
+  - Clickable: play sound + trigger tracking
+  - Expandable: Easily tied to NFT traits or XP
+  
+  🧠 Game Features:
+  - Users with **NFT traits** can access **Hytopia land** in **Experiment X**.
+  - Rewards and **staking stats** tied to **NFT ownership**
+  
+  🛡️ Master Dev Rule:
+  This is a living system. Respect the cheese!
+  ============================================
+  -->
+
+  <!-- 🧬 Cheese Engine Meta Identifier (for SQL or AI indexing) -->
+  <meta name="narrrf-cheese-engine" content="core-riddle-system-v1.4">
+  <meta name="egg-count" content="3">
+  <meta name="egg-tracking" content="enabled">
+
+  <!-- 🧠 Lab Meta Setup -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Narrrf Style Guide</title>
+
+<!-- Add Tailwind CSS (ensure it’s included for styling) -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ============================================= -->
+  <!-- 🧪 style.html | Narrrf's World Master Lab File -->
+  <!-- ============================================= -->
+  <!-- This file contains all core animations, glowing fx, floating cheese, 
+       and long-term system notes for Frontend + SQL Devs -->
+  
+  <!-- ============================== -->
+  <!-- 🎨 CSS LAB ANIMATIONS (Visual) -->
+  <!-- ============================== -->
+  <style>
+    /* 🔄 General Glow Loop */
+    @keyframes glowCheese {
+      0%, 100% { filter: drop-shadow(0 0 4px #facc15); }
+      50% { filter: drop-shadow(0 0 12px #fde047); }
+    }
+
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes floatMouse {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    /* 🧠 Cheese Animation Classes */
+    .animate-glow-cheese {
+      animation: glowCheese 2s ease-in-out infinite;
+    }
+    .animate-bounce-slow {
+      animation: bounce-slow 3s ease-in-out infinite;
+    }
+    .floaty {
+      animation: floatMouse 3s ease-in-out infinite;
+    }
+
+    /* 🧀 Cheese Movement Smoothness */
+    a[id^="cheese-egg"] img {
+      transition: top 0.4s ease-in-out, left 0.4s ease-in-out;
+    }
+  </style>
+
+  <!-- ============================== -->
+  <!-- 🔬 Extra Lab Effects & Glow UI -->
+  <!-- ============================== -->
+  <style>
+    @keyframes labBubble {
+      0% { transform: translateY(0) scale(1); opacity: 0.7; }
+      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+    }
+
+    .animate-lab-bubble {
+      animation: labBubble 5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* 🔮 MasterChief Glow Title Animation */
+    @keyframes pulse-glow {
+      0%, 100% { filter: drop-shadow(0 0 4px #f472b6); }
+      50% { filter: drop-shadow(0 0 12px #fb7185); }
+    }
+
+    .drop-shadow-glow {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    /* 🍟 Lab Cheese Glow Override (legacy support for single cheese egg) */
+    #cheese-egg img {
+      animation: glowCheese 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+
+<body class="bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans">
+
+  <!-- 🎨 STYLE GUIDE HEADER -->
+  <header class="text-center py-10 bg-pink-600 text-white">
+    <h1 class="text-4xl font-bold">🧠 Narrrf's Lab: Style Guide</h1>
+    <p class="text-sm mt-2">Structure & Comment System for Consistent Building</p>
+  </header>
+
+  <main class="max-w-4xl mx-auto py-12 px-6 space-y-12">
+
+    <!-- 🧩 HTML SECTION FORMAT -->
+    <section class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-2xl font-bold mb-4">🧩 Section Structure</h2>
+      <pre class="text-xs bg-gray-100 p-4 rounded overflow-x-auto">
+<!-- ✅ SECTION START -->
+<section class="bg-white py-16 px-6">
+  <div class="max-w-4xl mx-auto text-center">
+    <h2 class="text-2xl font-bold mb-4">Section Title</h2>
+    <p class="text-sm">Short explanation...</p>
+  </div>
+</section>
+<!-- ✅ SECTION END -->
+      </pre>
+    </section>
+
+    <!-- 🎯 COMMENT SYSTEM -->
+    <section class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-2xl font-bold mb-4">🎯 Comment Tags</h2>
+      <ul class="list-disc list-inside space-y-2 text-sm">
+        <li>&lt;!-- ✅ CLOSES THE &lt;main&gt; TAG CORRECTLY --&gt; — closing tag confirmations</li>
+        <li>&lt;!-- 🔥 Bubble Effects Start --&gt; — visual fx zones</li>
+        <li>&lt;!-- 📜 MINT PAGE LAB SECTION --&gt; — feature identifiers</li>
+        <li>&lt;!-- 🧠 Discord Roles Card Grid --&gt; — exact component notes</li>
+      </ul>
+    </section>
+
+    <!-- 🌈 TAILWIND COMPONENTS -->
+    <section class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-2xl font-bold mb-4">🌈 Tailwind Utility Patterns</h2>
+      <ul class="list-disc list-inside space-y-2 text-sm">
+        <li><code>bg-gradient-to-br from-pink-200 to-purple-300</code> — background aesthetic</li>
+        <li><code>rounded-xl</code> — soft edge containers</li>
+        <li><code>shadow</code> — clean lab glow</li>
+        <li><code>max-w-4xl mx-auto</code> — page centering for readability</li>
+      </ul>
+    </section>
+
+    <!-- 🧪 BUBBLE ANIMATIONS -->
+    <section class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-2xl font-bold mb-4">🧪 Bubble Animations</h2>
+      <pre class="text-xs bg-gray-100 p-4 rounded overflow-x-auto">
+<!-- BUBBLE FX -->
+<div class="absolute w-4 h-4 bg-pink-400 blur-md rounded-full animate-lab-bubble"></div>
+<div class="absolute w-5 h-5 bg-purple-400 blur-lg rounded-full animate-lab-bubble delay-1000"></div>
+      </pre>
+    </section>
+
+    <!-- 🧠 Masterchief Notes for SQL, DB & Backend -->
+    <section class="bg-white rounded-xl shadow p-6 border-l-4 border-blue-400 mt-12">
+      <h2 class="text-2xl font-bold mb-4">🧠 Masterchief Notes for SQL, DB & Backend</h2>
+      <p class="text-sm mb-4">These notes serve as key references for any backend or database developers joining Narrrf's Lab — especially our new expert Masterchief who's taking point on SQL modeling.</p>
+      <ul class="list-disc list-inside space-y-2 text-sm">
+        <li>📦 The project centers around a cartoon NFT ecosystem called Narrrf's World, focused on storytelling, minting, and gamification.</li>
+        <li>🎭 We have over 1000 NFT traits generated across GEN1/GEN2 collections — needs to be modeled in a tbl_traits table.</li>
+        <li>👤 Users interact via wallet connect (Phantom/Solana) — we’ll need tbl_users with wallet address, roles, VIP status, and point balance ($DSPOINC).</li>
+        <li>🧪 Points system includes roles, raffles, and upgrades — link wallets and Discord IDs.</li>
+        <li>🏆 We track missions, roles, giveaways, and wheel spins. Suggested relational tables:
+          <ul class="list-disc list-inside ml-4">
+            <li>tbl_roles</li>
+            <li>tbl_wallets</li>
+            <li>tbl_rewards</li>
+            <li>tbl_raffle_entries</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="text-center py-6 text-sm text-purple-700">
+    🧪 Lab Certified by Narrrf | Last Updated: 2025
+  </footer>
+
+
+<!-- ============================== -->
+<!-- 🧪 GLOBAL CHEESE EGG SCRIPT -->
+<!-- ============================== -->
+<!-- 
+  🧠 MasterChief Lab Rule (SQL-Compliant Dev Structure):
+  All scripts must follow the annotated schema below for DB syncing & future automation.
+
+  🧬 Lab Dev Convention:
+  - ✅ COMMENT EACH FUNCTION: Purpose, inputs, outputs.
+  - ✅ SQL-FRIENDLY IDS: Lowercase, kebab-case only (ex: cheese-egg-blue).
+  - ✅ BOUNDARIES: Must use CHEESE_SIZE for consistent frontend spacing + DB matching.
+  - ✅ DOM lifecycle: Always wrapped in `DOMContentLoaded` to avoid undefined elements.
+
+  🧑‍🔬 5yo Notes:
+  - The cheese jumps around. It goes *boing!* and plays a pop sound.
+  - You can click it and it does a secret. Every egg is special.
+
+This is the CHEESE ENGINE. It makes cheese jump around the screen like it's ALIVE!
+Every cheese is a sneaky secret. If you click it — *POP!* — it plays a silly sound and takes you to a magical page.
+
+🧠 How it works:
+1. Cheeses start inside the “roadmap” box.
+2. The script moves them every few seconds (boing!).
+3. Never put top/left styles in the HTML — the cheese script does that for you!
+4. Use class="absolute" and place them inside the roadmap section (which must have class="relative").
+
+🧪 That’s it!
+Now your cheese eggs can bounce like bunnies and surprise the Narrrfs! 🐭💨
+-->
+<!-- =========================================== -->
+<!-- 🧪 SQL LAB EXTENSION: CHEESE EGG TRACKING -->
+<!-- =========================================== -->
+<pre class="bg-yellow-50 text-xs p-4 rounded overflow-x-auto mt-4">
+📦 Table: tbl_cheese_clicks
+
+🔁 Each click logs:
+- user_wallet (from localStorage)
+- egg_id (HTML ID)
+- timestamp (epoch ms)
+
+🎯 Purpose:
+Tracks riddle progression, XP, lore events, and item unlocks.
+Supports trait-based eggs, rotating puzzles, and rare finds.
+
+✅ Dev Rules:
+1. Consistent egg IDs (kebab-case)
+2. Do not reuse IDs across pages
+3. No inline styles — use JS positioning
+4. Place eggs inside <section id="roadmap" class="relative">
+5. Backend: /api/track-egg-click → tbl_cheese_clicks
+
+🚀 Ready for:
+- Trait-based puzzles
+- Timed rare eggs
+- Web3-linked reward logic
+
+🛡️ MasterChief DB Tip:
+Index `egg_id` + `user_wallet` for fast riddle tracking
+
+<!-- 🧪 Example DB Connection Setup -->
+<div class="bg-gray-100 text-xs p-4 rounded overflow-x-auto mt-4">
+<code>
+<?php
+// Lab Note 🧪: Define DB connection settings for Narrrf's Lab
+$host = '127.0.0.1';
+$db   = 'narrrf_lab';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+
+// Lab Note 🧪: Build DSN (data source name)
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+try {
+    // Lab Note 🧪: Connect to DB using PDO
+    $pdo = new PDO($dsn, $user, $pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    echo "✅ Connected to Narrrf's Lab DB!";
+} catch (\PDOException $e) {
+    throw new \PDOException($e->getMessage(), (int)$e->getCode());
+}
+?>
+  </code>
+  </div>   <!-- 🧪 End of Example DB Setup -->
+    </section> <!-- ✅ End SQL LAB EXTENSION Block -->
+
+<script>
+  // ⏱️ Time between cheese teleport jumps (in ms)
+  const MOVE_INTERVAL = 6000;
+
+  // 🧀 Cheese icon size for positioning limits
+  const CHEESE_SIZE = 40;
+
+  // 🔊 Sound effect that plays when cheese is clicked
+  const cheeseClickSound = new Audio("sounds/cheese-egg-click.wav");
+  cheeseClickSound.volume = 0.8;
+
+  /**
+   * 🎯 moveEgg()
+   * @param {string} id - The egg element ID to move
+   * @param {string} parentId - The ID of the container to move inside
+   * @desc Moves an egg to a random location inside a parent container.
+   *       Ensures padding via CHEESE_SIZE to prevent overflow.
+   */
+  function moveEgg(id, parentId) {
+    const egg = document.getElementById(id);
+    const parent = document.getElementById(parentId);
+    if (!egg || !parent) return;
+
+    const maxLeft = parent.clientWidth - CHEESE_SIZE;
+    const maxTop = parent.clientHeight - CHEESE_SIZE;
+
+    const left = Math.floor(Math.random() * maxLeft);
+    const top = Math.floor(Math.random() * maxTop);
+
+    egg.style.left = `${left}px`;
+    egg.style.top = `${top}px`;
+  }
+
+  // 🚀 On DOM ready, begin cheese movement + sound logic
+  window.addEventListener('DOMContentLoaded', () => {
+    // 🧀 List of all cheese egg element IDs (must match HTML + SQL spec)
+    const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
+
+    // 🎲 Randomly move each egg every MOVE_INTERVAL
+    eggIds.forEach(id => {
+      moveEgg(id, 'roadmap');
+      setInterval(() => moveEgg(id, 'roadmap'), MOVE_INTERVAL);
+    });
+
+    // 🔊 Attach click sound to each cheese egg
+    eggIds.forEach(id => {
+      const egg = document.getElementById(id);
+      if (egg) {
+        egg.addEventListener('click', () => cheeseClickSound.play());
+      }
+    });
+  });
+</script>
+<!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
+---------------------------------------------------------
+🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien
+🌍 This **Genesis 2.0** package represents the culmination of **Narrrf’s World** project: integrating **Web2/Web3**, **NFT ownership**, and **SQL-based game mechanics** into a self-sustaining ecosystem.
+
+💾 **Stored in the Lab’s digital archives**, it will continue to evolve and serve as a reference for **future generations** of developers.
+
+⚡ Officially ready for **scaling**, **real-time integration**, and continuous **user interaction**.
+
+🎮 **Masterchief** will guide the **backend SQL** operations and ensure that **cheese never spoils**.
+
+🧪 **Future devs**: add your **name**, **refine the platform**, and **keep expanding** on this legendary system.
+
+🔧 **Critical Dev Reminders for the Next Generations**:
+  - Ensure **minting** is **tested across all wallet types** (e.g., Phantom, Solana).
+  - Validate **SQL integration** for minting, supply tracking, and wallet syncing.
+  - Always monitor **egg tracking** and **wallet connectivity** across all pages.
+  - Keep testing **Web3 wallets** and integrating future wallet systems.
+  - **Optimize the minting process** for **scalability** and **future-proofing**.
+
+🔮 Maintain the **core focus on Web3** principles, **game progression**, and **community empowerment**.
+
+---------------------------------------------------------
+🧪 **Cheese Engine v1.4: The Riddle System Core**
+---------------------------------------------------------
+This system powers **moving riddle nodes** throughout Narrrf's World. All **cheese clicks** are tracked and used for:
+- Lore progression
+- Inventory events
+- Trait-gated puzzles
+
+**Riddle Engine** is the heart of the **Narrrfverse**, integrating with:
+- **SQL tracking** for each riddle solved (stored in the `tbl_cheese_clicks` table).
+- **User interaction**, where progress is stored and retrieved based on wallet address, egg ID, and timestamp.
+- **Unlocking Easter Eggs** as users progress, ensuring a dynamic and immersive game world.
+
+📦 **DB Dev:**
+Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
+→ Use **wallet address** from localStorage, **timestamp**, and **egg ID** for progress tracking.
+
+🚀 **Future Ideas**:
+- **Massive map-wide riddle hunts** integrated with time-locked eggs and rotating cheese dungeons.
+- Enhance **user experience** with dynamic **puzzle-solving mechanics**.
+  
+🧑‍💻 Future devs can expand the **riddle system** and **reward mechanics** with more complex features and interactivity.
+
+---------------------------------------------------------
+🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
+---------------------------------------------------------
+-->
+
+<!-- ======================================== -->
+<!-- 🧠 HTML Brain 4.0 Footer Lab Declaration -->
+<!-- ======================================== -->
+<footer class="text-center text-xs text-yellow-600 py-4 mt-12">
+  🧠 Powered by Cheese Architect 4.0 — HTML Brain of Narrrf’s World<br>
+  🧀 Brain Sync 4.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊
+</footer>
+<!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
+<!-- 🔐 Do not remove unless instructed by the Over Brain. -->
+</body>
+</html>

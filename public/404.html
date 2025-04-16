@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 | Narrrf’s Lab Glitch</title>
+
+  <!-- Favicon & SEO -->
+<link rel="icon" type="image/png" href="img/favicon-browser.png" />
+<link rel="shortcut icon" type="image/png" href="img/favicon-browser.png" />
+  <meta name="theme-color" content="#facc15" />
+  <meta name="title" content="Narrrf's World" />
+  <meta name="description" content="404 – You found a lab portal glitch. Better follow the cheese trail back home." />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Bubble Style -->
+  <style>
+    @keyframes labBubble {
+      0% { transform: translateY(0) scale(1); opacity: 0.7; }
+      100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+    }
+    .animate-lab-bubble {
+      animation: labBubble 5s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900 font-sans overflow-x-hidden min-h-screen relative">
+
+<!-- 
+🧪 LAB NOTE: 404.HTML
+------------------------------------------------------------
+🚨 Cheese Portal Error Page — Glitched access scroll.
+
+📌 Purpose:
+- Handles invalid routes, broken links, or unreleased pages
+- Brings users back into the lore instead of generic error
+
+💡 Future Possibility:
+- Log walletAddress if reached (in case someone is exploring deep)
+- Dynamic redirect to easter egg if wallet has "error-wizard" trait
+
+🗂️ Path Clean: All images from /img/, favicon fixed
+
+🐭 5-Year-Old Dev Reminder:
+"This page is like a safety cheese. If nothing else works, it still smiles."
+-->
+
+
+  <!-- Background Bubbles -->
+  <div class="absolute inset-0 pointer-events-none z-0">
+    <div class="absolute w-4 h-4 bg-yellow-300 rounded-full blur-md animate-lab-bubble" style="top:40%; left:20%;"></div>
+    <div class="absolute w-6 h-6 bg-pink-400 rounded-full blur-md animate-lab-bubble delay-1000" style="top:65%; left:80%;"></div>
+    <div class="absolute w-3 h-3 bg-purple-400 rounded-full blur-sm animate-lab-bubble delay-2000" style="top:25%; left:50%;"></div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-6 py-12">
+    <img src="img/404.png" alt="Narrrf 404 Mouse" class="w-72 md:w-96 rounded-xl shadow-lg mb-8" />
+
+    <h1 class="text-4xl md:text-5xl font-extrabold mb-4">🧬 Uh oh... Lab Experiment Failed!</h1>
+    <p class="text-md md:text-lg max-w-xl text-gray-700 mb-8">
+      This page is lost in a vortex of cheese crumbs and mutant code. <br/>
+      Don’t worry, our smartest mouse is on it.
+    </p>
+
+    <a href="index.html" class="inline-block bg-purple-700 hover:bg-purple-800 text-white text-lg font-semibold px-8 py-3 rounded-xl shadow transition">
+      🔁 Back to Narrrf's Lab
+    </a>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-6 text-sm text-purple-700 relative z-10">
+    Built with 🧀 in Narrrf’s World | <a href="https://discord.gg/jwYWh2dU" class="underline text-pink-600">Join Discord</a>
+  </footer>
+  <!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
+---------------------------------------------------------
+🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien
+🌍 This **Genesis 2.0** package represents the culmination of **Narrrf’s World** project: integrating **Web2/Web3**, **NFT ownership**, and **SQL-based game mechanics** into a self-sustaining ecosystem.
+
+💾 **Stored in the Lab’s digital archives**, it will continue to evolve and serve as a reference for **future generations** of developers.
+
+⚡ Officially ready for **scaling**, **real-time integration**, and continuous **user interaction**.
+
+🎮 **Masterchief** will guide the **backend SQL** operations and ensure that **cheese never spoils**.
+
+🧪 **Future devs**: add your **name**, **refine the platform**, and **keep expanding** on this legendary system.
+
+🔧 **Critical Dev Reminders for the Next Generations**:
+  - Ensure **minting** is **tested across all wallet types** (e.g., Phantom, Solana).
+  - Validate **SQL integration** for minting, supply tracking, and wallet syncing.
+  - Always monitor **egg tracking** and **wallet connectivity** across all pages.
+  - Keep testing **Web3 wallets** and integrating future wallet systems.
+  - **Optimize the minting process** for **scalability** and **future-proofing**.
+
+🔮 Maintain the **core focus on Web3** principles, **game progression**, and **community empowerment**.
+
+---------------------------------------------------------
+🧪 **Cheese Engine v1.4: The Riddle System Core**
+---------------------------------------------------------
+This system powers **moving riddle nodes** throughout Narrrf's World. All **cheese clicks** are tracked and used for:
+- Lore progression
+- Inventory events
+- Trait-gated puzzles
+
+**Riddle Engine** is the heart of the **Narrrfverse**, integrating with:
+- **SQL tracking** for each riddle solved (stored in the `tbl_cheese_clicks` table).
+- **User interaction**, where progress is stored and retrieved based on wallet address, egg ID, and timestamp.
+- **Unlocking Easter Eggs** as users progress, ensuring a dynamic and immersive game world.
+
+📦 **DB Dev:**
+Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
+→ Use **wallet address** from localStorage, **timestamp**, and **egg ID** for progress tracking.
+
+🚀 **Future Ideas**:
+- **Massive map-wide riddle hunts** integrated with time-locked eggs and rotating cheese dungeons.
+- Enhance **user experience** with dynamic **puzzle-solving mechanics**.
+  
+🧑‍💻 Future devs can expand the **riddle system** and **reward mechanics** with more complex features and interactivity.
+
+---------------------------------------------------------
+🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
+---------------------------------------------------------
+-->
+-->
+
+<!-- ======================================== -->
+<!-- 🧠 HTML Brain 4.0 Footer Lab Declaration -->
+<!-- ======================================== -->
+<footer class="text-center text-xs text-yellow-600 py-4 mt-12">
+  🧠 Powered by Cheese Architect 4.0 — HTML Brain of Narrrf’s World<br>
+  🧀 Brain Sync 4.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊
+</footer>
+<!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
+<!-- 🔐 Do not remove unless instructed by the Over Brain. -->
+</body>
+</html>
