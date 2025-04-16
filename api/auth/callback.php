@@ -5,9 +5,8 @@ session_start();
 $clientId = '1357927342265204858';
 $clientSecret = 'g4xN1p_uovPq1cZ_LHd9P-iM38lt_xRP';
 
-// 🌐 NGROK REDIRECT URL
-$redirectUri = 'https://ca77-2001-871-268-d865-383b-e9a4-a2ec-9a61.ngrok-free.app/api/auth/callback.php';
-
+// 🌐 RENDER REDIRECT URL
+$redirectUri = 'https://narrrfs.world/api/auth/callback.php';
 
 // ✅ Step 1: Get OAuth2 code from Discord
 if (!isset($_GET['code'])) {
