@@ -46,6 +46,23 @@ if (!isset($token['access_token'])) {
     die("❌ Failed to get access token:\n$response");
 }
 $accessToken = $token['access_token'];  // 🧀 Cheese token now usable ✅
+// 🔍 TEST THE USER RESPONSE
+$userRequest = curl_init();
+curl_setopt_array($userRequest, [
+    CURLOPT_URL => 'https://discord.com/api/v10/users/@me',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        "Authorization: Bearer $accessToken"
+    ]
+]);
+$userResponse = curl_exec($userRequest);
+curl_close($userRequest);
+
+// 👁️ Dump response for testing
+echo "<pre>";
+print_r($userResponse);
+echo "</pre>";
+
 
 // ✅ Step 3: Get user info from Discord
 $userRequest = curl_init();
