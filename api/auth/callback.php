@@ -31,6 +31,16 @@ curl_setopt_array($tokenRequest, [
     CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded']
 ]);
 
+// ⛑️ MISSING: Add this now!
+$response = curl_exec($tokenRequest);
+curl_close($tokenRequest);
+$token = json_decode($response, true);
+
+if (!isset($token['access_token'])) {
+    die("❌ Failed to get access token:\n$response");
+}
+$accessToken = $token['access_token']; // 🧀 Cheese token now usable ✅
+
 // ✅ Step 3: Get user info from Discord
 $userRequest = curl_init();
 curl_setopt_array($userRequest, [
