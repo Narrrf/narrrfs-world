@@ -1,14 +1,12 @@
 <?php
 session_start();
 
-// ✅ Load credentials securely from environment variables
-$clientId = getenv('DISCORD_CLIENT_ID');         // 🧠 Discord App ID from Render
-$clientSecret = getenv('DISCORD_SECRET');        // 🧀 Secret Sauce from Render look at enviroment
-
-// 🌐 Render redirect URI
+// ✅ Load credentials securely from Render environment
+$clientId = getenv('DISCORD_CLIENT_ID');
+$clientSecret = getenv('DISCORD_SECRET');
 $redirectUri = 'https://narrrfs.world/api/auth/callback.php';
 
-// ✅ Step 1: Get OAuth2 code from Discord
+// ✅ Step 1: Get OAuth2 code
 if (!isset($_GET['code'])) {
     die('❌ No code returned from Discord');
 }
@@ -31,38 +29,15 @@ curl_setopt_array($tokenRequest, [
     CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded']
 ]);
 
-// ⛑️ MISSING: Add this now!
 $response = curl_exec($tokenRequest);
 curl_close($tokenRequest);
 $token = json_decode($response, true);
 
-// TEMP DEBUG 👇
-echo "<pre>";
-print_r($token);
-echo "</pre>";
-exit;
-
+// ❌ Failed token response
 if (!isset($token['access_token'])) {
     die("❌ Failed to get access token:\n$response");
 }
 $accessToken = $token['access_token'];  // 🧀 Cheese token now usable ✅
-// 🔍 TEST THE USER RESPONSE
-$userRequest = curl_init();
-curl_setopt_array($userRequest, [
-    CURLOPT_URL => 'https://discord.com/api/v10/users/@me',
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_HTTPHEADER => [
-        "Authorization: Bearer $accessToken"
-    ]
-]);
-$userResponse = curl_exec($userRequest);
-curl_close($userRequest);
-
-// 👁️ Dump response for testing
-echo "<pre>";
-print_r($userResponse);
-echo "</pre>";
-
 
 // ✅ Step 3: Get user info from Discord
 $userRequest = curl_init();
@@ -77,6 +52,7 @@ $userResponse = curl_exec($userRequest);
 curl_close($userRequest);
 $user = json_decode($userResponse, true);
 
+// ❌ No user data
 if (!isset($user['id'])) {
     die("❌ Failed to get user info:\n$userResponse");
 }
@@ -85,7 +61,7 @@ if (!isset($user['id'])) {
 $_SESSION['discord_id'] = $user['id'];
 $_SESSION['access_token'] = $accessToken;
 
-// ✅ Connect to SQLite DB in Apache path
+// ✅ Step 4: Save user to DB
 $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 try {
     $pdo = new PDO("sqlite:$dbPath");
@@ -94,20 +70,19 @@ try {
     die("❌ Database error: " . $e->getMessage());
 }
 
-// ✅ INSERT or UPDATE user in tbl_users
 $stmt = $pdo->prepare("
     INSERT OR REPLACE INTO tbl_users (discord_id, username, avatar_url)
     VALUES (?, ?, ?)
 ");
 $stmt->execute([$user['id'], $user['username'], $user['avatar']]);
 
-// ✅ Step 4: Call role sync (tbl_user_roles)
+// ✅ Step 5: Sync roles
 include_once(__DIR__ . '/sync-role.php');
 
-// ✅ Final Redirect based on environment
-if ($_SERVER['HTTP_HOST'] === 'localhost') {
-    header('Location: http://localhost/profile.html');
-} else {
-    header('Location: https://narrrfs.world/profile.html');
-}
+// ✅ Redirect to profile page
+$redirectTarget = ($_SERVER['HTTP_HOST'] === 'localhost')
+    ? 'http://localhost/profile.html'
+    : 'https://narrrfs.world/profile.html';
+
+header("Location: $redirectTarget");
 exit;
