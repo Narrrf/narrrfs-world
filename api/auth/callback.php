@@ -61,7 +61,7 @@ $_SESSION['discord_id'] = $user['id'];
 $_SESSION['access_token'] = $accessToken;
 
 // ✅ Connect to SQLite DB in Apache path
-$dbPath = 'C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite';
+$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 try {
     $pdo = new PDO("sqlite:$dbPath");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
