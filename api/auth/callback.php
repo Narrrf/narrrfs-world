@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// 🧠 DISCORD APP CREDS
 $clientId = getenv('DISCORD_CLIENT_ID');
 $clientSecret = getenv('DISCORD_SECRET');
 
