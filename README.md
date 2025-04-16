@@ -1,53 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>README - Narrrf's World</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9fafb;
-      color: #1f2937;
-      line-height: 1.6;
-      padding: 20px;
-    }
-    h1, h2, h3 {
-      color: #3b82f6;
-    }
-    pre {
-      background-color: #f3f4f6;
-      border: 1px solid #e5e7eb;
-      padding: 10px;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      overflow-x: auto;
-    }
-    code {
-      font-family: monospace, monospace;
-      background-color: #f3f4f6;
-      padding: 0.2em 0.4em;
-      border-radius: 4px;
-    }
-    ul {
-      list-style: disc;
-      margin-left: 20px;
-    }
-    li {
-      margin-bottom: 10px;
-    }
-    a {
-      color: #3b82f6;
-    }
-    footer {
-      font-size: 0.85rem;
-      color: #6b7280;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <h1>README for Narrrf's World</h1>
+
+# README for Narrrf's World
+
+## 🚀 Project Overview
+
+**Narrrf’s World** is a Web3-powered experience where lore, NFTs, Discord, and databases meet. It's built to last 200 years — uniting riddles, traits, staking, and Web2/Web3 bridges in one wild, cheesy experiment. This README is for backend builders, frontend tinkerers, and SQL adventurers.
+
+> **Note**: This private README is designed for Masterchiefe, Corebrain, and the next generation of devs syncing the egg machine with the riddle core.
+
+---
+
+## 🧠 Folder & Brain System Overview
+
+- `/api` → All logic: click tracking, rewards, role syncing, and auth.
+- `/db` → SQLite database: `narrrf_world.sqlite` with `tbl_users`, `tbl_user_roles`.
+- `/api/auth/callback.php` → Discord OAuth callback.
+- `/api/auth/sync-role.php` → Fetches user roles via Discord API.
+- `/discord-tools/role_map.php` → Maps raw Discord role IDs to friendly names.
+- `/sync/sync-role.php` → External access to trigger role sync manually.
+- `/profile.html` → Live frontend display of user data (uses fetch requests to PHP).
+
+---
+
+## 🧅🔐 Onionpipe + Tor Backend (Cheese Secured Architecture 5.0)
+
+### What’s Happening
+
+We use [**onionpipe**](https://github.com/cmars/onionpipe) to expose our **Apache/PHP/XAMPP stack** via a secure .onion address, so that sensitive routes like `callback.php` and `sync-role.php` don’t touch the clearnet.
+
+### ✅ Why It Rocks
+
+| 🍯 Benefit | Description |
+|-----------|-------------|
+| 🛡️ Hidden backend | Our PHP app is never publicly exposed on IP |
+| 🧠 Secure OAuth | Discord login, token exchange, role reading all happen in the dark |
+| 🍕 Cheese Shield | Tor circuit ensures no IP leaks, only .onion hits |
+| 🌐 Dual Access | Users can access from clearnet, backend talks via Tor |
+| 🧅 Powered by Onionpipe | Localhost:80 is tunneled to a .onion address using a minimal setup |
+
+### 🔧 Setup Summary
+
+1. Install [`onionpipe`](https://github.com/cmars/onionpipe/releases).
+2. Make sure `tor.exe` is in the same directory or in `PATH`.
+3. Start it like this:
+
+```bash
+cd C:\onionpipe
+onionpipe.exe 80~80
+```
+
+4. You’ll get an .onion address like:
+
+```
+127.0.0.1:80 => r7omsa6vuezkfaneyw3ovscz36rjrfr4taleibasevwlma2xjthp5oid.onion:80
+```
+
+5. Update your Discord OAuth app settings to:
+   - Use this `.onion` as your callback URI
+   - Match it in your PHP config
+
+---
+
+## 📦 External Service Setup
+
+### Discord OAuth2 Scopes
+
+- `identify`
+- `guilds`
+- `guilds.members.read`
+
+### Discord Bot Permissions
+
+- `bot` scope
+- Admin-level permissions
+- Must be re-invited if scopes or permissions change
+
+---
+
+## 🔄 Troubleshooting Cheatsheet
+
+| 🧀 Error | 🔧 Fix |
+|---------|--------|
+| `401 Unauthorized` | Check if token is expired, redirect URI mismatch |
+| `No code returned from Discord` | URL missing `?code=` param, redirect skipped |
+| `file not found` errors | Make sure `/narrrfs-world` is **NOT** in live path if Apache root is correct |
+| CORS errors | Must serve from same `.onion` or use proper proxy |
+| JSON parse error | PHP file outputting HTML (likely a 404/500 error) |
+
+---
+
+## 🍰 Cheese Status
+
+- 🧠 Brain: Online
+- 🔐 Auth: Working
+- 🔄 Sync: Success
+- 🧅 Onion Backend: Live
+- 🔭 Cleared for Phase 3
+
 
   <h2>🚀 Project Overview</h2>
   <p>
