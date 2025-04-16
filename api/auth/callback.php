@@ -36,6 +36,12 @@ $response = curl_exec($tokenRequest);
 curl_close($tokenRequest);
 $token = json_decode($response, true);
 
+// TEMP DEBUG 👇
+echo "<pre>";
+print_r($token);
+echo "</pre>";
+exit;
+
 if (!isset($token['access_token'])) {
     die("❌ Failed to get access token:\n$response");
 }
