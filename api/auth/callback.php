@@ -1,10 +1,11 @@
 <?php
 session_start();
 
+// ✅ Load credentials securely from environment variables
 $clientId = getenv('DISCORD_CLIENT_ID');
 $clientSecret = getenv('DISCORD_SECRET');
 
-// 🌐 RENDER REDIRECT URL
+// 🌐 Render redirect URI
 $redirectUri = 'https://narrrfs.world/api/auth/callback.php';
 
 // ✅ Step 1: Get OAuth2 code from Discord
@@ -29,14 +30,6 @@ curl_setopt_array($tokenRequest, [
     ]),
     CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded']
 ]);
-$response = curl_exec($tokenRequest);
-curl_close($tokenRequest);
-$token = json_decode($response, true);
-
-if (!isset($token['access_token'])) {
-    die("❌ Failed to get access token:\n$response");
-}
-$accessToken = $token['access_token'];
 
 // ✅ Step 3: Get user info from Discord
 $userRequest = curl_init();
