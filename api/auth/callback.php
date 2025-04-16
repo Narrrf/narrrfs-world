@@ -39,7 +39,7 @@ $token = json_decode($response, true);
 if (!isset($token['access_token'])) {
     die("❌ Failed to get access token:\n$response");
 }
-$accessToken = $token['access_token']; // 🧀 Cheese token now usable ✅
+$accessToken = $token['access_token'];  // 🧀 Cheese token now usable ✅
 
 // ✅ Step 3: Get user info from Discord
 $userRequest = curl_init();
