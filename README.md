@@ -294,3 +294,79 @@ Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
 
 </body>
 </html>
+---
+
+### 🔐 Onion Backend Integration (April 2025 Update)
+
+To enhance **privacy**, **resilience**, and **global access**, we have implemented a decentralized, Tor-based backend system.
+
+This is used to route all **sensitive PHP logic**, **SQLite database access**, and **authentication requests** (OAuth, Discord, etc.) through a **hidden .onion service** — while keeping the **frontend live on GitHub Pages or clearnet servers**.
+
+---
+
+### ✅ Why This Is Smart
+
+| Benefit | Explanation |
+| --- | --- |
+| 🛡️ Privacy by default | Backend runs behind an .onion, invisible to attackers |
+| 🔐 True IP never exposed | Frontend calls the backend via `.onion`, masking server IP |
+| 🧠 Cheese Sync Secure | Discord OAuth + role sync is protected from tampering |
+| ⚙️ Easy failover | Onion stays up even if clearnet frontend has issues |
+| 📡 No public server needed | Run the backend on a local PC or laptop — no hosting costs |
+
+---
+
+### 📁 Directory + Infrastructure Map
+
+| System | Location |
+|--------|----------|
+| Public Frontend | GitHub Pages / Clearnet |
+| PHP Backend (Apache) | `127.0.0.1:80` via Tor |
+| Onionpipe Port | `80~80` via `onionpipe.exe` |
+| Onion Hostname | e.g. `r7omsa6vuezkfaney...onion` |
+| SQLite DB | `htdocs/narrrfs-world/db/narrrf_world.sqlite` |
+| Critical Files | `callback.php`, `sync-role.php`, `roles.php` |
+| Verified Auth Redirect | `https://yourdomain.onion/api/auth/callback.php` |
+
+---
+
+### 🧅 Setup Guide (Local Windows Dev + Global Access)
+
+1. **Install Onionpipe** and extract to `C:\onionpipe`
+2. **Install Tor** (or use Tor Expert Bundle)
+3. **Copy `tor.exe`** into `C:\onionpipe` or ensure it’s in your `%PATH%`
+4. Start Apache via XAMPP with:
+   ```bash
+   http://localhost/profile.html
+   ```
+5. Start Onion Service:
+   ```bash
+   .\onionpipe.exe 80~80
+   ```
+6. Onion address appears in terminal, e.g.:
+   ```
+   127.0.0.1:80 => abcxyz...onion:80
+   ```
+7. Use that `.onion` for all backend fetches on your public site.
+
+---
+
+### 📡 Public Site Fetching Example
+
+**GitHub-hosted frontend (profile.html):**
+```js
+fetch('https://yourbackend.onion/api/user/roles.php', {
+  credentials: 'include'
+});
+```
+
+> ⚠️ Note: Requires a bridge or proxy setup unless hosted inside Tor Browser or via a clearnet-to-onion forwarder.
+
+---
+
+### 🧠 Brain Integration
+
+All Narrrfs Brain modules now recognize `.onion` routing as a valid backend strategy. Updates reflected in:
+- `Update_brain_5.0.json`
+- `narrrfs_world_paths.json`
+- `SQL_Junior_5.0.json`
