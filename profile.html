@@ -66,7 +66,6 @@
 </div>
 
 
-
 <!-- 🔗 Profile Bridge Card -->
   <main class="flex-grow flex items-center justify-center px-4 py-12">
     <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center border-4 border-yellow-400">
@@ -106,33 +105,31 @@
 </footer>
 
   <!-- 🔐 Dynamic Fetch Script -->
-  <script>
-    async function loadProfile() {
-      try {
-        const res = await fetch('https://discordsignin.markuswrulich.repl.co/api/user', {
-          credentials: 'include'
-        });
-        if (!res.ok) {
-          document.getElementById('username').innerText = 'Not Logged In';
-          return;
-        }
+<script>
+  async function loadProfile() {
+    try {
+      const res = await fetch('/api/user.php', {
+        credentials: 'include'
+      });
 
-        const user = await res.json();
-        document.getElementById('avatar').src = user.avatarUrl || '';
-        document.getElementById('username').innerText = `${user.username}#${user.discriminator}`;
-        document.getElementById('email').innerText = user.email || 'No email provided';
-        document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
-
-        // Optional future wallet sync UI
-        document.getElementById('wallet-address').innerText = `🔗 Linked wallet: ${localStorage.getItem('walletAddress') || 'not connected'}`;
-        document.getElementById('traits').innerText = "Alien, Chaos, Mutant"; // ⏳ Later fetched from /api/user/traits
-      } catch (e) {
-        console.error('Profile fetch failed', e);
-        document.getElementById('username').innerText = 'Login Required';
+      if (!res.ok) {
+        document.getElementById('username').innerText = 'Not Logged In';
+        return;
       }
+
+      const user = await res.json();
+      document.getElementById('avatar').src = user.avatarUrl || '';
+      document.getElementById('username').innerText = `${user.username}#${user.discriminator}`;
+      document.getElementById('welcome-name').innerText = user.username || 'Unknown';
+      document.getElementById('email').innerText = user.email || 'No email provided';
+      document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
+      document.getElementById('wallet-address').innerText = `🔗 Linked wallet: ${localStorage.getItem('walletAddress') || 'not connected'}`;
+    } catch (e) {
+      console.error('Profile fetch failed', e);
+      document.getElementById('username').innerText = 'Login Required';
     }
-    loadProfile();
-  </script>
+  }
+</script>
   <script>
 document.addEventListener("DOMContentLoaded", async () => {
   try {
