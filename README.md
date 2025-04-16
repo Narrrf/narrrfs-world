@@ -97,15 +97,6 @@ onionpipe.exe 80~80
 - 🔭 Cleared for Phase 3
 
 
-  <h2>🚀 Project Overview</h2>
-  <p>
-    <strong>Narrrf's World</strong> is a Web3-powered experience where lore, NFTs, Discord, and databases meet. It's built to last 200 years — uniting riddles, traits, staking, and Web2/Web3 bridges in one wild, cheesy experiment. This README is for backend builders, frontend tinkerers, and SQL adventurers.
-  </p>
-
-  <div class="important-note">
-    <strong>Note:</strong> This private README is designed for Masterchiefe, Corebrain, and the next generation of devs syncing the egg machine with the riddle core.
-  </div>
-
   <h2>📦 Folder & Brain System Overview</h2>
   <ul>
     <li><strong>client/</strong> – React frontend powered by Cheese Architect 🧱</li>
@@ -122,13 +113,7 @@ onionpipe.exe 80~80
     <li>🤖 <strong>Bot Brain</strong>: Discord and Twitter OAuth, bots, and community sync.</li>
   </ul>
 
-  <h2>📄 Continue with next section?</h2>
 
-  <h2>🚀 Project Overview</h2>
-  <p>
-    <strong>Narrrf's World</strong> is a Web3-powered game with interactive lore, NFT-based traits, and financial systems. Users can explore the chaotic world, unlock secrets through puzzles, stake tokens, and build their <strong>virtual land</strong> using <strong>NFTs</strong> that grant <strong>roles</strong>, <strong>privileges</strong>, and <strong>stakes</strong>. The game is built around <strong>interactive puzzles</strong> and <strong>reward systems</strong> that tie back to <strong>SQL databases</strong>, <strong>Discord roles</strong>, and <strong>blockchain</strong>.
-  </p>
-  <p>This document explains the structure, core features, and backend systems for development.</p>
 
   <h2>💡 Project Components</h2>
   <h3>1. Frontend Structure</h3>
