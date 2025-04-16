@@ -56,11 +56,11 @@ if (!isset($user['id'])) {
     die("❌ Failed to get user info:\n$userResponse");
 }
 
-// ✅ Store in session
+// ✅ Step 4: Store in session
 $_SESSION['discord_id'] = $user['id'];
 $_SESSION['access_token'] = $accessToken;
 
-// ✅ Step 4: Save user to DB
+// ✅ Step 5: Save user to DB
 $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 try {
     $pdo = new PDO("sqlite:$dbPath");
@@ -75,10 +75,10 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$user['id'], $user['username'], $user['avatar']]);
 
-// ✅ Step 5: Sync roles
+// ✅ Step 6: Sync roles
 include_once(__DIR__ . '/sync-role.php');
 
-// ✅ Redirect to profile page
+// ✅ Step 7: Redirect to profile
 $redirectTarget = ($_SERVER['HTTP_HOST'] === 'localhost')
     ? 'http://localhost/profile.html'
     : 'https://narrrfs.world/profile.html';
