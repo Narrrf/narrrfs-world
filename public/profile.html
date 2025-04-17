@@ -9,6 +9,7 @@
   <link rel="icon" href="img/cheese-egg.png" type="image/png">
 
   <style>
+    /* 🎨 Style Card Elements */
     .card {
       background: #36393f;
       border-radius: 12px;
@@ -18,16 +19,22 @@
       width: 100%;
       text-align: center;
     }
+
+    /* 🖼️ Avatar */
     .avatar {
       border-radius: 50%;
       width: 100px;
       height: 100px;
       margin-bottom: 15px;
     }
+
+    /* 🧠 Username */
     .username {
       font-size: 1.5em;
       margin-bottom: 5px;
     }
+
+    /* 🧬 Tagline + Guild Info */
     .tagline {
       font-size: 0.95em;
       color: #b9bbbe;
@@ -37,6 +44,8 @@
       margin-top: 15px;
       font-size: 0.9em;
     }
+
+    /* 🧀 Highlight Text */
     .cheese {
       margin-top: 25px;
       font-style: italic;
@@ -45,7 +54,7 @@
   </style>
 </head>
 
-<!-- ✅ Move this outside the <head> tag -->
+<!-- ✅ Profile Scroll DOM Zone -->
 <body class="bg-[#2f3136] text-white font-sans flex flex-col items-center py-10 px-4">
 
 <!-- 🔰 Header with App Context -->
@@ -70,7 +79,9 @@
   <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center border-4 border-yellow-400">
 
     <!-- 👋 Welcome Message -->
-    <p id="welcome-msg" class="text-yellow-300 text-sm italic mb-2">Welcome back, <span id="welcome-name">...</span></p>
+    <p id="welcome-msg" class="text-yellow-300 text-sm italic mb-2">
+      Welcome back, <span id="welcome-name">loading...</span>
+    </p>
 
     <!-- 🖼️ User Avatar -->
     <img id="avatar" class="w-24 h-24 mx-auto rounded-full border-4 border-yellow-500 shadow mb-4 animate-bounce" src="" alt="User Avatar" />
@@ -106,23 +117,21 @@
   🧀 Brain Sync 4.0 Confirmed · Profile UX Last Update: 2025 · Guided by Coreforge + Corebrain 📊
 </footer>
 
-  <!-- 🔐 Dynamic Fetch Script -->
+<!-- 🔐 Dynamic Fetch Script -->
 <script>
   async function loadProfile() {
     try {
-      const res = await fetch('/api/user.php', {
-        credentials: 'include'
-      });
-
+      const res = await fetch('/api/user.php', { credentials: 'include' });
       if (!res.ok) {
         document.getElementById('username').innerText = 'Not Logged In';
         return;
       }
 
       const user = await res.json();
+      const fullUsername = `${user.username}#${user.discriminator}`;
       document.getElementById('avatar').src = user.avatarUrl || '';
-      document.getElementById('username').innerText = `${user.username}#${user.discriminator}`;
-      document.getElementById('welcome-name').innerText = user.username || 'Unknown';
+      document.getElementById('username').innerText = fullUsername;
+      document.getElementById('welcome-name').innerText = fullUsername;
       document.getElementById('email').innerText = user.email || 'No email provided';
       document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
       document.getElementById('wallet-address').innerText = `🔗 Linked wallet: ${localStorage.getItem('walletAddress') || 'not connected'}`;
@@ -131,31 +140,25 @@
       document.getElementById('username').innerText = 'Login Required';
     }
   }
-</script>
-  <script>
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    // Fetch user roles from /api/user/roles.php
-    const res = await fetch('/api/user/roles.php');
-    const data = await res.json();
-    
-    // Check if roles are returned successfully
-    const roles = data.roles || [];
-    
-    // If the user has the VIP role, show the Golden Cheese gate
-    if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
-      document.getElementById('goldenCheeseGate').classList.remove('hidden');
-      console.log("%c🧀 VIP Access: Golden Cheese Unlocked!", "color: gold; font-weight: bold;");
-    } else {
-      // If not, show the No VIP Joke
-      document.getElementById('noCheeseJoke').classList.remove('hidden');
-      console.log("😅 Logged in, but VIP role not found.");
-    }
-  } catch (err) {
-    console.error("Role check failed:", err);
-  }
-});
 
+  document.addEventListener("DOMContentLoaded", async () => {
+    loadProfile();
+    try {
+      const res = await fetch('/api/user/roles.php');
+      const data = await res.json();
+      const roles = data.roles || [];
+
+      if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
+        document.getElementById('goldenCheeseGate').classList.remove('hidden');
+        console.log("%c🧀 VIP Access: Golden Cheese Unlocked!", "color: gold; font-weight: bold;");
+      } else {
+        document.getElementById('noCheeseJoke').classList.remove('hidden');
+        console.log("😅 Logged in, but VIP role not found.");
+      }
+    } catch (err) {
+      console.error("Role check failed:", err);
+    }
+  });
 </script>
 
 </body>
