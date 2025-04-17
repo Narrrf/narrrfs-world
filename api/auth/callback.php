@@ -2,8 +2,8 @@
 session_start();
 
 // ✅ Load from Render environment
-$clientId = getenv('DISCORD_CLIENT_ID');
-$clientSecret = getenv('DISCORD_SECRET');
+$clientId = getenv('DISCORD_CLIENT_ID');      // ✅ correct
+$clientSecret = getenv('DISCORD_SECRET');     // ✅ correct
 $redirectUri = 'https://narrrfs.world/api/auth/callback.php';
 
 // ✅ Step 1: Get code
