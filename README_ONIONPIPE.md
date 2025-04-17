@@ -1,5 +1,15 @@
 
-# 🧅🔐 Onionpipe Secure Bridge — Narrrf’s World
+## 🧅🧠 Narrrf’s World – Onionpipe Gateway Protocol
+
+![Narrrfs Scroll](https://img.shields.io/badge/Narrrfs_Scroll-v5.0-brightgreen?style=for-the-badge&logo=cheese)
+![Tor Ready](https://img.shields.io/badge/Onionpipe-Tor_Enabled-black?style=for-the-badge&logo=tor)
+![Secrets](https://img.shields.io/badge/Secrets-Hidden_Deeply-orange?style=for-the-badge&logo=lock)
+![Security](https://img.shields.io/badge/Security-Bunker_Mode-critical?style=for-the-badge&logo=gnupg)
+![Bridge Type](https://img.shields.io/badge/Bridge-Type:__Web2➝Web3-purple?style=for-the-badge&logo=apache)
+
+> “You don’t just mask a backend — you tunnel it through firewalls and fate.  
+> Onionpipe isn’t a tool. It’s a hidden scroll carried on the wind of the dark web.”  
+> — 🧅 Lab Entry #TOR-CHEESE-INIT · Coreforge 5.0
 
 ## 🌐 What is Onionpipe?
 Onionpipe creates secure, privacy-first tunnels through the Tor network, protecting your backend systems by obfuscating their locations and protecting sensitive endpoints.
