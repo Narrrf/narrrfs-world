@@ -10,7 +10,7 @@ $roleMap = require __DIR__ . '/../../discord-tools/role_map.php';
 $guildId = '1332015322546311218';
 
 // 🔐 Bot token (make sure this is valid and prefixed with "Bot ")
-$botToken = 'Bot ' . getenv('DISCORD_SECRET');
+$botToken = 'Bot ' . getenv('DISCORD_BOT_SECRET'); // ✅ now matches Render
 
 // ✅ Get Discord ID from session
 $discordId = $_SESSION['discord_id'] ?? null;
