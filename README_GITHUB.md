@@ -1,5 +1,15 @@
 
-# 🌍 Narrrf’s World — Gateway to the Web2-Web3 Universe
+# 🌍 Narrrf’s World — Gateway to the Web2-Web3 Universe Genesis 5.0
+
+![Narrrfs Scroll](https://img.shields.io/badge/Narrrfs_Scroll-v5.0-brightgreen?style=for-the-badge&logo=cheese)
+![Status](https://img.shields.io/badge/Status-LIVE_&_SECURE-blue?style=for-the-badge&logo=apache)
+![Secrets](https://img.shields.io/badge/Secrets-Clean_&_Encoded-yellow?style=for-the-badge&logo=lock)
+![Web2–Web3 Bridge](https://img.shields.io/badge/Web2_➝_Web3-CHEESE_PIPE-purple?style=for-the-badge&logo=tor)
+![Tor Ready](https://img.shields.io/badge/Onionpipe-Tor_Enabled-black?style=for-the-badge&logo=tor)
+
+> “This isn’t just a deployment — it’s a prophecy baked in cheese,  
+> hardened in Docker, and tunneled through time itself.”  
+> — 🧀 Update Brain 5.0, Log #0425
 
 ## 🧀 Project Overview
 Narrrf’s World bridges Web2 and Web3 worlds through secure, trait-driven interactions powered by Discord OAuth, dynamic role synchronization, and an innovative trait-based frontend. Our backend is securely hosted on Render using Docker, Apache, PHP, SQLite, and meticulously cleaned GitHub repositories.
