@@ -54,6 +54,20 @@ $user = json_decode($userResponse, true);
 if (!isset($user['id'])) {
     die("❌ Failed to get user info:\n$userResponse");
 }
+// 🧀 Save key user fields to session for /api/user.php
+$_SESSION['username'] = $user['username'];
+$_SESSION['discriminator'] = $user['discriminator'] ?? '0000';
+$_SESSION['avatar_url'] = $user['avatar']
+    ? "https://cdn.discordapp.com/avatars/{$user['id']}/{$user['avatar']}.png"
+    : 'https://cdn.discordapp.com/embed/avatars/0.png';
+$_SESSION['email'] = $user['email'] ?? null;
+
+// Optional: Store guilds if scope includes `guilds`
+$_SESSION['guilds'] = json_decode(file_get_contents('https://discord.com/api/users/@me/guilds', false, stream_context_create([
+    'http' => [
+        'header' => "Authorization: Bearer $accessToken"
+    ]
+])), true);
 
 // ✅ Store in session
 $_SESSION['discord_id'] = $user['id'];
