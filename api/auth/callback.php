@@ -63,11 +63,13 @@ $_SESSION['avatar_url'] = $user['avatar']
 $_SESSION['email'] = $user['email'] ?? null;
 
 // Optional: Store guilds if scope includes `guilds`
-$_SESSION['guilds'] = json_decode(file_get_contents('https://discord.com/api/users/@me/guilds', false, stream_context_create([
+$guildsResponse = file_get_contents('https://discord.com/api/users/@me/guilds', false, stream_context_create([
     'http' => [
         'header' => "Authorization: Bearer $accessToken"
     ]
-])), true);
+]));
+$_SESSION['guilds'] = json_decode($guildsResponse, true) ?? [];
+
 
 // ✅ Store in session
 $_SESSION['discord_id'] = $user['id'];
