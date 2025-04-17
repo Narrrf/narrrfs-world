@@ -5,12 +5,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // ✅ Load role ID → name mapping
 $roleMap = require __DIR__ . '/../../discord-tools/role_map.php';
-
 // 🧠 Your Discord Server (Guild) ID
 $guildId = '1332015322546311218';
-
 // 🔐 Bot token (make sure this is valid and prefixed with "Bot ")
-$botToken = 'Bot ' . getenv('DISCORD_BOT_SECRET'); // ✅ now matches Render
+$botToken = 'Bot ' . getenv('DISCORD_BOT_SECRET');
 
 // ✅ Get Discord ID from session
 $discordId = $_SESSION['discord_id'] ?? null;
@@ -39,16 +37,12 @@ curl_close($ch);
 // ❌ API failure
 if ($httpCode !== 200) {
     http_response_code($httpCode);
-    echo "❌ Discord API failed with HTTP $httpCode\n";
-    echo "🔎 Response: $response\n";
     exit;
 }
 
 // ✅ Parse role IDs
 $data = json_decode($response, true);
 $discordRoleIds = $data['roles'] ?? [];
-
-echo "🎭 Raw Role IDs: " . implode(', ', $discordRoleIds) . "\n";
 
 // 🧀 Map to role names
 $userRoles = [];
@@ -57,8 +51,6 @@ foreach ($discordRoleIds as $roleId) {
         $userRoles[] = $roleMap[$roleId];
     }
 }
-
-echo "🧪 Mapped Roles: " . implode(', ', $userRoles) . "\n";
 
 // ✅ Write to DB
 try {
@@ -75,7 +67,6 @@ $pdo = new PDO('sqlite:' . __DIR__ . '/../../db/narrrf_world.sqlite');
         $stmt->execute([$discordId, $roleName]);
     }
 
-    echo "✅ Roles synced to DB for user $discordId\n";
 } catch (Exception $e) {
     http_response_code(500);
     echo "❌ DB error: " . $e->getMessage();
