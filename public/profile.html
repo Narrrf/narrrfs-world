@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   try {
     const res = await fetch('/api/user.php', { credentials: 'include' });
 
-    if (!res.ok) {
+  if (!res.ok) {
       // 🧀 Not logged in — leave the grumpy cheese + clickable login
       document.getElementById('username').innerText = 'Not Logged In';
       document.getElementById('welcome-name').innerText = 'Guest#';
@@ -268,27 +268,15 @@ document.addEventListener("DOMContentLoaded", async function () {
       document.getElementById('traits').innerText = 'Please log in';
       document.getElementById('user-roles').innerText = 'No roles synced';
       document.getElementById('wallet-address').innerText = 'Not connected';
+      
+      // Reset to default state for non-logged-in users
+      avatar.src = 'img/grumpy-cheese.png';
+      avatar.alt = 'Grumpy Guest Avatar';
+      avatar.title = 'Click to login via Discord';
+      avatar.classList.add('cursor-pointer');
+      loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
       return;
     }
-
-    // ✅ Logged in — display data
-    const user = await res.json();
-    const fullUsername = `${user.username}#${user.discriminator}`;
-
-    avatar.src = user.avatarUrl || 'img/grumpy-cheese.png';
-    avatar.alt = fullUsername;
-    avatar.title = fullUsername;
-    avatar.classList.remove('cursor-pointer');
-    loginLink.removeAttribute('href');
-
-    document.getElementById('username').innerText = fullUsername;
-    document.getElementById('welcome-name').innerText = fullUsername;
-    document.getElementById('email').innerText = user.email || 'No email provided';
-    document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
-    document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits synced';
-    document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
-    document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Not connected';
-
     // 👑 VIP Status
     const vipRes = await fetch('/api/user/roles.php');
     const vipData = await vipRes.json();
