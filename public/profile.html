@@ -330,7 +330,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // ✅ Logged in
     const user = await res.json();
-    const fullUsername = `${user.username}#${user.discriminator}`;
+  const fullUsername = user.discriminator !== "0"
+  ? `${user.username}#${user.discriminator}`
+  : user.username;
 
     avatar.src = user.avatarUrl || 'img/default-avatar.png';
     avatar.alt = fullUsername;
