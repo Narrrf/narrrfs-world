@@ -334,9 +334,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById('welcome-name').innerText = fullUsername;
     document.getElementById('email').innerText = user.email || 'No email provided';
     document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
-    document.getElementById('traits').innerText = user.traits?.join(', ') || 'Traits sync soon';
-    document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'roles synched';
-    document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'coming soon';
+    document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits synced';
+    document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
+    document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Not connected';
 
     // 👑 VIP Status + Trophy Shelf
     const vipRes = await fetch('/api/user/roles.php');
