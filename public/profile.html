@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const user = await res.json();
     const fullUsername = `${user.username}#${user.discriminator}`;
 
-    avatar.src = user.avatarUrl || 'img/default-avatar.png';
+    avatar.src = user.avatarUrl || 'img/grumpy-cheese.png';
     avatar.alt = fullUsername;
     avatar.title = fullUsername;
     avatar.classList.remove('cursor-pointer');
