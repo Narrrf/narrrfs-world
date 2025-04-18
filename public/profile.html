@@ -51,6 +51,13 @@
       font-style: italic;
       color: #fcd34d;
     }
+    @keyframes pop {
+  0% { transform: scale(0.9); opacity: 0.3; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop {
+  animation: pop 0.4s ease-out;
+}
   </style>
 </head>
 
@@ -96,8 +103,6 @@
   </a>
 </div>
 
-
-
     <!-- 📛 Username Display -->
     <h1 id="username" class="text-2xl font-bold text-yellow-300">Loading...</h1>
     <p id="email" class="text-sm text-gray-400">...</p>
@@ -120,6 +125,18 @@
     <div class="mt-6 text-yellow-400 text-sm">
       🧠 Profile powered by Cheese Architect 5.0 · Phase 2 Bridge Online
     </div>
+<!-- 🧀 Trophy Shelf Zone -->
+<section id="trophy-shelf" class="my-16 px-4">
+  <h2 class="text-center text-2xl sm:text-3xl font-extrabold text-yellow-400 mb-6 drop-shadow">
+    🏆 Role Trophy Shelf
+  </h2>
+
+  <div id="cheeseShelf" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 justify-items-center">
+    <!-- Dynamic trophies will appear here -->
+  </div>
+
+  <p class="text-center mt-6 text-xs italic text-yellow-200">Collect all the cheese pokals... or be forgotten.</p>
+</section>
   </div>
 </main>
 <!-- 🧀 Wanted Profile Card -->
@@ -244,6 +261,46 @@
       
 <!-- 🔐 Dynamic Fetch Script logged in or not -->
 <script>
+const trophies = {
+  "VIP Holder":             { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
+  "PokerOG":                { img: "img/trophy_PokerOG.png", label: "Poker OG" },
+  "Champion":               { img: "img/trophy_champion.png", label: "Champion" },
+  "Rumble":                 { img: "img/trophy_rumble.png", label: "Rumble Champ" },
+  "Engage":                 { img: "img/trophy_engage.png", label: "Engager" },
+  "Moderator":              { img: "img/trophy_moderator.png", label: "Moderator" },
+  "Server Booster":         { img: "img/trophy_serverbooster.png", label: "Server Booster" },
+  "Alpha Caller":           { img: "img/trophy_alphacaller.png", label: "Alpha Caller" },
+  "Crypto Corn Friends":    { img: "img/trophy_cryptocornfriends.png", label: "Corny Companion" },
+  "Rabbit Friends":         { img: "img/trophy_rabbitfriends.png", label: "Bunny Buddy" },
+  "Kaleido Friends":        { img: "img/trophy_kaleidofriends.png", label: "Kaleido Supporter" },
+  "Weedery Friends":        { img: "img/trophy_weederyfriends.png", label: "Weedery 🌿" },
+  "Community Member":       { img: "img/trophy_community.png", label: "Community Member" },
+  "Verifiziert":            { img: "img/trophy_verified.png", label: "Verified" },
+};
+
+function renderTrophyShelf(userRoles = []) {
+  const shelf = document.getElementById("cheeseShelf");
+  if (!shelf) return;
+
+  shelf.innerHTML = ""; // Clear shelf
+
+  const uniqueRoles = [...new Set(userRoles)];
+
+  uniqueRoles.forEach(role => {
+    const trophy = trophies[role];
+    if (trophy) {
+      const trophyEl = document.createElement("div");
+      trophyEl.className = "flex flex-col items-center animate-pop transition-transform hover:scale-105";
+
+      trophyEl.innerHTML = `
+        <img src="${trophy.img}" alt="${trophy.label}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow mb-2" />
+        <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}</span>
+      `;
+      shelf.appendChild(trophyEl);
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
   const avatar = document.getElementById('avatar');
   const loginLink = document.getElementById('login-link');
@@ -252,7 +309,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const res = await fetch('/api/user.php', { credentials: 'include' });
 
     if (!res.ok) {
-      // 🧀 Not logged in — leave the grumpy cheese + clickable login
+      // 🧀 Not logged in
       document.getElementById('username').innerText = 'Not Logged In';
       document.getElementById('welcome-name').innerText = 'Guest#';
       document.getElementById('email').innerText = 'Please log in';
@@ -263,7 +320,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-    // ✅ Logged in — display data
+    // ✅ Logged in
     const user = await res.json();
     const fullUsername = `${user.username}#${user.discriminator}`;
 
@@ -271,8 +328,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     avatar.alt = fullUsername;
     avatar.title = fullUsername;
     avatar.classList.remove('cursor-pointer');
-
-    // 🔒 Remove login href
     loginLink.removeAttribute('href');
 
     document.getElementById('username').innerText = fullUsername;
@@ -283,10 +338,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
     document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Not connected';
 
-    // 👑 VIP Status
+    // 👑 VIP Status + Trophy Shelf
     const vipRes = await fetch('/api/user/roles.php');
     const vipData = await vipRes.json();
     const roles = vipData.roles || [];
+
+    renderTrophyShelf(roles);
 
     if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
       document.getElementById('goldenCheeseGate').classList.remove('hidden');
@@ -299,7 +356,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 });
 </script>
-
 
 </body>
 </html>
