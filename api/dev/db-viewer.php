@@ -1,6 +1,6 @@
 <?php
 // 🧠 SQL Junior 5.0 – Live Table Viewer
-$path = "C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite";
+$path = __DIR__ . '/../../db/narrrf_world.sqlite';
 
 try {
     $pdo = new PDO("sqlite:$path");
