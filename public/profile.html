@@ -83,17 +83,17 @@
       Welcome back, <span id="welcome-name">loading...</span>
     </p>
 
-<!-- 🖼️ User Avatar or Discord Login -->
+<!-- 👤 Avatar Login or Display -->
 <div class="w-24 h-24 mx-auto mb-4">
-  <a id="login-link"
-     href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read">
+  <a id="login-link" href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read">
     <img id="avatar"
          class="rounded-full border-4 border-yellow-500 shadow animate-bounce cursor-pointer transition hover:scale-105"
          src="img/grumpy-cheese.png"
-         alt="Guest Avatar"
+         alt="Grumpy Guest Avatar"
          title="Click to Login"
          width="96"
-         height="96" />
+         height="96"
+    />
   </a>
 </div>
 
@@ -243,51 +243,59 @@
       </div>
       
 <!-- 🔐 Dynamic Fetch Script -->
+<!-- 🔐 Dynamic Fetch Script -->
 <script>
 async function loadProfile() {
   try {
     const res = await fetch('/api/user.php', { credentials: 'include' });
 
+    const avatar = document.getElementById('avatar');
+    const loginLink = document.getElementById('login-link');
+
     if (!res.ok) {
-      // Not logged in – leave the default grumpy-cheese and login href
+      // Not logged in – show grumpy avatar and set login URL
+      avatar.src = 'img/grumpy-cheese.png';
+      avatar.alt = 'Grumpy Guest Avatar';
+      avatar.title = 'Click to login via Discord';
+      loginLink.href = 'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read';
+
+      // Display guest placeholder text
       document.getElementById('username').innerText = 'Not Logged In';
       document.getElementById('welcome-name').innerText = 'Guest#';
       document.getElementById('email').innerText = 'Please log in';
       document.getElementById('guilds').innerText = 'No guild data';
       document.getElementById('traits').innerText = 'Please log in';
-      document.getElementById('user-roles').innerText = 'Please log in';
-      document.getElementById('wallet-address').innerText = 'Please log in';
+      document.getElementById('user-roles').innerText = 'No roles synced';
+      document.getElementById('wallet-address').innerText = 'Not connected';
       return;
     }
 
-    // Logged in – replace avatar and disable login link
+    // ✅ Logged in: fetch user info
     const user = await res.json();
     const fullUsername = `${user.username}#${user.discriminator}`;
 
-    const avatar = document.getElementById('avatar');
     avatar.src = user.avatarUrl || 'img/default-avatar.png';
     avatar.alt = 'User Avatar';
-    avatar.title = 'Your Avatar';
-    avatar.classList.remove('cursor-pointer', 'hover:scale-105');
+    avatar.title = fullUsername;
 
-    const loginLink = document.getElementById('login-link');
-    loginLink.removeAttribute('href'); // disable click
+    // Disable login link once logged in
+    loginLink.removeAttribute('href');
+    avatar.classList.remove('cursor-pointer');
 
+    // Update UI with user data
     document.getElementById('username').innerText = fullUsername;
     document.getElementById('welcome-name').innerText = fullUsername;
     document.getElementById('email').innerText = user.email || 'No email provided';
     document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
     document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits synced';
     document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
-    document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'not connected';
+    document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Not connected';
 
   } catch (e) {
     console.error('Profile fetch failed', e);
   }
 }
-
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadProfile();
+document.addEventListener("DOMContentLoaded", loadProfile);
 
   // Show golden cheese or joke
   try {
