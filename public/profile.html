@@ -251,17 +251,24 @@ document.addEventListener("DOMContentLoaded", async function () {
   try {
     const res = await fetch('/api/user.php', { credentials: 'include' });
 
-    if (!res.ok) {
-      // 🧀 Not logged in — leave the grumpy cheese + clickable login
-      document.getElementById('username').innerText = 'Not Logged In';
-      document.getElementById('welcome-name').innerText = 'Guest#';
-      document.getElementById('email').innerText = 'Please log in';
-      document.getElementById('guilds').innerText = 'No guild data';
-      document.getElementById('traits').innerText = 'Please log in';
-      document.getElementById('user-roles').innerText = 'No roles synced';
-      document.getElementById('wallet-address').innerText = 'Not connected';
-      return;
-    }
+  if (!res.ok) {
+    // 🧀 Not logged in — leave the grumpy cheese + clickable login
+    document.getElementById('username').innerText = 'Not Logged In';
+    document.getElementById('welcome-name').innerText = 'Guest#';
+    document.getElementById('email').innerText = 'Please log in';
+    document.getElementById('guilds').innerText = 'No guild data';
+    document.getElementById('traits').innerText = 'Please log in';
+    document.getElementById('user-roles').innerText = 'No roles synced';
+    document.getElementById('wallet-address').innerText = 'Not connected';
+    
+    // Ensure login link is clickable for non-logged-in users
+    loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+    avatar.src = 'img/grumpy-cheese.png';
+    avatar.alt = 'Grumpy Guest Avatar';
+    avatar.title = 'Click to login via Discord';
+    avatar.classList.add('cursor-pointer');
+    return;
+  } 
 
     // ✅ Logged in — display data
     const user = await res.json();
