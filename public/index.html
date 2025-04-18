@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Meta Essentials -->
+  <!-- 🌐 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Narrrf’s World: The Future of Web3 and Web2 Integration" />
@@ -9,14 +9,14 @@
   <meta name="robots" content="index, follow" />
   <title>Welcome to Narrrf's World – Genesis 2.0 Portal</title>
 
-  <!-- Favicon & Metadata -->
+  <!-- 🧀 Favicon & Browser Metadata -->
   <link rel="icon" href="img/favicon-phantom.png" type="image/png" />
   <link rel="shortcut icon" href="img/favicon-browser.png" type="image/png" />
   <meta name="theme-color" content="#facc15" />
   <meta name="msapplication-TileColor" content="#facc15" />
   <meta name="msapplication-TileImage" content="img/favicon2.png" />
-  
-  <!-- Open Graph & Twitter Metadata -->
+
+  <!-- 📣 Open Graph & Twitter Share Metadata -->
   <meta property="og:title" content="Narrrf's World – Genesis 2.0" />
   <meta property="og:description" content="Explore, mint, and shape the future of Narrrf’s World." />
   <meta property="og:image" content="img/narrrfs_world_logo.png" />
@@ -25,13 +25,12 @@
   <meta name="twitter:title" content="Narrrf's World – Genesis 2.0" />
   <meta name="twitter:description" content="Join the chaos and mint your future." />
   <meta name="twitter:image" content="img/narrrfs_world_logo.png" />
-  
-  <!-- Tailwind CSS for Styling -->
+
+  <!-- 🎨 Tailwind CSS Integration -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Lab Animations & Custom Styles -->
+  <!-- ✨ Portal UI Glow Animations -->
   <style>
-    /* Add animations for bubbles and glowing effects for the lab */
     @keyframes labGlow {
       0% { transform: scale(1); opacity: 0.8; }
       100% { transform: scale(1.1); opacity: 1; }
@@ -40,10 +39,9 @@
       animation: labGlow 2s infinite;
     }
 
-    /* Custom colors for the portal theme */
     :root {
-      --primary-color: #f472b6; /* Pink */
-      --secondary-color: #3b82f6; /* Blue */
+      --primary-color: #f472b6; /* Portal Pink */
+      --secondary-color: #3b82f6; /* Portal Blue */
     }
   </style>
 </head>
@@ -179,39 +177,40 @@
 </a>
 -->
 
+<!-- 🔔 Pre-Launch Banner -->
+<div class="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-800 text-sm text-center py-2 px-4 font-semibold shadow-md z-50">
+  🚧 Narrrf’s World is in PRE-LAUNCH — Final tweaks underway. You’re early, fren 🧠🧪
+</div>
 
-  <!-- 🔔 Pre-Launch Banner -->
-  <div class="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-800 text-sm text-center py-2 px-4 font-semibold shadow-md z-50">
-    🚧 Narrrf’s World is in PRE-LAUNCH — Final tweaks underway. You’re early, fren 🧠🧪
+<!-- ✅ Spacer for banner offset -->
+<div class="pt-10"></div>
+
+<!-- 🔧 Navigation Bar -->
+<header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-40 w-full">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
+    <nav class="space-x-3 text-sm md:text-base flex items-center flex-wrap justify-end">
+      <a href="index.html" class="text-pink-400 font-semibold">Home</a>
+      <a href="mint.html" class="hover:text-pink-400">Mint</a>
+      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
+      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
+      <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
+      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+      <button id="top-connect-wallet-btn" onclick="connectWallet()" class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
+        🔌 Connect
+      </button>
+      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
+    </nav>
   </div>
+</header>
 
-  <!-- ✅ Spacer to push nav down below the banner -->
-  <div class="pt-10"></div>
-
-  <!-- 🔧 Navigation Bar -->
-  <header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-40 w-full">
-    <div class="max-w-6xl mx-auto flex justify-between items-center">
-      <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
-      <nav class="space-x-4 text-sm md:text-base flex items-center">
-        <a href="index.html" class="text-pink-400 font-semibold">Home</a>
-        <a href="mint.html" class="hover:text-pink-400">Mint</a>
-        <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
-        <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
-        <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
-        <a href="faq.html" class="hover:text-pink-400">FAQ</a>
-        <button id="top-connect-wallet-btn" onclick="connectWallet()" class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">🔌 Connect</button>
-        <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
-      </nav>
-    </div>
-  </header>
-
-<!-- Hero Header with Lab Bottle -->
-<header class="relative py-12 bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 overflow-hidden">
+<!-- 🎨 Hero Section: Bottle + CTA -->
+<section class="relative py-12 bg-gradient-to-br from-pink-200 to-purple-300 text-gray-900 overflow-hidden">
   <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center md:justify-start px-6 relative z-10">
 
-    <!-- Bouncing, Glowing Lab Bottle -->
-    <div class="relative mr-6 md:mr-10 animate-bounce-slow">
-      <img src="https://narrrfs.world/img/lab-bottle4.png" alt="Lab Bottle" class="w-28 md:w-36 transform rotate-[8deg] drop-shadow-[0_0_15px_#00ff88]" />
+    <!-- 🍾 Bouncing Lab Bottle -->
+    <div class="relative mr-0 md:mr-10 animate-bounce-slow mb-6 md:mb-0">
+      <img src="img/lab-bottle4.png" alt="Lab Bottle" class="w-24 md:w-36 rotate-[8deg] drop-shadow-[0_0_15px_#00ff88]" />
       <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div class="absolute w-3 h-3 bg-green-400 rounded-full blur-md animate-bubble1"></div>
         <div class="absolute w-4 h-4 bg-green-300 rounded-full blur-sm animate-bubble2"></div>
@@ -219,98 +218,49 @@
       </div>
     </div>
 
-<!-- Hero Text -->
-<div class="text-center md:text-left">
-  <h1 class="text-5xl font-extrabold mb-4">Narrrf's World</h1>
-  <p class="text-lg max-w-xl">
-    Let's leave the matrix... and take over Web3. A cartoon-chaotic Web3 universe powered by NFTs, poker, and pure community.
-  </p>
-  
-  <!-- Button Section -->
-  <div class="mt-6 flex flex-wrap justify-center md:justify-start gap-4">
-    
-    <!-- 🧠 Discord Login + VIP Cheese Reveal -->
-    <div class="mt-8 text-center md:text-left" id="discordLoginSection">
-      <!-- Updated Discord OAuth2 Login URL -->
-<!-- Discord Login Button in index.html -->
-<a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
-   class="inline-block bg-indigo-600 text-white font-bold py-2 px-5 rounded-xl shadow hover:bg-indigo-700 transition">
-  🔐 Login with Discord
-</a>
-
-<!-- VIP Golden Cheese Gate -->
-<div id="goldenCheeseGate" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 font-bold rounded-xl shadow-lg animate-pulse">
-  <img src="img/big-cheese.svg" class="w-8 h-8 inline mr-2" alt="Big Cheese" />
-  Welcome, VIP! You found the Golden Cheese 🧀
-</div>
-
-<!-- No VIP Role Joke -->
-<div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
-  😅 You’re logged in, but... no VIP pass? That’s nacho cheese!
-</div>
-
-    
-    <!-- Other Buttons -->
-    <a href="https://discord.gg/DJeCUkNj" target="_blank" class="bg-pink-600 text-white px-6 py-2 rounded-2xl shadow hover:bg-pink-700 transition">Join Discord</a>
-    <a href="mint.html" class="bg-white border border-pink-600 text-pink-600 px-6 py-2 rounded-2xl shadow hover:bg-pink-100 transition">Mint Now</a>
-    <a href="whitepaper.html" class="bg-purple-700 text-white px-6 py-2 rounded-2xl shadow hover:bg-purple-800 transition">📜 Whitepaper</a>
-  </div>
-</div>
-</div>
-</header>
-
-<!-- Bubble Animations -->
-
-
-<style>
-  @keyframes bounce-slow {
-    0%, 100% { transform: translateY(0) rotate(8deg); }
-    50% { transform: translateY(-10px) rotate(8deg); }
-  }
-
-  @keyframes bubble1 {
-    0% { transform: translateY(0) scale(1); opacity: 0.8; }
-    100% { transform: translateY(-60px) scale(1.3); opacity: 0; }
-  }
-
-  @keyframes bubble2 {
-    0% { transform: translateY(0) scale(0.9); opacity: 0.7; }
-    100% { transform: translateY(-50px) scale(1.1); opacity: 0; }
-  }
-
-  @keyframes bubble3 {
-    0% { transform: translateY(0) scale(1); opacity: 0.6; }
-    100% { transform: translateY(-70px) scale(1.2); opacity: 0; }
-  }
-
-  .animate-bounce-slow {
-    animation: bounce-slow 3s ease-in-out infinite;
-  }
-
-  .animate-bubble1 {
-    animation: bubble1 4s ease-in-out infinite;
-    left: 10px; top: 20px;
-  }
-
-  .animate-bubble2 {
-    animation: bubble2 5s ease-in-out infinite;
-    left: 25px; top: 30px;
-  }
-
-  .animate-bubble3 {
-    animation: bubble3 3.5s ease-in-out infinite;
-    left: 18px; top: 15px;
-  }
-</style>
-
-
-  <!-- What is Narrrf's World -->
-  <section class="bg-white py-16 px-6">
-    <div class="max-w-4xl mx-auto">
-      <h2 class="text-3xl font-bold mb-4 text-center">What is Narrrf's World?</h2>
-      <p class="text-md text-center mb-8">
-        A reimagined Pinky-and-the-Brain styled NFT world — wild, smart, and slightly chaotic genius. Collect NFTs, earn tokens, play games, own land, and stake your way to the top.
+    <!-- 🔥 Hero Copy + CTA -->
+    <div class="text-center md:text-left">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-4">Narrrf's World</h1>
+      <p class="text-base md:text-lg max-w-xl">
+        Let’s leave the matrix... and take over Web3. A cartoon-chaotic Web3 universe powered by NFTs, poker, and pure community.
       </p>
+
+ <!-- 🎮 CTA Buttons -->
+<div class="mt-6 flex flex-col sm:flex-row gap-3 flex-wrap justify-center md:justify-start">
+
+  <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
+     class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-xl shadow text-center">
+    🔐 Login with Discord
+  </a>
+
+  <a href="https://discord.gg/DJeCUkNj" target="_blank"
+     class="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-2xl shadow text-center">
+    Join Discord
+  </a>
+
+  <a href="mint.html"
+     class="bg-white border border-pink-600 text-pink-600 px-6 py-2 rounded-2xl shadow hover:bg-pink-100 transition text-center">
+    Mint Now
+  </a>
+
+  <a href="whitepaper.html"
+     class="bg-purple-700 hover:bg-purple-800 text-white px-6 py-2 rounded-2xl shadow transition text-center">
+    📜 Whitepaper
+  </a>
+
+</div>
+</div>
+</div>
+</section>
+
+<!-- 🌍 What is Narrrf's World -->
+<section class="bg-white py-16 px-6">
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-3xl font-bold mb-4 text-center">What is Narrrf's World?</h2>
+    <p class="text-md text-center mb-8">
+      A reimagined Pinky-and-the-Brain styled NFT world — wild, smart, and slightly chaotic genius. Collect NFTs, earn tokens, play games, own land, and stake your way to the top.
+    </p>
+
       <div class="grid md:grid-cols-2 gap-6">
         <div class="bg-pink-100 p-4 rounded-2xl shadow">
           <h3 class="text-xl font-bold">🎴 Collect NFTs</h3>
@@ -335,8 +285,6 @@
 <!-- 🗺️ Roadmap Section: The Takeover Plan -->
 
 <section id="roadmap" class="relative bg-gradient-to-b from-purple-100 to-white py-16 px-6">
-
-
 
   <!-- 🔍 Dev Note: This entire section is where the cheese eggs bounce around.
        ✅ VERY IMPORTANT: class="relative" keeps all egg positions locked inside here.
