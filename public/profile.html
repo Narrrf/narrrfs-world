@@ -229,8 +229,8 @@
   </a>
 </div>
   
-  <!-- 🌀 Cheese Portal to Hytopia -->
-div class="mt-10 text-center">
+<!-- 🌀 Cheese Portal to Hytopia -->
+<div class="mt-10 text-center">
   <a href="/hytopia.html" class="group inline-block relative" title="🧀 Hytopia portal is closed... for now.">
     <div class="relative p-4 rounded-full bg-yellow-300/90 hover:bg-yellow-400 transition-all duration-300 shadow-2xl animate-pulse">
       <img src="img/cheese-portal.png" alt="Enter Hytopia" class="w-24 h-24 sm:w-32 sm:h-32 mx-auto group-hover:scale-105 transition-transform duration-300 drop-shadow-lg" />
@@ -244,10 +244,17 @@ div class="mt-10 text-center">
 </div>
       
 <!-- 🔐 Dynamic Fetch Script logged in or not -->
-script>
+<script>
 document.addEventListener("DOMContentLoaded", async function () {
   const avatar = document.getElementById('avatar');
   const loginLink = document.getElementById('login-link');
+
+  // Set default state first
+  avatar.src = 'img/grumpy-cheese.png';
+  avatar.alt = 'Grumpy Guest Avatar';
+  avatar.title = 'Click to login via Discord';
+  avatar.classList.add('cursor-pointer');
+  loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
 
   try {
     const res = await fetch('/api/user.php', { credentials: 'include' });
@@ -261,13 +268,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       document.getElementById('traits').innerText = 'Please log in';
       document.getElementById('user-roles').innerText = 'No roles synced';
       document.getElementById('wallet-address').innerText = 'Not connected';
-      
-      // Reset to default state for non-logged-in users
-      avatar.src = 'img/grumpy-cheese.png';
-      avatar.alt = 'Grumpy Guest Avatar';
-      avatar.title = 'Click to login via Discord';
-      avatar.classList.add('cursor-pointer');
-      loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
       return;
     }
 
@@ -307,4 +307,4 @@ document.addEventListener("DOMContentLoaded", async function () {
 </script>
 
 </body>
-</html>
+</html> 
