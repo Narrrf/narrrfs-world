@@ -242,8 +242,7 @@
         </div>
       </div>
       
-<!-- 🔐 Dynamic Fetch Script -->
-<!-- 🔐 Dynamic Fetch Script -->
+<!-- 🔐 Dynamic Fetch Script logged in or not -->
 <script>
 async function loadProfile() {
   try {
@@ -253,13 +252,12 @@ async function loadProfile() {
     const loginLink = document.getElementById('login-link');
 
     if (!res.ok) {
-      // Not logged in – show grumpy avatar and set login URL
+      // Not logged in
       avatar.src = 'img/grumpy-cheese.png';
       avatar.alt = 'Grumpy Guest Avatar';
       avatar.title = 'Click to login via Discord';
       loginLink.href = 'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read';
 
-      // Display guest placeholder text
       document.getElementById('username').innerText = 'Not Logged In';
       document.getElementById('welcome-name').innerText = 'Guest#';
       document.getElementById('email').innerText = 'Please log in';
@@ -270,7 +268,7 @@ async function loadProfile() {
       return;
     }
 
-    // ✅ Logged in: fetch user info
+    // Logged in
     const user = await res.json();
     const fullUsername = `${user.username}#${user.discriminator}`;
 
@@ -278,11 +276,9 @@ async function loadProfile() {
     avatar.alt = 'User Avatar';
     avatar.title = fullUsername;
 
-    // Disable login link once logged in
     loginLink.removeAttribute('href');
     avatar.classList.remove('cursor-pointer');
 
-    // Update UI with user data
     document.getElementById('username').innerText = fullUsername;
     document.getElementById('welcome-name').innerText = fullUsername;
     document.getElementById('email').innerText = user.email || 'No email provided';
@@ -291,27 +287,28 @@ async function loadProfile() {
     document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
     document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Not connected';
 
+    // 🧀 Golden Cheese Role Gate Check
+    try {
+      const roleRes = await fetch('/api/user/roles.php');
+      const roleData = await roleRes.json();
+      const roles = roleData.roles || [];
+
+      if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
+        document.getElementById('goldenCheeseGate').classList.remove('hidden');
+      } else {
+        document.getElementById('noCheeseJoke').classList.remove('hidden');
+      }
+    } catch (err) {
+      console.error("Role check failed:", err);
+    }
+
   } catch (e) {
     console.error('Profile fetch failed', e);
   }
 }
+
 document.addEventListener("DOMContentLoaded", loadProfile);
-
-  // Show golden cheese or joke
-  try {
-    const res = await fetch('/api/user/roles.php');
-    const data = await res.json();
-    const roles = data.roles || [];
-
-    if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
-      document.getElementById('goldenCheeseGate').classList.remove('hidden');
-    } else {
-      document.getElementById('noCheeseJoke').classList.remove('hidden');
-    }
-  } catch (err) {
-    console.error('Role check failed:', err);
-  }
-});
 </script>
+
 </body>
 </html>
