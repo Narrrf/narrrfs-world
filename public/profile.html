@@ -83,8 +83,17 @@
       Welcome back, <span id="welcome-name">loading...</span>
     </p>
 
-    <!-- 🖼️ User Avatar -->
-    <img id="avatar" class="w-24 h-24 mx-auto rounded-full border-4 border-yellow-500 shadow mb-4 animate-bounce" src="" alt="User Avatar" />
+<!-- 🖼️ User Avatar or Discord Login -->
+<div class="w-24 h-24 mx-auto mb-4">
+  <a id="login-link" href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read">
+    <img id="avatar" 
+         class="rounded-full border-4 border-yellow-500 shadow animate-bounce cursor-pointer"
+         src="img/discord-login.png" 
+         alt="Login with Discord" 
+         title="Login with Discord"/>
+  </a>
+</div>
+
 
     <!-- 📛 Username Display -->
     <h1 id="username" class="text-2xl font-bold text-yellow-300">Loading...</h1>
