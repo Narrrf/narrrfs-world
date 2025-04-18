@@ -246,10 +246,19 @@
 async function loadProfile() {
   try {
     const res = await fetch('/api/user.php', { credentials: 'include' });
+
     if (!res.ok) {
-      // User is not logged in, keep Discord login image and link
+      // Not logged in: show grumpy cheese and login link
+      const avatar = document.getElementById('avatar');
+      const loginLink = document.getElementById('login-link');
+
+      avatar.src = 'img/grumpy-cheese.png';
+      avatar.alt = 'Grumpy Cheese – Login';
+      avatar.title = 'Click to sync profile via Discord';
+      loginLink.href = 'https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read';
+
       document.getElementById('username').innerText = 'Not Logged In';
-      document.getElementById('welcome-name').innerText = 'Guest';
+      document.getElementById('welcome-name').innerText = 'Guest#';
       document.getElementById('email').innerText = 'Please log in';
       document.getElementById('guilds').innerText = 'No guild data';
       document.getElementById('traits').innerText = 'Please log in';
@@ -258,19 +267,20 @@ async function loadProfile() {
       return;
     }
 
+    // Logged in: remove link, show real user
     const user = await res.json();
     const fullUsername = `${user.username}#${user.discriminator}`;
-
-    // Set actual user avatar once logged in
-    document.getElementById('avatar').src = user.avatarUrl || 'img/default-avatar.png';
-    document.getElementById('avatar').alt = 'User Avatar';
-    document.getElementById('avatar').title = 'Your Avatar';
     
-    // Remove login link behavior once logged in
-    document.getElementById('login-link').removeAttribute('href');
-    document.getElementById('avatar').classList.remove('cursor-pointer');
+    const avatar = document.getElementById('avatar');
+    avatar.src = user.avatarUrl || 'img/default-avatar.png';
+    avatar.alt = 'User Avatar';
+    avatar.title = 'Your Avatar';
 
-    // Populate profile fields
+    const loginLink = document.getElementById('login-link');
+    loginLink.removeAttribute('href');
+
+    avatar.classList.remove('cursor-pointer');
+
     document.getElementById('username').innerText = fullUsername;
     document.getElementById('welcome-name').innerText = fullUsername;
     document.getElementById('email').innerText = user.email || 'No email provided';
@@ -286,7 +296,8 @@ async function loadProfile() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  loadProfile();
+  await loadProfile();
+
   try {
     const res = await fetch('/api/user/roles.php');
     const data = await res.json();
