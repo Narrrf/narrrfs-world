@@ -3,97 +3,104 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🧠 Enter Hytopia Portal</title>
+  <title>🚀 Enter Hytopia – Onion Bridge Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" href="img/cheese-portal.png" type="image/png" />
   <meta name="theme-color" content="#fcd34d">
-
   <style>
     body {
       background: radial-gradient(circle at center, #fff9ec 0%, #ffe4e6 100%);
     }
-    .cheese-glow {
-      box-shadow: 0 0 25px rgba(253, 230, 138, 0.8);
+    .portal-glow {
+      box-shadow: 0 0 40px rgba(253, 230, 138, 0.8);
     }
-    .bubble {
-      animation: float 6s ease-in-out infinite;
+    .float-bubble {
+      animation: float 5s ease-in-out infinite;
     }
     @keyframes float {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
+      50% { transform: translateY(-15px); }
+    }
+    .flash-info {
+      animation: flash 2.5s ease-in-out infinite alternate;
+    }
+    @keyframes flash {
+      from { opacity: 0.4; }
+      to { opacity: 1; }
     }
   </style>
 </head>
 
-<body class="font-sans text-gray-800">
+<body class="font-sans text-gray-800 relative">
 
-  <!-- Header -->
-  <header class="text-center py-10 bg-yellow-100 border-b-4 border-yellow-300 shadow-inner">
-    <h1 class="text-4xl font-extrabold text-yellow-700">🧀 Hytopia Portal</h1>
-    <p class="text-md mt-2 text-yellow-900 italic">Welcome to the most experimental lab space in the voxelverse!</p>
+  <!-- Header with enhanced visuals -->
+  <header class="text-center py-10 bg-yellow-200 border-b-4 border-yellow-400 shadow-inner">
+    <h1 class="text-4xl md:text-5xl font-extrabold text-yellow-700 portal-glow">🌌 Hytopia Portal: Onion Bridge Edition 🌌</h1>
+    <p class="text-lg mt-3 text-yellow-900 italic">Blending dimensions, traits, roles & riddles in an experimental onion-layered universe.</p>
   </header>
 
-  <!-- Section: Highlights -->
-  <section class="max-w-4xl mx-auto px-6 py-16 space-y-12">
+  <!-- Interactive Portal Section -->
+  <section class="max-w-5xl mx-auto px-6 py-16 space-y-14">
 
     <div class="text-center">
-      <img src="img/cheese-portal.png" alt="Cheese Portal" class="mx-auto w-24 md:w-32 cheese-glow animate-pulse bubble">
-      <h2 class="text-2xl font-bold mt-6 text-yellow-700">🚀 What's New in HYTOPIA?</h2>
-      <p class="text-gray-700 max-w-xl mx-auto mt-3">Hytopia is more than a game engine—it's a creator’s sandbox powered by AI, voxel chaos, and JavaScript-friendly magic. 🍄</p>
+      <img src="img/cheese-portal.png" alt="Cheese Portal" class="mx-auto w-32 md:w-40 portal-glow float-bubble animate-pulse">
+      <h2 class="text-3xl font-bold mt-8 text-yellow-700">🚀 Unveil the Future of Gaming & Community</h2>
+      <p class="text-gray-700 max-w-2xl mx-auto mt-4">Step through this portal to discover the groundbreaking Hytopia ecosystem, now fully integrated with our Onion-Bridge role synchronization and trait-based puzzles.</p>
     </div>
 
-    <!-- Highlights -->
+    <!-- Dimensional Info Flashing Cards -->
     <div class="grid md:grid-cols-2 gap-8">
 
-      <div class="bg-pink-50 p-6 rounded-xl shadow">
-        <h3 class="text-xl font-bold text-pink-700 mb-2">🎮 Game Jam 2</h3>
-        <p>Freestyle mini-game building with $5,000 in prizes and AI-powered game logic. No coding experience required!</p>
-        <a href="https://gamejam.hytopia.com" target="_blank" class="inline-block mt-3 text-sm text-pink-600 underline">Sign up →</a>
+      <div class="bg-pink-100 p-6 rounded-xl shadow flash-info">
+        <h3 class="text-xl font-bold text-pink-800 mb-2">🌌 Dimensional Role Sync</h3>
+        <p>Imagine synchronizing HYTOPIA game roles with your Discord and Web3 wallet roles seamlessly. Unlock dimensions by simply playing.</p>
       </div>
 
-      <div class="bg-purple-50 p-6 rounded-xl shadow">
-        <h3 class="text-xl font-bold text-purple-700 mb-2">🤖 MCP Server</h3>
-        <p>HYTOPIA’s Model Context Protocol breaks complex features into pieces AI can handle. Build faster, smarter, and with less friction.</p>
+      <div class="bg-purple-100 p-6 rounded-xl shadow flash-info delay-200">
+        <h3 class="text-xl font-bold text-purple-800 mb-2">🧩 Trait-Integrated Puzzles</h3>
+        <p>Solve puzzles in-game based on your NFT traits. Every trait in your wallet could unlock hidden portals or special powers.</p>
       </div>
 
-      <div class="bg-blue-50 p-6 rounded-xl shadow">
-        <h3 class="text-xl font-bold text-blue-700 mb-2">📱 Mobile-First Ready</h3>
-        <p>Auto guest login, smooth device syncing, and SDK tools to launch on phones and tablets.</p>
-        <a href="https://dev.hytopia.com/sdk-guides/mobile" target="_blank" class="inline-block mt-3 text-sm text-blue-600 underline">View Mobile Docs →</a>
+      <div class="bg-yellow-100 p-6 rounded-xl shadow flash-info delay-300">
+        <h3 class="text-xl font-bold text-yellow-800 mb-2">🤖 AI-Driven Gameplay</h3>
+        <p>Utilize HYTOPIA's AI to craft complex game mechanics instantly—no prior coding experience required.</p>
       </div>
 
-      <div class="bg-green-50 p-6 rounded-xl shadow">
-        <h3 class="text-xl font-bold text-green-700 mb-2">🌍 Minecraft Map Importer</h3>
-        <p>Bring your legacy Minecraft builds to life inside HYTOPIA using one-click world converters. Respect the past, build the future.</p>
+      <div class="bg-green-100 p-6 rounded-xl shadow flash-info delay-500">
+        <h3 class="text-xl font-bold text-green-800 mb-2">📱 Mobile & Desktop Unity</h3>
+        <p>Play and create seamlessly across mobile and desktop. Synchronize your gaming experience without interruption.</p>
       </div>
 
     </div>
 
-    <!-- Community Section -->
-    <div class="bg-yellow-50 border-l-4 border-yellow-300 p-6 rounded-xl shadow">
-      <h3 class="text-xl font-bold text-yellow-800 mb-2">🎓 Hytopia Vision</h3>
-      <p class="text-sm text-gray-700">“We're not just slapping NFTs on broken systems. HYTOPIA stress-tests every token, node, and tool for long-term balance.” — ArkDev</p>
+    <!-- Lab Teasers -->
+    <div class="bg-indigo-100 border-l-4 border-indigo-300 p-6 rounded-xl shadow">
+      <h3 class="text-2xl font-bold text-indigo-800 mb-3">🧠 Why Onion Bridge?</h3>
+      <p class="text-sm text-gray-700">“We are building the future of Web3 integrated gaming: combining HYTOPIA’s dynamic voxel environments with our unique Onion-layered roles, NFTs, and Discord-driven logic. It’s not just gaming—it’s a fully immersive community experience.” — Masterchiefe</p>
       <ul class="list-disc list-inside mt-4 text-sm text-gray-700 space-y-1">
-        <li>Fair 40% revenue share for creators (vs. Roblox ~20%)</li>
-        <li>Code in HTML/CSS/JS — no walled garden toolkits</li>
-        <li>Claude-powered AI collaboration & generation</li>
-        <li>Voxel performance on mobile with 1000x1000 worlds</li>
+        <li>Full dimensional synchronization (game, Discord, blockchain)</li>
+        <li>Trait-based gameplay puzzles & unlockable areas</li>
+        <li>Interactive role & NFT-based UI elements in-game</li>
+        <li>AI-supported coding & development tools</li>
       </ul>
     </div>
 
-    <!-- CTA Footer -->
-    <div class="text-center mt-12">
-      <p class="text-md italic text-gray-600 mb-2">The portal isn’t fully open... yet.</p>
-      <a href="https://discord.com/invite/hytopia" class="inline-block bg-pink-600 text-white py-2 px-6 rounded-full shadow hover:bg-pink-700 transition">
-        🧠 Join the HYTOPIA Discord
+    <!-- Call to Action Section -->
+    <div class="text-center mt-16 space-y-6">
+      <p class="text-lg italic text-gray-600">Portal activation is imminent. Prepare your wallet & Discord roles for maximum sync!</p>
+      <a href="https://discord.com/invite/hytopia" class="inline-block bg-pink-600 text-white py-2 px-6 rounded-full shadow-lg hover:bg-pink-700 transition transform hover:scale-105">
+        🧠 Join the HYTOPIA Discord & Prepare
+      </a>
+      <a href="/profile.html" class="inline-block ml-4 bg-purple-600 text-white py-2 px-6 rounded-full shadow-lg hover:bg-purple-700 transition transform hover:scale-105">
+        🔗 Sync your Profile
       </a>
     </div>
 
   </section>
 
   <!-- Footer -->
-  <footer class="text-center py-6 text-sm text-yellow-800 bg-yellow-50 mt-16">
-    Powered by 🧀 Cheese Architect & Narrrf Labs · Hytopia Portal v0.9 Alpha
+  <footer class="text-center py-8 text-sm text-yellow-900 bg-yellow-100 mt-20 border-t-4 border-yellow-300">
+    Built by 🧀 Cheese Architect & Narrrf Labs | HYTOPIA Portal Integration Alpha
   </footer>
 
 </body>
