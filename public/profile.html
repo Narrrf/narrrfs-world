@@ -83,18 +83,20 @@
       Welcome back, <span id="welcome-name">loading...</span>
     </p>
 
-<!-- 🖼️ User Avatar or Discord Login -->
+<!-- 👤 Avatar Login or Display -->
 <div class="w-24 h-24 mx-auto mb-4">
   <a id="login-link" href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read">
     <img id="avatar"
          class="rounded-full border-4 border-yellow-500 shadow animate-bounce cursor-pointer transition hover:scale-105"
          src="img/grumpy-cheese.png"
          alt="Grumpy Guest Avatar"
-         title="Click to login via Discord"
+         title="Click to Login"
          width="96"
-         height="96" />
+         height="96"
+    />
   </a>
 </div>
+
 
     <!-- 📛 Username Display -->
     <h1 id="username" class="text-2xl font-bold text-yellow-300">Loading...</h1>
@@ -229,7 +231,7 @@
   </a>
 </div>
   
-<!-- 🌀 Cheese Portal to Hytopia -->
+  <!-- 🌀 Cheese Portal to Hytopia -->
 <div class="mt-10 text-center">
   <a href="/hytopia.html" class="group inline-block relative" title="🧀 Hytopia portal is closed... for now.">
     <div class="relative p-4 rounded-full bg-yellow-300/90 hover:bg-yellow-400 transition-all duration-300 shadow-2xl animate-pulse">
@@ -239,28 +241,25 @@
           🧀 Portal Closed · Opening Soon!
         </div>
       </div>
-    </div>
-  </a>
-</div>
       
-<!-- 🔐 Dynamic Fetch Script logged in or not -->
+<!-- 🔐 Dynamic Fetch Script -->
+<!-- 🔐 Dynamic Fetch Script -->
 <script>
-document.addEventListener("DOMContentLoaded", async function () {
-  const avatar = document.getElementById('avatar');
-  const loginLink = document.getElementById('login-link');
-
-  // Set default state first
-  avatar.src = 'img/grumpy-cheese.png';
-  avatar.alt = 'Grumpy Guest Avatar';
-  avatar.title = 'Click to login via Discord';
-  avatar.classList.add('cursor-pointer');
-  loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
-
+async function loadProfile() {
   try {
     const res = await fetch('/api/user.php', { credentials: 'include' });
 
+    const avatar = document.getElementById('avatar');
+    const loginLink = document.getElementById('login-link');
+
     if (!res.ok) {
-      // 🧀 Not logged in — leave the grumpy cheese + clickable login
+      // Not logged in – show grumpy avatar and set login URL
+      avatar.src = 'img/grumpy-cheese.png';
+      avatar.alt = 'Grumpy Guest Avatar';
+      avatar.title = 'Click to login via Discord';
+      loginLink.href = 'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read';
+
+      // Display guest placeholder text
       document.getElementById('username').innerText = 'Not Logged In';
       document.getElementById('welcome-name').innerText = 'Guest#';
       document.getElementById('email').innerText = 'Please log in';
@@ -270,16 +269,20 @@ document.addEventListener("DOMContentLoaded", async function () {
       document.getElementById('wallet-address').innerText = 'Not connected';
       return;
     }
-  // ✅ Logged in — display data
+
+    // ✅ Logged in: fetch user info
     const user = await res.json();
     const fullUsername = `${user.username}#${user.discriminator}`;
 
     avatar.src = user.avatarUrl || 'img/default-avatar.png';
-    avatar.alt = fullUsername;
+    avatar.alt = 'User Avatar';
     avatar.title = fullUsername;
-    avatar.classList.remove('cursor-pointer');
-    loginLink.removeAttribute('href');
 
+    // Disable login link once logged in
+    loginLink.removeAttribute('href');
+    avatar.classList.remove('cursor-pointer');
+
+    // Update UI with user data
     document.getElementById('username').innerText = fullUsername;
     document.getElementById('welcome-name').innerText = fullUsername;
     document.getElementById('email').innerText = user.email || 'No email provided';
@@ -288,22 +291,27 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
     document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Not connected';
 
-    // 👑 VIP Status
-    const vipRes = await fetch('/api/user/roles.php');
-    const vipData = await vipRes.json();
-    const roles = vipData.roles || [];
+  } catch (e) {
+    console.error('Profile fetch failed', e);
+  }
+}
+document.addEventListener("DOMContentLoaded", loadProfile);
+
+  // Show golden cheese or joke
+  try {
+    const res = await fetch('/api/user/roles.php');
+    const data = await res.json();
+    const roles = data.roles || [];
 
     if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
       document.getElementById('goldenCheeseGate').classList.remove('hidden');
     } else {
       document.getElementById('noCheeseJoke').classList.remove('hidden');
     }
-
-  } catch (error) {
-    console.error('Error fetching user data:', error);
+  } catch (err) {
+    console.error('Role check failed:', err);
   }
 });
 </script>
-
 </body>
-</html> 
+</html>
