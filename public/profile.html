@@ -83,19 +83,19 @@
       Welcome back, <span id="welcome-name">loading...</span>
     </p>
 
-<!-- 👤 Avatar Login or Display -->
+<!-- 🖼️ User Avatar or Discord Login -->
 <div class="w-24 h-24 mx-auto mb-4">
   <a id="login-link" href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read">
     <img id="avatar"
          class="rounded-full border-4 border-yellow-500 shadow animate-bounce cursor-pointer transition hover:scale-105"
          src="img/grumpy-cheese.png"
          alt="Grumpy Guest Avatar"
-         title="Click to Login"
+         title="Click to login via Discord"
          width="96"
-         height="96"
-    />
+         height="96" />
   </a>
 </div>
+
 
 
     <!-- 📛 Username Display -->
@@ -244,20 +244,15 @@
       
 <!-- 🔐 Dynamic Fetch Script logged in or not -->
 <script>
-async function loadProfile() {
+document.addEventListener("DOMContentLoaded", async function () {
+  const avatar = document.getElementById('avatar');
+  const loginLink = document.getElementById('login-link');
+
   try {
     const res = await fetch('/api/user.php', { credentials: 'include' });
 
-    const avatar = document.getElementById('avatar');
-    const loginLink = document.getElementById('login-link');
-
     if (!res.ok) {
-      // Not logged in
-      avatar.src = 'img/grumpy-cheese.png';
-      avatar.alt = 'Grumpy Guest Avatar';
-      avatar.title = 'Click to login via Discord';
-      loginLink.href = 'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read';
-
+      // 🧀 Not logged in — leave the grumpy cheese + clickable login
       document.getElementById('username').innerText = 'Not Logged In';
       document.getElementById('welcome-name').innerText = 'Guest#';
       document.getElementById('email').innerText = 'Please log in';
@@ -268,16 +263,17 @@ async function loadProfile() {
       return;
     }
 
-    // Logged in
+    // ✅ Logged in — display data
     const user = await res.json();
     const fullUsername = `${user.username}#${user.discriminator}`;
 
     avatar.src = user.avatarUrl || 'img/default-avatar.png';
-    avatar.alt = 'User Avatar';
+    avatar.alt = fullUsername;
     avatar.title = fullUsername;
-
-    loginLink.removeAttribute('href');
     avatar.classList.remove('cursor-pointer');
+
+    // 🔒 Remove login href
+    loginLink.removeAttribute('href');
 
     document.getElementById('username').innerText = fullUsername;
     document.getElementById('welcome-name').innerText = fullUsername;
@@ -287,28 +283,23 @@ async function loadProfile() {
     document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
     document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Not connected';
 
-    // 🧀 Golden Cheese Role Gate Check
-    try {
-      const roleRes = await fetch('/api/user/roles.php');
-      const roleData = await roleRes.json();
-      const roles = roleData.roles || [];
+    // 👑 VIP Status
+    const vipRes = await fetch('/api/user/roles.php');
+    const vipData = await vipRes.json();
+    const roles = vipData.roles || [];
 
-      if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
-        document.getElementById('goldenCheeseGate').classList.remove('hidden');
-      } else {
-        document.getElementById('noCheeseJoke').classList.remove('hidden');
-      }
-    } catch (err) {
-      console.error("Role check failed:", err);
+    if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
+      document.getElementById('goldenCheeseGate').classList.remove('hidden');
+    } else {
+      document.getElementById('noCheeseJoke').classList.remove('hidden');
     }
 
-  } catch (e) {
-    console.error('Profile fetch failed', e);
+  } catch (err) {
+    console.error('Profile fetch failed:', err);
   }
-}
-
-document.addEventListener("DOMContentLoaded", loadProfile);
+});
 </script>
+
 
 </body>
 </html>
