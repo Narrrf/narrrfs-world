@@ -249,14 +249,7 @@ async function loadProfile() {
     const res = await fetch('/api/user.php', { credentials: 'include' });
 
     if (!res.ok) {
-      const avatar = document.getElementById('avatar');
-      const loginLink = document.getElementById('login-link');
-
-      avatar.src = 'img/grumpy-cheese.png';
-      avatar.alt = 'Grumpy Cheese – Login';
-      avatar.title = 'Click to sync profile via Discord';
-      loginLink.href = 'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read';
-
+      // Not logged in – leave the default grumpy-cheese and login href
       document.getElementById('username').innerText = 'Not Logged In';
       document.getElementById('welcome-name').innerText = 'Guest#';
       document.getElementById('email').innerText = 'Please log in';
@@ -267,18 +260,18 @@ async function loadProfile() {
       return;
     }
 
-    // Logged in: remove login link and show real user
+    // Logged in – replace avatar and disable login link
     const user = await res.json();
     const fullUsername = `${user.username}#${user.discriminator}`;
-    
+
     const avatar = document.getElementById('avatar');
     avatar.src = user.avatarUrl || 'img/default-avatar.png';
     avatar.alt = 'User Avatar';
     avatar.title = 'Your Avatar';
+    avatar.classList.remove('cursor-pointer', 'hover:scale-105');
 
     const loginLink = document.getElementById('login-link');
-    loginLink.removeAttribute('href');
-    avatar.classList.remove('cursor-pointer');
+    loginLink.removeAttribute('href'); // disable click
 
     document.getElementById('username').innerText = fullUsername;
     document.getElementById('welcome-name').innerText = fullUsername;
@@ -290,13 +283,13 @@ async function loadProfile() {
 
   } catch (e) {
     console.error('Profile fetch failed', e);
-    document.getElementById('username').innerText = 'Login Required';
   }
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   await loadProfile();
 
+  // Show golden cheese or joke
   try {
     const res = await fetch('/api/user/roles.php');
     const data = await res.json();
@@ -308,7 +301,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById('noCheeseJoke').classList.remove('hidden');
     }
   } catch (err) {
-    console.error("Role check failed:", err);
+    console.error('Role check failed:', err);
   }
 });
 </script>
