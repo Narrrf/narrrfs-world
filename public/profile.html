@@ -240,46 +240,64 @@
       
 <!-- 🔐 Dynamic Fetch Script -->
 <script>
-  async function loadProfile() {
-    try {
-      const res = await fetch('/api/user.php', { credentials: 'include' });
-      if (!res.ok) {
-        document.getElementById('username').innerText = 'Not Logged In';
-        return;
-      }
-
-      const user = await res.json();
-      const fullUsername = `${user.username}#${user.discriminator}`;
-      document.getElementById('avatar').src = user.avatarUrl || '';
-      document.getElementById('username').innerText = fullUsername;
-      document.getElementById('welcome-name').innerText = fullUsername;
-      document.getElementById('email').innerText = user.email || 'No email provided';
-      document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
-      document.getElementById('wallet-address').innerText = `🔗 Linked wallet: ${localStorage.getItem('walletAddress') || 'not connected'}`;
-    } catch (e) {
-      console.error('Profile fetch failed', e);
-      document.getElementById('username').innerText = 'Login Required';
+async function loadProfile() {
+  try {
+    const res = await fetch('/api/user.php', { credentials: 'include' });
+    if (!res.ok) {
+      // User is not logged in, keep Discord login image and link
+      document.getElementById('username').innerText = 'Not Logged In';
+      document.getElementById('welcome-name').innerText = 'Guest';
+      document.getElementById('email').innerText = 'Please log in';
+      document.getElementById('guilds').innerText = 'No guild data';
+      document.getElementById('traits').innerText = 'Please log in';
+      document.getElementById('user-roles').innerText = 'Please log in';
+      document.getElementById('wallet-address').innerText = 'Please log in';
+      return;
     }
+
+    const user = await res.json();
+    const fullUsername = `${user.username}#${user.discriminator}`;
+
+    // Set actual user avatar once logged in
+    document.getElementById('avatar').src = user.avatarUrl || 'img/default-avatar.png';
+    document.getElementById('avatar').alt = 'User Avatar';
+    document.getElementById('avatar').title = 'Your Avatar';
+    
+    // Remove login link behavior once logged in
+    document.getElementById('login-link').removeAttribute('href');
+    document.getElementById('avatar').classList.remove('cursor-pointer');
+
+    // Populate profile fields
+    document.getElementById('username').innerText = fullUsername;
+    document.getElementById('welcome-name').innerText = fullUsername;
+    document.getElementById('email').innerText = user.email || 'No email provided';
+    document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
+    document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits synced';
+    document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
+    document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'not connected';
+
+  } catch (e) {
+    console.error('Profile fetch failed', e);
+    document.getElementById('username').innerText = 'Login Required';
   }
+}
 
-  document.addEventListener("DOMContentLoaded", async () => {
-    loadProfile();
-    try {
-      const res = await fetch('/api/user/roles.php');
-      const data = await res.json();
-      const roles = data.roles || [];
+document.addEventListener("DOMContentLoaded", async () => {
+  loadProfile();
+  try {
+    const res = await fetch('/api/user/roles.php');
+    const data = await res.json();
+    const roles = data.roles || [];
 
-      if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
-        document.getElementById('goldenCheeseGate').classList.remove('hidden');
-        console.log("%c🧀 VIP Access: Golden Cheese Unlocked!", "color: gold; font-weight: bold;");
-      } else {
-        document.getElementById('noCheeseJoke').classList.remove('hidden');
-        console.log("😅 Logged in, but VIP role not found.");
-      }
-    } catch (err) {
-      console.error("Role check failed:", err);
+    if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
+      document.getElementById('goldenCheeseGate').classList.remove('hidden');
+    } else {
+      document.getElementById('noCheeseJoke').classList.remove('hidden');
     }
-  });
+  } catch (err) {
+    console.error("Role check failed:", err);
+  }
+});
 </script>
 
 </body>
