@@ -116,16 +116,6 @@
       OAuth session live · Verified via Discord
     </div>
 
-    <section class="my-12 px-6">
-  <h2 class="text-2xl font-bold text-yellow-300 mb-4">🏆 Your Trophy Shelf</h2>
-  <div id="role-shelf" class="flex flex-wrap gap-4 justify-center items-end bg-yellow-100 p-6 rounded-xl shadow-inner border-4 border-yellow-400">
-    <!-- JS will inject trophy icons here -->
-    
-  </div>
-</section>
-
-
-
     <!-- 👣 Footer Note -->
     <div class="mt-6 text-yellow-400 text-sm">
       🧠 Profile powered by Cheese Architect 5.0 · Phase 2 Bridge Online
@@ -293,75 +283,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
     document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Not connected';
 
-async function loadRoleShelf() {
-  const res = await fetch('/api/user/roles.php');
-  const data = await res.json();
-  const roles = data.roles || [];
-  const shelf = document.getElementById('role-shelf');
-
-  // Role to trophy mapping
-  const trophies = {
-    "Events ping":            { img: "img/trophy-megaphone.png", label: "Events Beacon" },
-    "Alpha Caller":           { img: "img/trophy-alpha.png", label: "Alpha Caller" },
-    "Weedery Friends":        { img: "img/trophy-weed.png", label: "Weedery 🌿" },
-    "Announcement ping":      { img: "img/trophy-announcement.png", label: "Town Crier" },
-    "Moderator":              { img: "img/trophy-shield.png", label: "Moderator" },
-    "Rabbit Friends":         { img: "img/trophy-bunny.png", label: "Bunny Buddy" },
-    "Engage":                 { img: "img/trophy-spark.png", label: "Engager" },
-    "Server Booster":         { img: "img/trophy-boost.png", label: "Server Booster" },
-    "Verifiziert":            { img: "img/trophy-verified.png", label: "Verified" },
-    "projectupdate":          { img: "img/trophy-scroll.png", label: "Update Agent" },
-    "Rumble":                 { img: "img/trophy-rumble.png", label: "Rumble Champ" },
-    "PokerOG":                { img: "img/trophy-poker.png", label: "Poker OG" },
-    "Champion":               { img: "img/trophy-champion.png", label: "Champion" },
-    "Alpha ping":             { img: "img/trophy-radar.png", label: "Radar Ping" },
-    "Community Member":       { img: "img/trophy-community.png", label: "Community Member" },
-    "Poker ping":             { img: "img/trophy-ping.png", label: "Poker Ping" },
-    "Crypto Corn Friends":    { img: "img/trophy-corn.png", label: "Corny Companion" },
-    "Founder":                { img: "img/trophy-crown.png", label: "Founder" },
-    "Kaleido Friends":        { img: "img/trophy-kaleido.png", label: "Kaleido Supporter" },
-    "VIP Holder":             { img: "img/trophy-cheese.png", label: "VIP Cheese Lord" },
-  };
- const uniqueRoles = [...new Set(roles)];
-    shelf.innerHTML = "";
-
-    uniqueRoles.forEach(role => {
-      if (trophies[role]) {
-        const { img, label } = trophies[role];
-        const trophy = document.createElement("div");
-        trophy.className = "flex flex-col items-center animate-bounce";
-        trophy.innerHTML = `
-          <img src="${img}" alt="${label}" class="w-16 h-16 sm:w-20 sm:h-20 mb-1 drop-shadow" />
-          <span class="text-xs text-yellow-900 text-center font-semibold">${label}</span>
-        `;
-        shelf.appendChild(trophy);
-      }
-    });
-  } catch (err) {
-    console.error('Trophy Shelf Error:', err);
-  }
-}
-  // Deduplicate roles
-  const uniqueRoles = [...new Set(roles)];
-
-  // Render shelf
-  shelf.innerHTML = "";
-  uniqueRoles.forEach(role => {
-    if (trophies[role]) {
-      const { img, label } = trophies[role];
-      const trophy = document.createElement("div");
-      trophy.className = "flex flex-col items-center animate-pop";
-      trophy.innerHTML = `
-        <img src="${img}" alt="${label}" class="w-16 h-16 sm:w-20 sm:h-20 mb-1 drop-shadow" />
-        <span class="text-xs text-yellow-900 text-center font-semibold">${label}</span>
-      `;
-      shelf.appendChild(trophy);
-    }
-  });
-}
-
-
-    
     // 👑 VIP Status
     const vipRes = await fetch('/api/user/roles.php');
     const vipData = await vipRes.json();
@@ -377,7 +298,6 @@ async function loadRoleShelf() {
     console.error('Profile fetch failed:', err);
   }
 });
-  
 </script>
 
 
