@@ -193,6 +193,104 @@
   </div>
 </section>
 
+  <body class="bg-[#1e1f23] text-yellow-50 font-sans flex flex-col items-center min-h-screen py-10 px-4">
+
+  <!-- 🧠 Lab Top Banner -->
+  <header class="w-full bg-black text-yellow-300 text-center py-4 px-6 shadow-lg border-b-4 border-yellow-400">
+    <h1 class="text-2xl font-extrabold tracking-wider">🧠 Narrrf's Lab – Phase 2 Profile Sync</h1>
+    <p class="text-xs text-gray-400 italic">Decode traits · Sync roles · Enter chaos</p>
+  </header>
+
+  <!-- 👤 Avatar & Login Logic -->
+  <main class="flex flex-col items-center justify-center w-full mt-10">
+    <div class="bg-gray-900 rounded-2xl shadow-2xl border-4 border-yellow-400 p-6 max-w-md w-full text-center">
+
+      <!-- ✨ Avatar Dynamic -->
+      <div id="profile-avatar" class="relative mx-auto mb-4">
+        <!-- 🧀 Grumpy Avatar Default -->
+        <img id="avatar-img" src="img/grumpy-cheese.png" class="w-24 h-24 rounded-full border-4 border-yellow-500 shadow-md" alt="Login Avatar" />
+
+        <!-- 🟡 Login Button (visible only when logged out) -->
+        <a href="/api/auth/login.php" id="login-btn" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 text-white text-xs font-bold rounded-full hover:bg-opacity-80 transition">
+          🔐 Login with Discord
+        </a>
+      </div>
+
+      <!-- 📛 User Info -->
+      <h2 id="username" class="text-xl font-bold mb-1">Not logged in</h2>
+      <p id="wallet-address" class="text-sm text-yellow-300">🔗 Wallet: Not linked</p>
+    </div>
+
+    <!-- 🧬 Traits & Roles Panel -->
+    <section class="mt-6 max-w-lg w-full bg-yellow-100 text-gray-900 p-6 rounded-xl shadow-inner border-2 border-yellow-300">
+      <h3 class="text-lg font-bold mb-2">🔍 Sync Tracker</h3>
+      <ul class="text-sm space-y-1">
+        <li>🧠 Role Synced: <span class="text-green-600">No</span></li>
+        <li>🎮 Game Access: <span class="text-red-600">Restricted</span></li>
+        <li>💼 Wallet Synced: <span class="text-yellow-700">Pending</span></li>
+        <li>🧬 Traits Unlocked: <span class="text-purple-600">0</span></li>
+      </ul>
+    </section>
+
+    <!-- 🌀 Enter Portal Button -->
+    <a href="/index.html" class="mt-8 inline-block bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-6 rounded-full shadow-xl border-2 border-yellow-400 transition">
+      🔁 Back to the Lab
+    </a>
+  </main>
+
+
+  <body class="bg-[#1e1f23] text-yellow-50 font-sans flex flex-col items-center min-h-screen py-10 px-4">
+
+  <!-- 🧠 Lab Top Banner -->
+  <header class="w-full bg-black text-yellow-300 text-center py-4 px-6 shadow-lg border-b-4 border-yellow-400">
+    <h1 class="text-2xl font-extrabold tracking-wider">🧠 Narrrf's Lab – Phase 2 Profile Sync</h1>
+    <p class="text-xs text-gray-400 italic">Decode traits · Sync roles · Enter chaos</p>
+  </header>
+
+  <!-- 👤 Avatar & Login Logic -->
+  <main class="flex flex-col items-center justify-center w-full mt-10">
+    <div class="bg-gray-900 rounded-2xl shadow-2xl border-4 border-yellow-400 p-6 max-w-md w-full text-center">
+
+      <!-- ✨ Avatar Dynamic -->
+      <div id="profile-avatar" class="relative mx-auto mb-4">
+        <!-- 🧀 Grumpy Avatar Default -->
+        <img id="avatar-img" src="img/grumpy-cheese.png" class="w-24 h-24 rounded-full border-4 border-yellow-500 shadow-md" alt="Login Avatar" />
+
+        <!-- 🟡 Login Button (visible only when logged out) -->
+        <a href="/api/auth/login.php" id="login-btn" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 text-white text-xs font-bold rounded-full hover:bg-opacity-80 transition">
+          🔐 Login with Discord
+        </a>
+      </div>
+
+      <!-- 📛 User Info -->
+      <h2 id="username" class="text-xl font-bold mb-1">Not logged in</h2>
+      <p id="wallet-address" class="text-sm text-yellow-300">🔗 Wallet: Not linked</p>
+    </div>
+
+    <!-- 🧬 Traits & Roles Panel -->
+    <section class="mt-6 max-w-lg w-full bg-yellow-100 text-gray-900 p-6 rounded-xl shadow-inner border-2 border-yellow-300">
+      <h3 class="text-lg font-bold mb-2">🔍 Sync Tracker</h3>
+      <ul class="text-sm space-y-1">
+        <li>🧠 Role Synced: <span class="text-green-600">No</span></li>
+        <li>🎮 Game Access: <span class="text-red-600">Restricted</span></li>
+        <li>💼 Wallet Synced: <span class="text-yellow-700">Pending</span></li>
+        <li>🧬 Traits Unlocked: <span class="text-purple-600">0</span></li>
+      </ul>
+    </section>
+
+    <!-- 🌀 Enter Portal Button -->
+    <a href="/index.html" class="mt-8 inline-block bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-6 rounded-full shadow-xl border-2 border-yellow-400 transition">
+      🔁 Back to the Lab
+    </a>
+  </main>
+
+  <!-- 🍩 Footer -->
+  <footer class="text-center mt-16 text-xs text-gray-400">
+    Powered by 🧀 Cheese Architect 5.0 · Discord + Game + Wallet Sync Engine 🌍
+  </footer>
+</body>
+
+
 <!-- 🎟️ Quick Action Buttons -->
 <div class="flex justify-center gap-4 my-12">
   
