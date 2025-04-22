@@ -35,11 +35,12 @@
 <body>
   <button id="toggle">Toggle View</button>
 
-  <script>
-    document.getElementById('toggle').addEventListener('click', () => {
-      // 📡 Send camera toggle event to server
-      window.ui.send('toggleCamera');
-    });
-  </script>
+<script>
+  document.getElementById('toggle').addEventListener('click', () => {
+    // 📡 Send correct event format expected by Hytopia server
+    window.ui.send({ type: 'toggleCamera' });
+  });
+</script>
+
 </body>
 </html>
