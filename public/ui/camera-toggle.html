@@ -1,0 +1,45 @@
+<!-- /ui/camera-toggle.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Camera Toggle</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: sans-serif;
+    }
+
+    #toggle {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 18px;
+      font-size: 14px;
+      background: #ffcc00;
+      color: #222;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+      transition: background 0.2s ease;
+    }
+
+    #toggle:hover {
+      background: #ffdd33;
+    }
+  </style>
+</head>
+<body>
+  <button id="toggle">Toggle View</button>
+
+  <script>
+    document.getElementById('toggle').addEventListener('click', () => {
+      // 📡 Send camera toggle event to server
+      window.ui.send('toggleCamera');
+    });
+  </script>
+</body>
+</html>
