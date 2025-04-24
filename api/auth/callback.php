@@ -75,6 +75,8 @@ $_SESSION['guilds'] = json_decode($guildsResponse, true) ?? [];
 $_SESSION['discord_id'] = $user['id'];
 $_SESSION['access_token'] = $accessToken;
 
+error_log('Discord ID Fetched: ' . $_SESSION['discord_id']);
+
 // ✅ Save user to DB
 $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 try {
