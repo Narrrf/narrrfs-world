@@ -278,62 +278,99 @@
       
 <!-- 🔐 Dynamic Fetch Script logged in or not -->
 <!-- 👑 VIP Logic + Trophy Shelf (KEEP AS IS) -->
+<!-- 🔐 Dynamic Fetch Script logged in or not -->
 <script>
-  document.addEventListener("DOMContentLoaded", async function () {
-    const avatar = document.getElementById('avatar');
-    const loginLink = document.getElementById('login-link');
+const trophies = {
+  "VIP Holder":             { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
+  "PokerOG":                { img: "img/trophy_PokerOG.png", label: "Poker OG" },
+  "Champion":               { img: "img/trophy_champion.png", label: "Champion" },
+  "Rumble":                 { img: "img/trophy_rumble.png", label: "Rumble Champ" },
+  "Engage":                 { img: "img/trophy_engage.png", label: "Engager" },
+  "Moderator":              { img: "img/trophy_moderator.png", label: "Moderator" },
+  "Server Booster":         { img: "img/trophy_serverbooster.png", label: "Server Booster" },
+  "Alpha Caller":           { img: "img/trophy_alphacaller.png", label: "Alpha Caller" },
+  "Crypto Corn Friends":    { img: "img/trophy_cryptocornfriends.png", label: "Corny Companion" },
+  "Rabbit Friends":         { img: "img/trophy_rabbitfriends.png", label: "Bunny Buddy" },
+  "Kaleido Friends":        { img: "img/trophy_kaleidofriends.png", label: "Kaleido Supporter" },
+  "Weedery Friends":        { img: "img/trophy_weederyfriends.png", label: "Weedery 🌿" },
+  "Community Member":       { img: "img/trophy_community.png", label: "Community Member" },
+  "Verifiziert":            { img: "img/trophy_verified.png", label: "Verified" },
+};
 
-    try {
-      const res = await fetch('/api/user.php', { credentials: 'include' });
+function renderTrophyShelf(userRoles = []) {
+  const shelf = document.getElementById("cheeseShelf");
+  if (!shelf) return;
 
-      if (!res.ok) {
-        document.getElementById('username').innerText = 'Not Logged In';
-        document.getElementById('welcome-name').innerText = 'Guest#';
-        document.getElementById('email').innerText = 'Please log in';
-        document.getElementById('guilds').innerText = 'No guild data';
-        document.getElementById('traits').innerText = 'Please log in';
-        document.getElementById('user-roles').innerText = 'No roles synced';
-        document.getElementById('wallet-address').innerText = 'Not connected';
-        return;
-      }
+  shelf.innerHTML = ""; // Clear shelf
 
-      const user = await res.json();
-      const fullUsername = user.discriminator !== "0" ? `${user.username}#${user.discriminator}` : user.username;
+  const uniqueRoles = [...new Set(userRoles)];
 
-      avatar.src = user.avatarUrl || 'img/default-avatar.png';
-      avatar.alt = fullUsername;
-      avatar.title = fullUsername;
-      avatar.classList.remove('cursor-pointer');
-      loginLink.removeAttribute('href');
+  uniqueRoles.forEach(role => {
+    const trophy = trophies[role];
+    if (trophy) {
+      const trophyEl = document.createElement("div");
+      trophyEl.className = "flex flex-col items-center animate-pop transition-transform hover:scale-105";
 
-      document.getElementById('username').innerText = fullUsername;
-      document.getElementById('welcome-name').innerText = fullUsername;
-      document.getElementById('email').innerText = user.email || 'No email provided';
-      document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
-      document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits synced';
-      document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
-      document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Not connected';
-
-      const vipRes = await fetch('/api/user/roles.php');
-      const vipData = await vipRes.json();
-      const roles = vipData.roles || [];
-
-      renderTrophyShelf(roles);
-
-      if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
-        document.getElementById('goldenCheeseGate').classList.remove('hidden');
-      } else {
-        document.getElementById('noCheeseJoke').classList.remove('hidden');
-      }
-
-      // 👇 FINAL FIX: Hide login if session exists
-      const loginBlock = document.getElementById('loginBlock');
-      if (loginBlock) loginBlock.style.display = 'none';
-
-    } catch (err) {
-      console.error('Profile fetch failed:', err);
+      trophyEl.innerHTML = `
+        <img src="${trophy.img}" alt="${trophy.label}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow mb-2" />
+        <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}</span>
+      `;
+      shelf.appendChild(trophyEl);
     }
   });
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
+  const avatar = document.getElementById('avatar');
+  const loginLink = document.getElementById('login-link');
+
+  try {
+    const res = await fetch('/api/user.php', { credentials: 'include' });
+
+    if (!res.ok) {
+      document.getElementById('username').innerText = 'Not Logged In';
+      document.getElementById('welcome-name').innerText = 'Guest#';
+      document.getElementById('email').innerText = 'Please log in';
+      document.getElementById('guilds').innerText = 'No guild data';
+      document.getElementById('traits').innerText = 'Please log in';
+      document.getElementById('user-roles').innerText = 'No roles synced';
+      document.getElementById('wallet-address').innerText = 'Not connected';
+      return;
+    }
+
+    const user = await res.json();
+    const fullUsername = user.discriminator !== "0" ? `${user.username}#${user.discriminator}` : user.username;
+
+    avatar.src = user.avatarUrl || 'img/default-avatar.png';
+    avatar.alt = fullUsername;
+    avatar.title = fullUsername;
+    avatar.classList.remove('cursor-pointer');
+    loginLink.removeAttribute('href');
+
+    document.getElementById('username').innerText = fullUsername;
+    document.getElementById('welcome-name').innerText = fullUsername;
+    document.getElementById('email').innerText = user.email || 'No email provided';
+    document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
+    document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits synced';
+    document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles synced';
+    document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Not connected';
+
+    const vipRes = await fetch('/api/user/roles.php');
+    const vipData = await vipRes.json();
+    const roles = vipData.roles || [];
+
+    renderTrophyShelf(roles);
+
+    if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
+      document.getElementById('goldenCheeseGate').classList.remove('hidden');
+    } else {
+      document.getElementById('noCheeseJoke').classList.remove('hidden');
+    }
+
+  } catch (err) {
+    console.error('Profile fetch failed:', err);
+  }
+});
 </script>
 </body>
 </html>
