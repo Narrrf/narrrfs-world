@@ -281,6 +281,7 @@
 <!-- 🔐 Dynamic Fetch Script logged in or not -->
 <!-- Patched profile.html by Cheese Architect 🧀✨ -->
 
+<!-- Patched profile.html with working fetch logic 🧠 -->
 <script>
 const trophies = {
   "VIP Holder": { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
@@ -294,7 +295,7 @@ const trophies = {
   "Crypto Corn Friends": { img: "img/trophy_cryptocornfriends.png", label: "Corny Companion" },
   "Rabbit Friends": { img: "img/trophy_rabbitfriends.png", label: "Bunny Buddy" },
   "Kaleido Friends": { img: "img/trophy_kaleidofriends.png", label: "Kaleido Supporter" },
-  "Weedery Friends": { img: "img/trophy_weederyfriends.png", label: "Weedery \ud83c\udf3f" },
+  "Weedery Friends": { img: "img/trophy_weederyfriends.png", label: "Weedery 🌿" },
   "Community Member": { img: "img/trophy_community.png", label: "Community Member" },
   "Verifiziert": { img: "img/trophy_verified.png", label: "Verified" },
 };
@@ -333,20 +334,44 @@ document.addEventListener("DOMContentLoaded", async function () {
       document.getElementById('traits').innerText = 'No traits available';
       document.getElementById('user-roles').innerText = 'No roles';
       document.getElementById('wallet-address').innerText = 'Wallet not linked';
-
-      // 🧠 Hide both VIP and NoVIP blocks immediately
       document.getElementById('goldenCheeseGate')?.classList.add('hidden');
       document.getElementById('noCheeseJoke')?.classList.add('hidden');
-      
-      return; // 🔥 Exit here - do not process anything else
+      return;
     }
 
-    // (Your normal logged-in logic continues here...)
+    const user = await res.json();
+    const fullUsername = user.discriminator !== "0"
+      ? `${user.username}#${user.discriminator}`
+      : user.username;
+
+    avatar.src = user.avatarUrl || 'img/default-avatar.png';
+    avatar.alt = fullUsername;
+    avatar.title = fullUsername;
+    avatar.classList.remove('cursor-pointer');
+    loginLink.removeAttribute('href');
+
+    document.getElementById('username').innerText = fullUsername;
+    document.getElementById('welcome-name').innerText = fullUsername;
+    document.getElementById('email').innerText = user.email || 'No email';
+    document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
+    document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits';
+    document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles';
+    document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Wallet not linked';
+
+    const vipRes = await fetch('/api/user/roles.php');
+    const vipData = await vipRes.json();
+    const roles = vipData.roles || [];
+
+    renderTrophyShelf(roles);
+
+    if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
+      document.getElementById('goldenCheeseGate')?.classList.remove('hidden');
+    } else {
+      document.getElementById('noCheeseJoke')?.classList.remove('hidden');
+    }
 
   } catch (err) {
     console.error('Profile fetch failed:', err);
-
-    // If fetch throws an error (not just bad status), fallback too
     document.getElementById('username').innerText = 'Guest#0000';
     document.getElementById('welcome-name').innerText = 'Guest';
     document.getElementById('email').innerText = 'Please log in';
@@ -359,5 +384,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 });
 </script>
+
 </body>
 </html>
