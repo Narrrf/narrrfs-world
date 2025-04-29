@@ -387,3 +387,392 @@ document.addEventListener("DOMContentLoaded", async function () {
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🧠 Your Narrrf Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="theme-color" content="#fcd34d">
+  <link rel="icon" href="img/cheese-egg.png" type="image/png">
+
+  <style>
+    /* 🎨 Style Card Elements */
+    .card {
+      background: #36393f;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* 🖼️ Avatar */
+    .avatar {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      margin-bottom: 15px;
+    }
+
+    /* 🧠 Username */
+    .username {
+      font-size: 1.5em;
+      margin-bottom: 5px;
+    }
+
+    /* 🧬 Tagline + Guild Info */
+    .tagline {
+      font-size: 0.95em;
+      color: #b9bbbe;
+      margin-bottom: 20px;
+    }
+    .guilds {
+      margin-top: 15px;
+      font-size: 0.9em;
+    }
+
+    /* 🧀 Highlight Text */
+    .cheese {
+      margin-top: 25px;
+      font-style: italic;
+      color: #fcd34d;
+    }
+    @keyframes pop {
+  0% { transform: scale(0.9); opacity: 0.3; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop {
+  animation: pop 0.4s ease-out;
+}
+  </style>
+</head>
+
+<!-- ✅ Profile Scroll DOM Zone -->
+<body class="bg-[#2f3136] text-white font-sans flex flex-col items-center py-10 px-4">
+
+<!-- 🔰 Header with App Context -->
+<header class="w-full bg-black py-4 px-6 text-yellow-400 text-center shadow-md">
+  <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Phase 2 Portal</h1>
+  <p class="text-xs text-gray-400 mt-1">Profile Synced via Discord OAuth · Powered by Cheese Architect 4.0</p>
+</header>
+
+<!-- 💎 Conditional VIP Notification -->
+<div id="goldenCheeseGate" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 font-bold rounded-xl shadow-lg animate-pulse">
+  <img src="img/big-cheese.svg" class="w-8 h-8 inline mr-2" alt="Big Cheese" />
+  Welcome, VIP! You found the Golden Cheese 🧀
+</div>
+
+<!-- 🧂 VIP Absence Fallback -->
+<div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
+  😅 You’re logged in, but... no VIP pass? That’s nacho cheese!
+</div>
+
+<!-- 👤 User Profile Card -->
+<main class="flex-grow flex items-center justify-center px-4 py-12">
+  <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center border-4 border-yellow-400">
+
+    <!-- 👋 Welcome Message -->
+    <p id="welcome-msg" class="text-yellow-300 text-sm italic mb-2">
+      Welcome back, <span id="welcome-name">loading...</span>
+    </p>
+
+<!-- 🖼️ User Avatar or Discord Login -->
+<div class="w-24 h-24 mx-auto mb-4">
+  <a id="login-link" href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read">
+    <img id="avatar"
+         class="rounded-full border-4 border-yellow-500 shadow animate-bounce cursor-pointer transition hover:scale-105"
+         src="img/grumpy-cheese.png"
+         alt="Grumpy Guest Avatar"
+         title="Click to login via Discord"
+         width="96"
+         height="96" />
+  </a>
+</div>
+
+    <!-- 📛 Username Display -->
+    <h1 id="username" class="text-2xl font-bold text-yellow-300">Loading...</h1>
+    <p id="email" class="text-sm text-gray-400">...</p>
+    <p id="guilds" class="mt-2 text-sm text-yellow-100 italic">Guilds loading...</p>
+
+    <!-- 🧪 Traits + Wallet View -->
+    <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner">
+      <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
+      <p id="wallet-address">🔗 Linked wallet: <em class="text-sm">coming soon</em></p>
+      <p>🧬 Traits: <span id="traits">pending sync</span></p>
+      <p id="user-roles" class="mt-3 text-sm text-yellow-900 italic">Roles: loading...</p>
+    </div>
+
+    <!-- ✅ Session Note -->
+    <div class="mt-4 text-xs text-gray-300 italic">
+      OAuth session live · Verified via Discord
+    </div>
+
+    <!-- 👣 Footer Note -->
+    <div class="mt-6 text-yellow-400 text-sm">
+      🧠 Profile powered by Cheese Architect 5.0 · Phase 2 Bridge Online
+    </div>
+<!-- 🧀 Trophy Shelf Zone -->
+<section id="trophy-shelf" class="my-16 px-4">
+  <h2 class="text-center text-2xl sm:text-3xl font-extrabold text-yellow-400 mb-6 drop-shadow">
+    🏆 Role Trophy Shelf
+  </h2>
+
+  <div id="cheeseShelf" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 justify-items-center">
+    <!-- Dynamic trophies will appear here -->
+  </div>
+
+  <p class="text-center mt-6 text-xs italic text-yellow-200">Collect all the cheese pokals... or be forgotten.</p>
+</section> 
+  
+</main>
+  
+<!-- 🧀 Cheese Profile Card – Unified Lab Style -->
+<section class="relative mt-12 bg-gray-800 border-4 border-yellow-400 rounded-2xl p-6 shadow-2xl max-w-md mx-auto text-white">
+
+  <!-- 🔨 Under Construction Ribbon -->
+  <div class="absolute -top-4 -right-4 rotate-6 bg-yellow-400 text-black text-xs font-extrabold px-3 py-1 rounded-full shadow-lg z-10 animate-pulse ring-2 ring-yellow-300">
+    🚧 Under Cheese-struction
+  </div>
+
+  <!-- 🧠 Header -->
+  <h2 class="text-xl text-yellow-300 font-extrabold mb-4 flex items-center justify-center gap-2">
+    🧀 Wanted Cheese Profile
+  </h2>
+
+  <!-- 👤 Name + Roles -->
+  <p class="text-lg font-bold text-yellow-100 mb-1">
+    👤 Name: <span class="text-white font-normal">Mastercheese#002</span>
+  </p>
+  <p class="text-md text-yellow-100 italic mb-4">
+    🎓 Roles: Puzzle Adept · Lore Mage
+  </p>
+
+  
+  <!-- 📊 Stats Block -->
+  <!-- ... Your stats, access levels, and wallet go here ... -->
+  
+</section>
+<div class="bg-yellow-100 text-gray-900 rounded-xl p-4 border-1-4 border-yellow-400 shadow-inner mb-4 mt-8">
+  <!-- 📊 Stats Content -->
+    <h3 class="font-bold text-yellow-800 mb-2">📊 Stats</h3>
+    <ul class="list-disc list-inside text-sm space-y-1">
+      <li>🧬 Traits Unlocked: <strong>7 / 10</strong></li>
+      <li>🚪 Portals Accessed: <strong>3</strong></li>
+      <li>📜 Lore Solved: <strong>2 riddles</strong></li>
+      <li>🧀 Cheese Clicks: <strong>41</strong></li>
+      <li>🌐 Discord Role Sync: <strong>✅ Complete</strong></li>
+    </ul>
+  </div>
+
+  <!-- 🧪 Skills -->
+  <div class="bg-white/80 text-gray-800 rounded-xl p-4 border-l-4 border-yellow-300 shadow mb-4">
+    <h3 class="font-bold text-yellow-800 mb-2">🧪 Skills</h3>
+    <ul class="list-disc list-inside text-sm">
+      <li>🥚 Egg Whisperer</li>
+      <li>🗺️ Chaos Cartographer</li>
+      <li>🔍 Riddle Solver</li>
+    </ul>
+  </div>
+
+  <!-- 🔐 Access Levels -->
+  <div class="bg-white/70 text-gray-800 rounded-xl p-4 border-l-4 border-indigo-400 shadow mb-4">
+    <h3 class="font-bold text-indigo-800 mb-2">🔐 Access Levels</h3>
+    <ul class="flex flex-wrap gap-2 text-xs">
+      <li class="bg-green-500 text-white px-3 py-1 rounded-full">🟢 Lore Portal</li>
+      <li class="bg-yellow-500 text-white px-3 py-1 rounded-full">🟡 Hytopia Portal</li>
+      <li class="bg-red-500 text-white px-3 py-1 rounded-full">🔴 Lab 3 (Locked)</li>
+    </ul>
+  </div>
+
+  <!-- 💰 Currency -->
+  <div class="bg-purple-100 text-gray-800 rounded-xl p-4 border-l-4 border-purple-400 shadow mb-4">
+    <h3 class="font-bold text-purple-800 mb-2">💰 Wallet & NFTs</h3>
+    <ul class="list-disc list-inside text-sm">
+      <li>💎 $SPOINC Balance: <strong>1,234</strong></li>
+      <li>🪙 $DSPOINC Balance: <strong>12,340</strong> (Swap Rate: 1 → 10,000)</li>
+      <li>🎴 NFTs: 2x VIP Cheese, 1x LoreKey</li>
+    </ul>
+  </div>
+
+  <!-- 🪧 Status -->
+  <p class="text-center text-red-400 font-bold mt-4 animate-pulse">
+    🪧 STATUS: WANTED FOR TRAIT THEFT 🔥
+  </p>
+
+  <!-- 🧀 Stamp -->
+  <div class="mt-6 flex justify-center">
+    <div class="bg-yellow-400 text-white px-4 py-2 rounded-full border-4 border-white shadow-md">
+      🧀 Official Cheese Stamp
+    </div>
+  </div>
+</section>
+
+  <!-- 🍩 Footer -->
+  <footer class="text-center mt-16 text-xs text-gray-400">
+    Powered by 🧀 Cheese Architect 5.0 · Discord + Game + Wallet Sync Engine 🌍
+  </footer>
+</body>
+
+<!-- 🎯 Quick Action Buttons -->
+  
+<!-- 🔑 Fallback Login Button -->
+<div id="loginBlock" class="mt-6 text-center">
+  <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
+     class="inline-block bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-5 rounded-full shadow-md border-2 border-yellow-600 animate-bounce transition">
+    🧀 Click to Login with Discord
+  </a>
+  <p class="mt-2 text-xs text-gray-300 italic">When the Grumpy Cheese gives no love, this does.</p>
+</div>
+
+  
+  <!-- 🔑 Login / Sync -->
+  <a href="/profile.html" class="bg-indigo-500 text-white px-5 py-2 rounded-full shadow hover:bg-indigo-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    🔑 Login / Sync Profile
+  </a>
+
+  <!-- 🧪 Back to Lab -->
+  <a href="/index.html" class="bg-yellow-500 text-white px-5 py-2 rounded-full shadow hover:bg-yellow-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    🧪 Back to the Lab
+  </a>
+
+  <!-- 🧬 View Traits -->
+  <a href="#traits" class="bg-pink-500 text-white px-5 py-2 rounded-full shadow hover:bg-pink-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    🧬 View Traits
+  </a>
+
+  <!-- 🚪 Portals -->
+  <a href="#portals" class="bg-blue-500 text-white px-5 py-2 rounded-full shadow hover:bg-blue-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    🚪 Open Portals
+  </a>
+
+  <!-- 💰 Wallet -->
+  <a href="#wallet" class="bg-purple-500 text-white px-5 py-2 rounded-full shadow hover:bg-purple-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    💰 Manage Wallet
+  </a>
+</div>
+
+  <!-- 🌀 Cheese Portal to Hytopia -->
+<div class="mt-10 text-center">
+  <a href="/hytopia.html" class="group inline-block relative" title="🧀 Hytopia portal is closed... for now.">
+    <div class="relative p-4 rounded-full bg-yellow-300/90 hover:bg-yellow-400 transition-all duration-300 shadow-2xl animate-pulse">
+      <img src="img/cheese-portal.png" alt="Enter Hytopia" class="w-24 h-24 sm:w-32 sm:h-32 mx-auto group-hover:scale-105 transition-transform duration-300 drop-shadow-lg" />
+      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div class="text-xs bg-black/80 text-yellow-300 px-3 py-1 rounded-full shadow-md animate-pulse">
+          🧀 Portal Closed · Opening Soon!
+        </div>
+      </div>
+      
+<!-- 🔐 Dynamic Fetch Script logged in or not -->
+<!-- 👑 VIP Logic + Trophy Shelf (KEEP AS IS) -->
+<!-- 🔐 Dynamic Fetch Script logged in or not -->
+<!-- Patched profile.html by Cheese Architect 🧀✨ -->
+
+<!-- Patched profile.html with working fetch logic 🧠 -->
+<!-- Patched profile.html with working fetch logic 🧠 -->
+<script>
+const trophies = {
+  "VIP Holder": { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
+  "PokerOG": { img: "img/trophy_PokerOG.png", label: "Poker OG" },
+  "Champion": { img: "img/trophy_champion.png", label: "Champion" },
+  "Rumble": { img: "img/trophy_rumble.png", label: "Rumble Champ" },
+  "Engage": { img: "img/trophy_engage.png", label: "Engager" },
+  "Moderator": { img: "img/trophy_moderator.png", label: "Moderator" },
+  "Server Booster": { img: "img/trophy_serverbooster.png", label: "Server Booster" },
+  "Alpha Caller": { img: "img/trophy_alphacaller.png", label: "Alpha Caller" },
+  "Crypto Corn Friends": { img: "img/trophy_cryptocornfriends.png", label: "Corny Companion" },
+  "Rabbit Friends": { img: "img/trophy_rabbitfriends.png", label: "Bunny Buddy" },
+  "Kaleido Friends": { img: "img/trophy_kaleidofriends.png", label: "Kaleido Supporter" },
+  "Weedery Friends": { img: "img/trophy_weederyfriends.png", label: "Weedery 🌿" },
+  "Community Member": { img: "img/trophy_community.png", label: "Community Member" },
+  "Verifiziert": { img: "img/trophy_verified.png", label: "Verified" },
+};
+
+function renderTrophyShelf(userRoles = []) {
+  const shelf = document.getElementById("cheeseShelf");
+  if (!shelf) return;
+  shelf.innerHTML = "";
+  const uniqueRoles = [...new Set(userRoles)];
+  uniqueRoles.forEach(role => {
+    const trophy = trophies[role];
+    if (trophy) {
+      const trophyEl = document.createElement("div");
+      trophyEl.className = "flex flex-col items-center animate-pop transition-transform hover:scale-105";
+      trophyEl.innerHTML = `
+        <img src="${trophy.img}" alt="${trophy.label}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow mb-2" />
+        <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}</span>
+      `;
+      shelf.appendChild(trophyEl);
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
+  const avatar = document.getElementById('avatar');
+  const loginLink = document.getElementById('login-link');
+
+  try {
+    const res = await fetch('/api/user.php', { credentials: 'include' });
+
+    if (!res.ok) {
+      document.getElementById('username').innerText = 'Guest#0000';
+      document.getElementById('welcome-name').innerText = 'Guest';
+      document.getElementById('email').innerText = 'Please log in';
+      document.getElementById('guilds').innerText = 'No guilds connected';
+      document.getElementById('traits').innerText = 'No traits available';
+      document.getElementById('user-roles').innerText = 'No roles';
+      document.getElementById('wallet-address').innerText = 'Wallet not linked';
+      document.getElementById('goldenCheeseGate')?.classList.add('hidden');
+      document.getElementById('noCheeseJoke')?.classList.add('hidden');
+      return;
+    }
+
+    const user = await res.json();
+    const fullUsername = user.discriminator !== "0"
+      ? `${user.username}#${user.discriminator}`
+      : user.username;
+
+    avatar.src = user.avatarUrl || 'img/default-avatar.png';
+    avatar.alt = fullUsername;
+    avatar.title = fullUsername;
+    avatar.classList.remove('cursor-pointer');
+    loginLink.removeAttribute('href');
+
+    document.getElementById('username').innerText = fullUsername;
+    document.getElementById('welcome-name').innerText = fullUsername;
+    document.getElementById('email').innerText = user.email || 'No email';
+    document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
+    document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits';
+    document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles';
+    document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Wallet not linked';
+
+    const vipRes = await fetch('/api/user/roles.php');
+    const vipData = await vipRes.json();
+    const roles = vipData.roles || [];
+
+    renderTrophyShelf(roles);
+
+    if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
+      document.getElementById('goldenCheeseGate')?.classList.remove('hidden');
+    } else {
+      document.getElementById('noCheeseJoke')?.classList.remove('hidden');
+    }
+
+  } catch (err) {
+    console.error('Profile fetch failed:', err);
+    document.getElementById('username').innerText = 'Guest#0000';
+    document.getElementById('welcome-name').innerText = 'Guest';
+    document.getElementById('email').innerText = 'Please log in';
+    document.getElementById('guilds').innerText = 'No guilds connected';
+    document.getElementById('traits').innerText = 'No traits available';
+    document.getElementById('user-roles').innerText = 'No roles';
+    document.getElementById('wallet-address').innerText = 'Wallet not linked';
+    document.getElementById('goldenCheeseGate')?.classList.add('hidden');
+    document.getElementById('noCheeseJoke')?.classList.add('hidden');
+  }
+});
+</script>
+</body>
+</html>
