@@ -451,6 +451,25 @@
       🧠 Learn How to Get Roles
     </a>
   </section>
+  
+<!-- 🧀 GENESIS_8_TETRIS_SCROLL -->
+<!-- 🎮 Lab Note: Tetris Canvas Fixed
+🧠 Canvas height = 400px = 20 blocks of 20px
+🧪 Applied 0.5px translate to align strokes
+✅ Bottom collision & pixel alignment confirmed
+-->
+
+<section id="cheese-tetris" class="bg-black text-yellow-300 py-12 px-8 rounded-3xl shadow-2xl max-w-md mx-auto mt-24 mb-20 ring-4 ring-yellow-400/40">
+  <h2 class="text-center text-3xl font-extrabold mb-6 tracking-tight text-yellow-100 drop-shadow">
+    🎮 TETRIS SPOINC MODE
+  </h2>
+  <canvas id="tetris-canvas" width="200" height="400"
+          class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
+  <p id="spoink-score" class="text-center mt-6 text-lg font-semibold text-yellow-200 animate-pulse">
+    💰 $DSPOINC earned: <span class="font-mono">0</span>
+  </p>
+</section>
+
 
 <!-- 🧀 COMING UP NEXT SECTION – PHASE 2 LAUNCH CYCLE -->
 <!-- 🧠 MasterChief Dev Notes:
@@ -847,5 +866,6 @@ Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
 </footer>
 <!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
 <!-- 🔐 Do not remove unless instructed by the Over Brain. -->
+<script src="scripts/tetris-scroll.js"></script>
 </body>
 </html>
