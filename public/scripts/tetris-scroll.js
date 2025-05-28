@@ -182,6 +182,14 @@ document.addEventListener("keydown", e => {
   draw();
 });
 
+// 🚫 Prevent arrow keys from scrolling the page
+window.addEventListener("keydown", function (e) {
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+
 // 📱 Mobile swipe support (fine-tuned)
 let touchStartX = 0;
 let touchStartY = 0;
