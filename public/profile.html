@@ -244,6 +244,14 @@
     💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
   </p>
 
+  <!-- 📱 Mobile Touch Controls -->
+  <div id="mobile-controls" class="flex justify-around mt-4 sm:hidden">
+    <button onclick="moveLeft()" class="bg-yellow-400 rounded-full px-4 py-2 text-xl font-bold shadow">←</button>
+    <button onclick="rotatePiece()" class="bg-yellow-400 rounded-full px-4 py-2 text-xl font-bold shadow">🔄</button>
+    <button onclick="moveRight()" class="bg-yellow-400 rounded-full px-4 py-2 text-xl font-bold shadow">→</button>
+    <button onclick="drop()" class="bg-yellow-400 rounded-full px-4 py-2 text-xl font-bold shadow">↓</button>
+  </div>
+
   <!-- 🔐 Login / Wallet Connect -->
   <div id="tetris-auth" class="text-center my-4">
     <button onclick="loginAndReload()" class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-5 py-2 rounded-full shadow transition">
