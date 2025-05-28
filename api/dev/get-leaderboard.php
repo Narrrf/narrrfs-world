@@ -10,23 +10,26 @@ try {
   $db = new PDO("sqlite:$dbPath");
   $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-  $stmt = $db->prepare("
+  $query = "
     SELECT wallet, score, discord_id, discord_name, timestamp
     FROM tbl_tetris_scores
     ORDER BY score DESC, timestamp ASC
     LIMIT 10
-  ");
+  ";
+
+  $stmt = $db->prepare($query);
   $stmt->execute();
-  $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
   echo json_encode([
     'success' => true,
-    'leaderboard' => $results
+    'leaderboard' => $rows ?? []
   ]);
 } catch (Exception $e) {
   http_response_code(500);
   echo json_encode([
     'success' => false,
+    'leaderboard' => [],
     'error' => 'Leaderboard error: ' . $e->getMessage()
   ]);
 }
