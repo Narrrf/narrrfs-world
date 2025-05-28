@@ -137,33 +137,47 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(data => console.log("💾 Score saved:", data))
       .catch(err => console.error("Score save failed:", err));
   }
+  
+  // 🎮 Key controls
+  document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft" && !collide(current.shape, current.row, current.col - 1)) current.col--;
+    else if (e.key === "ArrowRight" && !collide(current.shape, current.row, current.col + 1)) current.col++;
+    else if (e.key === "ArrowDown") drop();
+    else if (e.key === "ArrowUp" || e.key === "w") rotatePiece();
+    draw();
+  });
 
-// 🏁 Leaderboard display
-async function loadLeaderboard() {
-  const list = document.getElementById("leaderboard-list");
-  try {
-    const res = await fetch("/api/dev/get-leaderboard.php");
-    const result = await res.json();
-    const scores = result.leaderboard || [];
+  // 📱 Touch controls for mobile
+  let touchStartX = 0;
+  let touchStartY = 0;
 
-    if (!Array.isArray(scores)) {
-      throw new Error("Invalid leaderboard format");
+  canvas.addEventListener("touchstart", e => {
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+  }, { passive: true });
+
+  canvas.addEventListener("touchend", e => {
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX;
+    const deltaY = touch.clientY - touchStartY;
+
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX > 30 && !collide(current.shape, current.row, current.col + 1)) {
+        current.col++; // Swipe right
+      } else if (deltaX < -30 && !collide(current.shape, current.row, current.col - 1)) {
+        current.col--; // Swipe left
+      }
+    } else {
+      if (deltaY > 30) {
+        drop(); // Swipe down
+      } else if (deltaY < -30) {
+        rotatePiece(); // Swipe up
+      }
     }
 
-    list.innerHTML = "";
-    scores.forEach((entry, i) => {
-      const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-      const li = document.createElement("li");
-      li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-      list.appendChild(li);
-    });
-
-  } catch (err) {
-    console.error("Leaderboard error:", err);
-    list.innerHTML = "<li>❌ Could not load leaderboard</li>";
-  }
-}
-
+    draw();
+  }, { passive: true });
 
   // 🔐 Discord login button
   window.loginAndReload = function () {
@@ -175,13 +189,4 @@ async function loadLeaderboard() {
   loadLeaderboard();
   draw();
   gameInterval = setInterval(drop, 500);
-
-  // 🎮 Key controls
-  document.addEventListener("keydown", e => {
-    if (e.key === "ArrowLeft" && !collide(current.shape, current.row, current.col - 1)) current.col--;
-    else if (e.key === "ArrowRight" && !collide(current.shape, current.row, current.col + 1)) current.col++;
-    else if (e.key === "ArrowDown") drop();
-    else if (e.key === "ArrowUp" || e.key === "w") rotatePiece();
-    draw();
-  });
 });
