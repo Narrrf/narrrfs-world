@@ -1,4 +1,4 @@
-// 🧠 Cheese Architect Tetris v1.2 – Full Sync + Leaderboard Ready
+// 🧠 Cheese Architect Tetris v1.3 – Mobile Touch Fix + Leaderboard Bug Patch
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("tetris-canvas");
   const context = canvas.getContext("2d");
@@ -10,22 +10,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const colors = ["", "#fcd34d", "#4ade80", "#60a5fa", "#f472b6"];
 
   let score = 0;
-  let gameInterval;
   const grid = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
 
   const pieces = [
-    [[1, 1, 1], [0, 1, 0]],   // T
-    [[2, 2], [2, 2]],         // O
-    [[0, 3, 3], [3, 3, 0]],   // S
-    [[4, 4, 0], [0, 4, 4]]    // Z
+    [[1, 1, 1], [0, 1, 0]],
+    [[2, 2], [2, 2]],
+    [[0, 3, 3], [3, 3, 0]],
+    [[4, 4, 0], [0, 4, 4]]
   ];
 
-  function randomPiece() {
-    return pieces[Math.floor(Math.random() * pieces.length)];
-  }
-
   let current = {
-    shape: randomPiece(),
+    shape: pieces[Math.floor(Math.random() * pieces.length)],
     row: 0,
     col: 3
   };
@@ -42,12 +37,10 @@ document.addEventListener("DOMContentLoaded", () => {
     context.save();
     context.translate(0.5, 0.5);
 
-    // Draw grid
     grid.forEach((row, y) =>
       row.forEach((val, x) => val && drawBlock(x, y, colors[val]))
     );
 
-    // Draw current piece
     current.shape.forEach((row, y) =>
       row.forEach((val, x) => {
         if (val) drawBlock(current.col + x, current.row + y, colors[val]);
@@ -82,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
         grid.splice(y, 1);
         grid.unshift(Array(gridWidth).fill(0));
         lines++;
-        y++; // Check same line again
+        y++;
       }
     }
     if (lines > 0) {
@@ -97,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       merge();
       clearLines();
-      current = { shape: randomPiece(), row: 0, col: 3 };
+      current = { shape: pieces[Math.floor(Math.random() * pieces.length)], row: 0, col: 3 };
       if (collide(current.shape, current.row, current.col)) {
         alert(`🧠 Game Over! You earned $${score} DSPOINC!`);
         clearInterval(gameInterval);
@@ -117,28 +110,47 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 🧬 Save score to PHP + SQLite
   function onTetrisGameOver(finalScore) {
     const wallet = localStorage.getItem("walletAddress");
     const discordId = localStorage.getItem("discord_id");
     const discordName = localStorage.getItem("discord_name");
 
-    if (!wallet) {
-      console.warn("Wallet not found. Score not saved.");
-      return;
-    }
+    if (!wallet) return;
 
     fetch("/api/dev/save-score.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ wallet, score: finalScore, discord_id: discordId, discord_name: discordName })
-    })
-      .then(res => res.json())
-      .then(data => console.log("💾 Score saved:", data))
-      .catch(err => console.error("Score save failed:", err));
+    }).then(res => res.json()).then(data => console.log("💾 Score saved:", data));
   }
-  
-  // 🎮 Key controls
+
+  async function loadLeaderboard() {
+    const list = document.getElementById("leaderboard-list");
+    try {
+      const res = await fetch("/api/dev/get-leaderboard.php");
+      const result = await res.json();
+      const scores = result.leaderboard || [];
+
+      if (!Array.isArray(scores)) throw new Error("Invalid leaderboard format");
+
+      list.innerHTML = "";
+      scores.forEach((entry, i) => {
+        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+        const li = document.createElement("li");
+        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+        list.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Leaderboard error:", err);
+      list.innerHTML = "<li>❌ Could not load leaderboard</li>";
+    }
+  }
+
+  window.loginAndReload = function () {
+    window.location.href =
+      "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify";
+  };
+
   document.addEventListener("keydown", e => {
     if (e.key === "ArrowLeft" && !collide(current.shape, current.row, current.col - 1)) current.col--;
     else if (e.key === "ArrowRight" && !collide(current.shape, current.row, current.col + 1)) current.col++;
@@ -147,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     draw();
   });
 
-  // 📱 Touch controls for mobile
+  // 📱 Touch support for mobile
   let touchStartX = 0;
   let touchStartY = 0;
 
@@ -163,30 +175,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const deltaY = touch.clientY - touchStartY;
 
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX > 30 && !collide(current.shape, current.row, current.col + 1)) {
-        current.col++; // Swipe right
-      } else if (deltaX < -30 && !collide(current.shape, current.row, current.col - 1)) {
-        current.col--; // Swipe left
-      }
+      if (deltaX > 30 && !collide(current.shape, current.row, current.col + 1)) current.col++;
+      else if (deltaX < -30 && !collide(current.shape, current.row, current.col - 1)) current.col--;
     } else {
-      if (deltaY > 30) {
-        drop(); // Swipe down
-      } else if (deltaY < -30) {
-        rotatePiece(); // Swipe up
-      }
+      if (deltaY > 30) drop();
+      else if (deltaY < -30) rotatePiece();
     }
 
     draw();
   }, { passive: true });
 
-  // 🔐 Discord login button
-  window.loginAndReload = function () {
-    window.location.href =
-      "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify";
-  };
-
-  // 🚀 Start the game
+  // 🚀 Start
   loadLeaderboard();
   draw();
-  gameInterval = setInterval(drop, 500);
+  const gameInterval = setInterval(drop, 500);
 });
