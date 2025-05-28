@@ -7,17 +7,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const gridWidth = 10;
   const gridHeight = 20;
   const blockSize = 20;
-  const colors = ["", "#fcd34d", "#4ade80", "#60a5fa", "#f472b6"];
 
   let score = 0;
   const grid = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
 
-  const pieces = [
-    [[1, 1, 1], [0, 1, 0]],
-    [[2, 2], [2, 2]],
-    [[0, 3, 3], [3, 3, 0]],
-    [[4, 4, 0], [0, 4, 4]]
-  ];
+const colors = ["", "#fcd34d", "#4ade80", "#60a5fa", "#f472b6", "#c084fc"];
+const pieces = [
+  [[1, 1, 1], [0, 1, 0]],     // T
+  [[2, 2], [2, 2]],           // O
+  [[0, 3, 3], [3, 3, 0]],     // S
+  [[4, 4, 0], [0, 4, 4]],     // Z
+  [[5, 5, 5, 5]]              // I (horizontal)
+];
 
   let current = {
     shape: pieces[Math.floor(Math.random() * pieces.length)],
@@ -110,83 +111,114 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function onTetrisGameOver(finalScore) {
-    const wallet = localStorage.getItem("walletAddress");
-    const discordId = localStorage.getItem("discord_id");
-    const discordName = localStorage.getItem("discord_name");
+function onTetrisGameOver(finalScore) {
+  const wallet = localStorage.getItem("walletAddress");
+  const discordId = localStorage.getItem("discord_id");
+  const discordName = localStorage.getItem("discord_name");
 
-    if (!wallet) return;
-
-    fetch("/api/dev/save-score.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wallet, score: finalScore, discord_id: discordId, discord_name: discordName })
-    }).then(res => res.json()).then(data => console.log("💾 Score saved:", data));
+  if (!wallet || wallet === "null") {
+    console.warn("❌ Wallet missing — score will not be saved.");
+    return;
   }
 
-  async function loadLeaderboard() {
-    const list = document.getElementById("leaderboard-list");
-    try {
-      const res = await fetch("/api/dev/get-leaderboard.php");
-      const result = await res.json();
-      const scores = result.leaderboard || [];
-
-      if (!Array.isArray(scores)) throw new Error("Invalid leaderboard format");
-
-      list.innerHTML = "";
-      scores.forEach((entry, i) => {
-        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-        const li = document.createElement("li");
-        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-        list.appendChild(li);
-      });
-    } catch (err) {
-      console.error("Leaderboard error:", err);
-      list.innerHTML = "<li>❌ Could not load leaderboard</li>";
-    }
+  if (!discordName || discordName === "null") {
+    console.warn("⚠️ Discord name missing — fallback to wallet-only save.");
   }
 
-  window.loginAndReload = function () {
-    window.location.href =
-      "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify";
-  };
+  fetch("/api/dev/save-score.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      wallet,
+      score: finalScore,
+      discord_id: discordId,
+      discord_name: discordName
+    })
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Save failed: HTTP " + res.status);
+      return res.json();
+    })
+    .then(data => console.log("💾 Score saved:", data))
+    .catch(err => console.error("❌ Score save error:", err));
+}
 
-  document.addEventListener("keydown", e => {
-    if (e.key === "ArrowLeft" && !collide(current.shape, current.row, current.col - 1)) current.col--;
-    else if (e.key === "ArrowRight" && !collide(current.shape, current.row, current.col + 1)) current.col++;
-    else if (e.key === "ArrowDown") drop();
-    else if (e.key === "ArrowUp" || e.key === "w") rotatePiece();
-    draw();
-  });
+async function loadLeaderboard() {
+  const list = document.getElementById("leaderboard-list");
+  try {
+    const res = await fetch("/api/dev/get-leaderboard.php");
+    const result = await res.json();
+    const scores = result.leaderboard || [];
 
-  // 📱 Touch support for mobile
-  let touchStartX = 0;
-  let touchStartY = 0;
+    if (!Array.isArray(scores)) throw new Error("Invalid leaderboard format");
 
-  canvas.addEventListener("touchstart", e => {
-    const touch = e.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-  }, { passive: true });
+    list.innerHTML = "";
+    scores.forEach((entry, i) => {
+      const name = (entry.discord_name && entry.discord_name !== "null")
+        ? entry.discord_name
+        : `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+      const li = document.createElement("li");
+      li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+      list.appendChild(li);
+    });
 
-  canvas.addEventListener("touchend", e => {
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - touchStartX;
-    const deltaY = touch.clientY - touchStartY;
+  } catch (err) {
+    console.error("Leaderboard error:", err);
+    list.innerHTML = "<li>❌ Could not load leaderboard</li>";
+  }
+}
 
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX > 30 && !collide(current.shape, current.row, current.col + 1)) current.col++;
-      else if (deltaX < -30 && !collide(current.shape, current.row, current.col - 1)) current.col--;
-    } else {
-      if (deltaY > 30) drop();
-      else if (deltaY < -30) rotatePiece();
-    }
-
-    draw();
-  }, { passive: true });
-
-  // 🚀 Start
-  loadLeaderboard();
+// 🎮 Desktop key controls
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft" || e.key === "a") {
+    if (!collide(current.shape, current.row, current.col - 1)) current.col--;
+  } else if (e.key === "ArrowRight" || e.key === "d") {
+    if (!collide(current.shape, current.row, current.col + 1)) current.col++;
+  } else if (e.key === "ArrowDown" || e.key === "s") {
+    drop();
+  } else if (e.key === "ArrowUp" || e.key === "w") {
+    rotatePiece();
+  }
   draw();
-  const gameInterval = setInterval(drop, 500);
+});
+
+// 📱 Mobile swipe support (fine-tuned)
+let touchStartX = 0;
+let touchStartY = 0;
+
+canvas.addEventListener("touchstart", e => {
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+}, { passive: true });
+
+canvas.addEventListener("touchend", e => {
+  const touch = e.changedTouches[0];
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
+
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    // Horizontal movement
+    if (deltaX > 25 && !collide(current.shape, current.row, current.col + 1)) {
+      current.col++;
+    } else if (deltaX < -25 && !collide(current.shape, current.row, current.col - 1)) {
+      current.col--;
+    }
+  } else {
+    // Vertical movement
+    if (deltaY > 25) {
+      drop();
+    } else if (deltaY < -25) {
+      rotatePiece();
+    }
+  }
+
+  draw();
+}, { passive: true });
+
+
+// 🚀 Start the game
+loadLeaderboard();
+draw();
+const gameInterval = setInterval(drop, 500);
 });
