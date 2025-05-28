@@ -138,26 +138,32 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(err => console.error("Score save failed:", err));
   }
 
-  // 🏁 Leaderboard display
-  async function loadLeaderboard() {
-    const list = document.getElementById("leaderboard-list");
-    try {
-      const res = await fetch("/api/dev/get-leaderboard.php");
-      if (!res.ok) throw new Error("Failed to load");
-      const scores = await res.json();
+// 🏁 Leaderboard display
+async function loadLeaderboard() {
+  const list = document.getElementById("leaderboard-list");
+  try {
+    const res = await fetch("/api/dev/get-leaderboard.php");
+    const result = await res.json();
+    const scores = result.leaderboard || [];
 
-      list.innerHTML = "";
-      scores.forEach((entry, i) => {
-        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-        const li = document.createElement("li");
-        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-        list.appendChild(li);
-      });
-    } catch (err) {
-      console.error("Leaderboard error:", err);
-      list.innerHTML = "<li>❌ Could not load leaderboard</li>";
+    if (!Array.isArray(scores)) {
+      throw new Error("Invalid leaderboard format");
     }
+
+    list.innerHTML = "";
+    scores.forEach((entry, i) => {
+      const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+      const li = document.createElement("li");
+      li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+      list.appendChild(li);
+    });
+
+  } catch (err) {
+    console.error("Leaderboard error:", err);
+    list.innerHTML = "<li>❌ Could not load leaderboard</li>";
   }
+}
+
 
   // 🔐 Discord login button
   window.loginAndReload = function () {
