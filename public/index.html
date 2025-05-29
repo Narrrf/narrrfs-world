@@ -30,20 +30,32 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- ✨ Portal UI Glow Animations -->
-  <style>
-    @keyframes labGlow {
-      0% { transform: scale(1); opacity: 0.8; }
-      100% { transform: scale(1.1); opacity: 1; }
-    }
-    .animate-glow {
-      animation: labGlow 2s infinite;
-    }
+<!-- ✨ Portal UI Glow Animations -->
+<style>
+  @keyframes labGlow {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.1); opacity: 1; }
+  }
+  .animate-glow {
+    animation: labGlow 2s infinite;
+  }
 
-    :root {
-      --primary-color: #f472b6; /* Portal Pink */
-      --secondary-color: #3b82f6; /* Portal Blue */
-    }
-  </style>
+  :root {
+    --primary-color: #f472b6;
+    --secondary-color: #3b82f6;
+  }
+
+/* 🥚 Final Easter Egg Glow */
+.egg-flash {
+  animation: eggFlash 1.5s ease-in-out infinite;
+}
+@keyframes eggFlash {
+  0%, 100% { box-shadow: 0 0 12px #fde68a; }
+  50% { box-shadow: 0 0 22px #facc15; }
+}
+
+</style>
+
 </head>
 <body class="bg-gradient-to-br from-purple-50 via-pink-100 to-yellow-50 text-gray-900 font-sans min-h-screen">
 
@@ -351,9 +363,54 @@
   </div>
 </section>
 
+<!-- 👽 FINAL CHEESE EASTER EGG SCROLL – GENESIS 8 -->
+<section class="relative bg-yellow-50 py-20 px-6 mt-16 rounded-2xl shadow-xl max-w-3xl mx-auto overflow-hidden ring-2 ring-lime-400 border border-lime-300 animate-pulse hover:scale-[1.015] transition duration-300">
+  <img src="img/alien-grid-fade.png" alt="Alien Grid" class="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none z-0" />
+  <div class="relative text-center text-purple-900 z-10">
+    <h2 class="text-3xl font-extrabold text-lime-600 drop-shadow-glow mb-4 animate-glow">
+      🧪 Final Cheese Unlocked!
+    </h2>
+    <p class="text-base text-purple-800 max-w-md mx-auto leading-relaxed">
+      This scroll remained unclicked for over <strong class="text-yellow-700">60 days</strong>...<br>
+      Hidden behind the jumping cheese.<br>
+      <span class="font-semibold text-yellow-900">You’re now part of a very small club 🧠.</span>
+    </p>
+    <a href="/finances.html" class="inline-block mt-6 px-8 py-3 bg-lime-400 text-black font-extrabold rounded-full shadow-xl hover:bg-lime-500 ring-4 ring-lime-300 animate-pulse-glow transition duration-300">
+      🌌 Unlock Narrrf’s Finances Now
+    </a>
+  </div>
+</section>
+
+<!-- ✨ Custom Glow Animations -->
+<style>
+  @keyframes glow {
+    0% { text-shadow: 0 0 4px #a3e635, 0 0 8px #bef264; }
+    50% { text-shadow: 0 0 10px #84cc16, 0 0 20px #bef264; }
+    100% { text-shadow: 0 0 4px #a3e635, 0 0 8px #bef264; }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 8px #bef264; }
+    50% { box-shadow: 0 0 16px #84cc16; }
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .drop-shadow-glow {
+    text-shadow: 0 0 8px #a3e635;
+  }
+</style>
+
+
 <!-- 🎮 Gameboard Features -->
-<section class="bg-white py-16 px-6">
-  <div class="max-w-5xl mx-auto">
+<section class="bg-white px-6 pt-12 pb-20 mt-16">
+  <div class="max-w-4xl mx-auto">
     <h2 class="text-3xl font-bold mb-10 text-center">🎮 Gameboard Features</h2>
     <div class="grid md:grid-cols-2 gap-6">
 
@@ -540,12 +597,24 @@
     <h3 class="text-xl font-bold">💥 May 18–25 – Genesis 7.0 Pre-Activation</h3>
     <p>Final node bridges and lore overlays prepared for HYtopia Genesis 7.0 world expansion.</p>
   </div>
-  <!-- GENESIS_8_LAUNCH_ANNOUNCEMENT -->
-  <div class="bg-white rounded-2xl shadow p-6 border-l-4 border-pink-500">
-    <h3 class="text-xl font-bold">💰 May 29 – Genesis Public Lore Drop + Golden Egg Reveal</h3>
-    <p>Major public event with lore fragments, first Genesis Egg access, and trait visibility for all explorers.</p>
-  </div>
+<!-- 🧠 GENESIS_8_LAUNCH_ANNOUNCEMENT -->
+<div class="bg-white rounded-2xl shadow p-6 border-l-4 border-pink-500">
+  <h3 class="text-xl font-bold">💰 May 29 – Genesis Public Lore Drop + Golden Egg Reveal</h3>
+  <p>Major public event with lore fragments, first Genesis Egg access, and trait visibility for all explorers.</p>
 </div>
+
+<!-- 🧀 FINAL EASTER CHEESE REVEAL FOR SPACES -->
+<section class="bg-yellow-100 border-l-4 border-yellow-500 p-6 my-10 rounded-xl shadow-xl max-w-xl mx-auto text-center animate-pulse ring-2 ring-yellow-300 egg-flash">
+  <h3 class="text-xl font-bold text-yellow-800">🥚 Final Cheese Unlocked!</h3>
+  <p class="text-sm text-gray-800 mt-2">
+    Hidden for months inside bouncing cheese. This was the last scroll...
+    <strong class="text-yellow-900">no one found.</strong>
+  </p>
+  <a href="/finances.html" class="mt-4 inline-block bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-2 rounded-full shadow transition">
+    💸 Reveal Narrrf’s Finances
+  </a>
+</section>
+
 
 <!-- 🧠 GENESIS 8 ARCADE PREVIEW (TETRIS LOGIN PROMO) -->
 <section id="tetris-login-portal" class="bg-yellow-50 text-black py-12 px-6 rounded-xl shadow-inner max-w-md mx-auto mt-24 text-center ring-2 ring-yellow-300">
@@ -557,7 +626,6 @@
     🔐 Play TETRIS in Profile
   </a>
 </section>
-
 
 
 <!-- 🧠 Lab Footer Section with Social Links & Contact -->
