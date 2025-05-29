@@ -1,8 +1,7 @@
-// 🧠 Cheese Architect Tetris v1.3.5 – Scroll-Safe + Long Block + Mobile/Desktop Harmony
-
-// 🚫 Global scroll prevention for desktop arrow keys + spacebar
+// 🚫 Full page scroll prevention (Arrow keys + WASD + Space)
 window.addEventListener("keydown", function (e) {
-  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) {
+  const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "a", "s", "d", "w"];
+  if (keys.includes(e.key)) {
     e.preventDefault();
   }
 }, { passive: false });
@@ -15,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const gridWidth = 10;
   const gridHeight = 20;
   const blockSize = 20;
+  const sensitivity = 20;
 
   let score = 0;
   const grid = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [[2, 2], [2, 2]],           // O
     [[0, 3, 3], [3, 3, 0]],     // S
     [[4, 4, 0], [0, 4, 4]],     // Z
-    [[5, 5, 5, 5]],             // I (horizontal)
+    [[5, 5, 5, 5]]              // I (horizontal)
   ];
 
   let current = {
@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(gameInterval);
         onTetrisGameOver(score);
         loadLeaderboard();
+        return;
       }
     }
     draw();
@@ -160,29 +161,38 @@ document.addEventListener("DOMContentLoaded", () => {
       "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify";
   };
 
-  // 🎮 Desktop keyboard controls (WASD + arrows)
+  // 🎮 Desktop Keyboard Controls (WASD + Arrows)
   document.addEventListener("keydown", e => {
-    if (e.key === "ArrowLeft" || e.key === "a") {
-      if (!collide(current.shape, current.row, current.col - 1)) current.col--;
-    } else if (e.key === "ArrowRight" || e.key === "d") {
-      if (!collide(current.shape, current.row, current.col + 1)) current.col++;
-    } else if (e.key === "ArrowDown" || e.key === "s") {
-      drop();
-    } else if (e.key === "ArrowUp" || e.key === "w") {
-      rotatePiece();
+    switch (e.key) {
+      case "ArrowLeft":
+      case "a":
+        if (!collide(current.shape, current.row, current.col - 1)) current.col--;
+        break;
+      case "ArrowRight":
+      case "d":
+        if (!collide(current.shape, current.row, current.col + 1)) current.col++;
+        break;
+      case "ArrowDown":
+      case "s":
+        drop();
+        break;
+      case "ArrowUp":
+      case "w":
+        rotatePiece();
+        break;
     }
     draw();
-  });
+  }, { passive: false });
 
-  // 📱 Touch controls
-  let touchStartX = 0;
-  let touchStartY = 0;
+  // 📱 Touch Swipe Controls
+  let touchStartX = 0, touchStartY = 0;
 
   canvas.addEventListener("touchstart", e => {
+    if (e.cancelable) e.preventDefault();
     const touch = e.touches[0];
     touchStartX = touch.clientX;
     touchStartY = touch.clientY;
-  }, { passive: true });
+  }, { passive: false });
 
   canvas.addEventListener("touchend", e => {
     const touch = e.changedTouches[0];
@@ -190,17 +200,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const deltaY = touch.clientY - touchStartY;
 
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX > 30 && !collide(current.shape, current.row, current.col + 1)) current.col++;
-      else if (deltaX < -30 && !collide(current.shape, current.row, current.col - 1)) current.col--;
+      if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) current.col++;
+      else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) current.col--;
     } else {
-      if (deltaY > 30) drop();
-      else if (deltaY < -30) rotatePiece();
+      if (deltaY > sensitivity) drop();
+      else if (deltaY < -sensitivity) rotatePiece();
     }
 
     draw();
-  }, { passive: true });
+  }, { passive: false });
 
-  // 🚀 Launch game
+  // ✅ Launch game loop
   loadLeaderboard();
   draw();
   const gameInterval = setInterval(drop, 500);
