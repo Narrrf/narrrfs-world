@@ -2,8 +2,8 @@
 session_start();
 
 // ✅ Load from Render environment
-$clientId = getenv('DISCORD_CLIENT_ID');      // ✅ correct
-$clientSecret = getenv('DISCORD_SECRET');     // ✅ correct
+$clientId = getenv('DISCORD_CLIENT_ID');
+$clientSecret = getenv('DISCORD_SECRET');
 $redirectUri = 'https://narrrfs.world/api/auth/callback.php';
 
 // ✅ Step 1: Get code
@@ -54,13 +54,18 @@ $user = json_decode($userResponse, true);
 if (!isset($user['id'])) {
     die("❌ Failed to get user info:\n$userResponse");
 }
-// 🧀 Save key user fields to session for /api/user.php
+
+// 🧀 Save key user fields to session
 $_SESSION['username'] = $user['username'];
 $_SESSION['discriminator'] = $user['discriminator'] ?? '0000';
 $_SESSION['avatar_url'] = $user['avatar']
     ? "https://cdn.discordapp.com/avatars/{$user['id']}/{$user['avatar']}.png"
     : 'https://cdn.discordapp.com/embed/avatars/0.png';
 $_SESSION['email'] = $user['email'] ?? null;
+$_SESSION['discord_id'] = $user['id'];
+$_SESSION['access_token'] = $accessToken;
+
+error_log('Discord ID Fetched: ' . $_SESSION['discord_id']);
 
 // Optional: Store guilds if scope includes `guilds`
 $guildsResponse = file_get_contents('https://discord.com/api/users/@me/guilds', false, stream_context_create([
@@ -69,13 +74,6 @@ $guildsResponse = file_get_contents('https://discord.com/api/users/@me/guilds', 
     ]
 ]));
 $_SESSION['guilds'] = json_decode($guildsResponse, true) ?? [];
-
-
-// ✅ Store in session
-$_SESSION['discord_id'] = $user['id'];
-$_SESSION['access_token'] = $accessToken;
-
-error_log('Discord ID Fetched: ' . $_SESSION['discord_id']);
 
 // ✅ Save user to DB
 $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
@@ -95,10 +93,14 @@ $stmt->execute([$user['id'], $user['username'], $user['avatar']]);
 // ✅ Sync roles
 include_once(__DIR__ . '/sync-role.php');
 
-// ✅ Redirect
-$redirectTarget = ($_SERVER['HTTP_HOST'] === 'localhost')
+// ✅ Inject localStorage for Tetris + redirect
+$target = ($_SERVER['HTTP_HOST'] === 'localhost')
     ? 'http://localhost/profile.html'
     : 'https://narrrfs.world/profile.html';
 
-header("Location: $redirectTarget");
+echo "<script>
+  localStorage.setItem('discord_id', '{$user['id']}');
+  localStorage.setItem('discord_name', '{$user['username']}');
+  window.location.href = '$target';
+</script>";
 exit;
