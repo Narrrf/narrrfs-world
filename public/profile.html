@@ -229,7 +229,7 @@
 ✅ Bottom collision & pixel alignment confirmed
 -->
 <!-- 🧠 GENESIS_8_TETRIS_SCROLL -->
-<section id="cheese-tetris" class="bg-black text-yellow-300 py-12 px-8 rounded-3xl shadow-2xl max-w-md mx-auto mt-24 mb-20 ring-4 ring-yellow-400/40">
+<section id="cheese-tetris" class="bg-black text-yellow-300 py-12 px-8 rounded-3xl shadow-2xl max-w-md mx-auto mt-24 mb-20 ring-4 ring-yellow-400/40 drop-shadow-[0_0_15px_#facc15]">
   <h2 class="text-center text-3xl font-extrabold mb-6 tracking-tight text-yellow-100 drop-shadow">
     🎮 TETRIS SPOINC MODE
   </h2>
@@ -255,7 +255,7 @@
   <!-- 🔐 Login / Wallet Connect -->
   <div id="tetris-auth" class="text-center my-4">
     <button onclick="loginAndReload()" class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-5 py-2 rounded-full shadow transition">
-      🔐 Connect Wallet to Submit Score
+      🔐 Login with Discord to Save Score
     </button>
   </div>
 
@@ -270,10 +270,9 @@
 </section>
 
 
-
   <!-- 🍩 Footer -->
   <footer class="text-center mt-16 text-xs text-gray-400">
-    Powered by 🧀 Cheese Architect 5.0 · Discord + Game + Wallet Sync Engine 🌍
+    Powered by 🧀 Cheese Architect 8.0 · Discord + Game + Wallet Sync Engine 🌍
   </footer>
 </body>
 
@@ -390,10 +389,15 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-    const user = await res.json();
-    const fullUsername = user.discriminator !== "0"
-      ? `${user.username}#${user.discriminator}`
-      : user.username;
+const user = await res.json();
+const fullUsername = user.discriminator !== "0"
+  ? `${user.username}#${user.discriminator}`
+  : user.username;
+
+// ✅ Make sure Tetris sees these:
+localStorage.setItem("discord_id", user.discord_id);
+localStorage.setItem("discord_name", user.username);
+
 
     avatar.src = user.avatarUrl || 'img/default-avatar.png';
     avatar.alt = fullUsername;
