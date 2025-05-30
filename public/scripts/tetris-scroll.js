@@ -1,3 +1,5 @@
+let activeExplosive = null; // track position and countdown
+
 // 🚫 Full page scroll prevention (Arrow keys + WASD + Space)
 window.addEventListener("keydown", function (e) {
   const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "a", "s", "d", "w"];
@@ -19,45 +21,84 @@ document.addEventListener("DOMContentLoaded", () => {
   let score = 0;
   const grid = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
 
-  const colors = ["", "#fcd34d", "#4ade80", "#60a5fa", "#f472b6", "#c084fc"];
-  const pieces = [
-    [[1, 1, 1], [0, 1, 0]],     // T
-    [[2, 2], [2, 2]],           // O
-    [[0, 3, 3], [3, 3, 0]],     // S
-    [[4, 4, 0], [0, 4, 4]],     // Z
-    [[5, 5, 5, 5]]              // I (horizontal)
-  ];
+const colors = ["", "#fcd34d", "#4ade80", "#60a5fa", "#f472b6", "#c084fc", "#facc15"]; // color[6] = glowing
 
-  let current = {
-    shape: pieces[Math.floor(Math.random() * pieces.length)],
-    row: 0,
-    col: 3
-  };
+const pieces = [
+  [[1, 1, 1], [0, 1, 0]],     // T
+  [[2, 2], [2, 2]],           // O
+  [[0, 3, 3], [3, 3, 0]],     // S
+  [[4, 4, 0], [0, 4, 4]],     // Z
+  [[5, 5, 5, 5]],             // I (horizontal)
+  [[6]]                       // 💣 Explosive block (1x1)
+];
 
-  function drawBlock(x, y, color) {
-    context.fillStyle = color;
-    context.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
-    context.strokeStyle = "#1f2937";
-    context.strokeRect(x * blockSize + 0.5, y * blockSize + 0.5, blockSize - 1, blockSize - 1);
+let current = {
+  shape: randomPiece(),
+  row: 0,
+  col: 3,
+  timer: null // 💣 optional: for explosion
+};
+
+// ✅ Proper piece selection with 10% chance for explosion block
+function randomPiece() {
+  const isExplosive = Math.random() < 0.1;
+  return isExplosive ? [[6]] : pieces[Math.floor(Math.random() * pieces.length)];
+}
+
+// ✅ Explosion logic (clears 3x3)
+function explode(centerX, centerY) {
+  for (let y = -1; y <= 1; y++) {
+    for (let x = -1; x <= 1; x++) {
+      const ny = centerY + y;
+      const nx = centerX + x;
+      if (grid[ny]?.[nx]) grid[ny][nx] = 0;
+    }
+  }
+  draw();
+}
+
+// ✅ Drawing blocks — add glow if val === 6
+function drawBlock(x, y, color) {
+  context.save();
+
+  if (activeExplosive && activeExplosive.x === x && activeExplosive.y === y) {
+    const timeElapsed = (Date.now() - activeExplosive.start) / 1000;
+    const remaining = activeExplosive.countdown - timeElapsed;
+    const intensity = Math.max(0, Math.min(1, 1 - remaining / activeExplosive.countdown));
+
+    context.shadowColor = '#facc15';
+    context.shadowBlur = 10 + 30 * intensity;
   }
 
-  function draw() {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.save();
-    context.translate(0.5, 0.5);
+  context.fillStyle = color;
+  context.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+  context.strokeStyle = "#1f2937";
+  context.strokeRect(x * blockSize + 0.5, y * blockSize + 0.5, blockSize - 1, blockSize - 1);
+  context.restore();
+}
 
-    grid.forEach((row, y) =>
-      row.forEach((val, x) => val && drawBlock(x, y, colors[val]))
-    );
 
-    current.shape.forEach((row, y) =>
-      row.forEach((val, x) => {
-        if (val) drawBlock(current.col + x, current.row + y, colors[val]);
-      })
-    );
+// ✅ Main draw loop
+function draw() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.save();
+  context.translate(0.5, 0.5);
 
-    context.restore();
-  }
+grid.forEach((row, y) =>
+  row.forEach((val, x) => {
+    if (val) drawBlock(x, y, colors[val]);
+  })
+);
+
+current.shape.forEach((row, y) =>
+  row.forEach((val, x) => {
+    if (val) drawBlock(current.col + x, current.row + y, colors[val]);
+  })
+);
+
+
+  context.restore();
+}
 
   function collide(shape, row, col) {
     return shape.some((r, y) =>
@@ -93,23 +134,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function drop() {
-    if (!collide(current.shape, current.row + 1, current.col)) {
-      current.row++;
-    } else {
-      merge();
-      clearLines();
-      current = { shape: pieces[Math.floor(Math.random() * pieces.length)], row: 0, col: 3 };
-      if (collide(current.shape, current.row, current.col)) {
-        alert(`🧠 Game Over! You earned $${score} DSPOINC!`);
-        clearInterval(gameInterval);
-        onTetrisGameOver(score);
-        loadLeaderboard();
-        return;
-      }
+function drop() {
+  if (!collide(current.shape, current.row + 1, current.col)) {
+    current.row++;
+  } else {
+    // Check if this is the explosive piece BEFORE merge
+    if (
+      current.shape.length === 1 &&
+      current.shape[0].length === 1 &&
+      current.shape[0][0] === 6
+    ) {
+      const cx = current.col;
+      const cy = current.row;
+      const countdown = Math.floor(Math.random() * 30) + 1; // 1–30s random delay
+
+      activeExplosive = { x: cx, y: cy, countdown, start: Date.now() };
+
+      setTimeout(() => {
+        explode(cx, cy);
+        activeExplosive = null;
+      }, countdown * 1000);
     }
-    draw();
+
+    merge();
+    clearLines();
+
+    // Spawn new piece
+    current = {
+      shape: randomPiece(),
+      row: 0,
+      col: 3
+    };
+
+    // Game over check
+    if (collide(current.shape, current.row, current.col)) {
+      alert(`🧠 Game Over! You earned $${score} DSPOINC!`);
+      clearInterval(gameInterval);
+      onTetrisGameOver(score);
+      loadLeaderboard();
+      return;
+    }
   }
+
+  draw();
+}
+
 
   function rotatePiece() {
     const rotated = current.shape[0].map((_, i) =>
