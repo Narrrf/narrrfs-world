@@ -19,6 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const sensitivity = 20;
 
   let score = 0;
+  let linesClearedTotal = 0;
+  let dropInterval = 500;
+  let gameInterval = setInterval(drop, dropInterval);
   const grid = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
 
 const colors = ["", "#fcd34d", "#4ade80", "#60a5fa", "#f472b6", "#c084fc", "#facc15"]; // color[6] = glowing
@@ -118,21 +121,31 @@ current.shape.forEach((row, y) =>
     );
   }
 
-  function clearLines() {
-    let lines = 0;
-    for (let y = gridHeight - 1; y >= 0; y--) {
-      if (grid[y].every(v => v !== 0)) {
-        grid.splice(y, 1);
-        grid.unshift(Array(gridWidth).fill(0));
-        lines++;
-        y++;
-      }
-    }
-    if (lines > 0) {
-      score += lines * 10;
-      scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
+function clearLines() {
+  let lines = 0;
+  for (let y = gridHeight - 1; y >= 0; y--) {
+    if (grid[y].every(v => v !== 0)) {
+      grid.splice(y, 1);
+      grid.unshift(Array(gridWidth).fill(0));
+      lines++;
+      y++;
     }
   }
+
+  if (lines > 0) {
+    linesClearedTotal += lines;
+    score += lines * 10;
+    scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
+
+    // ⏩ Speed up every 20 lines
+    if (linesClearedTotal % 20 === 0) {
+      dropInterval = Math.max(100, dropInterval - 50);
+      clearInterval(gameInterval);
+      gameInterval = setInterval(drop, dropInterval);
+    }
+  }
+}
+
 
 function drop() {
   if (!collide(current.shape, current.row + 1, current.col)) {
@@ -282,5 +295,5 @@ function drop() {
   // ✅ Launch game loop
   loadLeaderboard();
   draw();
-  const gameInterval = setInterval(drop, 500);
+gameInterval = setInterval(drop, dropInterval); // ✅ Use the existing declared one
 });
