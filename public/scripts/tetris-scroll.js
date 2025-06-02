@@ -218,30 +218,38 @@ function onTetrisGameOver(finalScore) {
   const discordId = localStorage.getItem("discord_id");
   const discordName = localStorage.getItem("discord_name");
 
-  if (!wallet) return;
+  // ✅ Validate wallet presence & format
+  if (!wallet || wallet.length < 15) {
+    console.warn("❌ Invalid or missing wallet. Score not saved.");
+    return;
+  }
+
+  const payload = {
+    wallet,
+    score: finalScore,
+    discord_id: discordId,
+    discord_name: discordName
+  };
+
+  console.log("⏎ Sending score payload:", payload);
 
   fetch("/api/dev/save-score.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      wallet,
-      score: finalScore,
-      discord_id: discordId,
-      discord_name: discordName
-    })
+    body: JSON.stringify(payload)
   })
     .then(res => res.json())
     .then(data => {
       console.log("💾 Score saved:", data);
 
-      // 🧠 Only attempt leaderboard load if element exists
       if (document.getElementById("leaderboard-list")) {
         loadLeaderboard();
       }
     })
-    .catch(err => console.error("Score save failed:", err));
+    .catch(err => {
+      console.error("Score save failed:", err);
+    });
 }
-
 
  async function loadLeaderboard() {
   const list = document.getElementById("leaderboard-list");
