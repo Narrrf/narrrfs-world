@@ -58,6 +58,20 @@
 .animate-pop {
   animation: pop 0.4s ease-out;
 }
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
   </style>
 </head>
 
@@ -243,6 +257,18 @@
   <p id="spoink-score" class="text-center mt-6 text-lg font-semibold text-yellow-200 animate-pulse">
     💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
   </p>
+  
+<!-- 🧠 Game Over Modal — Cheese Lab Style -->
+<div id="game-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+  <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
+    <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
+    <p id="final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">
+      🔁 Play Again
+    </button>
+  </div>
+</div>
+
 
   <!-- 📱 Mobile Touch Controls -->
   <div id="mobile-controls" class="flex justify-around mt-4 sm:hidden">
@@ -288,8 +314,6 @@
 </div>
 
   
-
-
   <!-- 🧪 Back to Lab -->
   <a href="/index.html" class="bg-yellow-500 text-white px-5 py-2 rounded-full shadow hover:bg-yellow-600 text-sm sm:text-base w-full sm:w-auto text-center">
     🧪 Back to the Lab
