@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let score = 0;
   let linesClearedTotal = 0;
   let dropInterval = 500;
-  let gameInterval = setInterval(drop, dropInterval);
   const grid = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
 
 const colors = ["", "#fcd34d", "#4ade80", "#60a5fa", "#f472b6", "#c084fc", "#facc15"]; // color[6] = glowing
@@ -151,7 +150,7 @@ function drop() {
   if (!collide(current.shape, current.row + 1, current.col)) {
     current.row++;
   } else {
-    // Check if this is the explosive piece BEFORE merge
+    // 💣 Check if explosive piece BEFORE merge
     if (
       current.shape.length === 1 &&
       current.shape[0].length === 1 &&
@@ -159,7 +158,7 @@ function drop() {
     ) {
       const cx = current.col;
       const cy = current.row;
-      const countdown = Math.floor(Math.random() * 30) + 1; // 1–30s random delay
+      const countdown = Math.floor(Math.random() * 30) + 1; // 1–30s delay
 
       activeExplosive = { x: cx, y: cy, countdown, start: Date.now() };
 
@@ -172,25 +171,37 @@ function drop() {
     merge();
     clearLines();
 
-    // Spawn new piece
+    // 🧱 Spawn new piece
     current = {
       shape: randomPiece(),
       row: 0,
       col: 3
     };
 
-    // Game over check
+    // 🧠 Game Over check
     if (collide(current.shape, current.row, current.col)) {
-      alert(`🧠 Game Over! You earned $${score} DSPOINC!`);
       clearInterval(gameInterval);
       onTetrisGameOver(score);
-      loadLeaderboard();
+
+      const modal = document.getElementById("game-over-modal");
+      const finalScoreText = document.getElementById("final-score-text");
+
+      if (modal && finalScoreText) {
+        finalScoreText.textContent = `You earned $${score} DSPOINC`;
+        modal.classList.remove("hidden");
+      }
+
+      if (document.getElementById("leaderboard-list")) {
+        loadLeaderboard();
+      }
+
       return;
     }
   }
 
-  draw();
+  draw(); // ✅ Redraw updated state
 }
+
 
 
   function rotatePiece() {
@@ -202,41 +213,63 @@ function drop() {
     }
   }
 
-  function onTetrisGameOver(finalScore) {
-    const wallet = localStorage.getItem("walletAddress");
-    const discordId = localStorage.getItem("discord_id");
-    const discordName = localStorage.getItem("discord_name");
+function onTetrisGameOver(finalScore) {
+  const wallet = localStorage.getItem("walletAddress");
+  const discordId = localStorage.getItem("discord_id");
+  const discordName = localStorage.getItem("discord_name");
 
-    if (!wallet) return;
+  if (!wallet) return;
 
-    fetch("/api/dev/save-score.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wallet, score: finalScore, discord_id: discordId, discord_name: discordName })
-    }).then(res => res.json()).then(data => console.log("💾 Score saved:", data));
+  fetch("/api/dev/save-score.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      wallet,
+      score: finalScore,
+      discord_id: discordId,
+      discord_name: discordName
+    })
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log("💾 Score saved:", data);
+
+      // 🧠 Only attempt leaderboard load if element exists
+      if (document.getElementById("leaderboard-list")) {
+        loadLeaderboard();
+      }
+    })
+    .catch(err => console.error("Score save failed:", err));
+}
+
+
+ async function loadLeaderboard() {
+  const list = document.getElementById("leaderboard-list");
+  if (!list) {
+    console.warn("⚠️ Leaderboard element not found.");
+    return;
   }
 
-  async function loadLeaderboard() {
-    const list = document.getElementById("leaderboard-list");
-    try {
-      const res = await fetch("/api/dev/get-leaderboard.php");
-      const result = await res.json();
-      const scores = result.leaderboard || [];
+  try {
+    const res = await fetch("/api/dev/get-leaderboard.php");
+    const result = await res.json();
+    const scores = result.leaderboard || [];
 
-      if (!Array.isArray(scores)) throw new Error("Invalid leaderboard format");
+    if (!Array.isArray(scores)) throw new Error("Invalid leaderboard format");
 
-      list.innerHTML = "";
-      scores.forEach((entry, i) => {
-        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-        const li = document.createElement("li");
-        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-        list.appendChild(li);
-      });
-    } catch (err) {
-      console.error("Leaderboard error:", err);
-      list.innerHTML = "<li>❌ Could not load leaderboard</li>";
-    }
+    list.innerHTML = "";
+    scores.forEach((entry, i) => {
+      const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+      const li = document.createElement("li");
+      li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+      list.appendChild(li);
+    });
+  } catch (err) {
+    console.error("Leaderboard error:", err);
+    list.innerHTML = "<li>❌ Could not load leaderboard</li>";
   }
+}
+
 
   window.loginAndReload = function () {
     window.location.href =
