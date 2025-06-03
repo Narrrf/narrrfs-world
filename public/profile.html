@@ -248,21 +248,10 @@
     🎮 TETRIS SPOINC MODE
   </h2>
 
-  <!-- 🎨 Game Canvas -->
-  <canvas id="tetris-canvas" width="200" height="400"
-    class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg">
-  </canvas>
-
-  <!-- 💰 Live Score Display -->
-  <p id="spoink-score" class="text-center mt-6 text-lg font-semibold text-yellow-200 animate-pulse">
-    💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
-  </p>
-  
-<!-- 🎨 Game Canvas -->
-<canvas id="tetris-canvas" width="200" height="400" ... ></canvas>
-
-<!-- 💰 Score Display -->
-<p id="spoink-score" ... > ... </p>
+<!-- 🎮 Game Canvas -->
+<canvas id="tetris-canvas" width="200" height="400"
+  class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg">
+</canvas>
 
 <!-- 🔮 Next Block Preview -->
 <div class="mt-4 flex flex-col items-center justify-center">
@@ -272,6 +261,12 @@
       class="bg-gray-900 rounded-md block"></canvas>
   </div>
 </div>
+
+<!-- 💰 Score Display -->
+<p id="spoink-score" class="text-center mt-6 text-lg font-semibold text-yellow-200 animate-pulse">
+  💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
+</p>
+
   
 <!-- 🧠 Game Over Modal — Cheese Lab Style -->
 <div id="game-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
