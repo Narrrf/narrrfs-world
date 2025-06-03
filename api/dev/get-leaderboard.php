@@ -2,7 +2,9 @@
 header('Content-Type: application/json');
 
 try {
-  $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+  $dbPath = file_exists('/data/narrrf_world.sqlite')
+    ? '/data/narrrf_world.sqlite'
+    : __DIR__ . '/../../db/narrrf_world.sqlite';
   if (!file_exists($dbPath)) {
     throw new Exception("Database not found");
   }
