@@ -214,15 +214,37 @@ function drop() {
   }
 
 function onTetrisGameOver(finalScore) {
-  const wallet = localStorage.getItem("walletAddress");
-  const discordId = localStorage.getItem("discord_id");
-  const discordName = localStorage.getItem("discord_name");
+  let wallet = localStorage.getItem("walletAddress");
+  let discordId = localStorage.getItem("discord_id");
+  let discordName = localStorage.getItem("discord_name");
 
-  // ✅ Validate wallet presence & format
-  if (!wallet || wallet.length < 15) {
-    console.warn("❌ Invalid or missing wallet. Score not saved.");
-    return;
+  // 🛠️ Mock fallback if testing locally
+  if (!discordId) {
+    discordId = "1337";
+    discordName = "Anonymous Mouse";
+    localStorage.setItem("discord_id", discordId);
+    localStorage.setItem("discord_name", discordName);
   }
+
+// ✅ For Local Testing
+if (!wallet) {
+  localStorage.setItem("walletAddress", "TestWallet123456789XYZ");
+  wallet = "TestWallet123456789XYZ";
+}
+
+if (!discordId) {
+  discordId = "1337";
+  discordName = "Anonymous Mouse";
+  localStorage.setItem("discord_id", discordId);
+  localStorage.setItem("discord_name", discordName);
+}
+
+
+// ✅ Basic validation
+if (!wallet || wallet.length < 15 || finalScore <= 0) {
+  console.warn("❌ Invalid wallet or zero score — skipping save.");
+  return;
+}
 
   const payload = {
     wallet,
@@ -241,17 +263,12 @@ function onTetrisGameOver(finalScore) {
     .then(res => res.json())
     .then(data => {
       console.log("💾 Score saved:", data);
-
-      if (document.getElementById("leaderboard-list")) {
-        loadLeaderboard();
-      }
+      if (document.getElementById("leaderboard-list")) loadLeaderboard();
     })
-    .catch(err => {
-      console.error("Score save failed:", err);
-    });
+    .catch(err => console.error("Score save failed:", err));
 }
 
- async function loadLeaderboard() {
+async function loadLeaderboard() {
   const list = document.getElementById("leaderboard-list");
   if (!list) {
     console.warn("⚠️ Leaderboard element not found.");
@@ -266,10 +283,17 @@ function onTetrisGameOver(finalScore) {
     if (!Array.isArray(scores)) throw new Error("Invalid leaderboard format");
 
     list.innerHTML = "";
+
+    const rankColors = ["text-yellow-400", "text-gray-300", "text-yellow-200"];
+    const rankEmojis = ["👑", "🥈", "🥉"];
+
     scores.forEach((entry, i) => {
       const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
       const li = document.createElement("li");
-      li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+      const emoji = rankEmojis[i] || "";
+
+      li.innerHTML = `${emoji} #${i + 1} <strong>${name}</strong> – ${entry.score} $DSPOINC`;
+      li.classList.add("animate-pop", rankColors[i] || "text-white");
       list.appendChild(li);
     });
   } catch (err) {
@@ -277,7 +301,6 @@ function onTetrisGameOver(finalScore) {
     list.innerHTML = "<li>❌ Could not load leaderboard</li>";
   }
 }
-
 
   window.loginAndReload = function () {
     window.location.href =

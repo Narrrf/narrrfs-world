@@ -269,7 +269,6 @@
   </div>
 </div>
 
-
   <!-- 📱 Mobile Touch Controls -->
   <div id="mobile-controls" class="flex justify-around mt-4 sm:hidden">
     <button onclick="moveLeft()" class="bg-yellow-400 rounded-full px-4 py-2 text-xl font-bold shadow">←</button>
@@ -286,13 +285,13 @@
   </div>
 
   <!-- 🏆 Leaderboard Section -->
-  <section id="tetris-leaderboard" class="mt-6 text-yellow-100 text-sm">
-    <h3 class="text-lg font-bold mb-2">🏆 Top $DSPOINC Scorers</h3>
-    <ol id="leaderboard-list" class="list-decimal list-inside text-left space-y-1">
-      <li>Loading leaderboard...</li>
-    </ol>
-    <div id="leaderboard-error" class="text-red-400 hidden">❌ Failed to load leaderboard</div>
-  </section>
+<section id="leaderboard-panel" class="mt-10 bg-gray-900 rounded-xl p-5 shadow-lg max-w-sm mx-auto border border-yellow-400/20">
+  <h3 class="text-xl font-bold text-yellow-300 mb-3 drop-shadow">🏆 Top $DSPOINC Scorers</h3>
+  <ul id="leaderboard-list" class="space-y-1 text-sm font-mono text-yellow-100">
+    <li>⏳ Loading leaderboard...</li>
+  </ul>
+  <div id="leaderboard-error" class="text-red-400 hidden mt-2">❌ Failed to load leaderboard</div>
+</section>
 </section>
 
 
