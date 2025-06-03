@@ -258,6 +258,21 @@
     💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
   </p>
   
+<!-- 🎨 Game Canvas -->
+<canvas id="tetris-canvas" width="200" height="400" ... ></canvas>
+
+<!-- 💰 Score Display -->
+<p id="spoink-score" ... > ... </p>
+
+<!-- 🔮 Next Block Preview -->
+<div class="mt-4 flex flex-col items-center justify-center">
+  <h4 class="text-xs font-semibold text-yellow-300 tracking-wide uppercase mb-1">🔮 Next Block</h4>
+  <div class="p-1 bg-black rounded-xl ring-2 ring-yellow-500/60 shadow-md">
+    <canvas id="next-canvas" width="80" height="80"
+      class="bg-gray-900 rounded-md block"></canvas>
+  </div>
+</div>
+  
 <!-- 🧠 Game Over Modal — Cheese Lab Style -->
 <div id="game-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
   <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">

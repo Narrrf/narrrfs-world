@@ -1,12 +1,20 @@
+
+// 🎨 Block colors for pieces (only define this ONCE)
+const colors = ["", "#fcd34d", "#4ade80", "#60a5fa", "#f472b6", "#c084fc", "#facc15"]; // color[6] = glowing
+
 let activeExplosive = null; // track position and countdown
 
-// 🚫 Full page scroll prevention (Arrow keys + WASD + Space)
+// 🚫 Full page scroll prevention
 window.addEventListener("keydown", function (e) {
   const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "a", "s", "d", "w"];
   if (keys.includes(e.key)) {
     e.preventDefault();
   }
 }, { passive: false });
+
+// 🔮 Preview canvas setup
+const nextCanvas = document.getElementById("next-canvas");
+const nextCtx = nextCanvas.getContext("2d");
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("tetris-canvas");
@@ -23,29 +31,31 @@ document.addEventListener("DOMContentLoaded", () => {
   let dropInterval = 500;
   const grid = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
 
-const colors = ["", "#fcd34d", "#4ade80", "#60a5fa", "#f472b6", "#c084fc", "#facc15"]; // color[6] = glowing
+  const pieces = [
+    [[1, 1, 1], [0, 1, 0]],     // T
+    [[2, 2], [2, 2]],           // O
+    [[0, 3, 3], [3, 3, 0]],     // S
+    [[4, 4, 0], [0, 4, 4]],     // Z
+    [[5, 5, 5, 5]],             // I
+    [[6]]                       // 💣
+  ];
 
-const pieces = [
-  [[1, 1, 1], [0, 1, 0]],     // T
-  [[2, 2], [2, 2]],           // O
-  [[0, 3, 3], [3, 3, 0]],     // S
-  [[4, 4, 0], [0, 4, 4]],     // Z
-  [[5, 5, 5, 5]],             // I (horizontal)
-  [[6]]                       // 💣 Explosive block (1x1)
-];
+  let nextPiece = randomPiece();
 
-let current = {
-  shape: randomPiece(),
-  row: 0,
-  col: 3,
-  timer: null // 💣 optional: for explosion
-};
+  let current = {
+    shape: nextPiece,
+    row: 0,
+    col: 3,
+    timer: null
+  };
 
-// ✅ Proper piece selection with 10% chance for explosion block
-function randomPiece() {
-  const isExplosive = Math.random() < 0.1;
-  return isExplosive ? [[6]] : pieces[Math.floor(Math.random() * pieces.length)];
-}
+  nextPiece = randomPiece();
+
+// ✅ Piece selection logic with 10% chance for bomb
+  function randomPiece() {
+    const isExplosive = Math.random() < 0.1;
+    return isExplosive ? [[6]] : pieces[Math.floor(Math.random() * pieces.length)];
+  }
 
 // ✅ Explosion logic (clears 3x3)
 function explode(centerX, centerY) {
@@ -81,26 +91,44 @@ function drawBlock(x, y, color) {
 
 
 // ✅ Main draw loop
-function draw() {
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.save();
-  context.translate(0.5, 0.5);
+  function draw() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.save();
+    context.translate(0.5, 0.5);
 
-grid.forEach((row, y) =>
-  row.forEach((val, x) => {
-    if (val) drawBlock(x, y, colors[val]);
-  })
-);
+    grid.forEach((row, y) =>
+      row.forEach((val, x) => {
+        if (val) drawBlock(x, y, colors[val]);
+      })
+    );
 
-current.shape.forEach((row, y) =>
-  row.forEach((val, x) => {
-    if (val) drawBlock(current.col + x, current.row + y, colors[val]);
-  })
-);
+    current.shape.forEach((row, y) =>
+      row.forEach((val, x) => {
+        if (val) drawBlock(current.col + x, current.row + y, colors[val]);
+      })
+    );
 
+    context.restore();
+  }
 
-  context.restore();
-}
+  function renderNextBlock(shape) {
+    if (!nextCtx || !shape) return;
+    nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+
+    const offsetX = Math.floor((4 - shape[0].length) / 2);
+    const offsetY = Math.floor((4 - shape.length) / 2);
+
+    shape.forEach((row, y) => {
+      row.forEach((val, x) => {
+        if (val) {
+          nextCtx.fillStyle = colors[val];
+          nextCtx.fillRect((x + offsetX) * 20, (y + offsetY) * 20, 20, 20);
+          nextCtx.strokeStyle = "#1f2937";
+          nextCtx.strokeRect((x + offsetX) * 20 + 0.5, (y + offsetY) * 20 + 0.5, 19, 19);
+        }
+      });
+    });
+  }
 
   function collide(shape, row, col) {
     return shape.some((r, y) =>
@@ -145,7 +173,6 @@ function clearLines() {
   }
 }
 
-
 function drop() {
   if (!collide(current.shape, current.row + 1, current.col)) {
     current.row++;
@@ -158,7 +185,7 @@ function drop() {
     ) {
       const cx = current.col;
       const cy = current.row;
-      const countdown = Math.floor(Math.random() * 30) + 1; // 1–30s delay
+      const countdown = Math.floor(Math.random() * 30) + 1;
 
       activeExplosive = { x: cx, y: cy, countdown, start: Date.now() };
 
@@ -173,10 +200,12 @@ function drop() {
 
     // 🧱 Spawn new piece
     current = {
-      shape: randomPiece(),
+      shape: nextPiece,
       row: 0,
       col: 3
     };
+    nextPiece = randomPiece();
+    renderNextBlock(nextPiece);
 
     // 🧠 Game Over check
     if (collide(current.shape, current.row, current.col)) {
@@ -201,8 +230,6 @@ function drop() {
 
   draw(); // ✅ Redraw updated state
 }
-
-
 
   function rotatePiece() {
     const rotated = current.shape[0].map((_, i) =>
@@ -330,34 +357,36 @@ async function loadLeaderboard() {
     draw();
   }, { passive: false });
 
-  // 📱 Touch Swipe Controls
-  let touchStartX = 0, touchStartY = 0;
+// ✅ Touch Swipe Controls — INSIDE the DOMContentLoaded block!
+let touchStartX = 0, touchStartY = 0;
 
-  canvas.addEventListener("touchstart", e => {
-    if (e.cancelable) e.preventDefault();
-    const touch = e.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-  }, { passive: false });
+canvas.addEventListener("touchstart", e => {
+  if (e.cancelable) e.preventDefault();
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+}, { passive: false });
 
-  canvas.addEventListener("touchend", e => {
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - touchStartX;
-    const deltaY = touch.clientY - touchStartY;
+canvas.addEventListener("touchend", e => {
+  const touch = e.changedTouches[0];
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
 
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) current.col++;
-      else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) current.col--;
-    } else {
-      if (deltaY > sensitivity) drop();
-      else if (deltaY < -sensitivity) rotatePiece();
-    }
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) current.col++;
+    else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) current.col--;
+  } else {
+    if (deltaY > sensitivity) drop();
+    else if (deltaY < -sensitivity) rotatePiece();
+  }
 
-    draw();
-  }, { passive: false });
-
-  // ✅ Launch game loop
-  loadLeaderboard();
   draw();
-gameInterval = setInterval(drop, dropInterval); // ✅ Use the existing declared one
+}, { passive: false });
+
+
+// ✅ Final game loop initialization
+loadLeaderboard();
+draw();
+renderNextBlock(nextPiece);
+gameInterval = setInterval(drop, dropInterval);
 });
