@@ -111,24 +111,32 @@ function drawBlock(x, y, color) {
     context.restore();
   }
 
-  function renderNextBlock(shape) {
-    if (!nextCtx || !shape) return;
-    nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+function renderNextBlock(shape) {
+  if (!nextCtx || !shape) return;
 
-    const offsetX = Math.floor((4 - shape[0].length) / 2);
-    const offsetY = Math.floor((4 - shape.length) / 2);
+  nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
 
-    shape.forEach((row, y) => {
-      row.forEach((val, x) => {
-        if (val) {
-          nextCtx.fillStyle = colors[val];
-          nextCtx.fillRect((x + offsetX) * 20, (y + offsetY) * 20, 20, 20);
-          nextCtx.strokeStyle = "#1f2937";
-          nextCtx.strokeRect((x + offsetX) * 20 + 0.5, (y + offsetY) * 20 + 0.5, 19, 19);
-        }
-      });
+  const offsetX = Math.floor((4 - shape[0].length) / 2);
+  const offsetY = Math.floor((4 - shape.length) / 2);
+
+  shape.forEach((row, y) => {
+    row.forEach((val, x) => {
+      if (val) {
+        nextCtx.fillStyle = colors[val];
+        nextCtx.fillRect((x + offsetX) * 20, (y + offsetY) * 20, 20, 20);
+        nextCtx.strokeStyle = "#1f2937";
+        nextCtx.strokeRect((x + offsetX) * 20 + 0.5, (y + offsetY) * 20 + 0.5, 19, 19);
+      }
     });
+  });
+
+  // 💣 Bomb detection & warning toggle
+  const bombWarning = document.getElementById("bomb-warning");
+  const isBomb = shape.length === 1 && shape[0].length === 1 && shape[0][0] === 6;
+  if (bombWarning) {
+    bombWarning.classList.toggle("hidden", !isBomb);
   }
+}
 
   function collide(shape, row, col) {
     return shape.some((r, y) =>
