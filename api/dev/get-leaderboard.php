@@ -12,12 +12,13 @@ try {
   $db = new PDO("sqlite:$dbPath");
   $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-  $query = "
-    SELECT wallet, score, discord_id, discord_name, timestamp
-    FROM tbl_tetris_scores
-    ORDER BY score DESC, timestamp ASC
-    LIMIT 10
-  ";
+$query = "
+  SELECT wallet, MAX(score) as score, discord_id, discord_name, MIN(timestamp) as timestamp
+  FROM tbl_tetris_scores
+  GROUP BY wallet
+  ORDER BY score DESC, timestamp ASC
+  LIMIT 10
+";
 
   $stmt = $db->prepare($query);
   $stmt->execute();
