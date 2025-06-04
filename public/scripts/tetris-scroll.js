@@ -365,17 +365,26 @@ async function loadLeaderboard() {
     draw();
   }, { passive: false });
 
-// ✅ Touch Swipe Controls — INSIDE the DOMContentLoaded block!
+// ✅ Enhanced Mobile Touch Controls: Swipe + Hold for Fast Drop
 let touchStartX = 0, touchStartY = 0;
+let touchDropInterval = null;
 
 canvas.addEventListener("touchstart", e => {
   if (e.cancelable) e.preventDefault();
   const touch = e.touches[0];
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
+
+  // 🧲 Start holding for drop
+  touchDropInterval = setInterval(() => {
+    drop();
+    draw();
+  }, 75); // drop faster when holding
 }, { passive: false });
 
 canvas.addEventListener("touchend", e => {
+  clearInterval(touchDropInterval);
+
   const touch = e.changedTouches[0];
   const deltaX = touch.clientX - touchStartX;
   const deltaY = touch.clientY - touchStartY;
@@ -384,12 +393,12 @@ canvas.addEventListener("touchend", e => {
     if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) current.col++;
     else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) current.col--;
   } else {
-    if (deltaY > sensitivity) drop();
-    else if (deltaY < -sensitivity) rotatePiece();
+    if (deltaY < -sensitivity) rotatePiece(); // Only rotate on short up swipe
   }
 
   draw();
 }, { passive: false });
+
 
 
 // ✅ Final game loop initialization
