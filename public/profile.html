@@ -72,6 +72,21 @@
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 5px #f472b6, 0 0 10px #f472b6, 0 0 15px #f472b6;
+  }
+  50% {
+    text-shadow: 0 0 10px #f472b6, 0 0 20px #f472b6, 0 0 25px #f472b6;
+  }
+  100% {
+    text-shadow: 0 0 5px #f472b6, 0 0 10px #f472b6, 0 0 15px #f472b6;
+  }
+}
+
+.animate-glow {
+  animation: glow 1s ease-in-out infinite;
+}
   </style>
 </head>
 
@@ -261,6 +276,10 @@
       class="bg-gray-900 rounded-md block"></canvas>
   </div>
 </div>
+
+<p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1 animate-glow">
+  💣 Incoming Cheese Bomb!
+</p>
 
 <!-- 💰 Score Display -->
 <p id="spoink-score" class="text-center mt-6 text-lg font-semibold text-yellow-200 animate-pulse">
