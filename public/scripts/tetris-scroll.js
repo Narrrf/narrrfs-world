@@ -1,6 +1,18 @@
 
 // 🎨 Block colors for pieces (only define this ONCE)
-const colors = ["", "#fcd34d", "#4ade80", "#60a5fa", "#f472b6", "#c084fc", "#facc15"]; // color[6] = glowing
+// 🎨 Cheese-Themed Block Colors
+const colors = [
+  "#000000",    // 0 - empty
+  "#FFB347",    // 1 - T (cheddar orange)
+  "#FFFACD",    // 2 - O (lemon cream)
+  "#EEDC82",    // 3 - S (aged parmesan)
+  "#FFDEAD",    // 4 - Z (mild gouda)
+  "#FFFF99",    // 5 - I (soft mozzarella)
+  "#FFD700",    // 6 - bomb (keep yellow explosion)
+  "#FFA500",    // 7 - L (sharp cheddar)
+  "#F4C430"     // 8 - J (gruyère gold)
+];
+ // index 8 → coral color for Blocks 
 
 let activeExplosive = null; // track position and countdown
 
@@ -31,14 +43,16 @@ document.addEventListener("DOMContentLoaded", () => {
   let dropInterval = 500;
   const grid = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(0));
 
-  const pieces = [
-    [[1, 1, 1], [0, 1, 0]],     // T
-    [[2, 2], [2, 2]],           // O
-    [[0, 3, 3], [3, 3, 0]],     // S
-    [[4, 4, 0], [0, 4, 4]],     // Z
-    [[5, 5, 5, 5]],             // I
-    [[6]]                       // 💣
-  ];
+const pieces = [
+  [[1, 1, 1], [0, 1, 0]],     // T
+  [[2, 2], [2, 2]],           // O
+  [[0, 3, 3], [3, 3, 0]],     // S
+  [[4, 4, 0], [0, 4, 4]],     // Z
+  [[5, 5, 5, 5]],             // I
+  [[7, 0], [7, 0], [7, 7]],   // L
+  [[0, 8], [0, 8], [8, 8]],   // J ← mirrored L block
+  [[6]]                       // 💣
+];
 
   let nextPiece = randomPiece();
 
