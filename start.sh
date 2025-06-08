@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# If a persisted DB exists, use it
+# ✅ If a persisted DB exists, restore it to the app
 if [ -f /data/narrrf_world.sqlite ]; then
   echo "✅ Found DB in /data — copying to app directory..."
   cp /data/narrrf_world.sqlite /var/www/html/db/narrrf_world.sqlite
@@ -9,10 +9,10 @@ else
   cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world.sqlite
 fi
 
-# 🔐 Fix permissions
+# 🔐 Fix permissions so PHP (www-data) can write
 chown www-data:www-data /var/www/html/db/narrrf_world.sqlite
 chmod 664 /var/www/html/db/narrrf_world.sqlite
 
-# Start Apache
+# 🚀 Start Apache in foreground
 exec apache2-foreground
 
