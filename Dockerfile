@@ -10,7 +10,7 @@ RUN a2enmod rewrite
 COPY ./public /var/www/html
 COPY ./api /var/www/html/api
 COPY ./discord-tools /var/www/html/discord-tools
-COPY ./db /var/www/html/db
+COPY ./db/schema.sql /var/www/html/db/schema.sql
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
