@@ -258,7 +258,7 @@
 ✅ Bottom collision & pixel alignment confirmed
 -->
 <!-- 🧠 GENESIS_8_TETRIS_SCROLL -->
-<section id="cheese-tetris" class="bg-black text-yellow-300 py-12 px-8 rounded-3xl shadow-2xl max-w-md mx-auto mt-24 mb-20 ring-4 ring-yellow-400/40 drop-shadow-[0_0_15px_#facc15]">
+<section id="cheese-tetris" class="relative bg-black text-yellow-300 py-12 px-8 rounded-3xl shadow-2xl max-w-md mx-auto mt-24 mb-20 ring-4 ring-yellow-400/40 drop-shadow-[0_0_15px_#facc15]">
   <h2 class="text-center text-3xl font-extrabold mb-6 tracking-tight text-yellow-100 drop-shadow">
     🎮 TETRIS SPOINC MODE
   </h2>
@@ -267,6 +267,12 @@
 <canvas id="tetris-canvas" width="200" height="400"
   class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg">
 </canvas>
+
+<!-- Inside #cheese-tetris section -->
+<div id="bomb-defused-popup"
+  class="absolute bottom-24 right-4 bg-yellow-300 text-black px-4 py-2 rounded-xl text-lg shadow-lg hidden z-50">
+  💣 Bomb Defused!
+</div>
 
 <!-- 🔮 Next Block Preview -->
 <div class="mt-4 flex flex-col items-center justify-center">
@@ -486,6 +492,6 @@ localStorage.setItem("discord_name", user.username);
 });
 </script>
 <!-- 🧠 Tetris Scroll Script with Cache-Busting -->
-<script src="scripts/tetris-scroll.js?v=9.0.3"></script>
+<script src="scripts/tetris-scroll.js?v=9.0.4"></script>
 </body>
 </html>
