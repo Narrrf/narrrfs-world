@@ -34,7 +34,9 @@ RUN chown -R www-data:www-data /var/www/html \
 
 WORKDIR /var/www/html
 
-COPY start.sh /start.sh
+# At the end of Dockerfile
+COPY ./start.sh /start.sh
 RUN chmod +x /start.sh
 CMD ["/start.sh"]
+
 
