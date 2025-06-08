@@ -212,7 +212,10 @@ function drop() {
       activeExplosive = { x: cx, y: cy, countdown, start: Date.now() };
 
       setTimeout(() => {
-        explode(cx, cy);
+        // 🧪 Verify bomb still exists before exploding
+        if (grid[cy]?.[cx] === 6) {
+          explode(cx, cy);
+        }
         activeExplosive = null;
       }, countdown * 1000);
     }
@@ -250,8 +253,9 @@ function drop() {
     }
   }
 
-  draw(); // ✅ Redraw updated state
+  draw(); // ✅ Always redraw
 }
+
 
   function rotatePiece() {
     const rotated = current.shape[0].map((_, i) =>
