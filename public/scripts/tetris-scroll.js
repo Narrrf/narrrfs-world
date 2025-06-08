@@ -174,10 +174,15 @@ function clearLines() {
   let lines = 0;
   for (let y = gridHeight - 1; y >= 0; y--) {
     if (grid[y].every(v => v !== 0)) {
+      // 🧠 Check for bomb BEFORE removing the row
+      if (grid[y].includes(6)) {
+        showBombDefusedPopup();
+      }
+
       grid.splice(y, 1);
       grid.unshift(Array(gridWidth).fill(0));
       lines++;
-      y++;
+      y++; // Re-check same row index
     }
   }
 
@@ -194,6 +199,22 @@ function clearLines() {
     }
   }
 }
+
+// 🔔 Defused popup UI logic
+function showBombDefusedPopup() {
+  const popup = document.getElementById("bomb-defused-popup");
+  if (!popup) return;
+
+  popup.classList.remove("hidden");
+  popup.classList.add("animate-pop");
+
+  setTimeout(() => {
+    popup.classList.add("hidden");
+    popup.classList.remove("animate-pop");
+  }, 2000);
+}
+
+
 
 function drop() {
   if (!collide(current.shape, current.row + 1, current.col)) {
