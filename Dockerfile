@@ -6,7 +6,7 @@ RUN echo "ServerName narrrfs.world" >> /etc/apache2/apache2.conf
 # Enable mod_rewrite
 RUN a2enmod rewrite
 
-# Install sqlite3 CLI tool ✅
+# Install sqlite3 CLI
 RUN apt-get update && apt-get install -y sqlite3
 
 # Copy files
@@ -15,11 +15,11 @@ COPY ./api /var/www/html/api
 COPY ./discord-tools /var/www/html/discord-tools
 COPY ./db/schema.sql /var/www/html/db/schema.sql
 
-# Create DB from schema ✅
-RUN sqlite3 /var/www/html/db/narrrf_world.sqlite < /var/www/html/db/schema.sql
-
-# Make sure db/ exists
+# Ensure db/ exists
 RUN mkdir -p /var/www/html/db
+
+# Create SQLite DB from schema
+RUN sqlite3 /var/www/html/db/narrrf_world.sqlite < /var/www/html/db/schema.sql
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
