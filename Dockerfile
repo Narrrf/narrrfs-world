@@ -14,6 +14,12 @@ COPY ./discord-tools /var/www/html/discord-tools
 # ✅ Ensure db/ exists to avoid build failures
 RUN mkdir -p /var/www/html/db
 
+# Copy schema file
+COPY ./db/schema.sql /var/www/html/db/schema.sql
+
+# Create empty DB from schema
+RUN sqlite3 /var/www/html/db/narrrf_world.sqlite < /var/www/html/db/schema.sql
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html \
