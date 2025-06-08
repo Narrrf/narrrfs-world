@@ -21,9 +21,20 @@ RUN mkdir -p /var/www/html/db
 # Create SQLite DB from schema
 RUN sqlite3 /var/www/html/db/narrrf_world.sqlite < /var/www/html/db/schema.sql
 
+# Restore DB from /data to /var/www/html/db only if it exists
+RUN mkdir -p /var/www/html/db && \
+    if [ -f /data/narrrf_world.sqlite ]; then \
+      cp /data/narrrf_world.sqlite /var/www/html/db/narrrf_world.sqlite; \
+    fi
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html \
     && chmod -R 777 /var/www/html/db
 
 WORKDIR /var/www/html
+
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+CMD ["/start.sh"]
+
