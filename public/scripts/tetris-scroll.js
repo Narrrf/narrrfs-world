@@ -432,6 +432,7 @@ async function loadLeaderboard() {
 // ✅ Enhanced Mobile Touch Controls: Swipe + Hold for Fast Drop
 let touchStartX = 0, touchStartY = 0;
 let touchDropInterval = null;
+let dropHoldTimeout = null;
 
 canvas.addEventListener("touchstart", e => {
   if (e.cancelable) e.preventDefault();
@@ -439,14 +440,17 @@ canvas.addEventListener("touchstart", e => {
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
 
-  // 🧲 Start holding for drop
-  touchDropInterval = setInterval(() => {
-    drop();
-    draw();
-  }, 75); // drop faster when holding
+  // ⏱️ Delay fast drop until held for 1 second
+  dropHoldTimeout = setTimeout(() => {
+    touchDropInterval = setInterval(() => {
+      drop();
+      draw();
+    }, 75);
+  }, 1000);
 }, { passive: false });
 
 canvas.addEventListener("touchend", e => {
+  clearTimeout(dropHoldTimeout);
   clearInterval(touchDropInterval);
 
   const touch = e.changedTouches[0];
@@ -457,7 +461,7 @@ canvas.addEventListener("touchend", e => {
     if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) current.col++;
     else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) current.col--;
   } else {
-    if (deltaY < -sensitivity) rotatePiece(); // Only rotate on short up swipe
+    if (deltaY < -sensitivity) rotatePiece();
   }
 
   draw();
