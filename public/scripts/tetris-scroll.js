@@ -469,44 +469,51 @@ function collide(shape, row, col) {
         }, { passive: false });
       
       // ✅ Enhanced Mobile Touch Controls: Swipe + Hold for Fast Drop
-      let touchStartX = 0, touchStartY = 0;
-      let touchDropInterval = null;
-      let dropHoldTimeout = null;
-      
-      canvas.addEventListener("touchstart", e => {
-        if (e.cancelable) e.preventDefault();
-        const touch = e.touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-      
-        // ⏱️ Delay fast drop until held for 1 second
-        dropHoldTimeout = setTimeout(() => {
-          touchDropInterval = setInterval(() => {
-            drop();
-            draw();
-          }, 75);
-        }, 1000);
-      }, { passive: false });
-      
-      canvas.addEventListener("touchend", e => {
-        clearTimeout(dropHoldTimeout);
-        clearInterval(touchDropInterval);
-      
-        const touch = e.changedTouches[0];
-        const deltaX = touch.clientX - touchStartX;
-        const deltaY = touch.clientY - touchStartY;
-      
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-          if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) current.col++;
-          else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) current.col--;
-        } else {
-          if (deltaY < -sensitivity) rotatePiece();
-        }
-      
-        draw();
-      }, { passive: false });
-      
-      
+let touchStartX = 0, touchStartY = 0;
+let touchDropInterval = null;
+let dropHoldTimeout = null;
+let heldDown = false;
+
+canvas.addEventListener("touchstart", e => {
+  if (e.cancelable) e.preventDefault();
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+
+  heldDown = false;
+
+  dropHoldTimeout = setTimeout(() => {
+    heldDown = true;
+    touchDropInterval = setInterval(() => {
+      drop();
+      draw();
+    }, 75);
+  }, 1000); // Trigger hold after 1 sec
+}, { passive: false });
+
+canvas.addEventListener("touchend", e => {
+  clearTimeout(dropHoldTimeout);
+
+  if (heldDown) {
+    clearInterval(touchDropInterval);
+    heldDown = false;
+    return; // Do not process swipe if hold-drop was triggered
+  }
+
+  const touch = e.changedTouches[0];
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
+
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) current.col++;
+    else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) current.col--;
+  } else {
+    if (deltaY < -sensitivity) rotatePiece(); // swipe up
+  }
+
+  draw();
+}, { passive: false });
+
       
       // ✅ Final game loop initialization
       loadLeaderboard();
