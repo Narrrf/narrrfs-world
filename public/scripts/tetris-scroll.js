@@ -15,25 +15,32 @@ const pieceImageMap = {
 let allImagesLoaded = false;
 let loadedCount = 0;
 let domReady = false;
-function tryStartTetris() {
-  if (allImagesLoaded && domReady) startTetris();
+// Replace current tryStartTetris logic with:
+function checkAndStartTetris() {
+  if (allImagesLoaded && domReady) {
+    startTetris();
+  }
 }
+
+// Make sure this is called after either state flips:
+document.addEventListener("DOMContentLoaded", () => {
+  domReady = true;
+  checkAndStartTetris(); // ← will only run startTetris when both are true
+});
+
 Object.entries(pieceImageMap).forEach(([key, filename]) => {
   const img = new Image();
-  img.src = "http://localhost/public/img/tetris/" + filename;
+  img.src = "http:/public/img/tetris/" + filename;
   img.onload = () => {
     loadedCount++;
     if (loadedCount === Object.keys(pieceImageMap).length) {
       allImagesLoaded = true;
-      tryStartTetris();
+      checkAndStartTetris(); // ← called here too
     }
   };
   blockImages[key] = img;
 });
-document.addEventListener("DOMContentLoaded", () => {
-  domReady = true;
-  tryStartTetris();
-});
+
 
 // 🎨 Cheese-Themed Block Colors do not work now code does so kind of backup 
 const colors = [
