@@ -488,7 +488,7 @@ canvas.addEventListener("touchstart", e => {
       drop();
       draw();
     }, 75);
-  }, 1000); // Trigger hold after 1 sec
+  }, 500); // Trigger hold after 1 sec
 }, { passive: false });
 
 canvas.addEventListener("touchend", e => {
