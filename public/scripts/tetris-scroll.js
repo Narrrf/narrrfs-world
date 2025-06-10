@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 Object.entries(pieceImageMap).forEach(([key, filename]) => {
   const img = new Image();
-  img.src = "http:/public/img/tetris/" + filename;
+  img.src = "img/tetris/" + filename;
   img.onload = () => {
     loadedCount++;
     if (loadedCount === Object.keys(pieceImageMap).length) {
