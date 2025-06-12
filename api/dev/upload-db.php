@@ -1,32 +1,28 @@
 <?php
-// 🔒 Secure DB Upload with Secret Key
+// 🔐 Secure Upload Endpoint (POST only)
 $secret = $_GET['secret'] ?? '';
 if ($secret !== 'MyUltraSecretKey123') {
-  http_response_code(403);
-  exit('❌ Forbidden');
+    http_response_code(403);
+    echo "Forbidden";
+    exit;
 }
 
-// ✅ Allow only POST method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  http_response_code(405);
-  echo "Method Not Allowed";
-  exit;
+    http_response_code(405);
+    echo "Method Not Allowed";
+    exit;
 }
 
-$target = '/data/narrrf_world.sqlite';
-
-// ✅ Check uploaded file
-if (!isset($_FILES['dbfile']) || $_FILES['dbfile']['error'] !== UPLOAD_ERR_OK) {
-  http_response_code(400);
-  echo "❌ Upload failed.";
-  exit;
+if (!isset($_FILES['sqlite'])) {
+    http_response_code(400);
+    echo "Missing file";
+    exit;
 }
 
-// 🚚 Move uploaded file
-if (move_uploaded_file($_FILES['dbfile']['tmp_name'], $target)) {
-  echo "✅ Uploaded successfully to $target";
+$uploadPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+if (move_uploaded_file($_FILES['sqlite']['tmp_name'], $uploadPath)) {
+    echo "✅ DB uploaded successfully";
 } else {
-  http_response_code(500);
-  echo "❌ Failed to move uploaded file.";
+    http_response_code(500);
+    echo "❌ Failed to save DB";
 }
-?>
