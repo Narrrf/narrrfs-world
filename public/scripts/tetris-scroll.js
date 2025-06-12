@@ -22,11 +22,12 @@ function checkAndStartTetris() {
   }
 }
 
-// Make sure this is called after either state flips:
-document.addEventListener("DOMContentLoaded", () => {
-  domReady = true;
-  checkAndStartTetris(); // ← will only run startTetris when both are true
-});
+// ✅ Final setup
+window.startTetrisGame = function () {
+  startTetris(); // <-- this is your existing init function
+};
+
+
 
 Object.entries(pieceImageMap).forEach(([key, filename]) => {
   const img = new Image();
@@ -239,82 +240,90 @@ function collide(shape, row, col) {
         }
       }
       
-      // 🔔 Defused popup UI logic
-      function showBombDefusedPopup() {
-        const popup = document.getElementById("bomb-defused-popup");
-        if (!popup) return;
-      
-        popup.classList.remove("hidden");
-        popup.classList.add("animate-pop");
-      
-        setTimeout(() => {
-          popup.classList.add("hidden");
-          popup.classList.remove("animate-pop");
-        }, 2000);
-      }
-      
-      
-      
-      function drop() {
-        if (!collide(current.shape, current.row + 1, current.col)) {
-          current.row++;
-        } else {
-          // 💣 Check if explosive piece BEFORE merge
-          if (
-            current.shape.length === 1 &&
-            current.shape[0].length === 1 &&
-            current.shape[0][0] === 6
-          ) {
-            const cx = current.col;
-            const cy = current.row;
-            const countdown = Math.floor(Math.random() * 30) + 1;
-      
-            activeExplosive = { x: cx, y: cy, countdown, start: Date.now() };
-      
-            setTimeout(() => {
-              // 🧪 Verify bomb still exists before exploding
-              if (grid[cy]?.[cx] === 6) {
-                explode(cx, cy);
-              }
-              activeExplosive = null;
-            }, countdown * 1000);
-          }
-      
-          merge();
-          clearLines();
-      
-          // 🧱 Spawn new piece
-          current = {
-            shape: nextPiece,
-            row: 0,
-            col: 3
-          };
-          nextPiece = randomPiece();
-          renderNextBlock(nextPiece);
-      
-          // 🧠 Game Over check
-          if (collide(current.shape, current.row, current.col)) {
-            clearInterval(gameInterval);
-            onTetrisGameOver(score);
-      
-            const modal = document.getElementById("game-over-modal");
-            const finalScoreText = document.getElementById("final-score-text");
-      
-            if (modal && finalScoreText) {
-              finalScoreText.textContent = `You earned $${score} DSPOINC`;
-              modal.classList.remove("hidden");
-            }
-      
-            if (document.getElementById("leaderboard-list")) {
-              loadLeaderboard();
-            }
-      
-            return;
-          }
+// 🔔 Defused popup UI logic
+function showBombDefusedPopup() {
+  const popup = document.getElementById("bomb-defused-popup");
+  if (!popup) return;
+
+  popup.classList.remove("hidden");
+  popup.classList.add("animate-pop");
+
+  setTimeout(() => {
+    popup.classList.add("hidden");
+    popup.classList.remove("animate-pop");
+  }, 2000);
+}
+
+// 🛑 Pause Logic
+let isTetrisPaused = false;
+
+document.getElementById("pause-tetris-btn")?.addEventListener("click", () => {
+  isTetrisPaused = !isTetrisPaused;
+  const btn = document.getElementById("pause-tetris-btn");
+  btn.textContent = isTetrisPaused ? "▶️ Resume" : "⏸️ Pause";
+});
+
+// 🧱 Drop Function
+function drop() {
+  if (isTetrisPaused) return; // ⛔ Early return if paused
+
+  if (!collide(current.shape, current.row + 1, current.col)) {
+    current.row++;
+  } else {
+    // 💣 Bomb piece logic
+    if (
+      current.shape.length === 1 &&
+      current.shape[0].length === 1 &&
+      current.shape[0][0] === 6
+    ) {
+      const cx = current.col;
+      const cy = current.row;
+      const countdown = Math.floor(Math.random() * 30) + 1;
+
+      activeExplosive = { x: cx, y: cy, countdown, start: Date.now() };
+
+      setTimeout(() => {
+        if (grid[cy]?.[cx] === 6) {
+          explode(cx, cy);
         }
-      
-        draw(); // ✅ Always redraw
+        activeExplosive = null;
+      }, countdown * 1000);
+    }
+
+    merge();
+    clearLines();
+
+    current = {
+      shape: nextPiece,
+      row: 0,
+      col: 3
+    };
+    nextPiece = randomPiece();
+    renderNextBlock(nextPiece);
+
+    if (collide(current.shape, current.row, current.col)) {
+      clearInterval(gameInterval);
+      onTetrisGameOver(score);
+
+      const modal = document.getElementById("game-over-modal");
+      const finalScoreText = document.getElementById("final-score-text");
+
+      if (modal && finalScoreText) {
+        finalScoreText.textContent = `You earned $${score} DSPOINC`;
+        modal.classList.remove("hidden");
       }
+
+      if (document.getElementById("leaderboard-list")) {
+        loadLeaderboard();
+      }
+
+      return;
+    }
+  }
+
+  draw(); // ✅ Always redraw
+}
+
       
       
         function rotatePiece() {
@@ -404,41 +413,7 @@ function collide(shape, row, col) {
           })
           .catch(err => console.error("Score save failed:", err));
       }
-      
-      
-      async function loadLeaderboard() {
-        const list = document.getElementById("leaderboard-list");
-        if (!list) {
-          console.warn("⚠️ Leaderboard element not found.");
-          return;
-        }
-      
-        try {
-          const res = await fetch("/api/dev/get-leaderboard.php");
-          const result = await res.json();
-          const scores = result.leaderboard || [];
-      
-          if (!Array.isArray(scores)) throw new Error("Invalid leaderboard format");
-      
-          list.innerHTML = "";
-      
-          const rankColors = ["text-yellow-400", "text-gray-300", "text-yellow-200"];
-          const rankEmojis = ["👑", "🥈", "🥉"];
-      
-          scores.forEach((entry, i) => {
-            const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-            const li = document.createElement("li");
-            const emoji = rankEmojis[i] || "";
-      
-            li.innerHTML = `${emoji} #${i + 1} <strong>${name}</strong> – ${entry.score} $DSPOINC`;
-            li.classList.add("animate-pop", rankColors[i] || "text-white");
-            list.appendChild(li);
-          });
-        } catch (err) {
-          console.error("Leaderboard error:", err);
-          list.innerHTML = "<li>❌ Could not load leaderboard</li>";
-        }
-      }
+     
       
         window.loginAndReload = function () {
           window.location.href =

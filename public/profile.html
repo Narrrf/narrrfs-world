@@ -95,8 +95,8 @@
 
 <!-- 🔰 Header with App Context -->
 <header class="w-full bg-black py-4 px-6 text-yellow-400 text-center shadow-md">
-  <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Phase 2 Portal</h1>
-  <p class="text-xs text-gray-400 mt-1">Profile Synced via Discord OAuth · Powered by Cheese Architect 4.0</p>
+  <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Phase 5 Portal</h1>
+  <p class="text-xs text-gray-400 mt-1">Profile Synced via Discord OAuth · Powered by Cheese Architect 9.0</p>
 </header>
 
 <!-- 💎 Conditional VIP Notification -->
@@ -152,7 +152,7 @@
 
     <!-- 👣 Footer Note -->
     <div class="mt-6 text-yellow-400 text-sm">
-      🧠 Profile powered by Cheese Architect 5.0 · Phase 2 Bridge Online
+      🧠 Profile powered by Cheese Architect 9.0 · Phase 5 Bridge Online
     </div>
 <!-- 🧀 Trophy Shelf Zone -->
 <section id="trophy-shelf" class="my-16 px-4">
@@ -257,44 +257,76 @@
 🧪 Applied 0.5px translate to align strokes
 ✅ Bottom collision & pixel alignment confirmed
 -->
-<!-- 🧠 GENESIS_8_TETRIS_SCROLL -->
-<section id="cheese-tetris" class="relative bg-black text-yellow-300 py-12 px-8 rounded-3xl shadow-2xl max-w-md mx-auto mt-24 mb-20 ring-4 ring-yellow-400/40 drop-shadow-[0_0_15px_#facc15]">
-  <h2 class="text-center text-3xl font-extrabold mb-6 tracking-tight text-yellow-100 drop-shadow">
-    🎮 TETRIS SPOINC MODE
-  </h2>
+<!-- 🧀 GENESIS_8_TETRIS_SCROLL -->
+<section id="cheese-tetris" class="relative bg-black text-yellow-300 py-12 px-6 md:px-8 rounded-3xl shadow-2xl max-w-md mx-auto mt-24 mb-12 ring-4 ring-yellow-400/40">
+  <h2 class="text-center text-3xl font-extrabold mb-6 text-yellow-100 drop-shadow">🎮 TETRIS SPOINC MODE</h2>
+  <canvas id="tetris-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
+  
+  <div class="text-center mt-4">
+  <button id="start-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg">
+    ▶️ Start Tetris
+  </button>
+</div>
 
-<!-- 🎮 Game Canvas -->
-<canvas id="tetris-canvas" width="200" height="400"
-  class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg">
-</canvas>
+<div class="text-center mt-2">
+  <button id="pause-tetris-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md">
+    ⏸️ Pause
+  </button>
+</div>
 
-<!-- Inside #cheese-tetris section -->
-<div id="bomb-defused-popup"
-  class="absolute top-[420px] right-6 md:right-12 bg-yellow-300 text-black px-2 py-1 rounded-lg text-xs md:text-sm shadow-lg hidden z-50 scale-75">
-  💣 Bomb Defused!
+  <div id="bomb-defused-popup"
+    class="absolute top-[420px] right-6 md:right-12 bg-yellow-300 text-black px-2 py-1 rounded-lg text-xs md:text-sm shadow-lg hidden z-50 scale-75">
+    💣 Bomb Defused!
+  </div>
+
+  <!-- 🔮 Next Block Preview -->
+  <div class="mt-4 flex flex-col items-center justify-center">
+    <h4 class="text-xs font-semibold tracking-wide uppercase mb-1">🔮 Next Block</h4>
+    <div class="p-1 bg-black rounded-xl ring-2 ring-yellow-500/60 shadow-md">
+      <canvas id="next-canvas" width="80" height="80" class="bg-gray-900 rounded-md block"></canvas>
+    </div>
+  </div>
+
+  <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1 animate-glow">💣 Incoming Cheese Bomb!</p>
+  <p id="spoink-score" class="text-center mt-6 text-lg font-semibold text-yellow-200 animate-pulse">
+    💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
+  </p>
+</section>
+
+<!-- 🐍 SNAKE SECTION -->
+<section id="cheese-snake" class="bg-black text-yellow-300 py-12 px-6 md:px-8 rounded-3xl shadow-2xl max-w-md mx-auto mb-16 ring-4 ring-yellow-400/40">
+  <h2 class="text-center text-2xl font-bold mb-4">🐍 Cheese Snake</h2>
+  <canvas id="snake-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto rounded-lg shadow-lg"></canvas>
+  
+  <div class="text-center mt-4">
+  <button id="start-snake-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg">
+    ▶️ Start Snake
+  </button>
+</div>
+
+<div class="text-center mt-2">
+  <button id="pause-snake-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md">
+    ⏸️ Pause
+  </button>
 </div>
 
 
-<!-- 🔮 Next Block Preview -->
-<div class="mt-4 flex flex-col items-center justify-center">
-  <h4 class="text-xs font-semibold text-yellow-300 tracking-wide uppercase mb-1">🔮 Next Block</h4>
-  <div class="p-1 bg-black rounded-xl ring-2 ring-yellow-500/60 shadow-md">
-    <canvas id="next-canvas" width="80" height="80"
-      class="bg-gray-900 rounded-md block"></canvas>
+  <p id="snake-score" class="text-center text-md font-semibold mt-4">💰 Snake Score: $0 DSPOINC</p>
+</section>
+
+<!-- 🧠 Snake Game Over Modal -->
+<div id="snake-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+  <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
+    <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
+    <p id="snake-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">
+      🔁 Play Again
+    </button>
   </div>
 </div>
 
-<p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1 animate-glow">
-  💣 Incoming Cheese Bomb!
-</p>
-
-<!-- 💰 Score Display -->
-<p id="spoink-score" class="text-center mt-6 text-lg font-semibold text-yellow-200 animate-pulse">
-  💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
-</p>
-
   
-<!-- 🧠 Game Over Modal — Cheese Lab Style -->
+<!-- 🧠 Game Over Modal Tetris — Cheese Lab Style -->
 <div id="game-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
   <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
     <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
@@ -312,20 +344,23 @@
     </button>
   </div>
 
-  <!-- 🏆 Leaderboard Section -->
-<section id="leaderboard-panel" class="mt-10 bg-gray-900 rounded-xl p-5 shadow-lg max-w-sm mx-auto border border-yellow-400/20">
-  <h3 class="text-xl font-bold text-yellow-300 mb-3 drop-shadow">🏆 Top $DSPOINC Scorers</h3>
-  <ul id="leaderboard-list" class="space-y-1 text-sm font-mono text-yellow-100">
-    <li>⏳ Loading leaderboard...</li>
-  </ul>
-  <div id="leaderboard-error" class="text-red-400 hidden mt-2">❌ Failed to load leaderboard</div>
-</section>
+
+<!-- 🏆 Leaderboard Section snake -->
+<!-- 🏆 Leaderboard Section snake -->
+<section id="leaderboard" class="bg-black text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-yellow-400 mt-10">
+  <h3 class="text-center text-xl font-bold">🏆 Leaderboard</h3>
+
+  <h4 class="text-center text-md font-semibold mt-4">🧀 Tetris Top Scores</h4>
+  <ul id="leaderboard-tetris-list" class="text-center"></ul>
+
+  <h4 class="text-center text-md font-semibold mt-4">🐍 Snake Top Scores</h4>
+  <ul id="leaderboard-snake-list" class="text-center"></ul>
 </section>
 
 
   <!-- 🍩 Footer -->
   <footer class="text-center mt-16 text-xs text-gray-400">
-    Powered by 🧀 Cheese Architect 8.0 · Discord + Game + Wallet Sync Engine 🌍
+    Powered by 🧀 Cheese Architect 9.0 · Discord + Game + Wallet Sync Engine 🌍
   </footer>
 </body>
 
@@ -492,7 +527,106 @@ localStorage.setItem("discord_name", user.username);
   }
 });
 </script>
+<script>
+  // 🎯 Load both Tetris and Snake Leaderboards
+  fetch("/api/dev/get-leaderboard.php")
+    .then(res => res.json())
+    .then(data => {
+      const scores = data.leaderboard || [];
+
+      const tetrisList = document.getElementById("leaderboard-tetris-list");
+      const snakeList = document.getElementById("leaderboard-snake-list");
+
+      tetrisList.innerHTML = "";
+      snakeList.innerHTML = "";
+
+      scores
+        .filter(entry => entry.game === "tetris")
+        .forEach((entry, i) => {
+          const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+          const li = document.createElement("li");
+          li.innerHTML = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+          tetrisList.appendChild(li);
+        });
+
+      scores
+        .filter(entry => entry.game === "snake")
+        .forEach((entry, i) => {
+          const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+          const li = document.createElement("li");
+          li.innerHTML = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+          snakeList.appendChild(li);
+        });
+    });
+</script>
+<script>
+  async function loadCombinedLeaderboards() {
+    try {
+      const res = await fetch("/api/dev/get-leaderboard.php");
+      const result = await res.json();
+
+      const tetrisList = document.getElementById("leaderboard-tetris-list");
+      const snakeList = document.getElementById("leaderboard-snake-list");
+
+      tetrisList.innerHTML = "";
+      snakeList.innerHTML = "";
+
+      (result.tetris || []).forEach((entry, i) => {
+        const li = document.createElement("li");
+        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+        tetrisList.appendChild(li);
+      });
+
+      (result.snake || []).forEach((entry, i) => {
+        const li = document.createElement("li");
+        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+        snakeList.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Leaderboard fetch failed", err);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadCombinedLeaderboards();
+
+    const tetrisBtn = document.getElementById("start-tetris-btn");
+    const snakeBtn = document.getElementById("start-snake-btn");
+
+    if (tetrisBtn) {
+      tetrisBtn.addEventListener("click", () => {
+        if (window.startTetrisGame) window.startTetrisGame();
+        tetrisBtn.disabled = true;
+        tetrisBtn.textContent = "🕹️ Playing...";
+      });
+    }
+
+    if (snakeBtn) {
+      snakeBtn.addEventListener("click", () => {
+        if (window.startSnakeGame) window.startSnakeGame();
+        snakeBtn.disabled = true;
+        snakeBtn.textContent = "🕹️ Playing...";
+      });
+    }
+  });
+  document.addEventListener("DOMContentLoaded", () => {
+  if (window.location.hostname === "localhost") {
+    const loginBlock = document.getElementById("tetris-auth");
+    if (loginBlock) loginBlock.classList.add("hidden");
+
+    // Inject mock localStorage for test play
+    localStorage.setItem("walletAddress", "TestWallet123456789XYZ");
+    localStorage.setItem("discord_id", "1337");
+    localStorage.setItem("discord_name", "Test Mouse");
+  }
+});
+
+
+</script>
 <!-- 🧠 Tetris Scroll Script with Cache-Busting -->
 <script src="scripts/tetris-scroll.js?v=9.9"></script>
+<script src="scripts/snake-scroll.js?v=1.0"></script>
 </body>
 </html>
