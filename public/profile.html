@@ -450,7 +450,7 @@ function renderTrophyShelf(userRoles = []) {
       trophyEl.className = "flex flex-col items-center animate-pop transition-transform hover:scale-105";
       trophyEl.innerHTML = `
         <img src="${trophy.img}" alt="${trophy.label}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow mb-2" />
-        <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}</span>
+        <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}
       `;
       shelf.appendChild(trophyEl);
     }
@@ -559,6 +559,11 @@ localStorage.setItem("discord_name", user.username);
         });
     });
 </script>
+<!-- 🧠 Load Scroll Scripts -->
+<script src="scripts/tetris-scroll.js?v=9.9"></script>
+<script src="scripts/snake-scroll.js?v=1.0"></script>
+
+<!-- 🏆 Leaderboard Logic -->
 <script>
   async function loadCombinedLeaderboards() {
     try {
@@ -588,16 +593,18 @@ localStorage.setItem("discord_name", user.username);
       console.error("Leaderboard fetch failed", err);
     }
   }
+</script>
 
+
+<!-- 🎮 Button Triggers and Init -->
+<script>
   document.addEventListener("DOMContentLoaded", () => {
-    loadCombinedLeaderboards();
-
     const tetrisBtn = document.getElementById("start-tetris-btn");
     const snakeBtn = document.getElementById("start-snake-btn");
 
     if (tetrisBtn) {
       tetrisBtn.addEventListener("click", () => {
-        if (window.startTetrisGame) window.startTetrisGame();
+        window.startTetrisGame?.();
         tetrisBtn.disabled = true;
         tetrisBtn.textContent = "🕹️ Playing...";
       });
@@ -605,28 +612,15 @@ localStorage.setItem("discord_name", user.username);
 
     if (snakeBtn) {
       snakeBtn.addEventListener("click", () => {
-        if (window.startSnakeGame) window.startSnakeGame();
+        window.startSnakeGame?.();
         snakeBtn.disabled = true;
         snakeBtn.textContent = "🕹️ Playing...";
       });
     }
+
+    loadCombinedLeaderboards();
   });
-  document.addEventListener("DOMContentLoaded", () => {
-  if (window.location.hostname === "localhost") {
-    const loginBlock = document.getElementById("tetris-auth");
-    if (loginBlock) loginBlock.classList.add("hidden");
-
-    // Inject mock localStorage for test play
-    localStorage.setItem("walletAddress", "TestWallet123456789XYZ");
-    localStorage.setItem("discord_id", "1337");
-    localStorage.setItem("discord_name", "Test Mouse");
-  }
-});
-
-
 </script>
-<!-- 🧠 Tetris Scroll Script with Cache-Busting -->
-<script src="scripts/tetris-scroll.js?v=9.9"></script>
-<script src="scripts/snake-scroll.js?v=1.0"></script>
+
 </body>
 </html>

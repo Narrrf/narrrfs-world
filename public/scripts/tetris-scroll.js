@@ -1,32 +1,28 @@
 // 🧀 Cheese Tetris Scroll v9.8 + PNG BLOCKS (all features from perfect backup, plus PNG support)
 
 // --- PNG Block Support simple only one template for all can be defined with new img/tetris ---
-const blockImages = {};
-const pieceImageMap = {
-  1: "block_T.png", // --- T
-  2: "block_O.png", // --- O
-  3: "block_S.png", // --- S
-  4: "block_Z.png", // --- Z
-  5: "block_I.png", // --- I
-  6: "block_BOMB.png", // --- Bomb
-  7: "block_L.png", // --- L
-  8: "block_J.png" // --- J
-};
 let allImagesLoaded = false;
 let loadedCount = 0;
-let domReady = false;
-// Replace current tryStartTetris logic with:
-function checkAndStartTetris() {
-  if (allImagesLoaded && domReady) {
-    startTetris();
-  }
-}
 
-// ✅ Final setup
-window.startTetrisGame = function () {
-  startTetris(); // <-- this is your existing init function
+const blockImages = {};
+const pieceImageMap = {
+  1: "block_T.png",
+  2: "block_O.png",
+  3: "block_S.png",
+  4: "block_Z.png",
+  5: "block_I.png",
+  6: "block_BOMB.png",
+  7: "block_L.png",
+  8: "block_J.png"
 };
 
+function checkAndStartTetris() {
+  const btn = document.getElementById("start-tetris-btn");
+  if (!btn) {
+    // auto-start fallback if no button present
+    window.startTetrisGame();
+  }
+}
 
 
 Object.entries(pieceImageMap).forEach(([key, filename]) => {
@@ -36,11 +32,22 @@ Object.entries(pieceImageMap).forEach(([key, filename]) => {
     loadedCount++;
     if (loadedCount === Object.keys(pieceImageMap).length) {
       allImagesLoaded = true;
-      checkAndStartTetris(); // ← called here too
+      checkAndStartTetris(); // ✅ Ensure the game can start after loading
     }
   };
   blockImages[key] = img;
 });
+
+
+
+window.startTetrisGame = function () {
+  if (!allImagesLoaded) {
+    console.warn("Assets still loading...");
+    return;
+  }
+  startTetris(); // ← main game logic
+};
+
 
 
 // 🎨 Cheese-Themed Block Colors do not work now code does so kind of backup 
@@ -122,26 +129,33 @@ function startTetris() {
   }
 
   // --- Drawing blocks: PNG if available, else color ---
-  function drawBlock(x, y, val) {
-    context.save();
-    if (activeExplosive && activeExplosive.x === x && activeExplosive.y === y) {
-      const timeElapsed = (Date.now() - activeExplosive.start) / 1000;
-      const remaining = activeExplosive.countdown - timeElapsed;
-      const intensity = Math.max(0, Math.min(1, 1 - remaining / activeExplosive.countdown));
-      context.shadowColor = '#facc15';
-      context.shadowBlur = 10 + 30 * intensity;
-    }
-    const img = blockImages[val];
-    if (img && img.complete) {
-      context.drawImage(img, x * blockSize, y * blockSize, blockSize, blockSize);
-    } else {
-      context.fillStyle = colors[val];
-      context.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
-      context.strokeStyle = "#1f2937";
-      context.strokeRect(x * blockSize + 0.5, y * blockSize + 0.5, blockSize - 1, blockSize - 1);
-    }
-    context.restore();
+function drawBlock(x, y, val) {
+  context.save();
+
+  // 💣 Bomb glow (active countdown)
+  if (activeExplosive && activeExplosive.x === x && activeExplosive.y === y) {
+    const timeElapsed = (Date.now() - activeExplosive.start) / 1000;
+    const remaining = activeExplosive.countdown - timeElapsed;
+    const intensity = Math.max(0, Math.min(1, 1 - remaining / activeExplosive.countdown));
+    context.shadowColor = '#facc15';
+    context.shadowBlur = 10 + 30 * intensity;
   }
+
+  const img = blockImages[val];
+  if (img && img.complete) {
+    context.drawImage(img, x * blockSize, y * blockSize, blockSize, blockSize);
+  } else {
+    context.fillStyle = colors[val] || "#FFFFFF";
+    context.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+
+    // 👁️ Optional stroke for clarity
+    context.strokeStyle = "#1f2937";
+    context.strokeRect(x * blockSize + 0.5, y * blockSize + 0.5, blockSize - 1, blockSize - 1);
+  }
+
+  context.restore();
+}
+
 
   // --- Main draw loop ---
   function draw() {
@@ -313,9 +327,10 @@ function drop() {
         modal.classList.remove("hidden");
       }
 
-      if (document.getElementById("leaderboard-list")) {
-        loadLeaderboard();
-      }
+if (typeof loadCombinedLeaderboards === "function") {
+  loadCombinedLeaderboards(); // ✅ Call the combined leaderboard
+}
+
 
       return;
     }
@@ -413,7 +428,9 @@ function drop() {
           })
           .catch(err => console.error("Score save failed:", err));
       }
-     
+      
+      
+ 
       
         window.loginAndReload = function () {
           window.location.href =
@@ -491,7 +508,6 @@ canvas.addEventListener("touchend", e => {
 
       
       // ✅ Final game loop initialization
-      loadLeaderboard();
       draw();
       renderNextBlock(nextPiece);
       gameInterval = setInterval(drop, dropInterval);
