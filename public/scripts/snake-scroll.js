@@ -301,24 +301,26 @@ function initSnake() {
     }
   });
 
-  // Touch controls
-  let touchStartX = 0, touchStartY = 0;
-  canvas.addEventListener("touchstart", e => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  });
+// Touch controls with scroll prevention
+let touchStartX = 0, touchStartY = 0;
+canvas.addEventListener("touchstart", e => {
+  e.preventDefault(); // ✅ Prevent scroll
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: false });
 
-  canvas.addEventListener("touchend", e => {
-    const deltaX = e.changedTouches[0].clientX - touchStartX;
-    const deltaY = e.changedTouches[0].clientY - touchStartY;
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX > 20 && velocity.x === 0) velocity = { x: 1, y: 0 };
-      else if (deltaX < -20 && velocity.x === 0) velocity = { x: -1, y: 0 };
-    } else {
-      if (deltaY > 20 && velocity.y === 0) velocity = { x: 0, y: 1 };
-      else if (deltaY < -20 && velocity.y === 0) velocity = { x: 0, y: -1 };
-    }
-  });
+canvas.addEventListener("touchend", e => {
+  e.preventDefault(); // ✅ Prevent scroll
+  const deltaX = e.changedTouches[0].clientX - touchStartX;
+  const deltaY = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (deltaX > 20 && velocity.x === 0) velocity = { x: 1, y: 0 };
+    else if (deltaX < -20 && velocity.x === 0) velocity = { x: -1, y: 0 };
+  } else {
+    if (deltaY > 20 && velocity.y === 0) velocity = { x: 0, y: 1 };
+    else if (deltaY < -20 && velocity.y === 0) velocity = { x: 0, y: -1 };
+  }
+}, { passive: false });
 
   // Pause button
   const pauseBtn = document.getElementById("pause-snake-btn");
