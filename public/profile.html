@@ -251,140 +251,117 @@
 </section>
 
   
-<!-- 🧀 GENESIS_8_TETRIS_SCROLL -->
-<!-- 🎮 Lab Note: Tetris Canvas Fixed
-🧠 Canvas height = 400px = 20 blocks of 20px
-🧪 Applied 0.5px translate to align strokes
-✅ Bottom collision & pixel alignment confirmed
--->
-<!-- 🧀 GENESIS_8_TETRIS_SCROLL -->
-<section id="cheese-tetris" class="relative bg-black text-yellow-300 py-12 px-6 md:px-8 rounded-3xl shadow-2xl max-w-md mx-auto mt-24 mb-12 ring-4 ring-yellow-400/40">
-  <h2 class="text-center text-3xl font-extrabold mb-6 text-yellow-100 drop-shadow">🎮 TETRIS SPOINC MODE</h2>
-  <canvas id="tetris-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
-  
-  <div class="text-center mt-4">
-  <button id="start-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg">
-    ▶️ Start Tetris
-  </button>
-</div>
+<!-- 🧠 GENOME 9.1 — Dual Game Layout Scroll -->
+<div class="max-w-6xl mx-auto px-4 mt-12 flex flex-col md:flex-row gap-8 items-start">
 
-<div class="text-center mt-2">
-  <button id="pause-tetris-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md">
-    ⏸️ Pause
-  </button>
-</div>
-
-  <div id="bomb-defused-popup"
-    class="absolute top-[420px] right-6 md:right-12 bg-yellow-300 text-black px-2 py-1 rounded-lg text-xs md:text-sm shadow-lg hidden z-50 scale-75">
-    💣 Bomb Defused!
-  </div>
-
-  <!-- 🔮 Next Block Preview -->
-  <div class="mt-4 flex flex-col items-center justify-center">
-    <h4 class="text-xs font-semibold tracking-wide uppercase mb-1">🔮 Next Block</h4>
-    <div class="p-1 bg-black rounded-xl ring-2 ring-yellow-500/60 shadow-md">
-      <canvas id="next-canvas" width="80" height="80" class="bg-gray-900 rounded-md block"></canvas>
+  <!-- 🎮 TETRIS PANEL -->
+  <section id="cheese-tetris" class="flex-1 relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40">
+    <div class="absolute top-4 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+      🎮 TETRIS
     </div>
-  </div>
 
-  <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1 animate-glow">💣 Incoming Cheese Bomb!</p>
-  <p id="spoink-score" class="text-center mt-6 text-lg font-semibold text-yellow-200 animate-pulse">
-    💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
-  </p>
-</section>
+    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">TETRIS SPOINC MODE</h2>
+    <canvas id="tetris-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
 
-<!-- 🐍 SNAKE SECTION -->
-<section id="cheese-snake" class="relative bg-black text-yellow-300 py-12 px-6 md:px-8 rounded-3xl shadow-2xl max-w-md mx-auto mb-16 ring-4 ring-yellow-400/40">
-  <h2 class="text-center text-2xl font-bold mb-4">🐍 Cheese Snake</h2>
+    <div class="text-center mt-4 space-y-2">
+      <button id="start-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
+      <button id="pause-tetris-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
+    </div>
 
-  <!-- 🐍 Snake Canvas + Countdown Overlay -->
-  <div class="relative">
-    <canvas id="snake-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto rounded-lg shadow-lg"></canvas>
-	
-	<div id="snake-container" class="bg-gradient-to-br from-black via-indigo-900 to-yellow-900 p-4 ring-4 ring-yellow-400 rounded-xl shadow-2xl">
+    <div id="bomb-defused-popup" class="absolute top-[420px] right-6 md:right-12 bg-yellow-300 text-black px-2 py-1 rounded-lg text-xs md:text-sm shadow-lg hidden z-50 scale-75">
+      💣 Bomb Defused!
+    </div>
 
+    <div class="mt-4 flex flex-col items-center justify-center">
+      <h4 class="text-xs font-semibold tracking-wide uppercase mb-1">🔮 Next Block</h4>
+      <div class="p-1 bg-black rounded-xl ring-2 ring-yellow-500/60 shadow-md">
+        <canvas id="next-canvas" width="80" height="80" class="bg-gray-900 rounded-md block"></canvas>
+      </div>
+    </div>
 
-<div id="mutation-badge"
-     class="hidden text-xs bg-lime-500 text-black px-3 py-2 rounded-full shadow-lg absolute"
-     style="top: 16px; right: 16px; z-index: 100;">
-  🧬 GENETIC MODE ACTIVE
+    <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1 animate-glow">💣 Incoming Cheese Bomb!</p>
+    <p id="spoink-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">
+      💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
+    </p>
+  </section>
+
+  <!-- 🐍 SNAKE PANEL -->
+  <section id="cheese-snake" class="flex-1 relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40">
+    <div class="absolute top-4 left-4 bg-lime-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+      🐍 SNAKE
+    </div>
+
+    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">Cheese Snake</h2>
+
+    <div class="relative">
+      <canvas id="snake-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto rounded-lg shadow-lg"></canvas>
+
+      <div id="mutation-badge" class="hidden text-xs bg-lime-500 text-black px-3 py-2 rounded-full shadow-lg absolute top-2 right-2 z-50">
+        🧬 GENETIC MODE ACTIVE
+      </div>
+
+      <div id="snake-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
+        5
+      </div>
+    </div>
+
+    <div class="text-center mt-4 space-y-2">
+      <button id="start-snake-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
+      <button id="pause-snake-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
+    </div>
+
+    <p id="snake-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">💰 Snake Score: $0 DSPOINC</p>
+    <div class="text-xs italic text-center text-gray-500 mt-1">&larr; first to 100 cheese triggers mutation</div>
+  </section>
 </div>
 
-
-    <!-- 🧀 Countdown Overlay -->
-    <div id="snake-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
-      5
-    </div>
-  </div>
-
-  <div class="text-center mt-4">
-    <button id="start-snake-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg">
-      ▶️ Start Snake
-    </button>
-  </div>
-
-  <div class="text-center mt-2">
-    <button id="pause-snake-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md">
-      ⏸️ Pause
-    </button>
-  </div>
-
-  <p id="snake-score" class="text-center text-md font-semibold mt-4">💰 Snake Score: $0 DSPOINC</p>
-</section>
-
-
-<!-- 🧠 Snake Game Over Modal -->
+<!-- 🧠 MODALS -->
 <div id="snake-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
   <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
     <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
     <p id="snake-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">
-      🔁 Play Again
-    </button>
+    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
   </div>
 </div>
 
-  
-<!-- 🧠 Game Over Modal Tetris — Cheese Lab Style -->
 <div id="game-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
   <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
     <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
     <p id="final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">
-      🔁 Play Again
-    </button>
+    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
   </div>
 </div>
 
-  <!-- 🔐 Login / Wallet Connect -->
-  <div id="tetris-auth" class="text-center my-4">
-    <button onclick="loginAndReload()" class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-5 py-2 rounded-full shadow transition">
-      🔐 Login with Discord to Save Score
-    </button>
-  </div>
+<!-- 🔐 Login Prompt -->
+<div id="tetris-auth" class="text-center my-6">
+  <button onclick="loginAndReload()" class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-5 py-2 rounded-full shadow transition">
+    🔐 Login with Discord to Save Score
+  </button>
+</div>
 
-
-<!-- 🏆 Leaderboard Section snake -->
-<!-- 🏆 Leaderboard Section snake -->
-<section id="leaderboard" class="bg-black text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-yellow-400 mt-10">
+<!-- 🏆 Leaderboard Section -->
+<section id="leaderboard" class="max-w-4xl mx-auto bg-black text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-yellow-400 mt-10">
   <h3 class="text-center text-xl font-bold">🏆 Leaderboard</h3>
-
-  <h4 class="text-center text-md font-semibold mt-4">🧀 Tetris Top Scores</h4>
-  <ul id="leaderboard-tetris-list" class="text-center"></ul>
-
-  <h4 class="text-center text-md font-semibold mt-4">🐍 Snake Top Scores</h4>
-  <ul id="leaderboard-snake-list" class="text-center"></ul>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+    <div>
+      <h4 class="text-center text-md font-semibold">🧀 Tetris Top Scores</h4>
+      <ul id="leaderboard-tetris-list" class="text-center"></ul>
+    </div>
+    <div>
+      <h4 class="text-center text-md font-semibold">🐍 Snake Top Scores</h4>
+      <ul id="leaderboard-snake-list" class="text-center"></ul>
+    </div>
+  </div>
 </section>
 
+<!-- 🍩 Footer -->
 
-  <!-- 🍩 Footer -->
-  <footer class="text-center mt-16 text-xs text-gray-400">
-    Powered by 🧀 Cheese Architect 9.0 · Discord + Game + Wallet Sync Engine 🌍
-  </footer>
-</body>
 
-<!-- 🎯 Quick Action Buttons -->
-  
+<!-- 🍩 Footer -->
+<footer class="text-center mt-16 text-xs text-gray-400">
+  Powered by 🧀 Cheese Architect 9.0 · Discord + Game + Wallet Sync Engine 🌍
+</footer>
+
 <!-- 🔑 Fallback Login Button -->
 <div id="loginBlock" class="mt-6 text-center">
   <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
@@ -640,6 +617,12 @@ localStorage.setItem("discord_name", user.username);
     loadCombinedLeaderboards();
   });
 </script>
-
+<script>
+  function loginAndReload() {
+    // Redirect to Discord OAuth
+    window.location.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+  }
+</script>
 </body>
 </html>
+
