@@ -278,7 +278,11 @@ document.getElementById("pause-tetris-btn")?.addEventListener("click", () => {
   clearInterval(gameInterval); // Always clear first
 
   if (!isTetrisPaused) {
-    gameInterval = setInterval(drop, dropInterval); // ✅ Restart interval on resume
+    // Force clear and restart interval when resuming
+    clearInterval(gameInterval);
+    gameInterval = setInterval(drop, dropInterval);
+    // Force one immediate drop to ensure game is responsive
+    drop();
   }
 });
 

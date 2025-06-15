@@ -328,6 +328,12 @@ canvas.addEventListener("touchend", e => {
     pauseBtn.addEventListener("click", () => {
       isSnakePaused = !isSnakePaused;
       pauseBtn.textContent = isSnakePaused ? "▶️ Resume" : "⏸️ Pause";
+      
+      if (!isSnakePaused) {
+        // Force clear and restart interval when resuming
+        clearInterval(gameInterval);
+        gameInterval = setInterval(moveSnake, 250);
+      }
     });
   }
 
