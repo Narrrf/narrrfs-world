@@ -267,8 +267,7 @@ function showBombDefusedPopup() {
     popup.classList.remove("animate-pop");
   }, 2000);
 }
-
-// 🛑 Pause Logic
+// 🛑 Pause Logic seems ok
 let isTetrisPaused = false;
 
 document.getElementById("pause-tetris-btn")?.addEventListener("click", () => {
