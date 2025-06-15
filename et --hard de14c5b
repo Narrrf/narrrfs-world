@@ -1,0 +1,124 @@
+[33m5b0f1b8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mrender-deploy[m[33m, [m[1;31morigin/render-deploy[m[33m, [m[1;31morigin/HEAD[m[33m)[m 🐍 Snake Genome Patch 9.1: UI polish, mutation trigger fixed, mobile controls enhanced
+[33mde14c5b[m 🎨 Profile UI Tweak + 🐍 Snake 9.1 Controls: Visual refinement in profile.html, stable scroll visuals confirmed
+[33mf567949[m 🐍 Snake Game 9.1 Update: Mobile swipe + hold control patched, mutation logic verified, stable build synced
+[33ma231479[m[33m ([m[1;33mtag: [m[1;33mv9.1-snake-genome[m[33m)[m 🧬 Snake Game Genome 9.1: Profile added, final mutation logic synced, DNA visuals pushed
+[33m8324824[m 🛠 Commit before rebase DB upload safe new (sync prep)
+[33meaca312[m 🌍 Final Push: Snake + Tetris integration, leaderboard, pause UX, DB update
+[33mdcee596[m Add files via upload
+[33me83ecd7[m 🧠 UX: Added pause buttons, fixed Snake init bug, updated DB and profile layout
+[33mf05bc63[m 🔥 Final mobile tweak: reduced hold-to-drop delay to 500ms for mobile fast drop
+[33mdaf537b[m 🔥 Final mobile tweak: reduced hold-to-drop delay to 500ms for mobile fast drop
+[33m5e4abbc[m 🚀 Fix mobile hold-to-drop control and sync profile container
+[33m559ca8d[m 🧀 Fix: Mobile PNG Tetris load & start issue + synced all assets
+[33m701b4cd[m 🧀 Fix: Mobile PNG Tetris load & start issue + synced all assets
+[33m30e91b0[m 🧀 Upgrade: Cheese blocks + Bomb logic in tetris-scroll.js
+[33mc6eaba0[m 📱 UX: Delay mobile touch drop until 1s hold to improve control
+[33m3ee731a[m 🖼️ Add phantom-style favicon
+[33mcd1651c[m 💣 UX: Resize & reposition bomb defused popup on profile.html (Tetris view)
+[33ma1ddb23[m 💣 UX: Refine bomb defused popup position for mobile and preview block alignment
+[33m365acfd[m 💣 UX: Add bomb defused popup and improve mobile positioning
+[33m7cb2dea[m 💣 UX: Improve bomb defused popup positioning for mobile
+[33m1ceb29e[m 🐛 Fix: Ensure next block spawns after all pieces, not just bombs
+[33m60e765b[m 🧀 Style: Updated block colors to cheese-themed palette
+[33m21ca563[m 🦶 Update: Improved footer section on index.html
+[33m592cd59[m 🔐 Secure DB upload/download endpoints with secret token
+[33md50662a[m 🔖 Add favicon images for browser and mobile
+[33m59f3c60[m 🚀 Add DB download endpoint for backup
+[33mf45dea8[m 🐭 Fix: Force leaderboard refresh after score save
+[33mc05b210[m 🔐 Fix: Writable DB file for Discord login
+[33md3d7950[m 🔐 Fix: Ensure DB file is writable for Discord login
+[33m8e69a5d[m 🚀 Add temporary DB upload endpoint
+[33mea15df4[m 🚀 Refactor: Auto-restore DB from persistent storage on startup
+[33mf5b461a[m 🧠 Auto-persist DB using start.sh and Dockerfile
+[33med28eb9[m 🧠 Add startup script to restore DB from persistent volume
+[33m08170ac[m 🐛 Fix: Add sqlite3 CLI and clean schema for proper Docker DB build
+[33ma9e1b5c[m 🐛 Fix: Add sqlite3 CLI to build database from schema
+[33m26dc212[m 🧱 Auto-create SQLite DB from schema.sql at build time
+[33m2c28b97[m 🐛 Fix: ensure db/ dir exists during build to prevent Render failure
+[33m20dfd58[m ✅ Add schema.sql and Dockerfile fix for stable Render deploy
+[33m7901b6c[m ✅ Add missing schema.sql to allow Docker build
+[33m2c00941[m 🚫 Fix: Don't overwrite live DB by excluding narrrf_world.sqlite
+[33m819c55b[m 🔗 Update: New Discord links added to index and FAQ pages
+[33m99c5176[m 📱 UX: Hold touch to drop blocks faster on mobile
+[33m75c99c7[m ✨ Glow Alert: Added cheese bomb warning glow effect
+[33mafbb095[m ✨ Glow Alert: Added animated bomb warning glow effect
+[33mcdbde7e[m 🧠 Fix: Show highest score per player with proper group by
+[33mfbdc9f1[m 🧠 Undo: Revert leaderboard to show multiple scores per player
+[33m77b0d62[m 🧠 Fix: leaderboard shows only highest score per player
+[33me9473ed[m 📱 Fix: Improved mobile layout on profile.html
+[33mafb3184[m 🧠 Fix: Dual-path DB support for Render & local (score + leaderboard)
+[33mc96a5ec[m 💾 Restore leaderboard data + 🎨 finalize preview layout
+[33m1c080c3[m 🧠 v9.0.4 - Final Tetris Patch: Preview block + game logic stable
+[33m97a84ba[m 📦 Add scroll-safe .gitignore for local dev hygiene
+[33m1c4cdae[m 🩹 Restore SQLite DB for Render boot compatibility
+[33m21c82be[m 🧼 Ignore local SQLite DB from version control
+[33mb0088a3[m 🧠 Finalize: Guest fallback, leaderboard visuals, Game Over modal + avatar
+[33m1a48612[m 🧠 Finalize: Guest fallback, leaderboard visuals, Game Over modal + avatar
+[33m4639006[m ✅ Fix: Validate wallet + prevent 400 spam in Game Over save
+[33m6ac876d[m 🧠 Update: Game Over modal UI + profile integration
+[33mf901dd8[m 🧠 Fix Tetris drop loop & add Game Over modal
+[33m2ffa489[m Update Genesis 9.0 timeline section and mint schedule
+[33mf47c078[m Update profile.html - trait gates & DOM logic tweak
+[33mcae4863[m 🧀 Tetris v1.3.6 – Exploding block + speed boost every 20 lines + full scroll sync
+[33me57539c[m 💣 Tetris v1.4.0 – Exploding blocks glow + render fix (colors[val] patch)
+[33mb21e728[m ✨ UI: Discord login button + cheesy Tetris glow style
+[33m6387bda[m Discord update
+[33md943e96[m 🧠 FINAL CHEESE SCROLL: Alien glow activated — finances easter egg fully revealed on index
+[33m3bfb0e9[m 🧠 Tetris v1.4 – Add Discord name to localStorage via callback for leaderboard sync
+[33m4e5e2c5[m 📦 Fix: Save-score with Discord name binding (Leaderboard Identity)
+[33m466416e[m 🧠 Tetris v1.3.5-final – Prevent scroll + full key control + mobile harmony
+[33mbea410c[m 🧠 Tetris v1.3.5 – Add I-block + mobile swipe + WASD/Arrow scroll-lock fix
+[33m40053cf[m 🎯 Tetris v1.3.4 – Smooth desktop keys + prevent scroll + mobile prep
+[33m1ec549e[m 🎮 Tetris v1.3.3 – Fix scroll jitter + full keyboard/mobile control 🌕
+[33m0620092[m 📱 Tetris v1.3.2 – Mobile swipe fix + profile embed sync 🧀
+[33mef43430[m 🧀 Fix mobile touch + leaderboard sync – Tetris scroll v1.3 cheese drop
+[33mc110bc4[m 📱 Add mobile touch controls for Tetris gameplay
+[33m2fd2652[m 🐭 Fix: Leaderboard result.leaderboard array access
+[33m3d58192[m 🐭 Fix: Leaderboard fetch logic + fallback message
+[33m30be446[m 🔗 Fix route to profile.html for Render root deployment
+[33m89cb0b3[m 🎮 Final Tetris Scroll Update: Profile migration + Leaderboard + Wallet/Discord sync
+[33mf8211dd[m 🎮 Tetris update:  scoring + Discord + wallet sync
+[33m35f47e2[m Update whitepaper-pro.html
+[33m21c73a2[m Update index.html
+[33maa15f9d[m Update faq.html
+[33mc385ea0[m Update index.html
+[33mb0608df[m Add files via upload
+[33m46cbca9[m Add files via upload
+[33ma686aa0[m Add files via upload
+[33m1e35e21[m Add files via upload
+[33m965f4cb[m Add files via upload
+[33m91c1c6e[m Add files via upload
+[33maada18a[m Update experiment-x.html
+[33maf9418e[m Update index.html
+[33mb521b64[m Update index.html
+[33mf88b5d1[m Update index.html
+[33mda0c22c[m Update project-updates.html
+[33mbe9a521[m Update project-updates.html
+[33m686a8e6[m Update project-updates.html
+[33mf90ee2e[m Update index.html
+[33mb613618[m Update faq.html
+[33m857724a[m Update index.html
+[33me2eac04[m Update faq.html
+[33m207057b[m Update index.html
+[33m6b60cd6[m Add files via upload
+[33m36760f4[m Update faq.html
+[33ma85ead4[m Update faq.html
+[33m318f412[m Update profile.html
+[33m96a39a4[m 🔥 profile.html now actually works lol
+[33m0b681be[m Update profile.html
+[33mac452f6[m Update profile.html
+[33m7fa13d7[m Add files via upload
+[33m5f3cc36[m Add files via upload
+[33m9913de5[m Update project-updates.html
+[33m2d3d61d[m Update index.html
+[33m33e2abb[m Update project-updates.html
+[33m1af2acd[m Update index.html
+[33ma1a7ff5[m Update index.html
+[33me118529[m Update profile.html
+[33m8911b3d[m Update profile.html
+[33m78a5289[m Update index.html
+[33m3759412[m Update profile.html
+[33m1da3474[m Update index.html
+[33mc013e84[m Update profile.html
+[33m09578a6[m Create sync-role.php
+[33mf8ce1c1[m Up

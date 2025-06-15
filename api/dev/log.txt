@@ -1,0 +1,1147 @@
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 60,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 50,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 60,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 80,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 50,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 130,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 50,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 70,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 110,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 80,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 50,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 80,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 50,
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 50,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 70,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 150,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 110,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 120,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 50,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 30,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 10,
+    "game": "snake",
+    "discord_id": "undefined",
+    "discord_name": "Guest"
+}

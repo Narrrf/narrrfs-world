@@ -1,0 +1,188 @@
+[33m8f8c9d6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mrender-deploy[m[33m, [m[1;31morigin/render-deploy[m[33m, [m[1;31morigin/HEAD[m[33m)[m 🎯 Leaderboard fix: only show top score per user
+[33m932e596[m 📦 Add debug-scores.php and updated .gitignore rules
+[33m7f3420c[m 🐛 Fix: Delay leaderboard refresh to ensure DOM ready
+[33m0831ddd[m 🧼 Clean UI: removed mobile control buttons, swipe gestures retained
+[33mafb3184[m 🧠 Fix: Dual-path DB support for Render & local (score + leaderboard)
+[33mc96a5ec[m 💾 Restore leaderboard data + 🎨 finalize preview layout
+[33m1c080c3[m 🧠 v9.0.4 - Final Tetris Patch: Preview block + game logic stable
+[33m97a84ba[m 📦 Add scroll-safe .gitignore for local dev hygiene
+[33m1c4cdae[m 🩹 Restore SQLite DB for Render boot compatibility
+[33m21c82be[m 🧼 Ignore local SQLite DB from version control
+[33mb0088a3[m 🧠 Finalize: Guest fallback, leaderboard visuals, Game Over modal + avatar
+[33m1a48612[m 🧠 Finalize: Guest fallback, leaderboard visuals, Game Over modal + avatar
+[33m4639006[m ✅ Fix: Validate wallet + prevent 400 spam in Game Over save
+[33m6ac876d[m 🧠 Update: Game Over modal UI + profile integration
+[33mf901dd8[m 🧠 Fix Tetris drop loop & add Game Over modal
+[33m2ffa489[m Update Genesis 9.0 timeline section and mint schedule
+[33mf47c078[m Update profile.html - trait gates & DOM logic tweak
+[33mcae4863[m 🧀 Tetris v1.3.6 – Exploding block + speed boost every 20 lines + full scroll sync
+[33me57539c[m 💣 Tetris v1.4.0 – Exploding blocks glow + render fix (colors[val] patch)
+[33mb21e728[m ✨ UI: Discord login button + cheesy Tetris glow style
+[33m6387bda[m Discord update
+[33md943e96[m 🧠 FINAL CHEESE SCROLL: Alien glow activated — finances easter egg fully revealed on index
+[33m3bfb0e9[m 🧠 Tetris v1.4 – Add Discord name to localStorage via callback for leaderboard sync
+[33m4e5e2c5[m 📦 Fix: Save-score with Discord name binding (Leaderboard Identity)
+[33m466416e[m 🧠 Tetris v1.3.5-final – Prevent scroll + full key control + mobile harmony
+[33mbea410c[m 🧠 Tetris v1.3.5 – Add I-block + mobile swipe + WASD/Arrow scroll-lock fix
+[33m40053cf[m 🎯 Tetris v1.3.4 – Smooth desktop keys + prevent scroll + mobile prep
+[33m1ec549e[m 🎮 Tetris v1.3.3 – Fix scroll jitter + full keyboard/mobile control 🌕
+[33m0620092[m 📱 Tetris v1.3.2 – Mobile swipe fix + profile embed sync 🧀
+[33mef43430[m 🧀 Fix mobile touch + leaderboard sync – Tetris scroll v1.3 cheese drop
+[33mc110bc4[m 📱 Add mobile touch controls for Tetris gameplay
+[33m2fd2652[m 🐭 Fix: Leaderboard result.leaderboard array access
+[33m3d58192[m 🐭 Fix: Leaderboard fetch logic + fallback message
+[33m30be446[m 🔗 Fix route to profile.html for Render root deployment
+[33m89cb0b3[m 🎮 Final Tetris Scroll Update: Profile migration + Leaderboard + Wallet/Discord sync
+[33mf8211dd[m 🎮 Tetris update:  scoring + Discord + wallet sync
+[33m35f47e2[m Update whitepaper-pro.html
+[33m21c73a2[m Update index.html
+[33maa15f9d[m Update faq.html
+[33mc385ea0[m Update index.html
+[33mb0608df[m Add files via upload
+[33m46cbca9[m Add files via upload
+[33ma686aa0[m Add files via upload
+[33m1e35e21[m Add files via upload
+[33m965f4cb[m Add files via upload
+[33m91c1c6e[m Add files via upload
+[33maada18a[m Update experiment-x.html
+[33maf9418e[m Update index.html
+[33mb521b64[m Update index.html
+[33mf88b5d1[m Update index.html
+[33mda0c22c[m Update project-updates.html
+[33mbe9a521[m Update project-updates.html
+[33m686a8e6[m Update project-updates.html
+[33mf90ee2e[m Update index.html
+[33mb613618[m Update faq.html
+[33m857724a[m Update index.html
+[33me2eac04[m Update faq.html
+[33m207057b[m Update index.html
+[33m6b60cd6[m Add files via upload
+[33m36760f4[m Update faq.html
+[33ma85ead4[m Update faq.html
+[33m318f412[m Update profile.html
+[33m96a39a4[m 🔥 profile.html now actually works lol
+[33m0b681be[m Update profile.html
+[33mac452f6[m Update profile.html
+[33m7fa13d7[m Add files via upload
+[33m5f3cc36[m Add files via upload
+[33m9913de5[m Update project-updates.html
+[33m2d3d61d[m Update index.html
+[33m33e2abb[m Update project-updates.html
+[33m1af2acd[m Update index.html
+[33ma1a7ff5[m Update index.html
+[33me118529[m Update profile.html
+[33m8911b3d[m Update profile.html
+[33m78a5289[m Update index.html
+[33m3759412[m Update profile.html
+[33m1da3474[m Update index.html
+[33mc013e84[m Update profile.html
+[33m09578a6[m Create sync-role.php
+[33mf8ce1c1[m Update callback.php
+[33mcd612ec[m Update profile.html
+[33me2775cf[m Update camera-toggle.html
+[33m77ee2e9[m Create camera-toggle.html
+[33m12b298b[m Update profile.html
+[33m5648fe0[m Update profile.html
+[33mb2ce353[m Update profile.html
+[33mbc33152[m Update profile.html
+[33mc3f7949[m Update profile.html
+[33m3cf4cdd[m Update profile.html
+[33m1dbe782[m Update profile.html
+[33mbbaed3f[m Update profile.html
+[33m7455f69[m Update profile.html
+[33m54e1660[m Update profile.html
+[33m0246bc3[m Update profile.html
+[33m59b2555[m Update profile.html
+[33mf51db5f[m Update profile.html
+[33ma565148[m Update profile.html
+[33mb0cde9b[m Add files via upload
+[33md151a2f[m Update profile.html
+[33md248445[m Update profile.html
+[33m11ff41f[m Update profile.html
+[33mc92bfe8[m Update profile.html
+[33m0c2bc03[m Update profile.html
+[33md51f213[m Update profile.html
+[33m40a3a51[m Update profile.html
+[33mf514443[m Update profile.html
+[33m2a5d138[m Update profile.html
+[33m34d5401[m Update profile.html
+[33me88d759[m Update profile.html
+[33m397661f[m Update profile.html
+[33m9ba8730[m Update profile.html
+[33maa7c6bf[m Update profile.html
+[33me1258a4[m Update profile.html
+[33mc0dc78b[m Update profile.html
+[33mfb52085[m Update profile.html
+[33mb0d7765[m Update profile.html
+[33m4e5be7d[m Update profile.html
+[33m9b77fdd[m Update profile.html
+[33m95e8ddb[m Add files via upload
+[33m42670af[m Add files via upload
+[33m5b941a2[m Update profile.html
+[33m4cd8a3c[m Update profile.html
+[33m784c170[m Update profile.html
+[33m638505f[m Update profile.html
+[33m7afb20e[m Update profile.html
+[33mc940eb0[m Add files via upload
+[33ma6064b4[m Update profile.html
+[33m04691e1[m Update profile.html
+[33md1f9a7c[m Update db-viewer.php
+[33m8938d4a[m Update profile.html
+[33m7173d44[m Update profile.html
+[33m09b06d9[m Update profile.html
+[33m47eba29[m Update profile.html
+[33mdcb5783[m Update profile.html
+[33m900564f[m Update hytopia.html
+[33m6e6900c[m Update hytopia.html
+[33mcc200de[m Update hytopia.html
+[33m8f705bf[m Update experiment-x.html
+[33me5c9d5e[m Update index.html
+[33m4085888[m Update project-updates.html
+[33ma2be46b[m Update index.html
+[33m5a97bf0[m Update index.html
+[33mec2eb8c[m Add files via upload
+[33mba3e93c[m Update profile.html
+[33mf6403d7[m Rename ChatGPT Image 18. Apr. 2025, 01_49_11.png to cheese-portal.png
+[33med39625[m Add files via upload
+[33me750425[m Update project-updates.html
+[33ma954e25[m Update whitepaper.html
+[33mfd30d69[m Update faq.html
+[33me84d0e9[m Update index.html
+[33mf739c74[m Update index.html
+[33m98f4b4c[m Update README_ONIONPIPE.md
+[33mdae85d9[m Update README_GITHUB.md
+[33m49cb2ae[m[33m ([m[1;33mtag: [m[1;33mv5.0[m[33m)[m Add files via upload
+[33mc024d46[m Update callback.php
+[33me1bba8f[m Update callback.php
+[33me3745f9[m Update callback.php
+[33m3f7f210[m Update callback.php
+[33m66f1247[m Update roles.php
+[33m0b98cdf[m Update profile.html
+[33mee73d2f[m Update sync-role.php
+[33mcc775c8[m Update sync-role.php
+[33m8bf7291[m Update callback.php
+[33med85e01[m Update sync-role.php
+[33m2a18e7b[m Update callback.php
+[33med799b6[m Update callback.php
+[33m426b29b[m Update callback.php
+[33m337b540[m Update callback.php
+[33m0b5d2fe[m Update callback.php
+[33m26c950e[m Update callback.php
+[33mbd82acd[m Update callback.php
+[33mad920f6[m Update callback.php
+[33mb06d767[m Update callback.php
+[33m9c001e8[m Update callback.php
+[33m75f5263[m Update callback.php
+[33m8e994e6[m Update callback.php
+[33m7ed2b57[m Update callback.php
+[33mdaac46f[m Update callback.php
+[33m29dfb81[m Update callback.php
+[33me8d9071[m Update callback.php
+[33m23fe951[m Update sync-role.php
+[33m395bdba[m Update callback.php
+[33m8c46784[m Update callback.php
+[33mc09876d[m Update callback.php
+[33ma1c7c81[m Update callback.php
+[33m41246c9[m Update index.html
+[33m25c1a34[m Fix: set ServerName to avoid Apache FQDN warning
+[33m299cbef[m 🚀 Render deploy: clean, no secrets
