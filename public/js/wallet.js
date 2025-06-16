@@ -16,11 +16,13 @@ async function updateUserScores() {
     const dspoincBalance = document.getElementById('dspoinc-balance');
     const discordName = document.getElementById('wallet-discord-name');
     
+    // Update balances
     if (spoincBalance && dspoincBalance) {
       spoincBalance.textContent = data.total_spoinc.toLocaleString();
       dspoincBalance.textContent = data.total_dspoinc.toLocaleString();
     }
 
+    // Update Discord name
     if (discordName) {
       discordName.textContent = data.discord_name || 'Not logged in';
       if (data.discord_name !== 'Guest') {
@@ -28,6 +30,26 @@ async function updateUserScores() {
       } else {
         discordName.classList.remove('font-semibold', 'text-purple-800');
       }
+    }
+
+    // Update stats
+    const statsAdjustments = document.getElementById('stats-adjustments');
+    const statsSources = document.getElementById('stats-sources');
+    const statsRoles = document.getElementById('stats-roles');
+    const statsMemberSince = document.getElementById('stats-member-since');
+
+    if (statsAdjustments) {
+      statsAdjustments.textContent = data.stats.adjustments_count.toLocaleString();
+    }
+    if (statsSources) {
+      statsSources.textContent = data.stats.source_count.toLocaleString();
+    }
+    if (statsRoles) {
+      statsRoles.textContent = data.stats.role_count.toLocaleString();
+    }
+    if (statsMemberSince && data.stats.first_score_date) {
+      const date = new Date(data.stats.first_score_date);
+      statsMemberSince.textContent = date.toLocaleDateString();
     }
   } catch (err) {
     console.error('Failed to fetch scores:', err);

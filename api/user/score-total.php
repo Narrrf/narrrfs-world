@@ -43,6 +43,27 @@ $total_dspoinc = (int)($row['total_dspoinc'] ?? 0);
 // Get guilds from session
 $guilds = $_SESSION['guilds'] ?? [];
 
+// Get additional stats
+// 1. Total adjustments count
+$stmt = $db->prepare("SELECT COUNT(*) as adj_count FROM tbl_score_adjustments WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$adjustments = $stmt->fetch();
+
+// 2. Unique score sources
+$stmt = $db->prepare("SELECT COUNT(DISTINCT source) as source_count FROM tbl_user_scores WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$sources = $stmt->fetch();
+
+// 3. First score date
+$stmt = $db->prepare("SELECT MIN(timestamp) as first_score FROM tbl_score_adjustments WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$firstScore = $stmt->fetch();
+
+// 4. Role count
+$stmt = $db->prepare("SELECT COUNT(*) as role_count FROM tbl_user_roles WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$roles = $stmt->fetch();
+
 // Respond with user info and scores
 echo json_encode([
     'discord_id' => $user_id,
@@ -50,6 +71,12 @@ echo json_encode([
     'avatar_url' => $user['avatar_url'] ?? 'https://cdn.discordapp.com/embed/avatars/0.png',
     'guilds' => $guilds,
     'total_dspoinc' => $total_dspoinc,
-    'total_spoinc' => floor($total_dspoinc / 10000)
+    'total_spoinc' => floor($total_dspoinc / 10000),
+    'stats' => [
+        'adjustments_count' => (int)($adjustments['adj_count'] ?? 0),
+        'source_count' => (int)($sources['source_count'] ?? 0),
+        'first_score_date' => $firstScore['first_score'] ?? null,
+        'role_count' => (int)($roles['role_count'] ?? 0)
+    ]
 ]);
 ?>
