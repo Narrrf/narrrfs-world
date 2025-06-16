@@ -485,60 +485,66 @@ document.addEventListener("DOMContentLoaded", async function () {
   const loginLink = document.getElementById('login-link');
 
   try {
-    const res = await fetch('https://narrrfs.world/api/user/score-total.php', { credentials: 'include' });
+    const res = await fetch('https://narrrfs.world/api/user/score-total.php', { 
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
 
     if (!res.ok) {
-      document.getElementById('username').innerText = 'Guest#0000';
-      document.getElementById('welcome-name').innerText = 'Guest';
-      document.getElementById('email').innerText = 'Please log in';
-      document.getElementById('guilds').innerText = 'No guilds connected';
-      document.getElementById('traits').innerText = 'No traits available';
-      document.getElementById('user-roles').innerText = 'No roles';
-      document.getElementById('wallet-address').innerText = 'Wallet not linked';
-      document.getElementById('goldenCheeseGate')?.classList.add('hidden');
-      document.getElementById('noCheeseJoke')?.classList.add('hidden');
-      return;
+      if (res.status === 401) {
+        // Not logged in - show login UI
+        document.getElementById('username').innerText = 'Guest#0000';
+        document.getElementById('welcome-name').innerText = 'Guest';
+        document.getElementById('email').innerText = 'Please log in';
+        document.getElementById('guilds').innerText = 'No guilds connected';
+        document.getElementById('traits').innerText = 'No traits available';
+        document.getElementById('user-roles').innerText = 'No roles';
+        document.getElementById('wallet-address').innerText = 'Wallet not linked';
+        document.getElementById('goldenCheeseGate')?.classList.add('hidden');
+        document.getElementById('noCheeseJoke')?.classList.add('hidden');
+        
+        // Make sure login link is visible and clickable
+        if (loginLink) {
+          loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+          loginLink.style.display = 'block';
+        }
+        if (avatar) {
+          avatar.src = 'img/grumpy-cheese.png';
+          avatar.style.cursor = 'pointer';
+        }
+        return;
+      }
+      throw new Error(`API error: ${res.status}`);
     }
 
     const user = await res.json();
-    const fullUsername = user.discord_name || 'Guest#0000';
-
-    // ✅ Make sure Tetris sees these:
+    
+    // Store Discord info for other features
     if (user.discord_id) {
       localStorage.setItem("discord_id", user.discord_id);
-      localStorage.setItem("discord_name", user.discord_name || 'Guest');
+      localStorage.setItem("discord_name", user.discord_name);
     }
 
     avatar.src = user.avatar_url || 'img/default-avatar.png';
-    avatar.alt = fullUsername;
-    avatar.title = fullUsername;
+    avatar.alt = user.discord_name;
+    avatar.title = user.discord_name;
     avatar.classList.remove('cursor-pointer');
     loginLink.removeAttribute('href');
 
-    document.getElementById('username').innerText = fullUsername;
-    document.getElementById('welcome-name').innerText = fullUsername;
+    document.getElementById('username').innerText = user.discord_name;
+    document.getElementById('welcome-name').innerText = user.discord_name;
     document.getElementById('email').innerText = user.email || 'No email';
     document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
     document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits';
     document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles';
     document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Wallet not linked';
 
-    const vipRes = await fetch('https://narrrfs.world/api/user/roles.php');
-    const vipData = await vipRes.json();
-    const roles = vipData.roles || [];
-
-    renderTrophyShelf(roles);
-
-    if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
-      document.getElementById('goldenCheeseGate')?.classList.remove('hidden');
-    } else {
-      document.getElementById('noCheeseJoke')?.classList.remove('hidden');
-    }
-
     // Update cheese scores
-    if (user.total_dspoinc) {
+    if (user.total_dspoinc !== undefined) {
       const dspoinc = user.total_dspoinc;
-      const spoinc = Math.floor(dspoinc / 10000);
+      const spoinc = user.total_spoinc;
       
       if (document.getElementById('user-dspoinc'))
         document.getElementById('user-dspoinc').textContent = `${dspoinc.toLocaleString()} $DSPOINC`;
@@ -546,8 +552,26 @@ document.addEventListener("DOMContentLoaded", async function () {
         document.getElementById('user-spoinc').textContent = `${spoinc.toLocaleString()}`;
     }
 
+    // Fetch roles separately since they're from a different endpoint
+    try {
+      const vipRes = await fetch('https://narrrfs.world/api/user/roles.php', { credentials: 'include' });
+      const vipData = await vipRes.json();
+      const roles = vipData.roles || [];
+
+      renderTrophyShelf(roles);
+
+      if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
+        document.getElementById('goldenCheeseGate')?.classList.remove('hidden');
+      } else {
+        document.getElementById('noCheeseJoke')?.classList.remove('hidden');
+      }
+    } catch (err) {
+      console.error('Failed to fetch roles:', err);
+    }
+
   } catch (err) {
     console.error('Profile fetch failed:', err);
+    // Show login UI on error
     document.getElementById('username').innerText = 'Guest#0000';
     document.getElementById('welcome-name').innerText = 'Guest';
     document.getElementById('email').innerText = 'Please log in';
@@ -557,6 +581,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById('wallet-address').innerText = 'Wallet not linked';
     document.getElementById('goldenCheeseGate')?.classList.add('hidden');
     document.getElementById('noCheeseJoke')?.classList.add('hidden');
+    
+    // Make sure login link is visible
+    if (loginLink) {
+      loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+      loginLink.style.display = 'block';
+    }
+    if (avatar) {
+      avatar.src = 'img/grumpy-cheese.png';
+      avatar.style.cursor = 'pointer';
+    }
   }
 });
 </script>

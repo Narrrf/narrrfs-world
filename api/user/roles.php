@@ -1,8 +1,17 @@
 <?php
 session_start();
 
-// JSON response header
+// CORS and JSON headers
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: https://narrrfs.world');
+header('Access-Control-Allow-Credentials: true');
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    header('Access-Control-Allow-Methods: GET, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Accept');
+    exit;
+}
 
 // ✅ Ensure user is logged in
 if (!isset($_SESSION['discord_id'])) {
