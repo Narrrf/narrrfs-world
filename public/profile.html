@@ -485,7 +485,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const loginLink = document.getElementById('login-link');
 
   try {
-    const res = await fetch('https://narrrfs.world/api/user.php', { credentials: 'include' });
+    const res = await fetch('https://narrrfs.world/api/user/score-total.php', { credentials: 'include' });
 
     if (!res.ok) {
       document.getElementById('username').innerText = 'Guest#0000';
@@ -500,17 +500,16 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-const user = await res.json();
-const fullUsername = user.discriminator !== "0"
-  ? `${user.username}#${user.discriminator}`
-  : user.username;
+    const user = await res.json();
+    const fullUsername = user.discord_name || 'Guest#0000';
 
-// ✅ Make sure Tetris sees these:
-localStorage.setItem("discord_id", user.discord_id);
-localStorage.setItem("discord_name", user.username);
+    // ✅ Make sure Tetris sees these:
+    if (user.discord_id) {
+      localStorage.setItem("discord_id", user.discord_id);
+      localStorage.setItem("discord_name", user.discord_name || 'Guest');
+    }
 
-
-    avatar.src = user.avatarUrl || 'img/default-avatar.png';
+    avatar.src = user.avatar_url || 'img/default-avatar.png';
     avatar.alt = fullUsername;
     avatar.title = fullUsername;
     avatar.classList.remove('cursor-pointer');
@@ -534,6 +533,17 @@ localStorage.setItem("discord_name", user.username);
       document.getElementById('goldenCheeseGate')?.classList.remove('hidden');
     } else {
       document.getElementById('noCheeseJoke')?.classList.remove('hidden');
+    }
+
+    // Update cheese scores
+    if (user.total_dspoinc) {
+      const dspoinc = user.total_dspoinc;
+      const spoinc = Math.floor(dspoinc / 10000);
+      
+      if (document.getElementById('user-dspoinc'))
+        document.getElementById('user-dspoinc').textContent = `${dspoinc.toLocaleString()} $DSPOINC`;
+      if (document.getElementById('user-spoinc'))
+        document.getElementById('user-spoinc').textContent = `${spoinc.toLocaleString()}`;
     }
 
   } catch (err) {
@@ -660,35 +670,14 @@ async function getDiscordId() {
   // Try from global variable first
   if (window.userDiscordId) return window.userDiscordId;
 
-  // Fallback to backend session API
-  try {
-    const res = await fetch('https://narrrfs.world/api/user/score-total.php');
-    const data = await res.json();
-    return data.discord_id || null;
-  } catch (e) {
-    return null;
-  }
-}
-
-async function fetchCheeseScores(discordId) {
-  if (!discordId) return;
-  // Call your backend for DSPOINC
-  const res = await fetch(`https://narrrfs.world/api/user/score-total.php?user_id=${discordId}`);
-  const data = await res.json();
-  // { "total_dspoinc": 24000000 }
-  const dspoinc = data.total_dspoinc || 0;
-  const spoinc = Math.floor(dspoinc / 10000);
-
-  if (document.getElementById('user-dspoinc'))
-    document.getElementById('user-dspoinc').textContent = `${dspoinc.toLocaleString()} $DSPOINC`;
-  if (document.getElementById('user-spoinc'))
-    document.getElementById('user-spoinc').textContent = `${spoinc.toLocaleString()}`;
+  // Fallback to localStorage
+  return localStorage.getItem('discord_id') || null;
 }
 
 // On page load after DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
-  const discordId = await getDiscordId();
-  if (discordId) fetchCheeseScores(discordId);
+  // Score fetching is now handled in the main user data fetch
+  // This listener is kept for potential future use
 });
 </script>
 </body>
