@@ -13,6 +13,10 @@ fi
 chown www-data:www-data /var/www/html/db/narrrf_world.sqlite
 chmod 664 /var/www/html/db/narrrf_world.sqlite
 
+# 📦 Apply database migrations
+echo "📦 Applying database migrations..."
+sqlite3 /var/www/html/db/narrrf_world.sqlite < /var/www/html/db/migrations/create_score_tables.sql
+
 # 🚀 Start Apache in foreground
 exec apache2-foreground
 
