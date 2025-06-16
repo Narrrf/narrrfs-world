@@ -662,7 +662,7 @@ async function getDiscordId() {
 
   // Fallback to backend session API
   try {
-    const res = await fetch('https://narrrfs.world/api/user');
+    const res = await fetch('https://narrrfs.world/api/user/score-total.php');
     const data = await res.json();
     return data.discord_id || null;
   } catch (e) {
