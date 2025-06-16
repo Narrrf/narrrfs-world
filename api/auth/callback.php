@@ -84,11 +84,16 @@ try {
     die("❌ Database error: " . $e->getMessage());
 }
 
+// Generate full avatar URL
+$avatarUrl = $user['avatar']
+    ? "https://cdn.discordapp.com/avatars/{$user['id']}/{$user['avatar']}.png"
+    : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
 $stmt = $pdo->prepare("
     INSERT OR REPLACE INTO tbl_users (discord_id, username, avatar_url)
     VALUES (?, ?, ?)
 ");
-$stmt->execute([$user['id'], $user['username'], $user['avatar']]);
+$stmt->execute([$user['id'], $user['username'], $avatarUrl]);
 
 // ✅ Sync roles
 include_once(__DIR__ . '/sync-role.php');
