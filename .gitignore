@@ -1,8 +1,7 @@
 # 🌐 Environment variables
 .env
 
-# 🧠 Local database (ignored after push)
-db/narrrf_world.sqlite
+
 
 # ✍️ Editor junk
 *.swp
