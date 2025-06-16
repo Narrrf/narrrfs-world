@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧀 Narrrf's World - Score Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="../img/cheese-egg.png" type="image/png">
+</head>
+<body class="bg-[#2f3136] text-white">
+    <!-- 🔰 Header -->
+    <header class="w-full bg-black py-4 px-6 text-yellow-400 shadow-md">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Admin Panel</h1>
+            <nav class="space-x-4 text-sm md:text-base flex items-center">
+                <a href="../index.html" class="hover:text-pink-400">Home</a>
+                <button id="connect-wallet-btn" onclick="connectWallet()" 
+                    class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
+                    🔌 Connect
+                </button>
+                <img id="user-avatar" src="../img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
+                <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
+                    ❌
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 🎯 Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <!-- 🔐 Auth Check -->
+        <div id="auth-warning" class="hidden bg-red-500 text-white p-4 rounded-lg mb-8 text-center">
+            ⚠️ Access restricted to Moderators and Founder only.
+        </div>
+
+        <!-- ✨ Score Management Form -->
+        <div id="score-form" class="bg-gray-800 rounded-xl p-6 shadow-xl">
+            <h2 class="text-2xl font-bold text-yellow-400 mb-6">🧀 Manage $DSPOINC Scores</h2>
+            
+            <!-- User Search -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Discord Username or ID</label>
+                <input type="text" id="user-search" 
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Enter username or ID...">
+                <div id="user-results" class="mt-2 space-y-2"></div>
+            </div>
+
+            <!-- Action Selection -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Action</label>
+                <select id="action-select" 
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                    <option value="add">Add $DSPOINC</option>
+                    <option value="remove">Remove $DSPOINC</option>
+                    <option value="set">Set $DSPOINC Total</option>
+                </select>
+            </div>
+
+            <!-- Amount Input -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Amount</label>
+                <input type="number" id="amount-input" 
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Enter amount...">
+            </div>
+
+            <!-- Reason Input -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Reason</label>
+                <input type="text" id="reason-input" 
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="Enter reason for adjustment...">
+            </div>
+
+            <!-- Submit Button -->
+            <button id="submit-btn" onclick="submitAdjustment()"
+                class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-lg shadow-lg transition-colors">
+                💫 Apply Score Change
+            </button>
+        </div>
+
+        <!-- 📜 Recent Adjustments -->
+        <div class="mt-8 bg-gray-800 rounded-xl p-6 shadow-xl">
+            <h3 class="text-xl font-bold text-yellow-400 mb-4">📜 Recent Adjustments</h3>
+            <div id="adjustments-list" class="space-y-2">
+                <!-- Adjustments will be populated here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 🎮 Scripts -->
+    <script src="../js/wallet.js"></script>
+    <script>
+        let selectedUserId = null;
+
+        // Check admin status on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/user/roles.php', { credentials: 'include' });
+                const data = await res.json();
+                
+                if (!data.roles || !data.roles.some(role => ['Admin', 'Moderator'].includes(role))) {
+                    document.getElementById('auth-warning').classList.remove('hidden');
+                    document.getElementById('score-form').classList.add('hidden');
+                }
+            } catch (err) {
+                console.error('Auth check failed:', err);
+                document.getElementById('auth-warning').classList.remove('hidden');
+                document.getElementById('score-form').classList.add('hidden');
+            }
+        });
+
+        // User search
+        document.getElementById('user-search').addEventListener('input', async (e) => {
+            const search = e.target.value.trim();
+            if (search.length < 2) {
+                document.getElementById('user-results').innerHTML = '';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/user/search.php?q=${encodeURIComponent(search)}`, {
+                    credentials: 'include'
+                });
+                const users = await res.json();
+
+                const resultsDiv = document.getElementById('user-results');
+                resultsDiv.innerHTML = '';
+
+                users.forEach(user => {
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'p-2 hover:bg-gray-700 rounded cursor-pointer flex items-center';
+                    userDiv.innerHTML = `
+                        <img src="${user.avatar_url || '../img/default-avatar.png'}" 
+                            class="w-8 h-8 rounded-full mr-2">
+                        <span>${user.username}</span>
+                    `;
+                    userDiv.onclick = () => selectUser(user);
+                    resultsDiv.appendChild(userDiv);
+                });
+            } catch (err) {
+                console.error('User search failed:', err);
+            }
+        });
+
+        function selectUser(user) {
+            selectedUserId = user.discord_id;
+            document.getElementById('user-search').value = user.username;
+            document.getElementById('user-results').innerHTML = '';
+        }
+
+        async function submitAdjustment() {
+            if (!selectedUserId) {
+                alert('Please select a user first');
+                return;
+            }
+
+            const amount = parseInt(document.getElementById('amount-input').value);
+            if (!amount || isNaN(amount)) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            const action = document.getElementById('action-select').value;
+            const reason = document.getElementById('reason-input').value || 'admin_adjustment';
+
+            try {
+                const res = await fetch('/api/admin/manage-score.php', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: selectedUserId,
+                        action,
+                        amount,
+                        reason
+                    })
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    alert(`Score successfully ${action}ed! New total: ${result.new_total.toLocaleString()} $DSPOINC`);
+                    document.getElementById('amount-input').value = '';
+                    document.getElementById('reason-input').value = '';
+                    loadRecentAdjustments();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (err) {
+                console.error('Score adjustment failed:', err);
+                alert('Failed to adjust score. Please try again.');
+            }
+        }
+
+        async function loadRecentAdjustments() {
+            try {
+                const res = await fetch('/api/admin/recent-adjustments.php', {
+                    credentials: 'include'
+                });
+                const adjustments = await res.json();
+
+                const listDiv = document.getElementById('adjustments-list');
+                listDiv.innerHTML = '';
+
+                adjustments.forEach(adj => {
+                    const adjDiv = document.createElement('div');
+                    adjDiv.className = 'bg-gray-700 rounded p-3 text-sm';
+                    adjDiv.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span>${adj.username}</span>
+                            <span class="text-${adj.action === 'add' ? 'green' : 'red'}-400">
+                                ${adj.action === 'add' ? '+' : '-'}${adj.amount.toLocaleString()} $DSPOINC
+                            </span>
+                        </div>
+                        <div class="text-gray-400 text-xs mt-1">
+                            ${adj.reason} - by ${adj.admin_name} - ${new Date(adj.timestamp).toLocaleString()}
+                        </div>
+                    `;
+                    listDiv.appendChild(adjDiv);
+                });
+            } catch (err) {
+                console.error('Failed to load adjustments:', err);
+            }
+        }
+
+        // Load recent adjustments on page load
+        loadRecentAdjustments();
+    </script>
+</body>
+</html> 
