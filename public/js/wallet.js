@@ -4,6 +4,26 @@
  * Last Updated: 2025
  */
 
+// Function to fetch and display user scores
+async function updateUserScores() {
+  try {
+    const response = await fetch('/api/user/score-total.php', {
+      credentials: 'include'
+    });
+    const data = await response.json();
+    
+    const spoincBalance = document.getElementById('spoinc-balance');
+    const dspoincBalance = document.getElementById('dspoinc-balance');
+    
+    if (spoincBalance && dspoincBalance) {
+      spoincBalance.textContent = data.total_spoinc.toLocaleString();
+      dspoincBalance.textContent = data.total_dspoinc.toLocaleString();
+    }
+  } catch (err) {
+    console.error('Failed to fetch scores:', err);
+  }
+}
+
 // Helper function to update all connect buttons on the page
 function updateAllConnectButtons(walletAddress, isConnected) {
   const connectButtons = document.querySelectorAll('[id$="connect-wallet-btn"]');
@@ -122,4 +142,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if (avatar) avatar.classList.remove('hidden');
     if (disconnectButton) disconnectButton.classList.remove('hidden');
   }
+  
+  // Update scores on page load
+  updateUserScores();
+  
+  // Update scores every 30 seconds
+  setInterval(updateUserScores, 30000);
 }); 
