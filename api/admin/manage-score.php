@@ -34,13 +34,13 @@ if (!$user_id || !$action || !$amount) {
 }
 
 // Connect to database
-$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+$dbPath = '/var/www/html/db/narrrf_world.sqlite';
 try {
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
+    echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
     exit;
 }
 
