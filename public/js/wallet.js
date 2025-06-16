@@ -14,10 +14,20 @@ async function updateUserScores() {
     
     const spoincBalance = document.getElementById('spoinc-balance');
     const dspoincBalance = document.getElementById('dspoinc-balance');
+    const discordName = document.getElementById('wallet-discord-name');
     
     if (spoincBalance && dspoincBalance) {
       spoincBalance.textContent = data.total_spoinc.toLocaleString();
       dspoincBalance.textContent = data.total_dspoinc.toLocaleString();
+    }
+
+    if (discordName) {
+      discordName.textContent = data.discord_name || 'Not logged in';
+      if (data.discord_name !== 'Guest') {
+        discordName.classList.add('font-semibold', 'text-purple-800');
+      } else {
+        discordName.classList.remove('font-semibold', 'text-purple-800');
+      }
     }
   } catch (err) {
     console.error('Failed to fetch scores:', err);
