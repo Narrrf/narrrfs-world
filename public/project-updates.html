@@ -88,7 +88,7 @@ if (in_array('easter-map', $traits)) {
 - Users with trait "riddle-solved-3" = see bonus update or easter egg
 
 🔥 5-Year-Old Dev Reminder:
-“If I want something to show only for someone special, I write a PHP if-statement with their trait name. No JS needed. Just cheese and logic.”
+"If I want something to show only for someone special, I write a PHP if-statement with their trait name. No JS needed. Just cheese and logic."
 
 ✅ No blockchain interaction needed — traits come from synced DB (backed by snapshot or API).
 
@@ -128,8 +128,14 @@ if (in_array('easter-map', $traits)) {
       <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
       <a href="project-updates.html" class="text-pink-400 font-semibold">Updates</a>
       <a href="faq.html" class="hover:text-pink-400">FAQ</a>
-      <button id="top-connect-wallet-btn" onclick="connectWallet()" class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">🔌 Connect</button>
-      <img id="user-avatar" src="cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
+      <button id="top-connect-wallet-btn" onclick="connectWallet()" 
+        class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
+        🔌 Connect
+      </button>
+      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
+      <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
+        ❌
+      </button>
     </nav>
   </div>
 </header>
@@ -170,7 +176,7 @@ if (in_array('easter-map', $traits)) {
 
 <!-- 🧠 Friendly Subtext -->
 <p class="text-md md:text-lg text-gray-700 max-w-xl mx-auto mb-10">
-  Narrrf’s World expands. Trait engines hum. Scrolls whisper. HYtopia Level 1 construction is live — and the riddles only grow deeper.
+  Narrrf's World expands. Trait engines hum. Scrolls whisper. HYtopia Level 1 construction is live — and the riddles only grow deeper.
 </p>
 
 <!-- 🧀 COMING UP NEXT SECTION – PHASE 2 LAUNCH CYCLE -->
@@ -203,7 +209,7 @@ if (in_array('easter-map', $traits)) {
     <li>🎨 <strong>VIP Render Claim Site</strong> finalizing</li>
   </ul>
   <p class="mt-4 text-xs italic text-gray-500">
-    Genesis 9.0 scrolls are active. Mutation is not only expected — it’s planned. 🧀
+    Genesis 9.0 scrolls are active. Mutation is not only expected — it's planned. 🧀
   </p>
 </div>
 
@@ -227,7 +233,7 @@ if (in_array('easter-map', $traits)) {
 </div>
 
 <p class="mt-4 text-xs italic text-yellow-700">
-  “The mouse plays Tetris, the scroll glows twice. The mint listens.”
+  "The mouse plays Tetris, the scroll glows twice. The mint listens."
 </p>
 
 <div class="grid md:grid-cols-2 gap-8 text-left mt-12">
@@ -316,9 +322,9 @@ Then let the PHP file echo each one. Or just ping Brain 3.1.
 <!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
 ---------------------------------------------------------
 🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien
-🌍 This **Genesis 2.0** package represents the culmination of **Narrrf’s World** project: integrating **Web2/Web3**, **NFT ownership**, and **SQL-based game mechanics** into a self-sustaining ecosystem.
+🌍 This **Genesis 2.0** package represents the culmination of **Narrrf's World** project: integrating **Web2/Web3**, **NFT ownership**, and **SQL-based game mechanics** into a self-sustaining ecosystem.
 
-💾 **Stored in the Lab’s digital archives**, it will continue to evolve and serve as a reference for **future generations** of developers.
+💾 **Stored in the Lab's digital archives**, it will continue to evolve and serve as a reference for **future generations** of developers.
 
 ⚡ Officially ready for **scaling**, **real-time integration**, and continuous **user interaction**.
 
@@ -368,10 +374,13 @@ Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
 <!-- 🧠 HTML Brain 4.0 Footer Lab Declaration -->
 <!-- ======================================== -->
 <footer class="text-center text-xs text-yellow-600 py-4 mt-12">
-  🧠 Powered by Cheese Architect 9.0 — HTML Brain of Narrrf’s World<br>
+  🧠 Powered by Cheese Architect 9.0 — HTML Brain of Narrrf's World<br>
   🧀 Brain Sync 9.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊
 </footer>
 <!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
 <!-- 🔐 Do not remove unless instructed by the Over Brain. -->
+
+<!-- Add wallet.js before the closing body tag -->
+<script src="js/wallet.js"></script>
 </body>
 </html>

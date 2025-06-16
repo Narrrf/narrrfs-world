@@ -62,7 +62,7 @@
 
   <!-- 📜 DEV NOTES -->
   <!-- This file is 100-year ready. Designed for clarity, scale, and Masterchief SQL integration. -->
-  <!-- If you’re a new dev joining Narrrf's World, please see README.md and lore-portal.html -->
+  <!-- If you're a new dev joining Narrrf's World, please see README.md and lore-portal.html -->
 </head>
 
 <body class="bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900 font-sans antialiased scroll-smooth">
@@ -86,8 +86,10 @@
         class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
         🔌 Connect
       </button>
-      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg cursor-pointer"
-        onclick="disconnectWallet()" />
+      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
+      <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
+        ❌
+      </button>
     </nav>
   </div>
 </header>
@@ -166,159 +168,21 @@
   <div class="max-w-3xl mx-auto">
     <h2 class="text-2xl font-bold mb-4">🧪 Quote from the Lab</h2>
     <p class="italic text-lg text-purple-800 font-semibold">
-      “You don’t mint a masterpiece — you mutate one.”<br>
-      <span class="text-sm text-gray-700 font-normal">– Narrrf’s Lab Philosophy, Vol. 1</span>
+      "You don't mint a masterpiece — you mutate one."<br>
+      <span class="text-sm text-gray-700 font-normal">– Narrrf's Lab Philosophy, Vol. 1</span>
     </p>
   </div>
 </section>
 
 
-<!-- Wallet Connect Script -->
-
-<script>
-  async function connectWallet() {
-    const connectButton = document.getElementById('connect-wallet-btn');
-    const mintButton = document.getElementById('mint-now-btn');
-    const vipMessage = document.getElementById('vip-message');
-    const avatar = document.getElementById('user-avatar');
-
-    if ('solana' in window) {
-      const provider = window.solana;
-
-      if (provider.isPhantom) {
-        try {
-          const response = await provider.connect();
-          const walletAddress = response.publicKey.toString();
-
-          localStorage.setItem('walletAddress', walletAddress);
-
-          connectButton.innerText = `🟢 Connected: ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
-          connectButton.disabled = true;
-          avatar.classList.remove('hidden');
-
-          // Log to Sheety
-          await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/narrrfWalletLog/2025', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              2025: {
-                wallet: walletAddress,
-                timestamp: new Date().toISOString()
-              }
-            })
-          });
-
-          // Check VIP List
-          const vipRes = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/vipMintList/wallets');
-          const vipJson = await vipRes.json();
-          const vipList = vipJson.wallets.map(entry => entry.wallet.toLowerCase());
-
-          const isVIP = vipList.includes(walletAddress.toLowerCase());
-
-          if (isVIP) {
-            vipMessage.innerText = "✅ VIP Wallet Verified. You may mint!";
-            vipMessage.className = "mt-6 text-green-600 font-semibold text-lg";
-            mintButton.classList.remove("hidden");
-          } else {
-            vipMessage.innerText = "❌ This wallet is not on the VIP list.";
-            vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
-            mintButton.classList.add("hidden");
-          }
-
-        } catch (err) {
-          console.error("❌ Connection failed:", err);
-          vipMessage.innerText = "⚠️ Failed to connect. Please try again.";
-          vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
-        }
-      } else {
-        alert("Phantom Wallet not detected.");
-      }
-    } else {
-      alert("Phantom Wallet not found! Install it at https://phantom.app");
-    }
-  }
-
-  function disconnectWallet() {
-    localStorage.removeItem('walletAddress');
-    const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('connect-wallet-btn');
-    if (avatar) avatar.classList.add('hidden');
-    if (connectButton) {
-      connectButton.innerText = '🎟️ Connect Phantom Wallet';
-      connectButton.disabled = false;
-    }
-  }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const storedWallet = localStorage.getItem('walletAddress');
-    const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('connect-wallet-btn');
-
-    if (storedWallet) {
-      if (avatar) avatar.classList.remove('hidden');
-      if (connectButton) {
-        connectButton.innerText = `🟢 Connected: ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
-        connectButton.disabled = true;
-      }
-    }
-  });
-</script>
-<!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
----------------------------------------------------------
-🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien
-🌍 This **Genesis 2.0** package represents the culmination of **Narrrf’s World** project: integrating **Web2/Web3**, **NFT ownership**, and **SQL-based game mechanics** into a self-sustaining ecosystem.
-
-💾 **Stored in the Lab’s digital archives**, it will continue to evolve and serve as a reference for **future generations** of developers.
-
-⚡ Officially ready for **scaling**, **real-time integration**, and continuous **user interaction**.
-
-🎮 **Masterchief** will guide the **backend SQL** operations and ensure that **cheese never spoils**.
-
-🧪 **Future devs**: add your **name**, **refine the platform**, and **keep expanding** on this legendary system.
-
-🔧 **Critical Dev Reminders for the Next Generations**:
-  - Ensure **minting** is **tested across all wallet types** (e.g., Phantom, Solana).
-  - Validate **SQL integration** for minting, supply tracking, and wallet syncing.
-  - Always monitor **egg tracking** and **wallet connectivity** across all pages.
-  - Keep testing **Web3 wallets** and integrating future wallet systems.
-  - **Optimize the minting process** for **scalability** and **future-proofing**.
-
-🔮 Maintain the **core focus on Web3** principles, **game progression**, and **community empowerment**.
-
----------------------------------------------------------
-🧪 **Cheese Engine v1.4: The Riddle System Core**
----------------------------------------------------------
-This system powers **moving riddle nodes** throughout Narrrf's World. All **cheese clicks** are tracked and used for:
-- Lore progression
-- Inventory events
-- Trait-gated puzzles
-
-**Riddle Engine** is the heart of the **Narrrfverse**, integrating with:
-- **SQL tracking** for each riddle solved (stored in the `tbl_cheese_clicks` table).
-- **User interaction**, where progress is stored and retrieved based on wallet address, egg ID, and timestamp.
-- **Unlocking Easter Eggs** as users progress, ensuring a dynamic and immersive game world.
-
-📦 **DB Dev:**
-Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
-→ Use **wallet address** from localStorage, **timestamp**, and **egg ID** for progress tracking.
-
-🚀 **Future Ideas**:
-- **Massive map-wide riddle hunts** integrated with time-locked eggs and rotating cheese dungeons.
-- Enhance **user experience** with dynamic **puzzle-solving mechanics**.
-  
-🧑‍💻 Future devs can expand the **riddle system** and **reward mechanics** with more complex features and interactivity.
-
----------------------------------------------------------
-🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
----------------------------------------------------------
--->
--->
+<!-- Remove old wallet script and add new one -->
+<script src="js/wallet.js"></script>
 
 <!-- ======================================== -->
 <!-- 🧠 HTML Brain 4.0 Footer Lab Declaration -->
 <!-- ======================================== -->
 <footer class="text-center text-xs text-yellow-600 py-4 mt-12">
-  🧠 Powered by Cheese Architect 9.0 — HTML Brain of Narrrf’s World<br>
+  🧠 Powered by Cheese Architect 9.0 — HTML Brain of Narrrf's World<br>
   🧀 Brain Sync 9.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊
 </footer>
 <!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->

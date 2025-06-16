@@ -94,9 +94,26 @@
 <body class="bg-[#2f3136] text-white font-sans flex flex-col items-center py-10 px-4">
 
 <!-- 🔰 Header with App Context -->
-<header class="w-full bg-black py-4 px-6 text-yellow-400 text-center shadow-md">
-  <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Phase 5 Portal</h1>
-  <p class="text-xs text-gray-400 mt-1">Profile Synced via Discord OAuth · Powered by Cheese Architect 9.0</p>
+<header class="w-full bg-black py-4 px-6 text-yellow-400 shadow-md">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Phase 5 Portal</h1>
+    <nav class="space-x-4 text-sm md:text-base flex items-center">
+      <a href="index.html" class="hover:text-pink-400">Home</a>
+      <a href="mint.html" class="hover:text-pink-400">Mint</a>
+      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
+      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
+      <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
+      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+      <button id="top-connect-wallet-btn" onclick="connectWallet()" 
+        class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
+        🔌 Connect
+      </button>
+      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
+      <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
+        ❌
+      </button>
+    </nav>
+  </div>
 </header>
 
 <!-- 💎 Conditional VIP Notification -->
@@ -107,7 +124,7 @@
 
 <!-- 🧂 VIP Absence Fallback -->
 <div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
-  😅 You’re logged in, but... no VIP pass? That’s nacho cheese!
+  😅 You're logged in, but... no VIP pass? That's nacho cheese!
 </div>
 
 <!-- 👤 User Profile Card -->
@@ -623,6 +640,9 @@ localStorage.setItem("discord_name", user.username);
     window.location.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
   }
 </script>
+
+<!-- Add wallet.js before the closing body tag -->
+<script src="js/wallet.js"></script>
 </body>
 </html>
 
