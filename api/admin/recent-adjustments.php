@@ -12,7 +12,7 @@ if (!isAdminOrMod()) {
     exit;
 }
 
-$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+$dbPath = '/var/www/html/db/narrrf_world.sqlite';
 try {
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -35,5 +35,5 @@ try {
     echo json_encode($adjustments);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to fetch adjustments']);
+    echo json_encode(['error' => 'Failed to fetch adjustments: ' . $e->getMessage()]);
 } 
