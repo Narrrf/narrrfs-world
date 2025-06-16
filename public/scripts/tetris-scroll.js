@@ -401,7 +401,7 @@ if (typeof loadCombinedLeaderboards === "function") {
       
         console.log("⏎ Sending score payload:", payload);
       
-        fetch("/api/dev/save-score.php", {
+        fetch("https://narrrfs.world/api/dev/save-score.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -413,7 +413,7 @@ if (typeof loadCombinedLeaderboards === "function") {
             // ✅ Force leaderboard refresh after short delay
             setTimeout(() => {
               if (document.getElementById("leaderboard-list")) {
-                fetch(`/api/dev/get-leaderboard.php?t=${Date.now()}`)
+                fetch(`https://narrrfs.world/api/dev/get-leaderboard.php?t=${Date.now()}`)
                   .then(res => res.json())
                   .then(result => {
                     const scores = result.leaderboard || [];

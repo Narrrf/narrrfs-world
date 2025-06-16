@@ -188,7 +188,7 @@
 
           // 🔐 Optional: Track to backend
           const currentUserWallet = localStorage.getItem('walletAddress') || 'unknown';
-          fetch('/api/track-egg-click', {
+          fetch('https://narrrfs.world/api/track-egg-click', {
             method: 'POST',
             body: JSON.stringify({
               user_wallet: currentUserWallet,
@@ -800,7 +800,7 @@
 
           const userWallet = localStorage.getItem('walletAddress') || 'guest';
 
-          fetch('/api/track-egg-click', {
+          fetch('https://narrrfs.world/api/track-egg-click', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -819,7 +819,7 @@
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
     try {
-      const res = await fetch('/api/user/roles.php');
+      const res = await fetch('https://narrrfs.world/api/user/roles.php');
       if (!res.ok) {
         console.warn("🔐 Role check skipped — user not authorized");
         return;

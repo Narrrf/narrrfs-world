@@ -266,7 +266,7 @@ function initSnake() {
       modal.classList.remove("hidden");
     }
 
-    fetch("/api/dev/save-score.php", {
+    fetch("https://narrrfs.world/api/dev/save-score.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -391,7 +391,7 @@ canvas.addEventListener("touchend", e => {
 */
 
 function unlockTrait(trait) {
-  fetch("/api/user/traits.php", {
+  fetch("https://narrrfs.world/api/user/traits.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ trait })

@@ -485,7 +485,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const loginLink = document.getElementById('login-link');
 
   try {
-    const res = await fetch('/api/user.php', { credentials: 'include' });
+    const res = await fetch('https://narrrfs.world/api/user.php', { credentials: 'include' });
 
     if (!res.ok) {
       document.getElementById('username').innerText = 'Guest#0000';
@@ -524,7 +524,7 @@ localStorage.setItem("discord_name", user.username);
     document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles';
     document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Wallet not linked';
 
-    const vipRes = await fetch('/api/user/roles.php');
+    const vipRes = await fetch('https://narrrfs.world/api/user/roles.php');
     const vipData = await vipRes.json();
     const roles = vipData.roles || [];
 
@@ -552,7 +552,7 @@ localStorage.setItem("discord_name", user.username);
 </script>
 <script>
   // 🎯 Load both Tetris and Snake Leaderboards
-  fetch("/api/dev/get-leaderboard.php")
+  fetch("https://narrrfs.world/api/dev/get-leaderboard.php")
     .then(res => res.json())
     .then(data => {
       const scores = data.leaderboard || [];
@@ -590,7 +590,7 @@ localStorage.setItem("discord_name", user.username);
 <script>
   async function loadCombinedLeaderboards() {
     try {
-      const res = await fetch("/api/dev/get-leaderboard.php");
+      const res = await fetch("https://narrrfs.world/api/dev/get-leaderboard.php");
       const result = await res.json();
 
       const tetrisList = document.getElementById("leaderboard-tetris-list");
@@ -662,7 +662,7 @@ async function getDiscordId() {
 
   // Fallback to backend session API
   try {
-    const res = await fetch('/api/user');
+    const res = await fetch('https://narrrfs.world/api/user');
     const data = await res.json();
     return data.discord_id || null;
   } catch (e) {
@@ -673,7 +673,7 @@ async function getDiscordId() {
 async function fetchCheeseScores(discordId) {
   if (!discordId) return;
   // Call your backend for DSPOINC
-  const res = await fetch(`/api/user/score-total.php?user_id=${discordId}`);
+  const res = await fetch(`https://narrrfs.world/api/user/score-total.php?user_id=${discordId}`);
   const data = await res.json();
   // { "total_dspoinc": 24000000 }
   const dspoinc = data.total_dspoinc || 0;
