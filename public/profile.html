@@ -371,6 +371,16 @@
   </div>
 </section>
 
+<section id="cheese-score-stats" class="max-w-4xl mx-auto bg-yellow-50 text-black py-4 px-4 rounded-3xl shadow-lg ring-2 ring-yellow-300 my-8">
+  <h4 class="text-center text-md font-semibold">🧀 Your DSPOINC & SPOINC Stats</h4>
+  <div class="text-center mt-2">
+    <span id="user-dspoinc" class="font-bold text-lg"></span>
+    <span class="block mt-1 text-yellow-900 text-sm">Equivalent: <span id="user-spoinc"></span> $SPOINC <span class="italic text-gray-500">(10,000:1)</span></span>
+  </div>
+</section>
+
+
+
 <!-- 🍩 Footer -->
 
 
@@ -643,6 +653,44 @@ localStorage.setItem("discord_name", user.username);
 
 <!-- Add wallet.js before the closing body tag -->
 <script src="js/wallet.js"></script>
+<!-- Cheese Score Stats Fetcher -->
+<script>
+// Utility to get Discord ID (if session is available)
+async function getDiscordId() {
+  // Try from global variable first
+  if (window.userDiscordId) return window.userDiscordId;
+
+  // Fallback to backend session API
+  try {
+    const res = await fetch('/api/user');
+    const data = await res.json();
+    return data.discord_id || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchCheeseScores(discordId) {
+  if (!discordId) return;
+  // Call your backend for DSPOINC
+  const res = await fetch(`/api/user/score-total.php?user_id=${discordId}`);
+  const data = await res.json();
+  // { "total_dspoinc": 24000000 }
+  const dspoinc = data.total_dspoinc || 0;
+  const spoinc = Math.floor(dspoinc / 10000);
+
+  if (document.getElementById('user-dspoinc'))
+    document.getElementById('user-dspoinc').textContent = `${dspoinc.toLocaleString()} $DSPOINC`;
+  if (document.getElementById('user-spoinc'))
+    document.getElementById('user-spoinc').textContent = `${spoinc.toLocaleString()}`;
+}
+
+// On page load after DOM is ready
+document.addEventListener('DOMContentLoaded', async () => {
+  const discordId = await getDiscordId();
+  if (discordId) fetchCheeseScores(discordId);
+});
+</script>
 </body>
 </html>
 
