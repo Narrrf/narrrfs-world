@@ -14,8 +14,12 @@ COPY ./public /var/www/html
 COPY ./api /var/www/html/api
 COPY ./discord-tools /var/www/html/discord-tools
 
+# Copy database folder + file!
+COPY ./db /var/www/html/db
+
 # Ensure db/ exists (avoid build fail)
 RUN mkdir -p /var/www/html/db
+
 
 # ✅ Restore DB from /data if it exists (only during container start, not build)
 # Moved to start.sh, not Dockerfile build-time
