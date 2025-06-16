@@ -153,7 +153,7 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
       <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
       <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
       <a href="faq.html" class="hover:text-pink-400">FAQ</a>
-      <button id="top-connect-wallet-btn" onclick="connectWallet()" 
+      <button id="connect-wallet-btn" onclick="connectWallet()" 
         class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
         🔌 Connect
       </button>
@@ -260,7 +260,7 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
       Narrrf's World isn't just another NFT drop. It's a social experiment, a chaotic cartoon economy, and a mission to put value back in the hands of the community. Our finances are structured to reward holders, empower builders, and push the boundaries of Web3 storytelling.
     </p>
     <blockquote class="italic text-lg text-purple-800 font-semibold">
-      "In a world run by cheese and chaos, only those who dare to play win big." ��🚀
+      "In a world run by cheese and chaos, only those who dare to play win big." 🚀
     </blockquote>
   </div>
 </section>
@@ -270,7 +270,7 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
 <script>
   async function connectWallet() {
     const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('top-connect-wallet-btn');
+    const connectButton = document.getElementById('connect-wallet-btn');
 
     if ('solana' in window) {
       const provider = window.solana;
@@ -292,7 +292,7 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
   window.addEventListener('DOMContentLoaded', () => {
     const storedWallet = localStorage.getItem('walletAddress');
     const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('top-connect-wallet-btn');
+    const connectButton = document.getElementById('connect-wallet-btn');
 
     if (storedWallet && connectButton) {
       connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;

@@ -76,7 +76,7 @@
         <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
         <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
         <a href="faq.html" class="hover:text-pink-400">FAQ</a>
-        <button id="top-connect-wallet-btn" onclick="connectWallet()" class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">🔌 Connect</button>
+        <button id="connect-wallet-btn" onclick="connectWallet()" class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">🔌 Connect</button>
         <img id="user-avatar" src="cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
       </nav>
     </div>
@@ -170,7 +170,7 @@
   <script>
     async function connectWallet() {
       const avatar = document.getElementById('user-avatar');
-      const connectButton = document.getElementById('top-connect-wallet-btn');
+      const connectButton = document.getElementById('connect-wallet-btn');
 
       if ('solana' in window) {
         const provider = window.solana;
@@ -192,7 +192,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       const storedWallet = localStorage.getItem('walletAddress');
       const avatar = document.getElementById('user-avatar');
-      const connectButton = document.getElementById('top-connect-wallet-btn');
+      const connectButton = document.getElementById('connect-wallet-btn');
 
       if (storedWallet && connectButton) {
         connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;

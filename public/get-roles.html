@@ -111,7 +111,7 @@ This file is the CHEESE PORTAL identity page.
         <a href="faq.html" class="hover:text-pink-400">FAQ</a>
 
         <!-- 🧠 Wallet Connect Button -->
-        <button id="top-connect-wallet-btn"
+        <button id="connect-wallet-btn"
           onclick="connectWallet()"
           class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
           🔌 Connect
@@ -266,7 +266,7 @@ This file is the CHEESE PORTAL identity page.
 <script>
   async function connectWallet() {
     const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('top-connect-wallet-btn');
+    const connectButton = document.getElementById('connect-wallet-btn');
 
     if ('solana' in window) {
       const provider = window.solana;
@@ -294,7 +294,7 @@ This file is the CHEESE PORTAL identity page.
   window.addEventListener('DOMContentLoaded', () => {
     const storedWallet = localStorage.getItem('walletAddress');
     const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('top-connect-wallet-btn');
+    const connectButton = document.getElementById('connect-wallet-btn');
 
     if (storedWallet && avatar && connectButton) {
       avatar.classList.remove('hidden');

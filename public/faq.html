@@ -105,7 +105,7 @@
       <a href="faq.html" class="text-pink-400 font-semibold">FAQ</a>
 
       <!-- Connect Wallet Button -->
-      <button id="top-connect-wallet-btn"
+      <button id="connect-wallet-btn"
         onclick="connectWallet()"
         class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
         🔌 Connect
@@ -225,7 +225,7 @@ bottom-0 → Moves it up/down (e.g. try bottom-8 to nudge it upward)-->
 <script>
   async function connectWallet() {
     const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('top-connect-wallet-btn');
+    const connectButton = document.getElementById('connect-wallet-btn');
 
     if ('solana' in window) {
       const provider = window.solana;
@@ -253,7 +253,7 @@ bottom-0 → Moves it up/down (e.g. try bottom-8 to nudge it upward)-->
   window.addEventListener('DOMContentLoaded', () => {
     const storedWallet = localStorage.getItem('walletAddress');
     const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('top-connect-wallet-btn');
+    const connectButton = document.getElementById('connect-wallet-btn');
 
     if (storedWallet && avatar && connectButton) {
       avatar.classList.remove('hidden');
