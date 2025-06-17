@@ -41,31 +41,33 @@ try {
 }
 
 try {
-    // Get user's total DSPOINC - using same query as score-total.php
-    $stmt = $db->prepare("SELECT SUM(score) AS total_dspoinc FROM tbl_user_scores WHERE user_id = ?");
-    $stmt->execute([$user_id]);
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    // Get username
+    // First verify the user exists and get their info
     $stmt = $db->prepare("SELECT username FROM tbl_users WHERE discord_id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    // Log query results for debugging
-    error_log("Query results for user $user_id: " . json_encode(['balance' => $result, 'user' => $user]));
-    
-    if ($user) {
-        echo json_encode([
-            'success' => true,
-            'balance' => (int)($result['total_dspoinc'] ?? 0),
-            'username' => $user['username']
-        ]);
-    } else {
+
+    if (!$user) {
         echo json_encode([
             'success' => false,
             'error' => 'User not found'
         ]);
+        exit;
     }
+
+    // Get total DSPOINC - using same query as score-total.php
+    $stmt = $db->prepare("SELECT SUM(score) AS total_dspoinc FROM tbl_user_scores WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Log query results for debugging
+    error_log("Query results for user $user_id: " . json_encode(['balance' => $result, 'user' => $user]));
+    
+    echo json_encode([
+        'success' => true,
+        'balance' => (int)($result['total_dspoinc'] ?? 0),
+        'username' => $user['username']
+    ]);
+
 } catch (PDOException $e) {
     error_log("Query error: " . $e->getMessage());
     http_response_code(500);
