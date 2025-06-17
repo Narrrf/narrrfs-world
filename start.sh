@@ -9,7 +9,7 @@ else
   cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world.sqlite
 fi
 
-# 🔐 Fix permissions so PHP (www-data) can write
+# 🔐 Fix permissions so PHP (www-data) and Discord bot can write
 chown www-data:www-data /var/www/html/db/narrrf_world.sqlite
 chmod 664 /var/www/html/db/narrrf_world.sqlite
 
@@ -21,6 +21,7 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite < /var/www/html/db/migrations/creat
 # 🤖 Start Discord bot in background
 echo "🤖 Starting Discord bot..."
 cd /var/www/html/discord
+export RENDER=true
 npm install
 node index.js &
 
