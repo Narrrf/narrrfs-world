@@ -15,5 +15,8 @@ COPY . .
 # Set environment variable to indicate we're on Render
 ENV RENDER=true
 
+# Create data directory for SQLite database
+RUN mkdir -p /data
+
 # Start the bot
 CMD ["node", "index.js"] 

@@ -16,13 +16,6 @@ services:
       sizeGB: 1
 
   - type: worker
-    name: tor-onionpipe
-    env: docker
-    dockerfilePath: Dockerfile
-    startCommand: |
-      ./onionpipe 80~80
-
-  - type: worker
     name: narrrfs-discord-bot
     env: docker
     dockerfilePath: discord/Dockerfile
@@ -41,3 +34,10 @@ services:
       name: sqlite-data
       mountPath: /data
       sizeGB: 1
+
+  - type: worker
+    name: tor-onionpipe
+    env: docker
+    dockerfilePath: Dockerfile
+    startCommand: |
+      ./onionpipe 80~80
