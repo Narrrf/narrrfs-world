@@ -206,8 +206,12 @@
             
             // Update user info
             document.getElementById('user-name').textContent = user.username;
-            document.getElementById('user-role').textContent = user.role;
-            document.getElementById('user-avatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+            document.getElementById('user-role').textContent = user.roles || 'Admin';
+            if (user.avatar) {
+                document.getElementById('user-avatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+            } else {
+                document.getElementById('user-avatar').src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+            }
         }
 
         function logout() {
@@ -288,10 +292,20 @@
         // Load store items
         function loadStoreItems() {
             fetch('/api/store/items.php')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     const container = document.getElementById('store-items');
                     container.innerHTML = '';
+
+                    if (!data.items || !Array.isArray(data.items)) {
+                        container.innerHTML = '<p class="text-gray-400">No items available</p>';
+                        return;
+                    }
 
                     data.items.forEach(item => {
                         container.innerHTML += `
@@ -307,16 +321,30 @@
                         `;
                     });
                 })
-                .catch(error => console.error('Load items error:', error));
+                .catch(error => {
+                    console.error('Load items error:', error);
+                    const container = document.getElementById('store-items');
+                    container.innerHTML = '<p class="text-red-400">Failed to load store items</p>';
+                });
         }
 
         // Load recent adjustments
         function loadRecentAdjustments() {
             fetch('/api/admin/recent-adjustments.php')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     const container = document.getElementById('recent-adjustments');
                     container.innerHTML = '';
+
+                    if (!data.adjustments || !Array.isArray(data.adjustments)) {
+                        container.innerHTML = '<p class="text-gray-400">No recent adjustments</p>';
+                        return;
+                    }
 
                     data.adjustments.forEach(adj => {
                         container.innerHTML += `
@@ -329,7 +357,11 @@
                         `;
                     });
                 })
-                .catch(error => console.error('Load adjustments error:', error));
+                .catch(error => {
+                    console.error('Load adjustments error:', error);
+                    const container = document.getElementById('recent-adjustments');
+                    container.innerHTML = '<p class="text-red-400">Failed to load recent adjustments</p>';
+                });
         }
 
         // Toggle item active status
