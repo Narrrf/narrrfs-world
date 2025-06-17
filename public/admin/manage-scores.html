@@ -192,11 +192,7 @@
         }
 
         function loginWithDiscord() {
-            const clientId = 'YOUR_DISCORD_CLIENT_ID';
-            const redirectUri = encodeURIComponent('https://narrrfs.world/admin/manage-scores.html');
-            const scope = 'identify';
-            
-            window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+            window.location.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
         }
 
         function showLoginSection() {
