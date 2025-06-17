@@ -1,6 +1,6 @@
 module.exports = {
     // Bot configuration
-    botToken: process.env.DISCORD_BOT_TOKEN || 'your-bot-token',
+    botToken: process.env.DISCORD_BOT_SECRET || 'your-bot-token',
     clientId: process.env.DISCORD_CLIENT_ID || 'your-client-id',
     guildId: process.env.DISCORD_GUILD_ID || 'your-guild-id',
     

@@ -33,6 +33,17 @@
             ⚠️ Access restricted to Moderators and Founder only.
         </div>
 
+        <!-- 🔄 Sync Users Section -->
+        <section class="mb-8 bg-gray-800 p-4 rounded-lg">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold">🔄 Sync Discord Users</h2>
+                <button onclick="syncUsers()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                    🔄 Sync Now
+                </button>
+            </div>
+            <p id="sync-status" class="mt-2 text-sm text-gray-400"></p>
+        </section>
+
         <!-- ✨ Score Management Form -->
         <div id="score-form" class="bg-gray-800 rounded-xl p-6 shadow-xl">
             <h2 class="text-2xl font-bold text-yellow-400 mb-6">🧀 Manage $DSPOINC Scores</h2>
@@ -93,6 +104,7 @@
     <script src="../js/wallet.js"></script>
     <script>
         let selectedUserId = null;
+        let selectedAction = 'add';
 
         // Check admin status on load
         document.addEventListener('DOMContentLoaded', async () => {
@@ -149,6 +161,23 @@
             document.getElementById('user-search').value = user.username;
             document.getElementById('user-results').innerHTML = '';
         }
+
+        function updateButtonStyles() {
+            document.getElementById('btn-add').className = 
+                `p-2 rounded transition-colors ${selectedAction === 'add' ? 'bg-green-600' : 'bg-gray-700'}`;
+            document.getElementById('btn-remove').className = 
+                `p-2 rounded transition-colors ${selectedAction === 'remove' ? 'bg-red-600' : 'bg-gray-700'}`;
+            document.getElementById('btn-set').className = 
+                `p-2 rounded transition-colors ${selectedAction === 'set' ? 'bg-blue-600' : 'bg-gray-700'}`;
+        }
+
+        function setAction(action) {
+            selectedAction = action;
+            updateButtonStyles();
+        }
+
+        // Initialize button styles
+        updateButtonStyles();
 
         async function submitAdjustment() {
             if (!selectedUserId) {
@@ -223,6 +252,34 @@
                 });
             } catch (err) {
                 console.error('Failed to load adjustments:', err);
+            }
+        }
+
+        // Sync users function
+        async function syncUsers() {
+            const statusEl = document.getElementById('sync-status');
+            statusEl.textContent = '🔄 Syncing users...';
+            
+            try {
+                const response = await fetch('/api/admin/sync-users.php', {
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusEl.innerHTML = `
+                        ✅ Sync complete!<br>
+                        Added ${result.missing_users_added} new users<br>
+                        Updated ${result.users_updated} usernames
+                    `;
+                    // Refresh the page after 2 seconds
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    statusEl.textContent = '❌ Sync failed: ' + result.error;
+                }
+            } catch (err) {
+                console.error('Failed to sync users:', err);
+                statusEl.textContent = '❌ Sync failed';
             }
         }
 

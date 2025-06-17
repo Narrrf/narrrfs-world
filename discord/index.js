@@ -61,5 +61,5 @@ client.once('ready', () => {
     console.log(`👋 Logged in as ${client.user.tag}`);
 });
 
-// Login to Discord using the bot secret
-client.login(process.env.DISCORD_BOT_SECRET); 
+// Login to Discord using the bot token from config
+client.login(config.botToken); 

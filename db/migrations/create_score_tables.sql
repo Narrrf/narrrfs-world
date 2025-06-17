@@ -16,5 +16,11 @@ CREATE INDEX IF NOT EXISTS idx_score_adjustments_user ON tbl_score_adjustments(u
 CREATE INDEX IF NOT EXISTS idx_score_adjustments_admin ON tbl_score_adjustments(admin_id);
 CREATE INDEX IF NOT EXISTS idx_score_adjustments_timestamp ON tbl_score_adjustments(timestamp DESC);
 
--- Add source column to user scores
-ALTER TABLE tbl_user_scores ADD COLUMN source TEXT DEFAULT 'legacy'; 
+-- Add source column to user scores if it doesn't exist
+SELECT CASE 
+    WHEN NOT EXISTS(
+        SELECT 1 FROM pragma_table_info('tbl_user_scores') WHERE name='source'
+    ) 
+    THEN 'ALTER TABLE tbl_user_scores ADD COLUMN source TEXT DEFAULT "legacy"'
+END AS sql_command
+WHERE sql_command IS NOT NULL; 

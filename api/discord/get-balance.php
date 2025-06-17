@@ -20,47 +20,44 @@ if (!isset($_GET['user_id'])) {
 
 $user_id = $_GET['user_id'];
 
-// Connect to database
-$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+// Connect to database - use production path on Render
+$dbPath = '/data/narrrf_world.sqlite';
+if (!file_exists($dbPath)) {
+    // Fallback to development path
+    $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+}
+
 try {
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Log database path for debugging
+    error_log("Using database at: " . $dbPath);
 } catch (PDOException $e) {
+    error_log("Database connection error: " . $e->getMessage() . " (Path: $dbPath)");
     http_response_code(500);
     echo json_encode(['error' => 'Database connection failed']);
     exit;
 }
 
-// Get user's balance
-$stmt = $db->prepare("
-    SELECT 
-        COALESCE(SUM(CASE WHEN action = 'add' THEN amount ELSE -amount END), 0) as balance,
-        username
-    FROM tbl_score_adjustments 
-    JOIN tbl_users ON tbl_users.discord_id = tbl_score_adjustments.user_id
-    WHERE user_id = ?
-    GROUP BY user_id, username
-");
-
-$stmt->execute([$user_id]);
-$result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if ($result) {
-    echo json_encode([
-        'success' => true,
-        'balance' => (int)$result['balance'],
-        'username' => $result['username']
-    ]);
-} else {
-    // User exists but has no transactions
+try {
+    // Get user's total DSPOINC - using same query as score-total.php
+    $stmt = $db->prepare("SELECT SUM(score) AS total_dspoinc FROM tbl_user_scores WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Get username
     $stmt = $db->prepare("SELECT username FROM tbl_users WHERE discord_id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
+    // Log query results for debugging
+    error_log("Query results for user $user_id: " . json_encode(['balance' => $result, 'user' => $user]));
+    
     if ($user) {
         echo json_encode([
             'success' => true,
-            'balance' => 0,
+            'balance' => (int)($result['total_dspoinc'] ?? 0),
             'username' => $user['username']
         ]);
     } else {
@@ -69,5 +66,10 @@ if ($result) {
             'error' => 'User not found'
         ]);
     }
+} catch (PDOException $e) {
+    error_log("Query error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Database query failed']);
+    exit;
 }
 ?> 
