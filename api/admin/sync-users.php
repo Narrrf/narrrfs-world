@@ -19,15 +19,22 @@ try {
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
+    error_log("Sync Error: Database connection failed - " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'Database connection failed']);
     exit;
 }
 
+// Debug: Log sync start
+error_log("Sync Debug: Starting user sync");
+
 // Get user roles
 $stmt = $db->prepare("SELECT role_name FROM tbl_user_roles WHERE user_id = ?");
 $stmt->execute([$_SESSION['discord_id']]);
 $roles = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Debug: Log roles
+error_log("Sync Debug: User roles for " . $_SESSION['discord_id'] . ": " . implode(", ", $roles));
 
 // Check if user is moderator or founder
 if (!in_array('Moderator', $roles) && !in_array('Founder', $roles)) {
@@ -38,23 +45,44 @@ if (!in_array('Moderator', $roles) && !in_array('Founder', $roles)) {
 
 // Fetch all Discord members
 $guild_id = DISCORD_GUILD_ID; // Add this to discord.php
-$url = "https://discord.com/api/v10/guilds/$guild_id/members?limit=1000";
-$headers = [
-    "Authorization: Bot " . DISCORD_BOT_TOKEN,
-    "Content-Type: application/json"
-];
+$discord_members = [];
+$after = null;
 
-$ch = curl_init($url);
-curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
-$discord_members = json_decode($response, true);
+do {
+    $url = "https://discord.com/api/v10/guilds/$guild_id/members?limit=1000" . ($after ? "&after=$after" : "");
+    $headers = [
+        "Authorization: Bot " . DISCORD_BOT_TOKEN,
+        "Content-Type: application/json"
+    ];
 
-if (!$discord_members) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Failed to fetch Discord members']);
-    exit;
-}
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+
+    // Debug: Log Discord API response
+    error_log("Sync Debug: Discord API response length: " . strlen($response));
+    $members = json_decode($response, true);
+
+    if (!$members || !is_array($members)) {
+        error_log("Sync Error: Failed to decode Discord members response");
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch Discord members']);
+        exit;
+    }
+
+    $discord_members = array_merge($discord_members, $members);
+    
+    // Get the last user's ID for pagination
+    if (count($members) === 1000) {
+        $after = end($members)['user']['id'];
+    } else {
+        $after = null;
+    }
+} while ($after);
+
+// Debug: Log member count
+error_log("Sync Debug: Fetched " . count($discord_members) . " members from Discord");
 
 // Get existing users from database
 $stmt = $db->prepare("SELECT discord_id, username FROM tbl_users");
@@ -88,6 +116,9 @@ foreach ($discord_members as $member) {
         }
     }
 }
+
+// Debug: Log final results
+error_log("Sync Debug: Added " . count($missing_users) . " new users, updated " . count($updated_users) . " existing users");
 
 echo json_encode([
     'success' => true,
