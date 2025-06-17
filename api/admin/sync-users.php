@@ -45,7 +45,7 @@ if (!in_array('Moderator', $roles) && !in_array('Founder', $roles)) {
 
 // Fetch all Discord members
 $guild_id = DISCORD_GUILD_ID; // Add this to discord.php
-$discord_members = [];
+$all_discord_members = [];
 $after = null;
 
 do {
@@ -60,13 +60,30 @@ do {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
 
-    // Debug: Log raw response
-    error_log("Sync Debug: Raw response length: " . strlen($response));
-    error_log("Sync Debug: First 500 chars of response: " . substr($response, 0, 500));
+    // Check for cURL errors
+    if ($response === false) {
+        error_log("Sync Error: cURL error - " . curl_error($ch));
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to connect to Discord API']);
+        curl_close($ch);
+        exit;
+    }
 
-    $discord_members = json_decode($response, true);
+    // Check HTTP response code
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    if ($httpCode !== 200) {
+        error_log("Sync Error: Discord API returned HTTP $httpCode - Response: $response");
+        http_response_code(500);
+        echo json_encode(['error' => "Discord API returned error $httpCode"]);
+        curl_close($ch);
+        exit;
+    }
 
-    if (!$discord_members) {
+    curl_close($ch);
+
+    $members = json_decode($response, true);
+
+    if (!$members) {
         error_log("Sync Error: Failed to decode Discord members response. JSON error: " . json_last_error_msg());
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch Discord members']);
@@ -74,10 +91,10 @@ do {
     }
 
     // Debug: Log member details
-    error_log("Sync Debug: Number of members fetched: " . count($discord_members));
-    error_log("Sync Debug: First member example: " . json_encode(array_slice($discord_members, 0, 1)));
+    error_log("Sync Debug: Number of members fetched: " . count($members));
+    error_log("Sync Debug: First member example: " . json_encode(array_slice($members, 0, 1)));
 
-    $discord_members = array_merge($discord_members, $members);
+    $all_discord_members = array_merge($all_discord_members, $members);
     
     // Get the last user's ID for pagination
     if (count($members) === 1000) {
@@ -88,7 +105,7 @@ do {
 } while ($after);
 
 // Debug: Log member count
-error_log("Sync Debug: Fetched " . count($discord_members) . " members from Discord");
+error_log("Sync Debug: Fetched " . count($all_discord_members) . " members from Discord");
 
 // Get existing users from database
 $stmt = $db->prepare("SELECT discord_id, username FROM tbl_users");
@@ -104,7 +121,7 @@ error_log("Sync Debug: First DB user example: " . json_encode(array_slice($db_us
 $missing_users = [];
 $updated_users = [];
 
-foreach ($discord_members as $member) {
+foreach ($all_discord_members as $member) {
     $discord_id = $member['user']['id'];
     $username = $member['user']['username'];
     
