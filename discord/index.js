@@ -129,7 +129,18 @@ client.on('userUpdate', async (oldUser, newUser) => {
 async function syncAllUsers() {
     try {
         const guild = client.guilds.cache.get(config.guildId);
+        if (!guild) {
+            console.error('Guild not found during sync! Guild ID:', config.guildId);
+            console.error('Available guilds:', Array.from(client.guilds.cache.values()).map(g => `${g.name} (${g.id})`));
+            return;
+        }
+
+        // Ensure the guild is available
+        await guild.fetch();
+        
         const members = await guild.members.fetch();
+        console.log(`Fetched ${members.size} members from guild`);
+        
         const db = new sqlite3.Database(DB_PATH);
         
         for (const [id, member] of members) {
@@ -159,6 +170,7 @@ async function syncAllUsers() {
         console.log('Completed user sync');
     } catch (error) {
         console.error('Error during user sync:', error);
+        console.error('Full error:', error);
     }
 }
 
@@ -167,9 +179,21 @@ client.once('ready', async () => {
     console.log(`🚀 Narrrf's World Bot is ready!`);
     console.log(`👋 Logged in as ${client.user.tag}`);
     
+    // Wait a moment for guild cache
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     // Check for specific user
     try {
         const guild = client.guilds.cache.get(config.guildId);
+        if (!guild) {
+            console.error('Guild not found! Guild ID:', config.guildId);
+            console.error('Available guilds:', Array.from(client.guilds.cache.values()).map(g => `${g.name} (${g.id})`));
+            return;
+        }
+
+        // Ensure the guild is available
+        await guild.fetch();
+        
         const member = await guild.members.fetch('734200554322001922');
         
         if (member) {
@@ -215,7 +239,11 @@ client.once('ready', async () => {
     }
     
     // Sync all users when bot starts
-    syncAllUsers();
+    try {
+        await syncAllUsers();
+    } catch (error) {
+        console.error('Error during initial user sync:', error);
+    }
 });
 
 // Login to Discord using the bot token from config
