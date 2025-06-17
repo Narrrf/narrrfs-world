@@ -28,8 +28,18 @@ try {
         error_log("Search Debug: Database file not found at $dbPath");
     }
 
+    // Debug: Check total users in database
+    $stmt = $db->query("SELECT COUNT(*) FROM tbl_users");
+    $totalUsers = $stmt->fetchColumn();
+    error_log("Search Debug: Total users in database: " . $totalUsers);
+
     // Debug: Log search parameters
     error_log("Search Debug: Searching for term: $search");
+
+    // Debug: Show some sample users
+    $stmt = $db->query("SELECT discord_id, username FROM tbl_users LIMIT 5");
+    $sampleUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Search Debug: Sample users: " . json_encode($sampleUsers));
 
     // Search by username or Discord ID
     $stmt = $db->prepare("

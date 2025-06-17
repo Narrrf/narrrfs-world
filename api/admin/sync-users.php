@@ -60,16 +60,22 @@ do {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
 
-    // Debug: Log Discord API response
-    error_log("Sync Debug: Discord API response length: " . strlen($response));
-    $members = json_decode($response, true);
+    // Debug: Log raw response
+    error_log("Sync Debug: Raw response length: " . strlen($response));
+    error_log("Sync Debug: First 500 chars of response: " . substr($response, 0, 500));
 
-    if (!$members || !is_array($members)) {
-        error_log("Sync Error: Failed to decode Discord members response");
+    $discord_members = json_decode($response, true);
+
+    if (!$discord_members) {
+        error_log("Sync Error: Failed to decode Discord members response. JSON error: " . json_last_error_msg());
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch Discord members']);
         exit;
     }
+
+    // Debug: Log member details
+    error_log("Sync Debug: Number of members fetched: " . count($discord_members));
+    error_log("Sync Debug: First member example: " . json_encode(array_slice($discord_members, 0, 1)));
 
     $discord_members = array_merge($discord_members, $members);
     
@@ -89,6 +95,10 @@ $stmt = $db->prepare("SELECT discord_id, username FROM tbl_users");
 $stmt->execute();
 $db_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $db_user_ids = array_column($db_users, 'discord_id');
+
+// Debug: Log existing users
+error_log("Sync Debug: Number of existing users in DB: " . count($db_users));
+error_log("Sync Debug: First DB user example: " . json_encode(array_slice($db_users, 0, 1)));
 
 // Find missing users
 $missing_users = [];
