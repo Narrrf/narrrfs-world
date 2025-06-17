@@ -3,288 +3,500 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧀 Narrrf's World - Score Management</title>
+    <title>🧠 Narrrf's Lab – Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="../img/cheese-egg.png" type="image/png">
 </head>
-<body class="bg-[#2f3136] text-white">
-    <!-- 🔰 Header -->
-    <header class="w-full bg-black py-4 px-6 text-yellow-400 shadow-md">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Admin Panel</h1>
-            <nav class="space-x-4 text-sm md:text-base flex items-center">
-                <a href="../index.html" class="hover:text-pink-400">Home</a>
-                <button id="connect-wallet-btn" onclick="connectWallet()" 
-                    class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
-                    🔌 Connect
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold mb-8">🧠 Narrrf's Lab – Admin Panel</h1>
+        
+        <!-- Login Section (shown when not logged in) -->
+        <div id="login-section" class="hidden">
+            <div class="bg-gray-800 p-8 rounded-lg max-w-md mx-auto">
+                <h2 class="text-2xl font-bold mb-4">Admin Login Required</h2>
+                <p class="mb-4">Please login with Discord to access the admin panel.</p>
+                <button onclick="loginWithDiscord()" class="bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-lg font-semibold">
+                    Login with Discord
                 </button>
-                <img id="user-avatar" src="../img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
-                <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
-                    ❌
-                </button>
-            </nav>
-        </div>
-    </header>
-
-    <!-- 🎯 Main Content -->
-    <main class="max-w-4xl mx-auto px-4 py-8">
-        <!-- 🔐 Auth Check -->
-        <div id="auth-warning" class="hidden bg-red-500 text-white p-4 rounded-lg mb-8 text-center">
-            ⚠️ Access restricted to Moderators and Founder only.
+            </div>
         </div>
 
-        <!-- 🔄 Sync Users Section -->
-        <section class="mb-8 bg-gray-800 p-4 rounded-lg">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold">🔄 Sync Discord Users</h2>
-                <button onclick="syncUsers()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+        <!-- Admin Panel (shown when logged in) -->
+        <div id="admin-panel" class="hidden">
+            <!-- User Info -->
+            <div class="bg-gray-800 p-4 rounded-lg mb-8 flex items-center justify-between">
+                <div class="flex items-center">
+                    <img id="user-avatar" src="" alt="User Avatar" class="w-10 h-10 rounded-full mr-4">
+                    <div>
+                        <p id="user-name" class="font-semibold"></p>
+                        <p id="user-role" class="text-gray-400"></p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">Logout</button>
+            </div>
+
+            <!-- Sync Users Section -->
+            <section class="bg-gray-800 p-6 rounded-lg mb-8">
+                <h2 class="text-2xl font-bold mb-4">🔄 Sync Discord Users</h2>
+                <button onclick="syncUsers()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
                     🔄 Sync Now
                 </button>
-            </div>
-            <p id="sync-status" class="mt-2 text-sm text-gray-400"></p>
-        </section>
+            </section>
 
-        <!-- ✨ Score Management Form -->
-        <div id="score-form" class="bg-gray-800 rounded-xl p-6 shadow-xl">
-            <h2 class="text-2xl font-bold text-yellow-400 mb-6">🧀 Manage $DSPOINC Scores</h2>
-            
-            <!-- User Search -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Discord Username or ID</label>
-                <input type="text" id="user-search" 
-                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    placeholder="Enter username or ID...">
-                <div id="user-results" class="mt-2 space-y-2"></div>
-            </div>
+            <!-- Manage Scores Section -->
+            <section class="bg-gray-800 p-6 rounded-lg mb-8">
+                <h2 class="text-2xl font-bold mb-4">🧀 Manage $DSPOINC Scores</h2>
+                <form id="score-form" class="space-y-4">
+                    <div>
+                        <label class="block mb-2">Search User</label>
+                        <div class="relative">
+                            <input type="text" id="user-search" class="w-full bg-gray-700 p-3 rounded" placeholder="Search by username or Discord ID" autocomplete="off">
+                            <div id="search-results" class="absolute w-full bg-gray-700 mt-1 rounded-lg shadow-lg hidden"></div>
+                        </div>
+                        <input type="hidden" id="user-id" required>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Action</label>
+                        <select id="action" class="w-full bg-gray-700 p-3 rounded" required>
+                            <option value="add">Add $DSPOINC</option>
+                            <option value="remove">Remove $DSPOINC</option>
+                            <option value="set">Set $DSPOINC Total</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Amount</label>
+                        <input type="number" id="amount" class="w-full bg-gray-700 p-3 rounded" required>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Reason</label>
+                        <textarea id="reason" class="w-full bg-gray-700 p-3 rounded" required></textarea>
+                    </div>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold w-full">
+                        💫 Apply Score Change
+                    </button>
+                </form>
+            </section>
 
-            <!-- Action Selection -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Action</label>
-                <select id="action-select" 
-                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-                    <option value="add">Add $DSPOINC</option>
-                    <option value="remove">Remove $DSPOINC</option>
-                    <option value="set">Set $DSPOINC Total</option>
-                </select>
-            </div>
-
-            <!-- Amount Input -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Amount</label>
-                <input type="number" id="amount-input" 
-                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    placeholder="Enter amount...">
-            </div>
-
-            <!-- Reason Input -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Reason</label>
-                <input type="text" id="reason-input" 
-                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    placeholder="Enter reason for adjustment...">
-            </div>
-
-            <!-- Submit Button -->
-            <button id="submit-btn" onclick="submitAdjustment()"
-                class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-lg shadow-lg transition-colors">
-                💫 Apply Score Change
-            </button>
-        </div>
-
-        <!-- 📜 Recent Adjustments -->
-        <div class="mt-8 bg-gray-800 rounded-xl p-6 shadow-xl">
-            <h3 class="text-xl font-bold text-yellow-400 mb-4">📜 Recent Adjustments</h3>
-            <div id="adjustments-list" class="space-y-2">
-                <!-- Adjustments will be populated here -->
-            </div>
-        </div>
-    </main>
-
-    <!-- 🎮 Scripts -->
-    <script src="../js/wallet.js"></script>
-    <script>
-        let selectedUserId = null;
-        let selectedAction = 'add';
-
-        // Check admin status on load
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const res = await fetch('/api/user/roles.php', { credentials: 'include' });
-                const data = await res.json();
+            <!-- Store Management Section -->
+            <section class="bg-gray-800 p-6 rounded-lg mb-8">
+                <h2 class="text-2xl font-bold mb-4">🏪 Manage Store</h2>
                 
-                if (!data.roles || !data.roles.some(role => ['Admin', 'Moderator'].includes(role))) {
-                    document.getElementById('auth-warning').classList.remove('hidden');
-                    document.getElementById('score-form').classList.add('hidden');
-                }
-            } catch (err) {
-                console.error('Auth check failed:', err);
-                document.getElementById('auth-warning').classList.remove('hidden');
-                document.getElementById('score-form').classList.add('hidden');
-            }
-        });
+                <!-- Add New Item Form -->
+                <form id="item-form" class="space-y-4 mb-8">
+                    <div>
+                        <label class="block mb-2">Item Name</label>
+                        <input type="text" id="item-name" class="w-full bg-gray-700 p-3 rounded" required>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Description</label>
+                        <textarea id="item-description" class="w-full bg-gray-700 p-3 rounded" required></textarea>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Price ($DSPOINC)</label>
+                        <input type="number" id="item-price" class="w-full bg-gray-700 p-3 rounded" required>
+                    </div>
+                    <div>
+                        <label class="block mb-2">Image URL</label>
+                        <input type="url" id="item-image" class="w-full bg-gray-700 p-3 rounded">
+                    </div>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold w-full">
+                        ➕ Add New Item
+                    </button>
+                </form>
 
-        // User search
-        document.getElementById('user-search').addEventListener('input', async (e) => {
-            const search = e.target.value.trim();
-            if (search.length < 2) {
-                document.getElementById('user-results').innerHTML = '';
-                return;
-            }
+                <!-- Store Items List -->
+                <div id="store-items" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Items will be populated here -->
+                </div>
+            </section>
+
+            <!-- User Details Section (hidden by default) -->
+            <section id="user-details" class="bg-gray-800 p-6 rounded-lg mb-8 hidden">
+                <h2 class="text-2xl font-bold mb-4">👤 User Details</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Basic Info -->
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-2">Basic Info</h3>
+                        <p>Username: <span id="detail-username"></span></p>
+                        <p>Discord ID: <span id="detail-discord-id"></span></p>
+                        <p class="text-2xl mt-4">Balance: <span id="detail-balance" class="text-yellow-400"></span> $DSPOINC</p>
+                    </div>
+                    
+                    <!-- Roles -->
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-2">Roles</h3>
+                        <div id="detail-roles" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <!-- Inventory -->
+                <div class="mt-6">
+                    <h3 class="text-xl font-semibold mb-4">🎒 Inventory</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="detail-inventory"></div>
+                    
+                    <!-- Add Item Form -->
+                    <form id="inventory-form" class="mt-6 bg-gray-700 p-4 rounded-lg">
+                        <h4 class="text-lg font-semibold mb-4">Manage Inventory</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block mb-2">Item</label>
+                                <select id="item-select" class="w-full bg-gray-600 p-3 rounded" required></select>
+                            </div>
+                            <div>
+                                <label class="block mb-2">Action</label>
+                                <select id="inventory-action" class="w-full bg-gray-600 p-3 rounded" required>
+                                    <option value="add">Add Item</option>
+                                    <option value="remove">Remove Item</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block mb-2">Reason</label>
+                                <input type="text" id="inventory-reason" class="w-full bg-gray-600 p-3 rounded" required>
+                            </div>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold w-full">
+                                Update Inventory
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Recent Adjustments Section -->
+            <section class="bg-gray-800 p-6 rounded-lg">
+                <h2 class="text-2xl font-bold mb-4">📜 Recent Adjustments</h2>
+                <div id="recent-adjustments" class="space-y-4">
+                    <!-- Adjustments will be populated here -->
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // Check login status on page load
+        checkLoginStatus();
+
+        function checkLoginStatus() {
+            fetch('/api/auth/check-session.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAdminPanel(data.user);
+                    } else {
+                        showLoginSection();
+                    }
+                })
+                .catch(error => {
+                    console.error('Session check error:', error);
+                    showLoginSection();
+                });
+        }
+
+        function loginWithDiscord() {
+            const clientId = 'YOUR_DISCORD_CLIENT_ID';
+            const redirectUri = encodeURIComponent('https://narrrfs.world/admin/manage-scores.html');
+            const scope = 'identify';
+            
+            window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+        }
+
+        function showLoginSection() {
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('admin-panel').classList.add('hidden');
+        }
+
+        function showAdminPanel(user) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('admin-panel').classList.remove('hidden');
+            
+            // Update user info
+            document.getElementById('user-name').textContent = user.username;
+            document.getElementById('user-role').textContent = user.role;
+            document.getElementById('user-avatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+        }
+
+        function logout() {
+            fetch('/api/auth/logout.php')
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch(error => console.error('Logout error:', error));
+        }
+
+        // Handle score form submission
+        document.getElementById('score-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                user_id: document.getElementById('user-id').value,
+                action: document.getElementById('action').value,
+                amount: parseInt(document.getElementById('amount').value),
+                reason: document.getElementById('reason').value
+            };
 
             try {
-                const res = await fetch(`/api/user/search.php?q=${encodeURIComponent(search)}`, {
-                    credentials: 'include'
-                });
-                const users = await res.json();
-
-                const resultsDiv = document.getElementById('user-results');
-                resultsDiv.innerHTML = '';
-
-                users.forEach(user => {
-                    const userDiv = document.createElement('div');
-                    userDiv.className = 'p-2 hover:bg-gray-700 rounded cursor-pointer flex items-center';
-                    userDiv.innerHTML = `
-                        <img src="${user.avatar_url || '../img/default-avatar.png'}" 
-                            class="w-8 h-8 rounded-full mr-2">
-                        <span>${user.username}</span>
-                    `;
-                    userDiv.onclick = () => selectUser(user);
-                    resultsDiv.appendChild(userDiv);
-                });
-            } catch (err) {
-                console.error('User search failed:', err);
-            }
-        });
-
-        function selectUser(user) {
-            selectedUserId = user.discord_id;
-            document.getElementById('user-search').value = user.username;
-            document.getElementById('user-results').innerHTML = '';
-        }
-
-        function updateButtonStyles() {
-            document.getElementById('btn-add').className = 
-                `p-2 rounded transition-colors ${selectedAction === 'add' ? 'bg-green-600' : 'bg-gray-700'}`;
-            document.getElementById('btn-remove').className = 
-                `p-2 rounded transition-colors ${selectedAction === 'remove' ? 'bg-red-600' : 'bg-gray-700'}`;
-            document.getElementById('btn-set').className = 
-                `p-2 rounded transition-colors ${selectedAction === 'set' ? 'bg-blue-600' : 'bg-gray-700'}`;
-        }
-
-        function setAction(action) {
-            selectedAction = action;
-            updateButtonStyles();
-        }
-
-        // Initialize button styles
-        updateButtonStyles();
-
-        async function submitAdjustment() {
-            if (!selectedUserId) {
-                alert('Please select a user first');
-                return;
-            }
-
-            const amount = parseInt(document.getElementById('amount-input').value);
-            if (!amount || isNaN(amount)) {
-                alert('Please enter a valid amount');
-                return;
-            }
-
-            const action = document.getElementById('action-select').value;
-            const reason = document.getElementById('reason-input').value || 'admin_adjustment';
-
-            try {
-                const res = await fetch('/api/admin/manage-score.php', {
+                const response = await fetch('/api/admin/manage-score.php', {
                     method: 'POST',
-                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Score updated successfully!');
+                    loadRecentAdjustments();
+                } else {
+                    alert(data.error || 'Failed to update score');
+                }
+            } catch (error) {
+                console.error('Score update error:', error);
+                alert('Failed to update score');
+            }
+        });
+
+        // Handle item form submission
+        document.getElementById('item-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('item-name').value,
+                description: document.getElementById('item-description').value,
+                price: parseInt(document.getElementById('item-price').value),
+                image_url: document.getElementById('item-image').value
+            };
+
+            try {
+                const response = await fetch('/api/store/add-item.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Item added successfully!');
+                    loadStoreItems();
+                    e.target.reset();
+                } else {
+                    alert(data.error || 'Failed to add item');
+                }
+            } catch (error) {
+                console.error('Add item error:', error);
+                alert('Failed to add item');
+            }
+        });
+
+        // Load store items
+        function loadStoreItems() {
+            fetch('/api/store/items.php')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('store-items');
+                    container.innerHTML = '';
+
+                    data.items.forEach(item => {
+                        container.innerHTML += `
+                            <div class="bg-gray-700 p-4 rounded-lg">
+                                <img src="${item.image_url || '/img/default-item.png'}" alt="${item.name}" class="w-full h-48 object-cover rounded mb-4">
+                                <h3 class="text-xl font-bold">${item.name}</h3>
+                                <p class="text-gray-300 mb-2">${item.description}</p>
+                                <p class="text-lg font-bold">${item.price.toLocaleString()} $DSPOINC</p>
+                                <button onclick="toggleItem(${item.item_id}, ${!item.is_active})" class="mt-2 px-4 py-2 rounded ${item.is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}">
+                                    ${item.is_active ? 'Disable' : 'Enable'}
+                                </button>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(error => console.error('Load items error:', error));
+        }
+
+        // Load recent adjustments
+        function loadRecentAdjustments() {
+            fetch('/api/admin/recent-adjustments.php')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('recent-adjustments');
+                    container.innerHTML = '';
+
+                    data.adjustments.forEach(adj => {
+                        container.innerHTML += `
+                            <div class="bg-gray-700 p-4 rounded-lg">
+                                <p class="font-bold">${adj.username}</p>
+                                <p class="text-gray-300">${adj.action} ${Math.abs(adj.amount).toLocaleString()} $DSPOINC</p>
+                                <p class="text-gray-400 text-sm">${adj.reason}</p>
+                                <p class="text-gray-400 text-sm">${new Date(adj.timestamp).toLocaleString()}</p>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(error => console.error('Load adjustments error:', error));
+        }
+
+        // Toggle item active status
+        async function toggleItem(itemId, newStatus) {
+            try {
+                const response = await fetch('/api/store/toggle-item.php', {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        user_id: selectedUserId,
-                        action,
-                        amount,
-                        reason
+                        item_id: itemId,
+                        is_active: newStatus
                     })
                 });
 
-                const result = await res.json();
-                if (result.success) {
-                    alert(`Score successfully ${action}ed! New total: ${result.new_total.toLocaleString()} $DSPOINC`);
-                    document.getElementById('amount-input').value = '';
-                    document.getElementById('reason-input').value = '';
-                    loadRecentAdjustments();
+                const data = await response.json();
+                if (data.success) {
+                    loadStoreItems();
                 } else {
-                    throw new Error(result.error);
+                    alert(data.error || 'Failed to toggle item status');
                 }
-            } catch (err) {
-                console.error('Score adjustment failed:', err);
-                alert('Failed to adjust score. Please try again.');
+            } catch (error) {
+                console.error('Toggle item error:', error);
+                alert('Failed to toggle item status');
             }
         }
 
-        async function loadRecentAdjustments() {
-            try {
-                const res = await fetch('/api/admin/recent-adjustments.php', {
-                    credentials: 'include'
-                });
-                const adjustments = await res.json();
-
-                const listDiv = document.getElementById('adjustments-list');
-                listDiv.innerHTML = '';
-
-                adjustments.forEach(adj => {
-                    const adjDiv = document.createElement('div');
-                    adjDiv.className = 'bg-gray-700 rounded p-3 text-sm';
-                    adjDiv.innerHTML = `
-                        <div class="flex justify-between items-center">
-                            <span>${adj.username}</span>
-                            <span class="text-${adj.action === 'add' ? 'green' : 'red'}-400">
-                                ${adj.action === 'add' ? '+' : '-'}${adj.amount.toLocaleString()} $DSPOINC
-                            </span>
-                        </div>
-                        <div class="text-gray-400 text-xs mt-1">
-                            ${adj.reason} - by ${adj.admin_name} - ${new Date(adj.timestamp).toLocaleString()}
-                        </div>
-                    `;
-                    listDiv.appendChild(adjDiv);
-                });
-            } catch (err) {
-                console.error('Failed to load adjustments:', err);
-            }
-        }
-
-        // Sync users function
-        async function syncUsers() {
-            const statusEl = document.getElementById('sync-status');
-            statusEl.textContent = '🔄 Syncing users...';
-            
-            try {
-                const response = await fetch('/api/admin/sync-users.php', {
-                    credentials: 'include'
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    statusEl.innerHTML = `
-                        ✅ Sync complete!<br>
-                        Added ${result.missing_users_added} new users<br>
-                        Updated ${result.users_updated} usernames
-                    `;
-                    // Refresh the page after 2 seconds
-                    setTimeout(() => location.reload(), 2000);
-                } else {
-                    statusEl.textContent = '❌ Sync failed: ' + result.error;
-                }
-            } catch (err) {
-                console.error('Failed to sync users:', err);
-                statusEl.textContent = '❌ Sync failed';
-            }
-        }
-
-        // Load recent adjustments on page load
+        // Initial loads
+        loadStoreItems();
         loadRecentAdjustments();
+
+        let searchTimeout;
+        const searchInput = document.getElementById('user-search');
+        const searchResults = document.getElementById('search-results');
+        const userIdInput = document.getElementById('user-id');
+
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const query = searchInput.value.trim();
+            
+            if (query.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`/api/user/search.php?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.users.length > 0) {
+                            searchResults.innerHTML = data.users.map(user => `
+                                <div class="p-2 hover:bg-gray-600 cursor-pointer" onclick="selectUser('${user.discord_id}', '${user.username}')">
+                                    ${user.username} (${user.discord_id})
+                                </div>
+                            `).join('');
+                            searchResults.classList.remove('hidden');
+                        } else {
+                            searchResults.innerHTML = '<div class="p-2">No users found</div>';
+                            searchResults.classList.remove('hidden');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        searchResults.innerHTML = '<div class="p-2">Error searching users</div>';
+                        searchResults.classList.remove('hidden');
+                    });
+            }, 300);
+        });
+
+        function selectUser(id, username) {
+            userIdInput.value = id;
+            searchInput.value = username;
+            searchResults.classList.add('hidden');
+            loadUserDetails(id);
+        }
+
+        function loadUserDetails(userId) {
+            fetch(`/api/user/details.php?user_id=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const user = data.user;
+                        document.getElementById('detail-username').textContent = user.username;
+                        document.getElementById('detail-discord-id').textContent = user.discord_id;
+                        document.getElementById('detail-balance').textContent = user.balance.toLocaleString();
+                        
+                        // Display roles
+                        const rolesDiv = document.getElementById('detail-roles');
+                        rolesDiv.innerHTML = user.roles.map(role => 
+                            `<span class="bg-blue-600 px-2 py-1 rounded text-sm">${role}</span>`
+                        ).join('');
+                        
+                        // Display inventory
+                        const inventoryDiv = document.getElementById('detail-inventory');
+                        inventoryDiv.innerHTML = user.inventory.map(item => `
+                            <div class="bg-gray-700 p-4 rounded-lg">
+                                <img src="${item.image_url || '/img/default-item.png'}" class="w-full h-32 object-cover rounded mb-2">
+                                <h4 class="font-semibold">${item.name}</h4>
+                                <p class="text-sm text-gray-400">${item.description}</p>
+                                <p class="text-yellow-400 mt-2">${item.price} $DSPOINC</p>
+                            </div>
+                        `).join('') || '<p class="text-gray-400">No items in inventory</p>';
+
+                        // Show the details section
+                        document.getElementById('user-details').classList.remove('hidden');
+                    }
+                })
+                .catch(error => console.error('Error loading user details:', error));
+        }
+
+        // Load available items for the inventory form
+        fetch('/api/store/items.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const select = document.getElementById('item-select');
+                    select.innerHTML = data.items.map(item =>
+                        `<option value="${item.id}">${item.name} (${item.price} $DSPOINC)</option>`
+                    ).join('');
+                }
+            })
+            .catch(error => console.error('Error loading items:', error));
+
+        // Handle inventory form submission
+        document.getElementById('inventory-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                user_id: document.getElementById('user-id').value,
+                item_id: document.getElementById('item-select').value,
+                action: document.getElementById('inventory-action').value,
+                reason: document.getElementById('inventory-reason').value
+            };
+
+            try {
+                const response = await fetch('/api/admin/manage-inventory.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Inventory updated successfully!');
+                    loadUserDetails(formData.user_id); // Reload user details
+                } else {
+                    alert(data.error || 'Failed to update inventory');
+                }
+            } catch (error) {
+                console.error('Inventory update error:', error);
+                alert('Failed to update inventory');
+            }
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html> 

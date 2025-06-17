@@ -12,13 +12,15 @@ if (!isAdminOrMod()) {
     exit;
 }
 
+// Get search term
 $search = $_GET['q'] ?? '';
-if (strlen($search) < 2) {
-    echo json_encode([]);
+if (empty($search)) {
+    echo json_encode(['error' => 'Search term required']);
     exit;
 }
 
-$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+// Connect to database
+$dbPath = '/var/www/html/db/narrrf_world.sqlite';
 try {
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -41,26 +43,27 @@ try {
     $sampleUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
     error_log("Search Debug: Sample users: " . json_encode($sampleUsers));
 
-    // Search by username or Discord ID
+    // Search for users by username or discord_id
     $stmt = $db->prepare("
-        SELECT discord_id, username, avatar_url
-        FROM tbl_users
-        WHERE username LIKE ? COLLATE NOCASE 
-        OR discord_id LIKE ? COLLATE NOCASE
+        SELECT discord_id, username 
+        FROM tbl_users 
+        WHERE username LIKE ? OR discord_id LIKE ?
         LIMIT 10
     ");
     $searchTerm = "%$search%";
     $stmt->execute([$searchTerm, $searchTerm]);
+    
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Debug: Log results count
     error_log("Search Debug: Found " . count($users) . " results");
     error_log("Search Debug: Results: " . json_encode($users));
 
-    echo json_encode($users);
+    echo json_encode(['success' => true, 'users' => $users]);
+} catch (PDOException $e) {
+    echo json_encode(['error' => 'Database connection failed']);
 } catch (Exception $e) {
     // Debug: Log any errors
     error_log("Search Error: " . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['error' => 'Search failed: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Search failed']);
 } 
