@@ -10,6 +10,32 @@ services:
         value: YOUR_DISCORD_CLIENT_ID
       - key: DISCORD_SECRET
         value: YOUR_DISCORD_SECRET
+      - key: DATABASE_PATH
+        value: "/var/www/html/db/narrrf_world.sqlite"
+      - key: DISCORD_BOT_SECRET
+        sync: false
+
+  - type: worker
+    name: narrrfs-world-discord-bot
+    env: node
+    plan: free
+    buildCommand: cd discord && npm install
+    startCommand: cd discord && node deploy-commands.js && node index.js
+    envVars:
+      - key: RENDER
+        value: "true"
+      - key: DISCORD_BOT_SECRET
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_GUILD_ID
+        sync: false
+      - key: API_URL
+        value: "https://narrrfs.world"
+    disk:
+      name: sqlite-data
+      mountPath: /data
+      sizeGB: 1
 
   - type: worker
     name: tor-onionpipe

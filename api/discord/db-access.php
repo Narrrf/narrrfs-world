@@ -10,8 +10,9 @@ if ($auth_token !== $_ENV['DISCORD_BOT_SECRET']) {
     exit;
 }
 
-// Connect to database
-$db = new SQLite3('/var/www/html/db/narrrf_world.sqlite');
+// Connect to database using environment variable with fallback
+$db_path = $_ENV['DATABASE_PATH'] ?? __DIR__ . '/../../db/narrrf_world.sqlite';
+$db = new SQLite3($db_path);
 
 // Get request data
 $data = json_decode(file_get_contents('php://input'), true);
