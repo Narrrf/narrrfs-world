@@ -176,9 +176,14 @@
         checkLoginStatus();
 
         function checkLoginStatus() {
+            console.log('Checking login status...');
             fetch('/api/auth/check-session.php')
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Session check response:', response);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Session check data:', data);
                     if (data.success) {
                         showAdminPanel(data.user);
                     } else {
@@ -192,7 +197,7 @@
         }
 
         function loginWithDiscord() {
-            window.location.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+            window.location.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php%3Fredirect%3Dadmin&scope=identify+guilds+guilds.members.read";
         }
 
         function showLoginSection() {
@@ -201,17 +206,22 @@
         }
 
         function showAdminPanel(user) {
+            console.log('Showing admin panel for user:', user);
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('admin-panel').classList.remove('hidden');
             
             // Update user info
-            document.getElementById('user-name').textContent = user.username;
+            document.getElementById('user-name').textContent = user.username || 'Unknown User';
             document.getElementById('user-role').textContent = user.roles || 'Admin';
             if (user.avatar) {
                 document.getElementById('user-avatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
             } else {
                 document.getElementById('user-avatar').src = 'https://cdn.discordapp.com/embed/avatars/0.png';
             }
+
+            // Load initial data
+            loadStoreItems();
+            loadRecentAdjustments();
         }
 
         function logout() {
@@ -389,10 +399,6 @@
                 alert('Failed to toggle item status');
             }
         }
-
-        // Initial loads
-        loadStoreItems();
-        loadRecentAdjustments();
 
         let searchTimeout;
         const searchInput = document.getElementById('user-search');

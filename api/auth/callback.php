@@ -5,6 +5,9 @@ session_start();
 $clientId = getenv('DISCORD_CLIENT_ID');
 $clientSecret = getenv('DISCORD_SECRET');
 $redirectUri = 'https://narrrfs.world/api/auth/callback.php';
+if (isset($_GET['redirect'])) {
+    $redirectUri .= '?redirect=' . $_GET['redirect'];
+}
 
 // ✅ Step 1: Get code
 if (!isset($_GET['code'])) {
@@ -56,12 +59,12 @@ if (!isset($user['id'])) {
 }
 
 // 🧀 Save key user fields to session
-$_SESSION['username'] = $user['username'];
-$_SESSION['discriminator'] = $user['discriminator'] ?? '0000';
-$_SESSION['avatar_url'] = $user['avatar']
-    ? "https://cdn.discordapp.com/avatars/{$user['id']}/{$user['avatar']}.png"
-    : 'https://cdn.discordapp.com/embed/avatars/0.png';
-$_SESSION['email'] = $user['email'] ?? null;
+$_SESSION['user'] = [
+    'username' => $user['username'],
+    'discriminator' => $user['discriminator'] ?? '0000',
+    'avatar' => $user['avatar'],
+    'email' => $user['email'] ?? null,
+];
 $_SESSION['discord_id'] = $user['id'];
 $_SESSION['access_token'] = $accessToken;
 
@@ -76,11 +79,9 @@ $guildsResponse = file_get_contents('https://discord.com/api/users/@me/guilds', 
 $_SESSION['guilds'] = json_decode($guildsResponse, true) ?? [];
 
 // ✅ Save user to DB
-$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 try {
-    $pdo = new PDO("sqlite:$dbPath");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
+    $db = new SQLite3('/var/www/html/db/narrrf_world.sqlite');
+} catch (Exception $e) {
     die("❌ Database error: " . $e->getMessage());
 }
 
@@ -89,20 +90,27 @@ $avatarUrl = $user['avatar']
     ? "https://cdn.discordapp.com/avatars/{$user['id']}/{$user['avatar']}.png"
     : 'https://cdn.discordapp.com/embed/avatars/0.png';
 
-$stmt = $pdo->prepare("
+$stmt = $db->prepare("
     INSERT OR REPLACE INTO tbl_users (discord_id, username, avatar_url)
-    VALUES (?, ?, ?)
+    VALUES (:discord_id, :username, :avatar_url)
 ");
-$stmt->execute([$user['id'], $user['username'], $avatarUrl]);
+$stmt->bindValue(':discord_id', $user['id'], SQLITE3_TEXT);
+$stmt->bindValue(':username', $user['username'], SQLITE3_TEXT);
+$stmt->bindValue(':avatar_url', $avatarUrl, SQLITE3_TEXT);
+$stmt->execute();
 
 // ✅ Sync roles
 include_once(__DIR__ . '/sync-role.php');
 
-// ✅ Inject localStorage for Tetris + redirect
-$target = ($_SERVER['HTTP_HOST'] === 'localhost')
-    ? 'http://localhost/profile.html'
-    : 'https://narrrfs.world/profile.html';
+// Determine redirect target
+$target = 'https://narrrfs.world/';
+if (isset($_GET['redirect']) && $_GET['redirect'] === 'admin') {
+    $target .= 'admin/manage-scores.html';
+} else {
+    $target .= 'profile.html';
+}
 
+// ✅ Inject localStorage and redirect
 echo "<script>
   localStorage.setItem('discord_id', '{$user['id']}');
   localStorage.setItem('discord_name', '{$user['username']}');
