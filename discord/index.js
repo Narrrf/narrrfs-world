@@ -7,7 +7,7 @@ const sqlite3 = require('sqlite3');
 
 // Always use the main database path
 const DB_PATH = process.env.RENDER 
-    ? '/data/narrrf_world.sqlite'  // Render persistent volume path
+    ? '/var/www/html/db/narrrf_world.sqlite'  // Main database on Render
     : path.join(__dirname, '..', 'db', 'narrrf_world.sqlite');
 console.log('Using database at:', DB_PATH);
 
