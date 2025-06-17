@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, Collection, GatewayIntentBits } = require('discord.js');
+const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const config = require('./config.js');
@@ -11,12 +11,19 @@ const DB_PATH = process.env.RENDER
     : path.join(__dirname, '..', 'db', 'narrrf_world.sqlite');
 console.log('Using database at:', DB_PATH);
 
-// Create client instance
+// Create client instance with all necessary intents
 const client = new Client({ 
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildMembers
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildPresences
+    ],
+    partials: [
+        Partials.User,
+        Partials.GuildMember,
+        Partials.Message
     ]
 });
 
