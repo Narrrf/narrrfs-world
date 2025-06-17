@@ -14,7 +14,7 @@ function isAdminOrMod() {
             SELECT role_name 
             FROM tbl_user_roles 
             WHERE user_id = ? 
-            AND role_name IN ('Admin', 'Moderator')
+            AND role_name IN ('Founder', 'Moderator')
         ");
         $stmt->execute([$_SESSION['discord_id']]);
         $roles = $stmt->fetchAll(PDO::FETCH_COLUMN);

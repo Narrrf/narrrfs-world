@@ -27,7 +27,8 @@ try {
     $stmt = $db->prepare("
         SELECT discord_id, username, avatar_url
         FROM tbl_users
-        WHERE username LIKE ? OR discord_id LIKE ?
+        WHERE username LIKE ? COLLATE NOCASE 
+        OR discord_id LIKE ? COLLATE NOCASE
         LIMIT 10
     ");
     $searchTerm = "%$search%";
