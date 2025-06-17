@@ -10,30 +10,6 @@ services:
         value: YOUR_DISCORD_CLIENT_ID
       - key: DISCORD_SECRET
         value: YOUR_DISCORD_SECRET
-    disk:
-      name: sqlite-data
-      mountPath: /data
-      sizeGB: 1
-
-  - type: worker
-    name: narrrfs-discord-bot
-    env: docker
-    dockerfilePath: discord/Dockerfile
-    plan: free
-    autoDeploy: true
-    envVars:
-      - key: DISCORD_BOT_SECRET
-        value: YOUR_DISCORD_BOT_TOKEN
-      - key: DISCORD_CLIENT_ID
-        value: YOUR_DISCORD_CLIENT_ID
-      - key: DISCORD_GUILD_ID
-        value: YOUR_GUILD_ID
-      - key: API_URL
-        value: https://narrrfs.world
-    disk:
-      name: sqlite-data
-      mountPath: /data
-      sizeGB: 1
 
   - type: worker
     name: tor-onionpipe
