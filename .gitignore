@@ -1,12 +1,26 @@
 # 🌐 Environment variables
 .env
 
+# 🤖 Discord Bot - Local Development
+/discord/node_modules
+/discord/.env
+/discord/config.local.js
 
+# 💾 Database Files - Local Development
+/db/*.sqlite
+/db/*.sqlite-journal
+!/db/schema.sql
 
 # ✍️ Editor junk
 *.swp
 *.bak
+.DS_Store
+Thumbs.db
 
 # 🧩 JS backup scrolls
 public/scripts/tetris-scroll-backup*.js
 public/scripts/tetris-scroll (1).js
+
+# 📦 NPM
+node_modules/
+package-lock.json
