@@ -3,8 +3,15 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: https://narrrfs.world');
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Headers: Authorization, Content-Type');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 
 require_once __DIR__ . '/../config/discord.php';
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 // Get authorization header
 $auth_header = apache_request_headers()['Authorization'] ?? '';
@@ -44,6 +51,96 @@ $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
 $action = $_GET['action'] ?? 'info';
 
 switch($action) {
+    case 'sync_users':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method not allowed']);
+            exit;
+        }
+
+        $users = json_decode(file_get_contents('php://input'), true);
+        if (!$users || !is_array($users)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid user data']);
+            exit;
+        }
+
+        try {
+            $db->beginTransaction();
+
+            // Prepare statements
+            $checkUser = $db->prepare("SELECT 1 FROM tbl_users WHERE discord_id = ?");
+            $insertUser = $db->prepare("INSERT INTO tbl_users (discord_id, username, discriminator, avatar_url) VALUES (?, ?, ?, ?)");
+            $updateUser = $db->prepare("UPDATE tbl_users SET username = ?, discriminator = ?, avatar_url = ? WHERE discord_id = ?");
+            
+            // Delete old roles
+            $deleteRoles = $db->prepare("DELETE FROM tbl_user_roles WHERE user_id = ?");
+            // Insert new roles
+            $insertRole = $db->prepare("INSERT INTO tbl_user_roles (user_id, role_name) VALUES (?, ?)");
+
+            $synced = 0;
+            $updated = 0;
+            $errors = [];
+
+            foreach ($users as $user) {
+                try {
+                    // Check if user exists
+                    $checkUser->execute([$user['id']]);
+                    $exists = $checkUser->fetchColumn();
+
+                    if ($exists) {
+                        // Update existing user
+                        $updateUser->execute([
+                            $user['username'],
+                            $user['discriminator'] ?? '0',
+                            $user['avatar_url'] ?? null,
+                            $user['id']
+                        ]);
+                        $updated++;
+                    } else {
+                        // Insert new user
+                        $insertUser->execute([
+                            $user['id'],
+                            $user['username'],
+                            $user['discriminator'] ?? '0',
+                            $user['avatar_url'] ?? null
+                        ]);
+                        $synced++;
+                    }
+
+                    // Sync roles
+                    if (isset($user['roles']) && is_array($user['roles'])) {
+                        $deleteRoles->execute([$user['id']]);
+                        foreach ($user['roles'] as $role) {
+                            $insertRole->execute([$user['id'], $role]);
+                        }
+                    }
+                } catch (PDOException $e) {
+                    $errors[] = [
+                        'user_id' => $user['id'],
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
+
+            $db->commit();
+
+            echo json_encode([
+                'success' => true,
+                'synced_users' => $synced,
+                'updated_users' => $updated,
+                'errors' => $errors
+            ]);
+        } catch (PDOException $e) {
+            $db->rollBack();
+            http_response_code(500);
+            echo json_encode([
+                'error' => 'Database error',
+                'message' => $e->getMessage()
+            ]);
+        }
+        break;
+
     case 'info':
         $database_info = [];
         foreach ($tables as $table) {
