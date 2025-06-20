@@ -122,6 +122,15 @@
   Welcome, VIP! You found the Golden Cheese 🧀
 </div>
 
+<div id="vip-download-zone" class="hidden mt-4">
+  <a id="vip-download-btn" 
+     href="/api/user/download-vip-art.php"
+     class="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-2 rounded-lg shadow animate-pop"
+     download>
+    🖼️ Download Your HD VIP NFT
+  </a>
+</div>
+
 <!-- 🧂 VIP Absence Fallback -->
 <div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
   😅 You're logged in, but... no VIP pass? That's nacho cheese!
@@ -562,6 +571,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
         document.getElementById('goldenCheeseGate')?.classList.remove('hidden');
+	// After you fetch user roles (where you reveal the Golden Cheese)
+if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
+  document.getElementById("vip-download-zone").classList.remove("hidden");
+}
+
       } else {
         document.getElementById('noCheeseJoke')?.classList.remove('hidden');
       }
