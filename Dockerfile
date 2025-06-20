@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y sqlite3
 
 # Copy static files
 COPY ./public /var/www/html
+COPY ./public/videos /var/www/html/videos
 COPY ./api /var/www/html/api
 COPY ./discord-tools /var/www/html/discord-tools
 COPY ./private /var/www/html/private
