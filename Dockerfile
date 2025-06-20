@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y sqlite3
 COPY ./public /var/www/html
 COPY ./api /var/www/html/api
 COPY ./discord-tools /var/www/html/discord-tools
+COPY ./private /var/www/html/private
 
 # Copy database folder + file!
 COPY ./db /var/www/html/db
