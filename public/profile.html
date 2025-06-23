@@ -807,14 +807,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // 1. Draw the graph only if we have a userId
-  async function drawGraph(userId) {
-    if (!userId) return; // Not logged in
-    try {
-      const res = await fetch(`/api/discord/score-history.php?user_id=${userId}`);
-      const json = await res.json();
+document.addEventListener('DOMContentLoaded', function() {
+  const userId = window.sessionDiscordId || localStorage.getItem('discord_id');
+  const canvas = document.getElementById('pointsGraph');
+  if (!userId) {
+    if (canvas) canvas.replaceWith('Please log in to see your DSPOINC history.');
+    return;
+  }
+  if (!canvas) {
+    console.error('pointsGraph canvas missing!');
+    return;
+  }
+  fetch(`/api/discord/score-history.php?user_id=${userId}`)
+    .then(res => res.json())
+    .then(json => {
       if (!json.history || !json.history.length) {
-        document.getElementById('pointsGraph').replaceWith('No score history available yet.');
+        canvas.replaceWith('No score history available yet.');
         return;
       }
       let cumulative = 0, labels = [], data = [];
@@ -823,7 +831,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         labels.push(entry.timestamp.split('T')[0]);
         data.push(cumulative);
       }
-      new Chart(document.getElementById('pointsGraph'), {
+      new Chart(canvas, {
         type: 'line',
         data: {
           labels,
@@ -844,18 +852,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           scales: { y: { beginAtZero: true } }
         }
       });
-    } catch (err) {
-      document.getElementById('pointsGraph').replaceWith('Could not load history. Please try again.');
+    })
+    .catch(err => {
       console.error('Graph error:', err);
-    }
-  }
-
-  // 2. Logic: only load if logged in
-  if (window.sessionDiscordId) {
-    drawGraph(window.sessionDiscordId);
-  } else {
-    document.getElementById('pointsGraph').replaceWith('Please log in to see your DSPOINC history.');
-  }
+      canvas.replaceWith('Could not load history. Please try again.');
+    });
+});
 </script>
 </body>
 </html>
