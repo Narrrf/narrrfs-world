@@ -175,7 +175,6 @@ $discordId = $_SESSION['discord_id'] ?? '';
       <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
       <p id="wallet-address">🔗 Linked wallet: <em class="text-sm">coming soon</em></p>
       <p>🧬 Traits: <span id="traits">pending sync</span></p>
-      <p id="user-roles" class="mt-3 text-sm text-yellow-900 italic">Roles: loading...</p>
     </div>
 
     <!-- ✅ Session Note -->
@@ -214,14 +213,6 @@ $discordId = $_SESSION['discord_id'] ?? '';
   <h2 class="text-xl text-yellow-300 font-extrabold mb-4 flex items-center justify-center gap-2">
     🧀 Wanted Cheese Profile
   </h2>
-
-  <!-- 👤 Name + Roles -->
-  <p class="text-lg font-bold text-yellow-100 mb-1">
-    👤 Name: <span class="text-white font-normal">Mastercheese#002</span>
-  </p>
-  <p class="text-md text-yellow-100 italic mb-4">
-    🎓 Roles: Puzzle Adept · Lore Mage
-  </p>
 
   
   <!-- 📊 Stats Block -->
@@ -278,8 +269,9 @@ $discordId = $_SESSION['discord_id'] ?? '';
     <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
     Your $DSPOINC Journey
   </h2>
+<div class="relative">
   <canvas id="pointsGraph" width="400" height="180"></canvas>
-  <div class="text-xs text-yellow-200 mt-2">Powered by Discord bot and on-chain events</div>
+  <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
 </div>
 
 <div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
@@ -810,8 +802,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.addEventListener('DOMContentLoaded', function() {
   const userId = window.sessionDiscordId || localStorage.getItem('discord_id');
   const canvas = document.getElementById('pointsGraph');
+  const msgBox = document.getElementById('pointsGraphMsg');
+
+  function showMsg(msg) {
+    if (msgBox) {
+      msgBox.innerText = msg;
+      msgBox.classList.remove('hidden');
+    }
+    if (canvas) canvas.style.display = 'none';
+  }
+
   if (!userId) {
-    if (canvas) canvas.replaceWith('Please log in to see your DSPOINC history.');
+    showMsg('Please log in to see your DSPOINC history.');
     return;
   }
   if (!canvas) {
@@ -822,9 +824,11 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(res => res.json())
     .then(json => {
       if (!json.history || !json.history.length) {
-        canvas.replaceWith('No score history available yet.');
+        showMsg('No score history available yet.');
         return;
       }
+      if (msgBox) msgBox.classList.add('hidden');
+      canvas.style.display = '';
       let cumulative = 0, labels = [], data = [];
       for (const entry of json.history) {
         cumulative += entry.amount;
@@ -854,8 +858,8 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     })
     .catch(err => {
+      showMsg('Could not load history. Please try again.');
       console.error('Graph error:', err);
-      canvas.replaceWith('Could not load history. Please try again.');
     });
 });
 </script>
