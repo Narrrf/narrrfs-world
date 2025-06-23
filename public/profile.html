@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+<?php
+session_start();
+$discordId = $_SESSION['discord_id'] ?? '';
+?>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🧠 Your Narrrf Profile</title>
+  <script>
+  window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
+</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="theme-color" content="#fcd34d">
   <link rel="icon" href="img/cheese-egg.png" type="image/png">
@@ -231,23 +238,13 @@
   </div>
 
   <!-- 🧪 Skills -->
-  <div class="bg-white/80 text-gray-800 rounded-xl p-4 border-l-4 border-yellow-300 shadow mb-4">
-    <h3 class="font-bold text-yellow-800 mb-2">🧪 Skills</h3>
-    <ul class="list-disc list-inside text-sm">
-      <li>🥚 Egg Whisperer</li>
-      <li>🗺️ Chaos Cartographer</li>
-      <li>🔍 Riddle Solver</li>
-    </ul>
+<div class="skills-list flex flex-wrap gap-2 mt-2">
+  <!-- Filled by JS -->
   </div>
 
   <!-- 🔐 Access Levels -->
-  <div class="bg-white/70 text-gray-800 rounded-xl p-4 border-l-4 border-indigo-400 shadow mb-4">
-    <h3 class="font-bold text-indigo-800 mb-2">🔐 Access Levels</h3>
-    <ul class="flex flex-wrap gap-2 text-xs">
-      <li class="bg-green-500 text-white px-3 py-1 rounded-full">🟢 Lore Portal</li>
-      <li class="bg-yellow-500 text-white px-3 py-1 rounded-full">🟡 Hytopia Portal</li>
-      <li class="bg-red-500 text-white px-3 py-1 rounded-full">🔴 Lab 3 (Locked)</li>
-    </ul>
+<div class="access-levels-list flex flex-wrap gap-2 mt-2">
+  <!-- Filled by JS -->
   </div>
 
   <!-- 💰 Currency -->
@@ -268,20 +265,35 @@
     🪧 STATUS: WANTED FOR TRAIT THEFT 🔥
   </p>
 
-  <!-- 🧀 Stamp -->
-  <div class="mt-6 flex justify-center">
-    <div class="bg-yellow-400 text-white px-4 py-2 rounded-full border-4 border-white shadow-md">
-      🧀 Official Cheese Stamp
-    </div>
+<!-- 🧀 Official Cheese Stamp -->
+<div class="mt-6 flex justify-center">
+  <div class="bg-yellow-400 text-white px-4 py-2 rounded-full border-4 border-white shadow-md">
+    🧀 Official Cheese Stamp
   </div>
+</div>
+
+<!-- DSPOINC Graph & Score Changes -->
+<div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
+  <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
+    <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
+    Your $DSPOINC Journey
+  </h2>
+  <canvas id="pointsGraph" width="400" height="180"></canvas>
+  <div class="text-xs text-yellow-200 mt-2">Powered by Discord bot and on-chain events</div>
+</div>
+
+<div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
+  <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
+  <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
+    <!-- Populated by JS -->
+  </ul>
+</div>
 </section>
 
-  
-<!-- 🧠 GENOME 9.1 — Dual Game Layout Scroll -->
-<div class="max-w-6xl mx-auto px-4 mt-12 flex flex-col md:flex-row gap-8 items-start">
-
-  <!-- 🎮 TETRIS PANEL -->
-  <section id="cheese-tetris" class="flex-1 relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40">
+<!-- 🎮 Dual Game Panel — Tetris + Snake -->
+<section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col md:flex-row gap-8 items-start justify-center">
+ <!-- 🎮 TETRIS PANEL -->
+  <section id="cheese-tetris" class="flex-1 relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 mb-8 md:mb-0">
     <div class="absolute top-4 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
       🎮 TETRIS
     </div>
@@ -309,15 +321,15 @@
     <p id="spoink-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">
       💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
     </p>
+
   </section>
 
-  <!-- 🐍 SNAKE PANEL -->
-  <section id="cheese-snake" class="flex-1 relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40">
-    <div class="absolute top-4 left-4 bg-lime-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+  <!-- 🟢 SNAKE PANEL -->
+  <section id="cheese-snake" class="flex-1 bg-black text-yellow-300 py-8 px-4 sm:px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 relative flex flex-col items-center">
+    <div class="absolute top-4 left-4 bg-green-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
       🐍 SNAKE
     </div>
-
-    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">Cheese Snake</h2>
+  <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">Cheese Snake</h2>
 
     <div class="relative">
       <canvas id="snake-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto rounded-lg shadow-lg"></canvas>
@@ -338,8 +350,8 @@
 
     <p id="snake-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">💰 Snake Score: $0 DSPOINC</p>
     <div class="text-xs italic text-center text-gray-500 mt-1">&larr; first to 100 cheese triggers mutation</div>
-  </section>
-</div>
+
+
 
 <!-- 🧠 MODALS -->
 <div id="snake-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
@@ -358,8 +370,11 @@
   </div>
 </div>
 
+</section>
+</section>
+
 <!-- 🔐 Login Prompt -->
-<div id="tetris-auth" class="text-center my-6">
+<div id="tetris-auth" class="text-center my-6 w-full max-w-2xl mx-auto">
   <button onclick="loginAndReload()" class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-5 py-2 rounded-full shadow transition">
     🔐 Login with Discord to Save Score
   </button>
@@ -388,8 +403,6 @@
   </div>
 </section>
 
-
-
 <!-- 🍩 Footer -->
 
 
@@ -407,31 +420,34 @@
   <p class="mt-2 text-xs text-gray-300 italic">When the Grumpy Cheese gives no love, this does.</p>
 </div>
 
-  
-  <!-- 🧪 Back to Lab -->
-  <a href="/index.html" class="bg-yellow-500 text-white px-5 py-2 rounded-full shadow hover:bg-yellow-600 text-sm sm:text-base w-full sm:w-auto text-center">
+
+<div class="w-full flex justify-center mt-6">
+  <a href="/index.html"
+     class="bg-yellow-500 text-white px-5 py-2 rounded-full shadow hover:bg-yellow-600 text-sm sm:text-base text-center">
     🧪 Back to the Lab
   </a>
+</div>
+
   
-    <!-- 🔑 Login / Sync --
-  <a href="/profile.html" class="bg-indigo-500 text-white px-5 py-2 rounded-full shadow hover:bg-indigo-600 text-sm sm:text-base w-full sm:w-auto text-center">
+  <!-- 🔑 Login / Sync -->
+  <!-- <a href="/profile.html" class="bg-indigo-500 text-white px-5 py-2 rounded-full shadow hover:bg-indigo-600 text-sm sm:text-base w-full sm:w-auto text-center">
     🔑 Login / Sync Profile
-  </a>
+  </a> -->
 
-  <!-- 🧬 View Traits -
-  <a href="#traits" class="bg-pink-500 text-white px-5 py-2 rounded-full shadow hover:bg-pink-600 text-sm sm:text-base w-full sm:w-auto text-center">
+  <!-- 🧬 View Traits -->
+  <!-- <a href="#traits" class="bg-pink-500 text-white px-5 py-2 rounded-full shadow hover:bg-pink-600 text-sm sm:text-base w-full sm:w-auto text-center">
     🧬 View Traits
-  </a>
+  </a> -->
 
-  <!-- 🚪 Portals -
-  <a href="#portals" class="bg-blue-500 text-white px-5 py-2 rounded-full shadow hover:bg-blue-600 text-sm sm:text-base w-full sm:w-auto text-center">
+  <!-- 🚪 Portals -->
+  <!-- <a href="#portals" class="bg-blue-500 text-white px-5 py-2 rounded-full shadow hover:bg-blue-600 text-sm sm:text-base w-full sm:w-auto text-center">
     🚪 Open Portals
-  </a>
+  </a> -->
 
-  <!-- 💰 Wallet 
-  <a href="#wallet" class="bg-purple-500 text-white px-5 py-2 rounded-full shadow hover:bg-purple-600 text-sm sm:text-base w-full sm:w-auto text-center">
+  <!-- 💰 Wallet -->
+  <!-- <a href="#wallet" class="bg-purple-500 text-white px-5 py-2 rounded-full shadow hover:bg-purple-600 text-sm sm:text-base w-full sm:w-auto text-center">
     💰 Manage Wallet
-  </a>
+  </a> -->
 </div>
 
   <!-- 🌀 Cheese Portal to Hytopia -->
@@ -702,6 +718,65 @@ if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
     loadCombinedLeaderboards();
   });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+  // 1. Try to get Discord ID (session or local)
+  const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+  if (!userId) return; // Not logged in
+
+  // 2. Fetch user profile data
+  let user;
+  try {
+    const res = await fetch(`/api/user/profile.php?user_id=${userId}`);
+    user = await res.json();
+    if (user.error) throw new Error(user.error);
+  } catch (e) {
+    // fallback to loading state
+    return;
+  }
+
+  // 3. Fill Stats
+  document.getElementById('stats-adjustments').innerText = user.stats?.scoreAdjustments ?? "–";
+  document.getElementById('stats-sources').innerText = user.stats?.sources ?? "–";
+  document.getElementById('stats-roles').innerText = user.stats?.roles ?? "–";
+  document.getElementById('stats-member-since').innerText = user.member_since ?? "–";
+
+  // 4. Fill Skills (all roles & traits as badges)
+  const skillsBox = document.querySelector('.skills-list');
+  skillsBox.innerHTML = '';
+  const allSkills = [...(user.roles || []), ...(user.traits || [])];
+  if (allSkills.length) {
+    allSkills.forEach(skill => {
+      const badge = document.createElement('span');
+      badge.className = "inline-block bg-yellow-300 text-black px-2 py-1 rounded-full m-1 text-xs font-semibold shadow";
+      badge.innerText = skill;
+      skillsBox.appendChild(badge);
+    });
+  } else {
+    skillsBox.innerHTML = '<span class="text-gray-300">No skills yet</span>';
+  }
+
+  // 5. Access Levels (portals): show unlocked based on role/trait logic
+  const portals = [
+    {name: "Lore Portal", role: "Lore Mage", color: "bg-green-500"},
+    {name: "Hytopia Portal", role: "Hytopia Hero", color: "bg-yellow-400"},
+    {name: "Lab 3", role: "Lab3 Access", color: "bg-red-500"},
+  ];
+  const accessEl = document.querySelector('.access-levels-list');
+  accessEl.innerHTML = '';
+  portals.forEach(portal => {
+    const unlocked = allSkills.includes(portal.role);
+    accessEl.innerHTML += `<span class="px-3 py-1 rounded-full mr-2 mb-2 inline-block text-white text-xs font-bold shadow ${portal.color} ${!unlocked ? 'opacity-50 grayscale' : ''}">
+      ${portal.name}${!unlocked ? ' (Locked)' : ''}
+    </span>`;
+  });
+
+  // 6. Optionally: Let user "highlight" a favorite skill/level
+  // You can add an event listener to the badges to let them pick a "main" skill, etc.
+});
+</script>
+
 <script>
   function loginAndReload() {
     // Redirect to Discord OAuth
@@ -727,6 +802,60 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Score fetching is now handled in the main user data fetch
   // This listener is kept for potential future use
 });
+</script>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // 1. Draw the graph only if we have a userId
+  async function drawGraph(userId) {
+    if (!userId) return; // Not logged in
+    try {
+      const res = await fetch(`/api/discord/score-history.php?user_id=${userId}`);
+      const json = await res.json();
+      if (!json.history || !json.history.length) {
+        document.getElementById('pointsGraph').replaceWith('No score history available yet.');
+        return;
+      }
+      let cumulative = 0, labels = [], data = [];
+      for (const entry of json.history) {
+        cumulative += entry.amount;
+        labels.push(entry.timestamp.split('T')[0]);
+        data.push(cumulative);
+      }
+      new Chart(document.getElementById('pointsGraph'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: '$DSPOINC Over Time',
+            data,
+            fill: false,
+            tension: 0.3,
+            borderColor: '#fcd34d',
+            backgroundColor: '#fde68a',
+            pointRadius: 4,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: true } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    } catch (err) {
+      document.getElementById('pointsGraph').replaceWith('Could not load history. Please try again.');
+      console.error('Graph error:', err);
+    }
+  }
+
+  // 2. Logic: only load if logged in
+  if (window.sessionDiscordId) {
+    drawGraph(window.sessionDiscordId);
+  } else {
+    document.getElementById('pointsGraph').replaceWith('Please log in to see your DSPOINC history.');
+  }
 </script>
 </body>
 </html>
