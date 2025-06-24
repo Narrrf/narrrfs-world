@@ -1,34 +1,63 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-$user_id = $_SESSION['discord_id'] ?? $_GET['user_id'] ?? '';
-if (!$user_id) { echo json_encode(['error'=>'Not logged in']); exit; }
+
+// Only session user can fetch profile!
+$user_id = $_SESSION['discord_id'] ?? '';
+if (!$user_id) {
+    echo json_encode(['error' => 'Not logged in']);
+    exit;
+}
 
 $db = new SQLite3(__DIR__ . '/../../db/narrrf_world.sqlite');
-// 1. Basic info
-$userRow = $db->querySingle("SELECT username, MIN(timestamp) AS joined FROM tbl_users WHERE discord_id = '$user_id'", true);
-// 2. Roles
+
+// 1. Basic info (tbl_users does NOT have timestamp)
+$stmt = $db->prepare("SELECT username, avatar_url FROM tbl_users WHERE discord_id = ?");
+$stmt->bindValue(1, $user_id, SQLITE3_TEXT);
+$userRow = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+
+// 2. Earliest trait timestamp = join date (fallback if needed)
+$joinStmt = $db->prepare("SELECT MIN(timestamp) AS joined FROM tbl_user_traits WHERE user_id = ?");
+$joinStmt->bindValue(1, $user_id, SQLITE3_TEXT);
+$joinedRow = $joinStmt->execute()->fetchArray(SQLITE3_ASSOC);
+$member_since = isset($joinedRow['joined']) && $joinedRow['joined'] ? substr($joinedRow['joined'], 0, 10) : "";
+
+// 3. Roles
 $roles = [];
-$res = $db->query("SELECT role_name FROM tbl_user_roles WHERE user_id = '$user_id'");
+$roleStmt = $db->prepare("SELECT role_name FROM tbl_user_roles WHERE user_id = ?");
+$roleStmt->bindValue(1, $user_id, SQLITE3_TEXT);
+$res = $roleStmt->execute();
 while ($row = $res->fetchArray(SQLITE3_ASSOC)) $roles[] = $row['role_name'];
-// 3. Traits (if you have them)
+
+// 4. Traits
 $traits = [];
-$tr = $db->query("SELECT trait FROM tbl_user_traits WHERE user_id = '$user_id'");
+$traitStmt = $db->prepare("SELECT trait FROM tbl_user_traits WHERE user_id = ?");
+$traitStmt->bindValue(1, $user_id, SQLITE3_TEXT);
+$tr = $traitStmt->execute();
 while ($row = $tr->fetchArray(SQLITE3_ASSOC)) $traits[] = $row['trait'];
-// 4. Stats
-$adj = $db->querySingle("SELECT COUNT(*) FROM tbl_score_adjustments WHERE user_id = '$user_id'");
-$sources = $db->querySingle("SELECT COUNT(DISTINCT source) FROM tbl_user_scores WHERE user_id = '$user_id'");
+
+// 5. Stats
+$adjStmt = $db->prepare("SELECT COUNT(*) FROM tbl_score_adjustments WHERE user_id = ?");
+$adjStmt->bindValue(1, $user_id, SQLITE3_TEXT);
+$adj = $adjStmt->execute()->fetchArray(SQLITE3_NUM)[0];
+
+$srcStmt = $db->prepare("SELECT COUNT(DISTINCT source) FROM tbl_user_scores WHERE user_id = ?");
+$srcStmt->bindValue(1, $user_id, SQLITE3_TEXT);
+$sources = $srcStmt->execute()->fetchArray(SQLITE3_NUM)[0];
+
 $db->close();
 
+// 6. Output JSON
 echo json_encode([
   'discord_name' => $userRow['username'] ?? 'Unknown',
-  'member_since' => substr($userRow['joined'] ?? '', 0, 10),
-  'roles' => $roles,
-  'traits' => $traits,
-  'stats' => [
-    'scoreAdjustments' => $adj,
-    'sources' => $sources,
-    'roles' => count($roles),
+  'avatar_url'   => $userRow['avatar_url'] ?? '',
+  'member_since' => $member_since,
+  'roles'        => $roles,
+  'traits'       => $traits,
+  'stats'        => [
+    'scoreAdjustments' => (int)$adj,
+    'sources'          => (int)$sources,
+    'roles'            => count($roles),
   ]
 ]);
 ?>
