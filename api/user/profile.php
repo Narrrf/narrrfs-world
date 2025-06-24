@@ -49,6 +49,7 @@ $db->close();
 
 // 6. Output JSON
 echo json_encode([
+  'discord_id'   => $user_id, // <-- add this line!
   'discord_name' => $userRow['username'] ?? 'Unknown',
   'avatar_url'   => $userRow['avatar_url'] ?? '',
   'member_since' => $member_since,
