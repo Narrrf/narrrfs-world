@@ -11,12 +11,12 @@ if (!$user_id) {
 
 $db = new SQLite3(__DIR__ . '/../../db/narrrf_world.sqlite');
 
-// 1. Basic info (tbl_users does NOT have timestamp)
+// 1. Basic info
 $stmt = $db->prepare("SELECT username, avatar_url FROM tbl_users WHERE discord_id = ?");
 $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
 $userRow = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
 
-// 2. Earliest trait timestamp = join date (fallback if needed)
+// 2. Earliest trait timestamp = join date
 $joinStmt = $db->prepare("SELECT MIN(timestamp) AS joined FROM tbl_user_traits WHERE user_id = ?");
 $joinStmt->bindValue(1, $user_id, SQLITE3_TEXT);
 $joinedRow = $joinStmt->execute()->fetchArray(SQLITE3_ASSOC);
@@ -45,16 +45,16 @@ $srcStmt = $db->prepare("SELECT COUNT(DISTINCT source) FROM tbl_user_scores WHER
 $srcStmt->bindValue(1, $user_id, SQLITE3_TEXT);
 $sources = $srcStmt->execute()->fetchArray(SQLITE3_NUM)[0];
 
-$db->close();
-
-// Calculate total DSPOINC from tbl_user_scores
+// 6. Calculate total DSPOINC from tbl_user_scores
 $dspoincStmt = $db->prepare("SELECT SUM(score) FROM tbl_user_scores WHERE user_id = ?");
 $dspoincStmt->bindValue(1, $user_id, SQLITE3_TEXT);
 $dspoincResult = $dspoincStmt->execute()->fetchArray(SQLITE3_NUM);
 $total_dspoinc = $dspoincResult[0] ?? 0;
 
+// NOW close the DB!
+$db->close();
 
-// 6. Output JSON
+// Output JSON
 echo json_encode([
   'discord_id'   => $user_id,
   'discord_name' => $userRow['username'] ?? 'Unknown',
@@ -62,7 +62,7 @@ echo json_encode([
   'member_since' => $member_since,
   'roles'        => $roles,
   'traits'       => $traits,
-  'total_dspoinc' => (int)$total_dspoinc, // <-- ADD THIS LINE
+  'total_dspoinc' => (int)$total_dspoinc,
   'stats'        => [
     'scoreAdjustments' => (int)$adj,
     'sources'          => (int)$sources,
