@@ -267,22 +267,27 @@ $discordId = $_SESSION['discord_id'] ?? '';
 </div>
 
 <!-- DSPOINC Graph & Score Changes -->
-<div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
+<div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full <div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
   <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
     <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
     Your $DSPOINC Journey
   </h2>
-<div class="relative">
-  <canvas id="pointsGraph" width="400" height="180"></canvas>
-  <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
+  <div>
+    <span class="font-mono text-yellow-300">Balance:</span>
+    <span id="user-dspoinc" class="font-mono text-yellow-100 text-lg"></span>
+  </div>
+  <div class="relative">
+    <canvas id="pointsGraph" width="400" height="180"></canvas>
+    <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
+  </div>
+  <div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
+    <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
+    <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
+      <!-- Populated by JS -->
+    </ul>
+  </div>
 </div>
 
-<div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
-  <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
-  <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
-    <!-- Populated by JS -->
-  </ul>
-</div>
 </section>
 
 <!-- 🎮 Dual Game Panel — Tetris + Snake -->
@@ -387,14 +392,6 @@ $discordId = $_SESSION['discord_id'] ?? '';
       <h4 class="text-center text-md font-semibold">🐍 Snake Top Scores</h4>
       <ul id="leaderboard-snake-list" class="text-center"></ul>
     </div>
-  </div>
-</section>
-
-<section id="cheese-score-stats" class="max-w-4xl mx-auto bg-yellow-50 text-black py-4 px-4 rounded-3xl shadow-lg ring-2 ring-yellow-300 my-8">
-  <h4 class="text-center text-md font-semibold">🧀 Your DSPOINC & SPOINC Stats</h4>
-  <div class="text-center mt-2">
-    <span id="user-dspoinc" class="font-bold text-lg"></span>
-    <span class="block mt-1 text-yellow-900 text-sm">Equivalent: <span id="user-spoinc"></span> $SPOINC <span class="italic text-gray-500">(10,000:1)</span></span>
   </div>
 </section>
 
@@ -870,6 +867,54 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+  const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+  if (!userId) return;
+
+  let user;
+  try {
+    const res = await fetch(`/api/user/profile.php?user_id=${userId}`);
+    user = await res.json();
+    if (user.error) throw new Error(user.error);
+  } catch (e) {
+    return;
+  }
+
+  // DSPOINC Balance
+  const dspoincEl = document.getElementById('user-dspoinc');
+  if (dspoincEl) dspoincEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
+
+  // Recent Adjustments
+  if (user.discord_id) {
+    fetch('/api/admin/recent-adjustments.php', { credentials: 'include' })
+      .then(res => res.json())
+      .then(adjustments => {
+        const recentList = document.getElementById('recentAdjustments');
+        if (recentList && Array.isArray(adjustments)) {
+          const userAdjustments = adjustments
+            .filter(a => a.user_id === user.discord_id)
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10);
+          if (userAdjustments.length === 0) {
+            recentList.innerHTML = '<li class="text-gray-400">No score changes yet.</li>';
+          } else {
+recentList.innerHTML = userAdjustments
+  .map(a =>
+    `<li>
+      <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
+      : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
+      <span class="italic">(${a.reason || a.action})</span>
+    </li>`
+  ).join('');
+          }
+        }
+      });
+  }
+});
+</script>
+
 </body>
 </html>
 
