@@ -475,7 +475,7 @@ const trophies = {
   "Kaleido Friends": { img: "img/trophy_kaleidofriends.png", label: "Kaleido Supporter" },
   "Weedery Friends": { img: "img/trophy_weederyfriends.png", label: "Weedery 🌿" },
   "Community Member": { img: "img/trophy_community.png", label: "Community Member" },
-  "Verifiziert": { img: "img/trophy_verified.png", label: "Verified" },
+  "Verifiziert": { img: "img/trophy_verified.png", label: "Verified" }
 };
 
 function renderTrophyShelf(userRoles = []) {
@@ -502,11 +502,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   const loginLink = document.getElementById('login-link');
 
   try {
-    const res = await fetch('https://narrrfs.world/api/user/score-total.php', { 
+    // Unified fetch from profile.php
+    const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
       credentials: 'include',
-      headers: {
-        'Accept': 'application/json'
-      }
+      headers: { 'Accept': 'application/json' }
     });
 
     if (!res.ok) {
@@ -538,57 +537,45 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const user = await res.json();
     
-    // Store Discord info for other features
+    // Store Discord info for other features (optional)
     if (user.discord_id) {
       localStorage.setItem("discord_id", user.discord_id);
       localStorage.setItem("discord_name", user.discord_name);
     }
 
-    avatar.src = user.avatar_url || 'img/default-avatar.png';
-    avatar.alt = user.discord_name;
-    avatar.title = user.discord_name;
-    avatar.classList.remove('cursor-pointer');
-    loginLink.removeAttribute('href');
+    // Username & avatar
+    document.getElementById('username').innerText = user.discord_name || 'Unknown';
+    document.getElementById('welcome-name').innerText = user.discord_name || 'Unknown';
+    if (avatar) {
+      avatar.src = user.avatar_url || 'img/default-avatar.png';
+      avatar.alt = user.discord_name || 'Unknown';
+      avatar.title = user.discord_name || 'Unknown';
+      avatar.classList.remove('cursor-pointer');
+    }
+    if (loginLink) loginLink.removeAttribute('href');
 
-    document.getElementById('username').innerText = user.discord_name;
-    document.getElementById('welcome-name').innerText = user.discord_name;
-    document.getElementById('email').innerText = user.email || 'No email';
-    document.getElementById('guilds').innerText = `🎯 Guilds Connected: ${user.guilds?.length || 0}`;
+    // Traits, roles, and wallet
     document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits';
     document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles';
     document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Wallet not linked';
 
-    // Update cheese scores
-    if (user.total_dspoinc !== undefined) {
-      const dspoinc = user.total_dspoinc;
-      const spoinc = user.total_spoinc;
-      
-      if (document.getElementById('user-dspoinc'))
-        document.getElementById('user-dspoinc').textContent = `${dspoinc.toLocaleString()} $DSPOINC`;
-      if (document.getElementById('user-spoinc'))
-        document.getElementById('user-spoinc').textContent = `${spoinc.toLocaleString()}`;
+    // Scores/stats (if present in JSON)
+    if (user.stats) {
+      if (document.getElementById('user-dspoinc') && user.stats.scoreAdjustments !== undefined)
+        document.getElementById('user-dspoinc').textContent = user.stats.scoreAdjustments.toLocaleString();
+      if (document.getElementById('user-spoinc') && user.stats.sources !== undefined)
+        document.getElementById('user-spoinc').textContent = user.stats.sources.toLocaleString();
     }
 
-    // Fetch roles separately since they're from a different endpoint
-    try {
-      const vipRes = await fetch('https://narrrfs.world/api/user/roles.php', { credentials: 'include' });
-      const vipData = await vipRes.json();
-      const roles = vipData.roles || [];
+    // Trophy pokal shelf — render immediately from roles
+    if (user.roles) renderTrophyShelf(user.roles);
 
-      renderTrophyShelf(roles);
-
-      if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
-        document.getElementById('goldenCheeseGate')?.classList.remove('hidden');
-	// After you fetch user roles (where you reveal the Golden Cheese)
-if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
-  document.getElementById("vip-download-zone").classList.remove("hidden");
-}
-
-      } else {
-        document.getElementById('noCheeseJoke')?.classList.remove('hidden');
-      }
-    } catch (err) {
-      console.error('Failed to fetch roles:', err);
+    // VIP/Golden Cheese logic
+    if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
+      document.getElementById('goldenCheeseGate')?.classList.remove('hidden');
+      document.getElementById("vip-download-zone")?.classList.remove("hidden");
+    } else {
+      document.getElementById('noCheeseJoke')?.classList.remove('hidden');
     }
 
   } catch (err) {
@@ -616,6 +603,7 @@ if (roles.includes("VIP Holder") || roles.includes("VIP_pass")) {
   }
 });
 </script>
+
 <script>
   // 🎯 Load both Tetris and Snake Leaderboards
   fetch("https://narrrfs.world/api/dev/get-leaderboard.php")
