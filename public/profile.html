@@ -148,6 +148,7 @@ $discordId = $_SESSION['discord_id'] ?? '';
   <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center border-4 border-yellow-400">
 
     <!-- 👋 Welcome Message -->
+<span id="welcome-name"></span>
     <p id="welcome-msg" class="text-yellow-300 text-sm italic mb-2">
       Welcome back, <span id="welcome-name">loading...</span>
     </p>
@@ -186,6 +187,8 @@ $discordId = $_SESSION['discord_id'] ?? '';
     <div class="mt-6 text-yellow-400 text-sm">
       🧠 Profile powered by Cheese Architect 9.0 · Phase 5 Bridge Online
     </div>
+	
+
 <!-- 🧀 Trophy Shelf Zone -->
 <section id="trophy-shelf" class="my-16 px-4">
   <h2 class="text-center text-2xl sm:text-3xl font-extrabold text-yellow-400 mb-6 drop-shadow">
@@ -497,6 +500,21 @@ function renderTrophyShelf(userRoles = []) {
   });
 }
 
+// Helper for safe text setting
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.innerText = value;
+}
+// Helper for class toggle (show/hide)
+function showElement(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('hidden');
+}
+function hideElement(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('hidden');
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
   const avatar = document.getElementById('avatar');
   const loginLink = document.getElementById('login-link');
@@ -511,16 +529,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!res.ok) {
       if (res.status === 401) {
         // Not logged in - show login UI
-        document.getElementById('username').innerText = 'Guest#0000';
-        document.getElementById('welcome-name').innerText = 'Guest';
-        document.getElementById('email').innerText = 'Please log in';
-        document.getElementById('guilds').innerText = 'No guilds connected';
-        document.getElementById('traits').innerText = 'No traits available';
-        document.getElementById('user-roles').innerText = 'No roles';
-        document.getElementById('wallet-address').innerText = 'Wallet not linked';
-        document.getElementById('goldenCheeseGate')?.classList.add('hidden');
-        document.getElementById('noCheeseJoke')?.classList.add('hidden');
-        
+        setText('username', 'Guest#0000');
+        setText('welcome-name', 'Guest');
+        setText('email', 'Please log in');
+        setText('guilds', 'No guilds connected');
+        setText('traits', 'No traits available');
+        setText('user-roles', 'No roles');
+        setText('wallet-address', 'Wallet not linked');
+        hideElement('goldenCheeseGate');
+        hideElement('noCheeseJoke');
+
         // Make sure login link is visible and clickable
         if (loginLink) {
           loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
@@ -544,8 +562,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     // Username & avatar
-    document.getElementById('username').innerText = user.discord_name || 'Unknown';
-    document.getElementById('welcome-name').innerText = user.discord_name || 'Unknown';
+    setText('username', user.discord_name || 'Unknown');
+    setText('welcome-name', user.discord_name || 'Unknown');
     if (avatar) {
       avatar.src = user.avatar_url || 'img/default-avatar.png';
       avatar.alt = user.discord_name || 'Unknown';
@@ -555,16 +573,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (loginLink) loginLink.removeAttribute('href');
 
     // Traits, roles, and wallet
-    document.getElementById('traits').innerText = user.traits?.join(', ') || 'No traits';
-    document.getElementById('user-roles').innerText = user.roles?.join(', ') || 'No roles';
-    document.getElementById('wallet-address').innerText = localStorage.getItem('walletAddress') || 'Wallet not linked';
+    setText('traits', user.traits?.join(', ') || 'No traits');
+    setText('user-roles', user.roles?.join(', ') || 'No roles');
+    setText('wallet-address', localStorage.getItem('walletAddress') || 'Wallet not linked');
+    setText('email', user.email || '');
+    setText('guilds', `🎯 Guilds Connected: ${user.guilds?.length || 0}`);
 
     // Scores/stats (if present in JSON)
     if (user.stats) {
-      if (document.getElementById('user-dspoinc') && user.stats.scoreAdjustments !== undefined)
-        document.getElementById('user-dspoinc').textContent = user.stats.scoreAdjustments.toLocaleString();
-      if (document.getElementById('user-spoinc') && user.stats.sources !== undefined)
-        document.getElementById('user-spoinc').textContent = user.stats.sources.toLocaleString();
+      setText('user-dspoinc', user.stats.scoreAdjustments !== undefined ? user.stats.scoreAdjustments.toLocaleString() : '');
+      setText('user-spoinc', user.stats.sources !== undefined ? user.stats.sources.toLocaleString() : '');
     }
 
     // Trophy pokal shelf — render immediately from roles
@@ -572,24 +590,24 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // VIP/Golden Cheese logic
     if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
-      document.getElementById('goldenCheeseGate')?.classList.remove('hidden');
-      document.getElementById("vip-download-zone")?.classList.remove("hidden");
+      showElement('goldenCheeseGate');
+      showElement('vip-download-zone');
     } else {
-      document.getElementById('noCheeseJoke')?.classList.remove('hidden');
+      showElement('noCheeseJoke');
     }
 
   } catch (err) {
     console.error('Profile fetch failed:', err);
     // Show login UI on error
-    document.getElementById('username').innerText = 'Guest#0000';
-    document.getElementById('welcome-name').innerText = 'Guest';
-    document.getElementById('email').innerText = 'Please log in';
-    document.getElementById('guilds').innerText = 'No guilds connected';
-    document.getElementById('traits').innerText = 'No traits available';
-    document.getElementById('user-roles').innerText = 'No roles';
-    document.getElementById('wallet-address').innerText = 'Wallet not linked';
-    document.getElementById('goldenCheeseGate')?.classList.add('hidden');
-    document.getElementById('noCheeseJoke')?.classList.add('hidden');
+    setText('username', 'Guest#0000');
+    setText('welcome-name', 'Guest');
+    setText('email', 'Please log in');
+    setText('guilds', 'No guilds connected');
+    setText('traits', 'No traits available');
+    setText('user-roles', 'No roles');
+    setText('wallet-address', 'Wallet not linked');
+    hideElement('goldenCheeseGate');
+    hideElement('noCheeseJoke');
     
     // Make sure login link is visible
     if (loginLink) {
@@ -603,6 +621,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 });
 </script>
+
 
 <script>
   // 🎯 Load both Tetris and Snake Leaderboards
