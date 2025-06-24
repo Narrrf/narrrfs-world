@@ -47,14 +47,22 @@ $sources = $srcStmt->execute()->fetchArray(SQLITE3_NUM)[0];
 
 $db->close();
 
+// Calculate total DSPOINC from tbl_user_scores
+$dspoincStmt = $db->prepare("SELECT SUM(score) FROM tbl_user_scores WHERE user_id = ?");
+$dspoincStmt->bindValue(1, $user_id, SQLITE3_TEXT);
+$dspoincResult = $dspoincStmt->execute()->fetchArray(SQLITE3_NUM);
+$total_dspoinc = $dspoincResult[0] ?? 0;
+
+
 // 6. Output JSON
 echo json_encode([
-  'discord_id'   => $user_id, // <-- add this line!
+  'discord_id'   => $user_id,
   'discord_name' => $userRow['username'] ?? 'Unknown',
   'avatar_url'   => $userRow['avatar_url'] ?? '',
   'member_since' => $member_since,
   'roles'        => $roles,
   'traits'       => $traits,
+  'total_dspoinc' => (int)$total_dspoinc, // <-- ADD THIS LINE
   'stats'        => [
     'scoreAdjustments' => (int)$adj,
     'sources'          => (int)$sources,
