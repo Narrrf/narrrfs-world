@@ -951,7 +951,8 @@ questList.innerHTML = data.quests.map(q => `
       ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank">Open Link</a>` : ''}
       <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
     </div>
-    <div class="ml-0 md:ml-8 mt-3 md:mt-0 flex flex-col items-end gap-2 min-w-[140px]">
+     <div class="w-[150px] shrink-0 ml-0 md:ml-8 mt-3 md:mt-0 flex flex-col items-end gap-2 bg-gray-900/70 rounded-lg p-2">
+
       <span class="px-3 py-1 rounded-full text-xs font-semibold 
         ${q.is_active ? 'bg-green-600' : 'bg-gray-600'} text-white">
         ${q.is_active ? 'Active' : 'Closed'}
