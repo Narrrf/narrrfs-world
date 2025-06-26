@@ -1,7 +1,7 @@
 <?php
 // ====== ABSOLUTE TOP! Prevent output buffer leakage, show only JSON ======
-ob_clean();
-error_reporting(0); ini_set('display_errors', 0);
+if (ob_get_level()) { ob_clean(); }  // Only clean buffer if active
+ini_set('display_errors', 0); ini_set('display_startup_errors', 0); error_reporting(0);
 header('Content-Type: application/json');
 
 // --- COUNCIL-LEVEL AUTH ---
@@ -55,7 +55,6 @@ if (!preg_match('/^\s*(SELECT|INSERT|UPDATE)\s/i', $query)) {
     exit;
 }
 
-// --- EXECUTE ---
 try {
     $stmt = $db->prepare($query);
     foreach ($params as $i => $value) {
@@ -63,7 +62,6 @@ try {
     }
     $result = $stmt->execute();
 
-    // SELECT: return rows
     if (preg_match('/^\s*SELECT/i', $query)) {
         $rows = [];
         while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
@@ -71,7 +69,6 @@ try {
         }
         echo json_encode(['success' => true, 'data' => $rows]);
     }
-    // INSERT: return affectedRows and insertId
     else if (preg_match('/^\s*INSERT/i', $query)) {
         $insertId = $db->lastInsertRowID();
         echo json_encode([
@@ -80,12 +77,10 @@ try {
             'insertId' => $insertId
         ]);
     }
-    // UPDATE: return affectedRows
     else {
         echo json_encode(['success' => true, 'affectedRows' => $db->changes()]);
     }
 } catch (Exception $e) {
-    // Always return JSON error, never show PHP warnings!
     echo json_encode(['success' => false, 'error' => 'Query failed: ' . $e->getMessage()]);
 }
 
