@@ -1,8 +1,10 @@
 <?php
-// ====== ABSOLUTE TOP! Prevent output buffer leakage, show only JSON ======
-if (ob_get_level()) { ob_clean(); }  // Only clean buffer if active
-ini_set('display_errors', 0); ini_set('display_startup_errors', 0); error_reporting(0);
+// === GUARANTEED CLEAN JSON-ONLY OUTPUT ===
+if (function_exists('ob_clean')) @ob_clean();
 header('Content-Type: application/json');
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+error_reporting(0);
 
 // --- COUNCIL-LEVEL AUTH ---
 function get_auth_token() {
@@ -55,6 +57,7 @@ if (!preg_match('/^\s*(SELECT|INSERT|UPDATE)\s/i', $query)) {
     exit;
 }
 
+// --- EXECUTE ---
 try {
     $stmt = $db->prepare($query);
     foreach ($params as $i => $value) {
