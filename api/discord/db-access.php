@@ -59,16 +59,26 @@ try {
     }
     $result = $stmt->execute();
 
-    // SELECT returns rows, others return affectedRows
-    if (preg_match('/^\s*SELECT/i', $query)) {
-        $rows = [];
-        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-            $rows[] = $row;
-        }
-        echo json_encode(['success' => true, 'data' => $rows]);
-    } else {
-        echo json_encode(['success' => true, 'affectedRows' => $db->changes()]);
+if (preg_match('/^\s*SELECT/i', $query)) {
+    // SELECT queries: Return data rows
+    $rows = [];
+    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+        $rows[] = $row;
     }
+    echo json_encode(['success' => true, 'data' => $rows]);
+} else if (preg_match('/^\s*INSERT/i', $query)) {
+    // INSERT queries: Return affectedRows and the insertId
+    $insertId = $db->lastInsertRowID();
+    echo json_encode([
+        'success' => true,
+        'affectedRows' => $db->changes(),
+        'insertId' => $insertId
+    ]);
+} else {
+    // UPDATE queries: Just affectedRows
+    echo json_encode(['success' => true, 'affectedRows' => $db->changes()]);
+}
+
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
