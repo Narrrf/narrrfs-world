@@ -11,16 +11,31 @@
 /db/*.sqlite-journal
 !/db/schema.sql
 
-# ✍️ Editor junk
-*.swp
-*.bak
-.DS_Store
-Thumbs.db
-
 # 🧩 JS backup scrolls
 public/scripts/tetris-scroll-backup*.js
 public/scripts/tetris-scroll (1).js
 
+# 🛑 AI, Backup, Data Science, and Export folders
+AI Major 10.0/
+score download/
+*.csv
+*.docx
+*.json
+*.py
+backup*
+*.bak
+
 # 📦 NPM
 node_modules/
 package-lock.json
+
+# ✍️ Editor & OS junk
+*.swp
+.DS_Store
+Thumbs.db
+
+# 🚫 Misc (add more if you notice accidental files/folders)
+.vscode/
+.idea/
+logs/
+*.log

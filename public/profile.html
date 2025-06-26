@@ -260,7 +260,7 @@ $discordId = $_SESSION['discord_id'] ?? '';
   </p>
 
 <!-- User Quests Section -->
-<section id="user-quests-section" class="my-10">
+<section id="user-quests-section" class="my-10" style="min-width:140px">
   <h2 class="text-2xl font-bold text-yellow-300 mb-4">🗺️ Your Quests</h2>
   <div id="user-quests-list" class="space-y-4">
     <!-- Quests will render here -->
@@ -276,15 +276,16 @@ $discordId = $_SESSION['discord_id'] ?? '';
 </div>
 
 <!-- DSPOINC Graph & Score Changes -->
-<div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full <div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
+<div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
   <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
     <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
     Your $DSPOINC Journey
   </h2>
   <div>
     <span class="font-mono text-yellow-300">Balance:</span>
-    <span id="user-dspoinc" class="font-mono text-yellow-100 text-lg"></span>
+    <span id="user-dspoinc-journey" class="font-mono text-yellow-100 text-lg">0</span>
   </div>
+  
   <div class="relative">
     <canvas id="pointsGraph" width="400" height="180"></canvas>
     <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
@@ -879,18 +880,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 document.addEventListener('DOMContentLoaded', async function() {
-  // 1. DSPOINC Balance & Recent Adjustments
-  const dspoincEl = document.getElementById('user-dspoinc');
   let user = {};
   let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
 
-  // Fetch user profile
+  // Fetch user profile and set balances
   if (userId) {
     try {
       const res = await fetch('/api/user/profile.php?user_id=' + encodeURIComponent(userId));
       user = await res.json();
+
+      // Set both balances (top and journey widget)
+      const dspoincEl = document.getElementById('user-dspoinc');
+      const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
       if (dspoincEl) dspoincEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
-    } catch (e) {}
+      if (dspoincJourneyEl) dspoincJourneyEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
+
+    } catch (e) { /* handle error if you want */ }
   }
 
   // Fetch recent adjustments
@@ -936,43 +941,47 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
       }
 
-      questList.innerHTML = data.quests.map(q => `
-        <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col sm:flex-row items-center justify-between mb-3">
-          <div class="flex-1">
-            <div class="font-bold text-lg text-yellow-200 mb-1">${q.type === "Custom" ? "📝 Custom Quest" : "🐦 Twitter Quest"}</div>
-            <div class="mb-1">${q.description}</div>
-            ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank">Open Link</a>` : ''}
-            <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
-          </div>
-          <div class="ml-0 sm:ml-8 mt-4 sm:mt-0 flex flex-col items-end">
-            <span class="px-3 py-1 rounded-full text-xs font-semibold ${q.is_active ? 'bg-green-600' : 'bg-gray-600'}">
-              ${q.is_active ? 'Active' : 'Closed'}
-            </span>
-            <span class="mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
-              q.claim_status
-                ? (q.claim_status === "approved"
-                    ? 'bg-green-500'
-                    : q.claim_status === "rejected"
-                      ? 'bg-red-500'
-                      : 'bg-yellow-400')
-                : 'bg-gray-700'
-            }">
-              ${
-                q.claim_status === "approved" ? 'Claimed & Rewarded'
-                : q.claim_status === "rejected" ? 'Rejected'
-                : q.claim_status === "pending" ? 'Pending Review'
-                : 'Not Claimed'
-              }
-            </span>
-            ${q.claimed_at ? `<span class="mt-1 text-xs text-gray-400">Claimed at: ${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
-            ${
-              q.is_active && !q.claim_status
-                ? `<button onclick="claimQuest('${q.quest_id}', this)" class="mt-3 px-4 py-1 bg-yellow-500 hover:bg-yellow-600 text-black rounded-lg font-semibold text-sm transition">Claim Quest</button>`
-                : ''
-            }
-          </div>
-        </div>
-      `).join('');
+questList.innerHTML = data.quests.map(q => `
+  <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col md:flex-row items-start md:items-center justify-between mb-3">
+    <div class="flex-1">
+      <div class="font-bold text-lg text-yellow-200 mb-1">
+        ${q.type === "Custom" ? "📝 Custom Quest" : "🐦 Twitter Quest"}
+      </div>
+      <div class="mb-1">${q.description}</div>
+      ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank">Open Link</a>` : ''}
+      <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
+    </div>
+    <div class="ml-0 md:ml-8 mt-3 md:mt-0 flex flex-col items-end gap-2 min-w-[140px]">
+      <span class="px-3 py-1 rounded-full text-xs font-semibold 
+        ${q.is_active ? 'bg-green-600' : 'bg-gray-600'} text-white">
+        ${q.is_active ? 'Active' : 'Closed'}
+      </span>
+      <span class="px-3 py-1 rounded-full text-xs font-semibold 
+        ${
+          q.claim_status === "approved" ? 'bg-green-500'
+          : q.claim_status === "rejected" ? 'bg-red-500'
+          : q.claim_status === "pending" ? 'bg-yellow-400 text-gray-900'
+          : 'bg-gray-700'
+        }">
+        ${
+          q.claim_status === "approved" ? 'Claimed & Rewarded'
+          : q.claim_status === "rejected" ? 'Rejected'
+          : q.claim_status === "pending" ? 'Pending Review'
+          : 'Not Claimed'
+        }
+      </span>
+      ${q.claimed_at ? `<span class="text-xs text-gray-300 text-right">Claimed at:<br>${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
+      ${
+        q.is_active && !q.claim_status
+          ? `<button onclick="claimQuest('${q.quest_id}', this)" class="mt-2 px-4 py-1 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg font-semibold text-xs transition">
+              Claim Quest
+            </button>`
+          : ''
+      }
+    </div>
+  </div>
+`).join('');
+
     } catch (e) {
       const questList = document.getElementById('user-quests-list');
       if (questList) questList.innerHTML = '<div class="text-red-400">Failed to load quests.</div>';
