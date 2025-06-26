@@ -1,0 +1,17 @@
+{
+  "name": "Narrrfs World Genesis Genetic #xxxx",
+  "description": "A cinematic NFT Gen from the Narrrf Multiverse",
+  "image": "xxxx.png",
+  "attributes": [
+    { "trait_type": "Theme", "value": "One of the given Traits in Template MEtadata with all traits,json in the project files" },
+    { "trait_type": "Sub-Trait", "value": "One of the given Traits in Template MEtadata with all traits,json in the project files" },
+    { "trait_type": "Outfit", "value": "One of the given Traits in Template MEtadata with all traits,json in the project files" },
+    { "trait_type": "Accessories", "value": "One of the given Traits in Template MEtadata with all traits,json in the project files" },
+    { "trait_type": "Expression", "value": "One of the given Traits in Template MEtadata with all traits,json in the project files" },
+    { "trait_type": "Background", "value": "One of the given Traits in Template MEtadata with all traits,json in the project files" }
+  ],
+  "properties": {
+    "files": [{ "uri": "xxxx.png", "type": "image/png" }],
+    "category": "image"
+  }
+}

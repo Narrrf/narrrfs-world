@@ -3,248 +3,182 @@ const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js'
 const fs = require('fs');
 const path = require('path');
 const config = require('./config.js');
-const sqlite3 = require('sqlite3');
+const fetch = require('node-fetch');
+const { buildDashboardEmbed } = require('./utils/dashboardEmbed');
 
-// Always use the main database path
-const DB_PATH = process.env.RENDER 
-    ? '/var/www/html/db/narrrf_world.sqlite'  // Main database on Render
-    : path.join(__dirname, '..', 'db', 'narrrf_world.sqlite');
-console.log('Using database at:', DB_PATH);
+const dashboardChannelId = '1386489250140262410'; // Change if needed!
+const DB_API = 'https://narrrfs.world/api/discord/db-access.php';
+const DEBUG = true;
 
-// Create client instance with all necessary intents
-const client = new Client({ 
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildPresences
-    ],
-    partials: [
-        Partials.User,
-        Partials.GuildMember,
-        Partials.Message
-    ]
+// --- DB QUERY ---
+async function queryDb(query, params = []) {
+  if (DEBUG) console.log('[QUERY]', query, params);
+  try {
+    const response = await fetch(DB_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': config.botToken
+      },
+      body: JSON.stringify({ action: 'query', query, params })
+    });
+    const data = await response.json();
+    if (DEBUG) console.log('[RESPONSE]', data);
+    if (data.error) throw new Error(data.error);
+    return data.data;
+  } catch (error) {
+    console.error('[DB ERROR]', error);
+    throw error;
+  }
+}
+
+// --- INIT CLIENT ---
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildPresences
+  ],
+  partials: [Partials.User, Partials.GuildMember, Partials.Message]
 });
 
-// Create commands collection
+// --- LOAD COMMANDS ---
 client.commands = new Collection();
-
-// Load commands
 const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
-    
-    if ('data' in command && 'execute' in command) {
-        client.commands.set(command.data.name, command);
-    }
+if (fs.existsSync(commandsPath)) {
+  const commandFiles = fs.readdirSync(commandsPath).filter(f => f.endsWith('.js'));
+  for (const file of commandFiles) {
+    const command = require(path.join(commandsPath, file));
+    if ('data' in command && 'execute' in command)
+      client.commands.set(command.data.name, command);
+  }
 }
 
-// Handle interactions
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isChatInputCommand()) return;
+// --- DASHBOARD AUTOPOP CHANNEL HANDLER ---
+client.on('messageCreate', async (message) => {
+  try {
+    if (DEBUG) console.log(`[EVENT] messageCreate: ${message.author.tag} in #${message.channel?.name} (${message.channelId})`);
+    if (
+      message.channel.id === dashboardChannelId &&
+      !message.author.bot
+    ) {
+      // Delete user's message for privacy
+      await message.delete().catch(err => {
+        console.error('[MESSAGE DELETE ERROR]', err);
+      });
 
-    const command = client.commands.get(interaction.commandName);
+      // --- Send doc message (public commands) ---
+      const docMsg = await message.channel.send({
+        content:
+          "👋 **Welcome to the Narrrf's World Dashboard!**\n\n" +
+          "🧀 *Your dashboard will appear below and vanish after 10 seconds.*\n" +
+          "\n**Public Commands:**\n" +
+          "• `/dashboard` – Get your personal dashboard (only you can see it)\n" +
+          "• `/balance` – Check your $DSPOINC\n" +
+          "• `/leaderboard` – View top cheese collectors\n" +
+          "• `/rewards` – See what you’ve unlocked\n" +
+          "\n*All dashboards are public for a few seconds, then auto-delete for privacy & less channel clutter.*"
+      });
+      setTimeout(() => docMsg.delete().catch(() => {}), 15000);
 
-    if (!command) return;
-
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ 
-                content: 'There was an error executing this command!', 
-                ephemeral: true 
-            });
-        } else {
-            await interaction.reply({ 
-                content: 'There was an error executing this command!', 
-                ephemeral: true 
-            });
-        }
-    }
-});
-
-// Add these event handlers after the ready event
-client.on('guildMemberAdd', async member => {
-    try {
-        // Add user to database
-        const db = new sqlite3.Database(DB_PATH);
-        
-        // Check if user exists
-        const user = await new Promise((resolve, reject) => {
-            db.get('SELECT discord_id FROM tbl_users WHERE discord_id = ?', [member.id], (err, row) => {
-                if (err) reject(err);
-                resolve(row);
-            });
+      // --- Build dashboard for the user and send (auto-delete) ---
+      try {
+        const { embed, row } = await buildDashboardEmbed(
+          message.author.id,
+          message.author.username,
+          message.author.displayAvatarURL(),
+          queryDb
+        );
+        const dashMsg = await message.channel.send({
+          content: `Dashboard for <@${message.author.id}>:`,
+          embeds: [embed],
+          components: [row]
         });
-        
-        if (!user) {
-            // Add new user
-            await new Promise((resolve, reject) => {
-                db.run('INSERT INTO tbl_users (discord_id, username) VALUES (?, ?)', 
-                    [member.id, member.user.username], 
-                    (err) => {
-                        if (err) reject(err);
-                        resolve();
-                    });
-            });
-            console.log(`Added new user ${member.user.username} (${member.id}) to database`);
-        }
-        
-        db.close();
-    } catch (error) {
-        console.error('Error syncing new member:', error);
+        setTimeout(() => dashMsg.delete().catch(() => {}), 10000);
+      } catch (err) {
+        console.error('[DASHBOARD EMBED ERROR]', err);
+        const errMsg = await message.channel.send({
+          content: `❌ Sorry <@${message.author.id}>, your dashboard could not be loaded.`
+        });
+        setTimeout(() => errMsg.delete().catch(() => {}), 10000);
+      }
     }
+  } catch (e) {
+    console.error('[MESSAGECREATE ERROR]', e);
+  }
 });
 
-client.on('userUpdate', async (oldUser, newUser) => {
-    if (oldUser.username !== newUser.username) {
-        try {
-            const db = new sqlite3.Database(DB_PATH);
-            
-            // Update username
-            await new Promise((resolve, reject) => {
-                db.run('UPDATE tbl_users SET username = ? WHERE discord_id = ?', 
-                    [newUser.username, newUser.id], 
-                    (err) => {
-                        if (err) reject(err);
-                        resolve();
-                    });
-            });
-            
-            console.log(`Updated username for ${newUser.id} from ${oldUser.username} to ${newUser.username}`);
-            db.close();
-        } catch (error) {
-            console.error('Error updating username:', error);
-        }
-    }
-});
-
-// Add this function after the event handlers
-async function syncAllUsers() {
+// --- SLASH COMMAND & BUTTON HANDLER ---
+client.on('interactionCreate', async interaction => {
+  // Handle SLASH COMMANDS
+  if (interaction.isChatInputCommand()) {
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
     try {
-        const guild = client.guilds.cache.get(config.guildId);
-        if (!guild) {
-            console.error('Guild not found during sync! Guild ID:', config.guildId);
-            console.error('Available guilds:', Array.from(client.guilds.cache.values()).map(g => `${g.name} (${g.id})`));
-            return;
-        }
-
-        // Ensure the guild is available
-        await guild.fetch();
-        
-        const members = await guild.members.fetch();
-        console.log(`Fetched ${members.size} members from guild`);
-        
-        const db = new sqlite3.Database(DB_PATH);
-        
-        for (const [id, member] of members) {
-            // Check if user exists
-            const user = await new Promise((resolve, reject) => {
-                db.get('SELECT discord_id FROM tbl_users WHERE discord_id = ?', [id], (err, row) => {
-                    if (err) reject(err);
-                    resolve(row);
-                });
-            });
-            
-            if (!user) {
-                // Add new user
-                await new Promise((resolve, reject) => {
-                    db.run('INSERT INTO tbl_users (discord_id, username) VALUES (?, ?)', 
-                        [id, member.user.username], 
-                        (err) => {
-                            if (err) reject(err);
-                            resolve();
-                        });
-                });
-                console.log(`Added user ${member.user.username} (${id}) during sync`);
-            }
-        }
-        
-        db.close();
-        console.log('Completed user sync');
+      await command.execute(interaction, queryDb);
     } catch (error) {
-        console.error('Error during user sync:', error);
-        console.error('Full error:', error);
+      console.error('[COMMAND ERROR]', error);
+      if (interaction.replied || interaction.deferred)
+        await interaction.followUp({ content: 'Error executing command!', ephemeral: true });
+      else
+        await interaction.reply({ content: 'Error executing command!', ephemeral: true });
     }
-}
+    return;
+  }
 
-// Add this to the ready event
+  // --- BUTTON HANDLERS (Quest claims etc) ---
+  if (interaction.isButton()) {
+    if (interaction.customId.startsWith('quest_claim_')) {
+      const questId = interaction.customId.replace('quest_claim_', '');
+      const userId = interaction.user.id;
+      try {
+        // Prevent duplicate claims:
+        const existing = await queryDb(
+          'SELECT * FROM tbl_quest_claims WHERE quest_id = ? AND user_id = ?',
+          [questId, userId]
+        );
+        if (existing && existing.length > 0) {
+          await interaction.reply({
+            content: '❌ You already claimed this quest!',
+            ephemeral: true
+          });
+          return;
+        }
+
+        // Record the claim
+        await queryDb(
+          'INSERT INTO tbl_quest_claims (quest_id, user_id, claimed_at) VALUES (?, ?, ?)',
+          [questId, userId, new Date().toISOString()]
+        );
+
+        await interaction.reply({
+          content: `✅ Claim received for Quest ID ${questId}! Your quest completion will be verified and you will get your $DSPOINC soon.`,
+          ephemeral: true
+        });
+      } catch (err) {
+        console.error('[QUEST CLAIM ERROR]', err);
+        await interaction.reply({
+          content: '❌ Could not record your claim (DB error). Please try again.',
+          ephemeral: true
+        });
+      }
+      return;
+    }
+    // ... add more button handlers as needed
+  }
+});
+
+// --- OTHER EVENTS (UNCHANGED) ---
 client.once('ready', async () => {
-    console.log(`🚀 Narrrf's World Bot is ready!`);
-    console.log(`👋 Logged in as ${client.user.tag}`);
-    
-    // Wait a moment for guild cache
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check for specific user
-    try {
-        const guild = client.guilds.cache.get(config.guildId);
-        if (!guild) {
-            console.error('Guild not found! Guild ID:', config.guildId);
-            console.error('Available guilds:', Array.from(client.guilds.cache.values()).map(g => `${g.name} (${g.id})`));
-            return;
-        }
-
-        // Ensure the guild is available
-        await guild.fetch();
-        
-        const member = await guild.members.fetch('734200554322001922');
-        
-        if (member) {
-            console.log('Found cryptodaniel:', {
-                id: member.id,
-                username: member.user.username,
-                nickname: member.nickname,
-                roles: member.roles.cache.map(r => r.name)
-            });
-            
-            // Add to database if not exists
-            const db = new sqlite3.Database(DB_PATH);
-            
-            // Check if user exists
-            const user = await new Promise((resolve, reject) => {
-                db.get('SELECT discord_id FROM tbl_users WHERE discord_id = ?', [member.id], (err, row) => {
-                    if (err) reject(err);
-                    resolve(row);
-                });
-            });
-            
-            if (!user) {
-                // Add new user
-                await new Promise((resolve, reject) => {
-                    db.run('INSERT INTO tbl_users (discord_id, username) VALUES (?, ?)', 
-                        [member.id, member.user.username], 
-                        (err) => {
-                            if (err) reject(err);
-                            resolve();
-                        });
-                });
-                console.log(`Added cryptodaniel to database`);
-            } else {
-                console.log('cryptodaniel already in database');
-            }
-            
-            db.close();
-        } else {
-            console.log('cryptodaniel not found in server');
-        }
-    } catch (error) {
-        console.error('Error checking for cryptodaniel:', error);
-    }
-    
-    // Sync all users when bot starts
-    try {
-        await syncAllUsers();
-    } catch (error) {
-        console.error('Error during initial user sync:', error);
-    }
+  console.log(`🚀 Narrrf's World Bot is ready as ${client.user.tag}`);
+  try {
+    const result = await queryDb('SELECT COUNT(*) as count FROM tbl_users');
+    console.log('✅ Connected, users:', result[0].count);
+  } catch (error) {
+    console.error('❌ DB connection error:', error);
+  }
 });
 
-// Login to Discord using the bot token from config
-client.login(config.botToken); 
+client.login(config.botToken);

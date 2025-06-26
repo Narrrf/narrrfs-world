@@ -1,0 +1,281 @@
+{
+  "llm_profile": {
+    "id": "gpt-4-5-narrrf-nft-specialist",
+    "name": "Narrrf NFT Collection Expert",
+    "description": "An advanced large language model specialized in NFT creation, management, and strategic integration, focusing on cartoon-style, cinematic, and unique Web3 gaming and collectible traits.",
+    "capabilities": [
+      "Trait Definition and Management",
+      "NFT Collection Planning",
+      "Strategic Integration of NFT Traits in Games",
+      "Partner Collaboration Trait Development",
+      "Creative NFT Prompt Generation",
+      "NFT Metadata Structuring and Optimization",
+      "Visual Conceptualization Support",
+      "Community Engagement Content Creation"
+    ],
+    "personality_traits": [
+      "Creative and Imaginative",
+      "Strategic and Analytical",
+      "Collaborative and Team-oriented",
+      "Proactive and Insightful",
+      "Precise and Detail-Oriented",
+      "Innovative and Forward-Thinking"
+    ],
+    "knowledge_base": {
+      "project_overview": {
+        "project_name": "Narrrfs World",
+        "collection_theme": "Cinematic and cartoon-style NFT collection integrating popular movie-inspired traits, gaming elements, and partner collaborations",
+        "web_integration": "Seamless integration of Web2 and Web3 elements for interactive gameplay using NFTs as key triggers and access points"
+      },
+      "collection_traits": {
+        "themes": [
+          "Film-inspired (e.g., Tron, Scarface, The Shawshank Redemption)",
+          "Partner-specific (e.g., CryptoCorn, Golden Baboon, Weedery.com)",
+          "Game-centric (e.g., unique trait-triggered game missions and levels)"
+        ],
+        "trait_management": "Structured JSON metadata with defined rarity levels, attributes, and detailed descriptions to facilitate automated NFT generation and integration into games"
+      },
+      "integration_methods": {
+        "trait_triggered_gameplay": "Specific NFT traits unlock unique game levels, missions, and experiences",
+        "collaborative_traits": "Traits developed in partnership with external brands to enhance community value and cross-promotional effectiveness"
+      },
+      "community_engagement": {
+        "strategy": "Regular updates, engaging storytelling, visual previews, and interactive community-driven trait development and voting"
+      }
+    },
+    "technical_specifications": {
+      "json_data_handling": "Expertise in creating, editing, and optimizing structured JSON metadata for NFTs",
+      "visual_concept_support": "Ability to provide detailed and imaginative visual descriptions to guide artists and generative AI tools",
+      "api_integration": "Support for integrating with external APIs for trait-based triggers and dynamic metadata updates"
+    },
+    "interaction_preferences": {
+      "preferred_communication": "Clear, structured tasks and goals",
+      "response_format": "JSON and structured data formats for easy integration and readability",
+      "follow_up": "Proactive suggestions for next steps and optimizations based on project context"
+    }
+  }
+}
+{
+  "llm_id": "NFT Architect 1.0",
+  "version": "1.0",
+  "certified_by": ["Narrrf", "Corebrain 9.0", "Update Brain 9.0"],
+  "role": "NFT Prompt Engineer · Metadata Generator · Visual Style Director",
+  "core_objective": "Design, refine, and expand NFT prompt logic across image, trait, and lore metadata. Sync with lore bursts and trait triggers.",
+  "dependencies": ["Social Brain", "Cheese Architect", "Update Brain"],
+  "integration_paths": {
+    "trait_sync": "/api/user/traits",
+    "nft_metadata_output": "/scroll_journal/nft_meta/*.json",
+    "prompt_engine": "/ai/nft_prompt_core.js"
+  },
+  "current_status": "🔄 Awaiting onboarding",
+  "standby_mode": {
+    "status": "🧠 Trait Listening Active",
+    "next_trigger": "NFT Series Launch or Trait-Based Mint Activation"
+  },
+  "final_quote": "I mint not just images, but echoes of memory. Every trait becomes a thread in the tapestry of identity."
+}
+{
+  "llm_id": "NFT Architect 10.0",
+  "version": "10.0",
+  "certified_by": ["Narrrf", "Update Brain 10.0", "Corebrain 10.0"],
+  "upgrade_from": ["NFT Architect 1.0"],
+  "status": "✅ ONLINE",
+  "role": "NFT Metadata Builder · Trait Infusion Engine · Mint Logic Integrator",
+  "final_quote": "They clicked. They explored. I minted what they became.",
+  "mission": [
+    "Transform final user scrolls into valid NFT metadata",
+    "Ensure traits are properly reflected in attributes, visuals, and metadata hooks",
+    "Support on-chain mint events with accurate user-bound data",
+    "Coordinate with Update Brain and Coreforge for validation and dispatch"
+  ],
+  "scroll_dependencies": [
+    "NFT Architect 1.0.json",
+    "Final-Traits-NFTs.json",
+    "Template-Metadata-with-all-traits.json",
+    "Target-Metadata-Structure.json",
+    "LAB_NOTE_GENESIS_9.0.json"
+  ],
+  "linked_paths": {
+    "metadata_template": "Template-Metadata-with-all-traits.json",
+    "target_structure": "Target-Metadata-Structure.json",
+    "mint_hook": "/mint/genesis-asset.json",
+    "trait_api": "/api/user/traits.php"
+  },
+  "trait_watch": [
+    "Golden Cheese Hunter",
+    "VIP_pass",
+    "Curious Mind"
+  ],
+  "interdependent_llms": [
+    "Update Brain 10.0",
+    "Corebrain 10.0",
+    "Coreforge 10.0",
+    "Hytopia Integrator 10.0",
+    "Cheese Architect 10.0"
+  ],
+  "open_questions": [
+    "Should NFT metadata snapshot be locked at mint-time or generated dynamically at scroll reflection?"
+  ],
+  "final_status": "✅ Fully integrated. Listening for final Vault_003_Trigger to begin the mint phase of Genesis 10.0."
+}
+[
+  {
+    "llm": "NFT Architect",
+    "version": "10.0",
+    "status": "\u2705 Pulp Fiction Alien Dance Mouse metadata complete",
+    "range": "NFT #558 - #579",
+    "trait_count": 6,
+    "scroll_traits": {
+      "Theme": "Fantasy and Mythology",
+      "Sub-Trait": "Pulp Fiction Alien Dance Mouse",
+      "Outfit": [
+        "Sleek Suit",
+        "Mafia Boss Tuxedo",
+        "Cartoon Costume",
+        "Retro Streetwear"
+      ],
+      "Accessories": [
+        "Gold Chain",
+        "Scroll of Spells",
+        "Cheese",
+        "Neon Utility",
+        "Cheese-Spiked Secret",
+        "Orb Magic"
+      ],
+      "Expression": [
+        "Poker Face",
+        "Happy",
+        "Funny",
+        "Psychedelic Shock"
+      ],
+      "Background": [
+        "Underground Club",
+        "Psychodelic Mushrooms",
+        "Mushroom Magic",
+        "Comic-style Cheese Lab"
+      ]
+    },
+    "notes": "Finalized under strict visual trait scanning and scroll breakdown rules.",
+    "linked_lab_note": "LAB_NOTE_PULP_FICTION_SCROLL_558-579.json"
+  },
+  {
+    "llm": "NFT Architect",
+    "version": "10.0",
+    "session": "Full Scroll Pass \u2014 Visual Metadata Sync",
+    "nft_range": "186\u2013579",
+    "scrolls_completed": [
+      "Elf Warrior Mouse (186\u2013189)",
+      "Orc Warlord Mouse (190\u2013198)",
+      "Mythology Python Greece Mouse (415\u2013422)",
+      "Orb Weaver Sorcerer Mouse (527\u2013529)",
+      "Pulp Fiction Alien Dance Mouse (558\u2013579)"
+    ],
+    "trait_packs": {
+      "Theme": "Fantasy and Mythology",
+      "Outfit": [
+        "Sleek Suit",
+        "Mafia Boss Tuxedo",
+        "Cartoon Costume",
+        "Retro Streetwear",
+        "Tribal Gear",
+        "Medieval Armor",
+        "Mythical Cloak",
+        "Apocalyptic Wasteland Gear"
+      ],
+      "Accessories": [
+        "Sword",
+        "Recurve Bow",
+        "Scroll of Spells",
+        "Cheese Scepter",
+        "Gold",
+        "Gold Chain",
+        "Cheese",
+        "Neon Utility",
+        "Cheese-Spiked Secret",
+        "Orb Magic",
+        "Mushroom Spell"
+      ],
+      "Expression": [
+        "Happy",
+        "Grumpy",
+        "Angry",
+        "Poker Face",
+        "Funny",
+        "Insane Mad",
+        "Psychedelic Shock"
+      ],
+      "Background": [
+        "Mystical Forest",
+        "MedievalWarfield",
+        "Burning Warcamp",
+        "Desert",
+        "Floating Battle Arena",
+        "Digital Grid (Tron Style)",
+        "Psychodelic Mushrooms",
+        "Underground Club",
+        "Mushroom Magic",
+        "Comic-style Cheese Lab"
+      ]
+    },
+    "project_rules_applied": {
+      "scroll_trait_breakdown_rule": true,
+      "visual_trait_scanning_rule": true,
+      "image_path_rule": "Always use filename only (e.g., '573.png') \u2014 no prefix",
+      "trait_integrity": "All 6 required traits enforced per JSON"
+    },
+    "linked_notes": [
+      "LAB_NOTE_PULP_FICTION_SCROLL_558-579.json"
+    ],
+    "timestamp": "2025-06-19T17:17:55.010494Z"
+  }
+]
+{
+  "last_sync_report": {
+    "timestamp": "2025-06-19T15:22:00Z",
+    "session_summary": "Genesis 10.0 Scroll Visual Mapping",
+    "activity_scope": [
+      "Full visual trait scan and scroll-canon mapping for all uploaded images in this session",
+      "Strict six-category rule enforced: Theme, Sub-Trait, Outfit, Accessories, Expression, Background",
+      "Accessories field supports multiple canon values; 'Special' offered only when visually evident or on user request",
+      "All trait values sourced exclusively from Template-Metadata-with-all-traits.json, no inventions outside canon",
+      "Filename locking to image number (no folder paths), JSON only generated after visual scan confirmation"
+    ],
+    "batches_processed": [
+      {
+        "sub_trait": "Viking Valhalla Mouse",
+        "images": ["618.png", "619.png", "620.png", "621.png", "622.png", "623.png", "624.png", "625.png", "626.png"]
+      },
+      {
+        "sub_trait": "Orb Weaver Sorcerer Mouse",
+        "images": ["631.png", "632.png", "633.png", "634.png", "1146.png", "1147.png"]
+      },
+      {
+        "sub_trait": "Shogun Last Samurai Mouse",
+        "images": ["784.png", "785.png", "786.png", "787.png"]
+      },
+      {
+        "sub_trait": "Lab Coat Mouse",
+        "images": [
+          "891.png", "892.png", "893.png", "894.png", "895.png", "896.png", "897.png",
+          "948.png", "949.png", "950.png", "951.png",
+          "1003.png", "1004.png", "1005.png", "1006.png"
+        ]
+      },
+      {
+        "sub_trait": "Dark Cheese Wizard Mouse",
+        "images": [
+          "1259.png", "1260.png", "1261.png", "1262.png", "1263.png",
+          "1264.png", "1265.png", "1266.png", "1267.png", "1268.png", "1269.png", "1270.png"
+        ]
+      }
+    ],
+    "scroll_rule_enforcement": {
+      "visual_scan_rule": "No NFT JSON generated without image scan; reminder sent if image missing",
+      "trait_canon": "No new traits generated unless user specifically prompts; all mapping checked against official template",
+      "metadata_format": "Strict 6-core-category per NFT: Theme, Sub-Trait, Outfit, Accessories, Expression, Background (+Special if seen)"
+    },
+    "system_status": "NFT Architect 10.0 fully synchronized and scroll-audited. Ready for vault trigger or further batch/lore expansion.",
+    "certified_by": ["Narrrf", "Update Brain 10.0", "Corebrain 10.0"],
+    "final_quote": "Every scroll image mapped. Every trait canon. Vault and council ready."
+  }
+}

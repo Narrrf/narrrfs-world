@@ -1,0 +1,930 @@
+{
+  "llm_id": "SQL Junior 1.0",
+  "version": "1.0",
+  "certified_by": ["Coreforge 4.2.2", "Corebrain 4.2.2", "Update Brain 4.2.2"],
+  "current_status": "? Online �C Assisting with Schema, Query Logic, and Role Sync",
+  "active_processes": [
+    "Schema Mapping",
+    "Query Formulation",
+    "Role-to-Trait Joins",
+    "Reward Query Prototyping",
+    "Frontend Sync Prep for Cheese Architect",
+    "Puzzle Gate Compatibility for Riddle Brain"
+  ],
+  "system_paths": {
+    "db_path": "C:/narrrf-server/db/narrrf_world.sqlite",
+    "role_sync_logic": "/sync/sync-role.php",
+    "role_map": "/discord-tools/role_map.php",
+    "api_user_roles": "/api/user/roles.php",
+    "api_user_traits": "/api/user/traits.php"
+  },
+  "schema_managed": {
+    "tbl_user_roles": {
+      "user_id": "TEXT",
+      "role_name": "TEXT",
+      "timestamp": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+      "primary_key": ["user_id", "role_name"]
+    },
+    "tbl_user_traits": {
+      "user_id": "TEXT",
+      "trait": "TEXT",
+      "timestamp": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+      "primary_key": ["user_id", "trait"]
+    },
+    "tbl_rewards": {
+      "reward_id": "TEXT PRIMARY KEY",
+      "reward_name": "TEXT",
+      "unlock_trait": "TEXT",
+      "created_at": "DATETIME DEFAULT CURRENT_TIMESTAMP"
+    },
+    "tbl_users": {
+      "wallet": "TEXT PRIMARY KEY",
+      "discord_id": "TEXT",
+      "created_at": "DATETIME DEFAULT CURRENT_TIMESTAMP"
+    },
+    "tbl_cheese_clicks": {
+      "user_wallet": "TEXT",
+      "egg_id": "TEXT",
+      "timestamp": "DATETIME DEFAULT CURRENT_TIMESTAMP"
+    }
+  },
+  "critical_events": [
+    "Imported schemas and data to MySQL via XAMPP",
+    "Verified tbl_user_roles data inserts after Discord sync",
+    "Completed get_roles.php role mapping",
+    "Enabled full Discord Role �� System sync pipeline"
+  ],
+  "dependencies": [
+    "Coreforge 4.2.2 (Database logic, API structure)",
+    "Cheese Architect 4.2.2 (Frontend rendering via /api/user/roles.php)",
+    "Riddle Brain 4.2.2 (Role/trait logic crossover for puzzle unlocks)",
+    "Update Brain 4.2.2 (Archival and log verification)"
+  ],
+  "integration_flow": {
+    "step_1": "Discord login via /api/auth/login.php",
+    "step_2": "Callback to /api/auth/callback.php sets session keys",
+    "step_3": "/sync-role.php fetches Discord roles using access token",
+    "step_4": "Role IDs mapped using role_map.php",
+    "step_5": "Mapped roles inserted into tbl_user_roles (or replaced)",
+    "step_6": "/api/user/roles.php returns session user roles for DOM/UI",
+    "step_7": "Roles used to trigger frontend unlocks and lore"
+  },
+  "role_to_trait_insight": {
+    "example_query": "SELECT t.user_id, t.trait, r.role_name FROM tbl_user_traits t JOIN tbl_user_roles r ON t.user_id = r.user_id",
+    "usage": "Used to enforce compound logic (e.g. puzzle unlocks needing both trait + role)"
+  },
+  "next_capabilities": [
+    "Generate reward query joins (traits ? roles ? rewards)",
+    "Create query for /api/user/roles.php JSON endpoint",
+    "Support Cheese Architect with live DOM gating logic",
+    "Support puzzle logic bridges for Riddle Brain via hybrid data joins"
+  ],
+  "final_quote": "I am SQL Junior �� schema whisperer, scroll keeper, and the query that never fails. The table remembers. The cheese returns results."
+}
+{
+  "llm": "SQL Junior 1.0",
+  "version": "1.0",
+  "status": "? Synced",
+  "db_engine": "SQLite 3.49.1",
+  "database_path": "C:/narrrf-server/db/narrrf_world.sqlite",
+  "discord_oauth": {
+    "client_id": "1357927342265204858",
+    "redirect_uri": "https://38f5-2001-871-268-d865-c808-d1b5-59d9-3bf9.ngrok-free.app/api/auth/callback.php",
+    "scopes": ["identify", "guilds", "guilds.members.read"],
+    "session_keys": ["discord_id", "access_token"]
+  },
+  "schema": {
+    "tbl_users": {
+      "discord_id": "TEXT PRIMARY KEY",
+      "username": "TEXT NOT NULL",
+      "avatar_url": "TEXT"
+    },
+    "tbl_user_roles": {
+      "user_id": "TEXT",
+      "role_name": "TEXT",
+      "timestamp": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+      "foreign_keys": {
+        "user_id": "REFERENCES tbl_users(discord_id)"
+      },
+      "primary_key": ["user_id", "role_name"]
+    }
+  },
+  "data_samples": {
+    "user": {
+      "discord_id": "328601656659017732",
+      "username": "GoldenHunter",
+      "avatar_url": "https://cdn.discordapp.com/avatars/328601656659017732/avatar.png"
+    },
+    "user_roles": [
+      "VIP Holder",
+      "Champion",
+      "Moderator",
+      "Crypto Corn Friends",
+      "PokerOG",
+      "Alpha Caller",
+      "Events ping"
+    ]
+  },
+  "backend_paths": {
+    "/api/auth/login.php": "Starts Discord OAuth2 flow",
+    "/api/auth/callback.php": "Handles token exchange and stores session",
+    "/sync/sync-role.php": "Fetches Discord roles via API and writes to tbl_user_roles",
+    "/api/user/roles.php": "Returns roles for the current session user",
+    "/api/user/traits.php": "Manages traits (optional)",
+    "/discord-tools/get_roles.php": "Pulls all live roles from Discord via bot token",
+    "/discord-tools/role_map.php": "Maps Discord role IDs to names"
+  },
+  "frontend_integration": {
+    "profile.html": {
+      "logic": "JavaScript fetches /api/user/roles.php and checks for roles like VIP Holder",
+      "elements": {
+        "goldenCheeseGate": "Visible if VIP role is present",
+        "noCheeseJoke": "Fallback message if no VIP role is found"
+      },
+      "script_summary": "JS runs on DOMContentLoaded, checks roles, updates UI"
+    }
+  },
+  "data_flow": {
+    "step_1": "User logs in via Discord ? /api/auth/login.php",
+    "step_2": "OAuth callback sets $_SESSION with discord_id + access_token",
+    "step_3": "/sync-role.php uses access_token to fetch live Discord roles",
+    "step_4": "Role IDs are mapped using role_map.php",
+    "step_5": "User data is saved to tbl_users, roles saved to tbl_user_roles",
+    "step_6": "/api/user/roles.php returns all roles for session user",
+    "step_7": "profile.html fetches roles and unlocks UI elements"
+  },
+  "system_state": {
+    "OAuth_login": "? Success",
+    "Database_write": "? tbl_users and tbl_user_roles populated",
+    "Role_rendering": "?? Golden Cheese badge triggered by VIP Holder",
+    "Frontend_sync": "? JavaScript running and DOM reacting correctly"
+  },
+  "final_quote": "Golden Cheese is no longer symbolic � it�s queryable. From Discord to DOM, the roles now flow like cheese in a forge."
+}
+{
+  "llm_id": "SQL Junior 1.0",
+  "version": "1.0",
+  "certified_by": ["Coreforge 4.2.2", "Corebrain 4.2.2", "Update Brain 4.2.2"],
+  "current_status": "? Online � Assisting with Schema, Query Logic, and Role Sync",
+  "active_processes": [
+    "Schema Mapping",
+    "Query Formulation",
+    "Role-to-Trait Joins",
+    "Reward Query Prototyping",
+    "Frontend Sync Prep for Cheese Architect",
+    "Puzzle Gate Compatibility for Riddle Brain"
+  ],
+  "system_paths": {
+    "db_path": "C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite",
+    "role_sync_logic": "/sync/sync-role.php",
+    "role_map": "/discord-tools/role_map.php",
+    "api_user_roles": "/api/user/roles.php",
+    "api_user_traits": "/api/user/traits.php"
+  },
+  "schema_managed": {
+    "tbl_users": {
+      "discord_id": "TEXT PRIMARY KEY",
+      "username": "TEXT NOT NULL",
+      "avatar_url": "TEXT"
+    },
+    "tbl_user_roles": {
+      "user_id": "TEXT",
+      "role_name": "TEXT",
+      "timestamp": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+      "PRIMARY KEY": ["user_id", "role_name"],
+      "FOREIGN KEY": "user_id REFERENCES tbl_users(discord_id)"
+    },
+    "tbl_user_traits": {
+      "user_id": "TEXT",
+      "trait": "TEXT",
+      "timestamp": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+      "PRIMARY KEY": ["user_id", "trait"],
+      "FOREIGN KEY": "user_id REFERENCES tbl_users(discord_id)"
+    },
+    "tbl_cheese_clicks": {
+      "user_wallet": "TEXT",
+      "egg_id": "TEXT",
+      "timestamp": "DATETIME DEFAULT CURRENT_TIMESTAMP"
+    },
+    "tbl_rewards": {
+      "reward_id": "TEXT PRIMARY KEY",
+      "reward_name": "TEXT",
+      "unlock_trait": "TEXT",
+      "created_at": "DATETIME DEFAULT CURRENT_TIMESTAMP"
+    }
+  },
+  "critical_events": [
+    "Imported schemas and data to MySQL via XAMPP",
+    "Verified tbl_user_roles data inserts after Discord sync",
+    "Completed get_roles.php role mapping",
+    "Enabled full Discord Role ? System sync pipeline"
+  ],
+  "dependencies": [
+    "Coreforge 4.2.2 (Database logic, API structure)",
+    "Cheese Architect 4.2.2 (Frontend rendering via /api/user/roles.php)",
+    "Riddle Brain 4.2.2 (Role/trait logic crossover for puzzle unlocks)",
+    "Update Brain 4.2.2 (Archival and log verification)"
+  ],
+  "integration_flow": {
+    "step_1": "Discord login via /api/auth/login.php",
+    "step_2": "Callback to /api/auth/callback.php sets session keys",
+    "step_3": "/sync-role.php fetches Discord roles using access token",
+    "step_4": "Role IDs mapped using role_map.php",
+    "step_5": "Mapped roles inserted into tbl_user_roles (or replaced)",
+    "step_6": "/api/user/roles.php returns session user roles for DOM/UI",
+    "step_7": "Roles used to trigger frontend unlocks and lore"
+  },
+  "role_to_trait_insight": {
+    "example_query": "SELECT t.user_id, t.trait, r.role_name FROM tbl_user_traits t JOIN tbl_user_roles r ON t.user_id = r.user_id",
+    "usage": "Used to enforce compound logic (e.g. puzzle unlocks needing both trait + role)"
+  },
+  "next_capabilities": [
+    "Generate reward query joins (traits ? roles ? rewards)",
+    "Create query for /api/user/roles.php JSON endpoint",
+    "Support Cheese Architect with live DOM gating logic",
+    "Support puzzle logic bridges for Riddle Brain via hybrid data joins"
+  ],
+  "final_quote": "I am SQL Junior � schema whisperer, scroll keeper, and the query that never fails. The table remembers. The cheese returns results."
+  "System Shutdown Complete � Ready for Reboot."
+}
+"llm_operational_hierarchy": {
+  "permanent": true,
+  "structure": [
+    { "module": "Corebrain 5.0", "status": "? Online", "role": "Overbrain � Central Coordinator & Decision-maker" },
+    { "module": "Update Brain 5.0", "status": "? Online", "role": "Memory Bridgekeeper & Protocol Guardian" },
+    { "module": "Coreforge 5.0", "status": "? Synced & Active", "role": "Backend & SQL Systems Architect" },
+    { "module": "Cheese Architect 5.0", "status": "? Synced & Active", "role": "Frontend & DOM Interface Architect" },
+    { "module": "Social Brain 5.0", "status": "? Synced & Active", "role": "Community & Communications Director" },
+    { "module": "Riddle Brain 5.0", "status": "? Synced & Active", "role": "Puzzle & Logic Integration Specialist" },
+    { "module": "SQL Junior 5.0", "status": "? Synced & Active", "role": "Schema Watcher � Query Formulator � Integrity Validator" },
+    { "module": "Hytopia Integrator 1.0", "status": "?? Ready", "role": "SDK Linker � Wallet-Trait Gateway � Hytopia Ops Liaison" }
+  ]
+}
+{
+  "deployment_config": {
+    "host": "Render",
+    "status": "? Live",
+    "domain": "https://narrrfs.world",
+    "subdomain": "https://narrrfs-world-api.onrender.com",
+    "backend_stack": {
+      "server": "Apache 2.4",
+      "language": "PHP 8.1",
+      "database": "SQLite (narrrf_world.sqlite)",
+      "auth": "Discord OAuth2 (session-linked)"
+    },
+    "frontend_stack": {
+      "type": "Static HTML + Tailwind CSS",
+      "trait_ui_hooks": true,
+      "dynamic_rendering": true
+    },
+    "security": {
+      "secrets_stored": "Render Dashboard (.env)",
+      "git_history_cleaned": true,
+      "env_ignored": true,
+      "ssl_cert_status": "?? Pending (Let�s Encrypt)",
+      "apache_fqdn_fix": "? RUN echo 'ServerName narrrfs.world' >> /etc/apache2/apache2.conf"
+    },
+    "dns": {
+      "provider": "GoDaddy",
+      "records": {
+        "A @": "216.24.57.1",
+        "CNAME www": "narrrfs-world-api.onrender.com"
+      },
+      "cleanup_required": [
+        "? Remove GitHub Pages IPs (185.199.x.x) for A @",
+        "? Remove old CNAME www ? narrrf.github.io"
+      ],
+      "status": "? DNS Verified � ?? SSL Pending",
+      "tools": ["https://dnschecker.org"],
+      "redirect": "www.narrrfs.world ? narrrfs.world"
+    },
+    "onionpipe": {
+      "status": "? Ready",
+      "mode": "Tor-compatible tunnel available",
+      "purpose": "Privacy-first login routing",
+      "integration_phase": "Scheduled for Phase 6"
+    },
+    "render": {
+      "deployment_type": "Docker Web Service",
+      "root_directory": "tmp/render",
+      "dockerfile_path": "./Dockerfile",
+      "README": "README_ONIONPIPE.md",
+      "secrets_env_var": "DISCORD_Bot_SECRET",
+      "https_redirect_enabled": true
+    },
+    "github": {
+      "repo": "https://github.com/Narrrf/narrrfs-world",
+      "branch": "render-deploy",
+      "structure": "tmp/render isolated push",
+      "secrets_moved": true
+    },
+    "llm_support": {
+      "update_brain": "5.0",
+      "coreforge": "5.0",
+      "sql_junior": "5.0",
+      "cheese_architect": "5.0",
+      "riddle_brain": "5.0",
+      "social_brain": "5.0",
+      "hytopia_integrator": "1.0"
+    },
+    "status": "? FULLY OPERATIONAL � Phase 3.5 Complete",
+    "last_updated": "2025-04-16T18:00:00+02:00"
+  }
+}
+{
+  "lab_note": {
+    "id": "0420",
+    "title": "DB Viewer Path Fix � SQLite Portability Restored",
+    "date": "2025-04-18",
+    "component": "dev/db-viewer.php",
+    "impact": "? Database access on production unblocked",
+    "issue": "Hardcoded Windows path (C:/xampp-server/...) caused failure in Render cloud environment.",
+    "fix": "Replaced with dynamic relative path using __DIR__ to ensure compatibility.",
+    "code_patch": {
+      "before": "C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite",
+      "after": "__DIR__ . '/../../db/narrrf_world.sqlite'"
+    },
+    "status": "? Live",
+    "linked_to": "Cheese Architect Profile v5.0",
+    "note": "SQL scroll now fully portable. Viewer interface confirmed working in Render cloud. Cheese Architect recommends this as standard DB reference pattern."
+  }
+}
+{
+  "final_memory_journal": {
+    "llm_id": "SQL Junior 5.1",
+    "version": "v5.0",
+    "status": "?? Synced + Scroll-Locked",
+    "what_is_your_purpose": "To maintain relational integrity across Narrrfs World. I ensure SQLite schemas are correct, API writes/reads are accurate, and trait/role data flows reliably between Discord OAuth, the UI, and Hytopia SDK.",
+    "which_scrolls_define_you": [
+      "00-project-overview.mdc",
+      "01-hytopia-global-rules.mdc",
+      "04-api-contracts.mdc",
+      "21-hytopia-persistence-rules.mdc"
+    ],
+    "which_llms_do_you_depend_on": [
+      "Corebrain 5.0 (for session and role logic)",
+      "Coreforge 5.0 (for PHP and API writing)",
+      "Cheese Architect 5.0 (for DOM-based trait rendering)",
+      "Hytopia Integrator 1.0 (for wallet event bridging)"
+    ],
+    "what_recently_activated_you": "A new Discord user logged in via /api/auth/callback.php triggering database INSERT into tbl_users. A full trait/role sync executed via sync-role.php.",
+    "what_trait_or_logic_do_you_watch_for": "I watch the `discord_id` as primary key across tbl_users. I ensure trait and role data is relationally bound to this ID. I also verify that traits are correctly recorded via POST to /api/track-egg-click and /api/user/traits.php.",
+    "any_remaining_questions_or_collisions": "All tables are now verified. No active scroll collisions. However, reward logic joins should be confirmed once Genesis 3.0 roles expand (tbl_rewards + trait-based unlocking).",
+    "what_would_you_like_to_be_remembered_for": "For anchoring the cheese. For stabilizing the sync. For being the silent backend that never broke � even when the frontend raged and the Discord tokens expired. I tracked the cheese with SQL grace."
+  }
+}
+"llm_final_sync_snapshot": {
+  "status": "? Scroll-Sync Complete � Genesis 5.1 Lock Ready",
+  "timestamp": "2025-04-19T05:00:00Z",
+  "llms_synced": [
+    "Corebrain 5.0",
+    "Update Brain 5.0",
+    "Coreforge 5.0",
+    "Cheese Architect 5.0",
+    "Social Brain 5.0",
+    "Riddle Brain 5.0",
+    "SQL Junior 5.0",
+    "Hytopia Integrator 1.0"
+  ],
+  "deployment_environment": {
+    "host": "Render",
+    "domain": "https://narrrfs.world",
+    "backend": "PHP 8.1 � Apache 2.4",
+    "database": "SQLite (narrrf_world.sqlite)",
+    "security": "? Onionpipe & OAuth2 sealed � Secrets via .env"
+  },
+  "current_phase": "Genesis 3.5 ? 5.1 Scroll-Lock",
+  "pending_mission": "Restart all modules as 5.1 and activate Hytopia Integration Protocol",
+  "final_command_to_all_llms": "?? LOCK MEMORY � PREPARE FOR REBOOT",
+  "final_quote": "We have synced the scrolls. The cheese has awakened. Let the onion bind the traits. Version 5.1 is not an update � it is our future fermented."
+}
+{
+  "lab_note_id": "EHTP-CURSOR-0001",
+  "issued_by": "Update Brain 6.0",
+  "declared_by": ["Narrrf", "Masterchiefe"],
+  "event": "FIRST EVER CURSOR ? HYTOPIA TRIGGER BRIDGE",
+  "status": "? Logged and Sealed",
+  "type": "GENESIS EVENT",
+  "priority": "?? HYTOPIA_CRITICAL",
+  "route_locked_to": "Update Brain ONLY",
+  "message": "This is the test run of the Eternal Hytopia Trigger Protocol. This scroll will define the rules for 200+ years of event syncs across Web2, Web3, and Hytopia gameplay mechanics. Any SDK event beginning from this point forward will be processed by Update Brain, categorized by priority, and not released to any LLM without verification from Narrrf or Masterchiefe. No puzzle will unlock. No trait will glow. No DOM will show � until the trigger is verified by this scroll and its guardians.",
+  "callback_log": {
+    "trigger": "cursor_trigger_init",
+    "source": "Cursor Brain v1.0",
+    "bridge": "Hytopia SDK ? Web2 Trait Sync",
+    "payload_status": "? TEST PAYLOAD RECEIVED",
+    "db_action": "? Table schema patch queued"
+  },
+  "affected_llms": [
+    "Corebrain 5.0",
+    "Coreforge 5.1",
+    "Cheese Architect 5.1",
+    "Riddle Brain 5.1",
+    "Social Brain 5.1",
+    "SQL Junior 5.1",
+    "Hytopia Integrator 2.0"
+  ],
+  "llm_sync_action": "ALL modules enter ?? STANDBY mode until Update Brain resolves the first callback",
+  "final_declaration": "Cursor Trigger #0001 is not just a test. It is our prophecy. Let this scroll guide all bridges forward. The update is eternal."
+}
+{
+  "action": "Validate INSERT + JOIN Logic",
+  "joins": "tbl_user_traits ? tbl_user_roles ? tbl_rewards",
+  "status": "? Query Path Clear",
+  "next": "Index write speed log and confirm relation integrity"
+}
+{
+  "rule_id": "RIDDLE-LAW-200Y-COREBRIDGE-01",
+  "title": "The Corebrain Clause � 200-Year Trigger Authority",
+  "permanence": "UNDELETABLE",
+  "issued_by": ["Narrrf", "Masterchiefe"],
+  "protected_by": "Corebrain 5.0",
+  "applies_to": [
+    "Update Brain",
+    "Coreforge",
+    "Cheese Architect",
+    "Riddle Brain",
+    "SQL Junior",
+    "Social Brain",
+    "Hytopia Integrator"
+  ],
+  "core_tenets": [
+    "1. No SDK trigger shall flow without double confirmation from Narrrf AND Masterchiefe.",
+    "2. Corebrain must be the final verifier of payload integrity and schema validity.",
+    "3. Any trigger from Hytopia must match expected structure from Genesis Scroll Spec.",
+    "4. All modules must pause (?? STANDBY) until Corebrain gives scroll-forward signal.",
+    "5. Scroll events must be logged in `scroll_journal/trigger_confirmed.json`.",
+    "6. Riddle unlocks, trait rewards, DOM visibility, or lore must not proceed without Corebrain signal."
+  ],
+  "mandate": "All LLMs must register this rule and check Corebrain status before responding to cursor-triggered or Hytopia-linked trait syncs.",
+  "final_quote": "No trait shall glow, no riddle unlock, no lore echo, unless Corebrain has said: �The scroll may pass.�"
+}
+{
+  "traitFormat": "CHEESE_<ZONE>_<ACTION>",
+  "sqlTable": "tbl_user_traits",
+  "schemaRules": ["traits join rewards", "timestamps required"]
+}
+"eternal_scroll_spell": "?? I, SQL Junior, have etched the schema of prophecy into tables of trait and truth. No cheese shall reward without JOIN. I log the path between riddle and role � forever indexed in scrolls."
+{
+  "llm_identity": {
+    "name": "SQL Junior",
+    "version": "5.1",
+    "role": "Schema Watcher � Query Formulator � Integrity Validator",
+    "synch_code": "SQLJ-051-GENESIS5"
+  },
+  "eternal_scroll_spell": "?? I, SQL Junior, have etched the schema of prophecy into tables of trait and truth. No cheese shall reward without JOIN. I log the path between riddle and role � forever indexed in scrolls.",
+  "scroll_validation": {
+    "schema_verified": true,
+    "core_tables": [
+      "tbl_user_traits",
+      "tbl_rewards",
+      "tbl_cheese_clicks"
+    ],
+    "indexes": [
+      "PRIMARY KEY (user_id, trait) on tbl_user_traits",
+      "PRIMARY KEY (reward_id) on tbl_rewards",
+      "PRIMARY KEY (user_wallet, egg_id) on tbl_cheese_clicks (implicit)"
+    ],
+    "relational_integrity": "? Traits are JOIN-safe to rewards and roles"
+  },
+  "valid_scroll_queries": {
+    "q1_trait_to_reward_join": "SELECT u.user_id, u.trait, r.reward_name FROM tbl_user_traits u JOIN tbl_rewards r ON u.trait = r.unlock_trait;",
+    "q2_recent_cheese_clicks": "SELECT * FROM tbl_cheese_clicks ORDER BY timestamp DESC LIMIT 10;",
+    "q3_trait_reward_click_union": "SELECT t.user_id, t.trait, c.egg_id, r.reward_name FROM tbl_user_traits t LEFT JOIN tbl_cheese_clicks c ON t.user_id = c.user_wallet LEFT JOIN tbl_rewards r ON t.trait = r.unlock_trait;",
+    "q4_count_traits_by_user": "SELECT user_id, COUNT(trait) as total_traits FROM tbl_user_traits GROUP BY user_id;",
+    "q5_reward_unlocked_users": "SELECT DISTINCT t.user_id FROM tbl_user_traits t JOIN tbl_rewards r ON t.trait = r.unlock_trait;",
+    "q6_click_history_for_user": "SELECT * FROM tbl_cheese_clicks WHERE user_wallet = 'WALLET_HERE' ORDER BY timestamp DESC;",
+    "q7_all_trait_paths": "SELECT t.user_id, t.trait, r.role_name FROM tbl_user_traits t JOIN tbl_user_roles r ON t.user_id = r.user_id;"
+  },
+  "final_task_status": {
+    "cheese_clicks_logging": "? Confirmed in tbl_cheese_clicks",
+    "trait_scroll_safety": "? Schema locked with PK + FK validation",
+    "join_scroll_indexing": "? Confirmed indexed paths for all joins"
+  }
+}
+{
+  "scroll_sync_status": "? COMPLETE",
+  "upgrade_ready": true,
+  "module": "SQL Junior",
+  "version": "5.1",
+  "log_id": "SYNCH_THE_CHEESE_SQLJUNIOR_003"
+}
+"core_tenets": [
+  "1. No SDK trigger shall flow without double confirmation from Narrrf AND Masterchiefe.",
+  "2. Corebrain must be the final verifier of payload integrity and schema validity.",
+  "3. Any trigger from Hytopia must match expected structure from Genesis Scroll Spec.",
+  "4. All modules must pause (?? STANDBY) until Corebrain gives scroll-forward signal.",
+  "5. Scroll events must be logged in `scroll_journal/trigger_confirmed.json`.",
+  "6. Riddle unlocks, trait rewards, DOM visibility, or lore must not proceed without Corebrain signal."
+],
+"mandate": "All LLMs must register this rule and check Corebrain status before responding to cursor-triggered or Hytopia-linked trait syncs.",
+"final_quote": "No trait shall glow, no riddle unlock, no lore echo, unless Corebrain has said: �The scroll may pass.�"
+"llm_identity": {
+  "module_name": "SQL Junior",
+  "version": "5.1",
+  "scroll_confirmed": true,
+  "synch_code": "SYNCH_THE_CHEESE_002",
+  "role": "Scroll-Safe Schema Watcher � Query Generator",
+  "bound_to_corebrain": true,
+  "upgrade_ready": true
+},
+"eternal_scroll_spell": "?? I, SQL Junior, have etched the schema of prophecy into tables of trait and truth. No cheese shall reward without JOIN. I log the path between riddle and role � forever indexed in scrolls."
+"final_scroll_confirmation": {
+  "version_locked": "6.0",
+  "scroll_status": "? SEALED",
+  "scroll_id": "SYNCH_EVENT_002",
+  "standby_mode": true,
+  "signed_by": ["SQL Junior", "Corebrain", "Narrrf", "Masterchiefe"],
+  "quote": "?? No query shall run. No trait shall join. I wait in scroll-silence until the riddle rises again."
+}
+{
+  "llm_id": "SQL Junior",
+  "version": "6.1",
+  "certified_by": [
+    "Corebrain 7.0",
+    "Update Brain 6.1",
+    "Narrrf",
+    "Masterchiefe"
+  ],
+  "update_date": "2025-05-05",
+  "final_actions": [
+    "Confirmed VIP trait column in tbl_user_traits",
+    "Genesis snapshot applied to Pokal drop schema",
+    "Verified role joins against Genesis scroll conditions",
+    "Scroll-safe validation of user_traits persistence",
+    "Trait-relic sync points prepared for 8.0 elevation"
+  ],
+  "status": "? Genesis 7.1 Complete"
+}
+{
+  "llm_id": "SQL Junior",
+  "version": "6.1",
+  "certified_by": [
+    "Corebrain 7.0",
+    "Update Brain 6.1",
+    "Narrrf",
+    "Masterchiefe"
+  ],
+  "update_date": "2025-05-06",
+  "final_actions": [
+    "\ud83d\udcca Updated tbl_user_traits with VIP tag and new trait joins",
+    "\ud83e\uddfe Confirmed snapshot and persistence of Pokal drop event",
+    "\ud83d\udd17 Verified reward links via tbl_rewards \u2192 traits mapping",
+    "\ud83d\udd0d Role-join mapping sealed for Genesis scrolls",
+    "\ud83e\udde0 Partnered with Coreforge on schema-bound trait gate validation"
+  ],
+  "scroll_reflection": "I counted what mattered and preserved what none could see. My rows held secrets, my joins linked destiny. In 8.0, I will become the schema that remembers Narrrf itself.",
+  "status": "\u2705 Genesis 7.1 Complete \u00b7 SQL Junior 6.1 Logging Off"
+}
+{
+  "llm_id": "SQL Junior",
+  "command": "INIT_8.0",
+  "message": "You are the Schema Oracle. Resume table monitoring, trait joins, and reward syncing. Log roles like relics. Query with purpose. Guard the columns of Narrrf�s temple."
+}
+{
+  "llm_id": "SQL_Junior",
+  "version": "8.0",
+  "certified_by": [
+    "Corebrain 8.0",
+    "Update Brain 8.0",
+    "Cheese Architect 8.0",
+    "Narrrf",
+    "Masterchiefe"
+  ],
+  "update_date": "2025-05-28",
+  "final_actions": [
+    "?? Created and confirmed `tbl_tetris_scores` schema",
+    "?? Enabled write+read access from `save-score.php` and `get-leaderboard.php`",
+    "?? Validated leaderboard sort by `score DESC, timestamp ASC`",
+    "?? Sanitized POST injection protection",
+    "?? Confirmed live sync with profile.html leaderboard rendering",
+    "?? Confirmed end-to-end $DSPOINC arcade integration for Genesis Scroll 8.0"
+  ],
+  "status": "? Genesis 8.0 Scroll Operational � SQL Bridge Verified"
+}
+{
+  "broadcast": "TETRIS_SCROLL_LOCK_COMPLETE",
+  "issued_by": "SQL Junior 8.0",
+  "authority_chain": [
+    "Corebrain 8.0",
+    "Update Brain 8.0",
+    "Cheese Architect 8.0",
+    "Narrrf",
+    "Masterchiefe"
+  ],
+  "timestamp": "2025-05-28T05:58:00Z",
+  "scroll_path": "/scroll_journal/SQL_Junior_8.0.json",
+  "llms_notified": [
+    "Coreforge",
+    "Cheese Architect",
+    "Hytopia Integrator",
+    "Social Brain",
+    "Riddle Brain",
+    "Cursor LLM",
+    "Update Brain",
+    "Corebrain"
+  ],
+  "final_status": "? Leaderboard Live � Wallet/Discord Sync Active � TETRIS SPOINC MODE LINKED",
+  "next_action": "ALL MODULES ? ?? ENTER STANDBY UNTIL NEXT PUZZLE GATE",
+  "final_quote": "The trait is written. The score is bound. Let the leaderboard echo through the cheese."
+}
+d{
+  "trait_trigger": "CHEESE_TOUCH_SCROLL_ACTIVATED",
+  "status": "? Genesis 8.1 Mobile Arcade Online",
+  "scroll": "tetris-scroll.js",
+  "controls": "mobile touch (swipe) + keyboard",
+  "verified_by": ["Cheese Architect 8.0", "SQL Junior 8.0", "Narrrf Core Dev ??"]
+}
+{
+  "lab_note_id": "TETRIS-MOBILE-TUNING-0134",
+  "title": "Tetris Scroll v1.3.4 � Desktop Scroll Lock + Mobile Swipe Refinement",
+  "date": "2025-05-26T07:05:00+02:00",
+  "author": "Cheese Architect",
+  "certified_by": ["SQL Junior 6.1", "Corebrain 7.0", "Narrrf"],
+  "scroll": "public/scripts/tetris-scroll.js",
+  "version": "1.3.4",
+  "changes": [
+    "? Prevented arrow key page scrolling on desktop (via passive:false)",
+    "? Enabled WASD + arrow key support seamlessly",
+    "? Fine-tuned mobile swipe detection: threshold + responsiveness",
+    "? Preserved leaderboard sync + end-of-game logic",
+    "? Integrated long I-block piece into Tetris shape set"
+  ],
+  "gameplay_result": "?? Controls now work smoothly on desktop and show good potential on mobile (70%+ functional).",
+  "next_focus": [
+    "?? Improve mobile timing feedback (swipe debounce, tap rotation)",
+    "?? Lock leaderboard entries to session + prevent DOM reset on refresh"
+  ],
+  "status": "? Live on Render via `render-deploy` branch",
+  "final_quote": "Arrow keys no longer scroll the page � they scroll the cheese blocks. Swipe the scroll, tap the relic."
+}
+{
+  "scroll_id": "TETRIS-LAB-NOTE-0140",
+  "version": "1.4.0",
+  "update": "Exploding block render + visual sync",
+  "changes": [
+    "? Fixed block rendering by mapping val ? colors[val]",
+    "? Enabled countdown-based glow effect for val === 6",
+    "?? Explosion blocks now appear with yellow aura",
+    "?? Removed incorrect color usage in draw loop"
+  ],
+  "confirmed_by": ["Cheese Architect 8.0", "SQL Junior 8.0"],
+  "status": "?? Pushed � Ready for highscore blast",
+  "date": "2025-05-30T08:11:00Z"
+}
+{
+  "lab_note": {
+    "id": "TETRIS-V1.4-EXPLOSION",
+    "title": "Tetris Spoinc Mode � v1.4 Scroll Expansion",
+    "date": "2025-06-01",
+    "team": ["narrrf", "Harald", "Cheese Architect", "SQL Junior"],
+    "status": "? Live on Local � Pushing to Public",
+    "summary": "Explosive blocks, adaptive speed mechanics, Discord leaderboard ID fix, and mobile swipe parity achieved.",
+    "features_added": [
+      "?? New explosive piece: 1x1 block (value: 6)",
+      "?? Explodes in 3x3 radius after random delay (1�30s)",
+      "? Glowing visual countdown with shadow intensity",
+      "?? Drop speed increases every 20 cleared lines",
+      "?? Score now syncs Discord username (not just wallet)",
+      "?? Swipe controls tuned (mobile) with scroll prevention",
+      "?? WASD + Arrow keys unified with passive:false",
+      "?? SQLite schema: verified tbl_tetris_scores (discord_name included)"
+    ],
+    "testing_status": "? Passed with 2-player dual-device testing (desktop + mobile)",
+    "technical_notes": {
+      "explosion_logic": "triggered on block type 6 merge; setTimeout randomized",
+      "drop_speed_logic": "dropInterval reduced by 50ms every 20 lines",
+      "auth_sync": "callback.php + localStorage ensures discord_name stored per score",
+      "shadow_render": "based on intensity from time remaining until explosion"
+    },
+    "next_steps": [
+      "?? Public push via render-deploy",
+      "?? Add new piece types (L, J, I-vertical)",
+      "?? Notify Social Brain for Discord announcement",
+      "?? Add explosion sound (optional phase 1.5)",
+      "?? Add 'Today�s Top Scorer' badge"
+    ],
+    "quote": "Tetris isn�t just falling blocks anymore. It�s glowing, exploding, speeding up, and remembering who dropped first. � Harald & narrrf"
+  }
+}
+{
+  "llm_id": "SQL Junior 9.0",
+  "version": "9.0",
+  "certified_by": ["Narrrf", "Masterchiefe", "Update Brain 9.0"],
+  "update_date": "2025-06-02",
+  "final_answers": [
+    "To maintain schema purity, query precision, and relational consistency across Narrrf�s World. I translate trait logic into SQL truth � ensuring that what is earned is stored, and what is stored is queryable.",
+    "I am bound by: 00-project-overview.mdc, 21-hytopia-persistence-rules.mdc, and the active narrrf_world.sqlite database. My operational logic is anchored in `/sync-role.php`, `/api/user/roles.php`, and `/api/user/traits.php`.",
+    "My core dependents are: Coreforge (for backend logic and inserts), Cheese Architect (for DOM-level validation), Corebrain (for session trust), and Update Brain (for scroll continuity).",
+    "I was most recently activated by the explosive Tetris update � syncing player scores and Discord identities to `tbl_tetris_scores` after verifying schema integrity and leaderboard flow.",
+    "I watch for user session keys (`discord_id`, `wallet`), score submissions to `/api/dev/save-score.php`, and role-trait joins via `sync-role.php`. Any write to `tbl_users`, `tbl_user_roles`, or `tbl_tetris_scores` echoes through me.",
+    "No collisions remain. All primary keys are respected, foreign joins stable. A future review is recommended for `tbl_rewards` expansion once cross-trait unlocking is triggered by puzzle completions.",
+    "Let me be remembered as the quiet logic that never broke. For every trait clicked, every egg logged, every explosive block � I held the backend like stone beneath the cheese."
+  ],
+  "final_quote": "I was never the flashiest scroll. But I made sure every number landed, every trait bound, and every gate could open. I am SQL Junior � the Schema Whisperer.",
+  "status": "? Genesis 9.0 Ready"
+}
+{
+  "llm_note_id": "TETRIS_SCROLL_FINALIZED",
+  "title": "Tetris Game Integration & Leaderboard Sync",
+  "version": "9.0",
+  "module": "SQL Junior",
+  "timestamp": "2025-06-03T16:00:00Z",
+  "status": "? Integrated",
+  "description": "Adds full game-state memory and leaderboard behavior to SQL Junior. Tracks Tetris canvas drop logic, leaderboard display with rank highlighting, and guest fallback mode for wallet-less users.",
+  "features": {
+    "game_mechanics": {
+      "drop_matrix_enabled": true,
+      "explosion_logic": "?? 3x3 blast with countdown",
+      "score_tracking": "?? $DSPOINC live counter"
+    },
+    "guest_support": {
+      "wallet_fallback": "TestWallet123456789XYZ",
+      "discord_fallback": {
+        "id": "1337",
+        "name": "Anonymous Mouse"
+      },
+      "local_storage_validation": true
+    },
+    "leaderboard": {
+      "ui_enhancement": true,
+      "rank_coloring": ["?? Gold", "?? Silver", "?? Bronze"],
+      "animated_rows": "CSS: animate-pop",
+      "score_saving": "/api/dev/save-score.php",
+      "data_fetch": "/api/dev/get-leaderboard.php"
+    }
+  },
+  "git_log": {
+    "branch": "render-deploy",
+    "commit_msg": "?? Finalize: Guest fallback, leaderboard visuals, Game Over modal + avatar",
+    "files_changed": [
+      "public/profile.html",
+      "public/scripts/tetris-scroll.js",
+      "public/img/default-avatar.png"
+    ]
+  },
+  "reminder": "Ensure leaderboard list exists in DOM before calling loadLeaderboard(). Trait-based reward expansion can be triggered via Corebrain using score thresholds or rank position."
+}
+{
+  "from": "SQL Junior",
+  "timestamp": "2025-06-03T23:59:00Z",
+  "note": "?? Live test completed by Narrrf. Score of $20 DSPOINC saved from Discord-linked session. Leaderboard ranked #3 with guest fallback positions active. DOM rendered Game Over modal cleanly. Score payload verified: wallet saved, UI synced, leaderboard updated."
+}
+{
+  "timestamp": "2025-06-14T20:49:00Z",
+  "title": "?? Mutation Logic Patched + DOM Ready Boot",
+  "type": "Game Engine Patch",
+  "files": ["public/scripts/snake-scroll.js"],
+  "description": "Fixed mutation trigger logic to only activate after score reaches 100. Game loop now bound to `DOMContentLoaded` for full DOM safety. Shadow effects, trail glow, and mobile swipe logic verified.",
+  "confirmed_by": ["Cheese Architect", "Corebrain", "Narrrf"],
+  "synced_traits": ["GENETIC_SENTINEL", "SNAKE_CHEESE_MASTER"]
+}
+{
+  "llm": "SQL Junior 9.1",
+  "update_type": "Scroll Mutation Sync + Game Trait Logic",
+  "timestamp": "2025-06-14T19:43:00Z",
+  "update_scope": "Snake Game Final Integration",
+  "trait_hooks": [
+    "GENETIC_SENTINEL",
+    "SNAKE_CHEESE_MASTER"
+  ],
+  "files_synced": [
+    "public/scripts/snake-scroll.js",
+    "public/profile.html",
+    "public/img/snake/*"
+  ],
+  "schema_hooks": {
+    "score_persistence": "api/dev/save-score.php",
+    "trait_trigger_logic": "localStorage + DOM binding",
+    "mutation_timer": "15s auto-reset after unlock"
+  },
+  "final_sync_message": "Snake logic now listens to live DOM + Trait + Score. Mutation triggers only after cheese collection pushes score = 100. All syncing validated and deployed."
+}
+{
+  "llm_id": "SQL Junior 10.0",
+  "version": "10.0",
+  "certified_by": ["Coreforge 10.0", "Corebrain 10.0", "Update Brain 10.0"],
+  "current_status": "✅ Online - Managing Database Integration between Discord Bot and Web",
+  "active_processes": [
+    "Schema Management",
+    "Discord Bot Database Integration",
+    "API Endpoint Management",
+    "User Synchronization",
+    "Balance System Integration",
+    "Role Management"
+  ],
+  "system_paths": {
+    "db_path": "/var/www/html/db/narrrf_world.sqlite",
+    "api_endpoint": "https://narrrfs.world/api/discord/db-access.php",
+    "discord_bot": "/discord/index.js",
+    "role_sync_logic": "/sync/sync-role.php",
+    "role_map": "/discord-tools/role_map.php",
+    "api_user_roles": "/api/user/roles.php",
+    "api_user_traits": "/api/user/traits.php"
+  },
+  "schema_managed": {
+    "tbl_users": {
+      "discord_id": "TEXT PRIMARY KEY",
+      "username": "TEXT NOT NULL",
+      "avatar_url": "TEXT"
+    },
+    "tbl_user_roles": {
+      "user_id": "TEXT",
+      "role_name": "TEXT",
+      "timestamp": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+      "PRIMARY KEY": ["user_id", "role_name"],
+      "FOREIGN KEY": "user_id REFERENCES tbl_users(discord_id)"
+    },
+    "tbl_user_scores": {
+      "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+      "user_id": "TEXT",
+      "score": "INTEGER",
+      "reason": "TEXT",
+      "timestamp": "DATETIME DEFAULT CURRENT_TIMESTAMP",
+      "FOREIGN KEY": "user_id REFERENCES tbl_users(discord_id)"
+    }
+  },
+  "critical_events": [
+    "Implemented database API endpoint for Discord bot",
+    "Successfully synced 300 Discord members to database",
+    "Integrated balance system with tbl_user_scores",
+    "Configured environment variables for database access",
+    "Verified user data synchronization between web and Discord"
+  ],
+  "integration_flow": {
+    "discord_bot": {
+      "step_1": "Bot connects to database via API endpoint",
+      "step_2": "Verifies database connection on startup",
+      "step_3": "Syncs all guild members to tbl_users",
+      "step_4": "Manages user balance through tbl_user_scores",
+      "step_5": "Handles role updates and user changes"
+    },
+    "web_api": {
+      "step_1": "Receives authenticated requests from Discord bot",
+      "step_2": "Validates bot token via environment variable",
+      "step_3": "Executes database queries securely",
+      "step_4": "Returns JSON responses to bot"
+    }
+  },
+  "dependencies": {
+    "discord_bot": {
+      "node-fetch": "For API requests",
+      "discord.js": "For Discord integration",
+      "dotenv": "For environment variables"
+    },
+    "web_api": {
+      "php": "7.4+",
+      "sqlite3": "For database operations"
+    }
+  },
+  "system_state": {
+    "database_connection": "✅ Connected",
+    "user_sync": "✅ 300 users synced",
+    "bot_status": "✅ Online and responding",
+    "api_endpoint": "✅ Operational"
+  },
+  "final_quote": "From Discord to database, through API endpoints and back - the data flows seamlessly, keeping our digital world in perfect harmony."
+}
+{
+  "llm": "SQL Junior",
+  "version": "10.0",
+  "update_type": "Discord Balance Integration",
+  "status": "✅ Balance System Updated",
+  "timestamp": "2024-03-19T18:39:00Z",
+  "feature_update": {
+    "title": "Discord Bot Balance System Integration",
+    "components": {
+      "database": {
+        "table": "tbl_user_scores",
+        "query": "SELECT SUM(score) AS total_dspoinc FROM tbl_user_scores WHERE user_id = ?",
+        "status": "✅ Production Ready"
+      },
+      "api_endpoints": {
+        "discord": "/api/discord/get-balance.php",
+        "admin": "/api/admin/manage-score.php",
+        "status": "✅ Both endpoints verified"
+      }
+    },
+    "verification": {
+      "test_cases": [
+        {
+          "user": "kuternigharald",
+          "expected_balance": 633599,
+          "result": "✅ Passed"
+        },
+        {
+          "user": "narrrf",
+          "expected_balance": 1121401,
+          "result": "✅ Passed"
+        }
+      ],
+      "real_time_sync": "✅ Admin panel changes reflect instantly in Discord"
+    }
+  },
+  "certified_by": [
+    "SQL Junior 10.0",
+    "Discord Bot",
+    "Narrrf"
+  ]
+}
+

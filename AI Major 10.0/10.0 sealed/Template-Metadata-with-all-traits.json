@@ -1,0 +1,265 @@
+{
+  "name": "Narrrfs World Genesis Genetic #0000",
+  "description": "A cinematic NFT Gen from the Narrrf Multiverse",
+  "image": "0.png",
+  "attributes": [
+    {
+      "trait_type": "Theme",
+      "value": "[
+      "Fantasy and Mythology",
+      "Sci-Fi and Futuristic",
+      "Classic Cinema and TV",
+      "Action and Adventure",
+      "Horror and Gothic",
+      "Comedy and Satire",
+      "Crime and Thriller",
+      "Dystopian and Noir",
+      "Sports and Competition",
+      "Animation and Classic Cartoons",
+      "Musical and Psychedelic",
+      "Historical and War-Themed"
+    ]"
+    },
+    {
+      "trait_type": "Sub-Trait",
+      "value": "{
+      "Fantasy and Mythology": [
+        "Viking Valhalla Mouse",
+        "Elf Warrior Mouse",
+        "Orc Warlord Mouse",
+        "Dark Cheese Wizard Mouse",
+        "Shogun Last Samurai Mouse",
+        "Mythology Python Greece Mouse",
+        "Pulp Fiction Alien Dance Mouse",
+        "Lab Coat Mouse",
+        "Fibonacci Mouse",
+		"Orb Weaver Sorcerer Mouse"
+      ],
+      "Sci-Fi and Futuristic": [
+        "Matrix Mouse",
+		"Man in Black Mouse",
+        "Terminator Mouse",
+        "Transformers Mouse",
+        "Robocop Mouse",
+        "Star Trek Borg Mouse",
+        "The Jetsons Futuristic Mouse"
+        "Star Wars Ewok Mouse",
+		"Back to the Future Mouse",
+		"Tron Mouse"
+		"Doctor Who Mouse"
+		"Independence Day Mouse"
+		"Marvel Gang Mouse"
+        "Venom Mouse",
+		"Inception Mouse"
+		"Cowboy Alien Invasion Mouse"
+      ],
+      "Classic Cinema and TV": [
+        "Flintstones Prehistoric Mouse",
+        "Masters of the Universe Mouse",
+        "Speedy Gonzales Brain Morph Mouse"
+		"Joker Mouse"
+		"Top Gun Mouse"
+		"Lebowski Mouse"
+		"Good Morning Vietnam Mouse"
+		"Cat from Hell Mouse"
+      ],
+      "Action and Adventure": [
+        "Western Outlaw Battle Goose Mouse",
+        "Rambo Mouse",
+        "Transporter Action Driver Mouse",
+		"Pirates of the Caribbean Mouse"
+		"Medieval Bow Fighter Mouse" 
+		"Cyperpunk Mouse"
+      ],
+      "Horror and Gothic": [
+        "Nosferatu Vampire Mouse",
+        "Shining Mouse",
+        "Halloween Mouse",
+		"Zombieland Mouse"
+      ],
+      "Comedy and Satire": [
+        "Happy Gilmore Golf Champion Mouse",
+        "The Waterboy Underdog Mouse",
+        "We’re the Millers Roadtrip Mouse",
+        "Boys in the Hood Mouse",
+        "Half Baked Mouse",
+        "Harold and Kumar Mouse",
+		"Friday Mouse",
+		"The Mask Mouse",
+        "Golden Bingo Champion Mouse"
+      ],
+      "Crime and Thriller": [
+        "Scarface Crime Lord Mouse",
+        "RocknRolla Street Boss Mouse",
+        "Reservoir Dogs Heist Mouse",
+        "Snatch Underground Fighter Mouse",
+        "21 Blackjack Mastermind Mouse",
+        "Fear and Loathing Las Vegas Mouse", 
+		"Kill Bill Shogun Mouse"
+		"Gangster Club Mouse"
+		"Boardwalk Empire Mouse"
+		"Blow Money Mouse" 
+		"True Romance Mouse"
+		"Seven Mouse"
+      ],
+      "Dystopian and Noir": [
+        "Equilibrium Dystopian Mouse",
+        "Clockwork Orange Mouse",
+        "Fight Club Rebel Mouse",
+        "Gulag Prisoner Mouse",
+		"Green Mile Mouse",
+		"Shawshank Redemption Mouse",
+		"Borderland Mouse",
+		"Mad Max Mouse",
+		"Waterworld Mouse",
+		"Vendetta Mouse"
+      ],
+      "Sports and Competition": [
+        "Raging Bull Fighter Mouse",
+        "Rocky Mouse",
+        "Formula 1 Racing Mouse",
+        "Bloodsport Mouse"
+      ],
+      "Animation and Classic Cartoons": [
+        "Futurama Mouse",
+        "Rick and Morty Mouse",
+        "Jamaica Rum Mouse",
+        "Sailor Mouse"
+		"Barbapapa Mouse"
+      ],
+      "Musical and Psychedelic": [
+        "Psychedelic Rockstar Mouse",
+        "Yellow Submarine Mouse",
+      ],
+      "Historical and War-Themed": [
+        "Apocalypse Now War Mouse",
+        "The Hunt for Red October Mouse",
+        "Apocalypto Mouse",
+        "Platoon Mouse",
+		"Legionnaire Mouse",
+		"Gladiator Future Mouse"
+      ]"
+    },
+    {
+      "trait_type": "Outfit",
+      "value": "[
+  "Sleek Suit",
+  "Futuristic Armor",
+  "Medieval Armor",
+  "Cartoon Costume",
+  "Tribal Gear",
+  "Retro Streetwear",
+  "Lab Coat",
+  "Apocalyptic Wasteland Gear",
+  "Mafia Boss Tuxedo",
+  "Cowboy Outlaw Dress",
+  "Orange Training Jumpsuit",
+  "Punk Outfit",
+  "Ninja Outfit",
+  "Robes",
+  "Mythical Cloak",
+]"
+    },
+    {
+      "trait_type": "Accessories",
+      "value": "[
+  "Katana",
+  "Angel Wings",
+  "Sword",
+  "Orb Magic",
+  "Sword Special",
+  "Gun Standard",
+  "Gun Future",
+  "Machine Gun",
+  "Cheese Scepter",
+  "Gold Chain",
+  "Baseball Bat",
+  "Scroll of Spells",
+  "Bingo Balls",
+  "Poker Cards",
+  "Knife",
+  "Gold",
+  "Recurve Bow",
+  "Daimond item",
+  "Cheese",
+  "Cheese Scepter",
+  "Flux Capacitor",
+  "Neon Utility",
+  "Mushroom Spell",
+  "Smoking Magic",
+  "Cheese-Spiked Secret",
+  "Portal",
+  "Golf Set",
+  "Shield",
+  "Axe",
+  "Basketball"
+]"
+    },
+    {
+      "trait_type": "Expression",
+      "value": "[
+  "Happy",
+  "Angry",
+  "Sad",
+  "Funny",
+  "Poker Face",
+  "Grumpy",
+  "Psychedelic Shock",
+  "Stoned",
+  "Insane Mad",
+]"
+    },
+    {
+      "trait_type": "Background",
+      "value": "[
+  "Futuristic City",
+  "Mystical Forest",
+  "Desert Battlefield",
+  "Underground Club",
+  "Viking Ragnarok",
+  "Haunted Castle",
+  "Post-Apocalyptic",
+  "Poker Lounge",
+  "Comic-style Cheese Lab",
+  "Psychodelic Mushrooms",
+  "Time-Travel Tunnel",
+  "Cheese Cartoon",
+  "Lab",
+  "Floating Battle Arena",
+  "Mushroom Magic",
+  "Digital Grid (Tron Style)",
+  "Retro Miami Skyline",
+  "Narrrfs World Portal Cheese Gate",
+  "Backroom Mafia Casino"
+  "MedievalWarfield",
+  "Desert",
+  "Burning Warcamp",
+  "Club",
+  "Floating Battle Arena"
+]"
+    },
+{
+  "trait_type": "Special",
+  "value": [
+    "Weedery WDYR",
+    "Golden Baboons Rascal Club",
+    "CryptoCorn",
+    "Bear or Bull",
+    "Robotic Rabbit Syndicate",
+    "Fibonacci Order",
+    "Scroll Keeper",
+    "Portal Seeker",
+	"Golden Cheese Hunter"
+  ]"
+    }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "0.png",
+        "type": "image/png"
+      }
+    ],
+    "category": "image"
+  }
+}
