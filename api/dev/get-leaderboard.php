@@ -13,24 +13,32 @@ try {
   $db = new PDO("sqlite:$dbPath");
   $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-  // Fetch top 10 Tetris scores
+  // Fetch top 10 Tetris scores, one per user (discord_id)
   $tetrisStmt = $db->prepare("
-    SELECT wallet, MAX(score) as score, discord_id, discord_name, MIN(timestamp) as timestamp
+    SELECT
+      discord_id,
+      discord_name,
+      MAX(score) AS score,
+      MIN(timestamp) AS timestamp
     FROM tbl_tetris_scores
     WHERE game = 'tetris'
-    GROUP BY wallet, discord_id, discord_name
+    GROUP BY discord_id, discord_name
     ORDER BY score DESC, timestamp ASC
     LIMIT 10
   ");
   $tetrisStmt->execute();
   $tetrisRows = $tetrisStmt->fetchAll(PDO::FETCH_ASSOC);
 
-  // Fetch top 10 Snake scores
+  // Fetch top 10 Snake scores, one per user (discord_id)
   $snakeStmt = $db->prepare("
-    SELECT wallet, MAX(score) as score, discord_id, discord_name, MIN(timestamp) as timestamp
+    SELECT
+      discord_id,
+      discord_name,
+      MAX(score) AS score,
+      MIN(timestamp) AS timestamp
     FROM tbl_tetris_scores
     WHERE game = 'snake'
-    GROUP BY wallet, discord_id, discord_name
+    GROUP BY discord_id, discord_name
     ORDER BY score DESC, timestamp ASC
     LIMIT 10
   ");
