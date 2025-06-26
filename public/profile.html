@@ -259,13 +259,16 @@ $discordId = $_SESSION['discord_id'] ?? '';
     🪧 STATUS: WANTED FOR TRAIT THEFT 🔥
   </p>
 
-<!-- User Quests Section -->
-<section id="user-quests-section" class="my-10" style="min-width:140px">
+
+<section id="user-quests-section" class="my-10">
   <h2 class="text-2xl font-bold text-yellow-300 mb-4">🗺️ Your Quests</h2>
-  <div id="user-quests-list" class="space-y-4">
-    <!-- Quests will render here -->
+  <div class="max-w-2xl mx-auto">
+    <div id="user-quests-list" class="space-y-4">
+      <!-- Quests will render here -->
+    </div>
   </div>
 </section>
+
 
 
 <!-- 🧀 Official Cheese Stamp -->
@@ -942,17 +945,16 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
 
 questList.innerHTML = data.quests.map(q => `
-  <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col md:flex-row items-start md:items-center justify-between mb-3">
-    <div class="flex-1">
+  <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
+    <div class="flex-1 min-w-0">
       <div class="font-bold text-lg text-yellow-200 mb-1">
         ${q.type === "Custom" ? "📝 Custom Quest" : "🐦 Twitter Quest"}
       </div>
-      <div class="mb-1">${q.description}</div>
+      <div class="mb-1 break-words">${q.description}</div>
       ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank">Open Link</a>` : ''}
       <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
     </div>
-     <div class="w-[150px] shrink-0 ml-0 md:ml-8 mt-3 md:mt-0 flex flex-col items-end gap-2 bg-gray-900/70 rounded-lg p-2">
-
+    <div class="flex flex-col items-end gap-2 min-w-[140px]">
       <span class="px-3 py-1 rounded-full text-xs font-semibold 
         ${q.is_active ? 'bg-green-600' : 'bg-gray-600'} text-white">
         ${q.is_active ? 'Active' : 'Closed'}
@@ -974,7 +976,7 @@ questList.innerHTML = data.quests.map(q => `
       ${q.claimed_at ? `<span class="text-xs text-gray-300 text-right">Claimed at:<br>${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
       ${
         q.is_active && !q.claim_status
-          ? `<button onclick="claimQuest('${q.quest_id}', this)" class="mt-2 px-4 py-1 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg font-semibold text-xs transition">
+          ? `<button onclick="claimQuest('${q.quest_id}', this)" class="mt-2 px-4 py-1 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg font-semibold text-xs transition whitespace-nowrap">
               Claim Quest
             </button>`
           : ''
@@ -982,6 +984,7 @@ questList.innerHTML = data.quests.map(q => `
     </div>
   </div>
 `).join('');
+
 
     } catch (e) {
       const questList = document.getElementById('user-quests-list');
