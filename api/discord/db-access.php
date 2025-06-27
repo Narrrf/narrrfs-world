@@ -1,6 +1,7 @@
 <?php
 // === GUARANTEED CLEAN JSON-ONLY OUTPUT ===
-if (ob_get_level()) ob_clean();  
+if (function_exists('ob_end_clean')) @ob_end_clean();
+if (function_exists('ob_clean')) @ob_clean();
 header('Content-Type: application/json');
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
