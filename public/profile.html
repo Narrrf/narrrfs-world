@@ -841,10 +841,6 @@ document.addEventListener('DOMContentLoaded', function() {
   fetch(`/api/discord/score-history.php?user_id=${userId}`)
     .then(res => res.json())
     .then(json => {
-      if (!json.history || !json.history.length) {
-        showMsg('No score history available yet.');
-        return;
-      }
       if (msgBox) msgBox.classList.add('hidden');
       canvas.style.display = '';
       let cumulative = 0, labels = [], data = [];
