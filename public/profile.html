@@ -903,44 +903,41 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch (e) { /* handle error if you want */ }
   }
 
-// Fetch recent adjustments
-// Fetch recent adjustments
-if (user && user.discord_id) {
-  fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
-    .then(res => res.json())
-    .then(response => {
-      const recentList = document.getElementById('recentAdjustments');
-      const emptyMsg = document.getElementById('no-score-history');
-      const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+  // Fetch recent adjustments
+  if (user && user.discord_id) {
+    fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
+      .then(res => res.json())
+      .then(response => {
+        const recentList = document.getElementById('recentAdjustments');
+        const emptyMsg = document.getElementById('no-score-history');
+        const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
 
-      if (recentList) {
         if (adjustments.length === 0) {
-          recentList.innerHTML = '';
+          if (recentList) recentList.innerHTML = '';
           if (emptyMsg) emptyMsg.style.display = '';
         } else {
-          recentList.innerHTML = adjustments
-            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-            .slice(0, 10)
-            .map(a =>
-              `<li>
-                <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
-                <span class="italic">(${a.reason || a.action})</span>
-              </li>`
-            ).join('');
-          if (emptyMsg) emptyMsg.style.display = 'none';
+          if (recentList) {
+            recentList.innerHTML = adjustments
+              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+              .slice(0, 10)
+              .map(a =>
+                `<li>
+                  <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
+                  : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
+                  <span class="italic">(${a.reason || a.action})</span>
+                </li>`
+              ).join('');
+          }
+          if (emptyMsg) emptyMsg.style.display = 'none'; // HIDE the empty message if any adjustment exists
         }
-      }
-    })
-    .catch(() => {
-      const recentList = document.getElementById('recentAdjustments');
-      const emptyMsg = document.getElementById('no-score-history');
-      if (recentList) recentList.innerHTML = '';
-      if (emptyMsg) emptyMsg.style.display = '';
-    });
-}
-
-
+      })
+      .catch(() => {
+        const recentList = document.getElementById('recentAdjustments');
+        const emptyMsg = document.getElementById('no-score-history');
+        if (recentList) recentList.innerHTML = '<li class="text-red-400">Could not load recent changes.</li>';
+        if (emptyMsg) emptyMsg.style.display = '';
+      });
+  }
 
   // 2. Load and display quests for this user
   if (userId) {
@@ -955,48 +952,46 @@ if (user && user.discord_id) {
         return;
       }
 
-questList.innerHTML = data.quests.map(q => `
-  <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
-    <div class="flex-1 min-w-0">
-      <div class="font-bold text-lg text-yellow-200 mb-1">
-        ${q.type === "Custom" ? "📝 Custom Quest" : "🐦 Twitter Quest"}
-      </div>
-      <div class="mb-1 break-words">${q.description}</div>
-      ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank">Open Link</a>` : ''}
-      <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
-    </div>
-    <div class="flex flex-col items-end gap-2 min-w-[140px]">
-      <span class="px-3 py-1 rounded-full text-xs font-semibold 
-        ${q.is_active ? 'bg-green-600' : 'bg-gray-600'} text-white">
-        ${q.is_active ? 'Active' : 'Closed'}
-      </span>
-      <span class="px-3 py-1 rounded-full text-xs font-semibold 
-        ${
-          q.claim_status === "approved" ? 'bg-green-500'
-          : q.claim_status === "rejected" ? 'bg-red-500'
-          : q.claim_status === "pending" ? 'bg-yellow-400 text-gray-900'
-          : 'bg-gray-700'
-        }">
-        ${
-          q.claim_status === "approved" ? 'Claimed & Rewarded'
-          : q.claim_status === "rejected" ? 'Rejected'
-          : q.claim_status === "pending" ? 'Pending Review'
-          : 'Not Claimed'
-        }
-      </span>
-      ${q.claimed_at ? `<span class="text-xs text-gray-300 text-right">Claimed at:<br>${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
-      ${
-        q.is_active && !q.claim_status
-          ? `<button onclick="claimQuest('${q.quest_id}', this)" class="mt-2 px-4 py-1 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg font-semibold text-xs transition whitespace-nowrap">
-              Claim Quest
-            </button>`
-          : ''
-      }
-    </div>
-  </div>
-`).join('');
-
-
+      questList.innerHTML = data.quests.map(q => `
+        <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-lg text-yellow-200 mb-1">
+              ${q.type === "Custom" ? "📝 Custom Quest" : "🐦 Twitter Quest"}
+            </div>
+            <div class="mb-1 break-words">${q.description}</div>
+            ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank">Open Link</a>` : ''}
+            <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
+          </div>
+          <div class="flex flex-col items-end gap-2 min-w-[140px]">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold 
+              ${q.is_active ? 'bg-green-600' : 'bg-gray-600'} text-white">
+              ${q.is_active ? 'Active' : 'Closed'}
+            </span>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold 
+              ${
+                q.claim_status === "approved" ? 'bg-green-500'
+                : q.claim_status === "rejected" ? 'bg-red-500'
+                : q.claim_status === "pending" ? 'bg-yellow-400 text-gray-900'
+                : 'bg-gray-700'
+              }">
+              ${
+                q.claim_status === "approved" ? 'Claimed & Rewarded'
+                : q.claim_status === "rejected" ? 'Rejected'
+                : q.claim_status === "pending" ? 'Pending Review'
+                : 'Not Claimed'
+              }
+            </span>
+            ${q.claimed_at ? `<span class="text-xs text-gray-300 text-right">Claimed at:<br>${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
+            ${
+              q.is_active && !q.claim_status
+                ? `<button onclick="claimQuest('${q.quest_id}', this)" class="mt-2 px-4 py-1 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg font-semibold text-xs transition whitespace-nowrap">
+                    Claim Quest
+                  </button>`
+                : ''
+            }
+          </div>
+        </div>
+      `).join('');
     } catch (e) {
       const questList = document.getElementById('user-quests-list');
       if (questList) questList.innerHTML = '<div class="text-red-400">Failed to load quests.</div>';
@@ -1030,6 +1025,7 @@ window.claimQuest = async function(questId, btn) {
   }
 };
 </script>
+
 
 </body>
 </html>
