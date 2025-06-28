@@ -295,7 +295,7 @@ $discordId = $_SESSION['discord_id'] ?? '';
   </div>
 <div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
   <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
-  <div id="no-score-history" class="text-gray-400 mb-2">No score history available yet.</div>
+<div id="no-score-history" class="text-gray-400 mb-2" style="display: none;">No score history available yet.</div>
   <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
     <!-- Populated by JS -->
   </ul>
@@ -904,40 +904,45 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   // Fetch recent adjustments
-  if (user && user.discord_id) {
-    fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
-      .then(res => res.json())
-      .then(response => {
-        const recentList = document.getElementById('recentAdjustments');
-        const emptyMsg = document.getElementById('no-score-history');
-        const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+// Fetch recent adjustments
+if (user && user.discord_id) {
+  fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
+    .then(res => res.json())
+    .then(response => {
+      const recentList = document.getElementById('recentAdjustments');
+      const emptyMsg = document.getElementById('no-score-history');
+      const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
 
-        if (adjustments.length === 0) {
-          if (recentList) recentList.innerHTML = '';
-          if (emptyMsg) emptyMsg.style.display = '';
-        } else {
-          if (recentList) {
-            recentList.innerHTML = adjustments
-              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-              .slice(0, 10)
-              .map(a =>
-                `<li>
-                  <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                  : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
-                  <span class="italic">(${a.reason || a.action})</span>
-                </li>`
-              ).join('');
-          }
-          if (emptyMsg) emptyMsg.style.display = 'none'; // HIDE the empty message if any adjustment exists
+      // If there are adjustments, hide the message and show the list
+      if (adjustments.length > 0) {
+        if (recentList) {
+          recentList.innerHTML = adjustments
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10)
+            .map(a =>
+              `<li>
+                <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
+                : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
+                <span class="italic">(${a.reason || a.action})</span>
+              </li>`
+            ).join('');
         }
-      })
-      .catch(() => {
-        const recentList = document.getElementById('recentAdjustments');
-        const emptyMsg = document.getElementById('no-score-history');
-        if (recentList) recentList.innerHTML = '<li class="text-red-400">Could not load recent changes.</li>';
-        if (emptyMsg) emptyMsg.style.display = '';
-      });
-  }
+        if (emptyMsg) emptyMsg.style.display = "none";
+      } else {
+        // No score changes: show the empty msg and clear the list
+        if (recentList) recentList.innerHTML = '';
+        if (emptyMsg) emptyMsg.style.display = "";
+      }
+    })
+    .catch(() => {
+      // On error, show a fallback error in the list and show the empty msg
+      const recentList = document.getElementById('recentAdjustments');
+      if (recentList) recentList.innerHTML = '<li class="text-red-400">Could not load recent changes.</li>';
+      const emptyMsg = document.getElementById('no-score-history');
+      if (emptyMsg) emptyMsg.style.display = "";
+    });
+}
+
 
   // 2. Load and display quests for this user
   if (userId) {
