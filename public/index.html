@@ -390,6 +390,29 @@ The next wave is close — don’t miss the real Genesis scroll.
 
 <!-- ✅ END Promo Section: VIP collection + MP4 + CTA -->
 
+<!-- 🧬 NFT Visual Carousel Promo | From experiment-x.html | Genesis 11.0 -->
+<section class="max-w-3xl mx-auto px-6 py-12 z-10 relative">
+  <h2 class="text-3xl font-extrabold text-center mb-4">🧬 Preview: Narrrf’s World Mutant Carousel</h2>
+  <p class="text-center max-w-xl mx-auto text-gray-700 mb-8">
+    Live from the Narrrf Lab — see the latest mutant NFT drops and future map experiments. Click through the carousel and enter the lore.
+  </p>
+  <div class="overflow-hidden rounded-xl shadow-lg bg-white">
+    <!-- Slides (1/81) -->
+    <img src="img/Carusel1 (1)_small.png" class="carousel-slide block w-full" />
+    <script>
+      for (let i = 2; i <= 81; i++) {
+        document.write(`<img src="img/Carusel1 (${i})_small.png" class="carousel-slide hidden w-full" />`);
+      }
+    </script>
+    <img src="img/hytopia-world-4192.png" class="carousel-slide hidden w-full" alt="Hytopia World #4192" />
+  </div>
+  <!-- Controls -->
+  <div class="flex justify-between items-center mt-4">
+    <button onclick="showSlide(-1)" class="bg-pink-500 text-white px-4 py-2 rounded-full shadow hover:bg-pink-600">← Prev</button>
+    <button onclick="showSlide(1)" class="bg-purple-500 text-white px-4 py-2 rounded-full shadow hover:bg-purple-600">Next →</button>
+  </div>
+</section>
+
 
 <!-- 🧬 GENESIS 10 ANNOUNCEMENTS -->
 <div class="text-center mt-10 px-6">
@@ -497,6 +520,9 @@ The next wave is close — don’t miss the real Genesis scroll.
   </div>
 </section>
 
+
+
+
 <!-- 👽 FINAL CHEESE EASTER EGG SCROLL – GENESIS 8 -->
 <section class="relative bg-yellow-50 py-20 px-6 mt-16 rounded-2xl shadow-xl max-w-3xl mx-auto overflow-hidden ring-2 ring-lime-400 border border-lime-300 animate-pulse hover:scale-[1.015] transition duration-300">
   <img src="img/alien-grid-fade.png" alt="Alien Grid" class="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none z-0" />
@@ -574,7 +600,7 @@ The next wave is close — don’t miss the real Genesis scroll.
         <h3 class="text-xl font-bold">♣️ Poker Showdowns</h3>
         <p>Join VIP ClubGG matches. Winner-take-all tournaments, qualifiers & TOC entry!</p>
         <a href="https://www.clubgg.com" target="_blank" class="inline-block mt-4 bg-purple-700 text-white px-4 py-2 rounded-xl shadow hover:bg-purple-800">🎲 Join ClubGG (ID: 821719)</a>
-        <a href="https://www.clubgg.com/download" target="_blank" class="inline-block mt-2 bg-purple-500 text-white px-4 py-2 rounded-xl shadow hover:bg-purple-600">⬇️ Download Poker Client</a>
+        <a href="https://www.clubgg.com" target="_blank" class="inline-block mt-2 bg-purple-500 text-white px-4 py-2 rounded-xl shadow hover:bg-purple-600">⬇️ Download Poker Client</a>
       </div>
 
       <div class="bg-green-100 p-6 rounded-2xl shadow">
@@ -1020,5 +1046,18 @@ All POST requests go to:
     JavaScript is required to experience Narrrf's World. Please enable JS!
   </div>
 </noscript>
+<script>
+  let index = 0;
+  function showSlide(step) {
+    const slides = document.querySelectorAll(".carousel-slide");
+    index = (index + step + slides.length) % slides.length;
+    slides.forEach((slide, i) => {
+      slide.classList.toggle("hidden", i !== index);
+    });
+  }
+  // Initialize on DOM load:
+  window.addEventListener('DOMContentLoaded', () => showSlide(0));
+</script>
+
 </body>
 </html>
