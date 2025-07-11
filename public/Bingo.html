@@ -23,6 +23,7 @@
       <label class="block mb-2 font-semibold">Enter Called Numbers (e.g., B7, I23, N36):</label>
       <input id="calledNumbersInput" type="text" class="w-full p-2 border rounded" placeholder="e.g., B7, I23, N36">
       <button onclick="markNumbers()" class="mt-2 bg-green-600 text-white px-4 py-2 rounded">Mark Numbers</button>
+      <button onclick="clearCards()" class="mt-2 bg-red-600 text-white px-4 py-2 rounded ml-2">Clear Cards</button>
     </div>
 
     <div id="ticketsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -181,6 +182,17 @@
           document.querySelectorAll(`#ticketsContainer > div:nth-child(${tIndex + 1}) .text-green-600`).forEach(el => el.classList.remove('hidden'));
         }
       });
+    }
+
+    function clearCards() {
+      const cells = document.querySelectorAll('[data-ticket]');
+      cells.forEach(cell => {
+        if (cell.textContent !== '★') {
+          cell.classList.remove('marked');
+        }
+      });
+      document.querySelectorAll('.text-green-600').forEach(el => el.classList.add('hidden'));
+      document.getElementById('calledNumbersInput').value = '';
     }
 
     function checkBingo(ticket, tIndex, calledNumbers) {
