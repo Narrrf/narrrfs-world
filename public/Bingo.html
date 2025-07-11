@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Professional Bingo Checker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .marked { background-color: #facc15 !important; color: white !important; }
+    input.grid-input { width: 2.5rem; text-align: center; }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-4 text-center">🎯 Professional Bingo Checker</h1>
+
+    <button onclick="addTicketGrid()" class="mb-4 bg-indigo-600 text-white px-4 py-2 rounded">Add New Ticket</button>
+
+    <div id="ticketGrids"></div>
+
+    <div class="mb-6 mt-6">
+      <label class="block mb-2 font-semibold">Enter Called Numbers (comma or space separated):</label>
+      <input id="calledNumbersInput" type="text" class="w-full p-2 border rounded" placeholder="e.g., 1, 7, 15...">
+      <button onclick="markNumbers()" class="mt-2 bg-green-600 text-white px-4 py-2 rounded">Mark Numbers</button>
+    </div>
+
+    <div id="ticketsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </div>
+
+  <script>
+    let tickets = [];
+
+    function addTicketGrid() {
+      const gridDiv = document.createElement('div');
+      gridDiv.className = 'bg-white p-4 mb-4 rounded shadow';
+
+      const table = document.createElement('table');
+      for (let r = 0; r < 5; r++) {
+        const row = document.createElement('tr');
+        for (let c = 0; c < 5; c++) {
+          const cell = document.createElement('td');
+
+          if (r === 2 && c === 2) {
+            cell.innerHTML = '<div class="bg-yellow-300 text-center font-bold">FREE</div>';
+          } else {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'grid-input border rounded';
+            cell.appendChild(input);
+          }
+
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+
+      const saveBtn = document.createElement('button');
+      saveBtn.textContent = 'Save Ticket';
+      saveBtn.className = 'mt-2 bg-blue-600 text-white px-3 py-1 rounded';
+      saveBtn.onclick = () => saveTicket(gridDiv);
+
+      gridDiv.appendChild(table);
+      gridDiv.appendChild(saveBtn);
+
+      document.getElementById('ticketGrids').appendChild(gridDiv);
+    }
+
+    function saveTicket(gridDiv) {
+      const inputs = gridDiv.querySelectorAll('input');
+      const ticket = [];
+
+      for (let r = 0; r < 5; r++) {
+        const row = [];
+        for (let c = 0; c < 5; c++) {
+          if (r === 2 && c === 2) {
+            row.push('FREE');
+          } else {
+            const input = inputs[r * 5 + c - (r > 2 ? 1 : 0)];
+            row.push(Number(input.value));
+          }
+        }
+        ticket.push(row);
+      }
+
+      tickets.push(ticket);
+      renderTickets();
+      gridDiv.remove();
+    }
+
+    function renderTickets() {
+      const container = document.getElementById('ticketsContainer');
+      container.innerHTML = '';
+
+      tickets.forEach((ticket, tIndex) => {
+        const grid = document.createElement('div');
+        grid.className = 'bg-white p-3 rounded shadow text-center';
+
+        ticket.forEach((row, rIndex) => {
+          const rowDiv = document.createElement('div');
+          rowDiv.className = 'flex justify-center mb-1';
+
+          row.forEach((num, cIndex) => {
+            const cell = document.createElement('div');
+            cell.textContent = num === 'FREE' ? '★' : num;
+            cell.dataset.ticket = tIndex;
+            cell.dataset.row = rIndex;
+            cell.dataset.col = cIndex;
+            cell.className = 'w-10 h-10 flex items-center justify-center border m-0.5 rounded';
+            if (num === 'FREE') cell.classList.add('marked');
+            rowDiv.appendChild(cell);
+          });
+
+          grid.appendChild(rowDiv);
+        });
+
+        const bingoDiv = document.createElement('div');
+        bingoDiv.className = 'mt-2 font-bold text-green-600 hidden';
+        bingoDiv.textContent = '🎉 Bingo!';
+        grid.appendChild(bingoDiv);
+
+        container.appendChild(grid);
+      });
+    }
+
+    function markNumbers() {
+      const calledInput = document.getElementById('calledNumbersInput').value.trim();
+      if (!calledInput) return alert('Please enter called numbers.');
+
+      const calledNumbers = calledInput.split(/\s|,/).map(Number);
+
+      tickets.forEach((ticket, tIndex) => {
+        let cells = document.querySelectorAll(`[data-ticket='${tIndex}']`);
+
+        cells.forEach(cell => {
+          if (cell.textContent === '★') return;
+          if (calledNumbers.includes(Number(cell.textContent))) {
+            cell.classList.add('marked');
+          }
+        });
+
+        if (checkBingo(ticket, tIndex, calledNumbers)) {
+          document.querySelectorAll(`#ticketsContainer > div:nth-child(${tIndex + 1}) .text-green-600`).forEach(el => el.classList.remove('hidden'));
+        }
+      });
+    }
+
+    function checkBingo(ticket, tIndex, calledNumbers) {
+      const size = ticket.length;
+      let bingo = false;
+
+      // Check rows
+      for (let r = 0; r < size; r++) {
+        if (ticket[r].every((num, i) => num === 'FREE' || calledNumbers.includes(num))) {
+          bingo = true;
+        }
+      }
+
+      // Check columns
+      for (let c = 0; c < ticket[0].length; c++) {
+        let col = ticket.map(row => row[c]);
+        if (col.every(num => num === 'FREE' || calledNumbers.includes(num))) {
+          bingo = true;
+        }
+      }
+
+      // Check diagonals
+      let diag1 = [], diag2 = [];
+      for (let i = 0; i < size; i++) {
+        diag1.push(ticket[i][i]);
+        diag2.push(ticket[i][size - i - 1]);
+      }
+      if (diag1.every(num => num === 'FREE' || calledNumbers.includes(num)) || diag2.every(num => num === 'FREE' || calledNumbers.includes(num))) {
+        bingo = true;
+      }
+
+      return bingo;
+    }
+  </script>
+
+</body>
+</html>
