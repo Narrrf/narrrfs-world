@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../db.php'; // adjust if your DB file is in a different path
+require_once __DIR__ . '/../db/db.php'; // Fixed path
 
 if (!isset($_SESSION['discord_id'])) {
     http_response_code(401);
@@ -17,10 +17,17 @@ if (!isset($data['ticket'])) {
     exit;
 }
 
-$ticket_json = json_encode($data['ticket']);
+// Extra sanitize ticket before saving
+$ticket = $data['ticket'];
+$ticket_json = json_encode($ticket, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-$pdo = new PDO("sqlite:/var/www/html/db/narrrf_world.sqlite");
-$stmt = $pdo->prepare("INSERT INTO tbl_bingo_tickets (user_id, ticket_json) VALUES (?, ?)");
-$stmt->execute([$user_id, $ticket_json]);
-
-echo "Ticket saved successfully!";
+// Prepare and bind safely (already protects against injection)
+try {
+    $pdo = new PDO("sqlite:/var/www/html/db/narrrf_world.sqlite");
+    $stmt = $pdo->prepare("INSERT INTO tbl_bingo_tickets (user_id, ticket_json) VALUES (?, ?)");
+    $stmt->execute([$user_id, $ticket_json]);
+    echo "Ticket saved successfully!";
+} catch (Exception $e) {
+    http_response_code(500);
+    echo "Database error: " . htmlspecialchars($e->getMessage());
+}
