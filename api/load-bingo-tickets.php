@@ -1,6 +1,5 @@
 <?php
 session_start();
-require_once __DIR__ . '/../db/db.php';
 
 if (!isset($_SESSION['discord_id'])) {
     http_response_code(401);
