@@ -21,7 +21,6 @@ if (!isset($data['ticket'])) {
 $ticket = $data['ticket'];
 $ticket_json = json_encode($ticket, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-// Prepare and bind safely (already protects against injection)
 try {
     $pdo = new PDO("sqlite:/var/www/html/db/narrrf_world.sqlite");
     $stmt = $pdo->prepare("INSERT INTO tbl_bingo_tickets (user_id, ticket_json) VALUES (?, ?)");
