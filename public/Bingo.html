@@ -16,10 +16,10 @@
     <h1 class="text-3xl font-bold mb-4 text-center">🎯 Professional Bingo Checker</h1>
 
     <div id="loginSection" class="mb-4 text-center">
-      <a href="/api/discord-login.php?redirect=/Bingo.html"
-         class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-full shadow">
-        🔑 Login with Discord to Save Tickets
-      </a>
+<a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
+   class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-full shadow">
+  🔑 Login with Discord to Save Tickets
+</a>
     </div>
 
     <button id="addTicketBtn" class="mb-4 bg-indigo-600 text-white px-4 py-2 rounded">Add New Ticket</button>
@@ -210,12 +210,25 @@
     });
   }
 
-  function deleteTicket(index) {
-    if (confirm("Are you sure you want to delete this ticket?")) {
+function deleteTicket(index) {
+  const ticketObj = tickets[index];
+  if (!ticketObj || !ticketObj.id) return;
+
+  if (confirm("Are you sure you want to delete this ticket?")) {
+    fetch('/api/delete-bingo-ticket.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ticket_id: ticketObj.id })
+    })
+    .then(res => res.json())
+    .then(response => {
+      console.log(response.message || 'Deleted');
       tickets.splice(index, 1);
       renderTickets();
-    }
+    })
+    .catch(err => console.error("Delete failed:", err));
   }
+}
 
   function generateID() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
