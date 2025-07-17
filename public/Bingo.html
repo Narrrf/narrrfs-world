@@ -164,18 +164,21 @@ function addTicketGrid() {
 function saveTicket(gridDiv, ticketName, ticketId = null) {
   const inputs = gridDiv.querySelectorAll('input[type=number]');
   const ticket = [];
-  for (let r = 0; r < 5; r++) {
-    const row = [];
-    for (let c = 0; c < 5; c++) {
-      if (r === 2 && c === 2) {
-        row.push('FREE');
-      } else {
-        const input = inputs[r * 5 + c - (r > 2 ? 1 : 0)];
-        row.push(Number(input.value));
-      }
+for (let r = 0; r < 5; r++) {
+  const row = [];
+  for (let c = 0; c < 5; c++) {
+    if (r === 2 && c === 2) {
+      row.push('FREE');
+    } else {
+      // Calculate input index (skip the center cell)
+      let inputIndex = r * 5 + c;
+      if (r > 2 || (r === 2 && c > 2)) inputIndex -= 1;
+      const input = inputs[inputIndex];
+      row.push(Number(input.value));
     }
-    ticket.push(row);
   }
+  ticket.push(row);
+}
 
   // If editing, use the same ticketId
   const id = ticketId || generateID();
