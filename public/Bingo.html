@@ -3,135 +3,112 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
   <title>🍀 Golden Bingo Checker | Narrrf's World</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .marked { background-color: #facc15 !important; color: #fff !important; }
-    input.grid-input { width: 2.5rem; text-align: center; }
-    .gold-shadow { box-shadow: 0 0 10px #ffe066, 0 0 25px #facc15; }
-	
-	input.grid-input {
-  width: 2rem;
-  height: 2rem;
-  text-align: center;
-  font-size: 1rem;
-  margin: 0;
-  padding: 0;
-}
-@media (min-width: 768px) {
-  input.grid-input {
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: 1.25rem;
-  }
-}
+    /* Grid inputs */
+    input.grid-input {
+      width: 2rem;
+      height: 2rem;
+      text-align: center;
+      border: 2px solid #facc15;
+      border-radius: 0.25rem;
+    }
+    @media (min-width: 768px) {
+      input.grid-input {
+        width: 2.5rem;
+        height: 2.5rem;
+      }
+    }
 
+    .marked {
+      background-color: #facc15 !important;
+      color: white !important;
+    }
+
+    .gold-shadow {
+      box-shadow: 0 0 15px #ffe066;
+    }
   </style>
 </head>
-<body class="bg-gradient-to-br from-yellow-50 to-yellow-200 min-h-screen text-gray-900">
+<body class="bg-gradient-to-br from-yellow-50 to-yellow-200 text-gray-900">
 
-  <!-- 🧀 GOLDEN NAVBAR -->
-  <nav class="bg-yellow-100/80 border-b-4 border-yellow-300 rounded-b-2xl shadow-lg gold-shadow py-3 mb-4 sticky top-0 z-40">
-    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 px-4">
-      <a href="index.html" class="text-xl font-extrabold text-yellow-700 drop-shadow-lg flex items-center gap-2 hover:scale-105 transition">
-        🧪 Narrrf's Lab
-      </a>
-      <div class="flex gap-3 mt-2 sm:mt-0">
-        <a href="profile.html" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold px-4 py-2 rounded-full shadow border-2 border-yellow-700 transition">
-          🧀 Profile
-        </a>
-      </div>
-    </div>
-  </nav>
+<!-- Golden Navbar -->
+<nav class="bg-yellow-100 border-b-4 border-yellow-300 shadow gold-shadow py-4">
+  <div class="max-w-5xl mx-auto flex justify-between px-4">
+    <a href="index.html" class="text-xl font-bold text-yellow-700">🧪 Narrrf's Lab</a>
+    <a href="profile.html" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-4 py-2 rounded-full">🧀 Profile</a>
+  </div>
+</nav>
 
-  <!-- 🧀 LAB GOLDEN HEADER -->
-  <header class="relative bg-gradient-to-r from-yellow-200 via-pink-100 to-yellow-100 p-8 rounded-3xl shadow-xl border-4 border-yellow-300 mb-8 mt-4 gold-shadow">
-    <div class="absolute top-[-14px] left-10 w-3 h-3 bg-yellow-300 rounded-full animate-bounce-slow blur-sm"></div>
-    <div class="absolute top-[-24px] left-20 w-4 h-4 bg-yellow-200 rounded-full animate-pulse blur-sm"></div>
-    <div class="absolute top-[-20px] right-16 w-2 h-2 bg-pink-200 rounded-full animate-bounce blur-sm"></div>
-    <h1 class="text-4xl md:text-5xl font-extrabold text-yellow-600 drop-shadow-glow animate-pulse mb-2 text-center">
-      🧀 Golden Bingo Vault
-    </h1>
-    <p class="text-lg text-gray-700 max-w-xl mx-auto text-center">
-      Check your tickets, chase your legend, and let the cheese gods decide your fate.
-    </p>
-  </header>
+<!-- Golden Header -->
+<header class="text-center p-8 rounded-xl shadow-xl my-8 mx-4 gold-shadow bg-gradient-to-r from-yellow-100 to-pink-50">
+  <h1 class="text-5xl font-bold text-yellow-600 animate-pulse">🧀 Golden Bingo Vault</h1>
+  <p class="text-gray-700">Enter numbers, save tickets, and play freely!</p>
+</header>
 
-  <!-- 🥇 BINGO ZONE CONTAINER -->
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-4">
-    <section class="mb-6 flex flex-col items-center">
-      <!-- Discord Login -->
+<!-- Main Bingo Section -->
+<main class="max-w-4xl mx-auto px-4 py-6">
+  <section class="text-center mb-4">
+    <div id="loginSection" class="mb-4">
       <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
-        class="inline-block bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2 px-6 rounded-full shadow-lg border-2 border-yellow-700 transition-all mb-4">
-        🔑 Login with Discord to Save Tickets
-      </a>
+        class="bg-yellow-400 text-yellow-900 px-6 py-2 rounded-full shadow">🔑 Login with Discord to Save Tickets</a>
+    </div>
 
-      <button id="addTicketBtn" onclick="addTicketGrid()" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-6 py-2 rounded-full shadow mb-4 border-2 border-yellow-700 font-semibold">
-        ➕ Add New Ticket
-      </button>
-    </section>
+    <button onclick="addTicketGrid()" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-6 py-2 rounded-full shadow">
+      ➕ Add New Ticket
+    </button>
+  </section>
 
-    <div id="ticketGrids"></div>
+  <div id="ticketGrids"></div>
 
-    <section class="bg-white/70 border-l-4 border-yellow-400 p-6 rounded-xl shadow max-w-xl mx-auto mb-8">
-      <label class="block mb-2 font-semibold">Enter Called Numbers (e.g., B7, I23, N36):</label>
-      <input id="calledNumbersInput" type="text" class="w-full p-2 border rounded" placeholder="e.g., B7, I23, N36">
-      <div class="mt-2 flex gap-2">
-        <button onclick="markNumbers()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Mark Numbers</button>
-        <button onclick="clearCards()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Clear Cards</button>
-      </div>
-    </section>
+  <section class="bg-white border-l-4 border-yellow-400 p-4 rounded-xl shadow mb-8">
+    <label class="block mb-2">Enter Called Numbers (free entry):</label>
+    <input id="calledNumbersInput" type="text" class="w-full p-2 border rounded" placeholder="Example: 7, 22, 36">
+    <div class="flex gap-2 mt-2">
+      <button onclick="markNumbers()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Mark Numbers</button>
+      <button onclick="clearCards()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Clear Cards</button>
+    </div>
+  </section>
 
-    <!-- Tickets Grid -->
-    <div id="ticketsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-  </main>
- 
+  <div id="ticketsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+</main>
 
-  <!-- 🧠 LAB GOLDEN FOOTER -->
-<footer class="text-center py-6 text-xs text-yellow-700 bg-yellow-100 rounded-t-3xl shadow-inner mt-12">
-  🧠 Powered by Cheese Architect 11.0 — Bingo Edition | <a href="https://discord.gg/5dpGjmpJ" class="underline text-pink-600">Join Discord</a> <br>
-  🧀 Vault Sync | Genesis 11.0 | Last Update: 2025 | Cheese and Luck are not financial advice
-
-  <!-- 🧀 If you found this, you’re a Bingo legend! -->
-  <span class="relative group ml-2">
-    <span class="cursor-pointer text-xs opacity-30 hover:opacity-100 transition" title="Legend cheese">🧀</span>
-    <span class="absolute left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-yellow-200 text-yellow-800 rounded shadow-lg text-xs opacity-0 group-hover:opacity-100 transition pointer-events-none z-50">
-      Secret cheese unlocked! Ping Narrrf on Discord with a screenshot for a surprise!
-    </span>
-  </span>
+<!-- Golden Footer -->
+<footer class="text-center py-4 text-xs bg-yellow-100 text-yellow-800 shadow-inner rounded-t-xl">
+  🧠 Powered by Cheese Architect 11.0 | <a href="https://discord.gg/5dpGjmpJ" class="underline">Join Discord</a> <br>
+  🧀 Last Update: 2025 | Cheese & Luck are not financial advice
 </footer>
 
+  <script src="/js/bingo-logic.js"></script>
+  <!-- 🧀 If you found this, you’re a Bingo Dev legend! -->
+</body>
+</html>
+
+
 <script>
-  let tickets = []; // ✅ Declare only once
+let tickets = []; // ✅ Declare only once
 
-  window.addEventListener('DOMContentLoaded', async () => {
-    const loginSection = document.getElementById('loginSection');
-    const addBtn = document.getElementById('addTicketBtn');
-    if (addBtn) addBtn.addEventListener('click', addTicketGrid);
 
-    try {
-      const res = await fetch('/api/load-bingo-tickets.php', { credentials: 'include' });
-      if (res.ok) {
-        loginSection.style.display = 'none';
-        const ticketsData = await res.json();
-        ticketsData.forEach(ticketJSON => {
-          try {
-            const ticketObj = JSON.parse(ticketJSON);
-            tickets.push(ticketObj);
-          } catch (e) {
-            console.warn('Invalid ticket JSON:', ticketJSON);
-          }
-        });
-        renderTickets();
-      } else {
-        loginSection.style.display = 'block';
-        console.warn("Load failed:", await res.text());
-      }
-    } catch (error) {
-      loginSection.style.display = 'block';
-      console.log("Not logged in or error loading tickets:", error);
+window.addEventListener('DOMContentLoaded', async () => {
+  const loginSection = document.getElementById('loginSection');
+  try {
+    const res = await fetch('/api/load-bingo-tickets.php', { credentials: 'include' });
+    if (res.ok) {
+      if (loginSection) loginSection.style.display = 'none';
+      // ...load and render tickets
+    } else {
+      if (loginSection) loginSection.style.display = 'block';
+      // Optional: show error message to user
+      console.warn("Login check failed. Status:", res.status);
     }
-  });
+  } catch (error) {
+    if (loginSection) loginSection.style.display = 'block';
+    console.log("Not logged in or error loading tickets:", error);
+  }
+});
+
 
 function addTicketGrid() {
   const gridDiv = document.createElement('div');
@@ -168,7 +145,6 @@ function addTicketGrid() {
         input.className = 'grid-input border rounded text-center w-8 h-8 md:w-10 md:h-10 text-base bg-yellow-50 focus:ring-yellow-300';
         cell.appendChild(input);
       }
-
       row.appendChild(cell);
     }
     table.appendChild(row);
@@ -185,97 +161,94 @@ function addTicketGrid() {
   document.getElementById('ticketGrids').appendChild(gridDiv);
 }
 
-
-  function saveTicket(gridDiv, ticketName) {
-    const inputs = gridDiv.querySelectorAll('input[type=number]');
-    const ticket = [];
-
-    for (let r = 0; r < 5; r++) {
-      const row = [];
-      for (let c = 0; c < 5; c++) {
-        if (r === 2 && c === 2) {
-          row.push('FREE');
-        } else {
-          const input = inputs[r * 5 + c - (r > 2 ? 1 : 0)];
-          row.push(Number(input.value));
-        }
+function saveTicket(gridDiv, ticketName) {
+  const inputs = gridDiv.querySelectorAll('input[type=number]');
+  const ticket = [];
+  for (let r = 0; r < 5; r++) {
+    const row = [];
+    for (let c = 0; c < 5; c++) {
+      if (r === 2 && c === 2) {
+        row.push('FREE');
+      } else {
+        const input = inputs[r * 5 + c - (r > 2 ? 1 : 0)];
+        row.push(Number(input.value));
       }
-      ticket.push(row);
     }
-
-    const ticketObj = { id: generateID(), name: ticketName || `Ticket-${tickets.length + 1}`, grid: ticket };
-
-    tickets.push(ticketObj);
-    renderTickets();
-    gridDiv.remove();
-
-    fetch('/api/save-bingo-ticket.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ticket: ticketObj })
-    })
-    .then(res => res.text())
-    .then(msg => console.log(msg))
-    .catch(err => console.error("Error saving ticket:", err));
+    ticket.push(row);
   }
 
-  function renderTickets() {
-    const container = document.getElementById('ticketsContainer');
-    container.innerHTML = '';
+  const ticketObj = { id: generateID(), name: ticketName || `Ticket-${tickets.length + 1}`, grid: ticket };
 
-    tickets.forEach((ticketObj, tIndex) => {
-      const ticket = ticketObj.grid;
-      const grid = document.createElement('div');
-      grid.className = 'bg-gradient-to-br from-yellow-100 via-pink-50 to-yellow-50 p-3 md:p-4 rounded-2xl shadow-lg border-2 border-yellow-200 relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300 mouse-lab-bg';
+  tickets.push(ticketObj);
+  renderTickets();
+  gridDiv.remove();
 
-      const title = document.createElement('div');
-      title.className = 'font-bold mb-1';
-      title.textContent = `${ticketObj.name} (ID: ${ticketObj.id})`;
-      grid.appendChild(title);
+  fetch('/api/save-bingo-ticket.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ticket: ticketObj })
+  })
+  .then(res => res.text())
+  .then(msg => console.log(msg))
+  .catch(err => console.error("Error saving ticket:", err));
+}
 
-      const header = document.createElement('div');
-      header.className = 'flex justify-center mb-1 font-bold';
-      ['B','I','N','G','O'].forEach(letter => {
-        const col = document.createElement('div');
-        col.textContent = letter;
-        col.className = 'w-10 h-10 flex items-center justify-center';
-        header.appendChild(col);
-      });
-      grid.appendChild(header);
+function renderTickets() {
+  const container = document.getElementById('ticketsContainer');
+  container.innerHTML = '';
 
-      ticket.forEach((row, rIndex) => {
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'flex justify-center mb-1';
+  tickets.forEach((ticketObj, tIndex) => {
+    const ticket = ticketObj.grid;
+    const grid = document.createElement('div');
+    grid.className = 'bg-gradient-to-br from-yellow-100 via-pink-50 to-yellow-50 p-3 md:p-4 rounded-2xl shadow-lg border-2 border-yellow-200 relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300 mouse-lab-bg';
 
-row.forEach((num, cIndex) => {
-  const cell = document.createElement('div');
-  cell.textContent = num === 'FREE' ? '★' : num;
-  cell.dataset.ticket = tIndex;
-  cell.dataset.row = rIndex;
-  cell.dataset.col = cIndex;
-  cell.className = 'w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border m-0.5 rounded text-base md:text-lg bg-white/70';
-  if (num === 'FREE') cell.classList.add('marked');
-  rowDiv.appendChild(cell);
-});
+    const title = document.createElement('div');
+    title.className = 'font-bold mb-1';
+    title.textContent = `${ticketObj.name} (ID: ${ticketObj.id})`;
+    grid.appendChild(title);
 
-
-        grid.appendChild(rowDiv);
-      });
-
-      const bingoDiv = document.createElement('div');
-      bingoDiv.className = 'mt-2 font-bold text-green-600 hidden';
-      bingoDiv.textContent = '🎉 Bingo!';
-      grid.appendChild(bingoDiv);
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = 'Delete Ticket';
-      deleteBtn.className = 'mt-2 bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-full shadow transition';
-      deleteBtn.onclick = () => deleteTicket(tIndex);
-      grid.appendChild(deleteBtn);
-
-      container.appendChild(grid);
+    const header = document.createElement('div');
+    header.className = 'flex justify-center mb-1 font-bold';
+    ['B','I','N','G','O'].forEach(letter => {
+      const col = document.createElement('div');
+      col.textContent = letter;
+      col.className = 'w-10 h-10 flex items-center justify-center';
+      header.appendChild(col);
     });
-  }
+    grid.appendChild(header);
+
+    ticket.forEach((row, rIndex) => {
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'flex justify-center mb-1';
+
+      row.forEach((num, cIndex) => {
+        const cell = document.createElement('div');
+        cell.textContent = num === 'FREE' ? '★' : num;
+        cell.dataset.ticket = tIndex;
+        cell.dataset.row = rIndex;
+        cell.dataset.col = cIndex;
+        cell.className = 'w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border m-0.5 rounded text-base md:text-lg bg-white/70';
+        if (num === 'FREE') cell.classList.add('marked');
+        rowDiv.appendChild(cell);
+      });
+
+      grid.appendChild(rowDiv);
+    });
+
+    const bingoDiv = document.createElement('div');
+    bingoDiv.className = 'mt-2 font-bold text-green-600 hidden';
+    bingoDiv.textContent = '🎉 Bingo!';
+    grid.appendChild(bingoDiv);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete Ticket';
+    deleteBtn.className = 'mt-2 bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-full shadow transition';
+    deleteBtn.onclick = () => deleteTicket(tIndex);
+    grid.appendChild(deleteBtn);
+
+    container.appendChild(grid);
+  });
+}
 
 function deleteTicket(index) {
   const ticketObj = tickets[index];
@@ -297,90 +270,94 @@ function deleteTicket(index) {
   }
 }
 
-  function generateID() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-  }
+function generateID() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
 
-  function markNumbers() {
-    const calledInput = document.getElementById('calledNumbersInput').value.trim();
-    if (!calledInput) return alert('Please enter called numbers.');
+function markNumbers() {
+  const calledInput = document.getElementById('calledNumbersInput').value.trim();
+  if (!calledInput) return alert('Please enter called numbers.');
 
-    const calledEntries = calledInput.split(/\s|,/).map(entry => entry.trim().toUpperCase()).filter(e => e);
-    const calledNumbers = [];
+  const calledEntries = calledInput.split(/\s|,/).map(entry => entry.trim().toUpperCase()).filter(e => e);
+  const calledNumbers = [];
 
-    calledEntries.forEach(entry => {
-      const match = entry.match(/([BINGO])(\d+)/);
-      if (match) {
-        const letter = match[1];
-        const number = parseInt(match[2]);
-        const valid =
-          (letter === 'B' && number >= 1 && number <= 15) ||
-          (letter === 'I' && number >= 16 && number <= 30) ||
-          (letter === 'N' && number >= 31 && number <= 45) ||
-          (letter === 'G' && number >= 46 && number <= 60) ||
-          (letter === 'O' && number >= 61 && number <= 75);
-        if (valid) calledNumbers.push(number);
-      } else if (!isNaN(Number(entry))) {
-        calledNumbers.push(Number(entry));
-      }
-    });
+  calledEntries.forEach(entry => {
+    const match = entry.match(/([BINGO])(\d+)/);
+    if (match) {
+      const letter = match[1];
+      const number = parseInt(match[2]);
+      const valid =
+        (letter === 'B' && number >= 1 && number <= 15) ||
+        (letter === 'I' && number >= 16 && number <= 30) ||
+        (letter === 'N' && number >= 31 && number <= 45) ||
+        (letter === 'G' && number >= 46 && number <= 60) ||
+        (letter === 'O' && number >= 61 && number <= 75);
+      if (valid) calledNumbers.push(number);
+    } else if (!isNaN(Number(entry))) {
+      calledNumbers.push(Number(entry));
+    }
+  });
 
-    tickets.forEach((ticketObj, tIndex) => {
-      const ticket = ticketObj.grid;
-      let cells = document.querySelectorAll(`[data-ticket='${tIndex}']`);
+  tickets.forEach((ticketObj, tIndex) => {
+    const ticket = ticketObj.grid;
+    let cells = document.querySelectorAll(`[data-ticket='${tIndex}']`);
 
-      cells.forEach(cell => {
-        if (cell.textContent === '★') return;
-        if (calledNumbers.includes(Number(cell.textContent))) {
-          cell.classList.add('marked');
-        }
-      });
-
-      if (checkBingo(ticket, tIndex, calledNumbers)) {
-        document.querySelectorAll(`#ticketsContainer > div:nth-child(${tIndex + 1}) .text-green-600`).forEach(el => el.classList.remove('hidden'));
-      }
-    });
-  }
-
-  function clearCards() {
-    const cells = document.querySelectorAll('[data-ticket]');
     cells.forEach(cell => {
-      if (cell.textContent !== '★') {
-        cell.classList.remove('marked');
+      if (cell.textContent === '★') return;
+      if (calledNumbers.includes(Number(cell.textContent))) {
+        cell.classList.add('marked');
       }
     });
-    document.querySelectorAll('.text-green-600').forEach(el => el.classList.add('hidden'));
-    document.getElementById('calledNumbersInput').value = '';
-  }
 
-  function checkBingo(ticket, tIndex, calledNumbers) {
-    const size = ticket.length;
-    let bingo = false;
-
-    for (let r = 0; r < size; r++) {
-      if (ticket[r].every(num => num === 'FREE' || calledNumbers.includes(num))) {
-        bingo = true;
-      }
+    if (checkBingo(ticket, tIndex, calledNumbers)) {
+      document.querySelectorAll(`#ticketsContainer > div:nth-child(${tIndex + 1}) .text-green-600`).forEach(el => el.classList.remove('hidden'));
     }
+  });
+}
 
-    for (let c = 0; c < ticket[0].length; c++) {
-      let col = ticket.map(row => row[c]);
-      if (col.every(num => num === 'FREE' || calledNumbers.includes(num))) {
-        bingo = true;
-      }
+function clearCards() {
+  const cells = document.querySelectorAll('[data-ticket]');
+  cells.forEach(cell => {
+    if (cell.textContent !== '★') {
+      cell.classList.remove('marked');
     }
+  });
+  document.querySelectorAll('.text-green-600').forEach(el => el.classList.add('hidden'));
+  document.getElementById('calledNumbersInput').value = '';
+}
 
-    let diag1 = [], diag2 = [];
-    for (let i = 0; i < size; i++) {
-      diag1.push(ticket[i][i]);
-      diag2.push(ticket[i][size - i - 1]);
-    }
-    if (diag1.every(num => num === 'FREE' || calledNumbers.includes(num)) || diag2.every(num => num === 'FREE' || calledNumbers.includes(num))) {
+function checkBingo(ticket, tIndex, calledNumbers) {
+  const size = ticket.length;
+  let bingo = false;
+
+  // Check rows
+  for (let r = 0; r < size; r++) {
+    if (ticket[r].every(num => num === 'FREE' || calledNumbers.includes(num))) {
       bingo = true;
     }
-
-    return bingo;
   }
+
+  // Check columns
+  for (let c = 0; c < ticket[0].length; c++) {
+    let col = ticket.map(row => row[c]);
+    if (col.every(num => num === 'FREE' || calledNumbers.includes(num))) {
+      bingo = true;
+    }
+  }
+
+  // Check diagonals
+  let diag1 = [], diag2 = [];
+  for (let i = 0; i < size; i++) {
+    diag1.push(ticket[i][i]);
+    diag2.push(ticket[i][size - i - 1]);
+  }
+  if (diag1.every(num => num === 'FREE' || calledNumbers.includes(num)) || diag2.every(num => num === 'FREE' || calledNumbers.includes(num))) {
+    bingo = true;
+  }
+
+  return bingo;
+}
+
 </script>
 <!-- 🧀 If you found this, you’re a Bingo Dev legend! -->
 </body>

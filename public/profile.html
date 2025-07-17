@@ -94,6 +94,26 @@ $discordId = $_SESSION['discord_id'] ?? '';
 .animate-glow {
   animation: glow 1s ease-in-out infinite;
 }
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+.star-flash {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background-image: url('/img/star-sparkle.png');
+  background-size: contain;
+  animation: sparkle 2s infinite ease-in-out;
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
+}
+.wiggle-text {
+  animation: wiggle 1s infinite ease-in-out;
+}
   </style>
 </head>
 
@@ -149,12 +169,15 @@ $discordId = $_SESSION['discord_id'] ?? '';
   </a>
 </div>
 
-<!-- 🔔 BINGO FLASH BANNER -->
-<div id="bingoBanner" class="hidden bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 text-white text-center p-4 mb-6 rounded-lg shadow-lg animate-pulse">
-  <a href="/Bingo.html" class="text-2xl font-extrabold tracking-wide hover:underline">
-    🎯 Use Narrrfs Professional Bingo Checker!
+<!-- 🔔 PROFESSIONAL BINGO CHECKER BANNER -->
+<div id="bingoBanner" class="hidden relative p-5 mb-6 rounded-lg shadow-lg bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white text-center overflow-hidden border-4 border-yellow-300 animate-pulse">
+  <div class="absolute inset-0 opacity-25 bg-[url('/img/cheese-texture.png')] bg-cover bg-center pointer-events-none"></div>
+  <a href="/Bingo.html" class="relative z-10 text-2xl sm:text-3xl font-extrabold tracking-wide drop-shadow hover:underline">
+    🎯 Try the New <span class="underline decoration-wavy decoration-white">Professional Bingo Checker</span> Now!
   </a>
 </div>
+
+
 
 <!-- 🧂 VIP Absence Fallback -->
 <div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
@@ -567,6 +590,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         setText('wallet-address', 'Wallet not linked');
         hideElement('goldenCheeseGate');
         hideElement('noCheeseJoke');
+		hideElement('bingoBanner');
+
 
         // Make sure login link is visible and clickable
         if (loginLink) {
@@ -625,8 +650,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       showElement('noCheeseJoke');
     }
 	
-   // ✅ Show Bingo banner if user is logged in
-   showElement('bingoBanner');
+// ✅ Show Bingo banner if user is logged in
+if (user.discord_id) {
+  showElement('bingoBanner');
+}
+
 
 
   } catch (err) {
