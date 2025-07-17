@@ -102,12 +102,11 @@ $stmt->execute();
 // ✅ Sync roles
 include_once(__DIR__ . '/sync-role.php');
 
-// Determine redirect target
-$target = 'https://narrrfs.world/';
-if (isset($_GET['redirect']) && $_GET['redirect'] === 'admin') {
-    $target .= 'admin/manage-scores.html';
-} else {
-    $target .= 'profile.html';
+// 📌 Determine redirect target (now dynamic)
+$target = 'https://narrrfs.world/profile.html';
+if (isset($_SESSION['oauth_final_redirect'])) {
+    $target = 'https://narrrfs.world' . $_SESSION['oauth_final_redirect'];
+    unset($_SESSION['oauth_final_redirect']); // clean up
 }
 
 // ✅ Inject localStorage and redirect

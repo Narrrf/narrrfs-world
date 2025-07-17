@@ -471,13 +471,33 @@ if (typeof loadCombinedLeaderboards === "function") {
         }, { passive: false });
       
       // ✅ Enhanced Mobile Touch Controls: Swipe + Hold for Fast Drop
+// === TETRIS: Enhanced Full-Screen Touch Controls with Scroll Prevention ===
 let touchStartX = 0, touchStartY = 0;
 let touchDropInterval = null;
 let dropHoldTimeout = null;
 let heldDown = false;
+let tetrisScrollLocked = false;
+const sensitivity = 20; // Set your swipe threshold here
 
-canvas.addEventListener("touchstart", e => {
+// Helper: Lock/unlock scrolling for full screen (mobile fix)
+function lockTetrisScroll() {
+  if (!tetrisScrollLocked) {
+    document.body.style.overflow = "hidden";
+    tetrisScrollLocked = true;
+  }
+}
+function unlockTetrisScroll() {
+  if (tetrisScrollLocked) {
+    document.body.style.overflow = "";
+    tetrisScrollLocked = false;
+  }
+}
+
+// Listen anywhere on screen!
+document.addEventListener("touchstart", e => {
   if (e.cancelable) e.preventDefault();
+  lockTetrisScroll();
+
   const touch = e.touches[0];
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
@@ -490,16 +510,17 @@ canvas.addEventListener("touchstart", e => {
       drop();
       draw();
     }, 75);
-  }, 500); // Trigger hold after 1 sec
+  }, 500);
 }, { passive: false });
 
-canvas.addEventListener("touchend", e => {
+document.addEventListener("touchend", e => {
   clearTimeout(dropHoldTimeout);
 
   if (heldDown) {
     clearInterval(touchDropInterval);
     heldDown = false;
-    return; // Do not process swipe if hold-drop was triggered
+    unlockTetrisScroll();
+    return; // Don’t process swipe if hold-drop was triggered
   }
 
   const touch = e.changedTouches[0];
@@ -510,11 +531,17 @@ canvas.addEventListener("touchend", e => {
     if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) current.col++;
     else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) current.col--;
   } else {
-    if (deltaY < -sensitivity) rotatePiece(); // swipe up
+    if (deltaY < -sensitivity) rotatePiece(); // swipe up = rotate
+    // Optionally, swipe down for instant drop:
+    // if (deltaY > sensitivity) dropToBottom();
   }
 
   draw();
+  unlockTetrisScroll();
 }, { passive: false });
+
+// (Optional) When you quit/end/reset game, call unlockTetrisScroll() to restore scrolling!
+
 
       
       // ✅ Final game loop initialization

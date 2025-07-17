@@ -302,15 +302,20 @@ function initSnake() {
   });
 
 // Touch controls with scroll prevention
+// Add this at the TOP of your snake.js
 let touchStartX = 0, touchStartY = 0;
-canvas.addEventListener("touchstart", e => {
-  e.preventDefault(); // ✅ Prevent scroll
+let isSnakeGameActive = false;
+function enableGlobalSnakeTouch() { isSnakeGameActive = true; }
+function disableGlobalSnakeTouch() { isSnakeGameActive = false; }
+document.body.addEventListener("touchstart", function(e) {
+  if (!isSnakeGameActive) return;
+  e.preventDefault();
   touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
 }, { passive: false });
-
-canvas.addEventListener("touchend", e => {
-  e.preventDefault(); // ✅ Prevent scroll
+document.body.addEventListener("touchend", function(e) {
+  if (!isSnakeGameActive) return;
+  e.preventDefault();
   const deltaX = e.changedTouches[0].clientX - touchStartX;
   const deltaY = e.changedTouches[0].clientY - touchStartY;
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
@@ -321,6 +326,12 @@ canvas.addEventListener("touchend", e => {
     else if (deltaY < -20 && velocity.y === 0) velocity = { x: 0, y: -1 };
   }
 }, { passive: false });
+
+// In your game logic (when player starts):
+// enableGlobalSnakeTouch();
+// When game is over or exited:
+// disableGlobalSnakeTouch();
+
 
   // Pause button
   const pauseBtn = document.getElementById("pause-snake-btn");

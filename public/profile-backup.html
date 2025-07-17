@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<?php
+session_start();
+$discordId = $_SESSION['discord_id'] ?? '';
+?>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🧠 Your Narrrf Profile</title>
+  <script>
+  window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
+</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="theme-color" content="#fcd34d">
+  <link rel="icon" href="img/cheese-egg.png" type="image/png">
+
+  <style>
+    /* 🎨 Style Card Elements */
+    .card {
+      background: #36393f;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* 🖼️ Avatar */
+    .avatar {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      margin-bottom: 15px;
+    }
+
+    /* 🧠 Username */
+    .username {
+      font-size: 1.5em;
+      margin-bottom: 5px;
+    }
+
+    /* 🧬 Tagline + Guild Info */
+    .tagline {
+      font-size: 0.95em;
+      color: #b9bbbe;
+      margin-bottom: 20px;
+    }
+    .guilds {
+      margin-top: 15px;
+      font-size: 0.9em;
+    }
+
+    /* 🧀 Highlight Text */
+    .cheese {
+      margin-top: 25px;
+      font-style: italic;
+      color: #fcd34d;
+    }
+    @keyframes pop {
+  0% { transform: scale(0.9); opacity: 0.3; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop {
+  animation: pop 0.4s ease-out;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 5px #f472b6, 0 0 10px #f472b6, 0 0 15px #f472b6;
+  }
+  50% {
+    text-shadow: 0 0 10px #f472b6, 0 0 20px #f472b6, 0 0 25px #f472b6;
+  }
+  100% {
+    text-shadow: 0 0 5px #f472b6, 0 0 10px #f472b6, 0 0 15px #f472b6;
+  }
+}
+
+.animate-glow {
+  animation: glow 1s ease-in-out infinite;
+}
+  </style>
+</head>
+
+<!-- ✅ Profile Scroll DOM Zone -->
+<body class="bg-[#2f3136] text-white font-sans flex flex-col items-center py-10 px-4">
+
+<!-- 🔰 Header with App Context -->
+<header class="w-full bg-black py-4 px-6 text-yellow-400 shadow-md">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Phase 5 Portal</h1>
+    <nav class="space-x-4 text-sm md:text-base flex items-center">
+      <a href="index.html" class="hover:text-pink-400">Home</a>
+      <a href="mint.html" class="hover:text-pink-400">Mint</a>
+      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
+      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
+      <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
+      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+      <button id="connect-wallet-btn" onclick="connectWallet()" 
+        class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
+        🔌 Connect
+      </button>
+      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
+      <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
+        ❌
+      </button>
+    </nav>
+  </div>
+</header>
+
+<!-- 💎 Conditional VIP Notification -->
+<div id="goldenCheeseGate" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 font-bold rounded-xl shadow-lg animate-pulse">
+  <img src="img/big-cheese.svg" class="w-8 h-8 inline mr-2" alt="Big Cheese" />
+  Welcome, VIP! You found the Golden Cheese 🧀
+</div>
+
+<div id="vip-download-zone" class="hidden mt-4">
+  <a id="vip-download-btn" 
+     href="/api/user/download-vip-art.php"
+     class="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-2 rounded-lg shadow animate-pop"
+     download>
+    🖼️ Download Your HD VIP NFT
+  </a>
+</div>
+
+<!-- 🧂 VIP Absence Fallback -->
+<div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
+  😅 You're logged in, but... no VIP pass? That's nacho cheese!
+</div>
+
+<!-- 👤 User Profile Card -->
+<main class="flex-grow flex items-center justify-center px-4 py-12">
+  <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center border-4 border-yellow-400">
+
+    <!-- 👋 Welcome Message -->
+<span id="welcome-name"></span>
+    <p id="welcome-msg" class="text-yellow-300 text-sm italic mb-2">
+      Welcome back, <span id="welcome-name">loading...</span>
+    </p>
+
+<!-- 🖼️ User Avatar or Discord Login -->
+<div class="w-24 h-24 mx-auto mb-4">
+  <a id="login-link" href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read">
+    <img id="avatar"
+         class="rounded-full border-4 border-yellow-500 shadow animate-bounce cursor-pointer transition hover:scale-105"
+         src="img/grumpy-cheese.png"
+         alt="Grumpy Guest Avatar"
+         title="Click to login via Discord"
+         width="96"
+         height="96" />
+  </a>
+</div>
+
+    <!-- 📛 Username Display -->
+    <h1 id="username" class="text-2xl font-bold text-yellow-300">Loading...</h1>
+    <p id="email" class="text-sm text-gray-400">...</p>
+    <p id="guilds" class="mt-2 text-sm text-yellow-100 italic">Guilds loading...</p>
+
+    <!-- 🧪 Traits + Wallet View -->
+    <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner">
+      <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
+      <p id="wallet-address">🔗 Linked wallet: <em class="text-sm">coming soon</em></p>
+      <p>🧬 Traits: <span id="traits">pending sync</span></p>
+    </div>
+
+    <!-- ✅ Session Note -->
+    <div class="mt-4 text-xs text-gray-300 italic">
+      OAuth session live · Verified via Discord
+    </div>
+
+    <!-- 👣 Footer Note -->
+    <div class="mt-6 text-yellow-400 text-sm">
+      🧠 Profile powered by Cheese Architect 9.0 · Phase 5 Bridge Online
+    </div>
+	
+
+<!-- 🧀 Trophy Shelf Zone -->
+<section id="trophy-shelf" class="my-16 px-4">
+  <h2 class="text-center text-2xl sm:text-3xl font-extrabold text-yellow-400 mb-6 drop-shadow">
+    🏆 Role Trophy Shelf
+  </h2>
+
+  <div id="cheeseShelf" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 justify-items-center">
+    <!-- Dynamic trophies will appear here -->
+  </div>
+
+  <p class="text-center mt-6 text-xs italic text-yellow-200">Collect all the cheese pokals... or be forgotten.</p>
+</section> 
+  
+</main>
+  
+<!-- 🧀 Cheese Profile Card – Unified Lab Style -->
+<section class="relative mt-12 bg-gray-800 border-4 border-yellow-400 rounded-2xl p-6 shadow-2xl max-w-md mx-auto text-white">
+
+  <!-- 🔨 Under Construction Ribbon -->
+  <div class="absolute -top-4 -right-4 rotate-6 bg-yellow-400 text-black text-xs font-extrabold px-3 py-1 rounded-full shadow-lg z-10 animate-pulse ring-2 ring-yellow-300">
+    🚧 Under Cheese-struction
+  </div>
+
+  <!-- 🧠 Header -->
+  <h2 class="text-xl text-yellow-300 font-extrabold mb-4 flex items-center justify-center gap-2">
+    🧀 Wanted Cheese Profile
+  </h2>
+
+  
+  <!-- 📊 Stats Block -->
+  <div class="bg-yellow-100 text-gray-900 rounded-xl p-4 border-1-4 border-yellow-400 shadow-inner mb-4 mt-8">
+    <!-- 📊 Stats Content -->
+    <h3 class="font-bold text-yellow-800 mb-2">📊 Stats</h3>
+    <ul class="list-disc list-inside text-sm space-y-1">
+      <li>🎯 Score Adjustments: <strong id="stats-adjustments">Loading...</strong></li>
+      <li>🎮 Score Sources: <strong id="stats-sources">Loading...</strong></li>
+      <li>⭐ Active Roles: <strong id="stats-roles">Loading...</strong></li>
+      <li>📅 Member Since: <strong id="stats-member-since">Loading...</strong></li>
+      <li>🌐 Discord Role Sync: <strong>✅ Complete</strong></li>
+    </ul>
+  </div>
+
+  <!-- 🧪 Skills -->
+<div class="skills-list flex flex-wrap gap-2 mt-2">
+  <!-- Filled by JS -->
+  </div>
+
+  <!-- 🔐 Access Levels -->
+<div class="access-levels-list flex flex-wrap gap-2 mt-2">
+  <!-- Filled by JS -->
+  </div>
+
+  <!-- 💰 Currency -->
+  <div class="bg-purple-100 text-gray-800 rounded-xl p-4 border-l-4 border-purple-400 shadow mb-4">
+    <h3 class="font-bold text-purple-800 mb-2">💰 Wallet & NFTs</h3>
+    <div class="text-sm mb-2 italic">
+      <span class="text-purple-600">👤 Discord:</span> <span id="wallet-discord-name">Not logged in</span>
+    </div>
+    <ul class="list-disc list-inside text-sm">
+      <li>💎 $SPOINC Balance: <strong id="spoinc-balance">Loading...</strong></li>
+      <li>🪙 $DSPOINC Balance: <strong id="dspoinc-balance">Loading...</strong> (Swap Rate: 1 → 10,000)</li>
+      <li>🎴 NFTs: loading .. </li>
+    </ul>
+  </div>
+
+  <!-- 🪧 Status -->
+  <p class="text-center text-red-400 font-bold mt-4 animate-pulse">
+    🪧 STATUS: WANTED FOR TRAIT THEFT 🔥
+  </p>
+
+
+<section id="user-quests-section" class="my-10">
+  <h2 class="text-2xl font-bold text-yellow-300 mb-4">🗺️ Your Quests</h2>
+  <div class="max-w-2xl mx-auto">
+    <div id="user-quests-list" class="space-y-4">
+      <!-- Quests will render here -->
+    </div>
+  </div>
+</section>
+
+
+
+<!-- 🧀 Official Cheese Stamp -->
+<div class="mt-6 flex justify-center">
+  <div class="bg-yellow-400 text-white px-4 py-2 rounded-full border-4 border-white shadow-md">
+    🧀 Official Cheese Stamp 2806
+  </div>
+</div>
+
+<!-- DSPOINC Graph & Score Changes -->
+<div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
+  <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
+    <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
+    Your $DSPOINC Journey
+  </h2>
+  <div>
+    <span class="font-mono text-yellow-300">Balance:</span>
+    <span id="user-dspoinc-journey" class="font-mono text-yellow-100 text-lg">0</span>
+  </div>
+  
+  <div class="relative">
+    <canvas id="pointsGraph" width="400" height="180"></canvas>
+    <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
+  </div>
+<div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
+  <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
+  <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
+    <!-- Populated by JS -->
+  </ul>
+</div>
+
+</div>
+
+</section>
+
+<!-- 🎮 Dual Game Panel — Tetris + Snake -->
+<section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col md:flex-row gap-8 items-start justify-center">
+ <!-- 🎮 TETRIS PANEL -->
+  <section id="cheese-tetris" class="flex-1 relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 mb-8 md:mb-0">
+    <div class="absolute top-4 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+      🎮 TETRIS
+    </div>
+
+    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">TETRIS SPOINC MODE</h2>
+    <canvas id="tetris-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
+
+    <div class="text-center mt-4 space-y-2">
+      <button id="start-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
+      <button id="pause-tetris-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
+    </div>
+
+    <div id="bomb-defused-popup" class="absolute top-[420px] right-6 md:right-12 bg-yellow-300 text-black px-2 py-1 rounded-lg text-xs md:text-sm shadow-lg hidden z-50 scale-75">
+      💣 Bomb Defused!
+    </div>
+
+    <div class="mt-4 flex flex-col items-center justify-center">
+      <h4 class="text-xs font-semibold tracking-wide uppercase mb-1">🔮 Next Block</h4>
+      <div class="p-1 bg-black rounded-xl ring-2 ring-yellow-500/60 shadow-md">
+        <canvas id="next-canvas" width="80" height="80" class="bg-gray-900 rounded-md block"></canvas>
+      </div>
+    </div>
+
+    <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1 animate-glow">💣 Incoming Cheese Bomb!</p>
+    <p id="spoink-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">
+      💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
+    </p>
+
+  </section>
+
+  <!-- 🟢 SNAKE PANEL -->
+  <section id="cheese-snake" class="flex-1 bg-black text-yellow-300 py-8 px-4 sm:px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 relative flex flex-col items-center">
+    <div class="absolute top-4 left-4 bg-green-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+      🐍 SNAKE
+    </div>
+  <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">Cheese Snake</h2>
+
+    <div class="relative">
+      <canvas id="snake-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto rounded-lg shadow-lg"></canvas>
+
+      <div id="mutation-badge" class="hidden text-xs bg-lime-500 text-black px-3 py-2 rounded-full shadow-lg absolute top-2 right-2 z-50">
+        🧬 GENETIC MODE ACTIVE
+      </div>
+
+      <div id="snake-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
+        5
+      </div>
+    </div>
+
+    <div class="text-center mt-4 space-y-2">
+      <button id="start-snake-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
+      <button id="pause-snake-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
+    </div>
+
+    <p id="snake-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">💰 Snake Score: $0 DSPOINC</p>
+    <div class="text-xs italic text-center text-gray-500 mt-1">&larr; first to 100 cheese triggers mutation</div>
+
+
+
+<!-- 🧠 MODALS -->
+<div id="snake-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+  <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
+    <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
+    <p id="snake-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+  </div>
+</div>
+
+<div id="game-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+  <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
+    <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
+    <p id="final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+  </div>
+</div>
+
+</section>
+</section>
+
+<!-- 🔐 Login Prompt -->
+<div id="tetris-auth" class="text-center my-6 w-full max-w-2xl mx-auto">
+  <button onclick="loginAndReload()" class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-5 py-2 rounded-full shadow transition">
+    🔐 Login with Discord to Save Score
+  </button>
+</div>
+
+<!-- 🏆 Leaderboard Section -->
+<section id="leaderboard" class="max-w-4xl mx-auto bg-black text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-yellow-400 mt-10">
+  <h3 class="text-center text-xl font-bold">🏆 Leaderboard</h3>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+    <div>
+      <h4 class="text-center text-md font-semibold">🧀 Tetris Top Scores</h4>
+      <ul id="leaderboard-tetris-list" class="text-center"></ul>
+    </div>
+    <div>
+      <h4 class="text-center text-md font-semibold">🐍 Snake Top Scores</h4>
+      <ul id="leaderboard-snake-list" class="text-center"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 🍩 Footer -->
+
+
+<!-- 🍩 Footer -->
+<footer class="text-center mt-16 text-xs text-gray-400">
+  Powered by 🧀 Cheese Architect 9.0 · Discord + Game + Wallet Sync Engine 🌍
+</footer>
+
+<!-- 🔑 Fallback Login Button -->
+<div id="loginBlock" class="mt-6 text-center">
+  <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
+     class="inline-block bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-5 rounded-full shadow-md border-2 border-yellow-600 animate-bounce transition">
+    🧀 Click to Login with Discord
+  </a>
+  <p class="mt-2 text-xs text-gray-300 italic">When the Grumpy Cheese gives no love, this does.</p>
+</div>
+
+
+<div class="w-full flex justify-center mt-6">
+  <a href="/index.html"
+     class="bg-yellow-500 text-white px-5 py-2 rounded-full shadow hover:bg-yellow-600 text-sm sm:text-base text-center">
+    🧪 Back to the Lab
+  </a>
+</div>
+
+  
+  <!-- 🔑 Login / Sync -->
+  <!-- <a href="/profile.html" class="bg-indigo-500 text-white px-5 py-2 rounded-full shadow hover:bg-indigo-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    🔑 Login / Sync Profile
+  </a> -->
+
+  <!-- 🧬 View Traits -->
+  <!-- <a href="#traits" class="bg-pink-500 text-white px-5 py-2 rounded-full shadow hover:bg-pink-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    🧬 View Traits
+  </a> -->
+
+  <!-- 🚪 Portals -->
+  <!-- <a href="#portals" class="bg-blue-500 text-white px-5 py-2 rounded-full shadow hover:bg-blue-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    🚪 Open Portals
+  </a> -->
+
+  <!-- 💰 Wallet -->
+  <!-- <a href="#wallet" class="bg-purple-500 text-white px-5 py-2 rounded-full shadow hover:bg-purple-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    💰 Manage Wallet
+  </a> -->
+</div>
+
+  <!-- 🌀 Cheese Portal to Hytopia -->
+<div class="mt-10 text-center">
+  <a href="/hytopia.html" class="group inline-block relative" title="🧀 Hytopia portal is closed... for now.">
+    <div class="relative p-4 rounded-full bg-yellow-300/90 hover:bg-yellow-400 transition-all duration-300 shadow-2xl animate-pulse">
+      <img src="img/cheese-portal.png" alt="Enter Hytopia" class="w-24 h-24 sm:w-32 sm:h-32 mx-auto group-hover:scale-105 transition-transform duration-300 drop-shadow-lg" />
+      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div class="text-xs bg-black/80 text-yellow-300 px-3 py-1 rounded-full shadow-md animate-pulse">
+          🧀 Portal Closed · Opening Soon!
+        </div>
+      </div>
+      
+<!-- 🔐 Dynamic Fetch Script logged in or not -->
+<!-- 👑 VIP Logic + Trophy Shelf (KEEP AS IS) -->
+<!-- 🔐 Dynamic Fetch Script logged in or not -->
+<!-- Patched profile.html by Cheese Architect 🧀✨ -->
+
+<!-- Patched profile.html with working fetch logic 🧠 -->
+<!-- Patched profile.html with working fetch logic 🧠 -->
+<script>
+const trophies = {
+  "VIP Holder": { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
+  "PokerOG": { img: "img/trophy_PokerOG.png", label: "Poker OG" },
+  "Champion": { img: "img/trophy_champion.png", label: "Champion" },
+  "Rumble": { img: "img/trophy_rumble.png", label: "Rumble Champ" },
+  "Engage": { img: "img/trophy_engage.png", label: "Engager" },
+  "Moderator": { img: "img/trophy_moderator.png", label: "Moderator" },
+  "Server Booster": { img: "img/trophy_serverbooster.png", label: "Server Booster" },
+  "Alpha Caller": { img: "img/trophy_alphacaller.png", label: "Alpha Caller" },
+  "Crypto Corn Friends": { img: "img/trophy_cryptocornfriends.png", label: "Corny Companion" },
+  "Rabbit Friends": { img: "img/trophy_rabbitfriends.png", label: "Bunny Buddy" },
+  "Kaleido Friends": { img: "img/trophy_kaleidofriends.png", label: "Kaleido Supporter" },
+  "Weedery Friends": { img: "img/trophy_weederyfriends.png", label: "Weedery 🌿" },
+  "Community Member": { img: "img/trophy_community.png", label: "Community Member" },
+  "Verifiziert": { img: "img/trophy_verified.png", label: "Verified" }
+};
+
+function renderTrophyShelf(userRoles = []) {
+  const shelf = document.getElementById("cheeseShelf");
+  if (!shelf) return;
+  shelf.innerHTML = "";
+  const uniqueRoles = [...new Set(userRoles)];
+  uniqueRoles.forEach(role => {
+    const trophy = trophies[role];
+    if (trophy) {
+      const trophyEl = document.createElement("div");
+      trophyEl.className = "flex flex-col items-center animate-pop transition-transform hover:scale-105";
+      trophyEl.innerHTML = `
+        <img src="${trophy.img}" alt="${trophy.label}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow mb-2" />
+        <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}
+      `;
+      shelf.appendChild(trophyEl);
+    }
+  });
+}
+
+// Helper for safe text setting
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.innerText = value;
+}
+// Helper for class toggle (show/hide)
+function showElement(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('hidden');
+}
+function hideElement(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('hidden');
+}
+
+document.addEventListener("DOMContentLoaded", async function () {
+  const avatar = document.getElementById('avatar');
+  const loginLink = document.getElementById('login-link');
+
+  try {
+    // Unified fetch from profile.php
+    const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        // Not logged in - show login UI
+        setText('username', 'Guest#0000');
+        setText('welcome-name', 'Guest');
+        setText('email', 'Please log in');
+        setText('guilds', 'No guilds connected');
+        setText('traits', 'No traits available');
+        setText('user-roles', 'No roles');
+        setText('wallet-address', 'Wallet not linked');
+        hideElement('goldenCheeseGate');
+        hideElement('noCheeseJoke');
+
+        // Make sure login link is visible and clickable
+        if (loginLink) {
+          loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+          loginLink.style.display = 'block';
+        }
+        if (avatar) {
+          avatar.src = 'img/grumpy-cheese.png';
+          avatar.style.cursor = 'pointer';
+        }
+        return;
+      }
+      throw new Error(`API error: ${res.status}`);
+    }
+
+    const user = await res.json();
+    
+    // Store Discord info for other features (optional)
+    if (user.discord_id) {
+      localStorage.setItem("discord_id", user.discord_id);
+      localStorage.setItem("discord_name", user.discord_name);
+    }
+
+    // Username & avatar
+    setText('username', user.discord_name || 'Unknown');
+    setText('welcome-name', user.discord_name || 'Unknown');
+    if (avatar) {
+      avatar.src = user.avatar_url || 'img/default-avatar.png';
+      avatar.alt = user.discord_name || 'Unknown';
+      avatar.title = user.discord_name || 'Unknown';
+      avatar.classList.remove('cursor-pointer');
+    }
+    if (loginLink) loginLink.removeAttribute('href');
+
+    // Traits, roles, and wallet
+    setText('traits', user.traits?.join(', ') || 'No traits');
+    setText('user-roles', user.roles?.join(', ') || 'No roles');
+    setText('wallet-address', localStorage.getItem('walletAddress') || 'Wallet not linked');
+    setText('email', user.email || '');
+    setText('guilds', `🎯 Guilds Connected: ${user.guilds?.length || 0}`);
+
+    // Scores/stats (if present in JSON)
+    if (user.stats) {
+      setText('user-dspoinc', user.stats.scoreAdjustments !== undefined ? user.stats.scoreAdjustments.toLocaleString() : '');
+      setText('user-spoinc', user.stats.sources !== undefined ? user.stats.sources.toLocaleString() : '');
+    }
+
+    // Trophy pokal shelf — render immediately from roles
+    if (user.roles) renderTrophyShelf(user.roles);
+
+    // VIP/Golden Cheese logic
+    if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
+      showElement('goldenCheeseGate');
+      showElement('vip-download-zone');
+    } else {
+      showElement('noCheeseJoke');
+    }
+
+  } catch (err) {
+    console.error('Profile fetch failed:', err);
+    // Show login UI on error
+    setText('username', 'Guest#0000');
+    setText('welcome-name', 'Guest');
+    setText('email', 'Please log in');
+    setText('guilds', 'No guilds connected');
+    setText('traits', 'No traits available');
+    setText('user-roles', 'No roles');
+    setText('wallet-address', 'Wallet not linked');
+    hideElement('goldenCheeseGate');
+    hideElement('noCheeseJoke');
+    
+    // Make sure login link is visible
+    if (loginLink) {
+      loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+      loginLink.style.display = 'block';
+    }
+    if (avatar) {
+      avatar.src = 'img/grumpy-cheese.png';
+      avatar.style.cursor = 'pointer';
+    }
+  }
+});
+</script>
+
+
+<script>
+  // 🎯 Load both Tetris and Snake Leaderboards
+  fetch("https://narrrfs.world/api/dev/get-leaderboard.php")
+    .then(res => res.json())
+    .then(data => {
+      const scores = data.leaderboard || [];
+
+      const tetrisList = document.getElementById("leaderboard-tetris-list");
+      const snakeList = document.getElementById("leaderboard-snake-list");
+
+      tetrisList.innerHTML = "";
+      snakeList.innerHTML = "";
+
+      scores
+        .filter(entry => entry.game === "tetris")
+        .forEach((entry, i) => {
+          const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+          const li = document.createElement("li");
+          li.innerHTML = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+          tetrisList.appendChild(li);
+        });
+
+      scores
+        .filter(entry => entry.game === "snake")
+        .forEach((entry, i) => {
+          const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+          const li = document.createElement("li");
+          li.innerHTML = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+          snakeList.appendChild(li);
+        });
+    });
+</script>
+<!-- 🧠 Load Scroll Scripts -->
+<script src="scripts/tetris-scroll.js?v=9.9"></script>
+<script src="scripts/snake-scroll.js?v=1.0"></script>
+
+<!-- 🏆 Leaderboard Logic -->
+<script>
+  async function loadCombinedLeaderboards() {
+    try {
+      const res = await fetch("https://narrrfs.world/api/dev/get-leaderboard.php");
+      const result = await res.json();
+
+      const tetrisList = document.getElementById("leaderboard-tetris-list");
+      const snakeList = document.getElementById("leaderboard-snake-list");
+
+      tetrisList.innerHTML = "";
+      snakeList.innerHTML = "";
+
+      (result.tetris || []).forEach((entry, i) => {
+        const li = document.createElement("li");
+        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+        tetrisList.appendChild(li);
+      });
+
+      (result.snake || []).forEach((entry, i) => {
+        const li = document.createElement("li");
+        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+        snakeList.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Leaderboard fetch failed", err);
+    }
+  }
+</script>
+
+
+<!-- 🎮 Button Triggers and Init -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const tetrisBtn = document.getElementById("start-tetris-btn");
+    const snakeBtn = document.getElementById("start-snake-btn");
+
+    if (tetrisBtn) {
+      tetrisBtn.addEventListener("click", () => {
+        window.startTetrisGame?.();
+        tetrisBtn.disabled = true;
+        tetrisBtn.textContent = "🕹️ Playing...";
+      });
+    }
+
+    if (snakeBtn) {
+      snakeBtn.addEventListener("click", () => {
+        window.startSnakeGame?.();
+        snakeBtn.disabled = true;
+        snakeBtn.textContent = "🕹️ Playing...";
+      });
+    }
+
+    loadCombinedLeaderboards();
+  });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+  // 1. Try to get Discord ID (session or local)
+  const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+  if (!userId) return; // Not logged in
+
+  // 2. Fetch user profile data
+  let user;
+  try {
+    const res = await fetch(`/api/user/profile.php?user_id=${userId}`);
+    user = await res.json();
+    if (user.error) throw new Error(user.error);
+  } catch (e) {
+    // fallback to loading state
+    return;
+  }
+
+  // 3. Fill Stats
+  document.getElementById('stats-adjustments').innerText = user.stats?.scoreAdjustments ?? "–";
+  document.getElementById('stats-sources').innerText = user.stats?.sources ?? "–";
+  document.getElementById('stats-roles').innerText = user.stats?.roles ?? "–";
+  document.getElementById('stats-member-since').innerText = user.member_since ?? "–";
+
+  // 4. Fill Skills (all roles & traits as badges)
+  const skillsBox = document.querySelector('.skills-list');
+  skillsBox.innerHTML = '';
+  const allSkills = [...(user.roles || []), ...(user.traits || [])];
+  if (allSkills.length) {
+    allSkills.forEach(skill => {
+      const badge = document.createElement('span');
+      badge.className = "inline-block bg-yellow-300 text-black px-2 py-1 rounded-full m-1 text-xs font-semibold shadow";
+      badge.innerText = skill;
+      skillsBox.appendChild(badge);
+    });
+  } else {
+    skillsBox.innerHTML = '<span class="text-gray-300">No skills yet</span>';
+  }
+
+  // 5. Access Levels (portals): show unlocked based on role/trait logic
+  const portals = [
+    {name: "Lore Portal", role: "Lore Mage", color: "bg-green-500"},
+    {name: "Hytopia Portal", role: "Hytopia Hero", color: "bg-yellow-400"},
+    {name: "Lab 3", role: "Lab3 Access", color: "bg-red-500"},
+  ];
+  const accessEl = document.querySelector('.access-levels-list');
+  accessEl.innerHTML = '';
+  portals.forEach(portal => {
+    const unlocked = allSkills.includes(portal.role);
+    accessEl.innerHTML += `<span class="px-3 py-1 rounded-full mr-2 mb-2 inline-block text-white text-xs font-bold shadow ${portal.color} ${!unlocked ? 'opacity-50 grayscale' : ''}">
+      ${portal.name}${!unlocked ? ' (Locked)' : ''}
+    </span>`;
+  });
+
+  // 6. Optionally: Let user "highlight" a favorite skill/level
+  // You can add an event listener to the badges to let them pick a "main" skill, etc.
+});
+</script>
+
+<script>
+  function loginAndReload() {
+    // Redirect to Discord OAuth
+    window.location.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+  }
+</script>
+
+<!-- Add wallet.js before the closing body tag -->
+<script src="js/wallet.js"></script>
+<!-- Cheese Score Stats Fetcher -->
+<script>
+// Utility to get Discord ID (if session is available)
+async function getDiscordId() {
+  // Try from global variable first
+  if (window.userDiscordId) return window.userDiscordId;
+
+  // Fallback to localStorage
+  return localStorage.getItem('discord_id') || null;
+}
+
+// On page load after DOM is ready
+document.addEventListener('DOMContentLoaded', async () => {
+  // Score fetching is now handled in the main user data fetch
+  // This listener is kept for potential future use
+});
+</script>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const userId = window.sessionDiscordId || localStorage.getItem('discord_id');
+  const canvas = document.getElementById('pointsGraph');
+  const msgBox = document.getElementById('pointsGraphMsg');
+
+  function showMsg(msg) {
+    if (msgBox) {
+      msgBox.innerText = msg;
+      msgBox.classList.remove('hidden');
+    }
+    if (canvas) canvas.style.display = 'none';
+  }
+
+  if (!userId) {
+    showMsg('Please log in to see your DSPOINC history.');
+    return;
+  }
+  if (!canvas) {
+    console.error('pointsGraph canvas missing!');
+    return;
+  }
+  fetch(`/api/discord/score-history.php?user_id=${userId}`)
+    .then(res => res.json())
+    .then(json => {
+      if (msgBox) msgBox.classList.add('hidden');
+      canvas.style.display = '';
+      let cumulative = 0, labels = [], data = [];
+      for (const entry of json.history) {
+        cumulative += entry.amount;
+        labels.push(entry.timestamp.split('T')[0]);
+        data.push(cumulative);
+      }
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: '$DSPOINC Over Time',
+            data,
+            fill: false,
+            tension: 0.3,
+            borderColor: '#fcd34d',
+            backgroundColor: '#fde68a',
+            pointRadius: 4,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: true } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    })
+    .catch(err => {
+      showMsg('Could not load history. Please try again.');
+      console.error('Graph error:', err);
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+  let user = {};
+  let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+
+  // Fetch user profile and set balances
+  if (userId) {
+    try {
+      const res = await fetch('/api/user/profile.php?user_id=' + encodeURIComponent(userId));
+      user = await res.json();
+
+      // Set both balances (top and journey widget)
+      const dspoincEl = document.getElementById('user-dspoinc');
+      const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
+      if (dspoincEl) dspoincEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
+      if (dspoincJourneyEl) dspoincJourneyEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
+
+    } catch (e) { /* handle error if you want */ }
+  }
+
+  // Fetch recent adjustments
+// Fetch recent adjustments
+if (user && user.discord_id) {
+  fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
+    .then(res => res.json())
+    .then(response => {
+      const recentList = document.getElementById('recentAdjustments');
+      const emptyMsg = document.getElementById('no-score-history');
+      const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+
+      // If there are adjustments, hide the message and show the list
+      if (adjustments.length > 0) {
+        if (recentList) {
+          recentList.innerHTML = adjustments
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10)
+            .map(a =>
+              `<li>
+                <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
+                : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
+                <span class="italic">(${a.reason || a.action})</span>
+              </li>`
+            ).join('');
+        }
+        if (emptyMsg) emptyMsg.style.display = "none";
+      } else {
+        // No score changes: show the empty msg and clear the list
+        if (recentList) recentList.innerHTML = '';
+        if (emptyMsg) emptyMsg.style.display = "";
+      }
+    })
+    .catch(() => {
+      // On error, show a fallback error in the list and show the empty msg
+      const recentList = document.getElementById('recentAdjustments');
+      if (recentList) recentList.innerHTML = '<li class="text-red-400">Could not load recent changes.</li>';
+      const emptyMsg = document.getElementById('no-score-history');
+      if (emptyMsg) emptyMsg.style.display = "";
+    });
+}
+
+
+  // 2. Load and display quests for this user
+  if (userId) {
+    try {
+      const res = await fetch('/api/user/quests.php?user_id=' + encodeURIComponent(userId));
+      const data = await res.json();
+      const questList = document.getElementById('user-quests-list');
+      if (!questList) return;
+
+      if (!data.quests || !data.quests.length) {
+        questList.innerHTML = '<div class="text-gray-400">No quests found.</div>';
+        return;
+      }
+
+      questList.innerHTML = data.quests.map(q => `
+        <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-lg text-yellow-200 mb-1">
+              ${q.type === "Custom" ? "📝 Custom Quest" : "🐦 Twitter Quest"}
+            </div>
+            <div class="mb-1 break-words">${q.description}</div>
+            ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank">Open Link</a>` : ''}
+            <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
+          </div>
+          <div class="flex flex-col items-end gap-2 min-w-[140px]">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold 
+              ${q.is_active ? 'bg-green-600' : 'bg-gray-600'} text-white">
+              ${q.is_active ? 'Active' : 'Closed'}
+            </span>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold 
+              ${
+                q.claim_status === "approved" ? 'bg-green-500'
+                : q.claim_status === "rejected" ? 'bg-red-500'
+                : q.claim_status === "pending" ? 'bg-yellow-400 text-gray-900'
+                : 'bg-gray-700'
+              }">
+              ${
+                q.claim_status === "approved" ? 'Claimed & Rewarded'
+                : q.claim_status === "rejected" ? 'Rejected'
+                : q.claim_status === "pending" ? 'Pending Review'
+                : 'Not Claimed'
+              }
+            </span>
+            ${q.claimed_at ? `<span class="text-xs text-gray-300 text-right">Claimed at:<br>${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
+            ${
+              q.is_active && !q.claim_status
+                ? `<button onclick="claimQuest('${q.quest_id}', this)" class="mt-2 px-4 py-1 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg font-semibold text-xs transition whitespace-nowrap">
+                    Claim Quest
+                  </button>`
+                : ''
+            }
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      const questList = document.getElementById('user-quests-list');
+      if (questList) questList.innerHTML = '<div class="text-red-400">Failed to load quests.</div>';
+    }
+  }
+});
+
+// --- Claim Quest: Exposed for onclick ---
+window.claimQuest = async function(questId, btn) {
+  btn.disabled = true;
+  btn.innerText = "Claiming...";
+  const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+  try {
+    const res = await fetch('/api/user/claim-quest.php', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `user_id=${encodeURIComponent(userId)}&quest_id=${encodeURIComponent(questId)}`
+    });
+    const data = await res.json();
+    if (data.success) {
+      btn.innerText = "Claimed! Pending review";
+      btn.className = "mt-3 px-4 py-1 bg-yellow-400 text-black rounded-lg font-semibold text-sm";
+      setTimeout(() => location.reload(), 800);
+    } else {
+      btn.innerText = "Already claimed";
+      btn.className = "mt-3 px-4 py-1 bg-gray-500 text-black rounded-lg font-semibold text-sm";
+    }
+  } catch (e) {
+    btn.innerText = "Failed";
+    btn.disabled = false;
+  }
+};
+</script>
+
+
+</body>
+</html>
+
