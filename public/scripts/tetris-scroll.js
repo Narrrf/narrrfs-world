@@ -85,7 +85,6 @@ function startTetris() {
   const gridWidth = 10;
   const gridHeight = 20;
   const blockSize = 20;
-  const sensitivity = 20;
 
   let score = 0;
   let linesClearedTotal = 0;
