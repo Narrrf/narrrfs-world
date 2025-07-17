@@ -97,10 +97,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     const res = await fetch('/api/load-bingo-tickets.php', { credentials: 'include' });
     if (res.ok) {
       if (loginSection) loginSection.style.display = 'none';
-      // ...load and render tickets
+      tickets = await res.json();   // <-- ADD THIS
+      renderTickets();              // <-- AND THIS
     } else {
       if (loginSection) loginSection.style.display = 'block';
-      // Optional: show error message to user
       console.warn("Login check failed. Status:", res.status);
     }
   } catch (error) {
