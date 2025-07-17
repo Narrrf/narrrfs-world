@@ -3,40 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Professional Bingo Checker</title>
+  <title>🍀 Golden Bingo Checker | Narrrf's World</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .marked { background-color: #facc15 !important; color: white !important; }
+    .marked { background-color: #facc15 !important; color: #fff !important; }
     input.grid-input { width: 2.5rem; text-align: center; }
+    .gold-shadow { box-shadow: 0 0 10px #ffe066, 0 0 25px #facc15; }
+	
+	input.grid-input {
+  width: 2rem;
+  height: 2rem;
+  text-align: center;
+  font-size: 1rem;
+  margin: 0;
+  padding: 0;
+}
+@media (min-width: 768px) {
+  input.grid-input {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.25rem;
+  }
+}
+
   </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gradient-to-br from-yellow-50 to-yellow-200 min-h-screen text-gray-900">
 
-  <div class="max-w-6xl mx-auto p-6">
-    <h1 class="text-3xl font-bold mb-4 text-center">🎯 Professional Bingo Checker</h1>
-
-    <div id="loginSection" class="mb-4 text-center">
-<a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
-   class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-full shadow">
-  🔑 Login with Discord to Save Tickets
-</a>
+  <!-- 🧀 GOLDEN NAVBAR -->
+  <nav class="bg-yellow-100/80 border-b-4 border-yellow-300 rounded-b-2xl shadow-lg gold-shadow py-3 mb-4 sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 px-4">
+      <a href="index.html" class="text-xl font-extrabold text-yellow-700 drop-shadow-lg flex items-center gap-2 hover:scale-105 transition">
+        🧪 Narrrf's Lab
+      </a>
+      <div class="flex gap-3 mt-2 sm:mt-0">
+        <a href="profile.html" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold px-4 py-2 rounded-full shadow border-2 border-yellow-700 transition">
+          🧀 Profile
+        </a>
+      </div>
     </div>
+  </nav>
 
-    <button id="addTicketBtn" class="mb-4 bg-indigo-600 text-white px-4 py-2 rounded">Add New Ticket</button>
+  <!-- 🧀 LAB GOLDEN HEADER -->
+  <header class="relative bg-gradient-to-r from-yellow-200 via-pink-100 to-yellow-100 p-8 rounded-3xl shadow-xl border-4 border-yellow-300 mb-8 mt-4 gold-shadow">
+    <div class="absolute top-[-14px] left-10 w-3 h-3 bg-yellow-300 rounded-full animate-bounce-slow blur-sm"></div>
+    <div class="absolute top-[-24px] left-20 w-4 h-4 bg-yellow-200 rounded-full animate-pulse blur-sm"></div>
+    <div class="absolute top-[-20px] right-16 w-2 h-2 bg-pink-200 rounded-full animate-bounce blur-sm"></div>
+    <h1 class="text-4xl md:text-5xl font-extrabold text-yellow-600 drop-shadow-glow animate-pulse mb-2 text-center">
+      🧀 Golden Bingo Vault
+    </h1>
+    <p class="text-lg text-gray-700 max-w-xl mx-auto text-center">
+      Check your tickets, chase your legend, and let the cheese gods decide your fate.
+    </p>
+  </header>
+
+  <!-- 🥇 BINGO ZONE CONTAINER -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-4">
+    <section class="mb-6 flex flex-col items-center">
+      <!-- Discord Login -->
+      <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
+        class="inline-block bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2 px-6 rounded-full shadow-lg border-2 border-yellow-700 transition-all mb-4">
+        🔑 Login with Discord to Save Tickets
+      </a>
+
+      <button id="addTicketBtn" onclick="addTicketGrid()" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-6 py-2 rounded-full shadow mb-4 border-2 border-yellow-700 font-semibold">
+        ➕ Add New Ticket
+      </button>
+    </section>
 
     <div id="ticketGrids"></div>
 
-    <div class="mb-6 mt-6">
+    <section class="bg-white/70 border-l-4 border-yellow-400 p-6 rounded-xl shadow max-w-xl mx-auto mb-8">
       <label class="block mb-2 font-semibold">Enter Called Numbers (e.g., B7, I23, N36):</label>
       <input id="calledNumbersInput" type="text" class="w-full p-2 border rounded" placeholder="e.g., B7, I23, N36">
-      <div class="mt-2">
-        <button onclick="markNumbers()" class="bg-green-600 text-white px-4 py-2 rounded">Mark Numbers</button>
-        <button onclick="clearCards()" class="bg-red-600 text-white px-4 py-2 rounded ml-2">Clear Cards</button>
+      <div class="mt-2 flex gap-2">
+        <button onclick="markNumbers()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Mark Numbers</button>
+        <button onclick="clearCards()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Clear Cards</button>
       </div>
-    </div>
+    </section>
 
+    <!-- Tickets Grid -->
     <div id="ticketsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-  </div>
+  </main>
+ 
+
+  <!-- 🧠 LAB GOLDEN FOOTER -->
+<footer class="text-center py-6 text-xs text-yellow-700 bg-yellow-100 rounded-t-3xl shadow-inner mt-12">
+  🧠 Powered by Cheese Architect 11.0 — Bingo Edition | <a href="https://discord.gg/5dpGjmpJ" class="underline text-pink-600">Join Discord</a> <br>
+  🧀 Vault Sync | Genesis 11.0 | Last Update: 2025 | Cheese and Luck are not financial advice
+
+  <!-- 🧀 If you found this, you’re a Bingo legend! -->
+  <span class="relative group ml-2">
+    <span class="cursor-pointer text-xs opacity-30 hover:opacity-100 transition" title="Legend cheese">🧀</span>
+    <span class="absolute left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-yellow-200 text-yellow-800 rounded shadow-lg text-xs opacity-0 group-hover:opacity-100 transition pointer-events-none z-50">
+      Secret cheese unlocked! Ping Narrrf on Discord with a screenshot for a surprise!
+    </span>
+  </span>
+</footer>
 
 <script>
   let tickets = []; // ✅ Declare only once
@@ -70,55 +133,58 @@
     }
   });
 
-  function addTicketGrid() {
-    const gridDiv = document.createElement('div');
-    gridDiv.className = 'bg-white p-4 mb-4 rounded shadow overflow-x-auto';
+function addTicketGrid() {
+  const gridDiv = document.createElement('div');
+  gridDiv.className = 'bg-gradient-to-br from-yellow-100 via-pink-50 to-yellow-50 p-3 md:p-4 rounded-2xl shadow-lg border-2 border-yellow-200 relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300 mouse-lab-bg';
 
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.placeholder = 'Ticket Name or ID';
-    nameInput.className = 'w-full p-2 border rounded mb-2';
-    gridDiv.appendChild(nameInput);
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = 'Ticket Name or ID';
+  nameInput.className = 'w-full p-2 border rounded mb-2';
+  gridDiv.appendChild(nameInput);
 
-    const table = document.createElement('table');
-    const headerRow = document.createElement('tr');
-    ['B','I','N','G','O'].forEach(letter => {
-      const th = document.createElement('th');
-      th.textContent = letter;
-      th.className = 'px-2 py-1';
-      headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
+  const table = document.createElement('table');
+  table.className = 'mx-auto bg-transparent';
+  const headerRow = document.createElement('tr');
+  ['B','I','N','G','O'].forEach(letter => {
+    const th = document.createElement('th');
+    th.textContent = letter;
+    th.className = 'w-8 h-8 md:w-10 md:h-10 text-base text-yellow-900 font-bold text-center px-0 py-0';
+    headerRow.appendChild(th);
+  });
+  table.appendChild(headerRow);
 
-    for (let r = 0; r < 5; r++) {
-      const row = document.createElement('tr');
-      for (let c = 0; c < 5; c++) {
-        const cell = document.createElement('td');
+  for (let r = 0; r < 5; r++) {
+    const row = document.createElement('tr');
+    for (let c = 0; c < 5; c++) {
+      const cell = document.createElement('td');
+      cell.className = 'p-0 m-0';
 
-        if (r === 2 && c === 2) {
-          cell.innerHTML = '<div class="bg-yellow-300 text-center font-bold">FREE</div>';
-        } else {
-          const input = document.createElement('input');
-          input.type = 'number';
-          input.className = 'grid-input border rounded';
-          cell.appendChild(input);
-        }
-
-        row.appendChild(cell);
+      if (r === 2 && c === 2) {
+        cell.innerHTML = '<div class="bg-yellow-300 text-yellow-900 font-extrabold rounded px-1 py-0.5 text-xs md:text-base flex items-center justify-center w-8 h-8 md:w-10 md:h-10">FREE</div>';
+      } else {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'grid-input border rounded text-center w-8 h-8 md:w-10 md:h-10 text-base bg-yellow-50 focus:ring-yellow-300';
+        cell.appendChild(input);
       }
-      table.appendChild(row);
+
+      row.appendChild(cell);
     }
-
-    const saveBtn = document.createElement('button');
-    saveBtn.textContent = 'Save Ticket';
-    saveBtn.className = 'mt-2 bg-blue-600 text-white px-3 py-1 rounded';
-    saveBtn.onclick = () => saveTicket(gridDiv, nameInput.value);
-
-    gridDiv.appendChild(table);
-    gridDiv.appendChild(saveBtn);
-
-    document.getElementById('ticketGrids').appendChild(gridDiv);
+    table.appendChild(row);
   }
+
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save Ticket';
+  saveBtn.className = 'mt-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold px-4 py-2 rounded-full shadow border-2 border-yellow-700 transition';
+  saveBtn.onclick = () => saveTicket(gridDiv, nameInput.value);
+
+  gridDiv.appendChild(table);
+  gridDiv.appendChild(saveBtn);
+
+  document.getElementById('ticketGrids').appendChild(gridDiv);
+}
+
 
   function saveTicket(gridDiv, ticketName) {
     const inputs = gridDiv.querySelectorAll('input[type=number]');
@@ -160,7 +226,7 @@
     tickets.forEach((ticketObj, tIndex) => {
       const ticket = ticketObj.grid;
       const grid = document.createElement('div');
-      grid.className = 'bg-white p-3 rounded shadow text-center overflow-x-auto';
+      grid.className = 'bg-gradient-to-br from-yellow-100 via-pink-50 to-yellow-50 p-3 md:p-4 rounded-2xl shadow-lg border-2 border-yellow-200 relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300 mouse-lab-bg';
 
       const title = document.createElement('div');
       title.className = 'font-bold mb-1';
@@ -181,16 +247,17 @@
         const rowDiv = document.createElement('div');
         rowDiv.className = 'flex justify-center mb-1';
 
-        row.forEach((num, cIndex) => {
-          const cell = document.createElement('div');
-          cell.textContent = num === 'FREE' ? '★' : num;
-          cell.dataset.ticket = tIndex;
-          cell.dataset.row = rIndex;
-          cell.dataset.col = cIndex;
-          cell.className = 'w-10 h-10 flex items-center justify-center border m-0.5 rounded';
-          if (num === 'FREE') cell.classList.add('marked');
-          rowDiv.appendChild(cell);
-        });
+row.forEach((num, cIndex) => {
+  const cell = document.createElement('div');
+  cell.textContent = num === 'FREE' ? '★' : num;
+  cell.dataset.ticket = tIndex;
+  cell.dataset.row = rIndex;
+  cell.dataset.col = cIndex;
+  cell.className = 'w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border m-0.5 rounded text-base md:text-lg bg-white/70';
+  if (num === 'FREE') cell.classList.add('marked');
+  rowDiv.appendChild(cell);
+});
+
 
         grid.appendChild(rowDiv);
       });
@@ -202,7 +269,7 @@
 
       const deleteBtn = document.createElement('button');
       deleteBtn.textContent = 'Delete Ticket';
-      deleteBtn.className = 'mt-2 bg-red-600 text-white px-3 py-1 rounded';
+      deleteBtn.className = 'mt-2 bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-full shadow transition';
       deleteBtn.onclick = () => deleteTicket(tIndex);
       grid.appendChild(deleteBtn);
 
@@ -315,7 +382,6 @@ function deleteTicket(index) {
     return bingo;
   }
 </script>
-
-
+<!-- 🧀 If you found this, you’re a Bingo Dev legend! -->
 </body>
 </html>

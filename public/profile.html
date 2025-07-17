@@ -149,6 +149,13 @@ $discordId = $_SESSION['discord_id'] ?? '';
   </a>
 </div>
 
+<!-- 🔔 BINGO FLASH BANNER -->
+<div id="bingoBanner" class="hidden bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 text-white text-center p-4 mb-6 rounded-lg shadow-lg animate-pulse">
+  <a href="/Bingo.html" class="text-2xl font-extrabold tracking-wide hover:underline">
+    🎯 Use Narrrfs Professional Bingo Checker!
+  </a>
+</div>
+
 <!-- 🧂 VIP Absence Fallback -->
 <div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
   😅 You're logged in, but... no VIP pass? That's nacho cheese!
@@ -617,6 +624,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
       showElement('noCheeseJoke');
     }
+	
+   // ✅ Show Bingo banner if user is logged in
+   showElement('bingoBanner');
+
 
   } catch (err) {
     console.error('Profile fetch failed:', err);
