@@ -155,7 +155,7 @@ $discordId = $_SESSION['discord_id'] ?? '';
 </header>
 
 <!-- VIP Section: Grouped and spaced -->
-<div class="flex flex-col items-center gap-3 mb-6 mt-4">
+<div id="vipSection" class="flex flex-col items-center gap-3 mb-6 mt-4 hidden">
   <div class="bg-yellow-100 border-2 border-yellow-300 px-6 py-3 rounded-xl font-bold text-yellow-900 shadow mb-1 text-center">
     🧀 Welcome, VIP! You found the Golden Cheese
   </div>
@@ -164,28 +164,11 @@ $discordId = $_SESSION['discord_id'] ?? '';
   </button>
 </div>
 
-<!-- Add margin above the banner for breathing room -->
-<div class="w-full flex justify-center my-8">
-  <div class="bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400 border-4 border-yellow-400 rounded-2xl shadow-xl px-8 py-5 text-3xl font-extrabold text-white text-center animate-pulse max-w-3xl w-full">
-    🎯 Try the New <span class="underline decoration-wavy decoration-white">Professional Bingo Checker</span> Now!
-  </div>
-</div>
-
-
-<!-- 🔔 PROFESSIONAL BINGO CHECKER BANNER -->
-<div id="bingoBanner" class="hidden relative p-5 mb-6 rounded-lg shadow-lg bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white text-center overflow-hidden border-4 border-yellow-300 animate-pulse">
-  <div class="absolute inset-0 opacity-25 bg-[url('/img/cheese-texture.png')] bg-cover bg-center pointer-events-none"></div>
-  <a href="/Bingo.html" class="relative z-10 text-2xl sm:text-3xl font-extrabold tracking-wide drop-shadow hover:underline">
-    🎯 Try the New <span class="underline decoration-wavy decoration-white">Professional Bingo Checker</span> Now!
-  </a>
-</div>
-
-
-
 <!-- 🧂 VIP Absence Fallback -->
 <div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
   😅 You're logged in, but... no VIP pass? That's nacho cheese!
 </div>
+
 
 <!-- 👤 User Profile Card -->
 <main class="flex-grow flex items-center justify-center px-4 py-12">
