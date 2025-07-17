@@ -154,20 +154,23 @@ $discordId = $_SESSION['discord_id'] ?? '';
   </div>
 </header>
 
-<!-- 💎 Conditional VIP Notification -->
-<div id="goldenCheeseGate" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 font-bold rounded-xl shadow-lg animate-pulse">
-  <img src="img/big-cheese.svg" class="w-8 h-8 inline mr-2" alt="Big Cheese" />
-  Welcome, VIP! You found the Golden Cheese 🧀
+<!-- VIP Section: Grouped and spaced -->
+<div class="flex flex-col items-center gap-3 mb-6 mt-4">
+  <div class="bg-yellow-100 border-2 border-yellow-300 px-6 py-3 rounded-xl font-bold text-yellow-900 shadow mb-1 text-center">
+    🧀 Welcome, VIP! You found the Golden Cheese
+  </div>
+  <button class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-6 py-2 rounded-xl shadow-md border-2 border-yellow-400 transition">
+    📸 Download Your HD VIP NFT
+  </button>
 </div>
 
-<div id="vip-download-zone" class="hidden mt-4">
-  <a id="vip-download-btn" 
-     href="/api/user/download-vip-art.php"
-     class="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-2 rounded-lg shadow animate-pop"
-     download>
-    🖼️ Download Your HD VIP NFT
-  </a>
+<!-- Add margin above the banner for breathing room -->
+<div class="w-full flex justify-center my-8">
+  <div class="bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400 border-4 border-yellow-400 rounded-2xl shadow-xl px-8 py-5 text-3xl font-extrabold text-white text-center animate-pulse max-w-3xl w-full">
+    🎯 Try the New <span class="underline decoration-wavy decoration-white">Professional Bingo Checker</span> Now!
+  </div>
 </div>
+
 
 <!-- 🔔 PROFESSIONAL BINGO CHECKER BANNER -->
 <div id="bingoBanner" class="hidden relative p-5 mb-6 rounded-lg shadow-lg bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white text-center overflow-hidden border-4 border-yellow-300 animate-pulse">
@@ -450,12 +453,13 @@ $discordId = $_SESSION['discord_id'] ?? '';
   </div>
 </section>
 
-<!-- 🍩 Footer -->
-
-
-<!-- 🍩 Footer -->
-<footer class="text-center mt-16 text-xs text-gray-400">
-  Powered by 🧀 Cheese Architect 9.0 · Discord + Game + Wallet Sync Engine 🌍
+<!-- 🍩 Footer GENESIS 11.0 -->
+<footer class="text-center mt-16 text-xs text-yellow-600">
+  Powered by 🧀 Cheese Architect <b>11.0</b> · Genesis Protocol · Discord + Game + Wallet Sync Engine 🌍<br>
+  <span class="opacity-70">
+    Vault Synced | 2025 | Scroll-Safe for 100 Years of Cheese | 
+    <a href="https://discord.gg/5dpGjmpJ" class="underline text-pink-500 hover:text-pink-600">Join Discord</a>
+  </span>
 </footer>
 
 <!-- 🔑 Fallback Login Button -->
@@ -464,8 +468,9 @@ $discordId = $_SESSION['discord_id'] ?? '';
      class="inline-block bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-5 rounded-full shadow-md border-2 border-yellow-600 animate-bounce transition">
     🧀 Click to Login with Discord
   </a>
-  <p class="mt-2 text-xs text-gray-300 italic">When the Grumpy Cheese gives no love, this does.</p>
+  <p class="mt-2 text-xs text-gray-400 italic">When the Grumpy Cheese gives no love, this does.</p>
 </div>
+
 
 
 <div class="w-full flex justify-center mt-6">
