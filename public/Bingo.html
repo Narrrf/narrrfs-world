@@ -161,7 +161,7 @@ function addTicketGrid() {
   document.getElementById('ticketGrids').appendChild(gridDiv);
 }
 
-function saveTicket(gridDiv, ticketName) {
+function saveTicket(gridDiv, ticketName, ticketId = null) {
   const inputs = gridDiv.querySelectorAll('input[type=number]');
   const ticket = [];
   for (let r = 0; r < 5; r++) {
@@ -177,7 +177,13 @@ function saveTicket(gridDiv, ticketName) {
     ticket.push(row);
   }
 
-  const ticketObj = { id: generateID(), name: ticketName || `Ticket-${tickets.length + 1}`, grid: ticket };
+  // If editing, use the same ticketId
+  const id = ticketId || generateID();
+  const ticketObj = { id, name: ticketName || `Ticket-${tickets.length + 1}`, grid: ticket };
+
+  // If editing: remove existing ticket with same id
+  const existingIndex = tickets.findIndex(t => t.id === id);
+  if (existingIndex !== -1) tickets.splice(existingIndex, 1);
 
   tickets.push(ticketObj);
   renderTickets();
@@ -192,6 +198,7 @@ function saveTicket(gridDiv, ticketName) {
   .then(msg => console.log(msg))
   .catch(err => console.error("Error saving ticket:", err));
 }
+
 
 function renderTickets() {
   const container = document.getElementById('ticketsContainer');
@@ -240,6 +247,13 @@ function renderTickets() {
     bingoDiv.textContent = '🎉 Bingo!';
     grid.appendChild(bingoDiv);
 
+    const editBtn = document.createElement('button');
+editBtn.textContent = 'Edit Ticket';
+editBtn.className = 'mt-2 bg-yellow-300 hover:bg-yellow-400 text-yellow-900 font-bold px-4 py-2 rounded-full shadow transition ml-2';
+editBtn.onclick = () => editTicket(tIndex);
+grid.appendChild(editBtn);
+
+
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete Ticket';
     deleteBtn.className = 'mt-2 bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-full shadow transition';
@@ -249,6 +263,67 @@ function renderTickets() {
     container.appendChild(grid);
   });
 }
+
+function editTicket(tIndex) {
+  const ticketObj = tickets[tIndex];
+  // Remove the ticket from the list (so Save will replace, not add duplicate)
+  tickets.splice(tIndex, 1);
+
+  // Build a grid pre-filled with existing ticket data
+  const gridDiv = document.createElement('div');
+  gridDiv.className = 'bg-gradient-to-br from-yellow-100 via-pink-50 to-yellow-50 p-3 md:p-4 rounded-2xl shadow-lg border-2 border-yellow-200 relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300 mouse-lab-bg';
+
+  // Ticket name input
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = 'Ticket Name or ID';
+  nameInput.className = 'w-full p-2 border rounded mb-2';
+  nameInput.value = ticketObj.name || '';
+  gridDiv.appendChild(nameInput);
+
+  // Ticket grid table
+  const table = document.createElement('table');
+  table.className = 'mx-auto bg-transparent';
+  const headerRow = document.createElement('tr');
+  ['B','I','N','G','O'].forEach(letter => {
+    const th = document.createElement('th');
+    th.textContent = letter;
+    th.className = 'w-8 h-8 md:w-10 md:h-10 text-base text-yellow-900 font-bold text-center px-0 py-0';
+    headerRow.appendChild(th);
+  });
+  table.appendChild(headerRow);
+
+  for (let r = 0; r < 5; r++) {
+    const row = document.createElement('tr');
+    for (let c = 0; c < 5; c++) {
+      const cell = document.createElement('td');
+      cell.className = 'p-0 m-0';
+
+      if (r === 2 && c === 2) {
+        cell.innerHTML = '<div class="bg-yellow-300 text-yellow-900 font-extrabold rounded px-1 py-0.5 text-xs md:text-base flex items-center justify-center w-8 h-8 md:w-10 md:h-10">FREE</div>';
+      } else {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'grid-input border rounded text-center w-8 h-8 md:w-10 md:h-10 text-base bg-yellow-50 focus:ring-yellow-300';
+        input.value = ticketObj.grid[r][c] !== 'FREE' ? ticketObj.grid[r][c] : '';
+        cell.appendChild(input);
+      }
+      row.appendChild(cell);
+    }
+    table.appendChild(row);
+  }
+
+  // Save button (replaces old ticket by same ID)
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save Changes';
+  saveBtn.className = 'mt-2 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold px-4 py-2 rounded-full shadow border-2 border-yellow-700 transition';
+  saveBtn.onclick = () => saveTicket(gridDiv, nameInput.value, ticketObj.id); // Pass the same ID
+  gridDiv.appendChild(table);
+  gridDiv.appendChild(saveBtn);
+
+  document.getElementById('ticketGrids').appendChild(gridDiv);
+}
+
 
 function deleteTicket(index) {
   const ticketObj = tickets[index];
