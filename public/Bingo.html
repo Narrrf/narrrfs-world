@@ -52,8 +52,9 @@
 <main class="max-w-4xl mx-auto px-4 py-6">
   <section class="text-center mb-4">
     <div id="loginSection" class="mb-4">
+      <div class="mb-2 text-yellow-900 font-semibold">Login with Discord and come back to this page to save and load your Bingo tickets.</div>
       <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
-        class="bg-yellow-400 text-yellow-900 px-6 py-2 rounded-full shadow">🔑 Login with Discord to Save Tickets</a>
+        class="bg-yellow-400 text-yellow-900 px-6 py-2 rounded-full shadow">🔑 Verify and come back</a>
     </div>
 
     <button onclick="addTicketGrid()" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-6 py-2 rounded-full shadow">
@@ -64,8 +65,9 @@
   <div id="ticketGrids"></div>
 
   <section class="bg-white border-l-4 border-yellow-400 p-4 rounded-xl shadow mb-8">
-    <label class="block mb-2">Enter Called Numbers (free entry):</label>
-    <input id="calledNumbersInput" type="text" class="w-full p-2 border rounded" placeholder="Example: 7, 22, 36">
+    <label class="block mb-2">Enter Called Numbers (one at a time):</label>
+    <input id="calledNumberInput" type="text" class="w-full p-2 border rounded" placeholder="Type a number and press Enter">
+    <div id="calledNumbersList" class="flex flex-wrap gap-2 mt-2"></div>
     <div class="flex gap-2 mt-2">
       <button onclick="markNumbers()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Mark Numbers</button>
       <button onclick="clearCards()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Clear Cards</button>
@@ -81,14 +83,14 @@
   🧀 Last Update: 2025 | Cheese & Luck are not financial advice!
 </footer>
 
-  <script src="/js/bingo-logic.js"></script>
-  <!-- 🧀 If you found this, you’re a Bingo Dev legend! -->
-</body>
-</html>
-
+<!-- Notification Popup -->
+<div id="bingoNotification" style="display:none; position:fixed; top:30px; left:50%; transform:translateX(-50%); z-index:1000; background:#facc15; color:#222; padding:1.5rem 2.5rem; border-radius:1rem; box-shadow:0 4px 32px #0002; font-size:1.25rem; font-weight:bold; text-align:center; min-width:250px; max-width:90vw;">
+  <span id="bingoNotificationMsg"></span>
+</div>
 
 <script>
 let tickets = []; // ✅ Declare only once
+let calledNumbers = [];
 
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -352,43 +354,69 @@ function generateID() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-function markNumbers() {
-  const calledInput = document.getElementById('calledNumbersInput').value.trim();
-  if (!calledInput) return alert('Please enter called numbers.');
+function showNotification(message) {
+  const notif = document.getElementById('bingoNotification');
+  const msg = document.getElementById('bingoNotificationMsg');
+  if (notif && msg) {
+    msg.textContent = message;
+    notif.style.display = 'block';
+    setTimeout(() => {
+      notif.style.display = 'none';
+    }, 3500);
+  }
+}
 
-  const calledEntries = calledInput.split(/\s|,/).map(entry => entry.trim().toUpperCase()).filter(e => e);
-  const calledNumbers = [];
+// Called number input logic
+const calledNumberInput = document.getElementById('calledNumberInput');
+const calledNumbersList = document.getElementById('calledNumbersList');
 
-  calledEntries.forEach(entry => {
-    const match = entry.match(/([BINGO])(\d+)/);
-    if (match) {
-      const letter = match[1];
-      const number = parseInt(match[2]);
-      const valid =
-        (letter === 'B' && number >= 1 && number <= 15) ||
-        (letter === 'I' && number >= 16 && number <= 30) ||
-        (letter === 'N' && number >= 31 && number <= 45) ||
-        (letter === 'G' && number >= 46 && number <= 60) ||
-        (letter === 'O' && number >= 61 && number <= 75);
-      if (valid) calledNumbers.push(number);
-    } else if (!isNaN(Number(entry))) {
-      calledNumbers.push(Number(entry));
+calledNumberInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const val = calledNumberInput.value.trim();
+    if (!val) return;
+    const num = parseInt(val);
+    if (!isNaN(num) && !calledNumbers.includes(num)) {
+      calledNumbers.push(num);
+      renderCalledNumbers();
+      markNumbers(); // Automatically mark numbers after each entry
     }
-  });
+    calledNumberInput.value = '';
+  }
+});
 
+function renderCalledNumbers() {
+  calledNumbersList.innerHTML = '';
+  calledNumbers.forEach((num, idx) => {
+    const chip = document.createElement('span');
+    chip.className = 'bg-yellow-300 text-yellow-900 px-3 py-1 rounded-full font-bold flex items-center gap-1';
+    chip.textContent = num;
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = '×';
+    removeBtn.className = 'ml-2 text-red-600 font-bold';
+    removeBtn.onclick = () => {
+      calledNumbers.splice(idx, 1);
+      renderCalledNumbers();
+    };
+    chip.appendChild(removeBtn);
+    calledNumbersList.appendChild(chip);
+  });
+}
+
+function markNumbers() {
+  if (calledNumbers.length === 0) return alert('Please enter called numbers.');
   tickets.forEach((ticketObj, tIndex) => {
     const ticket = ticketObj.grid;
     let cells = document.querySelectorAll(`[data-ticket='${tIndex}']`);
-
     cells.forEach(cell => {
       if (cell.textContent === '★') return;
       if (calledNumbers.includes(Number(cell.textContent))) {
         cell.classList.add('marked');
       }
     });
-
     if (checkBingo(ticket, tIndex, calledNumbers)) {
       document.querySelectorAll(`#ticketsContainer > div:nth-child(${tIndex + 1}) .text-green-600`).forEach(el => el.classList.remove('hidden'));
+      showNotification(`🎉 BINGO! Ticket: ${ticketObj.name} (ID: ${ticketObj.id})`);
     }
   });
 }
@@ -401,7 +429,9 @@ function clearCards() {
     }
   });
   document.querySelectorAll('.text-green-600').forEach(el => el.classList.add('hidden'));
-  document.getElementById('calledNumbersInput').value = '';
+  calledNumbers = [];
+  renderCalledNumbers();
+  calledNumberInput.value = '';
 }
 
 function checkBingo(ticket, tIndex, calledNumbers) {

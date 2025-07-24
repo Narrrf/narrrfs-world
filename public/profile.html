@@ -159,24 +159,29 @@ $discordId = $_SESSION['discord_id'] ?? '';
   <div class="bg-yellow-100 border-2 border-yellow-300 px-6 py-3 rounded-xl font-bold text-yellow-900 shadow mb-1 text-center">
     🧀 Welcome, VIP! You found the Golden Cheese
   </div>
-  <button class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-6 py-2 rounded-xl shadow-md border-2 border-yellow-400 transition">
+  <a href="/api/user/download-vip-art.php"
+     class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-6 py-2 rounded-xl shadow-md border-2 border-yellow-400 transition"
+     download>
     📸 Download Your HD VIP NFT
-  </button>
+  </a>
 </div>
 
 <!-- 🧂 VIP Absence Fallback -->
 <div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
-  😅 You're logged in, but... no VIP pass? That's nacho cheese!
+  😅 ... no VIP pass? That's nacho cheese!
 </div>
 
+<!-- Spacer for top nav offset -->
+<div class="h-4 md:h-6"></div>
+
+
 <!-- 🔔 PROFESSIONAL BINGO CHECKER BANNER -->
-<div id="bingoBanner" class="hidden relative p-5 mb-6 rounded-lg shadow-lg bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white text-center overflow-hidden border-4 border-yellow-300 animate-pulse">
+<div id="bingoBanner" class="hidden mt-6 relative p-5 mb-6 rounded-lg shadow-lg bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white text-center overflow-hidden border-4 border-yellow-300 animate-pulse">
   <div class="absolute inset-0 opacity-25 bg-[url('/img/cheese-texture.png')] bg-cover bg-center pointer-events-none"></div>
   <a href="/Bingo.html" class="relative z-10 text-2xl sm:text-3xl font-extrabold tracking-wide drop-shadow hover:underline">
     🎯 Try the New <span class="underline decoration-wavy decoration-white">Professional Bingo Checker</span> Now!
   </a>
 </div>
-
 
 
 <!-- 👤 User Profile Card -->
@@ -403,7 +408,7 @@ $discordId = $_SESSION['discord_id'] ?? '';
 
 
 
-<!-- 🧠 MODALS -->
+<!-- 🧠 MODALS GAMEOVER-->
 <div id="snake-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
   <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
     <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
@@ -419,6 +424,7 @@ $discordId = $_SESSION['discord_id'] ?? '';
     <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
   </div>
 </div>
+
 
 </section>
 </section>
@@ -639,20 +645,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Trophy pokal shelf — render immediately from roles
     if (user.roles) renderTrophyShelf(user.roles);
 
-    // VIP/Golden Cheese logic
-    if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
-      showElement('goldenCheeseGate');
-      showElement('vip-download-zone');
-    } else {
-      showElement('noCheeseJoke');
-    }
+    // VIP/Golden Cheese logic check on top menu
+if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
+  showElement('goldenCheeseGate'); // optional if defined elsewhere
+  showElement('vipSection');       // ✅ Matches the DOM ID
+} else {
+  showElement('noCheeseJoke');
+}
 	
 // ✅ Show Bingo banner if user is logged in
 if (user.discord_id) {
   showElement('bingoBanner');
 }
-
-
 
   } catch (err) {
     console.error('Profile fetch failed:', err);
