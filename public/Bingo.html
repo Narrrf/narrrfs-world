@@ -66,7 +66,10 @@
 
   <section class="bg-white border-l-4 border-yellow-400 p-4 rounded-xl shadow mb-8">
     <label class="block mb-2">Enter Called Numbers (one at a time):</label>
-    <input id="calledNumberInput" type="text" class="w-full p-2 border rounded" placeholder="Type a number and press Enter">
+    <div class="flex gap-2">
+      <input id="calledNumberInput" type="number" class="w-full p-2 border rounded" placeholder="Type a number">
+      <button id="addCalledNumberBtn" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-4 py-2 rounded-full font-bold">Add</button>
+    </div>
     <div id="calledNumbersList" class="flex flex-wrap gap-2 mt-2"></div>
     <div class="flex gap-2 mt-2">
       <button onclick="markNumbers()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Mark Numbers</button>
@@ -369,21 +372,27 @@ function showNotification(message) {
 // Called number input logic
 const calledNumberInput = document.getElementById('calledNumberInput');
 const calledNumbersList = document.getElementById('calledNumbersList');
+const addCalledNumberBtn = document.getElementById('addCalledNumberBtn');
+
+function addCalledNumber() {
+  const val = calledNumberInput.value.trim();
+  if (!val) return;
+  const num = parseInt(val);
+  if (!isNaN(num) && !calledNumbers.includes(num)) {
+    calledNumbers.push(num);
+    renderCalledNumbers();
+    markNumbers(); // Automatically mark numbers after each entry
+  }
+  calledNumberInput.value = '';
+}
 
 calledNumberInput.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
     e.preventDefault();
-    const val = calledNumberInput.value.trim();
-    if (!val) return;
-    const num = parseInt(val);
-    if (!isNaN(num) && !calledNumbers.includes(num)) {
-      calledNumbers.push(num);
-      renderCalledNumbers();
-      markNumbers(); // Automatically mark numbers after each entry
-    }
-    calledNumberInput.value = '';
+    addCalledNumber();
   }
 });
+addCalledNumberBtn.addEventListener('click', addCalledNumber);
 
 function renderCalledNumbers() {
   calledNumbersList.innerHTML = '';
