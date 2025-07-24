@@ -340,20 +340,23 @@ function showBombDefusedPopup() {
 }
 // 🛑 Pause Logic seems ok
 let isTetrisPaused = false;
+let gameInterval;
 
 document.getElementById("pause-tetris-btn")?.addEventListener("click", () => {
   isTetrisPaused = !isTetrisPaused;
   const btn = document.getElementById("pause-tetris-btn");
   btn.textContent = isTetrisPaused ? "▶️ Resume" : "⏸️ Pause";
 
-  clearInterval(gameInterval); // Always clear first
-
-  if (!isTetrisPaused) {
-    // Force clear and restart interval when resuming
+  if (isTetrisPaused) {
     clearInterval(gameInterval);
-    gameInterval = setInterval(drop, dropInterval);
-    // Force one immediate drop to ensure game is responsive
-    drop();
+  } else {
+    // Only restart interval if game is not over
+    if (gameInterval) {
+      clearInterval(gameInterval);
+      gameInterval = setInterval(drop, dropInterval);
+      // Force one immediate drop to ensure game is responsive
+      drop();
+    }
   }
 });
 
@@ -432,14 +435,22 @@ function drop() {
 
     if (collide(current.shape, current.row, current.col)) {
       clearInterval(gameInterval);
+      gameInterval = null; // Reset the interval reference
+      isTetrisPaused = true; // Set paused state
       onTetrisGameOver(score);
 
       const modal = document.getElementById("game-over-modal");
       const finalScoreText = document.getElementById("final-score-text");
+      const pauseBtn = document.getElementById("pause-tetris-btn");
 
       if (modal && finalScoreText) {
         finalScoreText.textContent = `You earned $${score} DSPOINC`;
         modal.classList.remove("hidden");
+      }
+
+      // Update pause button state
+      if (pauseBtn) {
+        pauseBtn.textContent = "⏸️ Pause";
       }
 
       if (typeof loadCombinedLeaderboards === "function") {
@@ -590,6 +601,7 @@ function lockTetrisScroll() {
     tetrisScrollLocked = true;
   }
 }
+
 function unlockTetrisScroll() {
   if (tetrisScrollLocked) {
     document.body.style.overflow = "";
@@ -599,6 +611,9 @@ function unlockTetrisScroll() {
 
 // Listen anywhere on screen!
 document.addEventListener("touchstart", e => {
+  // Don't handle touch events if game is paused or over
+  if (isTetrisPaused || !gameInterval) return;
+  
   if (e.cancelable) e.preventDefault();
   lockTetrisScroll();
 
@@ -608,23 +623,38 @@ document.addEventListener("touchstart", e => {
 
   heldDown = false;
 
+  // Clear any existing intervals first
+  clearTimeout(dropHoldTimeout);
+  clearInterval(touchDropInterval);
+
   dropHoldTimeout = setTimeout(() => {
-    heldDown = true;
-    touchDropInterval = setInterval(() => {
-      drop();
-      draw();
-    }, 75);
+    if (!isTetrisPaused && gameInterval) {
+      heldDown = true;
+      touchDropInterval = setInterval(() => {
+        if (!isTetrisPaused && gameInterval) {
+          drop();
+          draw();
+        }
+      }, 75);
+    }
   }, 500);
 }, { passive: false });
 
 document.addEventListener("touchend", e => {
+  // Always clear timeouts/intervals on touch end
   clearTimeout(dropHoldTimeout);
+  clearInterval(touchDropInterval);
+
+  // Don't process swipes if game is paused or over
+  if (isTetrisPaused || !gameInterval) {
+    unlockTetrisScroll();
+    return;
+  }
 
   if (heldDown) {
-    clearInterval(touchDropInterval);
     heldDown = false;
     unlockTetrisScroll();
-    return; // Don’t process swipe if hold-drop was triggered
+    return;
   }
 
   const touch = e.changedTouches[0];
@@ -632,19 +662,37 @@ document.addEventListener("touchend", e => {
   const deltaY = touch.clientY - touchStartY;
 
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
-    if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) current.col++;
-    else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) current.col--;
+    if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) {
+      current.col++;
+      draw();
+    } else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) {
+      current.col--;
+      draw();
+    }
   } else {
-    if (deltaY < -sensitivity) rotatePiece(); // swipe up = rotate
-    // Optionally, swipe down for instant drop:
-    // if (deltaY > sensitivity) dropToBottom();
+    if (deltaY < -sensitivity) {
+      rotatePiece(); // swipe up = rotate
+      draw();
+    }
+    // Optionally enable quick drop on swipe down:
+    // else if (deltaY > sensitivity) {
+    //   while (!collide(current.shape, current.row + 1, current.col)) {
+    //     current.row++;
+    //   }
+    //   draw();
+    // }
   }
 
-  draw();
   unlockTetrisScroll();
 }, { passive: false });
 
-// (Optional) When you quit/end/reset game, call unlockTetrisScroll() to restore scrolling!
+// Clean up touch controls on game over
+function cleanupTouchControls() {
+  clearTimeout(dropHoldTimeout);
+  clearInterval(touchDropInterval);
+  heldDown = false;
+  unlockTetrisScroll();
+}
 
 
       

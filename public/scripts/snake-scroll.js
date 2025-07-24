@@ -258,39 +258,6 @@ function initSnake() {
     draw(); // 🖌️ Always render after logic
   }
 
-  function onGameOver(finalScore) {
-    disableGlobalSnakeTouch(); // Disable touch controls on game over
-    const modal = document.getElementById("snake-over-modal");
-    const text = document.getElementById("snake-final-score-text");
-
-    if (modal && text) {
-      text.textContent = `You earned $${finalScore} DSPOINC`;
-      modal.classList.remove("hidden");
-    }
-
-    fetch("https://narrrfs.world/api/dev/save-score.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        wallet: localStorage.getItem("walletAddress") || "TestWallet123456789XYZ",
-        score: finalScore,
-        game: "snake",
-        discord_id: localStorage.getItem("discord_id") || "1337",
-        discord_name: localStorage.getItem("discord_name") || "Anonymous Mouse"
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log("✅ Snake score saved:", data);
-      if (!data.success) {
-        console.warn("⚠️ Save score response indicates failure:", data);
-      }
-    })
-    .catch(err => {
-      console.error("❌ Snake score save failed:", err);
-    });
-  }
-
   // --- Event Listeners (only add once!) ---
 
   // Keyboard controls
@@ -304,11 +271,21 @@ function initSnake() {
   });
 
 // Touch controls with scroll prevention
-// Add this at the TOP of your snake.js
 let touchStartX = 0, touchStartY = 0;
 let isSnakeGameActive = false;
-function enableGlobalSnakeTouch() { isSnakeGameActive = true; }
-function disableGlobalSnakeTouch() { isSnakeGameActive = false; }
+let snakeScrollLocked = false;
+
+function enableGlobalSnakeTouch() { 
+  isSnakeGameActive = true; 
+  document.body.style.overflow = "hidden";
+  snakeScrollLocked = true;
+}
+
+function disableGlobalSnakeTouch() { 
+  isSnakeGameActive = false;
+  document.body.style.overflow = "";
+  snakeScrollLocked = false;
+}
 
 // Prevent scrolling on the game canvas
 document.addEventListener('touchmove', function(e) {
@@ -318,7 +295,7 @@ document.addEventListener('touchmove', function(e) {
 }, { passive: false });
 
 document.body.addEventListener("touchstart", function(e) {
-  if (!isSnakeGameActive) return;
+  if (!isSnakeGameActive || isSnakePaused) return;
   e.preventDefault();
   const touch = e.touches[0];
   touchStartX = touch.clientX;
@@ -326,7 +303,7 @@ document.body.addEventListener("touchstart", function(e) {
 }, { passive: false });
 
 document.body.addEventListener("touchend", function(e) {
-  if (!isSnakeGameActive) return;
+  if (!isSnakeGameActive || isSnakePaused) return;
   e.preventDefault();
   const touch = e.changedTouches[0];
   const deltaX = touch.clientX - touchStartX;
@@ -335,6 +312,7 @@ document.body.addEventListener("touchend", function(e) {
   // Increase minimum swipe distance for better control
   const minSwipeDistance = 30;
   
+  // Only process swipes if game is active and not paused
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
     if (deltaX > minSwipeDistance && velocity.x === 0) {
       velocity = { x: 1, y: 0 };
@@ -360,12 +338,22 @@ function startGame() {
 
 function onGameOver(finalScore) {
   disableGlobalSnakeTouch(); // Disable touch controls on game over
+  clearInterval(gameInterval); // Clear the interval
+  gameInterval = null; // Reset the interval reference
+  isSnakePaused = true; // Set paused state
+  
   const modal = document.getElementById("snake-over-modal");
   const text = document.getElementById("snake-final-score-text");
+  const pauseBtn = document.getElementById("pause-snake-btn");
 
   if (modal && text) {
     text.textContent = `You earned $${finalScore} DSPOINC`;
     modal.classList.remove("hidden");
+  }
+
+  // Update pause button state
+  if (pauseBtn) {
+    pauseBtn.textContent = "⏸️ Pause";
   }
 
   fetch("https://narrrfs.world/api/dev/save-score.php", {
@@ -399,10 +387,14 @@ function onGameOver(finalScore) {
       isSnakePaused = !isSnakePaused;
       pauseBtn.textContent = isSnakePaused ? "▶️ Resume" : "⏸️ Pause";
       
-      if (!isSnakePaused) {
-        // Force clear and restart interval when resuming
+      if (isSnakePaused) {
         clearInterval(gameInterval);
-        gameInterval = setInterval(moveSnake, 250);
+      } else {
+        // Only restart if game is not over
+        if (gameInterval) {
+          clearInterval(gameInterval);
+          gameInterval = setInterval(moveSnake, 250);
+        }
       }
     });
   }
