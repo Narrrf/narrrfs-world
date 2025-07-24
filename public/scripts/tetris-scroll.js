@@ -1,5 +1,19 @@
 // 🧀 Cheese Tetris Scroll v9.8 + PNG BLOCKS (all features from perfect backup, plus PNG support)
 
+// 🚫 Full page scroll prevention
+window.addEventListener("touchmove", function(e) {
+  if (e.target.closest("#tetris-canvas")) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener("keydown", function (e) {
+  const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "a", "s", "d", "w"];
+  if (keys.includes(e.key)) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
 // --- PNG Block Support simple only one template for all can be defined with new img/tetris ---
 let allImagesLoaded = false;
 let loadedCount = 0;
@@ -16,6 +30,15 @@ const pieceImageMap = {
   8: "block_J.png"
 };
 
+// 🎮 Touch control variables
+let touchStartX = 0;
+let touchStartY = 0;
+let touchStartTime = 0;
+const SWIPE_THRESHOLD = 30; // Minimum distance for a swipe
+const SWIPE_TIME_THRESHOLD = 300; // Maximum time for a swipe in milliseconds
+const DOUBLE_TAP_THRESHOLD = 300; // Maximum time between taps for double tap
+let lastTapTime = 0;
+
 function checkAndStartTetris() {
   const btn = document.getElementById("start-tetris-btn");
   if (!btn) {
@@ -23,7 +46,6 @@ function checkAndStartTetris() {
     window.startTetrisGame();
   }
 }
-
 
 Object.entries(pieceImageMap).forEach(([key, filename]) => {
   const img = new Image();
@@ -38,7 +60,65 @@ Object.entries(pieceImageMap).forEach(([key, filename]) => {
   blockImages[key] = img;
 });
 
+// Improved touch controls for Tetris
+function initTouchControls(canvas, currentPiece, dropInterval) {
+  let lastSwipeDirection = null;
+  let lastSwipeTime = 0;
+  const SWIPE_COOLDOWN = 100; // Minimum time between swipes
 
+  canvas.addEventListener("touchstart", e => {
+    if (isTetrisPaused) return; // Prevent touch controls while paused
+    e.preventDefault();
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchStartTime = Date.now();
+
+    // Check for double tap (rotation)
+    const currentTime = Date.now();
+    if (currentTime - lastTapTime < DOUBLE_TAP_THRESHOLD) {
+      rotatePiece();
+      e.preventDefault();
+    }
+    lastTapTime = currentTime;
+  }, { passive: false });
+
+  canvas.addEventListener("touchmove", e => {
+    if (isTetrisPaused) return; // Prevent touch controls while paused
+    e.preventDefault();
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStartX;
+    const deltaY = touch.clientY - touchStartY;
+    const touchTime = Date.now() - touchStartTime;
+
+    // Horizontal movement
+    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+      if (deltaX > 0) {
+        if (!collide(current.shape, current.row, current.col + 1)) {
+          current.col++;
+          draw();
+        }
+      } else {
+        if (!collide(current.shape, current.row, current.col - 1)) {
+          current.col--;
+          draw();
+        }
+      }
+      touchStartX = touch.clientX;
+    }
+
+    // Fast drop (swipe down)
+    if (deltaY > SWIPE_THRESHOLD && touchTime < SWIPE_TIME_THRESHOLD) {
+      dropInterval = 50; // Speed up dropping
+    }
+  }, { passive: false });
+
+  canvas.addEventListener("touchend", e => {
+    if (isTetrisPaused) return; // Prevent touch controls while paused
+    e.preventDefault();
+    dropInterval = 500; // Reset drop speed
+  }, { passive: false });
+}
 
 window.startTetrisGame = function () {
   if (!allImagesLoaded) {
@@ -64,14 +144,6 @@ const colors = [
 ];
 
 let activeExplosive = null; // track position and countdown
-
-// 🚫 Full page scroll prevention
-window.addEventListener("keydown", function (e) {
-  const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "a", "s", "d", "w"];
-  if (keys.includes(e.key)) {
-    e.preventDefault();
-  }
-}, { passive: false });
 
 // 🔮 Preview canvas setup
 const nextCanvas = document.getElementById("next-canvas");
@@ -285,6 +357,40 @@ document.getElementById("pause-tetris-btn")?.addEventListener("click", () => {
   }
 });
 
+// Add keyboard event listener for movement controls
+document.addEventListener("keydown", e => {
+  if (isTetrisPaused) return; // Prevent movement while paused
+
+  switch (e.key) {
+    case "ArrowLeft":
+    case "a":
+      if (!collide(current.shape, current.row, current.col - 1)) {
+        current.col--;
+        draw();
+      }
+      break;
+    case "ArrowRight":
+    case "d":
+      if (!collide(current.shape, current.row, current.col + 1)) {
+        current.col++;
+        draw();
+      }
+      break;
+    case "ArrowDown":
+    case "s":
+      if (!collide(current.shape, current.row + 1, current.col)) {
+        current.row++;
+        draw();
+      }
+      break;
+    case "ArrowUp":
+    case "w":
+    case " ":
+      rotatePiece();
+      draw();
+      break;
+  }
+});
 
 // 🧱 Drop Function
 function drop() {
@@ -336,10 +442,9 @@ function drop() {
         modal.classList.remove("hidden");
       }
 
-if (typeof loadCombinedLeaderboards === "function") {
-  loadCombinedLeaderboards(); // ✅ Call the combined leaderboard
-}
-
+      if (typeof loadCombinedLeaderboards === "function") {
+        loadCombinedLeaderboards(); // ✅ Call the combined leaderboard
+      }
 
       return;
     }
@@ -348,17 +453,17 @@ if (typeof loadCombinedLeaderboards === "function") {
   draw(); // ✅ Always redraw
 }
 
-      
-      
-        function rotatePiece() {
-          const rotated = current.shape[0].map((_, i) =>
-            current.shape.map(row => row[i]).reverse()
-          );
-          if (!collide(rotated, current.row, current.col)) {
-            current.shape = rotated;
-          }
-        }
-      
+function rotatePiece() {
+  if (isTetrisPaused) return; // Prevent rotation while paused
+
+  const rotated = current.shape[0].map((_, i) =>
+    current.shape.map(row => row[i]).reverse()
+  );
+  if (!collide(rotated, current.row, current.col)) {
+    current.shape = rotated;
+  }
+}
+
       function onTetrisGameOver(finalScore) {
         let wallet = localStorage.getItem("walletAddress");
         let discordId = localStorage.getItem("discord_id");
@@ -447,27 +552,27 @@ if (typeof loadCombinedLeaderboards === "function") {
         };
       
         // 🎮 Desktop Keyboard Controls (WASD + Arrows)
-        document.addEventListener("keydown", e => {
-          switch (e.key) {
-            case "ArrowLeft":
-            case "a":
-              if (!collide(current.shape, current.row, current.col - 1)) current.col--;
-              break;
-            case "ArrowRight":
-            case "d":
-              if (!collide(current.shape, current.row, current.col + 1)) current.col++;
-              break;
-            case "ArrowDown":
-            case "s":
-              drop();
-              break;
-            case "ArrowUp":
-            case "w":
-              rotatePiece();
-              break;
-          }
-          draw();
-        }, { passive: false });
+        // document.addEventListener("keydown", e => { // This block is now handled by the global keydown listener
+        //   switch (e.key) {
+        //     case "ArrowLeft":
+        //     case "a":
+        //       if (!collide(current.shape, current.row, current.col - 1)) current.col--;
+        //       break;
+        //     case "ArrowRight":
+        //     case "d":
+        //       if (!collide(current.shape, current.row, current.col + 1)) current.col++;
+        //       break;
+        //     case "ArrowDown":
+        //     case "s":
+        //       drop();
+        //       break;
+        //     case "ArrowUp":
+        //     case "w":
+        //       rotatePiece();
+        //       break;
+        //   }
+        //   draw();
+        // }, { passive: false });
       
       // ✅ Enhanced Mobile Touch Controls: Swipe + Hold for Fast Drop
 // === TETRIS: Enhanced Full-Screen Touch Controls with Scroll Prevention ===

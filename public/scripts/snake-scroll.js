@@ -78,6 +78,7 @@ function initSnake() {
     clearInterval(gameInterval);
     resetGame();
     gameInterval = setInterval(moveSnake, 250); // slow start
+    enableGlobalSnakeTouch(); // Enable touch controls when game starts
   }
 
   function resetGame() {
@@ -258,6 +259,7 @@ function initSnake() {
   }
 
   function onGameOver(finalScore) {
+    disableGlobalSnakeTouch(); // Disable touch controls on game over
     const modal = document.getElementById("snake-over-modal");
     const text = document.getElementById("snake-final-score-text");
 
@@ -307,30 +309,87 @@ let touchStartX = 0, touchStartY = 0;
 let isSnakeGameActive = false;
 function enableGlobalSnakeTouch() { isSnakeGameActive = true; }
 function disableGlobalSnakeTouch() { isSnakeGameActive = false; }
-document.body.addEventListener("touchstart", function(e) {
-  if (!isSnakeGameActive) return;
-  e.preventDefault();
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-}, { passive: false });
-document.body.addEventListener("touchend", function(e) {
-  if (!isSnakeGameActive) return;
-  e.preventDefault();
-  const deltaX = e.changedTouches[0].clientX - touchStartX;
-  const deltaY = e.changedTouches[0].clientY - touchStartY;
-  if (Math.abs(deltaX) > Math.abs(deltaY)) {
-    if (deltaX > 20 && velocity.x === 0) velocity = { x: 1, y: 0 };
-    else if (deltaX < -20 && velocity.x === 0) velocity = { x: -1, y: 0 };
-  } else {
-    if (deltaY > 20 && velocity.y === 0) velocity = { x: 0, y: 1 };
-    else if (deltaY < -20 && velocity.y === 0) velocity = { x: 0, y: -1 };
+
+// Prevent scrolling on the game canvas
+document.addEventListener('touchmove', function(e) {
+  if (isSnakeGameActive) {
+    e.preventDefault();
   }
 }, { passive: false });
 
-// In your game logic (when player starts):
-// enableGlobalSnakeTouch();
-// When game is over or exited:
-// disableGlobalSnakeTouch();
+document.body.addEventListener("touchstart", function(e) {
+  if (!isSnakeGameActive) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+}, { passive: false });
+
+document.body.addEventListener("touchend", function(e) {
+  if (!isSnakeGameActive) return;
+  e.preventDefault();
+  const touch = e.changedTouches[0];
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
+  
+  // Increase minimum swipe distance for better control
+  const minSwipeDistance = 30;
+  
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (deltaX > minSwipeDistance && velocity.x === 0) {
+      velocity = { x: 1, y: 0 };
+    } else if (deltaX < -minSwipeDistance && velocity.x === 0) {
+      velocity = { x: -1, y: 0 };
+    }
+  } else {
+    if (deltaY > minSwipeDistance && velocity.y === 0) {
+      velocity = { x: 0, y: 1 };
+    } else if (deltaY < -minSwipeDistance && velocity.y === 0) {
+      velocity = { x: 0, y: -1 };
+    }
+  }
+}, { passive: false });
+
+// Add touch control activation/deactivation to game functions
+function startGame() {
+  clearInterval(gameInterval);
+  resetGame();
+  gameInterval = setInterval(moveSnake, 250); // slow start
+  enableGlobalSnakeTouch(); // Enable touch controls when game starts
+}
+
+function onGameOver(finalScore) {
+  disableGlobalSnakeTouch(); // Disable touch controls on game over
+  const modal = document.getElementById("snake-over-modal");
+  const text = document.getElementById("snake-final-score-text");
+
+  if (modal && text) {
+    text.textContent = `You earned $${finalScore} DSPOINC`;
+    modal.classList.remove("hidden");
+  }
+
+  fetch("https://narrrfs.world/api/dev/save-score.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      wallet: localStorage.getItem("walletAddress") || "TestWallet123456789XYZ",
+      score: finalScore,
+      game: "snake",
+      discord_id: localStorage.getItem("discord_id") || "1337",
+      discord_name: localStorage.getItem("discord_name") || "Anonymous Mouse"
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("✅ Snake score saved:", data);
+    if (!data.success) {
+      console.warn("⚠️ Save score response indicates failure:", data);
+    }
+  })
+  .catch(err => {
+    console.error("❌ Snake score save failed:", err);
+  });
+}
 
 
   // Pause button
