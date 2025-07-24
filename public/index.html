@@ -4,149 +4,136 @@
   <!-- 🌐 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Narrrf's World: The Future of Web3 and Web2 Integration" />
+  <meta name="description" content="Genesis 12.0 is live. Enter Narrrf's World: Web3, chaos, and cheese." />
   <meta name="author" content="Narrrf Team" />
   <meta name="robots" content="index, follow" />
-  <title>Welcome to Narrrf's World – Genesis 10.0 Portal</title>
-
-  <!-- 🧀 Favicon & Browser Metadata -->
-  <link rel="icon" href="img/favicon-phantom.png" type="image/png" />
-  <link rel="shortcut icon" href="img/favicon-browser.png" type="image/png" />
-  <link rel="preload" as="image" href="img/other-gamezone.png">
-  <link rel="preload" as="audio" href="sounds/cheese-egg-click.wav">
-  <meta name="keywords" content="Narrrf, Web3, NFT, game zone, Tetris, Snake, $SPOINC, Hytopia, Lore, AABB, ">
+  <meta name="keywords" content="Narrrf, Web3, NFT, traits, Bingo, Snake, $SPOINC, Hytopia, Lore, Puzzle" />
   <meta name="theme-color" content="#facc15" />
   <meta name="msapplication-TileColor" content="#facc15" />
   <meta name="msapplication-TileImage" content="img/favicon2.png" />
 
-  <!-- 📣 Open Graph & Twitter Share Metadata -->
-  <meta property="og:title" content="Narrrf's World – Genesis 9.0" />
-  <meta property="og:description" content="Explore, mint, and shape the future of Narrrf's World." />
+  <!-- 🔗 Title & Social Preview -->
+  <title>🎯 Narrrf's World – Genesis 12.0</title>
+  <meta property="og:title" content="Narrrf's World – Genesis 12.0" />
+  <meta property="og:description" content="Play Bingo. Click cheese. Unlock traits. A cartoon Web3 universe." />
   <meta property="og:image" content="img/narrrfs_world_logo.png" />
   <meta property="og:url" content="https://narrrfs.world" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Narrrf's World – Genesis 9.0" />
-  <meta name="twitter:description" content="Join the chaos and mint your future." />
+  <meta name="twitter:title" content="Narrrf's World – Genesis 12.0" />
+  <meta name="twitter:description" content="Join the Bingo vault and explore traits in Genesis 12.0." />
   <meta name="twitter:image" content="img/narrrfs_world_logo.png" />
 
-  <!-- 🎨 Tailwind CSS Integration -->
+  <!-- 🧀 Favicon & Preloads -->
+  <link rel="icon" href="img/favicon-phantom.png" type="image/png" />
+  <link rel="shortcut icon" href="img/favicon-browser.png" type="image/png" />
+  <link rel="preload" as="image" href="img/other-gamezone.png">
+  <link rel="preload" as="audio" href="sounds/cheese-egg-click.wav">
+
+  <!-- 🎨 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- ✨ Portal UI Glow Animations -->
-<!-- ✨ Portal UI Glow Animations -->
-<style>
-  @keyframes labGlow {
-    0% { transform: scale(1); opacity: 0.8; }
-    100% { transform: scale(1.1); opacity: 1; }
-  }
-  .animate-glow {
-    animation: labGlow 2s infinite;
-  }
-
-  :root {
-    --primary-color: #f472b6;
-    --secondary-color: #3b82f6;
-  }
-
-/* 🥚 Final Easter Egg Glow */
-.egg-flash {
-  animation: eggFlash 1.5s ease-in-out infinite;
-}
-@keyframes eggFlash {
-  0%, 100% { box-shadow: 0 0 12px #fde68a; }
-  50% { box-shadow: 0 0 22px #facc15; }
-}
-@keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-.animate-fade-in {
-  animation: fade-in 0.8s ease-out forwards;
-}
-.soft-glow {
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.2), 0 0 20px rgba(255, 192, 203, 0.3);
-}
-@keyframes fade-in-body {
-  to { opacity: 1; }
-}
-.animate-fade-in-body {
-  animation: fade-in-body 0.5s ease-out forwards;
-}
-</style>
-<noscript>
+  <!-- ✨ UI Glow + Animation Styles -->
   <style>
-    #cheese-egg, #cheese-egg-blue, #cheese-egg-finance {
-      display: none !important;
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 10px #10ff88); }
+  50% { filter: drop-shadow(0 0 25px #10ff88); }
+}
+.animate-glow-bottle {
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+    @keyframes labGlow {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.1); opacity: 1; }
     }
+    .animate-glow { animation: labGlow 2s infinite; }
+
+    :root {
+      --primary-color: #f472b6;
+      --secondary-color: #3b82f6;
+    }
+
+    /* 🥚 Final Easter Egg Glow */
+    .egg-flash {
+      animation: eggFlash 1.5s ease-in-out infinite;
+    }
+    @keyframes eggFlash {
+      0%, 100% { box-shadow: 0 0 12px #fde68a; }
+      50% { box-shadow: 0 0 22px #facc15; }
+    }
+
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    .animate-fade-in { animation: fade-in 0.8s ease-out forwards; }
+
+    .soft-glow {
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.2), 0 0 20px rgba(255, 192, 203, 0.3);
+    }
+
+    @keyframes fade-in-body { to { opacity: 1; } }
+    .animate-fade-in-body { animation: fade-in-body 0.5s ease-out forwards; }
+@keyframes bubble1 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes bubble2 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes bubble3 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+.animate-bubble1 { animation: bubble1 2.5s ease-in-out infinite; }
+.animate-bubble2 { animation: bubble2 3.5s ease-in-out infinite 0.5s; }
+.animate-bubble3 { animation: bubble3 4s ease-in-out infinite 1s; }
+.animate-glow,
+.animate-bubble1,
+.animate-bubble2,
+.animate-bubble3 {
+  transform: translateZ(0);
+}
+
   </style>
-</noscript>
+
+  <!-- 🛑 No JS fallback -->
+  <noscript>
+    <style>
+      #cheese-egg, #cheese-egg-blue, #cheese-egg-finance {
+        display: none !important;
+      }
+    </style>
+  </noscript>
 </head>
+
 <body class="bg-gradient-to-br from-purple-50 via-pink-100 to-yellow-50 text-gray-900 font-sans min-h-screen opacity-0 animate-fade-in-body">
 
 <!-- 
-🧪 LAB NOTE: INDEX.HTML
+🧪 LAB NOTE: INDEX.HTML — Genesis 12.0 Certified
 ------------------------------------------------------------
-🌐 This is the main portal to Narrrf's World.
+🌐 Portal entry to Narrrf's World: traits, games, bingo, wallet roles
 
-📌 Purpose:
-- Entry page to mint, roles, lore, and project status
-- Shows animated eggs, chaos UI, and clickable cheese
+🧠 Cheese Egg Engine v1.4.1 (client-only click tracking)
 
-💡 Notes for Backend Devs:
-- The cheese-click logic is powered by the "Cheese Egg Engine v1.4.1"
-- Currently no SQL or API injection on this page
-- Egg tracking may be upgraded to API calls in v2.x
-- Connects to wallet logic only via top nav (no mutation here)
-
-🗂️ Uses the new /img/ and /sounds/ folder system
+📌 Future:
+- Add egg click tracking to backend
+- Connect to trait gate / puzzle unlock
 -->
 
-
-
-<!-- Navigation Bar -->
-<!-- 🧭 Navigation Bar (top sticky) -->
-
-
-<!-- 🧀 Cheese Click Sound (Preloaded + Hidden) -->
-
+<!-- 🔊 Preloaded Audio -->
 <audio id="cheese-click-audio" src="sounds/cheese-egg-click.wav" preload="auto"></audio>
 
-<!-- 
-  🧠 NARRRF CORE MODULE: CHEESE EGG ENGINE v1.4.1
-  ===============================================
-  Description:
-  - Animates cheese eggs on homepage with movement and glow
-  - Plays SFX from /sounds/cheese-egg-click.wav on click
-  - Tracks interactions via local events only (no backend logging yet)
-
-  🔮 Upgrade Paths:
-  - Add AJAX/Fetch to log interactions via /api/log-cheese.php
-  - Store egg count in localStorage or session for user experience
-  - Hook into wallet-connect to make eggs unlockable by wallet role
-
-  🧾 Future SQL Ideas:
-  - Track egg clicks per wallet
-  - Store egg rarity per wallet
-  - Connect egg logic to riddle unlock system in database
-
-  ✅ Safe for production as standalone. Future-ready for backend logging.
--->
+<!-- 🧠 Cheese Egg Logic -->
 <script>
-  const MOVE_INTERVAL = 6000;       // ⏱️ Cheese hop time (ms)
-  const CHEESE_SIZE = 40;           // 🧀 Egg dimension buffer
+  const MOVE_INTERVAL = 6000;
+  const CHEESE_SIZE = 40;
   const cheeseClickSound = document.getElementById('cheese-click-audio');
-  if (cheeseClickSound) cheeseClickSound.volume = 0.8; // ✅ only once needed
+  if (cheeseClickSound) cheeseClickSound.volume = 0.8;
 
-  // 🧯 Make sure fetch works before tracking!
   if (!window.fetch) {
     console.warn("❌ Fetch not supported — egg tracking skipped.");
     return;
   }
 
-  /**
-   * 🎯 moveEgg()
-   * Randomly places cheese egg within roadmap bounds
-   */
   function moveEgg(id, parentId) {
     const egg = document.getElementById(id);
     const parent = document.getElementById(parentId);
@@ -157,15 +144,11 @@
     const left = Math.floor(Math.random() * maxLeft);
     const top = Math.floor(Math.random() * maxTop);
 
-    egg.style.position = 'absolute'; // 🛡️ Fallback
+    egg.style.position = 'absolute';
     egg.style.left = `${left}px`;
     egg.style.top = `${top}px`;
   }
 
-  /**
-   * 🚀 Cheese Engine Boot
-   * Initializes cheese drops, sound, and tracking
-   */
   window.addEventListener('DOMContentLoaded', () => {
     const roadmap = document.getElementById("roadmap");
     if (!roadmap) return;
@@ -185,8 +168,6 @@
       if (egg) {
         egg.addEventListener('click', () => {
           if (cheeseClickSound) cheeseClickSound.play();
-
-          // 🔐 Optional: Track to backend
           const currentUserWallet = localStorage.getItem('walletAddress') || 'unknown';
           fetch('https://narrrfs.world/api/track-egg-click', {
             method: 'POST',
@@ -199,26 +180,25 @@
           });
         });
 
-        egg.style.position = 'absolute'; // extra fallback
+        egg.style.position = 'absolute';
       }
     });
   });
 </script>
-
 <!-- ✅ End Cheese Engine -->
-<!-- 🧀 Cheese Eggs (INSIDE #roadmap!) -->
-<!-- ✅ These must live inside the <section id="roadmap" class="relative"> -->
+<!-- 🧀 Cheese Eggs (inside #roadmap!) -->
+<!-- ✅ Must be placed inside <section id="roadmap" class="relative"> -->
 
-<!-- 🔔 Pre-Launch Banner -->
-<div class="fixed top-0 left-0 w-full bg-yellow-200 text-yellow-800 text-sm text-center py-2 px-4 font-semibold shadow-md z-50">
-  🚧 Narrrf's World is in PRE-LAUNCH — Final tweaks underway. You're early, fren 🧠🧪
+<!-- 🎯 Genesis 12.0 Live Banner -->
+<div class="fixed top-0 left-0 w-full bg-yellow-400 text-yellow-900 text-sm text-center py-2 px-4 font-semibold shadow-md z-50 animate-pulse">
+  🎯 Genesis 12.0 is live! → <a href="/profile.html" class="underline hover:text-pink-600">Login and find the cheese</a> 🎰
 </div>
 
-<!-- ✅ Spacer for banner offset -->
-<div class="pt-10"></div>
+<!-- ⏫ Spacer to offset fixed banner height -->
+<div class="h-10"></div>
 
-<!-- 🔧 Navigation Bar -->
-<header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-40 w-full">
+<!-- 🧭 Sticky Navigation Bar -->
+<header class="bg-black text-white py-3 px-6 shadow-md sticky top-10 z-40 w-full">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
     <nav class="space-x-3 text-sm md:text-base flex items-center flex-wrap justify-end">
@@ -232,37 +212,32 @@
         🔌 Connect
       </button>
       <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
-	  <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
-  ❌
-</button>
+      <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
+        ❌
+      </button>
     </nav>
   </div>
 </header>
 
-<!-- 🧠 Main Hero Section for Narrrf's World Homepage -->
-<!-- Includes: Game Banner, Hero Image/CTA, Login + Mint buttons -->
-
-<!-- 🎮 Game Portal Hero Banner -->
-<div class="bg-black text-center py-4 z-20 relative">
-  <!-- Spacer to push content below sticky nav -->
-  <div class="h-4 md:h-6"></div>
-  <a href="/profile.html"
-     class="inline-block bg-gradient-to-r from-yellow-300 via-pink-500 to-purple-600 text-black text-xl font-bold px-6 py-3 rounded-full shadow-lg hover:scale-105 transition-transform duration-300">
-    🎮 Enter the Game Zone — Snake + Tetris Await!
+<!-- 🎮 Bingo CTA -->
+<div class="bg-black text-center py-3 z-30 relative">
+  <a href="/Bingo.html"
+     class="inline-block bg-yellow-400 hover:bg-yellow-500 text-black text-lg md:text-xl font-bold px-6 py-3 rounded-full shadow-lg animate-pulse transition">
+    🧀 Use Narrrf’s Golden Bingo Vault Now!
   </a>
 </div>
 
-<!-- 🎨 Hero Section: Bottle + CTA + Login Buttons -->
-<section class="relative z-10 py-20 bg-gradient-to-br from-pink-100 via-fuchsia-200 to-yellow-100 overflow-hidden border-b-4 border-yellow-300 shadow-inner">
+<!-- 🎨 Hero Section: Game Zone + Bottle -->
+<section class="relative z-10 pt-16 pb-20 bg-gradient-to-br from-pink-100 via-fuchsia-200 to-yellow-100 overflow-hidden border-b-4 border-yellow-300 shadow-inner">
 
-  <!-- 🌀 Decorative Animated Background Layers -->
+  <!-- 💫 Animated Background Decorations -->
   <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-lime-200 via-pink-100 to-transparent opacity-20 animate-pulse pointer-events-none"></div>
   <div class="absolute bottom-0 left-0 w-48 h-48 bg-green-300 rounded-full blur-3xl opacity-30 animate-bounce-slow pointer-events-none"></div>
 
-  <!-- 🌟 Hero Visual Layout: Game Entry + Bottle -->
+  <!-- 🎮 Game Card + Bottle Art -->
   <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-10 px-6 relative z-10">
 
-    <!-- 🎯 Game Entry Banner (Mouse Portal) -->
+    <!-- 🧠 Game Card -->
     <div class="relative z-20 text-center py-6 px-4 bg-gradient-to-r from-yellow-300 via-pink-500 to-purple-600 shadow-lg rounded-xl hover:scale-105 transition-transform duration-300 w-full md:w-1/2">
       <a href="/profile.html">
         <img src="img/other-gamezone.png" alt="Arcade Mouse Portal"
@@ -271,61 +246,68 @@
           Enter the Game Zone
         </h2>
         <p class="text-sm text-white italic">
-          🏆 Play Tetris + Snake · Save your Score · Unlock Traits
+          🏆 Play Tetris + Snake · Save Score · Unlock Traits!
         </p>
       </a>
     </div>
 
-    <!-- 🧪 Glowing Brain Bottle -->
-    <div class="relative animate-bounce-slow">
-      <img src="img/lab-bottle4.png" alt="Glowing Bottle from Narrrf's Lab"
-           class="w-24 md:w-36 rotate-[8deg] drop-shadow-[0_0_25px_#10ff88]" />
-      <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
-        <div class="absolute w-3 h-3 bg-green-400 rounded-full blur-md animate-bubble1"></div>
-        <div class="absolute w-4 h-4 bg-green-300 rounded-full blur-sm animate-bubble2"></div>
-        <div class="absolute w-2.5 h-2.5 bg-lime-400 rounded-full blur-lg animate-bubble3"></div>
-      </div>
-    </div>
+<!-- 🧪 Glowing Brain Bottle -->
+<div class="relative animate-bounce-slow mx-auto md:mx-0">
+  <img src="img/lab-bottle4.png"
+       alt="Glowing Bottle from Narrrf's Lab"
+       class="w-24 md:w-36 rotate-[8deg] animate-glow-bottle" />
+  <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+    <div class="absolute w-3 h-3 bg-green-400 rounded-full blur-md animate-bubble1"></div>
+    <div class="absolute w-4 h-4 bg-green-300 rounded-full blur-sm animate-bubble2"></div>
+    <div class="absolute w-2.5 h-2.5 bg-lime-400 rounded-full blur-lg animate-bubble3"></div>
   </div>
+</div>
 
-  <!-- 💬 Hero Text + Login CTA -->
-  <div class="text-center max-w-xl mx-auto mt-10 relative z-10">
-    <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900 drop-shadow-lg">
-      Narrrf's World
-    </h1>
-    <p class="text-base md:text-lg text-gray-800">
-      Let's leave the matrix... and take over Web3. A cartoon-chaotic Web3 universe powered by NFTs, poker, and pure community.
+</section>
+
+
+<!-- 💬 Hero Copy + CTAs -->
+<div class="text-center max-w-xl mx-auto mt-10 relative z-10">
+  <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900 drop-shadow-lg">
+    Narrrf's World – Genesis 12.0
+  </h1>
+  <p class="text-base md:text-lg text-gray-800">
+    Let's leave the matrix... and take over Web3. A cartoon-chaotic Web3 universe powered by NFTs, poker, and pure community.
+  </p>
+
+  <!-- 📜 Genesis Whitepaper Button (Standalone) -->
+  <div class="text-center mt-6 px-6">
+    <a href="whitepaper-pro.html"
+       class="inline-block bg-gray-900 text-yellow-300 font-bold px-6 py-3 rounded-full shadow-md hover:bg-yellow-500 hover:text-black transition">
+      📜 View the Genesis Whitepaper
+    </a>
+    <p class="text-xs text-gray-500 italic mt-2">
+      Strategic scroll plan · Phase 5 trait systems · Genesis lore encoded
     </p>
-
-    <!-- 🛠️ Login + Action Buttons -->
-    <div class="mt-6 flex flex-col sm:flex-row gap-3 flex-wrap justify-center">
-
-      <!-- 🔐 Discord OAuth Login -->
-      <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
-         class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-xl shadow">
-        🔐 Login with Discord
-      </a>
-
-      <!-- 💬 Join Community -->
-      <a href="https://discord.gg/SYd2FC2U" target="_blank"
-         class="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-2xl shadow">
-        Join Discord
-      </a>
-
-      <!-- 🧬 Mint Link -->
-      <a href="mint.html"
-         class="bg-white border border-pink-600 text-pink-600 px-6 py-2 rounded-2xl shadow hover:bg-pink-100 transition">
-        Mint Now
-      </a>
-
-      <!-- 📜 View Whitepaper -->
-      <a href="whitepaper.html"
-         class="bg-purple-700 hover:bg-purple-800 text-white px-6 py-2 rounded-2xl shadow transition">
-        📜 Whitepaper
-      </a>
-    </div>
   </div>
-</section> 
+
+  <!-- 🎯 CTA Button Row -->
+  <div class="mt-6 mb-4 flex flex-col sm:flex-row gap-3 flex-wrap justify-center">
+    <!-- 🔐 Login with Discord -->
+    <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
+       class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-full shadow transition">
+      🔐 Login with Discord
+    </a>
+
+    <!-- 💬 Join Discord -->
+    <a href="https://discord.gg/SYd2FC2U" target="_blank"
+       class="bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-6 rounded-full shadow transition">
+      💬 Join Discord
+    </a>
+
+    <!-- 🧬 Mint Now -->
+    <a href="mint.html"
+       class="bg-white border border-pink-600 text-pink-600 font-semibold py-2 px-6 rounded-full shadow hover:bg-pink-50 transition">
+      🧬 Mint Now
+    </a>
+  </div>
+</div>
+
 
 
 <!-- ✅ Cleanly closes hero section visual layout -->
@@ -341,6 +323,17 @@
     A massive shoutout to our early VIPs who believed in the cheese. 🧠🧀  
     The mint is near — and those who held, held strong. We see you. We thank you.
   </p>
+
+
+
+<!-- 🧬 Cheese Lab Countdown – Linked to Mint -->
+<a href="mint.html"
+   class="my-8 mx-auto w-fit px-6 py-3 rounded-full border-2 border-yellow-300 bg-yellow-100 text-yellow-900 font-bold text-base shadow-md animate-bounce-slow ring-1 ring-yellow-200 ring-offset-1 flex items-center gap-3 hover:bg-yellow-200 transition-all duration-200">
+  <span class="text-xl">🧬</span>
+  <span class="whitespace-nowrap">
+    Whitelist Mint starts in <span id="countdown-timer" class="text-pink-700 font-extrabold tracking-wide">...</span>
+  </span>
+</a>
 
   <p class="text-md md:text-lg text-gray-700 max-w-xl mx-auto mb-4">
     Our VIP cheese has already hit the market. You’re looking at a  
@@ -365,13 +358,6 @@ The next wave is close — don’t miss the real Genesis scroll.
     Your browser does not support the video tag.
   </video>
 
-  <!-- 🚀 Mint CTA -->
-  <div class="mt-6">
-    <a href="mint.html"
-       class="inline-block bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-full shadow-lg text-lg">
-      🧬 Mint Incoming — Get Ready
-    </a>
-  </div>
   
  <!-- 🧠 VIP Art Download Promo -->
 <div class="mt-10 bg-yellow-50 border-2 border-yellow-300 rounded-xl px-6 py-5 shadow-md max-w-2xl mx-auto text-center">
@@ -385,6 +371,31 @@ The next wave is close — don’t miss the real Genesis scroll.
     🧬 Check if You're VIP →
   </a>
 </div>
+
+<!-- 🧬 Cheese Lab Whitelist Countdown Script-->
+<script>
+function updateCountdown() {
+  const countdownEl = document.getElementById("countdown-timer");
+  const targetDate = new Date("2025-08-01T00:00:00Z"); // UTC midnight Aug 1
+
+  const now = new Date();
+  const diff = targetDate - now;
+
+  if (diff <= 0) {
+    countdownEl.innerText = "✅ Now Open!";
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const mins = Math.floor((diff / (1000 * 60)) % 60);
+  const secs = Math.floor((diff / 1000) % 60);
+
+  countdownEl.innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
+}
+setInterval(updateCountdown, 1000);
+updateCountdown();
+</script>
 
 </section>
 
@@ -413,23 +424,15 @@ The next wave is close — don’t miss the real Genesis scroll.
   </div>
 </section>
 
-
-<!-- 🧬 GENESIS 10 ANNOUNCEMENTS -->
-<div class="text-center mt-10 px-6">
-  <a href="whitepaper-pro.html"
-     class="inline-block bg-gray-900 text-yellow-300 font-bold px-6 py-3 rounded-full shadow-md hover:bg-yellow-500 hover:text-black transition">
-    📜 View the Genesis Whitepaper
-  </a>
-  <p class="text-xs text-gray-500 italic mt-2">
-    Strategic scroll plan · Phase 4 trait systems · Genesis lore encoded
-  </p>
-</div>
-
+<!-- 🧬 GENESIS 12 Links to Finance and Carousel 2.0  -->
 <div class="text-center mt-8 px-6">
   <a href="experiment-x.html"
      class="bg-gradient-to-br from-yellow-400 to-pink-500 text-white px-6 py-3 rounded-2xl shadow-lg font-bold text-base md:text-lg hover:scale-105 transition-all duration-300">
     🧪 Enter the Experiment Carousel
   </a>
+</div>
+
+
 </div>
 
 
@@ -916,100 +919,166 @@ The next wave is close — don’t miss the real Genesis scroll.
 
 <!-- 
 ===========================================================
-🧠 NARRRF'S WORLD — GENESIS 2.0 · FULL SYSTEM DECLARATION
+🧠 NARRRF'S WORLD — GENESIS 12.0 · MASTER SYSTEM OVERVIEW
 ===========================================================
 
-🎮 Module Certified By:
-- 🧠 Brain 3.1
-- 🧀 Masterchief (DB + SQL)
-- 🧒 Narrrf (5yo Padawan)
-- 👽 The Alien (Session Observer)
+🎮 Certified Modules (Phase 12.0)
+----------------------------------
+- 🧠 Corebrain 12.0 (DOM Sync, Role Logic, Trait Rendering)
+- 🧀 Cheese Architect 12.0 (Frontend UI + Mobile DOM Triggers)
+- 🧒 Narrrf (Padawan Tester – Scroll ID 1337)
+- 👽 Alien (Session Ghost + Wallet Memory Layer)
+- 🧬 SQL_Junior_12.0 (Cheese Click Logging + Score Sync)
+- 🧩 Riddle Brain 12.0 (Trait Puzzle Chains + Unlock Gating)
+- 🧪 Lab Note Genesis (Traits, Countdown Logic, Egg Zones)
 
-🌍 Purpose:
-This Genesis 2.0 engine powers the interactive logic behind Narrrf's World — bridging Web2 UX and Web3 wallet-based progression. It binds DOM, game logic, Discord roles, wallet states, and database-backed mechanics into one self-evolving narrative.
+🌍 SYSTEM PURPOSE
+------------------
+Bridge chaotic Web2 interaction with narrative-driven Web3 rewards. 
+Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered DOM states.
 
-💾 System Location: `/public/index.html + /api + /db/narrrf_world.sqlite`
-📜 DB Reference Table: `tbl_cheese_clicks`
+===========================================================
+📁 SYSTEM FILES & STRUCTURE
+===========================================================
 
------------------------------------------------------------
-🛠 CORE MODULES INCLUDED:
------------------------------------------------------------
+📂 `/public/index.html`
+- 🎯 Main landing zone for Narrrf's World
+- Includes the cheese engine, CTA banners, and dynamic hero
+- Connected to: countdown, login, mint zone
 
-1. 🧪 CHEESE EGG ENGINE (v1.4):
-   - Handles egg node movement inside `#roadmap`
-   - Tracks user interactions (clicks) via wallet
-   - Syncs egg ID, wallet address, and timestamp to DB
+📂 `/public/profile.html`
+- 🎮 Game zone + trait viewer
+- Displays $SPOINC score, wallet, quests, Discord roles, NFT logic
+- Syncs Tetris/Snake game scores with backend via `save-score.php`
 
-2. 🔐 VIP ROLE GATE:
-   - Uses `/api/user/roles.php` to determine Discord role status
-   - Reveals Golden Cheese gates only for VIPs
-   - Provides fallback content for non-VIP users
+📂 `/scripts/tetris-scroll.js`
+📂 `/scripts/snake-scroll.js`
+- Core game logic: score, pause/resume, mobile touch, countdown intro
+- Writes score to API with wallet + Discord ID
 
-3. 🧠 RIDDLE PROGRESSION TRACKER:
-   - Expands puzzle paths based on egg interactions
-   - Trait and time-based unlocks for future events
-   - Linked directly to SQL-backed reward and lore trees
+📂 `/api/user/*.php`
+- `profile.php`: Loads session wallet, roles, traits
+- `roles.php`: Discord-linked roles endpoint
+- `download-vip-art.php`: Gated download (VIP only)
+- `traits.php`: Returns JSON trait matrix
+- `save-score.php`: Saves Tetris/Snake scores
 
------------------------------------------------------------
-📦 DATABASE DESIGN:
------------------------------------------------------------
+📂 `/db/narrrf_world.sqlite`
+- Main data source for user traits, roles, scores, quests
+  → `tbl_cheese_clicks` → egg engine log
+  → `tbl_user_roles` → Discord role map
+  → `tbl_traits_claimed` → trait unlock (WIP for 12.1)
+  → `tbl_user_score_log` → stores game session history
 
-📂 `tbl_cheese_clicks`
-- `user_wallet` TEXT
-- `egg_id` TEXT
-- `timestamp` DATETIME
+📂 `/private/vip_hd_art/`
+- 🎴 Holds VIP-gated NFT images
+- Enforced download only via Discord + Role
 
-✅ Ensure all tracking uses:
-→ `walletAddress` from localStorage  
-→ Clicked egg's ID  
-→ `Date.now()` timestamp
+===========================================================
+🧠 CORE SYSTEM MODULES (GENESIS 12.0)
+===========================================================
 
-All POST requests go to:  
-➡️ `/api/track-egg-click`
+1. 🍳 CHEESE EGG ENGINE (v1.4.1)
+   - Randomized egg placement inside `#roadmap`
+   - Click handler posts `egg_id` + `wallet` + `timestamp` to backend
+   - Supports three floating egg IDs:
+     · `cheese-egg`
+     · `cheese-egg-blue`
+     · `cheese-egg-finance`
 
------------------------------------------------------------
-🧑‍💻 DEVELOPER RESPONSIBILITIES:
------------------------------------------------------------
+2. 🔐 VIP GATE LOGIC
+   - DOM toggles via `VIP_pass` or `VIP Holder` Discord roles
+   - Trait-based unlock toggles `download-vip-art.php`
+   - Fallback banner with joke if no role detected
 
-✅ Always test wallet connections across:
-   - Phantom (Solana)
-   - Brave Wallet
-   - Mobile Wallet Connect (if supported)
+3. 🧬 TRAIT SYNC + DOM LOGIC
+   - Traits fetched via API
+   - Displayed on profile
+   - Future: DOM unlocks via trait conditions (eg. `SNAKE_CHEESE_MASTER`)
 
-✅ Verify egg click tracking:
-   - Inspect console for fetch status
-   - Check `tbl_cheese_clicks` after interaction
+4. 🎮 TETRIS + SNAKE SCORE ENGINE
+   - Both games auto-sync wallet + Discord ID to API
+   - Real-time leaderboard rendering from `get-leaderboard.php`
+   - Game over = triggers reward + leaderboard load
 
-✅ Maintain role-based DOM logic:
-   - `VIP_pass` and `VIP Holder` must unlock special gates
-   - Use proper guards to avoid null access in DOM selectors
+5. ⏳ COUNTDOWN SYSTEM
+   - Animated UTC countdown on `mint.html`
+   - Styled via Tailwind + pulse
+   - Future support for scroll-unseal events
 
-✅ Optimize egg rendering for:
-   - Mobile interaction
-   - Canvas positioning
-   - Game-friendly latency
+6. 🧠 RIDDLE BRAIN 12.0
+   - Unlock logic in planning
+   - Trait combination triggers, timed scrolls, rare unlocks
+   - Example: “SNAKE_CHEESE_MASTER” unlocks additional lore path
 
------------------------------------------------------------
-🔮 FUTURE EXPANSION IDEAS:
------------------------------------------------------------
+===========================================================
+📦 DATABASE TABLES — NARRRF SQL LAYER
+===========================================================
 
-🚪 Cheese Dungeons (Map-wide riddle mechanics)  
-🧩 Trait-locked puzzle chains  
-🎁 Reward-based minting unlocks  
-📆 Timed eggs with expiration + history  
-🧬 Lore-triggered UI mutations  
+🔸 `tbl_cheese_clicks`
+  - `user_wallet` TEXT
+  - `egg_id` TEXT
+  - `timestamp` INTEGER
 
------------------------------------------------------------
-🧪 CERTIFIED: NARRRF'S CORE ENGINE
-🗓️ Last Updated: 2025-04-03
-🧠 Status: GENESIS 2.0 → Approved + Active
------------------------------------------------------------
+🔸 `tbl_user_roles`
+  - `user_id` TEXT (Discord)
+  - `role_name` TEXT
+
+🔸 `tbl_traits_claimed`
+  - `user_id` TEXT
+  - `trait_id` TEXT
+  - `timestamp` INTEGER
+
+🔸 `tbl_user_score_log`
+  - `user_id`
+  - `score`
+  - `game` (snake, tetris)
+  - `timestamp`
+
+===========================================================
+🧪 DEVELOPER + AI WORKFLOW PROTOCOL
+===========================================================
+
+✅ Always check:
+  - Mobile egg clicks + sound + random movement
+  - Score submits for Tetris/Snake with Discord + Wallet
+
+✅ Traits:
+  - Use `traits.php` or `profile.php` to sync
+  - Add new traits to `tbl_traits_claimed` + DOM logic
+
+✅ Game DOM Safety:
+  - Use `getElementById()` with null check
+  - Avoid global variable leaks from game intervals
+
+✅ JS Tips:
+  - Use `setInterval`, `clearInterval` safely on pause/resume
+  - Use `drop()` only once per loop to avoid flicker bugs
+  - Declare audio preload for egg click sounds
+
+===========================================================
+🔮 EXPANSION: GENESIS 12.1 AND BEYOND
+===========================================================
+
+🪙 Score Swap + On-chain Sync  
+📜 Scroll Unseal Events (via traits)  
+🧬 DNA Trait Mutation Lab  
+🧀 Cheese Dungeon: map logic + fog reveal  
+🧊 Puzzle Bridge: Riddle + Bingo unlock  
+🎴 NFT Reward integration + trait fusion  
+🧠 AI-compatible LLM protocol sync
+
+===========================================================
+✅ CERTIFIED: NARRRF ENGINE · STATUS: ACTIVE
+🧠 Last Updated: 2025-07-24 · GENESIS 12.0 LIVE
+===========================================================
 -->
 
 
 <!-- ======================================== -->
-<!-- 🧠 HTML Brain 9.0 Footer Lab Declaration -->
+<!-- 🧠 HTML Brain 12.0 Footer Lab Declaration -->
 <!-- ======================================== -->
+
 
   <!-- 🌀 Cheese Portal to Hytopia -->
 <section id="hytopia-portal" class="mt-16 px-6">
@@ -1031,8 +1100,8 @@ All POST requests go to:
 </section>
 
 <footer class="text-center text-xs text-yellow-600 py-4 mt-12">
-  🧠 Powered by Cheese Architect 4.0 — HTML Brain of Narrrf's World<br>
-  🧀 Brain Sync 9.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊
+  🧠 Powered by Cheese Architect 12.0 — HTML Brain of Narrrf's World<br>
+  🧀 Brain Sync 12.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊
 </footer>
 <!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
 <!-- 🔐 Do not remove unless instructed by the Over Brain. -->
