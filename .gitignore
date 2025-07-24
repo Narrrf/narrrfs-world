@@ -15,6 +15,7 @@
 public/scripts/tetris-scroll-backup*.js
 public/scripts/tetris-scroll (1).js
 
+
 # 🛑 AI, Backup, Data Science, and Export folders
 AI Major 10.0/
 score download/
@@ -39,3 +40,15 @@ Thumbs.db
 .idea/
 logs/
 *.log
+
+# .gitignore (at root of project)
+discord/commands/createitem.js
+discord/commands/listitems.js
+discord/discord-Quests-Working-Store-not.7z
+narrrf_world.sqlite
+public/scripts/Neuer Ordner/
+public/scripts/snake-scroll-WORKING-MAJOR.js
+public/scripts/tetris-scroll-WORKING-*.        
+db/migrations/add_user_columns.sql
+discord/commands/giftitem.js
+public/scripts/old bckups/tetris-scroll-Super-Working-Juli.js
