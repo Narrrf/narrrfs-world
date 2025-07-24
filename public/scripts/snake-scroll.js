@@ -238,7 +238,7 @@ function initSnake() {
       snake.some(seg => seg.x === head.x && seg.y === head.y)
     ) {
       clearInterval(gameInterval);
-      onGameOver(score * 10);
+      onGameOver();
       return;
     }
 
@@ -336,19 +336,102 @@ function startGame() {
   enableGlobalSnakeTouch(); // Enable touch controls when game starts
 }
 
-function onGameOver(finalScore) {
-  disableGlobalSnakeTouch(); // Disable touch controls on game over
-  clearInterval(gameInterval); // Clear the interval
-  gameInterval = null; // Reset the interval reference
-  isSnakePaused = true; // Set paused state
-  
-  const modal = document.getElementById("snake-over-modal");
-  const text = document.getElementById("snake-final-score-text");
+function onGameOver() {
+  clearInterval(gameInterval);
+  gameInterval = null;
+  isSnakePaused = true;
+
+  const modal = document.getElementById("game-over-modal");
+  const finalScoreText = document.getElementById("final-score-text");
   const pauseBtn = document.getElementById("pause-snake-btn");
 
-  if (modal && text) {
-    text.textContent = `You earned $${finalScore} DSPOINC`;
-    modal.classList.remove("hidden");
+  if (modal && finalScoreText) {
+    // Simple styling for the modal
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.backgroundColor = '#fff6e5';
+    modal.style.padding = '32px';
+    modal.style.borderRadius = '16px';
+    modal.style.border = '2px solid #fbbf24';
+    modal.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+    modal.style.zIndex = '1000';
+    modal.style.display = 'flex';
+    modal.style.flexDirection = 'column';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.gap = '20px';
+    modal.style.minWidth = '280px';
+    modal.style.maxWidth = '90vw';
+    modal.style.textAlign = 'center';
+
+    // Style the game over text
+    const gameOverText = modal.querySelector('h2') || modal.querySelector('strong');
+    if (gameOverText) {
+      gameOverText.style.color = '#92400e';
+      gameOverText.style.fontSize = '28px';
+      gameOverText.style.fontWeight = 'bold';
+      gameOverText.style.margin = '0';
+      gameOverText.style.display = 'flex';
+      gameOverText.style.alignItems = 'center';
+      gameOverText.style.justifyContent = 'center';
+      gameOverText.style.gap = '12px';
+      gameOverText.innerHTML = '🧠 GAME OVER';
+    }
+
+    // Style the score text
+    finalScoreText.style.color = '#92400e';
+    finalScoreText.style.fontSize = '20px';
+    finalScoreText.style.margin = '0';
+    finalScoreText.style.padding = '8px 0';
+    finalScoreText.style.width = '100%';
+    finalScoreText.style.textAlign = 'center';
+    finalScoreText.textContent = `You earned $${score} DSPOINC`;
+
+    // Find and style the retry button
+    const retryBtn = modal.querySelector('button');
+    if (retryBtn) {
+      retryBtn.style.backgroundColor = '#fbbf24';
+      retryBtn.style.color = '#92400e';
+      retryBtn.style.padding = '16px 32px';
+      retryBtn.style.borderRadius = '12px';
+      retryBtn.style.border = '2px solid #f59e0b';
+      retryBtn.style.cursor = 'pointer';
+      retryBtn.style.fontWeight = 'bold';
+      retryBtn.style.fontSize = '18px';
+      retryBtn.style.display = 'flex';
+      retryBtn.style.alignItems = 'center';
+      retryBtn.style.justifyContent = 'center';
+      retryBtn.style.gap = '12px';
+      retryBtn.style.margin = '8px auto 0';
+      retryBtn.style.width = '200px';
+      retryBtn.style.transition = 'all 0.2s ease';
+      retryBtn.style.userSelect = 'none';
+      retryBtn.style.touchAction = 'manipulation';
+      
+      // Enhanced hover effect
+      retryBtn.onmouseover = () => {
+        retryBtn.style.backgroundColor = '#f59e0b';
+        retryBtn.style.transform = 'translateY(-1px)';
+      };
+      retryBtn.onmouseout = () => {
+        retryBtn.style.backgroundColor = '#fbbf24';
+        retryBtn.style.transform = 'translateY(0)';
+      };
+
+      // Update button content with centered text
+      retryBtn.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+          <span style="display: inline-flex;">��</span>
+          <span style="flex: 1; text-align: center;">Play Again</span>
+        </div>
+      `.trim();
+    }
+
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
   }
 
   // Update pause button state
@@ -356,36 +439,32 @@ function onGameOver(finalScore) {
     pauseBtn.textContent = "⏸️ Pause";
   }
 
-  fetch("https://narrrfs.world/api/dev/save-score.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      wallet: localStorage.getItem("walletAddress") || "TestWallet123456789XYZ",
-      score: finalScore,
-      game: "snake",
-      discord_id: localStorage.getItem("discord_id") || "1337",
-      discord_name: localStorage.getItem("discord_name") || "Anonymous Mouse"
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("✅ Snake score saved:", data);
-    if (!data.success) {
-      console.warn("⚠️ Save score response indicates failure:", data);
-    }
-  })
-  .catch(err => {
-    console.error("❌ Snake score save failed:", err);
-  });
+  // Save score and update leaderboard
+  saveScore(score);
 }
 
 
   // Pause button
   const pauseBtn = document.getElementById("pause-snake-btn");
   if (pauseBtn) {
-    pauseBtn.addEventListener("click", () => {
+    // Add mobile-friendly styles
+    pauseBtn.style.padding = "12px 24px";
+    pauseBtn.style.fontSize = "18px";
+    pauseBtn.style.touchAction = "manipulation";
+    pauseBtn.style.userSelect = "none";
+    pauseBtn.style.webkitTapHighlightColor = "transparent";
+    
+    // Remove any existing listeners
+    pauseBtn.replaceWith(pauseBtn.cloneNode(true));
+    const newPauseBtn = document.getElementById("pause-snake-btn");
+    
+    // Add both click and touch events
+    const pauseHandler = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
       isSnakePaused = !isSnakePaused;
-      pauseBtn.textContent = isSnakePaused ? "▶️ Resume" : "⏸️ Pause";
+      newPauseBtn.textContent = isSnakePaused ? "▶️ Resume" : "⏸️ Pause";
       
       if (isSnakePaused) {
         clearInterval(gameInterval);
@@ -396,7 +475,10 @@ function onGameOver(finalScore) {
           gameInterval = setInterval(moveSnake, 250);
         }
       }
-    });
+    };
+
+    newPauseBtn.addEventListener("click", pauseHandler);
+    newPauseBtn.addEventListener("touchend", pauseHandler, { passive: false });
   }
 
   // Start button

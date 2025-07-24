@@ -342,23 +342,43 @@ function showBombDefusedPopup() {
 let isTetrisPaused = false;
 let gameInterval;
 
-document.getElementById("pause-tetris-btn")?.addEventListener("click", () => {
-  isTetrisPaused = !isTetrisPaused;
-  const btn = document.getElementById("pause-tetris-btn");
-  btn.textContent = isTetrisPaused ? "▶️ Resume" : "⏸️ Pause";
+const pauseBtn = document.getElementById("pause-tetris-btn");
+if (pauseBtn) {
+  // Add mobile-friendly styles
+  pauseBtn.style.padding = "12px 24px";
+  pauseBtn.style.fontSize = "18px";
+  pauseBtn.style.touchAction = "manipulation";
+  pauseBtn.style.userSelect = "none";
+  pauseBtn.style.webkitTapHighlightColor = "transparent";
+  
+  // Remove any existing listeners
+  pauseBtn.replaceWith(pauseBtn.cloneNode(true));
+  const newPauseBtn = document.getElementById("pause-tetris-btn");
+  
+  // Add both click and touch events
+  const pauseHandler = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    isTetrisPaused = !isTetrisPaused;
+    newPauseBtn.textContent = isTetrisPaused ? "▶️ Resume" : "⏸️ Pause";
 
-  if (isTetrisPaused) {
-    clearInterval(gameInterval);
-  } else {
-    // Only restart interval if game is not over
-    if (gameInterval) {
+    if (isTetrisPaused) {
       clearInterval(gameInterval);
-      gameInterval = setInterval(drop, dropInterval);
-      // Force one immediate drop to ensure game is responsive
-      drop();
+    } else {
+      // Only restart interval if game is not over
+      if (gameInterval) {
+        clearInterval(gameInterval);
+        gameInterval = setInterval(drop, dropInterval);
+        // Force one immediate drop to ensure game is responsive
+        drop();
+      }
     }
-  }
-});
+  };
+
+  newPauseBtn.addEventListener("click", pauseHandler);
+  newPauseBtn.addEventListener("touchend", pauseHandler, { passive: false });
+}
 
 // Add keyboard event listener for movement controls
 document.addEventListener("keydown", e => {
@@ -435,8 +455,8 @@ function drop() {
 
     if (collide(current.shape, current.row, current.col)) {
       clearInterval(gameInterval);
-      gameInterval = null; // Reset the interval reference
-      isTetrisPaused = true; // Set paused state
+      gameInterval = null;
+      isTetrisPaused = true;
       onTetrisGameOver(score);
 
       const modal = document.getElementById("game-over-modal");
@@ -444,8 +464,92 @@ function drop() {
       const pauseBtn = document.getElementById("pause-tetris-btn");
 
       if (modal && finalScoreText) {
+        // Simple styling for the modal
+        modal.style.position = 'fixed';
+        modal.style.top = '50%';
+        modal.style.left = '50%';
+        modal.style.transform = 'translate(-50%, -50%)';
+        modal.style.backgroundColor = '#fff6e5';
+        modal.style.padding = '32px';
+        modal.style.borderRadius = '16px';
+        modal.style.border = '2px solid #fbbf24';
+        modal.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        modal.style.zIndex = '1000';
+        modal.style.display = 'flex';
+        modal.style.flexDirection = 'column';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.gap = '20px';
+        modal.style.minWidth = '280px';
+        modal.style.maxWidth = '90vw';
+        modal.style.textAlign = 'center';
+
+        // Style the game over text
+        const gameOverText = modal.querySelector('h2') || modal.querySelector('strong');
+        if (gameOverText) {
+          gameOverText.style.color = '#92400e';
+          gameOverText.style.fontSize = '28px';
+          gameOverText.style.fontWeight = 'bold';
+          gameOverText.style.margin = '0';
+          gameOverText.style.display = 'flex';
+          gameOverText.style.alignItems = 'center';
+          gameOverText.style.justifyContent = 'center';
+          gameOverText.style.gap = '12px';
+          gameOverText.innerHTML = '🧠 GAME OVER';
+        }
+
+        // Style the score text
+        finalScoreText.style.color = '#92400e';
+        finalScoreText.style.fontSize = '20px';
+        finalScoreText.style.margin = '0';
+        finalScoreText.style.padding = '8px 0';
+        finalScoreText.style.width = '100%';
+        finalScoreText.style.textAlign = 'center';
         finalScoreText.textContent = `You earned $${score} DSPOINC`;
-        modal.classList.remove("hidden");
+
+        // Find and style the retry button
+        const retryBtn = modal.querySelector('button');
+        if (retryBtn) {
+          retryBtn.style.backgroundColor = '#fbbf24';
+          retryBtn.style.color = '#92400e';
+          retryBtn.style.padding = '16px 32px';
+          retryBtn.style.borderRadius = '12px';
+          retryBtn.style.border = '2px solid #f59e0b';
+          retryBtn.style.cursor = 'pointer';
+          retryBtn.style.fontWeight = 'bold';
+          retryBtn.style.fontSize = '18px';
+          retryBtn.style.display = 'flex';
+          retryBtn.style.alignItems = 'center';
+          retryBtn.style.justifyContent = 'center';
+          retryBtn.style.gap = '12px';
+          retryBtn.style.margin = '8px auto 0';
+          retryBtn.style.width = '200px';
+          retryBtn.style.transition = 'all 0.2s ease';
+          retryBtn.style.userSelect = 'none';
+          retryBtn.style.touchAction = 'manipulation';
+          
+          // Enhanced hover effect
+          retryBtn.onmouseover = () => {
+            retryBtn.style.backgroundColor = '#f59e0b';
+            retryBtn.style.transform = 'translateY(-1px)';
+          };
+          retryBtn.onmouseout = () => {
+            retryBtn.style.backgroundColor = '#fbbf24';
+            retryBtn.style.transform = 'translateY(0)';
+          };
+
+          // Update button content with centered text
+          retryBtn.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+              <span style="display: inline-flex;">🏠</span>
+              <span style="flex: 1; text-align: center;">Play Again</span>
+            </div>
+          `.trim();
+        }
+
+        // Show modal
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
       }
 
       // Update pause button state
@@ -454,7 +558,7 @@ function drop() {
       }
 
       if (typeof loadCombinedLeaderboards === "function") {
-        loadCombinedLeaderboards(); // ✅ Call the combined leaderboard
+        loadCombinedLeaderboards();
       }
 
       return;
