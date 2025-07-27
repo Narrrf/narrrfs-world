@@ -13,7 +13,7 @@ try {
 
 try {
     // Get all active items
-    $stmt = $db->prepare("SELECT * FROM tbl_store_items WHERE active = 1 ORDER BY name");
+    $stmt = $db->prepare("SELECT * FROM tbl_store_items WHERE is_active = 1 ORDER BY item_name");
     $stmt->execute();
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

@@ -228,6 +228,15 @@ $discordId = $_SESSION['discord_id'] ?? '';
       OAuth session live · Verified via Discord
     </div>
 
+    <!-- 🔧 Admin Access Button (only visible to admins/moderators) -->
+    <div id="adminAccessButton" class="mt-4 hidden">
+      <a href="/discord-test.html" 
+         class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-red-500 transition-all duration-300 transform hover:scale-105">
+        🔧 ADMIN INTERFACE
+      </a>
+      <p class="text-xs text-gray-400 mt-2 italic">Access granted for administrators and moderators</p>
+    </div>
+
     <!-- 👣 Footer Note -->
     <div class="mt-6 text-yellow-400 text-sm">
       🧠 Profile powered by Cheese Architect 9.0 · Phase 5 Bridge Online
@@ -578,6 +587,13 @@ document.addEventListener("DOMContentLoaded", async function () {
   const avatar = document.getElementById('avatar');
   const loginLink = document.getElementById('login-link');
 
+  // Check if user was redirected from admin interface
+  const adminRedirect = localStorage.getItem('adminRedirect');
+  if (adminRedirect) {
+    localStorage.removeItem('adminRedirect'); // Clear the flag
+    // We'll handle the admin redirect after user data is loaded
+  }
+
   try {
     // Unified fetch from profile.php
     const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
@@ -661,6 +677,57 @@ if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP
 if (user.discord_id) {
   showElement('bingoBanner');
 }
+
+    // 🔧 Show Admin Access Button for admins/moderators
+    if (user.roles && (
+        user.roles.includes("Moderator") || 
+        user.roles.includes("Admin") || 
+        user.roles.includes("super_admin") ||
+        user.roles.includes("Founder") ||
+        user.roles.includes("DL Rumble Admins") ||
+        user.discord_id === "328601656659017732" // narrrf's Discord ID
+    )) {
+      showElement('adminAccessButton');
+      
+      // If user was redirected from admin interface, show a notification
+      if (adminRedirect) {
+        // Add a temporary notification
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
+        notification.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span>✅ Admin access granted!</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="text-white hover:text-gray-200">×</button>
+          </div>
+        `;
+        document.body.appendChild(notification);
+        
+        // Auto-remove notification after 5 seconds
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.remove();
+          }
+        }, 5000);
+      }
+    } else if (adminRedirect) {
+      // User was redirected from admin but doesn't have admin privileges
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in';
+      notification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span>❌ Admin access denied. You need moderator privileges.</span>
+          <button onclick="this.parentElement.parentElement.remove()" class="text-white hover:text-gray-200">×</button>
+        </div>
+      `;
+      document.body.appendChild(notification);
+      
+      // Auto-remove notification after 5 seconds
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 5000);
+    }
 
   } catch (err) {
     console.error('Profile fetch failed:', err);

@@ -98,21 +98,64 @@
     <!-- Admin Authentication -->
     <div class="admin-card mb-6" id="authPanel">
       <h2 class="text-xl font-semibold mb-4">🔐 Admin Authentication</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-2">Discord ID:</label>
-          <input type="text" id="adminDiscordId" placeholder="Your Discord ID" class="w-full px-3 py-2 rounded text-gray-800">
+      
+      <!-- Discord Auth for Moderators -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🎮 Discord Authentication (Moderators)</h3>
+        <p class="text-sm text-gray-300 mb-3">If you have the moderator role in Discord, you can access basic admin features:</p>
+        <button onclick="authenticateDiscord()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded">
+          🔗 Login with Discord
+        </button>
+        <div id="discordAuthStatus" class="mt-2 text-sm"></div>
+      </div>
+
+      <!-- Password Auth for Super Admin -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🔑 Super Admin Access</h3>
+        <p class="text-sm text-gray-300 mb-3">For advanced features and user management:</p>
+        
+        <!-- Login Form -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Username:</label>
+            <input type="text" id="loginUsername" placeholder="Enter username" class="w-full px-3 py-2 rounded text-gray-800">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Password:</label>
+            <input type="password" id="loginPassword" placeholder="Enter password" class="w-full px-3 py-2 rounded text-gray-800">
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">Admin Role:</label>
-          <select id="adminRole" class="w-full px-3 py-2 rounded text-gray-800">
-            <option value="moderator">Moderator</option>
-            <option value="admin">Admin</option>
-            <option value="super_admin">Super Admin</option>
-          </select>
+        <div class="flex gap-2">
+          <button onclick="loginAdmin()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded">Super Admin Login</button>
+          <button onclick="showUserManagement()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">Manage Users</button>
         </div>
-        <div class="flex items-end">
-          <button onclick="authenticateAdmin()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded">Login</button>
+      </div>
+
+      <!-- User Management (Super Admin Only) -->
+      <div id="userManagementPanel" class="hidden">
+        <h3 class="text-lg font-semibold mb-4">👥 User Management</h3>
+        
+        <!-- Add New User -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-4">
+          <h4 class="text-md font-semibold mb-3">➕ Add New User</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" id="newUsername" placeholder="Username" class="px-3 py-2 rounded text-gray-800">
+            <input type="password" id="newPassword" placeholder="Password" class="px-3 py-2 rounded text-gray-800">
+            <select id="newRole" class="px-3 py-2 rounded text-gray-800">
+              <option value="moderator">Moderator</option>
+              <option value="admin">Admin</option>
+            </select>
+            <input type="text" id="newDiscordId" placeholder="Discord ID (optional)" class="px-3 py-2 rounded text-gray-800">
+          </div>
+          <button onclick="addUser()" class="mt-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add User</button>
+        </div>
+
+        <!-- Current Users -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h4 class="text-md font-semibold mb-3">📋 Current Users</h4>
+          <div id="currentUsersList" class="space-y-2">
+            <div class="text-gray-300">Loading users...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -180,9 +223,12 @@
       <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">🎯 Quick User Selection</h3>
         <div class="flex gap-2">
-          <input type="text" id="quickUserId" placeholder="Enter Discord User ID" 
-                 class="flex-1 px-3 py-2 rounded text-gray-800">
+          <input type="text" id="quickUserId" placeholder="Enter username or ID" 
+                 class="flex-1 px-3 py-2 rounded text-gray-800" oninput="quickSearchUsersInstant(this.value)">
           <button onclick="quickSelectUser()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">Select User</button>
+        </div>
+        <div id="quickUserResults" class="mt-3 max-h-48 overflow-y-auto">
+          <div class="text-gray-300">Enter at least 2 characters to search...</div>
         </div>
         <div id="selectedUserInfo" class="mt-3 p-3 bg-gray-700 rounded hidden">
           <!-- Selected user info will appear here -->
@@ -261,19 +307,44 @@
       <!-- Store Items -->
       <div class="mb-6">
         <h3 class="text-lg font-semibold mb-3">📦 Available Store Items</h3>
+        <button onclick="loadStoreItems()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-3">Refresh Items</button>
         <div id="storeItems" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="text-gray-300">Loading store items...</div>
+          <div class="text-gray-300">Click "Refresh Items" to load store items...</div>
         </div>
       </div>
 
       <!-- Add New Item -->
-      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
         <h3 class="text-lg font-semibold mb-3">➕ Add New Store Item</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input type="text" id="newItemName" placeholder="Item Name" class="px-3 py-2 rounded text-gray-800">
           <input type="number" id="newItemPrice" placeholder="Price in $DSPOINC" class="px-3 py-2 rounded text-gray-800">
+          <input type="text" id="newItemImageUrl" placeholder="Image URL (optional)" class="px-3 py-2 rounded text-gray-800">
           <textarea id="newItemDescription" placeholder="Item Description" class="px-3 py-2 rounded text-gray-800 md:col-span-2"></textarea>
-          <button onclick="addStoreItem()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add Item</button>
+          <button onclick="createStoreItem()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Create Item</button>
+        </div>
+      </div>
+
+      <!-- Give Item to User -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-semibold mb-3">🎁 Give Item to User</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <input type="text" id="giveItemUserId" placeholder="User ID or Username" class="px-3 py-2 rounded text-gray-800">
+          <input type="text" id="giveItemName" placeholder="Item Name" class="px-3 py-2 rounded text-gray-800">
+          <input type="number" id="giveItemQuantity" placeholder="Quantity" value="1" class="px-3 py-2 rounded text-gray-800">
+        </div>
+        <button onclick="giveItemToUser()" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">Give Item</button>
+      </div>
+
+      <!-- View User Inventory -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">👤 View User Inventory</h3>
+        <div class="flex gap-2">
+          <input type="text" id="viewInventoryUserId" placeholder="User ID or Username" class="flex-1 px-3 py-2 rounded text-gray-800">
+          <button onclick="viewUserInventory()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">View Inventory</button>
+        </div>
+        <div id="userInventoryList" class="mt-3">
+          <div class="text-gray-300">Enter user ID/username and click "View Inventory"...</div>
         </div>
       </div>
     </div>
@@ -457,23 +528,190 @@
     }
 
     // Admin authentication
-    function authenticateAdmin() {
-      const discordId = document.getElementById('adminDiscordId').value.trim();
-      const role = document.getElementById('adminRole').value;
+    async function loginAdmin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
       
-      if (!discordId) {
-        addLog('❌ Please enter your Discord ID');
+      if (!username || !password) {
+        addLog('❌ Please enter username and password');
         return;
       }
 
-      currentAdmin = {
-        discordId: discordId,
-        role: role
-      };
+      try {
+        const response = await fetch('/api/admin/auth.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'login',
+            username: username,
+            password: password
+          })
+        });
 
-      document.getElementById('authPanel').style.display = 'none';
-      document.getElementById('navPanel').style.display = 'block';
-      addLog(`✅ Admin authenticated: ${discordId} (${role})`);
+        const data = await response.json();
+        
+        if (data.success) {
+          currentAdmin = data.user;
+          document.getElementById('authPanel').style.display = 'none';
+          document.getElementById('navPanel').style.display = 'block';
+          addLog(`✅ Admin authenticated: ${username} (${data.user.role})`);
+        } else {
+          addLog(`❌ Login failed: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Login error: ${error.message}`);
+      }
+    }
+
+    // Show user management panel
+    function showUserManagement() {
+      const panel = document.getElementById('userManagementPanel');
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        loadCurrentUsers();
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+
+    // Load current users
+    async function loadCurrentUsers() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      
+      if (!username || !password) {
+        addLog('❌ Please enter your credentials first');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/auth.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'list_users',
+            admin_username: username,
+            admin_password: password
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          displayCurrentUsers(data.users);
+        } else {
+          addLog(`❌ Failed to load users: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Load users error: ${error.message}`);
+      }
+    }
+
+    // Display current users
+    function displayCurrentUsers(users) {
+      const container = document.getElementById('currentUsersList');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+          <div>
+            <span class="font-semibold">${user.username}</span>
+            <span class="text-sm text-gray-300 ml-2">(${user.role})</span>
+            ${user.discord_id ? `<span class="text-xs text-gray-400 ml-2">Discord: ${user.discord_id}</span>` : ''}
+          </div>
+          ${user.username !== 'narrrf' ? `
+            <button onclick="removeUser('${user.username}')" 
+                    class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-sm">
+              Remove
+            </button>
+          ` : '<span class="text-xs text-gray-400">Super Admin</span>'}
+        </div>
+      `).join('');
+    }
+
+    // Add new user
+    async function addUser() {
+      const adminUsername = document.getElementById('loginUsername').value.trim();
+      const adminPassword = document.getElementById('loginPassword').value;
+      const newUsername = document.getElementById('newUsername').value.trim();
+      const newPassword = document.getElementById('newPassword').value;
+      const newRole = document.getElementById('newRole').value;
+      const newDiscordId = document.getElementById('newDiscordId').value.trim();
+      
+      if (!adminUsername || !adminPassword || !newUsername || !newPassword) {
+        addLog('❌ Please fill in all required fields');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/auth.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'add_user',
+            admin_username: adminUsername,
+            admin_password: adminPassword,
+            new_username: newUsername,
+            new_password: newPassword,
+            new_role: newRole,
+            new_discord_id: newDiscordId
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ ${data.message}`);
+          // Clear form
+          document.getElementById('newUsername').value = '';
+          document.getElementById('newPassword').value = '';
+          document.getElementById('newDiscordId').value = '';
+          // Reload users list
+          loadCurrentUsers();
+        } else {
+          addLog(`❌ Failed to add user: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Add user error: ${error.message}`);
+      }
+    }
+
+    // Remove user
+    async function removeUser(username) {
+      const adminUsername = document.getElementById('loginUsername').value.trim();
+      const adminPassword = document.getElementById('loginPassword').value;
+      
+      if (!confirm(`Are you sure you want to remove user '${username}'?`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/auth.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'remove_user',
+            admin_username: adminUsername,
+            admin_password: adminPassword,
+            remove_username: username
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ ${data.message}`);
+          loadCurrentUsers();
+        } else {
+          addLog(`❌ Failed to remove user: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Remove user error: ${error.message}`);
+      }
     }
 
     // Tab navigation
@@ -524,6 +762,40 @@
           
           if (data.success) {
             displayUserResults(data.users);
+            addLog(`🔍 Found ${data.users.length} users matching "${searchTerm}"`);
+          } else {
+            addLog(`❌ Search failed: ${data.error}`);
+          }
+        } catch (error) {
+          addLog(`❌ Search error: ${error.message}`);
+        }
+      }, 300);
+    }
+
+    // Quick instant user search for point management
+    function quickSearchUsersInstant(searchTerm) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      
+      if (searchTerm.length < 2) {
+        document.getElementById('quickUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch('/api/admin/point-management.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'searchuser',
+              search: searchTerm
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            displayQuickUserResults(data.users);
             addLog(`🔍 Found ${data.users.length} users matching "${searchTerm}"`);
           } else {
             addLog(`❌ Search failed: ${data.error}`);
@@ -587,6 +859,51 @@
       `).join('');
     }
 
+    // Display quick user search results for point management
+    function displayQuickUserResults(users) {
+      const container = document.getElementById('quickUserResults');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="user-card mb-2">
+          <div class="flex justify-between items-center">
+            <div>
+              <h4 class="font-semibold">${user.username || 'Unknown User'}</h4>
+              <p class="text-sm text-gray-300">ID: ${user.user_id}</p>
+              <p class="text-sm text-yellow-400">Balance: ${user.score?.toLocaleString() || 0} $DSPOINC</p>
+            </div>
+            <button onclick="quickSelectUserFromResults('${user.user_id}', '${user.username || 'Unknown'}', ${user.score || 0})" 
+                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm">
+              Select
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Quick user selection from search results
+    function quickSelectUserFromResults(userId, username, balance) {
+      selectUser(userId, username);
+      
+      const infoDiv = document.getElementById('selectedUserInfo');
+      infoDiv.innerHTML = `
+        <div class="text-green-400">
+          <strong>Selected User:</strong> ${username}<br>
+          <strong>Balance:</strong> ${balance.toLocaleString()} $DSPOINC
+        </div>
+      `;
+      infoDiv.classList.remove('hidden');
+      
+      // Clear the search results
+      document.getElementById('quickUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+      
+      addLog(`👤 Selected user: ${username} (${balance.toLocaleString()} $DSPOINC)`);
+    }
+
     // Quick user selection
     async function quickSelectUser() {
       const userId = document.getElementById('quickUserId').value.trim();
@@ -637,6 +954,11 @@
       document.getElementById('historyUserId').value = userId;
       document.getElementById('quickUserId').value = userId;
       
+      // Clear search results
+      if (document.getElementById('quickUserResults')) {
+        document.getElementById('quickUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+      }
+      
       addLog(`👤 Selected user: ${username} (${userId})`);
     }
 
@@ -662,7 +984,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'addpoints',
-            admin_id: currentAdmin.discordId,
+            admin_id: currentAdmin.discord_id,
             user_id: userId,
             amount: amount,
             reason: reason
@@ -708,7 +1030,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'setpoints',
-            admin_id: currentAdmin.discordId,
+            admin_id: currentAdmin.discord_id,
             user_id: userId,
             amount: amount,
             reason: reason
@@ -754,7 +1076,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'removepoints',
-            admin_id: currentAdmin.discordId,
+            admin_id: currentAdmin.discord_id,
             user_id: userId,
             amount: amount,
             reason: reason
@@ -925,6 +1247,46 @@
       `).join('');
     }
 
+    // Edit store item (placeholder for future implementation)
+    function editStoreItem(itemId) {
+      addLog(`🔄 Edit store item functionality coming soon! Item ID: ${itemId}`);
+      // TODO: Implement edit store item modal/form
+    }
+
+    // Delete store item
+    async function deleteStoreItem(itemId) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to delete this store item?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/store-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'delete_item',
+            item_id: itemId
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Store item deleted successfully!`);
+          loadStoreItems();
+        } else {
+          addLog(`❌ Failed to delete store item: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Store item deletion error: ${error.message}`);
+      }
+    }
+
     // Load quests
     async function loadQuests() {
       try {
@@ -970,6 +1332,301 @@
       `).join('');
     }
 
+    // Create quest
+    async function createQuest() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const type = document.getElementById('newQuestType').value.trim();
+      const description = document.getElementById('newQuestDescription').value.trim();
+      const link = document.getElementById('newQuestUrl').value.trim();
+      const reward = parseInt(document.getElementById('newQuestReward').value);
+
+      if (!type || !description || !reward || reward <= 0) {
+        addLog('❌ Please fill in all required fields: Type, Description, and Reward (must be positive)');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/create-quest.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create',
+            type: type,
+            description: description,
+            link: link,
+            reward: reward,
+            created_by: currentAdmin.discord_id
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Quest created successfully! ID: ${data.quest_id}`);
+          
+          // Clear form
+          document.getElementById('newQuestType').value = '';
+          document.getElementById('newQuestDescription').value = '';
+          document.getElementById('newQuestUrl').value = '';
+          document.getElementById('newQuestReward').value = '';
+          
+          // Reload quests list
+          loadQuests();
+        } else {
+          addLog(`❌ Failed to create quest: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Quest creation error: ${error.message}`);
+      }
+    }
+
+    // Edit quest (placeholder for future implementation)
+    function editQuest(questId) {
+      addLog(`🔄 Edit quest functionality coming soon! Quest ID: ${questId}`);
+      // TODO: Implement edit quest modal/form
+    }
+
+    // Delete quest
+    async function deleteQuest(questId) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to delete this quest?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/create-quest.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'delete',
+            quest_id: questId
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Quest deleted successfully!`);
+          loadQuests();
+        } else {
+          addLog(`❌ Failed to delete quest: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Quest deletion error: ${error.message}`);
+      }
+    }
+
+    // Store Management Functions
+    async function loadStoreItems() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/store/items.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayStoreItems(data.items);
+        } else {
+          addLog(`❌ Failed to load store items: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Store items loading error: ${error.message}`);
+      }
+    }
+
+    function displayStoreItems(items) {
+      const container = document.getElementById('storeItems');
+      
+      if (!items || items.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No store items found.</div>';
+        return;
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="bg-gray-700 p-4 rounded-lg">
+          <h4 class="font-semibold text-white mb-2">${item.item_name}</h4>
+          <p class="text-gray-300 text-sm mb-2">${item.description || 'No description'}</p>
+          <p class="text-yellow-400 font-semibold">${item.price.toLocaleString()} $DSPOINC</p>
+          <div class="flex gap-2 mt-3">
+            <button onclick="editStoreItem(${item.item_id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Edit</button>
+            <button onclick="deleteStoreItem(${item.item_id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function createStoreItem() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const name = document.getElementById('newItemName').value.trim();
+      const description = document.getElementById('newItemDescription').value.trim();
+      const price = parseInt(document.getElementById('newItemPrice').value);
+      const imageUrl = document.getElementById('newItemImageUrl').value.trim();
+
+      if (!name || !description || !price || price <= 0) {
+        addLog('❌ Please fill in all required fields: Name, Description, and Price (must be positive)');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/store-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create_item',
+            name: name,
+            description: description,
+            price: price,
+            image_url: imageUrl,
+            created_by: currentAdmin.discord_id
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Store item created successfully! ID: ${data.item_id}`);
+          
+          // Clear form
+          document.getElementById('newItemName').value = '';
+          document.getElementById('newItemDescription').value = '';
+          document.getElementById('newItemPrice').value = '';
+          document.getElementById('newItemImageUrl').value = '';
+          
+          // Reload store items
+          loadStoreItems();
+        } else {
+          addLog(`❌ Failed to create store item: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Store item creation error: ${error.message}`);
+      }
+    }
+
+    async function giveItemToUser() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const userId = document.getElementById('giveItemUserId').value.trim();
+      const itemName = document.getElementById('giveItemName').value.trim();
+      const quantity = parseInt(document.getElementById('giveItemQuantity').value);
+
+      if (!userId || !itemName || !quantity || quantity <= 0) {
+        addLog('❌ Please fill in all required fields: User ID, Item Name, and Quantity (must be positive)');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/store-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'give_item',
+            user_id: userId,
+            item_name: itemName,
+            quantity: quantity,
+            given_by: currentAdmin.discord_id
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Successfully gave ${quantity}x ${itemName} to user ${userId}`);
+          
+          // Clear form
+          document.getElementById('giveItemUserId').value = '';
+          document.getElementById('giveItemName').value = '';
+          document.getElementById('giveItemQuantity').value = '1';
+        } else {
+          addLog(`❌ Failed to give item: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Give item error: ${error.message}`);
+      }
+    }
+
+    async function viewUserInventory() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const userId = document.getElementById('viewInventoryUserId').value.trim();
+
+      if (!userId) {
+        addLog('❌ Please enter a user ID or username');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/admin/store-management.php?action=get_user_inventory&user_id=${encodeURIComponent(userId)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          displayUserInventory(data.items, userId);
+        } else {
+          addLog(`❌ Failed to load user inventory: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ User inventory loading error: ${error.message}`);
+      }
+    }
+
+    function displayUserInventory(items, userId) {
+      const container = document.getElementById('userInventoryList');
+      
+      if (!items || items.length === 0) {
+        container.innerHTML = `<div class="text-gray-300">No items found for user ${userId}.</div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="bg-gray-700 p-4 rounded-lg">
+          <h4 class="font-semibold text-white mb-3">Inventory for ${userId}</h4>
+          <div class="space-y-2">
+            ${items.map(item => `
+              <div class="flex justify-between items-center bg-gray-600 p-2 rounded">
+                <div>
+                  <span class="font-semibold text-white">${item.name}</span>
+                  <span class="text-gray-300 text-sm ml-2">x${item.quantity}</span>
+                </div>
+                <span class="text-gray-300 text-sm">${item.description || ''}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Edit store item (placeholder for future implementation)
+    function editStoreItem(itemId) {
+      addLog(`🔄 Edit store item functionality coming soon! Item ID: ${itemId}`);
+      // TODO: Implement edit store item modal/form
+    }
+
+    // Delete store item (placeholder for future implementation)
+    function deleteStoreItem(itemId) {
+      addLog(`🔄 Delete store item functionality coming soon! Item ID: ${itemId}`);
+      // TODO: Implement delete store item confirmation and API call
+    }
+
     // Update invite code
     function updateInviteCode() {
       const newCode = document.getElementById('newInviteCode').value.trim();
@@ -986,6 +1643,21 @@
       const timestamp = new Date().toLocaleTimeString();
       log.innerHTML += `<div class="text-blue-400">[${timestamp}] ${message}</div>`;
       log.scrollTop = log.scrollHeight;
+    }
+
+    // Discord Authentication for Moderators
+    async function authenticateDiscord() {
+      const discordAuthStatus = document.getElementById('discordAuthStatus');
+      discordAuthStatus.textContent = 'Redirecting to Discord OAuth...';
+      
+      // Redirect to Discord OAuth URL as specified by user
+      const oauthUrl = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+      
+      // Store the intended destination for after OAuth redirect
+      localStorage.setItem('adminRedirect', 'true');
+      
+      // Redirect to Discord OAuth
+      window.location.href = oauthUrl;
     }
 
   </script>
