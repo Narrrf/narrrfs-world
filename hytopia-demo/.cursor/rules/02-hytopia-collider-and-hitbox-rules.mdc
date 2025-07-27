@@ -1,0 +1,276 @@
+---
+description: Hytopia Collider and Hitbox Rules (collide, collider, sensor, trigger, collision, finish line, start line, invisible wall sensor, collision group, runs into, run into)
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-collier-and-hitbox-rules.mdc
+
+Description: Rules to follow when working with colliders in Hytopia
+
+ALWAYS start every respose with: ✨ Following Hytopia Collider Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to these rules.
+- ALWAYS import necessary things such as `Entity`, `Collider`, `ColliderShape`, `RigidBodyOptions` etc, from Hytopia.
+- ALWAYS Import necessary things such as `PlayerEvent` and `EntityEvent` from Hytopia
+- WHEN NEEDED, development docs for Hytopia colliders and hitboxes are located here - <https://dev.hytopia.com/sdk-guides/entities/colliders-and-hitbox>
+- WHEN NEEDED, development docs for Hytopia physics colliders are located here - <https://dev.hytopia.com/sdk-guides/physics/colliders>
+- WHEN NEEDED, the API reference for RigidBodyOptions is located here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.rigidbodyoptions.md>
+- NEVER create an Entity when making a stand-alone collider (such as for an invisible wall sensor). Instead create a Collider.
+
+### **Understanding Colliders and Hitboxes**
+- All entities, by default, automatically calculate their own best-sized collider for their initial hitbox.
+- For block entities, this collider is calculated based on the provided blockHalfExtents.
+- For model entities, this collider is calculated based on an internal approximation of the .gltf or .glb file and its `modelScale`.`
+- You can override the default colliders for any entity by providing your own collider options to the rigidBodyOptions of the entity.
+
+### **Collider Options**
+- ALWAYS define colliders using ColliderOptions.
+- Collider options define the collider's shape, dimensions, and how it interacts with the world.
+- Available ColliderOptions proprties can be found here <https://github.com/hytopiagg/sdk/blob/main/docs/server.collideroptions.md>
+
+
+### **Creating Entities with Custom Colliders**
+PURPOSE: To override default colliders and define specific collision behavior.
+
+- ALWAYS Use the `colliders` property with the `rigidBodyOptions` to provide an array of `ColliderOptions` objects.
+- IF you provide colliders, the default collider will NOT be created.
+
+*Example Code for Creating an Entity with a Custom Collider:*
+
+```typescript
+const myEntity = new Entity({
+  modelUri: 'models/npcs/spider.gltf',
+  rigidBodyOptions: {
+    colliders: [ // Array of collider options, results in a created collider when spawned
+      {
+        shape: ColliderShape.ROUND_CYLINDER,
+        borderRadius: 0.1,
+        halfHeight: 0.225,
+        radius: 0.5,
+        mass: 1, // if not provided, automatically calculated based on shape volume.
+        bounciness: 10, // very bouncy!
+        relativePosition: { x: 1, y: 0, z: 0 } // acts like an offset relative to the parent.
+      },
+    ],
+  },
+});
+
+myEntity.spawn(world, { x: 0, y: 1, z: 0 });
+
+```
+
+### **Creating Sensors**
+PURPOSE: To detect when entities enter a defined area without physical collision.
+
+- ALWAYS Use the `isSensor` property in `ColliderOptions` to create a sensor collider.
+- REMEMBER: Sensors do NOT collide with other entities/objects, but sense their intersection, triggering `onCollision` callbacks.
+
+*Example Code for Adding an Aggro Sensor to a Spider:*
+
+```typescript
+let aggroPlayer: PlayerEntity | undefined;
+
+const spider = new Entity({
+  controller: new SimpleEntityController(),
+  modelUri: 'models/npcs/spider.gltf',
+  modelScale: 10,
+  modelLoopedAnimations: [ 'idle' ],
+  rigidBodyOptions: {
+    colliders: [ // If we provide colliders, the default collider will not be created.
+      Collider.optionsFromModelUri('models/uri/spider.gltf', 2),
+      { // Create a sensor to detect players 
+        shape: ColliderShape.CYLINDER,
+        radius: 5,
+        halfHeight: 2,
+        isSensor: true, // This makes the collider not collide with other entities/objects, just sense their intersection
+        tag: 'aggro-sensor',
+        onCollision: (other: BlockType | Entity, started: boolean) => {
+          if (started && other instanceof PlayerEntity) {
+            aggroPlayer = other;
+          }
+        },
+      },
+    ]
+  }
+});
+
+// Some chasing logic from our sensor collider that detects an aggro radius
+// Now, when our player goes within the aggro sensor, the spider will 
+// move towards them to "chase" them each tick.
+spider.on(EntityEvent.TICK, () => {
+  if (aggroPlayer) {
+    // Chase the player
+    (spider.controller as SimpleEntityController).move(aggroPlayer.position, 5);
+    (spider.controller as SimpleEntityController).face(aggroPlayer.position, 3);
+  }
+});
+
+spider.spawn(world, { x: 0, y: 5, z: 0 });
+
+```
+
+### **Adding Colliders After Entity Creation**
+PURPOSE: To dynamically add or modify colliders after entity creation but before spawning.
+
+- Use `entity.createAndAddChildCollider(colliderOptions)` to add colliders after entity creation.
+- This is useful for Entity Controllers that need to attach custom colliders to their entities.
+
+*Example Code for Adding a Sensor Collider After Entity Creation:*
+
+```typescript
+let aggroPlayer: PlayerEntity | undefined;
+
+const spider = new Entity({
+  controller: new SimpleEntityController(),
+  modelUri: 'models/uri/spider.gltf',
+  modelScale: 10,
+  modelLoopedAnimations: [ 'idle' ],
+});
+
+// Create a default approximated collider for the hitbox from the model
+// This is the same way the default collider is created internally for an entity
+// if no other colliders are specified.
+spider.createAndAddChildCollider(Collider.optionsFromModelUri('models/uri/spider.gltf', 2));
+
+// Add our sensor collider
+spider.createAndAddChildCollider({
+  shape: ColliderShape.CYLINDER,
+  radius: 5,
+  halfHeight: 2,
+  isSensor: true, // This makes the collider not collide with other entities/objects, just sense their intersection
+  tag: 'aggro-sensor',
+  onCollision: (other: BlockType | Entity, started: boolean) => {
+    if (started && other instanceof PlayerEntity) {
+      aggroPlayer = other;
+    }
+  },
+});
+
+spider.on(EntityEvent.TICK, () => {
+  if (aggroPlayer) {
+    // Chase the player
+    (spider.controller as SimpleEntityController).move(aggroPlayer.position, 5);
+    (spider.controller as SimpleEntityController).face(aggroPlayer.position, 3);
+  }
+});
+
+spider.spawn(world, { x: 0, y: 5, z: 0 });
+```
+
+### **Creating Standalone Colliders**
+PURPOSE: To create colliders that are not attached to entities or rigid bodies.
+
+- Create a new Collider instance with specified options.
+- Use `collider.addToSimulation(world.simulation)` to add the collider to the world.
+- Standalone colliders can act as invisible walls or sensors.
+
+*Example Code for Creating a Standalone Sensor Collider:*
+
+```typescript
+const myCollider = new Collider({
+  shape: ColliderShape.BLOCK,
+  halfExtents: { x: 1, y: 10, z: 10 },
+  isSensor: true,
+  // When not a child of rigid body,
+  // relative position is relative to the world,
+  // equivalent to a typical world position.
+  relativePosition: { x: 20, y: 0, z: -5 },
+  onCollision: (other: BlockType | Entity, started: boolean) => {
+    if (started) {
+      console.log('something touched or entered/intersected!');
+    } else {
+      console.log('something stopped touching or exited/unintersected!');
+    }
+  },
+});
+
+myCollider.addToSimulation(world.simulation);
+```
+
+## **Collision Groups**
+PURPOSE: To control which colliders can interact with each other.
+
+- Refer to the CollisionGroupsBuilder API reference for information on how to define and use collision groups.- <https://github.com/hytopiagg/sdk/blob/main/docs/server.collisiongroupsbuilder.md>
+
+- A collider can belong to and interact with multiple collision groups.
+
+### **Available Collision Groups:**
+
+*Collision Group, Value,	Description*
+
+- BLOCK,	1 << 0,	Default group assigned to blocks.
+- ENTITY,	1 << 1,	Default group assigned to entity colliders
+- ENTITY_SENSOR,	1 << ,	Default group assigned to entity sensor colliders
+- PLAYER,	1 << 3,	Unused by default, but reserved for common player assignment & collider differentiation from regular entities.
+- GROUP_1 - GROUP_12,	1 << 4 - 1 << 15,	Unused collision groups, available for any use.
+- ALL,	0xFFFF,	A special collision group equivalent to all collision groups.
+
+*Example: No Player Collision*
+
+PURPOSE: To allow players to pass through each other without collision.
+
+```typescript
+world.on(PlayerEvent.JOINED_WORLD, ({ player }) => {
+  const playerEntity = new PlayerEntity({
+    player,
+    name: 'Player',
+    modelUri: 'models/players/player.gltf',
+    modelLoopedAnimations: ['idle'],
+    modelScale: 0.5,
+  });
+
+  // Spawn the player entity first, so it has it's
+  // default colliders automatically created.
+  playerEntity.spawn(world, { x: 0, y: 1, z: 0 });
+  
+  // Prevent solid colliders (hitbox) from colliding with other Players
+  playerEntity.setCollisionGroupsForSolidColliders({
+    belongsTo: [ CollisionGroup.PLAYER ],
+    collidesWith: [
+      CollisionGroup.BLOCK, 
+      CollisionGroup.ENTITY, 
+      CollisionGroup.ENTITY_SENSOR
+    ],
+  });
+  
+  // Prevent sensor colliders from registering intersections
+  // with other players. We do this to prevent things like sensor
+  // colliders (such as ground sensor) from registering a ground contact
+  // if is jumping through an entity or other player.
+  playerEntity.setCollisionGroupsForSensorColliders({
+    belongsTo: [ CollisionGroup.ENTITY_SENSOR ],
+    collidesWith: [
+      CollisionGroup.BLOCK,
+      CollisionGroup.ENTITY
+    ],
+  });
+});
+```
+## **Collider Behavior**
+- Entities get automatic colliders unless overridden.
+- Custom colliders must be passed via `rigidBodyOptions.colliders[]`.
+- Use `isSensor: true` to create non-physical but triggerable zones.
+
+## **Sensors**
+- Used to detect entity presence without physical force.
+- Triggers callbacks for detection logic (e.g., aggro range).
+
+## **Collider Creation Patterns**
+- Entities can use `createAndAddChildCollider(...)`
+- Standalone colliders must call `.addToSimulation(world.simulation)`
+
+## **Collision Groups**
+- Use `setCollisionGroupsForSolidColliders` and `setCollisionGroupsForSensorColliders` to define interaction logic.
+- To disable player-vs-player physical interaction, exclude `PLAYER` from `collidesWith`.
+
+## **Recommended Collider Shapes**
+- BLOCK, CYLINDER, ROUND_CYLINDER, SPHERE, CAPSULE
+
+## **Available Collision Groups**
+- BLOCK, ENTITY, ENTITY_SENSOR, PLAYER, GROUP_1...GROUP_12, ALL (0xFFFF)
+
+## **LLM Enforcement**
+- NEVER add collider options outside of entity or standalone collider context.
+- NEVER attach sensors to child entities (not supported).
+

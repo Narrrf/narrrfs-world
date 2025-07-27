@@ -1,0 +1,142 @@
+---
+description: Hytopia Blocks, Chunks, and Terrain Rules
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-blocks-chunks-rules.mdc
+
+Description: Rules to follow when working with blocks, chunks, and terrain for Hytopia
+
+When following this rule, start every respose with: ✨ Following Hytopia Blocks & Chunks Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to the below rules.
+- ALWAYS Use the `BlockType`, `BlockTypeRegistry`, `Chunk`, and `ChunkLattice` classes as intended by the SDK developers
+- ALWAYS Write clean, effecient code that is easy to understand and maintain.
+- ALWAYS implement ONLY what was explicitly requested by the user
+- ALWAYS register block types **before** calling `chunkLattice.setBlock()` to avoid undefined block behaviors or type mismatches at runtime.
+
+## **BlockTypes Implementation**
+* USE: To create new block types
+
+- NOTE: Blocks must be registered with `world.blockTypeRegistry` before they set be placed in the world
+- ALWAYS create `BlockType` instances using either the `BlockType` class or the `BlockTypeRegistry` class
+- ALWAYS Assign each block type a unique ID between 100 and 255 (0 is reserved for air/no block).
+- ALWAYS use proper Vector3 formatting
+- ALWAYS Use the `textureUri` property to specify the texture for the block.
+
+(Regarding block texture: use a single image URI if all block faces are the same or a directory path containing `+x.png`, `+y.png`, `+z.png`, `-x.png`, `-y.png`, and `-z.png` for individual face textures)
+
+- ONLY set `isLiquid: true` for liquid block types
+- ALWAYS utilize `onEntityCollision` or `onEntityContactForce` for interaction with entities. 
+- ALWAYS be mindful of the upcoming coordinate data for `onEntityCollision`.
+- REMEMBER, ALWAYS register `BlockType` instances with the `world.blockTypeRegistry` before use.
+
+*Example Code - creating a block type using block type registry:*
+
+```typescript
+    const bouncyBlockId = 77;
+    world.blockTypeRegistry.registerGenericBlockType({
+        id: bouncyBlockId, // must be between 1 and 255, cannot be 0, 0 is reserved for air or "no block".
+        textureUri: 'blocks/clay.png',
+        name: 'Bouncy Clay',
+        customColliderOptions: {
+            bounciness: 5,
+        }
+    });
+```
+
+*Example Code - creating a block using BlockType wth a Collision Callback:*
+
+```typescript
+const sandKnockbackBlockId = 55;
+const sandKnockbackBlockType = new BlockType({
+  id: knockbackBlockId,
+  textureUri: 'blocks/sand.png',
+  name: 'Knockback Sand',
+});
+
+sandKnockbackBlockType.on(BlockTypeEvent.ENTITY_COLLISION, ({ blockType, entity, started }) => {
+  // block type will be sandKnockbackBlockType
+  // entity is the entity that collided with the block
+  // started is true if the collision started, false when the entity is no longer colliding
+  entity.applyImpulse({ x: 0, y: 20, z: 0}); // apply vertical knockback shooting them up.
+});
+
+sandKnockbackBlockType.on(BlockTypeEvent.ENTITY_CONTACT_FORCE, ({ blockType, entity, contractForceData }) => {
+  // block type will be sandKnockbackBlockType
+  // entity is the entity that collided with the block
+  // log the contact force data, or do something with it.
+  console.log(contactForceData);  
+});
+
+world.blockTypeRegistry.registerBlockType(sandKnockbackBlockType);
+
+world.chunkLattice.setBlock({ x: 0, y: 0, z: -3 });
+```
+
+*Example Code - Modifying Collission Callbacks for Block Types*
+
+```typescript
+// Let's assume block id 14 is lava
+const lavaBlockType world.blockTypeRegistry.getBlockTypeId(14);
+
+// Set the collision callback
+lavaBlockType.on(BlockTypeEvent.ENTITY_COLLISION, ({ blockType, entity, started }) => {
+  if (started) {
+    // kill the entity by despawning it since it touched lava.
+    entity.despawn();
+  }
+});
+
+// Now, let's say later in our code lava suddenly no longer
+// kills players for some reason, we can remove it if we want
+// lava collisions to no longer have any logic when a entity collides with them
+lavaBlockType.offAll(BlockTypeEvent.ENTITY_COLLISION);
+```
+
+*Additional Block Type Documentation*
+
+Hytopia Block Type SDK Guide - <https://dev.hytopia.com/sdk-guides/blocks-and-chunks/block-types>
+Hytopia Block Type API Refernce - <https://github.com/hytopiagg/sdk/blob/main/docs/server.blocktype.md>
+Hytopia `BlockTypeEvent` API Reference - <https://github.com/hytopiagg/sdk/blob/main/docs/server.blocktypeevent.md> 
+
+## **Block Type Registry**
+* USE: To manage and register all available block types in the world.
+
+- Use the `world.blockTypeRegistry` to register new block types using `registerBlockType()` or `registerGenericBlockType()`.
+- Retrieve block types by ID using `getBlockType(id)`.
+- Enumerate all registered block types using `getAllBlockTypes()`.
+
+*Additional Block Type Registry Documentation*
+
+Hytopia Block Type Registry SDK Guide - <https://dev.hytopia.com/sdk-guides/blocks-and-chunks/block-type-registry>
+Hytopia Block Type Registry API Refernce - <https://github.com/hytopiagg/sdk/blob/main/docs/server.blocktyperegistry.md>
+Hytopia BlockTypeRegistryAEvent API Reference <https://github.com/hytopiagg/sdk/blob/main/docs/server.blocktyperegistryevent.md>
+
+
+## **Chunks**
+* USE: To organize blocks into manageable units (16x16x16 blocks).
+
+- All coordinates used in `chunkLattice` operations must be integer-aligned (i.e., `{ x: 0, y: 0, z: 0 }`) since blocks exist on a grid, not continuous space.
+
+- Chunks are automatically created and managed by the `ChunkLattice`.
+
+*Additional Chunks Documentation*
+
+Hytopia Chunk SDK Guide - <https://dev.hytopia.com/sdk-guides/blocks-and-chunks/chunks>
+Hytopia Chunk API Refernce - <https://github.com/hytopiagg/sdk/blob/main/docs/server.chunk.md>
+Hytopia ChunkEvent API Refernce - <https://github.com/hytopiagg/sdk/blob/main/docs/server.chunkevent.md>
+
+## **Chunk Lattice**
+* USE: To manage the overall terrain and provide efficient access to blocks within the world.
+
+- ALWAYS use `chunkLattice.hasBlock(coordinate)` to check if a block exists at a given coordinate.
+- ALWAYS Use `chunkLattice.setBlock(coordinate, blockTypeId)` to set or remove a block at a specific coordinate.  
+- ALWAYS Use `blockTypeId = 0` to remove a block. (This replaces the block with "air")
+- ALWAYS Use `chunkLattice.getBlockType(coordinate)` to get the block type ID at a specific coordinate.
+
+*Additional Chunks Lattice Documentation*
+
+Hytopia Chunk Lattice SDK Guide - <https://dev.hytopia.com/sdk-guides/blocks-and-chunks/chunk-lattice>
+Hytopia Chunk Lattice API Refernce - <https://github.com/hytopiagg/sdk/blob/main/docs/server.chunklattice.md>

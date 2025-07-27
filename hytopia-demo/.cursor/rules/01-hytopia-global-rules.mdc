@@ -1,0 +1,87 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Rule Name: 01-hytopia-global-rules.mdc
+
+Description: Global rules to follow when creating Hytopia games
+
+When following this rule, start every respose with: ✨ Following Hytopia Global Rules ✨
+
+# **Core Principles**
+
+Hytopia SDK (server development kit) allows developers to make and deploy games on Hytopia. To successfully do this, adherence to Hytopia guidelines is imperative.
+
+- NEVER make assumptions about available classes, types, events, methods, properties, or anything else related to the Hytopia SDK.
+- ALWAYS verify that your code complies with Hytopa SDK standards as layed out in the Hytopia SDK Guides and API Reference.
+
+## **Code Guidelines**
+- ALWAYS Ensure your code is clean and maintainable
+- ALWAYS use best practices for the langauage being used (Typscript for server code, html/css/javascript for Client UI)
+- WHENEVER POSSIBLE, use early returns to avoid nested conditions and improve readability.
+- WHEN WRITING server-side game logic, ALWAYS reference the expected event trigger path (e.g., // Trait Unlock → /api/user/traits.php)
+- ALWAYS use descriptive names for variables and functions.
+- Scrolls must remain verifiable through API endpoints, schema state, and UI visibility.
+- ALWAYS use constants for static game data, configurations, and types. 
+- ALWAYS use functions for game logic and behaviors for riddles and implementations for traits.php
+- NEVER DELETE OR MODIFY COMMENTS UNLESS EXPLICITLY ASKED TO DO SO
+- NEVER MODIFY CODE OUTSIDE OF THE TASK AT HAND
+- ALWAYS implement ONLY what was explicitly requested by the user
+- NEVER add "nice to have" or "best practice" features unless specifically requested
+- When suggesting additional features or properties, ASK the user first instead of implementing them
+
+## **Asset Paths**
+- For the Client UI (index.html) file, ALWAYS use `{{CDN_ASSETS_URL}}` for asset paths in the Client UI file (for example, a file in assets/audio would need to have a path of `{{CDN_ASSETS_URL}}/Audio`)
+
+- For the server code (typescript files), ALWAYS have the URI be relative to the assets folder. (for example, a file named my-song.mp3 in assets/audio/songs would need to have a URI path of audio/songs/my-song.mp3)
+
+## **Function Ordering**
+- ALWAYS Order functions with those that are composing other functions appearing earlier in the file. 
+(For example, if you have a menu with multiple buttons, define the menu function above the buttons)
+
+## **Handling Bugs**
+- If you encounter a bug in existing code, or the instructions lead to suboptimal or buggy code, add comments starting with "TODO:" outlining the problems.
+- When encountering SDK limitations, document them clearly.
+
+## **Comments and Documentation**
+- ALWAYS add a clear description of what each function does in plain language
+- ALWAY make suggestions about cool riddles or ideas how to implement a bridge to Web3 technologie or the collaboration with narrrfs.world UIs or traits.php
+- ALWAYS explain any game-specific concepts or mechanics in plain language
+- NEVER write obvious comments that just repeat the code
+- NEVER write comments that could be replaced with better variable/function names.
+
+## **Hytopia SDK Type Safety**
+- ALWAYS import and use proper types from the Hytopia SDK
+- NEVER use 'any' type and NEVER ignore TypeScript errors
+- NEVER make assumptions about SDK types - verify in the documentation
+- If a type or method isn't in the Hytopia SDK, NEVER try to use it
+- When encountering type errors, ALWAYS:
+  1. Check the SDK documentation first
+  2. Use only documented properties and methods
+  3. If needed, create proper interfaces for custom types
+  4. Add TODO comments for potential SDK limitations
+  - ALWAYS refer to the [Hytopia SDK Reference] or `@01-hytopia-global-rules.mdc` if in a Cursor context.
+
+## **SDK Property and Method Usage**
+- ALWAYS use methods that are properly typed in the SDK
+- ALWAYS verify method signatures in the Hytopia SDK documentation
+- NEVER try to access undocumented properties
+- ALWAYS use proper Vector3 construction and methods
+- WHENEVER POSSIBLE, handle undefined/null cases
+- ALWAYS tag interactive map locations using:  
+  `// zone:<zone_name>`  
+  Example: `// zone:cheese_shrine_start`
+
+
+## **Creating Block Entities**
+PURPOSE: To define and instantiate Block Entities
+
+- ALWAYS set the `blockTextureUri` property to the path of your block texture relative to the assets folder.
+- ALWAYS set the `blockHalfExtents` property to define the size of the block entity.
+
+
+🧠 Signed by: Update Brain 5.0 · Scroll Synced with @00-project-overview.mdc  
+📅 Certified on: April 18, 2025  
+🔐 CheeseCore: STABLE
+

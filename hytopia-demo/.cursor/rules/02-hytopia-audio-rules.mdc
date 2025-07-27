@@ -1,0 +1,132 @@
+---
+description: Hytopia Audio Implementation Rules (Ambient Music and Spacial Audio Sound Effects SFX on Server)
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-audio-rules.mdc
+
+Description: Rules to follow when implementing Audio for Hytopia
+
+When following this rule, start every respose with: ✨ Following Hytopia Audio Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to these rules.
+- ALWAYS use the Audio class and related features as intended by the SDK developers.
+- ALWAYS Write clean, well-commented code that is easy to understand and maintain.
+- WHEN NEEDED, Hytopia SDK Audio Developer Docs can be found here - <https://dev.hytopia.com/sdk-guides/audio-and-sfx>
+- WHEN NEEDED, Hytopia SDK Audio API Reference cam be found here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.audio.md>
+- WHEN NEEDED, Hytopia AudioManager API Reference can be found here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.audiomanager.md>
+- WHEN NEEDED, Hytopia AudioEvents API Reference can be found here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.audioevent.md>
+- ALWAYS implement ONLY what was explicitly requested by the user
+
+## **General Audio Implementation - IMPORTANT**
+- IF THE AUDIO SHOULD ONLY BE HEARD BY ONE PLAYER - handle the setup through the Client UI HTML file (fetch and consider [02-hytopia-ui-general-rules.mdc](mdc:.cursor/rules/02-hytopia-ui-general-rules.mdc))
+- IF HANDLING AUDIO in the HTML File, use `{{CDN_ASSETS_URL}}` for asset paths in the Client UI file (for example, a file in assets/audio would need to have a path of `{{CDN_ASSETS_URL}}/Audio`)
+
+- IF THE AUDIO SHOULD BE HEARD BY EVERYONE ON THE SERVER - handle the setup through the server (rules below)
+- If playing spatial audio in puzzle zones, use `// zone:<name>` comments to tag map areas.
+- Pair audio triggers with trait checks (e.g., if player has `CHEESE_GATE_UNLOCKED`, play gate SFX).
+- For debugging audio, optionally assign `debugLabel` to your Audio instance (e.g., `myAudio.debugLabel = 'puzzle_ding'`)
+
+
+
+## **Ambient Audio Implementation**
+* Use: For background music and general ambience that affects all players in a world.
+- ALWAYS use the `Audio` class to create an ambient audio object.
+- ALWAYS specify the audio file URI using the `uri` property (e.g., `'audio/music/ambience.mp3'`).
+- WHEN APPROPRIATE set `loop: true` for looped background music.
+- ALWAYS control the volume using the `volume` property (a value between 0 and 1).
+- ALWAYS use the `play(world)` method to start playback in the specified world.
+
+*Example Ambient Audio Implemenation Code*
+
+``` typescript
+    startServer(world => {
+      const gameMusic = new Audio({
+        uri: 'audio/music/ambience.mp3',
+        loop: true,
+        volume: 0.5,
+      });
+      gameMusic.play(world);
+    });
+```
+
+## **Spatial Audio Implemenation**
+* Use: For sound effects and music that originate from a specific location or entity in the game world. 
+- ALWAYS Use the `Audio` class to create a spatial audio object.
+- ALWAYS Specify the audio file URI using the `uri` property (e.g., `'audio/sfx/explosion.wav'`).
+
+*Attaching to Entities:
+- ALWAYS use the `attachedToEntity` property to when attaching the audio to a game entity
+- Always use `referenceDistance` to control the distance at which the audio starts to be audible. As the listener gets closer, the audio gets louder.
+
+*Example Spatial Audio Attached to Entitiy Implementation*
+
+``` typescript
+    world.on(PlayerEvent.JOINED_WORLD, ({ player }) => {
+    const playerEntity = new PlayerEntity({
+      player,
+      modelUri: 'models/players/player.gltf', // resolves to assets/models/player.gltf
+      modelLoopedAnimations: [ 'idle' ],
+      modelScale: 0.5,
+    });
+
+      const playerSirenAudio = new Audio({
+        uri: 'audio/sfx/siren.mp3',
+        loop: true,
+        volume: 1,
+        attachedToEntity: playerEntity,
+        referenceDistance: 20,
+      });
+      playerSirenAudio.play(world);
+    };
+```
+
+
+*Attaching at Fixed Positions:
+- ALWAYS use the `position` property (an object with `x`, `y`, and `z` coordinates) to make the audio emit from a fixed location in the world. 
+- NEVER use `attachedToEntity` when using `position`
+
+*Example Spatial Audio Fixed Position Implementation*
+
+``` typescript
+    const explosionAudio = new Audio({
+        uri: 'audio/sfx/explosion.wav',
+        volume: 0.8,
+        position: { x: 10, y: 2, z: -5 },
+        referenceDistance: 15
+    });
+    explosionAudio.play(world);
+```
+
+## **Controlling Playback and Effects**
+* Use: dynamically adjust audio properties during gameplay
+
+- Use the `setPlaybackRate()` method to change the playback speed of the audio.
+- Other adjustable properties include: `distortion`, `detune`, and `volume`.
+- Changes to these properties will be smoothly interpolated by the client.
+
+*Example Change Playback Rate Implementation*
+
+```typescript
+    startServer(world => {
+      const gameMusic = new Audio({
+        uri: 'audio/music/ambience.mp3',
+        loop: true,
+        volume: 0.5,
+      });
+      gameMusic.play(world);
+
+      setInterval(() => {
+        gameMusic.setPlaybackRate(gameMusic.playbackRate + 0.1);
+      }, 1000);
+    });
+```
+
+// ⚠️ Audio must use typed Audio class — HTML <audio> tags are forbidden unless referenced by @02-hytopia-ui-general-rules.mdc
+// 🔗 All Audio.play(world) triggers must originate from game lifecycle events (e.g., JOINED_WORLD, puzzle solved)
+// 📌 Spatial audio must respect single-source rule: only one of position OR attachedToEntity
+- Future upgrade path: Use AudioEvent timeline chaining for quest audio or lore scroll narration.
+- Reference: https://github.com/hytopiagg/sdk/blob/main/docs/server.audioevent.md
+
+

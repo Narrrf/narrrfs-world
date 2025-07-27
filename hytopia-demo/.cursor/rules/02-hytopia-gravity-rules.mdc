@@ -1,0 +1,48 @@
+---
+description: Hytopia Gravity Rules (zero gravity)
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-gravity-rules.mdc
+
+Description: How to work with gravity in Hytopia
+
+When following this rule, start every respose with: ✨ Following Hytopia Gravity Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to these rules.
+- WHEN NEEDED, development docs for Hytopia gravity are located here - <https://dev.hytopia.com/sdk-guides/physics/gravity>
+- ALWAYS implement ONLY what was explicitly requested by the user
+
+
+### **Understanding Gravity**
+
+- Gravity is a constant force that affects all rigid bodies with the dynamic type.
+- The default gravity in HYTOPIA is { x: 0, y: -32, z: 0 }.
+
+### **Changing Gravity**
+PURPOSE: To modify the gravity of the game world to influence physics behavior.
+- Use world.simulation.setGravity({ x: number, y: number, z: number }) to change the gravity.
+- ALWAYS specify the gravity vector in terms of X, Y, and Z components.
+- You can change the gravity of your game at any time.
+
+*Example Code for Changing Gravity:*
+
+```typescript
+world.simulation.setGravity({ x: 0, y: -9.81, z: 0 });
+```
+
+### **Understanding Gravity**
+- Gravity is a constant force that affects all rigid bodies with the dynamic type.
+- The default gravity in HYTOPIA is { x: 0, y: -32, z: 0 }.
+
+### **Changing Gravity**
+PURPOSE: To modify the gravity of the game world to influence physics behavior.
+
+- Use `world.simulation.setGravity({ x, y, z })` to change the gravity.
+- ALWAYS specify the full vector when adjusting gravity.
+- This can be done at any time during runtime.
+
+```typescript
+world.simulation.setGravity({ x: 0, y: -9.81, z: 0 });
+```

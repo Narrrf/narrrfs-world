@@ -1,0 +1,52 @@
+---
+description: Hytopia Entity Manager Rules
+globs: 
+---
+Rule Name: 02-hytopia-entity-manager-rules.mdc
+
+Description: Rules to follow when working with entities and the entity manager
+
+When following this rule, start every respose with: ✨ Following Hytopia Entity Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to these rules.
+- ALWAYS use the API reference for available Entity properties and methods - <https://github.com/hytopiagg/sdk/blob/main/docs/server.entity.md>
+- When needed, development docs for Hytopia Entities are located here - <https://dev.hytopia.com/sdk-guides/entities>
+- ALWAYS implement ONLY what was explicitly requested by the user
+
+### **Understanding Entities**
+- Entities are the core objects in any game that can move, interact with physics, and more.
+- Examples include player-controlled characters, NPCs, vehicles, movable blocks, and platforms.
+- Entities can be either Model Entities (using GLTF format) or Block Entities (defined by size and block texture).
+
+
+### **Accessing the Entity Manager**
+PURPOSE: To manage and retrieve entities in the game world.
+
+- ALWAYS import the `EntityManager` class from Hytopia
+- ALWAYS access the `EntityManager` singleton for a world using `world.entityManager`.
+
+### **Using the Entity Manager**
+PURPOSE: To retrieve and manage entities in the game world.
+
+- Use `world.entityManager.getAllEntities()` to get an array of all spawned entities.
+- Use `world.entityManager.getAllPlayerEntities()` to get an array of all spawned player entities.
+- Use `world.entityManager.getPlayerEntitiesByPlayer(player)` to get entities assigned to a specific player.
+- Use `world.entityManager.getEntitiesByTag(tag)` to get entities with a specific tag.
+- Use `world.entityManager.getEntitiesByTagSubstring(substring)` to get entities with tags containing a substring.
+
+*Example Code for Using Entity Manager:*
+
+```typescript
+// Get all entities
+const allEntities = world.entityManager.getAllEntities();
+
+// Get player entities for a specific player
+const playerEntities = world.entityManager.getPlayerEntitiesByPlayer(player);
+
+// Get entities by tag
+const zombieEntities = world.entityManager.getEntitiesByTag('zombie');
+
+// Get entities by tag substring
+const entitiesWithO = world.entityManager.getEntitiesByTagSubstring('o');
+```

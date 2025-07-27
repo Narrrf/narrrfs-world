@@ -1,0 +1,198 @@
+---
+description: Hytopia Block Entity Rules (moving platforms, walls, bouncy blocks, pushable block, teleporting block, etc)
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-block-entity-rules.mdc
+
+Description: Rules to follow when creating block entities in Hytopia
+
+When following this rule, start every respose with: ✨ Following Hytopia Block Entity Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to these rules.
+- ALWAYS import `Entity` and `EntityEvent` from Hytopia.
+- ALWAYS import `RigidBodyType` enum from Hytopia.
+- WHEN NEEDED, development docs for Hytopia block entities are located here - <https://dev.hytopia.com/sdk-guides/entities/block-entities>
+- WHEN NEEDED, the API reference for the Entity class is located here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.entity.md>
+- WHEN NEEDEd, EntityEvent API reference is here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.entityevent.md>
+- WHEN NEEDED, the API reference for RigidBodyOptions can be found here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.rigidbodyoptions.md>
+- WHEN NEEDED, the API reference for RigidBodyType can be found here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.rigidbodytype.md>
+- ALWAYS define block entities by specifying `blockTextureUri` and `blockHalfExtents` in the Entity constructor.
+- ALWAYS implement ONLY what was explicitly requested by the user
+
+### **Creating Block Entities**
+PURPOSE: To define and instantiate Block Entities
+
+- ALWAYS set the `blockTextureUri` property to the path of your block texture relative to the assets folder.
+- For example, if the texture file is assets/blocks/clay.png, then your `blockTextureUri` is blocks/clay.png
+- Texture URI can also be a folder, without a file extension.
+- ALWAYS set the `blockHalfExtents` property to define the size of the block entity. (This determines the block's dimensions, with each value representing half the extent of the block in the X, Y, and Z axes, respectively. This means a value of 1 will produce a result 2 blocks wide)
+
+## **Common Uses & Examples**
+
+### Moving Platform
+- Use `RigidBodyType.KINEMATIC_VELOCITY` to prevent the platform from being affected by external physics.
+- Use `linearVelocity` and `EntityEvent.TICK` to control direction and limits.
+
+### Pushable Block
+- Defaults to DYNAMIC physics.
+- Can respond to `ENTITY_COLLISION` with custom logic.
+
+### Pushable Block With Locked Rotations & Translations
+- Use `enabledRotations` and `enabledTranslations` to limit movement/rotation.
+
+### Teleporting Block
+- Use `KINEMATIC_POSITION` + `setTranslation()` on a timer or trigger.
+
+### Heavy Pushable Block
+- Increase `additionalMass` in `rigidBodyOptions` for heavier feel.
+
+All examples in this scroll follow proper import usage and Hytopia SDK patterns. Refer to this rule when working with physical or interactive block elements.
+
+*Example Code for Creating a Basic Block Entity:*
+
+```typescript
+
+//Example block entity that is 1 block x 1 block x 1 block wide
+const basicBlock = new Entity({
+    blockTextureUri: 'blocks/bricks.png',
+    blockHalfExtents: { x: 0.5, y: 0.5, z: 0.5 },
+});
+```
+
+## **Common Uses & Examples**
+
+### **Moving Platform**
+PURPOSE: To create a block entity that acts as a moving platform.
+
+- Use RigidBodyType.KINEMATIC_VELOCITY to prevent the platform from being affected by external physics.
+- Set linearVelocity to define the platform's movement speed and direction.
+- Use `EntityEvent.Tick` callback to clamp the platform's movement within a specific range.
+
+*Example Code for a Moving Platform:*
+
+```typescript
+const blockPlatform = new Entity({
+  blockTextureUri: 'blocks/grass',
+  blockHalfExtents: { x: 1, y: 0.5, z: 1 },
+  rigidBodyOptions: {
+    type: RigidBodyType.KINEMATIC_VELOCITY, // Kinematic means platform won't be effected by external physics, including gravity
+    linearVelocity: { x: 0, y: 0, z: 3 }, // A starting velocity that won't change because it's kinematic
+  },
+});
+
+// Clamp the z range the platform moves back and forth between
+blockPlatform.on(EntityEvent.TICK, () => {
+  const position = blockPlatform.getTranslation();
+
+  if (position.z < -9) {
+    blockPlatform.setLinearVelocity({ x: 0, y: 0, z: 3 });
+  }
+
+  if (position.z > 8) {
+    blockPlatform.setLinearVelocity({ x: 0, y: 0, z: -3 });
+  }
+});
+
+blockPlatform.spawn(world, { x: 3, y: 3, z: -7 });
+```
+
+### **Pushable Block**
+PURPOSE: To create a block entity that can be pushed by players or other entities.
+
+- Block entities are DYNAMIC by default, meaning they interact with external forces.
+- Use onEntityCollision to execute custom logic when the block is pushed.
+
+*Example Code for a Pushable Block:*
+
+```typescript
+// Block entity is dynamic by default, meaning it will interact with external forces/physics, including gravity
+const movableBlock = new Entity({
+  blockTextureUri: 'blocks/sand.png',
+  blockHalfExtents: { x: 0.5, y: 0.5, z: 0.5 }, 
+});
+
+// For the sake of demonstration, we can even have a callback when we push the block!
+movableBlock.on(EntityEvent.ENTITY_COLLISION, ({ otherEntity, started }) => {
+  if (started) {
+    world.chatManager.sendBroadcastMessage('The sand block was pushed!');
+  }
+});
+
+movableBlock.spawn(world, { x: -4, y: 10, z: -6 });
+```
+
+### **Pushable Block With Locked Rotations & Translations**
+PURPOSE: To restrict the movement of a pushable block to specific axes.
+
+- Use enabledRotations and enabledTranslations in rigidBodyOptions to lock rotations and translations on specific axes.
+
+*Example Code for a Pushable Block with Locked Rotations & Translations:*
+
+```typescript
+const movableBlock = new Entity({
+    blockTextureUri: 'blocks/sand.png',
+    blockHalfExtents: { x: 0.5, y: 0.5, z: 0.5 },
+    rigidBodyOptions: {
+        type: RigidBodyType.DYNAMIC,
+        enabledRotations: { x: false, y: false, z: false },
+        enabledTranslations: { x: false, y: true, z: true },
+    },
+});
+
+movableBlock.spawn(world, { x: -4, y: 10, z: -6 });
+```
+
+### **Teleporting Block**
+
+PURPOSE: To create a block entity that teleports to different locations.
+
+- Use RigidBodyType.KINEMATIC_POSITION to prevent the block from being affected by physics.
+- Use setTranslation to move the block to different coordinates.
+- Use setInterval to create a timer that triggers the teleportation logic.
+
+*Example Code for a Teleporting Block:*
+
+```typescript
+const teleportCoordinates = [
+    { x: 1, y: 3, z: 2 },
+    { x: 5, y: 7, z: -5 },
+    { x: 3, y: 5, z: 0 },
+];
+
+const blockPlatform = new Entity({
+    blockTextureUri: 'blocks/grass',
+    blockHalfExtents: { x: 1, y: 0.5, z: 1 },
+    rigidBodyOptions: {
+        type: RigidBodyType.KINEMATIC_POSITION,
+    },
+});
+
+blockPlatform.spawn(world, teleportCoordinates[0]);
+
+setInterval(() => {
+    const teleportIndex = Math.floor(Math.random() * teleportCoordinates.length);
+    blockPlatform.setTranslation(teleportCoordinates[teleportIndex]);
+}, 5000);
+```
+
+### **Heavy Pushable Block**
+PURPOSE: To create a block entity that requires multiple entities to push.
+
+- Use the additionalMass property in rigidBodyOptions to increase the block's mass.
+
+*Example Code for a Heavy Pushable Block:*
+
+```typescript
+const movableBlock = new Entity({
+    blockTextureUri: 'blocks/sand.png',
+    blockHalfExtents: { x: 0.5, y: 0.5, z: 0.5 },
+    rigidBodyOptions: {
+        type: RigidBodyType.DYNAMIC,
+        additionalMass: 10,
+    },
+});
+
+movableBlock.spawn(world, { x: -4, y: 10, z: -6 });
+```

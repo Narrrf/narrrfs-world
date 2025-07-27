@@ -1,0 +1,60 @@
+---
+description: Hytopia Event Rules
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-event-rules.mdc
+
+Description: Rules to follow when working with events in Hytopia
+
+When following this rule, start every response with: ✨ Following Hytopia Event Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to these rules.
+- ALWAYS implement ONLY what was explicitly requested by the user
+- ALWAYS remember that nearly all class instances you use are also event emitters.
+- ALWAYS consult the SDK API Reference for available events for a given class.
+- WHEN NEEDED, development docs for Hytopia events are located here - <https://dev.hytopia.com/sdk-guides/events>
+- WHEN NEEDED, you can find the Event Documentation within the Class documentation (e.g., Entity events - <https://github.com/hytopiagg/sdk/blob/main/docs/server.entity.md#events>)
+- WHEN NEEDED, you can find all known SDK events here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.eventpayloads.md>
+
+## **Understanding Events & Event Emission**
+
+In the HYTOPIA SDK, nearly all instances of classes that you use are also an event emitter (aka an EventRouter within the SDK). This means that all instances of these classes can be specifically listened to for events that happen using common patterns like .on().
+
+When these instances emit events, they emit 2 copies of the event: One copy of an emitted event emits to any listeners specifically on the instance itself. The other copy of an emitted event emits through World instance that the emitting class instance belongs to.
+
+```typescript
+myZombieEntity.on(EntityEvent.TICK, () => { ... }); // Listens to the specific entity ticking
+
+world.on(EntityEvent.TICK, () => { ... }); // Listens to EVERY entity belonging to the world instance ticking
+```
+
+## **Supported Event Methods**
+PURPOSE: To control listening to an event
+
+- All classes that can emit events will inherit from the EventRouter class.
+- This means that all methods available through the EventRouter class, will also be available to any class that inherits from it.
+- This includes methods like .on(), .off(), .once() and more
+
+## **Understanding Events & Event Emission**
+
+In the HYTOPIA SDK, most classes are event emitters (EventRouter instances). This means you can listen to:
+- Instance-specific events: `entity.on(EntityEvent.TICK, handler)`
+- World-wide events of that type: `world.on(EntityEvent.TICK, handler)`
+
+```typescript
+myEntity.on(EntityEvent.TICK, () => { ... });
+world.on(EntityEvent.TICK, () => { ... });
+```
+
+## **Supported Event Methods**
+All event-capable classes support:
+- `.on(event, handler)`
+- `.once(event, handler)`
+- `.off(event, handler)`
+- `.emit(event, payload)` (internal only)
+
+These methods are inherited from the `EventRouter` class and behave the same for `Entity`, `Player`, `World`, `Audio`, and others.
+
+

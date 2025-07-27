@@ -1,0 +1,76 @@
+Rule Name: 04-api-contracts.mdc
+
+Description: Rules to follow when implementing and integrating API endpoints in Narrrfs World
+
+When following this rule, start every response with: ✨ Following API Contract Rules ✨
+
+## 🧠 Core Contract Philosophy
+
+- ALWAYS use POST for state-changing endpoints (traits, clicks, rewards)
+- NEVER call an API endpoint without verifying payload structure and response expectations
+- ALWAYS treat trait, reward, and role APIs as user-state modifying actions requiring wallet or Discord ID
+- ALWAYS mirror any new client-side trait or role gate with a corresponding PHP endpoint
+
+## 🧩 Required Endpoints
+
+### 🔑 POST /api/user/traits.php
+Used when wallet connects, or trait gate is checked
+
+Payload:
+{
+  "wallet": "0x123456..."
+}
+
+### 🎖️ POST /api/track-egg-click
+Called when a player unlocks a trait from puzzle interaction
+
+Payload:
+{
+  "wallet": "0xabc...",
+  "traitKey": "CHEESE_SHRINE_EGGCLICK",
+  "traitValue": true
+}
+
+### 📡 POST /api/event-trigger.php
+Generic zone trigger / analytics system
+
+Payload:
+{
+  "wallet": "0xabc...",
+  "event": "puzzle_complete",
+  "data": { "zone": "cheese_lab", "time": 1423 }
+}
+
+### 🧑‍🤝‍🧑 GET /api/user/roles.php
+Returns current Discord role associations
+
+Response:
+{
+  "roles": ["ALCHEMIST", "GENESIS_MOUSE", "REWARD_CLAIMER"]
+}
+
+### 🧬 GET /sync/sync-role.php
+Syncs Discord roles to DB (runs via session context)
+
+## 🔐 Contract Safety Rules
+
+- Trait format: CHEESE_<ZONE>_<ACTION>
+- Reject null or empty wallets
+- Accept only `true` or `{}` as traitValue — no "ok", no arbitrary strings
+- All POST must use application/json
+
+## 🧠 LLM + Cursor Protocol
+
+- Corebrain enforces API contract logic
+- Coreforge ensures payloads match database expectations
+- Hytopia Integrator wires fetch() to correct endpoint
+- Riddle Brain links puzzles to /track-egg-click
+- Cheese Architect binds DOM to /user/traits and /user/roles
+- Cursor will not suggest unknown endpoints
+
+## 📜 Footer Notes
+
+// 📜 api-contracts.mdc active
+// 🔐 Trait and reward APIs must be state-safe and properly typed
+// 📡 All integrations must defer to this contract for endpoint usage
+// 🧠 Do not create new endpoints unless scroll-authorized

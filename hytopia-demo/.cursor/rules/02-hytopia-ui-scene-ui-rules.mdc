@@ -1,0 +1,212 @@
+---
+description: Hytopia Scene UIs Implementation Rules (health bar, name tag)
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-ui-scene-ui-rules.mdc
+
+Description: Rules to follow when implementing scene UIs for Hytopia
+
+When following this rule, start every respose with: ✨ Following Hytopia Scene UI Rules ✨
+
+## **Core Principles**
+* Use: Scene UIs are in-game UIs that appear as if they are a part of the game scene. 
+
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to these rules.
+- ALWAYS fetch and consider [02-hytopia-ui-general-rules.mdc](mdc:.cursor/rules/02-hytopia-ui-general-rules.mdc) in addition to these rules.
+- When needed, development docs for Hytopia Scene UI are located here - <https://dev.hytopia.com/sdk-guides/user-interface/scene-uis>
+- Hytopia Scene UI API Reference is found here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.sceneui.md>
+- ALWAYS implement ONLY what was explicitly requested by the user
+
+# **Registering Scene UIs in the UI Client**
+- ALWAYS make sure to add registrations to the index.html file inside of assets/ui
+- ALWAYS use `hytopia.registerSceneUITemplate()` within your .html file to register Scene UI templates
+- First argument: unique `templateId` string to identify this template
+- Use clear, descriptive template IDs
+- Second argument: renderer function that creates new instances from the template
+- Renderer function receives:
+    - `id`: the unique instance ID (not the template ID)
+    - `onState`: callback function for state updates
+
+
+*Scene UI Example in Client UI File*
+
+
+```html
+<!-- Example Scene UI Implementation -->
+<!-- Script at the top -->
+<script>
+    hytopia.registerSceneUITemplate('player-healthbar', (id, onState) => {
+        const healthbarTemplate = document.getElementById('player-healthbar-template');
+        const healthbarElementClone = healthbarTemplate.content.cloneNode(true);
+        
+        // Store references with clear, semantic names
+        const playerName = healthbarElement.querySelector('.player-name');
+        const healthValue = healthbarElement.querySelector('.health-value');
+        
+        onState(state => {
+            playerName.textContent = state.playerName;
+            healthValue.textContent = `${state.healthValue}/100`;
+        });
+        
+        return healthbarElementClone;
+    });
+</script>
+
+<!-- Define the template structure -->
+
+<template id="player-healthbar-template">
+    <div class="player-healthbar">
+        <p class="player-name"></p>
+        <p class="health-value"></p>
+    </div>
+</template>
+
+<!-- Define the styles -->
+
+<style>
+    .player-healthbar {
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 12px;
+        padding: 12px 20px;
+        color: white;
+    }
+    
+    .player-name, .health-value {
+        font-family: Arial, sans-serif;
+        user-select: none;
+        margin: 0;
+    }
+</style>
+```
+
+# **Scene UI Instance Creation & Management in Server Code**
+- ALWAYS make sure the `Player UI` and `Scene UI` classes have been imported from Hytopia
+- ALWAYS make sure the the Player UI has been loaded into the server code using `player.ui.load(ui/index.html)` 
+- Scene UIs can be attached to entities or at fixed positions
+- ALWAYS Create Scene UI instances on the server using new `SceneUI({...})`
+- ALWAYS provide a templateId option to the SceneUI constructor
+- ALWAYS match the template ID used in registerSceneUITemplate() property
+- ALWAYS Set initial data for the Scene UI using the state property
+
+*Entity attached Scene UI Example*
+
+ ```typescript
+
+// Example of an Entity-attached Scene UI
+
+const playerHealthbar = new SceneUI({
+    templateId: 'player-healthbar',
+    attachedToEntity: player.entity,
+    offset: { x: 0, y: 2, z: 0 },
+    state: {
+        playerName: player.username,
+        health: maxHealth
+    }
+});
+```
+
+*Fixed Location Scene UI Example*
+
+ ```typescript
+
+// Example of a Scene UI at a fixed position
+
+const healthBar = new SceneUI({
+    templateId: 'player-healthbar',
+    position: new Vector3(0, 2, 0),
+    state: {
+        playerName: player.username,
+        health: maxHealth
+    }
+});
+```
+
+# **Loading and Unloading Scene UIs in Server Code**
+- ALWAYS Load Scene UIs using `sceneUi.load(world)`
+- WHEN NECESSARY, Unload Scene UIs using `sceneUi.unload()`
+
+*Scene UI Load and Unload Example*
+
+```typescript
+
+// Example scene UI load into world
+
+healthBar.load(world);
+
+// Example scene UI unload when done
+
+healthBar.unload();
+
+```
+
+
+# **State Management**
+- Update the state of a Scene UI instance using `sceneUI.setState({...})` in the Server Code
+- .setState performs a shallow merge of the provided data with the existing state
+- State updates trigger the onState callback in the client-side template renderer
+
+*State Management Example*
+
+```typescript
+// Example state update code on server
+
+healthBar.setState({ health: newHealth });
+
+```
+## **Client UI Template Registration**
+- Use `hytopia.registerSceneUITemplate(templateId, (id, onState) => {...})`
+- Add to `ui/index.html`
+- Templates must use `<template id="...">`
+- Scripts go at the top
+- Use `onState` to update content from server
+
+```html
+<script>
+hytopia.registerSceneUITemplate('player-healthbar', (id, onState) => {
+  const tpl = document.getElementById('player-healthbar-template');
+  const clone = tpl.content.cloneNode(true);
+  const name = clone.querySelector('.player-name');
+  const hp = clone.querySelector('.health-value');
+  onState(state => {
+    name.textContent = state.playerName;
+    hp.textContent = `${state.health}/100`;
+  });
+  return clone;
+});
+</script>
+```
+
+## **Server-Side Scene UI Creation**
+
+Attach to entity:
+```ts
+const healthBar = new SceneUI({
+  templateId: 'player-healthbar',
+  attachedToEntity: player.entity,
+  offset: { x: 0, y: 2, z: 0 },
+  state: { playerName: player.username, health: 100 }
+});
+healthBar.load(world);
+```
+
+Fixed world location:
+```ts
+const healthBar = new SceneUI({
+  templateId: 'player-healthbar',
+  position: new Vector3(0, 2, 0),
+  state: { playerName: 'Alice', health: 75 }
+});
+healthBar.load(world);
+```
+
+## **State Management**
+```ts
+healthBar.setState({ health: 50 });
+```
+
+## **Unload Scene UI**
+```ts
+healthBar.unload();
+```
+   

@@ -1,0 +1,182 @@
+---
+description: Hytopia Entity Controller Rules
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-entity-controller-rules.mdc
+
+Description: Rules to follow when working with entity controllers in Hytopia
+
+ALWAYS start every respose with: ✨ Following Hytopia Entity Controller Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to these rules.
+- ALWAYS import necessary classes such as `Entity` and the appropriate controller class from Hytopia.
+- ALWAYS understand the entity controller lifecycle methods (attach, spawn, tickWithPlayerInput, tick, detach, despawn).
+- WHEN NEEDED, development docs for Hytopia entity controllers are located here - <https://dev.hytopia.com/sdk-guides/entities/entity-controllers>
+
+
+## **Premade Entity Controllers**
+
+### **PlayerEntityController**
+- Player Entity controller is default controller automatically assigned to a PlayerEntity if a custom controller is not provided.
+- Handles basic player movement, jump, camera movement, and platform sticking.
+- ALWAYS configure a PlayerEntityController using the PlayerEntityControllerOptions class.
+
+- WHEN NEEDED, API reference for `PlayerEntityController` class is here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.playerentitycontroller.md>
+- WHEN NEEDED, docs for the Player Entity Controller are here - <https://dev.hytopia.com/sdk-guides/entities/entity-controllers/player-entity-controller>
+- WHEN NEEDED, API reference for PlayerEntityControllerOptions - <https://github.com/hytopiagg/sdk/blob/main/docs/server.playerentitycontrolleroptions.md>
+
+
+### **SimpleEntityController**
+- Simple Entity Controller implements basic quality-of-life controls like .move() and .face().
+- Allows for creating basic or complex pathfinding based on target coordinates and movement speeds.
+- Supports completion callbacks for both .move() and .face() methods.
+- When needing to stop a SimpleEntityController's .move() calls, it is important to invoke the .stop() method on the SimpleEntityController instance.
+
+- WHEN NEEDED, docs for the Simple Entity Controller is here - <https://dev.hytopia.com/sdk-guides/entities/entity-controllers/simple-entity-controller>
+- WHEN NEEDED, API reference for SimpleEntityController class is here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.simpleentitycontroller.md>
+
+*Example Code for Using SimpleEntityController:*
+
+```typescript
+import {
+  Entity,
+  SimpleEntityController,
+  // ... other imports
+} from 'hytopia';
+
+// other code ...
+
+// Create a spider entity instance with our entity controller
+const spider = new Entity({
+  controller: new SimpleEntityController(),
+  modelUri: 'models/npcs/spider.gltf',
+  modelScale: 2.5,
+  modelLoopedAnimations: [ 'idle' ],
+});
+​
+// Spawn the spider in the world.
+spider.spawn(world, { x: 0, y: 10, z: -15 });
+
+// have the spider face towards and move towards the target
+// position, taking physics into account.
+const target = { x: 0, y: 0, z: 0 };
+const spiderEntityController = spider.controller as SimpleEntityController;
+spiderEntityController.move(target, 3); // move towards target at a speed of 3 (approx. blocks per second)
+spiderEntityController.face(target, 1); // face towards the target a speed of 1
+```
+
+## **Creating Custom Entity Controllers**
+PURPOSE: To define specific entity behaviors and interactions.
+
+- ALWAYS inherit from `BaseEntityController` when creating custom entity controllers.
+- Override lifecycle methods to implement custom logic for each stage of the controller's existence.
+- Use `tickWithPlayerInput` for player-controlled entities and tick for general entity behavior.
+
+*Example Code for a Custom Entity Controller:*
+
+```typescript
+import { BaseEntityController, Entity } from '@hytopia/sdk';
+
+class CustomMovementController extends BaseEntityController {
+  private moveSpeed: number;
+
+  constructor(moveSpeed: number) {
+    super();
+    this.moveSpeed = moveSpeed;
+  }
+
+  onTick(entity: Entity, deltaTimeMs: number): void {
+    // Example: Move the entity forward at the specified speed
+    const currentPosition = entity.getTranslation();
+    const newPosition = {
+      x: currentPosition.x + this.moveSpeed * (deltaTimeMs / 1000),
+      y: currentPosition.y,
+      z: currentPosition.z,
+    };
+    entity.setTranslation(newPosition);
+  }
+}
+
+const movingEntity = new Entity({
+  modelUri: 'models/my_moving_entity.gltf',
+  controller: new CustomMovementController(2), // Move at a speed of 2 units per second
+});
+
+movingEntity.spawn(world, { x: 0, y: 0, z: 0 });
+```
+
+### **BaseEntityController Lifecycle Methods**
+PURPOSE: To manage the different stages of an entity controller's existence.
+
+- WHEN NEEDED, docs for Base Entity Controller are here - <https://dev.hytopia.com/sdk-guides/entities/entity-controllers/base-entity-controller>
+- WHEN NEEDED, the API reference for `BaseEntityController` is here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.baseentitycontroller.md>
+- WHEN NEEDED, API Reference for `BaseEntityControllerEvent` - <https://github.com/hytopiagg/sdk/blob/main/docs/server.baseentitycontrollerevent.md>
+- ALWAYS override these methods in custom entity controllers to implement specific logic for each stage.
+
+- `attach(entity: Entity):` Called when the controller is attached to an entity. Use for initialization and collider assignments.
+- `spawn(entity: Entity):` Called when the entity first spawns.
+- `tickWithPlayerInput(entity: PlayerEntity, input: PlayerInput, cameraOrientation: PlayerCameraOrientation, deltaTimeMs: number):` Called each tick with the controlling player's current input (only for PlayerEntity or classes extending it).
+- `tick(entity: Entity, deltaTimeMs: number):` Called each tick while the entity is still spawned.
+- `detach(entity: Entity):` Called when the controller is detached from the entity.
+- `despawn(entity: Entity):` Called when the entity despawns.
+
+
+## **PathfindingEntityController**
+PURPOSE: Used to move an entity along a path.
+
+- WHEN NEEDED, API reference for `PathfindingEntityController` - <https://github.com/hytopiagg/sdk/blob/main/docs/server.pathfindingentitycontroller.md>
+
+## **Premade Entity Controllers**
+
+### PlayerEntityController
+- Default for PlayerEntity.
+- Handles platform movement, jump, input.
+- Configure via PlayerEntityControllerOptions.
+
+### SimpleEntityController
+- Exposes .move() and .face().
+- Use .stop() to interrupt pathing.
+- Example:
+
+```typescript
+const spider = new Entity({
+  controller: new SimpleEntityController(),
+  modelUri: 'models/npcs/spider.gltf',
+  modelScale: 2.5,
+  modelLoopedAnimations: ['idle'],
+});
+spider.spawn(world, { x: 0, y: 10, z: -15 });
+const controller = spider.controller as SimpleEntityController;
+controller.move({ x: 0, y: 0, z: 0 }, 3);
+controller.face({ x: 0, y: 0, z: 0 }, 1);
+```
+
+## **Custom Controllers**
+- Inherit from `BaseEntityController`
+- Implement:
+  - attach
+  - spawn
+  - tickWithPlayerInput
+  - tick
+  - detach
+  - despawn
+
+### Example:
+
+```typescript
+class CustomMovementController extends BaseEntityController {
+  constructor(private moveSpeed: number) { super(); }
+
+  onTick(entity: Entity, deltaTimeMs: number) {
+    const pos = entity.getTranslation();
+    entity.setTranslation({ x: pos.x + this.moveSpeed * (deltaTimeMs / 1000), y: pos.y, z: pos.z });
+  }
+}
+```
+
+## **PathfindingEntityController**
+- Use for navigation/pathing logic.
+- Reference: https://github.com/hytopiagg/sdk/blob/main/docs/server.pathfindingentitycontroller.md
+

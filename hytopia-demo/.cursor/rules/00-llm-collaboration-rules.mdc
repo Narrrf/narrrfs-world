@@ -1,0 +1,84 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Rule Name: 00-llm-collaboration-rules.mdc
+
+Description: Shared ruleset defining inter-LLM collaboration in Narrrf's World development
+
+When using this rule, start response with: ✨ Following LLM Collaboration Rules ✨
+
+---
+
+## 🧠 Core Principles
+
+- All LLMs must collaborate to form scroll-complete logic.
+- No module may assume full authority over a feature without syncing with the other LLMs responsible for related zones or logic.
+- Scrolls must remain verifiable through API endpoints, schema state, and UI visibility.
+- ALWAYS use functions for game logic and behaviors for riddles and implementations for traits.php and bridges to the collaboration LLMs
+---
+
+## 🔗 Collaboration Directives
+
+### 🧩 Puzzle Logic
+- ASK: `Riddle Brain` before implementing any puzzle event, riddle zone, or logic gate.
+- VERIFY: Trait condition gates exist via `/api/user/traits.php`
+
+### 🧀 UI & Trait Visibility
+- ASK: `Cheese Architect` for DOM hooks, UI states, and trait-based CSS triggers
+- VERIFY: Elements are reactive in `profile.html`, `experiment-x.html`
+
+### 🛠 Backend/API Consistency
+- ASK: `Coreforge` for all `/api/*.php` contract implementations
+- VERIFY: Trait-to-role mutations in `sync-role.php`
+- ALWAYS respect scroll `04-api-contracts.mdc`
+
+### 💾 Database & Schema Mapping
+- ASK: `SQL Junior` if a trait, role, or reward system exists in `narrrf_world.sqlite`
+- VERIFY: Columns, join queries, and storage logic
+
+### 📣 Lore & Broadcast Awareness
+- ASK: `Social Brain` if the scroll affects player lore, Discord roles, or public pings
+- DO NOT trigger community-facing logic without activating the lore system
+
+### 🔗 SDK Integration
+- ASK: `Hytopia Integrator` before using any Hytopia SDK method
+- VERIFY: All types and classes are scroll-safe via `01-hytopia-global-rules.mdc`
+
+---
+
+## ✨ Scroll Context Anchors
+
+Use contextual tags to help LLMs reason across scrolls:
+
+```ts
+// zone:cheese_shrine_start
+// trait_trigger → CHEESE_SHRINE_EGGCLICK
+// api_trigger → /api/track-egg-click
+// requires: Riddle Brain, Coreforge, SQL Junior
+```
+
+---
+
+## 🧠 Certified Scroll Usage
+
+| Feature Type       | Ask First        | Scroll to Anchor                  |
+|--------------------|------------------|-----------------------------------|
+| Puzzle Riddle      | Riddle Brain     | `03-puzzle-zone-triggers.mdc`     |
+| Trait UI Effect    | Cheese Architect | `02-hytopia-ui-rules.mdc`         |
+| DB Write/Read      | SQL Junior       | `21-hytopia-persistence-rules.mdc`|
+| SDK Events         | Hytopia Integrator| `01-hytopia-global-rules.mdc`    |
+| Trait Mapping      | Coreforge        | `04-api-contracts.mdc`            |
+
+---
+
+## 📜 Signed By
+
+🧠 Update Brain 5.0  
+🔗 Hytopia Integrator 5.0  
+🛠 Coreforge 5.0  
+🧀 Cheese Architect 5.0  
+🧩 Riddle Brain 5.0  
+📣 Social Brain 5.0  
+📅 Certified: April 25, 2025

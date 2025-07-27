@@ -1,0 +1,142 @@
+---
+description: Hytopia Player Camera Rules (First Person and Third Person View)
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-camera-rules.mdc
+
+Description: Rules to follow when working with the player camera
+
+When following this rule, start every respose with: ✨ Following Hytopia Camera Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to the below rules.
+- ALWAYS import BOTH `PlayerCamera` AND `PlayerCameraMode` from Hytopia
+- ALWAYS use the PlayerCamera class and its methods as intended by the SDK developers
+- WHEN NEEDED, development docs for Hytopia Camera are located here - <https://dev.hytopia.com/sdk-guides/camera>
+- WHEN NEEDED, the API reference for the PlayerCamera class is located here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.playercamera.md>
+- WHEN NEEDED, `PlayerCameraEvent` API reference is here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.playercameraevent.md>
+- ALWAYS implement ONLY what was explicitly requested by the user
+
+### **Accessing the Player Camera**
+- ALWAYS import `PlayerCamera` from Hytopia
+- ALWAYS access the player's camera using `player.camera`  
+
+### **Camera Modes**
+* PURPOSE: To switch between different camera perspectives (e.g., first-person, third-person).
+
+- ALWAYS import `PlayerCameraMode` from Hytopia
+- ALWAYS use `player.camera.setMode(PlayerCameraMode.FIRST_PERSON)` to set camera to first person (NOT `player.camera.setMode(PlayerCamera.FIRST_PERSON)`)
+- ALWAYS use `player.camera.setMode(PlayerCameraMode.THIRD_PERSON)` to change the camera to third person (NOT `player.camera.setMode(PlayerCamera.THIRD_PERSON)`)
+
+### **Camera Attachment and Tracking**
+* PURPOSE: To control the origin from which the player's camera sees the world.
+
+*Attaching to Entities:* 
+
+Use `player.camera.setAttachedToEntity(entity)` to attach the camera to a specific entity in the world.  The camera will then move with the entity.
+
+*Attaching to Positions:* 
+- Use `player.camera.setAttachedToPosition(position)` to attach the camera to a fixed position in the world.
+
+*Tracking Entities:* 
+- Use `player.camera.setTrackedEntity(entity)` to make the camera constantly look at a specific entity.
+
+*Tracking Positions:* 
+- Use `player.camera.setTrackedPosition(position)` to make the camera constantly look at a specific position.
+
+
+### **Camera Offsets**
+* PURPOSE: To fine-tune the positioning of the camera relative to its attachment point.
+
+- Use `player.camera.setOffset({ x: number, y: number, z: number })` to change the offset of the camera relative to the attached entity or position.
+- Use `player.camera.setForwardOffset(number)` to change the forward offset of the camera (only supported in first-person mode).
+- Use `player.camera.setFilmOffset(number)` to shift the camera perspective left or right.
+
+
+### **Camera Perspective Control (FOV and Zoom)**
+* PURPOSE: To adjust the field of view and zoom level of the camera.
+
+- Use `player.camera.setFov(number)` to change the field of view (default is 75).
+- Use `player.camera.setZoom(number)` to change the zoom level (default is 2).
+
+### **Hiding Model Nodes**
+* PURPOSE: To hide specific parts of the player model from the camera's perspective.
+
+- Use `player.camera.setModelHiddenNodes([ 'nodeName1', 'nodeName2' ])` to hide specific nodes in the model.  The `setModelHiddenNodes` function will do a case-insensitive substring match.
+- Example use would be to hide the "head" node in first-person mode to prevent it from obstructing the view.
+
+### **Example Code**
+
+*Example Code for First Person Shooter*
+
+```typescript
+startServer(world => {
+  // Other game setup code..
+
+  // Notice we're setting the camera for players immediately
+  // when they join, but we can use player.camera anywhere
+  // in our game logic. Also notice that player.camera is
+  // specific to each player, this allows us to control
+  // the camera of each player independently.
+  world.on(PlayerEvent.JOINED_WORLD, ({ player }) => {
+    const playerEntity = new PlayerEntity({ // Create an entity our newly joined player controls
+      player,
+      name: 'Player',
+      modelUri: 'models/players/player.gltf',
+      modelLoopedAnimations: [ 'idle' ],
+      modelScale: 0.5,
+    });
+
+    // Setup a first person camera for the player
+    // set first person mode
+    player.camera.setMode(PlayerCameraMode.FIRST_PERSON); 
+
+    // shift camrea up on Y axis so we see from "head" perspective.
+    player.camera.setOffset({ x: 0, y: 0.4, z: 0 }); 
+
+    // hide the head node from the model so we don't see it in the camera, this is just hidden for the controlling player.
+    player.camera.setHiddenModelNodes([ 'head', 'neck' ]); 
+    
+    // Shift the camera forward so we are looking slightly in front of where the player is looking.
+    player.camera.setForwardOffset(0.3); 
+    
+// Fix typo in playerEntity.spawn
+playerEntity.spawn(world, { x: 0, y: 3, z: 0 }); // was missing a closing parenthesis
+  });
+
+  // Other game setup code...
+});
+```
+
+*Example Code for Field of View and Zoom Effects*
+
+```Typescript
+// Change the player's FOV to 90,
+// giving a wider field of view.
+// Default is a FOV of 75.
+player.camera.setFov(90);
+
+// Change the player's zoom giving
+// a more zoomed in perspective
+// relative to the camera's attachment point
+// Default is a Zoom of 2
+player.camera.setZoom(2)
+
+// Increase FOV every 100ms,
+// creating a warp speed
+// visual effect
+setInterval(() => {
+  const currentFov = player.camera.fov;
+  
+  if (currentFov < 150) {
+    player.camera.setFov(currentFov + 1);
+  }
+}, 100)
+```
+
+🧠 Cursor Enforcement:
+- ❌ Disallow use of `PlayerCameraMode.FIRST_PERSON` without calling `player.camera.setOffset()` (to prevent camera clipping).
+- ✅ Warn if `player.camera.setHiddenModelNodes()` is NOT used in `FIRST_PERSON` mode.
+- ✅ Require camera actions like `setMode`, `setOffset`, `setFov`, etc. to occur in `PlayerEvent.JOINED_WORLD` or equivalent scope.
+

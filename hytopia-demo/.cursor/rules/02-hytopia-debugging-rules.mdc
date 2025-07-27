@@ -1,0 +1,72 @@
+---
+description: Hytopia Debugging Rules (errors)
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-debugging-rules.mdc
+
+Description: How to setup debugging in Hytopia
+
+ALWAYS start every respose with: ✨ Following Hytopia Debugging Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to these rules.
+- WHEN NEEDED, development docs for Hytopia debugging are located here - <https://dev.hytopia.com/sdk-guides/physics/debugging>
+
+### **Debugging Colliders**
+PURPOSE: To visualize colliders and sensor colliders for debugging.
+
+- Use world.simulation.enableDebugRendering(true) to enable debug rendering.
+- ALWAYS remember that debug rendering is very performance intensive.
+- ONLY enable debug rendering briefly when needed.
+
+*Example Code for Enabling Collider Debugging:*
+
+```typescript
+startServer(world => {
+  world.simulation.enableDebugRendering(true);
+  // ... other code
+});
+```
+
+### **Debugging Raycasts**
+PURPOSE: To visualize raycasts while building and debugging your game.
+
+- Use world.simulation.enableDebugRaycasting(true) to enable debug visualization of raycasts.
+- Raycast debugging has no noticeable performance impact and can be kept enabled throughout development.
+- Black lines indicate no object was hit, and red lines indicate an object was hit.
+- The lines have a 3D arrow indicating the direction of the raycast.
+
+*Example Code for Enabling Raycast Debugging:*
+
+```typescript
+startServer(world => {
+  world.simulation.enableDebugRaycasting(true);
+  // ... other code
+});
+```
+### **Debugging Colliders**
+PURPOSE: To visualize colliders and sensor colliders for debugging.
+
+- Use world.simulation.enableDebugRendering(true) to enable debug rendering.
+- ALWAYS remember that debug rendering is very performance intensive.
+- ONLY enable debug rendering briefly when needed.
+
+```typescript
+startServer(world => {
+  world.simulation.enableDebugRendering(true);
+});
+```
+
+### **Debugging Raycasts**
+PURPOSE: To visualize raycasts while building and debugging your game.
+
+- Use world.simulation.enableDebugRaycasting(true) to enable debug visualization of raycasts.
+- Raycast debugging has no noticeable performance impact and can be kept enabled throughout development.
+- Black lines = no object hit, red lines = object hit.
+- Lines include 3D arrows indicating raycast direction.
+
+```typescript
+startServer(world => {
+  world.simulation.enableDebugRaycasting(true);
+});

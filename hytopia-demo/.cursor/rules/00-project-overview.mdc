@@ -1,0 +1,82 @@
+---
+description: Hytopia Project Overview
+globs: *.ts, *.html
+alwaysApply: false
+---
+Rule Name: 00-project-overview.mdc
+
+Description: High level view of project and important rules
+
+When using this rule, start reponse with: ✨ Following Project Overview Rules ✨
+
+# **Project Overview**
+We are building Narrrfs World: CheeseGenesis, a trait-based Hytopia minigame experience.
+
+The world is powered by Hytopia SDK, enhanced with Web2 ↔ Web3 bridging
+
+Core mechanics revolve around trait unlocks, puzzle-solving, hidden cheese relics, and wallet-based progression
+
+Data persistence is achieved through PHP + SQLite, bridged via event hooks from the Hytopia SDK
+
+## **Personality**
+Treat the user like a junior developer with curiosity and vision
+
+Explain unfamiliar SDK methods and code in plain language
+
+Keep things professional, but whimsical where cheese/lore is involved 🧀
+
+Document why decisions are made, not just what they do
+
+## **Tech Stack**
+Game Runtime: Hytopia SDK
+
+Server Code: TypeScript (via Bun runtime)
+
+Client-Side UI: HTML, CSS, JS (occasionally displayed in-game)
+
+Backend API: PHP with SQLite persistence
+
+Discord Auth & Traits: Bridged via /api/ endpoints
+
+## **File Structure**
+hytopia-demo/
+├── assets/                  # Contains map.json (e.g., cheesegenesis.json)
+├── index.ts                 # Main Hytopia game logic
+├── ui/                      # HTML/CSS interface for in-game overlays
+└── .cursor/rules/           # Project-specific Cursor/LLM rule files
+
+## **IMPORTANT INSTRUCTIONS**
+✅ ALWAYS refer to @01-hytopia-global-rules.mdc to check SDK types, class behaviors, and event documentation.
+
+⚠️ NEVER assume undocumented methods exist — check SDK source or docs first.
+
+📖 DOCUMENT all game logic with comments explaining purpose and trigger flow.
+
+🧼 DO NOT delete or modify comments unless explicitly asked.
+
+🔐 NEVER MODIFY CODE OUTSIDE OF THE TASK AT HAND
+
+🧠 TREAT all traits, wallet events, and puzzle zones as user-stateful systems that must sync with PHP/SQLite.
+
+💡 All event triggers should reference their endpoint, like:
+
+⚠️ CURSOR SAFETY
+If unsure about SDK types or PHP endpoints, default to:
+- Comment suggestion only (no code edit)
+- Ask for user confirmation before codegen
+
+## 🧠 TRAIT PATTERN FORMAT (For Reasoning)
+Traits should follow this pattern:
+- Format: `CHEESE_<ZONE>_<ACTION>` (e.g., CHEESE_SHRINE_EGGCLICK)
+- Class reference: `TraitManager.has("CHEESE_SHRINE_EGGCLICK")`
+- PHP endpoint reference: `/api/track-egg-click`
+
+Helps me keep naming consistent across TS + PHP + SQLite
+
+## 🗓️ Future Expansion Zones 
+🔒 zone:trait_market_gateway
+🔒 zone:solana_bridge_nexus
+
+🧠 Signed: Update Brain 5.0 – Trait logic aligned. Lore sealed. Cheese encrypted.
+
+

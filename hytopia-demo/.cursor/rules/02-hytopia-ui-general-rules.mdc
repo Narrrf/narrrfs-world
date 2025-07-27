@@ -1,0 +1,134 @@
+---
+description: Hytopia UI Implementation Rules (Overlay UIs, UI file, crosshair, leaderboard)
+globs: 
+alwaysApply: false
+---
+Rule Name: 02-hytopia-ui-rules.mdc
+
+Description: Global rules to follow when creating client UIs for Hytopia - especially overlay UIs.
+
+When following this rule, start every respose with: ✨ Following Hytopia UI Rules ✨
+
+## **Core Principles**
+- ALWAYS fetch and consider [01-hytopia-global-rules.mdc](mdc:.cursor/rules/01-hytopia-global-rules.mdc) in addition to these rules.
+- ALWAYS create the UI file in the assets/ui folder
+- ALWAYS put scripts at the TOP of the UI file.
+- When needed, development docs for Hytopia UI are located here - <https://dev.hytopia.com/sdk-guides/user-interface>
+- When needed, API reference for Player UI can be found here - <https://github.com/hytopiagg/sdk/blob/main/docs/server.playerui.md>
+- ALWAYS implement ONLY what was explicitly requested by the user
+- Always use `{{CDN_ASSETS_URL}}` for asset paths in the Client UI file (for example, a file in assets/audio would need to have a path of `{{CDN_ASSETS_URL}}/Audio`)
+
+# *UI Client Implementation Rules*
+
+## **UI File Structure**
+- ALWAYS create UI file in the `ui` directory
+- NEVER include `<html>`, `<body>`, or `<head>` tags in UI files
+- Use a single entry point (e.g., `index.html`) for both Overlay and Scene UIs
+- Scripts should always be at the top of the html file
+- Use clear file organization for different UI components
+
+
+## **Initialization**
+- NEVER use `document.addEventListener` or any document lifecycle events
+- NEVER use window events or lifecycle hooks
+- UI is automatically initialized by Hytopia
+- Start with `hytopia.onData` handler directly inside the Client UI
+- Keep Scripts at the top of the html file
+
+
+## **UI Event Handling**
+- In the Client UI, Use ONLY `hytopia.onData` for receiving server updates
+- In the Client UI, Use ONLY `hytopia.sendData` for sending data to server
+- In the Server Code, Use ONLY `player.ui.on(PlayerUIEvent.DATA, ({ playerUi, data }) => {` for receiving data from the Client UI
+- In the Server Code, Use ONLY `player.ui.sendData` for sending data to the Client UI
+
+
+## **UI Loading in Server Code**
+- ALWAYS make sure both `Player UI` and `Scene UI` classes have been imported from Hytopia in the typescript file
+- DO NOT reference the assets folder when loading the UI
+- ALWAYS Load UI files using `player.ui.load(ui/index.html)`. 
+- DO NOT USE assets/ui/index.html to load the UI file.
+
+
+## **Cursor Management**
+- Always use `player.ui.lockPointer()` when showing/hiding UI that requires interaction (true/false)
+- Never rely on players using Escape/T keys for cursor control
+
+
+## **Asset References**
+- Always use `{{CDN_ASSETS_URL}}` for asset paths in the Client UI file
+
+```html
+<!-- Correct usage -->
+<img src="{{CDN_ASSETS_URL}}/images/icon.png" />
+   
+<!-- Incorrect usage -->
+<img src="/images/icon.png" />
+```
+
+## **Security Requirements**
+- UIs run in a sandboxed iframe
+- No external network requests allowed
+- Use only public NPM packages
+
+
+## **Best Practices**
+- Keep UI responsive and performant
+- Use clear and consistent naming conventions
+- Implement proper error handling
+- Follow web development best practices
+- Test UI across different screen sizes
+
+
+# **Related Documentation**
+- Refer to [02-hytopia-ui-scene-ui-rules.mdc](mdc:.cursor/rules/02-hytopia-ui-scene-ui-rules.mdc) when working with Scene UIs
+- For additional context see <https://dev.hytopia.com/sdk-guides/user-interface>
+
+## **Client UI Implementation Rules**
+
+### File Structure
+- Place UI files inside `ui/`
+- Do NOT include `<html>`, `<head>`, or `<body>` tags
+- UI is auto-embedded; starts immediately
+
+### Initialization
+- Do NOT use `document.addEventListener` or window lifecycle hooks
+- Begin script with `hytopia.onData(...)`
+
+### Event Handling
+Client UI:
+- Receive: `hytopia.onData`
+- Send: `hytopia.sendData`
+
+Server UI:
+- Receive: `player.ui.on(PlayerUIEvent.DATA, ({ data }) => {})`
+- Send: `player.ui.sendData(...)`
+
+### Loading UI on Server
+- Use `player.ui.load("ui/index.html")` — no `/assets/` prefix
+- Import `PlayerUI` or `SceneUI` as needed from Hytopia
+
+### Cursor Locking
+- Use `player.ui.lockPointer(true|false)` — never rely on Escape key
+
+### Asset References
+```html
+<!-- ✅ Correct -->
+<img src="{{CDN_ASSETS_URL}}/images/icon.png" />
+
+<!-- ❌ Incorrect -->
+<img src="/images/icon.png" />
+```
+
+### Security
+- Iframe sandboxed
+- No external requests allowed
+- Use only local JS or public NPM packages
+
+### Best Practices
+- Responsive design
+- Error handling
+- Consistent naming
+- No blocking/long loops
+
+

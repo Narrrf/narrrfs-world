@@ -1,0 +1,13 @@
+# Discord Token of Render System - Environment Variables
+# Copy this file to .env and set your Discord invite code
+
+# Discord Invite Code (replace with your current invite code)
+DISCORD_INVITE_CODE=rHc4Jg5Q
+
+# Optional: Additional Discord configuration
+DISCORD_BASE_URL=https://discord.gg/
+
+# Render Environment Variables:
+# In your Render dashboard, add these environment variables:
+# DISCORD_INVITE_CODE = rHc4Jg5Q (or your current invite code)
+# DISCORD_BASE_URL = https://discord.gg/ 

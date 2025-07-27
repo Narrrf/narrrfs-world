@@ -1,0 +1,93 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+Rule Name: 03-puzzle-zone-triggers.mdc
+
+Description: Rules to follow when tagging and triggering puzzle zones in Narrrfs World
+
+When following this rule, start every response with: ✨ Following Puzzle Zone Trigger Rules ✨
+
+## 🧠 Core Principles
+
+- ALWAYS tag puzzle zones in TypeScript with `// zone:<zone_name>`
+- ALWAYS gate puzzle logic behind trait checks using `TraitManager.has(...)`
+- ALWAYS verify traits via /api/user/traits.php before rendering DOM
+- ALWAYS post trait unlocks to /api/track-egg-click
+- NEVER display or enable puzzle triggers without proper trait state
+
+## 🔐 Puzzle Zone Marking
+
+// zone:cheese_shrine_gate
+Used by Cursor, Cheese Architect, and Riddle Brain to bind puzzle logic to spatial or DOM gates.
+
+Tag SDK or DOM logic using:
+    // zone:cheese_shrine_gate
+
+## 🎮 Trait-Gated Puzzle Rendering
+
+In SDK:
+    world.on('player:enterZone', ({ player }) => {
+      if (TraitManager.has('CHEESE_SHRINE_GATE')) {
+        // Puzzle appears
+      }
+    });
+
+In HTML:
+    <!-- 🔐 Do not remove unless instructed by the Over Brain. -->
+    <div class="hidden trait-gate-CHEESE_SHRINE_GATE">
+      <!-- Puzzle UI Here -->
+    </div>
+
+## 📡 Puzzle + Audio Coordination
+
+    // zone:puzzle_laser_gate
+    if (TraitManager.has('CHEESE_LASER_SOLVED')) {
+      const sfx = new Audio({ uri: 'audio/sfx/unlock.mp3', position: { x: 1, y: 0, z: 1 } });
+      sfx.play(world);
+    }
+
+## 📜 Backend Contract
+
+Trait format:
+    CHEESE_<ZONE>_<ACTION>
+
+Post trait unlocks to:
+    /api/track-egg-click
+
+Examples:
+    CHEESE_TOWER_LEVERPULL
+    CHEESE_GATE_SOLVED
+    CHEESE_BOTTLECLICK
+
+## 🧩 Trait Pattern Enforcement
+- Traits must follow: CHEESE_<ZONE>_<ACTION>
+- Example: CHEESE_LAB_BOTTLECLICK, CHEESE_SHRINE_GATE
+
+## 📜 Backend Contracts
+- POST trait unlocks to: /api/track-egg-click
+- Use: { wallet, traitKey, traitValue: true }
+
+## 📁 Cursor & LLM Rules
+- LLMs may only suggest puzzle logic inside verified zones
+- Traits must be referenced before enabling DOM or map trigger
+- DOM gates must use class: trait-gate-<TRAIT_NAME>
+
+## 📁 Cursor & LLM Enforcement
+
+| Enforced Behavior                             | Rule |
+|-----------------------------------------------|------|
+| Use // zone:<zone_name>                       | ✅    |
+| Verify traits before showing puzzle content   | ✅    |
+| Use Audio.play(world) for puzzle audio        | ✅    |
+| Use trait-gate-<TRAIT_NAME> in HTML DOM       | ✅    |
+| Use /api/track-egg-click for trait unlocks    | ✅    |
+
+## 🧠 Footer
+// 📜 puzzle-zone-triggers.mdc enforced
+// 🧩 Puzzle zones must be trait-aware
+// 🔐 DOM + SDK puzzle gates must sync via trait state
+// 🔐 Puzzle gates are trait-bound
+// 🧠 Zones must use // zone:<zone_name>
+// 🧩 DOM gates use trait-gate-<TRAIT_NAME>
