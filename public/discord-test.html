@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discord Token of Render Test | Narrrf's World</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 🔗 Discord Token of Render System -->
+  <script src="discord-config.js"></script>
+  
+  <style>
+    .test-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 15px;
+      padding: 20px;
+      margin: 10px;
+      color: white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .status-active { background-color: #10b981; }
+    .status-pending { background-color: #f59e0b; }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen p-8">
+  
+  <div class="max-w-4xl mx-auto">
+    
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-800 mb-4">🔗 Discord Token of Render Test</h1>
+      <p class="text-gray-600">Testing the dynamic Discord link management system</p>
+    </div>
+
+    <!-- Current Configuration -->
+    <div class="test-card mb-6">
+      <h2 class="text-xl font-semibold mb-4">📋 Current Configuration</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p><strong>Current Invite Code:</strong> <span id="currentCode" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+          <p><strong>Full Discord URL:</strong> <span id="currentUrl" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+        </div>
+        <div>
+          <p><strong>System Version:</strong> <span id="systemVersion" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+          <p><strong>Last Updated:</strong> <span id="lastUpdated" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Links -->
+    <div class="test-card mb-6">
+      <h2 class="text-xl font-semibold mb-4">🔗 Test Discord Links</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h3 class="font-semibold mb-2">Regular Links:</h3>
+          <a href="https://discord.gg/SYd2FC2U" target="_blank" class="block text-blue-300 hover:text-blue-200 mb-2">Old Discord Link (SYd2FC2U)</a>
+          <a href="https://discord.gg/jwYWh2dU" target="_blank" class="block text-blue-300 hover:text-blue-200 mb-2">Backup Discord Link (jwYWh2dU)</a>
+          <a href="https://discord.gg/mJrt9h7z" target="_blank" class="block text-blue-300 hover:text-blue-200 mb-2">Another Discord Link (mJrt9h7z)</a>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-2">Button Links:</h3>
+          <button onclick="window.open('https://discord.gg/SYd2FC2U', '_blank')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-2 block w-full">Join Discord (SYd2FC2U)</button>
+          <button onclick="window.location.href='https://discord.gg/jwYWh2dU'" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mb-2 block w-full">Join Discord (jwYWh2dU)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="test-card mb-6">
+      <h2 class="text-xl font-semibold mb-4">🎛️ Control Panel</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Update Invite Code:</label>
+          <div class="flex gap-2">
+            <input type="text" id="newInviteCode" placeholder="Enter new code" class="flex-1 px-3 py-2 rounded text-gray-800" value="rHc4Jg5Q">
+            <button onclick="updateInviteCode()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Update</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Quick Test Codes:</label>
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="setInviteCode('rHc4Jg5Q')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">rHc4Jg5Q</button>
+            <button onclick="setInviteCode('SYd2FC2U')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">SYd2FC2U</button>
+            <button onclick="setInviteCode('jwYWh2dU')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">jwYWh2dU</button>
+            <button onclick="setInviteCode('mJrt9h7z')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">mJrt9h7z</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Log -->
+    <div class="test-card">
+      <h2 class="text-xl font-semibold mb-4">📊 Status Log</h2>
+      <div id="statusLog" class="bg-gray-800 p-4 rounded text-sm font-mono h-32 overflow-y-auto">
+        <div class="text-green-400">🔄 System initializing...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Update display with current configuration
+    function updateDisplay() {
+      document.getElementById('currentCode').textContent = DISCORD_CONFIG.inviteCode;
+      document.getElementById('currentUrl').textContent = DISCORD_CONFIG.getCurrentUrl();
+      document.getElementById('systemVersion').textContent = DISCORD_CONFIG.version;
+      document.getElementById('lastUpdated').textContent = DISCORD_CONFIG.lastUpdated;
+    }
+
+    // Update invite code
+    function updateInviteCode() {
+      const newCode = document.getElementById('newInviteCode').value.trim();
+      if (newCode) {
+        DISCORD_CONFIG.updateInviteCode(newCode);
+        updateDisplay();
+        addLog(`✅ Updated invite code to: ${newCode}`);
+      }
+    }
+
+    // Set invite code from quick buttons
+    function setInviteCode(code) {
+      DISCORD_CONFIG.updateInviteCode(code);
+      document.getElementById('newInviteCode').value = code;
+      updateDisplay();
+      addLog(`⚡ Quick set invite code to: ${code}`);
+    }
+
+    // Add log entry
+    function addLog(message) {
+      const log = document.getElementById('statusLog');
+      const timestamp = new Date().toLocaleTimeString();
+      log.innerHTML += `<div class="text-blue-400">[${timestamp}] ${message}</div>`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Override console.log to also show in our log
+    const originalLog = console.log;
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('Discord')) {
+        addLog(args[0]);
+      }
+    };
+
+    // Initialize display when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(() => {
+        updateDisplay();
+        addLog('🎯 Discord Token of Render System loaded successfully');
+        addLog(`🔗 Current Discord URL: ${DISCORD_CONFIG.getCurrentUrl()}`);
+      }, 100);
+    });
+  </script>
+
+</body>
+</html> 
