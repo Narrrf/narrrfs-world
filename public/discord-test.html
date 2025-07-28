@@ -417,12 +417,19 @@
     let searchTimeout = null;
 
     // Initialize the interface
-    document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(() => {
+    document.addEventListener('DOMContentLoaded', async function() {
+      setTimeout(async () => {
         updateDisplay();
-        loadDashboardData();
-        addLog('🎯 Admin interface loaded successfully');
-        addLog('🔐 Please authenticate to access admin features');
+        
+        // Check for existing Discord authentication first
+        const discordAuthResult = await checkDiscordAuth();
+        
+        if (!discordAuthResult) {
+          // Only load dashboard data if not auto-authenticated
+          loadDashboardData();
+          addLog('🎯 Admin interface loaded successfully');
+          addLog('🔐 Please authenticate to access admin features');
+        }
       }, 100);
     });
 
@@ -1643,6 +1650,52 @@
       const timestamp = new Date().toLocaleTimeString();
       log.innerHTML += `<div class="text-blue-400">[${timestamp}] ${message}</div>`;
       log.scrollTop = log.scrollHeight;
+    }
+
+    // Check for existing Discord authentication on page load
+    async function checkDiscordAuth() {
+      try {
+        // Check if user is already authenticated via Discord
+        const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok) {
+          const user = await res.json();
+          
+          // Check if user has admin/moderator roles
+          if (user.roles && (
+              user.roles.includes("Moderator") || 
+              user.roles.includes("Admin") || 
+              user.roles.includes("super_admin") ||
+              user.roles.includes("Founder") ||
+              user.roles.includes("DL Rumble Admins") ||
+              user.discord_id === "328601656659017732" // narrrf's Discord ID
+          )) {
+            // Auto-login as Discord moderator
+            currentAdmin = {
+              username: user.discord_name || 'Discord Moderator',
+              discord_id: user.discord_id,
+              role: 'moderator',
+              auth_type: 'discord'
+            };
+            
+            // Hide auth panel and show admin interface
+            document.getElementById('authPanel').style.display = 'none';
+            document.getElementById('navPanel').style.display = 'block';
+            
+            // Load dashboard data
+            loadDashboardData();
+            
+            addLog(`✅ Auto-authenticated as Discord moderator: ${user.discord_name}`);
+            return true;
+          }
+        }
+      } catch (error) {
+        console.log('No existing Discord session found');
+      }
+      return false;
     }
 
     // Discord Authentication for Moderators
