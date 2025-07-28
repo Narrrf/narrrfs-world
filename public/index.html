@@ -523,8 +523,8 @@ updateCountdown();
   <!-- ⬅️➡️ Navigation Controls -->
   <div class="absolute bottom-4 md:bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-1 md:gap-2">
     <div class="flex gap-2 md:gap-4">
-      <button onclick="navigateHDR(-1)" class="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-3 py-1 md:px-6 md:py-3 rounded-full shadow-lg transition-all duration-300 text-sm md:text-lg font-bold border-2 border-pink-400 hover:border-pink-500 transform hover:scale-105">← Prev</button>
-      <button onclick="navigateHDR(1)" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1 md:px-6 md:py-3 rounded-full shadow-lg transition-all duration-300 text-sm md:text-lg font-bold border-2 border-purple-400 hover:border-purple-500 transform hover:scale-105">Next →</button>
+      <button onclick="console.log('Prev button clicked'); navigateHDR(-1)" class="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-3 py-1 md:px-6 md:py-3 rounded-full shadow-lg transition-all duration-300 text-sm md:text-lg font-bold border-2 border-pink-400 hover:border-pink-500 transform hover:scale-105">← Prev</button>
+      <button onclick="console.log('Next button clicked'); navigateHDR(1)" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1 md:px-6 md:py-3 rounded-full shadow-lg transition-all duration-300 text-sm md:text-lg font-bold border-2 border-purple-400 hover:border-purple-500 transform hover:scale-105">Next →</button>
     </div>
             <p class="text-xs text-gray-500 text-center font-semibold">🧀 Swipe left/right or drag to navigate • ESC to close</p>
   </div>
@@ -1536,10 +1536,14 @@ function handleHDRDragEnd() {
     const figures = document.querySelectorAll('#hdr-grid figure');
     if (!figures.length) return;
 
+    console.log('HDR navigation: Starting with currentHDRIndex =', currentHDRIndex, 'step =', step, 'figures.length =', figures.length);
+    
     const newIndex = currentHDRIndex + step;
+    console.log('HDR navigation: newIndex =', newIndex);
     
     // If trying to navigate beyond loaded images, load more
     if (newIndex >= figures.length && newIndex < TOTAL_HDR_IMAGES) {
+      console.log('HDR navigation: Loading more images...');
       loadMoreHDRImages();
       // Wait a bit for images to load, then try again
       setTimeout(() => {
@@ -1551,13 +1555,32 @@ function handleHDRDragEnd() {
     // Handle wrapping around
     if (newIndex < 0) {
       currentHDRIndex = figures.length - 1;
+      console.log('HDR navigation: Wrapped to end, new currentHDRIndex =', currentHDRIndex);
     } else if (newIndex >= figures.length) {
       currentHDRIndex = 0;
+      console.log('HDR navigation: Wrapped to beginning, new currentHDRIndex =', currentHDRIndex);
     } else {
       currentHDRIndex = newIndex;
+      console.log('HDR navigation: Normal navigation, new currentHDRIndex =', currentHDRIndex);
     }
     
-    const targetFigure = figures[currentHDRIndex];
+    // Find the figure with the matching data-index
+    let targetFigure = null;
+    for (let i = 0; i < figures.length; i++) {
+      const figureIndex = parseInt(figures[i].getAttribute('data-index'), 10);
+      if (figureIndex === currentHDRIndex) {
+        targetFigure = figures[i];
+        break;
+      }
+    }
+    
+    if (!targetFigure) {
+      console.log('HDR navigation: Could not find figure with data-index =', currentHDRIndex);
+      // Fallback: use array index
+      targetFigure = figures[currentHDRIndex];
+      console.log('HDR navigation: Using fallback array index, targetFigure =', targetFigure);
+    }
+    
     if (targetFigure) {
       // Check if HDR viewer is open
       const hdrFullscreen = document.getElementById('hdrFullscreen');
@@ -1567,11 +1590,17 @@ function handleHDRDragEnd() {
       if (hdrFullscreen && !hdrFullscreen.classList.contains('hidden') && hdrImage && img && img.src) {
         // Update the HDR image directly
         hdrImage.src = img.src;
+        console.log('HDR navigation: Updated image to', img.src);
       } else {
         // If HDR viewer is not open, open it with the target figure
         openHDR(targetFigure);
+        console.log('HDR navigation: Opened HDR viewer with figure', currentHDRIndex);
       }
+    } else {
+      console.log('HDR navigation: No target figure found!');
     }
+    
+    console.log('HDR navigation: Current index is now', currentHDRIndex, 'out of', figures.length, 'loaded figures');
   }
 
   document.addEventListener("keydown", (e) => {
@@ -1702,7 +1731,9 @@ function handleHDRDragEnd() {
 
   function finishHDRLoading() {
     isLoadingHDR = false;
-    hdrImagesLoaded = Math.min(hdrImagesLoaded + HDR_BATCH_SIZE, TOTAL_HDR_IMAGES);
+    // Count actual loaded figures instead of using batch size
+    const figures = document.querySelectorAll('#hdr-grid figure');
+    hdrImagesLoaded = Math.min(figures.length, TOTAL_HDR_IMAGES);
     
     // Update load more button
     const loadMoreBtn = document.getElementById('load-more-hdr');
