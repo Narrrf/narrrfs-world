@@ -1,22 +1,32 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
-  <!-- Meta Essentials -->
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Experiment X | Narrrf's World</title>
-
-  <!-- Favicon & Metadata -->
-  <link rel="icon" type="image/png" href="img/favicon2.PNG" />
-  <meta name="theme-color" content="#facc15" />
-  <meta name="msapplication-TileColor" content="#facc15" />
-  <meta name="msapplication-TileImage" content="img/favicon2.PNG" />
-  <meta name="title" content="Narrrf's World" />
-  <meta name="description" content="Mutant visuals & future chaos from Narrrf's Lab." />
-
-  <!-- Tailwind CSS -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧪 Lab Preview - Narrrf's World</title>
+  
+  <!-- 🚫 Prevent Game Over and Rotate Device Alerts on Mobile -->
+  <script>
+    // Override any alert function that might show unwanted messages
+    const originalAlert = window.alert;
+    window.alert = function(message) {
+      // Block any "game over" or "rotate device" related alerts
+      if (typeof message === 'string') {
+        const lowerMessage = message.toLowerCase();
+        if (lowerMessage.includes('game over') || 
+            lowerMessage.includes('rotate') || 
+            lowerMessage.includes('device') ||
+            lowerMessage.includes('orientation')) {
+          console.log('Blocked unwanted alert:', message);
+          return;
+        }
+      }
+      // Allow other alerts to work normally
+      return originalAlert.apply(this, arguments);
+    };
+  </script>
+  
   <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- 🔗 Discord Token of Render System -->
   <script src="discord-config.js"></script>
 
   <!-- Carousel & Lab Animations -->
@@ -496,7 +506,12 @@ This is the dual-mode display section for both:
     
     const targetFigure = figures[currentHDRIndex];
     if (targetFigure) {
-      openHDR(targetFigure);
+      // Update the HDR image directly instead of calling openHDR
+      const hdrImage = document.getElementById('hdrImage');
+      const img = targetFigure.querySelector('img');
+      if (hdrImage && img && img.src) {
+        hdrImage.src = img.src;
+      }
     }
   }
 

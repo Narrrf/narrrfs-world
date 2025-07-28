@@ -12,6 +12,27 @@
   <meta name="msapplication-TileColor" content="#facc15" />
   <meta name="msapplication-TileImage" content="img/favicon2.png" />
 
+  <!-- 🚫 Prevent Game Over and Rotate Device Alerts on Mobile -->
+  <script>
+    // Override any alert function that might show unwanted messages
+    const originalAlert = window.alert;
+    window.alert = function(message) {
+      // Block any "game over" or "rotate device" related alerts
+      if (typeof message === 'string') {
+        const lowerMessage = message.toLowerCase();
+        if (lowerMessage.includes('game over') || 
+            lowerMessage.includes('rotate') || 
+            lowerMessage.includes('device') ||
+            lowerMessage.includes('orientation')) {
+          console.log('Blocked unwanted alert:', message);
+          return;
+        }
+      }
+      // Allow other alerts to work normally
+      return originalAlert.apply(this, arguments);
+    };
+  </script>
+
   <!-- 🔗 Title & Social Preview -->
   <title>🎯 Narrrf's World – Genesis 12.0</title>
   <meta property="og:title" content="Narrrf's World – Genesis 12.0" />
@@ -1511,7 +1532,12 @@ function handleHDRDragEnd() {
     
     const targetFigure = figures[currentHDRIndex];
     if (targetFigure) {
-      openHDR(targetFigure);
+      // Update the HDR image directly instead of calling openHDR
+      const hdrImage = document.getElementById('hdrImage');
+      const img = targetFigure.querySelector('img');
+      if (hdrImage && img && img.src) {
+        hdrImage.src = img.src;
+      }
     }
   }
 
