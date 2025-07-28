@@ -217,7 +217,7 @@ This is the dual-mode display section for both:
 </div>
 
 <!-- 🖼️ HDR Fullscreen Viewer -->
-<div id="hdrFullscreen" class="hidden fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center transition-all duration-300 cursor-grab" style="touch-action: manipulation;">
+<div id="hdrFullscreen" class="hidden fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center transition-all duration-300 cursor-grab" style="touch-action: pan-x pan-y; -webkit-user-select: none; -webkit-touch-callout: none;">
                               <!-- ❌ Exit Button -->
                       <button onclick="closeHDR()" class="absolute bottom-4 left-2 md:bottom-6 md:left-4 text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 px-2 py-1 md:px-4 md:py-2 lg:px-6 lg:py-3 rounded-full shadow-lg text-xs md:text-sm z-50 transition-all duration-300 font-bold border-2 border-red-400 hover:border-red-500 transform hover:scale-105">
                         🧀 Exit
@@ -375,6 +375,7 @@ This is the dual-mode display section for both:
   }
 
   function handleHDRDragStart(e) {
+    e.preventDefault(); // Prevent default touch behavior
     isHDRDragging = true;
     hdrStartX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
     hdrCurrentX = hdrStartX;
@@ -391,8 +392,11 @@ This is the dual-mode display section for both:
     if (!isHDRDragging) return;
 
     e.preventDefault();
-    hdrCurrentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
-    hdrDragDistance = hdrCurrentX - hdrStartX;
+    e.stopPropagation(); // Stop event propagation
+    
+    const currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+    hdrCurrentX = currentX;
+    hdrDragDistance = currentX - hdrStartX;
 
     // Add visual feedback during drag
     const hdrImage = document.getElementById('hdrImage');
@@ -567,7 +571,7 @@ This is the dual-mode display section for both:
 
   // 🎨 HDR Grid Management
   let hdrImagesLoaded = 0;
-  const HDR_BATCH_SIZE = window.innerWidth <= 768 ? 10 : 20; // Smaller batches for mobile
+  const HDR_BATCH_SIZE = window.innerWidth <= 768 ? 20 : 30; // Increased batch size for mobile
   const TOTAL_HDR_IMAGES = 151;
   let isLoadingHDR = false; // Prevent multiple simultaneous loads
 
@@ -575,8 +579,9 @@ This is the dual-mode display section for both:
     const grid = document.getElementById('hdr-grid');
     if (!grid) return;
     
-    // Load first batch of HDR images
-    loadHDRImages(0, HDR_BATCH_SIZE);
+    // Load more images initially for mobile users
+    const initialLoad = window.innerWidth <= 768 ? 30 : HDR_BATCH_SIZE;
+    loadHDRImages(0, initialLoad);
   }
 
   function loadHDRImages(startIndex, count) {
@@ -658,7 +663,10 @@ This is the dual-mode display section for both:
 
   function loadMoreHDRImages() {
     if (!isLoadingHDR) {
-      loadHDRImages(hdrImagesLoaded, HDR_BATCH_SIZE);
+      // For mobile users, load more images at once to get closer to all 151
+      const remainingImages = TOTAL_HDR_IMAGES - hdrImagesLoaded;
+      const loadAmount = window.innerWidth <= 768 ? Math.min(50, remainingImages) : HDR_BATCH_SIZE;
+      loadHDRImages(hdrImagesLoaded, loadAmount);
     }
   }
 </script>
