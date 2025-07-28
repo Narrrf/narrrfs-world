@@ -17,8 +17,9 @@ COPY ./discord-tools /var/www/html/discord-tools
 COPY ./private /var/www/html/private
 COPY ./scripts /var/www/html/scripts
 
-# Copy database folder + file!
-COPY ./db /var/www/html/db
+# Copy database directory structure and migrations
+COPY ./db/migrations /var/www/html/db/migrations
+COPY ./db/schema.sql /var/www/html/db/schema.sql
 
 # Ensure db/ exists (avoid build fail)
 RUN mkdir -p /var/www/html/db

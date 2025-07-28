@@ -506,12 +506,12 @@ updateCountdown();
 <!-- 🖼️ HDR Fullscreen Viewer -->
 <div id="hdrFullscreen" class="hidden fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center transition-all duration-300 cursor-grab" style="touch-action: pan-x pan-y; -webkit-user-select: none; -webkit-touch-callout: none;">
                               <!-- ❌ Exit Button -->
-                      <button onclick="closeHDR()" class="absolute bottom-4 left-2 md:bottom-6 md:left-4 text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 px-2 py-1 md:px-4 md:py-2 lg:px-6 lg:py-3 rounded-full shadow-lg text-xs md:text-sm z-50 transition-all duration-300 font-bold border-2 border-red-400 hover:border-red-500 transform hover:scale-105">
+                      <button onclick="closeHDR()" class="absolute bottom-4 left-2 md:bottom-6 md:left-4 text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 px-3 py-2 md:px-4 md:py-2 lg:px-6 lg:py-3 rounded-full shadow-lg text-sm md:text-base z-50 transition-all duration-300 font-bold border-2 border-red-400 hover:border-red-500 transform hover:scale-105 min-w-[60px] md:min-w-[80px]">
                         🧀 Exit
                       </button>
                       
                       <!-- 📱 Horizontal Mode Button -->
-                      <button onclick="forceHorizontalMode()" class="absolute bottom-4 left-16 md:bottom-6 md:left-32 lg:left-48 text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-2 py-1 md:px-4 md:py-2 lg:px-6 lg:py-3 rounded-full shadow-lg text-xs md:text-sm z-50 transition-all duration-300 font-bold border-2 border-blue-400 hover:border-blue-500 transform hover:scale-105">
+                      <button onclick="forceHorizontalMode()" class="absolute bottom-4 left-20 md:bottom-6 md:left-32 lg:left-48 text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-3 py-2 md:px-4 md:py-2 lg:px-6 lg:py-3 rounded-full shadow-lg text-sm md:text-base z-50 transition-all duration-300 font-bold border-2 border-blue-400 hover:border-blue-500 transform hover:scale-105 min-w-[80px] md:min-w-[100px]">
                         📱 Horizontal
                       </button>
 
@@ -523,10 +523,10 @@ updateCountdown();
   <!-- ⬅️➡️ Navigation Controls -->
   <div class="absolute bottom-4 md:bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-1 md:gap-2">
     <div class="flex gap-2 md:gap-4">
-      <button onclick="console.log('Prev button clicked'); navigateHDR(-1)" class="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-3 py-1 md:px-6 md:py-3 rounded-full shadow-lg transition-all duration-300 text-sm md:text-lg font-bold border-2 border-pink-400 hover:border-pink-500 transform hover:scale-105">← Prev</button>
-      <button onclick="console.log('Next button clicked'); navigateHDR(1)" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1 md:px-6 md:py-3 rounded-full shadow-lg transition-all duration-300 text-sm md:text-lg font-bold border-2 border-purple-400 hover:border-purple-500 transform hover:scale-105">Next →</button>
+      <button onclick="console.log('Prev button clicked'); navigateHDR(-1)" class="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 rounded-full shadow-lg transition-all duration-300 text-base md:text-lg font-bold border-2 border-pink-400 hover:border-pink-500 transform hover:scale-105 min-w-[80px] md:min-w-[100px]">← Prev</button>
+      <button onclick="console.log('Next button clicked'); navigateHDR(1)" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 rounded-full shadow-lg transition-all duration-300 text-base md:text-lg font-bold border-2 border-purple-400 hover:border-purple-500 transform hover:scale-105 min-w-[80px] md:min-w-[100px]">Next →</button>
     </div>
-            <p class="text-xs text-gray-500 text-center font-semibold">🧀 Swipe left/right or drag to navigate • ESC to close</p>
+            <p class="text-xs md:text-sm text-gray-500 text-center font-semibold">🧀 Swipe left/right or drag to navigate • ESC to close</p>
   </div>
 </div>
 
@@ -991,9 +991,8 @@ updateCountdown();
     const parent = document.getElementById(parentId);
     if (!egg || !parent) return;
 
-    const maxLeft = parent.clientWidth - 40; // Using first CHEESE_SIZE value
-    const maxTop = parent.clientHeight - 40; // Using first CHEESE_SIZE value
-
+    const maxLeft = parent.clientWidth - CHEESE_SIZE;
+    const maxTop = parent.clientHeight - CHEESE_SIZE;
     const left = Math.floor(Math.random() * maxLeft);
     const top = Math.floor(Math.random() * maxTop);
 
@@ -1564,22 +1563,8 @@ function handleHDRDragEnd() {
       console.log('HDR navigation: Normal navigation, new currentHDRIndex =', currentHDRIndex);
     }
     
-    // Find the figure with the matching data-index
-    let targetFigure = null;
-    for (let i = 0; i < figures.length; i++) {
-      const figureIndex = parseInt(figures[i].getAttribute('data-index'), 10);
-      if (figureIndex === currentHDRIndex) {
-        targetFigure = figures[i];
-        break;
-      }
-    }
-    
-    if (!targetFigure) {
-      console.log('HDR navigation: Could not find figure with data-index =', currentHDRIndex);
-      // Fallback: use array index
-      targetFigure = figures[currentHDRIndex];
-      console.log('HDR navigation: Using fallback array index, targetFigure =', targetFigure);
-    }
+    // Get the target figure by array index (since they're loaded in order)
+    const targetFigure = figures[currentHDRIndex];
     
     if (targetFigure) {
       // Check if HDR viewer is open
@@ -1654,7 +1639,8 @@ function handleHDRDragEnd() {
 
   // 🎨 HDR Grid Management
   let hdrImagesLoaded = 0;
-  const HDR_BATCH_SIZE = window.innerWidth <= 768 ? 20 : 30; // Increased batch size for mobile
+  let hdrNextIndex = 0; // Track the next index to load
+  const HDR_BATCH_SIZE = window.innerWidth <= 768 ? 30 : 40; // Increased batch size for better loading
   const TOTAL_HDR_IMAGES = 151;
   let isLoadingHDR = false; // Prevent multiple simultaneous loads
 
@@ -1662,8 +1648,15 @@ function handleHDRDragEnd() {
     const grid = document.getElementById('hdr-grid');
     if (!grid) return;
     
+    // Clear the grid first to prevent duplicates
+    grid.innerHTML = '';
+    
+    // Reset loading state
+    hdrImagesLoaded = 0;
+    hdrNextIndex = 0;
+    
     // Load more images initially for mobile users
-    const initialLoad = window.innerWidth <= 768 ? 30 : HDR_BATCH_SIZE;
+    const initialLoad = window.innerWidth <= 768 ? 40 : HDR_BATCH_SIZE;
     loadHDRImages(0, initialLoad);
   }
 
@@ -1671,8 +1664,10 @@ function handleHDRDragEnd() {
     const grid = document.getElementById('hdr-grid');
     if (!grid || isLoadingHDR) return;
 
+    console.log(`Loading HDR images from ${startIndex} to ${startIndex + count - 1}`);
     isLoadingHDR = true;
     let loadedCount = 0;
+    let failedCount = 0;
     const targetCount = Math.min(startIndex + count, TOTAL_HDR_IMAGES);
 
     for (let i = startIndex; i < targetCount; i++) {
@@ -1695,26 +1690,30 @@ function handleHDRDragEnd() {
       // Add error handling for image loading
       img.onerror = () => {
         console.warn(`Failed to load HDR image ${i}`);
-        // Remove the figure if image fails to load
-        if (figure.parentNode) {
-          figure.parentNode.removeChild(figure);
-        }
-        loadedCount++;
-        if (loadedCount >= targetCount - startIndex) {
+        failedCount++;
+        // Don't remove the figure, just mark it as failed
+        figure.style.opacity = '0.3';
+        figure.style.filter = 'grayscale(100%)';
+        
+        // Check if all images in this batch have been processed
+        if (loadedCount + failedCount >= targetCount - startIndex) {
           finishHDRLoading();
         }
       };
 
       img.onload = () => {
         loadedCount++;
-        if (loadedCount >= targetCount - startIndex) {
+        console.log(`Successfully loaded HDR image ${i}`);
+        
+        // Check if all images in this batch have been processed
+        if (loadedCount + failedCount >= targetCount - startIndex) {
           finishHDRLoading();
         }
       };
 
       const figcaption = document.createElement('figcaption');
       figcaption.className = 'text-sm text-yellow-800 mt-3 text-center font-bold bg-gradient-to-r from-yellow-200 to-pink-200 rounded-full px-4 py-2 mx-auto w-fit border-2 border-yellow-300 shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-105 relative z-10';
-      figcaption.textContent = '🧀 Click to zoom';
+      figcaption.textContent = `🧀 Click to zoom (${i + 1})`;
 
       figure.appendChild(img);
       figure.appendChild(figcaption);
@@ -1724,9 +1723,10 @@ function handleHDRDragEnd() {
     // Fallback in case no images load
     setTimeout(() => {
       if (isLoadingHDR) {
+        console.log('HDR loading timeout - forcing finish');
         finishHDRLoading();
       }
-    }, 5000);
+    }, 10000); // Increased timeout to 10 seconds
   }
 
   function finishHDRLoading() {
@@ -1734,6 +1734,9 @@ function handleHDRDragEnd() {
     // Count actual loaded figures instead of using batch size
     const figures = document.querySelectorAll('#hdr-grid figure');
     hdrImagesLoaded = Math.min(figures.length, TOTAL_HDR_IMAGES);
+    hdrNextIndex = hdrImagesLoaded; // Update next index to load
+    
+    console.log(`HDR loading finished. Loaded ${hdrImagesLoaded} images. Next index: ${hdrNextIndex}`);
     
     // Update load more button
     const loadMoreBtn = document.getElementById('load-more-hdr');
@@ -1747,28 +1750,55 @@ function handleHDRDragEnd() {
   }
 
   function loadMoreHDRImages() {
-    if (!isLoadingHDR) {
+    if (!isLoadingHDR && hdrNextIndex < TOTAL_HDR_IMAGES) {
       // For mobile users, load more images at once to get closer to all 151
-      const remainingImages = TOTAL_HDR_IMAGES - hdrImagesLoaded;
-      const loadAmount = window.innerWidth <= 768 ? Math.min(50, remainingImages) : HDR_BATCH_SIZE;
-      loadHDRImages(hdrImagesLoaded, loadAmount);
+      const remainingImages = TOTAL_HDR_IMAGES - hdrNextIndex;
+      const loadAmount = window.innerWidth <= 768 ? Math.min(60, remainingImages) : HDR_BATCH_SIZE;
+      console.log(`Loading more HDR images from index ${hdrNextIndex}, amount: ${loadAmount}`);
+      loadHDRImages(hdrNextIndex, loadAmount);
     }
   }
 
   // 📱 Force Horizontal Mode Function
   function forceHorizontalMode() {
+    console.log('Attempting to force landscape mode...');
+    
     if (screen.orientation && screen.orientation.lock) {
       try {
         screen.orientation.lock('landscape').then(() => {
-          console.log('Screen locked to landscape mode');
+          console.log('✅ Screen locked to landscape mode successfully');
+          // Show a brief success message
+          const message = document.createElement('div');
+          message.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg z-[60] text-sm font-bold';
+          message.textContent = '📱 Landscape mode activated!';
+          document.body.appendChild(message);
+          setTimeout(() => message.remove(), 2000);
         }).catch((error) => {
-          console.log('Could not lock orientation:', error);
+          console.log('❌ Could not lock orientation:', error);
+          // Show error message
+          const message = document.createElement('div');
+          message.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg z-[60] text-sm font-bold';
+          message.textContent = '❌ Landscape mode not supported';
+          document.body.appendChild(message);
+          setTimeout(() => message.remove(), 2000);
         });
       } catch (error) {
-        console.log('Orientation lock not supported:', error);
+        console.log('❌ Orientation lock not supported:', error);
+        // Show error message
+        const message = document.createElement('div');
+        message.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg z-[60] text-sm font-bold';
+        message.textContent = '❌ Landscape mode not supported';
+        document.body.appendChild(message);
+        setTimeout(() => message.remove(), 2000);
       }
     } else {
-      console.log('Screen orientation API not supported');
+      console.log('❌ Screen orientation API not supported');
+      // Show error message
+      const message = document.createElement('div');
+      message.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg z-[60] text-sm font-bold';
+      message.textContent = '❌ Landscape mode not supported';
+      document.body.appendChild(message);
+      setTimeout(() => message.remove(), 2000);
     }
   }
 

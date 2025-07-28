@@ -643,7 +643,7 @@
           document.getElementById('navPanel').style.display = 'block';
           
           // Check if user is owner (narrrf or admin role)
-          const isOwner = data.user.role === 'admin' || data.user.username === 'narrrf';
+          const isOwner = data.user.role === 'admin' || data.user.role === 'super_admin' || data.user.username === 'narrrf';
           
           // Show/hide owner-only options
           const ownerOnlyOptions = document.getElementById('ownerOnlyOptions');
@@ -1934,7 +1934,7 @@
     // Show upload modal
     function showUploadModal() {
       // Check if user is owner
-      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.username !== 'narrrf')) {
+      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.role !== 'super_admin' && currentAdmin.username !== 'narrrf')) {
         addLog('❌ Access denied: Database upload requires owner privileges');
         return;
       }
@@ -1955,7 +1955,7 @@
     // Handle database upload
     async function uploadDatabase() {
       // Check if user is owner
-      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.username !== 'narrrf')) {
+      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.role !== 'super_admin' && currentAdmin.username !== 'narrrf')) {
         const statusDiv = document.getElementById('uploadStatus');
         statusDiv.innerHTML = '<div class="text-red-400">❌ Access denied: Database upload requires owner privileges</div>';
         addLog('❌ Access denied: Database upload requires owner privileges');
@@ -2006,7 +2006,7 @@
     // Show database viewer
     function showDatabaseViewer() {
       // Check if user is owner
-      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.username !== 'narrrf')) {
+      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.role !== 'super_admin' && currentAdmin.username !== 'narrrf')) {
         addLog('❌ Access denied: Database viewer requires owner privileges');
         return;
       }
@@ -2048,7 +2048,7 @@
     // Trigger database backup
     async function triggerBackup() {
       // Check if user is owner
-      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.username !== 'narrrf')) {
+      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.role !== 'super_admin' && currentAdmin.username !== 'narrrf')) {
         addLog('❌ Access denied: Database backup requires owner privileges');
         return;
       }
