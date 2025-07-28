@@ -51,7 +51,7 @@ switch ($action) {
         try {
             // Insert new store item
             $stmt = $db->prepare('
-                INSERT INTO store_items (item_name, description, price, category, created_at, is_active) 
+                INSERT INTO tbl_store_items (item_name, description, price, image_url, created_at, is_active) 
                 VALUES (?, ?, ?, ?, datetime("now"), 1)
             ');
             
@@ -108,7 +108,7 @@ switch ($action) {
         
         try {
             // First, find the item
-            $stmt = $db->prepare('SELECT * FROM store_items WHERE item_name = ? AND is_active = 1');
+            $stmt = $db->prepare('SELECT * FROM tbl_store_items WHERE item_name = ? AND is_active = 1');
             $stmt->bindValue(1, $item_name, SQLITE3_TEXT);
             $result = $stmt->execute();
             $item = $result->fetchArray(SQLITE3_ASSOC);
@@ -122,7 +122,7 @@ switch ($action) {
             }
             
             // Check if user already has this item
-            $stmt = $db->prepare('SELECT * FROM user_inventory WHERE user_id = ? AND item_name = ?');
+            $stmt = $db->prepare('SELECT * FROM tbl_user_inventory WHERE user_id = ? AND item_name = ?');
             $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
             $stmt->bindValue(2, $item_name, SQLITE3_TEXT);
             $result = $stmt->execute();
@@ -131,7 +131,7 @@ switch ($action) {
             if ($existing) {
                 // Update quantity
                 $new_quantity = $existing['quantity'] + $quantity;
-                $stmt = $db->prepare('UPDATE user_inventory SET quantity = ? WHERE user_id = ? AND item_name = ?');
+                $stmt = $db->prepare('UPDATE tbl_user_inventory SET quantity = ? WHERE user_id = ? AND item_name = ?');
                 $stmt->bindValue(1, $new_quantity, SQLITE3_INTEGER);
                 $stmt->bindValue(2, $user_id, SQLITE3_TEXT);
                 $stmt->bindValue(3, $item_name, SQLITE3_TEXT);
@@ -139,7 +139,7 @@ switch ($action) {
             } else {
                 // Insert new inventory entry
                 $stmt = $db->prepare('
-                    INSERT INTO user_inventory (user_id, item_name, quantity, acquired_at) 
+                    INSERT INTO tbl_user_inventory (user_id, item_name, quantity, acquired_at) 
                     VALUES (?, ?, ?, datetime("now"))
                 ');
                 $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
@@ -174,7 +174,7 @@ switch ($action) {
         }
         
         try {
-            $stmt = $db->prepare('UPDATE store_items SET is_active = 0 WHERE id = ?');
+            $stmt = $db->prepare('UPDATE tbl_store_items SET is_active = 0 WHERE item_id = ?');
             $stmt->bindValue(1, $item_id, SQLITE3_INTEGER);
             $result = $stmt->execute();
             
@@ -210,9 +210,9 @@ switch ($action) {
         
         try {
             $stmt = $db->prepare('
-                SELECT ui.*, si.item_name, si.description, si.category 
-                FROM user_inventory ui 
-                JOIN store_items si ON ui.item_name = si.item_name 
+                SELECT ui.*, si.item_name, si.description, si.image_url as category 
+                FROM tbl_user_inventory ui 
+                JOIN tbl_store_items si ON ui.item_name = si.item_name 
                 WHERE ui.user_id = ? AND si.is_active = 1
                 ORDER BY si.item_name
             ');
