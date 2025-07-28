@@ -434,13 +434,14 @@ updateCountdown();
 
   <!-- 🧪 Carousel Mode -->
   <div id="carousel-zone" class="block">
-    <div id="carousel-images" class="overflow-hidden rounded-xl shadow-lg bg-white">
+    <div id="carousel-images" class="overflow-hidden rounded-xl shadow-lg bg-white cursor-grab select-none" style="touch-action: pan-y pinch-zoom;">
       <!-- JS injects 81 carusel images -->
     </div>
     <div class="flex justify-between items-center mt-4">
       <button onclick="showSlide(-1)" class="bg-pink-500 text-white px-4 py-2 rounded-full shadow hover:bg-pink-600">← Prev</button>
       <button onclick="showSlide(1)" class="bg-purple-500 text-white px-4 py-2 rounded-full shadow hover:bg-purple-600">Next →</button>
     </div>
+    <p class="text-xs text-gray-500 text-center mt-2">💡 Swipe left/right or drag to navigate</p>
   </div>
 
 <!-- 🎨 HDR IPFS ART GALLERY -->
@@ -456,7 +457,7 @@ updateCountdown();
 </div>
 
 <!-- 🖼️ HDR Fullscreen Viewer -->
-<div id="hdrFullscreen" class="hidden fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center transition-all duration-300">
+<div id="hdrFullscreen" class="hidden fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center transition-all duration-300 cursor-grab" style="touch-action: pan-y pinch-zoom;">
   <!-- ❌ Exit Button -->
   <button onclick="closeHDR()" class="absolute top-4 right-4 text-white bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded-full shadow-lg text-sm z-50 transition-all duration-200">
     ❌ Exit HDR View
@@ -466,9 +467,12 @@ updateCountdown();
   <img id="hdrImage" src="" alt="HDR Art" class="w-full h-full object-contain animate-scaleIn" />
 
   <!-- ⬅️➡️ Navigation Controls -->
-  <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-4">
-    <button onclick="navigateHDR(-1)" class="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full shadow-lg transition-all duration-200 text-lg">← Prev</button>
-    <button onclick="navigateHDR(1)" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-full shadow-lg transition-all duration-200 text-lg">Next →</button>
+  <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2">
+    <div class="flex gap-4">
+      <button onclick="navigateHDR(-1)" class="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full shadow-lg transition-all duration-200 text-lg">← Prev</button>
+      <button onclick="navigateHDR(1)" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-full shadow-lg transition-all duration-200 text-lg">Next →</button>
+    </div>
+    <p class="text-xs text-gray-400 text-center">💡 Swipe left/right or drag to navigate • ESC to close</p>
   </div>
 </div>
 
@@ -1153,8 +1157,14 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
   </div>
 </noscript>
 <script>
-  // 🧪 Carousel Logic
+  // 🧪 Carousel Logic with Swipe Support
   let index = 0;
+  let isDragging = false;
+  let startX = 0;
+  let currentX = 0;
+  let dragDistance = 0;
+  const SWIPE_THRESHOLD = 50; // Minimum distance for swipe
+
   function showSlide(step) {
     const slides = document.querySelectorAll(".carousel-slide");
     if (!slides.length) return;
@@ -1165,8 +1175,188 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
     });
   }
 
+  // 🖱️ Mouse/Touch Swipe Support
+  function initializeSwipeSupport() {
+    const carouselContainer = document.getElementById('carousel-images');
+    if (!carouselContainer) return;
+
+    // Mouse events for desktop
+    carouselContainer.addEventListener('mousedown', handleDragStart);
+    carouselContainer.addEventListener('mousemove', handleDragMove);
+    carouselContainer.addEventListener('mouseup', handleDragEnd);
+    carouselContainer.addEventListener('mouseleave', handleDragEnd);
+
+    // Touch events for mobile
+    carouselContainer.addEventListener('touchstart', handleDragStart);
+    carouselContainer.addEventListener('touchmove', handleDragMove);
+    carouselContainer.addEventListener('touchend', handleDragEnd);
+
+    // Prevent default drag behavior
+    carouselContainer.addEventListener('dragstart', (e) => e.preventDefault());
+  }
+
+  function handleDragStart(e) {
+    isDragging = true;
+    startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+    currentX = startX;
+    dragDistance = 0;
+    
+    const carouselContainer = document.getElementById('carousel-images');
+    if (carouselContainer) {
+      carouselContainer.style.cursor = 'grabbing';
+      carouselContainer.style.userSelect = 'none';
+    }
+  }
+
+  function handleDragMove(e) {
+    if (!isDragging) return;
+    
+    e.preventDefault();
+    currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+    dragDistance = currentX - startX;
+    
+    // Add visual feedback during drag
+    const carouselContainer = document.getElementById('carousel-images');
+    if (carouselContainer && Math.abs(dragDistance) > 10) {
+      carouselContainer.style.transform = `translateX(${dragDistance * 0.1}px)`;
+      carouselContainer.style.transition = 'none';
+    }
+  }
+
+  function handleDragEnd() {
+    if (!isDragging) return;
+    
+    isDragging = false;
+    
+    const carouselContainer = document.getElementById('carousel-images');
+    if (carouselContainer) {
+      carouselContainer.style.cursor = 'grab';
+      carouselContainer.style.userSelect = 'auto';
+      carouselContainer.style.transform = '';
+      carouselContainer.style.transition = 'transform 0.3s ease-out';
+    }
+
+    // Determine swipe direction and trigger slide change
+    if (Math.abs(dragDistance) > SWIPE_THRESHOLD) {
+      if (dragDistance > 0) {
+        // Swipe right - go to previous slide
+        showSlide(-1);
+      } else {
+        // Swipe left - go to next slide
+        showSlide(1);
+      }
+    }
+    
+      // Reset drag distance
+  dragDistance = 0;
+}
+
+// 🖱️ HDR Swipe Support Functions
+function initializeHDRSwipeSupport() {
+  const hdrContainer = document.getElementById('hdrFullscreen');
+  if (!hdrContainer) return;
+
+  // Mouse events for desktop
+  hdrContainer.addEventListener('mousedown', handleHDRDragStart);
+  hdrContainer.addEventListener('mousemove', handleHDRDragMove);
+  hdrContainer.addEventListener('mouseup', handleHDRDragEnd);
+  hdrContainer.addEventListener('mouseleave', handleHDRDragEnd);
+
+  // Touch events for mobile
+  hdrContainer.addEventListener('touchstart', handleHDRDragStart);
+  hdrContainer.addEventListener('touchmove', handleHDRDragMove);
+  hdrContainer.addEventListener('touchend', handleHDRDragEnd);
+
+  // Prevent default drag behavior
+  hdrContainer.addEventListener('dragstart', (e) => e.preventDefault());
+}
+
+function removeHDRSwipeSupport() {
+  const hdrContainer = document.getElementById('hdrFullscreen');
+  if (!hdrContainer) return;
+
+  // Remove mouse events
+  hdrContainer.removeEventListener('mousedown', handleHDRDragStart);
+  hdrContainer.removeEventListener('mousemove', handleHDRDragMove);
+  hdrContainer.removeEventListener('mouseup', handleHDRDragEnd);
+  hdrContainer.removeEventListener('mouseleave', handleHDRDragEnd);
+
+  // Remove touch events
+  hdrContainer.removeEventListener('touchstart', handleHDRDragStart);
+  hdrContainer.removeEventListener('touchmove', handleHDRDragMove);
+  hdrContainer.removeEventListener('touchend', handleHDRDragEnd);
+}
+
+function handleHDRDragStart(e) {
+  isHDRDragging = true;
+  hdrStartX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+  hdrCurrentX = hdrStartX;
+  hdrDragDistance = 0;
+
+  const hdrContainer = document.getElementById('hdrFullscreen');
+  if (hdrContainer) {
+    hdrContainer.style.cursor = 'grabbing';
+    hdrContainer.style.userSelect = 'none';
+  }
+}
+
+function handleHDRDragMove(e) {
+  if (!isHDRDragging) return;
+
+  e.preventDefault();
+  hdrCurrentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+  hdrDragDistance = hdrCurrentX - hdrStartX;
+
+  // Add visual feedback during drag
+  const hdrImage = document.getElementById('hdrImage');
+  if (hdrImage && Math.abs(hdrDragDistance) > 10) {
+    hdrImage.style.transform = `translateX(${hdrDragDistance * 0.1}px)`;
+    hdrImage.style.transition = 'none';
+  }
+}
+
+function handleHDRDragEnd() {
+  if (!isHDRDragging) return;
+
+  isHDRDragging = false;
+
+  const hdrContainer = document.getElementById('hdrFullscreen');
+  const hdrImage = document.getElementById('hdrImage');
+  
+  if (hdrContainer) {
+    hdrContainer.style.cursor = 'grab';
+    hdrContainer.style.userSelect = 'auto';
+  }
+  
+  if (hdrImage) {
+    hdrImage.style.transform = '';
+    hdrImage.style.transition = 'transform 0.3s ease-out';
+  }
+
+  // Determine swipe direction and trigger HDR navigation
+  if (Math.abs(hdrDragDistance) > HDR_SWIPE_THRESHOLD) {
+    if (hdrDragDistance > 0) {
+      // Swipe right - go to previous HDR image
+      navigateHDR(-1);
+    } else {
+      // Swipe left - go to next HDR image
+      navigateHDR(1);
+    }
+  }
+
+  // Reset drag distance
+  hdrDragDistance = 0;
+}
+
   // 🎨 HDR Fullscreen Logic
   let currentHDRIndex = 0;
+  
+  // 🖱️ HDR Swipe Support Variables
+  let isHDRDragging = false;
+  let hdrStartX = 0;
+  let hdrCurrentX = 0;
+  let hdrDragDistance = 0;
+  const HDR_SWIPE_THRESHOLD = 50; // Minimum distance for HDR swipe
 
   function openHDR(figureEl) {
     const full = document.getElementById('hdrFullscreen');
@@ -1183,6 +1373,9 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
     full.classList.remove('hidden');
     full.classList.add('flex');
     document.body.classList.add('overflow-hidden');
+    
+    // Initialize HDR swipe support
+    initializeHDRSwipeSupport();
   }
 
   // Add this function to enable closing HDR fullscreen
@@ -1193,6 +1386,9 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
       full.classList.remove('flex');
     }
     document.body.classList.remove('overflow-hidden');
+    
+    // Remove HDR swipe event listeners
+    removeHDRSwipeSupport();
   }
 
   function navigateHDR(step) {
@@ -1246,14 +1442,18 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
     }
     showSlide(0);
     
+    // Initialize swipe support for the carousel
+    initializeSwipeSupport();
+    
     // Initialize HDR grid with first 20 images
     initializeHDRGrid();
   });
 
   // 🎨 HDR Grid Management
   let hdrImagesLoaded = 0;
-  const HDR_BATCH_SIZE = 20;
+  const HDR_BATCH_SIZE = window.innerWidth <= 768 ? 10 : 20; // Smaller batches for mobile
   const TOTAL_HDR_IMAGES = 151;
+  let isLoadingHDR = false; // Prevent multiple simultaneous loads
 
   function initializeHDRGrid() {
     const grid = document.getElementById('hdr-grid');
@@ -1265,9 +1465,13 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
 
   function loadHDRImages(startIndex, count) {
     const grid = document.getElementById('hdr-grid');
-    if (!grid) return;
+    if (!grid || isLoadingHDR) return;
 
-    for (let i = startIndex; i < Math.min(startIndex + count, TOTAL_HDR_IMAGES); i++) {
+    isLoadingHDR = true;
+    let loadedCount = 0;
+    const targetCount = Math.min(startIndex + count, TOTAL_HDR_IMAGES);
+
+    for (let i = startIndex; i < targetCount; i++) {
       const figure = document.createElement('figure');
       figure.className = 'rounded-xl shadow-lg overflow-hidden cursor-pointer hover:scale-105 transition-all';
       figure.setAttribute('data-index', i);
@@ -1279,6 +1483,26 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
       img.className = 'object-cover w-full h-auto max-h-[300px]';
       img.loading = 'lazy';
 
+      // Add error handling for image loading
+      img.onerror = () => {
+        console.warn(`Failed to load HDR image ${i}`);
+        // Remove the figure if image fails to load
+        if (figure.parentNode) {
+          figure.parentNode.removeChild(figure);
+        }
+        loadedCount++;
+        if (loadedCount >= targetCount - startIndex) {
+          finishHDRLoading();
+        }
+      };
+
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount >= targetCount - startIndex) {
+          finishHDRLoading();
+        }
+      };
+
       const figcaption = document.createElement('figcaption');
       figcaption.className = 'text-xs text-gray-500 mt-2 text-center';
       figcaption.textContent = '🔍 Click to zoom';
@@ -1288,7 +1512,17 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
       grid.appendChild(figure);
     }
 
-    hdrImagesLoaded = Math.min(startIndex + count, TOTAL_HDR_IMAGES);
+    // Fallback in case no images load
+    setTimeout(() => {
+      if (isLoadingHDR) {
+        finishHDRLoading();
+      }
+    }, 5000);
+  }
+
+  function finishHDRLoading() {
+    isLoadingHDR = false;
+    hdrImagesLoaded = Math.min(hdrImagesLoaded + HDR_BATCH_SIZE, TOTAL_HDR_IMAGES);
     
     // Update load more button
     const loadMoreBtn = document.getElementById('load-more-hdr');
@@ -1302,7 +1536,9 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
   }
 
   function loadMoreHDRImages() {
-    loadHDRImages(hdrImagesLoaded, HDR_BATCH_SIZE);
+    if (!isLoadingHDR) {
+      loadHDRImages(hdrImagesLoaded, HDR_BATCH_SIZE);
+    }
   }
 
   // Initialize on DOM load:
