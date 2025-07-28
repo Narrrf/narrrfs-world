@@ -329,7 +329,10 @@
       <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
         <h3 class="text-lg font-semibold mb-3">🎁 Give Item to User</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input type="text" id="giveItemUserId" placeholder="User ID or Username" class="px-3 py-2 rounded text-gray-800">
+          <div class="relative">
+            <input type="text" id="giveItemUserId" placeholder="Search User ID or Username" class="px-3 py-2 rounded text-gray-800 w-full" oninput="giveItemSearchUsersInstant(this.value)">
+            <div id="giveItemUserResults" class="absolute z-10 w-full bg-gray-700 border border-gray-600 rounded mt-1 max-h-40 overflow-y-auto" style="display: none;"></div>
+          </div>
           <input type="text" id="giveItemName" placeholder="Item Name" class="px-3 py-2 rounded text-gray-800">
           <input type="number" id="giveItemQuantity" placeholder="Quantity" value="1" class="px-3 py-2 rounded text-gray-800">
         </div>
@@ -340,11 +343,14 @@
       <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">👤 View User Inventory</h3>
         <div class="flex gap-2">
-          <input type="text" id="viewInventoryUserId" placeholder="User ID or Username" class="flex-1 px-3 py-2 rounded text-gray-800">
+          <div class="relative flex-1">
+            <input type="text" id="viewInventoryUserId" placeholder="Search User ID or Username" class="px-3 py-2 rounded text-gray-800 w-full" oninput="viewInventorySearchUsersInstant(this.value)">
+            <div id="viewInventoryUserResults" class="absolute z-10 w-full bg-gray-700 border border-gray-600 rounded mt-1 max-h-40 overflow-y-auto" style="display: none;"></div>
+          </div>
           <button onclick="viewUserInventory()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">View Inventory</button>
         </div>
         <div id="userInventoryList" class="mt-3">
-          <div class="text-gray-300">Enter user ID/username and click "View Inventory"...</div>
+          <div class="text-gray-300">Search for a user and click "View Inventory"...</div>
         </div>
       </div>
     </div>
@@ -909,6 +915,130 @@
       document.getElementById('quickUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
       
       addLog(`👤 Selected user: ${username} (${balance.toLocaleString()} $DSPOINC)`);
+    }
+
+    // Give Item user search functionality
+    function giveItemSearchUsersInstant(searchTerm) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      
+      if (searchTerm.length < 2) {
+        document.getElementById('giveItemUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+        document.getElementById('giveItemUserResults').style.display = 'none';
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch('/api/admin/point-management.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'searchuser',
+              search: searchTerm
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            displayGiveItemUserResults(data.users);
+            document.getElementById('giveItemUserResults').style.display = 'block';
+          } else {
+            document.getElementById('giveItemUserResults').innerHTML = '<div class="text-gray-300">Search failed</div>';
+            document.getElementById('giveItemUserResults').style.display = 'block';
+          }
+        } catch (error) {
+          document.getElementById('giveItemUserResults').innerHTML = '<div class="text-gray-300">Search error</div>';
+          document.getElementById('giveItemUserResults').style.display = 'block';
+        }
+      }, 300);
+    }
+
+    // Display Give Item user search results
+    function displayGiveItemUserResults(users) {
+      const container = document.getElementById('giveItemUserResults');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300 p-2">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="p-2 hover:bg-gray-600 cursor-pointer border-b border-gray-600" onclick="selectGiveItemUser('${user.user_id}', '${user.username || 'Unknown'}')">
+          <div class="font-semibold text-white">${user.username || 'Unknown User'}</div>
+          <div class="text-sm text-gray-300">ID: ${user.user_id}</div>
+          <div class="text-sm text-yellow-400">Balance: ${user.score?.toLocaleString() || 0} $DSPOINC</div>
+        </div>
+      `).join('');
+    }
+
+    // Select user for Give Item
+    function selectGiveItemUser(userId, username) {
+      document.getElementById('giveItemUserId').value = userId;
+      document.getElementById('giveItemUserResults').style.display = 'none';
+      addLog(`✅ Selected user for Give Item: ${username} (${userId})`);
+    }
+
+    // View Inventory user search functionality
+    function viewInventorySearchUsersInstant(searchTerm) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      
+      if (searchTerm.length < 2) {
+        document.getElementById('viewInventoryUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+        document.getElementById('viewInventoryUserResults').style.display = 'none';
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch('/api/admin/point-management.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'searchuser',
+              search: searchTerm
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            displayViewInventoryUserResults(data.users);
+            document.getElementById('viewInventoryUserResults').style.display = 'block';
+          } else {
+            document.getElementById('viewInventoryUserResults').innerHTML = '<div class="text-gray-300">Search failed</div>';
+            document.getElementById('viewInventoryUserResults').style.display = 'block';
+          }
+        } catch (error) {
+          document.getElementById('viewInventoryUserResults').innerHTML = '<div class="text-gray-300">Search error</div>';
+          document.getElementById('viewInventoryUserResults').style.display = 'block';
+        }
+      }, 300);
+    }
+
+    // Display View Inventory user search results
+    function displayViewInventoryUserResults(users) {
+      const container = document.getElementById('viewInventoryUserResults');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300 p-2">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="p-2 hover:bg-gray-600 cursor-pointer border-b border-gray-600" onclick="selectViewInventoryUser('${user.user_id}', '${user.username || 'Unknown'}')">
+          <div class="font-semibold text-white">${user.username || 'Unknown User'}</div>
+          <div class="text-sm text-gray-300">ID: ${user.user_id}</div>
+          <div class="text-sm text-yellow-400">Balance: ${user.score?.toLocaleString() || 0} $DSPOINC</div>
+        </div>
+      `).join('');
+    }
+
+    // Select user for View Inventory
+    function selectViewInventoryUser(userId, username) {
+      document.getElementById('viewInventoryUserId').value = userId;
+      document.getElementById('viewInventoryUserResults').style.display = 'none';
+      addLog(`✅ Selected user for View Inventory: ${username} (${userId})`);
     }
 
     // Quick user selection
@@ -1611,7 +1741,7 @@
             ${items.map(item => `
               <div class="flex justify-between items-center bg-gray-600 p-2 rounded">
                 <div>
-                  <span class="font-semibold text-white">${item.name}</span>
+                  <span class="font-semibold text-white">${item.item_name}</span>
                   <span class="text-gray-300 text-sm ml-2">x${item.quantity}</span>
                 </div>
                 <span class="text-gray-300 text-sm">${item.description || ''}</span>

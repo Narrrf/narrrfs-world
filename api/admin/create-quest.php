@@ -18,15 +18,26 @@ try {
     exit;
 }
 
-$action = $_POST['action'] ?? $_GET['action'] ?? '';
+// Handle JSON input
+$input = [];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $content_type = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (strpos($content_type, 'application/json') !== false) {
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+    } else {
+        $input = $_POST;
+    }
+}
+
+$action = $input['action'] ?? $_GET['action'] ?? '';
 
 switch ($action) {
     case 'create':
-        $type = $_POST['type'] ?? '';
-        $description = $_POST['description'] ?? '';
-        $link = $_POST['link'] ?? '';
-        $reward = intval($_POST['reward'] ?? 0);
-        $created_by = $_POST['created_by'] ?? '';
+        $type = $input['type'] ?? '';
+        $description = $input['description'] ?? '';
+        $link = $input['link'] ?? '';
+        $reward = intval($input['reward'] ?? 0);
+        $created_by = $input['created_by'] ?? '';
         
         // Validation
         if (empty($type) || empty($description) || $reward <= 0) {
@@ -83,7 +94,7 @@ switch ($action) {
         break;
         
     case 'delete':
-        $quest_id = intval($_POST['quest_id'] ?? 0);
+        $quest_id = intval($input['quest_id'] ?? 0);
         
         if ($quest_id <= 0) {
             echo json_encode([

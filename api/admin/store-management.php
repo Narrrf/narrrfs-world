@@ -18,36 +18,47 @@ try {
     exit;
 }
 
-$action = $_POST['action'] ?? $_GET['action'] ?? '';
+// Handle JSON input
+$input = [];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $content_type = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (strpos($content_type, 'application/json') !== false) {
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+    } else {
+        $input = $_POST;
+    }
+}
+
+$action = $input['action'] ?? $_GET['action'] ?? '';
 
 switch ($action) {
-                    case 'create_item':
-                    $name = $_POST['name'] ?? '';
-                    $description = $_POST['description'] ?? '';
-                    $price = intval($_POST['price'] ?? 0);
-                    $image_url = $_POST['image_url'] ?? '';
-                    $created_by = $_POST['created_by'] ?? '';
-                    
-                    // Validation
-                    if (empty($name) || empty($description) || $price <= 0) {
-                        echo json_encode([
-                            'success' => false,
-                            'error' => 'Name, description, and price are required. Price must be positive.'
-                        ]);
-                        break;
-                    }
-                    
-                    try {
-                        // Insert new store item
-                        $stmt = $db->prepare('
-                            INSERT INTO tbl_store_items (item_name, description, price, image_url, is_active, created_at) 
-                            VALUES (?, ?, ?, ?, 1, datetime("now"))
-                        ');
-                        
-                        $stmt->bindValue(1, $name, SQLITE3_TEXT);
-                        $stmt->bindValue(2, $description, SQLITE3_TEXT);
-                        $stmt->bindValue(3, $price, SQLITE3_INTEGER);
-                        $stmt->bindValue(4, $image_url, SQLITE3_TEXT);
+    case 'create_item':
+        $name = $input['name'] ?? '';
+        $description = $input['description'] ?? '';
+        $price = intval($input['price'] ?? 0);
+        $image_url = $input['image_url'] ?? '';
+        $created_by = $input['created_by'] ?? '';
+        
+        // Validation
+        if (empty($name) || empty($description) || $price <= 0) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Name, description, and price are required. Price must be positive.'
+            ]);
+            break;
+        }
+        
+        try {
+            // Insert new store item
+            $stmt = $db->prepare('
+                INSERT INTO tbl_store_items (item_name, description, price, image_url, is_active, created_at) 
+                VALUES (?, ?, ?, ?, 1, datetime("now"))
+            ');
+            
+            $stmt->bindValue(1, $name, SQLITE3_TEXT);
+            $stmt->bindValue(2, $description, SQLITE3_TEXT);
+            $stmt->bindValue(3, $price, SQLITE3_INTEGER);
+            $stmt->bindValue(4, $image_url, SQLITE3_TEXT);
             
             $result = $stmt->execute();
             
@@ -57,14 +68,14 @@ switch ($action) {
                     'success' => true,
                     'message' => 'Store item created successfully',
                     'item_id' => $item_id,
-                                                'item' => [
-                                'item_id' => $item_id,
-                                'item_name' => $name,
-                                'description' => $description,
-                                'price' => $price,
-                                'image_url' => $image_url,
-                                'is_active' => 1
-                            ]
+                    'item' => [
+                        'item_id' => $item_id,
+                        'item_name' => $name,
+                        'description' => $description,
+                        'price' => $price,
+                        'image_url' => $image_url,
+                        'is_active' => 1
+                    ]
                 ]);
             } else {
                 echo json_encode([
@@ -81,10 +92,10 @@ switch ($action) {
         break;
         
     case 'give_item':
-        $user_id = $_POST['user_id'] ?? '';
-        $item_name = $_POST['item_name'] ?? '';
-        $quantity = intval($_POST['quantity'] ?? 1);
-        $given_by = $_POST['given_by'] ?? '';
+        $user_id = $input['user_id'] ?? '';
+        $item_name = $input['item_name'] ?? '';
+        $quantity = intval($input['quantity'] ?? 1);
+        $given_by = $input['given_by'] ?? '';
         
         // Validation
         if (empty($user_id) || empty($item_name) || $quantity <= 0) {
@@ -96,8 +107,8 @@ switch ($action) {
         }
         
         try {
-                                    // First, find the item
-                        $stmt = $db->prepare('SELECT * FROM tbl_store_items WHERE item_name = ? AND is_active = 1');
+            // First, find the item
+            $stmt = $db->prepare('SELECT * FROM tbl_store_items WHERE item_name = ? AND is_active = 1');
             $stmt->bindValue(1, $item_name, SQLITE3_TEXT);
             $result = $stmt->execute();
             $item = $result->fetchArray(SQLITE3_ASSOC);
@@ -105,7 +116,7 @@ switch ($action) {
             if (!$item) {
                 echo json_encode([
                     'success' => false,
-                    'error' => 'Item not found or not active'
+                    'error' => 'Item not found'
                 ]);
                 break;
             }
@@ -118,34 +129,31 @@ switch ($action) {
             $existing = $result->fetchArray(SQLITE3_ASSOC);
             
             if ($existing) {
-                // Update existing inventory
-                $stmt = $db->prepare('UPDATE tbl_user_inventory SET quantity = quantity + ? WHERE user_id = ? AND item_id = ?');
-                $stmt->bindValue(1, $quantity, SQLITE3_INTEGER);
+                // Update quantity
+                $new_quantity = $existing['quantity'] + $quantity;
+                $stmt = $db->prepare('UPDATE tbl_user_inventory SET quantity = ? WHERE user_id = ? AND item_id = ?');
+                $stmt->bindValue(1, $new_quantity, SQLITE3_INTEGER);
                 $stmt->bindValue(2, $user_id, SQLITE3_TEXT);
                 $stmt->bindValue(3, $item['item_id'], SQLITE3_INTEGER);
+                $stmt->execute();
             } else {
                 // Insert new inventory entry
-                $stmt = $db->prepare('INSERT INTO tbl_user_inventory (user_id, item_id, quantity, acquired_at) VALUES (?, ?, ?, datetime("now"))');
+                $stmt = $db->prepare('
+                    INSERT INTO tbl_user_inventory (user_id, item_id, quantity, acquired_at) 
+                    VALUES (?, ?, ?, datetime("now"))
+                ');
                 $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
                 $stmt->bindValue(2, $item['item_id'], SQLITE3_INTEGER);
                 $stmt->bindValue(3, $quantity, SQLITE3_INTEGER);
+                $stmt->execute();
             }
             
-            $result = $stmt->execute();
+            echo json_encode([
+                'success' => true,
+                'message' => "Item '{$item_name}' given to user successfully",
+                'quantity' => $quantity
+            ]);
             
-            if ($result) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => "Successfully gave {$quantity}x {$item_name} to user",
-                    'item' => $item,
-                    'quantity' => $quantity
-                ]);
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'error' => 'Failed to give item to user'
-                ]);
-            }
         } catch (Exception $e) {
             echo json_encode([
                 'success' => false,
@@ -155,7 +163,7 @@ switch ($action) {
         break;
         
     case 'delete_item':
-        $item_id = intval($_POST['item_id'] ?? 0);
+        $item_id = intval($input['item_id'] ?? 0);
         
         if ($item_id <= 0) {
             echo json_encode([
@@ -190,7 +198,7 @@ switch ($action) {
         break;
         
     case 'get_user_inventory':
-        $user_id = $_GET['user_id'] ?? '';
+        $user_id = $input['user_id'] ?? $_GET['user_id'] ?? '';
         
         if (empty($user_id)) {
             echo json_encode([
@@ -201,13 +209,13 @@ switch ($action) {
         }
         
         try {
-                                    $stmt = $db->prepare('
-                            SELECT ui.*, si.item_name, si.description, si.image_url 
-                            FROM tbl_user_inventory ui 
-                            JOIN tbl_store_items si ON ui.item_id = si.item_id 
-                            WHERE ui.user_id = ? AND si.is_active = 1
-                            ORDER BY si.item_name
-                        ');
+            $stmt = $db->prepare('
+                SELECT ui.*, si.item_name, si.description, si.image_url 
+                FROM tbl_user_inventory ui 
+                JOIN tbl_store_items si ON ui.item_id = si.item_id 
+                WHERE ui.user_id = ? AND si.is_active = 1
+                ORDER BY si.item_name
+            ');
             $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
             $result = $stmt->execute();
             
