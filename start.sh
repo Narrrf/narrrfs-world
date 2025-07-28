@@ -15,6 +15,14 @@ fi
 chown www-data:www-data /var/www/html/db/narrrf_world.sqlite
 chmod 664 /var/www/html/db/narrrf_world.sqlite
 
+# === SETUP DATABASE BACKUP SCRIPTS ===
+if [ -d /var/www/html/scripts ]; then
+    echo "🔧 Setting up database backup scripts..."
+    chmod +x /var/www/html/scripts/db-backup.sh
+    chmod +x /var/www/html/scripts/db-cleanup.sh
+    echo "✅ Database backup scripts configured"
+fi
+
 # === MIGRATIONS ===
 echo "📦 Applying database migrations..."
 sqlite3 /var/www/html/db/narrrf_world.sqlite < /var/www/html/db/migrations/create_score_tables.sql

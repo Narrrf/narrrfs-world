@@ -9,7 +9,7 @@ const ROLE_GATE_CONFIG = {
     ],
     protectedPages: [
         'admin.html', 'moderator.html', 'admin-panel.html',
-        'mod-panel.html', 'discord-test.html'
+        'mod-panel.html', 'admin-interface.html'
     ],
     redirectUrl: '/index.html',
     

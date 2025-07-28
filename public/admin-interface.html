@@ -1,0 +1,2135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Narrrf's World Admin Interface</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 🔗 Discord Token of Render System -->
+  <script src="discord-config.js"></script>
+  
+  <style>
+    .admin-card {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+      border-radius: 15px;
+      padding: 20px;
+      margin: 10px;
+      color: white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .stats-card {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      border-radius: 12px;
+      padding: 15px;
+      margin: 8px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .user-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 8px;
+      border-left: 4px solid #f0c92c;
+      transition: all 0.3s ease;
+    }
+    .user-card:hover {
+      background: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
+    }
+    .tab-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+    }
+    .tab-btn.active {
+      background: rgba(255,255,255,0.3);
+      border-color: rgba(255,255,255,0.5);
+    }
+    .history-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 10px;
+      margin: 5px 0;
+      border-left: 4px solid #f0c92c;
+    }
+    .positive { border-left-color: #10b981; }
+    .negative { border-left-color: #ef4444; }
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen p-4">
+  
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <h1 class="text-4xl font-bold text-gray-800 mb-2">🎮 Narrrf's World Admin Interface</h1>
+      <p class="text-gray-600">Complete Discord Bot Management System</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="stats-card">
+        <h3 class="text-lg font-semibold">👥 Total Users</h3>
+        <p class="text-2xl font-bold" id="totalUsers">Loading...</p>
+      </div>
+      <div class="stats-card">
+        <h3 class="text-lg font-semibold">💰 Total Scores</h3>
+        <p class="text-2xl font-bold" id="totalScores">Loading...</p>
+      </div>
+      <div class="stats-card">
+        <h3 class="text-lg font-semibold">🏪 Store Items</h3>
+        <p class="text-2xl font-bold" id="totalItems">Loading...</p>
+      </div>
+      <div class="stats-card">
+        <h3 class="text-lg font-semibold">🏆 Active Quests</h3>
+        <p class="text-2xl font-bold" id="activeQuests">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Admin Authentication -->
+    <div class="admin-card mb-6" id="authPanel">
+      <h2 class="text-xl font-semibold mb-4">🔐 Admin Authentication</h2>
+      
+      <!-- Discord Auth for Moderators -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🎮 Discord Authentication (Moderators)</h3>
+        <p class="text-sm text-gray-300 mb-3">If you have the moderator role in Discord, you can access basic admin features:</p>
+        <button onclick="authenticateDiscord()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded">
+          🔗 Login with Discord
+        </button>
+        <div id="discordAuthStatus" class="mt-2 text-sm"></div>
+      </div>
+
+      <!-- Password Auth for Super Admin -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🔑 Super Admin Access</h3>
+        <p class="text-sm text-gray-300 mb-3">For advanced features and user management:</p>
+        
+        <!-- Login Form -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Username:</label>
+            <input type="text" id="loginUsername" placeholder="Enter username" class="w-full px-3 py-2 rounded text-gray-800">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Password:</label>
+            <input type="password" id="loginPassword" placeholder="Enter password" class="w-full px-3 py-2 rounded text-gray-800">
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="loginAdmin()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded">Super Admin Login</button>
+          <button onclick="showUserManagement()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">Manage Users</button>
+        </div>
+      </div>
+
+      <!-- User Management (Super Admin Only) -->
+      <div id="userManagementPanel" class="hidden">
+        <h3 class="text-lg font-semibold mb-4">👥 User Management</h3>
+        
+        <!-- Add New User -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-4">
+          <h4 class="text-md font-semibold mb-3">➕ Add New User</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" id="newUsername" placeholder="Username" class="px-3 py-2 rounded text-gray-800">
+            <input type="password" id="newPassword" placeholder="Password" class="px-3 py-2 rounded text-gray-800">
+            <select id="newRole" class="px-3 py-2 rounded text-gray-800">
+              <option value="moderator">Moderator</option>
+              <option value="admin">Admin</option>
+            </select>
+            <input type="text" id="newDiscordId" placeholder="Discord ID (optional)" class="px-3 py-2 rounded text-gray-800">
+          </div>
+          <button onclick="addUser()" class="mt-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add User</button>
+        </div>
+
+        <!-- Current Users -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h4 class="text-md font-semibold mb-3">📋 Current Users</h4>
+          <div id="currentUsersList" class="space-y-2">
+            <div class="text-gray-300">Loading users...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="admin-card mb-6" id="navPanel" style="display: none;">
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button class="tab-btn active px-4 py-2 rounded" data-tab="dashboard">📊 Dashboard</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="users">👥 User Management</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="points">💰 Point Management</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="store">🏪 Store Management</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="quests">🏆 Quest System</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="discord">🔗 Discord Config</button>
+      </div>
+      
+      <!-- Additional Admin Links -->
+      <div class="text-center mt-4 pt-4 border-t border-gray-600">
+        <!-- Owner-only database options -->
+        <div id="ownerOnlyOptions" style="display: none;">
+          <a href="admin-backup.html" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+            🗄️ Database Backup
+          </a>
+          <a href="download-db.php" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+            📥 Download Database
+          </a>
+          <button onclick="showUploadModal()" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+            📤 Upload Database
+          </button>
+          <button onclick="showDatabaseViewer()" class="inline-block bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+            👁️ Database Viewer
+          </button>
+        </div>
+        <!-- All admin users can see Home link -->
+        <a href="index.html" class="inline-block bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+          🏠 Home
+        </a>
+      </div>
+    </div>
+
+    <!-- Dashboard Tab -->
+    <div class="admin-card mb-6" id="dashboardTab">
+      <h2 class="text-xl font-semibold mb-4">📊 System Dashboard</h2>
+      
+      <!-- System Stats -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">📈 Detailed System Statistics</h3>
+        <div id="systemStats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-green-400" id="totalUsersDetail">-</div>
+            <div class="text-sm text-gray-300">Total Users</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-400" id="totalScoresDetail">-</div>
+            <div class="text-sm text-gray-300">Score Records</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-yellow-400" id="totalItemsDetail">-</div>
+            <div class="text-sm text-gray-300">Store Items</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-purple-400" id="activeQuestsDetail">-</div>
+            <div class="text-sm text-gray-300">Active Quests</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">⚡ Quick Actions</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <button onclick="refreshDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-300">
+            🔄 Refresh Data
+          </button>
+          <!-- Owner-only database actions -->
+          <div id="ownerOnlyActions" style="display: none;">
+            <button onclick="showUploadModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-all duration-300">
+              📤 Upload DB
+            </button>
+            <button onclick="showDatabaseViewer()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-all duration-300">
+              👁️ View DB
+            </button>
+            <button onclick="triggerBackup()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-300">
+              💾 Backup DB
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-lg font-semibold mb-3">🔄 Recent Point Adjustments</h3>
+          <div id="recentAdjustments" class="max-h-64 overflow-y-auto">
+            <div class="text-gray-300">Loading recent adjustments...</div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-3">🏆 Top Users by Balance</h3>
+          <div id="topUsers" class="max-h-64 overflow-y-auto">
+            <div class="text-gray-300">Loading top users...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Management Tab -->
+    <div class="admin-card mb-6" id="usersTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">👥 User Management</h2>
+      
+      <!-- Instant User Search -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium mb-2">🔍 Instant User Search:</label>
+        <div class="flex gap-2">
+          <input type="text" id="userSearch" placeholder="Search by Discord ID or username..." 
+                 class="flex-1 px-3 py-2 rounded text-gray-800" 
+                 oninput="searchUsersInstant(this.value)">
+          <button onclick="searchUsers()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Search</button>
+        </div>
+      </div>
+
+      <!-- User Results -->
+      <div id="userResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="text-gray-300">Search for users to see results...</div>
+      </div>
+    </div>
+
+    <!-- Point Management Tab -->
+    <div class="admin-card mb-6" id="pointsTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">💰 Point Management</h2>
+      
+      <!-- Quick User Selection -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🎯 Quick User Selection</h3>
+        <div class="flex gap-2">
+          <input type="text" id="quickUserId" placeholder="Enter username or ID" 
+                 class="flex-1 px-3 py-2 rounded text-gray-800" oninput="quickSearchUsersInstant(this.value)">
+          <button onclick="quickSelectUser()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">Select User</button>
+        </div>
+        <div id="quickUserResults" class="mt-3 max-h-48 overflow-y-auto">
+          <div class="text-gray-300">Enter at least 2 characters to search...</div>
+        </div>
+        <div id="selectedUserInfo" class="mt-3 p-3 bg-gray-700 rounded hidden">
+          <!-- Selected user info will appear here -->
+        </div>
+      </div>
+
+      <!-- Point Operations -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        
+        <!-- Add Points -->
+        <div class="bg-green-900 bg-opacity-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">➕ Add Points</h3>
+          <div class="space-y-3">
+            <input type="text" id="addUserId" placeholder="Discord User ID" class="w-full px-3 py-2 rounded text-gray-800">
+            <input type="number" id="addAmount" placeholder="Amount to add" class="w-full px-3 py-2 rounded text-gray-800">
+            <input type="text" id="addReason" placeholder="Reason (optional)" class="w-full px-3 py-2 rounded text-gray-800">
+            <button onclick="addPoints()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add Points</button>
+          </div>
+        </div>
+
+        <!-- Set Points -->
+        <div class="bg-blue-900 bg-opacity-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">🎯 Set Points</h3>
+          <div class="space-y-3">
+            <input type="text" id="setUserId" placeholder="Discord User ID" class="w-full px-3 py-2 rounded text-gray-800">
+            <input type="number" id="setAmount" placeholder="New total amount" class="w-full px-3 py-2 rounded text-gray-800">
+            <input type="text" id="setReason" placeholder="Reason (optional)" class="w-full px-3 py-2 rounded text-gray-800">
+            <button onclick="setPoints()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Set Points</button>
+          </div>
+        </div>
+
+        <!-- Remove Points -->
+        <div class="bg-red-900 bg-opacity-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">➖ Remove Points</h3>
+          <div class="space-y-3">
+            <input type="text" id="removeUserId" placeholder="Discord User ID" class="w-full px-3 py-2 rounded text-gray-800">
+            <input type="number" id="removeAmount" placeholder="Amount to remove" class="w-full px-3 py-2 rounded text-gray-800">
+            <input type="text" id="removeReason" placeholder="Reason (optional)" class="w-full px-3 py-2 rounded text-gray-800">
+            <button onclick="removePoints()" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Remove Points</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Balance & History -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Quick Balance Check -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">💳 Quick Balance Check</h3>
+          <div class="flex gap-2">
+            <input type="text" id="balanceUserId" placeholder="Discord User ID" class="flex-1 px-3 py-2 rounded text-gray-800">
+            <button onclick="checkBalance()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">Check Balance</button>
+          </div>
+          <div id="balanceResult" class="mt-3 p-3 bg-gray-700 rounded hidden">
+            <!-- Balance result will be shown here -->
+          </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">📋 Transaction History</h3>
+          <div class="flex gap-2 mb-3">
+            <input type="text" id="historyUserId" placeholder="Discord User ID" class="flex-1 px-3 py-2 rounded text-gray-800">
+            <button onclick="getHistory()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">Get History</button>
+          </div>
+          <div id="historyResult" class="max-h-64 overflow-y-auto">
+            <!-- History will be shown here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Store Management Tab -->
+    <div class="admin-card mb-6" id="storeTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">🏪 Store Management</h2>
+      
+      <!-- Store Items -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">📦 Available Store Items</h3>
+        <button onclick="loadStoreItems()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-3">Refresh Items</button>
+        <div id="storeItems" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="text-gray-300">Click "Refresh Items" to load store items...</div>
+        </div>
+      </div>
+
+      <!-- Add New Item -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-semibold mb-3">➕ Add New Store Item</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input type="text" id="newItemName" placeholder="Item Name" class="px-3 py-2 rounded text-gray-800">
+          <input type="number" id="newItemPrice" placeholder="Price in $DSPOINC" class="px-3 py-2 rounded text-gray-800">
+          <input type="text" id="newItemImageUrl" placeholder="Image URL (optional)" class="px-3 py-2 rounded text-gray-800">
+          <textarea id="newItemDescription" placeholder="Item Description" class="px-3 py-2 rounded text-gray-800 md:col-span-2"></textarea>
+          <button onclick="createStoreItem()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Create Item</button>
+        </div>
+      </div>
+
+      <!-- Give Item to User -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-semibold mb-3">🎁 Give Item to User</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="relative">
+            <input type="text" id="giveItemUserId" placeholder="Search User ID or Username" class="px-3 py-2 rounded text-gray-800 w-full" oninput="giveItemSearchUsersInstant(this.value)">
+            <div id="giveItemUserResults" class="absolute z-10 w-full bg-gray-700 border border-gray-600 rounded mt-1 max-h-40 overflow-y-auto" style="display: none;"></div>
+          </div>
+          <input type="text" id="giveItemName" placeholder="Item Name" class="px-3 py-2 rounded text-gray-800">
+          <input type="number" id="giveItemQuantity" placeholder="Quantity" value="1" class="px-3 py-2 rounded text-gray-800">
+        </div>
+        <button onclick="giveItemToUser()" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">Give Item</button>
+      </div>
+
+      <!-- View User Inventory -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">👤 View User Inventory</h3>
+        <div class="flex gap-2">
+          <div class="relative flex-1">
+            <input type="text" id="viewInventoryUserId" placeholder="Search User ID or Username" class="px-3 py-2 rounded text-gray-800 w-full" oninput="viewInventorySearchUsersInstant(this.value)">
+            <div id="viewInventoryUserResults" class="absolute z-10 w-full bg-gray-700 border border-gray-600 rounded mt-1 max-h-40 overflow-y-auto" style="display: none;"></div>
+          </div>
+          <button onclick="viewUserInventory()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">View Inventory</button>
+        </div>
+        <div id="userInventoryList" class="mt-3">
+          <div class="text-gray-300">Search for a user and click "View Inventory"...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quest System Tab -->
+    <div class="admin-card mb-6" id="questsTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">🏆 Quest System</h2>
+      
+      <!-- Active Quests -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">🎯 Active Quests</h3>
+        <div id="activeQuestsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="text-gray-300">Loading active quests...</div>
+        </div>
+      </div>
+
+      <!-- Create New Quest -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">➕ Create New Quest</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input type="text" id="newQuestType" placeholder="Quest Type" class="px-3 py-2 rounded text-gray-800">
+          <input type="number" id="newQuestReward" placeholder="Reward in $DSPOINC" class="px-3 py-2 rounded text-gray-800">
+          <input type="text" id="newQuestUrl" placeholder="Quest URL" class="px-3 py-2 rounded text-gray-800">
+          <textarea id="newQuestDescription" placeholder="Quest Description" class="px-3 py-2 rounded text-gray-800 md:col-span-2"></textarea>
+          <button onclick="createQuest()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Create Quest</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discord Config Tab -->
+    <div class="admin-card mb-6" id="discordTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">🔗 Discord Configuration</h2>
+      
+      <!-- Current Discord Settings -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <p><strong>Current Invite Code:</strong> <span id="currentCode" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+          <p><strong>Full Discord URL:</strong> <span id="currentUrl" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+        </div>
+        <div>
+          <p><strong>System Version:</strong> <span id="systemVersion" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+          <p><strong>Last Updated:</strong> <span id="lastUpdated" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+        </div>
+      </div>
+      
+      <!-- Update Discord Settings -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🔄 Update Discord Settings</h3>
+        <div class="flex gap-2">
+          <input type="text" id="newInviteCode" placeholder="Enter new invite code" class="flex-1 px-3 py-2 rounded text-gray-800" value="rHc4Jg5Q">
+          <button onclick="updateInviteCode()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Update</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Activity Log -->
+    <div class="admin-card">
+      <h2 class="text-xl font-semibold mb-4">📊 Admin Activity Log</h2>
+      <div id="statusLog" class="bg-gray-800 p-4 rounded text-sm font-mono h-32 overflow-y-auto">
+        <div class="text-green-400">🔄 Admin interface initializing...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Global variables
+    let currentAdmin = null;
+    let currentTab = 'dashboard';
+    let searchTimeout = null;
+
+    // Initialize the interface
+    document.addEventListener('DOMContentLoaded', async function() {
+      setTimeout(async () => {
+        updateDisplay();
+        
+        // Check for existing Discord authentication first
+        const discordAuthResult = await checkDiscordAuth();
+        
+        if (!discordAuthResult) {
+          // Only load dashboard data if not auto-authenticated
+          loadDashboardData();
+          addLog('🎯 Admin interface loaded successfully');
+          addLog('🔐 Please authenticate to access admin features');
+        }
+      }, 100);
+    });
+
+    // Update Discord display
+    function updateDisplay() {
+      document.getElementById('currentCode').textContent = DISCORD_CONFIG.inviteCode;
+      document.getElementById('currentUrl').textContent = DISCORD_CONFIG.getCurrentUrl();
+      document.getElementById('systemVersion').textContent = DISCORD_CONFIG.version;
+      document.getElementById('lastUpdated').textContent = DISCORD_CONFIG.lastUpdated;
+    }
+
+    // Load dashboard data
+    async function loadDashboardData() {
+      try {
+        // Load stats
+        const statsResponse = await fetch('/api/admin/get-stats.php');
+        const stats = await statsResponse.json();
+        
+        if (stats.success) {
+          document.getElementById('totalUsers').textContent = stats.totalUsers;
+          document.getElementById('totalScores').textContent = stats.totalScores;
+          document.getElementById('totalItems').textContent = stats.totalItems;
+          document.getElementById('activeQuests').textContent = stats.activeQuests;
+          
+          // Update detailed stats
+          document.getElementById('totalUsersDetail').textContent = stats.totalUsers;
+          document.getElementById('totalScoresDetail').textContent = stats.totalScores;
+          document.getElementById('totalItemsDetail').textContent = stats.totalItems;
+          document.getElementById('activeQuestsDetail').textContent = stats.activeQuests;
+        }
+
+        // Load recent adjustments
+        const adjustmentsResponse = await fetch('/api/admin/get-recent-adjustments.php');
+        const adjustments = await adjustmentsResponse.json();
+        
+        if (adjustments.success) {
+          displayRecentAdjustments(adjustments.adjustments);
+        }
+
+        // Load top users
+        const topUsersResponse = await fetch('/api/admin/get-top-users.php');
+        const topUsers = await topUsersResponse.json();
+        
+        if (topUsers.success) {
+          displayTopUsers(topUsers.users);
+        }
+
+      } catch (error) {
+        addLog(`❌ Error loading dashboard data: ${error.message}`);
+      }
+    }
+
+    // Display recent adjustments
+    function displayRecentAdjustments(adjustments) {
+      const container = document.getElementById('recentAdjustments');
+      
+      if (adjustments.length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No recent adjustments</div>';
+        return;
+      }
+
+      container.innerHTML = adjustments.map(adj => {
+        const amount = parseInt(adj.amount);
+        const isPositive = amount > 0;
+        const timestamp = new Date(adj.timestamp).toLocaleString();
+        
+        return `
+          <div class="history-item ${isPositive ? 'positive' : 'negative'}">
+            <div class="flex justify-between items-start">
+              <div>
+                <strong>${isPositive ? '+' : ''}${amount.toLocaleString()} $DSPOINC</strong>
+                <span class="text-sm text-gray-300 ml-2">(${adj.action})</span>
+              </div>
+              <div class="text-xs text-gray-400">${timestamp}</div>
+            </div>
+            <div class="text-sm text-gray-300 mt-1">User: ${adj.user_id}</div>
+            <div class="text-sm text-gray-300">Reason: ${adj.reason || 'No reason'}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Display top users
+    function displayTopUsers(users) {
+      const container = document.getElementById('topUsers');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map((user, index) => `
+        <div class="user-card">
+          <div class="flex justify-between items-center">
+            <div>
+              <h4 class="font-semibold">#${index + 1} ${user.username || 'Unknown User'}</h4>
+              <p class="text-sm text-gray-300">ID: ${user.user_id}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-lg font-bold text-yellow-400">${user.total_score?.toLocaleString() || 0} $DSPOINC</p>
+            </div>
+          </div>
+          <button onclick="selectUser('${user.user_id}', '${user.username || 'Unknown'}')" 
+                  class="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm w-full">
+            Select User
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // Admin authentication
+    async function loginAdmin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      
+      if (!username || !password) {
+        addLog('❌ Please enter username and password');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/auth.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'login',
+            username: username,
+            password: password
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          currentAdmin = data.user;
+          document.getElementById('authPanel').style.display = 'none';
+          document.getElementById('navPanel').style.display = 'block';
+          
+          // Check if user is owner (narrrf or admin role)
+          const isOwner = data.user.role === 'admin' || data.user.username === 'narrrf';
+          
+          // Show/hide owner-only options
+          const ownerOnlyOptions = document.getElementById('ownerOnlyOptions');
+          const ownerOnlyActions = document.getElementById('ownerOnlyActions');
+          
+          if (isOwner) {
+            ownerOnlyOptions.style.display = 'block';
+            ownerOnlyActions.style.display = 'block';
+            addLog(`✅ Owner authenticated: ${username} (${data.user.role}) - Full access granted`);
+          } else {
+            ownerOnlyOptions.style.display = 'none';
+            ownerOnlyActions.style.display = 'none';
+            addLog(`✅ Moderator authenticated: ${username} (${data.user.role}) - Limited access`);
+          }
+        } else {
+          addLog(`❌ Login failed: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Login error: ${error.message}`);
+      }
+    }
+
+    // Show user management panel
+    function showUserManagement() {
+      const panel = document.getElementById('userManagementPanel');
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        loadCurrentUsers();
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+
+    // Load current users
+    async function loadCurrentUsers() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      
+      if (!username || !password) {
+        addLog('❌ Please enter your credentials first');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/auth.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'list_users',
+            admin_username: username,
+            admin_password: password
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          displayCurrentUsers(data.users);
+        } else {
+          addLog(`❌ Failed to load users: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Load users error: ${error.message}`);
+      }
+    }
+
+    // Display current users
+    function displayCurrentUsers(users) {
+      const container = document.getElementById('currentUsersList');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+          <div>
+            <span class="font-semibold">${user.username}</span>
+            <span class="text-sm text-gray-300 ml-2">(${user.role})</span>
+            ${user.discord_id ? `<span class="text-xs text-gray-400 ml-2">Discord: ${user.discord_id}</span>` : ''}
+          </div>
+          ${user.username !== 'narrrf' ? `
+            <button onclick="removeUser('${user.username}')" 
+                    class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-sm">
+              Remove
+            </button>
+          ` : '<span class="text-xs text-gray-400">Super Admin</span>'}
+        </div>
+      `).join('');
+    }
+
+    // Add new user
+    async function addUser() {
+      const adminUsername = document.getElementById('loginUsername').value.trim();
+      const adminPassword = document.getElementById('loginPassword').value;
+      const newUsername = document.getElementById('newUsername').value.trim();
+      const newPassword = document.getElementById('newPassword').value;
+      const newRole = document.getElementById('newRole').value;
+      const newDiscordId = document.getElementById('newDiscordId').value.trim();
+      
+      if (!adminUsername || !adminPassword || !newUsername || !newPassword) {
+        addLog('❌ Please fill in all required fields');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/auth.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'add_user',
+            admin_username: adminUsername,
+            admin_password: adminPassword,
+            new_username: newUsername,
+            new_password: newPassword,
+            new_role: newRole,
+            new_discord_id: newDiscordId
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ ${data.message}`);
+          // Clear form
+          document.getElementById('newUsername').value = '';
+          document.getElementById('newPassword').value = '';
+          document.getElementById('newDiscordId').value = '';
+          // Reload users list
+          loadCurrentUsers();
+        } else {
+          addLog(`❌ Failed to add user: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Add user error: ${error.message}`);
+      }
+    }
+
+    // Remove user
+    async function removeUser(username) {
+      const adminUsername = document.getElementById('loginUsername').value.trim();
+      const adminPassword = document.getElementById('loginPassword').value;
+      
+      if (!confirm(`Are you sure you want to remove user '${username}'?`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/auth.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'remove_user',
+            admin_username: adminUsername,
+            admin_password: adminPassword,
+            remove_username: username
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ ${data.message}`);
+          loadCurrentUsers();
+        } else {
+          addLog(`❌ Failed to remove user: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Remove user error: ${error.message}`);
+      }
+    }
+
+    // Tab navigation
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const tab = this.dataset.tab;
+        
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Hide all tabs
+        document.querySelectorAll('[id$="Tab"]').forEach(t => t.style.display = 'none');
+        
+        // Show selected tab
+        document.getElementById(tab + 'Tab').style.display = 'block';
+        
+        currentTab = tab;
+        addLog(`📋 Switched to ${tab} tab`);
+        
+        // Load tab-specific data
+        if (tab === 'store') loadStoreItems();
+        if (tab === 'quests') loadQuests();
+      });
+    });
+
+    // Instant user search
+    function searchUsersInstant(searchTerm) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      
+      if (searchTerm.length < 2) {
+        document.getElementById('userResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch('/api/admin/point-management.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'searchuser',
+              search: searchTerm
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            displayUserResults(data.users);
+            addLog(`🔍 Found ${data.users.length} users matching "${searchTerm}"`);
+          } else {
+            addLog(`❌ Search failed: ${data.error}`);
+          }
+        } catch (error) {
+          addLog(`❌ Search error: ${error.message}`);
+        }
+      }, 300);
+    }
+
+    // Quick instant user search for point management
+    function quickSearchUsersInstant(searchTerm) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      
+      if (searchTerm.length < 2) {
+        document.getElementById('quickUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch('/api/admin/point-management.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'searchuser',
+              search: searchTerm
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            displayQuickUserResults(data.users);
+            addLog(`🔍 Found ${data.users.length} users matching "${searchTerm}"`);
+          } else {
+            addLog(`❌ Search failed: ${data.error}`);
+          }
+        } catch (error) {
+          addLog(`❌ Search error: ${error.message}`);
+        }
+      }, 300);
+    }
+
+    // User search
+    async function searchUsers() {
+      const searchTerm = document.getElementById('userSearch').value.trim();
+      if (!searchTerm) {
+        addLog('❌ Please enter a search term');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/point-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'searchuser',
+            search: searchTerm
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          displayUserResults(data.users);
+          addLog(`🔍 Found ${data.users.length} users matching "${searchTerm}"`);
+        } else {
+          addLog(`❌ Search failed: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Search error: ${error.message}`);
+      }
+    }
+
+    // Display user search results
+    function displayUserResults(users) {
+      const container = document.getElementById('userResults');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="user-card">
+          <h4 class="font-semibold mb-2">${user.username || 'Unknown User'}</h4>
+          <p class="text-sm text-gray-300 mb-2">ID: ${user.user_id}</p>
+          <p class="text-sm text-yellow-400 mb-3">Balance: ${user.score?.toLocaleString() || 0} $DSPOINC</p>
+          <button onclick="selectUser('${user.user_id}', '${user.username || 'Unknown'}')" 
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm w-full">
+            Select User
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // Display quick user search results for point management
+    function displayQuickUserResults(users) {
+      const container = document.getElementById('quickUserResults');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="user-card mb-2">
+          <div class="flex justify-between items-center">
+            <div>
+              <h4 class="font-semibold">${user.username || 'Unknown User'}</h4>
+              <p class="text-sm text-gray-300">ID: ${user.user_id}</p>
+              <p class="text-sm text-yellow-400">Balance: ${user.score?.toLocaleString() || 0} $DSPOINC</p>
+            </div>
+            <button onclick="quickSelectUserFromResults('${user.user_id}', '${user.username || 'Unknown'}', ${user.score || 0})" 
+                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm">
+              Select
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Quick user selection from search results
+    function quickSelectUserFromResults(userId, username, balance) {
+      selectUser(userId, username);
+      
+      const infoDiv = document.getElementById('selectedUserInfo');
+      infoDiv.innerHTML = `
+        <div class="text-green-400">
+          <strong>Selected User:</strong> ${username}<br>
+          <strong>Balance:</strong> ${balance.toLocaleString()} $DSPOINC
+        </div>
+      `;
+      infoDiv.classList.remove('hidden');
+      
+      // Clear the search results
+      document.getElementById('quickUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+      
+      addLog(`👤 Selected user: ${username} (${balance.toLocaleString()} $DSPOINC)`);
+    }
+
+    // Give Item user search functionality
+    function giveItemSearchUsersInstant(searchTerm) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      
+      if (searchTerm.length < 2) {
+        document.getElementById('giveItemUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+        document.getElementById('giveItemUserResults').style.display = 'none';
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch('/api/admin/point-management.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'searchuser',
+              search: searchTerm
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            displayGiveItemUserResults(data.users);
+            document.getElementById('giveItemUserResults').style.display = 'block';
+          } else {
+            document.getElementById('giveItemUserResults').innerHTML = '<div class="text-gray-300">Search failed</div>';
+            document.getElementById('giveItemUserResults').style.display = 'block';
+          }
+        } catch (error) {
+          document.getElementById('giveItemUserResults').innerHTML = '<div class="text-gray-300">Search error</div>';
+          document.getElementById('giveItemUserResults').style.display = 'block';
+        }
+      }, 300);
+    }
+
+    // Display Give Item user search results
+    function displayGiveItemUserResults(users) {
+      const container = document.getElementById('giveItemUserResults');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300 p-2">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="p-2 hover:bg-gray-600 cursor-pointer border-b border-gray-600" onclick="selectGiveItemUser('${user.user_id}', '${user.username || 'Unknown'}')">
+          <div class="font-semibold text-white">${user.username || 'Unknown User'}</div>
+          <div class="text-sm text-gray-300">ID: ${user.user_id}</div>
+          <div class="text-sm text-yellow-400">Balance: ${user.score?.toLocaleString() || 0} $DSPOINC</div>
+        </div>
+      `).join('');
+    }
+
+    // Select user for Give Item
+    function selectGiveItemUser(userId, username) {
+      document.getElementById('giveItemUserId').value = userId;
+      document.getElementById('giveItemUserResults').style.display = 'none';
+      addLog(`✅ Selected user for Give Item: ${username} (${userId})`);
+    }
+
+    // View Inventory user search functionality
+    function viewInventorySearchUsersInstant(searchTerm) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      
+      if (searchTerm.length < 2) {
+        document.getElementById('viewInventoryUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+        document.getElementById('viewInventoryUserResults').style.display = 'none';
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch('/api/admin/point-management.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'searchuser',
+              search: searchTerm
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            displayViewInventoryUserResults(data.users);
+            document.getElementById('viewInventoryUserResults').style.display = 'block';
+          } else {
+            document.getElementById('viewInventoryUserResults').innerHTML = '<div class="text-gray-300">Search failed</div>';
+            document.getElementById('viewInventoryUserResults').style.display = 'block';
+          }
+        } catch (error) {
+          document.getElementById('viewInventoryUserResults').innerHTML = '<div class="text-gray-300">Search error</div>';
+          document.getElementById('viewInventoryUserResults').style.display = 'block';
+        }
+      }, 300);
+    }
+
+    // Display View Inventory user search results
+    function displayViewInventoryUserResults(users) {
+      const container = document.getElementById('viewInventoryUserResults');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300 p-2">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="p-2 hover:bg-gray-600 cursor-pointer border-b border-gray-600" onclick="selectViewInventoryUser('${user.user_id}', '${user.username || 'Unknown'}')">
+          <div class="font-semibold text-white">${user.username || 'Unknown User'}</div>
+          <div class="text-sm text-gray-300">ID: ${user.user_id}</div>
+          <div class="text-sm text-yellow-400">Balance: ${user.score?.toLocaleString() || 0} $DSPOINC</div>
+        </div>
+      `).join('');
+    }
+
+    // Select user for View Inventory
+    function selectViewInventoryUser(userId, username) {
+      document.getElementById('viewInventoryUserId').value = userId;
+      document.getElementById('viewInventoryUserResults').style.display = 'none';
+      addLog(`✅ Selected user for View Inventory: ${username} (${userId})`);
+    }
+
+    // Quick user selection
+    async function quickSelectUser() {
+      const userId = document.getElementById('quickUserId').value.trim();
+      
+      if (!userId) {
+        addLog('❌ Please enter a user ID');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/point-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'getbalance',
+            user_id: userId
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          selectUser(userId, `User ${userId}`);
+          const infoDiv = document.getElementById('selectedUserInfo');
+          infoDiv.innerHTML = `
+            <div class="text-green-400">
+              <strong>Selected User:</strong> ${userId}<br>
+              <strong>Balance:</strong> ${data.balance.toLocaleString()} $DSPOINC
+            </div>
+          `;
+          infoDiv.classList.remove('hidden');
+          addLog(`👤 Selected user: ${userId} (${data.balance.toLocaleString()} $DSPOINC)`);
+        } else {
+          addLog(`❌ User not found: ${userId}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error selecting user: ${error.message}`);
+      }
+    }
+
+    // Select user for point operations
+    function selectUser(userId, username) {
+      // Fill all point operation forms with this user
+      document.getElementById('addUserId').value = userId;
+      document.getElementById('setUserId').value = userId;
+      document.getElementById('removeUserId').value = userId;
+      document.getElementById('balanceUserId').value = userId;
+      document.getElementById('historyUserId').value = userId;
+      document.getElementById('quickUserId').value = userId;
+      
+      // Clear search results
+      if (document.getElementById('quickUserResults')) {
+        document.getElementById('quickUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+      }
+      
+      addLog(`👤 Selected user: ${username} (${userId})`);
+    }
+
+    // Add points
+    async function addPoints() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate as admin first');
+        return;
+      }
+
+      const userId = document.getElementById('addUserId').value.trim();
+      const amount = parseInt(document.getElementById('addAmount').value);
+      const reason = document.getElementById('addReason').value.trim() || 'Manual admin adjustment';
+
+      if (!userId || !amount || amount <= 0) {
+        addLog('❌ Please enter valid user ID and amount');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/point-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'addpoints',
+            admin_id: currentAdmin.discord_id,
+            user_id: userId,
+            amount: amount,
+            reason: reason
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ ${data.message} - New balance: ${data.new_balance.toLocaleString()} $DSPOINC`);
+          // Clear form
+          document.getElementById('addAmount').value = '';
+          document.getElementById('addReason').value = '';
+          // Reload dashboard data
+          loadDashboardData();
+        } else {
+          addLog(`❌ Failed to add points: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Add points error: ${error.message}`);
+      }
+    }
+
+    // Set points
+    async function setPoints() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate as admin first');
+        return;
+      }
+
+      const userId = document.getElementById('setUserId').value.trim();
+      const amount = parseInt(document.getElementById('setAmount').value);
+      const reason = document.getElementById('setReason').value.trim() || 'Manual set by admin';
+
+      if (!userId || amount < 0) {
+        addLog('❌ Please enter valid user ID and amount');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/point-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'setpoints',
+            admin_id: currentAdmin.discord_id,
+            user_id: userId,
+            amount: amount,
+            reason: reason
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ ${data.message}`);
+          // Clear form
+          document.getElementById('setAmount').value = '';
+          document.getElementById('setReason').value = '';
+          // Reload dashboard data
+          loadDashboardData();
+        } else {
+          addLog(`❌ Failed to set points: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Set points error: ${error.message}`);
+      }
+    }
+
+    // Remove points
+    async function removePoints() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate as admin first');
+        return;
+      }
+
+      const userId = document.getElementById('removeUserId').value.trim();
+      const amount = parseInt(document.getElementById('removeAmount').value);
+      const reason = document.getElementById('removeReason').value.trim() || 'Manual admin adjustment';
+
+      if (!userId || !amount || amount <= 0) {
+        addLog('❌ Please enter valid user ID and amount');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/point-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'removepoints',
+            admin_id: currentAdmin.discord_id,
+            user_id: userId,
+            amount: amount,
+            reason: reason
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ ${data.message} - New balance: ${data.new_balance.toLocaleString()} $DSPOINC`);
+          // Clear form
+          document.getElementById('removeAmount').value = '';
+          document.getElementById('removeReason').value = '';
+          // Reload dashboard data
+          loadDashboardData();
+        } else {
+          addLog(`❌ Failed to remove points: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Remove points error: ${error.message}`);
+      }
+    }
+
+    // Check balance
+    async function checkBalance() {
+      const userId = document.getElementById('balanceUserId').value.trim();
+      
+      if (!userId) {
+        addLog('❌ Please enter a user ID');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/point-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'getbalance',
+            user_id: userId
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          const resultDiv = document.getElementById('balanceResult');
+          resultDiv.innerHTML = `
+            <div class="text-green-400">
+              <strong>User ID:</strong> ${data.user_id}<br>
+              <strong>Balance:</strong> ${data.balance.toLocaleString()} $DSPOINC
+            </div>
+          `;
+          resultDiv.classList.remove('hidden');
+          addLog(`💳 Balance for ${userId}: ${data.balance.toLocaleString()} $DSPOINC`);
+        } else {
+          addLog(`❌ Failed to get balance: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Check balance error: ${error.message}`);
+      }
+    }
+
+    // Get transaction history
+    async function getHistory() {
+      const userId = document.getElementById('historyUserId').value.trim();
+      
+      if (!userId) {
+        addLog('❌ Please enter a user ID');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/point-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'gethistory',
+            user_id: userId,
+            limit: 20
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          displayHistory(data.history);
+          addLog(`📋 Retrieved ${data.history.length} transactions for ${userId}`);
+        } else {
+          addLog(`❌ Failed to get history: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Get history error: ${error.message}`);
+      }
+    }
+
+    // Display transaction history
+    function displayHistory(history) {
+      const container = document.getElementById('historyResult');
+      
+      if (history.length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No transaction history found.</div>';
+        return;
+      }
+
+      container.innerHTML = history.map(item => {
+        const amount = parseInt(item.amount);
+        const isPositive = amount > 0;
+        const timestamp = new Date(item.timestamp).toLocaleString();
+        
+        return `
+          <div class="history-item ${isPositive ? 'positive' : 'negative'}">
+            <div class="flex justify-between items-start">
+              <div>
+                <strong>${isPositive ? '+' : ''}${amount.toLocaleString()} $DSPOINC</strong>
+                <span class="text-sm text-gray-300 ml-2">(${item.action})</span>
+              </div>
+              <div class="text-xs text-gray-400">${timestamp}</div>
+            </div>
+            <div class="text-sm text-gray-300 mt-1">Reason: ${item.reason || 'No reason provided'}</div>
+            <div class="text-xs text-gray-500">Admin: ${item.admin_id}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Load store items
+    async function loadStoreItems() {
+      try {
+        const response = await fetch('/api/store/items.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayStoreItems(data.items);
+          addLog(`🏪 Loaded ${data.items.length} store items`);
+        } else {
+          addLog(`❌ Failed to load store items: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Store items error: ${error.message}`);
+      }
+    }
+
+    // Display store items
+    function displayStoreItems(items) {
+      const container = document.getElementById('storeItems');
+      
+      if (items.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No store items found</div>';
+        return;
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="user-card">
+          <h4 class="font-semibold mb-2">${item.item_name}</h4>
+          <p class="text-sm text-gray-300 mb-2">${item.description || 'No description'}</p>
+          <p class="text-lg font-bold text-yellow-400 mb-3">${item.price?.toLocaleString() || 0} $DSPOINC</p>
+          <div class="flex gap-2">
+            <button onclick="editStoreItem(${item.item_id})" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex-1">
+              Edit
+            </button>
+            <button onclick="deleteStoreItem(${item.item_id})" 
+                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm flex-1">
+              Delete
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Edit store item (placeholder for future implementation)
+    function editStoreItem(itemId) {
+      addLog(`🔄 Edit store item functionality coming soon! Item ID: ${itemId}`);
+      // TODO: Implement edit store item modal/form
+    }
+
+    // Delete store item
+    async function deleteStoreItem(itemId) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to delete this store item?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/store-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'delete_item',
+            item_id: itemId
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Store item deleted successfully!`);
+          loadStoreItems();
+        } else {
+          addLog(`❌ Failed to delete store item: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Store item deletion error: ${error.message}`);
+      }
+    }
+
+    // Load quests
+    async function loadQuests() {
+      try {
+        const response = await fetch('/api/admin/get-quests.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayQuests(data.quests);
+          addLog(`🏆 Loaded ${data.quests.length} quests`);
+        } else {
+          addLog(`❌ Failed to load quests: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Quests error: ${error.message}`);
+      }
+    }
+
+    // Display quests
+    function displayQuests(quests) {
+      const container = document.getElementById('activeQuestsList');
+      
+      if (quests.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No active quests found</div>';
+        return;
+      }
+
+      container.innerHTML = quests.map(quest => `
+        <div class="user-card">
+          <h4 class="font-semibold mb-2">${quest.type}</h4>
+          <p class="text-sm text-gray-300 mb-2">${quest.description || 'No description'}</p>
+          <p class="text-lg font-bold text-yellow-400 mb-3">${quest.reward?.toLocaleString() || 0} $DSPOINC</p>
+          <div class="flex gap-2">
+            <button onclick="editQuest(${quest.quest_id})" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex-1">
+              Edit
+            </button>
+            <button onclick="deleteQuest(${quest.quest_id})" 
+                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm flex-1">
+              Delete
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Create quest
+    async function createQuest() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const type = document.getElementById('newQuestType').value.trim();
+      const description = document.getElementById('newQuestDescription').value.trim();
+      const link = document.getElementById('newQuestUrl').value.trim();
+      const reward = parseInt(document.getElementById('newQuestReward').value);
+
+      if (!type || !description || !reward || reward <= 0) {
+        addLog('❌ Please fill in all required fields: Type, Description, and Reward (must be positive)');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/create-quest.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create',
+            type: type,
+            description: description,
+            link: link,
+            reward: reward,
+            created_by: currentAdmin.discord_id
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Quest created successfully! ID: ${data.quest_id}`);
+          
+          // Clear form
+          document.getElementById('newQuestType').value = '';
+          document.getElementById('newQuestDescription').value = '';
+          document.getElementById('newQuestUrl').value = '';
+          document.getElementById('newQuestReward').value = '';
+          
+          // Reload quests list
+          loadQuests();
+        } else {
+          addLog(`❌ Failed to create quest: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Quest creation error: ${error.message}`);
+      }
+    }
+
+    // Edit quest (placeholder for future implementation)
+    function editQuest(questId) {
+      addLog(`🔄 Edit quest functionality coming soon! Quest ID: ${questId}`);
+      // TODO: Implement edit quest modal/form
+    }
+
+    // Delete quest
+    async function deleteQuest(questId) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to delete this quest?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/create-quest.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'delete',
+            quest_id: questId
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Quest deleted successfully!`);
+          loadQuests();
+        } else {
+          addLog(`❌ Failed to delete quest: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Quest deletion error: ${error.message}`);
+      }
+    }
+
+    // Store Management Functions
+    async function loadStoreItems() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/store/items.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayStoreItems(data.items);
+        } else {
+          addLog(`❌ Failed to load store items: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Store items loading error: ${error.message}`);
+      }
+    }
+
+    function displayStoreItems(items) {
+      const container = document.getElementById('storeItems');
+      
+      if (!items || items.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No store items found.</div>';
+        return;
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="bg-gray-700 p-4 rounded-lg">
+          <h4 class="font-semibold text-white mb-2">${item.item_name}</h4>
+          <p class="text-gray-300 text-sm mb-2">${item.description || 'No description'}</p>
+          <p class="text-yellow-400 font-semibold">${item.price.toLocaleString()} $DSPOINC</p>
+          <div class="flex gap-2 mt-3">
+            <button onclick="editStoreItem(${item.item_id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Edit</button>
+            <button onclick="deleteStoreItem(${item.item_id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function createStoreItem() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const name = document.getElementById('newItemName').value.trim();
+      const description = document.getElementById('newItemDescription').value.trim();
+      const price = parseInt(document.getElementById('newItemPrice').value);
+      const imageUrl = document.getElementById('newItemImageUrl').value.trim();
+
+      if (!name || !description || !price || price <= 0) {
+        addLog('❌ Please fill in all required fields: Name, Description, and Price (must be positive)');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/store-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create_item',
+            name: name,
+            description: description,
+            price: price,
+            image_url: imageUrl,
+            created_by: currentAdmin.discord_id
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Store item created successfully! ID: ${data.item_id}`);
+          
+          // Clear form
+          document.getElementById('newItemName').value = '';
+          document.getElementById('newItemDescription').value = '';
+          document.getElementById('newItemPrice').value = '';
+          document.getElementById('newItemImageUrl').value = '';
+          
+          // Reload store items
+          loadStoreItems();
+        } else {
+          addLog(`❌ Failed to create store item: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Store item creation error: ${error.message}`);
+      }
+    }
+
+    async function giveItemToUser() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const userId = document.getElementById('giveItemUserId').value.trim();
+      const itemName = document.getElementById('giveItemName').value.trim();
+      const quantity = parseInt(document.getElementById('giveItemQuantity').value);
+
+      if (!userId || !itemName || !quantity || quantity <= 0) {
+        addLog('❌ Please fill in all required fields: User ID, Item Name, and Quantity (must be positive)');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/store-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'give_item',
+            user_id: userId,
+            item_name: itemName,
+            quantity: quantity,
+            given_by: currentAdmin.discord_id
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Successfully gave ${quantity}x ${itemName} to user ${userId}`);
+          
+          // Clear form
+          document.getElementById('giveItemUserId').value = '';
+          document.getElementById('giveItemName').value = '';
+          document.getElementById('giveItemQuantity').value = '1';
+        } else {
+          addLog(`❌ Failed to give item: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Give item error: ${error.message}`);
+      }
+    }
+
+    async function viewUserInventory() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const userId = document.getElementById('viewInventoryUserId').value.trim();
+
+      if (!userId) {
+        addLog('❌ Please enter a user ID or username');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/admin/store-management.php?action=get_user_inventory&user_id=${encodeURIComponent(userId)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          displayUserInventory(data.items, userId);
+        } else {
+          addLog(`❌ Failed to load user inventory: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ User inventory loading error: ${error.message}`);
+      }
+    }
+
+    function displayUserInventory(items, userId) {
+      const container = document.getElementById('userInventoryList');
+      
+      if (!items || items.length === 0) {
+        container.innerHTML = `<div class="text-gray-300">No items found for user ${userId}.</div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="bg-gray-700 p-4 rounded-lg">
+          <h4 class="font-semibold text-white mb-3">Inventory for ${userId}</h4>
+          <div class="space-y-2">
+            ${items.map(item => `
+              <div class="flex justify-between items-center bg-gray-600 p-2 rounded">
+                <div>
+                  <span class="font-semibold text-white">${item.item_name}</span>
+                  <span class="text-gray-300 text-sm ml-2">x${item.quantity}</span>
+                </div>
+                <span class="text-gray-300 text-sm">${item.description || ''}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Edit store item (placeholder for future implementation)
+    function editStoreItem(itemId) {
+      addLog(`🔄 Edit store item functionality coming soon! Item ID: ${itemId}`);
+      // TODO: Implement edit store item modal/form
+    }
+
+    // Delete store item functionality is already implemented above
+
+    // Update invite code
+    function updateInviteCode() {
+      const newCode = document.getElementById('newInviteCode').value.trim();
+      if (newCode) {
+        DISCORD_CONFIG.updateInviteCode(newCode);
+        updateDisplay();
+        addLog(`✅ Updated invite code to: ${newCode}`);
+      }
+    }
+
+    // Add log entry
+    function addLog(message) {
+      const log = document.getElementById('statusLog');
+      const timestamp = new Date().toLocaleTimeString();
+      log.innerHTML += `<div class="text-blue-400">[${timestamp}] ${message}</div>`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Check for existing Discord authentication on page load
+    async function checkDiscordAuth() {
+      try {
+        // Check if user is already authenticated via Discord
+        const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok) {
+          const user = await res.json();
+          
+          // Check if user has admin/moderator roles
+          if (user.roles && (
+              user.roles.includes("Moderator") || 
+              user.roles.includes("Admin") || 
+              user.roles.includes("super_admin") ||
+              user.roles.includes("Founder") ||
+              user.roles.includes("Bot Master") ||
+              user.discord_id === "328601656659017732" // narrrf's Discord ID
+          )) {
+            // Auto-login as Discord moderator
+            currentAdmin = {
+              username: user.discord_name || 'Discord Moderator',
+              discord_id: user.discord_id,
+              role: 'moderator',
+              auth_type: 'discord'
+            };
+            
+            // Hide auth panel and show admin interface
+            document.getElementById('authPanel').style.display = 'none';
+            document.getElementById('navPanel').style.display = 'block';
+            
+            // Load dashboard data
+            loadDashboardData();
+            
+            addLog(`✅ Auto-authenticated as Discord moderator: ${user.discord_name}`);
+            return true;
+          }
+        }
+      } catch (error) {
+        console.log('No existing Discord session found');
+      }
+      return false;
+    }
+
+    // Discord Authentication for Moderators
+    async function authenticateDiscord() {
+      const discordAuthStatus = document.getElementById('discordAuthStatus');
+      discordAuthStatus.textContent = 'Redirecting to Discord OAuth...';
+      
+      // Redirect to Discord OAuth URL as specified by user
+      const oauthUrl = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+      
+      // Store the intended destination for after OAuth redirect
+      localStorage.setItem('adminRedirect', 'true');
+      
+      // Redirect to Discord OAuth
+      window.location.href = oauthUrl;
+    }
+
+    // === DATABASE UPLOAD FUNCTIONALITY ===
+    
+    // Show upload modal
+    function showUploadModal() {
+      // Check if user is owner
+      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.username !== 'narrrf')) {
+        addLog('❌ Access denied: Database upload requires owner privileges');
+        return;
+      }
+      
+      const modal = document.getElementById('uploadModal');
+      modal.classList.remove('hidden');
+    }
+    
+    // Hide upload modal
+    function hideUploadModal() {
+      const modal = document.getElementById('uploadModal');
+      modal.classList.add('hidden');
+      // Reset form
+      document.getElementById('uploadForm').reset();
+      document.getElementById('uploadStatus').innerHTML = '';
+    }
+    
+    // Handle database upload
+    async function uploadDatabase() {
+      // Check if user is owner
+      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.username !== 'narrrf')) {
+        const statusDiv = document.getElementById('uploadStatus');
+        statusDiv.innerHTML = '<div class="text-red-400">❌ Access denied: Database upload requires owner privileges</div>';
+        addLog('❌ Access denied: Database upload requires owner privileges');
+        return;
+      }
+      
+      const fileInput = document.getElementById('dbFile');
+      const statusDiv = document.getElementById('uploadStatus');
+      
+      if (!fileInput.files[0]) {
+        statusDiv.innerHTML = '<div class="text-red-400">❌ Please select a database file</div>';
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('sqlite', fileInput.files[0]);
+      
+      statusDiv.innerHTML = '<div class="text-blue-400">⏳ Uploading database...</div>';
+      
+      try {
+        const response = await fetch('/api/dev/upload-db.php?secret=MyUltraSecretKey123', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.text();
+        
+        if (response.ok) {
+          statusDiv.innerHTML = '<div class="text-green-400">✅ ' + result + '</div>';
+          addLog('✅ Database uploaded successfully');
+          
+          // Refresh dashboard data after upload
+          setTimeout(() => {
+            loadDashboardData();
+          }, 2000);
+        } else {
+          statusDiv.innerHTML = '<div class="text-red-400">❌ Upload failed: ' + result + '</div>';
+          addLog('❌ Database upload failed: ' + result);
+        }
+      } catch (error) {
+        statusDiv.innerHTML = '<div class="text-red-400">❌ Upload error: ' + error.message + '</div>';
+        addLog('❌ Database upload error: ' + error.message);
+      }
+    }
+    
+    // === DATABASE VIEWER FUNCTIONALITY ===
+    
+    // Show database viewer
+    function showDatabaseViewer() {
+      // Check if user is owner
+      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.username !== 'narrrf')) {
+        addLog('❌ Access denied: Database viewer requires owner privileges');
+        return;
+      }
+      
+      const modal = document.getElementById('viewerModal');
+      modal.classList.remove('hidden');
+      loadDatabaseViewer();
+    }
+    
+    // Hide database viewer
+    function hideDatabaseViewer() {
+      const modal = document.getElementById('viewerModal');
+      modal.classList.add('hidden');
+    }
+    
+    // Load database viewer content
+    async function loadDatabaseViewer() {
+      const contentDiv = document.getElementById('viewerContent');
+      contentDiv.innerHTML = '<div class="text-blue-400">⏳ Loading database viewer...</div>';
+      
+      try {
+        const response = await fetch('/api/dev/db-viewer.php');
+        const html = await response.text();
+        contentDiv.innerHTML = html;
+      } catch (error) {
+        contentDiv.innerHTML = '<div class="text-red-400">❌ Failed to load database viewer: ' + error.message + '</div>';
+      }
+    }
+
+    // === QUICK ACTIONS ===
+    
+    // Refresh dashboard data
+    async function refreshDashboard() {
+      addLog('🔄 Refreshing dashboard data...');
+      await loadDashboardData();
+      addLog('✅ Dashboard data refreshed');
+    }
+    
+    // Trigger database backup
+    async function triggerBackup() {
+      // Check if user is owner
+      if (!currentAdmin || (currentAdmin.role !== 'admin' && currentAdmin.username !== 'narrrf')) {
+        addLog('❌ Access denied: Database backup requires owner privileges');
+        return;
+      }
+      
+      addLog('💾 Triggering database backup...');
+      
+      try {
+        const response = await fetch('/api/admin/db-persistence.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Database backup completed successfully');
+          // Refresh dashboard after backup
+          setTimeout(() => {
+            loadDashboardData();
+          }, 2000);
+        } else {
+          addLog('❌ Database backup failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Database backup error: ' + error.message);
+      }
+    }
+
+  </script>
+
+  <!-- Database Upload Modal -->
+  <div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">📤 Upload Database</h3>
+        <button onclick="hideUploadModal()" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <form id="uploadForm" onsubmit="event.preventDefault(); uploadDatabase();">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Select SQLite Database File:</label>
+          <input type="file" id="dbFile" accept=".sqlite,.db" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        
+        <div id="uploadStatus" class="mb-4"></div>
+        
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="hideUploadModal()" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            Upload Database
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Database Viewer Modal -->
+  <div id="viewerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">👁️ Database Viewer</h3>
+        <button onclick="hideDatabaseViewer()" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <div id="viewerContent" class="overflow-y-auto max-h-[calc(90vh-120px)]">
+        <!-- Database viewer content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+</body>
+</html> 

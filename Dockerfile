@@ -15,6 +15,7 @@ COPY ./public/videos /var/www/html/videos
 COPY ./api /var/www/html/api
 COPY ./discord-tools /var/www/html/discord-tools
 COPY ./private /var/www/html/private
+COPY ./scripts /var/www/html/scripts
 
 # Copy database folder + file!
 COPY ./db /var/www/html/db

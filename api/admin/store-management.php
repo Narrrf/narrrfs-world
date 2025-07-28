@@ -4,6 +4,29 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
+// === DATABASE PERSISTENCE FUNCTION ===
+function triggerDatabaseBackup() {
+    try {
+        $backup_script = '/var/www/html/scripts/db-backup.sh';
+        
+        if (!file_exists($backup_script)) {
+            error_log('Backup script not found: ' . $backup_script);
+            return false;
+        }
+        
+        // Make script executable
+        chmod($backup_script, 0755);
+        
+        // Execute backup script in background to avoid blocking the response
+        exec("$backup_script > /dev/null 2>&1 &");
+        
+        return true;
+    } catch (Exception $e) {
+        error_log('Database backup failed: ' . $e->getMessage());
+        return false;
+    }
+}
+
 // Database connection
 $db_path = '/var/www/html/db/narrrf_world.sqlite';
 
@@ -64,6 +87,10 @@ switch ($action) {
             
             if ($result) {
                 $item_id = $db->lastInsertRowID();
+                
+                // Trigger database backup after successful creation
+                triggerDatabaseBackup();
+                
                 echo json_encode([
                     'success' => true,
                     'message' => 'Store item created successfully',
@@ -148,6 +175,9 @@ switch ($action) {
                 $stmt->execute();
             }
             
+            // Trigger database backup after successful item assignment
+            triggerDatabaseBackup();
+            
             echo json_encode([
                 'success' => true,
                 'message' => "Item '{$item_name}' given to user successfully",
@@ -179,6 +209,9 @@ switch ($action) {
             $result = $stmt->execute();
             
             if ($result && $db->changes() > 0) {
+                // Trigger database backup after successful deletion
+                triggerDatabaseBackup();
+                
                 echo json_encode([
                     'success' => true,
                     'message' => 'Store item deleted successfully'
