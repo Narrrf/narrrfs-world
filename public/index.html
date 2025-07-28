@@ -1494,6 +1494,19 @@ function handleHDRDragEnd() {
     
     // Initialize HDR swipe support
     initializeHDRSwipeSupport();
+    
+    // Lock orientation to landscape when opening HDR viewer on mobile
+    if (window.innerWidth <= 768 && screen.orientation && screen.orientation.lock) {
+      try {
+        screen.orientation.lock('landscape').then(() => {
+          console.log('Screen locked to landscape mode for HDR viewing');
+        }).catch((error) => {
+          console.log('Could not lock orientation:', error);
+        });
+      } catch (error) {
+        console.log('Orientation lock not supported:', error);
+      }
+    }
   }
 
   // Add this function to enable closing HDR fullscreen
@@ -1507,6 +1520,16 @@ function handleHDRDragEnd() {
     
     // Remove HDR swipe event listeners
     removeHDRSwipeSupport();
+    
+    // Unlock orientation when closing HDR viewer
+    if (screen.orientation && screen.orientation.unlock) {
+      try {
+        screen.orientation.unlock();
+        console.log('Screen orientation unlocked');
+      } catch (error) {
+        console.log('Could not unlock orientation:', error);
+      }
+    }
   }
 
   function navigateHDR(step) {
@@ -1536,11 +1559,17 @@ function handleHDRDragEnd() {
     
     const targetFigure = figures[currentHDRIndex];
     if (targetFigure) {
-      // Update the HDR image directly instead of calling openHDR
+      // Check if HDR viewer is open
+      const hdrFullscreen = document.getElementById('hdrFullscreen');
       const hdrImage = document.getElementById('hdrImage');
       const img = targetFigure.querySelector('img');
-      if (hdrImage && img && img.src) {
+      
+      if (hdrFullscreen && !hdrFullscreen.classList.contains('hidden') && hdrImage && img && img.src) {
+        // Update the HDR image directly
         hdrImage.src = img.src;
+      } else {
+        // If HDR viewer is not open, open it with the target figure
+        openHDR(targetFigure);
       }
     }
   }
@@ -1695,9 +1724,21 @@ function handleHDRDragEnd() {
     }
   }
 
-  // 📱 Force Horizontal Mode Function (Disabled)
+  // 📱 Force Horizontal Mode Function
   function forceHorizontalMode() {
-    console.log('Horizontal mode is disabled - mobile users can view HDR gallery normally');
+    if (screen.orientation && screen.orientation.lock) {
+      try {
+        screen.orientation.lock('landscape').then(() => {
+          console.log('Screen locked to landscape mode');
+        }).catch((error) => {
+          console.log('Could not lock orientation:', error);
+        });
+      } catch (error) {
+        console.log('Orientation lock not supported:', error);
+      }
+    } else {
+      console.log('Screen orientation API not supported');
+    }
   }
 
   // Initialize on DOM load:
