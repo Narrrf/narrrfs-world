@@ -2039,10 +2039,7 @@ function handleHDRDragEnd() {
     } else {
       exp.style.display = 'none';
       art.style.display = 'block';
-      setTimeout(() => {
-        const firstFigure = document.querySelector('#art-mode-slider figure[data-index="0"]');
-        if (firstFigure) openHDR(firstFigure);
-      }, 100);
+      // Don't automatically open first image - let user choose
     }
   }
 
@@ -2089,8 +2086,8 @@ function handleHDRDragEnd() {
     // Show status bar
     showStatusBar();
     
-    // Load only 5 images initially for much better performance
-    const initialLoad = 5;
+    // Load 20 images initially for better user experience
+    const initialLoad = 20;
     loadHDRImages(0, initialLoad);
   }
 
