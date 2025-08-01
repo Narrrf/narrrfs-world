@@ -170,8 +170,8 @@ function approveQuestClaim($db) {
             
             // Insert into user scores (for profile calculation)
             $stmt = $db->prepare("INSERT INTO tbl_user_scores 
-                                    (user_id, score, source, timestamp) 
-                                  VALUES (?, ?, 'quest_completion', datetime('now'))");
+                                    (user_id, score, game, source, timestamp) 
+                                  VALUES (?, ?, 'discord', 'quest_completion', datetime('now'))");
             $stmt->bindValue(1, $claim['user_id'], SQLITE3_TEXT);
             $stmt->bindValue(2, $claim['quest_reward'], SQLITE3_INTEGER);
             $stmt->execute();
