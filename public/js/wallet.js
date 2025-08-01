@@ -115,7 +115,7 @@ async function connectWallet() {
       console.error("Failed to log wallet:", err);
     }
 
-    // Check VIP List if on mint page
+    // Check VIP List and Discord Role if on mint page
     if (window.location.pathname.includes('mint.html') && vipMessage && mintButton) {
       try {
         const vipRes = await fetch('https://api.sheety.co/8ec14c6cea31d5316dc44a6d2e45be03/vipMintList/wallets');
@@ -123,19 +123,45 @@ async function connectWallet() {
         const vipList = vipJson.wallets.map(entry => entry.wallet.toLowerCase());
 
         const isVIP = vipList.includes(walletAddress.toLowerCase());
+        
+        // Check Discord role access
+        let hasDiscordRole = false;
+        if (!isVIP) {
+          try {
+            const discordId = localStorage.getItem('discord_id');
+            if (discordId) {
+              const roleRes = await fetch('/api/user/roles.php');
+              const roleData = await roleRes.json();
+              if (roleData.roles && roleData.roles.includes('1332108350518857842')) {
+                hasDiscordRole = true;
+              }
+            }
+          } catch (roleErr) {
+            console.error("Failed to check Discord role:", roleErr);
+          }
+        }
 
+        const mintInfo = document.getElementById('mint-info');
+        
         if (isVIP) {
           vipMessage.innerText = "✅ VIP Wallet Verified. You may mint!";
           vipMessage.className = "mt-6 text-green-600 font-semibold text-lg";
           mintButton.classList.remove("hidden");
+          if (mintInfo) mintInfo.classList.remove("hidden");
+        } else if (hasDiscordRole) {
+          vipMessage.innerText = "✅ Discord Role Verified. You may mint! (No wallet in WL)";
+          vipMessage.className = "mt-6 text-blue-600 font-semibold text-lg";
+          mintButton.classList.remove("hidden");
+          if (mintInfo) mintInfo.classList.remove("hidden");
         } else {
-          vipMessage.innerText = "❌ This wallet is not on the VIP list.";
+          vipMessage.innerText = "❌ Access Denied. This wallet is not on the VIP list and no Discord role access.";
           vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
           mintButton.classList.add("hidden");
+          if (mintInfo) mintInfo.classList.add("hidden");
         }
       } catch (err) {
         console.error("Failed to check VIP status:", err);
-        vipMessage.innerText = "⚠️ Failed to verify VIP status. Please try again.";
+        vipMessage.innerText = "⚠️ Failed to verify access status. Please try again.";
         vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
       }
     }
@@ -155,12 +181,14 @@ function disconnectWallet() {
   const disconnectButton = document.getElementById('wallet-disconnect');
   const vipMessage = document.getElementById('vip-message');
   const mintButton = document.getElementById('mint-now-btn');
+  const mintInfo = document.getElementById('mint-info');
 
   updateAllConnectButtons('', false);
   if (avatar) avatar.classList.add('hidden');
   if (disconnectButton) disconnectButton.classList.add('hidden');
   if (vipMessage) vipMessage.innerText = '';
   if (mintButton) mintButton.classList.add('hidden');
+  if (mintInfo) mintInfo.classList.add('hidden');
 }
 
 // Check for stored wallet on page load
