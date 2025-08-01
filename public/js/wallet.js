@@ -130,11 +130,14 @@ async function connectWallet() {
           try {
             const discordId = localStorage.getItem('discord_id');
             if (discordId) {
-              const roleRes = await fetch('/api/user/roles.php');
-              const roleData = await roleRes.json();
-              if (roleData.roles && roleData.roles.includes('1332108350518857842')) {
-                hasDiscordRole = true;
-              }
+                             const roleRes = await fetch('/api/user/roles.php');
+               const roleData = await roleRes.json();
+               // Check for WL role by name instead of hardcoded ID
+               hasDiscordRole = roleData.roles && roleData.roles.some(role => 
+                 role.toLowerCase().includes('wl') || 
+                 role.toLowerCase().includes('whitelist') ||
+                 role === '1332108350518857842' // Keep the original ID as fallback
+               );
             }
           } catch (roleErr) {
             console.error("Failed to check Discord role:", roleErr);
@@ -222,16 +225,23 @@ async function checkDiscordRoleAccess() {
     const roleData = await roleRes.json();
     console.log('Role data received:', roleData);
     
-    if (roleData.roles && roleData.roles.includes('1332108350518857842')) {
-      console.log('User has WL role!');
-      vipMessage.innerText = "✅ Discord WL Role Verified. You may mint!";
-      vipMessage.className = "mt-6 text-blue-600 font-semibold text-lg";
-      mintButton.classList.remove("hidden");
-      if (mintInfo) mintInfo.classList.remove("hidden");
-      return true;
-         } else {
+         // Check for WL role by name instead of hardcoded ID
+     const hasWLRole = roleData.roles && roleData.roles.some(role => 
+       role.toLowerCase().includes('wl') || 
+       role.toLowerCase().includes('whitelist') ||
+       role === '1332108350518857842' // Keep the original ID as fallback
+     );
+     
+     if (hasWLRole) {
+       console.log('User has WL role!');
+       vipMessage.innerText = "✅ Discord WL Role Verified. You may mint!";
+       vipMessage.className = "mt-6 text-blue-600 font-semibold text-lg";
+       mintButton.classList.remove("hidden");
+       if (mintInfo) mintInfo.classList.remove("hidden");
+       return true;
+     } else {
        console.log('User does not have WL role. Available roles:', roleData.roles);
-       console.log('Looking for WL role ID: 1332108350518857842');
+       console.log('Looking for WL role (by name or ID: 1332108350518857842)');
        console.log('User roles:', JSON.stringify(roleData.roles, null, 2));
        vipMessage.innerText = "❌ Discord WL Role not found. Please check your Discord roles.";
        vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";

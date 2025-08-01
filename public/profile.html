@@ -1170,7 +1170,14 @@ async function checkWLRoleAndShowButton() {
     const roleData = await roleRes.json();
     console.log('Role data received:', roleData);
     
-    if (roleData.roles && roleData.roles.includes('1332108350518857842')) {
+    // Check for WL role by name instead of hardcoded ID
+    const hasWLRole = roleData.roles && roleData.roles.some(role => 
+      role.toLowerCase().includes('wl') || 
+      role.toLowerCase().includes('whitelist') ||
+      role === '1332108350518857842' // Keep the original ID as fallback
+    );
+    
+    if (hasWLRole) {
       console.log('User has WL role - showing button');
       // User has WL role - show button
       const wlButton = document.getElementById('wlMintButton');
@@ -1182,6 +1189,7 @@ async function checkWLRoleAndShowButton() {
       }
     } else {
       console.log('User does not have WL role or roles not found');
+      console.log('Available roles:', roleData.roles);
     }
   } catch (error) {
     console.error('Failed to check WL role:', error);
