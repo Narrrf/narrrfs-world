@@ -229,12 +229,14 @@ async function checkDiscordRoleAccess() {
       mintButton.classList.remove("hidden");
       if (mintInfo) mintInfo.classList.remove("hidden");
       return true;
-    } else {
-      console.log('User does not have WL role. Available roles:', roleData.roles);
-      vipMessage.innerText = "❌ Discord WL Role not found. Please check your Discord roles.";
-      vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
-      return false;
-    }
+         } else {
+       console.log('User does not have WL role. Available roles:', roleData.roles);
+       console.log('Looking for WL role ID: 1332108350518857842');
+       console.log('User roles:', JSON.stringify(roleData.roles, null, 2));
+       vipMessage.innerText = "❌ Discord WL Role not found. Please check your Discord roles.";
+       vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
+       return false;
+     }
   } catch (roleErr) {
     console.error("Failed to check Discord role:", roleErr);
     vipMessage.innerText = "⚠️ Failed to check Discord roles. Please try again.";
