@@ -216,6 +216,16 @@ $discordId = $_SESSION['discord_id'] ?? '';
     <p id="email" class="text-sm text-gray-400">...</p>
     <p id="guilds" class="mt-2 text-sm text-yellow-100 italic">Guilds loading...</p>
 
+    <!-- 🎯 Check WL Button -->
+    <div class="mt-4">
+      <button id="checkWLButton" 
+              onclick="checkWLRoleAndShowButton()"
+              class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border-2 border-blue-500 transition-all duration-300 transform hover:scale-105">
+        🎯 Check WL Status
+      </button>
+      <p id="wlStatusMessage" class="text-xs text-gray-400 mt-1 italic hidden">Checking WL status...</p>
+    </div>
+
     <!-- 🧪 Traits + Wallet View -->
     <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner">
       <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
@@ -1158,42 +1168,86 @@ window.claimQuest = async function(questId, btn) {
 
 // 🎯 WL Role Button Logic
 async function checkWLRoleAndShowButton() {
-  const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
-  console.log('Checking WL role for user:', userId);
-  if (!userId) {
-    console.log('No user ID found');
-    return;
-  }
-
-  try {
-    const roleRes = await fetch('/api/user/roles.php');
-    const roleData = await roleRes.json();
-    console.log('Role data received:', roleData);
+    const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+    const statusMessage = document.getElementById('wlStatusMessage');
+    const checkButton = document.getElementById('checkWLButton');
     
-    // Check for WL role by name instead of hardcoded ID
-    const hasWLRole = roleData.roles && roleData.roles.some(role => 
-      role.toLowerCase().includes('wl') || 
-      role.toLowerCase().includes('whitelist') ||
-      role === '1332108350518857842' // Keep the original ID as fallback
-    );
+    console.log('Checking WL role for user:', userId);
     
-    if (hasWLRole) {
-      console.log('User has WL role - showing button');
-      // User has WL role - show button
-      const wlButton = document.getElementById('wlMintButton');
-      if (wlButton) {
-        wlButton.classList.remove('hidden');
-        console.log('WL button should now be visible');
-      } else {
-        console.log('WL button element not found');
-      }
-    } else {
-      console.log('User does not have WL role or roles not found');
-      console.log('Available roles:', roleData.roles);
+    // Show status message and disable button
+    if (statusMessage) {
+        statusMessage.textContent = 'Checking WL status...';
+        statusMessage.classList.remove('hidden');
     }
-  } catch (error) {
-    console.error('Failed to check WL role:', error);
-  }
+    if (checkButton) {
+        checkButton.disabled = true;
+        checkButton.textContent = '🔄 Checking...';
+    }
+    
+    if (!userId) {
+        console.log('No user ID found');
+        if (statusMessage) {
+            statusMessage.textContent = 'Please login with Discord first';
+            statusMessage.className = 'text-xs text-red-400 mt-1 italic';
+        }
+        if (checkButton) {
+            checkButton.disabled = false;
+            checkButton.textContent = '🎯 Check WL Status';
+        }
+        return;
+    }
+
+    try {
+        const roleRes = await fetch('/api/user/roles.php');
+        const roleData = await roleRes.json();
+        console.log('Role data received:', roleData);
+        
+        // Check for WL role by name instead of hardcoded ID
+        const hasWLRole = roleData.roles && roleData.roles.some(role => 
+            role.toLowerCase().includes('wl') || 
+            role.toLowerCase().includes('whitelist') ||
+            role === '1332108350518857842' // Keep the original ID as fallback
+        );
+        
+        if (hasWLRole) {
+            console.log('User has WL role - showing button');
+            // User has WL role - show button
+            const wlButton = document.getElementById('wlMintButton');
+            if (wlButton) {
+                wlButton.classList.remove('hidden');
+                console.log('WL button should now be visible');
+            } else {
+                console.log('WL button element not found');
+            }
+            
+            // Update status message
+            if (statusMessage) {
+                statusMessage.textContent = '✅ WL Role found! Mint button should be visible below.';
+                statusMessage.className = 'text-xs text-green-400 mt-1 italic';
+            }
+        } else {
+            console.log('User does not have WL role or roles not found');
+            console.log('Available roles:', roleData.roles);
+            
+            // Update status message
+            if (statusMessage) {
+                statusMessage.textContent = '❌ WL Role not found. Available roles: ' + (roleData.roles ? roleData.roles.join(', ') : 'None');
+                statusMessage.className = 'text-xs text-red-400 mt-1 italic';
+            }
+        }
+    } catch (error) {
+        console.error('Failed to check WL role:', error);
+        if (statusMessage) {
+            statusMessage.textContent = '⚠️ Error checking WL status. Please try again.';
+            statusMessage.className = 'text-xs text-yellow-400 mt-1 italic';
+        }
+    }
+    
+    // Re-enable button
+    if (checkButton) {
+        checkButton.disabled = false;
+        checkButton.textContent = '🎯 Check WL Status';
+    }
 }
 
 // Check for WL role on page load

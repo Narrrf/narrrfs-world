@@ -960,6 +960,17 @@ document.addEventListener('DOMContentLoaded', function() {
     </button>
   </div>
 
+  <!-- 🎯 Check WL Button -->
+  <div class="flex justify-center mb-6">
+    <button onclick="checkWLRoleFromIndex()" 
+            class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold px-6 py-3 rounded-full shadow-lg transition-all duration-300 border-2 border-blue-400 hover:border-blue-500 transform hover:scale-105">
+      🎯 Check WL Status
+    </button>
+  </div>
+  <div id="wlStatusMessageIndex" class="text-center mb-4 hidden">
+    <p class="text-sm text-gray-600 italic">Checking WL status...</p>
+  </div>
+
   <!-- 🧪 Carousel Mode -->
   <div id="carousel-zone" class="block">
     <div id="carousel-images" class="overflow-hidden rounded-xl shadow-lg bg-white cursor-grab select-none" style="touch-action: pan-y pinch-zoom;">
@@ -2065,6 +2076,76 @@ function handleHDRDragEnd() {
       // Don't add hdr-mode class here - only add when actually viewing HDR images
       // document.body.classList.add('hdr-mode'); // Add HDR mode class
       // Don't automatically open first image - let user choose
+    }
+  }
+
+  // 🎯 Check WL Role from Index Page
+  async function checkWLRoleFromIndex() {
+    const statusMessage = document.getElementById('wlStatusMessageIndex');
+    const checkButton = document.querySelector('button[onclick="checkWLRoleFromIndex()"]');
+    
+    // Show status message and disable button
+    if (statusMessage) {
+      statusMessage.querySelector('p').textContent = 'Checking WL status...';
+      statusMessage.classList.remove('hidden');
+    }
+    if (checkButton) {
+      checkButton.disabled = true;
+      checkButton.textContent = '🔄 Checking...';
+    }
+    
+    const userId = localStorage.getItem("discord_id") || "";
+    console.log('Checking WL role for user:', userId);
+    
+    if (!userId) {
+      if (statusMessage) {
+        statusMessage.querySelector('p').textContent = 'Please login with Discord first';
+        statusMessage.querySelector('p').className = 'text-sm text-red-600 italic';
+      }
+      if (checkButton) {
+        checkButton.disabled = false;
+        checkButton.textContent = '🎯 Check WL Status';
+      }
+      return;
+    }
+
+    try {
+      const roleRes = await fetch('/api/user/roles.php');
+      const roleData = await roleRes.json();
+      console.log('Role data received:', roleData);
+      
+      // Check for WL role by name instead of hardcoded ID
+      const hasWLRole = roleData.roles && roleData.roles.some(role => 
+        role.toLowerCase().includes('wl') || 
+        role.toLowerCase().includes('whitelist') ||
+        role === '1332108350518857842' // Keep the original ID as fallback
+      );
+      
+      if (hasWLRole) {
+        console.log('User has WL role!');
+        if (statusMessage) {
+          statusMessage.querySelector('p').textContent = '✅ WL Role found! You can access the mint page.';
+          statusMessage.querySelector('p').className = 'text-sm text-green-600 italic';
+        }
+      } else {
+        console.log('User does not have WL role. Available roles:', roleData.roles);
+        if (statusMessage) {
+          statusMessage.querySelector('p').textContent = '❌ WL Role not found. Available roles: ' + (roleData.roles ? roleData.roles.join(', ') : 'None');
+          statusMessage.querySelector('p').className = 'text-sm text-red-600 italic';
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check WL role:', error);
+      if (statusMessage) {
+        statusMessage.querySelector('p').textContent = '⚠️ Error checking WL status. Please try again.';
+        statusMessage.querySelector('p').className = 'text-sm text-yellow-600 italic';
+      }
+    }
+    
+    // Re-enable button
+    if (checkButton) {
+      checkButton.disabled = false;
+      checkButton.textContent = '🎯 Check WL Status';
     }
   }
 
