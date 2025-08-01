@@ -68,6 +68,73 @@
   animation: scaleIn 0.6s ease-out forwards;
 }
 
+/* 🖼️ HDR Viewer Landscape Optimizations */
+@media (orientation: landscape) {
+  /* Hide menu and other UI elements in landscape for better HDR viewing */
+  .landscape\:hidden {
+    display: none !important;
+  }
+  
+  /* Hide the main navigation menu in landscape mode */
+  header.bg-black {
+    display: none !important;
+  }
+  
+  /* Hide the bingo CTA in landscape mode */
+  .bg-black.text-center.py-3 {
+    display: none !important;
+  }
+  
+  /* Reduce button sizes in landscape */
+  .landscape\:min-w-\[60px\] {
+    min-width: 60px !important;
+  }
+  
+  .landscape\:text-sm {
+    font-size: 0.875rem !important;
+  }
+  
+  .landscape\:px-3 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  .landscape\:py-1\.5 {
+    padding-top: 0.375rem !important;
+    padding-bottom: 0.375rem !important;
+  }
+  
+  .landscape\:text-xs {
+    font-size: 0.75rem !important;
+  }
+  
+  .landscape\:opacity-75 {
+    opacity: 0.75 !important;
+  }
+  
+  /* Hide horizontal mode button in landscape */
+  .landscape\:hidden {
+    display: none !important;
+  }
+}
+
+/* 📱 Portrait Mode Optimizations */
+@media (orientation: portrait) {
+  /* Ensure buttons are visible in portrait */
+  .portrait\:block {
+    display: block !important;
+  }
+  
+  /* Larger buttons for touch in portrait */
+  .portrait\:min-w-\[80px\] {
+    min-width: 80px !important;
+  }
+  
+  .portrait\:text-base {
+    font-size: 1rem !important;
+  }
+}
+
   </style>
 </head>
 
@@ -219,12 +286,12 @@ This is the dual-mode display section for both:
 <!-- 🖼️ HDR Fullscreen Viewer -->
 <div id="hdrFullscreen" class="hidden fixed inset-0 bg-black bg-opacity-95 z-50 flex flex-col items-center justify-center transition-all duration-300 cursor-grab" style="touch-action: pan-x pan-y; -webkit-user-select: none; -webkit-touch-callout: none;">
                               <!-- ❌ Exit Button -->
-                      <button onclick="closeHDR()" class="absolute bottom-4 left-2 md:bottom-6 md:left-4 text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 px-3 py-2 md:px-4 md:py-2 lg:px-6 lg:py-3 rounded-full shadow-lg text-sm md:text-base z-50 transition-all duration-300 font-bold border-2 border-red-400 hover:border-red-500 transform hover:scale-105 min-w-[60px] md:min-w-[80px]">
+                      <button onclick="closeHDR()" class="absolute top-4 right-4 text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-2 lg:px-6 lg:py-3 rounded-full shadow-lg text-xs sm:text-sm md:text-base z-50 transition-all duration-300 font-bold border-2 border-red-400 hover:border-red-500 transform hover:scale-105 min-w-[50px] sm:min-w-[60px] md:min-w-[80px]">
                         🧀 Exit
                       </button>
                       
                       <!-- 📱 Horizontal Mode Button -->
-                      <button onclick="forceHorizontalMode()" class="absolute bottom-4 left-20 md:bottom-6 md:left-32 lg:left-48 text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-3 py-2 md:px-4 md:py-2 lg:px-6 lg:py-3 rounded-full shadow-lg text-sm md:text-base z-50 transition-all duration-300 font-bold border-2 border-blue-400 hover:border-blue-500 transform hover:scale-105 min-w-[80px] md:min-w-[100px]">
+                      <button onclick="forceHorizontalMode()" class="absolute top-4 left-4 text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-2 lg:px-6 lg:py-3 rounded-full shadow-lg text-xs sm:text-sm md:text-base z-50 transition-all duration-300 font-bold border-2 border-blue-400 hover:border-blue-500 transform hover:scale-105 min-w-[60px] sm:min-w-[80px] md:min-w-[100px] landscape:hidden">
                         📱 Horizontal
                       </button>
 
@@ -236,10 +303,10 @@ This is the dual-mode display section for both:
   <!-- ⬅️➡️ Navigation Controls -->
   <div class="absolute bottom-4 md:bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-1 md:gap-2">
     <div class="flex gap-2 md:gap-4">
-      <button onclick="console.log('Prev button clicked'); navigateHDR(-1)" class="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 rounded-full shadow-lg transition-all duration-300 text-base md:text-lg font-bold border-2 border-pink-400 hover:border-pink-500 transform hover:scale-105 min-w-[80px] md:min-w-[100px]">← Prev</button>
-      <button onclick="console.log('Next button clicked'); navigateHDR(1)" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 rounded-full shadow-lg transition-all duration-300 text-base md:text-lg font-bold border-2 border-purple-400 hover:border-purple-500 transform hover:scale-105 min-w-[80px] md:min-w-[100px]">Next →</button>
+      <button id="hdr-prev-btn" class="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 lg:px-5 lg:py-2.5 rounded-full shadow-lg transition-all duration-300 text-xs sm:text-sm md:text-base font-bold border-2 border-pink-400 hover:border-pink-500 transform hover:scale-105 min-w-[50px] sm:min-w-[60px] md:min-w-[70px] lg:min-w-[80px] cursor-pointer touch-manipulation landscape:min-w-[60px] landscape:text-sm landscape:px-3 landscape:py-1.5">← Prev</button>
+      <button id="hdr-next-btn" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 lg:px-5 lg:py-2.5 rounded-full shadow-lg transition-all duration-300 text-xs sm:text-sm md:text-base font-bold border-2 border-purple-400 hover:border-purple-500 transform hover:scale-105 min-w-[50px] sm:min-w-[60px] md:min-w-[70px] lg:min-w-[80px] cursor-pointer touch-manipulation landscape:min-w-[60px] landscape:text-sm landscape:px-3 landscape:py-1.5">Next →</button>
     </div>
-            <p class="text-xs md:text-sm text-gray-500 text-center font-semibold">🧀 Swipe left/right or drag to navigate • ESC to close</p>
+    <p class="text-xs md:text-sm text-gray-500 text-center font-semibold landscape:text-xs landscape:opacity-75">🧀 Swipe left/right or drag to navigate • ESC to close</p>
   </div>
 </div>
 
@@ -465,6 +532,9 @@ This is the dual-mode display section for both:
     full.classList.add('flex');
     document.body.classList.add('overflow-hidden');
     
+    // Show initial bandwidth warning for HDR viewer
+    showHDRWelcomeMessage();
+    
     // Initialize HDR swipe support
     initializeHDRSwipeSupport();
     
@@ -490,6 +560,9 @@ This is the dual-mode display section for both:
       full.classList.remove('flex');
     }
     document.body.classList.remove('overflow-hidden');
+    
+    // Hide status bar when closing HDR viewer
+    hideStatusBar();
     
     // Remove HDR swipe event listeners
     removeHDRSwipeSupport();
@@ -595,6 +668,9 @@ This is the dual-mode display section for both:
 
   // 🧪 Inject carusel images
   window.addEventListener('DOMContentLoaded', () => {
+    // 🧹 Clean up any existing status bar on page load
+    cleanupStatusBar();
+    
     const container = document.getElementById('carousel-images');
     if (container) {
       for (let i = 1; i <= 81; i++) {
@@ -616,9 +692,10 @@ This is the dual-mode display section for both:
   // 🎨 HDR Grid Management
   let hdrImagesLoaded = 0;
   let hdrNextIndex = 0; // Track the next index to load
-  const HDR_BATCH_SIZE = window.innerWidth <= 768 ? 30 : 40; // Increased batch size for better loading
+  const HDR_BATCH_SIZE = window.innerWidth <= 768 ? 8 : 12; // Reduced for better performance
   const TOTAL_HDR_IMAGES = 151;
   let isLoadingHDR = false; // Prevent multiple simultaneous loads
+  let loadingProgress = 0; // Track loading progress
 
   function initializeHDRGrid() {
     const grid = document.getElementById('hdr-grid');
@@ -630,9 +707,13 @@ This is the dual-mode display section for both:
     // Reset loading state
     hdrImagesLoaded = 0;
     hdrNextIndex = 0;
+    loadingProgress = 0;
     
-    // Load more images initially for mobile users
-    const initialLoad = window.innerWidth <= 768 ? 40 : HDR_BATCH_SIZE;
+    // Show status bar
+    showStatusBar();
+    
+    // Load only 5 images initially for much better performance
+    const initialLoad = 5;
     loadHDRImages(0, initialLoad);
   }
 
@@ -646,6 +727,11 @@ This is the dual-mode display section for both:
     let failedCount = 0;
     const targetCount = Math.min(startIndex + count, TOTAL_HDR_IMAGES);
 
+    // Show loading progress for large batches
+    if (count >= 8) {
+      showLoadingProgress(startIndex, targetCount);
+    }
+
     for (let i = startIndex; i < targetCount; i++) {
       const figure = document.createElement('figure');
       figure.className = 'rounded-2xl shadow-xl overflow-hidden cursor-pointer hover:scale-110 transition-all duration-500 border-4 border-yellow-300 hover:border-pink-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 p-3 relative group';
@@ -658,18 +744,26 @@ This is the dual-mode display section for both:
       figure.appendChild(decoration);
 
       const img = document.createElement('img');
-      img.src = `https://ec04f79279368ef19713ae9212cac094.ipfs.4everland.link/ipfs/bafybeig4p7562trvm2uh4cns73hb3u5ef5ghmufixgizbu2om2mthn373u/${i}.PNG`;
+      img.src = `img/HDR/${i}.PNG`;
       img.alt = `HDR Zoom ${i + 1}`;
       img.className = 'object-cover w-full h-auto max-h-[300px] rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 group-hover:brightness-110 relative z-10';
       img.loading = 'lazy';
+      
+      // Add timeout for image loading to prevent hanging
+      const imgTimeout = setTimeout(() => {
+        if (!img.complete) {
+          console.warn(`HDR image ${i} loading timeout - skipping`);
+          img.onerror();
+        }
+      }, 8000); // 8 second timeout
 
       // Add error handling for image loading
       img.onerror = () => {
-        console.warn(`Failed to load HDR image ${i}`);
+        clearTimeout(imgTimeout);
+        console.warn(`Failed to load HDR image ${i} - skipping`);
         failedCount++;
-        // Don't remove the figure, just mark it as failed
-        figure.style.opacity = '0.3';
-        figure.style.filter = 'grayscale(100%)';
+        // Remove the figure entirely to avoid showing broken images
+        figure.remove();
         
         // Check if all images in this batch have been processed
         if (loadedCount + failedCount >= targetCount - startIndex) {
@@ -678,8 +772,13 @@ This is the dual-mode display section for both:
       };
 
       img.onload = () => {
+        clearTimeout(imgTimeout);
         loadedCount++;
-        console.log(`Successfully loaded HDR image ${i}`);
+        loadingProgress = startIndex + loadedCount;
+        console.log(`Successfully loaded HDR image ${i} (${loadedCount}/${targetCount - startIndex})`);
+        
+        // Update progress indicator
+        updateLoadingProgress(loadingProgress, targetCount);
         
         // Check if all images in this batch have been processed
         if (loadedCount + failedCount >= targetCount - startIndex) {
@@ -702,11 +801,15 @@ This is the dual-mode display section for both:
         console.log('HDR loading timeout - forcing finish');
         finishHDRLoading();
       }
-    }, 10000); // Increased timeout to 10 seconds
+    }, 15000); // Increased timeout to 15 seconds for mobile
   }
 
   function finishHDRLoading() {
     isLoadingHDR = false;
+    
+    // Hide loading progress
+    hideLoadingProgress();
+    
     // Count actual loaded figures instead of using batch size
     const figures = document.querySelectorAll('#hdr-grid figure');
     hdrImagesLoaded = Math.min(figures.length, TOTAL_HDR_IMAGES);
@@ -714,11 +817,16 @@ This is the dual-mode display section for both:
     
     console.log(`HDR loading finished. Loaded ${hdrImagesLoaded} images. Next index: ${hdrNextIndex}`);
     
+    // Update status bar
+    updateStatusBar();
+    
     // Update load more button
     const loadMoreBtn = document.getElementById('load-more-hdr');
     if (loadMoreBtn) {
       if (hdrImagesLoaded >= TOTAL_HDR_IMAGES) {
         loadMoreBtn.style.display = 'none';
+        // Hide status bar when complete
+        setTimeout(() => hideStatusBar(), 2000);
       } else {
         loadMoreBtn.textContent = `🧀 Load More Cheese (${hdrImagesLoaded}/${TOTAL_HDR_IMAGES})`;
       }
@@ -727,12 +835,175 @@ This is the dual-mode display section for both:
 
   function loadMoreHDRImages() {
     if (!isLoadingHDR && hdrNextIndex < TOTAL_HDR_IMAGES) {
-      // For mobile users, load more images at once to get closer to all 151
+      // Optimized loading for better performance - smaller batches
       const remainingImages = TOTAL_HDR_IMAGES - hdrNextIndex;
-      const loadAmount = window.innerWidth <= 768 ? Math.min(60, remainingImages) : HDR_BATCH_SIZE;
+      const loadAmount = window.innerWidth <= 768 ? Math.min(8, remainingImages) : Math.min(12, remainingImages);
+      
+      // Show bandwidth warning for large loads
+      if (loadAmount >= 10) {
+        showBandwidthWarning(loadAmount);
+      }
+      
       console.log(`Loading more HDR images from index ${hdrNextIndex}, amount: ${loadAmount}`);
       loadHDRImages(hdrNextIndex, loadAmount);
     }
+  }
+
+  // 📊 Loading Progress Functions
+  function showLoadingProgress(startIndex, targetCount) {
+    const progress = document.createElement('div');
+    progress.id = 'hdr-loading-progress';
+    progress.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg z-[70] text-sm font-bold shadow-lg border-2 border-blue-400';
+    progress.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span>🔄</span>
+        <span>Loading images... ${startIndex + 1}-${targetCount}</span>
+      </div>
+    `;
+    
+    document.body.appendChild(progress);
+  }
+
+  function updateLoadingProgress(current, total) {
+    const progress = document.getElementById('hdr-loading-progress');
+    if (progress) {
+      const percentage = Math.round((current / total) * 100);
+      progress.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span>🔄</span>
+          <span>Loading... ${current}/${total} (${percentage}%)</span>
+        </div>
+      `;
+    }
+  }
+
+  function hideLoadingProgress() {
+    const progress = document.getElementById('hdr-loading-progress');
+    if (progress) {
+      progress.style.opacity = '0';
+      progress.style.transform = 'translate(-50%, -20px)';
+      setTimeout(() => progress.remove(), 300);
+    }
+  }
+
+  // 📊 Smart Status Bar Functions
+  function showStatusBar() {
+    // First, ensure any existing status bar is removed
+    hideStatusBar();
+    
+    const statusBar = document.createElement('div');
+    statusBar.id = 'hdr-status-bar';
+    statusBar.className = 'fixed bottom-20 right-4 bg-black/80 text-white px-3 py-2 rounded-full z-[60] text-xs font-bold shadow-lg border border-white/20 backdrop-blur-sm';
+    statusBar.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span class="text-yellow-400">🧀</span>
+        <span id="hdr-status-text">Loading...</span>
+        <div class="w-16 h-1 bg-gray-600 rounded-full overflow-hidden">
+          <div id="hdr-status-fill" class="h-full bg-yellow-400 transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(statusBar);
+    updateStatusBar();
+  }
+
+  function updateStatusBar() {
+    const statusBar = document.getElementById('hdr-status-bar');
+    const statusText = document.getElementById('hdr-status-text');
+    const statusFill = document.getElementById('hdr-status-fill');
+    
+    if (statusBar && statusText && statusFill) {
+      const progress = hdrImagesLoaded;
+      const total = TOTAL_HDR_IMAGES;
+      const percentage = total > 0 ? Math.round((progress / total) * 100) : 0;
+      
+      statusText.textContent = `${progress}/${total}`;
+      statusFill.style.width = `${percentage}%`;
+      
+      // Update colors based on progress
+      if (percentage >= 100) {
+        statusFill.className = 'h-full bg-green-400 transition-all duration-300';
+      } else if (percentage >= 50) {
+        statusFill.className = 'h-full bg-yellow-400 transition-all duration-300';
+      } else {
+        statusFill.className = 'h-full bg-orange-400 transition-all duration-300';
+      }
+    }
+  }
+
+  function hideStatusBar() {
+    const statusBar = document.getElementById('hdr-status-bar');
+    if (statusBar) {
+      statusBar.style.opacity = '0';
+      statusBar.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        if (statusBar.parentNode) {
+          statusBar.remove();
+        }
+      }, 300);
+    }
+  }
+
+  // 🧹 Cleanup function to ensure status bar is hidden on page load
+  function cleanupStatusBar() {
+    const statusBar = document.getElementById('hdr-status-bar');
+    if (statusBar) {
+      statusBar.remove();
+    }
+  }
+
+  // 🌐 Bandwidth Warning Function
+  function showBandwidthWarning(imageCount) {
+    const warning = document.createElement('div');
+    warning.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-3 rounded-lg z-[70] text-sm font-bold shadow-lg border-2 border-orange-400 max-w-sm text-center';
+    warning.innerHTML = `
+      <div class="flex items-center justify-center gap-2 mb-2">
+        <span class="text-lg">🌐</span>
+        <span>Loading ${imageCount} HD Images</span>
+      </div>
+      <div class="text-xs opacity-90">
+        This may take a moment and use significant bandwidth.<br>
+        Please be patient while images load...
+      </div>
+    `;
+    
+    document.body.appendChild(warning);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      if (warning.parentNode) {
+        warning.style.opacity = '0';
+        warning.style.transform = 'translate(-50%, -20px)';
+        setTimeout(() => warning.remove(), 300);
+      }
+    }, 4000);
+  }
+
+  // 🖼️ HDR Welcome Message Function
+  function showHDRWelcomeMessage() {
+    const welcome = document.createElement('div');
+    welcome.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-6 py-3 rounded-lg z-[70] text-sm font-bold shadow-lg border-2 border-blue-400 max-w-sm text-center';
+    welcome.innerHTML = `
+      <div class="flex items-center justify-center gap-2 mb-2">
+        <span class="text-lg">🖼️</span>
+        <span>HDR Viewer Active</span>
+      </div>
+      <div class="text-xs opacity-90">
+        High-quality images may use significant bandwidth.<br>
+        Use swipe or buttons to navigate.
+      </div>
+    `;
+    
+    document.body.appendChild(welcome);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      if (welcome.parentNode) {
+        welcome.style.opacity = '0';
+        welcome.style.transform = 'translate(-50%, -20px)';
+        setTimeout(() => welcome.remove(), 300);
+      }
+    }, 3000);
   }
 </script>
 
@@ -841,6 +1112,62 @@ This is the dual-mode display section for both:
       setTimeout(() => message.remove(), 2000);
     }
   }
+  
+  // 🎯 HDR Navigation Button Event Handlers
+  function initializeHDRButtons() {
+    const prevBtn = document.getElementById('hdr-prev-btn');
+    const nextBtn = document.getElementById('hdr-next-btn');
+    
+    if (prevBtn) {
+      // Remove any existing listeners and add new ones
+      prevBtn.replaceWith(prevBtn.cloneNode(true));
+      const newPrevBtn = document.getElementById('hdr-prev-btn');
+      
+      // Add multiple event types for better mobile support
+      newPrevBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Prev button clicked');
+        navigateHDR(-1);
+      });
+      
+      newPrevBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Prev button touched');
+        navigateHDR(-1);
+      });
+    }
+    
+    if (nextBtn) {
+      // Remove any existing listeners and add new ones
+      nextBtn.replaceWith(nextBtn.cloneNode(true));
+      const newNextBtn = document.getElementById('hdr-next-btn');
+      
+      // Add multiple event types for better mobile support
+      newNextBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Next button clicked');
+        navigateHDR(1);
+      });
+      
+      newNextBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Next button touched');
+        navigateHDR(1);
+      });
+    }
+  }
+  
+  // Initialize HDR buttons when HDR viewer opens
+  const originalOpenHDR = openHDR;
+  openHDR = function(figure) {
+    originalOpenHDR(figure);
+    // Initialize buttons after HDR viewer is open
+    setTimeout(initializeHDRButtons, 100);
+  };
   </script>
 <!-- 
 ===========================================================

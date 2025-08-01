@@ -39,6 +39,24 @@ switch ($action) {
         $reward = intval($input['reward'] ?? 0);
         $created_by = $input['created_by'] ?? '';
         
+        // Role granting options
+        $grant_role = $input['grant_role'] ?? false;
+        $role_id = $input['role_id'] ?? null;
+        
+        // Cheese quest specific fields
+        $cheese_config = null;
+        if ($type === 'cheese_hunt') {
+            $cheese_config = [
+                'movement_pattern' => $input['movement_pattern'] ?? 'random',
+                'movement_speed' => $input['movement_speed'] ?? 'normal',
+                'hidden_areas' => $input['hidden_areas'] ?? true,
+                'cheese_count' => $input['cheese_count'] ?? 3,
+                'discord_ticket' => $input['discord_ticket'] ?? true,
+                'winner_message' => $input['winner_message'] ?? '🎯 Congratulations! You found the cheese!',
+                'screenshot_required' => $input['screenshot_required'] ?? true
+            ];
+        }
+        
         // Validation
         if (empty($type) || empty($description) || $reward <= 0) {
             echo json_encode([
@@ -49,10 +67,10 @@ switch ($action) {
         }
         
         try {
-            // Insert new quest
+            // Insert new quest with cheese configuration and role_id
             $stmt = $db->prepare('
-                INSERT INTO tbl_quests (type, description, link, reward, created_by, is_active, created_at) 
-                VALUES (?, ?, ?, ?, ?, 1, datetime("now"))
+                INSERT INTO tbl_quests (type, description, link, reward, created_by, is_active, created_at, cheese_config, role_id) 
+                VALUES (?, ?, ?, ?, ?, 1, datetime("now"), ?, ?)
             ');
             
             $stmt->bindValue(1, $type, SQLITE3_TEXT);
@@ -60,6 +78,8 @@ switch ($action) {
             $stmt->bindValue(3, $link, SQLITE3_TEXT);
             $stmt->bindValue(4, $reward, SQLITE3_INTEGER);
             $stmt->bindValue(5, $created_by, SQLITE3_TEXT);
+            $stmt->bindValue(6, $cheese_config ? json_encode($cheese_config) : null, SQLITE3_TEXT);
+            $stmt->bindValue(7, $grant_role ? $role_id : null, SQLITE3_TEXT);
             
             $result = $stmt->execute();
             
@@ -76,7 +96,9 @@ switch ($action) {
                         'link' => $link,
                         'reward' => $reward,
                         'created_by' => $created_by,
-                        'is_active' => 1
+                        'is_active' => 1,
+                        'cheese_config' => $cheese_config,
+                        'role_id' => $grant_role ? $role_id : null
                     ]
                 ]);
             } else {
