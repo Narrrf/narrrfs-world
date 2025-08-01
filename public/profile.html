@@ -237,6 +237,15 @@ $discordId = $_SESSION['discord_id'] ?? '';
       <p class="text-xs text-gray-400 mt-2 italic">Access granted for administrators and moderators</p>
     </div>
 
+    <!-- 🎯 WL Role Mint Access Button (only visible to WL role users) -->
+    <div id="wlMintButton" class="mt-4 hidden">
+      <a href="/mint.html" 
+         class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-green-500 transition-all duration-300 transform hover:scale-105">
+        🧠 Go to Mint (WL Access)
+      </a>
+      <p class="text-xs text-gray-400 mt-2 italic">You have Discord WL role access for minting</p>
+    </div>
+
     <!-- 👣 Footer Note -->
     <div class="mt-6 text-yellow-400 text-sm">
       🧠 Profile powered by Cheese Architect 9.0 · Phase 5 Bridge Online
@@ -1146,6 +1155,33 @@ window.claimQuest = async function(questId, btn) {
     btn.disabled = false;
   }
 };
+
+// 🎯 WL Role Button Logic
+async function checkWLRoleAndShowButton() {
+  const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+  if (!userId) return;
+
+  try {
+    const roleRes = await fetch('/api/user/roles.php');
+    const roleData = await roleRes.json();
+    
+    if (roleData.roles && roleData.roles.includes('1332108350518857842')) {
+      // User has WL role - show button
+      const wlButton = document.getElementById('wlMintButton');
+      if (wlButton) {
+        wlButton.classList.remove('hidden');
+      }
+    }
+  } catch (error) {
+    console.error('Failed to check WL role:', error);
+  }
+}
+
+// Check for WL role on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Small delay to ensure page is loaded
+  setTimeout(checkWLRoleAndShowButton, 1000);
+});
 </script>
 <script src="scripts/tetris-scroll.js"></script>
 <script src="scripts/snake-scroll.js"></script>
