@@ -94,14 +94,6 @@ try {
                 $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
                 $stmt->bindValue(4, 'addpoints', SQLITE3_TEXT);
                 $stmt->execute();
-            } else {
-                // 3. If user exists, also insert a new record for tracking (same as bot logic)
-                $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
-                $stmt->bindValue(1, $userId, SQLITE3_TEXT);
-                $stmt->bindValue(2, $amount, SQLITE3_INTEGER);
-                $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
-                $stmt->bindValue(4, 'addpoints', SQLITE3_TEXT);
-                $stmt->execute();
             }
             
             // 3. Get updated balance
@@ -159,14 +151,6 @@ try {
                 $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
                 $stmt->bindValue(4, 'setpoints', SQLITE3_TEXT);
                 $stmt->execute();
-            } else {
-                // 3. If user exists, also insert a new record for tracking (same as bot logic)
-                $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
-                $stmt->bindValue(1, $userId, SQLITE3_TEXT);
-                $stmt->bindValue(2, $delta, SQLITE3_INTEGER); // Use delta for proper tracking
-                $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
-                $stmt->bindValue(4, 'setpoints', SQLITE3_TEXT);
-                $stmt->execute();
             }
             
             // 3. Log the adjustment
@@ -212,14 +196,6 @@ try {
             
             // 2. If no rows affected, user doesn't exist, so insert new record with negative score
             if ($affectedRows === 0) {
-                $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
-                $stmt->bindValue(1, $userId, SQLITE3_TEXT);
-                $stmt->bindValue(2, -$amount, SQLITE3_INTEGER);
-                $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
-                $stmt->bindValue(4, 'removepoints', SQLITE3_TEXT);
-                $stmt->execute();
-            } else {
-                // 3. If user exists, also insert a new record for tracking (same as bot logic)
                 $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
                 $stmt->bindValue(1, $userId, SQLITE3_TEXT);
                 $stmt->bindValue(2, -$amount, SQLITE3_INTEGER);
@@ -345,6 +321,3 @@ try {
 
 $db->close();
 ?> 
-
-
-
