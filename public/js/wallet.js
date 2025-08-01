@@ -154,10 +154,14 @@ async function connectWallet() {
           mintButton.classList.remove("hidden");
           if (mintInfo) mintInfo.classList.remove("hidden");
         } else {
-          vipMessage.innerText = "❌ Access Denied. This wallet is not on the VIP list and no Discord role access.";
-          vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
-          mintButton.classList.add("hidden");
-          if (mintInfo) mintInfo.classList.add("hidden");
+          // Check if user has Discord role access before showing denied message
+          const discordRoleAccess = await checkDiscordRoleAccess();
+          if (!discordRoleAccess) {
+            vipMessage.innerText = "❌ Access Denied. This wallet is not on the VIP list and no Discord role access.";
+            vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
+            mintButton.classList.add("hidden");
+            if (mintInfo) mintInfo.classList.add("hidden");
+          }
         }
       } catch (err) {
         console.error("Failed to check VIP status:", err);
@@ -191,6 +195,37 @@ function disconnectWallet() {
   if (mintInfo) mintInfo.classList.add('hidden');
 }
 
+// Function to check Discord role access for mint page
+async function checkDiscordRoleAccess() {
+  const vipMessage = document.getElementById('vip-message');
+  const mintButton = document.getElementById('mint-now-btn');
+  const mintInfo = document.getElementById('mint-info');
+  
+  if (!vipMessage || !mintButton) return;
+  
+  try {
+    const discordId = localStorage.getItem('discord_id');
+    if (!discordId) {
+      return; // No Discord login
+    }
+    
+    const roleRes = await fetch('/api/user/roles.php');
+    const roleData = await roleRes.json();
+    
+    if (roleData.roles && roleData.roles.includes('1332108350518857842')) {
+      vipMessage.innerText = "✅ Discord WL Role Verified. You may mint!";
+      vipMessage.className = "mt-6 text-blue-600 font-semibold text-lg";
+      mintButton.classList.remove("hidden");
+      if (mintInfo) mintInfo.classList.remove("hidden");
+      return true;
+    }
+  } catch (roleErr) {
+    console.error("Failed to check Discord role:", roleErr);
+  }
+  
+  return false;
+}
+
 // Check for stored wallet on page load
 window.addEventListener('DOMContentLoaded', () => {
   const storedWallet = localStorage.getItem('walletAddress');
@@ -201,6 +236,11 @@ window.addEventListener('DOMContentLoaded', () => {
     updateAllConnectButtons(storedWallet, true);
     if (avatar) avatar.classList.remove('hidden');
     if (disconnectButton) disconnectButton.classList.remove('hidden');
+  }
+  
+  // Check Discord role access on mint page
+  if (window.location.pathname.includes('mint.html')) {
+    checkDiscordRoleAccess();
   }
   
   // Update scores on page load
