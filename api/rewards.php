@@ -19,7 +19,7 @@ foreach ($required as $key) {
     }
 }
 
-$dbPath = 'C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite';
+$dbPath = __DIR__ . '/../db/narrrf_world.sqlite';
 try {
     $pdo = new PDO("sqlite:$dbPath");
     $stmt = $pdo->prepare("

@@ -1,5 +1,5 @@
 <?php
-$pdo = new PDO("sqlite:C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite");
+$pdo = new PDO("sqlite:" . __DIR__ . "/../../db/narrrf_world.sqlite");
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $query = $pdo->query("SELECT user_id, role_name, timestamp FROM tbl_user_roles ORDER BY timestamp DESC");

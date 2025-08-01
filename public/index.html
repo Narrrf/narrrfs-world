@@ -2110,8 +2110,8 @@ function handleHDRDragEnd() {
     // Don't show status bar initially - only show when in HDR mode
     // showStatusBar();
     
-    // Load 10 images initially for better performance with large files
-    const initialLoad = 10;
+    // Load optimized amount based on device type
+    const initialLoad = window.innerWidth <= 768 ? 3 : 8;
     loadHDRImages(0, initialLoad);
   }
 
@@ -2235,10 +2235,10 @@ function handleHDRDragEnd() {
     if (!isLoadingHDR && hdrNextIndex < TOTAL_HDR_IMAGES) {
       // Optimized loading for better performance - smaller batches for large images
       const remainingImages = TOTAL_HDR_IMAGES - hdrNextIndex;
-      const loadAmount = window.innerWidth <= 768 ? Math.min(5, remainingImages) : Math.min(8, remainingImages);
+      const loadAmount = window.innerWidth <= 768 ? Math.min(3, remainingImages) : Math.min(6, remainingImages);
       
       // Show bandwidth warning for large loads
-      if (loadAmount >= 10) {
+      if (loadAmount >= 6) {
         showBandwidthWarning(loadAmount);
       }
       

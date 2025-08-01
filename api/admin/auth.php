@@ -12,7 +12,7 @@ $GUILD_ID = '1332015322546311218'; // Guild ID from sync-role.php
 // Simple admin users storage (in production, you'd want to use a database)
 $admin_users = [
     'narrrf' => [
-        'password' => 'PnoRakesucks&2025', // Change this to your preferred password
+        'password' => $_ENV['ADMIN_PASSWORD'] ?? getenv('ADMIN_PASSWORD') ?? 'PnoRakesucks&2025', // Use environment variable
         'role' => 'super_admin',
         'discord_id' => '328601656659017732'
     ]

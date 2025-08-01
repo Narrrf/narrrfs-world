@@ -109,10 +109,10 @@ if (isset($_SESSION['oauth_final_redirect'])) {
     unset($_SESSION['oauth_final_redirect']); // clean up
 }
 
-// ✅ Inject localStorage and redirect
+// ✅ Inject localStorage and redirect (XSS PROTECTED)
 echo "<script>
-  localStorage.setItem('discord_id', '{$user['id']}');
-  localStorage.setItem('discord_name', '{$user['username']}');
-  window.location.href = '$target';
+  localStorage.setItem('discord_id', " . json_encode($user['id']) . ");
+  localStorage.setItem('discord_name', " . json_encode($user['username']) . ");
+  window.location.href = " . json_encode($target) . ";
 </script>";
 exit;

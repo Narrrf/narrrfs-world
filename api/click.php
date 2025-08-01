@@ -17,7 +17,7 @@ if (!isset($input['egg_id'])) {
 }
 
 $eggId = trim($input['egg_id']);
-$dbPath = 'C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite';
+$dbPath = __DIR__ . '/../db/narrrf_world.sqlite';
 
 try {
     $pdo = new PDO("sqlite:$dbPath");
