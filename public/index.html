@@ -139,8 +139,8 @@
         display: none !important;
       }
       
-      /* Hide the main navigation menu in landscape mode */
-      header.bg-black {
+      /* Hide the main navigation menu in landscape mode only when HDR is active */
+      body.hdr-mode header.bg-black {
         display: none !important;
       }
       
@@ -411,6 +411,13 @@
     
     // 🧹 Clean up any existing status bar on page load
     cleanupStatusBar();
+    
+    // Ensure HDR mode class is removed on page load
+    document.body.classList.remove('hdr-mode');
+    
+    // Force remove any existing status bar elements
+    const existingStatusBars = document.querySelectorAll('#hdr-status-bar');
+    existingStatusBars.forEach(bar => bar.remove());
     
     const eggIds = ['cheese-egg', 'cheese-egg-finance', 'cheese-egg-blue'];
 
@@ -906,7 +913,9 @@ The next wave is close — don't miss the real Genesis scroll.
 <script>
 function updateCountdown() {
   const countdownEl = document.getElementById("countdown-timer");
-  const targetDate = new Date("2025-08-01T00:00:00Z"); // UTC midnight Aug 1
+  if (!countdownEl) return;
+  
+  const targetDate = new Date("2025-01-28T04:35:00Z"); // About 12h35min from now
 
   const now = new Date();
   const diff = targetDate - now;
@@ -923,8 +932,12 @@ function updateCountdown() {
 
   countdownEl.innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
 }
-setInterval(updateCountdown, 1000);
-updateCountdown();
+
+// Initialize countdown when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+});
 </script>
 
 </section>
@@ -2038,9 +2051,11 @@ function handleHDRDragEnd() {
       exp.style.display = 'block';
       art.style.display = 'none';
       closeHDR();
+      document.body.classList.remove('hdr-mode'); // Remove HDR mode class
     } else {
       exp.style.display = 'none';
       art.style.display = 'block';
+      document.body.classList.add('hdr-mode'); // Add HDR mode class
       // Don't automatically open first image - let user choose
     }
   }
@@ -2088,8 +2103,8 @@ function handleHDRDragEnd() {
     // Show status bar
     showStatusBar();
     
-    // Load 20 images initially for better user experience
-    const initialLoad = 20;
+    // Load 10 images initially for better performance with large files
+    const initialLoad = 10;
     loadHDRImages(0, initialLoad);
   }
 
@@ -2131,7 +2146,7 @@ function handleHDRDragEnd() {
           console.warn(`HDR image ${i} loading timeout - skipping`);
           img.onerror();
         }
-      }, 8000); // 8 second timeout
+      }, 30000); // 30 second timeout for large images
 
       // Add error handling for image loading
       img.onerror = () => {
@@ -2177,7 +2192,7 @@ function handleHDRDragEnd() {
         console.log('HDR loading timeout - forcing finish');
         finishHDRLoading();
       }
-    }, 15000); // Increased timeout to 15 seconds for mobile
+    }, 60000); // 60 second timeout for large image batches
   }
 
   function finishHDRLoading() {
@@ -2211,9 +2226,9 @@ function handleHDRDragEnd() {
 
   function loadMoreHDRImages() {
     if (!isLoadingHDR && hdrNextIndex < TOTAL_HDR_IMAGES) {
-      // Optimized loading for better performance - smaller batches
+      // Optimized loading for better performance - smaller batches for large images
       const remainingImages = TOTAL_HDR_IMAGES - hdrNextIndex;
-      const loadAmount = window.innerWidth <= 768 ? Math.min(8, remainingImages) : Math.min(12, remainingImages);
+      const loadAmount = window.innerWidth <= 768 ? Math.min(5, remainingImages) : Math.min(8, remainingImages);
       
       // Show bandwidth warning for large loads
       if (loadAmount >= 10) {
