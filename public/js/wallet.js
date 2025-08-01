@@ -201,29 +201,46 @@ async function checkDiscordRoleAccess() {
   const mintButton = document.getElementById('mint-now-btn');
   const mintInfo = document.getElementById('mint-info');
   
-  if (!vipMessage || !mintButton) return;
+  if (!vipMessage || !mintButton) {
+    console.log('Mint page elements not found');
+    return false;
+  }
   
   try {
     const discordId = localStorage.getItem('discord_id');
+    console.log('Checking Discord role access for user:', discordId);
+    
     if (!discordId) {
-      return; // No Discord login
+      console.log('No Discord ID found in localStorage');
+      vipMessage.innerText = "⚠️ Please login with Discord first";
+      vipMessage.className = "mt-6 text-yellow-600 font-semibold text-lg";
+      return false;
     }
     
+    console.log('Fetching roles from API...');
     const roleRes = await fetch('/api/user/roles.php');
     const roleData = await roleRes.json();
+    console.log('Role data received:', roleData);
     
     if (roleData.roles && roleData.roles.includes('1332108350518857842')) {
+      console.log('User has WL role!');
       vipMessage.innerText = "✅ Discord WL Role Verified. You may mint!";
       vipMessage.className = "mt-6 text-blue-600 font-semibold text-lg";
       mintButton.classList.remove("hidden");
       if (mintInfo) mintInfo.classList.remove("hidden");
       return true;
+    } else {
+      console.log('User does not have WL role. Available roles:', roleData.roles);
+      vipMessage.innerText = "❌ Discord WL Role not found. Please check your Discord roles.";
+      vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
+      return false;
     }
   } catch (roleErr) {
     console.error("Failed to check Discord role:", roleErr);
+    vipMessage.innerText = "⚠️ Failed to check Discord roles. Please try again.";
+    vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
+    return false;
   }
-  
-  return false;
 }
 
 // Check for stored wallet on page load
@@ -248,4 +265,23 @@ window.addEventListener('DOMContentLoaded', () => {
   
   // Update scores every 30 seconds
   setInterval(updateUserScores, 30000);
-}); 
+});
+
+// Function to clear cache and reload page (for favicon issues)
+function clearCacheAndReload() {
+  if ('caches' in window) {
+    caches.keys().then(function(names) {
+      for (let name of names) {
+        caches.delete(name);
+      }
+    });
+  }
+  
+  // Clear localStorage for Discord and wallet data
+  localStorage.removeItem('discord_id');
+  localStorage.removeItem('discord_name');
+  localStorage.removeItem('walletAddress');
+  
+  // Force reload without cache
+  window.location.reload(true);
+}
