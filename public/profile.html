@@ -1159,18 +1159,29 @@ window.claimQuest = async function(questId, btn) {
 // 🎯 WL Role Button Logic
 async function checkWLRoleAndShowButton() {
   const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
-  if (!userId) return;
+  console.log('Checking WL role for user:', userId);
+  if (!userId) {
+    console.log('No user ID found');
+    return;
+  }
 
   try {
     const roleRes = await fetch('/api/user/roles.php');
     const roleData = await roleRes.json();
+    console.log('Role data received:', roleData);
     
     if (roleData.roles && roleData.roles.includes('1332108350518857842')) {
+      console.log('User has WL role - showing button');
       // User has WL role - show button
       const wlButton = document.getElementById('wlMintButton');
       if (wlButton) {
         wlButton.classList.remove('hidden');
+        console.log('WL button should now be visible');
+      } else {
+        console.log('WL button element not found');
       }
+    } else {
+      console.log('User does not have WL role or roles not found');
     }
   } catch (error) {
     console.error('Failed to check WL role:', error);
