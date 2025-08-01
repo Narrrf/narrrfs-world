@@ -915,7 +915,7 @@ function updateCountdown() {
   const countdownEl = document.getElementById("countdown-timer");
   if (!countdownEl) return;
   
-  const targetDate = new Date("2025-01-28T04:35:00Z"); // About 12h35min from now
+  const targetDate = new Date("2025-08-01T18:00:00Z"); // Today 8 PM Vienna time (7 PM UTC)
 
   const now = new Date();
   const diff = targetDate - now;
@@ -1928,6 +1928,10 @@ function handleHDRDragEnd() {
     full.classList.remove('hidden');
     full.classList.add('flex');
     document.body.classList.add('overflow-hidden');
+    document.body.classList.add('hdr-mode'); // Add HDR mode class when actually viewing HDR
+    
+    // Show status bar when opening HDR viewer
+    showStatusBar();
     
     // Show initial bandwidth warning for HDR viewer
     showHDRWelcomeMessage();
@@ -1957,6 +1961,7 @@ function handleHDRDragEnd() {
       full.classList.remove('flex');
     }
     document.body.classList.remove('overflow-hidden');
+    document.body.classList.remove('hdr-mode'); // Remove HDR mode class when closing HDR
     
     // Hide status bar when closing HDR viewer
     hideStatusBar();
@@ -2052,10 +2057,12 @@ function handleHDRDragEnd() {
       art.style.display = 'none';
       closeHDR();
       document.body.classList.remove('hdr-mode'); // Remove HDR mode class
+      hideStatusBar(); // Hide status bar when switching to experiment mode
     } else {
       exp.style.display = 'none';
       art.style.display = 'block';
-      document.body.classList.add('hdr-mode'); // Add HDR mode class
+      // Don't add hdr-mode class here - only add when actually viewing HDR images
+      // document.body.classList.add('hdr-mode'); // Add HDR mode class
       // Don't automatically open first image - let user choose
     }
   }
@@ -2100,8 +2107,8 @@ function handleHDRDragEnd() {
     hdrNextIndex = 0;
     loadingProgress = 0;
     
-    // Show status bar
-    showStatusBar();
+    // Don't show status bar initially - only show when in HDR mode
+    // showStatusBar();
     
     // Load 10 images initially for better performance with large files
     const initialLoad = 10;

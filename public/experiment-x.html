@@ -538,6 +538,10 @@ This is the dual-mode display section for both:
     full.classList.remove('hidden');
     full.classList.add('flex');
     document.body.classList.add('overflow-hidden');
+    document.body.classList.add('hdr-mode'); // Add HDR mode class when actually viewing HDR
+    
+    // Show status bar when opening HDR viewer
+    showStatusBar();
     
     // Show initial bandwidth warning for HDR viewer
     showHDRWelcomeMessage();
@@ -567,6 +571,7 @@ This is the dual-mode display section for both:
       full.classList.remove('flex');
     }
     document.body.classList.remove('overflow-hidden');
+    document.body.classList.remove('hdr-mode'); // Remove HDR mode class when closing HDR
     
     // Hide status bar when closing HDR viewer
     hideStatusBar();
@@ -664,10 +669,12 @@ This is the dual-mode display section for both:
       art.style.display = 'none';
       closeHDR();
       document.body.classList.remove('hdr-mode'); // Remove HDR mode class
+      hideStatusBar(); // Hide status bar when switching to experiment mode
     } else {
       exp.style.display = 'none';
       art.style.display = 'block';
-      document.body.classList.add('hdr-mode'); // Add HDR mode class
+      // Don't add hdr-mode class here - only add when actually viewing HDR images
+      // document.body.classList.add('hdr-mode'); // Add HDR mode class
       // Don't automatically open first image - let user choose
     }
   }
@@ -722,8 +729,8 @@ This is the dual-mode display section for both:
     hdrNextIndex = 0;
     loadingProgress = 0;
     
-    // Show status bar
-    showStatusBar();
+    // Don't show status bar initially - only show when in HDR mode
+    // showStatusBar();
     
     // Load 10 images initially for better performance with large files
     const initialLoad = 10;
