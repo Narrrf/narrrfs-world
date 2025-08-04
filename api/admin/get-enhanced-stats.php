@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Database connection
-$db_path = __DIR__ . '/../../db/narrrf_world.sqlite';
+$db_path = '/var/www/html/db/narrrf_world.sqlite';
 try {
     $pdo = new PDO("sqlite:$db_path");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

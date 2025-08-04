@@ -2,7 +2,7 @@
 // Comprehensive fix for all points management functions
 // This ensures only ONE record per user to prevent summing issues
 
-$file = '../api/admin/point-management.php';
+$file = 'api/admin/point-management.php';
 $content = file_get_contents($file);
 
 // Fix 1: ADDPOINTS - Replace with DELETE + INSERT approach
@@ -118,7 +118,7 @@ $content = str_replace($oldSetPoints, $newSetPoints, $content);
 $content = str_replace($oldRemovePoints, $newRemovePoints, $content);
 
 // Write back to file
-file_put_contents($file, $newContent);
+file_put_contents($file, $content);
 
 echo "✅ FIXED ALL POINTS FUNCTIONS!\n";
 echo "All three functions (addpoints, setpoints, removepoints) now:\n";

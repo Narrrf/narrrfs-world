@@ -78,23 +78,23 @@ try {
                 throw new Exception('Invalid parameters');
             }
             
-            // EXACT SAME LOGIC AS BOT:
-            // 1. Try to update existing user score
-            $stmt = $db->prepare('UPDATE tbl_user_scores SET score = score + ? WHERE user_id = ?');
-            $stmt->bindValue(1, $amount, SQLITE3_INTEGER);
-            $stmt->bindValue(2, $userId, SQLITE3_TEXT);
-            $stmt->execute();
-            $affectedRows = $db->changes();
+            // FIXED LOGIC: Clear all existing records and create one new record
+            // 1. Get current total balance
+            $currentBalance = getUserTotalScore($db, $userId);
+            $newBalance = $currentBalance + $amount;
             
-            // 2. If no rows affected, user doesn't exist, so insert new record
-            if ($affectedRows === 0) {
-                $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
-                $stmt->bindValue(1, $userId, SQLITE3_TEXT);
-                $stmt->bindValue(2, $amount, SQLITE3_INTEGER);
-                $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
-                $stmt->bindValue(4, 'addpoints', SQLITE3_TEXT);
-                $stmt->execute();
-            }
+            // 2. Delete all existing records for this user
+            $stmt = $db->prepare('DELETE FROM tbl_user_scores WHERE user_id = ?');
+            $stmt->bindValue(1, $userId, SQLITE3_TEXT);
+            $stmt->execute();
+
+            // 3. Insert one new record with the new total
+            $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
+            $stmt->bindValue(1, $userId, SQLITE3_TEXT);
+            $stmt->bindValue(2, $newBalance, SQLITE3_INTEGER);
+            $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
+            $stmt->bindValue(4, 'addpoints', SQLITE3_TEXT);
+            $stmt->execute();
             
             // 3. Get updated balance
             $newBalance = getUserTotalScore($db, $userId);
@@ -135,23 +135,19 @@ try {
             $oldAmount = getUserTotalScore($db, $userId);
             $delta = $newAmount - $oldAmount;
             
-            // EXACT SAME LOGIC AS BOT:
-            // 1. Try to update existing user score
-            $stmt = $db->prepare('UPDATE tbl_user_scores SET score = ? WHERE user_id = ?');
-            $stmt->bindValue(1, $newAmount, SQLITE3_INTEGER);
-            $stmt->bindValue(2, $userId, SQLITE3_TEXT);
+            // FIXED LOGIC: Clear all existing records and create one new record
+            // 1. Delete all existing records for this user
+            $stmt = $db->prepare('DELETE FROM tbl_user_scores WHERE user_id = ?');
+            $stmt->bindValue(1, $userId, SQLITE3_TEXT);
             $stmt->execute();
-            $affectedRows = $db->changes();
-            
-            // 2. If no rows affected, user doesn't exist, so insert new record
-            if ($affectedRows === 0) {
-                $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
-                $stmt->bindValue(1, $userId, SQLITE3_TEXT);
-                $stmt->bindValue(2, $newAmount, SQLITE3_INTEGER);
-                $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
-                $stmt->bindValue(4, 'setpoints', SQLITE3_TEXT);
-                $stmt->execute();
-            }
+
+            // 2. Insert one new record with the exact amount
+            $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
+            $stmt->bindValue(1, $userId, SQLITE3_TEXT);
+            $stmt->bindValue(2, $newAmount, SQLITE3_INTEGER);
+            $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
+            $stmt->bindValue(4, 'setpoints', SQLITE3_TEXT);
+            $stmt->execute();
             
             // 3. Log the adjustment
             $stmt = $db->prepare('INSERT INTO tbl_score_adjustments (user_id, admin_id, amount, action, reason) VALUES (?, ?, ?, ?, ?)');
@@ -186,23 +182,23 @@ try {
                 throw new Exception('Invalid parameters');
             }
             
-            // EXACT SAME LOGIC AS BOT:
-            // 1. Try to update existing user score
-            $stmt = $db->prepare('UPDATE tbl_user_scores SET score = score - ? WHERE user_id = ?');
-            $stmt->bindValue(1, $amount, SQLITE3_INTEGER);
-            $stmt->bindValue(2, $userId, SQLITE3_TEXT);
-            $stmt->execute();
-            $affectedRows = $db->changes();
+            // FIXED LOGIC: Clear all existing records and create one new record
+            // 1. Get current total balance
+            $currentBalance = getUserTotalScore($db, $userId);
+            $newBalance = $currentBalance - $amount;
             
-            // 2. If no rows affected, user doesn't exist, so insert new record with negative score
-            if ($affectedRows === 0) {
-                $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
-                $stmt->bindValue(1, $userId, SQLITE3_TEXT);
-                $stmt->bindValue(2, -$amount, SQLITE3_INTEGER);
-                $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
-                $stmt->bindValue(4, 'removepoints', SQLITE3_TEXT);
-                $stmt->execute();
-            }
+            // 2. Delete all existing records for this user
+            $stmt = $db->prepare('DELETE FROM tbl_user_scores WHERE user_id = ?');
+            $stmt->bindValue(1, $userId, SQLITE3_TEXT);
+            $stmt->execute();
+
+            // 3. Insert one new record with the new total
+            $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
+            $stmt->bindValue(1, $userId, SQLITE3_TEXT);
+            $stmt->bindValue(2, $newBalance, SQLITE3_INTEGER);
+            $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
+            $stmt->bindValue(4, 'removepoints', SQLITE3_TEXT);
+            $stmt->execute();
             
             // 3. Get updated balance
             $newBalance = getUserTotalScore($db, $userId);
