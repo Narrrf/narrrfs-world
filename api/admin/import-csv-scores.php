@@ -3,7 +3,7 @@
 // This will replace all corrupted data with the accurate CSV data
 
 $db_path = '/var/www/html/db/narrrf_world.sqlite';
-$csv_file = __DIR__ . '/public/leaderboard.csv';
+$csv_file = __DIR__ . '/../../public/leaderboard.csv';
 
 if (!file_exists($db_path)) {
     echo "❌ Database not found: $db_path\n";
