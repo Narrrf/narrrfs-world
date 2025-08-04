@@ -9,7 +9,7 @@ The Discord Token of Render System is a dynamic solution for managing Discord in
 All Discord invite codes are managed in `discord-config.js`:
 ```javascript
 const DISCORD_CONFIG = {
-    inviteCode: 'rHc4Jg5Q', // 🔧 UPDATE THIS TOKEN TO CHANGE ALL DISCORD LINKS
+    inviteCode: 'hx4EvgBG', // 🔧 UPDATE THIS TOKEN TO CHANGE ALL DISCORD LINKS
     // ... other configuration
 };
 ```
@@ -35,7 +35,7 @@ The system runs on both `DOMContentLoaded` and `window.load` events to catch dyn
 ### Example:
 ```javascript
 // Change this line in discord-config.js
-inviteCode: 'rHc4Jg5Q', // Old code
+inviteCode: 'hx4EvgBG', // Old code
 inviteCode: 'newInviteCode123', // New code
 ```
 
@@ -73,8 +73,8 @@ Visit `discord-test.html` to:
 3. Look for messages like:
    ```
    🎯 Discord Token of Render System v12.0 loaded
-   🔗 Current Discord URL: https://discord.gg/rHc4Jg5Q
-   🔄 Updated Discord link: https://discord.gg/SYd2FC2U → https://discord.gg/rHc4Jg5Q
+   🔗 Current Discord URL: https://discord.gg/hx4EvgBG
+   🔄 Updated Discord link: https://discord.gg/rHc4Jg5Q → https://discord.gg/hx4EvgBG
    ```
 
 ## 🔧 Technical Details
@@ -167,5 +167,20 @@ If you encounter issues:
 4. Ensure all pages include the `discord-config.js` script
 
 ---
+
+## 🔧 Admin Interface Integration
+
+### Admin Panel Update
+The Discord invite code can now be updated through the admin interface:
+1. Navigate to `/admin-interface.html`
+2. Go to the "Discord Config" tab
+3. Enter the new invite code and click "Update"
+4. The system will automatically update all links and log the change
+
+### API Endpoint
+- **Endpoint**: `/api/admin/update-discord-invite.php`
+- **Method**: POST
+- **Authentication**: Admin credentials required
+- **Response**: JSON with success/error status
 
 **🎯 Remember**: Just update the `inviteCode` in `discord-config.js` and all Discord links across your entire site will automatically update! 

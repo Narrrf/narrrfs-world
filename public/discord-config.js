@@ -1,14 +1,14 @@
 // Discord Configuration - Token of Render System
 // This file manages Discord invite links dynamically across all pages
 // Environment Variable Support: DISCORD_INVITE_CODE
-// Fallback: 'rHc4Jg5Q' (current Discord invite code)
+// Fallback: 'hx4EvgBG' (current Discord invite code)
 
 const DISCORD_CONFIG = {
     // 🔧 ENVIRONMENT VARIABLE SUPPORT
     // Set DISCORD_INVITE_CODE in your environment or use fallback
     inviteCode: (typeof process !== 'undefined' && process.env && process.env.DISCORD_INVITE_CODE) 
         ? process.env.DISCORD_INVITE_CODE 
-        : 'rHc4Jg5Q', // Fallback Discord invite code
+        : 'hx4EvgBG', // Fallback Discord invite code
     
     // Base Discord URL
     baseUrl: 'https://discord.gg/',
