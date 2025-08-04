@@ -31,8 +31,8 @@ try {
         exit;
     }
 
-    // Get user basic info
-    $stmt = $pdo->prepare("SELECT discord_id, username, created_at FROM tbl_users WHERE discord_id = ?");
+            // Get user basic info
+        $stmt = $pdo->prepare("SELECT discord_id, username FROM tbl_users WHERE discord_id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 

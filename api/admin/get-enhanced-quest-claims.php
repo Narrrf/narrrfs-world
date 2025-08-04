@@ -48,8 +48,7 @@ try {
                 q.type as quest_type,
                 q.reward as quest_reward,
                 q.role_id as quest_role_id,
-                u.username,
-                u.created_at as user_created_at
+                u.username
             FROM tbl_quest_claims qc
             LEFT JOIN tbl_quests q ON qc.quest_id = q.quest_id
             LEFT JOIN tbl_users u ON qc.user_id = u.discord_id
