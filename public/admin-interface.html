@@ -3264,7 +3264,7 @@
           </div>
 
           <!-- Statistics Overview -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <!-- Cheese Click Stats -->
             <div class="bg-gray-800 p-3 rounded">
               <h5 class="font-semibold text-blue-400 mb-2">🧀 Cheese Click Activity</h5>
@@ -3293,6 +3293,22 @@
                   <span class="text-gray-400">Last Click:</span>
                   <span class="text-white font-semibold">${data.cheese_stats.last_click ? formatDate(data.cheese_stats.last_click) : 'Never'}</span>
                 </div>
+              </div>
+            </div>
+
+            <!-- Egg Type Breakdown -->
+            <div class="bg-gray-800 p-3 rounded">
+              <h5 class="font-semibold text-yellow-400 mb-2">🥚 Egg Type Breakdown</h5>
+              <div class="space-y-1 text-sm">
+                ${data.cheese_stats.clicks_by_egg && data.cheese_stats.clicks_by_egg.length > 0 ? 
+                  data.cheese_stats.clicks_by_egg.map(egg => `
+                    <div class="flex justify-between">
+                      <span class="text-gray-400">${getEggDisplayName(egg.egg_id)}:</span>
+                      <span class="text-white font-semibold">${egg.click_count}</span>
+                    </div>
+                  `).join('') : 
+                  '<div class="text-gray-500 italic">No egg clicks recorded</div>'
+                }
               </div>
             </div>
 
@@ -3381,8 +3397,24 @@
               <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                 ${data.cheese_stats.clicks_by_egg.map(egg => `
                   <div class="bg-gray-800 p-2 rounded text-center">
-                    <p class="text-xs text-gray-400">Egg ${egg.egg_id}</p>
+                    <p class="text-xs text-gray-400">${getEggDisplayName(egg.egg_id)}</p>
                     <p class="text-sm font-semibold text-white">${egg.click_count}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Recent Cheese Clicks -->
+          ${data.cheese_stats.recent_clicks.length > 0 ? `
+            <div class="mb-4">
+              <h5 class="font-semibold text-white mb-2">🕒 Recent Cheese Clicks</h5>
+              <div class="space-y-1 max-h-32 overflow-y-auto">
+                ${data.cheese_stats.recent_clicks.slice(0, 10).map(click => `
+                  <div class="bg-gray-800 p-2 rounded text-sm">
+                    <span class="text-gray-400">${getEggDisplayName(click.egg_id)}</span>
+                    <span class="text-gray-500 mx-2">•</span>
+                    <span class="text-gray-300">${formatDate(click.timestamp)}</span>
                   </div>
                 `).join('')}
               </div>
@@ -3395,6 +3427,17 @@
     function formatDate(dateString) {
       if (!dateString) return 'N/A';
       return new Date(dateString).toLocaleString();
+    }
+
+    function getEggDisplayName(eggId) {
+      const eggNames = {
+        'cheese-egg-blue': '🔵 Blue Egg',
+        'cheese-egg-red': '🔴 Red Egg', 
+        'cheese-egg-green': '🟢 Green Egg',
+        'cheese-egg': '🧀 Cheese Egg',
+        'cheese-egg-finance': '💰 Finance Egg'
+      };
+      return eggNames[eggId] || eggId;
     }
 
     async function approveQuestClaim(claimId) {
