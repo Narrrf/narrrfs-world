@@ -41,7 +41,7 @@ try {
 // --- PARSE INPUT ---
 $data = json_decode(file_get_contents('php://input'), true);
 $action = $data['action'] ?? '';
-$query_type = $data['query_type'] ?? '';
+$query = $data['query'] ?? '';
 $params = $data['params'] ?? [];
 
 // --- ACTION SAFETY ---
@@ -51,31 +51,12 @@ if ($action !== 'query') {
     exit;
 }
 
-// --- WHITELISTED QUERY SYSTEM (SECURITY FIX) ---
-$allowed_queries = [
-    'get_user_by_id' => 'SELECT * FROM tbl_users WHERE discord_id = ?',
-    'get_user_scores' => 'SELECT * FROM tbl_user_scores WHERE user_id = ?',
-    'get_user_roles' => 'SELECT * FROM tbl_user_roles WHERE user_id = ?',
-    'get_user_inventory' => 'SELECT * FROM tbl_user_inventory WHERE user_id = ?',
-    'get_user_traits' => 'SELECT * FROM tbl_user_traits WHERE user_id = ?',
-    'get_quests' => 'SELECT * FROM tbl_quests WHERE is_active = 1',
-    'get_quest_claims' => 'SELECT * FROM tbl_quest_claims WHERE user_id = ?',
-    'get_leaderboard' => 'SELECT * FROM tbl_leaderboard ORDER BY score DESC LIMIT 100',
-    'get_store_items' => 'SELECT * FROM tbl_store_items WHERE is_active = 1',
-    'insert_user' => 'INSERT OR REPLACE INTO tbl_users (discord_id, username, avatar_url) VALUES (?, ?, ?)',
-    'insert_user_score' => 'INSERT OR REPLACE INTO tbl_user_scores (user_id, score, updated_at) VALUES (?, ?, ?)',
-    'insert_quest_claim' => 'INSERT INTO tbl_quest_claims (quest_id, user_id, proof, status) VALUES (?, ?, ?, ?)',
-    'update_user_score' => 'UPDATE tbl_user_scores SET score = ?, updated_at = ? WHERE user_id = ?',
-    'update_quest_claim' => 'UPDATE tbl_quest_claims SET status = ?, reviewed_at = ? WHERE claim_id = ?'
-];
-
-if (!isset($allowed_queries[$query_type])) {
-    echo json_encode(['success' => false, 'error' => 'Query type not allowed']);
+// --- SQL SAFETY ---
+if (!preg_match('/^\s*(SELECT|INSERT|UPDATE)\s/i', $query)) {
+    echo json_encode(['success' => false, 'error' => 'Query not allowed: Only SELECT, INSERT, UPDATE permitted.']);
     $db->close();
     exit;
 }
-
-$query = $allowed_queries[$query_type];
 
 // --- EXECUTE ---
 try {

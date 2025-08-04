@@ -7,8 +7,8 @@ if (session_status() === PHP_SESSION_NONE) {
 // ✅ Load role ID → name mapping from file
 $roleMap = require __DIR__ . '/../../discord-tools/role_map.php';
 
-// 🏠 Your Discord Guild (server) ID
-$guildId = '1332015322546311218';
+// 🏠 Your Discord Guild (server) ID - Use environment variable from Render
+$guildId = getenv('DISCORD_GUILD') ?: '1332015322546311218';
 
 // 🔐 Bot token securely from Render ENV (must start with "Bot ")
 $botToken = 'Bot ' . getenv('DISCORD_BOT_SECRET');

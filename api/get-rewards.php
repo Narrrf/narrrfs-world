@@ -8,7 +8,7 @@ if (!isset($_SESSION['discord_id'])) {
 }
 
 $userId = $_SESSION['discord_id'];
-$dbPath = __DIR__ . '/../db/narrrf_world.sqlite';
+$dbPath = 'C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite';
 
 try {
     $pdo = new PDO("sqlite:$dbPath");

@@ -44,7 +44,7 @@ function verifyDiscordPermissions($discordId) {
 function getUserTotalScore($db, $userId) {
     $stmt = $db->prepare('SELECT SUM(score) as total FROM tbl_user_scores WHERE user_id = ?');
     $stmt->bindValue(1, $userId, SQLITE3_TEXT);
-    $result = $stmt// DELETED
+    $result = $stmt->execute();
     $row = $result->fetchArray(SQLITE3_ASSOC);
     return $row ? (int)$row['total'] : 0;
 }
@@ -53,7 +53,7 @@ function getUserTotalScore($db, $userId) {
 function userExistsInScores($db, $userId) {
     $stmt = $db->prepare('SELECT COUNT(*) as count FROM tbl_user_scores WHERE user_id = ?');
     $stmt->bindValue(1, $userId, SQLITE3_TEXT);
-    $result = $stmt// DELETED
+    $result = $stmt->execute();
     $row = $result->fetchArray(SQLITE3_ASSOC);
     return $row && $row['count'] > 0;
 }
@@ -83,7 +83,7 @@ try {
             $stmt = $db->prepare('UPDATE tbl_user_scores SET score = score + ? WHERE user_id = ?');
             $stmt->bindValue(1, $amount, SQLITE3_INTEGER);
             $stmt->bindValue(2, $userId, SQLITE3_TEXT);
-            $stmt// DELETED
+            $stmt->execute();
             $affectedRows = $db->changes();
             
             // 2. If no rows affected, user doesn't exist, so insert new record
@@ -91,9 +91,9 @@ try {
                 $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
                 $stmt->bindValue(1, $userId, SQLITE3_TEXT);
                 $stmt->bindValue(2, $amount, SQLITE3_INTEGER);
-                $stmt// DELETED
+                $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
                 $stmt->bindValue(4, 'addpoints', SQLITE3_TEXT);
-                $stmt// DELETED
+                $stmt->execute();
             }
             
             // 3. Get updated balance
@@ -106,7 +106,7 @@ try {
             $stmt->bindValue(3, $amount, SQLITE3_INTEGER);
             $stmt->bindValue(4, 'add', SQLITE3_TEXT);
             $stmt->bindValue(5, $reason, SQLITE3_TEXT);
-            $stmt// DELETED
+            $stmt->execute();
             
             echo json_encode([
                 'success' => true,
@@ -140,7 +140,7 @@ try {
             $stmt = $db->prepare('UPDATE tbl_user_scores SET score = ? WHERE user_id = ?');
             $stmt->bindValue(1, $newAmount, SQLITE3_INTEGER);
             $stmt->bindValue(2, $userId, SQLITE3_TEXT);
-            $stmt// DELETED
+            $stmt->execute();
             $affectedRows = $db->changes();
             
             // 2. If no rows affected, user doesn't exist, so insert new record
@@ -148,9 +148,9 @@ try {
                 $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
                 $stmt->bindValue(1, $userId, SQLITE3_TEXT);
                 $stmt->bindValue(2, $newAmount, SQLITE3_INTEGER);
-                $stmt// DELETED
-                $stmt// DELETED
-                $stmt// DELETED
+                $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
+                $stmt->bindValue(4, 'setpoints', SQLITE3_TEXT);
+                $stmt->execute();
             }
             
             // 3. Log the adjustment
@@ -160,7 +160,7 @@ try {
             $stmt->bindValue(3, $delta, SQLITE3_INTEGER);
             $stmt->bindValue(4, 'set', SQLITE3_TEXT);
             $stmt->bindValue(5, $reason, SQLITE3_TEXT);
-            $stmt// DELETED
+            $stmt->execute();
             
             echo json_encode([
                 'success' => true,
@@ -191,7 +191,7 @@ try {
             $stmt = $db->prepare('UPDATE tbl_user_scores SET score = score - ? WHERE user_id = ?');
             $stmt->bindValue(1, $amount, SQLITE3_INTEGER);
             $stmt->bindValue(2, $userId, SQLITE3_TEXT);
-            $stmt// DELETED
+            $stmt->execute();
             $affectedRows = $db->changes();
             
             // 2. If no rows affected, user doesn't exist, so insert new record with negative score
@@ -199,9 +199,9 @@ try {
                 $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
                 $stmt->bindValue(1, $userId, SQLITE3_TEXT);
                 $stmt->bindValue(2, -$amount, SQLITE3_INTEGER);
-                $stmt// DELETED
+                $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
                 $stmt->bindValue(4, 'removepoints', SQLITE3_TEXT);
-                $stmt// DELETED
+                $stmt->execute();
             }
             
             // 3. Get updated balance
@@ -214,7 +214,7 @@ try {
             $stmt->bindValue(3, -$amount, SQLITE3_INTEGER);
             $stmt->bindValue(4, 'remove', SQLITE3_TEXT);
             $stmt->bindValue(5, $reason, SQLITE3_TEXT);
-            $stmt// DELETED
+            $stmt->execute();
             
             echo json_encode([
                 'success' => true,
@@ -256,7 +256,7 @@ try {
             ');
             $stmt->bindValue(1, $userId, SQLITE3_TEXT);
             $stmt->bindValue(2, $limit, SQLITE3_INTEGER);
-            $result = $stmt// DELETED
+            $result = $stmt->execute();
             
             $history = [];
             while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
@@ -289,7 +289,7 @@ try {
             $searchPattern = "%{$searchTerm}%";
             $stmt->bindValue(1, $searchPattern, SQLITE3_TEXT);
             $stmt->bindValue(2, $searchPattern, SQLITE3_TEXT);
-            $result = $stmt// DELETED
+            $result = $stmt->execute();
             
             $users = [];
             while ($row = $result->fetchArray(SQLITE3_ASSOC)) {

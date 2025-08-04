@@ -11,7 +11,7 @@ try {
 
     // Get active quests
     $stmt = $db->prepare('
-        SELECT quest_id, type, description, reward, url, created_by, created_at, is_active
+        SELECT quest_id, type, description, reward, link, created_by, created_at, is_active, role_id
         FROM tbl_quests 
         WHERE is_active = 1
         ORDER BY created_at DESC

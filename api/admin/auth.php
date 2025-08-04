@@ -4,15 +4,15 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Discord Bot Token and role configuration
-$DISCORD_BOT_TOKEN = 'YOUR_DISCORD_BOT_TOKEN'; // Replace with your actual bot token
+// Discord Bot Token and role configuration - Use environment variables
+$DISCORD_BOT_SECRET = getenv('DISCORD_BOT_SECRET'); // Use DISCORD_BOT_SECRET environment variable
 $MODERATOR_ROLE_ID = '1332049628300054679'; // Moderator role ID from role_map.php
-$GUILD_ID = '1332015322546311218'; // Guild ID from sync-role.php
+$GUILD_ID = getenv('DISCORD_GUILD') ?: '1332015322546311218'; // Use DISCORD_GUILD environment variable
 
 // Simple admin users storage (in production, you'd want to use a database)
 $admin_users = [
     'narrrf' => [
-        'password' => $_ENV['ADMIN_PASSWORD'] ?? getenv('ADMIN_PASSWORD') ?? 'PnoRakesucks&2025', // Use environment variable
+        'password' => 'PnoRakesucks&2025', // Change this to your preferred password
         'role' => 'super_admin',
         'discord_id' => '328601656659017732'
     ]
@@ -29,9 +29,9 @@ if (file_exists($users_file)) {
 
 // Function to check Discord moderator role
 function checkDiscordModeratorRole($discord_user_id) {
-    global $DISCORD_BOT_TOKEN, $MODERATOR_ROLE_ID, $GUILD_ID;
+    global $DISCORD_BOT_SECRET, $MODERATOR_ROLE_ID, $GUILD_ID;
     
-    if (!$discord_user_id || $DISCORD_BOT_TOKEN === 'YOUR_DISCORD_BOT_TOKEN') {
+    if (!$discord_user_id || !$DISCORD_BOT_SECRET) {
         // For testing purposes, allow access if no proper setup
         return true;
     }
@@ -43,7 +43,7 @@ function checkDiscordModeratorRole($discord_user_id) {
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Bot {$DISCORD_BOT_TOKEN}",
+        "Authorization: Bot {$DISCORD_BOT_SECRET}",
         "Content-Type: application/json"
     ]);
     
@@ -63,9 +63,9 @@ function checkDiscordModeratorRole($discord_user_id) {
 
 // Function to get Discord username
 function getDiscordUsername($discord_user_id) {
-    global $DISCORD_BOT_TOKEN;
+    global $DISCORD_BOT_SECRET;
     
-    if (!$discord_user_id || $DISCORD_BOT_TOKEN === 'YOUR_DISCORD_BOT_TOKEN') {
+    if (!$discord_user_id || !$DISCORD_BOT_SECRET) {
         return 'Discord Moderator';
     }
     
@@ -75,7 +75,7 @@ function getDiscordUsername($discord_user_id) {
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Bot {$DISCORD_BOT_TOKEN}",
+        "Authorization: Bot {$DISCORD_BOT_SECRET}",
         "Content-Type: application/json"
     ]);
     

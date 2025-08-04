@@ -44,14 +44,14 @@ if (!in_array('Moderator', $roles) && !in_array('Founder', $roles)) {
 }
 
 // Fetch all Discord members
-$guild_id = DISCORD_GUILD_ID; // Add this to discord.php
+$guild_id = getenv('DISCORD_GUILD') ?: '1332015322546311218'; // Use DISCORD_GUILD environment variable
 $all_discord_members = [];
 $after = null;
 
 do {
     $url = "https://discord.com/api/v10/guilds/$guild_id/members?limit=1000" . ($after ? "&after=$after" : "");
     $headers = [
-        "Authorization: Bot " . DISCORD_BOT_TOKEN,
+        "Authorization: Bot " . getenv('DISCORD_BOT_SECRET'), // Use DISCORD_BOT_SECRET environment variable
         "Content-Type: application/json"
     ];
 
