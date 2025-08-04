@@ -829,15 +829,23 @@
           <div>
             <label class="block text-sm font-medium mb-2">🔄 Reset Type:</label>
             <select id="resetType" class="w-full px-3 py-2 rounded text-gray-800" onchange="toggleResetOptions()">
-              <option value="all">All Scores</option>
-              <option value="top_scores">Top Scores Only</option>
-              <option value="user">Specific User</option>
+              <option value="season">🆕 New Season (Preserve Data)</option>
+              <option value="all">🗑️ All Scores (Delete)</option>
+              <option value="top_scores">📊 Top Scores Only</option>
+              <option value="user">👤 Specific User</option>
             </select>
           </div>
         </div>
 
         <!-- Additional Options -->
         <div id="resetOptions" class="space-y-4">
+          <!-- Season Option -->
+          <div id="seasonOption" class="hidden">
+            <label class="block text-sm font-medium mb-2">📅 Season Name (Optional):</label>
+            <input type="text" id="seasonName" placeholder="e.g., Summer 2024, Season 2, etc." class="w-full px-3 py-2 rounded text-gray-800">
+            <p class="text-xs text-gray-400 mt-1">Leave empty for auto-generated season name. Current data will be preserved as historical data.</p>
+          </div>
+
           <!-- Top Scores Option -->
           <div id="topScoresOption" class="hidden">
             <label class="block text-sm font-medium mb-2">📊 Number of Top Scores to Reset:</label>
@@ -858,7 +866,7 @@
           <button onclick="resetGameScores()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded font-semibold">
             ⚠️ Reset Game Scores
           </button>
-          <p class="text-xs text-red-400 mt-2">⚠️ This action cannot be undone! All selected scores will be permanently deleted.</p>
+          <p class="text-xs text-red-400 mt-2">⚠️ This action cannot be undone! For season resets, data is preserved as historical records.</p>
         </div>
       </div>
 
@@ -878,6 +886,30 @@
           <div id="snakeTopPlayers" class="space-y-2 max-h-64 overflow-y-auto">
             <div class="text-gray-300">Loading top players...</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Season Statistics -->
+      <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-yellow-400 mb-3">🏆 Season Statistics & Legends</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">📅 Select Season:</label>
+            <select id="seasonSelector" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
+              <option value="current">Current Season</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">🎮 Game Filter:</label>
+            <select id="gameFilter" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
+              <option value="all">All Games</option>
+              <option value="tetris">Tetris Only</option>
+              <option value="snake">Snake Only</option>
+            </select>
+          </div>
+        </div>
+        <div id="seasonStats" class="space-y-4">
+          <div class="text-gray-300">Loading season statistics...</div>
         </div>
       </div>
 
@@ -1319,29 +1351,39 @@
 
         // Load enhanced statistics (only for authenticated users)
         if (currentAdmin) {
-          const enhancedStatsResponse = await fetch('/api/admin/get-enhanced-stats.php');
-          const enhancedStats = await enhancedStatsResponse.json();
-          
-          if (enhancedStats.success) {
-            const stats = enhancedStats;
+          try {
+            const enhancedStatsResponse = await fetch('/api/admin/get-enhanced-stats.php');
+            const enhancedStats = await enhancedStatsResponse.json();
             
-            // Update immediate stats
-            document.getElementById('avgClicksPerUser').textContent = stats.immediate_stats.average_clicks_per_user;
-            document.getElementById('totalDSPOINC').textContent = stats.immediate_stats.total_dspoinc_circulation.toLocaleString();
-            document.getElementById('questCompletionRate').textContent = stats.immediate_stats.quest_completion_rate + '%';
-            document.getElementById('avgQuestReward').textContent = stats.immediate_stats.average_quest_reward.toLocaleString();
-            
-            // Update daily stats
-            document.getElementById('clicksLast24h').textContent = stats.daily_stats.clicks_last_24h;
-            document.getElementById('newUsersToday').textContent = stats.daily_stats.new_users_today;
-            document.getElementById('questsClaimedToday').textContent = stats.daily_stats.quests_claimed_today;
-            document.getElementById('rolesGrantedToday').textContent = stats.daily_stats.roles_granted_today;
-            
-            // Display engagement stats
-            displayEngagementStats(stats.engagement_stats);
-            
-            // Display wealth stats
-            displayWealthStats(stats.wealth_distribution);
+            if (enhancedStats.success) {
+              const stats = enhancedStats;
+              
+              // Update immediate stats
+              document.getElementById('avgClicksPerUser').textContent = stats.immediate_stats.average_clicks_per_user;
+              document.getElementById('totalDSPOINC').textContent = stats.immediate_stats.total_dspoinc_circulation.toLocaleString();
+              document.getElementById('questCompletionRate').textContent = stats.immediate_stats.quest_completion_rate + '%';
+              document.getElementById('avgQuestReward').textContent = stats.immediate_stats.average_quest_reward.toLocaleString();
+              
+              // Update daily stats
+              document.getElementById('clicksLast24h').textContent = stats.daily_stats.clicks_last_24h;
+              document.getElementById('newUsersToday').textContent = stats.daily_stats.new_users_today;
+              document.getElementById('questsClaimedToday').textContent = stats.daily_stats.quests_claimed_today;
+              document.getElementById('rolesGrantedToday').textContent = stats.daily_stats.roles_granted_today;
+              
+              // Display engagement stats
+              displayEngagementStats(stats.engagement_stats);
+              
+              // Display wealth stats
+              displayWealthStats(stats.wealth_distribution);
+            } else {
+              addLog(`❌ Enhanced stats error: ${enhancedStats.error}`);
+              // Set default values on error
+              setDefaultEnhancedStats();
+            }
+          } catch (error) {
+            addLog(`❌ Enhanced stats loading error: ${error.message}`);
+            // Set default values on error
+            setDefaultEnhancedStats();
           }
         } else {
           // Hide enhanced stats for non-authenticated users
@@ -1464,6 +1506,74 @@
           </button>
         </div>
       `).join('');
+    }
+
+    // Display engagement stats
+    function displayEngagementStats(engagementStats) {
+      const container = document.getElementById('engagementStats');
+      
+      if (!engagementStats) {
+        container.innerHTML = '<div class="text-gray-400">No engagement data available</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span class="text-cyan-300">Power Users (>100 clicks):</span>
+            <span class="text-white font-semibold">${engagementStats.power_users}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-cyan-300">Active Users (7 days):</span>
+            <span class="text-white font-semibold">${engagementStats.active_users_7_days}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-cyan-300">Retention Rate:</span>
+            <span class="text-white font-semibold">${engagementStats.user_retention_rate}%</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // Display wealth stats
+    function displayWealthStats(wealthStats) {
+      const container = document.getElementById('wealthStats');
+      
+      if (!wealthStats) {
+        container.innerHTML = '<div class="text-gray-400">No wealth data available</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span class="text-emerald-300">Highest Balance:</span>
+            <span class="text-white font-semibold">${wealthStats.max_balance?.toLocaleString() || 0}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-emerald-300">Lowest Balance:</span>
+            <span class="text-white font-semibold">${wealthStats.min_balance?.toLocaleString() || 0}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-emerald-300">Average Balance:</span>
+            <span class="text-white font-semibold">${wealthStats.avg_balance?.toLocaleString() || 0}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // Set default enhanced stats on error
+    function setDefaultEnhancedStats() {
+      document.getElementById('avgClicksPerUser').textContent = '0';
+      document.getElementById('totalDSPOINC').textContent = '0';
+      document.getElementById('questCompletionRate').textContent = '0%';
+      document.getElementById('avgQuestReward').textContent = '0';
+      document.getElementById('clicksLast24h').textContent = '0';
+      document.getElementById('newUsersToday').textContent = '0';
+      document.getElementById('questsClaimedToday').textContent = '0';
+      document.getElementById('rolesGrantedToday').textContent = '0';
+      document.getElementById('engagementStats').innerHTML = '<div class="text-gray-400">Error loading data</div>';
+      document.getElementById('wealthStats').innerHTML = '<div class="text-gray-400">Error loading data</div>';
     }
 
     // Admin authentication
@@ -1680,7 +1790,10 @@
         // Load tab-specific data
         if (tab === 'store') loadStoreItems();
         if (tab === 'quests') loadQuests();
-        if (tab === 'games') loadGameStatistics();
+        if (tab === 'games') {
+          loadGameStatistics();
+          loadSeasonStats();
+        }
       });
     });
 
@@ -3582,6 +3695,170 @@
       displayRecentActivity(data.recent_activity);
     }
 
+    // Season Statistics Functions
+    async function loadSeasonStats() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const season = document.getElementById('seasonSelector').value;
+      const gameType = document.getElementById('gameFilter').value;
+
+      addLog(`🔄 Loading season statistics for ${season}...`);
+
+      try {
+        const response = await fetch(`/api/admin/get-season-stats.php?season=${season}&game_type=${gameType}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          displaySeasonStats(data.data);
+          updateSeasonSelector(data.data.available_seasons);
+          addLog('✅ Season statistics loaded successfully');
+        } else {
+          addLog(`❌ Failed to load season statistics: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Season statistics loading error: ${error.message}`);
+      }
+    }
+
+    function displaySeasonStats(data) {
+      const container = document.getElementById('seasonStats');
+      
+      let html = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="bg-gray-700 p-3 rounded">
+            <h5 class="font-semibold text-blue-400 mb-2">🟦 Tetris Statistics</h5>
+            ${data.season_stats.tetris ? `
+              <p class="text-sm text-gray-300">Total Scores: ${data.season_stats.tetris.total_scores.toLocaleString()}</p>
+              <p class="text-sm text-gray-300">Unique Players: ${data.season_stats.tetris.unique_players.toLocaleString()}</p>
+              <p class="text-sm text-gray-300">Max Score: ${data.season_stats.tetris.max_score ? data.season_stats.tetris.max_score.toLocaleString() : '0'}</p>
+              <p class="text-sm text-gray-300">Avg Score: ${Math.round(data.season_stats.tetris.avg_score || 0).toLocaleString()}</p>
+              <p class="text-sm text-yellow-400">Top Performers: ${data.season_stats.tetris.top_performers}</p>
+            ` : '<p class="text-sm text-gray-400">No data available</p>'}
+          </div>
+          <div class="bg-gray-700 p-3 rounded">
+            <h5 class="font-semibold text-green-400 mb-2">🐍 Snake Statistics</h5>
+            ${data.season_stats.snake ? `
+              <p class="text-sm text-gray-300">Total Scores: ${data.season_stats.snake.total_scores.toLocaleString()}</p>
+              <p class="text-sm text-gray-300">Unique Players: ${data.season_stats.snake.unique_players.toLocaleString()}</p>
+              <p class="text-sm text-gray-300">Max Score: ${data.season_stats.snake.max_score ? data.season_stats.snake.max_score.toLocaleString() : '0'}</p>
+              <p class="text-sm text-gray-300">Avg Score: ${Math.round(data.season_stats.snake.avg_score || 0).toLocaleString()}</p>
+              <p class="text-sm text-yellow-400">Top Performers: ${data.season_stats.snake.top_performers}</p>
+            ` : '<p class="text-sm text-gray-400">No data available</p>'}
+          </div>
+        </div>
+      `;
+
+      // Add top performers section
+      if (data.top_performers) {
+        html += `
+          <div class="bg-gray-700 p-3 rounded mb-4">
+            <h5 class="font-semibold text-yellow-400 mb-2">🏆 Current Season Top Performers</h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        `;
+
+        if (data.top_performers.tetris && data.top_performers.tetris.length > 0) {
+          html += `
+            <div>
+              <h6 class="text-blue-400 font-semibold mb-2">🟦 Tetris</h6>
+              ${data.top_performers.tetris.map((player, index) => `
+                <div class="flex justify-between items-center mb-1 ${player.is_top_performer ? 'bg-yellow-600 bg-opacity-30 p-1 rounded' : ''}">
+                  <span class="text-sm text-white">${index + 1}. ${player.discord_name || 'Unknown'}</span>
+                  <span class="text-sm text-green-400">${player.score.toLocaleString()}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        if (data.top_performers.snake && data.top_performers.snake.length > 0) {
+          html += `
+            <div>
+              <h6 class="text-green-400 font-semibold mb-2">🐍 Snake</h6>
+              ${data.top_performers.snake.map((player, index) => `
+                <div class="flex justify-between items-center mb-1 ${player.is_top_performer ? 'bg-yellow-600 bg-opacity-30 p-1 rounded' : ''}">
+                  <span class="text-sm text-white">${index + 1}. ${player.discord_name || 'Unknown'}</span>
+                  <span class="text-sm text-green-400">${player.score.toLocaleString()}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        html += `
+            </div>
+          </div>
+        `;
+      }
+
+      // Add all-time legends section
+      if (data.all_time_legends) {
+        html += `
+          <div class="bg-gray-700 p-3 rounded">
+            <h5 class="font-semibold text-purple-400 mb-2">👑 All-Time Legends (Top Performers)</h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        `;
+
+        if (data.all_time_legends.tetris && data.all_time_legends.tetris.length > 0) {
+          html += `
+            <div>
+              <h6 class="text-blue-400 font-semibold mb-2">🟦 Tetris Legends</h6>
+              ${data.all_time_legends.tetris.map((legend, index) => `
+                <div class="flex justify-between items-center mb-1 bg-purple-600 bg-opacity-30 p-1 rounded">
+                  <div>
+                    <span class="text-sm text-white">${index + 1}. ${legend.discord_name || 'Unknown'}</span>
+                    <span class="text-xs text-gray-400 block">${legend.season}</span>
+                  </div>
+                  <span class="text-sm text-green-400">${legend.score.toLocaleString()}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        if (data.all_time_legends.snake && data.all_time_legends.snake.length > 0) {
+          html += `
+            <div>
+              <h6 class="text-green-400 font-semibold mb-2">🐍 Snake Legends</h6>
+              ${data.all_time_legends.snake.map((legend, index) => `
+                <div class="flex justify-between items-center mb-1 bg-purple-600 bg-opacity-30 p-1 rounded">
+                  <div>
+                    <span class="text-sm text-white">${index + 1}. ${legend.discord_name || 'Unknown'}</span>
+                    <span class="text-xs text-gray-400 block">${legend.season}</span>
+                  </div>
+                  <span class="text-sm text-green-400">${legend.score.toLocaleString()}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        html += `
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function updateSeasonSelector(availableSeasons) {
+      const selector = document.getElementById('seasonSelector');
+      const currentOptions = selector.innerHTML;
+      
+      // Keep the "Current Season" option and add available seasons
+      selector.innerHTML = '<option value="current">Current Season</option>';
+      
+      availableSeasons.forEach(season => {
+        const option = document.createElement('option');
+        option.value = season;
+        option.textContent = season;
+        selector.appendChild(option);
+      });
+    }
+
     function displayTopPlayers(gameType, players) {
       const container = document.getElementById(`${gameType}TopPlayers`);
       
@@ -3633,15 +3910,19 @@
 
     function toggleResetOptions() {
       const resetType = document.getElementById('resetType').value;
+      const seasonOption = document.getElementById('seasonOption');
       const topScoresOption = document.getElementById('topScoresOption');
       const userOption = document.getElementById('userOption');
 
       // Hide all options first
+      seasonOption.classList.add('hidden');
       topScoresOption.classList.add('hidden');
       userOption.classList.add('hidden');
 
       // Show relevant option
-      if (resetType === 'top_scores') {
+      if (resetType === 'season') {
+        seasonOption.classList.remove('hidden');
+      } else if (resetType === 'top_scores') {
         topScoresOption.classList.remove('hidden');
       } else if (resetType === 'user') {
         userOption.classList.remove('hidden');
@@ -3658,6 +3939,7 @@
       const resetType = document.getElementById('resetType').value;
       const topCount = document.getElementById('topCount').value;
       const userId = document.getElementById('resetUserId').value.trim();
+      const seasonName = document.getElementById('seasonName').value.trim();
 
       // Validate inputs
       if (resetType === 'user' && !userId) {
@@ -3674,7 +3956,11 @@
       let confirmationMessage = `Are you sure you want to reset ${gameType === 'all' ? 'all games' : gameType} scores?\n\n`;
       confirmationMessage += `Reset Type: ${resetType}\n`;
       
-      if (resetType === 'top_scores') {
+      if (resetType === 'season') {
+        confirmationMessage += `New Season: ${seasonName || 'auto-generated'}\n`;
+        confirmationMessage += `📊 Current season data will be preserved as historical data\n`;
+        confirmationMessage += `🏆 Top 2 performers will be marked as legends\n`;
+      } else if (resetType === 'top_scores') {
         confirmationMessage += `Top Scores: ${topCount}\n`;
       } else if (resetType === 'user') {
         confirmationMessage += `User ID: ${userId}\n`;
@@ -3689,7 +3975,7 @@
       addLog(`🔄 Resetting game scores...`);
 
       try {
-        const response = await fetch('/api/admin/reset-game-scores.php', {
+        const response = await fetch('/api/admin/reset-game-scores-v2.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -3700,7 +3986,8 @@
             game_type: gameType,
             reset_type: resetType,
             top_count: parseInt(topCount),
-            user_id: userId
+            user_id: userId,
+            season_name: seasonName || null
           })
         });
 
@@ -3708,12 +3995,25 @@
         
         if (data.success) {
           addLog(`✅ Game scores reset successfully!`);
-          addLog(`📊 Records deleted: ${data.details.records_deleted}`);
+          addLog(`📊 Records affected: ${data.details.records_affected}`);
           addLog(`🎮 Game type: ${data.details.game_type}`);
           addLog(`🔄 Reset type: ${data.details.reset_type}`);
+          addLog(`📅 Current season: ${data.details.current_season}`);
+          addLog(`🆕 New season: ${data.details.new_season}`);
+          
+          // Show top performers if any
+          if (data.details.top_performers) {
+            addLog(`🏆 Top performers marked as legends:`);
+            Object.keys(data.details.top_performers).forEach(game => {
+              data.details.top_performers[game].forEach(performer => {
+                addLog(`  ${game}: ${performer.discord_name} (${performer.score})`);
+              });
+            });
+          }
           
           // Refresh statistics
           loadGameStatistics();
+          loadSeasonStats();
         } else {
           addLog(`❌ Failed to reset game scores: ${data.error}`);
         }

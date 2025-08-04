@@ -9,14 +9,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Database connection
+// Database connection - use production path for Render
 $db_path = '/var/www/html/db/narrrf_world.sqlite';
+if (!file_exists($db_path)) {
+    $db_path = __DIR__ . '/../../db/narrrf_world.sqlite';
+}
+
 try {
     $pdo = new PDO("sqlite:$db_path");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'error' => 'Database connection failed: ' . $e->getMessage()]);
     exit;
 }
 
@@ -25,6 +29,9 @@ try {
     $totalUsers = $pdo->query("SELECT COUNT(*) FROM tbl_users")->fetchColumn();
     $totalClicks = $pdo->query("SELECT COUNT(*) FROM tbl_cheese_clicks")->fetchColumn();
     $totalScoreRecords = $pdo->query("SELECT COUNT(*) FROM tbl_user_scores")->fetchColumn();
+    
+    // Debug logging
+    error_log("Enhanced Stats Debug - Total Users: $totalUsers, Total Clicks: $totalClicks, Total Score Records: $totalScoreRecords");
     
     // Calculate immediate stats
     $averageClicksPerUser = $totalUsers > 0 ? round($totalClicks / $totalUsers, 2) : 0;
@@ -65,11 +72,23 @@ try {
     $wealthStats = $stmt->fetch(PDO::FETCH_ASSOC);
     
     // Get power users (users with >100 clicks)
-    $powerUsers = $pdo->query("SELECT COUNT(DISTINCT user_wallet) FROM tbl_cheese_clicks GROUP BY user_wallet HAVING COUNT(*) > 100")->fetchColumn();
+    $stmt = $pdo->query("SELECT COUNT(*) FROM (
+        SELECT user_wallet, COUNT(*) as click_count 
+        FROM tbl_cheese_clicks 
+        GROUP BY user_wallet 
+        HAVING COUNT(*) > 100
+    )");
+    $powerUsers = $stmt->fetchColumn();
     
     // Get active users (last 7 days)
     $weekAgo = date('Y-m-d H:i:s', strtotime('-7 days'));
     $activeUsers7Days = $pdo->query("SELECT COUNT(DISTINCT user_wallet) FROM tbl_cheese_clicks WHERE timestamp >= '$weekAgo'")->fetchColumn();
+    
+    // Calculate user retention rate
+    $userRetentionRate = $totalUsers > 0 ? round(($activeUsers7Days / $totalUsers) * 100, 1) : 0;
+    
+    // Debug logging
+    error_log("Enhanced Stats Debug - Power Users: $powerUsers, Active Users 7 Days: $activeUsers7Days, Retention Rate: $userRetentionRate%");
     
     echo json_encode([
         'success' => true,
@@ -91,7 +110,7 @@ try {
         'engagement_stats' => [
             'power_users' => $powerUsers,
             'active_users_7_days' => $activeUsers7Days,
-            'user_retention_rate' => $totalUsers > 0 ? round(($activeUsers7Days / $totalUsers) * 100, 1) : 0
+            'user_retention_rate' => $userRetentionRate
         ],
         'wealth_distribution' => [
             'max_balance' => $wealthStats['max_balance'] ?? 0,
