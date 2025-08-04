@@ -341,13 +341,18 @@ function onGameOver() {
   gameInterval = null;
   isSnakePaused = true;
 
+  // 🐍 Capture the final score before any potential resets
+  const finalScore = score;
+  console.log("🐍 Game Over - Final Score:", finalScore);
+
   const modal = document.getElementById("snake-over-modal");
   const finalScoreText = document.getElementById("snake-final-score-text");
   const pauseBtn = document.getElementById("pause-snake-btn");
 
   if (modal && finalScoreText) {
     // ✅ Only update score content, no style changes — handled in HTML
-    finalScoreText.textContent = `You earned $${score} DSPOINC`;
+    finalScoreText.textContent = `You earned $${finalScore} DSPOINC`;
+    console.log("🐍 Displaying score:", finalScore);
 
     modal.classList.remove("hidden");
     modal.style.display = "flex"; // fallback for older browsers
@@ -357,7 +362,89 @@ function onGameOver() {
     pauseBtn.textContent = "⏸️ Pause";
   }
 
-  saveScore(score);
+  // 🐍 Save the captured final score
+  saveScore(finalScore);
+}
+
+// 🐍 Snake Score Saving Function
+function saveScore(finalScore) {
+  let wallet = localStorage.getItem("walletAddress");
+  let discordId = localStorage.getItem("discord_id");
+  let discordName = localStorage.getItem("discord_name");
+
+  // 🛠️ Mock fallback if testing locally
+  if (!discordId) {
+    discordId = "1337";
+    discordName = "Anonymous Mouse";
+    localStorage.setItem("discord_id", discordId);
+    localStorage.setItem("discord_name", discordName);
+  }
+
+  // ✅ For Local Testing
+  if (!wallet) {
+    localStorage.setItem("walletAddress", "TestWallet123456789XYZ");
+    wallet = "TestWallet123456789XYZ";
+  }
+
+  if (!discordId) {
+    discordId = "1337";
+    discordName = "Anonymous Mouse";
+    localStorage.setItem("discord_id", discordId);
+    localStorage.setItem("discord_name", discordName);
+  }
+
+  // ✅ Basic validation
+  if (!wallet || wallet.length < 15 || finalScore <= 0) {
+    console.warn("❌ Invalid wallet or zero score — skipping save.");
+    return;
+  }
+
+  const payload = {
+    wallet,
+    score: finalScore,
+    discord_id: discordId,
+    discord_name: discordName,
+    game: "snake" // 🐍 Specify this is a Snake game score
+  };
+
+  console.log("🐍 Sending Snake score payload:", payload);
+
+  fetch("https://narrrfs.world/api/dev/save-score.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log("💾 Snake score saved:", data);
+
+      // ✅ Force leaderboard refresh after short delay
+      setTimeout(() => {
+        if (document.getElementById("leaderboard-list")) {
+          fetch(`https://narrrfs.world/api/dev/get-leaderboard.php?t=${Date.now()}`)
+            .then(res => res.json())
+            .then(result => {
+              const scores = result.leaderboard || [];
+              const list = document.getElementById("leaderboard-list");
+              list.innerHTML = "";
+
+              const rankColors = ["text-yellow-400", "text-gray-300", "text-yellow-200"];
+              const rankEmojis = ["👑", "🥈", "🥉"];
+
+              scores.forEach((entry, i) => {
+                const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+                const li = document.createElement("li");
+                const emoji = rankEmojis[i] || "";
+
+                li.innerHTML = `${emoji} #${i + 1} <strong>${name}</strong> – ${entry.score} $DSPOINC`;
+                li.classList.add("animate-pop", rankColors[i] || "text-white");
+                list.appendChild(li);
+              });
+            });
+        }
+      }, 500);
+    })
+    .catch(err => console.error("Snake score save failed:", err));
 }
 
 
