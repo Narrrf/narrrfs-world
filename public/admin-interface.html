@@ -168,6 +168,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="points">💰 Point Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="store">🏪 Store Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="quests">🏆 Quest System</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="games">🎮 Game Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="discord">🔗 Discord Config</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="cheeseGuide">🧀 Cheese Guide</button>
       </div>
@@ -723,6 +724,168 @@
         </div>
         <div id="questClaimsList" class="space-y-4 max-h-96 overflow-y-auto">
           <div class="text-gray-300">Click "Refresh Claims" to load quest submissions...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Management Tab -->
+    <div class="admin-card mb-6" id="gamesTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">🎮 Game Management</h2>
+      
+      <!-- Game Statistics Overview -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">📊 Game Statistics</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <!-- Tetris Stats -->
+          <div class="bg-gray-700 p-3 rounded">
+            <h4 class="font-semibold text-blue-400 mb-2">🟦 Tetris</h4>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Total Scores:</span>
+                <span class="text-white font-semibold" id="tetrisTotalScores">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Unique Players:</span>
+                <span class="text-white font-semibold" id="tetrisUniquePlayers">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Highest Score:</span>
+                <span class="text-green-400 font-semibold" id="tetrisMaxScore">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Recent (24h):</span>
+                <span class="text-blue-400 font-semibold" id="tetrisRecent24h">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Snake Stats -->
+          <div class="bg-gray-700 p-3 rounded">
+            <h4 class="font-semibold text-green-400 mb-2">🐍 Snake</h4>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Total Scores:</span>
+                <span class="text-white font-semibold" id="snakeTotalScores">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Unique Players:</span>
+                <span class="text-white font-semibold" id="snakeUniquePlayers">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Highest Score:</span>
+                <span class="text-green-400 font-semibold" id="snakeMaxScore">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Recent (24h):</span>
+                <span class="text-blue-400 font-semibold" id="snakeRecent24h">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Stats -->
+          <div class="bg-gray-700 p-3 rounded">
+            <h4 class="font-semibold text-purple-400 mb-2">📈 Combined</h4>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Total Scores:</span>
+                <span class="text-white font-semibold" id="totalGameScores">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Total Players:</span>
+                <span class="text-white font-semibold" id="totalGamePlayers">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Recent (24h):</span>
+                <span class="text-blue-400 font-semibold" id="totalGameRecent24h">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Recent (7d):</span>
+                <span class="text-purple-400 font-semibold" id="totalGameRecent7d">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <button onclick="loadGameStatistics()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Statistics</button>
+      </div>
+
+      <!-- Score Reset Management -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🔄 Score Reset Management</h3>
+        
+        <!-- Reset Options -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+          <!-- Game Selection -->
+          <div>
+            <label class="block text-sm font-medium mb-2">🎮 Select Game:</label>
+            <select id="resetGameType" class="w-full px-3 py-2 rounded text-gray-800">
+              <option value="all">All Games (Tetris + Snake)</option>
+              <option value="tetris">🟦 Tetris Only</option>
+              <option value="snake">🐍 Snake Only</option>
+            </select>
+          </div>
+
+          <!-- Reset Type -->
+          <div>
+            <label class="block text-sm font-medium mb-2">🔄 Reset Type:</label>
+            <select id="resetType" class="w-full px-3 py-2 rounded text-gray-800" onchange="toggleResetOptions()">
+              <option value="all">All Scores</option>
+              <option value="top_scores">Top Scores Only</option>
+              <option value="user">Specific User</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Additional Options -->
+        <div id="resetOptions" class="space-y-4">
+          <!-- Top Scores Option -->
+          <div id="topScoresOption" class="hidden">
+            <label class="block text-sm font-medium mb-2">📊 Number of Top Scores to Reset:</label>
+            <input type="number" id="topCount" value="10" min="1" max="100" class="w-full px-3 py-2 rounded text-gray-800">
+            <p class="text-xs text-gray-400 mt-1">Enter the number of top scores to remove (e.g., 10 = remove top 10 scores)</p>
+          </div>
+
+          <!-- User Option -->
+          <div id="userOption" class="hidden">
+            <label class="block text-sm font-medium mb-2">👤 Discord User ID:</label>
+            <input type="text" id="resetUserId" placeholder="Enter Discord ID (e.g., 123456789012345678)" class="w-full px-3 py-2 rounded text-gray-800">
+            <p class="text-xs text-gray-400 mt-1">Enter the Discord ID of the user whose scores you want to reset</p>
+          </div>
+        </div>
+
+        <!-- Reset Button -->
+        <div class="mt-6">
+          <button onclick="resetGameScores()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded font-semibold">
+            ⚠️ Reset Game Scores
+          </button>
+          <p class="text-xs text-red-400 mt-2">⚠️ This action cannot be undone! All selected scores will be permanently deleted.</p>
+        </div>
+      </div>
+
+      <!-- Top Players -->
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Tetris Top Players -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-blue-400 mb-3">🟦 Tetris Top Players</h4>
+          <div id="tetrisTopPlayers" class="space-y-2 max-h-64 overflow-y-auto">
+            <div class="text-gray-300">Loading top players...</div>
+          </div>
+        </div>
+
+        <!-- Snake Top Players -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-green-400 mb-3">🐍 Snake Top Players</h4>
+          <div id="snakeTopPlayers" class="space-y-2 max-h-64 overflow-y-auto">
+            <div class="text-gray-300">Loading top players...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-purple-400 mb-3">📊 Recent Game Activity</h4>
+        <div id="recentGameActivity" class="space-y-2 max-h-48 overflow-y-auto">
+          <div class="text-gray-300">Loading recent activity...</div>
         </div>
       </div>
     </div>
@@ -1517,6 +1680,7 @@
         // Load tab-specific data
         if (tab === 'store') loadStoreItems();
         if (tab === 'quests') loadQuests();
+        if (tab === 'games') loadGameStatistics();
       });
     });
 
@@ -3095,7 +3259,7 @@
           <!-- User Info -->
           <div class="mb-4">
             <h4 class="text-lg font-semibold text-white mb-2">👤 ${data.user.username || 'Unknown User'} (${data.user.discord_id})</h4>
-            <p class="text-sm text-gray-300">Member since: ${formatDate(data.user.created_at)}</p>
+            <p class="text-sm text-gray-300">User ID: ${data.user.discord_id}</p>
             <p class="text-sm text-gray-300">Current Balance: <span class="text-yellow-400 font-semibold">${data.balance.toLocaleString()} $DSPOINC</span></p>
           </div>
 
@@ -3322,6 +3486,197 @@
 
     function filterQuestClaims() {
       loadQuestClaims();
+    }
+
+    // Game Management Functions
+    async function loadGameStatistics() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Loading game statistics...');
+
+      try {
+        const response = await fetch('/api/admin/get-game-statistics.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayGameStatistics(data);
+          addLog('✅ Game statistics loaded successfully');
+        } else {
+          addLog(`❌ Failed to load game statistics: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Game statistics loading error: ${error.message}`);
+      }
+    }
+
+    function displayGameStatistics(data) {
+      // Update Tetris statistics
+      document.getElementById('tetrisTotalScores').textContent = data.tetris.total_scores.toLocaleString();
+      document.getElementById('tetrisUniquePlayers').textContent = data.tetris.unique_players.toLocaleString();
+      document.getElementById('tetrisMaxScore').textContent = data.tetris.max_score ? data.tetris.max_score.toLocaleString() : '0';
+      document.getElementById('tetrisRecent24h').textContent = data.tetris.recent_24h.toLocaleString();
+
+      // Update Snake statistics
+      document.getElementById('snakeTotalScores').textContent = data.snake.total_scores.toLocaleString();
+      document.getElementById('snakeUniquePlayers').textContent = data.snake.unique_players.toLocaleString();
+      document.getElementById('snakeMaxScore').textContent = data.snake.max_score ? data.snake.max_score.toLocaleString() : '0';
+      document.getElementById('snakeRecent24h').textContent = data.snake.recent_24h.toLocaleString();
+
+      // Update combined statistics
+      document.getElementById('totalGameScores').textContent = data.total.total_scores.toLocaleString();
+      document.getElementById('totalGamePlayers').textContent = data.total.total_players.toLocaleString();
+      document.getElementById('totalGameRecent24h').textContent = data.total.recent_24h.toLocaleString();
+      document.getElementById('totalGameRecent7d').textContent = data.total.recent_7d.toLocaleString();
+
+      // Display top players
+      displayTopPlayers('tetris', data.tetris_top_players);
+      displayTopPlayers('snake', data.snake_top_players);
+
+      // Display recent activity
+      displayRecentActivity(data.recent_activity);
+    }
+
+    function displayTopPlayers(gameType, players) {
+      const container = document.getElementById(`${gameType}TopPlayers`);
+      
+      if (!players || players.length === 0) {
+        container.innerHTML = '<div class="text-gray-400 text-sm">No players found</div>';
+        return;
+      }
+
+      container.innerHTML = players.map((player, index) => `
+        <div class="bg-gray-700 p-2 rounded flex justify-between items-center">
+          <div class="flex items-center">
+            <span class="text-sm font-semibold text-gray-300 mr-2">#${index + 1}</span>
+            <div>
+              <p class="text-sm font-semibold text-white">${player.discord_name || 'Unknown'}</p>
+              <p class="text-xs text-gray-400">${player.discord_id}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-semibold text-green-400">${player.best_score.toLocaleString()}</p>
+            <p class="text-xs text-gray-400">${player.total_games} games</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function displayRecentActivity(activity) {
+      const container = document.getElementById('recentGameActivity');
+      
+      if (!activity || activity.length === 0) {
+        container.innerHTML = '<div class="text-gray-400 text-sm">No recent activity</div>';
+        return;
+      }
+
+      container.innerHTML = activity.map(item => `
+        <div class="bg-gray-700 p-2 rounded flex justify-between items-center">
+          <div class="flex items-center">
+            <span class="text-sm mr-2">${item.game === 'tetris' ? '🟦' : '🐍'}</span>
+            <div>
+              <p class="text-sm font-semibold text-white">${item.discord_name || 'Unknown'}</p>
+              <p class="text-xs text-gray-400">${formatDate(item.timestamp)}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-semibold text-green-400">${item.score.toLocaleString()}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleResetOptions() {
+      const resetType = document.getElementById('resetType').value;
+      const topScoresOption = document.getElementById('topScoresOption');
+      const userOption = document.getElementById('userOption');
+
+      // Hide all options first
+      topScoresOption.classList.add('hidden');
+      userOption.classList.add('hidden');
+
+      // Show relevant option
+      if (resetType === 'top_scores') {
+        topScoresOption.classList.remove('hidden');
+      } else if (resetType === 'user') {
+        userOption.classList.remove('hidden');
+      }
+    }
+
+    async function resetGameScores() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const gameType = document.getElementById('resetGameType').value;
+      const resetType = document.getElementById('resetType').value;
+      const topCount = document.getElementById('topCount').value;
+      const userId = document.getElementById('resetUserId').value.trim();
+
+      // Validate inputs
+      if (resetType === 'user' && !userId) {
+        addLog('❌ Please enter a Discord User ID for user-specific reset');
+        return;
+      }
+
+      if (resetType === 'top_scores' && (!topCount || topCount < 1 || topCount > 100)) {
+        addLog('❌ Please enter a valid number of top scores (1-100)');
+        return;
+      }
+
+      // Create confirmation message
+      let confirmationMessage = `Are you sure you want to reset ${gameType === 'all' ? 'all games' : gameType} scores?\n\n`;
+      confirmationMessage += `Reset Type: ${resetType}\n`;
+      
+      if (resetType === 'top_scores') {
+        confirmationMessage += `Top Scores: ${topCount}\n`;
+      } else if (resetType === 'user') {
+        confirmationMessage += `User ID: ${userId}\n`;
+      }
+      
+      confirmationMessage += '\n⚠️ This action cannot be undone!';
+
+      if (!confirm(confirmationMessage)) {
+        return;
+      }
+
+      addLog(`🔄 Resetting game scores...`);
+
+      try {
+        const response = await fetch('/api/admin/reset-game-scores.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            admin_username: currentAdmin.username,
+            admin_password: 'admin_auth_token', // This should be handled securely
+            game_type: gameType,
+            reset_type: resetType,
+            top_count: parseInt(topCount),
+            user_id: userId
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Game scores reset successfully!`);
+          addLog(`📊 Records deleted: ${data.details.records_deleted}`);
+          addLog(`🎮 Game type: ${data.details.game_type}`);
+          addLog(`🔄 Reset type: ${data.details.reset_type}`);
+          
+          // Refresh statistics
+          loadGameStatistics();
+        } else {
+          addLog(`❌ Failed to reset game scores: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Reset game scores error: ${error.message}`);
+      }
     }
 
     // Enhanced quest creation with role granting
