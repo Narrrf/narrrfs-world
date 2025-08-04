@@ -52,8 +52,8 @@ if ($action !== 'query') {
 }
 
 // --- SQL SAFETY ---
-if (!preg_match('/^\s*(SELECT|INSERT|UPDATE)\s/i', $query)) {
-    echo json_encode(['success' => false, 'error' => 'Query not allowed: Only SELECT, INSERT, UPDATE permitted.']);
+if (!preg_match('/^\s*(SELECT|INSERT|UPDATE|DELETE)\s/i', $query)) {
+    echo json_encode(['success' => false, 'error' => 'Query not allowed: Only SELECT, INSERT, UPDATE, DELETE permitted.']);
     $db->close();
     exit;
 }

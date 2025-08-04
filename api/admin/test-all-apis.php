@@ -163,7 +163,7 @@ $test_results[] = testAPIEndpoint('get-recent-adjustments.php', function() {
     
     $result = $db->query('
         SELECT * FROM tbl_score_adjustments 
-        ORDER BY adjusted_at DESC 
+        ORDER BY timestamp DESC 
         LIMIT 10
     ');
     
