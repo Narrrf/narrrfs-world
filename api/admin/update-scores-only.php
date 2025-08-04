@@ -159,12 +159,12 @@ try {
             $exists = $result->fetchArray(SQLITE3_ASSOC)['count'] > 0;
             
             if ($exists) {
-                // Update existing user's score (preserve other data)
+                // Update only the score for existing user (preserve all other data)
                 $stmt = $db->prepare('UPDATE tbl_user_scores SET score = ? WHERE user_id = ?');
                 $stmt->bindValue(1, $points_balance, SQLITE3_INTEGER);
                 $stmt->bindValue(2, $user_id, SQLITE3_TEXT);
                 $stmt->execute();
-                echo "✅ Updated: $username ($user_id) → " . number_format($points_balance) . " \$DSPOINC\n";
+                echo "✅ Updated score: $username ($user_id) → " . number_format($points_balance) . " \$DSPOINC\n";
             } else {
                 // Insert new user if not exists
                 $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)');
@@ -173,7 +173,7 @@ try {
                 $stmt->bindValue(3, 'discord', SQLITE3_TEXT);
                 $stmt->bindValue(4, 'csv_update', SQLITE3_TEXT);
                 $stmt->execute();
-                echo "➕ Added: $username ($user_id) → " . number_format($points_balance) . " \$DSPOINC\n";
+                echo "➕ Added new user: $username ($user_id) → " . number_format($points_balance) . " \$DSPOINC\n";
             }
             
             $updated_count++;
@@ -210,22 +210,26 @@ try {
         echo "❌ Narrrf not found in database!\n";
     }
     
-    // Add entry to score adjustments table
+    // Add entry to score adjustments table (if table exists with correct structure)
     $current_time = date('Y-m-d H:i:s');
     $sync_description = "Score update from CSV - Updated $updated_count users with accurate balances";
     
-    $stmt = $db->prepare('
-        INSERT INTO tbl_score_adjustments (user_id, adjustment_amount, reason, adjusted_by, adjusted_at) 
-        VALUES (?, ?, ?, ?, ?)
-    ');
-    $stmt->bindValue(1, 'SYSTEM_UPDATE', SQLITE3_TEXT);
-    $stmt->bindValue(2, $updated_count, SQLITE3_INTEGER);
-    $stmt->bindValue(3, $sync_description, SQLITE3_TEXT);
-    $stmt->bindValue(4, 'ADMIN_SYSTEM', SQLITE3_TEXT);
-    $stmt->bindValue(5, $current_time, SQLITE3_TEXT);
-    $stmt->execute();
+    try {
+        $stmt = $db->prepare('
+            INSERT INTO tbl_score_adjustments (user_id, reason, adjusted_by, adjusted_at) 
+            VALUES (?, ?, ?, ?)
+        ');
+        $stmt->bindValue(1, 'SYSTEM_UPDATE', SQLITE3_TEXT);
+        $stmt->bindValue(2, $sync_description, SQLITE3_TEXT);
+        $stmt->bindValue(3, 'ADMIN_SYSTEM', SQLITE3_TEXT);
+        $stmt->bindValue(4, $current_time, SQLITE3_TEXT);
+        $stmt->execute();
+        
+        echo "📝 Added update record to score adjustments table\n";
+    } catch (Exception $e) {
+        echo "📝 Note: Could not add to adjustments table (table structure may differ)\n";
+    }
     
-    echo "📝 Added update record to score adjustments table\n";
     echo "🕐 Update completed at: $current_time\n";
     
     echo "\n🔧 Database updated successfully!\n";
