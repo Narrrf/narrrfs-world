@@ -102,6 +102,24 @@ try {
         echo "❌ Narrrf not found in database!\n";
     }
     
+    // Add entry to score adjustments table to record this sync
+    $current_time = date('Y-m-d H:i:s');
+    $sync_description = "Database sync from CSV - Imported $imported_count users with accurate balances";
+    
+    $stmt = $db->prepare('
+        INSERT INTO tbl_score_adjustments (user_id, adjustment_amount, reason, adjusted_by, adjusted_at) 
+        VALUES (?, ?, ?, ?, ?)
+    ');
+    $stmt->bindValue(1, 'SYSTEM_SYNC', SQLITE3_TEXT);
+    $stmt->bindValue(2, $imported_count, SQLITE3_INTEGER);
+    $stmt->bindValue(3, $sync_description, SQLITE3_TEXT);
+    $stmt->bindValue(4, 'ADMIN_SYSTEM', SQLITE3_TEXT);
+    $stmt->bindValue(5, $current_time, SQLITE3_TEXT);
+    $stmt->execute();
+    
+    echo "📝 Added sync record to score adjustments table\n";
+    echo "🕐 Sync completed at: $current_time\n";
+    
     echo "\n🔧 Database has been fixed with accurate CSV data!\n";
     
 } catch (Exception $e) {
