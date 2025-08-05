@@ -13,7 +13,14 @@ try {
   $db = new PDO("sqlite:$dbPath");
   $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-  // Fetch top 10 Tetris scores, one per user (discord_id)
+  // Get current season
+  $seasonStmt = $db->prepare("SELECT MAX(CAST(SUBSTR(season, 8) AS INTEGER)) as max_season FROM tbl_tetris_scores WHERE season LIKE 'season_%' AND season NOT LIKE '%_historical'");
+  $seasonStmt->execute();
+  $current_season_result = $seasonStmt->fetch(PDO::FETCH_ASSOC);
+  $current_season = $current_season_result['max_season'] ?? 1;
+  $current_season_name = "season_$current_season";
+
+  // Fetch top 10 Tetris scores for CURRENT SEASON only, one per user (discord_id)
   $tetrisStmt = $db->prepare("
     SELECT
       discord_id,
@@ -21,15 +28,15 @@ try {
       MAX(score) AS score,
       MIN(timestamp) AS timestamp
     FROM tbl_tetris_scores
-    WHERE game = 'tetris'
+    WHERE game = 'tetris' AND season = ? AND is_current_season = 1
     GROUP BY discord_id, discord_name
     ORDER BY score DESC, timestamp ASC
     LIMIT 10
   ");
-  $tetrisStmt->execute();
+  $tetrisStmt->execute([$current_season_name]);
   $tetrisRows = $tetrisStmt->fetchAll(PDO::FETCH_ASSOC);
 
-  // Fetch top 10 Snake scores, one per user (discord_id)
+  // Fetch top 10 Snake scores for CURRENT SEASON only, one per user (discord_id)
   $snakeStmt = $db->prepare("
     SELECT
       discord_id,
@@ -37,16 +44,17 @@ try {
       MAX(score) AS score,
       MIN(timestamp) AS timestamp
     FROM tbl_tetris_scores
-    WHERE game = 'snake'
+    WHERE game = 'snake' AND season = ? AND is_current_season = 1
     GROUP BY discord_id, discord_name
     ORDER BY score DESC, timestamp ASC
     LIMIT 10
   ");
-  $snakeStmt->execute();
+  $snakeStmt->execute([$current_season_name]);
   $snakeRows = $snakeStmt->fetchAll(PDO::FETCH_ASSOC);
 
   echo json_encode([
     'success' => true,
+    'current_season' => $current_season_name,
     'tetris' => $tetrisRows,
     'snake' => $snakeRows
   ]);
@@ -57,3 +65,4 @@ try {
     'error' => 'Leaderboard error: ' . $e->getMessage()
   ]);
 }
+?>

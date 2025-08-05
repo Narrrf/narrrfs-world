@@ -23,73 +23,80 @@ try {
     $pdo = new PDO("sqlite:$dbPath");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Get Tetris statistics
+    // Get current season
+    $seasonStmt = $pdo->prepare("SELECT MAX(CAST(SUBSTR(season, 8) AS INTEGER)) as max_season FROM tbl_tetris_scores WHERE season LIKE 'season_%' AND season NOT LIKE '%_historical'");
+    $seasonStmt->execute();
+    $current_season_result = $seasonStmt->fetch(PDO::FETCH_ASSOC);
+    $current_season = $current_season_result['max_season'] ?? 1;
+    $current_season_name = "season_$current_season";
+
+    // Get Tetris statistics for CURRENT SEASON
     $tetris_stats = [];
     
-    // Total Tetris scores
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'tetris'");
-    $stmt->execute();
+    // Total Tetris scores for current season
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
     $tetris_stats['total_scores'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_scores'];
     
-    // Unique Tetris players
-    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'tetris'");
-    $stmt->execute();
+    // Unique Tetris players for current season
+    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
     $tetris_stats['unique_players'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_players'];
     
-    // Highest Tetris score
-    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'tetris'");
-    $stmt->execute();
+    // Highest Tetris score for current season
+    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
     $tetris_stats['max_score'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['max_score'];
     
-    // Average Tetris score
-    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'tetris'");
-    $stmt->execute();
+    // Average Tetris score for current season
+    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
     $tetris_stats['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
     
-    // Recent Tetris activity (last 24h)
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND timestamp >= datetime('now', '-24 hours')");
-    $stmt->execute();
+    // Recent Tetris activity (last 24h) for current season
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-24 hours')");
+    $stmt->execute([$current_season_name]);
     $tetris_stats['recent_24h'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
     
-    // Recent Tetris activity (last 7 days)
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND timestamp >= datetime('now', '-7 days')");
-    $stmt->execute();
+    // Recent Tetris activity (last 7 days) for current season
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-7 days')");
+    $stmt->execute([$current_season_name]);
     $tetris_stats['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
 
-    // Get Snake statistics
+    // Get Snake statistics for CURRENT SEASON
     $snake_stats = [];
     
-    // Total Snake scores
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'snake'");
-    $stmt->execute();
+    // Total Snake scores for current season
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
     $snake_stats['total_scores'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_scores'];
     
-    // Unique Snake players
-    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'snake'");
-    $stmt->execute();
+    // Unique Snake players for current season
+    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
     $snake_stats['unique_players'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_players'];
     
-    // Highest Snake score
-    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'snake'");
-    $stmt->execute();
+    // Highest Snake score for current season
+    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
     $snake_stats['max_score'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['max_score'];
     
-    // Average Snake score
-    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'snake'");
-    $stmt->execute();
+    // Average Snake score for current season
+    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
     $snake_stats['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
     
-    // Recent Snake activity (last 24h)
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'snake' AND timestamp >= datetime('now', '-24 hours')");
-    $stmt->execute();
+    // Recent Snake activity (last 24h) for current season
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-24 hours')");
+    $stmt->execute([$current_season_name]);
     $snake_stats['recent_24h'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
     
-    // Recent Snake activity (last 7 days)
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'snake' AND timestamp >= datetime('now', '-7 days')");
-    $stmt->execute();
+    // Recent Snake activity (last 7 days) for current season
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-7 days')");
+    $stmt->execute([$current_season_name]);
     $snake_stats['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
 
-    // Get top players for each game
+    // Get top players for each game for CURRENT SEASON
     $tetris_top_players = [];
     $stmt = $pdo->prepare("
         SELECT 
@@ -100,12 +107,12 @@ try {
             MIN(timestamp) as first_game,
             MAX(timestamp) as last_game
         FROM tbl_tetris_scores 
-        WHERE game = 'tetris' 
+        WHERE game = 'tetris' AND season = ? AND is_current_season = 1
         GROUP BY discord_id, discord_name 
         ORDER BY best_score DESC 
         LIMIT 10
     ");
-    $stmt->execute();
+    $stmt->execute([$current_season_name]);
     $tetris_top_players = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $snake_top_players = [];
@@ -118,12 +125,12 @@ try {
             MIN(timestamp) as first_game,
             MAX(timestamp) as last_game
         FROM tbl_tetris_scores 
-        WHERE game = 'snake' 
+        WHERE game = 'snake' AND season = ? AND is_current_season = 1
         GROUP BY discord_id, discord_name 
         ORDER BY best_score DESC 
         LIMIT 10
     ");
-    $stmt->execute();
+    $stmt->execute([$current_season_name]);
     $snake_top_players = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Get recent activity
