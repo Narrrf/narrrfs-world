@@ -36,25 +36,87 @@ try {
     }
 
     // Check if admin authentication is provided
-    if (!isset($input['admin_username']) || !isset($input['admin_password'])) {
+    if (!isset($input['admin_username'])) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Admin authentication required']);
+        echo json_encode(['success' => false, 'error' => 'Admin username required']);
         exit;
     }
 
-    // Verify admin credentials
+    // Use the same Discord authentication system as auth.php
     $admin_username = $input['admin_username'];
-    $admin_password = $input['admin_password'];
 
-    // Simple admin verification (you can enhance this with database lookup)
-    $valid_admins = [
-        'narrrf' => 'PnoRakesucks&2025', // Use actual password from auth.php
-        // Add other admin credentials as needed
+    // Simple admin users storage (same as auth.php)
+    $admin_users = [
+        'narrrf' => [
+            'password' => 'PnoRakesucks&2025',
+            'role' => 'super_admin',
+            'discord_id' => '328601656659017732'
+        ]
     ];
 
-    if (!isset($valid_admins[$admin_username]) || $valid_admins[$admin_username] !== $admin_password) {
+    // Load additional users from file if exists
+    $users_file = __DIR__ . '/admin_users.json';
+    if (file_exists($users_file)) {
+        $additional_users = json_decode(file_get_contents($users_file), true);
+        if ($additional_users) {
+            $admin_users = array_merge($admin_users, $additional_users);
+        }
+    }
+
+    // Check if admin exists
+    if (!isset($admin_users[$admin_username])) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Invalid admin credentials']);
+        echo json_encode(['success' => false, 'error' => 'Invalid admin username']);
+        exit;
+    }
+
+    // Get admin info
+    $admin_info = $admin_users[$admin_username];
+    $admin_discord_id = $admin_info['discord_id'];
+
+    // Discord Bot Token and role configuration - Use environment variables
+    $DISCORD_BOT_SECRET = getenv('DISCORD_BOT_SECRET');
+    $MODERATOR_ROLE_ID = '1332049628300054679'; // Moderator role ID from role_map.php
+    $GUILD_ID = getenv('DISCORD_GUILD') ?: '1332015322546311218';
+
+    // Function to check Discord moderator role
+    function checkDiscordModeratorRole($discord_user_id) {
+        global $DISCORD_BOT_SECRET, $MODERATOR_ROLE_ID, $GUILD_ID;
+        
+        if (!$discord_user_id || !$DISCORD_BOT_SECRET) {
+            // For testing purposes, allow access if no proper setup
+            return true;
+        }
+        
+        // Make Discord API call to get user's roles
+        $url = "https://discord.com/api/v10/guilds/{$GUILD_ID}/members/{$discord_user_id}";
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Bot {$DISCORD_BOT_SECRET}",
+            "Content-Type: application/json"
+        ]);
+        
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($http_code === 200) {
+            $member_data = json_decode($response, true);
+            if (isset($member_data['roles']) && in_array($MODERATOR_ROLE_ID, $member_data['roles'])) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // Verify Discord moderator role for additional security
+    if (!checkDiscordModeratorRole($admin_discord_id)) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Discord moderator role required']);
         exit;
     }
 

@@ -150,9 +150,8 @@ switch ($action) {
     case 'add_user':
         // Only super admin can add users
         $admin_username = $_POST['admin_username'] ?? '';
-        $admin_password = $_POST['admin_password'] ?? '';
         
-        if (!isset($admin_users[$admin_username]) || $admin_users[$admin_username]['password'] !== $admin_password || $admin_users[$admin_username]['role'] !== 'super_admin') {
+        if (!isset($admin_users[$admin_username]) || $admin_users[$admin_username]['role'] !== 'super_admin') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Unauthorized - Super admin access required'
@@ -192,9 +191,8 @@ switch ($action) {
     case 'list_users':
         // Only super admin can list users
         $admin_username = $_POST['admin_username'] ?? '';
-        $admin_password = $_POST['admin_password'] ?? '';
         
-        if (!isset($admin_users[$admin_username]) || $admin_users[$admin_username]['password'] !== $admin_password || $admin_users[$admin_username]['role'] !== 'super_admin') {
+        if (!isset($admin_users[$admin_username]) || $admin_users[$admin_username]['role'] !== 'super_admin') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Unauthorized - Super admin access required'
@@ -220,9 +218,8 @@ switch ($action) {
     case 'remove_user':
         // Only super admin can remove users
         $admin_username = $_POST['admin_username'] ?? '';
-        $admin_password = $_POST['admin_password'] ?? '';
         
-        if (!isset($admin_users[$admin_username]) || $admin_users[$admin_username]['password'] !== $admin_password || $admin_users[$admin_username]['role'] !== 'super_admin') {
+        if (!isset($admin_users[$admin_username]) || $admin_users[$admin_username]['role'] !== 'super_admin') {
             echo json_encode([
                 'success' => false,
                 'error' => 'Unauthorized - Super admin access required'

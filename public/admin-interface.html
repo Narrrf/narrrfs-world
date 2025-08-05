@@ -1718,8 +1718,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'list_users',
-            admin_username: username,
-            admin_password: password
+            admin_username: username
           })
         });
 
@@ -1782,7 +1781,6 @@
           body: JSON.stringify({
             action: 'add_user',
             admin_username: adminUsername,
-            admin_password: adminPassword,
             new_username: newUsername,
             new_password: newPassword,
             new_role: newRole,
@@ -1824,7 +1822,6 @@
           body: JSON.stringify({
             action: 'remove_user',
             admin_username: adminUsername,
-            admin_password: adminPassword,
             remove_username: username
           })
         });
@@ -2873,7 +2870,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             admin_username: currentAdmin.username,
-            admin_password: 'admin_auth_token', // This should be handled securely
             new_invite_code: newCode
           })
         });
@@ -4056,7 +4052,6 @@
           },
           body: JSON.stringify({
             admin_username: currentAdmin.username,
-            admin_password: 'admin_auth_token', // This should be handled securely
             game_type: gameType,
             reset_type: resetType,
             top_count: parseInt(topCount),
