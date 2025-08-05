@@ -42,16 +42,13 @@ try {
         exit;
     }
 
-    // Include admin authentication
-    require_once 'auth.php';
-
     // Verify admin credentials
     $admin_username = $input['admin_username'];
     $admin_password = $input['admin_password'];
 
     // Simple admin verification (you can enhance this with database lookup)
     $valid_admins = [
-        'narrrf' => 'your_secure_password_here', // Replace with actual password
+        'narrrf' => 'PnoRakesucks&2025', // Use actual password from auth.php
         // Add other admin credentials as needed
     ];
 
