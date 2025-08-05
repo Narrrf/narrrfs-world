@@ -24,10 +24,13 @@ if (!$wallet || !$raw_score || !$game) {
 // 🧀 Convert raw score to DSPOINC (10 per cheese)
 $dspoinc_score = $raw_score * 10;
 
+// 🎮 Get current active season
+$currentSeason = 'season_1'; // Default to season 1 for now
+
 // 💾 Save to DB with DSPOINC score
 $stmt = $db->prepare("
-  INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game)
-  VALUES (:wallet, :score, :discord_id, :discord_name, :game)
+  INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game, season)
+  VALUES (:wallet, :score, :discord_id, :discord_name, :game, :season)
 ");
 
 $stmt->bindValue(':wallet', $wallet);
@@ -35,28 +38,63 @@ $stmt->bindValue(':score', $dspoinc_score, PDO::PARAM_INT);
 $stmt->bindValue(':discord_id', $discord_id);
 $stmt->bindValue(':discord_name', $discord_name);
 $stmt->bindValue(':game', $game);
+$stmt->bindValue(':season', $currentSeason);
 $stmt->execute();
 
-// 🧀 Update user's DSPOINC balance in tbl_user_scores (upsert logic)
-try {
-    // First try to update existing record
-    $updateStmt = $db->prepare("UPDATE tbl_user_scores SET score = score + ? WHERE user_id = ?");
-    $updateStmt->bindValue(1, $dspoinc_score, PDO::PARAM_INT);
-    $updateStmt->bindValue(2, $discord_id);
-    $updateStmt->execute();
-    
-    // If no rows were affected, user doesn't exist yet - create new record
-    if ($updateStmt->rowCount() === 0) {
-        $insertStmt = $db->prepare("INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)");
-        $insertStmt->bindValue(1, $discord_id);
-        $insertStmt->bindValue(2, $dspoinc_score, PDO::PARAM_INT);
-        $insertStmt->bindValue(3, $game);
-        $insertStmt->bindValue(4, 'game_score');
-        $insertStmt->execute();
+// 🏆 Check if this is a new highest score for the user
+$highestScoreStmt = $db->prepare("
+    SELECT MAX(score) as highest_score 
+    FROM tbl_tetris_scores 
+    WHERE discord_id = ? AND game = ? AND season = ?
+");
+$highestScoreStmt->bindValue(1, $discord_id);
+$highestScoreStmt->bindValue(2, $game);
+$highestScoreStmt->bindValue(3, $currentSeason);
+$highestScoreStmt->execute();
+$highestScore = $highestScoreStmt->fetch(PDO::FETCH_ASSOC);
+
+$isNewHighScore = ($highestScore['highest_score'] == $dspoinc_score);
+
+// 🧀 Update user's DSPOINC balance in tbl_user_scores (highest score only)
+if ($isNewHighScore) {
+    try {
+        // Check if user already has a record for this game
+        $checkStmt = $db->prepare("
+            SELECT score FROM tbl_user_scores 
+            WHERE user_id = ? AND game = ?
+        ");
+        $checkStmt->bindValue(1, $discord_id);
+        $checkStmt->bindValue(2, $game);
+        $checkStmt->execute();
+        $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($existing) {
+            // Update existing record with new highest score
+            $updateStmt = $db->prepare("
+                UPDATE tbl_user_scores 
+                SET score = ?, last_updated = CURRENT_TIMESTAMP 
+                WHERE user_id = ? AND game = ?
+            ");
+            $updateStmt->bindValue(1, $dspoinc_score, PDO::PARAM_INT);
+            $updateStmt->bindValue(2, $discord_id);
+            $updateStmt->bindValue(3, $game);
+            $updateStmt->execute();
+        } else {
+            // Create new record for this game
+            $insertStmt = $db->prepare("
+                INSERT INTO tbl_user_scores (user_id, score, game, source) 
+                VALUES (?, ?, ?, ?)
+            ");
+            $insertStmt->bindValue(1, $discord_id);
+            $insertStmt->bindValue(2, $dspoinc_score, PDO::PARAM_INT);
+            $insertStmt->bindValue(3, $game);
+            $insertStmt->bindValue(4, 'game_score');
+            $insertStmt->execute();
+        }
+        
+    } catch (Exception $e) {
+        error_log("Error updating user scores: " . $e->getMessage());
     }
-} catch (Exception $e) {
-    error_log("Error updating tbl_user_scores: " . $e->getMessage());
-    // Continue execution even if user balance update fails
 }
 
 // 🏆 Check for WL Role Eligibility (use DSPOINC score for threshold check)
@@ -64,9 +102,13 @@ $wl_result = checkWLEligibility($db, $discord_id, $game, $dspoinc_score);
 
 echo json_encode([
     'success' => true, 
-    'message' => "Score saved for $game: $raw_score cheese = $dspoinc_score DSPOINC",
+    'message' => $isNewHighScore ? 
+        "🎉 NEW HIGH SCORE! $game: $raw_score cheese = $dspoinc_score DSPOINC" :
+        "Score saved for $game: $raw_score cheese = $dspoinc_score DSPOINC (not a new high score)",
     'raw_score' => $raw_score,
     'dspoinc_score' => $dspoinc_score,
+    'is_new_high_score' => $isNewHighScore,
+    'season' => $currentSeason,
     'wl_check' => $wl_result
 ]);
 ?>
@@ -83,23 +125,23 @@ function checkWLEligibility($db, $user_id, $game, $score) {
             return ['eligible' => false, 'message' => 'No WL settings configured'];
         }
         
-                         // Check if WL is enabled for this game
-                 $wl_enabled = false;
-                 $wl_threshold = 0;
-                 $wl_role_id = '';
-                 $wl_bonus = 0;
-                 
-                 if ($game === 'tetris' && $settings['tetris_wl_enabled']) {
-                     $wl_enabled = true;
-                     $wl_threshold = $settings['tetris_wl_threshold'];
-                     $wl_role_id = $settings['tetris_wl_role_id'];
-                     $wl_bonus = $settings['tetris_wl_bonus'];
-                 } elseif ($game === 'snake' && $settings['snake_wl_enabled']) {
-                     $wl_enabled = true;
-                     $wl_threshold = $settings['snake_wl_threshold'];
-                     $wl_role_id = $settings['snake_wl_role_id'];
-                     $wl_bonus = $settings['snake_wl_bonus'];
-                 }
+        // Check if WL is enabled for this game
+        $wl_enabled = false;
+        $wl_threshold = 0;
+        $wl_role_id = '';
+        $wl_bonus = 0;
+        
+        if ($game === 'tetris' && $settings['tetris_wl_enabled']) {
+            $wl_enabled = true;
+            $wl_threshold = $settings['tetris_wl_threshold'];
+            $wl_role_id = $settings['tetris_wl_role_id'];
+            $wl_bonus = $settings['tetris_wl_bonus'];
+        } elseif ($game === 'snake' && $settings['snake_wl_enabled']) {
+            $wl_enabled = true;
+            $wl_threshold = $settings['snake_wl_threshold'];
+            $wl_role_id = $settings['snake_wl_role_id'];
+            $wl_bonus = $settings['snake_wl_bonus'];
+        }
         
         if (!$wl_enabled || !$wl_role_id) {
             return ['eligible' => false, 'message' => 'WL not enabled for this game'];
@@ -126,13 +168,13 @@ function checkWLEligibility($db, $user_id, $game, $score) {
         // User is eligible for WL role - grant it automatically
         $role_granted = grantWLRole($user_id, $game, $score, $wl_role_id);
         
-                         return [
-                     'eligible' => true,
-                     'message' => "🎉 WL Role Granted! Score: $score, Threshold: $wl_threshold",
-                     'role_granted' => $role_granted,
-                     'role_id' => $wl_role_id,
-                     'bonus_points' => $wl_bonus
-                 ];
+        return [
+            'eligible' => true,
+            'message' => "🎉 WL Role Granted! Score: $score, Threshold: $wl_threshold",
+            'role_granted' => $role_granted,
+            'role_id' => $wl_role_id,
+            'bonus_points' => $wl_bonus
+        ];
         
     } catch (Exception $e) {
         error_log("WL eligibility check error: " . $e->getMessage());
