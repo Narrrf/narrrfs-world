@@ -10,36 +10,41 @@ file_put_contents(__DIR__ . '/log.txt', json_encode($data, JSON_PRETTY_PRINT) . 
 
 // ✅ Extract + validate input
 $wallet = $data['wallet'] ?? null;
-$score = $data['score'] ?? null;
+$raw_score = $data['score'] ?? null;
 $discord_id = $data['discord_id'] ?? null;
 $discord_name = $data['discord_name'] ?? null;
 $game = $data['game'] ?? 'tetris'; // default to tetris if not specified
 
-if (!$wallet || !$score || !$game) {
+if (!$wallet || !$raw_score || !$game) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Missing wallet, score or game']);
     exit;
 }
 
-// 💾 Save to DB
+// 🧀 Convert raw score to DSPOINC (10 per cheese)
+$dspoinc_score = $raw_score * 10;
+
+// 💾 Save to DB with DSPOINC score
 $stmt = $db->prepare("
   INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game)
   VALUES (:wallet, :score, :discord_id, :discord_name, :game)
 ");
 
 $stmt->bindValue(':wallet', $wallet);
-$stmt->bindValue(':score', $score, PDO::PARAM_INT);
+$stmt->bindValue(':score', $dspoinc_score, PDO::PARAM_INT);
 $stmt->bindValue(':discord_id', $discord_id);
 $stmt->bindValue(':discord_name', $discord_name);
 $stmt->bindValue(':game', $game);
 $stmt->execute();
 
-// 🏆 Check for WL Role Eligibility
-$wl_result = checkWLEligibility($db, $discord_id, $game, $score);
+// 🏆 Check for WL Role Eligibility (use DSPOINC score for threshold check)
+$wl_result = checkWLEligibility($db, $discord_id, $game, $dspoinc_score);
 
 echo json_encode([
     'success' => true, 
-    'message' => "Score saved for $game",
+    'message' => "Score saved for $game: $raw_score cheese = $dspoinc_score DSPOINC",
+    'raw_score' => $raw_score,
+    'dspoinc_score' => $dspoinc_score,
     'wl_check' => $wl_result
 ]);
 ?>
