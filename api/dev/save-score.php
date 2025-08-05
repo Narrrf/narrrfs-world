@@ -37,6 +37,28 @@ $stmt->bindValue(':discord_name', $discord_name);
 $stmt->bindValue(':game', $game);
 $stmt->execute();
 
+// 🧀 Update user's DSPOINC balance in tbl_user_scores (upsert logic)
+try {
+    // First try to update existing record
+    $updateStmt = $db->prepare("UPDATE tbl_user_scores SET score = score + ? WHERE user_id = ?");
+    $updateStmt->bindValue(1, $dspoinc_score, PDO::PARAM_INT);
+    $updateStmt->bindValue(2, $discord_id);
+    $updateStmt->execute();
+    
+    // If no rows were affected, user doesn't exist yet - create new record
+    if ($updateStmt->rowCount() === 0) {
+        $insertStmt = $db->prepare("INSERT INTO tbl_user_scores (user_id, score, game, source) VALUES (?, ?, ?, ?)");
+        $insertStmt->bindValue(1, $discord_id);
+        $insertStmt->bindValue(2, $dspoinc_score, PDO::PARAM_INT);
+        $insertStmt->bindValue(3, $game);
+        $insertStmt->bindValue(4, 'game_score');
+        $insertStmt->execute();
+    }
+} catch (Exception $e) {
+    error_log("Error updating tbl_user_scores: " . $e->getMessage());
+    // Continue execution even if user balance update fails
+}
+
 // 🏆 Check for WL Role Eligibility (use DSPOINC score for threshold check)
 $wl_result = checkWLEligibility($db, $discord_id, $game, $dspoinc_score);
 
