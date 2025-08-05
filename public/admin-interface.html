@@ -4045,7 +4045,7 @@
       addLog(`🔄 Resetting game scores...`);
 
       try {
-        const response = await fetch('/api/admin/reset-scores-working.php', {
+        const response = await fetch('/api/admin/reset-game-scores-v2.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
