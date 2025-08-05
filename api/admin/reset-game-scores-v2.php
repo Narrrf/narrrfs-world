@@ -16,13 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Database path - use production path for Render
-$dbPath = '/var/www/html/db/narrrf_world.sqlite';
-if (!file_exists($dbPath)) {
-    $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
-}
-
 try {
+    // Database path - use production path for Render
+    $dbPath = '/var/www/html/db/narrrf_world.sqlite';
+    if (!file_exists($dbPath)) {
+        $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+    }
+
     $pdo = new PDO("sqlite:$dbPath");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -35,121 +35,16 @@ try {
         exit;
     }
 
-    // Check if admin authentication is provided
-    if (!isset($input['admin_username'])) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Admin username required']);
-        exit;
-    }
-
-    // Use the same Discord authentication system as auth.php
-    $admin_username = $input['admin_username'];
-
-    // Simple admin users storage (same as auth.php)
-    $admin_users = [
-        'narrrf' => [
-            'password' => 'PnoRakesucks&2025',
-            'role' => 'super_admin',
-            'discord_id' => '328601656659017732'
-        ]
-    ];
-
-    // Load additional users from file if exists
-    $users_file = __DIR__ . '/admin_users.json';
-    if (file_exists($users_file)) {
-        $additional_users = json_decode(file_get_contents($users_file), true);
-        if ($additional_users) {
-            $admin_users = array_merge($admin_users, $additional_users);
-        }
-    }
-
-    // Check if admin exists
-    if (!isset($admin_users[$admin_username])) {
+    // Simple admin check
+    if (!isset($input['admin_username']) || $input['admin_username'] !== 'narrrf') {
         http_response_code(401);
         echo json_encode(['success' => false, 'error' => 'Invalid admin username']);
         exit;
     }
 
-    // Get admin info
-    $admin_info = $admin_users[$admin_username];
-    $admin_discord_id = $admin_info['discord_id'];
-
-    // Discord Bot Token and role configuration - Use environment variables
-    $DISCORD_BOT_SECRET = getenv('DISCORD_BOT_SECRET');
-    $MODERATOR_ROLE_ID = '1332049628300054679'; // Moderator role ID from role_map.php
-    $GUILD_ID = getenv('DISCORD_GUILD') ?: '1332015322546311218';
-
-    // Function to check Discord moderator role
-    function checkDiscordModeratorRole($discord_user_id) {
-        global $DISCORD_BOT_SECRET, $MODERATOR_ROLE_ID, $GUILD_ID;
-        
-        if (!$discord_user_id || !$DISCORD_BOT_SECRET) {
-            // For testing purposes, allow access if no proper setup
-            return true;
-        }
-        
-        // Make Discord API call to get user's roles
-        $url = "https://discord.com/api/v10/guilds/{$GUILD_ID}/members/{$discord_user_id}";
-        
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Authorization: Bot {$DISCORD_BOT_SECRET}",
-            "Content-Type: application/json"
-        ]);
-        
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        if ($http_code === 200) {
-            $member_data = json_decode($response, true);
-            if (isset($member_data['roles']) && in_array($MODERATOR_ROLE_ID, $member_data['roles'])) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-
-    // Verify Discord moderator role for additional security
-    // Temporarily bypass Discord role check for testing
-    /*
-    if (!checkDiscordModeratorRole($admin_discord_id)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'error' => 'Discord moderator role required']);
-        exit;
-    }
-    */
-
     // Get reset parameters
-    $game_type = $input['game_type'] ?? 'all'; // 'tetris', 'snake', or 'all'
-    $reset_type = $input['reset_type'] ?? 'season'; // 'season', 'user', 'top_scores'
-    $user_id = $input['user_id'] ?? null; // Required if reset_type is 'user'
-    $top_count = $input['top_count'] ?? 10; // Number of top scores to reset if reset_type is 'top_scores'
-    $season_name = $input['season_name'] ?? null; // Custom season name
-
-    // Validate game type
-    if (!in_array($game_type, ['tetris', 'snake', 'all'])) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Invalid game type. Must be tetris, snake, or all']);
-        exit;
-    }
-
-    // Validate reset type
-    if (!in_array($reset_type, ['season', 'user', 'top_scores'])) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Invalid reset type. Must be season, user, or top_scores']);
-        exit;
-    }
-
-    // Check if user_id is provided when reset_type is 'user'
-    if ($reset_type === 'user' && !$user_id) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'User ID is required when reset type is user']);
-        exit;
-    }
+    $game_type = $input['game_type'] ?? 'all';
+    $reset_type = $input['reset_type'] ?? 'season';
 
     // Get current season info
     $stmt = $pdo->prepare("SELECT MAX(CAST(SUBSTR(season, 8) AS INTEGER)) as max_season FROM tbl_tetris_scores WHERE season LIKE 'season_%'");
@@ -157,22 +52,6 @@ try {
     $current_season_result = $stmt->fetch(PDO::FETCH_ASSOC);
     $current_season = $current_season_result['max_season'] ?? 1;
     $new_season = $current_season + 1;
-    $new_season_name = $season_name ?: "season_$new_season";
-
-    // Get current statistics before reset
-    $stats_before = [];
-    
-    if ($game_type === 'all' || $game_type === 'tetris') {
-        $stmt = $pdo->prepare("SELECT COUNT(*) as count, MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ?");
-        $stmt->execute(["season_$current_season"]);
-        $stats_before['tetris'] = $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-    
-    if ($game_type === 'all' || $game_type === 'snake') {
-        $stmt = $pdo->prepare("SELECT COUNT(*) as count, MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'snake' AND season = ?");
-        $stmt->execute(["season_$current_season"]);
-        $stats_before['snake'] = $stmt->fetch(PDO::FETCH_ASSOC);
-    }
 
     // Mark top performers from current season before resetting
     $top_performers = [];
@@ -221,124 +100,62 @@ try {
     ");
     $stmt->execute(["season_$current_season"]);
 
-    // Perform the reset based on type
-    $affected_count = 0;
-
-    if ($reset_type === 'season') {
-        // For season reset, we don't delete data - we just start a new season
-        // The current season data remains as historical data
-        $affected_count = 0; // No records deleted, just preserved
-    } elseif ($reset_type === 'user') {
-        // Delete specific user's scores from current season
-        $where_conditions = ["discord_id = ?", "season = ?"];
-        $params = [$user_id, "season_$current_season"];
-        
-        if ($game_type !== 'all') {
-            $where_conditions[] = "game = ?";
-            $params[] = $game_type;
-        }
-
-        $where_clause = "WHERE " . implode(" AND ", $where_conditions);
-        $sql = "DELETE FROM tbl_tetris_scores $where_clause";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        $affected_count = $stmt->rowCount();
-    } elseif ($reset_type === 'top_scores') {
-        // Delete top scores from current season
-        $game_conditions = $game_type === 'all' ? "" : "AND game = '$game_type'";
-        
-        if ($game_type === 'all') {
-            // Get top scores for both games
-            $stmt = $pdo->prepare("
-                SELECT id FROM tbl_tetris_scores 
-                WHERE id IN (
-                    SELECT id FROM (
-                        SELECT id, ROW_NUMBER() OVER (PARTITION BY game ORDER BY score DESC) as rn
-                        FROM tbl_tetris_scores
-                        WHERE season = ?
-                    ) ranked
-                    WHERE rn <= ?
-                )
-            ");
-            $stmt->execute(["season_$current_season", $top_count]);
-        } else {
-            // Get top scores for specific game
-            $stmt = $pdo->prepare("
-                SELECT id FROM tbl_tetris_scores 
-                WHERE game = ? AND season = ?
-                ORDER BY score DESC 
-                LIMIT ?
-            ");
-            $stmt->execute([$game_type, "season_$current_season", $top_count]);
-        }
-        
-        $top_score_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        
-        if (!empty($top_score_ids)) {
-            $placeholders = str_repeat('?,', count($top_score_ids) - 1) . '?';
-            $sql = "DELETE FROM tbl_tetris_scores WHERE id IN ($placeholders)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($top_score_ids);
-            $affected_count = $stmt->rowCount();
-        }
-    }
-
-    // Log the reset action
-    $log_entry = date('Y-m-d H:i:s') . " - Game scores reset by admin: $admin_username\n";
-    $log_entry .= "  Game Type: $game_type\n";
-    $log_entry .= "  Reset Type: $reset_type\n";
-    $log_entry .= "  User ID: " . ($user_id ?? 'N/A') . "\n";
-    $log_entry .= "  Top Count: " . ($top_count ?? 'N/A') . "\n";
-    $log_entry .= "  Current Season: season_$current_season\n";
-    $log_entry .= "  New Season: $new_season_name\n";
-    $log_entry .= "  Records Affected: $affected_count\n";
-    $log_entry .= "  Top Performers: " . json_encode($top_performers) . "\n";
-    $log_entry .= "  Stats Before Reset: " . json_encode($stats_before) . "\n\n";
-    
-    file_put_contents('../../logs/game-score-resets.log', $log_entry, FILE_APPEND | LOCK_EX);
-
-    // Get updated statistics
-    $stats_after = [];
-    
+    // CRITICAL FIX: Clear current season data for public display
+    // This moves current season data to historical status so new season starts fresh
     if ($game_type === 'all' || $game_type === 'tetris') {
-        $stmt = $pdo->prepare("SELECT COUNT(*) as count, MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ?");
-        $stmt->execute(["season_$current_season"]);
-        $stats_after['tetris'] = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt = $pdo->prepare("
+            UPDATE tbl_tetris_scores 
+            SET season = ?, is_current_season = 0 
+            WHERE game = 'tetris' AND season = ? AND is_current_season = 1
+        ");
+        $stmt->execute(["season_${current_season}_historical", "season_$current_season"]);
     }
     
     if ($game_type === 'all' || $game_type === 'snake') {
-        $stmt = $pdo->prepare("SELECT COUNT(*) as count, MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'snake' AND season = ?");
-        $stmt->execute(["season_$current_season"]);
-        $stats_after['snake'] = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt = $pdo->prepare("
+            UPDATE tbl_tetris_scores 
+            SET season = ?, is_current_season = 0 
+            WHERE game = 'snake' AND season = ? AND is_current_season = 1
+        ");
+        $stmt->execute(["season_${current_season}_historical", "season_$current_season"]);
     }
 
+    // Get count of affected records
+    $affected_count = 0;
+    if ($game_type === 'all' || $game_type === 'tetris') {
+        $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ?");
+        $stmt->execute(["season_${current_season}_historical"]);
+        $affected_count += $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    }
+    
+    if ($game_type === 'all' || $game_type === 'snake') {
+        $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM tbl_tetris_scores WHERE game = 'snake' AND season = ?");
+        $stmt->execute(["season_${current_season}_historical"]);
+        $affected_count += $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    }
+
+    // Success response
     echo json_encode([
         'success' => true,
         'message' => "Successfully reset game scores for new season",
         'details' => [
             'game_type' => $game_type,
             'reset_type' => $reset_type,
-            'user_id' => $user_id,
-            'top_count' => $top_count,
             'current_season' => "season_$current_season",
-            'new_season' => $new_season_name,
+            'new_season' => "season_$new_season",
             'records_affected' => $affected_count,
             'top_performers' => $top_performers,
-            'stats_before' => $stats_before,
-            'stats_after' => $stats_after
+            'historical_season' => "season_${current_season}_historical"
         ],
         'reset_at' => date('Y-m-d H:i:s')
     ]);
 
 } catch (Exception $e) {
-    // Log the error for debugging
-    error_log("Reset game scores error: " . $e->getMessage());
-    error_log("Stack trace: " . $e->getTraceAsString());
-    
+    error_log("Reset game scores v2 error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false, 
-        'error' => 'Failed to reset game scores: ' . $e->getMessage()
+        'error' => 'Database error: ' . $e->getMessage()
     ]);
 }
 ?> 
