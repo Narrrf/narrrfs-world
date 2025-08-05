@@ -698,6 +698,79 @@
                   <option value="false">Optional</option>
                 </select>
               </div>
+            </div>
+          </div>
+          
+          <!-- Game Settings Section -->
+          <div class="md:col-span-2 bg-gray-700 p-4 rounded-lg">
+            <h4 class="text-lg font-semibold mb-3 text-blue-400">🎮 Game Settings & WL Role Grants</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Tetris WL Settings -->
+              <div class="bg-gray-600 p-3 rounded-lg">
+                <h5 class="text-md font-semibold mb-2 text-green-400">🟦 Tetris WL Settings</h5>
+                <div class="space-y-2">
+                  <div class="flex items-center">
+                    <input type="checkbox" id="tetrisWlEnabled" class="mr-2 w-4 h-4 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500 focus:ring-2">
+                    <label for="tetrisWlEnabled" class="text-sm font-medium">Enable WL Role Grant</label>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium mb-1">Score Threshold:</label>
+                    <input type="number" id="tetrisWlThreshold" value="4000" min="1000" max="10000" class="w-full px-2 py-1 rounded text-gray-800 text-sm">
+                  </div>
+                                 <div>
+                 <label class="block text-xs font-medium mb-1">WL Role ID:</label>
+                 <select id="tetrisWlRoleId" class="w-full px-2 py-1 rounded text-gray-800 text-sm">
+                   <option value="">Select WL role...</option>
+                   <option value="1399651053682692208">🧀 Cheese Hunter (1399651053682692208)</option>
+                   <option value="1332017770937847809">🏆 Alpha Caller (1332017770937847809)</option>
+                   <option value="1332017420591697972">🥇 Champion (1332017420591697972)</option>
+                   <option value="1332016526848692345">👑 VIP Cheese Lord (1332016526848692345)</option>
+                   <option value="1333347801408737323">✅ Verified (1333347801408737323)</option>
+                 </select>
+               </div>
+               <div>
+                 <label class="block text-xs font-medium mb-1">Bonus Points:</label>
+                 <input type="number" id="tetrisWlBonus" value="1000" min="100" max="10000" class="w-full px-2 py-1 rounded text-gray-800 text-sm">
+               </div>
+                </div>
+              </div>
+              
+              <!-- Snake WL Settings -->
+              <div class="bg-gray-600 p-3 rounded-lg">
+                <h5 class="text-md font-semibold mb-2 text-green-400">🐍 Snake WL Settings</h5>
+                <div class="space-y-2">
+                  <div class="flex items-center">
+                    <input type="checkbox" id="snakeWlEnabled" class="mr-2 w-4 h-4 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500 focus:ring-2">
+                    <label for="snakeWlEnabled" class="text-sm font-medium">Enable WL Role Grant</label>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium mb-1">Score Threshold:</label>
+                    <input type="number" id="snakeWlThreshold" value="4000" min="1000" max="10000" class="w-full px-2 py-1 rounded text-gray-800 text-sm">
+                  </div>
+                                 <div>
+                 <label class="block text-xs font-medium mb-1">WL Role ID:</label>
+                 <select id="snakeWlRoleId" class="w-full px-2 py-1 rounded text-gray-800 text-sm">
+                   <option value="">Select WL role...</option>
+                   <option value="1399651053682692208">🧀 Cheese Hunter (1399651053682692208)</option>
+                   <option value="1332017770937847809">🏆 Alpha Caller (1332017770937847809)</option>
+                   <option value="1332017420591697972">🥇 Champion (1332017420591697972)</option>
+                   <option value="1332016526848692345">👑 VIP Cheese Lord (1332016526848692345)</option>
+                   <option value="1333347801408737323">✅ Verified (1333347801408737323)</option>
+                 </select>
+               </div>
+               <div>
+                 <label class="block text-xs font-medium mb-1">Bonus Points:</label>
+                 <input type="number" id="snakeWlBonus" value="1000" min="100" max="10000" class="w-full px-2 py-1 rounded text-gray-800 text-sm">
+               </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3">
+              <button onclick="saveGameSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                💾 Save Game Settings
+              </button>
+            </div>
+          </div>
               <div class="md:col-span-2">
                 <label class="block text-sm font-medium mb-1">Winner Message:</label>
                 <input type="text" id="cheeseWinnerMessage" value="🎯 Congratulations! You found the cheese!" class="w-full px-3 py-2 rounded text-gray-800">
@@ -1793,6 +1866,7 @@
         if (tab === 'games') {
           loadGameStatistics();
           loadSeasonStats();
+          loadGameSettings();
         }
       });
     });
@@ -4019,6 +4093,104 @@
         }
       } catch (error) {
         addLog(`❌ Reset game scores error: ${error.message}`);
+      }
+    }
+
+    // Game Settings Management
+    async function loadGameSettings() {
+      try {
+        const response = await fetch('/api/admin/game-settings.php?action=get_settings');
+        const data = await response.json();
+        
+        if (data.success) {
+          const settings = data.settings;
+          
+                       // Populate Tetris settings
+             document.getElementById('tetrisWlEnabled').checked = settings.tetris_wl_enabled == 1;
+             document.getElementById('tetrisWlThreshold').value = settings.tetris_wl_threshold || 4000;
+             document.getElementById('tetrisWlRoleId').value = settings.tetris_wl_role_id || '';
+             document.getElementById('tetrisWlBonus').value = settings.tetris_wl_bonus || 1000;
+             
+             // Populate Snake settings
+             document.getElementById('snakeWlEnabled').checked = settings.snake_wl_enabled == 1;
+             document.getElementById('snakeWlThreshold').value = settings.snake_wl_threshold || 4000;
+             document.getElementById('snakeWlRoleId').value = settings.snake_wl_role_id || '';
+             document.getElementById('snakeWlBonus').value = settings.snake_wl_bonus || 1000;
+          
+          addLog('✅ Game settings loaded successfully');
+        } else {
+          addLog('❌ Failed to load game settings');
+        }
+      } catch (error) {
+        addLog(`❌ Load game settings error: ${error.message}`);
+      }
+    }
+
+    async function saveGameSettings() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+               const tetrisWlEnabled = document.getElementById('tetrisWlEnabled').checked ? 1 : 0;
+         const tetrisWlThreshold = parseInt(document.getElementById('tetrisWlThreshold').value);
+         const tetrisWlRoleId = document.getElementById('tetrisWlRoleId').value;
+         const tetrisWlBonus = parseInt(document.getElementById('tetrisWlBonus').value);
+         const snakeWlEnabled = document.getElementById('snakeWlEnabled').checked ? 1 : 0;
+         const snakeWlThreshold = parseInt(document.getElementById('snakeWlThreshold').value);
+         const snakeWlRoleId = document.getElementById('snakeWlRoleId').value;
+         const snakeWlBonus = parseInt(document.getElementById('snakeWlBonus').value);
+
+      // Validate inputs
+               if ((tetrisWlEnabled && !tetrisWlRoleId) || (snakeWlEnabled && !snakeWlRoleId)) {
+           addLog('❌ Please select a WL role when enabling WL grants');
+           return;
+         }
+       
+         if (tetrisWlThreshold < 1000 || tetrisWlThreshold > 10000 || 
+             snakeWlThreshold < 1000 || snakeWlThreshold > 10000) {
+           addLog('❌ Score threshold must be between 1000 and 10000');
+           return;
+         }
+       
+         if (tetrisWlBonus < 100 || tetrisWlBonus > 10000 || 
+             snakeWlBonus < 100 || snakeWlBonus > 10000) {
+           addLog('❌ Bonus points must be between 100 and 10000');
+           return;
+         }
+
+      addLog('💾 Saving game settings...');
+
+      try {
+        const response = await fetch('/api/admin/game-settings.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+                       body: JSON.stringify({
+               action: 'update_settings',
+               tetris_wl_enabled: tetrisWlEnabled,
+               tetris_wl_threshold: tetrisWlThreshold,
+               tetris_wl_role_id: tetrisWlRoleId,
+               tetris_wl_bonus: tetrisWlBonus,
+               snake_wl_enabled: snakeWlEnabled,
+               snake_wl_threshold: snakeWlThreshold,
+               snake_wl_role_id: snakeWlRoleId,
+               snake_wl_bonus: snakeWlBonus
+             })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+                       addLog('✅ Game settings saved successfully!');
+             addLog(`🟦 Tetris WL: ${tetrisWlEnabled ? 'Enabled' : 'Disabled'} (${tetrisWlThreshold} DSPOINC, +${tetrisWlBonus} bonus)`);
+             addLog(`🐍 Snake WL: ${snakeWlEnabled ? 'Enabled' : 'Disabled'} (${snakeWlThreshold} DSPOINC, +${snakeWlBonus} bonus)`);
+        } else {
+          addLog(`❌ Failed to save game settings: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Save game settings error: ${error.message}`);
       }
     }
 

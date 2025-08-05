@@ -409,42 +409,50 @@ function saveScore(finalScore) {
 
   console.log("🐍 Sending Snake score payload:", payload);
 
-  fetch("https://narrrfs.world/api/dev/save-score.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-    .then(res => res.json())
-    .then(data => {
-      console.log("💾 Snake score saved:", data);
+           fetch("https://narrrfs.world/api/dev/save-score.php", {
+           method: "POST",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify(payload)
+         })
+           .then(res => res.json())
+           .then(data => {
+             console.log("💾 Snake score saved:", data);
+             
+             // 🏆 Check for WL Role Grant
+             if (data.wl_check && data.wl_check.eligible) {
+               console.log("🎉 WL Role granted:", data.wl_check);
+               
+               // Show WL notification
+               showWLNotification(data.wl_check);
+             }
 
-      // ✅ Force leaderboard refresh after short delay
-      setTimeout(() => {
-        if (document.getElementById("leaderboard-list")) {
-          fetch(`https://narrrfs.world/api/dev/get-leaderboard.php?t=${Date.now()}`)
-            .then(res => res.json())
-            .then(result => {
-              const scores = result.leaderboard || [];
-              const list = document.getElementById("leaderboard-list");
-              list.innerHTML = "";
+             // ✅ Force leaderboard refresh after short delay
+             setTimeout(() => {
+               if (document.getElementById("leaderboard-list")) {
+                 fetch(`https://narrrfs.world/api/dev/get-leaderboard.php?t=${Date.now()}`)
+                   .then(res => res.json())
+                   .then(result => {
+                     const scores = result.leaderboard || [];
+                     const list = document.getElementById("leaderboard-list");
+                     list.innerHTML = "";
 
-              const rankColors = ["text-yellow-400", "text-gray-300", "text-yellow-200"];
-              const rankEmojis = ["👑", "🥈", "🥉"];
+                     const rankColors = ["text-yellow-400", "text-gray-300", "text-yellow-200"];
+                     const rankEmojis = ["👑", "🥈", "🥉"];
 
-              scores.forEach((entry, i) => {
-                const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-                const li = document.createElement("li");
-                const emoji = rankEmojis[i] || "";
+                     scores.forEach((entry, i) => {
+                       const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+                       const li = document.createElement("li");
+                       const emoji = rankEmojis[i] || "";
 
-                li.innerHTML = `${emoji} #${i + 1} <strong>${name}</strong> – ${entry.score} $DSPOINC`;
-                li.classList.add("animate-pop", rankColors[i] || "text-white");
-                list.appendChild(li);
-              });
-            });
-        }
-      }, 500);
-    })
-    .catch(err => console.error("Snake score save failed:", err));
+                       li.innerHTML = `${emoji} #${i + 1} <strong>${name}</strong> – ${entry.score} $DSPOINC`;
+                       li.classList.add("animate-pop", rankColors[i] || "text-white");
+                       list.appendChild(li);
+                     });
+                   });
+               }
+             }, 500);
+           })
+           .catch(err => console.error("Snake score save failed:", err));
 }
 
 
@@ -576,6 +584,56 @@ function maybePlaceBomb() {
   if (Math.random() < 0.05) {
     console.log("💣 Bomb block placed (placeholder)");
   }
+}
+
+// 🏆 WL Role Notification Function
+function showWLNotification(wlData) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = 'fixed top-4 right-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-lg shadow-lg z-50 transform transition-all duration-500';
+  notification.style.maxWidth = '400px';
+  
+  const roleName = getRoleName(wlData.role_id);
+  
+  notification.innerHTML = `
+    <div class="flex items-center space-x-3">
+      <div class="text-2xl">🏆</div>
+      <div>
+        <div class="font-bold text-lg">WL Role Granted!</div>
+        <div class="text-sm opacity-90">${roleName}</div>
+        <div class="text-xs opacity-75">+${wlData.bonus_points} DSPOINC Bonus</div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Animate in
+  setTimeout(() => {
+    notification.style.transform = 'translateX(0)';
+  }, 100);
+  
+  // Remove after 5 seconds
+  setTimeout(() => {
+    notification.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 500);
+  }, 5000);
+}
+
+// Helper function to get role name from ID
+function getRoleName(roleId) {
+  const roleMap = {
+    '1399651053682692208': '🧀 Cheese Hunter',
+    '1332017770937847809': '🏆 Alpha Caller',
+    '1332017420591697972': '🥇 Champion',
+    '1332016526848692345': '👑 VIP Cheese Lord',
+    '1333347801408737323': '✅ Verified'
+  };
+  return roleMap[roleId] || 'WL Role';
 }
 
 // 🛠️ UI Debug Helper
