@@ -10,50 +10,101 @@ async function updateUserScores() {
     const response = await fetch('/api/user/score-total.php', {
       credentials: 'include'
     });
+    
+    // Check if response is ok before trying to parse JSON
+    if (!response.ok) {
+      if (response.status === 401) {
+        // User not authenticated - this is normal for guests
+        console.log('User not authenticated - showing guest mode');
+        updateGuestMode();
+        return;
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    }
+    
     const data = await response.json();
+    
+    // Check if data is valid before accessing properties
+    if (!data || typeof data !== 'object') {
+      console.warn('Invalid data received from score-total.php');
+      updateGuestMode();
+      return;
+    }
     
     const spoincBalance = document.getElementById('spoinc-balance');
     const dspoincBalance = document.getElementById('dspoinc-balance');
     const discordName = document.getElementById('wallet-discord-name');
     
-    // Update balances
+    // Update balances with safe property access
     if (spoincBalance && dspoincBalance) {
-      spoincBalance.textContent = data.total_spoinc.toLocaleString();
-      dspoincBalance.textContent = data.total_dspoinc.toLocaleString();
+      const totalSpoinc = data.total_spoinc || 0;
+      const totalDspoinc = data.total_dspoinc || 0;
+      spoincBalance.textContent = totalSpoinc.toLocaleString();
+      dspoincBalance.textContent = totalDspoinc.toLocaleString();
     }
 
     // Update Discord name
     if (discordName) {
-      discordName.textContent = data.discord_name || 'Not logged in';
-      if (data.discord_name !== 'Guest') {
+      const discordNameValue = data.discord_name || 'Not logged in';
+      discordName.textContent = discordNameValue;
+      if (discordNameValue !== 'Guest' && discordNameValue !== 'Not logged in') {
         discordName.classList.add('font-semibold', 'text-purple-800');
       } else {
         discordName.classList.remove('font-semibold', 'text-purple-800');
       }
     }
 
-    // Update stats
+    // Update stats with safe property access
     const statsAdjustments = document.getElementById('stats-adjustments');
     const statsSources = document.getElementById('stats-sources');
     const statsRoles = document.getElementById('stats-roles');
     const statsMemberSince = document.getElementById('stats-member-since');
 
     if (statsAdjustments) {
-      statsAdjustments.textContent = data.stats.adjustments_count.toLocaleString();
+      const adjustmentsCount = data.stats?.adjustments_count || 0;
+      statsAdjustments.textContent = adjustmentsCount.toLocaleString();
     }
     if (statsSources) {
-      statsSources.textContent = data.stats.source_count.toLocaleString();
+      const sourceCount = data.stats?.source_count || 0;
+      statsSources.textContent = sourceCount.toLocaleString();
     }
     if (statsRoles) {
-      statsRoles.textContent = data.stats.role_count.toLocaleString();
+      const roleCount = data.stats?.role_count || 0;
+      statsRoles.textContent = roleCount.toLocaleString();
     }
-    if (statsMemberSince && data.stats.first_score_date) {
+    if (statsMemberSince && data.stats?.first_score_date) {
       const date = new Date(data.stats.first_score_date);
       statsMemberSince.textContent = date.toLocaleDateString();
     }
   } catch (err) {
     console.error('Failed to fetch scores:', err);
+    // Fallback to guest mode on any error
+    updateGuestMode();
   }
+}
+
+// Helper function to update UI for guest mode
+function updateGuestMode() {
+  const spoincBalance = document.getElementById('spoinc-balance');
+  const dspoincBalance = document.getElementById('dspoinc-balance');
+  const discordName = document.getElementById('wallet-discord-name');
+  const statsAdjustments = document.getElementById('stats-adjustments');
+  const statsSources = document.getElementById('stats-sources');
+  const statsRoles = document.getElementById('stats-roles');
+  const statsMemberSince = document.getElementById('stats-member-since');
+
+  // Set default values for guest mode
+  if (spoincBalance) spoincBalance.textContent = '0';
+  if (dspoincBalance) dspoincBalance.textContent = '0';
+  if (discordName) {
+    discordName.textContent = 'Not logged in';
+    discordName.classList.remove('font-semibold', 'text-purple-800');
+  }
+  if (statsAdjustments) statsAdjustments.textContent = '0';
+  if (statsSources) statsSources.textContent = '0';
+  if (statsRoles) statsRoles.textContent = '0';
+  if (statsMemberSince) statsMemberSince.textContent = 'N/A';
 }
 
 // Helper function to update all connect buttons on the page
@@ -130,17 +181,31 @@ async function connectWallet() {
           try {
             const discordId = localStorage.getItem('discord_id');
             if (discordId) {
-                             const roleRes = await fetch('/api/user/roles.php');
-               const roleData = await roleRes.json();
-               // Check for WL role by name instead of hardcoded ID
-               hasDiscordRole = roleData.roles && roleData.roles.some(role => 
-                 role.toLowerCase().includes('wl') || 
-                 role.toLowerCase().includes('whitelist') ||
-                 role === '1332108350518857842' // Keep the original ID as fallback
-               );
+              const roleRes = await fetch('/api/user/roles.php', {
+                credentials: 'include'
+              });
+              
+              // Check if response is ok before trying to parse JSON
+              if (roleRes.ok) {
+                const roleData = await roleRes.json();
+                // Check for WL role by name instead of hardcoded ID
+                hasDiscordRole = roleData.roles && roleData.roles.some(role => 
+                  role.toLowerCase().includes('wl') || 
+                  role.toLowerCase().includes('whitelist') ||
+                  role === '1332108350518857842' // Keep the original ID as fallback
+                );
+              } else if (roleRes.status === 401) {
+                // User not authenticated - this is normal for guests
+                console.log('User not authenticated for roles check');
+                hasDiscordRole = false;
+              } else {
+                console.warn('Roles API returned error:', roleRes.status);
+                hasDiscordRole = false;
+              }
             }
           } catch (roleErr) {
             console.error("Failed to check Discord role:", roleErr);
+            hasDiscordRole = false;
           }
         }
 
@@ -221,16 +286,43 @@ async function checkDiscordRoleAccess() {
     }
     
     console.log('Fetching roles from API...');
-    const roleRes = await fetch('/api/user/roles.php');
+    const roleRes = await fetch('/api/user/roles.php', {
+      credentials: 'include'
+    });
+    
+    // Check if response is ok before trying to parse JSON
+    if (!roleRes.ok) {
+      if (roleRes.status === 401) {
+        // User not authenticated - this is normal for guests
+        console.log('User not authenticated for roles check');
+        vipMessage.innerText = "⚠️ Please login with Discord first";
+        vipMessage.className = "mt-6 text-yellow-600 font-semibold text-lg";
+        return false;
+      } else {
+        console.warn('Roles API returned error:', roleRes.status);
+        vipMessage.innerText = "⚠️ Failed to check Discord roles. Please try again.";
+        vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
+        return false;
+      }
+    }
+    
     const roleData = await roleRes.json();
     console.log('Role data received:', roleData);
     
-         // Check for WL role by name instead of hardcoded ID
-     const hasWLRole = roleData.roles && roleData.roles.some(role => 
-       role.toLowerCase().includes('wl') || 
-       role.toLowerCase().includes('whitelist') ||
-       role === '1332108350518857842' // Keep the original ID as fallback
-     );
+    // Check if roleData is valid before accessing properties
+    if (!roleData || !roleData.roles) {
+      console.warn('Invalid role data received');
+      vipMessage.innerText = "⚠️ Failed to check Discord roles. Please try again.";
+      vipMessage.className = "mt-6 text-red-600 font-semibold text-lg";
+      return false;
+    }
+    
+    // Check for WL role by name instead of hardcoded ID
+    const hasWLRole = roleData.roles.some(role => 
+      role.toLowerCase().includes('wl') || 
+      role.toLowerCase().includes('whitelist') ||
+      role === '1332108350518857842' // Keep the original ID as fallback
+    );
      
      if (hasWLRole) {
        console.log('User has WL role!');
