@@ -46,23 +46,12 @@ try {
     $stmt->execute($params);
     $nfts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get user info if available
-    $userInfo = null;
-    $userStmt = $db->prepare("SELECT discord_id, discord_name FROM tbl_users WHERE wallet = ?");
-    $userStmt->execute([$wallet]);
-    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($user) {
-        $userInfo = [
-            'discord_id' => $user['discord_id'],
-            'discord_name' => $user['discord_name']
-        ];
-    }
+    // Note: tbl_users doesn't have a wallet column, so we can't link NFT ownership to Discord users directly
+    // User info would need to be stored in tbl_nft_ownership or a separate linking table
 
     echo json_encode([
         'success' => true,
         'nfts' => $nfts,
-        'user_info' => $userInfo,
         'count' => count($nfts)
     ]);
 

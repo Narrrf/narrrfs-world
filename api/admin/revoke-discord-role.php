@@ -32,7 +32,7 @@ try {
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Get user info
-    $userStmt = $db->prepare("SELECT discord_name FROM tbl_users WHERE discord_id = ?");
+    $userStmt = $db->prepare("SELECT username FROM tbl_users WHERE discord_id = ?");
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
     
@@ -99,7 +99,7 @@ try {
     
     $logStmt->execute([
         $userId,
-        $user['discord_name'],
+        $user['username'],
         $roleId,
         $roleName,
         $reason,
@@ -110,7 +110,7 @@ try {
     if ($roleRevoked) {
         echo json_encode([
             'success' => true,
-            'message' => "Role revoked successfully from {$user['discord_name']}",
+            'message' => "Role revoked successfully from {$user['username']}",
             'user_id' => $userId,
             'role_id' => $roleId,
             'role_name' => $roleName
