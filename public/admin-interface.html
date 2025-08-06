@@ -170,6 +170,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="quests">🏆 Quest System</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="games">🎮 Game Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="discord">🔗 Discord Config</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="holderVerification">🎴 Holder Verification</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="cheeseGuide">🧀 Cheese Guide</button>
       </div>
       
@@ -1253,6 +1254,168 @@
       </div>
     </div>
 
+    <!-- Holder Verification Tab -->
+    <div class="admin-card mb-6" id="holderVerificationTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">🎴 Holder Verification Management</h2>
+      
+      <!-- Overview Section -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-semibold mb-3 text-purple-400">📊 Holder Verification Overview</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-purple-400" id="totalVerifications">-</div>
+            <div class="text-sm text-gray-300">Total Verifications</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-green-400" id="successfulVerifications">-</div>
+            <div class="text-sm text-gray-300">Successful</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-400" id="totalNFTs">-</div>
+            <div class="text-sm text-gray-300">Total NFTs</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-yellow-400" id="activeRoles">-</div>
+            <div class="text-sm text-gray-300">Active Roles</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Management -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        
+        <!-- View Verifications -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3 text-blue-400">🔍 View Verifications</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Filter by Collection:</label>
+              <select id="verificationCollectionFilter" class="w-full px-3 py-2 rounded text-gray-800">
+                <option value="">All Collections</option>
+                <option value="genesis">🧠 Genesis Collection</option>
+                <option value="vip">🎴 VIP Collection</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Filter by Status:</label>
+              <select id="verificationStatusFilter" class="w-full px-3 py-2 rounded text-gray-800">
+                <option value="">All Statuses</option>
+                <option value="1">✅ Role Granted</option>
+                <option value="0">❌ Role Not Granted</option>
+              </select>
+            </div>
+            <button onclick="loadVerifications()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+              🔍 Load Verifications
+            </button>
+          </div>
+          
+          <div class="mt-4">
+            <div id="verificationsList" class="space-y-2 max-h-64 overflow-y-auto">
+              <div class="text-gray-400 text-center py-4">Click "Load Verifications" to view data</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NFT Ownership Management -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3 text-green-400">🎴 NFT Ownership Management</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Wallet Address:</label>
+              <input type="text" id="nftWalletAddress" placeholder="Enter wallet address" class="w-full px-3 py-2 rounded text-gray-800">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Collection:</label>
+              <select id="nftCollection" class="w-full px-3 py-2 rounded text-gray-800">
+                <option value="genesis">🧠 Genesis Collection</option>
+                <option value="vip">🎴 VIP Collection</option>
+              </select>
+            </div>
+            <button onclick="searchNFTs()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+              🔍 Search NFTs
+            </button>
+          </div>
+          
+          <div class="mt-4">
+            <div id="nftSearchResults" class="space-y-2 max-h-64 overflow-y-auto">
+              <div class="text-gray-400 text-center py-4">Search for NFTs to view ownership</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role Management -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-semibold mb-3 text-yellow-400">🏆 Role Management</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Role Granting -->
+          <div>
+            <h4 class="text-md font-semibold mb-3 text-green-400">Grant Roles</h4>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Discord User ID:</label>
+                <input type="text" id="roleUserId" placeholder="Enter Discord user ID" class="w-full px-3 py-2 rounded text-gray-800">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Role to Grant:</label>
+                <select id="roleToGrant" class="w-full px-3 py-2 rounded text-gray-800">
+                  <option value="1402668301414563971">🏆 Holder (1402668301414563971)</option>
+                  <option value="1332016526848692345">🎴 VIP Holder (1332016526848692345)</option>
+                  <option value="1332108350518857842">🧀 Cheese Hunter (1332108350518857842)</option>
+                  <option value="1332108350518857843">🎯 Alpha Caller (1332108350518857843)</option>
+                  <option value="1332108350518857844">🏅 Champion (1332108350518857844)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Reason:</label>
+                <input type="text" id="roleGrantReason" placeholder="Reason for role grant" class="w-full px-3 py-2 rounded text-gray-800">
+              </div>
+              <button onclick="grantRole()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                ✅ Grant Role
+              </button>
+            </div>
+          </div>
+
+          <!-- Role Revoking -->
+          <div>
+            <h4 class="text-md font-semibold mb-3 text-red-400">Revoke Roles</h4>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Discord User ID:</label>
+                <input type="text" id="revokeUserId" placeholder="Enter Discord user ID" class="w-full px-3 py-2 rounded text-gray-800">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Role to Revoke:</label>
+                <select id="roleToRevoke" class="w-full px-3 py-2 rounded text-gray-800">
+                  <option value="1402668301414563971">🏆 Holder (1402668301414563971)</option>
+                  <option value="1332016526848692345">🎴 VIP Holder (1332016526848692345)</option>
+                  <option value="1332108350518857842">🧀 Cheese Hunter (1332108350518857842)</option>
+                  <option value="1332108350518857843">🎯 Alpha Caller (1332108350518857843)</option>
+                  <option value="1332108350518857844">🏅 Champion (1332108350518857844)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Reason:</label>
+                <input type="text" id="roleRevokeReason" placeholder="Reason for role revocation" class="w-full px-3 py-2 rounded text-gray-800">
+              </div>
+              <button onclick="revokeRole()" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+                ❌ Revoke Role
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Log -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3 text-blue-400">📋 Verification Log</h3>
+        <div id="verificationLog" class="bg-gray-900 p-4 rounded text-sm font-mono h-32 overflow-y-auto">
+          <div class="text-blue-400">🔄 Holder verification system ready...</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -1866,6 +2029,7 @@
           loadSeasonStats();
           loadGameSettings();
         }
+        if (tab === 'holderVerification') loadHolderVerificationData();
       });
     });
 
@@ -4488,6 +4652,244 @@
           </div>
         </div>
       `;
+    }
+
+    // ========================================
+    // HOLDER VERIFICATION FUNCTIONS
+    // ========================================
+
+    // Load holder verification statistics
+    async function loadHolderVerificationStats() {
+      try {
+        const response = await fetch('/api/admin/get-holder-verification-stats.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('totalVerifications').textContent = data.stats.total_verifications || 0;
+          document.getElementById('successfulVerifications').textContent = data.stats.successful_verifications || 0;
+          document.getElementById('totalNFTs').textContent = data.stats.total_nfts || 0;
+          document.getElementById('activeRoles').textContent = data.stats.active_roles || 0;
+        } else {
+          addVerificationLog(`❌ Failed to load verification stats: ${data.error}`);
+        }
+      } catch (error) {
+        addVerificationLog(`❌ Error loading verification stats: ${error.message}`);
+      }
+    }
+
+    // Load verifications with filters
+    async function loadVerifications() {
+      try {
+        const collectionFilter = document.getElementById('verificationCollectionFilter').value;
+        const statusFilter = document.getElementById('verificationStatusFilter').value;
+        
+        const response = await fetch('/api/admin/get-holder-verifications.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            collection: collectionFilter,
+            status: statusFilter
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          displayVerifications(data.verifications);
+          addVerificationLog(`✅ Loaded ${data.verifications.length} verifications`);
+        } else {
+          addVerificationLog(`❌ Failed to load verifications: ${data.error}`);
+        }
+      } catch (error) {
+        addVerificationLog(`❌ Error loading verifications: ${error.message}`);
+      }
+    }
+
+    // Display verifications in the list
+    function displayVerifications(verifications) {
+      const container = document.getElementById('verificationsList');
+      
+      if (verifications.length === 0) {
+        container.innerHTML = '<div class="text-gray-400 text-center py-4">No verifications found</div>';
+        return;
+      }
+
+      container.innerHTML = verifications.map(verification => {
+        const statusIcon = verification.role_granted ? '✅' : '❌';
+        const statusColor = verification.role_granted ? 'text-green-400' : 'text-red-400';
+        const date = new Date(verification.verified_at).toLocaleString();
+        
+        return `
+          <div class="bg-gray-700 p-3 rounded border-l-4 border-gray-600">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="font-semibold text-white">${verification.username}</div>
+                <div class="text-sm text-gray-300">${verification.wallet.substring(0, 8)}...${verification.wallet.substring(verification.wallet.length - 8)}</div>
+                <div class="text-sm text-gray-400">Collection: ${verification.collection}</div>
+              </div>
+              <div class="text-right">
+                <div class="${statusColor} font-semibold">${statusIcon} ${verification.role_granted ? 'Role Granted' : 'No Role'}</div>
+                <div class="text-xs text-gray-400">${date}</div>
+                <div class="text-xs text-gray-400">NFTs: ${verification.nft_count}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Search NFTs by wallet and collection
+    async function searchNFTs() {
+      try {
+        const wallet = document.getElementById('nftWalletAddress').value.trim();
+        const collection = document.getElementById('nftCollection').value;
+        
+        if (!wallet) {
+          addVerificationLog('❌ Please enter a wallet address');
+          return;
+        }
+
+        const response = await fetch('/api/admin/search-nft-ownership.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet: wallet,
+            collection: collection
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          displayNFTSearchResults(data.nfts, wallet);
+          addVerificationLog(`✅ Found ${data.nfts.length} NFTs for wallet ${wallet.substring(0, 8)}...`);
+        } else {
+          addVerificationLog(`❌ NFT search failed: ${data.error}`);
+        }
+      } catch (error) {
+        addVerificationLog(`❌ Error searching NFTs: ${error.message}`);
+      }
+    }
+
+    // Display NFT search results
+    function displayNFTSearchResults(nfts, wallet) {
+      const container = document.getElementById('nftSearchResults');
+      
+      if (nfts.length === 0) {
+        container.innerHTML = '<div class="text-gray-400 text-center py-4">No NFTs found for this wallet</div>';
+        return;
+      }
+
+      container.innerHTML = nfts.map(nft => {
+        const rarityColor = nft.rarity === 'Legendary' ? 'text-yellow-400' : 
+                           nft.rarity === 'Epic' ? 'text-purple-400' : 
+                           nft.rarity === 'Rare' ? 'text-blue-400' : 'text-gray-400';
+        
+        return `
+          <div class="bg-gray-700 p-3 rounded border-l-4 border-gray-600">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="font-semibold text-white">Token #${nft.token_id}</div>
+                <div class="text-sm ${rarityColor}">${nft.rarity || 'Common'}</div>
+                <div class="text-sm text-gray-400">Collection: ${nft.collection}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-gray-400">${new Date(nft.acquired_at).toLocaleDateString()}</div>
+                ${nft.traits ? `<div class="text-xs text-gray-400">Has Traits</div>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Grant role to user
+    async function grantRole() {
+      try {
+        const userId = document.getElementById('roleUserId').value.trim();
+        const roleId = document.getElementById('roleToGrant').value;
+        const reason = document.getElementById('roleGrantReason').value.trim();
+        
+        if (!userId) {
+          addVerificationLog('❌ Please enter a Discord user ID');
+          return;
+        }
+
+        const response = await fetch('/api/admin/grant-discord-role.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: userId,
+            role_id: roleId,
+            reason: reason || 'Manual role grant via admin interface'
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addVerificationLog(`✅ Role granted to user ${userId}`);
+          document.getElementById('roleUserId').value = '';
+          document.getElementById('roleGrantReason').value = '';
+        } else {
+          addVerificationLog(`❌ Failed to grant role: ${data.error}`);
+        }
+      } catch (error) {
+        addVerificationLog(`❌ Error granting role: ${error.message}`);
+      }
+    }
+
+    // Revoke role from user
+    async function revokeRole() {
+      try {
+        const userId = document.getElementById('revokeUserId').value.trim();
+        const roleId = document.getElementById('roleToRevoke').value;
+        const reason = document.getElementById('roleRevokeReason').value.trim();
+        
+        if (!userId) {
+          addVerificationLog('❌ Please enter a Discord user ID');
+          return;
+        }
+
+        const response = await fetch('/api/admin/revoke-discord-role.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: userId,
+            role_id: roleId,
+            reason: reason || 'Manual role revocation via admin interface'
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addVerificationLog(`✅ Role revoked from user ${userId}`);
+          document.getElementById('revokeUserId').value = '';
+          document.getElementById('roleRevokeReason').value = '';
+        } else {
+          addVerificationLog(`❌ Failed to revoke role: ${data.error}`);
+        }
+      } catch (error) {
+        addVerificationLog(`❌ Error revoking role: ${error.message}`);
+      }
+    }
+
+    // Add log to verification log
+    function addVerificationLog(message) {
+      const log = document.getElementById('verificationLog');
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.className = 'text-blue-400';
+      logEntry.textContent = `[${timestamp}] ${message}`;
+      log.appendChild(logEntry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Load holder verification data when tab is opened
+    function loadHolderVerificationData() {
+      loadHolderVerificationStats();
+      addVerificationLog('🔄 Holder verification system initialized');
     }
 
   </script>

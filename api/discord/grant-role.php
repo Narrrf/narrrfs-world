@@ -59,9 +59,9 @@ $role_id = $input['role_id'] ?? '';
 
 error_log("grant-role.php called: action=$action, user_id=$user_id, role_id=$role_id");
 
-if ($action !== 'add_role' || !$user_id || !$role_id) {
+if (($action !== 'add_role' && $action !== 'remove_role') || !$user_id || !$role_id) {
     http_response_code(400);
-    echo json_encode(['error' => 'Missing required parameters']);
+    echo json_encode(['error' => 'Missing required parameters or invalid action']);
     exit;
 }
 
@@ -78,16 +78,23 @@ if (!$discord_bot_token) {
 }
 
 try {
-    // Add role to user via Discord API
+    // Add or remove role to/from user via Discord API
     $discord_api_url = "https://discord.com/api/v10/guilds/{$discord_guild_id}/members/{$user_id}/roles/{$role_id}";
     
-    error_log("Making Discord API call to: $discord_api_url");
+    error_log("Making Discord API call to: $discord_api_url for action: $action");
     error_log("Bot token length: " . strlen($discord_bot_token));
     error_log("Bot token preview: " . substr($discord_bot_token, 0, 10) . "...");
     
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $discord_api_url);
-    curl_setopt($ch, CURLOPT_PUT, true);
+    
+    // Use PUT for adding role, DELETE for removing role
+    if ($action === 'add_role') {
+        curl_setopt($ch, CURLOPT_PUT, true);
+    } else {
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+    }
+    
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Authorization: Bot ' . $discord_bot_token,
         'Content-Type: application/json'
@@ -116,13 +123,15 @@ try {
     error_log("Verbose curl log: " . $verbose_log);
     
     if ($http_code === 204) {
-        // Success - role added
-        error_log("Discord role granted successfully: User $user_id, Role $role_id");
+        // Success - role added or removed
+        $action_text = $action === 'add_role' ? 'granted' : 'removed';
+        error_log("Discord role $action_text successfully: User $user_id, Role $role_id");
         echo json_encode([
             'success' => true,
-            'message' => 'Role granted successfully',
+            'message' => "Role $action_text successfully",
             'user_id' => $user_id,
-            'role_id' => $role_id
+            'role_id' => $role_id,
+            'action' => $action
         ]);
     } else {
         // Error from Discord API
@@ -132,6 +141,7 @@ try {
             'error' => 'Discord API error',
             'http_code' => $http_code,
             'response' => $response,
+            'action' => $action,
             'details' => [
                 'url' => $discord_api_url,
                 'guild_id' => $discord_guild_id,
