@@ -613,6 +613,8 @@ const trophies = {
   "VIP Holder": { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
   "Holder": { img: "img/trophy_holder.png", label: "🏆 Holder" },
   "Cheese Hunter": { img: "img/trophy_cheese_hunter.png", label: "🧀 Cheese Hunter" },
+  "🏆 Holder": { img: "img/trophy_holder.png", label: "🏆 Holder" },
+  "🎴 VIP Holder": { img: "img/trophy_VIP.png", label: "🎴 VIP Holder" },
   "PokerOG": { img: "img/trophy_PokerOG.png", label: "Poker OG" },
   "Champion": { img: "img/trophy_champion.png", label: "Champion" },
   "Rumble": { img: "img/trophy_rumble.png", label: "Rumble Champ" },
@@ -633,16 +635,43 @@ function renderTrophyShelf(userRoles = []) {
   if (!shelf) return;
   shelf.innerHTML = "";
   const uniqueRoles = [...new Set(userRoles)];
+  
+  // Debug logging
+  console.log('Rendering trophy shelf with roles:', uniqueRoles);
+  
   uniqueRoles.forEach(role => {
-    const trophy = trophies[role];
+    // Check for exact match first
+    let trophy = trophies[role];
+    
+    // If no exact match, try to find a match by removing emojis or adding them
+    if (!trophy) {
+      // Try removing emojis from role name
+      const cleanRole = role.replace(/[🏆🎴🧀]/g, '').trim();
+      trophy = trophies[cleanRole];
+      
+      // If still no match, try adding emojis
+      if (!trophy) {
+        if (cleanRole === 'Holder') {
+          trophy = trophies['🏆 Holder'];
+        } else if (cleanRole === 'VIP Holder') {
+          trophy = trophies['🎴 VIP Holder'];
+        } else if (cleanRole === 'Cheese Hunter') {
+          trophy = trophies['🧀 Cheese Hunter'];
+        }
+      }
+    }
+    
     if (trophy) {
       const trophyEl = document.createElement("div");
       trophyEl.className = "flex flex-col items-center animate-pop transition-transform hover:scale-105";
       trophyEl.innerHTML = `
         <img src="${trophy.img}" alt="${trophy.label}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow mb-2" />
-        <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}
+        <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}</span>
       `;
       shelf.appendChild(trophyEl);
+      console.log('Added trophy for role:', role, '->', trophy.label);
+    } else {
+      console.log('No trophy found for role:', role);
     }
   });
 }
@@ -1380,36 +1409,21 @@ async function verifyNFTs() {
   }
 }
 
-// Get NFTs from wallet using Solana RPC
+// Get NFTs from wallet using our backend proxy
 async function getNFTsFromWallet(walletAddress) {
   try {
-    // Use Solana RPC to get token accounts
-    const response = await fetch('https://api.mainnet-beta.solana.com', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'getTokenAccountsByOwner',
-        params: [
-          walletAddress,
-          {
-            programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' // SPL Token Program
-          },
-          {
-            encoding: 'jsonParsed'
-          }
-        ]
-      })
-    });
-
+    const response = await fetch(`/api/wallet/get-nfts.php?wallet=${walletAddress}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const data = await response.json();
     
-    if (data.error) {
-      throw new Error(data.error.message);
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to fetch NFTs');
     }
 
-    return data.result.value || [];
+    return data.nfts || [];
     
   } catch (error) {
     console.error('Error fetching NFTs:', error);
@@ -1445,24 +1459,31 @@ async function checkOurCollectionNFTs(nfts) {
         
         // Check if this NFT belongs to our collection
         if (tokenData.mint) {
-          // Get NFT metadata
-          const metadataResponse = await fetch(`https://api.solscan.io/token/meta?tokenAddress=${tokenData.mint}`);
-          const metadata = await metadataResponse.json();
-          
-          if (metadata.data && metadata.data.collection) {
-            const collectionAddress = metadata.data.collection.key;
-            
-            if (ourCollections[collectionAddress]) {
-              ourNFTs.push({
-                mint: tokenData.mint,
-                amount: tokenData.tokenAmount.uiAmount,
-                metadata: metadata.data,
-                collection: ourCollections[collectionAddress].name,
-                role: ourCollections[collectionAddress].role,
-                roleId: ourCollections[collectionAddress].roleId,
-                roleName: ourCollections[collectionAddress].roleName
-              });
+          try {
+            // Get NFT metadata using our backend proxy
+            const metadataResponse = await fetch(`/api/wallet/get-nft-metadata.php?token=${tokenData.mint}`);
+            if (metadataResponse.ok) {
+              const metadataData = await metadataResponse.json();
+              
+              if (metadataData.success && metadataData.metadata.data && metadataData.metadata.data.collection) {
+                const collectionAddress = metadataData.metadata.data.collection.key;
+                
+                if (ourCollections[collectionAddress]) {
+                  ourNFTs.push({
+                    mint: tokenData.mint,
+                    amount: tokenData.tokenAmount.uiAmount,
+                    metadata: metadataData.metadata.data,
+                    collection: ourCollections[collectionAddress].name,
+                    role: ourCollections[collectionAddress].role,
+                    roleId: ourCollections[collectionAddress].roleId,
+                    roleName: ourCollections[collectionAddress].roleName
+                  });
+                }
+              }
             }
+          } catch (metadataError) {
+            console.warn('Failed to get metadata for token:', tokenData.mint, metadataError);
+            // Continue checking other NFTs
           }
         }
       }
