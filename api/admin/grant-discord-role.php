@@ -31,15 +31,21 @@ try {
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Get user info
-    $userStmt = $db->prepare("SELECT username FROM tbl_users WHERE discord_id = ?");
+    // Get user info - use same logic as existing user search system
+    $userStmt = $db->prepare("
+        SELECT us.user_id, SUM(us.score) as total_score, u.username, u.discord_id
+        FROM tbl_user_scores us
+        LEFT JOIN tbl_users u ON us.user_id = u.discord_id
+        WHERE us.user_id = ?
+        GROUP BY us.user_id
+    ");
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$user) {
         echo json_encode([
             'success' => false,
-            'error' => 'User not found in database'
+            'error' => 'User not found in database. User must have played games to be in the system.'
         ]);
         exit;
     }

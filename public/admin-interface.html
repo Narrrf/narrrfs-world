@@ -1354,6 +1354,16 @@
             <h4 class="text-md font-semibold mb-3 text-green-400">Grant Roles</h4>
             <div class="space-y-3">
               <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Search User:</label>
+                <div class="flex gap-2">
+                  <input type="text" id="holderUserSearch" placeholder="Search by Discord ID or username" class="flex-1 px-3 py-2 rounded text-gray-800" oninput="searchHolderUsersInstant(this.value)">
+                  <button onclick="searchHolderUsers()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">Search</button>
+                </div>
+                <div id="holderUserSearchResults" class="mt-2 max-h-32 overflow-y-auto bg-gray-700 rounded p-2 hidden">
+                  <div class="text-gray-400 text-sm">Enter at least 2 characters to search...</div>
+                </div>
+              </div>
+              <div>
                 <label class="block text-sm font-medium text-gray-300 mb-1">Discord User ID:</label>
                 <input type="text" id="roleUserId" placeholder="Enter Discord user ID" class="w-full px-3 py-2 rounded text-gray-800">
               </div>
@@ -4891,6 +4901,109 @@
       loadHolderVerificationStats();
       addVerificationLog('🔄 Holder verification system initialized');
     }
+
+    // Search holder users with instant search
+    function searchHolderUsersInstant(searchTerm) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      
+      if (searchTerm.length < 2) {
+        document.getElementById('holderUserSearchResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+        document.getElementById('holderUserSearchResults').classList.add('hidden');
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch('/api/admin/point-management.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'searchuser',
+              search: searchTerm
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            displayHolderUserSearchResults(data.users);
+            document.getElementById('holderUserSearchResults').classList.remove('hidden');
+          } else {
+            addVerificationLog(`❌ Search failed: ${data.error}`);
+          }
+        } catch (error) {
+          addVerificationLog(`❌ Search error: ${error.message}`);
+        }
+      }, 300);
+    }
+
+    // Display holder user search results
+    function displayHolderUserSearchResults(users) {
+      const container = document.getElementById('holderUserSearchResults');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="user-card mb-2 p-2 bg-gray-600 rounded">
+          <div class="flex justify-between items-center">
+            <div>
+              <h4 class="font-semibold text-white">${user.username || 'Unknown User'}</h4>
+              <p class="text-sm text-gray-300">ID: ${user.user_id}</p>
+              <p class="text-sm text-yellow-400">Balance: ${user.score?.toLocaleString() || 0} $DSPOINC</p>
+            </div>
+            <button onclick="selectHolderUser('${user.user_id}', '${user.username || 'Unknown'}')" 
+                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm">
+              Select
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Select user from holder search results
+    function selectHolderUser(userId, username) {
+      document.getElementById('roleUserId').value = userId;
+      document.getElementById('holderUserSearchResults').classList.add('hidden');
+      document.getElementById('holderUserSearch').value = username;
+      addVerificationLog(`✅ Selected user: ${username} (${userId})`);
+    }
+
+    // Search holder users (manual search)
+    async function searchHolderUsers() {
+      const searchTerm = document.getElementById('holderUserSearch').value.trim();
+      if (!searchTerm) {
+        addVerificationLog('❌ Please enter a search term');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/point-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'searchuser',
+            search: searchTerm
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          displayHolderUserSearchResults(data.users);
+          document.getElementById('holderUserSearchResults').classList.remove('hidden');
+          addVerificationLog(`🔍 Found ${data.users.length} users matching "${searchTerm}"`);
+        } else {
+          addVerificationLog(`❌ Search failed: ${data.error}`);
+        }
+      } catch (error) {
+        addVerificationLog(`❌ Search error: ${error.message}`);
+      }
+    }
+
+    
 
   </script>
 
