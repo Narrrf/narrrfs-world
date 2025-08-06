@@ -40,7 +40,8 @@ try {
     }
     
     if (!empty($collection)) {
-        // Direct collection search using searchAssets - much more efficient
+        // Use the correct Helius API endpoint for searching assets
+        // Based on Helius documentation: https://docs.helius.xyz/reference/search-assets
         $url = "https://api.helius.xyz/v1/searchAssets?api-key=$heliusApiKey";
         
         $payload = [
@@ -74,7 +75,9 @@ try {
         }
         
         if ($httpCode !== 200) {
-            throw new Exception('Helius API HTTP error: ' . $httpCode);
+            // Log the actual response for debugging
+            error_log("Helius API error response: " . $response);
+            throw new Exception('Helius API HTTP error: ' . $httpCode . ' - Response: ' . substr($response, 0, 200));
         }
         
         if (empty($response)) {
@@ -85,6 +88,11 @@ try {
         
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception('Invalid JSON response from Helius API: ' . json_last_error_msg());
+        }
+        
+        // Check if the API returned an error
+        if (isset($data['error'])) {
+            throw new Exception('Helius API error: ' . json_encode($data['error']));
         }
         
         // Filter for the specific collection - this is the key efficiency gain
