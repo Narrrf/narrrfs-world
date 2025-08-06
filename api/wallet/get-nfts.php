@@ -24,7 +24,18 @@ try {
     }
 
     // Use Helius API searchAssets method for efficient collection-specific queries
-    $heliusApiKey = getenv('HELIUS_API_KEY') ?: '1d94e4c7-8c1a-4c1e-9c1a-4c1e9c1a4c1e'; // Default fallback
+    $heliusApiKey = getenv('HELIUS_API_KEY');
+    
+    if (!$heliusApiKey || $heliusApiKey === 'your_helius_api_key_here') {
+        http_response_code(500);
+        echo json_encode([
+            'error' => 'Helius API key not configured',
+            'details' => 'Please set HELIUS_API_KEY environment variable in Render Dashboard or local .env file',
+            'setup_url' => 'https://dev.helius.xyz/',
+            'docs' => 'See README_ENVIRONMENT.md for setup instructions'
+        ]);
+        exit;
+    }
     
     if (!empty($collection)) {
         // Direct collection search using searchAssets - much more efficient
