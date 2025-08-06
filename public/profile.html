@@ -330,6 +330,9 @@ $discordId = $_SESSION['discord_id'] ?? '';
         <p class="text-gray-300 mt-2">Verifying NFTs...</p>
       </div>
     </div>
+    
+    <!-- 🧀 Cheese-themed message -->
+    <p class="text-center mt-6 text-xs italic text-purple-200">Verify your NFTs... or be left in the digital dust.</p>
   </div>
 </section>
   
@@ -1431,68 +1434,176 @@ async function getNFTsFromWallet(walletAddress) {
   }
 }
 
-// Check for NFTs in our collection
+// Check for NFTs in our collection with enhanced Solana verification
 async function checkOurCollectionNFTs(nfts) {
   const ourCollections = {
     'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML': {
       name: 'Narrrfs World: Genesis Genetic',
       role: 'genesis',
       roleId: '1402668301414563971',
-      roleName: '🏆 Holder'
+      roleName: '�� Holder'
     },
-    // Add VIP collection address when available
-    // 'VIP_COLLECTION_ADDRESS': {
-    //   name: 'Narrrf Genesis VIP Drop',
-    //   role: 'vip',
-    //   roleId: '1332016526848692345',
-    //   roleName: '🎴 VIP Holder'
-    // }
+    'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg': {
+      name: 'Narrrf Genesis VIP Drop',
+      role: 'vip',
+      roleId: '1332016526848692345',
+      roleName: '🎴 VIP Holder'
+    }
   };
   
   const ourNFTs = [];
+  let processedCount = 0;
+  const totalNFTs = nfts.length;
+  
+  console.log(`🔍 Starting Solana NFT verification of ${totalNFTs} NFTs for collections: AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML (Holder) and CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg (VIP Holder)`);
   
   try {
-    // Check each NFT in the wallet
-    for (const nft of nfts) {
-      if (nft.account && nft.account.data && nft.account.data.parsed) {
-        const tokenData = nft.account.data.parsed.info;
-        
-        // Check if this NFT belongs to our collection
-        if (tokenData.mint) {
-          try {
-            // Get NFT metadata using our backend proxy
-            const metadataResponse = await fetch(`/api/wallet/get-nft-metadata.php?token=${tokenData.mint}`);
-            if (metadataResponse.ok) {
-              const metadataData = await metadataResponse.json();
-              
-              if (metadataData.success && metadataData.metadata.data && metadataData.metadata.data.collection) {
-                const collectionAddress = metadataData.metadata.data.collection.key;
-                
-                if (ourCollections[collectionAddress]) {
-                  ourNFTs.push({
-                    mint: tokenData.mint,
-                    amount: tokenData.tokenAmount.uiAmount,
-                    metadata: metadataData.metadata.data,
-                    collection: ourCollections[collectionAddress].name,
-                    role: ourCollections[collectionAddress].role,
-                    roleId: ourCollections[collectionAddress].roleId,
-                    roleName: ourCollections[collectionAddress].roleName
-                  });
-                }
-              }
+    // Process NFTs in batches to avoid overwhelming the API
+    const batchSize = 3;
+    const batches = [];
+    
+    for (let i = 0; i < nfts.length; i += batchSize) {
+      batches.push(nfts.slice(i, i + batchSize));
+    }
+    
+    for (const batch of batches) {
+      // Process batch in parallel
+      const batchPromises = batch.map(async (nft) => {
+        if (nft.account && nft.account.data && nft.account.data.parsed) {
+          const tokenData = nft.account.data.parsed.info;
+          
+          if (tokenData.mint) {
+            processedCount++;
+            
+            // Update loading message
+            const loadingElement = document.querySelector('#verification-loading p');
+            if (loadingElement) {
+              loadingElement.textContent = `🔍 Verifying Solana NFTs... (${processedCount}/${totalNFTs})`;
             }
-          } catch (metadataError) {
-            console.warn('Failed to get metadata for token:', tokenData.mint, metadataError);
-            // Continue checking other NFTs
+            
+            try {
+              // Verify the mint address format
+              const mintVerification = verifySolanaKeypair(tokenData.mint);
+              if (!mintVerification.valid) {
+                console.warn('⚠️ Invalid mint address format:', tokenData.mint);
+                return;
+              }
+              
+              // Get NFT metadata using our backend proxy
+              const metadataResponse = await fetch(`/api/wallet/get-nft-metadata.php?token=${tokenData.mint}`);
+              
+              if (metadataResponse.ok) {
+                const metadataData = await metadataResponse.json();
+                
+                if (metadataData.success && metadataData.metadata && metadataData.metadata.data) {
+                  const metadata = metadataData.metadata.data;
+                  
+                  // Debug: Log the metadata structure
+                  console.log('🔍 Solana metadata for token:', tokenData.mint, metadata);
+                  
+                  // Check if this NFT belongs to our collection
+                  let collectionAddress = null;
+                  let isOurCollection = false;
+                  
+                  // Try different possible collection data formats
+                  if (metadata.collection && metadata.collection.key) {
+                    collectionAddress = metadata.collection.key;
+                  } else if (metadata.collection) {
+                    collectionAddress = metadata.collection;
+                  } else if (metadata.collectionAddress) {
+                    collectionAddress = metadata.collectionAddress;
+                  } else if (metadata.collectionKey) {
+                    collectionAddress = metadata.collectionKey;
+                  }
+                  
+                  // Check if it's our collection
+                  if (collectionAddress) {
+                    console.log('🎯 Found collection address:', collectionAddress, 'for token:', tokenData.mint);
+                    
+                    if (ourCollections[collectionAddress]) {
+                      isOurCollection = true;
+                    }
+                  }
+                  
+                  // Fallback: Check if the metadata contains our collection name
+                  if (!isOurCollection && metadata.name) {
+                    const nftName = metadata.name.toLowerCase();
+                    if (nftName.includes('narrrf') || nftName.includes('genesis') || nftName.includes('genetic') || nftName.includes('vip')) {
+                      console.log('🎯 Found NFT by name match:', metadata.name, 'for token:', tokenData.mint);
+                      isOurCollection = true;
+                      // Determine which collection based on name
+                      if (nftName.includes('vip')) {
+                        collectionAddress = 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg';
+                      } else {
+                        collectionAddress = 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML';
+                      }
+                    }
+                  }
+                  
+                  // Fallback: Check if the metadata contains our collection symbol
+                  if (!isOurCollection && metadata.symbol) {
+                    const nftSymbol = metadata.symbol.toLowerCase();
+                    if (nftSymbol.includes('narrrf') || nftSymbol.includes('genesis') || nftSymbol.includes('vip')) {
+                      console.log('🎯 Found NFT by symbol match:', metadata.symbol, 'for token:', tokenData.mint);
+                      isOurCollection = true;
+                      // Determine which collection based on symbol
+                      if (nftSymbol.includes('vip')) {
+                        collectionAddress = 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg';
+                      } else {
+                        collectionAddress = 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML';
+                      }
+                    }
+                  }
+                  
+                  if (isOurCollection && collectionAddress) {
+                    ourNFTs.push({
+                      mint: tokenData.mint,
+                      amount: tokenData.tokenAmount.uiAmount,
+                      metadata: metadata,
+                      collection: ourCollections[collectionAddress].name,
+                      role: ourCollections[collectionAddress].role,
+                      roleId: ourCollections[collectionAddress].roleId,
+                      roleName: ourCollections[collectionAddress].roleName
+                    });
+                    
+                    console.log('✅ Found Solana NFT from our collection:', collectionAddress, tokenData.mint, '->', ourCollections[collectionAddress].roleName);
+                  } else if (collectionAddress) {
+                    console.log('ℹ️ NFT from different collection:', collectionAddress, tokenData.mint);
+                  } else {
+                    console.log('ℹ️ NFT has no collection data:', tokenData.mint);
+                  }
+                } else if (metadataData.success && metadataData.message) {
+                  // No metadata found for this token, which is normal
+                  console.log('ℹ️ No metadata found for Solana token:', tokenData.mint);
+                } else if (metadataData.success === false) {
+                  console.warn('⚠️ Metadata request failed for token:', tokenData.mint, metadataData.error);
+                }
+              } else {
+                // Handle non-200 responses gracefully
+                console.warn('⚠️ Failed to get metadata for token:', tokenData.mint, 'Status:', metadataResponse.status);
+              }
+            } catch (metadataError) {
+              // Log error but continue processing other NFTs
+              console.warn('⚠️ Failed to get metadata for token:', tokenData.mint, metadataError);
+            }
           }
         }
+      });
+      
+      // Wait for batch to complete
+      await Promise.all(batchPromises);
+      
+      // Add delay between batches to avoid rate limiting
+      if (batches.indexOf(batch) < batches.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
     
+    console.log(`✅ Solana verification complete: Processed ${processedCount} NFTs, found ${ourNFTs.length} from our collections`);
     return ourNFTs;
     
   } catch (error) {
-    console.error('Error checking collection NFTs:', error);
+    console.error('❌ Error checking Solana collection NFTs:', error);
     throw error;
   }
 }
@@ -1615,6 +1726,63 @@ function showSuccess(message) {
 }
 </script>
 <!-- Duplicate scripts removed to prevent conflicts -->
+
+<!-- Verify Solana keypair format and structure -->
+function verifySolanaKeypair(publicKey) {
+  try {
+    // Check if it's a valid Solana public key format
+    if (!publicKey || typeof publicKey !== 'string') {
+      return { valid: false, error: 'Invalid public key format' };
+    }
+    
+    // Solana public keys are base58 encoded and 32-44 characters
+    if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(publicKey)) {
+      return { valid: false, error: 'Invalid Solana public key format' };
+    }
+    
+    return { valid: true, publicKey };
+  } catch (error) {
+    return { valid: false, error: 'Keypair verification failed: ' + error.message };
+  }
+}
+
+// Connect to Phantom wallet with enhanced keypair verification
+async function connectWallet() {
+  try {
+    // Check if Phantom is installed
+    if (!window.solana || !window.solana.isPhantom) {
+      showError('Phantom wallet is not installed. Please install it from <a href="https://phantom.app/" target="_blank" class="text-blue-400 underline">phantom.app</a>');
+      return;
+    }
+
+    // Connect to wallet
+    const response = await window.solana.connect();
+    const publicKey = response.publicKey.toString();
+    
+    // Verify the keypair using Solana standards
+    const verification = verifySolanaKeypair(publicKey);
+    if (!verification.valid) {
+      showError('Invalid wallet keypair: ' + verification.error);
+      return;
+    }
+    
+    connectedWallet = window.solana;
+    connectedWalletAddress = publicKey;
+    
+    // Update UI
+    document.getElementById('wallet-status').classList.remove('hidden');
+    document.getElementById('wallet-address').textContent = `Address: ${publicKey.substring(0, 8)}...${publicKey.substring(publicKey.length - 8)}`;
+    document.getElementById('connect-wallet-btn').classList.add('hidden');
+    document.getElementById('verify-nfts-btn').classList.remove('hidden');
+    
+    console.log('🔐 Solana wallet connected and verified:', publicKey);
+    showSuccess('Wallet connected successfully!');
+    
+  } catch (error) {
+    console.error('Wallet connection error:', error);
+    showError('Failed to connect wallet: ' + error.message);
+  }
+}
 
 </body>
 </html>
