@@ -21,8 +21,17 @@ if (!$wallet || !$raw_score || !$game) {
     exit;
 }
 
-// 🧀 Convert raw score to DSPOINC (10 per cheese)
-$dspoinc_score = $raw_score * 10;
+// 🧀 Convert raw score to DSPOINC (game-specific conversion)
+if ($game === 'tetris') {
+    // Tetris: 1 cheese = 1 DSPOINC (no multiplication needed)
+    $dspoinc_score = $raw_score;
+} elseif ($game === 'snake') {
+    // Snake: 1 cheese = 10 DSPOINC (multiply by 10)
+    $dspoinc_score = $raw_score * 10;
+} else {
+    // Default: 1 cheese = 10 DSPOINC
+    $dspoinc_score = $raw_score * 10;
+}
 
 // 🎮 Get current active season
 $currentSeason = 'season_1'; // Default to season 1 for now
@@ -100,13 +109,17 @@ if ($isNewHighScore) {
 // 🏆 Check for WL Role Eligibility (use DSPOINC score for threshold check)
 $wl_result = checkWLEligibility($db, $discord_id, $game, $dspoinc_score);
 
+// Get conversion rate for display
+$conversion_rate = ($game === 'tetris') ? '1:1' : '1:10';
+
 echo json_encode([
     'success' => true, 
     'message' => $isNewHighScore ? 
-        "🎉 NEW HIGH SCORE! $game: $raw_score cheese = $dspoinc_score DSPOINC" :
-        "Score saved for $game: $raw_score cheese = $dspoinc_score DSPOINC (not a new high score)",
+        "🎉 NEW HIGH SCORE! $game: $raw_score cheese = $dspoinc_score DSPOINC ($conversion_rate)" :
+        "Score saved for $game: $raw_score cheese = $dspoinc_score DSPOINC ($conversion_rate) (not a new high score)",
     'raw_score' => $raw_score,
     'dspoinc_score' => $dspoinc_score,
+    'conversion_rate' => $conversion_rate,
     'is_new_high_score' => $isNewHighScore,
     'season' => $currentSeason,
     'wl_check' => $wl_result
