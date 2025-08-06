@@ -9,6 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $wallet = $_GET['wallet'] ?? '';
+$collection = $_GET['collection'] ?? ''; // Collection address to search for
+
 if (!$wallet) {
     http_response_code(400);
     echo json_encode(['error' => 'Missing wallet address']);
@@ -21,91 +23,156 @@ try {
         throw new Exception('Invalid Solana wallet address format. Expected base58 encoded public key.');
     }
 
-    // Prepare the RPC request payload for getTokenAccountsByOwner
-    $payload = [
-        "jsonrpc" => "2.0",
-        "id" => 1,
-        "method" => "getTokenAccountsByOwner",
-        "params" => [
-            $wallet,
-            [
-                "programId" => "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-            ],
-            [
-                "encoding" => "jsonParsed"
-            ]
-        ]
-    ];
-
-    // Make the request to Solana RPC with enhanced error handling
-    $ch = curl_init("https://api.mainnet-beta.solana.com");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'User-Agent: Narrrfs-World-NFT-Verifier/1.0'
-    ]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
+    // Use Helius API searchAssets method for efficient collection-specific queries
+    $heliusApiKey = getenv('HELIUS_API_KEY') ?: '1d94e4c7-8c1a-4c1e-9c1a-4c1e9c1a4c1e'; // Default fallback
     
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlError = curl_error($ch);
-    curl_close($ch);
+    if (!empty($collection)) {
+        // Direct collection search using searchAssets - much more efficient
+        $url = "https://api.helius.xyz/v1/searchAssets?api-key=$heliusApiKey";
+        
+        $payload = [
+            "ownerAddress" => $wallet,
+            "grouping" => ["collection", "collectionKey"],
+            "page" => 1,
+            "limit" => 1000
+        ];
+        
+        // Make POST request for searchAssets
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'User-Agent: Narrrfs-World-NFT-Verifier/1.0'
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+        
+        if ($curlError) {
+            throw new Exception('CURL error: ' . $curlError);
+        }
+        
+        if ($httpCode !== 200) {
+            throw new Exception('Helius API HTTP error: ' . $httpCode);
+        }
+        
+        if (empty($response)) {
+            throw new Exception('Empty response from Helius API');
+        }
+        
+        $data = json_decode($response, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Invalid JSON response from Helius API: ' . json_last_error_msg());
+        }
+        
+        // Filter for the specific collection - this is the key efficiency gain
+        $nfts = [];
+        if (isset($data['result']) && is_array($data['result'])) {
+            foreach ($data['result'] as $nft) {
+                // Check if NFT belongs to the specified collection
+                $nftCollection = $nft['grouping'] ?? [];
+                $isTargetCollection = false;
+                
+                foreach ($nftCollection as $group) {
+                    if (isset($group['groupKey']) && $group['groupKey'] === 'collection') {
+                        $collectionKey = $group['groupValue'] ?? '';
+                        if ($collectionKey === $collection) {
+                            $isTargetCollection = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if ($isTargetCollection) {
+                    $nfts[] = $nft;
+                }
+            }
+        }
+        
+        $count = count($nfts);
+        error_log("Helius searchAssets found $count NFTs for wallet: $wallet in collection: $collection");
+        
+        // Return minimal data - just what we need for role assignment
+        echo json_encode([
+            'success' => true,
+            'nfts' => $nfts,
+            'count' => $count,
+            'wallet' => $wallet,
+            'collection' => $collection,
+            'method' => 'helius_searchAssets',
+            'has_assets' => $count > 0,
+            'timestamp' => date('c')
+        ]);
+        
+    } else {
+        // If no specific collection, return all NFTs (fallback)
+        $url = "https://api.helius.xyz/v0/addresses/$wallet/nfts?api-key=$heliusApiKey";
+        
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'User-Agent: Narrrfs-World-NFT-Verifier/1.0'
+        ]);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
 
-    if ($curlError) {
-        throw new Exception('CURL error: ' . $curlError);
+        if ($curlError) {
+            throw new Exception('CURL error: ' . $curlError);
+        }
+
+        if ($httpCode !== 200) {
+            throw new Exception('Helius API HTTP error: ' . $httpCode);
+        }
+
+        if (empty($response)) {
+            throw new Exception('Empty response from Helius API');
+        }
+
+        $data = json_decode($response, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Invalid JSON response from Helius API: ' . json_last_error_msg());
+        }
+
+        $nfts = $data ?? [];
+        $count = count($nfts);
+
+        error_log("Helius API found $count total NFTs for wallet: $wallet");
+        
+        echo json_encode([
+            'success' => true,
+            'nfts' => $nfts,
+            'count' => $count,
+            'wallet' => $wallet,
+            'method' => 'helius_getNFTs',
+            'timestamp' => date('c')
+        ]);
     }
-
-    if ($httpCode !== 200) {
-        throw new Exception('Solana RPC HTTP error: ' . $httpCode);
-    }
-
-    if (empty($response)) {
-        throw new Exception('Empty response from Solana RPC');
-    }
-
-    $data = json_decode($response, true);
-    
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception('Invalid JSON response from Solana RPC: ' . json_last_error_msg());
-    }
-
-    if (isset($data['error'])) {
-        $errorMessage = $data['error']['message'] ?? 'Unknown Solana RPC error';
-        $errorCode = $data['error']['code'] ?? 'UNKNOWN';
-        throw new Exception("Solana RPC error (Code: $errorCode): $errorMessage");
-    }
-
-    // Validate the response structure
-    if (!isset($data['result']) || !isset($data['result']['value'])) {
-        throw new Exception('Invalid response structure from Solana RPC');
-    }
-
-    $nfts = $data['result']['value'] ?? [];
-    $count = count($nfts);
-
-    // Log successful retrieval for debugging
-    error_log("Successfully retrieved $count NFTs for wallet: $wallet");
-
-    // Return the NFT data with enhanced information
-    echo json_encode([
-        'success' => true,
-        'nfts' => $nfts,
-        'count' => $count,
-        'wallet' => $wallet,
-        'timestamp' => date('c')
-    ]);
 
 } catch (Exception $e) {
-    error_log("Solana NFT retrieval error for wallet $wallet: " . $e->getMessage());
+    error_log("Helius API error for wallet $wallet: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage(),
         'wallet' => $wallet,
+        'collection' => $collection,
         'timestamp' => date('c')
     ]);
 }

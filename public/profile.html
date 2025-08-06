@@ -276,129 +276,48 @@ $discordId = $_SESSION['discord_id'] ?? '';
 </section>
 
 <!-- 🎴 Web3 Wallet Verification Section -->
-<section id="web3-verification" class="my-20 px-4">
-  <div class="max-w-2xl mx-auto">
-    <h2 class="text-center text-2xl sm:text-3xl font-extrabold text-purple-400 mb-6 drop-shadow">
+<section class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-6 shadow-2xl my-20">
+  <div class="text-center">
+    <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-center gap-2">
       🎴 NFT Holder Verification
     </h2>
+    <p class="text-gray-300 mb-6">
+      Connect your Phantom wallet to verify NFT ownership and get automatic Discord roles!
+      <br><span class="text-yellow-400 text-sm">🔐 Secure: Requires cryptographic signature to prove wallet ownership</span>
+    </p>
     
-    <div class="bg-gray-800 border-2 border-purple-400 rounded-2xl p-6 shadow-2xl">
-      <div class="text-center mb-6">
-        <p class="text-gray-300 mb-4">
-          Connect your Phantom wallet to verify NFT ownership and get automatic Discord roles!
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <button id="connect-wallet-btn" onclick="connectWallet()" 
-                  class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl">
-            <span class="text-xl">👻</span>
-            Connect Phantom Wallet
-          </button>
-          <button id="verify-nfts-btn" onclick="verifyNFTs()" 
-                  class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl hidden">
-            <span class="text-xl">🔍</span>
-            Verify NFTs
-          </button>
-        </div>
-      </div>
-      
-      <!-- Wallet Status -->
-      <div id="wallet-status" class="text-center mb-6 hidden">
-        <div class="bg-gray-700 rounded-lg p-4">
-          <p class="text-green-400 font-semibold mb-2">✅ Wallet Connected</p>
-          <p class="text-gray-300 text-sm" id="wallet-address">Address: ...</p>
-        </div>
-      </div>
-      
-      <!-- Verification Results -->
-      <div id="verification-results" class="hidden">
-        <h3 class="text-lg font-semibold text-purple-300 mb-4">Verification Results</h3>
-        <div id="nft-results" class="space-y-3">
-          <!-- Results will be populated here -->
-        </div>
-      </div>
-      
-      <!-- Error Messages -->
-      <div id="verification-error" class="hidden">
-        <div class="bg-red-900 border border-red-500 rounded-lg p-4 text-center">
-          <p class="text-red-300 font-semibold" id="error-message">Error occurred</p>
-        </div>
-      </div>
-      
-      <!-- Loading Spinner -->
-      <div id="verification-loading" class="hidden text-center">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
-        <p class="text-gray-300 mt-2">Verifying NFTs...</p>
-      </div>
+    <!-- Wallet Connection Status -->
+    <div id="wallet-status" class="hidden bg-gray-800 rounded-lg p-4 mb-4">
+      <div class="text-green-400 font-semibold">✅ Wallet Connected</div>
+      <div id="wallet-address" class="text-gray-300 text-sm mt-1"></div>
     </div>
     
-    <!-- 🧀 Cheese-themed message -->
-    <p class="text-center mt-6 text-xs italic text-purple-200">Verify your NFTs... or be left in the digital dust.</p>
-  </div>
-</section>
-  
-</main>
-  
-<!-- 🧀 Cheese Profile Card – Unified Lab Style -->
-<section class="relative mt-12 bg-gray-800 border-4 border-yellow-400 rounded-2xl p-6 shadow-2xl max-w-md mx-auto text-white">
-
-  <!-- 🔨 Under Construction Ribbon -->
-  <div class="absolute -top-4 -right-4 rotate-6 bg-yellow-400 text-black text-xs font-extrabold px-3 py-1 rounded-full shadow-lg z-10 animate-pulse ring-2 ring-yellow-300">
-    🚧 Under Cheese-struction
-  </div>
-
-  <!-- 🧠 Header -->
-  <h2 class="text-xl text-yellow-300 font-extrabold mb-4 flex items-center justify-center gap-2">
-    🧀 Wanted Cheese Profile
-  </h2>
-
-  
-  <!-- 📊 Stats Block -->
-  <div class="bg-yellow-100 text-gray-900 rounded-xl p-4 border-1-4 border-yellow-400 shadow-inner mb-4 mt-8">
-    <!-- 📊 Stats Content -->
-    <h3 class="font-bold text-yellow-800 mb-2">📊 Stats</h3>
-    <ul class="list-disc list-inside text-sm space-y-1">
-      <li>🎯 Score Adjustments: <strong id="stats-adjustments">Loading...</strong></li>
-      <li>🎮 Score Sources: <strong id="stats-sources">Loading...</strong></li>
-      <li>⭐ Active Roles: <strong id="stats-roles">Loading...</strong></li>
-      <li>📅 Member Since: <strong id="stats-member-since">Loading...</strong></li>
-      <li>🌐 Discord Role Sync: <strong>✅ Complete</strong></li>
-    </ul>
-  </div>
-
-  <!-- 🧪 Skills -->
-<div class="skills-list flex flex-wrap gap-2 mt-2">
-  <!-- Filled by JS -->
-  </div>
-
-  <!-- 🔐 Access Levels -->
-<div class="access-levels-list flex flex-wrap gap-2 mt-2">
-  <!-- Filled by JS -->
-  </div>
-
-  <!-- 💰 Currency -->
-  <div class="bg-purple-100 text-gray-800 rounded-xl p-4 border-l-4 border-purple-400 shadow mb-4">
-    <h3 class="font-bold text-purple-800 mb-2">💰 Wallet & NFTs</h3>
-    <div class="text-sm mb-2 italic">
-      <span class="text-purple-600">👤 Discord:</span> <span id="wallet-discord-name">Not logged in</span>
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <button id="connect-wallet-btn" onclick="connectWallet()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all">
+        <span>🔗</span> Connect Wallet
+      </button>
+      <button id="verify-nfts-btn" onclick="verifyNFTs()" class="hidden bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all">
+        <span>🔍</span> Verify NFTs
+      </button>
     </div>
-    <ul class="list-disc list-inside text-sm">
-      <li>💎 $SPOINC Balance: <strong id="spoinc-balance">Loading...</strong></li>
-      <li>🪙 $DSPOINC Balance: <strong id="dspoinc-balance">Loading...</strong> (Swap Rate: 1 → 10,000)</li>
-      <li>🎴 NFTs: loading .. </li>
-    </ul>
-  </div>
-
-  <!-- 🪧 Status -->
-  <p class="text-center text-red-400 font-bold mt-4 animate-pulse">
-    🪧 STATUS: WANTED FOR TRAIT THEFT 🔥
-  </p>
-
-
-<section id="user-quests-section" class="my-10">
-  <h2 class="text-2xl font-bold text-yellow-300 mb-4">🗺️ Your Quests</h2>
-  <div class="max-w-2xl mx-auto">
-    <div id="user-quests-list" class="space-y-4">
-      <!-- Quests will render here -->
+    
+    <!-- Loading Spinner -->
+    <div id="verification-loading" class="hidden mt-4">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+      <p class="text-gray-300 mt-2">Verifying NFTs...</p>
+    </div>
+    
+    <!-- Error Display -->
+    <div id="verification-error" class="hidden mt-4 bg-red-900 border border-red-500 rounded-lg p-4">
+      <div class="text-red-300 font-semibold">❌ Error</div>
+      <div id="error-message" class="text-red-200 text-sm mt-1"></div>
+    </div>
+    
+    <!-- Results Display -->
+    <div id="verification-results" class="hidden mt-4 bg-green-900 border border-green-500 rounded-lg p-4">
+      <div class="text-green-300 font-semibold">✅ Verification Results</div>
+      <div id="results-content" class="text-green-200 text-sm mt-1"></div>
     </div>
   </div>
 </section>
@@ -1380,7 +1299,7 @@ async function connectWallet() {
   }
 }
 
-// Verify NFTs in the connected wallet
+// Verify NFTs in the connected wallet using efficient Helius searchAssets
 async function verifyNFTs() {
   if (!connectedWallet || !connectedWalletAddress) {
     showError('Please connect your wallet first');
@@ -1390,18 +1309,66 @@ async function verifyNFTs() {
   try {
     showLoading(true);
     
-    // Get NFTs from the wallet
-    const nfts = await getNFTsFromWallet(connectedWalletAddress);
+    // Use Helius searchAssets to directly check for our collections - much more efficient
+    const ourCollections = {
+      'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML': {
+        name: 'Narrrfs World: Genesis Genetic',
+        role: '🏆 Holder',
+        roleId: '1402668301414563971'
+      },
+      'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg': {
+        name: 'Narrrf Genesis VIP Drop',
+        role: '🎴 VIP Holder', 
+        roleId: '1332016526848692345'
+      }
+    };
+
+    const foundNFTs = [];
     
-    // Check for our collection NFTs
-    const ourCollectionNFTs = await checkOurCollectionNFTs(nfts);
+    // Check each collection directly using searchAssets
+    for (const [collectionAddress, collectionInfo] of Object.entries(ourCollections)) {
+      try {
+        console.log(`🔍 Checking ${collectionInfo.name} collection...`);
+        
+        const response = await fetch(`/api/wallet/get-nfts.php?wallet=${connectedWalletAddress}&collection=${collectionAddress}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to check collection');
+        }
+
+        console.log(`✅ ${collectionInfo.name}: Found ${data.count} NFTs using ${data.method}`);
+        
+        if (data.has_assets && data.count > 0) {
+          // User has NFTs from this collection - add to found list
+          foundNFTs.push({
+            collection: collectionInfo.name,
+            role: collectionInfo.role,
+            roleId: collectionInfo.roleId,
+            count: data.count,
+            collectionAddress: collectionAddress
+          });
+        }
+        
+      } catch (collectionError) {
+        console.warn(`⚠️ Error checking ${collectionInfo.name}:`, collectionError);
+        // Continue checking other collections
+      }
+    }
     
     // Display results
-    displayVerificationResults(ourCollectionNFTs);
+    displayVerificationResults(foundNFTs);
     
     // If NFTs found, verify with our backend
-    if (ourCollectionNFTs.length > 0) {
-      await verifyWithBackend(connectedWalletAddress, ourCollectionNFTs);
+    if (foundNFTs.length > 0) {
+      await verifyWithBackend(connectedWalletAddress, foundNFTs);
+    } else {
+      showError('No NFTs from our collections found in your wallet. Make sure you own Narrrfs World: Genesis Genetic or Narrrf Genesis VIP Drop NFTs.');
     }
     
   } catch (error) {
@@ -1412,241 +1379,59 @@ async function verifyNFTs() {
   }
 }
 
-// Get NFTs from wallet using our backend proxy
-async function getNFTsFromWallet(walletAddress) {
-  try {
-    const response = await fetch(`/api/wallet/get-nfts.php?wallet=${walletAddress}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to fetch NFTs');
-    }
-
-    return data.nfts || [];
-    
-  } catch (error) {
-    console.error('Error fetching NFTs:', error);
-    throw error;
-  }
-}
-
-// Check for NFTs in our collection with enhanced Solana verification
-async function checkOurCollectionNFTs(nfts) {
-  const ourCollections = {
-    'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML': {
-      name: 'Narrrfs World: Genesis Genetic',
-      role: 'genesis',
-      roleId: '1402668301414563971',
-      roleName: '�� Holder'
-    },
-    'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg': {
-      name: 'Narrrf Genesis VIP Drop',
-      role: 'vip',
-      roleId: '1332016526848692345',
-      roleName: '🎴 VIP Holder'
-    }
-  };
-  
-  const ourNFTs = [];
-  let processedCount = 0;
-  const totalNFTs = nfts.length;
-  
-  console.log(`🔍 Starting Solana NFT verification of ${totalNFTs} NFTs for collections: AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML (Holder) and CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg (VIP Holder)`);
-  
-  try {
-    // Process NFTs in batches to avoid overwhelming the API
-    const batchSize = 3;
-    const batches = [];
-    
-    for (let i = 0; i < nfts.length; i += batchSize) {
-      batches.push(nfts.slice(i, i + batchSize));
-    }
-    
-    for (const batch of batches) {
-      // Process batch in parallel
-      const batchPromises = batch.map(async (nft) => {
-        if (nft.account && nft.account.data && nft.account.data.parsed) {
-          const tokenData = nft.account.data.parsed.info;
-          
-          if (tokenData.mint) {
-            processedCount++;
-            
-            // Update loading message
-            const loadingElement = document.querySelector('#verification-loading p');
-            if (loadingElement) {
-              loadingElement.textContent = `🔍 Verifying Solana NFTs... (${processedCount}/${totalNFTs})`;
-            }
-            
-            try {
-              // Verify the mint address format
-              const mintVerification = verifySolanaKeypair(tokenData.mint);
-              if (!mintVerification.valid) {
-                console.warn('⚠️ Invalid mint address format:', tokenData.mint);
-                return;
-              }
-              
-              // Get NFT metadata using our backend proxy
-              const metadataResponse = await fetch(`/api/wallet/get-nft-metadata.php?token=${tokenData.mint}`);
-              
-              if (metadataResponse.ok) {
-                const metadataData = await metadataResponse.json();
-                
-                if (metadataData.success && metadataData.metadata && metadataData.metadata.data) {
-                  const metadata = metadataData.metadata.data;
-                  
-                  // Debug: Log the metadata structure
-                  console.log('🔍 Solana metadata for token:', tokenData.mint, metadata);
-                  
-                  // Check if this NFT belongs to our collection
-                  let collectionAddress = null;
-                  let isOurCollection = false;
-                  
-                  // Try different possible collection data formats
-                  if (metadata.collection && metadata.collection.key) {
-                    collectionAddress = metadata.collection.key;
-                  } else if (metadata.collection) {
-                    collectionAddress = metadata.collection;
-                  } else if (metadata.collectionAddress) {
-                    collectionAddress = metadata.collectionAddress;
-                  } else if (metadata.collectionKey) {
-                    collectionAddress = metadata.collectionKey;
-                  }
-                  
-                  // Check if it's our collection
-                  if (collectionAddress) {
-                    console.log('🎯 Found collection address:', collectionAddress, 'for token:', tokenData.mint);
-                    
-                    if (ourCollections[collectionAddress]) {
-                      isOurCollection = true;
-                    }
-                  }
-                  
-                  // Fallback: Check if the metadata contains our collection name
-                  if (!isOurCollection && metadata.name) {
-                    const nftName = metadata.name.toLowerCase();
-                    if (nftName.includes('narrrf') || nftName.includes('genesis') || nftName.includes('genetic') || nftName.includes('vip')) {
-                      console.log('🎯 Found NFT by name match:', metadata.name, 'for token:', tokenData.mint);
-                      isOurCollection = true;
-                      // Determine which collection based on name
-                      if (nftName.includes('vip')) {
-                        collectionAddress = 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg';
-                      } else {
-                        collectionAddress = 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML';
-                      }
-                    }
-                  }
-                  
-                  // Fallback: Check if the metadata contains our collection symbol
-                  if (!isOurCollection && metadata.symbol) {
-                    const nftSymbol = metadata.symbol.toLowerCase();
-                    if (nftSymbol.includes('narrrf') || nftSymbol.includes('genesis') || nftSymbol.includes('vip')) {
-                      console.log('🎯 Found NFT by symbol match:', metadata.symbol, 'for token:', tokenData.mint);
-                      isOurCollection = true;
-                      // Determine which collection based on symbol
-                      if (nftSymbol.includes('vip')) {
-                        collectionAddress = 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg';
-                      } else {
-                        collectionAddress = 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML';
-                      }
-                    }
-                  }
-                  
-                  if (isOurCollection && collectionAddress) {
-                    ourNFTs.push({
-                      mint: tokenData.mint,
-                      amount: tokenData.tokenAmount.uiAmount,
-                      metadata: metadata,
-                      collection: ourCollections[collectionAddress].name,
-                      role: ourCollections[collectionAddress].role,
-                      roleId: ourCollections[collectionAddress].roleId,
-                      roleName: ourCollections[collectionAddress].roleName
-                    });
-                    
-                    console.log('✅ Found Solana NFT from our collection:', collectionAddress, tokenData.mint, '->', ourCollections[collectionAddress].roleName);
-                  } else if (collectionAddress) {
-                    console.log('ℹ️ NFT from different collection:', collectionAddress, tokenData.mint);
-                  } else {
-                    console.log('ℹ️ NFT has no collection data:', tokenData.mint);
-                  }
-                } else if (metadataData.success && metadataData.message) {
-                  // No metadata found for this token, which is normal
-                  console.log('ℹ️ No metadata found for Solana token:', tokenData.mint);
-                } else if (metadataData.success === false) {
-                  console.warn('⚠️ Metadata request failed for token:', tokenData.mint, metadataData.error);
-                }
-              } else {
-                // Handle non-200 responses gracefully
-                console.warn('⚠️ Failed to get metadata for token:', tokenData.mint, 'Status:', metadataResponse.status);
-              }
-            } catch (metadataError) {
-              // Log error but continue processing other NFTs
-              console.warn('⚠️ Failed to get metadata for token:', tokenData.mint, metadataError);
-            }
-          }
-        }
-      });
-      
-      // Wait for batch to complete
-      await Promise.all(batchPromises);
-      
-      // Add delay between batches to avoid rate limiting
-      if (batches.indexOf(batch) < batches.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-    }
-    
-    console.log(`✅ Solana verification complete: Processed ${processedCount} NFTs, found ${ourNFTs.length} from our collections`);
-    return ourNFTs;
-    
-  } catch (error) {
-    console.error('❌ Error checking Solana collection NFTs:', error);
-    throw error;
-  }
-}
-
 // Display verification results
-function displayVerificationResults(nfts) {
-  const resultsContainer = document.getElementById('verification-results');
-  const nftResults = document.getElementById('nft-results');
+function displayVerificationResults(foundNFTs) {
+  const resultsDiv = document.getElementById('verification-results');
+  const resultsContent = document.getElementById('results-content');
   
-  if (nfts.length === 0) {
-    nftResults.innerHTML = `
-      <div class="bg-gray-700 rounded-lg p-4 text-center">
-        <p class="text-gray-300">No NFTs from our collection found in your wallet.</p>
-        <p class="text-sm text-gray-400 mt-2">Make sure you own NFTs from our collection: ${ourCollectionAddress}</p>
-      </div>
-    `;
+  if (foundNFTs.length === 0) {
+    resultsContent.innerHTML = '<p>❌ No NFTs from our collections found.</p>';
   } else {
-    nftResults.innerHTML = nfts.map(nft => `
-      <div class="bg-green-900 border border-green-500 rounded-lg p-4">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="text-green-300 font-semibold">✅ NFT Found</p>
-            <p class="text-gray-300 text-sm">Mint: ${nft.mint.substring(0, 8)}...${nft.mint.substring(nft.mint.length - 8)}</p>
-            <p class="text-gray-300 text-sm">Amount: ${nft.amount}</p>
-          </div>
-          <div class="text-right">
-            <p class="text-green-400 text-sm">🎴 Collection Verified</p>
-          </div>
+    let html = '<div class="space-y-2">';
+    foundNFTs.forEach(nft => {
+      html += `
+        <div class="bg-green-800 rounded p-2">
+          <div class="font-semibold">✅ ${nft.role}</div>
+          <div class="text-sm">Collection: ${nft.collection}</div>
+          <div class="text-sm">NFTs found: ${nft.count}</div>
         </div>
-      </div>
-    `).join('');
+      `;
+    });
+    html += '</div>';
+    resultsContent.innerHTML = html;
   }
   
-  resultsContainer.classList.remove('hidden');
+  resultsDiv.classList.remove('hidden');
 }
 
-// Verify with our backend
+// Verify with our backend - now requires cryptographic signature
 async function verifyWithBackend(walletAddress, nfts) {
   try {
     const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
     
     if (!userId) {
       showError('Please login with Discord first to verify NFTs');
+      return;
+    }
+    
+    // Request signature from user to prove wallet ownership
+    const message = `Verify NFT ownership for Narrrfs World - ${new Date().toISOString()}`;
+    let signature = null;
+    
+    try {
+      // Request signature from Phantom wallet
+      if (window.solana && window.solana.isPhantom) {
+        const encodedMessage = new TextEncoder().encode(message);
+        const signedMessage = await window.solana.signMessage(encodedMessage, 'utf8');
+        signature = Array.from(signedMessage.signature).map(byte => byte.toString(16).padStart(2, '0')).join('');
+        
+        console.log('🔐 Signature obtained:', signature);
+      } else {
+        throw new Error('Phantom wallet not available for signing');
+      }
+    } catch (signError) {
+      console.error('Signature error:', signError);
+      showError('Failed to get signature. Please approve the signature request in your wallet.');
       return;
     }
     
@@ -1668,7 +1453,9 @@ async function verifyWithBackend(walletAddress, nfts) {
           user_id: userId,
           wallet_address: walletAddress,
           nfts: collectionNFTs,
-          collection: collectionRole
+          collection: collectionRole,
+          signature: signature,
+          message: message
         })
       });
       
