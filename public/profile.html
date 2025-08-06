@@ -133,7 +133,7 @@ $discordId = $_SESSION['discord_id'] ?? '';
   ========================================
 -->
 
-<body class="bg-[#2f3136] text-white font-sans flex flex-col items-center py-10 px-4">
+<body class="bg-[#2f3136] text-white font-sans min-h-screen">
 
 <!-- 🔰 Header with App Context -->
 <header class="w-full bg-black py-4 px-6 text-yellow-400 shadow-md">
@@ -189,8 +189,8 @@ $discordId = $_SESSION['discord_id'] ?? '';
 
 
 <!-- 👤 User Profile Card -->
-<main class="flex-grow flex items-center justify-center px-4 py-12">
-  <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center border-4 border-yellow-400">
+<main class="container mx-auto px-4 py-8 max-w-6xl">
+  <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 w-full text-center border-4 border-yellow-400">
 
     <!-- 👋 Welcome Message -->
 <span id="welcome-name"></span>
@@ -231,6 +231,33 @@ $discordId = $_SESSION['discord_id'] ?? '';
       <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
       <p id="wallet-address">🔗 Linked wallet: <em class="text-sm">coming soon</em></p>
       <p>🧬 Traits: <span id="traits">pending sync</span></p>
+    </div>
+
+    <!-- 📊 User Stats Section -->
+    <div class="mt-6 bg-gray-700 rounded-lg p-4 shadow-inner">
+      <h2 class="font-semibold text-lg mb-2 text-yellow-300">📊 User Statistics</h2>
+      <ul class="text-sm space-y-1">
+        <li>🎯 Score Adjustments: <strong id="stats-adjustments">Loading...</strong></li>
+        <li>🎮 Score Sources: <strong id="stats-sources">Loading...</strong></li>
+        <li>⭐ Active Roles: <strong id="stats-roles">Loading...</strong></li>
+        <li>📅 Member Since: <strong id="stats-member-since">Loading...</strong></li>
+      </ul>
+    </div>
+
+    <!-- 🎯 Skills Section -->
+    <div class="mt-6 bg-gray-700 rounded-lg p-4 shadow-inner">
+      <h2 class="font-semibold text-lg mb-2 text-yellow-300">🎯 Skills & Roles</h2>
+      <div class="skills-list">
+        <!-- Skills will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- 🚪 Access Levels Section -->
+    <div class="mt-6 bg-gray-700 rounded-lg p-4 shadow-inner">
+      <h2 class="font-semibold text-lg mb-2 text-yellow-300">🚪 Access Levels</h2>
+      <div class="access-levels-list">
+        <!-- Access levels will be populated by JavaScript -->
+      </div>
     </div>
 
     <!-- ✅ Session Note -->
@@ -899,24 +926,31 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   // 3. Fill Stats
-  document.getElementById('stats-adjustments').innerText = user.stats?.scoreAdjustments ?? "–";
-  document.getElementById('stats-sources').innerText = user.stats?.sources ?? "–";
-  document.getElementById('stats-roles').innerText = user.stats?.roles ?? "–";
-  document.getElementById('stats-member-since').innerText = user.member_since ?? "–";
+  const statsAdjustments = document.getElementById('stats-adjustments');
+  const statsSources = document.getElementById('stats-sources');
+  const statsRoles = document.getElementById('stats-roles');
+  const statsMemberSince = document.getElementById('stats-member-since');
+  
+  if (statsAdjustments) statsAdjustments.innerText = user.stats?.scoreAdjustments ?? "–";
+  if (statsSources) statsSources.innerText = user.stats?.sources ?? "–";
+  if (statsRoles) statsRoles.innerText = user.stats?.roles ?? "–";
+  if (statsMemberSince) statsMemberSince.innerText = user.member_since ?? "–";
 
   // 4. Fill Skills (all roles & traits as badges)
   const skillsBox = document.querySelector('.skills-list');
-  skillsBox.innerHTML = '';
-  const allSkills = [...(user.roles || []), ...(user.traits || [])];
-  if (allSkills.length) {
-    allSkills.forEach(skill => {
-      const badge = document.createElement('span');
-      badge.className = "inline-block bg-yellow-300 text-black px-2 py-1 rounded-full m-1 text-xs font-semibold shadow";
-      badge.innerText = skill;
-      skillsBox.appendChild(badge);
-    });
-  } else {
-    skillsBox.innerHTML = '<span class="text-gray-300">No skills yet</span>';
+  if (skillsBox) {
+    skillsBox.innerHTML = '';
+    const allSkills = [...(user.roles || []), ...(user.traits || [])];
+    if (allSkills.length) {
+      allSkills.forEach(skill => {
+        const badge = document.createElement('span');
+        badge.className = "inline-block bg-yellow-300 text-black px-2 py-1 rounded-full m-1 text-xs font-semibold shadow";
+        badge.innerText = skill;
+        skillsBox.appendChild(badge);
+      });
+    } else {
+      skillsBox.innerHTML = '<span class="text-gray-300">No skills yet</span>';
+    }
   }
 
   // 5. Access Levels (portals): show unlocked based on role/trait logic
@@ -926,13 +960,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     {name: "Lab 3", role: "Lab3 Access", color: "bg-red-500"},
   ];
   const accessEl = document.querySelector('.access-levels-list');
-  accessEl.innerHTML = '';
-  portals.forEach(portal => {
-    const unlocked = allSkills.includes(portal.role);
-    accessEl.innerHTML += `<span class="px-3 py-1 rounded-full mr-2 mb-2 inline-block text-white text-xs font-bold shadow ${portal.color} ${!unlocked ? 'opacity-50 grayscale' : ''}">
-      ${portal.name}${!unlocked ? ' (Locked)' : ''}
-    </span>`;
-  });
+  if (accessEl) {
+    accessEl.innerHTML = '';
+    const allSkills = [...(user.roles || []), ...(user.traits || [])];
+    portals.forEach(portal => {
+      const unlocked = allSkills.includes(portal.role);
+      accessEl.innerHTML += `<span class="px-3 py-1 rounded-full mr-2 mb-2 inline-block text-white text-xs font-bold shadow ${portal.color} ${!unlocked ? 'opacity-50 grayscale' : ''}">
+        ${portal.name}${!unlocked ? ' (Locked)' : ''}
+      </span>`;
+    });
+  }
 
   // 6. Optionally: Let user "highlight" a favorite skill/level
   // You can add an event listener to the badges to let them pick a "main" skill, etc.
@@ -1333,13 +1370,15 @@ async function verifyNFTs() {
         const response = await fetch(`/api/wallet/get-nfts.php?wallet=${connectedWalletAddress}&collection=${collectionAddress}`);
         
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          console.warn(`⚠️ HTTP error ${response.status} for ${collectionInfo.name}`);
+          continue; // Skip this collection and continue with others
         }
         
         const data = await response.json();
         
         if (!data.success) {
-          throw new Error(data.error || 'Failed to check collection');
+          console.warn(`⚠️ API error for ${collectionInfo.name}:`, data.error);
+          continue; // Skip this collection and continue with others
         }
 
         console.log(`✅ ${collectionInfo.name}: Found ${data.count} NFTs using ${data.method}`);
@@ -1368,7 +1407,7 @@ async function verifyNFTs() {
     if (foundNFTs.length > 0) {
       await verifyWithBackend(connectedWalletAddress, foundNFTs);
     } else {
-      showError('No NFTs from our collections found in your wallet. Make sure you own Narrrfs World: Genesis Genetic or Narrrf Genesis VIP Drop NFTs.');
+      showError('No NFTs from our collections found in your wallet. Make sure you own Narrrfs World: Genesis Genetic or Narrrf Genesis VIP Drop NFTs. If you believe this is an error, please contact support.');
     }
     
   } catch (error) {
@@ -1512,9 +1551,9 @@ function showSuccess(message) {
   }, 3000);
 }
 </script>
-<!-- Duplicate scripts removed to prevent conflicts -->
 
-<!-- Verify Solana keypair format and structure -->
+<script>
+// Verify Solana keypair format and structure
 function verifySolanaKeypair(publicKey) {
   try {
     // Check if it's a valid Solana public key format
@@ -1570,6 +1609,7 @@ async function connectWallet() {
     showError('Failed to connect wallet: ' + error.message);
   }
 }
+</script>
 
 </body>
 </html>

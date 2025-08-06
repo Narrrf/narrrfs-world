@@ -27,12 +27,14 @@ try {
     $heliusApiKey = getenv('HELIUS_API_KEY');
     
     if (!$heliusApiKey || $heliusApiKey === 'your_helius_api_key_here') {
-        http_response_code(500);
+        // Return a graceful error instead of 500
         echo json_encode([
-            'error' => 'Helius API key not configured',
-            'details' => 'Please set HELIUS_API_KEY environment variable in Render Dashboard or local .env file',
-            'setup_url' => 'https://dev.helius.xyz/',
-            'docs' => 'See README_ENVIRONMENT.md for setup instructions'
+            'success' => false,
+            'error' => 'NFT verification service temporarily unavailable',
+            'details' => 'Helius API key not configured. Please contact support.',
+            'count' => 0,
+            'has_assets' => false,
+            'method' => 'fallback'
         ]);
         exit;
     }
