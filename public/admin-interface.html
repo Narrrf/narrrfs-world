@@ -1262,106 +1262,136 @@ require_once 'discord-invite.php';
     <div class="admin-card mb-6" id="holderVerificationTab" style="display: none;">
       <h2 class="text-xl font-semibold mb-4">🎴 Holder Verification Management</h2>
       
-      <!-- Overview Section -->
-      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
-        <h3 class="text-lg font-semibold mb-3 text-purple-400">📊 Holder Verification Overview</h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <div class="text-center">
-            <div class="text-2xl font-bold text-purple-400" id="totalVerifications">-</div>
-            <div class="text-sm text-gray-300">Total Verifications</div>
+      <!-- Overview Section - Enhanced with better visual hierarchy -->
+      <div class="bg-gradient-to-r from-purple-900 to-blue-900 p-6 rounded-lg mb-6 border border-purple-500">
+        <h3 class="text-lg font-semibold mb-4 text-purple-300 flex items-center">
+          <span class="mr-2">📊</span> Holder Verification Overview
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="text-center bg-purple-800 bg-opacity-50 p-4 rounded-lg border border-purple-400">
+            <div class="text-3xl font-bold text-purple-300" id="totalVerifications">-</div>
+            <div class="text-sm text-purple-200">Total Verifications</div>
           </div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-green-400" id="successfulVerifications">-</div>
-            <div class="text-sm text-gray-300">Successful</div>
+          <div class="text-center bg-green-800 bg-opacity-50 p-4 rounded-lg border border-green-400">
+            <div class="text-3xl font-bold text-green-300" id="successfulVerifications">-</div>
+            <div class="text-sm text-green-200">Successful</div>
           </div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-blue-400" id="totalNFTs">-</div>
-            <div class="text-sm text-gray-300">Total NFTs</div>
+          <div class="text-center bg-blue-800 bg-opacity-50 p-4 rounded-lg border border-blue-400">
+            <div class="text-3xl font-bold text-blue-300" id="totalNFTs">-</div>
+            <div class="text-sm text-blue-200">Total NFTs</div>
           </div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-yellow-400" id="activeRoles">-</div>
-            <div class="text-sm text-gray-300">Active Roles</div>
+          <div class="text-center bg-yellow-800 bg-opacity-50 p-4 rounded-lg border border-yellow-400">
+            <div class="text-3xl font-bold text-yellow-300" id="activeRoles">-</div>
+            <div class="text-sm text-yellow-200">Active Roles</div>
           </div>
         </div>
       </div>
 
-      <!-- Verification Management -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <!-- Quick Actions Bar -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-semibold mb-3 text-blue-300">⚡ Quick Actions</h3>
+        <div class="flex flex-wrap gap-3">
+          <button onclick="loadVerifications()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <span class="mr-2">🔍</span> Load All Verifications
+          </button>
+          <button onclick="loadRoleHistory('all')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <span class="mr-2">📊</span> View Role History
+          </button>
+          <button onclick="refreshVerificationStats()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <span class="mr-2">🔄</span> Refresh Stats
+          </button>
+          <button onclick="exportVerificationData()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <span class="mr-2">📥</span> Export Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content Grid - Reorganized for better flow -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         
-        <!-- View Verifications -->
-        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
-          <h3 class="text-lg font-semibold mb-3 text-blue-400">🔍 View Verifications</h3>
-          <div class="space-y-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Filter by Collection:</label>
-              <select id="verificationCollectionFilter" class="w-full px-3 py-2 rounded text-gray-800">
-                <option value="">All Collections</option>
-                <option value="genesis">🧠 Genesis Collection</option>
-                <option value="vip">🎴 VIP Collection</option>
-              </select>
+        <!-- Left Column: Verification Management -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <!-- View Verifications - Enhanced with better data display -->
+          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3 text-blue-300 flex items-center">
+              <span class="mr-2">🔍</span> View Verifications
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Filter by Collection:</label>
+                <select id="verificationCollectionFilter" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+                  <option value="">All Collections</option>
+                  <option value="genesis">🧠 Genesis Collection</option>
+                  <option value="vip">🎴 VIP Collection</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Filter by Status:</label>
+                <select id="verificationStatusFilter" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+                  <option value="">All Statuses</option>
+                  <option value="1">✅ Role Granted</option>
+                  <option value="0">❌ Role Not Granted</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Filter by Status:</label>
-              <select id="verificationStatusFilter" class="w-full px-3 py-2 rounded text-gray-800">
-                <option value="">All Statuses</option>
-                <option value="1">✅ Role Granted</option>
-                <option value="0">❌ Role Not Granted</option>
-              </select>
-            </div>
-            <button onclick="loadVerifications()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            <button onclick="loadVerifications()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mb-4">
               🔍 Load Verifications
             </button>
-          </div>
-          
-          <div class="mt-4">
-            <div id="verificationsList" class="space-y-2 max-h-64 overflow-y-auto">
+            
+            <!-- Enhanced verification results display -->
+            <div id="verificationsList" class="space-y-2 max-h-80 overflow-y-auto bg-gray-900 p-3 rounded">
               <div class="text-gray-400 text-center py-4">Click "Load Verifications" to view data</div>
             </div>
           </div>
-        </div>
 
-        <!-- NFT Ownership Management -->
-        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
-          <h3 class="text-lg font-semibold mb-3 text-green-400">🎴 NFT Ownership Management</h3>
-          <div class="space-y-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Wallet Address:</label>
-              <input type="text" id="nftWalletAddress" placeholder="Enter wallet address" class="w-full px-3 py-2 rounded text-gray-800">
+          <!-- NFT Ownership Management - Enhanced -->
+          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3 text-green-300 flex items-center">
+              <span class="mr-2">🎴</span> NFT Ownership Management
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Wallet Address:</label>
+                <input type="text" id="nftWalletAddress" placeholder="Enter wallet address" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Collection:</label>
+                <select id="nftCollection" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+                  <option value="genesis">🧠 Genesis Collection</option>
+                  <option value="vip">🎴 VIP Collection</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Collection:</label>
-              <select id="nftCollection" class="w-full px-3 py-2 rounded text-gray-800">
-                <option value="genesis">🧠 Genesis Collection</option>
-                <option value="vip">🎴 VIP Collection</option>
-              </select>
-            </div>
-            <button onclick="searchNFTs()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            <button onclick="searchNFTs()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mb-4">
               🔍 Search NFTs
             </button>
-          </div>
-          
-          <div class="mt-4">
-            <div id="nftSearchResults" class="space-y-2 max-h-64 overflow-y-auto">
+            
+            <!-- Enhanced NFT search results -->
+            <div id="nftSearchResults" class="space-y-2 max-h-80 overflow-y-auto bg-gray-900 p-3 rounded">
               <div class="text-gray-400 text-center py-4">Search for NFTs to view ownership</div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Role Management -->
-      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
-        <h3 class="text-lg font-semibold mb-3 text-yellow-400">🏆 Role Management</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Right Column: Role Management - Streamlined -->
+        <div class="space-y-6">
           
-          <!-- Role Granting -->
-          <div>
-            <h4 class="text-md font-semibold mb-3 text-green-400">Grant Roles</h4>
+          <!-- Role Granting - Enhanced -->
+          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3 text-green-300 flex items-center">
+              <span class="mr-2">✅</span> Grant Roles
+            </h3>
             <div class="space-y-3">
               <div>
                 <label class="block text-sm font-medium text-gray-300 mb-1">Search User:</label>
                 <div class="flex gap-2">
-                  <input type="text" id="holderUserSearch" placeholder="Search by Discord ID or username" class="flex-1 px-3 py-2 rounded text-gray-800" oninput="searchHolderUsersInstant(this.value)">
-                  <button onclick="searchHolderUsers()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">Search</button>
+                  <input type="text" id="holderUserSearch" placeholder="Search by Discord ID or username" 
+                         class="flex-1 px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600" 
+                         oninput="searchHolderUsersInstant(this.value)">
+                  <button onclick="searchHolderUsers()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
+                    🔍
+                  </button>
                 </div>
                 <div id="holderUserSearchResults" class="mt-2 max-h-32 overflow-y-auto bg-gray-700 rounded p-2 hidden">
                   <div class="text-gray-400 text-sm">Enter at least 2 characters to search...</div>
@@ -1369,11 +1399,11 @@ require_once 'discord-invite.php';
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-300 mb-1">Discord User ID:</label>
-                <input type="text" id="roleUserId" placeholder="Enter Discord user ID" class="w-full px-3 py-2 rounded text-gray-800">
+                <input type="text" id="roleUserId" placeholder="Enter Discord user ID" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-300 mb-1">Role to Grant:</label>
-                <select id="roleToGrant" class="w-full px-3 py-2 rounded text-gray-800">
+                <select id="roleToGrant" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
                   <option value="1402668301414563971">🏆 Holder (1402668301414563971)</option>
                   <option value="1332016526848692345">🎴 VIP Holder (1332016526848692345)</option>
                   <option value="1332108350518857842">🧀 Cheese Hunter (1332108350518857842)</option>
@@ -1383,23 +1413,29 @@ require_once 'discord-invite.php';
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-300 mb-1">Reason:</label>
-                <input type="text" id="roleGrantReason" placeholder="Reason for role grant" class="w-full px-3 py-2 rounded text-gray-800">
+                <input type="text" id="roleGrantReason" placeholder="Reason for role grant" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
               </div>
-              <button onclick="grantRole()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+              <button onclick="grantRole()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
                 ✅ Grant Role
               </button>
             </div>
           </div>
 
-          <!-- Role Revoking -->
-          <div>
-            <h4 class="text-md font-semibold mb-3 text-red-400">Revoke Roles</h4>
+          <!-- Role Revoking - Enhanced -->
+          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3 text-red-300 flex items-center">
+              <span class="mr-2">❌</span> Revoke Roles
+            </h3>
             <div class="space-y-3">
               <div>
                 <label class="block text-sm font-medium text-gray-300 mb-1">Search User:</label>
                 <div class="flex gap-2">
-                  <input type="text" id="revokeUserSearch" placeholder="Search by Discord ID or username" class="flex-1 px-3 py-2 rounded text-gray-800" oninput="searchRevokeUsersInstant(this.value)">
-                  <button onclick="searchRevokeUsers()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">Search</button>
+                  <input type="text" id="revokeUserSearch" placeholder="Search by Discord ID or username" 
+                         class="flex-1 px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600" 
+                         oninput="searchRevokeUsersInstant(this.value)">
+                  <button onclick="searchRevokeUsers()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
+                    🔍
+                  </button>
                 </div>
                 <div id="revokeUserSearchResults" class="mt-2 max-h-32 overflow-y-auto bg-gray-700 rounded p-2 hidden">
                   <div class="text-gray-400 text-sm">Enter at least 2 characters to search...</div>
@@ -1407,11 +1443,11 @@ require_once 'discord-invite.php';
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-300 mb-1">Discord User ID:</label>
-                <input type="text" id="revokeUserId" placeholder="Enter Discord user ID" class="w-full px-3 py-2 rounded text-gray-800">
+                <input type="text" id="revokeUserId" placeholder="Enter Discord user ID" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-300 mb-1">Role to Revoke:</label>
-                <select id="roleToRevoke" class="w-full px-3 py-2 rounded text-gray-800">
+                <select id="roleToRevoke" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
                   <option value="1402668301414563971">🏆 Holder (1402668301414563971)</option>
                   <option value="1332016526848692345">🎴 VIP Holder (1332016526848692345)</option>
                   <option value="1332108350518857842">🧀 Cheese Hunter (1332108350518857842)</option>
@@ -1421,9 +1457,9 @@ require_once 'discord-invite.php';
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-300 mb-1">Reason:</label>
-                <input type="text" id="roleRevokeReason" placeholder="Reason for role revocation" class="w-full px-3 py-2 rounded text-gray-800">
+                <input type="text" id="roleRevokeReason" placeholder="Reason for role revocation" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
               </div>
-              <button onclick="revokeRole()" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+              <button onclick="revokeRole()" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
                 ❌ Revoke Role
               </button>
             </div>
@@ -1431,39 +1467,48 @@ require_once 'discord-invite.php';
         </div>
       </div>
 
-      <!-- Verification Log -->
-      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
-        <h3 class="text-lg font-semibold mb-3 text-blue-400">📋 Verification Log</h3>
-        <div id="verificationLog" class="bg-gray-900 p-4 rounded text-sm font-mono h-32 overflow-y-auto">
-          <div class="text-blue-400">🔄 Holder verification system ready...</div>
-        </div>
-      </div>
-
-      <!-- Role Grant History -->
-      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mt-6">
-        <h3 class="text-lg font-semibold mb-3 text-purple-400">📊 Role Grant History</h3>
-        <div class="space-y-3 mb-4">
-          <div class="flex flex-wrap gap-2">
-            <button onclick="loadRoleHistory('all')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">
-              All Actions
-            </button>
-            <button onclick="loadRoleHistory('granted')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-              ✅ Granted Only
-            </button>
-            <button onclick="loadRoleHistory('revoked')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
-              ❌ Revoked Only
-            </button>
-          </div>
-          <div class="flex gap-2">
-            <input type="text" id="historyUserSearch" placeholder="Search by user ID or username" class="flex-1 px-3 py-2 rounded text-gray-800 text-sm">
-            <button onclick="searchRoleHistory()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
-              Search
-            </button>
-          </div>
-        </div>
+      <!-- Bottom Section: Logs and History -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        <div id="roleHistoryList" class="space-y-2 max-h-64 overflow-y-auto">
-          <div class="text-gray-400 text-center py-4">Click "All Actions" to view role grant history</div>
+        <!-- Verification Log - Enhanced -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3 text-blue-300 flex items-center">
+            <span class="mr-2">📋</span> Verification Log
+          </h3>
+          <div id="verificationLog" class="bg-gray-900 p-4 rounded text-sm font-mono h-48 overflow-y-auto border border-gray-600">
+            <div class="text-blue-400">🔄 Holder verification system ready...</div>
+          </div>
+        </div>
+
+        <!-- Role Grant History - Enhanced -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3 text-purple-300 flex items-center">
+            <span class="mr-2">📊</span> Role Grant History
+          </h3>
+          <div class="space-y-3 mb-4">
+            <div class="flex flex-wrap gap-2">
+              <button onclick="loadRoleHistory('all')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">
+                All Actions
+              </button>
+              <button onclick="loadRoleHistory('granted')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                ✅ Granted Only
+              </button>
+              <button onclick="loadRoleHistory('revoked')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                ❌ Revoked Only
+              </button>
+            </div>
+            <div class="flex gap-2">
+              <input type="text" id="historyUserSearch" placeholder="Search by user ID or username" 
+                     class="flex-1 px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600 text-sm">
+              <button onclick="searchRoleHistory()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
+                🔍
+              </button>
+            </div>
+          </div>
+          
+          <div id="roleHistoryList" class="space-y-2 max-h-48 overflow-y-auto bg-gray-900 p-3 rounded border border-gray-600">
+            <div class="text-gray-400 text-center py-4">Click "All Actions" to view role grant history</div>
+          </div>
         </div>
       </div>
     </div>
@@ -4942,6 +4987,47 @@ require_once 'discord-invite.php';
     function loadHolderVerificationData() {
       loadHolderVerificationStats();
       addVerificationLog('🔄 Holder verification system initialized');
+    }
+
+    // Refresh verification statistics
+    async function refreshVerificationStats() {
+      addVerificationLog('🔄 Refreshing verification statistics...');
+      await loadHolderVerificationStats();
+      addVerificationLog('✅ Verification statistics refreshed');
+    }
+
+    // Export verification data
+    async function exportVerificationData() {
+      try {
+        addVerificationLog('📥 Exporting verification data...');
+        
+        const response = await fetch('/api/admin/export-verification-data.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            format: 'json',
+            include_history: true
+          })
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `verification-data-${new Date().toISOString().split('T')[0]}.json`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          addVerificationLog('✅ Verification data exported successfully');
+        } else {
+          const data = await response.json();
+          addVerificationLog(`❌ Export failed: ${data.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        addVerificationLog(`❌ Export error: ${error.message}`);
+      }
     }
 
     // Search holder users with instant search

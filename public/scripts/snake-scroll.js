@@ -94,6 +94,11 @@ function initSnake() {
     checkMutationStatus();
     const btn = document.getElementById("pause-snake-btn");
     if (btn) btn.textContent = "⏸️ Pause";
+    
+    // 🎯 Ensure scrolling is locked when game is reset and active
+    if (gameInterval) {
+      lockSnakeScroll();
+    }
   }
 
   function placeFood() {
@@ -270,10 +275,11 @@ function initSnake() {
     }
   });
 
-// Touch controls with scroll prevention
+// Touch controls with scroll prevention - Enhanced for mobile
 let touchStartX = 0, touchStartY = 0;
 let isSnakeGameActive = false;
 let snakeScrollLocked = false;
+const SNAKE_SWIPE_THRESHOLD = 50; // Increased from 30 to 50 for better mobile control
 
 function enableGlobalSnakeTouch() { 
   isSnakeGameActive = true; 
@@ -285,18 +291,36 @@ function disableGlobalSnakeTouch() {
   isSnakeGameActive = false;
   document.body.style.overflow = "";
   snakeScrollLocked = false;
+  unlockSnakeScroll(); // 🎯 Ensure scrolling is unlocked when disabling touch
 }
 
-// Prevent scrolling on the game canvas
+// Helper: Lock/unlock scrolling for Snake (like Tetris)
+function lockSnakeScroll() {
+  if (!snakeScrollLocked) {
+    document.body.style.overflow = "hidden";
+    snakeScrollLocked = true;
+  }
+}
+
+function unlockSnakeScroll() {
+  if (snakeScrollLocked) {
+    document.body.style.overflow = "";
+    snakeScrollLocked = false;
+  }
+}
+
+// Prevent scrolling on the game canvas - Enhanced for mobile
 document.addEventListener('touchmove', function(e) {
-  if (isSnakeGameActive) {
+  if (isSnakeGameActive && !isSnakePaused) {
     e.preventDefault();
+    e.stopPropagation();
   }
 }, { passive: false });
 
 document.body.addEventListener("touchstart", function(e) {
   if (!isSnakeGameActive || isSnakePaused) return;
   e.preventDefault();
+  e.stopPropagation();
   const touch = e.touches[0];
   touchStartX = touch.clientX;
   touchStartY = touch.clientY;
@@ -305,12 +329,13 @@ document.body.addEventListener("touchstart", function(e) {
 document.body.addEventListener("touchend", function(e) {
   if (!isSnakeGameActive || isSnakePaused) return;
   e.preventDefault();
+  e.stopPropagation();
   const touch = e.changedTouches[0];
   const deltaX = touch.clientX - touchStartX;
   const deltaY = touch.clientY - touchStartY;
   
-  // Increase minimum swipe distance for better control
-  const minSwipeDistance = 30;
+  // Increased minimum swipe distance for better mobile control
+  const minSwipeDistance = SNAKE_SWIPE_THRESHOLD;
   
   // Only process swipes if game is active and not paused
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
@@ -334,12 +359,16 @@ function startGame() {
   resetGame();
   gameInterval = setInterval(moveSnake, 250); // slow start
   enableGlobalSnakeTouch(); // Enable touch controls when game starts
+  lockSnakeScroll(); // 🎯 Lock scrolling when game starts (like Tetris)
 }
 
 function onGameOver() {
   clearInterval(gameInterval);
   gameInterval = null;
   isSnakePaused = true;
+
+  // 🎯 Unlock scrolling when game over (like Tetris)
+  unlockSnakeScroll();
 
   // 🐍 Capture the final score before any potential resets
   const finalScore = score;
@@ -481,11 +510,15 @@ function saveScore(finalScore) {
       
       if (isSnakePaused) {
         clearInterval(gameInterval);
+        // 🎯 Unlock scrolling when paused (like Tetris)
+        unlockSnakeScroll();
       } else {
         // Only restart if game is not over
         if (gameInterval) {
           clearInterval(gameInterval);
           gameInterval = setInterval(moveSnake, 250);
+          // 🎯 Lock scrolling when resumed (like Tetris)
+          lockSnakeScroll();
         }
       }
     };
