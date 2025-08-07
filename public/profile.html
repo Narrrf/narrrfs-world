@@ -1262,8 +1262,8 @@ async function checkWLRoleAndShowButton() {
         // Check ONLY for WL role - specific role name or ID
         const hasWLRole = roleData.roles && roleData.roles.some(role => {
             // Only check for the specific WL role
-            const isWLRole = role === '🧀 Cheese Hunter' || 
-                           role === 'Cheese Hunter' ||
+            const isWLRole = role === 'WL' || 
+                           role === 'WL Role' ||
                            role === '1332108350518857842'; // WL role ID
             
             if (isWLRole) {

@@ -82,20 +82,21 @@ try {
     $roleId = null;
     $roleName = null;
     $nftCount = count($nfts);
+    $verifiedCollections = [];
 
     if ($nftCount > 0) {
         // Process each collection found
         foreach ($nfts as $nft) {
-            $collection = $nft['collection'] ?? '';
+            $collectionName = $nft['collection'] ?? '';
             $role = $nft['role'] ?? '';
             $roleId = $nft['roleId'] ?? '';
             $count = $nft['count'] ?? 0;
             
             // Validate collection and role
-            if ($collection === 'Narrrfs World: Genesis Genetic' && $role === '🏆 Holder') {
+            if ($collectionName === 'Narrrfs World: Genesis Genetic' && $role === '🏆 Holder') {
                 $roleId = '1402668301414563971';
                 $roleName = '🏆 Holder';
-            } elseif ($collection === 'Narrrf Genesis VIP Drop' && $role === '🎴 VIP Holder') {
+            } elseif ($collectionName === 'Narrrf Genesis VIP Drop' && $role === '🎴 VIP Holder') {
                 $roleId = '1332016526848692345';
                 $roleName = '🎴 VIP Holder';
             } else {
@@ -103,7 +104,7 @@ try {
                 continue;
             }
 
-            // Store NFT ownership data (simplified since we don't have individual NFT details)
+            // Store NFT ownership data
             $nftStmt = $db->prepare("
                 INSERT OR REPLACE INTO tbl_nft_ownership 
                 (wallet, collection, nft_count, verified_at)
@@ -112,7 +113,7 @@ try {
             
             $nftStmt->execute([
                 $walletAddress,
-                $collection,
+                $collectionName,
                 $count
             ]);
 
@@ -145,17 +146,19 @@ try {
             // Log verification
             $verificationStmt = $db->prepare("
                 INSERT OR REPLACE INTO tbl_holder_verifications 
-                (user_id, username, wallet, collection, nft_count, role_granted, verified_at)
-                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                (user_id, username, wallet, collection, nft_count, role_granted, verified_at, signature, message)
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
             ");
             
             $verificationStmt->execute([
                 $userId,
-                $user['username'],
+                $user['username'] ?? '',
                 $walletAddress,
-                $collection,
+                $collectionName,
                 $count,
-                $roleGranted ? 1 : 0
+                $roleGranted ? 1 : 0,
+                $signature,
+                $message
             ]);
 
             // Log role grant
@@ -168,13 +171,21 @@ try {
                 
                 $roleGrantStmt->execute([
                     $userId,
-                    $user['username'],
+                    $user['username'] ?? '',
                     $roleId,
                     $roleName,
                     'NFT Holder Verification - Helius searchAssets (Signed)',
                     'system'
                 ]);
             }
+
+            $verifiedCollections[] = [
+                'collection' => $collectionName,
+                'role' => $roleName,
+                'role_id' => $roleId,
+                'count' => $count,
+                'granted' => $roleGranted
+            ];
         }
 
         echo json_encode([
@@ -183,7 +194,8 @@ try {
             'role_id' => $roleId,
             'nft_count' => $nftCount,
             'wallet' => $walletAddress,
-            'collections_found' => array_column($nfts, 'collection'),
+            'collections_found' => array_column($verifiedCollections, 'collection'),
+            'verified_collections' => $verifiedCollections,
             'message' => 'NFT verification successful! Role granted.'
         ]);
 

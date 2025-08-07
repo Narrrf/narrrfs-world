@@ -26,15 +26,18 @@ try {
     // Use Helius API searchAssets method for efficient collection-specific queries
     $heliusApiKey = getenv('HELIUS_API_KEY');
     
-    if (!$heliusApiKey || $heliusApiKey === 'your_helius_api_key_here') {
+    if (!$heliusApiKey || $heliusApiKey === 'your_helius_api_key_here' || $heliusApiKey === '') {
         // Return a graceful error instead of 500
+        error_log("Helius API key not configured for NFT verification");
         echo json_encode([
             'success' => false,
             'error' => 'NFT verification service temporarily unavailable',
-            'details' => 'Helius API key not configured. Please contact support.',
+            'details' => 'Helius API key not configured. Please contact support to enable NFT verification.',
             'count' => 0,
             'has_assets' => false,
-            'method' => 'fallback'
+            'method' => 'fallback',
+            'wallet' => $wallet,
+            'collection' => $collection
         ]);
         exit;
     }
@@ -71,12 +74,13 @@ try {
         curl_close($ch);
         
         if ($curlError) {
+            error_log("Helius API CURL error: " . $curlError);
             throw new Exception('CURL error: ' . $curlError);
         }
         
         if ($httpCode !== 200) {
             // Log the actual response for debugging
-            error_log("Helius API error response: " . $response);
+            error_log("Helius API error response (HTTP $httpCode): " . $response);
             throw new Exception('Helius API HTTP error: ' . $httpCode . ' - Response: ' . substr($response, 0, 200));
         }
         
@@ -92,6 +96,7 @@ try {
         
         // Check if the API returned an error
         if (isset($data['error'])) {
+            error_log("Helius API returned error: " . json_encode($data['error']));
             throw new Exception('Helius API error: ' . json_encode($data['error']));
         }
         
