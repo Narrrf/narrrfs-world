@@ -189,11 +189,17 @@ async function connectWallet() {
               if (roleRes.ok) {
                 const roleData = await roleRes.json();
                 // Check for WL role by name instead of hardcoded ID
-                hasDiscordRole = roleData.roles && roleData.roles.some(role => 
-                  role.toLowerCase().includes('wl') || 
-                  role.toLowerCase().includes('whitelist') ||
-                  role === '1332108350518857842' // Keep the original ID as fallback
-                );
+                hasDiscordRole = roleData.roles && roleData.roles.some(role => {
+                    // Only check for the specific WL role
+                    const isWLRole = role === 'WL' || 
+                                   role === 'WL' ||
+                                   role === '1332108350518857842'; // WL role ID
+                    
+                    if (isWLRole) {
+                        console.log('✅ Found WL role:', role);
+                    }
+                    return isWLRole;
+                });
               } else if (roleRes.status === 401) {
                 // User not authenticated - this is normal for guests
                 console.log('User not authenticated for roles check');
@@ -318,11 +324,17 @@ async function checkDiscordRoleAccess() {
     }
     
     // Check for WL role by name instead of hardcoded ID
-    const hasWLRole = roleData.roles.some(role => 
-      role.toLowerCase().includes('wl') || 
-      role.toLowerCase().includes('whitelist') ||
-      role === '1332108350518857842' // Keep the original ID as fallback
-    );
+    const hasWLRole = roleData.roles.some(role => {
+        // Only check for the specific WL role
+        const isWLRole = role === 'WL' || 
+                       role === 'WL' ||
+                       role === '1332108350518857842'; // WL role ID
+        
+        if (isWLRole) {
+            console.log('✅ Found WL role:', role);
+        }
+        return isWLRole;
+    });
      
      if (hasWLRole) {
        console.log('User has WL role!');

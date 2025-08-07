@@ -1257,13 +1257,20 @@ async function checkWLRoleAndShowButton() {
         const roleRes = await fetch('/api/user/roles.php');
         const roleData = await roleRes.json();
         console.log('Role data received:', roleData);
+        console.log('Available roles:', roleData.roles);
         
-        // Check for WL role by name instead of hardcoded ID
-        const hasWLRole = roleData.roles && roleData.roles.some(role => 
-            role.toLowerCase().includes('wl') || 
-            role.toLowerCase().includes('whitelist') ||
-            role === '1332108350518857842' // Keep the original ID as fallback
-        );
+        // Check ONLY for WL role - specific role name or ID
+        const hasWLRole = roleData.roles && roleData.roles.some(role => {
+            // Only check for the specific WL role
+            const isWLRole = role === '🧀 Cheese Hunter' || 
+                           role === 'Cheese Hunter' ||
+                           role === '1332108350518857842'; // WL role ID
+            
+            if (isWLRole) {
+                console.log('✅ Found WL role:', role);
+            }
+            return isWLRole;
+        });
         
         if (hasWLRole) {
             console.log('User has WL role - showing button');
@@ -1282,28 +1289,16 @@ async function checkWLRoleAndShowButton() {
                 statusMessage.className = 'text-xs text-green-400 mt-2 italic max-w-md mx-auto text-center';
             }
         } else {
-            console.log('User does not have WL role or roles not found');
+            console.log('User does not have WL role');
             console.log('Available roles:', roleData.roles);
             
-            // Update status message with better formatting
+            // Update status message - only show WL-specific message
             if (statusMessage) {
-                const roles = roleData.roles || [];
-                let rolesText = 'None';
-                if (roles.length > 0) {
-                    // Limit to first 5 roles and add "and X more" if there are more
-                    const displayRoles = roles.slice(0, 5);
-                    rolesText = displayRoles.join(', ');
-                    if (roles.length > 5) {
-                        rolesText += ` and ${roles.length - 5} more`;
-                    }
-                }
-                
                 statusMessage.innerHTML = `
                     <div class="text-center">
                         <div class="text-red-400 mb-1">❌ WL Role not found</div>
                         <div class="text-gray-400 text-xs">
-                            <span class="font-semibold">Available roles:</span><br>
-                            <span class="text-yellow-300">${rolesText}</span>
+                            <span class="font-semibold">Looking for:</span> 🧀 Cheese Hunter role
                         </div>
                     </div>
                 `;
