@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+<?php
+// Include Discord invite configuration
+require_once '../includes/discord-invite.php';
+?>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>404 | Narrrf’s Lab Glitch</title>
 
   <!-- Favicon & SEO -->
-<link rel="icon" type="image/png" href="img/narrrf-logo-professional.png" />
-<link rel="shortcut icon" type="image/png" href="img/narrrf-logo-professional.png" />
+<link rel="icon" type="image/png" href="img/favicon-phantom.png" />
+<link rel="shortcut icon" type="image/png" href="img/favicon-phantom.png" />
   <meta name="theme-color" content="#3b82f6" />
   <meta name="title" content="Narrrf's World" />
   <meta name="description" content="404 – You found a lab portal glitch. Better follow the cheese trail back home." />
@@ -73,7 +77,7 @@
 
   <!-- Footer -->
   <footer class="text-center py-6 text-sm text-purple-700 relative z-10">
-    Built with 🧀 in Narrrf's World | <a href="https://discord.gg/hx4EvgBG" class="underline text-pink-600">Join Discord</a>
+    Built with 🧀 in Narrrf's World | <a href="<?php echo $discord_url; ?>" class="underline text-pink-600">Join Discord</a>
   </footer>
   <!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
 ---------------------------------------------------------

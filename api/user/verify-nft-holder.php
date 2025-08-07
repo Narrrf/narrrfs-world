@@ -75,7 +75,6 @@ try {
         WHERE user_id = ? AND wallet = ? AND collection = ?
         ORDER BY verified_at DESC LIMIT 1
     ");
-    $existingStmt->execute([$userId, $walletAddress, $collection]);
     $existingVerification = $existingStmt->fetch(PDO::FETCH_ASSOC);
     
     // Process NFTs and determine role
@@ -104,19 +103,6 @@ try {
                 continue;
             }
 
-            // Store NFT ownership data
-            $nftStmt = $db->prepare("
-                INSERT OR REPLACE INTO tbl_nft_ownership 
-                (wallet, collection, nft_count, verified_at)
-                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            ");
-            
-            $nftStmt->execute([
-                $walletAddress,
-                $collectionName,
-                $count
-            ]);
-
             // Grant Discord role
             $discordApiUrl = 'https://narrrfs.world/api/discord/grant-role.php';
             $data = [
@@ -143,11 +129,11 @@ try {
             $result = json_decode($response, true);
             $roleGranted = ($httpCode === 200 && isset($result['success']) && $result['success']);
 
-            // Log verification
+            // Log verification - only use existing columns
             $verificationStmt = $db->prepare("
                 INSERT OR REPLACE INTO tbl_holder_verifications 
-                (user_id, username, wallet, collection, nft_count, role_granted, verified_at, signature, message)
-                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+                (user_id, username, wallet, collection, nft_count, role_granted, verified_at)
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             ");
             
             $verificationStmt->execute([
@@ -156,9 +142,7 @@ try {
                 $walletAddress,
                 $collectionName,
                 $count,
-                $roleGranted ? 1 : 0,
-                $signature,
-                $message
+                $roleGranted ? 1 : 0
             ]);
 
             // Log role grant

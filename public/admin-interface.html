@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+<?php
+// Include Discord invite configuration
+require_once '../includes/discord-invite.php';
+?>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -1004,12 +1008,12 @@
       <!-- Current Discord Settings -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
-          <p><strong>Current Invite Code:</strong> <span id="currentCode" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
-          <p><strong>Full Discord URL:</strong> <span id="currentUrl" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+          <p><strong>Current Invite Code:</strong> <span id="currentCode" class="font-mono bg-gray-800 px-2 py-1 rounded"><?php echo $discord_invite_code; ?></span></p>
+          <p><strong>Full Discord URL:</strong> <span id="currentUrl" class="font-mono bg-gray-800 px-2 py-1 rounded"><?php echo $discord_url; ?></span></p>
         </div>
         <div>
-          <p><strong>System Version:</strong> <span id="systemVersion" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
-          <p><strong>Last Updated:</strong> <span id="lastUpdated" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+          <p><strong>System Version:</strong> <span id="systemVersion" class="font-mono bg-gray-800 px-2 py-1 rounded">12.0</span></p>
+          <p><strong>Last Updated:</strong> <span id="lastUpdated" class="font-mono bg-gray-800 px-2 py-1 rounded">2025-06-25</span></p>
         </div>
       </div>
       
@@ -1017,7 +1021,7 @@
       <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">🔄 Update Discord Settings</h3>
         <div class="flex gap-2">
-          <input type="text" id="newInviteCode" placeholder="Enter new invite code" class="flex-1 px-3 py-2 rounded text-gray-800" value="hx4EvgBG">
+          <input type="text" id="newInviteCode" placeholder="Enter new invite code" class="flex-1 px-3 py-2 rounded text-gray-800" value="<?php echo $discord_invite_code; ?>">
           <button onclick="updateInviteCode()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Update</button>
         </div>
       </div>
