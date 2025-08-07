@@ -380,7 +380,7 @@ function onGameOver() {
 
   if (modal && finalScoreText) {
     // ✅ Only update score content, no style changes — handled in HTML
-    finalScoreText.textContent = `You earned $${finalScore} DSPOINC`;
+    finalScoreText.textContent = `You earned $${finalScore * 10} DSPOINC`;
     console.log("🐍 Displaying score:", finalScore);
 
     modal.classList.remove("hidden");
