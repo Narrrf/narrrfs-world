@@ -223,7 +223,9 @@ $discordId = $_SESSION['discord_id'] ?? '';
               class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border-2 border-blue-500 transition-all duration-300 transform hover:scale-105">
         🎯 Check WL Status
       </button>
-      <p id="wlStatusMessage" class="text-xs text-gray-400 mt-1 italic hidden">Checking WL status...</p>
+      <div id="wlStatusMessage" class="text-xs text-gray-400 mt-2 italic hidden max-w-md mx-auto">
+        <!-- Status message will be populated here -->
+      </div>
     </div>
 
     <!-- 🧪 Traits + Wallet View -->
@@ -1229,8 +1231,9 @@ async function checkWLRoleAndShowButton() {
     
     // Show status message and disable button
     if (statusMessage) {
-        statusMessage.textContent = 'Checking WL status...';
+        statusMessage.innerHTML = '<div class="text-center"><div class="animate-spin inline-block w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full mr-2"></div>Checking WL status...</div>';
         statusMessage.classList.remove('hidden');
+        statusMessage.className = 'text-xs text-blue-400 mt-2 italic max-w-md mx-auto text-center';
     }
     if (checkButton) {
         checkButton.disabled = true;
@@ -1240,8 +1243,8 @@ async function checkWLRoleAndShowButton() {
     if (!userId) {
         console.log('No user ID found');
         if (statusMessage) {
-            statusMessage.textContent = 'Please login with Discord first';
-            statusMessage.className = 'text-xs text-red-400 mt-1 italic';
+            statusMessage.innerHTML = '<div class="text-center text-red-400">❌ Please login with Discord first</div>';
+            statusMessage.className = 'text-xs text-red-400 mt-2 italic max-w-md mx-auto text-center';
         }
         if (checkButton) {
             checkButton.disabled = false;
@@ -1275,24 +1278,43 @@ async function checkWLRoleAndShowButton() {
             
             // Update status message
             if (statusMessage) {
-                statusMessage.textContent = '✅ WL Role found! Mint button should be visible below.';
-                statusMessage.className = 'text-xs text-green-400 mt-1 italic';
+                statusMessage.innerHTML = '<div class="text-center text-green-400">✅ WL Role found! Mint button should be visible below.</div>';
+                statusMessage.className = 'text-xs text-green-400 mt-2 italic max-w-md mx-auto text-center';
             }
         } else {
             console.log('User does not have WL role or roles not found');
             console.log('Available roles:', roleData.roles);
             
-            // Update status message
+            // Update status message with better formatting
             if (statusMessage) {
-                statusMessage.textContent = '❌ WL Role not found. Available roles: ' + (roleData.roles ? roleData.roles.join(', ') : 'None');
-                statusMessage.className = 'text-xs text-red-400 mt-1 italic';
+                const roles = roleData.roles || [];
+                let rolesText = 'None';
+                if (roles.length > 0) {
+                    // Limit to first 5 roles and add "and X more" if there are more
+                    const displayRoles = roles.slice(0, 5);
+                    rolesText = displayRoles.join(', ');
+                    if (roles.length > 5) {
+                        rolesText += ` and ${roles.length - 5} more`;
+                    }
+                }
+                
+                statusMessage.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-red-400 mb-1">❌ WL Role not found</div>
+                        <div class="text-gray-400 text-xs">
+                            <span class="font-semibold">Available roles:</span><br>
+                            <span class="text-yellow-300">${rolesText}</span>
+                        </div>
+                    </div>
+                `;
+                statusMessage.className = 'text-xs text-red-400 mt-2 italic max-w-md mx-auto text-center bg-gray-800 rounded-lg p-3';
             }
         }
     } catch (error) {
         console.error('Failed to check WL role:', error);
         if (statusMessage) {
-            statusMessage.textContent = '⚠️ Error checking WL status. Please try again.';
-            statusMessage.className = 'text-xs text-yellow-400 mt-1 italic';
+            statusMessage.innerHTML = '<div class="text-center text-yellow-400">⚠️ Error checking WL status. Please try again.</div>';
+            statusMessage.className = 'text-xs text-yellow-400 mt-2 italic max-w-md mx-auto text-center';
         }
     }
     
