@@ -65,8 +65,24 @@ try {
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
     
+    // If user not found in scores, check if they exist in users table
     if (!$user) {
-        throw new Exception('User not found in database. User must have played games to be in the system.');
+        $userCheckStmt = $db->prepare("SELECT discord_id, username FROM tbl_users WHERE discord_id = ?");
+        $userCheckStmt->execute([$userId]);
+        $userExists = $userCheckStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($userExists) {
+            // User exists but hasn't played games yet - create a basic entry
+            $user = [
+                'user_id' => $userId,
+                'total_score' => 0,
+                'username' => $userExists['username'],
+                'discord_id' => $userId
+            ];
+            error_log("User $userId exists but hasn't played games yet - allowing verification");
+        } else {
+            throw new Exception('User not found in database. User must be registered in the system.');
+        }
     }
     
     // Check for existing verification

@@ -186,6 +186,14 @@ try {
                 // Try different possible field names for collection
                 $nftCollection = $nft['collection'] ?? $nft['collectionAddress'] ?? $nft['grouping'] ?? '';
                 
+                // DEBUG: Log the NFT data to see what we're getting
+                error_log("DEBUG NFT: " . json_encode([
+                    'mint' => $nft['mint'] ?? 'unknown',
+                    'collection' => $nftCollection,
+                    'grouping' => $nft['grouping'] ?? 'none',
+                    'collectionAddress' => $nft['collectionAddress'] ?? 'none'
+                ]));
+                
                 // If grouping is an array, check for collection key
                 if (is_array($nftCollection)) {
                     foreach ($nftCollection as $group) {
@@ -196,6 +204,9 @@ try {
                     }
                 }
                 
+                // DEBUG: Log the final collection check
+                error_log("DEBUG Collection Check: Expected '$collection', Found '$nftCollection', Match: " . ($nftCollection === $collection ? 'YES' : 'NO'));
+                
                 if ($nftCollection === $collection) {
                     $nfts[] = $nft;
                 }
@@ -204,6 +215,21 @@ try {
         
         $count = count($nfts);
         error_log("Helius API found $count NFTs for wallet: $wallet in collection: $collection");
+        
+        // DEBUG: Log all NFTs found for this wallet (first 5 for debugging)
+        if ($count > 0) {
+            error_log("DEBUG: First 5 NFTs found for wallet $wallet:");
+            for ($i = 0; $i < min(5, $count); $i++) {
+                $nft = $nfts[$i];
+                error_log("DEBUG NFT $i: " . json_encode([
+                    'mint' => $nft['mint'] ?? 'unknown',
+                    'name' => $nft['name'] ?? 'unknown',
+                    'collection' => $nft['collection'] ?? 'none',
+                    'collectionAddress' => $nft['collectionAddress'] ?? 'none',
+                    'grouping' => $nft['grouping'] ?? 'none'
+                ]));
+            }
+        }
         
         // Return minimal data - just what we need for role assignment
         echo json_encode([
