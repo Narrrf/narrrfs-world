@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
 <?php
 session_start();
 $discordId = $_SESSION['discord_id'] ?? '';
@@ -7,6 +5,8 @@ $discordId = $_SESSION['discord_id'] ?? '';
 // Include Discord invite configuration
 require_once 'discord-invite.php';
 ?>
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
