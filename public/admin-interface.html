@@ -1003,7 +1003,7 @@ require_once 'discord-invite.php';
       <!-- Season Settings Management -->
       <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
         <h4 class="font-semibold text-yellow-400 mb-3">⚙️ Season Settings Management</h4>
-        <p class="text-sm text-gray-300 mb-4">Configure game scoring, maximum scores, and other season-based settings.</p>
+        <p class="text-sm text-gray-300 mb-4">Configure game scoring ratios, maximum scores, and other season-based settings for Tetris and Snake games.</p>
         
         <!-- Current Season Settings -->
         <div class="mb-6 p-4 bg-gray-700 rounded-lg">
@@ -1021,21 +1021,39 @@ require_once 'discord-invite.php';
             </div>
             <div class="space-y-2">
               <div class="flex justify-between">
-                <span class="text-gray-400">📊 Points Per Line:</span>
+                <span class="text-gray-400">📊 Points Per Line (Tetris):</span>
                 <span class="text-white font-semibold" id="currentPointsPerLine">-</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">🧀 Points Per Cheese:</span>
+                <span class="text-gray-400">🧀 Points Per Cheese (Snake):</span>
                 <span class="text-white font-semibold" id="currentPointsPerCheese">-</span>
               </div>
             </div>
           </div>
+          
+          <!-- Scoring Ratio Display -->
+          <div class="mt-4 p-3 bg-gray-600 rounded-lg">
+            <h6 class="font-semibold text-yellow-400 mb-2">🎯 Current Scoring Ratios</h6>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-300">🟦 Tetris Ratio:</span>
+                <span class="text-green-400 font-semibold" id="tetrisRatio">-</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-300">🐍 Snake Ratio:</span>
+                <span class="text-green-400 font-semibold" id="snakeRatio">-</span>
+              </div>
+            </div>
+          </div>
+          
           <button onclick="loadCurrentSeasonSettings()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">🔄 Refresh Settings</button>
         </div>
 
         <!-- Update Season Settings -->
         <div class="p-4 bg-gray-700 rounded-lg">
           <h5 class="font-semibold text-green-400 mb-3">🔄 Update Season Settings</h5>
+          <p class="text-sm text-gray-300 mb-4">Configure scoring ratios and maximum scores for both games. Changes apply immediately to new game scores.</p>
+          
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="block text-sm font-medium mb-2">🎯 Tetris Max Score:</label>
@@ -1048,16 +1066,28 @@ require_once 'discord-invite.php';
               <p class="text-xs text-gray-400 mt-1">Maximum DSPOINC score for Snake (cheat prevention)</p>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-2">📊 Points Per Line:</label>
-              <input type="number" id="newPointsPerLine" placeholder="10" min="1" max="100" class="w-full px-3 py-2 rounded text-gray-800">
-              <p class="text-xs text-gray-400 mt-1">DSPOINC points awarded per line cleared in Tetris</p>
+              <label class="block text-sm font-medium mb-2">📊 Points Per Line (Tetris):</label>
+              <input type="number" id="newPointsPerLine" placeholder="1" min="1" max="100" class="w-full px-3 py-2 rounded text-gray-800">
+              <p class="text-xs text-gray-400 mt-1">DSPOINC points awarded per line cleared in Tetris (1:1 = exact score)</p>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-2">🧀 Points Per Cheese:</label>
-              <input type="number" id="newPointsPerCheese" placeholder="10" min="1" max="100" class="w-full px-3 py-2 rounded text-gray-800">
-              <p class="text-xs text-gray-400 mt-1">DSPOINC points awarded per cheese collected in Snake</p>
+              <label class="block text-sm font-medium mb-2">🧀 Points Per Cheese (Snake):</label>
+              <input type="number" id="newPointsPerCheese" placeholder="1" min="1" max="100" class="w-full px-3 py-2 rounded text-gray-800">
+              <p class="text-xs text-gray-400 mt-1">DSPOINC points awarded per cheese collected in Snake (1:1 = exact score)</p>
             </div>
           </div>
+          
+          <!-- Quick Ratio Presets -->
+          <div class="mb-4 p-3 bg-gray-600 rounded-lg">
+            <h6 class="font-semibold text-yellow-400 mb-2">⚡ Quick Ratio Presets</h6>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setRatioPreset(1, 1)" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">1:1 (Exact Score)</button>
+              <button onclick="setRatioPreset(10, 10)" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">10:1 (10x Multiplier)</button>
+              <button onclick="setRatioPreset(5, 5)" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">5:1 (5x Multiplier)</button>
+              <button onclick="setRatioPreset(2, 2)" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm">2:1 (2x Multiplier)</button>
+            </div>
+          </div>
+          
           <button onclick="updateSeasonSettings()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold">
             ✅ Update Season Settings
           </button>
@@ -2190,6 +2220,7 @@ require_once 'discord-invite.php';
           loadGameStatistics();
           loadSeasonStats();
           loadGameSettings();
+          loadCurrentSeasonSettings();
         }
         if (tab === 'holderVerification') loadHolderVerificationData();
       });
@@ -5382,16 +5413,35 @@ require_once 'discord-invite.php';
         const data = await response.json();
         
         if (data.success) {
-          document.getElementById('currentTetrisMax').textContent = data.tetris_max_score;
-          document.getElementById('currentSnakeMax').textContent = data.snake_max_score;
+          document.getElementById('currentTetrisMax').textContent = data.tetris_max_score.toLocaleString();
+          document.getElementById('currentSnakeMax').textContent = data.snake_max_score.toLocaleString();
           document.getElementById('currentPointsPerLine').textContent = data.points_per_line;
           document.getElementById('currentPointsPerCheese').textContent = data.points_per_cheese;
+          
+          // Update ratio displays if they exist
+          const tetrisRatioElement = document.getElementById('tetrisRatio');
+          const snakeRatioElement = document.getElementById('snakeRatio');
+          if (tetrisRatioElement) {
+            tetrisRatioElement.textContent = `1:${data.points_per_line}`;
+          }
+          if (snakeRatioElement) {
+            snakeRatioElement.textContent = `1:${data.points_per_cheese}`;
+          }
+          
+          addLog('✅ Season settings loaded successfully');
         } else {
           addLog(`❌ Failed to load current season settings: ${data.error}`);
         }
       } catch (error) {
         addLog(`❌ Error loading current season settings: ${error.message}`);
       }
+    }
+
+    // Set ratio preset
+    function setRatioPreset(tetrisRatio, snakeRatio) {
+      document.getElementById('newPointsPerLine').value = tetrisRatio;
+      document.getElementById('newPointsPerCheese').value = snakeRatio;
+      addLog(`⚡ Applied ratio preset: Tetris 1:${tetrisRatio}, Snake 1:${snakeRatio}`);
     }
 
     // Update season settings

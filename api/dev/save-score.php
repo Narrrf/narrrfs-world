@@ -30,8 +30,8 @@ $seasonStmt->execute([$currentSeason]);
 $seasonSettings = $seasonStmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$seasonSettings) {
-    // Create default season settings if none exist
-    $db->exec("INSERT INTO tbl_season_settings (season_name, tetris_max_score, snake_max_score, points_per_line, points_per_cheese) VALUES ('season_1', 1000, 1000, 10, 10)");
+    // No season settings found - use safe defaults (10:1 ratio)
+    error_log("No season settings found for season: $currentSeason - using safe defaults");
     $seasonSettings = [
         'tetris_max_score' => 10000,
         'snake_max_score' => 10000,
