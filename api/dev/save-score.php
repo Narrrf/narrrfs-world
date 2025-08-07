@@ -90,7 +90,8 @@ try {
     $adjustmentStmt->bindValue(2, 'system'); // System-generated adjustment
     $adjustmentStmt->bindValue(3, $dspoinc_score, PDO::PARAM_INT);
     $adjustmentStmt->bindValue(4, 'add'); // Changed from 'game_score' to 'add' to match table constraint
-    $adjustmentStmt->bindValue(5, "$game game score: $raw_score cheese = $dspoinc_score DSPOINC");
+    $unit = ($game === 'tetris') ? 'lines' : 'cheese';
+    $adjustmentStmt->bindValue(5, "$game game score: $raw_score $unit = $dspoinc_score DSPOINC");
     $adjustmentStmt->execute();
     
 } catch (Exception $e) {
@@ -103,7 +104,8 @@ $wl_result = checkWLEligibility($db, $discord_id, $game, $dspoinc_score);
 // Get conversion rate for display (use actual season settings)
 $conversion_rate = "1:$pointsPerUnit";
 
-$message = "Score saved for $game: $raw_score cheese = $dspoinc_score DSPOINC ($conversion_rate)";
+$unit = ($game === 'tetris') ? 'lines' : 'cheese';
+$message = "Score saved for $game: $raw_score $unit = $dspoinc_score DSPOINC ($conversion_rate)";
 if ($score_capped) {
     $message .= " (capped at max score: $max_score DSPOINC)";
 }
