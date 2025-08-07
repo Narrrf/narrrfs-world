@@ -22,7 +22,7 @@ try {
         $settings = [
             'tetris_max_score' => 10000,
             'snake_max_score' => 10000,
-            'points_per_line' => 1,
+            'points_per_line' => 10,
             'points_per_cheese' => 10
         ];
     }
