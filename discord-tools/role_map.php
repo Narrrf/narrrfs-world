@@ -36,5 +36,6 @@ return [
     "1356041911068262521" => "Founder",
     "1356296242757369898" => "Server Booster",
     "1357088702408691882" => "projectupdate",
-    "1360170093186646129" => "Narrrf's World Login"
+    "1360170093186646129" => "Narrrf's World Login",
+    "1399651053682692208" => "🧀 Cheese Hunter"
 ];
