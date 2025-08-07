@@ -314,7 +314,7 @@ function collide(shape, row, col) {
         if (lines > 0) {
           linesClearedTotal += lines;
           score += lines * 10;
-          scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
+          scoreDisplay.textContent = `💰 $DSPOINC earned: ${score * 10}`;
       
           // ⏩ Speed up every 20 lines
           if (linesClearedTotal % 20 === 0) {
@@ -456,7 +456,7 @@ if (collide(current.shape, current.row, current.col)) {
     if (gameOverText) {
       gameOverText.innerHTML = '🧠 GAME OVER';
     }
-    finalScoreText.textContent = `You earned $${score} DSPOINC`;
+    finalScoreText.textContent = `You earned $${score * 10} DSPOINC`;
     modal.classList.remove('hidden');
 cleanupTouchControls();
   }
