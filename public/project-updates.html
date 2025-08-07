@@ -1,3 +1,4 @@
+<?php require_once '../includes/discord-invite.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -255,7 +256,7 @@ If you ever want to make this list dynamic, ask the SQL wizard (Brian 3.1 style)
 "Can we load these dev logs from a table called project_updates or cheese_tasks?"
 Then let the PHP file echo each one. Or just ping Brain 3.1.
 -->
-              Made with 🧀 & Dev Logs in Narrrf's Lab | <a href="https://discord.gg/hx4EvgBG" class="underline text-pink-600">Join us on Discord</a>
+              Made with 🧀 & Dev Logs in Narrrf's Lab | <a href="<?php echo $discord_url; ?>" class="underline text-pink-600">Join us on Discord</a>
 </footer>
 
 <!-- Global Wallet Connect + PFP Script -->
@@ -344,7 +345,7 @@ This system powers **moving riddle nodes** throughout Narrrf's World. All **chee
 Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
 → Use **wallet address** from localStorage, **timestamp**, and **egg ID** for progress tracking.
 
-🚀 **Future Ideas**:
+�� **Future Ideas**:
 - **Massive map-wide riddle hunts** integrated with time-locked eggs and rotating cheese dungeons.
 - Enhance **user experience** with dynamic **puzzle-solving mechanics**.
   

@@ -1,3 +1,4 @@
+<?php require_once '../includes/discord-invite.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,7 +87,7 @@
   <img src="img/whitepaper-mouse1.png" alt="Whitepaper Mouse"
        class="floaty w-28 md:w-36 hover:scale-105 transition-transform duration-300 drop-shadow-xl mouse-glow"
        title="Smartest mouse in the lab 🧠📜"
-                       onclick="window.location.href='https://discord.gg/hx4EvgBG'"
+                       onclick="window.location.href='<?php echo $discord_url; ?>'"
        style="cursor: pointer;" />
 </div>
 
