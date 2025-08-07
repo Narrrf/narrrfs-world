@@ -46,27 +46,17 @@ try {
     if (!empty($collection)) {
         // Use the correct Helius API endpoint for searching assets
         // Based on Helius documentation: https://docs.helius.xyz/reference/search-assets
-        $url = "https://api.helius.xyz/v1/searchAssets?api-key=$heliusApiKey";
-        
-        $payload = [
-            "ownerAddress" => $wallet,
-            "grouping" => ["collection", "collectionKey"],
-            "page" => 1,
-            "limit" => 1000
-        ];
+        $url = "https://api.helius.xyz/v0/addresses/$wallet/nfts?api-key=$heliusApiKey";
         
         // Log the request for debugging
-        error_log("Helius API request - URL: $url, Payload: " . json_encode($payload));
+        error_log("Helius API request - URL: $url");
         
-        // Make POST request for searchAssets
+        // Make GET request for NFTs
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
             'User-Agent: Narrrfs-World-NFT-Verifier/1.0'
         ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -109,30 +99,30 @@ try {
         
         // Filter for the specific collection
         $nfts = [];
-        if (isset($data['result']) && is_array($data['result'])) {
-            foreach ($data['result'] as $nft) {
+        if (is_array($data)) {
+            foreach ($data as $nft) {
                 // Check if NFT belongs to the specified collection
-                $nftCollection = $nft['grouping'] ?? [];
-                $isTargetCollection = false;
+                // Try different possible field names for collection
+                $nftCollection = $nft['collection'] ?? $nft['collectionAddress'] ?? $nft['grouping'] ?? '';
                 
-                foreach ($nftCollection as $group) {
-                    if (isset($group['groupKey']) && $group['groupKey'] === 'collection') {
-                        $collectionKey = $group['groupValue'] ?? '';
-                        if ($collectionKey === $collection) {
-                            $isTargetCollection = true;
+                // If grouping is an array, check for collection key
+                if (is_array($nftCollection)) {
+                    foreach ($nftCollection as $group) {
+                        if (isset($group['groupKey']) && $group['groupKey'] === 'collection') {
+                            $nftCollection = $group['groupValue'] ?? '';
                             break;
                         }
                     }
                 }
                 
-                if ($isTargetCollection) {
+                if ($nftCollection === $collection) {
                     $nfts[] = $nft;
                 }
             }
         }
         
         $count = count($nfts);
-        error_log("Helius searchAssets found $count NFTs for wallet: $wallet in collection: $collection");
+        error_log("Helius API found $count NFTs for wallet: $wallet in collection: $collection");
         
         // Return minimal data - just what we need for role assignment
         echo json_encode([
@@ -141,7 +131,7 @@ try {
             'count' => $count,
             'wallet' => $wallet,
             'collection' => $collection,
-            'method' => 'helius_searchAssets',
+            'method' => 'helius_getNFTs',
             'has_assets' => $count > 0,
             'timestamp' => date('c')
         ]);
