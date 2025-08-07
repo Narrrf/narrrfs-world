@@ -1,0 +1,13 @@
+[1mdiff --git a/includes/discord-invite.php b/includes/discord-invite.php[m
+[1mindex 6eb9c20..4c84070 100644[m
+[1m--- a/includes/discord-invite.php[m
+[1m+++ b/includes/discord-invite.php[m
+[36m@@ -3,7 +3,7 @@[m
+ // This file provides the Discord invite code from environment variables[m
+ [m
+ // Read the Discord invite code from environment variable with fallback[m
+[31m-$discord_invite_code = getenv('DISCORD_INVITE_CODE') ?: 'hx4EvgBG';[m
+[32m+[m[32m$discord_invite_code = getenv('DISCORD_INVITE_CODE') ?: '3hRRh3gB';[m
+ [m
+ // Full Discord URL[m
+ $discord_url = "https://discord.gg/$discord_invite_code";[m
