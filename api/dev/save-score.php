@@ -89,7 +89,7 @@ try {
     $adjustmentStmt->bindValue(1, $discord_id);
     $adjustmentStmt->bindValue(2, 'system'); // System-generated adjustment
     $adjustmentStmt->bindValue(3, $dspoinc_score, PDO::PARAM_INT);
-    $adjustmentStmt->bindValue(4, 'game_score');
+    $adjustmentStmt->bindValue(4, 'add'); // Changed from 'game_score' to 'add' to match table constraint
     $adjustmentStmt->bindValue(5, "$game game score: $raw_score cheese = $dspoinc_score DSPOINC");
     $adjustmentStmt->execute();
     
