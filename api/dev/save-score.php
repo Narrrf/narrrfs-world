@@ -21,22 +21,40 @@ if (!$wallet || !$raw_score || !$game) {
     exit;
 }
 
-// 🧀 Convert raw score to DSPOINC (game-specific conversion)
-if ($game === 'tetris') {
-    // Tetris: 1 cheese = 1 DSPOINC (no multiplication needed)
-    $dspoinc_score = $raw_score;
-} elseif ($game === 'snake') {
-    // Snake: 1 cheese = 10 DSPOINC (multiply by 10)
-    $dspoinc_score = $raw_score * 10;
-} else {
-    // Default: 1 cheese = 10 DSPOINC
-    $dspoinc_score = $raw_score * 10;
-}
-
-// 🎮 Get current active season
+// 🎮 Get current active season and settings
 $currentSeason = 'season_1'; // Default to season 1 for now
 
-// 💾 Save to DB with DSPOINC score
+// Get season settings for scoring and limits
+$seasonStmt = $db->prepare("SELECT * FROM tbl_season_settings WHERE season_name = ?");
+$seasonStmt->execute([$currentSeason]);
+$seasonSettings = $seasonStmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$seasonSettings) {
+    // Create default season settings if none exist
+    $db->exec("INSERT INTO tbl_season_settings (season_name, tetris_max_score, snake_max_score, points_per_line, points_per_cheese) VALUES ('season_1', 1000, 1000, 10, 10)");
+    $seasonSettings = [
+        'tetris_max_score' => 10000,
+        'snake_max_score' => 10000,
+        'points_per_line' => 10,
+        'points_per_cheese' => 10
+    ];
+}
+
+// 🧀 Convert raw score to DSPOINC (use season settings for points per line/cheese)
+$pointsPerUnit = ($game === 'tetris') ? $seasonSettings['points_per_line'] : $seasonSettings['points_per_cheese'];
+$dspoinc_score = $raw_score * $pointsPerUnit; // Use season settings for scoring
+
+// 🛡️ Check maximum score limit (cheat prevention)
+$max_score = ($game === 'tetris') ? $seasonSettings['tetris_max_score'] : $seasonSettings['snake_max_score'];
+if ($dspoinc_score > $max_score) {
+    $dspoinc_score = $max_score;
+    $raw_score = $max_score / $pointsPerUnit; // Adjust raw score to match limit
+    $score_capped = true;
+} else {
+    $score_capped = false;
+}
+
+// 💾 Save to DB with DSPOINC score (always save, not just high scores)
 $stmt = $db->prepare("
   INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game, season)
   VALUES (:wallet, :score, :discord_id, :discord_name, :game, :season)
@@ -50,77 +68,54 @@ $stmt->bindValue(':game', $game);
 $stmt->bindValue(':season', $currentSeason);
 $stmt->execute();
 
-// 🏆 Check if this is a new highest score for the user
-$highestScoreStmt = $db->prepare("
-    SELECT MAX(score) as highest_score 
-    FROM tbl_tetris_scores 
-    WHERE discord_id = ? AND game = ? AND season = ?
-");
-$highestScoreStmt->bindValue(1, $discord_id);
-$highestScoreStmt->bindValue(2, $game);
-$highestScoreStmt->bindValue(3, $currentSeason);
-$highestScoreStmt->execute();
-$highestScore = $highestScoreStmt->fetch(PDO::FETCH_ASSOC);
-
-$isNewHighScore = ($highestScore['highest_score'] == $dspoinc_score);
-
-// 🧀 Update user's DSPOINC balance in tbl_user_scores (highest score only)
-if ($isNewHighScore) {
-    try {
-        // Check if user already has a record for this game
-        $checkStmt = $db->prepare("
-            SELECT score FROM tbl_user_scores 
-            WHERE user_id = ? AND game = ?
-        ");
-        $checkStmt->bindValue(1, $discord_id);
-        $checkStmt->bindValue(2, $game);
-        $checkStmt->execute();
-        $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($existing) {
-            // Update existing record with new highest score
-            $updateStmt = $db->prepare("
-                UPDATE tbl_user_scores 
-                SET score = ?, last_updated = CURRENT_TIMESTAMP 
-                WHERE user_id = ? AND game = ?
-            ");
-            $updateStmt->bindValue(1, $dspoinc_score, PDO::PARAM_INT);
-            $updateStmt->bindValue(2, $discord_id);
-            $updateStmt->bindValue(3, $game);
-            $updateStmt->execute();
-        } else {
-            // Create new record for this game
-            $insertStmt = $db->prepare("
-                INSERT INTO tbl_user_scores (user_id, score, game, source) 
-                VALUES (?, ?, ?, ?)
-            ");
-            $insertStmt->bindValue(1, $discord_id);
-            $insertStmt->bindValue(2, $dspoinc_score, PDO::PARAM_INT);
-            $insertStmt->bindValue(3, $game);
-            $insertStmt->bindValue(4, 'game_score');
-            $insertStmt->execute();
-        }
-        
-    } catch (Exception $e) {
-        error_log("Error updating user scores: " . $e->getMessage());
-    }
+// 🎯 Add score to user's DSPOINC balance (ALWAYS add, not just high scores)
+try {
+    // Insert new record for this game score
+    $insertStmt = $db->prepare("
+        INSERT INTO tbl_user_scores (user_id, score, game, source) 
+        VALUES (?, ?, ?, ?)
+    ");
+    $insertStmt->bindValue(1, $discord_id);
+    $insertStmt->bindValue(2, $dspoinc_score, PDO::PARAM_INT);
+    $insertStmt->bindValue(3, $game);
+    $insertStmt->bindValue(4, 'game_score');
+    $insertStmt->execute();
+    
+    // 🎯 Create score adjustment entry for tracking
+    $adjustmentStmt = $db->prepare("
+        INSERT INTO tbl_score_adjustments (user_id, admin_id, amount, action, reason) 
+        VALUES (?, ?, ?, ?, ?)
+    ");
+    $adjustmentStmt->bindValue(1, $discord_id);
+    $adjustmentStmt->bindValue(2, 'system'); // System-generated adjustment
+    $adjustmentStmt->bindValue(3, $dspoinc_score, PDO::PARAM_INT);
+    $adjustmentStmt->bindValue(4, 'game_score');
+    $adjustmentStmt->bindValue(5, "$game game score: $raw_score cheese = $dspoinc_score DSPOINC");
+    $adjustmentStmt->execute();
+    
+} catch (Exception $e) {
+    error_log("Error updating user scores: " . $e->getMessage());
 }
 
 // 🏆 Check for WL Role Eligibility (use DSPOINC score for threshold check)
 $wl_result = checkWLEligibility($db, $discord_id, $game, $dspoinc_score);
 
-// Get conversion rate for display
-$conversion_rate = ($game === 'tetris') ? '1:1' : '1:10';
+// Get conversion rate for display (use actual season settings)
+$conversion_rate = "1:$pointsPerUnit";
+
+$message = "Score saved for $game: $raw_score cheese = $dspoinc_score DSPOINC ($conversion_rate)";
+if ($score_capped) {
+    $message .= " (capped at max score: $max_score DSPOINC)";
+}
 
 echo json_encode([
     'success' => true, 
-    'message' => $isNewHighScore ? 
-        "🎉 NEW HIGH SCORE! $game: $raw_score cheese = $dspoinc_score DSPOINC ($conversion_rate)" :
-        "Score saved for $game: $raw_score cheese = $dspoinc_score DSPOINC ($conversion_rate) (not a new high score)",
+    'message' => $message,
     'raw_score' => $raw_score,
     'dspoinc_score' => $dspoinc_score,
     'conversion_rate' => $conversion_rate,
-    'is_new_high_score' => $isNewHighScore,
+    'score_capped' => $score_capped,
+    'max_score' => $max_score,
     'season' => $currentSeason,
     'wl_check' => $wl_result
 ]);
@@ -197,38 +192,20 @@ function checkWLEligibility($db, $user_id, $game, $score) {
 
 function grantWLRole($user_id, $game, $score, $role_id) {
     try {
-        // Use the WL role granting API
-        $api_url = 'https://narrrfs.world/api/admin/grant-wl-role.php';
+        // Log the role grant
+        $stmt = $db->prepare("
+            INSERT INTO tbl_wl_role_grants (user_id, game, score, role_id, granted_at)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ");
+        $stmt->bindValue(1, $user_id);
+        $stmt->bindValue(2, $game);
+        $stmt->bindValue(3, $score);
+        $stmt->bindValue(4, $role_id);
+        $stmt->execute();
         
-        $data = [
-            'action' => 'grant_wl_role',
-            'user_id' => $user_id,
-            'game' => $game,
-            'score' => $score,
-            'role_id' => $role_id
-        ];
-        
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $api_url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        if ($http_code === 200) {
-            $result = json_decode($response, true);
-            return $result && isset($result['success']) && $result['success'];
-        }
-        
-        return false;
-        
+        return true;
     } catch (Exception $e) {
-        error_log("WL role grant error: " . $e->getMessage());
+        error_log("Error granting WL role: " . $e->getMessage());
         return false;
     }
 }

@@ -999,6 +999,71 @@ require_once 'discord-invite.php';
           <div class="text-gray-300">Loading recent activity...</div>
         </div>
       </div>
+
+      <!-- Season Settings Management -->
+      <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-yellow-400 mb-3">⚙️ Season Settings Management</h4>
+        <p class="text-sm text-gray-300 mb-4">Configure game scoring, maximum scores, and other season-based settings.</p>
+        
+        <!-- Current Season Settings -->
+        <div class="mb-6 p-4 bg-gray-700 rounded-lg">
+          <h5 class="font-semibold text-blue-400 mb-3">📋 Current Season Settings</h5>
+          <div id="currentSeasonSettings" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-400">🎯 Tetris Max Score:</span>
+                <span class="text-white font-semibold" id="currentTetrisMax">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">🐍 Snake Max Score:</span>
+                <span class="text-white font-semibold" id="currentSnakeMax">-</span>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-400">📊 Points Per Line:</span>
+                <span class="text-white font-semibold" id="currentPointsPerLine">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">🧀 Points Per Cheese:</span>
+                <span class="text-white font-semibold" id="currentPointsPerCheese">-</span>
+              </div>
+            </div>
+          </div>
+          <button onclick="loadCurrentSeasonSettings()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">🔄 Refresh Settings</button>
+        </div>
+
+        <!-- Update Season Settings -->
+        <div class="p-4 bg-gray-700 rounded-lg">
+          <h5 class="font-semibold text-green-400 mb-3">🔄 Update Season Settings</h5>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">🎯 Tetris Max Score:</label>
+              <input type="number" id="newTetrisMax" placeholder="10000" min="100" max="100000" class="w-full px-3 py-2 rounded text-gray-800">
+              <p class="text-xs text-gray-400 mt-1">Maximum DSPOINC score for Tetris (cheat prevention)</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">🐍 Snake Max Score:</label>
+              <input type="number" id="newSnakeMax" placeholder="10000" min="100" max="100000" class="w-full px-3 py-2 rounded text-gray-800">
+              <p class="text-xs text-gray-400 mt-1">Maximum DSPOINC score for Snake (cheat prevention)</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">📊 Points Per Line:</label>
+              <input type="number" id="newPointsPerLine" placeholder="10" min="1" max="100" class="w-full px-3 py-2 rounded text-gray-800">
+              <p class="text-xs text-gray-400 mt-1">DSPOINC points awarded per line cleared in Tetris</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">🧀 Points Per Cheese:</label>
+              <input type="number" id="newPointsPerCheese" placeholder="10" min="1" max="100" class="w-full px-3 py-2 rounded text-gray-800">
+              <p class="text-xs text-gray-400 mt-1">DSPOINC points awarded per cheese collected in Snake</p>
+            </div>
+          </div>
+          <button onclick="updateSeasonSettings()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold">
+            ✅ Update Season Settings
+          </button>
+          <p class="text-xs text-green-400 mt-2">✅ These settings will apply to all new game scores immediately.</p>
+        </div>
+      </div>
     </div>
 
     <!-- Discord Config Tab -->
@@ -1313,66 +1378,66 @@ require_once 'discord-invite.php';
         <div class="lg:col-span-2 space-y-6">
           
           <!-- View Verifications - Enhanced with better data display -->
-          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
             <h3 class="text-lg font-semibold mb-3 text-blue-300 flex items-center">
               <span class="mr-2">🔍</span> View Verifications
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Filter by Collection:</label>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Filter by Collection:</label>
                 <select id="verificationCollectionFilter" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
-                  <option value="">All Collections</option>
-                  <option value="genesis">🧠 Genesis Collection</option>
-                  <option value="vip">🎴 VIP Collection</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Filter by Status:</label>
+                <option value="">All Collections</option>
+                <option value="genesis">🧠 Genesis Collection</option>
+                <option value="vip">🎴 VIP Collection</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Filter by Status:</label>
                 <select id="verificationStatusFilter" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
-                  <option value="">All Statuses</option>
-                  <option value="1">✅ Role Granted</option>
-                  <option value="0">❌ Role Not Granted</option>
-                </select>
-              </div>
+                <option value="">All Statuses</option>
+                <option value="1">✅ Role Granted</option>
+                <option value="0">❌ Role Not Granted</option>
+              </select>
+            </div>
             </div>
             <button onclick="loadVerifications()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mb-4">
               🔍 Load Verifications
             </button>
-            
+          
             <!-- Enhanced verification results display -->
             <div id="verificationsList" class="space-y-2 max-h-80 overflow-y-auto bg-gray-900 p-3 rounded">
               <div class="text-gray-400 text-center py-4">Click "Load Verifications" to view data</div>
-            </div>
           </div>
+        </div>
 
           <!-- NFT Ownership Management - Enhanced -->
-          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
             <h3 class="text-lg font-semibold mb-3 text-green-300 flex items-center">
               <span class="mr-2">🎴</span> NFT Ownership Management
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Wallet Address:</label>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Wallet Address:</label>
                 <input type="text" id="nftWalletAddress" placeholder="Enter wallet address" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Collection:</label>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1">Collection:</label>
                 <select id="nftCollection" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
-                  <option value="genesis">🧠 Genesis Collection</option>
-                  <option value="vip">🎴 VIP Collection</option>
-                </select>
-              </div>
+                <option value="genesis">🧠 Genesis Collection</option>
+                <option value="vip">🎴 VIP Collection</option>
+              </select>
+            </div>
             </div>
             <button onclick="searchNFTs()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mb-4">
               🔍 Search NFTs
             </button>
-            
+          
             <!-- Enhanced NFT search results -->
             <div id="nftSearchResults" class="space-y-2 max-h-80 overflow-y-auto bg-gray-900 p-3 rounded">
               <div class="text-gray-400 text-center py-4">Search for NFTs to view ownership</div>
-            </div>
           </div>
         </div>
+      </div>
 
         <!-- Right Column: Role Management - Streamlined -->
         <div class="space-y-6">
@@ -1471,43 +1536,43 @@ require_once 'discord-invite.php';
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         <!-- Verification Log - Enhanced -->
-        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
           <h3 class="text-lg font-semibold mb-3 text-blue-300 flex items-center">
             <span class="mr-2">📋</span> Verification Log
           </h3>
           <div id="verificationLog" class="bg-gray-900 p-4 rounded text-sm font-mono h-48 overflow-y-auto border border-gray-600">
-            <div class="text-blue-400">🔄 Holder verification system ready...</div>
-          </div>
+          <div class="text-blue-400">🔄 Holder verification system ready...</div>
         </div>
+      </div>
 
         <!-- Role Grant History - Enhanced -->
         <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
           <h3 class="text-lg font-semibold mb-3 text-purple-300 flex items-center">
             <span class="mr-2">📊</span> Role Grant History
           </h3>
-          <div class="space-y-3 mb-4">
-            <div class="flex flex-wrap gap-2">
-              <button onclick="loadRoleHistory('all')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">
-                All Actions
-              </button>
-              <button onclick="loadRoleHistory('granted')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-                ✅ Granted Only
-              </button>
-              <button onclick="loadRoleHistory('revoked')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
-                ❌ Revoked Only
-              </button>
-            </div>
-            <div class="flex gap-2">
+        <div class="space-y-3 mb-4">
+          <div class="flex flex-wrap gap-2">
+            <button onclick="loadRoleHistory('all')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">
+              All Actions
+            </button>
+            <button onclick="loadRoleHistory('granted')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+              ✅ Granted Only
+            </button>
+            <button onclick="loadRoleHistory('revoked')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+              ❌ Revoked Only
+            </button>
+          </div>
+          <div class="flex gap-2">
               <input type="text" id="historyUserSearch" placeholder="Search by user ID or username" 
                      class="flex-1 px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600 text-sm">
-              <button onclick="searchRoleHistory()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
+            <button onclick="searchRoleHistory()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
                 🔍
-              </button>
-            </div>
+            </button>
           </div>
-          
+        </div>
+        
           <div id="roleHistoryList" class="space-y-2 max-h-48 overflow-y-auto bg-gray-900 p-3 rounded border border-gray-600">
-            <div class="text-gray-400 text-center py-4">Click "All Actions" to view role grant history</div>
+          <div class="text-gray-400 text-center py-4">Click "All Actions" to view role grant history</div>
           </div>
         </div>
       </div>
@@ -5307,6 +5372,62 @@ require_once 'discord-invite.php';
         }
       } catch (error) {
         addVerificationLog(`❌ Search error: ${error.message}`);
+      }
+    }
+
+    // Load current season settings
+    async function loadCurrentSeasonSettings() {
+      try {
+        const response = await fetch('/api/admin/get-current-season-settings.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('currentTetrisMax').textContent = data.tetris_max_score;
+          document.getElementById('currentSnakeMax').textContent = data.snake_max_score;
+          document.getElementById('currentPointsPerLine').textContent = data.points_per_line;
+          document.getElementById('currentPointsPerCheese').textContent = data.points_per_cheese;
+        } else {
+          addLog(`❌ Failed to load current season settings: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error loading current season settings: ${error.message}`);
+      }
+    }
+
+    // Update season settings
+    async function updateSeasonSettings() {
+      try {
+        const tetrisMax = parseInt(document.getElementById('newTetrisMax').value);
+        const snakeMax = parseInt(document.getElementById('newSnakeMax').value);
+        const pointsPerLine = parseInt(document.getElementById('newPointsPerLine').value);
+        const pointsPerCheese = parseInt(document.getElementById('newPointsPerCheese').value);
+
+        if (isNaN(tetrisMax) || isNaN(snakeMax) || isNaN(pointsPerLine) || isNaN(pointsPerCheese)) {
+          addLog('❌ Please enter valid numbers for all fields');
+          return;
+        }
+
+        const response = await fetch('/api/admin/update-season-settings.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tetris_max_score: tetrisMax,
+            snake_max_score: snakeMax,
+            points_per_line: pointsPerLine,
+            points_per_cheese: pointsPerCheese
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Season settings updated successfully`);
+          loadCurrentSeasonSettings();
+        } else {
+          addLog(`❌ Failed to update season settings: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error updating season settings: ${error.message}`);
       }
     }
 
