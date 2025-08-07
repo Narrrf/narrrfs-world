@@ -34,9 +34,11 @@ try {
         
         // Test API connectivity with a simple request
         $testWallet = '11111111111111111111111111111112'; // Test wallet address
-        $url = "https://api.helius.xyz/v0/addresses/$testWallet/nfts?api-key=$heliusApiKey";
         
-        $ch = curl_init($url);
+        // Test 1: Enhanced Solana API endpoint
+        $apiUrl = "https://api.helius.xyz/v0/addresses/$testWallet/nfts?api-key=$heliusApiKey";
+        
+        $ch = curl_init($apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'User-Agent: Narrrfs-World-NFT-Verifier/1.0'
@@ -45,21 +47,55 @@ try {
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         
         $apiResponse = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
+        $apiHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $apiCurlError = curl_error($ch);
         curl_close($ch);
         
-        $response['test_results']['http_code'] = $httpCode;
-        $response['test_results']['curl_error'] = $curlError ?: 'none';
-        $response['test_results']['response_preview'] = substr($apiResponse, 0, 200);
-        $response['test_results']['url_tested'] = $url;
+        // Test 2: RPC endpoint (for comparison)
+        $rpcUrl = "https://mainnet.helius-rpc.com/?api-key=$heliusApiKey";
+        $rpcPayload = json_encode([
+            "jsonrpc" => "2.0",
+            "id" => 1,
+            "method" => "getBalance",
+            "params" => [$testWallet]
+        ]);
         
-        if ($httpCode === 200) {
+        $ch = curl_init($rpcUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'User-Agent: Narrrfs-World-NFT-Verifier/1.0'
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $rpcPayload);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        
+        $rpcResponse = curl_exec($ch);
+        $rpcHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $rpcCurlError = curl_error($ch);
+        curl_close($ch);
+        
+        $response['test_results']['api_test'] = [
+            'http_code' => $apiHttpCode,
+            'curl_error' => $apiCurlError ?: 'none',
+            'response_preview' => substr($apiResponse, 0, 200),
+            'url_tested' => $apiUrl
+        ];
+        
+        $response['test_results']['rpc_test'] = [
+            'http_code' => $rpcHttpCode,
+            'curl_error' => $rpcCurlError ?: 'none',
+            'response_preview' => substr($rpcResponse, 0, 200),
+            'url_tested' => $rpcUrl
+        ];
+        
+        if ($apiHttpCode === 200) {
             $response['success'] = true;
             $response['test_results']['status'] = 'api_working';
         } else {
             $response['test_results']['status'] = 'api_error';
-            $response['error'] = "API returned HTTP $httpCode";
+            $response['error'] = "API returned HTTP $apiHttpCode";
         }
     }
     

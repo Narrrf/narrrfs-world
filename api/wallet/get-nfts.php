@@ -44,8 +44,8 @@ try {
     }
     
     if (!empty($collection)) {
-        // Use the correct Helius API endpoint for searching assets
-        // Based on Helius documentation: https://docs.helius.xyz/reference/search-assets
+        // Use the correct Helius API endpoint for getting NFTs
+        // Based on Helius dashboard: https://api.helius.xyz/v0/addresses/{address}/nfts
         $url = "https://api.helius.xyz/v0/addresses/$wallet/nfts?api-key=$heliusApiKey";
         
         // Log the request for debugging
