@@ -44,8 +44,7 @@ try {
     }
     
     if (!empty($collection)) {
-        // Use the correct Helius API endpoint for getting NFTs
-        // Based on Helius dashboard: https://api.helius.xyz/v0/addresses/{address}/nfts
+        // Try Enhanced Solana API first, fallback to RPC if it fails
         $url = "https://api.helius.xyz/v0/addresses/$wallet/nfts?api-key=$heliusApiKey";
         
         // Log the request for debugging
@@ -75,10 +74,92 @@ try {
             throw new Exception('CURL error: ' . $curlError);
         }
         
+        // If Enhanced API fails, try RPC endpoint as fallback
         if ($httpCode !== 200) {
-            // Log the actual response for debugging
-            error_log("Helius API error response (HTTP $httpCode): " . $response);
-            throw new Exception('Helius API HTTP error: ' . $httpCode . ' - Response: ' . substr($response, 0, 200));
+            error_log("Enhanced API failed (HTTP $httpCode), trying RPC endpoint...");
+            
+            // Fallback to RPC endpoint
+            $rpcUrl = "https://mainnet.helius-rpc.com/?api-key=$heliusApiKey";
+            $rpcPayload = [
+                "jsonrpc" => "2.0",
+                "id" => 1,
+                "method" => "getTokenAccountsByOwner",
+                "params" => [
+                    $wallet,
+                    [
+                        "programId" => "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+                    ],
+                    [
+                        "encoding" => "jsonParsed"
+                    ]
+                ]
+            ];
+            
+            $ch = curl_init($rpcUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'User-Agent: Narrrfs-World-NFT-Verifier/1.0'
+            ]);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($rpcPayload));
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
+            curl_close($ch);
+            
+            if ($curlError) {
+                throw new Exception('RPC fallback CURL error: ' . $curlError);
+            }
+            
+            if ($httpCode !== 200) {
+                throw new Exception('Both Enhanced API and RPC failed. Enhanced API: ' . $httpCode . ', RPC: ' . $httpCode);
+            }
+            
+            $data = json_decode($response, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception('Invalid JSON response from RPC: ' . json_last_error_msg());
+            }
+            
+            if (isset($data['error'])) {
+                throw new Exception('RPC error: ' . json_encode($data['error']));
+            }
+            
+            // Process RPC response
+            $nfts = [];
+            if (isset($data['result']['value']) && is_array($data['result']['value'])) {
+                foreach ($data['result']['value'] as $tokenAccount) {
+                    $tokenData = $tokenAccount['account']['data']['parsed']['info'] ?? [];
+                    $mint = $tokenData['mint'] ?? '';
+                    $amount = $tokenData['tokenAmount']['uiAmount'] ?? 0;
+                    
+                    if ($amount == 1 && $mint) {
+                        $nfts[] = [
+                            'mint' => $mint,
+                            'amount' => $amount,
+                            'collection' => $collection
+                        ];
+                    }
+                }
+            }
+            
+            $count = count($nfts);
+            error_log("Helius RPC fallback found $count NFTs for wallet: $wallet");
+            
+            echo json_encode([
+                'success' => true,
+                'nfts' => $nfts,
+                'count' => $count,
+                'wallet' => $wallet,
+                'collection' => $collection,
+                'method' => 'helius_rpc_fallback',
+                'has_assets' => $count > 0,
+                'timestamp' => date('c')
+            ]);
+            return;
         }
         
         if (empty($response)) {
@@ -131,7 +212,7 @@ try {
             'count' => $count,
             'wallet' => $wallet,
             'collection' => $collection,
-            'method' => 'helius_getNFTs',
+            'method' => 'helius_enhanced_api',
             'has_assets' => $count > 0,
             'timestamp' => date('c')
         ]);
