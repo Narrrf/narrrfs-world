@@ -1254,6 +1254,17 @@ async function checkWLRoleAndShowButton() {
     }
 
     try {
+        // First, sync roles from Discord to ensure local database is up-to-date
+        console.log('🔄 Syncing roles from Discord...');
+        const syncResponse = await fetch('/api/auth/sync-role.php');
+        
+        if (!syncResponse.ok) {
+            console.warn('⚠️ Role sync failed, continuing with local check...');
+        } else {
+            console.log('✅ Roles synced from Discord');
+        }
+        
+        // Now check roles from the local database (which should be up-to-date)
         const roleRes = await fetch('/api/user/roles.php');
         const roleData = await roleRes.json();
         console.log('Role data received:', roleData);
@@ -1298,7 +1309,7 @@ async function checkWLRoleAndShowButton() {
                     <div class="text-center">
                         <div class="text-red-400 mb-1">❌ WL Role not found</div>
                         <div class="text-gray-400 text-xs">
-                            <span class="font-semibold">Looking for:</span> 🧀 Cheese Hunter role
+                            <span class="font-semibold">Looking for:</span> WL role
                         </div>
                     </div>
                 `;

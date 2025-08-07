@@ -4,6 +4,18 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Set JSON headers for AJAX requests
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: https://narrrfs.world');
+header('Access-Control-Allow-Credentials: true');
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    header('Access-Control-Allow-Methods: GET, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Accept');
+    exit;
+}
+
 // ✅ Load role ID → name mapping from file
 $roleMap = require __DIR__ . '/../../discord-tools/role_map.php';
 
@@ -19,6 +31,7 @@ $discordId = $_SESSION['discord_id'] ?? null;
 // ❌ Abort early if token or session data missing
 if (!$discordId || !$botToken) {
     http_response_code(401);
+    echo json_encode(['error' => 'User not logged in or bot token missing']);
     exit;
 }
 
@@ -40,6 +53,7 @@ curl_close($ch);
 if ($httpCode !== 200) {
     http_response_code($httpCode);
     error_log("❌ Discord API failed with HTTP $httpCode — Response: $response");
+    echo json_encode(['error' => 'Discord API failed', 'http_code' => $httpCode]);
     exit;
 }
 
@@ -72,7 +86,17 @@ try {
 
     // ✅ Success log
     error_log("✅ Roles synced to DB for user $discordId: " . implode(', ', $userRoles));
+    
+    // Return success response
+    echo json_encode([
+        'success' => true,
+        'message' => 'Roles synced successfully',
+        'roles' => $userRoles,
+        'user_id' => $discordId
+    ]);
+    
 } catch (Exception $e) {
     http_response_code(500);
     error_log("❌ DB error: " . $e->getMessage());
+    echo json_encode(['error' => 'Database error', 'details' => $e->getMessage()]);
 }
