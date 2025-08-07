@@ -12,15 +12,12 @@ if (!$user_id) {
 $db = new SQLite3(__DIR__ . '/../../db/narrrf_world.sqlite');
 
 // 1. Basic info
-$stmt = $db->prepare("SELECT username, avatar_url FROM tbl_users WHERE discord_id = ?");
+$stmt = $db->prepare("SELECT username, avatar_url, created_at FROM tbl_users WHERE discord_id = ?");
 $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
 $userRow = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
 
-// 2. Earliest trait timestamp = join date
-$joinStmt = $db->prepare("SELECT MIN(timestamp) AS joined FROM tbl_user_traits WHERE user_id = ?");
-$joinStmt->bindValue(1, $user_id, SQLITE3_TEXT);
-$joinedRow = $joinStmt->execute()->fetchArray(SQLITE3_ASSOC);
-$member_since = isset($joinedRow['joined']) && $joinedRow['joined'] ? substr($joinedRow['joined'], 0, 10) : "";
+// 2. Discord join date = member since date
+$member_since = isset($userRow['created_at']) && $userRow['created_at'] ? substr($userRow['created_at'], 0, 10) : "";
 
 // 3. Roles
 $roles = [];

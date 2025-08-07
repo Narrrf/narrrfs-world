@@ -90,10 +90,27 @@ $avatarUrl = $user['avatar']
     ? "https://cdn.discordapp.com/avatars/{$user['id']}/{$user['avatar']}.png"
     : 'https://cdn.discordapp.com/embed/avatars/0.png';
 
-$stmt = $db->prepare("
-    INSERT OR REPLACE INTO tbl_users (discord_id, username, avatar_url)
-    VALUES (:discord_id, :username, :avatar_url)
-");
+// Check if user already exists
+$checkStmt = $db->prepare("SELECT discord_id FROM tbl_users WHERE discord_id = ?");
+$checkStmt->bindValue(':discord_id', $user['id'], SQLITE3_TEXT);
+$existingUser = $checkStmt->execute()->fetchArray(SQLITE3_ASSOC);
+
+if ($existingUser) {
+    // Update existing user (don't change created_at)
+    $stmt = $db->prepare("
+        UPDATE tbl_users 
+        SET username = :username, avatar_url = :avatar_url
+        WHERE discord_id = :discord_id
+    ");
+} else {
+    // Insert new user with created_at timestamp
+    $stmt = $db->prepare("
+        INSERT INTO tbl_users (discord_id, username, avatar_url, created_at)
+        VALUES (:discord_id, :username, :avatar_url, :created_at)
+    ");
+    $stmt->bindValue(':created_at', date('Y-m-d H:i:s'), SQLITE3_TEXT);
+}
+
 $stmt->bindValue(':discord_id', $user['id'], SQLITE3_TEXT);
 $stmt->bindValue(':username', $user['username'], SQLITE3_TEXT);
 $stmt->bindValue(':avatar_url', $avatarUrl, SQLITE3_TEXT);

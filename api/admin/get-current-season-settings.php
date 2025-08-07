@@ -16,14 +16,14 @@ try {
     $settings = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$settings) {
-        // Create default settings if none exist (1:1 ratio)
-        $db->exec("INSERT INTO tbl_season_settings (season_name, tetris_max_score, snake_max_score, points_per_line, points_per_cheese) VALUES ('season_1', 10000, 10000, 1, 1)");
+        // Create default settings if none exist (1:1 ratio for tetris, 10:1 ratio for snake)
+        $db->exec("INSERT INTO tbl_season_settings (season_name, tetris_max_score, snake_max_score, points_per_line, points_per_cheese) VALUES ('season_1', 10000, 10000, 1, 10)");
         
         $settings = [
             'tetris_max_score' => 10000,
             'snake_max_score' => 10000,
             'points_per_line' => 1,
-            'points_per_cheese' => 1
+            'points_per_cheese' => 10
         ];
     }
     
@@ -32,7 +32,7 @@ try {
         'tetris_max_score' => $settings['tetris_max_score'] ?? 10000,
         'snake_max_score' => $settings['snake_max_score'] ?? 10000,
         'points_per_line' => $settings['points_per_line'] ?? 1,
-        'points_per_cheese' => $settings['points_per_cheese'] ?? 1,
+        'points_per_cheese' => $settings['points_per_cheese'] ?? 10,
         'season_name' => $settings['season_name'] ?? 'season_1'
     ]);
     
