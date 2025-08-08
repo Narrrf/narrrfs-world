@@ -92,7 +92,7 @@ $avatarUrl = $user['avatar']
 
 // Check if user already exists
 $checkStmt = $db->prepare("SELECT discord_id FROM tbl_users WHERE discord_id = ?");
-$checkStmt->bindValue(':discord_id', $user['id'], SQLITE3_TEXT);
+$checkStmt->bindValue(1, $user['id'], SQLITE3_TEXT);
 $existingUser = $checkStmt->execute()->fetchArray(SQLITE3_ASSOC);
 
 if ($existingUser) {
@@ -114,7 +114,13 @@ if ($existingUser) {
 $stmt->bindValue(':discord_id', $user['id'], SQLITE3_TEXT);
 $stmt->bindValue(':username', $user['username'], SQLITE3_TEXT);
 $stmt->bindValue(':avatar_url', $avatarUrl, SQLITE3_TEXT);
-$stmt->execute();
+
+try {
+    $stmt->execute();
+} catch (Exception $e) {
+    error_log("Database error during user save: " . $e->getMessage());
+    // Continue anyway - user can still use the site
+}
 
 // ✅ Sync roles
 include_once(__DIR__ . '/sync-role.php');

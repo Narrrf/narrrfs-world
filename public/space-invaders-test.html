@@ -102,5 +102,51 @@
 <!-- 🧀 Load Space Cheese Invaders Script -->
 <script src="scripts/space-cheese-invaders.js"></script>
 
+<!-- 🎮 Game Event Listeners -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🎮 Space Invaders Test Page Loaded');
+  
+  const startBtn = document.getElementById('start-space-invaders-btn');
+  const pauseBtn = document.getElementById('pause-space-invaders-btn');
+  
+  if (startBtn) {
+    console.log('✅ Start button found');
+    startBtn.addEventListener('click', function() {
+      console.log('🚀 Start button clicked');
+      if (window.initSpaceInvaders) {
+        console.log('✅ Calling initSpaceInvaders');
+        window.initSpaceInvaders();
+        startBtn.disabled = true;
+        startBtn.textContent = '🎮 Playing...';
+      } else {
+        console.error('❌ initSpaceInvaders not available');
+      }
+    });
+  } else {
+    console.error('❌ Start button not found');
+  }
+  
+  if (pauseBtn) {
+    console.log('✅ Pause button found');
+    pauseBtn.addEventListener('click', function() {
+      console.log('⏸️ Pause button clicked');
+      // Pause functionality will be handled by the game script
+    });
+  } else {
+    console.error('❌ Pause button not found');
+  }
+  
+  // Listen for game end events
+  window.addEventListener('spaceInvadersGameEnd', function() {
+    console.log('🎮 Game ended, resetting start button');
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.textContent = '▶️ Start';
+    }
+  });
+});
+</script>
+
 </body>
 </html>
