@@ -182,9 +182,9 @@ require_once 'discord-invite.php';
       <div class="text-center mt-4 pt-4 border-t border-gray-600">
         <!-- Database options for all moderators (password protected) -->
         <div id="databaseOptions" style="display: none;">
-          <a href="download-db.php" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+          <button onclick="downloadDatabase()" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
             📥 Download Database
-          </a>
+          </button>
           <button onclick="showUploadModal()" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
             📤 Upload Database
           </button>
@@ -3595,6 +3595,32 @@ require_once 'discord-invite.php';
       }
     }
     
+    // Download database
+    async function downloadDatabase() {
+      if (!currentAdmin) {
+        addLog('❌ Authentication required for database download');
+        return;
+      }
+      
+      try {
+        addLog('📥 Initiating database download...');
+        
+        // Create a temporary link to download the database
+        const link = document.createElement('a');
+        link.href = '/api/dev/download-db.php';
+        link.download = 'narrrf_world.sqlite';
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        addLog('✅ Database download initiated');
+      } catch (error) {
+        addLog('❌ Database download failed: ' + error.message);
+      }
+    }
+    
     // Show database viewer
     function showDatabaseViewer() {
       const modal = document.getElementById('viewerModal');
@@ -5792,13 +5818,24 @@ require_once 'discord-invite.php';
       // Start polling for Discord events
       discordFeedInterval = setInterval(async () => {
         try {
-          const response = await fetch('/api/admin/get-discord-activity.php');
+          // First try to get real-time Discord events
+          const response = await fetch('/api/admin/discord-events.php');
           const data = await response.json();
           
           if (data.success && data.events && data.events.length > 0) {
             data.events.forEach(event => {
               addDiscordEvent(event);
             });
+          } else {
+            // Fallback to the old activity endpoint
+            const fallbackResponse = await fetch('/api/admin/get-discord-activity.php');
+            const fallbackData = await fallbackResponse.json();
+            
+            if (fallbackData.success && fallbackData.events && fallbackData.events.length > 0) {
+              fallbackData.events.forEach(event => {
+                addDiscordEvent(event);
+              });
+            }
           }
         } catch (error) {
           console.error('Error fetching Discord activity:', error);
