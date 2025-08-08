@@ -16,7 +16,7 @@ window.addEventListener("keydown", function (e) {
 }, { passive: false });
 
 // 🎮 Game Variables (global scope like other games)
-let gameInterval;
+let spaceInvadersGameInterval;
 let isSpaceInvadersPaused = false;
 let spaceInvadersScore = 0;
 
@@ -67,7 +67,7 @@ cheeseExplosionImg.src = "img/space/cheese-explosion.png";
   snakeDNAImg.onerror = () => console.warn('⚠️ Snake DNA image failed to load, using fallback');
   snakeDNAImg.src = "img/snake/snake-dna.png";
 
-  const snakeHeadImg = new Image();
+  const spaceInvadersSnakeHeadImg = new Image();
   snakeHeadImg.onload = () => console.log('🐍 Snake head image loaded successfully');
   snakeHeadImg.onerror = () => console.warn('⚠️ Snake head image failed to load, using fallback');
   snakeHeadImg.src = "img/snake/snake-head.png";
@@ -333,12 +333,19 @@ function initSpaceInvaders() {
   }
 
   function startGame() {
+    console.log('🚀 startGame called - setting up game loop...');
     resetGame();
-    gameInterval = setInterval(gameLoop, 100); // ULTRA SLOW GAME LOOP (100ms instead of 50ms)
+    spaceInvadersGameInterval = setInterval(gameLoop, 100); // ULTRA SLOW GAME LOOP (100ms instead of 50ms)
+    console.log('✅ Game loop interval set:', spaceInvadersGameInterval);
     document.getElementById("start-space-invaders-btn").textContent = "🔄 Restart";
   }
 
   function resetGame() {
+    // Clear any existing game interval
+    if (spaceInvadersGameInterval) {
+      clearInterval(spaceInvadersGameInterval);
+      spaceInvadersGameInterval = null;
+    }
     spaceInvadersScore = 0;
     gameSpeed = 0.1; // ULTRA SLOW STARTING SPEED
     waveNumber = 1;
@@ -366,6 +373,7 @@ function initSpaceInvaders() {
   function gameLoop() {
     if (isSpaceInvadersPaused) return;
     
+    console.log('🔄 Game loop running - updating and drawing...');
     updateGame();
     draw();
   }
@@ -1314,7 +1322,7 @@ function initSpaceInvaders() {
   }
 
   function onGameWin() {
-    clearInterval(gameInterval);
+    clearInterval(spaceInvadersGameInterval);
     
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
@@ -1344,7 +1352,7 @@ function initSpaceInvaders() {
   }
 
   function onGameOver() {
-    clearInterval(gameInterval);
+    clearInterval(spaceInvadersGameInterval);
     
     const gameOverModal = document.getElementById("space-invaders-over-modal");
       const finalScoreText = document.getElementById("space-invaders-final-score-text");
@@ -1402,9 +1410,11 @@ function initSpaceInvaders() {
   }
 
   function movePlayer(direction) {
+    console.log('🎮 movePlayer called:', direction, 'paused:', isSpaceInvadersPaused);
     if (isSpaceInvadersPaused) return;
     
     const moveAmount = playerShip.speed;
+    const oldX = playerShip.x;
     
     switch (direction) {
       case 'left':
@@ -1414,6 +1424,8 @@ function initSpaceInvaders() {
         playerShip.x = Math.min(canvasWidth - playerShip.width, playerShip.x + moveAmount);
         break;
     }
+    
+    console.log('🎮 Ship moved from', oldX, 'to', playerShip.x);
   }
 
   function playerShoot() {
@@ -1485,12 +1497,7 @@ function initSpaceInvaders() {
     document.body.style.overflow = '';
   }
 
-  // 🎮 Keyboard controls
-  const pauseHandler = (e) => {
-    if (e.key === 'p' || e.key === 'P') {
-      togglePause();
-    }
-  };
+
 
   function togglePause() {
     isSpaceInvadersPaused = !isSpaceInvadersPaused;
@@ -1500,10 +1507,18 @@ function initSpaceInvaders() {
     }
   }
 
-  // 🎮 Event listeners
+  // 🎮 Combined keyboard event listener
   document.addEventListener('keydown', (e) => {
-    if (isSpaceInvadersPaused && e.key !== 'p' && e.key !== 'P') return;
+    // Handle pause first
+    if (e.key === 'p' || e.key === 'P') {
+      togglePause();
+      return;
+    }
     
+    // If paused, don't handle other keys
+    if (isSpaceInvadersPaused) return;
+    
+    // Handle movement and shooting
     switch (e.key) {
       case 'ArrowLeft':
       case 'a':
@@ -1523,8 +1538,6 @@ function initSpaceInvaders() {
     }
   });
 
-  document.addEventListener('keydown', pauseHandler);
-
   // 🎮 Button event listeners
   const startBtn = document.getElementById("start-space-invaders-btn");
   const pauseBtn = document.getElementById("pause-space-invaders-btn");
@@ -1543,7 +1556,8 @@ function initSpaceInvaders() {
 
   // 🧹 Cleanup function
   function cleanupSpaceInvadersControls() {
-    document.removeEventListener('keydown', pauseHandler);
+    // Note: We can't easily remove the specific keydown listener since it's anonymous
+    // The browser will clean it up when the page is unloaded
     disableGlobalSpaceInvadersTouch();
     unlockSpaceInvadersScroll();
   }
@@ -1603,9 +1617,11 @@ function initSpaceInvaders() {
   console.log('✅ initSpaceInvaders completed successfully');
 }
 
-// 🎮 Make initSpaceInvaders globally available
-console.log('🌐 About to assign initSpaceInvaders to window object...');
+// 🎮 Make game functions globally available
+console.log('🌐 About to assign game functions to window object...');
 console.log('🔍 initSpaceInvaders function exists:', typeof initSpaceInvaders);
 window.initSpaceInvaders = initSpaceInvaders;
-console.log('✅ initSpaceInvaders assigned to window:', typeof window.initSpaceInvaders);
+window.startGameWithCountdown = startGameWithCountdown;
+window.startGame = startGame;
+console.log('✅ Game functions assigned to window');
 console.log('🎯 window.initSpaceInvaders === initSpaceInvaders:', window.initSpaceInvaders === initSpaceInvaders);

@@ -117,6 +117,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (window.initSpaceInvaders) {
         console.log('✅ Calling initSpaceInvaders');
         window.initSpaceInvaders();
+        // Start the game immediately after initialization
+        if (window.startGameWithCountdown) {
+          console.log('🚀 Starting game with countdown');
+          window.startGameWithCountdown();
+        } else {
+          console.log('🚀 Starting game directly');
+          window.startGame();
+        }
         startBtn.disabled = true;
         startBtn.textContent = '🎮 Playing...';
       } else {
