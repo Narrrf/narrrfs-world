@@ -15,6 +15,7 @@ try {
     
     // Check if database file exists
     if (!file_exists($dbPath)) {
+        error_log("Database file not found: $dbPath");
         echo json_encode([
             'success' => false, 
             'error' => 'Database file not found locally. This is expected for local testing.',
@@ -23,8 +24,35 @@ try {
         exit;
     }
     
+    // Check if database file is writable
+    if (!is_writable($dbPath)) {
+        error_log("Database file not writable: $dbPath");
+        echo json_encode([
+            'success' => false, 
+            'error' => 'Database file not writable',
+            'local_test' => false
+        ]);
+        exit;
+    }
+    
     $db = new PDO('sqlite:' . $dbPath);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Check if required tables exist
+    $tables = ['tbl_tetris_scores', 'tbl_user_scores', 'tbl_score_adjustments'];
+    foreach ($tables as $table) {
+        $stmt = $db->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?");
+        $stmt->execute([$table]);
+        if (!$stmt->fetch()) {
+            error_log("Table $table does not exist in database");
+            echo json_encode([
+                'success' => false, 
+                'error' => "Required table $table does not exist in database",
+                'local_test' => false
+            ]);
+            exit;
+        }
+    }
 
     // 📦 Parse JSON input
     $data = json_decode(file_get_contents('php://input'), true);
@@ -79,7 +107,7 @@ try {
         $pointsPerUnit = $seasonSettings['points_per_cheese'] ?? 10;
         $unit = 'cheese';
     } elseif ($game === 'space_invaders') {
-        $pointsPerUnit = $seasonSettings['points_per_invader'] ?? 0.001; // 10,000 invaders = 10 DSPOINC
+        $pointsPerUnit = $seasonSettings['points_per_invader'] ?? 0.01; // 1,000 invaders = 10 DSPOINC
         $unit = 'invaders';
     } else {
         $pointsPerUnit = 10; // Default fallback
@@ -109,18 +137,27 @@ try {
     }
 
     // 💾 Save to DB with DSPOINC score (always save, not just high scores)
-    $stmt = $db->prepare("
-      INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game, season)
-      VALUES (:wallet, :score, :discord_id, :discord_name, :game, :season)
-    ");
+    try {
+        $stmt = $db->prepare("
+          INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game, season, is_current_season)
+          VALUES (:wallet, :score, :discord_id, :discord_name, :game, :season, 1)
+        ");
 
-    $stmt->bindValue(':wallet', $wallet);
-    $stmt->bindValue(':score', $dspoinc_score, PDO::PARAM_INT);
-    $stmt->bindValue(':discord_id', $discord_id);
-    $stmt->bindValue(':discord_name', $discord_name);
-    $stmt->bindValue(':game', $game);
-    $stmt->bindValue(':season', $currentSeason);
-    $stmt->execute();
+        $stmt->bindValue(':wallet', $wallet);
+        $stmt->bindValue(':score', round($dspoinc_score), PDO::PARAM_INT);
+        $stmt->bindValue(':discord_id', $discord_id);
+        $stmt->bindValue(':discord_name', $discord_name);
+        $stmt->bindValue(':game', $game);
+        $stmt->bindValue(':season', $currentSeason);
+        $stmt->execute();
+        
+        // Log successful insert
+        error_log("Space Invaders score inserted: $raw_score invaders = " . round($dspoinc_score) . " DSPOINC for user $discord_id");
+        
+    } catch (Exception $e) {
+        error_log("Error inserting Space Invaders score: " . $e->getMessage());
+        throw $e;
+    }
 
     // 🎯 Add score to user's DSPOINC balance (ALWAYS add, not just high scores)
     try {
@@ -130,10 +167,12 @@ try {
             VALUES (?, ?, ?, ?)
         ");
         $insertStmt->bindValue(1, $discord_id);
-        $insertStmt->bindValue(2, $dspoinc_score, PDO::PARAM_INT);
+        $insertStmt->bindValue(2, round($dspoinc_score), PDO::PARAM_INT);
         $insertStmt->bindValue(3, $game);
         $insertStmt->bindValue(4, 'game_score');
         $insertStmt->execute();
+        
+        error_log("User score inserted: " . round($dspoinc_score) . " DSPOINC for user $discord_id in game $game");
         
         // 🎯 Create score adjustment entry for tracking
         $adjustmentStmt = $db->prepare("
@@ -142,7 +181,7 @@ try {
         ");
         $adjustmentStmt->bindValue(1, $discord_id);
         $adjustmentStmt->bindValue(2, 'system'); // System-generated adjustment
-        $adjustmentStmt->bindValue(3, $dspoinc_score, PDO::PARAM_INT);
+        $adjustmentStmt->bindValue(3, round($dspoinc_score), PDO::PARAM_INT);
         $adjustmentStmt->bindValue(4, 'add'); // Changed from 'game_score' to 'add' to match table constraint
         
         // Generate appropriate reason message based on game type
@@ -159,6 +198,8 @@ try {
         $adjustmentStmt->bindValue(5, $reason);
         $adjustmentStmt->execute();
         
+        error_log("Score adjustment inserted: " . round($dspoinc_score) . " DSPOINC for user $discord_id - $reason");
+        
     } catch (Exception $e) {
         error_log("Error updating user scores: " . $e->getMessage());
     }
@@ -171,13 +212,13 @@ try {
 
     // Generate appropriate message based on game type
     if ($game === 'tetris') {
-        $message = "Score saved for $game: $raw_score lines = $dspoinc_score DSPOINC ($conversion_rate)";
+        $message = "Score saved for $game: $raw_score lines = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
     } elseif ($game === 'snake') {
-        $message = "Score saved for $game: $raw_score cheese = $dspoinc_score DSPOINC ($conversion_rate)";
+        $message = "Score saved for $game: $raw_score cheese = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
     } elseif ($game === 'space_invaders') {
-        $message = "Score saved for $game: $raw_score invaders = $dspoinc_score DSPOINC ($conversion_rate)";
+        $message = "Score saved for $game: $raw_score invaders = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
     } else {
-        $message = "Score saved for $game: $raw_score $unit = $dspoinc_score DSPOINC ($conversion_rate)";
+        $message = "Score saved for $game: $raw_score $unit = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
     }
 
     if ($score_capped) {
@@ -188,7 +229,7 @@ try {
         'success' => true, 
         'message' => $message,
         'raw_score' => $raw_score,
-        'dspoinc_score' => $dspoinc_score,
+        'dspoinc_score' => round($dspoinc_score),
         'conversion_rate' => $conversion_rate,
         'score_capped' => $score_capped,
         'max_score' => $max_score,

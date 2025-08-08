@@ -12,7 +12,7 @@ try {
     // Get current season
     $currentSeason = 'season_1'; // Default to season 1 for now
     
-    // Get Tetris leaderboard (current season only)
+    // Get Tetris leaderboard
     $tetrisStmt = $db->prepare("
         SELECT 
             discord_id,
@@ -29,7 +29,7 @@ try {
     $tetrisStmt->execute();
     $tetrisLeaderboard = $tetrisStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get Snake leaderboard (current season only)
+    // Get Snake leaderboard
     $snakeStmt = $db->prepare("
         SELECT 
             discord_id,
@@ -46,11 +46,29 @@ try {
     $snakeStmt->execute();
     $snakeLeaderboard = $snakeStmt->fetchAll(PDO::FETCH_ASSOC);
     
+    // Get Space Invaders leaderboard
+    $spaceInvadersStmt = $db->prepare("
+        SELECT 
+            discord_id,
+            discord_name,
+            MAX(score) as score,
+            MIN(timestamp) as timestamp
+        FROM tbl_tetris_scores 
+        WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1
+        GROUP BY discord_id, discord_name
+        ORDER BY score DESC, timestamp ASC
+        LIMIT 10
+    ");
+    $spaceInvadersStmt->bindValue(1, $currentSeason);
+    $spaceInvadersStmt->execute();
+    $spaceInvadersLeaderboard = $spaceInvadersStmt->fetchAll(PDO::FETCH_ASSOC);
+    
     echo json_encode([
         'success' => true,
         'current_season' => $currentSeason,
         'tetris' => $tetrisLeaderboard,
-        'snake' => $snakeLeaderboard
+        'snake' => $snakeLeaderboard,
+        'space_invaders' => $spaceInvadersLeaderboard
     ]);
     
 } catch (Exception $e) {

@@ -13,6 +13,7 @@ window.addEventListener("keydown", function (e) {
   const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "a", "s", "d", "w"];
   if (keys.includes(e.key)) {
     e.preventDefault();
+    // Don't stop propagation - let the second listener handle the movement
   }
 }, { passive: false });
 
@@ -1497,7 +1498,7 @@ let canvasHeight;
     // Show controls help
     ctx.fillStyle = '#ffffff';
     ctx.font = '12px Arial';
-    ctx.fillText(`Controls: Arrow Keys/A/D to move, Space/W to shoot, T to toggle auto-shoot`, 10, canvasHeight - 20);
+    ctx.fillText(`Controls: WASD/Arrows to move (up/down/left/right), Space to shoot, T to toggle auto-shoot`, 10, canvasHeight - 20);
   }
 
   function updateScore() {
@@ -1625,6 +1626,7 @@ let canvasHeight;
     
     const moveAmount = playerShip.speed;
     const oldX = playerShip.x;
+    const oldY = playerShip.y;
     
     switch (direction) {
       case 'left':
@@ -1633,10 +1635,16 @@ let canvasHeight;
       case 'right':
         playerShip.x = Math.min(canvasWidth - playerShip.width, playerShip.x + moveAmount);
         break;
+      case 'up':
+        playerShip.y = Math.max(0, playerShip.y - moveAmount);
+        break;
+      case 'down':
+        playerShip.y = Math.min(canvasHeight - playerShip.height, playerShip.y + moveAmount);
+        break;
     }
     
     // Auto-shoot when ship moves (with cooldown) - only if enabled
-    if (autoShootEnabled) {
+    if (autoShootEnabled && (oldX !== playerShip.x || oldY !== playerShip.y)) {
       const currentTime = Date.now();
       if (currentTime - lastPlayerShootTime > autoShootCooldown) {
         playerShoot();
@@ -1695,10 +1703,17 @@ let canvasHeight;
       const deltaX = touch.clientX - touchStartX;
       const deltaY = touch.clientY - touchStartY;
       
-      // Movement - more sensitive for mobile (like Tetris)
+      // Horizontal movement - more sensitive for mobile (like Tetris)
       if (Math.abs(deltaX) > 10) {
         movePlayer(deltaX > 0 ? 'right' : 'left');
         touchStartX = touch.clientX;
+        // Auto-shoot is handled in movePlayer function
+      }
+      
+      // Vertical movement - more sensitive for mobile
+      if (Math.abs(deltaY) > 10) {
+        movePlayer(deltaY > 0 ? 'down' : 'up');
+        touchStartY = touch.clientY;
         // Auto-shoot is handled in movePlayer function
       }
       
@@ -1797,39 +1812,61 @@ let canvasHeight;
     console.log(`🎯 Auto-shoot ${autoShootEnabled ? 'enabled' : 'disabled'}`);
   }
 
-  // 🎮 Combined keyboard event listener
+  // 🎮 Combined keyboard event listener for Space Invaders movement
   document.addEventListener('keydown', (e) => {
     // Handle pause first
     if (e.key === 'p' || e.key === 'P') {
-      togglePause();
+      if (typeof window.togglePause === 'function') {
+        window.togglePause();
+      }
       return;
     }
     
     // Handle auto-shoot toggle
     if (e.key === 't' || e.key === 'T') {
-      toggleAutoShoot();
+      if (typeof window.toggleAutoShoot === 'function') {
+        window.toggleAutoShoot();
+      }
       return;
     }
     
     // If paused, don't handle other keys
-    if (isSpaceInvadersPaused) return;
+    if (typeof isSpaceInvadersPaused !== 'undefined' && isSpaceInvadersPaused) return;
     
     // Handle movement and shooting
     switch (e.key) {
       case 'ArrowLeft':
       case 'a':
       case 'A':
-        movePlayer('left');
+        if (typeof window.movePlayer === 'function') {
+          window.movePlayer('left');
+        }
         break;
       case 'ArrowRight':
       case 'd':
       case 'D':
-        movePlayer('right');
+        if (typeof window.movePlayer === 'function') {
+          window.movePlayer('right');
+        }
         break;
-      case ' ':
+      case 'ArrowUp':
       case 'w':
       case 'W':
-        playerShoot();
+        if (typeof window.movePlayer === 'function') {
+          window.movePlayer('up');
+        }
+        break;
+      case 'ArrowDown':
+      case 's':
+      case 'S':
+        if (typeof window.movePlayer === 'function') {
+          window.movePlayer('down');
+        }
+        break;
+      case ' ':
+        if (typeof window.playerShoot === 'function') {
+          window.playerShoot();
+        }
         break;
     }
   });
@@ -1850,6 +1887,8 @@ let canvasHeight;
   const mobileControls = document.getElementById("mobile-controls");
   const mobileLeftBtn = document.getElementById("mobile-left-btn");
   const mobileRightBtn = document.getElementById("mobile-right-btn");
+  const mobileUpBtn = document.getElementById("mobile-up-btn");
+  const mobileDownBtn = document.getElementById("mobile-down-btn");
   const mobileShootBtn = document.getElementById("mobile-shoot-btn");
   const mobileAutoShootBtn = document.getElementById("mobile-auto-shoot-btn");
 
@@ -1868,6 +1907,18 @@ let canvasHeight;
   if (mobileRightBtn) {
     mobileRightBtn.addEventListener("click", () => {
       if (!isSpaceInvadersPaused) movePlayer('right');
+    });
+  }
+
+  if (mobileUpBtn) {
+    mobileUpBtn.addEventListener("click", () => {
+      if (!isSpaceInvadersPaused) movePlayer('up');
+    });
+  }
+
+  if (mobileDownBtn) {
+    mobileDownBtn.addEventListener("click", () => {
+      if (!isSpaceInvadersPaused) movePlayer('down');
     });
   }
 
@@ -1900,6 +1951,10 @@ let canvasHeight;
   // 🎮 Make game functions globally available
   window.startGameWithCountdown = startGameWithCountdown;
   window.startGame = startGame;
+  window.movePlayer = movePlayer;
+  window.playerShoot = playerShoot;
+  window.togglePause = togglePause;
+  window.toggleAutoShoot = toggleAutoShoot;
 
 // 🎮 Make initSpaceInvaders globally available
 window.initSpaceInvaders = initSpaceInvaders;
