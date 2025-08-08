@@ -30,22 +30,49 @@ $seasonStmt->execute([$currentSeason]);
 $seasonSettings = $seasonStmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$seasonSettings) {
-    // No season settings found - use safe defaults (10:1 ratio)
+    // No season settings found - use safe defaults
     error_log("No season settings found for season: $currentSeason - using safe defaults");
     $seasonSettings = [
         'tetris_max_score' => 10000,
         'snake_max_score' => 10000,
+        'space_invaders_max_score' => 10000,
         'points_per_line' => 10,
-        'points_per_cheese' => 10
+        'points_per_cheese' => 10,
+        'points_per_invader' => 0.001 // 10,000 invaders = 10 DSPOINC
     ];
 }
 
-// 🧀 Convert raw score to DSPOINC (use season settings for points per line/cheese)
-$pointsPerUnit = ($game === 'tetris') ? $seasonSettings['points_per_line'] : $seasonSettings['points_per_cheese'];
+// 🧀 Convert raw score to DSPOINC (use season settings for points per unit)
+$pointsPerUnit = 0;
+$unit = '';
+if ($game === 'tetris') {
+    $pointsPerUnit = $seasonSettings['points_per_line'] ?? 10;
+    $unit = 'lines';
+} elseif ($game === 'snake') {
+    $pointsPerUnit = $seasonSettings['points_per_cheese'] ?? 10;
+    $unit = 'cheese';
+} elseif ($game === 'space_invaders') {
+    $pointsPerUnit = $seasonSettings['points_per_invader'] ?? 0.001; // 10,000 invaders = 10 DSPOINC
+    $unit = 'invaders';
+} else {
+    $pointsPerUnit = 10; // Default fallback
+    $unit = 'units';
+}
+
 $dspoinc_score = $raw_score * $pointsPerUnit; // Use season settings for scoring
 
 // 🛡️ Check maximum score limit (cheat prevention)
-$max_score = ($game === 'tetris') ? $seasonSettings['tetris_max_score'] : $seasonSettings['snake_max_score'];
+$max_score = 0;
+if ($game === 'tetris') {
+    $max_score = $seasonSettings['tetris_max_score'] ?? 10000;
+} elseif ($game === 'snake') {
+    $max_score = $seasonSettings['snake_max_score'] ?? 10000;
+} elseif ($game === 'space_invaders') {
+    $max_score = $seasonSettings['space_invaders_max_score'] ?? 10000;
+} else {
+    $max_score = 10000; // Default fallback
+}
+
 if ($dspoinc_score > $max_score) {
     $dspoinc_score = $max_score;
     $raw_score = $max_score / $pointsPerUnit; // Adjust raw score to match limit
@@ -90,8 +117,19 @@ try {
     $adjustmentStmt->bindValue(2, 'system'); // System-generated adjustment
     $adjustmentStmt->bindValue(3, $dspoinc_score, PDO::PARAM_INT);
     $adjustmentStmt->bindValue(4, 'add'); // Changed from 'game_score' to 'add' to match table constraint
-    $unit = ($game === 'tetris') ? 'lines' : 'cheese';
-    $adjustmentStmt->bindValue(5, "$game game score: $raw_score $unit = $dspoinc_score DSPOINC");
+    
+    // Generate appropriate reason message based on game type
+    if ($game === 'tetris') {
+        $reason = "$game game score: $raw_score lines = $dspoinc_score DSPOINC";
+    } elseif ($game === 'snake') {
+        $reason = "$game game score: $raw_score cheese = $dspoinc_score DSPOINC";
+    } elseif ($game === 'space_invaders') {
+        $reason = "$game game score: $raw_score invaders = $dspoinc_score DSPOINC";
+    } else {
+        $reason = "$game game score: $raw_score $unit = $dspoinc_score DSPOINC";
+    }
+    
+    $adjustmentStmt->bindValue(5, $reason);
     $adjustmentStmt->execute();
     
 } catch (Exception $e) {
@@ -104,8 +142,17 @@ $wl_result = checkWLEligibility($db, $discord_id, $game, $dspoinc_score);
 // Get conversion rate for display (use actual season settings)
 $conversion_rate = "1:$pointsPerUnit";
 
-$unit = ($game === 'tetris') ? 'lines' : 'cheese';
-$message = "Score saved for $game: $raw_score $unit = $dspoinc_score DSPOINC ($conversion_rate)";
+// Generate appropriate message based on game type
+if ($game === 'tetris') {
+    $message = "Score saved for $game: $raw_score lines = $dspoinc_score DSPOINC ($conversion_rate)";
+} elseif ($game === 'snake') {
+    $message = "Score saved for $game: $raw_score cheese = $dspoinc_score DSPOINC ($conversion_rate)";
+} elseif ($game === 'space_invaders') {
+    $message = "Score saved for $game: $raw_score invaders = $dspoinc_score DSPOINC ($conversion_rate)";
+} else {
+    $message = "Score saved for $game: $raw_score $unit = $dspoinc_score DSPOINC ($conversion_rate)";
+}
+
 if ($score_capped) {
     $message .= " (capped at max score: $max_score DSPOINC)";
 }
@@ -151,6 +198,11 @@ function checkWLEligibility($db, $user_id, $game, $score) {
             $wl_threshold = $settings['snake_wl_threshold'];
             $wl_role_id = $settings['snake_wl_role_id'];
             $wl_bonus = $settings['snake_wl_bonus'];
+        } elseif ($game === 'space_invaders' && $settings['space_invaders_wl_enabled']) {
+            $wl_enabled = true;
+            $wl_threshold = $settings['space_invaders_wl_threshold'];
+            $wl_role_id = $settings['space_invaders_wl_role_id'];
+            $wl_bonus = $settings['space_invaders_wl_bonus'];
         }
         
         if (!$wl_enabled || !$wl_role_id) {

@@ -1284,16 +1284,10 @@ function initSpaceInvaders() {
 
   function drawScore() {
     if (scoreDisplay) {
-      // Check if DSPOINC rewards are enabled
-      const dspoinEnabled = localStorage.getItem('space_invaders_dspoin_enabled') === '1';
-      const conversionRate = parseInt(localStorage.getItem('space_invaders_conversion_rate')) || 10000;
-      
-      if (dspoinEnabled) {
-        const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
-        scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} (${dspoinEarned} DSPOINC)`;
-      } else {
-        scoreDisplay.textContent = `🧀 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} (Cheese Construction Mode)`;
-      }
+      // Space Invaders scoring: 10,000 invaders = 10 DSPOINC
+      const conversionRate = 10000; // 10,000 invaders = 10 DSPOINC
+      const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
+      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders (${dspoinEarned} DSPOINC)`;
     }
   }
 
@@ -1331,16 +1325,10 @@ function initSpaceInvaders() {
 
   function updateScore() {
     if (scoreDisplay) {
-      // Check if DSPOINC rewards are enabled
-      const dspoinEnabled = localStorage.getItem('space_invaders_dspoin_enabled') === '1';
-      const conversionRate = parseInt(localStorage.getItem('space_invaders_conversion_rate')) || 10000;
-      
-      if (dspoinEnabled) {
-        const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
-        scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} (${dspoinEarned} DSPOINC)`;
-      } else {
-        scoreDisplay.textContent = `🧀 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} (Cheese Construction Mode)`;
-      }
+      // Space Invaders scoring: 10,000 invaders = 10 DSPOINC
+      const conversionRate = 10000; // 10,000 invaders = 10 DSPOINC
+      const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
+      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders (${dspoinEarned} DSPOINC)`;
     }
   }
 
@@ -1350,24 +1338,17 @@ function initSpaceInvaders() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // Check if DSPOINC rewards are enabled
-    const dspoinEnabled = localStorage.getItem('space_invaders_dspoin_enabled') === '1';
-    const conversionRate = parseInt(localStorage.getItem('space_invaders_conversion_rate')) || 10000;
+    // Space Invaders scoring: 10,000 invaders = 10 DSPOINC
+    const conversionRate = 10000;
+    const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
     
     if (winModal && winScoreText) {
-      if (dspoinEnabled) {
-        const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
-        winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} points)`;
-      } else {
-        winScoreText.textContent = `Cheese Construction Complete! (${spaceInvadersScore.toLocaleString()} points)`;
-      }
+      winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed)`;
       winModal.classList.remove("hidden");
     }
     
-    // Only save score if DSPOINC rewards are enabled
-    if (dspoinEnabled) {
+    // Save score to database
     saveScore(spaceInvadersScore);
-  }
     cleanupSpaceInvadersControls();
 
     // Dispatch game end event for UI reset
@@ -1378,26 +1359,19 @@ function initSpaceInvaders() {
     clearInterval(spaceInvadersGameInterval);
     
     const gameOverModal = document.getElementById("space-invaders-over-modal");
-      const finalScoreText = document.getElementById("space-invaders-final-score-text");
+    const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // Check if DSPOINC rewards are enabled
-    const dspoinEnabled = localStorage.getItem('space_invaders_dspoin_enabled') === '1';
-    const conversionRate = parseInt(localStorage.getItem('space_invaders_conversion_rate')) || 10000;
+    // Space Invaders scoring: 10,000 invaders = 10 DSPOINC
+    const conversionRate = 10000;
+    const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
     
     if (gameOverModal && finalScoreText) {
-      if (dspoinEnabled) {
-        const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
-        finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} points)`;
-      } else {
-        finalScoreText.textContent = `Cheese Construction Ended! (${spaceInvadersScore.toLocaleString()} points)`;
-      }
+      finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed)`;
       gameOverModal.classList.remove("hidden");
     }
     
-    // Only save score if DSPOINC rewards are enabled
-    if (dspoinEnabled) {
+    // Save score to database
     saveScore(spaceInvadersScore);
-  }
     cleanupSpaceInvadersControls();
 
     // Dispatch game end event for UI reset
@@ -1406,26 +1380,40 @@ function initSpaceInvaders() {
 
   function saveScore(finalScore) {
     const discordId = localStorage.getItem('discord_id');
+    const discordName = localStorage.getItem('discord_name') || 'Unknown Player';
+    const wallet = localStorage.getItem('user_wallet') || discordId;
+    
     if (!discordId) {
       console.error('No Discord ID found for score saving');
       return;
     }
 
-    fetch('/api/track-egg-click.php', {
+    // Space Invaders scoring: 10,000 invaders = 10 DSPOINC
+    const conversionRate = 10000;
+    const dspoincScore = Math.floor(finalScore / conversionRate) * 10; // Convert to DSPOINC (10,000 invaders = 10 DSPOINC)
+
+    // Save to the same API endpoint as Tetris and Snake
+    fetch('/api/dev/save-score.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        wallet: wallet,
+        score: finalScore, // Raw score (number of invaders destroyed)
         discord_id: discordId,
-        egg_id: 'space_invaders',
-        score: finalScore,
+        discord_name: discordName,
         game: 'space_invaders'
       })
     })
     .then(response => response.json())
     .then(data => {
       console.log('Space Invaders score saved:', data);
+      if (data.success) {
+        console.log(`✅ Space Invaders score saved: ${finalScore} invaders = ${dspoincScore} DSPOINC`);
+      } else {
+        console.error('❌ Failed to save Space Invaders score:', data.error);
+      }
     })
     .catch(error => {
       console.error('Error saving Space Invaders score:', error);
