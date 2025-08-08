@@ -136,11 +136,27 @@ function initSpaceInvaders() {
     console.warn("⚠️ Score display element not found");
   }
 
-  // Use actual canvas dimensions instead of hardcoded values
+  // Responsive canvas sizing for mobile (like Tetris and Snake)
+  const isMobile = window.innerWidth <= 768;
+  
+  if (isMobile) {
+    // Mobile: Use viewport-based sizing
+    const maxWidth = Math.min(window.innerWidth - 40, 400);
+    const maxHeight = Math.min(window.innerHeight * 0.6, 600);
+    canvas.width = maxWidth;
+    canvas.height = maxHeight;
+    console.log('📱 Mobile canvas dimensions:', maxWidth, 'x', maxHeight);
+  } else {
+    // Desktop: Use original dimensions
+    canvas.width = 400;
+    canvas.height = 600;
+    console.log('🖥️ Desktop canvas dimensions: 400 x 600');
+  }
+  
   canvasWidth = canvas.width;
   canvasHeight = canvas.height;
   
-  console.log('📏 Canvas dimensions:', canvasWidth, 'x', canvasHeight);
+  console.log('📏 Final canvas dimensions:', canvasWidth, 'x', canvasHeight);
   
   const gridSize = 20;
 
@@ -1485,14 +1501,14 @@ function initSpaceInvaders() {
     const deltaX = touch.clientX - touchStartX;
     const deltaY = touch.clientY - touchStartY;
       
-      // Movement - more sensitive for mobile
-      if (Math.abs(deltaX) > 15) {
+      // Movement - more sensitive for mobile (like Tetris)
+      if (Math.abs(deltaX) > 10) {
         movePlayer(deltaX > 0 ? 'right' : 'left');
         touchStartX = touch.clientX;
       }
       
-      // Shooting - more reliable swipe up detection
-      if (deltaY < -25) {
+      // Shooting - more reliable swipe up detection (like Snake)
+      if (deltaY < -20) {
         playerShoot();
         // Reset touch to prevent multiple shots
         touchStartY = touch.clientY;
@@ -1501,15 +1517,15 @@ function initSpaceInvaders() {
   }
 
   function handleTouchEnd(e) {
-    // Check for tap-to-shoot (quick tap without movement)
+    // Check for tap-to-shoot (quick tap without movement) - like Tetris
     if (isTouching) {
       const touchDuration = Date.now() - touchStartTime;
       const touch = e.changedTouches[0];
       const deltaX = Math.abs(touch.clientX - touchStartX);
       const deltaY = Math.abs(touch.clientY - touchStartY);
       
-      // If it's a quick tap (less than 200ms) with minimal movement (less than 10px)
-      if (touchDuration < 200 && deltaX < 10 && deltaY < 10) {
+      // If it's a quick tap (less than 150ms) with minimal movement (less than 8px)
+      if (touchDuration < 150 && deltaX < 8 && deltaY < 8) {
         playerShoot();
       }
     }
@@ -1518,11 +1534,41 @@ function initSpaceInvaders() {
   }
 
   function lockSpaceInvadersScroll() {
+    // Mobile-friendly scroll lock (like Tetris and Snake)
+    console.log('🔒 Locking scroll for mobile');
+    
+    // Prevent scroll on body and html
     document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+    
+    // Also lock scroll on html element for better mobile support
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.touchAction = 'none';
+    document.documentElement.style.position = 'fixed';
+    document.documentElement.style.width = '100%';
+    document.documentElement.style.height = '100%';
   }
 
   function unlockSpaceInvadersScroll() {
+    // Restore scroll for mobile devices (like Tetris and Snake)
+    console.log('🔓 Unlocking scroll for mobile');
+    
+    // Restore body scroll
     document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.height = '';
+    
+    // Also restore scroll on html element
+    document.documentElement.style.overflow = '';
+    document.documentElement.style.touchAction = '';
+    document.documentElement.style.position = '';
+    document.documentElement.style.width = '';
+    document.documentElement.style.height = '';
   }
 
 
