@@ -4,9 +4,16 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Enable error logging for debugging
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
+
+// Disable error display in production - only log errors
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0); // Disable error display
+ini_set('display_startup_errors', 0);
+ini_set('log_errors', 1);
 
 // Get JSON input
 $input = json_decode(file_get_contents('php://input'), true);
@@ -26,12 +33,11 @@ $timestamp = isset($input['timestamp']) ? $input['timestamp'] : time();
 $quest_id = isset($input['quest_id']) ? intval($input['quest_id']) : null;
 $screenshot_data = isset($input['screenshot']) ? $input['screenshot'] : null;
 
-// Database path
-$dbPath = __DIR__ . '/../db/narrrf_world.sqlite';
+// Use centralized database configuration
+require_once __DIR__ . '/config/database.php';
 
 try {
-    $pdo = new PDO("sqlite:$dbPath");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = getDatabaseConnection();
 
     // Insert cheese click record with proper column mapping
     $stmt = $pdo->prepare("INSERT INTO tbl_cheese_clicks (user_wallet, egg_id, timestamp, quest_id)

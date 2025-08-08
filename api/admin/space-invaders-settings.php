@@ -4,6 +4,11 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type');
 
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
+
 require_once '../config/database.php';
 
 // Check admin authentication
@@ -15,8 +20,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 
 try {
-    $pdo = new PDO("sqlite:../../db/narrrf_world.sqlite");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = getDatabaseConnection();
     
     // Create settings table if it doesn't exist
     $pdo->exec("CREATE TABLE IF NOT EXISTS tbl_space_invaders_settings (

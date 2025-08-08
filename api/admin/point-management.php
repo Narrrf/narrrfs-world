@@ -4,19 +4,20 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Use the same database connection as the bot - Render production path
-$db_path = '/var/www/html/db/narrrf_world.sqlite';
-if (!file_exists($db_path)) {
-    echo json_encode(['success' => false, 'error' => 'Database not found']);
-    exit;
-}
+// Use centralized database configuration
+require_once __DIR__ . '/../config/database.php';
 
 try {
-    $db = new SQLite3($db_path);
+    $db = getSQLite3Connection();
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'error' => 'Could not connect to database']);
     exit;

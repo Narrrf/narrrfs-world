@@ -1,9 +1,11 @@
 <?php
 $source = "/var/www/html/db/narrrf_world.sqlite";
 
-// 🔒 Secret token check
+// �� Secret token check - Use environment variable
 $secret = $_GET['secret'] ?? '';
-if ($secret !== 'MyUltraSecretKey123') {
+$expected_secret = getenv('DB_DOWNLOAD_SECRET') ?: 'MyUltraSecretKey123'; // Fallback for development
+
+if ($secret !== $expected_secret) {
   http_response_code(403);
   exit('❌ Forbidden');
 }

@@ -4,26 +4,57 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
+
 // Discord Bot Token and role configuration - Use environment variables
 $DISCORD_BOT_SECRET = getenv('DISCORD_BOT_SECRET'); // Use DISCORD_BOT_SECRET environment variable
 $MODERATOR_ROLE_ID = '1332049628300054679'; // Moderator role ID from role_map.php
 $GUILD_ID = getenv('DISCORD_GUILD') ?: '1332015322546311218'; // Use DISCORD_GUILD environment variable
 
-// Simple admin users storage (in production, you'd want to use a database)
-$admin_users = [
-    'narrrf' => [
-        'password' => 'PnoRakesucks&2025', // Change this to your preferred password
-        'role' => 'super_admin',
-        'discord_id' => '328601656659017732'
-    ]
-];
+// Secure admin users storage using environment variables
+$admin_users = [];
 
-// Load additional users from file if exists
+// Load admin credentials from environment variables
+$admin_username = getenv('ADMIN_USERNAME') ?: 'narrrf';
+$admin_password_hash = getenv('ADMIN_PASSWORD_HASH'); // Should be bcrypt hash
+$admin_discord_id = getenv('ADMIN_DISCORD_ID') ?: '328601656659017732';
+
+// If environment variables are set, use them; otherwise, use fallback (for development only)
+if ($admin_password_hash) {
+    $admin_users[$admin_username] = [
+        'password_hash' => $admin_password_hash,
+        'role' => 'super_admin',
+        'discord_id' => $admin_discord_id
+    ];
+} else {
+    // Fallback for development - REMOVE IN PRODUCTION
+    $admin_users[$admin_username] = [
+        'password_hash' => password_hash('PnoRakesucks&2025', PASSWORD_DEFAULT),
+        'role' => 'super_admin',
+        'discord_id' => $admin_discord_id
+    ];
+}
+
+// Load additional users from file if exists (with validation)
 $users_file = __DIR__ . '/admin_users.json';
 if (file_exists($users_file)) {
-    $additional_users = json_decode(file_get_contents($users_file), true);
-    if ($additional_users) {
-        $admin_users = array_merge($admin_users, $additional_users);
+    $file_content = file_get_contents($users_file);
+    if ($file_content !== false) {
+        $additional_users = json_decode($file_content, true);
+        if ($additional_users && is_array($additional_users)) {
+            // Validate and hash passwords for additional users
+            foreach ($additional_users as $username => $user_data) {
+                if (isset($user_data['password']) && !isset($user_data['password_hash'])) {
+                    // Hash plain text passwords
+                    $additional_users[$username]['password_hash'] = password_hash($user_data['password'], PASSWORD_DEFAULT);
+                    unset($additional_users[$username]['password']);
+                }
+            }
+            $admin_users = array_merge($admin_users, $additional_users);
+        }
     }
 }
 
@@ -98,17 +129,36 @@ switch ($action) {
         $username = $_POST['username'] ?? '';
         $password = $_POST['password'] ?? '';
         
-        if (isset($admin_users[$username]) && $admin_users[$username]['password'] === $password) {
-            $user = $admin_users[$username];
+        // Validate input
+        if (empty($username) || empty($password)) {
             echo json_encode([
-                'success' => true,
-                'user' => [
-                    'username' => $username,
-                    'role' => $user['role'],
-                    'discord_id' => $user['discord_id'],
-                    'auth_type' => 'password'
-                ]
+                'success' => false,
+                'error' => 'Username and password are required'
             ]);
+            break;
+        }
+        
+        if (isset($admin_users[$username])) {
+            $user = $admin_users[$username];
+            $stored_hash = $user['password_hash'] ?? $user['password'] ?? '';
+            
+            // Check if password is hashed or plain text (for backward compatibility)
+            if (password_verify($password, $stored_hash) || $stored_hash === $password) {
+                echo json_encode([
+                    'success' => true,
+                    'user' => [
+                        'username' => $username,
+                        'role' => $user['role'],
+                        'discord_id' => $user['discord_id'],
+                        'auth_type' => 'password'
+                    ]
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Invalid username or password'
+                ]);
+            }
         } else {
             echo json_encode([
                 'success' => false,
@@ -174,7 +224,7 @@ switch ($action) {
         
         // Add new user
         $admin_users[$new_username] = [
-            'password' => $new_password,
+            'password_hash' => password_hash($new_password, PASSWORD_DEFAULT),
             'role' => $new_role,
             'discord_id' => $new_discord_id
         ];
