@@ -96,6 +96,39 @@ try {
     $stmt->execute([$current_season_name]);
     $snake_stats['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
 
+    // Get Space Invaders statistics for CURRENT SEASON
+    $space_invaders_stats = [];
+    
+    // Total Space Invaders scores for current season
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
+    $space_invaders_stats['total_scores'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_scores'];
+    
+    // Unique Space Invaders players for current season
+    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
+    $space_invaders_stats['unique_players'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_players'];
+    
+    // Highest Space Invaders score for current season
+    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
+    $space_invaders_stats['max_score'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['max_score'];
+    
+    // Average Space Invaders score for current season
+    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1");
+    $stmt->execute([$current_season_name]);
+    $space_invaders_stats['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
+    
+    // Recent Space Invaders activity (last 24h) for current season
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-24 hours')");
+    $stmt->execute([$current_season_name]);
+    $space_invaders_stats['recent_24h'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
+    
+    // Recent Space Invaders activity (last 7 days) for current season
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-7 days')");
+    $stmt->execute([$current_season_name]);
+    $space_invaders_stats['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
+
     // Get top players for each game for CURRENT SEASON
     $tetris_top_players = [];
     $stmt = $pdo->prepare("
@@ -133,6 +166,24 @@ try {
     $stmt->execute([$current_season_name]);
     $snake_top_players = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    $space_invaders_top_players = [];
+    $stmt = $pdo->prepare("
+        SELECT 
+            discord_id,
+            discord_name,
+            MAX(score) as best_score,
+            COUNT(*) as total_games,
+            MIN(timestamp) as first_game,
+            MAX(timestamp) as last_game
+        FROM tbl_tetris_scores 
+        WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1
+        GROUP BY discord_id, discord_name 
+        ORDER BY best_score DESC 
+        LIMIT 10
+    ");
+    $stmt->execute([$current_season_name]);
+    $space_invaders_top_players = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     // Get recent activity
     $recent_activity = [];
     $stmt = $pdo->prepare("
@@ -151,19 +202,21 @@ try {
 
     // Calculate total statistics
     $total_stats = [
-        'total_scores' => $tetris_stats['total_scores'] + $snake_stats['total_scores'],
-        'total_players' => max($tetris_stats['unique_players'], $snake_stats['unique_players']), // Approximate unique players across both games
-        'recent_24h' => $tetris_stats['recent_24h'] + $snake_stats['recent_24h'],
-        'recent_7d' => $tetris_stats['recent_7d'] + $snake_stats['recent_7d']
+        'total_scores' => $tetris_stats['total_scores'] + $snake_stats['total_scores'] + $space_invaders_stats['total_scores'],
+        'total_players' => max($tetris_stats['unique_players'], $snake_stats['unique_players'], $space_invaders_stats['unique_players']), // Approximate unique players across all games
+        'recent_24h' => $tetris_stats['recent_24h'] + $snake_stats['recent_24h'] + $space_invaders_stats['recent_24h'],
+        'recent_7d' => $tetris_stats['recent_7d'] + $snake_stats['recent_7d'] + $space_invaders_stats['recent_7d']
     ];
 
     echo json_encode([
         'success' => true,
         'tetris' => $tetris_stats,
         'snake' => $snake_stats,
+        'space_invaders' => $space_invaders_stats,
         'total' => $total_stats,
         'tetris_top_players' => $tetris_top_players,
         'snake_top_players' => $snake_top_players,
+        'space_invaders_top_players' => $space_invaders_top_players,
         'recent_activity' => $recent_activity,
         'generated_at' => date('Y-m-d H:i:s')
     ]);

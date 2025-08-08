@@ -1145,3 +1145,9 @@
     "discord_id": "undefined",
     "discord_name": "Guest"
 }
+{
+    "user_id": "1337",
+    "game": "space_invaders",
+    "score": 150,
+    "wallet": "TestWallet123456789XYZ"
+}

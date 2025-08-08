@@ -814,7 +814,7 @@ require_once 'discord-invite.php';
       <!-- Game Statistics Overview -->
       <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">📊 Game Statistics</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <!-- Tetris Stats -->
           <div class="bg-gray-700 p-3 rounded">
             <h4 class="font-semibold text-blue-400 mb-2">🟦 Tetris</h4>
@@ -861,6 +861,29 @@ require_once 'discord-invite.php';
             </div>
           </div>
 
+          <!-- Space Invaders Stats -->
+          <div class="bg-gray-700 p-3 rounded">
+            <h4 class="font-semibold text-orange-400 mb-2">👾 Space Invaders</h4>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Total Scores:</span>
+                <span class="text-white font-semibold" id="spaceInvadersTotalScores">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Unique Players:</span>
+                <span class="text-white font-semibold" id="spaceInvadersUniquePlayers">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Highest Score:</span>
+                <span class="text-green-400 font-semibold" id="spaceInvadersMaxScore">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Recent (24h):</span>
+                <span class="text-blue-400 font-semibold" id="spaceInvadersRecent24h">-</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Total Stats -->
           <div class="bg-gray-700 p-3 rounded">
             <h4 class="font-semibold text-purple-400 mb-2">📈 Combined</h4>
@@ -898,9 +921,10 @@ require_once 'discord-invite.php';
           <div>
             <label class="block text-sm font-medium mb-2">🎮 Select Game:</label>
             <select id="resetGameType" class="w-full px-3 py-2 rounded text-gray-800">
-              <option value="all">All Games (Tetris + Snake)</option>
+              <option value="all">All Games (Tetris + Snake + Space Invaders)</option>
               <option value="tetris">🟦 Tetris Only</option>
               <option value="snake">🐍 Snake Only</option>
+              <option value="space_invaders">👾 Space Invaders Only</option>
             </select>
           </div>
 
@@ -950,7 +974,7 @@ require_once 'discord-invite.php';
       </div>
 
       <!-- Top Players -->
-      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Tetris Top Players -->
         <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
           <h4 class="font-semibold text-blue-400 mb-3">🟦 Tetris Top Players</h4>
@@ -963,6 +987,14 @@ require_once 'discord-invite.php';
         <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
           <h4 class="font-semibold text-green-400 mb-3">🐍 Snake Top Players</h4>
           <div id="snakeTopPlayers" class="space-y-2 max-h-64 overflow-y-auto">
+            <div class="text-gray-300">Loading top players...</div>
+          </div>
+        </div>
+
+        <!-- Space Invaders Top Players -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-orange-400 mb-3">👾 Space Invaders Top Players</h4>
+          <div id="spaceInvadersTopPlayers" class="space-y-2 max-h-64 overflow-y-auto">
             <div class="text-gray-300">Loading top players...</div>
           </div>
         </div>
@@ -984,6 +1016,7 @@ require_once 'discord-invite.php';
               <option value="all">All Games</option>
               <option value="tetris">Tetris Only</option>
               <option value="snake">Snake Only</option>
+              <option value="space_invaders">Space Invaders Only</option>
             </select>
           </div>
         </div>
@@ -4109,6 +4142,12 @@ require_once 'discord-invite.php';
       document.getElementById('snakeMaxScore').textContent = data.snake.max_score ? data.snake.max_score.toLocaleString() : '0';
       document.getElementById('snakeRecent24h').textContent = data.snake.recent_24h.toLocaleString();
 
+      // Update Space Invaders statistics
+      document.getElementById('spaceInvadersTotalScores').textContent = data.space_invaders.total_scores.toLocaleString();
+      document.getElementById('spaceInvadersUniquePlayers').textContent = data.space_invaders.unique_players.toLocaleString();
+      document.getElementById('spaceInvadersMaxScore').textContent = data.space_invaders.max_score ? data.space_invaders.max_score.toLocaleString() : '0';
+      document.getElementById('spaceInvadersRecent24h').textContent = data.space_invaders.recent_24h.toLocaleString();
+
       // Update combined statistics
       document.getElementById('totalGameScores').textContent = data.total.total_scores.toLocaleString();
       document.getElementById('totalGamePlayers').textContent = data.total.total_players.toLocaleString();
@@ -4118,6 +4157,7 @@ require_once 'discord-invite.php';
       // Display top players
       displayTopPlayers('tetris', data.tetris_top_players);
       displayTopPlayers('snake', data.snake_top_players);
+      displayTopPlayers('space_invaders', data.space_invaders_top_players);
 
       // Display recent activity
       displayRecentActivity(data.recent_activity);
@@ -4155,7 +4195,7 @@ require_once 'discord-invite.php';
       const container = document.getElementById('seasonStats');
       
       let html = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div class="bg-gray-700 p-3 rounded">
             <h5 class="font-semibold text-blue-400 mb-2">🟦 Tetris Statistics</h5>
             ${data.season_stats.tetris ? `
@@ -4174,6 +4214,16 @@ require_once 'discord-invite.php';
               <p class="text-sm text-gray-300">Max Score: ${data.season_stats.snake.max_score ? data.season_stats.snake.max_score.toLocaleString() : '0'}</p>
               <p class="text-sm text-gray-300">Avg Score: ${Math.round(data.season_stats.snake.avg_score || 0).toLocaleString()}</p>
               <p class="text-sm text-yellow-400">Top Performers: ${data.season_stats.snake.top_performers}</p>
+            ` : '<p class="text-sm text-gray-400">No data available</p>'}
+          </div>
+          <div class="bg-gray-700 p-3 rounded">
+            <h5 class="font-semibold text-orange-400 mb-2">👾 Space Invaders Statistics</h5>
+            ${data.season_stats.space_invaders ? `
+              <p class="text-sm text-gray-300">Total Scores: ${data.season_stats.space_invaders.total_scores.toLocaleString()}</p>
+              <p class="text-sm text-gray-300">Unique Players: ${data.season_stats.space_invaders.unique_players.toLocaleString()}</p>
+              <p class="text-sm text-gray-300">Max Score: ${data.season_stats.space_invaders.max_score ? data.season_stats.space_invaders.max_score.toLocaleString() : '0'}</p>
+              <p class="text-sm text-gray-300">Avg Score: ${Math.round(data.season_stats.space_invaders.avg_score || 0).toLocaleString()}</p>
+              <p class="text-sm text-yellow-400">Top Performers: ${data.season_stats.space_invaders.top_performers}</p>
             ` : '<p class="text-sm text-gray-400">No data available</p>'}
           </div>
         </div>
@@ -4206,6 +4256,20 @@ require_once 'discord-invite.php';
             <div>
               <h6 class="text-green-400 font-semibold mb-2">🐍 Snake</h6>
               ${data.top_performers.snake.map((player, index) => `
+                <div class="flex justify-between items-center mb-1 ${player.is_top_performer ? 'bg-yellow-600 bg-opacity-30 p-1 rounded' : ''}">
+                  <span class="text-sm text-white">${index + 1}. ${player.discord_name || 'Unknown'}</span>
+                  <span class="text-sm text-green-400">${player.score.toLocaleString()}</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        if (data.top_performers.space_invaders && data.top_performers.space_invaders.length > 0) {
+          html += `
+            <div>
+              <h6 class="text-orange-400 font-semibold mb-2">👾 Space Invaders</h6>
+              ${data.top_performers.space_invaders.map((player, index) => `
                 <div class="flex justify-between items-center mb-1 ${player.is_top_performer ? 'bg-yellow-600 bg-opacity-30 p-1 rounded' : ''}">
                   <span class="text-sm text-white">${index + 1}. ${player.discord_name || 'Unknown'}</span>
                   <span class="text-sm text-green-400">${player.score.toLocaleString()}</span>

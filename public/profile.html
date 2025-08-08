@@ -394,10 +394,10 @@ require_once 'discord-invite.php';
 
 </section>
 
-<!-- 🎮 Dual Game Panel — Tetris + Snake -->
-<section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col md:flex-row gap-8 items-start justify-center">
+<!-- 🎮 Triple Game Panel — Tetris + Snake + Space Invaders -->
+<section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col lg:flex-row gap-8 items-start justify-center">
  <!-- 🎮 TETRIS PANEL -->
-  <section id="cheese-tetris" class="flex-1 relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 mb-8 md:mb-0">
+  <section id="cheese-tetris" class="flex-1 relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 mb-8 lg:mb-0">
     <div class="absolute top-4 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
       🎮 TETRIS
     </div>
@@ -429,7 +429,7 @@ require_once 'discord-invite.php';
   </section>
 
   <!-- 🟢 SNAKE PANEL -->
-  <section id="cheese-snake" class="flex-1 bg-black text-yellow-300 py-8 px-4 sm:px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 relative flex flex-col items-center">
+  <section id="cheese-snake" class="flex-1 bg-black text-yellow-300 py-8 px-4 sm:px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 relative flex flex-col items-center mb-8 lg:mb-0">
     <div class="absolute top-4 left-4 bg-green-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
       🐍 SNAKE
     </div>
@@ -454,8 +454,40 @@ require_once 'discord-invite.php';
 
     <p id="snake-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">💰 Snake Score: $0 DSPOINC</p>
     <div class="text-xs italic text-center text-gray-500 mt-1">&larr; first to 100 cheese triggers mutation</div>
+  </section>
 
+  <!-- 🚀 SPACE INVADERS PANEL -->
+  <section id="space-cheese-invaders" class="flex-1 bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 relative">
+    <div class="absolute top-4 left-4 bg-purple-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+      🚀 SPACE INVADERS
+    </div>
+    
+    <div class="absolute top-4 right-4 bg-orange-500 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+      🧀 CHEESE CONSTRUCTION
+    </div>
 
+    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">SPACE CHEESE INVADERS</h2>
+    
+    <div class="relative">
+      <canvas id="space-invaders-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
+
+      <div id="space-invaders-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
+        5
+      </div>
+    </div>
+
+    <div class="text-center mt-4 space-y-2">
+      <button id="start-space-invaders-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
+      <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
+    </div>
+
+    <p id="space-invaders-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">
+      💰 Space Invaders Score: $0 DSPOINC
+    </p>
+
+    <div class="text-xs italic text-center text-gray-500 mt-1">👾 Defend Earth from cheese invaders!</div>
+  </section>
+</section>
 
 <!-- 🧠 MODALS GAMEOVER-->
 <div id="snake-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
@@ -474,9 +506,21 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
+<div id="space-invaders-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+  <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
+    <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
+    <p id="space-invaders-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+  </div>
+</div>
 
-</section>
-</section>
+<div id="space-invaders-win-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+  <div class="bg-green-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-green-400 max-w-xs w-full animate-fade-in">
+    <h2 class="text-3xl font-extrabold mb-3 text-green-900 drop-shadow">🏆 VICTORY!</h2>
+    <p id="space-invaders-win-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+    <button onclick="window.location.reload()" class="bg-green-400 hover:bg-green-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+  </div>
+</div>
 
 <!-- 🔐 Login Prompt -->
 <div id="tetris-auth" class="text-center my-6 w-full max-w-2xl mx-auto">
@@ -486,9 +530,9 @@ require_once 'discord-invite.php';
 </div>
 
 <!-- 🏆 Leaderboard Section -->
-<section id="leaderboard" class="max-w-4xl mx-auto bg-black text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-yellow-400 mt-10">
+<section id="leaderboard" class="max-w-6xl mx-auto bg-black text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-yellow-400 mt-10">
   <h3 class="text-center text-xl font-bold">🏆 Leaderboard</h3>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
     <div>
       <h4 class="text-center text-md font-semibold">🧀 Tetris Top Scores</h4>
       <ul id="leaderboard-tetris-list" class="text-center"></ul>
@@ -496,6 +540,10 @@ require_once 'discord-invite.php';
     <div>
       <h4 class="text-center text-md font-semibold">🐍 Snake Top Scores</h4>
       <ul id="leaderboard-snake-list" class="text-center"></ul>
+    </div>
+    <div>
+      <h4 class="text-center text-md font-semibold">🚀 Space Invaders Top Scores</h4>
+      <ul id="leaderboard-space-invaders-list" class="text-center"></ul>
     </div>
   </div>
 </section>
@@ -825,7 +873,7 @@ if (user.discord_id) {
 
 
 <script>
-  // 🎯 Load both Tetris and Snake Leaderboards
+  // 🎯 Load all three game leaderboards
   fetch("https://narrrfs.world/api/dev/get-leaderboard.php")
     .then(res => res.json())
     .then(data => {
@@ -833,9 +881,11 @@ if (user.discord_id) {
 
       const tetrisList = document.getElementById("leaderboard-tetris-list");
       const snakeList = document.getElementById("leaderboard-snake-list");
+      const spaceInvadersList = document.getElementById("leaderboard-space-invaders-list");
 
       tetrisList.innerHTML = "";
       snakeList.innerHTML = "";
+      spaceInvadersList.innerHTML = "";
 
       scores
         .filter(entry => entry.game === "tetris")
@@ -854,11 +904,31 @@ if (user.discord_id) {
           li.innerHTML = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
           snakeList.appendChild(li);
         });
+
+      scores
+        .filter(entry => entry.game === "space_invaders")
+        .forEach((entry, i) => {
+          const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+          const li = document.createElement("li");
+          li.innerHTML = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+          spaceInvadersList.appendChild(li);
+        });
     });
 </script>
 <!-- 🧠 Load Scroll Scripts -->
 <script src="scripts/tetris-scroll.js?v=9.9"></script>
 <script src="scripts/snake-scroll.js?v=1.1"></script>
+        <script src="scripts/space-cheese-invaders.js?v=1.1" onerror="console.error('❌ Failed to load space-cheese-invaders.js')" onload="console.log('✅ space-cheese-invaders.js loaded successfully')"></script>
+        <script>
+          // Check if initSpaceInvaders is available immediately after script loads
+          console.log('🔍 Checking initSpaceInvaders availability after script load...');
+          console.log('🔍 window.initSpaceInvaders type:', typeof window.initSpaceInvaders);
+          if (typeof window.initSpaceInvaders === 'function') {
+            console.log('✅ initSpaceInvaders is available after script load');
+          } else {
+            console.error('❌ initSpaceInvaders is NOT available after script load');
+          }
+        </script>
 
 <!-- 🏆 Leaderboard Logic -->
 <script>
@@ -898,6 +968,14 @@ if (user.discord_id) {
   document.addEventListener("DOMContentLoaded", () => {
     const tetrisBtn = document.getElementById("start-tetris-btn");
     const snakeBtn = document.getElementById("start-snake-btn");
+    const spaceInvadersBtn = document.getElementById("start-space-invaders-btn");
+    const spaceInvadersCanvas = document.getElementById("space-invaders-canvas");
+
+    console.log('🎮 DOM loaded, checking game elements:');
+    console.log('🔍 Tetris button:', tetrisBtn);
+    console.log('🔍 Snake button:', snakeBtn);
+    console.log('🔍 Space Invaders button:', spaceInvadersBtn);
+    console.log('🔍 Space Invaders canvas:', spaceInvadersCanvas);
 
     if (tetrisBtn) {
       tetrisBtn.addEventListener("click", () => {
@@ -914,6 +992,29 @@ if (user.discord_id) {
         snakeBtn.textContent = "🕹️ Playing...";
       });
     }
+
+    if (spaceInvadersBtn) {
+      spaceInvadersBtn.addEventListener("click", () => {
+        console.log('🎮 Space Invaders button clicked');
+        console.log('🔍 window.initSpaceInvaders exists:', typeof window.initSpaceInvaders);
+        if (window.initSpaceInvaders) {
+          console.log('🚀 Calling window.initSpaceInvaders()');
+          window.initSpaceInvaders();
+        } else {
+          console.error('❌ window.initSpaceInvaders is not available');
+        }
+        spaceInvadersBtn.disabled = true;
+        spaceInvadersBtn.textContent = "🕹️ Playing...";
+      });
+    }
+
+    // Reset button states when game ends
+    window.addEventListener('spaceInvadersGameEnd', () => {
+      if (spaceInvadersBtn) {
+        spaceInvadersBtn.disabled = false;
+        spaceInvadersBtn.textContent = "▶️ Start";
+      }
+    });
 
     loadCombinedLeaderboards();
   });

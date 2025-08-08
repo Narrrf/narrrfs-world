@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🧀 Space Cheese Invaders - Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    @keyframes pop {
+      0% { transform: scale(0.9); opacity: 0.3; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: pop 0.4s ease-out;
+    }
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    .animate-fade-in {
+      animation: fade-in 0.3s ease-out;
+    }
+  </style>
+</head>
+
+<body class="bg-[#2f3136] text-white font-sans min-h-screen">
+
+<!-- 🔰 Header -->
+<header class="w-full bg-black py-4 px-6 text-yellow-400 shadow-md">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <h1 class="text-xl font-bold tracking-wide">🧀 Space Cheese Invaders - Test</h1>
+    <nav class="space-x-4 text-sm md:text-base flex items-center">
+      <a href="profile.html" class="hover:text-pink-400">← Back to Profile</a>
+    </nav>
+  </div>
+</header>
+
+<!-- 🚀 SPACE INVADERS PANEL -->
+<section id="space-cheese-invaders" class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col items-center justify-center">
+  <section class="relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 max-w-md w-full">
+    <div class="absolute top-4 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+      🚀 SPACE INVADERS
+    </div>
+
+    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">SPACE CHEESE INVADERS</h2>
+    
+    <div class="relative">
+      <canvas id="space-invaders-canvas" width="400" height="600" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
+
+      <div id="space-invaders-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
+        5
+      </div>
+    </div>
+
+    <div class="text-center mt-4 space-y-2">
+      <button id="start-space-invaders-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
+      <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
+    </div>
+
+    <p id="space-invaders-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">
+      💰 Space Invaders Score: $0 DSPOINC
+    </p>
+
+    <div class="text-xs italic text-center text-gray-500 mt-1">
+      🎮 Controls: WASD/Arrows to move, Space/W to shoot, P to pause
+    </div>
+  </section>
+</section>
+
+<!-- 🧠 MODALS GAMEOVER -->
+<div id="space-invaders-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+  <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
+    <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
+    <p id="space-invaders-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+  </div>
+</div>
+
+<div id="space-invaders-win-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+  <div class="bg-green-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-green-400 max-w-xs w-full animate-fade-in">
+    <h2 class="text-3xl font-extrabold mb-3 text-green-900 drop-shadow">🏆 VICTORY!</h2>
+    <p id="space-invaders-win-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+    <button onclick="window.location.reload()" class="bg-green-400 hover:bg-green-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+  </div>
+</div>
+
+<!-- 🍩 Footer -->
+<footer class="text-center mt-16 text-xs text-yellow-600">
+  Powered by 🧀 Cheese Architect <b>12.0</b> · Space Cheese Invaders Test · Local Development 🌍<br>
+  <span class="opacity-70">
+    Test Environment | 2025 | Space Cheese Invaders v1.0
+  </span>
+</footer>
+
+<!-- 🧀 Load Space Cheese Invaders Script -->
+<script src="scripts/space-cheese-invaders.js"></script>
+
+</body>
+</html>

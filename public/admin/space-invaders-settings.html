@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Invaders Settings - Admin Panel</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .settings-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .settings-section h3 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 10px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .setting-label {
+            flex: 1;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .setting-description {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 5px;
+        }
+        
+        .setting-input {
+            flex: 0 0 150px;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .setting-input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #00b894, #00a085);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .bomb-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Space Invaders Settings</h1>
+            <p>Configure game difficulty and bomb mechanics</p>
+        </div>
+        
+        <div class="content">
+            <a href="../admin-interface.html" class="back-link">← Back to Admin Panel</a>
+            
+            <div id="status"></div>
+            
+            <div class="bomb-warning">
+                ⚠️ <strong>Bomb Settings:</strong> Bombs are dangerous items that appear at higher levels and cause double damage. Use with caution!
+            </div>
+            
+            <div class="settings-section">
+                <h3>💣 Bomb Configuration</h3>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Bomb Activation Level</div>
+                        <div class="setting-description">Wave level when bombs start appearing (default: 4)</div>
+                    </div>
+                    <input type="number" id="bomb_activation_level" class="setting-input" min="1" max="10" value="4">
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Bomb Spawn Chance</div>
+                        <div class="setting-description">Probability of spawning bombs (0.0-1.0, default: 0.2)</div>
+                    </div>
+                    <input type="number" id="bomb_spawn_chance" class="setting-input" min="0" max="1" step="0.1" value="0.2">
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Bomb Damage Multiplier</div>
+                        <div class="setting-description">How much damage bombs do compared to regular blocks (default: 2)</div>
+                    </div>
+                    <input type="number" id="bomb_damage_multiplier" class="setting-input" min="1" max="5" value="2">
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>🐍 Snake Invaders</h3>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Snake DNA Activation Level</div>
+                        <div class="setting-description">Wave level when snake DNA appears (default: 1)</div>
+                    </div>
+                    <input type="number" id="snake_dna_activation_level" class="setting-input" min="1" max="10" value="1">
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Snake Head Activation Level</div>
+                        <div class="setting-description">Wave level when snake heads appear (default: 2)</div>
+                    </div>
+                    <input type="number" id="snake_head_activation_level" class="setting-input" min="1" max="10" value="2">
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>⚡ Game Speed & Difficulty</h3>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Tetris Spawn Interval (ms)</div>
+                        <div class="setting-description">Base time between Tetris block spawns (default: 8000)</div>
+                    </div>
+                    <input type="number" id="tetris_spawn_interval_base" class="setting-input" min="1000" max="20000" value="8000">
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Invader Shoot Speed (ms)</div>
+                        <div class="setting-description">Base time between invader shots (default: 300)</div>
+                    </div>
+                    <input type="number" id="invader_shoot_speed_base" class="setting-input" min="100" max="1000" value="300">
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Base Game Speed</div>
+                        <div class="setting-description">Base movement speed multiplier (default: 0.1)</div>
+                    </div>
+                    <input type="number" id="game_speed_base" class="setting-input" min="0.05" max="1.0" step="0.05" value="0.1">
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>💰 DSPOINC Rewards</h3>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Enable DSPOINC Rewards</div>
+                        <div class="setting-description">Turn on/off DSPOINC rewards for Space Invaders (0=off, 1=on)</div>
+                    </div>
+                    <select id="dspoin_rewards_enabled" class="setting-input">
+                        <option value="0">OFF - Cheese Construction Mode</option>
+                        <option value="1">ON - DSPOINC Rewards</option>
+                    </select>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">DSPOINC Conversion Rate</div>
+                        <div class="setting-description">Points needed for 1 DSPOINC (default: 10,000 points = 1 DSPOINC)</div>
+                    </div>
+                    <input type="number" id="dspoin_conversion_rate" class="setting-input" min="1000" max="100000" value="10000">
+                </div>
+                
+                <div class="dspoin-info" style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #2196f3;">
+                    <strong>💡 DSPOINC Mode Info:</strong><br>
+                    • <strong>OFF (Cheese Construction):</strong> Points show but don't write to user table<br>
+                    • <strong>ON (DSPOINC Rewards):</strong> Points convert to DSPOINC and save to user account<br>
+                    • <strong>Current Status:</strong> Only Tetris and Snake games give DSPOINC by default
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="loadSettings()">🔄 Load Current Settings</button>
+                <button class="btn btn-success" onclick="saveSettings()">💾 Save Settings</button>
+                <button class="btn" onclick="resetToDefaults()">🔄 Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load settings when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+        });
+        
+        function showStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            
+            setTimeout(() => {
+                statusDiv.textContent = '';
+                statusDiv.className = 'status';
+            }, 5000);
+        }
+        
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/admin/space-invaders-settings.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load settings');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.settings) {
+                    data.settings.forEach(setting => {
+                        const input = document.getElementById(setting.setting_key);
+                        if (input) {
+                            input.value = setting.setting_value;
+                        }
+                    });
+                    showStatus('Settings loaded successfully!');
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                showStatus('Error loading settings: ' + error.message, 'error');
+            }
+        }
+        
+        async function saveSettings() {
+            try {
+                const settings = [];
+                const inputs = document.querySelectorAll('.setting-input');
+                
+                inputs.forEach(input => {
+                    settings.push({
+                        key: input.id,
+                        value: input.value
+                    });
+                });
+                
+                const response = await fetch('/api/admin/space-invaders-settings.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ settings })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save settings');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('Settings saved successfully!');
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showStatus('Error saving settings: ' + error.message, 'error');
+            }
+        }
+        
+        function resetToDefaults() {
+            if (confirm('Are you sure you want to reset all settings to defaults?')) {
+                document.getElementById('bomb_activation_level').value = '4';
+                document.getElementById('bomb_spawn_chance').value = '0.2';
+                document.getElementById('bomb_damage_multiplier').value = '2';
+                document.getElementById('snake_dna_activation_level').value = '1';
+                document.getElementById('snake_head_activation_level').value = '2';
+                document.getElementById('tetris_spawn_interval_base').value = '8000';
+                document.getElementById('invader_shoot_speed_base').value = '300';
+                document.getElementById('game_speed_base').value = '0.1';
+                
+                showStatus('Settings reset to defaults!');
+            }
+        }
+    </script>
+</body>
+</html>

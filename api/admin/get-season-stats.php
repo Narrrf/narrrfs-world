@@ -80,6 +80,21 @@ try {
         $stmt->execute([$target_season]);
         $season_stats['snake'] = $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
+    if ($game_type === 'all' || $game_type === 'space_invaders') {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(*) as total_scores,
+                MAX(score) as max_score,
+                AVG(score) as avg_score,
+                COUNT(DISTINCT discord_id) as unique_players,
+                COUNT(CASE WHEN is_top_performer = 1 THEN 1 END) as top_performers
+            FROM tbl_tetris_scores 
+            WHERE game = 'space_invaders' AND season = ?
+        ");
+        $stmt->execute([$target_season]);
+        $season_stats['space_invaders'] = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
     // Get top performers for the season
     $top_performers = [];
@@ -117,6 +132,23 @@ try {
         $stmt->execute([$target_season]);
         $top_performers['snake'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    
+    if ($game_type === 'all' || $game_type === 'space_invaders') {
+        $stmt = $pdo->prepare("
+            SELECT 
+                discord_id,
+                discord_name,
+                score,
+                timestamp,
+                is_top_performer
+            FROM tbl_tetris_scores 
+            WHERE game = 'space_invaders' AND season = ? 
+            ORDER BY score DESC 
+            LIMIT 10
+        ");
+        $stmt->execute([$target_season]);
+        $top_performers['space_invaders'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     // Get all-time top performers (marked as legends)
     $all_time_legends = [];
@@ -153,6 +185,23 @@ try {
         ");
         $stmt->execute();
         $all_time_legends['snake'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    if ($game_type === 'all' || $game_type === 'space_invaders') {
+        $stmt = $pdo->prepare("
+            SELECT 
+                discord_id,
+                discord_name,
+                score,
+                season,
+                timestamp
+            FROM tbl_tetris_scores 
+            WHERE game = 'space_invaders' AND is_top_performer = 1 
+            ORDER BY score DESC 
+            LIMIT 5
+        ");
+        $stmt->execute();
+        $all_time_legends['space_invaders'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Get season timeline
