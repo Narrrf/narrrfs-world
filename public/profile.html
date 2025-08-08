@@ -457,7 +457,7 @@ require_once 'discord-invite.php';
   </section>
 
   <!-- 🚀 SPACE INVADERS PANEL -->
-  <section id="space-cheese-invaders" class="flex-1 bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 relative">
+  <section id="space-cheese-invaders" class="flex-1 bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 relative cursor-pointer hover:ring-yellow-300 transition-all duration-300" onclick="window.location.href='space-invaders-test.html'">
     <div class="absolute top-4 left-4 bg-purple-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
       🚀 SPACE INVADERS
     </div>
@@ -466,9 +466,14 @@ require_once 'discord-invite.php';
       🧀 CHEESE CONSTRUCTION
     </div>
 
+    <!-- 🎯 Click to Play Full Game Indicator -->
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/90 text-black text-lg font-bold px-6 py-3 rounded-xl shadow-2xl z-20 hover:bg-yellow-300 transition-all duration-300">
+      🎮 CLICK TO PLAY FULL GAME
+    </div>
+
     <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">SPACE CHEESE INVADERS</h2>
     
-    <div class="relative">
+    <div class="relative opacity-50">
       <canvas id="space-invaders-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
 
       <div id="space-invaders-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
@@ -476,16 +481,16 @@ require_once 'discord-invite.php';
       </div>
     </div>
 
-    <div class="text-center mt-4 space-y-2">
+    <div class="text-center mt-4 space-y-2 opacity-50">
       <button id="start-space-invaders-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
       <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
     </div>
 
-    <p id="space-invaders-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">
+    <p id="space-invaders-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse opacity-50">
       💰 Space Invaders Score: $0 DSPOINC
     </p>
 
-    <div class="text-xs italic text-center text-gray-500 mt-1">👾 Defend Earth from cheese invaders!</div>
+    <div class="text-xs italic text-center text-gray-500 mt-1">👾 Click to play the full Space Cheese Invaders game!</div>
   </section>
 </section>
 

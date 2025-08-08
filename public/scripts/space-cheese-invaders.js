@@ -67,7 +67,7 @@ cheeseExplosionImg.src = "img/space/cheese-explosion.png";
   snakeDNAImg.onerror = () => console.warn('⚠️ Snake DNA image failed to load, using fallback');
   snakeDNAImg.src = "img/snake/snake-dna.png";
 
-  const spaceInvadersSnakeHeadImg = new Image();
+  const snakeHeadImg = new Image();
   snakeHeadImg.onload = () => console.log('🐍 Snake head image loaded successfully');
   snakeHeadImg.onerror = () => console.warn('⚠️ Snake head image failed to load, using fallback');
   snakeHeadImg.src = "img/snake/snake-head.png";
@@ -1615,13 +1615,17 @@ function initSpaceInvaders() {
   });
   
   console.log('✅ initSpaceInvaders completed successfully');
+  
+  // 🎮 Make game functions globally available
+  console.log('🌐 About to assign game functions to window object...');
+  window.startGameWithCountdown = startGameWithCountdown;
+  window.startGame = startGame;
+  console.log('✅ Game functions assigned to window');
 }
 
-// 🎮 Make game functions globally available
-console.log('🌐 About to assign game functions to window object...');
+// 🎮 Make initSpaceInvaders globally available
+console.log('🌐 About to assign initSpaceInvaders to window object...');
 console.log('🔍 initSpaceInvaders function exists:', typeof initSpaceInvaders);
 window.initSpaceInvaders = initSpaceInvaders;
-window.startGameWithCountdown = startGameWithCountdown;
-window.startGame = startGame;
-console.log('✅ Game functions assigned to window');
+console.log('✅ initSpaceInvaders assigned to window');
 console.log('🎯 window.initSpaceInvaders === initSpaceInvaders:', window.initSpaceInvaders === initSpaceInvaders);
