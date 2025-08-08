@@ -12,10 +12,33 @@ header('X-XSS-Protection: 1; mode=block');
 // Check for authentication first
 session_start();
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    // Check for Discord authentication
+    // Check for Discord authentication - multiple methods
     $discord_user_id = null;
+    $user_roles = [];
+    
+    // Method 1: Check for Discord cookies
     if (isset($_COOKIE['discord_user_id'])) {
         $discord_user_id = $_COOKIE['discord_user_id'];
+        $user_roles = isset($_COOKIE['discord_roles']) ? json_decode($_COOKIE['discord_roles'], true) : [];
+    }
+    
+    // Method 2: Check for session-based Discord authentication
+    if (!$discord_user_id && isset($_SESSION['discord_id'])) {
+        $discord_user_id = $_SESSION['discord_id'];
+        
+        // Get user roles from database
+        try {
+            require_once __DIR__ . '/../config/database.php';
+            $db = getSQLite3Connection();
+            $stmt = $db->prepare('SELECT role_name FROM tbl_user_roles WHERE user_id = ?');
+            $stmt->bindValue(1, $discord_user_id, SQLITE3_TEXT);
+            $result = $stmt->execute();
+            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                $user_roles[] = $row['role_name'];
+            }
+        } catch (Exception $e) {
+            error_log('Error fetching user roles: ' . $e->getMessage());
+        }
     }
     
     // If no Discord authentication, require admin login
@@ -27,7 +50,6 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     
     // Check Discord roles (basic check - should be enhanced)
     $allowed_roles = ['Moderator', 'Admin', 'super_admin', 'Founder', 'Bot Master'];
-    $user_roles = isset($_COOKIE['discord_roles']) ? json_decode($_COOKIE['discord_roles'], true) : [];
     
     $has_permission = false;
     foreach ($allowed_roles as $role) {

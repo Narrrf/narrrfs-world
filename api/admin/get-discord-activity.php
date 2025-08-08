@@ -2,12 +2,69 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 // Security headers
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('X-XSS-Protection: 1; mode=block');
+
+// Check for authentication
+session_start();
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    // Check for Discord authentication - multiple methods
+    $discord_user_id = null;
+    $user_roles = [];
+    
+    // Method 1: Check for Discord cookies
+    if (isset($_COOKIE['discord_user_id'])) {
+        $discord_user_id = $_COOKIE['discord_user_id'];
+        $user_roles = isset($_COOKIE['discord_roles']) ? json_decode($_COOKIE['discord_roles'], true) : [];
+    }
+    
+    // Method 2: Check for session-based Discord authentication
+    if (!$discord_user_id && isset($_SESSION['discord_id'])) {
+        $discord_user_id = $_SESSION['discord_id'];
+        
+        // Get user roles from database
+        try {
+            require_once __DIR__ . '/../config/database.php';
+            $db = getSQLite3Connection();
+            $stmt = $db->prepare('SELECT role_name FROM tbl_user_roles WHERE user_id = ?');
+            $stmt->bindValue(1, $discord_user_id, SQLITE3_TEXT);
+            $result = $stmt->execute();
+            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                $user_roles[] = $row['role_name'];
+            }
+        } catch (Exception $e) {
+            error_log('Error fetching user roles: ' . $e->getMessage());
+        }
+    }
+    
+    // If no Discord authentication, require admin login
+    if (!$discord_user_id) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'Unauthorized - Admin access required']);
+        exit;
+    }
+    
+    // Check Discord roles (basic check - should be enhanced)
+    $allowed_roles = ['Moderator', 'Admin', 'super_admin', 'Founder', 'Bot Master'];
+    
+    $has_permission = false;
+    foreach ($allowed_roles as $role) {
+        if (in_array($role, $user_roles)) {
+            $has_permission = true;
+            break;
+        }
+    }
+    
+    if (!$has_permission && $discord_user_id !== '328601656659017732') { // narrrf's ID
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Insufficient permissions']);
+        exit;
+    }
+}
 
 // Use centralized database configuration
 require_once __DIR__ . '/../config/database.php';
@@ -107,35 +164,11 @@ try {
         $events = [
             [
                 'type' => 'messageCreate',
-                'user_name' => 'narrrf',
-                'user_id' => '328601656659017732',
-                'channel_name' => 'general-talk',
+                'user_name' => 'System',
+                'user_id' => '000000000000000000',
+                'channel_name' => 'general',
                 'timestamp' => date('Y-m-d H:i:s'),
-                'description' => 'User sent a message'
-            ],
-            [
-                'type' => 'command',
-                'user_name' => 'megaethdogs',
-                'user_id' => '1403315971573153933',
-                'channel_name' => '432-megaethdogs',
-                'timestamp' => date('Y-m-d H:i:s', strtotime('-1 minute')),
-                'description' => 'User used /leaderboard command'
-            ],
-            [
-                'type' => 'messageCreate',
-                'user_name' => 'santa3120',
-                'user_id' => '1107633105185013790',
-                'channel_name' => 'cheeseboard',
-                'timestamp' => date('Y-m-d H:i:s', strtotime('-2 minutes')),
-                'description' => 'User clicked the cheese!'
-            ],
-            [
-                'type' => 'command',
-                'user_name' => 'kuternigharald',
-                'user_id' => '1138915296959287468',
-                'channel_name' => 'tetris',
-                'timestamp' => date('Y-m-d H:i:s', strtotime('-3 minutes')),
-                'description' => 'User scored 1,290 points in Tetris'
+                'description' => 'Discord activity feed initialized'
             ]
         ];
     }
@@ -145,14 +178,9 @@ try {
         return strtotime($b['timestamp']) - strtotime($a['timestamp']);
     });
     
-    // Limit to 20 events
-    $events = array_slice($events, 0, 20);
-
     echo json_encode([
         'success' => true,
-        'events' => $events,
-        'generated_at' => date('Y-m-d H:i:s'),
-        'total_events' => count($events)
+        'events' => array_slice($events, 0, 10) // Limit to 10 most recent events
     ]);
 
 } catch (Exception $e) {
