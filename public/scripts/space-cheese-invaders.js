@@ -338,6 +338,9 @@ function initSpaceInvaders() {
     spaceInvadersGameInterval = setInterval(gameLoop, 100); // ULTRA SLOW GAME LOOP (100ms instead of 50ms)
     console.log('✅ Game loop interval set:', spaceInvadersGameInterval);
     document.getElementById("start-space-invaders-btn").textContent = "🔄 Restart";
+    
+    // Lock scroll only when game is actually running
+    lockSpaceInvadersScroll();
   }
 
   function resetGame() {
@@ -346,6 +349,10 @@ function initSpaceInvaders() {
       clearInterval(spaceInvadersGameInterval);
       spaceInvadersGameInterval = null;
     }
+    
+    // Unlock scroll when game is reset
+    unlockSpaceInvadersScroll();
+    
     spaceInvadersScore = 0;
     gameSpeed = 0.1; // ULTRA SLOW STARTING SPEED
     waveNumber = 1;
@@ -1505,6 +1512,13 @@ function initSpaceInvaders() {
     if (pauseBtn) {
       pauseBtn.textContent = isSpaceInvadersPaused ? "▶️ Resume" : "⏸️ Pause";
     }
+    
+    // Unlock scroll when paused, lock when resumed
+    if (isSpaceInvadersPaused) {
+      unlockSpaceInvadersScroll();
+    } else {
+      lockSpaceInvadersScroll();
+    }
   }
 
   // 🎮 Combined keyboard event listener
@@ -1552,7 +1566,7 @@ function initSpaceInvaders() {
 
   // 🎮 Touch controls setup
   enableGlobalSpaceInvadersTouch();
-  lockSpaceInvadersScroll();
+  // Don't lock scroll immediately - only lock when game starts
 
   // 🧹 Cleanup function
   function cleanupSpaceInvadersControls() {
