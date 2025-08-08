@@ -1462,6 +1462,7 @@ function initSpaceInvaders() {
 
   let touchStartX = 0;
   let touchStartY = 0;
+  let touchStartTime = 0;
   let isTouching = false;
 
   function handleTouchStart(e) {
@@ -1471,6 +1472,9 @@ function initSpaceInvaders() {
     touchStartX = touch.clientX;
     touchStartY = touch.clientY;
       isTouching = true;
+      
+      // Store touch start time for tap detection
+      touchStartTime = Date.now();
     }
   }
 
@@ -1481,18 +1485,35 @@ function initSpaceInvaders() {
     const deltaX = touch.clientX - touchStartX;
     const deltaY = touch.clientY - touchStartY;
       
-      if (Math.abs(deltaX) > 20) {
+      // Movement - more sensitive for mobile
+      if (Math.abs(deltaX) > 15) {
         movePlayer(deltaX > 0 ? 'right' : 'left');
         touchStartX = touch.clientX;
       }
       
-      if (deltaY < -30) {
+      // Shooting - more reliable swipe up detection
+      if (deltaY < -25) {
         playerShoot();
+        // Reset touch to prevent multiple shots
+        touchStartY = touch.clientY;
       }
     }
   }
 
   function handleTouchEnd(e) {
+    // Check for tap-to-shoot (quick tap without movement)
+    if (isTouching) {
+      const touchDuration = Date.now() - touchStartTime;
+      const touch = e.changedTouches[0];
+      const deltaX = Math.abs(touch.clientX - touchStartX);
+      const deltaY = Math.abs(touch.clientY - touchStartY);
+      
+      // If it's a quick tap (less than 200ms) with minimal movement (less than 10px)
+      if (touchDuration < 200 && deltaX < 10 && deltaY < 10) {
+        playerShoot();
+      }
+    }
+    
     isTouching = false;
   }
 
@@ -1562,6 +1583,36 @@ function initSpaceInvaders() {
 
   if (pauseBtn) {
     pauseBtn.addEventListener("click", togglePause);
+  }
+
+  // 🎮 Mobile controls setup
+  const mobileControls = document.getElementById("mobile-controls");
+  const mobileLeftBtn = document.getElementById("mobile-left-btn");
+  const mobileRightBtn = document.getElementById("mobile-right-btn");
+  const mobileShootBtn = document.getElementById("mobile-shoot-btn");
+
+  // Show mobile controls on mobile devices
+  if (mobileControls && window.innerWidth <= 768) {
+    mobileControls.classList.remove("hidden");
+  }
+
+  // Mobile button event listeners
+  if (mobileLeftBtn) {
+    mobileLeftBtn.addEventListener("click", () => {
+      if (!isSpaceInvadersPaused) movePlayer('left');
+    });
+  }
+
+  if (mobileRightBtn) {
+    mobileRightBtn.addEventListener("click", () => {
+      if (!isSpaceInvadersPaused) movePlayer('right');
+    });
+  }
+
+  if (mobileShootBtn) {
+    mobileShootBtn.addEventListener("click", () => {
+      if (!isSpaceInvadersPaused) playerShoot();
+    });
   }
 
   // 🎮 Touch controls setup
