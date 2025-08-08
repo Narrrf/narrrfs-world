@@ -720,7 +720,8 @@ function initSpaceInvaders() {
       bullet.y -= bullet.speed;
     });
     
-    bullets = bullets.filter(bullet => bullet.y > 0);
+    // Allow bullets to travel further to hit invaders outside screen bounds
+    bullets = bullets.filter(bullet => bullet.y > -50); // Allow bullets to go 50px above screen
   }
 
   function moveInvaderBullets() {
@@ -743,13 +744,18 @@ function initSpaceInvaders() {
       }
     });
     
-    invaderBullets = invaderBullets.filter(bullet => bullet.y < canvasHeight);
+    invaderBullets = invaderBullets.filter(bullet => bullet.y < canvasHeight + 50); // Allow bullets to go 50px below screen
   }
 
   function checkBulletCollisions() {
     bullets.forEach((bullet, bulletIndex) => {
       invaders.forEach(invader => {
-        if (invader.alive && checkCollision(bullet, invader)) {
+        // Check if invader is alive and within reasonable bounds (including slightly outside screen)
+        if (invader.alive && 
+            invader.x > -100 && invader.x < canvasWidth + 100 && 
+            invader.y > -100 && invader.y < canvasHeight + 100 &&
+            checkCollision(bullet, invader)) {
+          
           // Check if bullet hit weak point
           const hitWeakPoint = invader.hasWeakPoint && 
             bullet.x >= invader.weakPointX - invader.weakPointSize &&
@@ -774,7 +780,7 @@ function initSpaceInvaders() {
             
             if (invader.weakPointHealth <= 0) {
               // Weak point destroyed - kill invader
-          invader.alive = false;
+              invader.alive = false;
               spaceInvadersScore += invader.points * 3; // Triple points for destroying weak point
               
               // Create big explosion
@@ -789,7 +795,7 @@ function initSpaceInvaders() {
           } else {
             // Normal hit - kill invader
             invader.alive = false;
-          spaceInvadersScore += invader.points;
+            spaceInvadersScore += invader.points;
             
             // Create normal explosion
             explosions.push({
@@ -1284,8 +1290,8 @@ function initSpaceInvaders() {
 
   function drawScore() {
     if (scoreDisplay) {
-      // Space Invaders scoring: 10,000 invaders = 10 DSPOINC
-      const conversionRate = 10000; // 10,000 invaders = 10 DSPOINC
+      // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
+      const conversionRate = 1000; // 1,000 invaders = 10 DSPOINC
       const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
       scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders (${dspoinEarned} DSPOINC)`;
     }
@@ -1325,8 +1331,8 @@ function initSpaceInvaders() {
 
   function updateScore() {
     if (scoreDisplay) {
-      // Space Invaders scoring: 10,000 invaders = 10 DSPOINC
-      const conversionRate = 10000; // 10,000 invaders = 10 DSPOINC
+      // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
+      const conversionRate = 1000; // 1,000 invaders = 10 DSPOINC
       const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
       scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders (${dspoinEarned} DSPOINC)`;
     }
@@ -1338,8 +1344,8 @@ function initSpaceInvaders() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // Space Invaders scoring: 10,000 invaders = 10 DSPOINC
-    const conversionRate = 10000;
+    // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
+    const conversionRate = 1000;
     const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
     
     if (winModal && winScoreText) {
@@ -1361,8 +1367,8 @@ function initSpaceInvaders() {
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // Space Invaders scoring: 10,000 invaders = 10 DSPOINC
-    const conversionRate = 10000;
+    // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
+    const conversionRate = 1000;
     const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
     
     if (gameOverModal && finalScoreText) {
@@ -1388,9 +1394,9 @@ function initSpaceInvaders() {
       return;
     }
 
-    // Space Invaders scoring: 10,000 invaders = 10 DSPOINC
-    const conversionRate = 10000;
-    const dspoincScore = Math.floor(finalScore / conversionRate) * 10; // Convert to DSPOINC (10,000 invaders = 10 DSPOINC)
+    // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
+    const conversionRate = 1000;
+    const dspoincScore = Math.floor(finalScore / conversionRate) * 10; // Convert to DSPOINC (1,000 invaders = 10 DSPOINC)
 
     // Save to the same API endpoint as Tetris and Snake
     fetch('/api/dev/save-score.php', {

@@ -16,10 +16,12 @@ try {
     // Validate input
     $tetrisMax = $data['tetris_max_score'] ?? null;
     $snakeMax = $data['snake_max_score'] ?? null;
+    $spaceInvadersMax = $data['space_invaders_max_score'] ?? null;
     $pointsPerLine = $data['points_per_line'] ?? null;
     $pointsPerCheese = $data['points_per_cheese'] ?? null;
+    $pointsPerInvader = $data['points_per_invader'] ?? null;
     
-    if (!$tetrisMax || !$snakeMax || !$pointsPerLine || !$pointsPerCheese) {
+    if (!$tetrisMax || !$snakeMax || !$spaceInvadersMax || !$pointsPerLine || !$pointsPerCheese || !$pointsPerInvader) {
         throw new Exception('Missing required fields');
     }
     
@@ -30,20 +32,26 @@ try {
     if ($snakeMax < 100 || $snakeMax > 100000) {
         throw new Exception('Snake max score must be between 100 and 100000');
     }
+    if ($spaceInvadersMax < 100 || $spaceInvadersMax > 100000) {
+        throw new Exception('Space Invaders max score must be between 100 and 100000');
+    }
     if ($pointsPerLine < 1 || $pointsPerLine > 100) {
         throw new Exception('Points per line must be between 1 and 100');
     }
     if ($pointsPerCheese < 1 || $pointsPerCheese > 100) {
         throw new Exception('Points per cheese must be between 1 and 100');
     }
+    if ($pointsPerInvader < 0.001 || $pointsPerInvader > 1) {
+        throw new Exception('Points per invader must be between 0.001 and 1');
+    }
     
     // Update season settings
     $stmt = $db->prepare("
         INSERT OR REPLACE INTO tbl_season_settings 
-        (season_name, tetris_max_score, snake_max_score, points_per_line, points_per_cheese) 
-        VALUES (?, ?, ?, ?, ?)
+        (season_name, tetris_max_score, snake_max_score, space_invaders_max_score, points_per_line, points_per_cheese, points_per_invader) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     ");
-    $stmt->execute(['season_1', $tetrisMax, $snakeMax, $pointsPerLine, $pointsPerCheese]);
+    $stmt->execute(['season_1', $tetrisMax, $snakeMax, $spaceInvadersMax, $pointsPerLine, $pointsPerCheese, $pointsPerInvader]);
     
     echo json_encode([
         'success' => true,
@@ -51,8 +59,10 @@ try {
         'settings' => [
             'tetris_max_score' => $tetrisMax,
             'snake_max_score' => $snakeMax,
+            'space_invaders_max_score' => $spaceInvadersMax,
             'points_per_line' => $pointsPerLine,
-            'points_per_cheese' => $pointsPerCheese
+            'points_per_cheese' => $pointsPerCheese,
+            'points_per_invader' => $pointsPerInvader
         ]
     ]);
     

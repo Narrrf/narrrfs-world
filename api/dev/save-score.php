@@ -38,7 +38,7 @@ if (!$seasonSettings) {
         'space_invaders_max_score' => 10000,
         'points_per_line' => 10,
         'points_per_cheese' => 10,
-        'points_per_invader' => 0.001 // 10,000 invaders = 10 DSPOINC
+        'points_per_invader' => 0.01 // 1,000 invaders = 10 DSPOINC
     ];
 }
 
