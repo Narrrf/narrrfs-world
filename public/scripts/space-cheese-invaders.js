@@ -1,5 +1,6 @@
 // 🧀 Space Cheese Invaders v3.0 - ULTRA SLOW WITH TETRIS BLOCKS
 // Much slower invaders (1 second drop, 1 minute break) with Tetris block danger items
+// NEW: Auto-shoot feature - automatically fires when ship moves (toggle with 'T' key)
 
 // 🚫 Full page scroll prevention (same as other games)
 window.addEventListener("touchmove", function(e) {
@@ -20,26 +21,46 @@ let spaceInvadersGameInterval;
 let isSpaceInvadersPaused = false;
 let spaceInvadersScore = 0;
 
-// 🧀 Load cheese-themed images with proper error handling
+// 🧀 Load cheese-themed images
 const cheeseShipImg = new Image();
-cheeseShipImg.onload = () => console.log('🧀 Cheese ship image loaded successfully');
-cheeseShipImg.onerror = () => console.warn('⚠️ Cheese ship image failed to load, using fallback');
-cheeseShipImg.src = "img/space/cheese-ship.png";
+cheeseShipImg.src = 'img/space/cheese-ship.png';
+cheeseShipImg.onload = () => {
+  console.log('✅ Cheese ship image loaded successfully');
+};
+cheeseShipImg.onerror = (e) => {
+  console.error('❌ Failed to load cheese ship image:', e);
+  console.error('❌ Attempted path:', cheeseShipImg.src);
+};
 
 const cheeseInvaderImg = new Image();
-cheeseInvaderImg.onload = () => console.log('🧀 Cheese invader image loaded successfully');
-cheeseInvaderImg.onerror = () => console.warn('⚠️ Cheese invader image failed to load, using fallback');
-cheeseInvaderImg.src = "img/space/cheese-invader.png";
+cheeseInvaderImg.src = 'img/space/cheese-invader.png';
+cheeseInvaderImg.onload = () => {
+  console.log('✅ Cheese invader image loaded successfully');
+};
+cheeseInvaderImg.onerror = (e) => {
+  console.error('❌ Failed to load cheese invader image:', e);
+  console.error('❌ Attempted path:', cheeseInvaderImg.src);
+};
 
 const cheeseBulletImg = new Image();
-cheeseBulletImg.onload = () => console.log('🧀 Cheese bullet image loaded successfully');
-cheeseBulletImg.onerror = () => console.warn('⚠️ Cheese bullet image failed to load, using fallback');
-cheeseBulletImg.src = "img/space/cheese-bullet.png";
+cheeseBulletImg.src = 'img/space/cheese-bullet.png';
+cheeseBulletImg.onload = () => {
+  console.log('✅ Cheese bullet image loaded successfully');
+};
+cheeseBulletImg.onerror = (e) => {
+  console.error('❌ Failed to load cheese bullet image:', e);
+  console.error('❌ Attempted path:', cheeseBulletImg.src);
+};
 
 const cheeseExplosionImg = new Image();
-cheeseExplosionImg.onload = () => console.log('🧀 Cheese explosion image loaded successfully');
-cheeseExplosionImg.onerror = () => console.warn('⚠️ Cheese explosion image failed to load, using fallback');
-cheeseExplosionImg.src = "img/space/cheese-explosion.png";
+cheeseExplosionImg.src = 'img/space/cheese-explosion.png';
+cheeseExplosionImg.onload = () => {
+  console.log('✅ Cheese explosion image loaded successfully');
+};
+cheeseExplosionImg.onerror = (e) => {
+  console.error('❌ Failed to load cheese explosion image:', e);
+  console.error('❌ Attempted path:', cheeseExplosionImg.src);
+};
 
   // 🧩 Load Tetris block images for danger items
   const tetrisBlockImages = {
@@ -56,21 +77,29 @@ cheeseExplosionImg.src = "img/space/cheese-explosion.png";
   // Load all Tetris block images
   Object.keys(tetrisBlockImages).forEach(blockType => {
     const img = tetrisBlockImages[blockType];
-    img.onload = () => console.log(`🧩 Tetris block ${blockType} loaded successfully`);
-    img.onerror = () => console.warn(`⚠️ Tetris block ${blockType} failed to load, using fallback`);
+    img.onload = () => {}; // Removed debug log
+    img.onerror = () => {}; // Removed debug log
     img.src = `img/tetris/block_${blockType}.png`;
   });
 
   // 🐍 Load snake-themed images for dangerous invaders
   const snakeDNAImg = new Image();
-  snakeDNAImg.onload = () => console.log('🐍 Snake DNA image loaded successfully');
-  snakeDNAImg.onerror = () => console.warn('⚠️ Snake DNA image failed to load, using fallback');
-  snakeDNAImg.src = "img/snake/snake-dna.png";
+  snakeDNAImg.src = 'img/snake/snake-dna.png';
+  snakeDNAImg.onload = () => {
+    console.log('✅ Snake DNA image loaded');
+  };
+  snakeDNAImg.onerror = () => {
+    console.warn('⚠️ Failed to load snake DNA image');
+  };
 
   const snakeHeadImg = new Image();
-  snakeHeadImg.onload = () => console.log('🐍 Snake head image loaded successfully');
-  snakeHeadImg.onerror = () => console.warn('⚠️ Snake head image failed to load, using fallback');
-  snakeHeadImg.src = "img/snake/snake-head.png";
+  snakeHeadImg.src = 'img/snake/snake-head.png';
+  snakeHeadImg.onload = () => {
+    console.log('✅ Snake head image loaded');
+  };
+  snakeHeadImg.onerror = () => {
+    console.warn('⚠️ Failed to load snake head image');
+  };
 
 // 🎯 Game State - ULTRA SLOW REDESIGN
 let playerShip = { x: 0, y: 0 };
@@ -91,6 +120,9 @@ let invaderDropPhase = false; // NEW: Track if invaders are dropping
 let dropStartTime = 0; // NEW: Track when drop started
 let dropDuration = 1000; // NEW: 1 second drop duration
 let breakDuration = 60000; // NEW: 1 minute break duration
+let lastPlayerShootTime = 0; // NEW: Track last player shoot time for auto-shoot cooldown
+let autoShootCooldown = 300; // NEW: 300ms cooldown between auto-shots
+let autoShootEnabled = true; // NEW: Auto-shoot toggle (enabled by default)
 
 // 🎮 Canvas context (global scope)
 let ctx;
@@ -111,71 +143,83 @@ let canvasHeight;
     SNAKE_HEAD: { type: 'SNAKE_HEAD', speed: 2.0, points: -200, size: 35, color: '#00ff00', image: 'snakeHead' }
   };
 
-// 🎮 Space Invaders Game Function
-function initSpaceInvaders() {
-  console.log('🚀 initSpaceInvaders called');
-  
-  const canvas = document.getElementById("space-invaders-canvas");
-  if (!canvas) {
-    console.error("❌ Canvas element with id 'space-invaders-canvas' not found.");
-    return;
-  }
-  
-  console.log('✅ Canvas found:', canvas);
-  
-  ctx = canvas.getContext("2d");
-  if (!ctx) {
-    console.error("❌ Could not get 2D context from canvas");
-    return;
-  }
-  
-  console.log('✅ Canvas context obtained');
-  
-  const scoreDisplay = document.getElementById("space-invaders-score");
-  if (!scoreDisplay) {
-    console.warn("⚠️ Score display element not found");
-  }
+  function initSpaceInvaders() {
+    console.log('🚀 Initializing Space Invaders...');
+    
+    // Get canvas and context
+    const canvas = document.getElementById('space-invaders-canvas');
+    if (!canvas) {
+      console.error('❌ Canvas not found - make sure element with id "space-invaders-canvas" exists');
+      return;
+    }
 
-  // Responsive canvas sizing for mobile (like Tetris and Snake)
-  const isMobile = window.innerWidth <= 768;
-  
-  if (isMobile) {
-    // Mobile: Use viewport-based sizing
-    const maxWidth = Math.min(window.innerWidth - 40, 400);
-    const maxHeight = Math.min(window.innerHeight * 0.6, 600);
+    ctx = canvas.getContext('2d');
+    if (!ctx) {
+      console.error('❌ Canvas context not found');
+      return;
+    }
+
+    console.log('✅ Canvas and context initialized');
+
+    // Set canvas dimensions based on device
+    let maxWidth = 400;
+    let maxHeight = 600;
+    
+    if (window.innerWidth < 768) {
+      // Mobile device - use smaller canvas
+      maxWidth = Math.min(350, window.innerWidth - 40);
+      maxHeight = Math.min(500, window.innerHeight - 200);
+    }
+    
     canvas.width = maxWidth;
     canvas.height = maxHeight;
-    console.log('📱 Mobile canvas dimensions:', maxWidth, 'x', maxHeight);
-  } else {
-    // Desktop: Use original dimensions
-    canvas.width = 400;
-    canvas.height = 600;
-    console.log('🖥️ Desktop canvas dimensions: 400 x 600');
+    canvasWidth = maxWidth;
+    canvasHeight = maxHeight;
+
+    console.log(`📏 Canvas dimensions set to: ${canvasWidth}x${canvasHeight}`);
+
+    // Initialize player ship
+    playerShip = {
+      x: canvasWidth / 2,
+      y: canvasHeight - 60,
+      width: 40,
+      height: 30,
+      speed: 5,
+      health: 3
+    };
+
+    // Initialize game state
+    spaceInvadersScore = 0;
+    gameSpeed = 0.1;
+    waveNumber = 1;
+    gamePhase = 'formation';
+    phaseTimer = 0;
+    invaderDropPhase = false;
+    dropStartTime = Date.now();
+    invaders = [];
+    bullets = [];
+    invaderBullets = [];
+    tetrisDangerItems = [];
+    explosions = [];
+    invaderDirection = 1;
+    invaderDropTimer = 0;
+    lastSpawnTime = Date.now();
+    lastTetrisSpawnTime = Date.now();
+
+    console.log('✅ Game state initialized');
+
+    // Initialize invaders
+    initializeInvaders();
+    
+    // Load DSPOINC settings
+    loadDspoinSettings();
+    
+    // Initial draw
+    draw();
+    
+    console.log('✅ Space Invaders initialization complete');
   }
-  
-  canvasWidth = canvas.width;
-  canvasHeight = canvas.height;
-  
-  console.log('📏 Final canvas dimensions:', canvasWidth, 'x', canvasHeight);
-  
-  const gridSize = 20;
 
-  // Load DSPOINC settings
-  loadDspoinSettings();
-
-  // 🚀 Initialize player ship
-  playerShip = {
-    x: canvasWidth / 2,
-    y: canvasHeight - 60,
-    width: 40,
-    height: 30,
-    speed: 6, // Even slower ship movement
-    health: 3
-  };
-
-  console.log('🚀 Player ship initialized at:', playerShip.x, playerShip.y);
-
-  // 👾 Initialize cheese invaders - ULTRA SLOW AND STRATEGIC
   function initializeInvaders() {
     invaders = [];
     // Start with a simple formation that gradually becomes complex
@@ -194,6 +238,13 @@ function initSpaceInvaders() {
 
   // 🎯 NEW: Create different formation patterns
   function createFormation(pattern) {
+    // Safety check for canvas dimensions
+    if (typeof canvasWidth === 'undefined' || typeof canvasHeight === 'undefined') {
+      console.warn('⚠️ Canvas dimensions not available, using default values');
+      canvasWidth = canvasWidth || 400;
+      canvasHeight = canvasHeight || 600;
+    }
+    
     switch (pattern) {
       case 'v_formation':
         // V-shaped formation - much smaller and slower
@@ -349,10 +400,8 @@ function initSpaceInvaders() {
   }
 
   function startGame() {
-    console.log('🚀 startGame called - setting up game loop...');
     resetGame();
     spaceInvadersGameInterval = setInterval(gameLoop, 100); // ULTRA SLOW GAME LOOP (100ms instead of 50ms)
-    console.log('✅ Game loop interval set:', spaceInvadersGameInterval);
     document.getElementById("start-space-invaders-btn").textContent = "🔄 Restart";
     
     // Lock scroll only when game is actually running
@@ -375,7 +424,7 @@ function initSpaceInvaders() {
     gamePhase = 'formation';
     phaseTimer = 0;
     invaderDropPhase = false;
-    dropStartTime = 0;
+    dropStartTime = Date.now();
     invaders = [];
     bullets = [];
     invaderBullets = [];
@@ -396,7 +445,6 @@ function initSpaceInvaders() {
   function gameLoop() {
     if (isSpaceInvadersPaused) return;
     
-    console.log('🔄 Game loop running - updating and drawing...');
     updateGame();
     draw();
   }
@@ -408,8 +456,8 @@ function initSpaceInvaders() {
     if (gamePhase === 'formation') {
       // Formation phase - much shorter and you can shoot!
       moveInvadersFormation();
-    moveBullets();
-    moveInvaderBullets();
+      moveBullets();
+      moveInvaderBullets();
       moveTetrisDangerItems();
       checkBulletCollisions();
       checkPlayerHit();
@@ -419,6 +467,8 @@ function initSpaceInvaders() {
         gamePhase = 'attack';
         phaseTimer = 0;
         invaderDropPhase = false;
+        dropStartTime = Date.now(); // Reset drop start time for new wave
+        console.log(`🎯 Starting attack phase for wave ${waveNumber}`);
       }
     } else if (gamePhase === 'attack') {
       // Attack phase - invaders move and shoot
@@ -426,15 +476,38 @@ function initSpaceInvaders() {
       moveBullets();
       moveInvaderBullets();
       moveTetrisDangerItems();
-    checkBulletCollisions();
+      checkBulletCollisions();
       checkPlayerHit();
       checkTetrisCollisions();
       
-      // Phase transitions
-      if (invaders.length === 0) {
+      // NEW: Check for stuck or hidden invaders
+      checkForStuckInvaders();
+      
+      // Phase transitions - check if only 2 or fewer invaders are left
+      const aliveInvaders = invaders.filter(invader => invader.alive);
+      
+      // NEW: Time-based wave progression to prevent getting stuck
+      const currentTime = Date.now();
+      const waveTimeLimit = 30000; // 30 seconds per wave
+      const timeSinceWaveStart = currentTime - dropStartTime;
+      
+      // Debug: Log wave status every 10 seconds
+      if (phaseTimer % 100 === 0) { // Every 10 seconds
+        console.log(`🎯 Wave ${waveNumber} status: ${aliveInvaders.length} invaders alive, ${Math.round(timeSinceWaveStart/1000)}s elapsed`);
+      }
+      
+      if (aliveInvaders.length <= 2 || timeSinceWaveStart > waveTimeLimit) {
+        if (aliveInvaders.length <= 2) {
+          console.log(`🎯 Wave ${waveNumber} completed! Only ${aliveInvaders.length} invaders left. Spawning wave ${waveNumber + 1}...`);
+        } else {
+          console.log(`⏰ Wave ${waveNumber} time limit reached (${Math.round(timeSinceWaveStart/1000)}s). Spawning wave ${waveNumber + 1}...`);
+        }
+        
         gamePhase = 'formation';
         phaseTimer = 0;
         waveNumber++;
+        invaderDropPhase = false;
+        dropStartTime = Date.now(); // Reset drop start time for new wave
         spawnNewWave();
       }
     }
@@ -445,6 +518,43 @@ function initSpaceInvaders() {
     if (currentTime - lastTetrisSpawnTime > tetrisSpawnInterval) {
       spawnTetrisDangerItem();
       lastTetrisSpawnTime = currentTime;
+    }
+  }
+
+  // NEW: Function to check for stuck or hidden invaders
+  function checkForStuckInvaders() {
+    const aliveInvaders = invaders.filter(invader => invader.alive);
+    let stuckInvaders = 0;
+    
+    aliveInvaders.forEach(invader => {
+      // Check if invader is completely off-screen or stuck
+      const isOffScreen = invader.x < -100 || invader.x > canvasWidth + 100 || 
+                         invader.y < -100 || invader.y > canvasHeight + 100;
+      
+      // Check if invader has been in the same position for too long (stuck)
+      const currentTime = Date.now();
+      if (!invader.lastMoveTime) {
+        invader.lastMoveTime = currentTime;
+        invader.lastX = invader.x;
+        invader.lastY = invader.y;
+      }
+      
+      const timeSinceLastMove = currentTime - invader.lastMoveTime;
+      const hasMoved = Math.abs(invader.x - invader.lastX) > 5 || Math.abs(invader.y - invader.lastY) > 5;
+      
+      if (isOffScreen || (timeSinceLastMove > 10000 && !hasMoved)) { // 10 seconds without movement
+        console.log(`⚠️ Removing stuck/hidden invader at (${Math.round(invader.x)}, ${Math.round(invader.y)})`);
+        invader.alive = false;
+        stuckInvaders++;
+      } else if (hasMoved) {
+        invader.lastMoveTime = currentTime;
+        invader.lastX = invader.x;
+        invader.lastY = invader.y;
+      }
+    });
+    
+    if (stuckInvaders > 0) {
+      console.log(`🧹 Removed ${stuckInvaders} stuck/hidden invaders`);
     }
   }
 
@@ -474,14 +584,12 @@ function initSpaceInvaders() {
     if (!invaderDropPhase && currentTime - dropStartTime > breakDuration) {
       invaderDropPhase = true;
       dropStartTime = currentTime;
-      console.log(`🚀 Starting 1-second invader drop phase! Wave ${waveNumber}`);
     }
     
     // Check if drop phase should end
     if (invaderDropPhase && currentTime - dropStartTime > dropDuration) {
       invaderDropPhase = false;
       dropStartTime = currentTime;
-      console.log("⏸️ Ending drop phase, starting 1-minute break!");
     }
     
     if (invaderDropPhase) {
@@ -489,78 +597,56 @@ function initSpaceInvaders() {
       invaders.forEach(invader => {
         if (!invader.alive) return;
         
-        // Wave-based speed multiplier - gets much faster each wave!
-        const waveSpeedMultiplier = 1 + (waveNumber - 1) * 0.6; // 60% faster each wave - much more dangerous!
+        // Wave-based speed multiplier - gets MUCH faster each wave!
+        const waveSpeedMultiplier = 1 + (waveNumber - 1) * 1.2; // 120% faster each wave - EXTREMELY dangerous!
         
-        // Different movement patterns based on invader type
+        // Different movement patterns based on invader type - more aggressive in later waves
         if (invader.movePattern === 'zigzag') {
           // Zigzag pattern - more dangerous and faster each wave
-          invader.x += invaderDirection * gameSpeed * 0.2 * waveSpeedMultiplier;
-          invader.y += 0.8 * waveSpeedMultiplier;
+          invader.x += invaderDirection * gameSpeed * 0.3 * waveSpeedMultiplier;
+          invader.y += 1.2 * waveSpeedMultiplier;
           
           // Zigzag movement - more frequent direction changes in later waves
-          if (Math.random() < (0.1 + waveNumber * 0.02)) { // More direction changes
+          if (Math.random() < (0.15 + waveNumber * 0.03)) { // More direction changes
             invaderDirection *= -1;
           }
         } else if (invader.movePattern === 'dive') {
-          // Dive pattern - very dangerous and faster each wave
-          invader.x += (Math.random() - 0.5) * 2 * waveSpeedMultiplier;
-          invader.y += 1.2 * waveSpeedMultiplier;
+          // NEW: Dive pattern - invaders dive straight down at player
+          invader.y += 2.0 * waveSpeedMultiplier;
+          invader.x += (playerShip.x - invader.x) * 0.02 * waveSpeedMultiplier; // Move towards player
         } else if (invader.movePattern === 'spiral') {
-          // Spiral pattern - complex movement and faster each wave
-          const angle = (currentTime * 0.001 * waveSpeedMultiplier) + invader.spiralOffset;
-          invader.x += Math.cos(angle) * 0.5 * waveSpeedMultiplier;
-          invader.y += 0.6 * waveSpeedMultiplier;
+          // NEW: Spiral pattern - invaders move in spiral motion
+          const spiralRadius = 30 + waveNumber * 5;
+          const spiralSpeed = 0.1 + waveNumber * 0.02;
+          invader.spiralOffset += spiralSpeed;
+          invader.x += Math.cos(invader.spiralOffset) * spiralRadius * 0.1;
+          invader.y += 1.0 * waveSpeedMultiplier;
+        } else if (invader.movePattern === 'hover') {
+          // NEW: Hover pattern - invaders hover and move side to side
+          invader.y += 0.3 * waveSpeedMultiplier;
+          invader.x += Math.sin(currentTime * 0.005 + invader.x * 0.01) * 2 * waveSpeedMultiplier;
         } else {
-          // Normal pattern - faster each wave
-          invader.x += invaderDirection * gameSpeed * 0.1 * waveSpeedMultiplier;
-          invader.y += 0.5 * waveSpeedMultiplier;
+          // Standard movement - straight down with slight horizontal movement
+          invader.x += invaderDirection * gameSpeed * 0.15 * waveSpeedMultiplier;
+          invader.y += 0.8 * waveSpeedMultiplier;
         }
         
-        // Check if invaders hit the edge
-        if (invader.x <= 0 || invader.x >= canvasWidth - invader.width) {
-      invaderDirection *= -1;
-    }
-      });
-    } else {
-      // During break phase - invaders hover but still move in patterns
-      invaders.forEach(invader => {
-        if (!invader.alive) return;
-        
-        // Wave-based speed multiplier for break phase too
-        const waveSpeedMultiplier = 1 + (waveNumber - 1) * 0.4; // 40% faster each wave during break - more dangerous!
-        
-        if (invader.movePattern === 'hover') {
-          // Hover pattern - slight movement, faster each wave
-          invader.x += invaderDirection * gameSpeed * 0.05 * waveSpeedMultiplier;
-          invader.y += Math.sin(currentTime * 0.002 * waveSpeedMultiplier) * 0.2;
-        } else {
-          // Minimal movement during break, but faster each wave
-          invader.x += invaderDirection * gameSpeed * 0.05 * waveSpeedMultiplier;
-        }
-        
-        // Check if invaders hit the edge
+        // Bounce off walls with more aggressive behavior in later waves
         if (invader.x <= 0 || invader.x >= canvasWidth - invader.width) {
           invaderDirection *= -1;
+          // In later waves, invaders can bounce back more aggressively
+          if (waveNumber >= 3) {
+            invader.y += 5; // Drop down when hitting walls
+          }
         }
       });
-    }
-    
-    // Remove dead invaders from array
-    invaders = invaders.filter(invader => invader.alive);
-    
-    // Spawn new wave only if we have very few invaders
-    if (invaders.length < 1) {
-      console.log(`Wave ${waveNumber} completed! Spawning wave ${waveNumber + 1}...`);
-      spawnNewWave();
     }
   }
   
   // 👾 Spawn new wave of invaders with variety - ULTRA SLOW
   function spawnNewWave() {
-    waveNumber++;
+    // waveNumber is already incremented in updateGame, so don't increment here
     gameSpeed += 0.001; // TINY difficulty increase
-    console.log(`New wave ${waveNumber} spawned! Speed: ${gameSpeed}`);
     
     // Choose a random formation pattern
     const patterns = [
@@ -691,7 +777,31 @@ function initSpaceInvaders() {
   // 🎯 NEW: Create invader with more variety and dangerous patterns
   function createInvader(x, y, row, formation) {
     const movePatterns = ['normal', 'zigzag', 'dive', 'spiral', 'hover'];
-    const movePattern = movePatterns[Math.floor(Math.random() * movePatterns.length)];
+    // More dangerous patterns become more common in later waves
+    let patternWeights = [0.3, 0.2, 0.2, 0.15, 0.15]; // Default weights
+    
+    if (waveNumber >= 3) {
+      patternWeights = [0.2, 0.25, 0.25, 0.15, 0.15]; // More zigzag and dive
+    }
+    if (waveNumber >= 5) {
+      patternWeights = [0.1, 0.3, 0.3, 0.15, 0.15]; // Even more aggressive
+    }
+    if (waveNumber >= 7) {
+      patternWeights = [0.05, 0.35, 0.35, 0.15, 0.1]; // Mostly dangerous patterns
+    }
+    
+    // Weighted random selection
+    const random = Math.random();
+    let cumulativeWeight = 0;
+    let selectedPattern = 'normal';
+    
+    for (let i = 0; i < movePatterns.length; i++) {
+      cumulativeWeight += patternWeights[i];
+      if (random <= cumulativeWeight) {
+        selectedPattern = movePatterns[i];
+        break;
+      }
+    }
     
     return {
       x: x,
@@ -701,17 +811,17 @@ function initSpaceInvaders() {
       width: 30,
       height: 25,
       alive: true,
-      points: (5 - row) * 15, // More points for higher rows
+      points: (5 - row) * 15 + (waveNumber - 1) * 10, // More points in later waves
       formation: formation,
-      shootTimer: Math.random() * 200, // Much faster shooting timing
-      movePattern: movePattern, // More dangerous movement patterns
+      shootTimer: Math.random() * (200 - waveNumber * 20), // Much faster shooting timing
+      movePattern: selectedPattern, // More dangerous movement patterns
       spiralOffset: Math.random() * Math.PI * 2, // For spiral movement
-      hasWeakPoint: Math.random() < 0.3, // 30% chance to have targetable weak point
+      hasWeakPoint: Math.random() < (0.3 + waveNumber * 0.05), // More weak points in later waves
       weakPointType: Math.random() < 0.5 ? 'eye' : 'dna', // Eye or DNA weak point
-      weakPointHealth: 2, // Weak points take 2 hits to destroy
+      weakPointHealth: 2 + Math.floor(waveNumber / 3), // More health in later waves
       weakPointX: x + 15, // Center of invader
       weakPointY: y + 12, // Upper part of invader
-      weakPointSize: 6 // Size of weak point
+      weakPointSize: 6 + Math.floor(waveNumber / 4) // Bigger weak points in later waves
     };
   }
 
@@ -719,9 +829,8 @@ function initSpaceInvaders() {
     bullets.forEach(bullet => {
       bullet.y -= bullet.speed;
     });
-    
-    // Allow bullets to travel further to hit invaders outside screen bounds
-    bullets = bullets.filter(bullet => bullet.y > -50); // Allow bullets to go 50px above screen
+    // Allow bullets to travel much further to hit invaders outside screen bounds
+    bullets = bullets.filter(bullet => bullet.y > -200); // Allow bullets to go 200px above screen
   }
 
   function moveInvaderBullets() {
@@ -743,17 +852,16 @@ function initSpaceInvaders() {
         bullet.y += bullet.speed;
       }
     });
-    
-    invaderBullets = invaderBullets.filter(bullet => bullet.y < canvasHeight + 50); // Allow bullets to go 50px below screen
+    invaderBullets = invaderBullets.filter(bullet => bullet.y < canvasHeight + 200); // Allow bullets to go 200px below screen
   }
 
   function checkBulletCollisions() {
     bullets.forEach((bullet, bulletIndex) => {
       invaders.forEach(invader => {
-        // Check if invader is alive and within reasonable bounds (including slightly outside screen)
+        // Check if invader is alive and within extended bounds (including far outside screen)
         if (invader.alive && 
-            invader.x > -100 && invader.x < canvasWidth + 100 && 
-            invader.y > -100 && invader.y < canvasHeight + 100 &&
+            invader.x > -300 && invader.x < canvasWidth + 300 && 
+            invader.y > -300 && invader.y < canvasHeight + 300 &&
             checkCollision(bullet, invader)) {
           
           // Check if bullet hit weak point
@@ -819,39 +927,58 @@ function initSpaceInvaders() {
     const aliveInvaders = invaders.filter(invader => invader.alive);
     if (aliveInvaders.length === 0) return;
     
-    // ULTRA aggressive shooting - multiple invaders shoot at once!
-    const baseShootInterval = Math.max(20, 150 - (waveNumber - 1) * 15); // Even faster shooting
-    const shootIntervalVariation = Math.max(10, 100 - (waveNumber - 1) * 10); // Less variation, more consistent
-    const simultaneousShooters = Math.min(3, Math.floor(waveNumber / 2) + 1); // Multiple invaders shoot at once
+    // EXTREMELY aggressive shooting - multiple invaders shoot at once!
+    const baseShootInterval = Math.max(10, 120 - (waveNumber - 1) * 20); // Much faster shooting
+    const shootIntervalVariation = Math.max(5, 80 - (waveNumber - 1) * 8); // Less variation, more consistent
+    const simultaneousShooters = Math.min(5, Math.floor(waveNumber / 2) + 2); // More invaders shoot at once
     
     aliveInvaders.forEach(invader => {
       invader.shootTimer--;
       if (invader.shootTimer <= 0) {
         // Multiple bullets per invader for higher waves
-        const bulletCount = waveNumber >= 5 ? 2 : 1;
+        let bulletCount = 1;
+        if (waveNumber >= 3) bulletCount = 2; // Double bullets for wave 3+
+        if (waveNumber >= 6) bulletCount = 3; // Triple bullets for wave 6+
+        if (waveNumber >= 8) bulletCount = 4; // Quadruple bullets for wave 8+
         
         for (let i = 0; i < bulletCount; i++) {
-    invaderBullets.push({
+          invaderBullets.push({
             x: invader.x + invader.width / 2 - 4 + (i * 4), // Spread bullets
             y: invader.y + invader.height,
             width: 8,
             height: 16,
-            speed: Math.min(8, 3 + (waveNumber - 1) * 0.5), // Much faster bullets
+            speed: Math.min(12, 4 + (waveNumber - 1) * 1.2), // Much faster bullets
             type: 'normal'
           });
         }
         
         // Add special targeting bullets for higher waves
-        if (waveNumber >= 3) {
+        if (waveNumber >= 2) {
           invaderBullets.push({
             x: invader.x + invader.width / 2 - 4,
             y: invader.y + invader.height,
             width: 10,
             height: 20,
-            speed: Math.min(10, 4 + (waveNumber - 1) * 0.8), // Super fast targeting bullets
+            speed: Math.min(15, 5 + (waveNumber - 1) * 1.5), // Super fast targeting bullets
             type: 'targeting',
             targetX: playerShip.x + playerShip.width / 2 // Target player position
           });
+        }
+        
+        // NEW: Rapid-fire bursts for very high waves
+        if (waveNumber >= 5) {
+          setTimeout(() => {
+            if (invader.alive) {
+              invaderBullets.push({
+                x: invader.x + invader.width / 2 - 4,
+                y: invader.y + invader.height,
+                width: 8,
+                height: 16,
+                speed: Math.min(10, 3 + (waveNumber - 1) * 0.8),
+                type: 'normal'
+              });
+            }
+          }, 200);
         }
         
         invader.shootTimer = Math.random() * shootIntervalVariation + baseShootInterval;
@@ -888,6 +1015,10 @@ function initSpaceInvaders() {
   }
 
   function draw() {
+    if (!ctx || typeof canvasWidth === 'undefined' || typeof canvasHeight === 'undefined') {
+      return; // Don't draw if context or canvas dimensions are not available
+    }
+    
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     
     drawStars();
@@ -944,6 +1075,14 @@ function initSpaceInvaders() {
       if (cheeseInvaderImg.complete && cheeseInvaderImg.naturalWidth > 0) {
         ctx.drawImage(cheeseInvaderImg, invader.x, invader.y, invader.width, invader.height);
       } else {
+        // Debug: Log when falling back to colored rectangles
+        if (invader.x === 0 && invader.y === 0) { // Only log once per frame
+          console.log('⚠️ Using fallback colored rectangles - cheese invader image not loaded');
+          console.log('⚠️ Image complete:', cheeseInvaderImg.complete);
+          console.log('⚠️ Image naturalWidth:', cheeseInvaderImg.naturalWidth);
+          console.log('⚠️ Image src:', cheeseInvaderImg.src);
+        }
+        
         // Fallback to cheese-themed invaders with different colors based on formation
         let cheeseColor, detailColor, holeColor;
         
@@ -1289,6 +1428,7 @@ function initSpaceInvaders() {
   }
 
   function drawScore() {
+    const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
       // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
       const conversionRate = 1000; // 1,000 invaders = 10 DSPOINC
@@ -1306,6 +1446,10 @@ function initSpaceInvaders() {
 
   // 📊 NEW: Draw phase information with bomb status
   function drawPhaseInfo() {
+    if (!ctx || typeof canvasHeight === 'undefined') {
+      return; // Don't draw if context or canvas height is not available
+    }
+    
     ctx.fillStyle = '#ffffff';
     ctx.font = '14px Arial';
     
@@ -1322,19 +1466,49 @@ function initSpaceInvaders() {
       }
     }
     
+    // Show auto-shoot status
+    ctx.fillStyle = autoShootEnabled ? '#4ade80' : '#ff6b6b';
+    ctx.fillText(`🎯 AUTO-SHOOT: ${autoShootEnabled ? 'ON' : 'OFF'}`, 10, 90);
+    
+    // Show difficulty level and danger indicators
+    if (waveNumber >= 3) {
+      ctx.fillStyle = '#ffaa00'; // Orange for medium difficulty
+      ctx.fillText(`⚠️ DIFFICULTY: MEDIUM - Faster invaders!`, 10, 110);
+    }
+    if (waveNumber >= 5) {
+      ctx.fillStyle = '#ff6600'; // Dark orange for high difficulty
+      ctx.fillText(`🔥 DIFFICULTY: HIGH - Multiple bullets!`, 10, 110);
+    }
+    if (waveNumber >= 7) {
+      ctx.fillStyle = '#ff0000'; // Red for extreme difficulty
+      ctx.fillText(`💀 DIFFICULTY: EXTREME - Rapid fire!`, 10, 110);
+    }
+    if (waveNumber >= 10) {
+      ctx.fillStyle = '#ff00ff'; // Magenta for insane difficulty
+      ctx.fillText(`👹 DIFFICULTY: INSANE - Maximum chaos!`, 10, 110);
+    }
+    
     // Show bomb status if we're at level 4 or higher
     if (waveNumber >= 4) {
       ctx.fillStyle = '#ff4444'; // Red for bombs
-      ctx.fillText(`💣 BOMBS ACTIVE! - Level ${waveNumber}`, 10, 70);
+      ctx.fillText(`💣 BOMBS ACTIVE! - Level ${waveNumber}`, 10, 130);
     }
+    
+    // Show controls help
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '12px Arial';
+    ctx.fillText(`Controls: Arrow Keys/A/D to move, Space/W to shoot, T to toggle auto-shoot`, 10, canvasHeight - 20);
   }
 
   function updateScore() {
+    const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
       // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
       const conversionRate = 1000; // 1,000 invaders = 10 DSPOINC
       const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
       scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders (${dspoinEarned} DSPOINC)`;
+    } else {
+      console.warn('⚠️ Score display element not found');
     }
   }
 
@@ -1398,6 +1572,8 @@ function initSpaceInvaders() {
     const conversionRate = 1000;
     const dspoincScore = Math.floor(finalScore / conversionRate) * 10; // Convert to DSPOINC (1,000 invaders = 10 DSPOINC)
 
+    console.log(`💾 Saving Space Invaders score: ${finalScore} invaders = ${dspoincScore} DSPOINC`);
+
     // Save to the same API endpoint as Tetris and Snake
     fetch('/api/dev/save-score.php', {
       method: 'POST',
@@ -1412,22 +1588,39 @@ function initSpaceInvaders() {
         game: 'space_invaders'
       })
     })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Response is not JSON - server may be returning HTML error page');
+      }
+      return response.json();
+    })
     .then(data => {
-      console.log('Space Invaders score saved:', data);
       if (data.success) {
-        console.log(`✅ Space Invaders score saved: ${finalScore} invaders = ${dspoincScore} DSPOINC`);
+        console.log(`✅ Space Invaders score saved successfully: ${finalScore} invaders = ${dspoincScore} DSPOINC`);
       } else {
-        console.error('❌ Failed to save Space Invaders score:', data.error);
+        if (data.local_test) {
+          console.log(`🔄 Local testing detected - score would be saved in production: ${finalScore} invaders = ${dspoincScore} DSPOINC`);
+        } else {
+          console.error('❌ Failed to save Space Invaders score:', data.error || 'Unknown error');
+        }
       }
     })
     .catch(error => {
-      console.error('Error saving Space Invaders score:', error);
+      console.error('❌ Error saving Space Invaders score:', error.message);
+      // Check if this is a local testing issue
+      if (error.message.includes('HTML') || error.message.includes('fetch')) {
+        console.log('🔄 Local testing detected - score saving disabled for local development');
+        console.log(`📊 Score would be saved in production: ${finalScore} invaders = ${dspoincScore} DSPOINC`);
+      }
     });
   }
 
   function movePlayer(direction) {
-    console.log('🎮 movePlayer called:', direction, 'paused:', isSpaceInvadersPaused);
     if (isSpaceInvadersPaused) return;
     
     const moveAmount = playerShip.speed;
@@ -1442,7 +1635,14 @@ function initSpaceInvaders() {
         break;
     }
     
-    console.log('🎮 Ship moved from', oldX, 'to', playerShip.x);
+    // Auto-shoot when ship moves (with cooldown) - only if enabled
+    if (autoShootEnabled) {
+      const currentTime = Date.now();
+      if (currentTime - lastPlayerShootTime > autoShootCooldown) {
+        playerShoot();
+        lastPlayerShootTime = currentTime;
+      }
+    }
   }
 
   function playerShoot() {
@@ -1490,15 +1690,16 @@ function initSpaceInvaders() {
 
   function handleTouchMove(e) {
     if (isTouching && e.target.closest("#space-invaders-canvas")) {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - touchStartX;
-    const deltaY = touch.clientY - touchStartY;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - touchStartX;
+      const deltaY = touch.clientY - touchStartY;
       
       // Movement - more sensitive for mobile (like Tetris)
       if (Math.abs(deltaX) > 10) {
         movePlayer(deltaX > 0 ? 'right' : 'left');
         touchStartX = touch.clientX;
+        // Auto-shoot is handled in movePlayer function
       }
       
       // Shooting - more reliable swipe up detection (like Snake)
@@ -1529,40 +1730,49 @@ function initSpaceInvaders() {
 
   function lockSpaceInvadersScroll() {
     // Mobile-friendly scroll lock (like Tetris and Snake)
-    console.log('🔒 Locking scroll for mobile');
+    // Modified to not cut off bottom content
     
     // Prevent scroll on body and html
     document.body.style.overflow = 'hidden';
     document.body.style.touchAction = 'none';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    document.body.style.height = '100%';
     
     // Also lock scroll on html element for better mobile support
     document.documentElement.style.overflow = 'hidden';
     document.documentElement.style.touchAction = 'none';
-    document.documentElement.style.position = 'fixed';
-    document.documentElement.style.width = '100%';
-    document.documentElement.style.height = '100%';
+    
+    // Store current scroll position to prevent jumping
+    if (!window.spaceInvadersScrollPosition) {
+      window.spaceInvadersScrollPosition = window.pageYOffset;
+    }
+    
+    // Scroll to the game container to ensure it's visible
+    const gameContainer = document.getElementById('space-cheese-invaders');
+    if (gameContainer) {
+      const rect = gameContainer.getBoundingClientRect();
+      const offset = rect.top + window.pageYOffset - 20; // 20px offset from top
+      window.scrollTo(0, offset);
+    } else {
+      // Fallback to stored position
+      window.scrollTo(0, window.spaceInvadersScrollPosition);
+    }
   }
 
   function unlockSpaceInvadersScroll() {
     // Restore scroll for mobile devices (like Tetris and Snake)
-    console.log('🔓 Unlocking scroll for mobile');
     
     // Restore body scroll
     document.body.style.overflow = '';
     document.body.style.touchAction = '';
-    document.body.style.position = '';
-    document.body.style.width = '';
-    document.body.style.height = '';
     
     // Also restore scroll on html element
     document.documentElement.style.overflow = '';
     document.documentElement.style.touchAction = '';
-    document.documentElement.style.position = '';
-    document.documentElement.style.width = '';
-    document.documentElement.style.height = '';
+    
+    // Restore scroll position if it was stored
+    if (window.spaceInvadersScrollPosition !== undefined) {
+      window.scrollTo(0, window.spaceInvadersScrollPosition);
+      delete window.spaceInvadersScrollPosition;
+    }
   }
 
 
@@ -1582,11 +1792,22 @@ function initSpaceInvaders() {
     }
   }
 
+  function toggleAutoShoot() {
+    autoShootEnabled = !autoShootEnabled;
+    console.log(`🎯 Auto-shoot ${autoShootEnabled ? 'enabled' : 'disabled'}`);
+  }
+
   // 🎮 Combined keyboard event listener
   document.addEventListener('keydown', (e) => {
     // Handle pause first
     if (e.key === 'p' || e.key === 'P') {
       togglePause();
+      return;
+    }
+    
+    // Handle auto-shoot toggle
+    if (e.key === 't' || e.key === 'T') {
+      toggleAutoShoot();
       return;
     }
     
@@ -1630,6 +1851,7 @@ function initSpaceInvaders() {
   const mobileLeftBtn = document.getElementById("mobile-left-btn");
   const mobileRightBtn = document.getElementById("mobile-right-btn");
   const mobileShootBtn = document.getElementById("mobile-shoot-btn");
+  const mobileAutoShootBtn = document.getElementById("mobile-auto-shoot-btn");
 
   // Show mobile controls on mobile devices
   if (mobileControls && window.innerWidth <= 768) {
@@ -1655,6 +1877,14 @@ function initSpaceInvaders() {
     });
   }
 
+  if (mobileAutoShootBtn) {
+    mobileAutoShootBtn.addEventListener("click", () => {
+      toggleAutoShoot();
+      // Update button text
+      mobileAutoShootBtn.textContent = autoShootEnabled ? "🎯 Auto: ON" : "🎯 Auto: OFF";
+    });
+  }
+
   // 🎮 Touch controls setup
   enableGlobalSpaceInvadersTouch();
   // Don't lock scroll immediately - only lock when game starts
@@ -1667,70 +1897,57 @@ function initSpaceInvaders() {
     unlockSpaceInvadersScroll();
   }
 
-  // 🎮 Initialize the game
-  console.log('👾 Initializing invaders...');
-  initializeInvaders();
-  console.log('👾 Invaders initialized, count:', invaders.length);
-  
-  // 🧀 Preload images and start initial draw
-  console.log('🖼️ Preloading images...');
-  Promise.all([
-    new Promise(resolve => {
-      if (cheeseShipImg.complete) resolve();
-      else cheeseShipImg.onload = resolve;
-    }),
-    new Promise(resolve => {
-      if (cheeseInvaderImg.complete) resolve();
-      else cheeseInvaderImg.onload = resolve;
-    }),
-    new Promise(resolve => {
-      if (cheeseBulletImg.complete) resolve();
-      else cheeseBulletImg.onload = resolve;
-    }),
-    new Promise(resolve => {
-      if (cheeseExplosionImg.complete) resolve();
-      else cheeseExplosionImg.onload = resolve;
-    }),
-    // Preload Tetris blocks
-    ...Object.values(tetrisBlockImages).map(img => 
-      new Promise(resolve => {
-        if (img.complete) resolve();
-        else img.onload = resolve;
-      })
-    ),
-    // Preload snake images
-    new Promise(resolve => {
-      if (snakeDNAImg.complete) resolve();
-      else snakeDNAImg.onload = resolve;
-    }),
-    new Promise(resolve => {
-      if (snakeHeadImg.complete) resolve();
-      else snakeHeadImg.onload = resolve;
-    })
-  ]).then(() => {
-    console.log('🧀🐍 All images loaded, game ready!');
-    // Force a redraw to show images
-    draw();
-    console.log('🎨 Initial draw completed');
-  }).catch((error) => {
-    console.log('🧀🐍 Some images failed to load, using fallbacks:', error);
-    // Force a redraw to show fallbacks
-    draw();
-    console.log('🎨 Initial draw completed with fallbacks');
-  });
-  
-  console.log('✅ initSpaceInvaders completed successfully');
-  
   // 🎮 Make game functions globally available
-  console.log('🌐 About to assign game functions to window object...');
   window.startGameWithCountdown = startGameWithCountdown;
   window.startGame = startGame;
-  console.log('✅ Game functions assigned to window');
-}
 
 // 🎮 Make initSpaceInvaders globally available
-console.log('🌐 About to assign initSpaceInvaders to window object...');
-console.log('🔍 initSpaceInvaders function exists:', typeof initSpaceInvaders);
 window.initSpaceInvaders = initSpaceInvaders;
-console.log('✅ initSpaceInvaders assigned to window');
-console.log('🎯 window.initSpaceInvaders === initSpaceInvaders:', window.initSpaceInvaders === initSpaceInvaders);
+
+// 🎮 Auto-initialize when DOM is loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    // Wait a bit for all elements to be available
+    setTimeout(() => {
+      if (document.getElementById('space-invaders-canvas')) {
+        console.log('🎮 Auto-initializing Space Invaders from DOMContentLoaded');
+        initSpaceInvaders();
+      } else {
+        console.warn('⚠️ Canvas not found during auto-initialization');
+      }
+    }, 100);
+  });
+} else {
+  // DOM is already loaded
+  setTimeout(() => {
+    if (document.getElementById('space-invaders-canvas')) {
+      console.log('🎮 Auto-initializing Space Invaders (DOM already loaded)');
+      initSpaceInvaders();
+    } else {
+      console.warn('⚠️ Canvas not found during auto-initialization');
+    }
+  }, 100);
+}
+
+// 🎮 Also expose the function immediately for manual calls
+console.log('🎮 Space Invaders script loaded - initSpaceInvaders available as window.initSpaceInvaders');
+
+// 🧪 Test function to check if everything is working
+window.testSpaceInvaders = function() {
+  console.log('🧪 Testing Space Invaders...');
+  const canvas = document.getElementById('space-invaders-canvas');
+  if (canvas) {
+    console.log('✅ Canvas found:', canvas);
+    console.log('✅ Canvas dimensions:', canvas.width, 'x', canvas.height);
+    if (window.initSpaceInvaders) {
+      console.log('✅ initSpaceInvaders function available');
+      return true;
+    } else {
+      console.error('❌ initSpaceInvaders function not available');
+      return false;
+    }
+  } else {
+    console.error('❌ Canvas not found');
+    return false;
+  }
+};

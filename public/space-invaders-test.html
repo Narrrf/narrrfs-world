@@ -43,39 +43,39 @@
 </header>
 
 <!-- 🚀 SPACE INVADERS PANEL -->
-<section id="space-cheese-invaders" class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col items-center justify-center">
-  <section class="relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 max-w-md w-full">
+<section id="space-cheese-invaders" class="max-w-6xl w-full mx-auto px-4 mt-8 flex flex-col items-center justify-center">
+  <section class="relative bg-black text-yellow-300 py-6 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 max-w-md w-full">
     <div class="absolute top-4 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
       🚀 SPACE INVADERS
     </div>
 
-    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">SPACE CHEESE INVADERS</h2>
+    <h2 class="text-center text-2xl font-bold mb-3 text-yellow-100 drop-shadow">SPACE CHEESE INVADERS</h2>
     
     <div class="relative">
-      <canvas id="space-invaders-canvas" width="400" height="600" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg w-full max-w-md h-auto" style="max-height: 70vh;"></canvas>
+      <canvas id="space-invaders-canvas" width="400" height="600" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg w-full max-w-md h-auto" style="max-height: 60vh;"></canvas>
 
       <div id="space-invaders-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
         5
       </div>
     </div>
 
-    <div class="text-center mt-4 space-y-2">
+    <div class="text-center mt-3 space-y-2">
       <button id="start-space-invaders-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
       <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
     </div>
 
     <!-- 🎮 Mobile Controls -->
-    <div id="mobile-controls" class="hidden md:hidden mt-4 flex justify-center space-x-4">
+    <div id="mobile-controls" class="hidden md:hidden mt-3 flex justify-center space-x-4">
       <button id="mobile-left-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-3 rounded-xl shadow-lg text-lg">⬅️</button>
       <button id="mobile-shoot-btn" class="bg-red-500 hover:bg-red-400 text-white font-bold px-6 py-3 rounded-xl shadow-lg text-lg">🔥 SHOOT</button>
       <button id="mobile-right-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-3 rounded-xl shadow-lg text-lg">➡️</button>
     </div>
 
-    <p id="space-invaders-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">
+    <p id="space-invaders-score" class="text-center mt-4 text-sm font-semibold text-yellow-200 animate-pulse">
       💰 Space Invaders Score: $0 DSPOINC
     </p>
 
-    <div class="text-xs italic text-center text-gray-500 mt-1">
+    <div class="text-xs italic text-center text-gray-500 mt-1 mb-2">
       🎮 Controls: WASD/Arrows to move, Space/W to shoot, P to pause<br>
       📱 Mobile: Use buttons below or swipe up on canvas to shoot
     </div>

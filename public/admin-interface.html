@@ -4152,37 +4152,62 @@ require_once 'discord-invite.php';
     }
 
     function displayGameStatistics(data) {
-      // Update Tetris statistics
-      document.getElementById('tetrisTotalScores').textContent = data.tetris.total_scores.toLocaleString();
-      document.getElementById('tetrisUniquePlayers').textContent = data.tetris.unique_players.toLocaleString();
-      document.getElementById('tetrisMaxScore').textContent = data.tetris.max_score ? data.tetris.max_score.toLocaleString() : '0';
-      document.getElementById('tetrisRecent24h').textContent = data.tetris.recent_24h.toLocaleString();
+      try {
+        // Update Tetris statistics
+        const tetrisTotalScores = document.getElementById('tetrisTotalScores');
+        const tetrisUniquePlayers = document.getElementById('tetrisUniquePlayers');
+        const tetrisMaxScore = document.getElementById('tetrisMaxScore');
+        const tetrisRecent24h = document.getElementById('tetrisRecent24h');
+        
+        if (tetrisTotalScores) tetrisTotalScores.textContent = data.tetris.total_scores.toLocaleString();
+        if (tetrisUniquePlayers) tetrisUniquePlayers.textContent = data.tetris.unique_players.toLocaleString();
+        if (tetrisMaxScore) tetrisMaxScore.textContent = data.tetris.max_score ? data.tetris.max_score.toLocaleString() : '0';
+        if (tetrisRecent24h) tetrisRecent24h.textContent = data.tetris.recent_24h.toLocaleString();
 
-      // Update Snake statistics
-      document.getElementById('snakeTotalScores').textContent = data.snake.total_scores.toLocaleString();
-      document.getElementById('snakeUniquePlayers').textContent = data.snake.unique_players.toLocaleString();
-      document.getElementById('snakeMaxScore').textContent = data.snake.max_score ? data.snake.max_score.toLocaleString() : '0';
-      document.getElementById('snakeRecent24h').textContent = data.snake.recent_24h.toLocaleString();
+        // Update Snake statistics
+        const snakeTotalScores = document.getElementById('snakeTotalScores');
+        const snakeUniquePlayers = document.getElementById('snakeUniquePlayers');
+        const snakeMaxScore = document.getElementById('snakeMaxScore');
+        const snakeRecent24h = document.getElementById('snakeRecent24h');
+        
+        if (snakeTotalScores) snakeTotalScores.textContent = data.snake.total_scores.toLocaleString();
+        if (snakeUniquePlayers) snakeUniquePlayers.textContent = data.snake.unique_players.toLocaleString();
+        if (snakeMaxScore) snakeMaxScore.textContent = data.snake.max_score ? data.snake.max_score.toLocaleString() : '0';
+        if (snakeRecent24h) snakeRecent24h.textContent = data.snake.recent_24h.toLocaleString();
 
-      // Update Space Invaders statistics
-      document.getElementById('spaceInvadersTotalScores').textContent = data.space_invaders.total_scores.toLocaleString();
-      document.getElementById('spaceInvadersUniquePlayers').textContent = data.space_invaders.unique_players.toLocaleString();
-      document.getElementById('spaceInvadersMaxScore').textContent = data.space_invaders.max_score ? data.space_invaders.max_score.toLocaleString() : '0';
-      document.getElementById('spaceInvadersRecent24h').textContent = data.space_invaders.recent_24h.toLocaleString();
+        // Update Space Invaders statistics
+        const spaceInvadersTotalScores = document.getElementById('spaceInvadersTotalScores');
+        const spaceInvadersUniquePlayers = document.getElementById('spaceInvadersUniquePlayers');
+        const spaceInvadersMaxScore = document.getElementById('spaceInvadersMaxScore');
+        const spaceInvadersRecent24h = document.getElementById('spaceInvadersRecent24h');
+        
+        if (spaceInvadersTotalScores) spaceInvadersTotalScores.textContent = data.space_invaders.total_scores.toLocaleString();
+        if (spaceInvadersUniquePlayers) spaceInvadersUniquePlayers.textContent = data.space_invaders.unique_players.toLocaleString();
+        if (spaceInvadersMaxScore) spaceInvadersMaxScore.textContent = data.space_invaders.max_score ? data.space_invaders.max_score.toLocaleString() : '0';
+        if (spaceInvadersRecent24h) spaceInvadersRecent24h.textContent = data.space_invaders.recent_24h.toLocaleString();
 
-      // Update combined statistics
-      document.getElementById('totalGameScores').textContent = data.total.total_scores.toLocaleString();
-      document.getElementById('totalGamePlayers').textContent = data.total.total_players.toLocaleString();
-      document.getElementById('totalGameRecent24h').textContent = data.total.recent_24h.toLocaleString();
-      document.getElementById('totalGameRecent7d').textContent = data.total.recent_7d.toLocaleString();
+        // Update combined statistics
+        const totalGameScores = document.getElementById('totalGameScores');
+        const totalGamePlayers = document.getElementById('totalGamePlayers');
+        const totalGameRecent24h = document.getElementById('totalGameRecent24h');
+        const totalGameRecent7d = document.getElementById('totalGameRecent7d');
+        
+        if (totalGameScores) totalGameScores.textContent = data.total.total_scores.toLocaleString();
+        if (totalGamePlayers) totalGamePlayers.textContent = data.total.total_players.toLocaleString();
+        if (totalGameRecent24h) totalGameRecent24h.textContent = data.total.recent_24h.toLocaleString();
+        if (totalGameRecent7d) totalGameRecent7d.textContent = data.total.recent_7d.toLocaleString();
 
-      // Display top players
-      displayTopPlayers('tetris', data.tetris_top_players);
-      displayTopPlayers('snake', data.snake_top_players);
-      displayTopPlayers('space_invaders', data.space_invaders_top_players);
+        // Display top players
+        displayTopPlayers('tetris', data.tetris_top_players);
+        displayTopPlayers('snake', data.snake_top_players);
+        displayTopPlayers('space_invaders', data.space_invaders_top_players);
 
-      // Display recent activity
-      displayRecentActivity(data.recent_activity);
+        // Display recent activity
+        displayRecentActivity(data.recent_activity);
+      } catch (error) {
+        console.error('Error displaying game statistics:', error);
+        addLog(`❌ Error displaying game statistics: ${error.message}`);
+      }
     }
 
     // Season Statistics Functions
@@ -4376,6 +4401,11 @@ require_once 'discord-invite.php';
     function displayTopPlayers(gameType, players) {
       const container = document.getElementById(`${gameType}TopPlayers`);
       
+      if (!container) {
+        console.warn(`Container ${gameType}TopPlayers not found`);
+        return;
+      }
+      
       if (!players || players.length === 0) {
         container.innerHTML = '<div class="text-gray-400 text-sm">No players found</div>';
         return;
@@ -4401,6 +4431,11 @@ require_once 'discord-invite.php';
     function displayRecentActivity(activity) {
       const container = document.getElementById('recentGameActivity');
       
+      if (!container) {
+        console.warn('Container recentGameActivity not found');
+        return;
+      }
+      
       if (!activity || activity.length === 0) {
         container.innerHTML = '<div class="text-gray-400 text-sm">No recent activity</div>';
         return;
@@ -4409,7 +4444,7 @@ require_once 'discord-invite.php';
       container.innerHTML = activity.map(item => `
         <div class="bg-gray-700 p-2 rounded flex justify-between items-center">
           <div class="flex items-center">
-            <span class="text-sm mr-2">${item.game === 'tetris' ? '🟦' : '🐍'}</span>
+            <span class="text-sm mr-2">${item.game === 'tetris' ? '🟦' : item.game === 'snake' ? '🐍' : item.game === 'space_invaders' ? '🚀' : '🎮'}</span>
             <div>
               <p class="text-sm font-semibold text-white">${item.discord_name || 'Unknown'}</p>
               <p class="text-xs text-gray-400">${formatDate(item.timestamp)}</p>
