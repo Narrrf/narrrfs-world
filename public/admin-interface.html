@@ -1712,10 +1712,14 @@ require_once 'discord-invite.php';
         const discordAuthResult = await checkDiscordAuth();
         
         if (!discordAuthResult) {
-          // Only load dashboard data if not auto-authenticated
-          loadDashboardData();
+          // Hide all admin content until authentication
+          hideAllAdminContent();
           addLog('🎯 Admin interface loaded successfully');
           addLog('🔐 Please authenticate to access admin features');
+        } else {
+          // User is authenticated, show admin content
+          showAdminContent();
+          loadDashboardData();
         }
       }, 100);
     });
@@ -1726,6 +1730,73 @@ require_once 'discord-invite.php';
       document.getElementById('currentUrl').textContent = DISCORD_CONFIG.getCurrentUrl();
       document.getElementById('systemVersion').textContent = DISCORD_CONFIG.version;
       document.getElementById('lastUpdated').textContent = DISCORD_CONFIG.lastUpdated;
+    }
+
+    // Hide all admin content until authentication
+    function hideAllAdminContent() {
+      // Hide navigation panel
+      const navPanel = document.getElementById('navPanel');
+      if (navPanel) navPanel.style.display = 'none';
+      
+      // Hide all tab content
+      const tabContents = document.querySelectorAll('[id$="Tab"]');
+      tabContents.forEach(tab => {
+        if (tab) tab.style.display = 'none';
+      });
+      
+      // Show only authentication panel
+      const authPanel = document.getElementById('authPanel');
+      if (authPanel) authPanel.style.display = 'block';
+      
+      // Clear sensitive data
+      const sensitiveElements = ['totalUsers', 'totalScores', 'totalItems', 'activeQuests'];
+      sensitiveElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = '🔒';
+      });
+    }
+
+    // Show admin content after authentication
+    function showAdminContent() {
+      // Hide authentication panel
+      const authPanel = document.getElementById('authPanel');
+      if (authPanel) authPanel.style.display = 'none';
+      
+      // Show navigation panel
+      const navPanel = document.getElementById('navPanel');
+      if (navPanel) navPanel.style.display = 'block';
+      
+      // Show dashboard tab by default
+      showTab('dashboard');
+    }
+
+    // Show specific tab
+    function showTab(tabName) {
+      // Update active tab button
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+      
+      // Hide all tabs
+      document.querySelectorAll('[id$="Tab"]').forEach(t => t.style.display = 'none');
+      
+      // Show selected tab
+      const selectedTab = document.getElementById(tabName + 'Tab');
+      if (selectedTab) selectedTab.style.display = 'block';
+      
+      currentTab = tabName;
+      addLog(`📋 Switched to ${tabName} tab`);
+      
+      // Load tab-specific data
+      if (tabName === 'store') loadStoreItems();
+      if (tabName === 'quests') loadQuests();
+      if (tabName === 'games') {
+        loadGameStatistics();
+        loadSeasonStats();
+        loadGameSettings();
+        loadCurrentSeasonSettings();
+      }
+      if (tabName === 'holderVerification') loadHolderVerificationData();
     }
 
     // Load dashboard data
@@ -2111,8 +2182,9 @@ require_once 'discord-invite.php';
         
         if (data.success) {
           currentAdmin = data.user;
-          document.getElementById('authPanel').style.display = 'none';
-          document.getElementById('navPanel').style.display = 'block';
+          
+          // Show admin content after authentication
+          showAdminContent();
           
           // Show database unlock section for all authenticated users (but keep options hidden initially)
           document.getElementById('databaseUnlockSection').style.display = 'block';
@@ -3368,11 +3440,8 @@ require_once 'discord-invite.php';
               auth_type: 'discord'
             };
             
-            // Hide auth panel and show admin interface
-            document.getElementById('authPanel').style.display = 'none';
-            document.getElementById('navPanel').style.display = 'block';
-            
-            // Load dashboard data
+            // Show admin content after authentication
+            showAdminContent();
             loadDashboardData();
             
             addLog(`✅ Auto-authenticated as Discord moderator: ${user.discord_name}`);
@@ -3418,29 +3487,55 @@ require_once 'discord-invite.php';
     }
     
     // Unlock database access
-    function unlockDatabase() {
+    async function unlockDatabase() {
       const password = document.getElementById('databasePassword').value;
       const statusDiv = document.getElementById('unlockStatus');
       
-      // Simple internal password (you can change this)
-      const internalPassword = 'cheese2024';
+      if (!password) {
+        statusDiv.innerHTML = '<div class="text-red-600">❌ Please enter a password</div>';
+        return;
+      }
       
-      if (password === internalPassword) {
-        // Show database options
-        document.getElementById('databaseOptions').style.display = 'block';
-        document.getElementById('databaseQuickActions').style.display = 'block';
-        document.getElementById('databaseUnlockSection').style.display = 'none';
+      // Require proper authentication before database access
+      if (!currentAdmin) {
+        statusDiv.innerHTML = '<div class="text-red-600">❌ Authentication required</div>';
+        addLog('❌ Database unlock failed: Authentication required');
+        return;
+      }
+      
+      try {
+        // Call secure server-side validation endpoint
+        const response = await fetch('/api/admin/validate-db-password.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (currentAdmin ? currentAdmin.token : '')
+          },
+          body: JSON.stringify({ password: password })
+        });
         
-        statusDiv.innerHTML = '<div class="text-green-600">✅ Database access unlocked!</div>';
-        addLog('🔓 Database access unlocked successfully');
+        const data = await response.json();
         
-        // Hide modal after 1 second
-        setTimeout(() => {
-          hideDatabaseUnlock();
-        }, 1000);
-      } else {
-        statusDiv.innerHTML = '<div class="text-red-600">❌ Incorrect password</div>';
-        addLog('❌ Database unlock failed: Incorrect password');
+        if (data.success) {
+          // Show database options
+          document.getElementById('databaseOptions').style.display = 'block';
+          document.getElementById('databaseQuickActions').style.display = 'block';
+          document.getElementById('databaseUnlockSection').style.display = 'none';
+          
+          statusDiv.innerHTML = '<div class="text-green-600">✅ Database access unlocked!</div>';
+          addLog('🔓 Database access unlocked successfully');
+          
+          // Hide modal after 1 second
+          setTimeout(() => {
+            hideDatabaseUnlock();
+          }, 1000);
+        } else {
+          statusDiv.innerHTML = '<div class="text-red-600">❌ ' + (data.error || 'Incorrect password') + '</div>';
+          addLog('❌ Database unlock failed: ' + (data.error || 'Incorrect password'));
+        }
+      } catch (error) {
+        statusDiv.innerHTML = '<div class="text-red-600">❌ Validation error: ' + error.message + '</div>';
+        addLog('❌ Database unlock error: ' + error.message);
       }
     }
     
@@ -3474,9 +3569,12 @@ require_once 'discord-invite.php';
       statusDiv.innerHTML = '<div class="text-blue-600">⏳ Uploading database...</div>';
       
       try {
-        const response = await fetch('/api/dev/upload-db.php?secret=MyUltraSecretKey123', {
+        const response = await fetch('/api/dev/upload-db.php', {
           method: 'POST',
-          body: formData
+          body: formData,
+          headers: {
+            'Authorization': 'Bearer ' + (currentAdmin ? currentAdmin.token : '')
+          }
         });
         
         const result = await response.text();
