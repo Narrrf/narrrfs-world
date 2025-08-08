@@ -877,49 +877,7 @@ if (user.discord_id) {
 </script>
 
 
-<script>
-  // 🎯 Load all three game leaderboards
-  fetch("https://narrrfs.world/api/dev/get-leaderboard.php")
-    .then(res => res.json())
-    .then(data => {
-      const scores = data.leaderboard || [];
 
-      const tetrisList = document.getElementById("leaderboard-tetris-list");
-      const snakeList = document.getElementById("leaderboard-snake-list");
-      const spaceInvadersList = document.getElementById("leaderboard-space-invaders-list");
-
-      tetrisList.innerHTML = "";
-      snakeList.innerHTML = "";
-      spaceInvadersList.innerHTML = "";
-
-      scores
-        .filter(entry => entry.game === "tetris")
-        .forEach((entry, i) => {
-          const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-          const li = document.createElement("li");
-          li.innerHTML = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-          tetrisList.appendChild(li);
-        });
-
-      scores
-        .filter(entry => entry.game === "snake")
-        .forEach((entry, i) => {
-          const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-          const li = document.createElement("li");
-          li.innerHTML = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-          snakeList.appendChild(li);
-        });
-
-      scores
-        .filter(entry => entry.game === "space_invaders")
-        .forEach((entry, i) => {
-          const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-          const li = document.createElement("li");
-          li.innerHTML = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-          spaceInvadersList.appendChild(li);
-        });
-    });
-</script>
 <!-- 🧠 Load Scroll Scripts -->
 <script src="scripts/tetris-scroll.js?v=9.9"></script>
 <script src="scripts/snake-scroll.js?v=1.1"></script>
@@ -944,9 +902,11 @@ if (user.discord_id) {
 
       const tetrisList = document.getElementById("leaderboard-tetris-list");
       const snakeList = document.getElementById("leaderboard-snake-list");
+      const spaceInvadersList = document.getElementById("leaderboard-space-invaders-list");
 
       tetrisList.innerHTML = "";
       snakeList.innerHTML = "";
+      spaceInvadersList.innerHTML = "";
 
       (result.tetris || []).forEach((entry, i) => {
         const li = document.createElement("li");
@@ -961,10 +921,20 @@ if (user.discord_id) {
         li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
         snakeList.appendChild(li);
       });
+
+      (result.space_invaders || []).forEach((entry, i) => {
+        const li = document.createElement("li");
+        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
+        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+        spaceInvadersList.appendChild(li);
+      });
     } catch (err) {
       console.error("Leaderboard fetch failed", err);
     }
   }
+
+  // Load leaderboards when page loads
+  loadCombinedLeaderboards();
 </script>
 
 
