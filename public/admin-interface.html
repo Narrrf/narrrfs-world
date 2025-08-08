@@ -1033,6 +1033,32 @@ require_once 'discord-invite.php';
         </div>
       </div>
 
+      <!-- Discord Activity Feed -->
+      <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <div class="flex justify-between items-center mb-3">
+          <h4 class="font-semibold text-blue-400 mb-0">🔗 Discord Activity Feed</h4>
+          <div class="flex items-center space-x-2">
+            <button id="toggleDiscordFeed" onclick="toggleDiscordFeed()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+              <span id="feedStatus">▶️ Start</span>
+            </button>
+            <button onclick="clearDiscordFeed()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+              🗑️ Clear
+            </button>
+          </div>
+        </div>
+        <div class="bg-black bg-opacity-80 p-3 rounded-lg border border-gray-600">
+          <div id="discordActivityFeed" class="space-y-1 max-h-64 overflow-y-auto font-mono text-sm">
+            <div class="text-gray-400 text-center py-4">
+              <div class="text-lg mb-2">🤖 Discord Bot Activity</div>
+              <div class="text-sm">Click "Start" to begin monitoring Discord events</div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-400">
+          <span id="feedStats">Events: 0 | Last update: Never</span>
+        </div>
+      </div>
+
       <!-- Season Settings Management -->
       <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
         <h4 class="font-semibold text-yellow-400 mb-3">⚙️ Season Settings Management</h4>
@@ -4399,10 +4425,28 @@ require_once 'discord-invite.php';
     }
 
     function displayTopPlayers(gameType, players) {
-      const container = document.getElementById(`${gameType}TopPlayers`);
+      let containerId;
+      
+      // Map game types to their correct container IDs
+      switch(gameType) {
+        case 'tetris':
+          containerId = 'tetrisTopPlayers';
+          break;
+        case 'snake':
+          containerId = 'snakeTopPlayers';
+          break;
+        case 'space_invaders':
+          containerId = 'spaceInvadersTopPlayers';
+          break;
+        default:
+          console.warn(`Unknown game type: ${gameType}`);
+          return;
+      }
+      
+      const container = document.getElementById(containerId);
       
       if (!container) {
-        console.warn(`Container ${gameType}TopPlayers not found`);
+        console.warn(`Container ${containerId} not found`);
         return;
       }
       
@@ -5612,6 +5656,152 @@ require_once 'discord-invite.php';
       } catch (error) {
         addLog(`❌ Error updating season settings: ${error.message}`);
       }
+    }
+
+    // Discord Activity Feed Functions
+    let discordFeedInterval = null;
+    let discordFeedActive = false;
+    let discordEventCount = 0;
+
+    function toggleDiscordFeed() {
+      const button = document.getElementById('toggleDiscordFeed');
+      const status = document.getElementById('feedStatus');
+      
+      if (discordFeedActive) {
+        // Stop the feed
+        if (discordFeedInterval) {
+          clearInterval(discordFeedInterval);
+          discordFeedInterval = null;
+        }
+        discordFeedActive = false;
+        status.textContent = '▶️ Start';
+        button.className = 'bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm';
+        addLog('🛑 Discord activity feed stopped');
+      } else {
+        // Start the feed
+        discordFeedActive = true;
+        status.textContent = '⏹️ Stop';
+        button.className = 'bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm';
+        startDiscordFeed();
+        addLog('▶️ Discord activity feed started');
+      }
+    }
+
+    function startDiscordFeed() {
+      // Clear existing feed
+      clearDiscordFeed();
+      
+      // Start polling for Discord events
+      discordFeedInterval = setInterval(async () => {
+        try {
+          const response = await fetch('/api/admin/get-discord-activity.php');
+          const data = await response.json();
+          
+          if (data.success && data.events && data.events.length > 0) {
+            data.events.forEach(event => {
+              addDiscordEvent(event);
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching Discord activity:', error);
+        }
+      }, 2000); // Poll every 2 seconds
+    }
+
+    function addDiscordEvent(event) {
+      const feed = document.getElementById('discordActivityFeed');
+      const stats = document.getElementById('feedStats');
+      
+      // Create event element
+      const eventElement = document.createElement('div');
+      eventElement.className = 'flex items-center space-x-2 text-gray-300 hover:bg-gray-700 p-1 rounded transition-colors';
+      
+      const timestamp = new Date(event.timestamp).toLocaleTimeString();
+      const eventType = getEventTypeIcon(event.type);
+      const userName = event.user_name || 'Unknown';
+      const channelName = event.channel_name || 'Unknown';
+      
+      // Determine color based on event type
+      let userColor = 'text-green-400';
+      let channelColor = 'text-yellow-400';
+      
+      if (event.type === 'admin_action') {
+        userColor = 'text-red-400';
+        channelColor = 'text-purple-400';
+      } else if (event.type === 'command') {
+        userColor = 'text-blue-400';
+        channelColor = 'text-cyan-400';
+      } else if (event.type === 'cheese_click') {
+        userColor = 'text-orange-400';
+        channelColor = 'text-yellow-400';
+      } else if (event.type === 'game_score') {
+        userColor = 'text-purple-400';
+        channelColor = 'text-green-400';
+      }
+      
+      eventElement.innerHTML = `
+        <span class="text-gray-500 text-xs min-w-[60px]">${timestamp}</span>
+        <span class="text-blue-400 text-lg">${eventType}</span>
+        <span class="${userColor} font-semibold">${userName}</span>
+        <span class="text-gray-400">in</span>
+        <span class="${channelColor}">#${channelName}</span>
+        <span class="text-gray-500 text-xs">(${event.user_id})</span>
+        ${event.description ? `<span class="text-gray-400 text-xs ml-2">- ${event.description}</span>` : ''}
+      `;
+      
+      // Add to feed
+      feed.insertBefore(eventElement, feed.firstChild);
+      
+      // Limit feed to 50 events
+      while (feed.children.length > 50) {
+        feed.removeChild(feed.lastChild);
+      }
+      
+      // Update stats
+      discordEventCount++;
+      stats.textContent = `Events: ${discordEventCount} | Last update: ${timestamp}`;
+    }
+
+    function getEventTypeIcon(eventType) {
+      switch(eventType) {
+        case 'messageCreate':
+          return '💬';
+        case 'messageDelete':
+          return '🗑️';
+        case 'memberJoin':
+          return '👋';
+        case 'memberLeave':
+          return '👋';
+        case 'reactionAdd':
+          return '👍';
+        case 'reactionRemove':
+          return '👎';
+        case 'command':
+          return '⚡';
+        case 'game_score':
+          return '🎮';
+        case 'admin_action':
+          return '🔧';
+        case 'cheese_click':
+          return '🧀';
+        default:
+          return '📝';
+      }
+    }
+
+    function clearDiscordFeed() {
+      const feed = document.getElementById('discordActivityFeed');
+      const stats = document.getElementById('feedStats');
+      
+      feed.innerHTML = `
+        <div class="text-gray-400 text-center py-4">
+          <div class="text-lg mb-2">🤖 Discord Bot Activity</div>
+          <div class="text-sm">Click "Start" to begin monitoring Discord events</div>
+        </div>
+      `;
+      
+      discordEventCount = 0;
+      stats.textContent = 'Events: 0 | Last update: Never';
     }
 
   </script>
