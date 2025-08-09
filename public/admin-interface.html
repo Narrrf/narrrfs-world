@@ -1467,7 +1467,7 @@ require_once 'discord-invite.php';
         <div class="mt-4 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
           <h4 class="text-sm font-semibold text-gray-300 mb-2">Community Wallet Address:</h4>
           <div class="flex items-center gap-2">
-            <code class="text-green-400 font-mono text-sm" id="walletAddress">62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325</code>
+            <code class="text-green-400 font-mono text-sm" id="walletAddress">62DpHkt3h7r6CJECJtRQUoMnm3SJxUTzF5kNUGJs2325</code>
             <button onclick="copyWalletAddress()" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs">
               📋 Copy
             </button>
@@ -2054,6 +2054,7 @@ require_once 'discord-invite.php';
         loadCurrentSeasonSettings();
       }
       if (tabName === 'holderVerification') loadHolderVerificationData();
+      if (tabName === 'communityFunds') loadCommunityFundsData();
     }
 
     // Load dashboard data
@@ -6198,10 +6199,33 @@ require_once 'discord-invite.php';
 
     // Community Funds Management Functions
     function loadCommunityFundsData() {
+      // Show loading states
+      showCommunityFundsLoadingStates();
+      
       // Load wallet data (SOL balance, NFTs, collections)
       loadCommunityWalletData();
       // Load community funds entries
       loadCommunityFundsEntries();
+    }
+
+    function showCommunityFundsLoadingStates() {
+      // Show loading for metrics
+      document.getElementById('solBalance').textContent = 'Loading...';
+      document.getElementById('totalNfts').textContent = 'Loading...';
+      document.getElementById('totalCollections').textContent = 'Loading...';
+      document.getElementById('totalEntries').textContent = 'Loading...';
+      
+      // Show loading for statistics
+      document.getElementById('monthlyTotal').textContent = 'Loading...';
+      document.getElementById('lastMonthTotal').textContent = 'Loading...';
+      document.getElementById('averageEntry').textContent = 'Loading...';
+      
+      // Show loading for collections and NFTs
+      document.getElementById('collectionsSummary').innerHTML = '<div class="text-center text-gray-300">Loading collections...</div>';
+      document.getElementById('nftGallery').innerHTML = '<div class="text-center text-gray-300">Loading NFTs...</div>';
+      
+      // Show loading for recent activity
+      document.getElementById('recentActivity').innerHTML = '<div class="text-gray-400 text-sm">Loading recent activity...</div>';
     }
 
     async function loadCommunityWalletData() {
@@ -6236,12 +6260,20 @@ require_once 'discord-invite.php';
           document.getElementById('solBalance').textContent = 'Error';
           document.getElementById('totalNfts').textContent = 'Error';
           document.getElementById('totalCollections').textContent = 'Error';
+          
+          // Show error in collections and NFTs
+          document.getElementById('collectionsSummary').innerHTML = '<div class="text-center text-red-400">Error loading collections</div>';
+          document.getElementById('nftGallery').innerHTML = '<div class="text-center text-red-400">Error loading NFTs</div>';
         }
       } catch (error) {
         console.error('Error loading wallet data:', error);
         document.getElementById('solBalance').textContent = 'Error';
         document.getElementById('totalNfts').textContent = 'Error';
         document.getElementById('totalCollections').textContent = 'Error';
+        
+        // Show error in collections and NFTs
+        document.getElementById('collectionsSummary').innerHTML = '<div class="text-center text-red-400">Error loading collections</div>';
+        document.getElementById('nftGallery').innerHTML = '<div class="text-center text-red-400">Error loading NFTs</div>';
       }
     }
 
@@ -6252,6 +6284,11 @@ require_once 'discord-invite.php';
         
         if (data.success) {
           displayCommunityFundsEntries(data.entries);
+          calculateAndDisplayStatistics(data.entries);
+          displayCommunityFundsRecentActivity(data.entries);
+          
+          // Update total entries count
+          document.getElementById('totalEntries').textContent = data.entries.length;
         } else {
           console.error('Error loading community funds:', data.message);
         }
@@ -6263,6 +6300,15 @@ require_once 'discord-invite.php';
     function displayCommunityFundsEntries(entries) {
       const tbody = document.getElementById('communityFundsTableBody');
       tbody.innerHTML = '';
+      
+      if (!entries || entries.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-4 py-4 text-center text-gray-500">No community funds entries found</td>
+          </tr>
+        `;
+        return;
+      }
       
       entries.forEach(entry => {
         const row = document.createElement('tr');
@@ -6285,9 +6331,9 @@ require_once 'discord-invite.php';
     }
 
     async function addCommunityFundsEntry() {
-      const type = document.getElementById('fundsType').value;
-      const description = document.getElementById('fundsDescription').value;
-      const amount = parseFloat(document.getElementById('fundsAmount').value);
+      const type = document.getElementById('entryType').value;
+      const description = document.getElementById('entryDescription').value;
+      const amount = parseFloat(document.getElementById('entryAmount').value);
       
       if (!type || !description || isNaN(amount)) {
         alert('Please fill in all fields with valid values');
@@ -6311,9 +6357,9 @@ require_once 'discord-invite.php';
         
         if (data.success) {
           // Clear form
-          document.getElementById('fundsType').value = '';
-          document.getElementById('fundsDescription').value = '';
-          document.getElementById('fundsAmount').value = '';
+          document.getElementById('entryType').value = 'expense';
+          document.getElementById('entryDescription').value = '';
+          document.getElementById('entryAmount').value = '';
           
           // Reload data
           loadCommunityFundsData();
@@ -6364,10 +6410,100 @@ require_once 'discord-invite.php';
       loadCommunityWalletData();
     }
 
+    function calculateAndDisplayStatistics(entries) {
+      if (!entries || entries.length === 0) {
+        document.getElementById('monthlyTotal').textContent = '0.0000';
+        document.getElementById('lastMonthTotal').textContent = '0.0000';
+        document.getElementById('averageEntry').textContent = '0.0000';
+        return;
+      }
+
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      let monthlyTotal = 0;
+      let lastMonthTotal = 0;
+      let totalAmount = 0;
+      let totalEntries = entries.length;
+
+      entries.forEach(entry => {
+        const entryDate = new Date(entry.created_at || entry.date);
+        const entryMonth = entryDate.getMonth();
+        const entryYear = entryDate.getFullYear();
+        
+        // Parse amount (remove 'SOL' suffix if present)
+        const amountStr = entry.amount.toString().replace(' SOL', '');
+        const amount = parseFloat(amountStr) || 0;
+        
+        if (entry.type === 'income') {
+          totalAmount += amount;
+          
+          if (entryMonth === currentMonth && entryYear === currentYear) {
+            monthlyTotal += amount;
+          } else if ((entryMonth === currentMonth - 1 && entryYear === currentYear) || 
+                     (currentMonth === 0 && entryMonth === 11 && entryYear === currentYear - 1)) {
+            lastMonthTotal += amount;
+          }
+        } else if (entry.type === 'expense') {
+          totalAmount -= amount;
+          
+          if (entryMonth === currentMonth && entryYear === currentYear) {
+            monthlyTotal -= amount;
+          } else if ((entryMonth === currentMonth - 1 && entryYear === currentYear) || 
+                     (currentMonth === 0 && entryMonth === 11 && entryYear === currentYear - 1)) {
+            lastMonthTotal -= amount;
+          }
+        }
+      });
+
+      const averageEntry = totalEntries > 0 ? totalAmount / totalEntries : 0;
+
+      document.getElementById('monthlyTotal').textContent = monthlyTotal.toFixed(4);
+      document.getElementById('lastMonthTotal').textContent = lastMonthTotal.toFixed(4);
+      document.getElementById('averageEntry').textContent = averageEntry.toFixed(4);
+    }
+
+    function displayCommunityFundsRecentActivity(entries) {
+      const container = document.getElementById('recentActivity');
+      container.innerHTML = '';
+      
+      if (!entries || entries.length === 0) {
+        container.innerHTML = '<div class="text-gray-400 text-sm">No recent activity</div>';
+        return;
+      }
+
+      // Show last 5 entries
+      const recentEntries = entries.slice(0, 5);
+      
+      recentEntries.forEach(entry => {
+        const activityDiv = document.createElement('div');
+        activityDiv.className = 'text-sm p-2 bg-gray-700 rounded';
+        
+        const typeIcon = entry.type === 'income' ? '💸' : '💰';
+        const typeColor = entry.type === 'income' ? 'text-green-400' : 'text-red-400';
+        
+        activityDiv.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="text-gray-300">${typeIcon} ${entry.description}</span>
+            <span class="${typeColor} font-semibold">${entry.amount} SOL</span>
+          </div>
+          <div class="text-xs text-gray-400 mt-1">${entry.date}</div>
+        `;
+        
+        container.appendChild(activityDiv);
+      });
+    }
+
     // NFT Portfolio Functions
     function displayCollectionsSummary(collections) {
       const container = document.getElementById('collectionsSummary');
       container.innerHTML = '';
+      
+      if (!collections || collections.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-400">No collections found</div>';
+        return;
+      }
       
       // Show top 4 collections
       const topCollections = collections.slice(0, 4);
@@ -6397,6 +6533,11 @@ require_once 'discord-invite.php';
     function displayNFTGallery(nfts) {
       const container = document.getElementById('nftGallery');
       container.innerHTML = '';
+      
+      if (!nfts || nfts.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-400">No NFTs found</div>';
+        return;
+      }
       
       // Show first 12 NFTs
       const displayNFTs = nfts.slice(0, 12);
