@@ -176,6 +176,7 @@ require_once 'discord-invite.php';
         <button class="tab-btn px-4 py-2 rounded" data-tab="discord">🔗 Discord Config</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="holderVerification">🎴 Holder Verification</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="cheeseGuide">🧀 Cheese Guide</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="communityFunds">💰 Community Funds</button>
       </div>
       
       <!-- Additional Admin Links -->
@@ -1429,6 +1430,262 @@ require_once 'discord-invite.php';
             <h4 class="font-semibold text-purple-400 mb-2">Difficulty Scaling</h4>
             <p class="text-gray-300 text-sm">Time-based multiplier increases over 5 minutes</p>
             <code class="text-xs text-gray-400 block mt-2">difficultyMultiplier = 1 + (timeSincePageLoad / 300000)</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community Funds Tab -->
+    <div class="admin-card mb-6" id="communityFundsTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">💰 Community Funds Management</h2>
+      
+      <!-- Community Wallet Overview -->
+      <div class="bg-gradient-to-r from-green-900 to-blue-900 p-6 rounded-lg mb-6 border border-green-500">
+        <h3 class="text-lg font-semibold mb-4 text-green-300 flex items-center">
+          <span class="mr-2">🏦</span> Community Benefit Wallet Overview
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="text-center bg-green-800 bg-opacity-50 p-4 rounded-lg border border-green-400">
+            <div class="text-3xl font-bold text-green-300" id="solBalance">-</div>
+            <div class="text-sm text-green-200">SOL Balance</div>
+          </div>
+          <div class="text-center bg-blue-800 bg-opacity-50 p-4 rounded-lg border border-blue-400">
+            <div class="text-3xl font-bold text-blue-300" id="totalNfts">-</div>
+            <div class="text-sm text-blue-200">Total NFTs</div>
+          </div>
+          <div class="text-center bg-purple-800 bg-opacity-50 p-4 rounded-lg border border-purple-400">
+            <div class="text-3xl font-bold text-purple-300" id="totalCollections">-</div>
+            <div class="text-sm text-purple-200">Collections</div>
+          </div>
+          <div class="text-center bg-yellow-800 bg-opacity-50 p-4 rounded-lg border border-yellow-400">
+            <div class="text-3xl font-bold text-yellow-300" id="totalEntries">-</div>
+            <div class="text-sm text-yellow-200">Fund Entries</div>
+          </div>
+        </div>
+        
+        <!-- Wallet Address Display -->
+        <div class="mt-4 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h4 class="text-sm font-semibold text-gray-300 mb-2">Community Wallet Address:</h4>
+          <div class="flex items-center gap-2">
+            <code class="text-green-400 font-mono text-sm" id="walletAddress">62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325</code>
+            <button onclick="copyWalletAddress()" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs">
+              📋 Copy
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- NFT Portfolio Section -->
+      <div class="bg-gradient-to-r from-purple-900 to-indigo-900 p-6 rounded-lg mb-6 border border-purple-500">
+        <h3 class="text-lg font-semibold mb-4 text-purple-300 flex items-center">
+          <span class="mr-2">🖼️</span> NFT Portfolio Overview
+        </h3>
+        
+        <!-- Collection Summary -->
+        <div class="mb-4">
+          <h4 class="text-md font-semibold text-purple-200 mb-3">Collections Summary:</h4>
+          <div id="collectionsSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="text-center text-gray-300">Loading collections...</div>
+          </div>
+        </div>
+        
+        <!-- NFT Gallery -->
+        <div class="mb-4">
+          <h4 class="text-md font-semibold text-purple-200 mb-3">Recent NFTs:</h4>
+          <div class="flex gap-2 mb-3">
+            <input type="text" id="nftSearch" placeholder="Search NFTs..." 
+                   class="flex-1 px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+            <select id="nftCollectionFilter" class="px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+              <option value="">All Collections</option>
+            </select>
+          </div>
+          <div id="nftGallery" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div class="text-center text-gray-300">Loading NFTs...</div>
+          </div>
+        </div>
+        
+        <!-- View All NFTs Button -->
+        <div class="text-center">
+          <button onclick="showAllNFTsModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">
+            🖼️ View All NFTs
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Actions Bar -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-semibold mb-3 text-blue-300">⚡ Quick Actions</h3>
+        <div class="flex flex-wrap gap-3">
+          <button onclick="refreshWalletData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <span class="mr-2">🔄</span> Refresh Wallet Data
+          </button>
+          <button onclick="loadCommunityFunds()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <span class="mr-2">📊</span> Load All Entries
+          </button>
+          <button onclick="showAddEntryModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <span class="mr-2">➕</span> Add New Entry
+          </button>
+          <button onclick="exportCommunityFunds()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg flex items-center">
+            <span class="mr-2">📥</span> Export Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        
+        <!-- Left Column: Entry Management -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <!-- Add New Entry Form -->
+          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3 text-green-300 flex items-center">
+              <span class="mr-2">➕</span> Add New Entry
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Entry Type:</label>
+                <select id="entryType" class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+                  <option value="expense">💰 Expense (NFT Purchase, Prizes, etc.)</option>
+                  <option value="income">💸 Income (Donations, Revenue, etc.)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Amount (SOL):</label>
+                <input type="number" id="entryAmount" step="0.001" min="0" placeholder="0.000" 
+                       class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-300 mb-1">Description:</label>
+                <input type="text" id="entryDescription" placeholder="e.g., NFT purchase from Collection X, Prize for Quest Y" 
+                       class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-300 mb-1">Transaction Hash (Optional):</label>
+                <input type="text" id="entryTxHash" placeholder="Solana transaction hash" 
+                       class="w-full px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+              </div>
+              <div class="md:col-span-2">
+                <button onclick="addCommunityFundEntry()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                  ➕ Add Entry
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- View All Entries -->
+          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3 text-blue-300 flex items-center">
+              <span class="mr-2">📊</span> Community Funds History
+            </h3>
+            <div class="mb-4">
+              <div class="flex gap-2 mb-3">
+                <input type="text" id="fundsSearch" placeholder="Search entries..." 
+                       class="flex-1 px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+                <select id="fundsTypeFilter" class="px-3 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+                  <option value="">All Types</option>
+                  <option value="expense">Expenses</option>
+                  <option value="income">Income</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- Entries Table -->
+            <div id="communityFundsTable" class="overflow-x-auto">
+              <table class="w-full text-sm text-gray-300">
+                <thead class="bg-gray-700">
+                  <tr>
+                    <th class="px-3 py-2 text-left">Date</th>
+                    <th class="px-3 py-2 text-left">Type</th>
+                    <th class="px-3 py-2 text-left">Amount</th>
+                    <th class="px-3 py-2 text-left">Description</th>
+                    <th class="px-3 py-2 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="communityFundsTableBody">
+                  <tr>
+                    <td colspan="5" class="px-3 py-4 text-center text-gray-500">Loading entries...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Statistics and Quick Actions -->
+        <div class="space-y-6">
+          
+          <!-- Recent Activity -->
+          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3 text-purple-300 flex items-center">
+              <span class="mr-2">📈</span> Recent Activity
+            </h3>
+            <div id="recentActivity" class="space-y-2">
+              <div class="text-gray-400 text-sm">Loading recent activity...</div>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3 text-yellow-300 flex items-center">
+              <span class="mr-2">📊</span> Quick Statistics
+            </h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-300">This Month:</span>
+                <span class="text-green-400" id="monthlyTotal">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-300">Last Month:</span>
+                <span class="text-blue-400" id="lastMonthTotal">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-300">Average Entry:</span>
+                <span class="text-purple-400" id="averageEntry">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NFT Portfolio Modal -->
+    <div id="nftPortfolioModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-gray-900 border border-purple-500 rounded-lg max-w-7xl w-full max-h-screen overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-purple-300">🖼️ Complete NFT Portfolio</h2>
+              <button onclick="closeNFTModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            
+            <!-- Search and Filter Controls -->
+            <div class="flex gap-4 mb-6">
+              <input type="text" id="modalNftSearch" placeholder="Search NFTs by name..." 
+                     class="flex-1 px-4 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+              <select id="modalCollectionFilter" class="px-4 py-2 rounded text-gray-800 bg-gray-700 border border-gray-600">
+                <option value="">All Collections</option>
+              </select>
+              <button onclick="exportNFTData()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">
+                📥 Export NFT Data
+              </button>
+            </div>
+            
+            <!-- NFT Grid -->
+            <div id="modalNftGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+              <!-- NFTs will be populated here -->
+            </div>
+            
+            <!-- Pagination -->
+            <div class="flex justify-center items-center gap-4 mt-6">
+              <button onclick="previousNFTPage()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                ← Previous
+              </button>
+              <span class="text-gray-300" id="nftPageInfo">Page 1 of 1</span>
+              <button onclick="nextNFTPage()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                Next →
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -5937,6 +6194,443 @@ require_once 'discord-invite.php';
       
       discordEventCount = 0;
       stats.textContent = 'Events: 0 | Last update: Never';
+    }
+
+    // Community Funds Management Functions
+    function loadCommunityFundsData() {
+      // Load wallet data (SOL balance, NFTs, collections)
+      loadCommunityWalletData();
+      // Load community funds entries
+      loadCommunityFundsEntries();
+    }
+
+    async function loadCommunityWalletData() {
+      try {
+        const response = await fetch('api/admin/get-community-wallet-nfts.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update SOL balance
+          document.getElementById('solBalance').textContent = data.balance.sol.toFixed(4);
+          
+          // Update NFT count
+          document.getElementById('totalNfts').textContent = data.nfts.total;
+          
+          // Update collections count
+          document.getElementById('totalCollections').textContent = data.nfts.collections.length;
+          
+          // Display collections summary
+          displayCollectionsSummary(data.nfts.collections);
+          
+          // Display NFT gallery
+          displayNFTGallery(data.nfts.list);
+          
+          // Populate collection filters
+          populateCollectionFilters(data.nfts.collections);
+          
+          // Store NFT data for modal
+          window.communityNFTs = data.nfts.list;
+          window.communityCollections = data.nfts.collections;
+        } else {
+          console.error('Error loading wallet data:', data.error);
+          document.getElementById('solBalance').textContent = 'Error';
+          document.getElementById('totalNfts').textContent = 'Error';
+          document.getElementById('totalCollections').textContent = 'Error';
+        }
+      } catch (error) {
+        console.error('Error loading wallet data:', error);
+        document.getElementById('solBalance').textContent = 'Error';
+        document.getElementById('totalNfts').textContent = 'Error';
+        document.getElementById('totalCollections').textContent = 'Error';
+      }
+    }
+
+    async function loadCommunityFundsEntries() {
+      try {
+        const response = await fetch('api/admin/get-community-funds.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayCommunityFundsEntries(data.entries);
+        } else {
+          console.error('Error loading community funds:', data.message);
+        }
+      } catch (error) {
+        console.error('Error loading community funds:', error);
+      }
+    }
+
+    function displayCommunityFundsEntries(entries) {
+      const tbody = document.getElementById('communityFundsTableBody');
+      tbody.innerHTML = '';
+      
+      entries.forEach(entry => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
+        
+        row.innerHTML = `
+          <td class="px-4 py-2 border-b">${entry.date}</td>
+          <td class="px-4 py-2 border-b">${entry.type}</td>
+          <td class="px-4 py-2 border-b">${entry.description}</td>
+          <td class="px-4 py-2 border-b text-right">${entry.amount} SOL</td>
+          <td class="px-4 py-2 border-b text-center">
+            <button onclick="deleteCommunityFundsEntry(${entry.id})" class="text-red-600 hover:text-red-800 px-2 py-1">
+              🗑️
+            </button>
+          </td>
+        `;
+        
+        tbody.appendChild(row);
+      });
+    }
+
+    async function addCommunityFundsEntry() {
+      const type = document.getElementById('fundsType').value;
+      const description = document.getElementById('fundsDescription').value;
+      const amount = parseFloat(document.getElementById('fundsAmount').value);
+      
+      if (!type || !description || isNaN(amount)) {
+        alert('Please fill in all fields with valid values');
+        return;
+      }
+      
+      try {
+        const response = await fetch('api/admin/add-community-funds.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: type,
+            description: description,
+            amount: amount
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Clear form
+          document.getElementById('fundsType').value = '';
+          document.getElementById('fundsDescription').value = '';
+          document.getElementById('fundsAmount').value = '';
+          
+          // Reload data
+          loadCommunityFundsData();
+          
+          alert('Community funds entry added successfully!');
+        } else {
+          alert('Error: ' + data.message);
+        }
+      } catch (error) {
+        console.error('Error adding community funds entry:', error);
+        alert('Error adding entry. Please try again.');
+      }
+    }
+
+    async function deleteCommunityFundsEntry(id) {
+      if (!confirm('Are you sure you want to delete this entry?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('api/admin/delete-community-funds.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: id })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          loadCommunityFundsData();
+          alert('Entry deleted successfully!');
+        } else {
+          alert('Error: ' + data.message);
+        }
+      } catch (error) {
+        console.error('Error deleting entry:', error);
+        alert('Error deleting entry. Please try again.');
+      }
+    }
+
+    function refreshCommunityFundsData() {
+      loadCommunityFundsData();
+    }
+
+    function refreshWalletData() {
+      loadCommunityWalletData();
+    }
+
+    // NFT Portfolio Functions
+    function displayCollectionsSummary(collections) {
+      const container = document.getElementById('collectionsSummary');
+      container.innerHTML = '';
+      
+      // Show top 4 collections
+      const topCollections = collections.slice(0, 4);
+      
+      topCollections.forEach(collection => {
+        const div = document.createElement('div');
+        div.className = 'text-center bg-purple-800 bg-opacity-50 p-3 rounded-lg border border-purple-400';
+        div.innerHTML = `
+          <div class="text-lg font-bold text-purple-300">${collection.count}</div>
+          <div class="text-xs text-purple-200 truncate" title="${collection.name}">${collection.name}</div>
+        `;
+        container.appendChild(div);
+      });
+      
+      // Add "more" indicator if there are more collections
+      if (collections.length > 4) {
+        const moreDiv = document.createElement('div');
+        moreDiv.className = 'text-center bg-gray-700 bg-opacity-50 p-3 rounded-lg border border-gray-500';
+        moreDiv.innerHTML = `
+          <div class="text-lg font-bold text-gray-300">+${collections.length - 4}</div>
+          <div class="text-xs text-gray-200">More</div>
+        `;
+        container.appendChild(moreDiv);
+      }
+    }
+
+    function displayNFTGallery(nfts) {
+      const container = document.getElementById('nftGallery');
+      container.innerHTML = '';
+      
+      // Show first 12 NFTs
+      const displayNFTs = nfts.slice(0, 12);
+      
+      displayNFTs.forEach(nft => {
+        const div = document.createElement('div');
+        div.className = 'bg-gray-800 bg-opacity-50 p-3 rounded-lg border border-gray-600 text-center';
+        div.innerHTML = `
+          <div class="w-full h-24 bg-gray-700 rounded mb-2 flex items-center justify-center">
+            ${nft.image ? `<img src="${nft.image}" alt="${nft.name}" class="w-full h-full object-cover rounded">` : '🖼️'}
+          </div>
+          <div class="text-xs text-gray-300 font-semibold truncate" title="${nft.name}">${nft.name}</div>
+          <div class="text-xs text-gray-400 truncate" title="${nft.collection}">${nft.collection}</div>
+        `;
+        container.appendChild(div);
+      });
+      
+      // Add "view all" indicator if there are more NFTs
+      if (nfts.length > 12) {
+        const viewAllDiv = document.createElement('div');
+        viewAllDiv.className = 'bg-purple-700 bg-opacity-50 p-3 rounded-lg border border-purple-400 text-center cursor-pointer hover:bg-purple-600';
+        viewAllDiv.onclick = () => showAllNFTsModal();
+        viewAllDiv.innerHTML = `
+          <div class="text-lg font-bold text-purple-300">+${nfts.length - 12}</div>
+          <div class="text-xs text-purple-200">View All</div>
+        `;
+        container.appendChild(viewAllDiv);
+      }
+    }
+
+    function populateCollectionFilters(collections) {
+      const filter = document.getElementById('nftCollectionFilter');
+      const modalFilter = document.getElementById('modalCollectionFilter');
+      
+      // Clear existing options
+      filter.innerHTML = '<option value="">All Collections</option>';
+      modalFilter.innerHTML = '<option value="">All Collections</option>';
+      
+      // Add collection options
+      collections.forEach(collection => {
+        const option = document.createElement('option');
+        option.value = collection.name;
+        option.textContent = `${collection.name} (${collection.count})`;
+        
+        filter.appendChild(option.cloneNode(true));
+        modalFilter.appendChild(option);
+      });
+    }
+
+    // NFT Modal Functions
+    function showAllNFTsModal() {
+      document.getElementById('nftPortfolioModal').classList.remove('hidden');
+      displayModalNFTs();
+    }
+
+    function closeNFTModal() {
+      document.getElementById('nftPortfolioModal').classList.add('hidden');
+    }
+
+    function displayModalNFTs() {
+      const container = document.getElementById('modalNftGrid');
+      const searchTerm = document.getElementById('modalNftSearch').value.toLowerCase();
+      const collectionFilter = document.getElementById('modalCollectionFilter').value;
+      
+      let filteredNFTs = window.communityNFTs || [];
+      
+      // Apply filters
+      if (searchTerm) {
+        filteredNFTs = filteredNFTs.filter(nft => 
+          nft.name.toLowerCase().includes(searchTerm) || 
+          nft.collection.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      if (collectionFilter) {
+        filteredNFTs = filteredNFTs.filter(nft => nft.collection === collectionFilter);
+      }
+      
+      // Reset to first page when filtering
+      currentNFTPage = 1;
+      
+      // Calculate pagination
+      const startIndex = (currentNFTPage - 1) * nftsPerPage;
+      const endIndex = startIndex + nftsPerPage;
+      const pageNFTs = filteredNFTs.slice(startIndex, endIndex);
+      
+      // Display NFTs for current page
+      container.innerHTML = '';
+      pageNFTs.forEach(nft => {
+        const div = document.createElement('div');
+        div.className = 'bg-gray-800 bg-opacity-50 p-3 rounded-lg border border-gray-600 text-center';
+        div.innerHTML = `
+          <div class="w-full h-32 bg-gray-700 rounded mb-2 flex items-center justify-center">
+            ${nft.image ? `<img src="${nft.image}" alt="${nft.name}" class="w-full h-full object-cover rounded">` : '🖼️'}
+          </div>
+          <div class="text-sm text-gray-300 font-semibold truncate" title="${nft.name}">${nft.name}</div>
+          <div class="text-xs text-gray-400 truncate" title="${nft.collection}">${nft.collection}</div>
+          <div class="text-xs text-gray-500 mt-1">${nft.mint.substring(0, 8)}...</div>
+        `;
+        container.appendChild(div);
+      });
+      
+      // Update page info
+      updateNFTPageInfo();
+    }
+
+    function exportNFTData() {
+      const nfts = window.communityNFTs || [];
+      const collections = window.communityCollections || [];
+      
+      const data = {
+        wallet: '62DpHkt3h7r6CJECjtRQUoMnm3SJxUTzF5kNUGjs2325',
+        export_date: new Date().toISOString(),
+        total_nfts: nfts.length,
+        collections: collections,
+        nfts: nfts
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `community-wallet-nfts-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Search and filter event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // NFT search functionality
+      const nftSearch = document.getElementById('nftSearch');
+      if (nftSearch) {
+        nftSearch.addEventListener('input', () => {
+          const searchTerm = nftSearch.value.toLowerCase();
+          const collectionFilter = document.getElementById('nftCollectionFilter').value;
+          filterNFTGallery(searchTerm, collectionFilter);
+        });
+      }
+      
+      // NFT collection filter
+      const nftCollectionFilter = document.getElementById('nftCollectionFilter');
+      if (nftCollectionFilter) {
+        nftCollectionFilter.addEventListener('change', () => {
+          const searchTerm = document.getElementById('nftSearch').value.toLowerCase();
+          const collectionFilter = nftCollectionFilter.value;
+          filterNFTGallery(searchTerm, collectionFilter);
+        });
+      }
+      
+      // Modal search functionality
+      const modalNftSearch = document.getElementById('modalNftSearch');
+      if (modalNftSearch) {
+        modalNftSearch.addEventListener('input', displayModalNFTs);
+      }
+      
+      // Modal collection filter
+      const modalCollectionFilter = document.getElementById('modalCollectionFilter');
+      if (modalCollectionFilter) {
+        modalCollectionFilter.addEventListener('change', displayModalNFTs);
+      }
+    });
+
+    // Pagination variables
+    let currentNFTPage = 1;
+    const nftsPerPage = 48; // 6x8 grid
+
+    function previousNFTPage() {
+      if (currentNFTPage > 1) {
+        currentNFTPage--;
+        displayModalNFTs();
+        updateNFTPageInfo();
+      }
+    }
+
+    function nextNFTPage() {
+      const totalPages = Math.ceil((window.communityNFTs || []).length / nftsPerPage);
+      if (currentNFTPage < totalPages) {
+        currentNFTPage++;
+        displayModalNFTs();
+        updateNFTPageInfo();
+      }
+    }
+
+    function updateNFTPageInfo() {
+      const totalNFTs = window.communityNFTs || [];
+      const totalPages = Math.ceil(totalNFTs.length / nftsPerPage);
+      document.getElementById('nftPageInfo').textContent = `Page ${currentNFTPage} of ${totalPages}`;
+    }
+
+    function filterNFTGallery(searchTerm, collectionFilter) {
+      const container = document.getElementById('nftGallery');
+      const nfts = window.communityNFTs || [];
+      
+      let filteredNFTs = nfts;
+      
+      if (searchTerm) {
+        filteredNFTs = filteredNFTs.filter(nft => 
+          nft.name.toLowerCase().includes(searchTerm) || 
+          nft.collection.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      if (collectionFilter) {
+        filteredNFTs = filteredNFTs.filter(nft => nft.collection === collectionFilter);
+      }
+      
+      // Display filtered NFTs (max 12)
+      const displayNFTs = filteredNFTs.slice(0, 12);
+      container.innerHTML = '';
+      
+      displayNFTs.forEach(nft => {
+        const div = document.createElement('div');
+        div.className = 'bg-gray-800 bg-opacity-50 p-3 rounded-lg border border-gray-600 text-center';
+        div.innerHTML = `
+          <div class="w-full h-24 bg-gray-700 rounded mb-2 flex items-center justify-center">
+            ${nft.image ? `<img src="${nft.image}" alt="${nft.name}" class="w-full h-full object-cover rounded">` : '🖼️'}
+          </div>
+          <div class="text-xs text-gray-300 font-semibold truncate" title="${nft.name}">${nft.name}</div>
+          <div class="text-xs text-gray-400 truncate" title="${nft.collection}">${nft.collection}</div>
+        `;
+        container.appendChild(div);
+      });
+      
+      // Add "view all" indicator if there are more filtered results
+      if (filteredNFTs.length > 12) {
+        const viewAllDiv = document.createElement('div');
+        viewAllDiv.className = 'bg-purple-700 bg-opacity-50 p-3 rounded-lg border border-purple-400 text-center cursor-pointer hover:bg-purple-600';
+        viewAllDiv.onclick = () => showAllNFTsModal();
+        viewAllDiv.innerHTML = `
+          <div class="text-lg font-bold text-purple-300">+${filteredNFTs.length - 12}</div>
+          <div class="text-xs text-purple-200">View All</div>
+        `;
+        container.appendChild(viewAllDiv);
+      }
     }
 
   </script>
