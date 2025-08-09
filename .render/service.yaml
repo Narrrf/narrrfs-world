@@ -10,6 +10,8 @@ services:
         value: your-discord-client-id
       - key: DISCORD_SECRET
         value: your-discord-secret
+      - key: HELIUS_API_KEY
+        value: your-helius-api-key-here
 
   - type: worker
     name: tor-onionpipe
