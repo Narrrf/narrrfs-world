@@ -19,15 +19,72 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 // Include database configuration
 require_once __DIR__ . '/../config/database.php';
 
+// Helper function to check if a table exists
+function tableExists($pdo, $tableName) {
+    try {
+        $stmt = $pdo->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?");
+        $stmt->execute([$tableName]);
+        return $stmt->fetch() !== false;
+    } catch (Exception $e) {
+        error_log("Error checking table existence for $tableName: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Helper function to safely execute a query and return default value if table doesn't exist
+function safeQuery($pdo, $tableName, $query, $params = [], $defaultValue = 0) {
+    if (!tableExists($pdo, $tableName)) {
+        error_log("Table $tableName does not exist, returning default value: $defaultValue");
+        return $defaultValue;
+    }
+    
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? (int)$result[array_keys($result)[0]] : $defaultValue;
+    } catch (Exception $e) {
+        error_log("Error executing query on table $tableName: " . $e->getMessage());
+        return $defaultValue;
+    }
+}
+
+// Helper function to safely execute a query and return default array if table doesn't exist
+function safeQueryArray($pdo, $tableName, $query, $params = [], $defaultValue = []) {
+    if (!tableExists($pdo, $tableName)) {
+        error_log("Table $tableName does not exist, returning default array");
+        return $defaultValue;
+    }
+    
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        error_log("Error executing query on table $tableName: " . $e->getMessage());
+        return $defaultValue;
+    }
+}
+
 try {
     $pdo = getDatabaseConnection();
 
-    // Get current season
-    $seasonStmt = $pdo->prepare("SELECT MAX(CAST(SUBSTR(season, 8) AS INTEGER)) as max_season FROM tbl_tetris_scores WHERE season LIKE 'season_%' AND season NOT LIKE '%_historical'");
-    $seasonStmt->execute();
-    $current_season_result = $seasonStmt->fetch(PDO::FETCH_ASSOC);
-    $current_season = $current_season_result['max_season'] ?? 1;
-    $current_season_name = "season_$current_season";
+    // Get current season (only if tetris_scores table exists)
+    $current_season = 1;
+    $current_season_name = "season_1";
+    
+    if (tableExists($pdo, 'tbl_tetris_scores')) {
+        try {
+            $seasonStmt = $pdo->prepare("SELECT MAX(CAST(SUBSTR(season, 8) AS INTEGER)) as max_season FROM tbl_tetris_scores WHERE season LIKE 'season_%' AND season NOT LIKE '%_historical'");
+            $seasonStmt->execute();
+            $current_season_result = $seasonStmt->fetch(PDO::FETCH_ASSOC);
+            $current_season = $current_season_result['max_season'] ?? 1;
+            $current_season_name = "season_$current_season";
+        } catch (Exception $e) {
+            error_log("Error getting current season: " . $e->getMessage());
+            // Use default values
+        }
+    }
 
     // Initialize consolidated response
     $consolidated_stats = [
@@ -63,61 +120,45 @@ try {
         ]
     ];
 
-    // Current season Tetris stats
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1");
-    $stmt->execute([$current_season_name]);
-    $tetris_stats['season_data']['total_scores'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1");
-    $stmt->execute([$current_season_name]);
-    $tetris_stats['season_data']['unique_players'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_players'];
-    
-    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1");
-    $stmt->execute([$current_season_name]);
-    $tetris_stats['season_data']['max_score'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['max_score'];
-    
-    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1");
-    $stmt->execute([$current_season_name]);
-    $tetris_stats['season_data']['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
-    
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-24 hours')");
-    $stmt->execute([$current_season_name]);
-    $tetris_stats['season_data']['recent_24h'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-7 days')");
-    $stmt->execute([$current_season_name]);
-    $tetris_stats['season_data']['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-30 days')");
-    $stmt->execute([$current_season_name]);
-    $tetris_stats['season_data']['recent_30d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
+    // Current season Tetris stats (with table existence checks)
+    if (tableExists($pdo, 'tbl_tetris_scores')) {
+        $tetris_stats['season_data']['total_scores'] = safeQuery($pdo, 'tbl_tetris_scores', 
+            "SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1", 
+            [$current_season_name]);
+        
+        $tetris_stats['season_data']['unique_players'] = safeQuery($pdo, 'tbl_tetris_scores', 
+            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1", 
+            [$current_season_name]);
+        
+        $tetris_stats['season_data']['max_score'] = safeQuery($pdo, 'tbl_tetris_scores', 
+            "SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1", 
+            [$current_season_name]);
+        
+        $tetris_stats['season_data']['avg_score'] = safeQuery($pdo, 'tbl_tetris_scores', 
+            "SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1", 
+            [$current_season_name]);
+        
+        $tetris_stats['season_data']['recent_24h'] = safeQuery($pdo, 'tbl_tetris_scores', 
+            "SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-24 hours')", 
+            [$current_season_name]);
+        
+        $tetris_stats['season_data']['recent_7d'] = safeQuery($pdo, 'tbl_tetris_scores', 
+            "SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-7 days')", 
+            [$current_season_name]);
 
-    // All-time Tetris stats
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'tetris'");
-    $stmt->execute();
-    $tetris_stats['all_time']['total_scores'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'tetris'");
-    $stmt->execute();
-    $tetris_stats['all_time']['unique_players'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_players'];
-    
-    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'tetris'");
-    $stmt->execute();
-    $tetris_stats['all_time']['max_score'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['max_score'];
-    
-    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'tetris'");
-    $stmt->execute();
-    $tetris_stats['all_time']['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
-
-    // Get top Tetris players for current season
-    $stmt = $pdo->prepare("SELECT ts.discord_id, u.username, ts.score 
-                           FROM tbl_tetris_scores ts 
-                           LEFT JOIN tbl_users u ON ts.discord_id = u.discord_id 
-                           WHERE ts.game = 'tetris' AND ts.season = ? AND ts.is_current_season = 1 
-                           ORDER BY ts.score DESC 
-                           LIMIT 10");
-    $stmt->execute([$current_season_name]);
-    $tetris_stats['top_players'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // All-time Tetris stats
+        $tetris_stats['all_time']['total_scores'] = safeQuery($pdo, 'tbl_tetris_scores', 
+            "SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'tetris'");
+        
+        $tetris_stats['all_time']['unique_players'] = safeQuery($pdo, 'tbl_tetris_scores', 
+            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'tetris'");
+        
+        $tetris_stats['all_time']['max_score'] = safeQuery($pdo, 'tbl_tetris_scores', 
+            "SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'tetris'");
+        
+        $tetris_stats['all_time']['avg_score'] = safeQuery($pdo, 'tbl_tetris_scores', 
+            "SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'tetris'");
+    }
 
     $consolidated_stats['games']['tetris'] = $tetris_stats;
 
@@ -143,123 +184,44 @@ try {
         ]
     ];
 
-    // Current season Snake stats
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1");
-    $stmt->execute([$current_season_name]);
-    $snake_stats['season_data']['total_scores'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1");
-    $stmt->execute([$current_season_name]);
-    $snake_stats['season_data']['unique_players'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_players'];
-    
-    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1");
-    $stmt->execute([$current_season_name]);
-    $snake_stats['season_data']['max_score'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['max_score'];
-    
-    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1");
-    $stmt->execute([$current_season_name]);
-    $snake_stats['season_data']['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
-    
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-24 hours')");
-    $stmt->execute([$current_season_name]);
-    $snake_stats['season_data']['recent_24h'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-7 days')");
-    $stmt->execute([$current_season_name]);
-    $snake_stats['season_data']['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-30 days')");
-    $stmt->execute([$current_season_name]);
-    $snake_stats['season_data']['recent_30d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
+    // Snake stats (with table existence checks)
+    if (tableExists($pdo, 'tbl_user_scores')) {
+        $snake_stats['season_data']['total_scores'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'snake' AND season = ?", 
+            [$current_season_name]);
+        
+        $snake_stats['season_data']['unique_players'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_user_scores WHERE game = 'snake' AND season = ?", 
+            [$current_season_name]);
+        
+        $snake_stats['season_data']['max_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'snake' AND season = ?", 
+            [$current_season_name]);
+        
+        $snake_stats['season_data']['avg_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game = 'snake' AND season = ?", 
+            [$current_season_name]);
 
-    // All-time Snake stats
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'snake'");
-    $stmt->execute();
-    $snake_stats['all_time']['total_scores'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'snake'");
-    $stmt->execute();
-    $snake_stats['all_time']['unique_players'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_players'];
-    
-    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'snake'");
-    $stmt->execute();
-    $snake_stats['all_time']['max_score'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['max_score'];
-    
-    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'snake'");
-    $stmt->execute();
-    $snake_stats['all_time']['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
-
-    // Get top Snake players for current season
-    $stmt = $pdo->prepare("SELECT ts.discord_id, u.username, ts.score 
-                           FROM tbl_tetris_scores ts 
-                           LEFT JOIN tbl_users u ON ts.discord_id = u.discord_id 
-                           WHERE ts.game = 'snake' AND ts.season = ? AND ts.is_current_season = 1 
-                           ORDER BY ts.score DESC 
-                           LIMIT 10");
-    $stmt->execute([$current_season_name]);
-    $snake_stats['top_players'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // All-time Snake stats
+        $snake_stats['all_time']['total_scores'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'snake'");
+        
+        $snake_stats['all_time']['unique_players'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_user_scores WHERE game = 'snake'");
+        
+        $snake_stats['all_time']['max_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'snake'");
+        
+        $snake_stats['all_time']['avg_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game = 'snake'");
+    }
 
     $consolidated_stats['games']['snake'] = $snake_stats;
-
-    // ===== CHEESE HUNT GAME STATISTICS =====
-    $cheese_hunt_stats = [
-        'game_name' => 'Cheese Hunt',
-        'game_icon' => '🧀',
-        'status' => 'active',
-        'current_data' => [
-            'total_clicks' => 0,
-            'unique_players' => 0,
-            'recent_24h' => 0,
-            'recent_7d' => 0,
-            'top_clicker' => null,
-            'clicks_by_egg_type' => []
-        ]
-    ];
-
-    // Cheese Hunt stats
-    $stmt = $pdo->query("SELECT COUNT(*) as total_clicks FROM tbl_cheese_clicks");
-    $cheese_hunt_stats['current_data']['total_clicks'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_clicks'];
-    
-    $stmt = $pdo->query("SELECT COUNT(DISTINCT user_wallet) as unique_players FROM tbl_cheese_clicks");
-    $cheese_hunt_stats['current_data']['unique_players'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_players'];
-    
-    $stmt = $pdo->query("SELECT COUNT(*) as recent_clicks FROM tbl_cheese_clicks WHERE timestamp >= datetime('now', '-1 day')");
-    $cheese_hunt_stats['current_data']['recent_24h'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_clicks'];
-    
-    $stmt = $pdo->query("SELECT COUNT(*) as recent_clicks FROM tbl_cheese_clicks WHERE timestamp >= datetime('now', '-7 days')");
-    $cheese_hunt_stats['current_data']['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_clicks'];
-    
-    $stmt = $pdo->query("SELECT COUNT(*) as recent_clicks FROM tbl_cheese_clicks WHERE timestamp >= datetime('now', '-30 days')");
-    $cheese_hunt_stats['current_data']['recent_30d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_clicks'];
-    
-    // Top clicker
-    $stmt = $pdo->query("SELECT c.user_wallet, u.username, COUNT(*) as click_count 
-                         FROM tbl_cheese_clicks c
-                         LEFT JOIN tbl_users u ON c.user_wallet = u.discord_id
-                         GROUP BY c.user_wallet 
-                         ORDER BY click_count DESC 
-                         LIMIT 1");
-    $top_clicker = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($top_clicker) {
-        $cheese_hunt_stats['current_data']['top_clicker'] = [
-            'username' => $top_clicker['username'] ?? 'Unknown',
-            'clicks' => (int)$top_clicker['click_count']
-        ];
-    }
-    
-    // Clicks by egg type
-    $stmt = $pdo->query("SELECT egg_id, COUNT(*) as click_count 
-                         FROM tbl_cheese_clicks 
-                         GROUP BY egg_id 
-                         ORDER BY click_count DESC");
-    $cheese_hunt_stats['current_data']['clicks_by_egg_type'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $consolidated_stats['games']['cheese_hunt'] = $cheese_hunt_stats;
 
     // ===== CHEESE INVADERS GAME STATISTICS =====
     $cheese_invaders_stats = [
         'game_name' => 'Cheese Invaders',
-        'game_icon' => '👾',
+        'game_icon' => '🧀👾',
         'status' => 'active',
         'season_data' => [
             'current_season' => $current_season_name,
@@ -278,68 +240,88 @@ try {
         ]
     ];
 
-    // Current season Cheese Invaders stats (using user_scores table)
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ?");
-    $stmt->execute([$current_season_name]);
-    $cheese_invaders_stats['season_data']['total_scores'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT user_id) as unique_players FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ?");
-    $stmt->execute([$current_season_name]);
-    $cheese_invaders_stats['season_data']['unique_players'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_players'];
-    
-    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ?");
-    $stmt->execute([$current_season_name]);
-    $cheese_invaders_stats['season_data']['max_score'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['max_score'];
-    
-    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ?");
-    $stmt->execute([$current_season_name]);
-    $cheese_invaders_stats['season_data']['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
-    
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ? AND created_at >= datetime('now', '-1 day')");
-    $stmt->execute([$current_season_name]);
-    $cheese_invaders_stats['season_data']['recent_24h'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ? AND created_at >= datetime('now', '-7 days')");
-    $stmt->execute([$current_season_name]);
-    $cheese_invaders_stats['season_data']['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ? AND created_at >= datetime('now', '-30 days')");
-    $stmt->execute([$current_season_name]);
-    $cheese_invaders_stats['season_data']['recent_30d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
+    // Cheese Invaders stats (with table existence checks)
+    if (tableExists($pdo, 'tbl_user_scores')) {
+        $cheese_invaders_stats['season_data']['total_scores'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'cheese_invaders' AND season = ?", 
+            [$current_season_name]);
+        
+        $cheese_invaders_stats['season_data']['unique_players'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_user_scores WHERE game = 'cheese_invaders' AND season = ?", 
+            [$current_season_name]);
+        
+        $cheese_invaders_stats['season_data']['max_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'cheese_invaders' AND season = ?", 
+            [$current_season_name]);
+        
+        $cheese_invaders_stats['season_data']['avg_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game = 'cheese_invaders' AND season = ?", 
+            [$current_season_name]);
 
-    // All-time Cheese Invaders stats
-    $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game_type = 'cheese_invaders'");
-    $stmt->execute();
-    $cheese_invaders_stats['all_time']['total_scores'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_scores'];
-    
-    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT user_id) as unique_players FROM tbl_user_scores WHERE game_type = 'cheese_invaders'");
-    $stmt->execute();
-    $cheese_invaders_stats['all_time']['unique_players'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_players'];
-    
-    $stmt = $pdo->prepare("SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game_type = 'cheese_invaders'");
-    $stmt->execute();
-    $cheese_invaders_stats['all_time']['max_score'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['max_score'];
-    
-    $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game_type = 'cheese_invaders'");
-    $stmt->execute();
-    $cheese_invaders_stats['all_time']['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
-
-    // Get top Cheese Invaders players for current season
-    $stmt = $pdo->prepare("SELECT us.user_id, u.username, us.score 
-                           FROM tbl_user_scores us 
-                           LEFT JOIN tbl_users u ON us.user_id = u.discord_id 
-                           WHERE us.game_type = 'cheese_invaders' AND us.season = ? 
-                           ORDER BY us.score DESC 
-                           LIMIT 10");
-    $stmt->execute([$current_season_name]);
-    $cheese_invaders_stats['top_players'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // All-time Cheese Invaders stats
+        $cheese_invaders_stats['all_time']['total_scores'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'cheese_invaders'");
+        
+        $cheese_invaders_stats['all_time']['unique_players'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_user_scores WHERE game = 'cheese_invaders'");
+        
+        $cheese_invaders_stats['all_time']['max_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'cheese_invaders'");
+        
+        $cheese_invaders_stats['all_time']['avg_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game = 'cheese_invaders'");
+    }
 
     $consolidated_stats['games']['cheese_invaders'] = $cheese_invaders_stats;
+
+    // ===== CHEESE HUNT GAME STATISTICS =====
+    $cheese_hunt_stats = [
+        'game_name' => 'Cheese Hunt',
+        'game_icon' => '🧀🎯',
+        'status' => 'active',
+        'current_data' => [
+            'total_clicks' => 0,
+            'unique_players' => 0,
+            'max_clicks' => 0,
+            'avg_clicks' => 0,
+            'recent_24h' => 0,
+            'recent_7d' => 0
+        ],
+        'all_time' => [
+            'total_clicks' => 0,
+            'unique_players' => 0,
+            'max_clicks' => 0,
+            'avg_clicks' => 0
+        ]
+    ];
+
+    // Cheese Hunt stats (with table existence checks)
+    if (tableExists($pdo, 'tbl_cheese_clicks')) {
+        $cheese_hunt_stats['current_data']['total_clicks'] = safeQuery($pdo, 'tbl_cheese_clicks', 
+            "SELECT COUNT(*) as total_clicks FROM tbl_cheese_clicks");
+        
+        $cheese_hunt_stats['current_data']['unique_players'] = safeQuery($pdo, 'tbl_cheese_clicks', 
+            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_cheese_clicks");
+        
+        $cheese_hunt_stats['current_data']['max_clicks'] = safeQuery($pdo, 'tbl_cheese_clicks', 
+            "SELECT MAX(clicks) as max_clicks FROM tbl_cheese_clicks");
+        
+        $cheese_hunt_stats['current_data']['avg_clicks'] = safeQuery($pdo, 'tbl_cheese_clicks', 
+            "SELECT AVG(clicks) as avg_clicks FROM tbl_cheese_clicks");
+
+        // All-time Cheese Hunt stats
+        $cheese_hunt_stats['all_time']['total_clicks'] = $cheese_hunt_stats['current_data']['total_clicks'];
+        $cheese_hunt_stats['all_time']['unique_players'] = $cheese_hunt_stats['current_data']['unique_players'];
+        $cheese_hunt_stats['all_time']['max_clicks'] = $cheese_hunt_stats['current_data']['max_clicks'];
+        $cheese_hunt_stats['all_time']['avg_clicks'] = $cheese_hunt_stats['current_data']['avg_clicks'];
+    }
+
+    $consolidated_stats['games']['cheese_hunt'] = $cheese_hunt_stats;
 
     // ===== DISCORD CHEESE RACE GAME STATISTICS =====
     $discord_race_stats = [
         'game_name' => 'Discord Cheese Race',
-        'game_icon' => '🏁',
+        'game_icon' => '🏁🧀',
         'status' => 'active',
         'race_data' => [
             'total_races' => 0,
@@ -351,56 +333,59 @@ try {
         ]
     ];
 
-    // Discord Race stats (using discord_events table)
-    $stmt = $pdo->query("SELECT COUNT(*) as total_races FROM tbl_discord_events WHERE event_type = 'cheese_race'");
-    $discord_race_stats['race_data']['total_races'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_races'];
-    
-    $stmt = $pdo->query("SELECT COUNT(*) as total_participants FROM tbl_discord_events WHERE event_type = 'cheese_race_participant'");
-    $discord_race_stats['race_data']['total_participants'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_participants'];
-    
-    $stmt = $pdo->query("SELECT COUNT(*) as total_prizes FROM tbl_discord_events WHERE event_type = 'cheese_race_winner'");
-    $discord_race_stats['race_data']['total_prizes_awarded'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total_prizes'];
-    
-    $stmt = $pdo->query("SELECT COUNT(*) as recent_races FROM tbl_discord_events WHERE event_type = 'cheese_race' AND created_at >= datetime('now', '-1 day')");
-    $discord_race_stats['race_data']['recent_24h'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_races'];
-    
-    $stmt = $pdo->query("SELECT COUNT(*) as recent_races FROM tbl_discord_events WHERE event_type = 'cheese_race' AND created_at >= datetime('now', '-7 days')");
-    $discord_race_stats['race_data']['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_races'];
-    
-    $stmt = $pdo->query("SELECT COUNT(*) as recent_races FROM tbl_discord_events WHERE event_type = 'cheese_race' AND created_at >= datetime('now', '-30 days')");
-    $discord_race_stats['race_data']['recent_30d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_races'];
-    
-    // Get top racers (winners)
-    $stmt = $pdo->query("SELECT de.user_id, u.username, COUNT(*) as wins
-                         FROM tbl_discord_events de
-                         LEFT JOIN tbl_users u ON de.user_id = u.discord_id
-                         WHERE de.event_type = 'cheese_race_winner'
-                         GROUP BY de.user_id
-                         ORDER BY wins DESC
-                         LIMIT 10");
-    $discord_race_stats['race_data']['top_racers'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Get recent activity
-    $stmt = $pdo->query("SELECT de.event_type, de.user_id, u.username, de.created_at
-                         FROM tbl_discord_events de
-                         LEFT JOIN tbl_users u ON de.user_id = u.discord_id
-                         WHERE de.event_type IN ('cheese_race', 'cheese_race_participant', 'cheese_race_winner')
-                         ORDER BY de.created_at DESC
-                         LIMIT 10");
-    $recent_activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    $discord_race_stats['race_data']['recent_activity'] = array_map(function($activity) {
-        $event_descriptions = [
-            'cheese_race' => 'Race started',
-            'cheese_race_participant' => 'Joined race',
-            'cheese_race_winner' => 'Won race'
-        ];
+    // Discord Race stats (with table existence checks)
+    if (tableExists($pdo, 'tbl_discord_events')) {
+        $discord_race_stats['race_data']['total_races'] = safeQuery($pdo, 'tbl_discord_events', 
+            "SELECT COUNT(*) as total_races FROM tbl_discord_events WHERE event_type = 'cheese_race'");
         
-        return [
-            'timestamp' => date('M j, Y g:i A', strtotime($activity['created_at'])),
-            'description' => ($activity['username'] ?? 'Unknown') . ' ' . ($event_descriptions[$activity['event_type']] ?? $activity['event_type'])
-        ];
-    }, $recent_activities);
+        $discord_race_stats['race_data']['total_participants'] = safeQuery($pdo, 'tbl_discord_events', 
+            "SELECT COUNT(*) as total_participants FROM tbl_discord_events WHERE event_type = 'cheese_race_participant'");
+        
+        $discord_race_stats['race_data']['total_prizes_awarded'] = safeQuery($pdo, 'tbl_discord_events', 
+            "SELECT COUNT(*) as total_prizes FROM tbl_discord_events WHERE event_type = 'cheese_race_winner'");
+        
+        $discord_race_stats['race_data']['recent_24h'] = safeQuery($pdo, 'tbl_discord_events', 
+            "SELECT COUNT(*) as recent_races FROM tbl_discord_events WHERE event_type = 'cheese_race' AND created_at >= datetime('now', '-1 day')");
+        
+        $discord_race_stats['race_data']['recent_7d'] = safeQuery($pdo, 'tbl_discord_events', 
+            "SELECT COUNT(*) as recent_races FROM tbl_discord_events WHERE event_type = 'cheese_race' AND created_at >= datetime('now', '-7 days')");
+        
+        // Get top racers (winners) - only if both tables exist
+        if (tableExists($pdo, 'tbl_users')) {
+            $discord_race_stats['race_data']['top_racers'] = safeQueryArray($pdo, 'tbl_discord_events', 
+                "SELECT de.user_id, u.username, COUNT(*) as wins
+                 FROM tbl_discord_events de
+                 LEFT JOIN tbl_users u ON de.user_id = u.discord_id
+                 WHERE de.event_type = 'cheese_race_winner'
+                 GROUP BY de.user_id
+                 ORDER BY wins DESC
+                 LIMIT 10");
+        }
+        
+        // Get recent activity - only if both tables exist
+        if (tableExists($pdo, 'tbl_users')) {
+            $recent_activities = safeQueryArray($pdo, 'tbl_discord_events', 
+                "SELECT de.event_type, de.user_id, u.username, de.created_at
+                 FROM tbl_discord_events de
+                 LEFT JOIN tbl_users u ON de.user_id = u.discord_id
+                 WHERE de.event_type IN ('cheese_race', 'cheese_race_participant', 'cheese_race_winner')
+                 ORDER BY de.created_at DESC
+                 LIMIT 10");
+            
+            $discord_race_stats['race_data']['recent_activity'] = array_map(function($activity) {
+                $event_descriptions = [
+                    'cheese_race' => 'Race started',
+                    'cheese_race_participant' => 'Joined race',
+                    'cheese_race_winner' => 'Won race'
+                ];
+                
+                return [
+                    'timestamp' => date('M j, Y g:i A', strtotime($activity['created_at'])),
+                    'description' => ($activity['username'] ?? 'Unknown') . ' ' . ($event_descriptions[$activity['event_type']] ?? $activity['event_type'])
+                ];
+            }, $recent_activities);
+        }
+    }
 
     $consolidated_stats['games']['discord_race'] = $discord_race_stats;
 
