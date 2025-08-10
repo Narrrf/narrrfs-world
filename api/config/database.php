@@ -6,8 +6,26 @@
 
 // Database configuration using environment variables
 function getDatabasePath() {
-    // Use environment variable for database path, fallback to default
-    $db_path = getenv('DB_PATH') ?: '/var/www/html/db/narrrf_world.sqlite';
+    // Check if we're running locally (XAMPP) or on production (Render)
+    // Use a more reliable method to detect local environment
+    $is_local = PHP_OS_FAMILY === 'Windows' || strpos($_SERVER['DOCUMENT_ROOT'] ?? '', 'xampp') !== false;
+    
+    if ($is_local) {
+        // Local development - use relative path from API directory
+        $api_dir = __DIR__; // Current directory (api/config)
+        $db_path = dirname(dirname($api_dir)) . '/db/narrrf_world.sqlite'; // Go up from api/config to project root, then to db
+        
+        // Debug logging for local development
+        error_log("Local development detected. Database path: " . $db_path);
+        error_log("API directory: " . $api_dir);
+        error_log("File exists: " . (file_exists($db_path) ? 'YES' : 'NO'));
+        error_log("PHP OS: " . PHP_OS_FAMILY);
+        error_log("Document root: " . ($_SERVER['DOCUMENT_ROOT'] ?? 'NOT SET'));
+    } else {
+        // Production - use environment variable or default
+        $db_path = getenv('DB_PATH') ?: '/var/www/html/db/narrrf_world.sqlite';
+        error_log("Production environment detected. Database path: " . $db_path);
+    }
     
     // Validate path for security
     if (strpos($db_path, '..') !== false || strpos($db_path, '//') !== false) {

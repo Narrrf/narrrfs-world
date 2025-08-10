@@ -16,12 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-// Database path
-$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+// Include database configuration
+require_once __DIR__ . '/../config/database.php';
 
 try {
-    $pdo = new PDO("sqlite:$dbPath");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = getDatabaseConnection();
 
     // Get current season
     $seasonStmt = $pdo->prepare("SELECT MAX(CAST(SUBSTR(season, 8) AS INTEGER)) as max_season FROM tbl_tetris_scores WHERE season LIKE 'season_%' AND season NOT LIKE '%_historical'");
@@ -88,6 +87,10 @@ try {
     $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-7 days')");
     $stmt->execute([$current_season_name]);
     $tetris_stats['season_data']['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
+    
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-30 days')");
+    $stmt->execute([$current_season_name]);
+    $tetris_stats['season_data']['recent_30d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
 
     // All-time Tetris stats
     $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'tetris'");
@@ -164,6 +167,10 @@ try {
     $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-7 days')");
     $stmt->execute([$current_season_name]);
     $snake_stats['season_data']['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
+    
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'snake' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-30 days')");
+    $stmt->execute([$current_season_name]);
+    $snake_stats['season_data']['recent_30d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
 
     // All-time Snake stats
     $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'snake'");
@@ -221,6 +228,9 @@ try {
     
     $stmt = $pdo->query("SELECT COUNT(*) as recent_clicks FROM tbl_cheese_clicks WHERE timestamp >= datetime('now', '-7 days')");
     $cheese_hunt_stats['current_data']['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_clicks'];
+    
+    $stmt = $pdo->query("SELECT COUNT(*) as recent_clicks FROM tbl_cheese_clicks WHERE timestamp >= datetime('now', '-30 days')");
+    $cheese_hunt_stats['current_data']['recent_30d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_clicks'];
     
     // Top clicker
     $stmt = $pdo->query("SELECT c.user_wallet, u.username, COUNT(*) as click_count 
@@ -284,6 +294,18 @@ try {
     $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ?");
     $stmt->execute([$current_season_name]);
     $cheese_invaders_stats['season_data']['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
+    
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ? AND created_at >= datetime('now', '-1 day')");
+    $stmt->execute([$current_season_name]);
+    $cheese_invaders_stats['season_data']['recent_24h'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
+    
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ? AND created_at >= datetime('now', '-7 days')");
+    $stmt->execute([$current_season_name]);
+    $cheese_invaders_stats['season_data']['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
+    
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent_scores FROM tbl_user_scores WHERE game_type = 'cheese_invaders' AND season = ? AND created_at >= datetime('now', '-30 days')");
+    $stmt->execute([$current_season_name]);
+    $cheese_invaders_stats['season_data']['recent_30d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_scores'];
 
     // All-time Cheese Invaders stats
     $stmt = $pdo->prepare("SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game_type = 'cheese_invaders'");
@@ -344,6 +366,41 @@ try {
     
     $stmt = $pdo->query("SELECT COUNT(*) as recent_races FROM tbl_discord_events WHERE event_type = 'cheese_race' AND created_at >= datetime('now', '-7 days')");
     $discord_race_stats['race_data']['recent_7d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_races'];
+    
+    $stmt = $pdo->query("SELECT COUNT(*) as recent_races FROM tbl_discord_events WHERE event_type = 'cheese_race' AND created_at >= datetime('now', '-30 days')");
+    $discord_race_stats['race_data']['recent_30d'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['recent_races'];
+    
+    // Get top racers (winners)
+    $stmt = $pdo->query("SELECT de.user_id, u.username, COUNT(*) as wins
+                         FROM tbl_discord_events de
+                         LEFT JOIN tbl_users u ON de.user_id = u.discord_id
+                         WHERE de.event_type = 'cheese_race_winner'
+                         GROUP BY de.user_id
+                         ORDER BY wins DESC
+                         LIMIT 10");
+    $discord_race_stats['race_data']['top_racers'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get recent activity
+    $stmt = $pdo->query("SELECT de.event_type, de.user_id, u.username, de.created_at
+                         FROM tbl_discord_events de
+                         LEFT JOIN tbl_users u ON de.user_id = u.discord_id
+                         WHERE de.event_type IN ('cheese_race', 'cheese_race_participant', 'cheese_race_winner')
+                         ORDER BY de.created_at DESC
+                         LIMIT 10");
+    $recent_activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $discord_race_stats['race_data']['recent_activity'] = array_map(function($activity) {
+        $event_descriptions = [
+            'cheese_race' => 'Race started',
+            'cheese_race_participant' => 'Joined race',
+            'cheese_race_winner' => 'Won race'
+        ];
+        
+        return [
+            'timestamp' => date('M j, Y g:i A', strtotime($activity['created_at'])),
+            'description' => ($activity['username'] ?? 'Unknown') . ' ' . ($event_descriptions[$activity['event_type']] ?? $activity['event_type'])
+        ];
+    }, $recent_activities);
 
     $consolidated_stats['games']['discord_race'] = $discord_race_stats;
 
