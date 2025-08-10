@@ -812,104 +812,111 @@ require_once 'discord-invite.php';
     <div class="admin-card mb-6" id="gamesTab" style="display: none;">
       <h2 class="text-xl font-semibold mb-4">🎮 Game Management</h2>
       
-      <!-- Game Statistics Overview -->
-      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
-        <h3 class="text-lg font-semibold mb-3">📊 Game Statistics</h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <!-- Tetris Stats -->
-          <div class="bg-gray-700 p-3 rounded">
-            <h4 class="font-semibold text-blue-400 mb-2">🟦 Tetris</h4>
-            <div class="space-y-1 text-sm">
-              <div class="flex justify-between">
-                <span class="text-gray-400">Total Scores:</span>
-                <span class="text-white font-semibold" id="tetrisTotalScores">-</span>
+      <!-- Game Management Tabs -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button class="tab-btn px-4 py-2 rounded active" data-game-tab="overview">📊 Overview Dashboard</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="tetris">🧩 Tetris</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="snake">🐍 Snake</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-invaders">👾 Cheese Invaders</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt">🧀 Cheese Hunt</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race">🏁 Discord Cheese Race</button>
+      </div>
+
+      <!-- Overview Dashboard Tab -->
+      <div id="overviewTab" class="game-tab-content">
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">📊 System Overview</h3>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <!-- Total Players -->
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-blue-400 mb-2">👥 Total Players</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Active:</span>
+                  <span class="text-white font-semibold" id="totalActivePlayers">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">This Week:</span>
+                  <span class="text-blue-400 font-semibold" id="totalWeeklyPlayers">-</span>
+                </div>
               </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Unique Players:</span>
-                <span class="text-white font-semibold" id="tetrisUniquePlayers">-</span>
+            </div>
+
+            <!-- Total Games -->
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-green-400 mb-2">🎮 Total Games</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Played:</span>
+                  <span class="text-white font-semibold" id="totalGamesPlayed">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Today:</span>
+                  <span class="text-green-400 font-semibold" id="totalGamesToday">-</span>
+                </div>
               </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Highest Score:</span>
-                <span class="text-green-400 font-semibold" id="tetrisMaxScore">-</span>
+            </div>
+
+            <!-- System Health -->
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-purple-400 mb-2">💚 System Health</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Status:</span>
+                  <span class="text-green-400 font-semibold" id="systemStatus">🟢 Online</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Uptime:</span>
+                  <span class="text-purple-400 font-semibold" id="systemUptime">99.9%</span>
+                </div>
               </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Recent (24h):</span>
-                <span class="text-blue-400 font-semibold" id="tetrisRecent24h">-</span>
+            </div>
+
+            <!-- Top Performers -->
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-yellow-400 mb-2">🏆 Top Performers</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">This Week:</span>
+                  <span class="text-white font-semibold" id="topPerformersWeek">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">All Time:</span>
+                  <span class="text-yellow-400 font-semibold" id="topPerformersAllTime">-</span>
+                </div>
               </div>
             </div>
           </div>
+          
+          <button onclick="loadGameOverview()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Overview</button>
+        </div>
 
-          <!-- Snake Stats -->
-          <div class="bg-gray-700 p-3 rounded">
-            <h4 class="font-semibold text-green-400 mb-2">🐍 Snake</h4>
-            <div class="space-y-1 text-sm">
-              <div class="flex justify-between">
-                <span class="text-gray-400">Total Scores:</span>
-                <span class="text-white font-semibold" id="snakeTotalScores">-</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Unique Players:</span>
-                <span class="text-white font-semibold" id="snakeUniquePlayers">-</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Highest Score:</span>
-                <span class="text-green-400 font-semibold" id="snakeMaxScore">-</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Recent (24h):</span>
-                <span class="text-blue-400 font-semibold" id="snakeRecent24h">-</span>
-              </div>
+        <!-- Daily/Weekly Activity Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-blue-400 mb-3">📈 Daily Activity (Last 7 Days)</h4>
+            <div id="dailyActivityChart" class="h-48 bg-gray-700 rounded p-4">
+              <div class="text-gray-400 text-center">Loading chart...</div>
             </div>
           </div>
-
-          <!-- Space Invaders Stats -->
-          <div class="bg-gray-700 p-3 rounded">
-            <h4 class="font-semibold text-orange-400 mb-2">👾 Space Invaders</h4>
-            <div class="space-y-1 text-sm">
-              <div class="flex justify-between">
-                <span class="text-gray-400">Total Scores:</span>
-                <span class="text-white font-semibold" id="spaceInvadersTotalScores">-</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Unique Players:</span>
-                <span class="text-white font-semibold" id="spaceInvadersUniquePlayers">-</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Highest Score:</span>
-                <span class="text-green-400 font-semibold" id="spaceInvadersMaxScore">-</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Recent (24h):</span>
-                <span class="text-blue-400 font-semibold" id="spaceInvadersRecent24h">-</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Total Stats -->
-          <div class="bg-gray-700 p-3 rounded">
-            <h4 class="font-semibold text-purple-400 mb-2">📈 Combined</h4>
-            <div class="space-y-1 text-sm">
-              <div class="flex justify-between">
-                <span class="text-gray-400">Total Scores:</span>
-                <span class="text-white font-semibold" id="totalGameScores">-</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Total Players:</span>
-                <span class="text-white font-semibold" id="totalGamePlayers">-</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Recent (24h):</span>
-                <span class="text-blue-400 font-semibold" id="totalGameRecent24h">-</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Recent (7d):</span>
-                <span class="text-purple-400 font-semibold" id="totalGameRecent7d">-</span>
-              </div>
+          
+          <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-green-400 mb-3">🎯 Weekly Performance</h4>
+            <div id="weeklyPerformance" class="space-y-3">
+              <div class="text-gray-400 text-center">Loading data...</div>
             </div>
           </div>
         </div>
-        
-        <button onclick="loadGameStatistics()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Statistics</button>
+
+        <!-- Quick Actions -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-purple-400 mb-3">⚡ Quick Actions</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button onclick="resetAllGameScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">🔄 Reset All Scores</button>
+            <button onclick="exportGameData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📊 Export Data</button>
+            <button onclick="backupGameData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">💾 Backup Data</button>
+          </div>
+        </div>
       </div>
 
       <!-- Score Reset Management -->
