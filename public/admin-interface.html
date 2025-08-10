@@ -4489,6 +4489,201 @@ require_once 'discord-invite.php';
       }
     }
 
+    // === MISSING DATABASE FUNCTIONS ===
+    
+    // Download database
+    async function downloadDatabase() {
+      try {
+        addLog('📥 Initiating database download...');
+        
+        // Call server-side download endpoint
+        const response = await fetch(API_BASE_URL + '/api/admin/download-database.php', {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer ' + (currentAdmin ? currentAdmin.token : '')
+          }
+        });
+        
+        if (response.ok) {
+          // Create blob and download
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `narrrfs_world_database_${new Date().toISOString().split('T')[0]}.sqlite`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          
+          addLog('✅ Database downloaded successfully');
+        } else {
+          const errorData = await response.json();
+          addLog('❌ Database download failed: ' + (errorData.error || 'Server error'));
+        }
+      } catch (error) {
+        addLog('❌ Database download error: ' + error.message);
+      }
+    }
+    
+    // Trigger database backup
+    async function triggerBackup() {
+      try {
+        addLog('🗄️ Initiating database backup...');
+        
+        // Call server-side backup endpoint
+        const response = await fetch(API_BASE_URL + '/api/admin/backup-database.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (currentAdmin ? currentAdmin.token : '')
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Database backup completed successfully');
+          addLog(`📁 Backup saved to: ${data.backup_path || 'server backup directory'}`);
+        } else {
+          addLog('❌ Database backup failed: ' + (data.error || 'Server error'));
+        }
+      } catch (error) {
+        addLog('❌ Database backup error: ' + error.message);
+      }
+    }
+    
+    // Show upload modal
+    function showUploadModal() {
+      const modal = document.getElementById('uploadModal');
+      modal.classList.remove('hidden');
+      document.getElementById('dbFile').focus();
+    }
+    
+    // Hide upload modal
+    function hideUploadModal() {
+      const modal = document.getElementById('uploadModal');
+      modal.classList.add('hidden');
+      document.getElementById('dbFile').value = '';
+      document.getElementById('uploadStatus').innerHTML = '';
+    }
+    
+    // Upload database
+    async function uploadDatabase() {
+      const fileInput = document.getElementById('dbFile');
+      const statusDiv = document.getElementById('uploadStatus');
+      
+      if (!fileInput.files[0]) {
+        statusDiv.innerHTML = '<div class="text-red-600">❌ Please select a database file</div>';
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('database', fileInput.files[0]);
+      
+      try {
+        statusDiv.innerHTML = '<div class="text-blue-600">⏳ Uploading database...</div>';
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/upload-database.php', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + (currentAdmin ? currentAdmin.token : '')
+          },
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          statusDiv.innerHTML = '<div class="text-green-600">✅ Database uploaded successfully</div>';
+          addLog('✅ Database uploaded successfully');
+          
+          // Hide modal after 2 seconds
+          setTimeout(() => {
+            hideUploadModal();
+          }, 2000);
+        } else {
+          statusDiv.innerHTML = '<div class="text-red-600">❌ ' + (data.error || 'Upload failed') + '</div>';
+          addLog('❌ Database upload failed: ' + (data.error || 'Upload failed'));
+        }
+      } catch (error) {
+        statusDiv.innerHTML = '<div class="text-red-600">❌ Upload error: ' + error.message + '</div>';
+        addLog('❌ Database upload error: ' + error.message);
+      }
+    }
+    
+    // Show database viewer
+    function showDatabaseViewer() {
+      const modal = document.getElementById('viewerModal');
+      modal.classList.remove('hidden');
+      loadDatabaseViewerContent();
+    }
+    
+    // Hide database viewer
+    function hideDatabaseViewer() {
+      const modal = document.getElementById('viewerModal');
+      modal.classList.add('hidden');
+      document.getElementById('viewerContent').innerHTML = '';
+    }
+    
+    // Load database viewer content
+    async function loadDatabaseViewerContent() {
+      const contentDiv = document.getElementById('viewerContent');
+      contentDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div><p class="mt-2 text-gray-600">Loading database structure...</p></div>';
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-database-structure.php', {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer ' + (currentAdmin ? currentAdmin.token : '')
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          let html = '<div class="space-y-4">';
+          
+          // Display database tables
+          if (data.tables && data.tables.length > 0) {
+            html += '<h4 class="text-lg font-semibold text-gray-800 mb-3">📊 Database Tables</h4>';
+            data.tables.forEach(table => {
+              html += `
+                <div class="bg-gray-100 p-4 rounded">
+                  <h5 class="font-semibold text-gray-800 mb-2">${table.name}</h5>
+                  <p class="text-sm text-gray-600 mb-2">Rows: ${table.row_count || 'Unknown'}</p>
+                  ${table.columns ? `
+                    <div class="text-xs text-gray-500">
+                      <strong>Columns:</strong> ${table.columns.join(', ')}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            });
+          }
+          
+          // Display database info
+          if (data.info) {
+            html += '<h4 class="text-lg font-semibold text-gray-800 mb-3 mt-6">ℹ️ Database Information</h4>';
+            html += `
+              <div class="bg-gray-100 p-4 rounded">
+                <p class="text-sm text-gray-600"><strong>Size:</strong> ${data.info.size || 'Unknown'}</p>
+                <p class="text-sm text-gray-600"><strong>Last Modified:</strong> ${data.info.last_modified || 'Unknown'}</p>
+                <p class="text-sm text-gray-600"><strong>Version:</strong> ${data.info.version || 'Unknown'}</p>
+              </div>
+            `;
+          }
+          
+          html += '</div>';
+          contentDiv.innerHTML = html;
+        } else {
+          contentDiv.innerHTML = '<div class="text-red-600 text-center py-8">❌ Failed to load database structure: ' + (data.error || 'Server error') + '</div>';
+        }
+      } catch (error) {
+        contentDiv.innerHTML = '<div class="text-red-600 text-center py-8">❌ Error loading database structure: ' + error.message + '</div>';
+      }
+    }
+
     function getStatusBorderColor(status) {
       switch (status) {
         case 'approved': return 'border-green-500';
@@ -5049,23 +5244,30 @@ require_once 'discord-invite.php';
       if (selectedButton) selectedButton.classList.add('active');
       
       // Load data for the selected tab
+      console.log('Switching to tab:', tabName);
       switch(tabName) {
         case 'overview':
+          console.log('Loading overview data...');
           loadGameOverview();
           break;
         case 'tetris':
+          console.log('Loading Tetris data...');
           loadTetrisData();
           break;
         case 'snake':
+          console.log('Loading Snake data...');
           loadSnakeData();
           break;
         case 'cheese-invaders':
+          console.log('Loading Cheese Invaders data...');
           loadInvadersData();
           break;
         case 'cheese-hunt':
+          console.log('Loading Cheese Hunt data...');
           loadCheeseData();
           break;
         case 'discord-race':
+          console.log('Loading Discord Race data...');
           loadRaceData();
           break;
       }
@@ -5598,10 +5800,16 @@ require_once 'discord-invite.php';
         const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
         const data = await response.json();
         
+        console.log('Full API response for Cheese Invaders:', data);
         if (data.success && data.data && data.data.games && data.data.games.cheese_invaders) {
-          displayInvadersData(data.data.games.cheese_invaders);
+          console.log('Cheese Invaders data found in response:', data.data.games.cheese_invaders);
+          // Add a small delay to ensure DOM is ready
+          setTimeout(() => {
+            displayInvadersData(data.data.games.cheese_invaders);
+          }, 100);
           addLog('✅ Cheese Invaders data loaded successfully');
         } else {
+          console.error('Cheese Invaders data not found in response:', data);
           addLog(`❌ Failed to load Cheese Invaders data: ${data.error}`);
         }
       } catch (error) {
@@ -5612,6 +5820,13 @@ require_once 'discord-invite.php';
     function displayInvadersData(invadersData) {
       try {
         console.log('Cheese Invaders data received:', invadersData);
+        console.log('Cheese Invaders data structure:', JSON.stringify(invadersData, null, 2));
+        console.log('Cheese Invaders season_data:', invadersData.season_data);
+        console.log('Cheese Invaders top_players:', invadersData.top_players);
+        
+        // Debug: Check if we're in the right tab
+        console.log('Current active tab:', document.querySelector('.game-tab-content[style*="display: block"]')?.id);
+        console.log('Cheese Invaders tab visible:', document.getElementById('cheeseInvadersTab')?.style.display !== 'none');
         
         // Helper function to format numbers nicely
         const formatNumber = (num) => {
@@ -5630,10 +5845,14 @@ require_once 'discord-invite.php';
         };
 
         // Update Cheese Invaders statistics from season_data with better formatting
+        console.log('Looking for invadersTotalWaves element:', document.getElementById('invadersTotalWaves'));
         if (document.getElementById('invadersTotalWaves')) {
           const totalWaves = invadersData.season_data?.total_scores || 0;
+          console.log('Setting invadersTotalWaves to:', totalWaves);
           document.getElementById('invadersTotalWaves').textContent = formatNumber(totalWaves);
           document.getElementById('invadersTotalWaves').className = totalWaves > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        } else {
+          console.error('Element invadersTotalWaves not found!');
         }
         
         if (document.getElementById('invadersWavesCompleted')) {
@@ -5847,10 +6066,16 @@ require_once 'discord-invite.php';
         const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
         const data = await response.json();
         
+        console.log('Full API response for Cheese Hunt:', data);
         if (data.success && data.data && data.data.games && data.data.games.cheese_hunt) {
-          displayCheeseData(data.data.games.cheese_hunt);
+          console.log('Cheese Hunt data found in response:', data.data.games.cheese_hunt);
+          // Add a small delay to ensure DOM is ready
+          setTimeout(() => {
+            displayCheeseData(data.data.games.cheese_hunt);
+          }, 100);
           addLog('✅ Cheese Hunt data loaded successfully');
         } else {
+          console.error('Cheese Hunt data not found in response:', data);
           addLog(`❌ Failed to load Cheese Hunt data: ${data.error}`);
         }
       } catch (error) {
@@ -5860,10 +6085,32 @@ require_once 'discord-invite.php';
 
     function displayCheeseData(cheeseData) {
       try {
+        console.log('Cheese Hunt data received:', cheeseData);
+        console.log('Cheese Hunt data structure:', JSON.stringify(cheeseData, null, 2));
+        console.log('Cheese Hunt current_data:', cheeseData.current_data);
+        console.log('Cheese Hunt top_players:', cheeseData.top_players);
         // Update Cheese Hunt statistics from current_data
-        if (document.getElementById('cheeseTotalClicks')) document.getElementById('cheeseTotalClicks').textContent = cheeseData.current_data?.total_clicks || '-';
-        if (document.getElementById('cheeseUniquePlayers')) document.getElementById('cheeseUniquePlayers').textContent = cheeseData.current_data?.unique_players || '-';
-        if (document.getElementById('cheeseClicksToday')) document.getElementById('cheeseClicksToday').textContent = cheeseData.current_data?.recent_24h || '-';
+        console.log('Looking for cheeseTotalClicks element:', document.getElementById('cheeseTotalClicks'));
+        if (document.getElementById('cheeseTotalClicks')) {
+          console.log('Setting cheeseTotalClicks to:', cheeseData.current_data?.total_clicks || '-');
+          document.getElementById('cheeseTotalClicks').textContent = cheeseData.current_data?.total_clicks || '-';
+        } else {
+          console.error('Element cheeseTotalClicks not found!');
+        }
+        
+        if (document.getElementById('cheeseUniquePlayers')) {
+          console.log('Setting cheeseUniquePlayers to:', cheeseData.current_data?.unique_players || '-');
+          document.getElementById('cheeseUniquePlayers').textContent = cheeseData.current_data?.unique_players || '-';
+        } else {
+          console.error('Element cheeseUniquePlayers not found!');
+        }
+        
+        if (document.getElementById('cheeseClicksToday')) {
+          console.log('Setting cheeseClicksToday to:', cheeseData.current_data?.recent_24h || '-');
+          document.getElementById('cheeseClicksToday').textContent = cheeseData.current_data?.recent_24h || '-';
+        } else {
+          console.error('Element cheeseClicksToday not found!');
+        }
         if (document.getElementById('cheeseAvgClicks')) document.getElementById('cheeseAvgClicks').textContent = '-';
         if (document.getElementById('cheeseRegularEggs')) document.getElementById('cheeseRegularEggs').textContent = '-';
         if (document.getElementById('cheeseGoldenEggs')) document.getElementById('cheeseGoldenEggs').textContent = '-';
@@ -5963,7 +6210,11 @@ require_once 'discord-invite.php';
             stats: statsData.data,
             recent_races: racesData.data
           };
-          displayRaceData(combinedData);
+          console.log('Discord Race data found in response:', combinedData);
+          // Add a small delay to ensure DOM is ready
+          setTimeout(() => {
+            displayRaceData(combinedData);
+          }, 100);
           addLog('✅ Discord Cheese Race data loaded successfully');
         } else {
           addLog(`❌ Failed to load Discord Cheese Race data: ${statsData.error || racesData.error}`);
@@ -5975,10 +6226,32 @@ require_once 'discord-invite.php';
 
     function displayRaceData(raceData) {
       try {
+        console.log('Discord Race data received:', raceData);
+        console.log('Discord Race data structure:', JSON.stringify(raceData, null, 2));
+        console.log('Discord Race stats:', raceData.stats);
+        console.log('Discord Race recent_races:', raceData.recent_races);
         // Update Discord Race statistics from stats API
-        if (document.getElementById('raceTotalRaces')) document.getElementById('raceTotalRaces').textContent = raceData.stats?.totalRacesToday || '-';
-        if (document.getElementById('raceActiveRaces')) document.getElementById('raceActiveRaces').textContent = raceData.stats?.activeRaces || '-';
-        if (document.getElementById('raceTotalParticipants')) document.getElementById('raceTotalParticipants').textContent = raceData.stats?.participantsToday || '-';
+        console.log('Looking for raceTotalRaces element:', document.getElementById('raceTotalRaces'));
+        if (document.getElementById('raceTotalRaces')) {
+          console.log('Setting raceTotalRaces to:', raceData.stats?.totalRacesToday || '-');
+          document.getElementById('raceTotalRaces').textContent = raceData.stats?.totalRacesToday || '-';
+        } else {
+          console.error('Element raceTotalRaces not found!');
+        }
+        
+        if (document.getElementById('raceActiveRaces')) {
+          console.log('Setting raceActiveRaces to:', raceData.stats?.activeRaces || '-');
+          document.getElementById('raceActiveRaces').textContent = raceData.stats?.activeRaces || '-';
+        } else {
+          console.error('Element raceActiveRaces not found!');
+        }
+        
+        if (document.getElementById('raceTotalParticipants')) {
+          console.log('Setting raceTotalParticipants to:', raceData.stats?.participantsToday || '-');
+          document.getElementById('raceTotalParticipants').textContent = raceData.stats?.participantsToday || '-';
+        } else {
+          console.error('Element raceTotalParticipants not found!');
+        }
         if (document.getElementById('raceTotalWinners')) document.getElementById('raceTotalWinners').textContent = raceData.stats?.dspoincDistributed > 0 ? 'Yes' : 'No';
         
         // Calculate additional stats
