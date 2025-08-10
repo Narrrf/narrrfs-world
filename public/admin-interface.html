@@ -5908,59 +5908,18 @@ require_once 'discord-invite.php';
         // Update leaderboard with enhanced styling
         const leaderboard = document.getElementById('invadersLeaderboard');
         if (leaderboard) {
-          if (invadersData.top_players && invadersData.top_players.length > 0) {
-            // Add summary at the top
-            const totalWaves = invadersData.top_players.reduce((sum, player) => sum + (player.wave || player.score || 0), 0);
-            const avgWave = Math.round(totalWaves / invadersData.top_players.length);
-            
-            leaderboard.innerHTML = `
-              <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
-                <div class="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div class="text-2xl font-bold text-purple-400">${invadersData.top_players.length}</div>
-                    <div class="text-xs text-gray-300">Top Players</div>
-                  </div>
-                  <div>
-                    <div class="text-2xl font-bold text-green-400">${totalWaves.toLocaleString()}</div>
-                    <div class="text-xs text-gray-300">Total Waves</div>
-                  </div>
-                  <div>
-                    <div class="text-2xl font-bold text-blue-400">${avgWave.toLocaleString()}</div>
-                    <div class="text-xs text-gray-300">Avg. Wave</div>
-                  </div>
-                </div>
+          // Since the API doesn't provide top_players for Cheese Invaders yet, show a placeholder
+          leaderboard.innerHTML = `
+            <div class="text-gray-400 text-center py-8">
+              <div class="text-4xl mb-2">👾</div>
+              <p class="text-lg font-semibold mb-2">No Cheese Invaders Yet</p>
+              <p class="text-sm">Start playing to appear on the leaderboard!</p>
+              <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
+                <p class="text-sm text-gray-300">Season: ${invadersData.season_data?.current_season || 'Season 1'}</p>
+                <p class="text-xs text-gray-400">Status: ${invadersData.status || 'Active'}</p>
               </div>
-              ${invadersData.top_players.map((player, index) => `
-                <div class="leaderboard-item bg-gray-600 p-3 rounded-lg mb-2 border border-gray-500 hover:bg-gray-500 transition-all duration-200 transform hover:scale-105" style="animation-delay: ${index * 0.1}s">
-                  <div class="flex justify-between items-center">
-                    <div class="flex items-center space-x-3">
-                      <div class="leaderboard-rank w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'bg-gray-500 text-gray-200'
-                      }">
-                        ${index + 1}
-                      </div>
-                      <div class="leaderboard-info">
-                        <div class="leaderboard-name text-white font-semibold">${player.username || 'Unknown Player'}</div>
-                        <div class="text-xs text-gray-400">${player.discord_id || 'No Discord ID'}</div>
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <div class="leaderboard-score text-lg font-bold text-green-400">${formatWave(player.wave || player.score)}</div>
-                      <div class="text-xs text-gray-400">${player.date ? new Date(player.date).toLocaleDateString() : 'No date'}</div>
-                    </div>
-                  </div>
-                </div>
-              `).join('')}
-            `;
-          } else {
-            leaderboard.innerHTML = `
-              <div class="text-gray-400 text-center py-8">
-                <div class="text-4xl mb-2">👾</div>
-                <p class="text-lg font-semibold mb-2">No Cheese Invaders Yet</p>
-                <p class="text-sm">Start playing to appear on the leaderboard!</p>
-              </div>
-            `;
-          }
+            </div>
+          `;
         }
 
         // Add data summary at the top
@@ -6121,64 +6080,19 @@ require_once 'discord-invite.php';
 
         // Update leaderboard with enhanced styling using new CSS classes
         const leaderboard = document.getElementById('cheeseLeaderboard');
-        if (leaderboard && cheeseData.top_players) {
-          if (cheeseData.top_players.length === 0) {
-            leaderboard.innerHTML = `
-              <div class="leaderboard-empty">
-                <div class="empty-icon">🧀</div>
-                <p class="empty-title">No Cheese Hunters Yet</p>
-                <p class="empty-subtitle">Start hunting cheese to appear on the leaderboard!</p>
+        if (leaderboard) {
+          // Since the API doesn't provide top_players for Cheese Hunt yet, show a placeholder
+          leaderboard.innerHTML = `
+            <div class="text-gray-400 text-center py-8">
+              <div class="text-4xl mb-2">🧀</div>
+              <p class="text-lg font-semibold mb-2">No Cheese Hunters Yet</p>
+              <p class="text-sm">Start hunting cheese to appear on the leaderboard!</p>
+              <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
+                <p class="text-sm text-gray-300">Total Clicks: ${cheeseData.current_data?.total_clicks || 0}</p>
+                <p class="text-xs text-gray-400">Status: ${cheeseData.status || 'Active'}</p>
               </div>
-            `;
-          } else {
-            // Add summary at the top
-            const totalClicks = cheeseData.top_players.reduce((sum, player) => sum + (player.clicks || 0), 0);
-            const avgClicks = Math.round(totalClicks / cheeseData.top_players.length);
-            
-            leaderboard.innerHTML = `
-              <div class="leaderboard-summary">
-                <div class="summary-grid">
-                  <div class="summary-item">
-                    <div class="summary-value summary-value-primary">${cheeseData.top_players.length}</div>
-                    <div class="summary-label">Top Hunters</div>
-                  </div>
-                  <div class="summary-item">
-                    <div class="summary-value summary-value-success">${totalClicks.toLocaleString()}</div>
-                    <div class="summary-label">Total Clicks</div>
-                  </div>
-                  <div class="summary-item">
-                    <div class="summary-value summary-value-info">${avgClicks.toLocaleString()}</div>
-                    <div class="summary-label">Avg. Clicks</div>
-                  </div>
-                </div>
-              </div>
-              ${cheeseData.top_players.map((player, index) => `
-                <div class="leaderboard-item ${index < 3 ? 'leaderboard-top' : ''}" style="animation-delay: ${index * 0.1}s">
-                  <div class="leaderboard-rank">
-                    <span class="rank-number ${index < 3 ? 'rank-top' : ''}">${index + 1}</span>
-                    ${index < 3 ? '<span class="rank-medal">🏆</span>' : ''}
-                  </div>
-                  <div class="leaderboard-player">
-                    <div class="player-avatar">
-                      <img src="${player.avatar_url || 'https://narrrfs.world/img/default-avatar.png'}" 
-                           alt="${player.username}" 
-                           class="avatar-image"
-                           onerror="this.src='https://narrrfs.world/img/default-avatar.png'">
-                    </div>
-                    <div class="player-info">
-                      <div class="player-name">${escapeHtml(player.username || 'Unknown Hunter')}</div>
-                      <div class="player-id">${player.discord_id || 'No Discord ID'}</div>
-                    </div>
-                  </div>
-                  <div class="leaderboard-score">
-                    <div class="score-value">${(player.clicks || 0).toLocaleString()}</div>
-                    <div class="score-label">clicks</div>
-                    <div class="score-date">${player.last_click ? new Date(player.last_click).toLocaleDateString() : 'Never'}</div>
-                  </div>
-                </div>
-              `).join('')}
-            `;
-          }
+            </div>
+          `;
         }
       } catch (error) {
         console.error('Error displaying Cheese Hunt data:', error);
@@ -6196,31 +6110,22 @@ require_once 'discord-invite.php';
       addLog('🔄 Loading Discord Cheese Race data...');
 
       try {
-        // Load race statistics
-        const statsResponse = await fetch(API_BASE_URL + '/api/admin/get-race-stats.php');
-        const statsData = await statsResponse.json();
+        // Load data from the consolidated games stats API
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
         
-        // Load recent races
-        const racesResponse = await fetch(API_BASE_URL + '/api/admin/get-recent-races.php');
-        const racesData = await racesResponse.json();
-        
-        if (statsData.success && racesData.success) {
-          // Combine the data for display
-          const combinedData = {
-            stats: statsData.data,
-            recent_races: racesData.data
-          };
-          console.log('Discord Race data found in response:', combinedData);
+        if (data.success && data.data && data.data.games && data.data.games.discord_race) {
+          console.log('Discord Race data found in response:', data.data.games.discord_race);
           // Add a small delay to ensure DOM is ready
           setTimeout(() => {
-            displayRaceData(combinedData);
+            displayRaceData(data.data.games.discord_race);
           }, 100);
           addLog('✅ Discord Cheese Race data loaded successfully');
         } else {
-          addLog(`❌ Failed to load Discord Cheese Race data: ${statsData.error || racesData.error}`);
+          addLog(`❌ Failed to load Discord Race data: ${data.error}`);
         }
       } catch (error) {
-        addLog(`❌ Discord Cheese Race data loading error: ${error.message}`);
+        addLog(`❌ Discord Race data loading error: ${error.message}`);
       }
     }
 
@@ -6228,41 +6133,44 @@ require_once 'discord-invite.php';
       try {
         console.log('Discord Race data received:', raceData);
         console.log('Discord Race data structure:', JSON.stringify(raceData, null, 2));
-        console.log('Discord Race stats:', raceData.stats);
-        console.log('Discord Race recent_races:', raceData.recent_races);
-        // Update Discord Race statistics from stats API
+        console.log('Discord Race race_data:', raceData.race_data);
+        
+        // Update Discord Race statistics from race_data API
         console.log('Looking for raceTotalRaces element:', document.getElementById('raceTotalRaces'));
         if (document.getElementById('raceTotalRaces')) {
-          console.log('Setting raceTotalRaces to:', raceData.stats?.totalRacesToday || '-');
-          document.getElementById('raceTotalRaces').textContent = raceData.stats?.totalRacesToday || '-';
+          console.log('Setting raceTotalRaces to:', raceData.race_data?.total_races || 0);
+          document.getElementById('raceTotalRaces').textContent = raceData.race_data?.total_races || 0;
         } else {
           console.error('Element raceTotalRaces not found!');
         }
         
         if (document.getElementById('raceActiveRaces')) {
-          console.log('Setting raceActiveRaces to:', raceData.stats?.activeRaces || '-');
-          document.getElementById('raceActiveRaces').textContent = raceData.stats?.activeRaces || '-';
+          console.log('Setting raceActiveRaces to:', raceData.race_data?.recent_24h || 0);
+          document.getElementById('raceActiveRaces').textContent = raceData.race_data?.recent_24h || 0;
         } else {
           console.error('Element raceActiveRaces not found!');
         }
         
         if (document.getElementById('raceTotalParticipants')) {
-          console.log('Setting raceTotalParticipants to:', raceData.stats?.participantsToday || '-');
-          document.getElementById('raceTotalParticipants').textContent = raceData.stats?.participantsToday || '-';
+          console.log('Setting raceTotalParticipants to:', raceData.race_data?.total_participants || 0);
+          document.getElementById('raceTotalParticipants').textContent = raceData.race_data?.total_participants || 0;
         } else {
           console.error('Element raceTotalParticipants not found!');
         }
-        if (document.getElementById('raceTotalWinners')) document.getElementById('raceTotalWinners').textContent = raceData.stats?.dspoincDistributed > 0 ? 'Yes' : 'No';
+        
+        if (document.getElementById('raceTotalWinners')) {
+          document.getElementById('raceTotalWinners').textContent = raceData.race_data?.total_prizes_awarded || 0;
+        }
         
         // Calculate additional stats
-        const totalRaces = raceData.stats?.totalRacesToday || 0;
-        const activeRaces = raceData.stats?.activeRaces || 0;
-        const completedRaces = totalRaces - activeRaces;
+        const totalRaces = raceData.race_data?.total_races || 0;
+        const recentRacesCount = raceData.race_data?.recent_24h || 0;
+        const completedRaces = totalRaces - recentRacesCount;
         const successRate = totalRaces > 0 ? Math.round((completedRaces / totalRaces) * 100) : 0;
         
         if (document.getElementById('raceCompletedRaces')) document.getElementById('raceCompletedRaces').textContent = completedRaces;
         if (document.getElementById('raceSuccessRate')) document.getElementById('raceSuccessRate').textContent = successRate + '%';
-        if (document.getElementById('raceAvgParticipants')) document.getElementById('raceAvgParticipants').textContent = totalRaces > 0 ? Math.round(raceData.stats?.participantsToday / totalRaces) : 0;
+        if (document.getElementById('raceAvgParticipants')) document.getElementById('raceAvgParticipants').textContent = totalRaces > 0 ? Math.round((raceData.race_data?.total_participants || 0) / totalRaces) : 0;
         
         // Handle other elements that might not have data yet
         if (document.getElementById('raceUniqueWinners')) document.getElementById('raceUniqueWinners').textContent = 'Coming Soon';
@@ -6270,21 +6178,13 @@ require_once 'discord-invite.php';
         if (document.getElementById('racePeakParticipation')) document.getElementById('racePeakParticipation').textContent = 'Coming Soon';
 
         // Update recent races list
-        const recentRaces = document.getElementById('recentRaceActivity');
-        if (recentRaces && raceData.recent_races) {
-          if (raceData.recent_races.length === 0) {
-            recentRaces.innerHTML = `
-              <div class="text-gray-400 text-center py-8">
-                <div class="text-4xl mb-2">🏁</div>
-                <p class="text-lg font-semibold mb-2">No Recent Races</p>
-                <p class="text-sm">Start a new race to see activity here!</p>
-              </div>
-            `;
-          } else {
+        const recentRacesElement = document.getElementById('recentRaceActivity');
+        if (recentRacesElement) {
+          if (raceData.race_data?.recent_activity && raceData.race_data.recent_activity.length > 0) {
             // Add summary at the top
-            const totalRaces = raceData.recent_races.length;
-            const completedRaces = raceData.recent_races.filter(race => race.status === 'completed').length;
-            const activeRaces = raceData.recent_races.filter(race => race.status === 'active').length;
+            const totalRaces = raceData.race_data.recent_activity.length;
+            const completedRaces = raceData.race_data.recent_activity.filter(race => race.status === 'completed').length;
+            const activeRaces = raceData.race_data.recent_activity.filter(race => race.status === 'active').length;
             
             recentRaces.innerHTML = `
               <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
@@ -6303,26 +6203,26 @@ require_once 'discord-invite.php';
                   </div>
                 </div>
               </div>
-              ${raceData.recent_races.map((race, index) => `
+              ${raceData.race_data.recent_activity.map((race, index) => `
                 <div class="history-item bg-gray-600 p-3 rounded-lg mb-3 border border-gray-500 hover:bg-gray-500 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
                   <div class="flex justify-between items-start mb-2">
                     <div class="flex items-center space-x-2">
                       <span class="text-lg">🏁</span>
-                      <span class="text-white font-semibold">${race.creator_name}</span>
+                      <span class="text-white font-semibold">${race.creator_name || 'Unknown'}</span>
                       <span class="px-2 py-1 text-xs rounded-full ${
                         race.status === 'completed' ? 'bg-green-600 text-green-100' : 
                         race.status === 'active' ? 'bg-blue-600 text-blue-100' : 
                         'bg-gray-600 text-gray-100'
-                      }">${race.status}</span>
+                      }">${race.status || 'unknown'}</span>
                     </div>
                     <div class="text-right">
-                      <div class="text-sm text-gray-300">${new Date(race.created_at).toLocaleString()}</div>
-                      <div class="text-xs text-gray-400">${race.participant_count} players</div>
+                      <div class="text-sm text-gray-300">${race.created_at ? new Date(race.created_at).toLocaleString() : 'No date'}</div>
+                      <div class="text-xs text-gray-400">${race.participant_count || 0} players</div>
                     </div>
                   </div>
                   <div class="flex justify-between items-center">
                     <div class="text-sm text-gray-300">
-                      <span class="text-yellow-400">💰</span> Reward: <span class="text-yellow-300 font-semibold">${race.dspoinc_reward} DSPOINC</span>
+                      <span class="text-yellow-400">💰</span> Reward: <span class="text-yellow-300 font-semibold">${race.dspoinc_reward || 0} DSPOINC</span>
                     </div>
                     <div class="text-xs text-gray-400">
                       ID: ${race.id || 'N/A'}
@@ -6331,27 +6231,39 @@ require_once 'discord-invite.php';
                 </div>
               `).join('')}
             `;
+          } else {
+            recentRaces.innerHTML = `
+              <div class="text-gray-400 text-center py-8">
+                <div class="text-4xl mb-2">🏁</div>
+                <p class="text-lg font-semibold mb-2">No Recent Races</p>
+                <p class="text-sm">Start a new race to see activity here!</p>
+                <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
+                  <p class="text-sm text-gray-300">Total races: ${raceData.race_data?.total_races || 0}</p>
+                  <p class="text-xs text-gray-400">Total participants: ${raceData.race_data?.total_participants || 0}</p>
+                </div>
+              </div>
+            `;
           }
         }
 
         // Update leaderboard with enhanced styling
         const leaderboard = document.getElementById('raceLeaderboard');
         if (leaderboard) {
-          if (!raceData.stats || !raceData.stats.topRacers || raceData.stats.topRacers.length === 0) {
+          if (!raceData.race_data || !raceData.race_data.top_racers || raceData.race_data.top_racers.length === 0) {
             leaderboard.innerHTML = `
               <div class="text-gray-400 text-center py-8">
                 <div class="text-4xl mb-2">🏆</div>
                 <p class="text-lg font-semibold mb-2">Leaderboard Coming Soon</p>
                 <p class="text-sm">Race data will appear here as players compete</p>
                 <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
-                  <p class="text-sm text-gray-300">Recent races: ${raceData.recent_races?.length || 0}</p>
-                  <p class="text-xs text-gray-400">Total participants today: ${raceData.stats?.participantsToday || 0}</p>
+                  <p class="text-sm text-gray-300">Recent races: ${raceData.race_data?.recent_activity?.length || 0}</p>
+                  <div class="text-xs text-gray-400">Total participants: ${raceData.race_data?.total_participants || 0}</div>
                 </div>
               </div>
             `;
           } else {
             // Enhanced leaderboard with the new CSS classes
-            const topRacers = raceData.stats.topRacers.slice(0, 10);
+            const topRacers = raceData.race_data.top_racers.slice(0, 10);
             leaderboard.innerHTML = `
               <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
                 <div class="grid grid-cols-2 gap-4 text-center">
@@ -6360,7 +6272,7 @@ require_once 'discord-invite.php';
                     <div class="text-xs text-gray-300">Top Racers</div>
                   </div>
                   <div>
-                    <div class="text-2xl font-bold text-green-400">${raceData.stats.totalRacesToday || 0}</div>
+                    <div class="text-2xl font-bold text-green-400">${raceData.race_data.total_races || 0}</div>
                     <div class="text-xs text-gray-300">Total Races</div>
                   </div>
                 </div>
@@ -9221,6 +9133,17 @@ require_once 'discord-invite.php';
       </div>
     </div>
   </div>
+
+  <!-- Utility Functions -->
+  <script>
+    // Utility function for escaping HTML
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
 
 </body>
 </html> 
