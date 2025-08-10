@@ -2578,7 +2578,7 @@ require_once 'discord-invite.php';
     async function loadDashboardData() {
       try {
         // Load basic stats (always visible)
-        const statsResponse = await fetch('/api/admin/get-stats.php');
+        const statsResponse = await fetch(API_BASE_URL + '/api/admin/get-stats.php');
         const stats = await statsResponse.json();
         
         if (stats.success) {
@@ -2604,7 +2604,7 @@ require_once 'discord-invite.php';
 
         // Load cheese click statistics (only for authenticated users)
         if (currentAdmin) {
-          const cheeseStatsResponse = await fetch('/api/admin/get-cheese-stats.php');
+          const cheeseStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-cheese-stats.php');
           const cheeseStats = await cheeseStatsResponse.json();
           
           if (cheeseStats.success) {
@@ -2655,7 +2655,7 @@ require_once 'discord-invite.php';
 
         // Load quest and role statistics (only for authenticated users)
         if (currentAdmin) {
-          const questStatsResponse = await fetch('/api/admin/get-quest-stats.php');
+          const questStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-quest-stats.php');
           const questStats = await questStatsResponse.json();
           
           if (questStats.success) {
@@ -2683,7 +2683,7 @@ require_once 'discord-invite.php';
 
         // Load recent adjustments (only for authenticated users)
         if (currentAdmin) {
-          const adjustmentsResponse = await fetch('/api/admin/get-recent-adjustments.php');
+          const adjustmentsResponse = await fetch(API_BASE_URL + '/api/admin/get-recent-adjustments.php');
           const adjustments = await adjustmentsResponse.json();
           
           if (adjustments.success) {
@@ -2695,7 +2695,7 @@ require_once 'discord-invite.php';
 
         // Load top users (only for authenticated users)
         if (currentAdmin) {
-          const topUsersResponse = await fetch('/api/admin/get-top-users.php');
+          const topUsersResponse = await fetch(API_BASE_URL + '/api/admin/get-top-users.php');
           const topUsers = await topUsersResponse.json();
           
           if (topUsers.success) {
@@ -2708,7 +2708,7 @@ require_once 'discord-invite.php';
         // Load enhanced statistics (only for authenticated users)
         if (currentAdmin) {
           try {
-            const enhancedStatsResponse = await fetch('/api/admin/get-enhanced-stats.php');
+            const enhancedStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-enhanced-stats.php');
             const enhancedStats = await enhancedStatsResponse.json();
             
             if (enhancedStats.success) {
@@ -3123,13 +3123,13 @@ require_once 'discord-invite.php';
       }
     }
 
-    // Tab navigation
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    // Tab navigation - Only process buttons with data-tab attribute
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
       btn.addEventListener('click', function() {
         const tab = this.dataset.tab;
         
         // Update active tab button
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
         // Hide all tabs
@@ -3170,7 +3170,7 @@ require_once 'discord-invite.php';
 
       searchTimeout = setTimeout(async () => {
         try {
-          const response = await fetch('/api/admin/point-management.php', {
+          const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3204,7 +3204,7 @@ require_once 'discord-invite.php';
 
       searchTimeout = setTimeout(async () => {
         try {
-          const response = await fetch('/api/admin/point-management.php', {
+          const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3236,7 +3236,7 @@ require_once 'discord-invite.php';
       }
 
       try {
-        const response = await fetch('/api/admin/point-management.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3343,7 +3343,7 @@ require_once 'discord-invite.php';
 
       searchTimeout = setTimeout(async () => {
         try {
-          const response = await fetch('/api/admin/point-management.php', {
+          const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3405,7 +3405,7 @@ require_once 'discord-invite.php';
 
       searchTimeout = setTimeout(async () => {
         try {
-          const response = await fetch('/api/admin/point-management.php', {
+          const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3465,7 +3465,7 @@ require_once 'discord-invite.php';
       }
 
       try {
-        const response = await fetch('/api/admin/point-management.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3530,7 +3530,7 @@ require_once 'discord-invite.php';
       }
 
       try {
-        const response = await fetch('/api/admin/point-management.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3576,7 +3576,7 @@ require_once 'discord-invite.php';
       }
 
       try {
-        const response = await fetch('/api/admin/point-management.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3622,7 +3622,7 @@ require_once 'discord-invite.php';
       }
 
       try {
-        const response = await fetch('/api/admin/point-management.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3661,7 +3661,7 @@ require_once 'discord-invite.php';
       }
 
       try {
-        const response = await fetch('/api/admin/point-management.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3700,7 +3700,7 @@ require_once 'discord-invite.php';
       }
 
       try {
-        const response = await fetch('/api/admin/point-management.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3756,7 +3756,7 @@ require_once 'discord-invite.php';
     // Load store items
     async function loadStoreItems() {
       try {
-        const response = await fetch('/api/store/items.php');
+        const response = await fetch(API_BASE_URL + '/api/store/items.php');
         const data = await response.json();
         
         if (data.success) {
@@ -3951,7 +3951,7 @@ require_once 'discord-invite.php';
       }
 
       try {
-        const response = await fetch('/api/store/items.php');
+        const response = await fetch(API_BASE_URL + '/api/store/items.php');
         const data = await response.json();
         
         if (data.success) {
@@ -5067,7 +5067,7 @@ require_once 'discord-invite.php';
       addLog('🔄 Loading game statistics...');
 
       try {
-        const response = await fetch('/api/admin/get-game-statistics.php');
+        const response = await fetch(API_BASE_URL + '/api/admin/get-game-statistics.php');
         const data = await response.json();
         
         if (data.success) {
@@ -5580,7 +5580,7 @@ require_once 'discord-invite.php';
     function resetTetrisScores() {
       addLog('🔄 Tetris score reset requested...');
       if (confirm('⚠️ This will reset ALL Tetris scores. This action cannot be undone. Are you sure?')) {
-        fetch('/api/admin/reset-game-scores-v2.php', {
+        fetch(API_BASE_URL + '/api/admin/reset-game-scores-v2.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -5609,7 +5609,7 @@ require_once 'discord-invite.php';
     function resetSnakeScores() {
       addLog('🔄 Snake score reset requested...');
       if (confirm('⚠️ This will reset ALL Snake scores. This action cannot be undone. Are you sure?')) {
-        fetch('/api/admin/reset-game-scores-v2.php', {
+        fetch(API_BASE_URL + '/api/admin/reset-game-scores-v2.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -5638,7 +5638,7 @@ require_once 'discord-invite.php';
     function resetInvadersScores() {
       addLog('🔄 Cheese Invaders score reset requested...');
       if (confirm('⚠️ This will reset ALL Cheese Invaders scores. This action cannot be undone. Are you sure?')) {
-        fetch('/api/admin/reset-game-scores-v2.php', {
+        fetch(API_BASE_URL + '/api/admin/reset-game-scores-v2.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -5667,7 +5667,7 @@ require_once 'discord-invite.php';
     function resetCheeseData() {
       addLog('🔄 Cheese Hunt data reset requested...');
       if (confirm('⚠️ This will reset ALL Cheese Hunt data. This action cannot be undone. Are you sure?')) {
-        fetch('/api/admin/reset-game-scores-v2.php', {
+        fetch(API_BASE_URL + '/api/admin/reset-game-scores-v2.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -5755,7 +5755,7 @@ require_once 'discord-invite.php';
 
     function exportCheeseData() {
       addLog('📊 Cheese Hunt data export requested...');
-      fetch('/api/admin/get-cheese-stats.php')
+              fetch(API_BASE_URL + '/api/admin/get-cheese-stats.php')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -5774,7 +5774,7 @@ require_once 'discord-invite.php';
 
     function exportRaceData() {
       addLog('📊 Discord Cheese Race data export requested...');
-      fetch('/api/admin/get-discord-activity.php')
+              fetch(API_BASE_URL + '/api/admin/get-discord-activity.php')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -6354,7 +6354,7 @@ require_once 'discord-invite.php';
     // Game Settings Management
     async function loadGameSettings() {
       try {
-        const response = await fetch('/api/admin/game-settings.php?action=get_settings');
+        const response = await fetch(API_BASE_URL + '/api/admin/game-settings.php?action=get_settings');
         const data = await response.json();
         
         if (data.success) {
@@ -6417,7 +6417,7 @@ require_once 'discord-invite.php';
       addLog('💾 Saving game settings...');
 
       try {
-        const response = await fetch('/api/admin/game-settings.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/game-settings.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -7311,7 +7311,7 @@ require_once 'discord-invite.php';
     // Load current season settings
     async function loadCurrentSeasonSettings() {
       try {
-        const response = await fetch('/api/admin/get-current-season-settings.php');
+        const response = await fetch(API_BASE_URL + '/api/admin/get-current-season-settings.php');
         const data = await response.json();
         
         if (data.success) {
@@ -7369,7 +7369,7 @@ require_once 'discord-invite.php';
           return;
         }
 
-        const response = await fetch('/api/admin/update-season-settings.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/update-season-settings.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -7432,7 +7432,7 @@ require_once 'discord-invite.php';
       discordFeedInterval = setInterval(async () => {
         try {
           // First try to get real-time Discord events
-          const response = await fetch('/api/admin/discord-events.php');
+          const response = await fetch(API_BASE_URL + '/api/admin/discord-events.php');
           const data = await response.json();
           
           if (data.success && data.events && data.events.length > 0) {
@@ -7441,7 +7441,7 @@ require_once 'discord-invite.php';
             });
           } else {
             // Fallback to the old activity endpoint
-            const fallbackResponse = await fetch('/api/admin/get-discord-activity.php');
+            const fallbackResponse = await fetch(API_BASE_URL + '/api/admin/get-discord-activity.php');
             const fallbackData = await fallbackResponse.json();
             
             if (fallbackData.success && fallbackData.events && fallbackData.events.length > 0) {
