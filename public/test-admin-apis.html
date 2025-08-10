@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧀 Cheese Race API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: white; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #333; border-radius: 5px; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        pre { background: #2a2a2a; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        button { background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+    <h1>🧀 Cheese Race API Test</h1>
+    <p>Testing the cheese race APIs that the admin interface will use</p>
+    
+    <div class="test-section">
+        <h2>Test 1: Race Stats API</h2>
+        <button onclick="testRaceStats()">Test Race Stats API</button>
+        <div id="statsResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Recent Races API</h2>
+        <button onclick="testRecentRaces()">Test Recent Races API</button>
+        <div id="racesResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Combined Data (like admin interface)</h2>
+        <button onclick="testCombined()">Test Combined Data</button>
+        <div id="combinedResult"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin + window.location.pathname.replace('/test-admin-apis.html', '');
+        
+        async function testRaceStats() {
+            const resultDiv = document.getElementById('statsResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing...</p>';
+            
+            try {
+                const response = await fetch(API_BASE_URL + '/api/admin/get-race-stats.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Race Stats API working!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ API returned error: ${data.error}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Fetch error: ${error.message}</p>
+                    <p>This suggests the API endpoint is not accessible from the browser</p>
+                `;
+            }
+        }
+        
+        async function testRecentRaces() {
+            const resultDiv = document.getElementById('racesResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing...</p>';
+            
+            try {
+                const response = await fetch(API_BASE_URL + '/api/admin/get-recent-races.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Recent Races API working!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ API returned error: ${data.error}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Fetch error: ${error.message}</p>
+                    <p>This suggests the API endpoint is not accessible from the browser</p>
+                `;
+            }
+        }
+        
+        async function testCombined() {
+            const resultDiv = document.getElementById('combinedResult');
+            resultDiv.innerHTML = '<p class="info">🔄 Testing combined data...</p>';
+            
+            try {
+                // Load race statistics
+                const statsResponse = await fetch(API_BASE_URL + '/api/admin/get-race-stats.php');
+                const statsData = await statsResponse.json();
+                
+                // Load recent races
+                const racesResponse = await fetch(API_BASE_URL + '/api/admin/get-recent-races.php');
+                const racesData = await racesResponse.json();
+                
+                if (statsData.success && racesData.success) {
+                    // Combine the data for display (like admin interface does)
+                    const combinedData = {
+                        stats: statsData.data,
+                        recent_races: racesData.data
+                    };
+                    
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Combined data test successful!</p>
+                        <h3>Combined Data Structure:</h3>
+                        <pre>${JSON.stringify(combinedData, null, 2)}</pre>
+                        
+                        <h3>Summary:</h3>
+                        <ul>
+                            <li>Total Races Today: ${combinedData.stats.totalRacesToday}</li>
+                            <li>Active Races: ${combinedData.stats.activeRaces}</li>
+                            <li>Participants Today: ${combinedData.stats.participantsToday}</li>
+                            <li>DSPOINC Distributed: ${combinedData.stats.dspoincDistributed}</li>
+                            <li>Recent Races: ${combinedData.recent_races.length}</li>
+                        </ul>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ One or both APIs failed</p>
+                        <p>Stats API: ${statsData.success ? '✅' : '❌'} ${statsData.error || 'OK'}</p>
+                        <p>Races API: ${racesData.success ? '✅' : '❌'} ${racesData.error || 'OK'}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Combined test error: ${error.message}</p>
+                `;
+            }
+        }
+        
+        // Show API base URL for debugging
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('API Base URL:', API_BASE_URL);
+            document.body.insertAdjacentHTML('afterbegin', `
+                <div class="test-section" style="background: #333;">
+                    <h3>Debug Info</h3>
+                    <p><strong>API Base URL:</strong> ${API_BASE_URL}</p>
+                    <p><strong>Current Page:</strong> ${window.location.href}</p>
+                    <p><strong>Origin:</strong> ${window.location.origin}</p>
+                </div>
+            `);
+        });
+    </script>
+</body>
+</html>

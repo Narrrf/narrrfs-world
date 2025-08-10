@@ -1,6 +1,6 @@
 ErrorDocument 404 /404.html
 
-# Enable PHP processing in HTML files
-<FilesMatch "\.html$">
+# Enable PHP processing in HTML and PHP files
+<FilesMatch "\.(html|php)$">
     SetHandler application/x-httpd-php
 </FilesMatch>
