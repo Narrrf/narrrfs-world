@@ -15,6 +15,16 @@ require_once 'discord-invite.php';
   <!-- 🔗 Discord Token of Render System -->
   <script src="discord-config.js"></script>
   
+  <!-- 🌍 Environment Detection -->
+  <script>
+    // Detect environment and set API base URL
+    const isProduction = window.location.hostname === 'narrrfs.world';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
+    
+    console.log('🌍 Environment detected:', isProduction ? 'Production' : 'Local');
+    console.log('🔗 API Base URL:', API_BASE_URL);
+  </script>
+  
   <style>
     .admin-card {
       background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
@@ -3126,7 +3136,12 @@ require_once 'discord-invite.php';
         document.querySelectorAll('[id$="Tab"]').forEach(t => t.style.display = 'none');
         
         // Show selected tab
-        document.getElementById(tab + 'Tab').style.display = 'block';
+        const tabElement = document.getElementById(tab + 'Tab');
+        if (tabElement) {
+          tabElement.style.display = 'block';
+        } else {
+          addLog(`❌ Tab element not found: ${tab}Tab`);
+        }
         
         currentTab = tab;
         addLog(`📋 Switched to ${tab} tab`);
@@ -4370,10 +4385,10 @@ require_once 'discord-invite.php';
       try {
         addLog('📥 Initiating database download...');
         
-        // Create a temporary link to download the database
-        const link = document.createElement('a');
-        link.href = '/api/dev/download-db-local.php';
-        link.download = 'narrrf_world.sqlite';
+                       // Create a temporary link to download the database
+               const link = document.createElement('a');
+               link.href = '/api/dev/download-db.php';
+               link.download = 'narrrf_world.sqlite';
         link.style.display = 'none';
         
         document.body.appendChild(link);
@@ -5197,7 +5212,7 @@ require_once 'discord-invite.php';
       addLog('🔄 Loading game overview...');
 
       try {
-        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const response = await fetch('https://narrrfs.world/api/admin/get-all-games-stats.php');
         const data = await response.json();
         
         if (data.success) {
@@ -5271,7 +5286,7 @@ require_once 'discord-invite.php';
       addLog('🔄 Loading Tetris data...');
 
       try {
-        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const response = await fetch('https://narrrfs.world/api/admin/get-all-games-stats.php');
         const data = await response.json();
         
         if (data.success && data.data && data.data.games && data.data.games.tetris) {
@@ -5330,7 +5345,7 @@ require_once 'discord-invite.php';
       addLog('🔄 Loading Snake data...');
 
       try {
-        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const response = await fetch('https://narrrfs.world/api/admin/get-all-games-stats.php');
         const data = await response.json();
         
         if (data.success && data.data && data.data.games && data.data.games.snake) {
@@ -5389,7 +5404,7 @@ require_once 'discord-invite.php';
       addLog('🔄 Loading Cheese Invaders data...');
 
       try {
-        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const response = await fetch('https://narrrfs.world/api/admin/get-all-games-stats.php');
         const data = await response.json();
         
         if (data.success && data.data && data.data.games && data.data.games.cheese_invaders) {
@@ -5446,7 +5461,7 @@ require_once 'discord-invite.php';
       addLog('🔄 Loading Cheese Hunt data...');
 
       try {
-        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const response = await fetch('https://narrrfs.world/api/admin/get-all-games-stats.php');
         const data = await response.json();
         
         if (data.success && data.data && data.data.games && data.data.games.cheese_hunt) {
@@ -5503,7 +5518,7 @@ require_once 'discord-invite.php';
       addLog('🔄 Loading Discord Cheese Race data...');
 
       try {
-        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const response = await fetch('https://narrrfs.world/api/admin/get-all-games-stats.php');
         const data = await response.json();
         
         if (data.success && data.data && data.data.games && data.data.games.discord_race) {
@@ -5680,7 +5695,7 @@ require_once 'discord-invite.php';
 
     function exportTetrisData() {
       addLog('📊 Tetris data export requested...');
-      fetch('/api/admin/get-all-games-stats.php')
+      fetch('https://narrrfs.world/api/admin/get-all-games-stats.php')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -5700,7 +5715,7 @@ require_once 'discord-invite.php';
 
     function exportSnakeData() {
       addLog('📊 Snake data export requested...');
-      fetch('/api/admin/get-all-games-stats.php')
+      fetch('https://narrrfs.world/api/admin/get-all-games-stats.php')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -5720,7 +5735,7 @@ require_once 'discord-invite.php';
 
     function exportInvadersData() {
       addLog('📊 Cheese Invaders data export requested...');
-      fetch('/api/admin/get-all-games-stats.php')
+      fetch('https://narrrfs.world/api/admin/get-all-games-stats.php')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -5869,7 +5884,7 @@ require_once 'discord-invite.php';
     function exportGameData() {
       addLog('📊 Game data export requested...');
       // Export all games data in one comprehensive CSV
-      fetch('/api/admin/get-all-games-stats.php')
+      fetch('https://narrrfs.world/api/admin/get-all-games-stats.php')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -5890,9 +5905,9 @@ require_once 'discord-invite.php';
       addLog('💾 Game data backup requested...');
       // Create a comprehensive backup of all game data
       Promise.all([
-        fetch('/api/admin/get-all-games-stats.php'),
-        fetch('/api/admin/get-cheese-stats.php'),
-        fetch('/api/admin/get-discord-activity.php')
+        fetch('https://narrrfs.world/api/admin/get-all-games-stats.php'),
+        fetch('https://narrrfs.world/api/admin/get-cheese-stats.php'),
+        fetch('https://narrrfs.world/api/admin/get-discord-activity.php')
       ])
       .then(responses => Promise.all(responses.map(r => r.json())))
       .then(dataArray => {
