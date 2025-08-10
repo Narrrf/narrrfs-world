@@ -53,6 +53,12 @@ require_once 'discord-invite.php';
       background: rgba(255,255,255,0.3);
       border-color: rgba(255,255,255,0.5);
     }
+    .game-tab-content {
+      display: none;
+    }
+    .game-tab-content:first-child {
+      display: block;
+    }
     .history-item {
       background: rgba(255,255,255,0.1);
       border-radius: 8px;
@@ -814,21 +820,21 @@ require_once 'discord-invite.php';
       
       <!-- Game Management Tabs -->
       <div class="flex flex-wrap gap-2 mb-6">
-        <button class="tab-btn px-4 py-2 rounded active" data-game-tab="overview">📊 Overview Dashboard</button>
-        <button class="tab-btn px-4 py-2 rounded" data-game-tab="tetris">🧩 Tetris</button>
-        <button class="tab-btn px-4 py-2 rounded" data-game-tab="snake">🐍 Snake</button>
-        <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-invaders">👾 Cheese Invaders</button>
-        <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt">🧀 Cheese Hunt</button>
-        <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race">🏁 Discord Cheese Race</button>
+        <button class="tab-btn px-4 py-2 rounded active" data-game-tab="overview" onclick="switchGameTab('overview')">📊 Overview Dashboard</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="tetris" onclick="switchGameTab('tetris')">🧩 Tetris</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="snake" onclick="switchGameTab('snake')">🐍 Snake</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-invaders" onclick="switchGameTab('cheese-invaders')">👾 Cheese Invaders</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt" onclick="switchGameTab('cheese-hunt')">🧀 Cheese Hunt</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="switchGameTab('discord-race')">🏁 Discord Cheese Race</button>
       </div>
 
       <!-- Overview Dashboard Tab -->
       <div id="overviewTab" class="game-tab-content">
-        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
           <h3 class="text-lg font-semibold mb-3">📊 System Overview</h3>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <!-- Total Players -->
-            <div class="bg-gray-700 p-3 rounded">
+          <div class="bg-gray-700 p-3 rounded">
               <h4 class="font-semibold text-blue-400 mb-2">👥 Total Players</h4>
               <div class="space-y-1 text-sm">
                 <div class="flex justify-between">
@@ -915,6 +921,499 @@ require_once 'discord-invite.php';
             <button onclick="resetAllGameScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">🔄 Reset All Scores</button>
             <button onclick="exportGameData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📊 Export Data</button>
             <button onclick="backupGameData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">💾 Backup Data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tetris Tab -->
+      <div id="tetrisTab" class="game-tab-content" style="display: none;">
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">🧩 Tetris Management</h3>
+          
+          <!-- Tetris Statistics -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-blue-400 mb-2">📊 Score Statistics</h4>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Total Scores:</span>
+                <span class="text-white font-semibold" id="tetrisTotalScores">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Unique Players:</span>
+                <span class="text-white font-semibold" id="tetrisUniquePlayers">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Highest Score:</span>
+                <span class="text-green-400 font-semibold" id="tetrisMaxScore">-</span>
+              </div>
+              <div class="flex justify-between">
+                  <span class="text-gray-400">Average Score:</span>
+                  <span class="text-blue-400 font-semibold" id="tetrisAvgScore">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-green-400 mb-2">🎯 Season Data</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Current Season:</span>
+                  <span class="text-white font-semibold" id="tetrisCurrentSeason">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Season Scores:</span>
+                  <span class="text-green-400 font-semibold" id="tetrisSeasonScores">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Season Players:</span>
+                  <span class="text-blue-400 font-semibold" id="tetrisSeasonPlayers">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="text-gray-400 mb-2">📈 Recent Activity</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Last 24h:</span>
+                  <span class="text-white font-semibold" id="tetrisRecent24h">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Last 7d:</span>
+                  <span class="text-blue-400 font-semibold" id="tetrisRecent7d">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Last 30d:</span>
+                  <span class="text-green-400 font-semibold" id="tetrisRecent30d">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-purple-400 mb-2">⚙️ Game Settings</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Status:</span>
+                  <span class="text-green-400 font-semibold" id="tetrisStatus">🟢 Active</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Difficulty:</span>
+                  <span class="text-blue-400 font-semibold" id="tetrisDifficulty">Normal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tetris Leaderboard -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Players</h4>
+            <div id="tetrisLeaderboard" class="space-y-2">
+              <div class="text-gray-400 text-center">Loading leaderboard...</div>
+            </div>
+          </div>
+
+          <!-- Tetris Actions -->
+          <div class="flex flex-wrap gap-3">
+            <button onclick="loadTetrisData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Data</button>
+            <button onclick="resetTetrisScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">🔄 Reset Scores</button>
+            <button onclick="exportTetrisData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📊 Export Data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Snake Tab -->
+      <div id="snakeTab" class="game-tab-content" style="display: none;">
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">🐍 Snake Management</h3>
+          
+          <!-- Snake Statistics -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-green-400 mb-2">📊 High Score Rankings</h4>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Total Scores:</span>
+                <span class="text-white font-semibold" id="snakeTotalScores">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Unique Players:</span>
+                <span class="text-white font-semibold" id="snakeUniquePlayers">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Highest Score:</span>
+                <span class="text-green-400 font-semibold" id="snakeMaxScore">-</span>
+              </div>
+              <div class="flex justify-between">
+                  <span class="text-gray-400">Average Score:</span>
+                  <span class="text-blue-400 font-semibold" id="snakeAvgScore">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-blue-400 mb-2">👥 Player Statistics</h4>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                  <span class="text-gray-400">Active Players:</span>
+                  <span class="text-white font-semibold" id="snakeActivePlayers">-</span>
+              </div>
+              <div class="flex justify-between">
+                  <span class="text-gray-400">New Players:</span>
+                  <span class="text-green-400 font-semibold" id="snakeNewPlayers">-</span>
+              </div>
+              <div class="flex justify-between">
+                  <span class="text-gray-400">Returning Players:</span>
+                  <span class="text-blue-400 font-semibold" id="snakeReturningPlayers">-</span>
+              </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-purple-400 mb-2">📈 Activity Trends</h4>
+              <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                  <span class="text-gray-400">Last 24h:</span>
+                  <span class="text-white font-semibold" id="snakeRecent24h">-</span>
+              </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Last 7d:</span>
+                  <span class="text-blue-400 font-semibold" id="snakeRecent7d">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Growth Rate:</span>
+                  <span class="text-green-400 font-semibold" id="snakeGrowthRate">-</span>
+                </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-yellow-400 mb-2">⚙️ Game Configuration</h4>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                  <span class="text-gray-400">Status:</span>
+                  <span class="text-green-400 font-semibold" id="snakeStatus">🟢 Active</span>
+              </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Speed:</span>
+                  <span class="text-blue-400 font-semibold" id="snakeSpeed">Normal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Snake Leaderboard -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Players</h4>
+            <div id="snakeLeaderboard" class="space-y-2">
+              <div class="text-gray-400 text-center">Loading leaderboard...</div>
+            </div>
+          </div>
+
+          <!-- Snake Actions -->
+          <div class="flex flex-wrap gap-3">
+            <button onclick="loadSnakeData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Data</button>
+            <button onclick="resetSnakeScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">🔄 Reset Scores</button>
+            <button onclick="exportSnakeData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📊 Export Data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cheese Invaders Tab -->
+      <div id="cheeseInvadersTab" class="game-tab-content" style="display: none;">
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">👾 Cheese Invaders Management</h3>
+          
+          <!-- Cheese Invaders Statistics -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-orange-400 mb-2">📊 Wave Statistics</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Total Waves:</span>
+                  <span class="text-white font-semibold" id="invadersTotalWaves">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Waves Completed:</span>
+                  <span class="text-green-400 font-semibold" id="invadersWavesCompleted">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Highest Wave:</span>
+                  <span class="text-blue-400 font-semibold" id="invadersHighestWave">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Success Rate:</span>
+                  <span class="text-purple-400 font-semibold" id="invadersSuccessRate">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-green-400 mb-2">🏆 Achievement Data</h4>
+              <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Total Players:</span>
+                  <span class="text-white font-semibold" id="invadersTotalPlayers">-</span>
+              </div>
+              <div class="flex justify-between">
+                  <span class="text-gray-400">Achievements:</span>
+                  <span class="text-green-400 font-semibold" id="invadersAchievements">-</span>
+              </div>
+              <div class="flex justify-between">
+                  <span class="text-gray-400">Completion Rate:</span>
+                  <span class="text-blue-400 font-semibold" id="invadersCompletionRate">-</span>
+              </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-blue-400 mb-2">📈 Performance</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Last 24h:</span>
+                  <span class="text-white font-semibold" id="invadersRecent24h">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Last 7d:</span>
+                  <span class="text-blue-400 font-semibold" id="invadersRecent7d">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Avg. Time:</span>
+                  <span class="text-green-400 font-semibold" id="invadersAvgTime">-</span>
+            </div>
+          </div>
+        </div>
+        
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-purple-400 mb-2">⚙️ Difficulty Settings</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Status:</span>
+                  <span class="text-green-400 font-semibold" id="invadersStatus">🟢 Active</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Difficulty:</span>
+                  <span class="text-blue-400 font-semibold" id="invadersDifficulty">Normal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cheese Invaders Leaderboard -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Players</h4>
+            <div id="invadersLeaderboard" class="space-y-2">
+              <div class="text-gray-400 text-center">Loading leaderboard...</div>
+            </div>
+          </div>
+
+          <!-- Cheese Invaders Actions -->
+          <div class="flex flex-wrap gap-3">
+            <button onclick="loadInvadersData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Data</button>
+            <button onclick="resetInvadersScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">🔄 Reset Scores</button>
+            <button onclick="exportInvadersData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📊 Export Data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cheese Hunt Tab -->
+      <div id="cheeseHuntTab" class="game-tab-content" style="display: none;">
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">🧀 Cheese Hunt Management</h3>
+          
+          <!-- Cheese Hunt Statistics -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-yellow-400 mb-2">📊 Click Statistics</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Total Clicks:</span>
+                  <span class="text-white font-semibold" id="cheeseTotalClicks">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Unique Players:</span>
+                  <span class="text-green-400 font-semibold" id="cheeseUniquePlayers">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Clicks Today:</span>
+                  <span class="text-blue-400 font-semibold" id="cheeseClicksToday">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Avg. Clicks:</span>
+                  <span class="text-purple-400 font-semibold" id="cheeseAvgClicks">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-green-400 mb-2">🥚 Egg Type Breakdown</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Regular Eggs:</span>
+                  <span class="text-white font-semibold" id="cheeseRegularEggs">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Golden Eggs:</span>
+                  <span class="text-yellow-400 font-semibold" id="cheeseGoldenEggs">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Rare Eggs:</span>
+                  <span class="text-purple-400 font-semibold" id="cheeseRareEggs">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-blue-400 mb-2">📈 Achievement Tracking</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Achievements:</span>
+                  <span class="text-white font-semibold" id="cheeseAchievements">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Completion Rate:</span>
+                  <span class="text-green-400 font-semibold" id="cheeseCompletionRate">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Active Hunters:</span>
+                  <span class="text-blue-400 font-semibold" id="cheeseActiveHunters">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-purple-400 mb-2">⚙️ Spawn Rate Settings</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Status:</span>
+                  <span class="text-green-400 font-semibold" id="cheeseStatus">🟢 Active</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Spawn Rate:</span>
+                  <span class="text-blue-400 font-semibold" id="cheeseSpawnRate">Normal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cheese Hunt Leaderboard -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Cheese Hunters</h4>
+            <div id="cheeseLeaderboard" class="space-y-2">
+              <div class="text-gray-400 text-center">Loading leaderboard...</div>
+            </div>
+          </div>
+
+          <!-- Cheese Hunt Actions -->
+          <div class="flex flex-wrap gap-3">
+            <button onclick="loadCheeseData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Data</button>
+            <button onclick="resetCheeseData()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">🔄 Reset Data</button>
+            <button onclick="exportCheeseData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📊 Export Data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Discord Cheese Race Tab -->
+      <div id="discordRaceTab" class="game-tab-content" style="display: none;">
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">🏁 Discord Cheese Race Management</h3>
+          
+          <!-- Discord Race Statistics -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-blue-400 mb-2">🏁 Race Results</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Total Races:</span>
+                  <span class="text-white font-semibold" id="raceTotalRaces">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Completed:</span>
+                  <span class="text-green-400 font-semibold" id="raceCompletedRaces">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Active Races:</span>
+                  <span class="text-blue-400 font-semibold" id="raceActiveRaces">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Success Rate:</span>
+                  <span class="text-purple-400 font-semibold" id="raceSuccessRate">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-green-400 mb-2">👥 Winner Statistics</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Total Winners:</span>
+                  <span class="text-white font-semibold" id="raceTotalWinners">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Unique Winners:</span>
+                  <span class="text-green-400 font-semibold" id="raceUniqueWinners">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Top Winner:</span>
+                  <span class="text-blue-400 font-semibold" id="raceTopWinner">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-purple-400 mb-2">📊 Participation Metrics</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Total Participants:</span>
+                  <span class="text-white font-semibold" id="raceTotalParticipants">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Avg. Participants:</span>
+                  <span class="text-green-400 font-semibold" id="raceAvgParticipants">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Peak Participation:</span>
+                  <span class="text-blue-400 font-semibold" id="racePeakParticipation">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gray-700 p-3 rounded">
+              <h4 class="font-semibold text-yellow-400 mb-2">🤖 Bot Configuration</h4>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Status:</span>
+                  <span class="text-green-400 font-semibold" id="raceBotStatus">🟢 Online</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Commands:</span>
+                  <span class="text-blue-400 font-semibold" id="raceCommands">Active</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Discord Race Leaderboard -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Racers</h4>
+            <div id="raceLeaderboard" class="space-y-2">
+              <div class="text-gray-400 text-center">Loading leaderboard...</div>
+            </div>
+          </div>
+
+          <!-- Recent Race Activity -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-blue-400 mb-3">📈 Recent Race Activity</h4>
+            <div id="recentRaceActivity" class="space-y-2">
+              <div class="text-gray-400 text-center">Loading recent activity...</div>
+            </div>
+          </div>
+
+          <!-- Discord Race Actions -->
+          <div class="flex flex-wrap gap-3">
+            <button onclick="loadRaceData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Data</button>
+            <button onclick="exportRaceData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📊 Export Data</button>
+            <button onclick="manageRaceBot()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">🤖 Bot Settings</button>
           </div>
         </div>
       </div>
@@ -2055,7 +2554,8 @@ require_once 'discord-invite.php';
       if (tabName === 'store') loadStoreItems();
       if (tabName === 'quests') loadQuests();
       if (tabName === 'games') {
-        loadGameStatistics();
+        // Initialize the new consolidated game management system
+        loadGameOverview(); // Load overview dashboard by default
         loadSeasonStats();
         loadGameSettings();
         loadCurrentSeasonSettings();
@@ -4625,6 +5125,839 @@ require_once 'discord-invite.php';
       }
     }
 
+    // ===== NEW GAME MANAGEMENT FUNCTIONS =====
+    
+    // Main function to load all game management data
+    function loadGameManagementData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      addLog('🔄 Loading game management data...');
+      
+      // Load overview dashboard by default
+      loadGameOverview();
+      
+      // Load other game data as needed
+      loadSeasonStats();
+      loadGameSettings();
+      loadCurrentSeasonSettings();
+      
+      addLog('✅ Game management data loaded successfully');
+    }
+    
+    // Tab switching functionality
+    function switchGameTab(tabName) {
+      // Hide all game tab contents
+      const allTabs = document.querySelectorAll('.game-tab-content');
+      allTabs.forEach(tab => tab.style.display = 'none');
+      
+      // Remove active class from all tab buttons
+      const allButtons = document.querySelectorAll('.tab-btn');
+      allButtons.forEach(btn => btn.classList.remove('active'));
+      
+      // Show selected tab and activate button
+      const selectedTab = document.getElementById(tabName + 'Tab');
+      const selectedButton = document.querySelector(`[data-game-tab="${tabName}"]`);
+      
+      if (selectedTab) selectedTab.style.display = 'block';
+      if (selectedButton) selectedButton.classList.add('active');
+      
+      // Load data for the selected tab
+      switch(tabName) {
+        case 'overview':
+          loadGameOverview();
+          break;
+        case 'tetris':
+          loadTetrisData();
+          break;
+        case 'snake':
+          loadSnakeData();
+          break;
+        case 'cheese-invaders':
+          loadInvadersData();
+          break;
+        case 'cheese-hunt':
+          loadCheeseData();
+          break;
+        case 'discord-race':
+          loadRaceData();
+          break;
+      }
+    }
+
+    // Overview Dashboard Functions
+    async function loadGameOverview() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Loading game overview...');
+
+      try {
+        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayGameOverview(data);
+          addLog('✅ Game overview loaded successfully');
+        } else {
+          addLog(`❌ Failed to load game overview: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Game overview loading error: ${error.message}`);
+      }
+    }
+
+    function displayGameOverview(data) {
+      try {
+        // Update system overview cards
+        if (data.overview) {
+          const overview = data.overview;
+          if (document.getElementById('totalActivePlayers')) document.getElementById('totalActivePlayers').textContent = overview.total_active_players || '-';
+          if (document.getElementById('totalWeeklyPlayers')) document.getElementById('totalWeeklyPlayers').textContent = overview.total_weekly_players || '-';
+          if (document.getElementById('totalGamesPlayed')) document.getElementById('totalGamesPlayed').textContent = overview.total_games_played || '-';
+          if (document.getElementById('totalGamesToday')) document.getElementById('totalGamesToday').textContent = overview.total_games_today || '-';
+          if (document.getElementById('topPerformersWeek')) document.getElementById('topPerformersWeek').textContent = overview.top_performers_week || '-';
+          if (document.getElementById('topPerformersAllTime')) document.getElementById('topPerformersAllTime').textContent = overview.top_performers_all_time || '-';
+        }
+
+        // Update daily activity chart (placeholder for now)
+        const dailyChart = document.getElementById('dailyActivityChart');
+        if (dailyChart) {
+          dailyChart.innerHTML = '<div class="text-green-400 text-center">📊 Daily activity data loaded</div>';
+        }
+
+        // Update weekly performance
+        const weeklyPerf = document.getElementById('weeklyPerformance');
+        if (weeklyPerf && data.overview) {
+          const overview = data.overview;
+          weeklyPerf.innerHTML = `
+            <div class="bg-gray-600 p-2 rounded mb-2">
+              <div class="flex justify-between text-sm">
+                <span>🎮 Total Games This Week</span>
+                <span class="font-semibold">${overview.total_games_week || 0}</span>
+              </div>
+            </div>
+            <div class="bg-gray-600 p-2 rounded mb-2">
+              <div class="flex justify-between text-sm">
+                <span>👥 New Players This Week</span>
+                <span class="font-semibold">${overview.new_players_week || 0}</span>
+              </div>
+            </div>
+            <div class="bg-gray-600 p-2 rounded mb-2">
+              <div class="flex justify-between text-sm">
+                <span>📈 Growth Rate</span>
+                <span class="font-semibold text-green-400">+${overview.growth_rate || 0}%</span>
+              </div>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error displaying game overview:', error);
+        addLog(`❌ Error displaying game overview: ${error.message}`);
+      }
+    }
+
+    // Tetris Tab Functions
+    async function loadTetrisData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Loading Tetris data...');
+
+      try {
+        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.games && data.data.games.tetris) {
+          displayTetrisData(data.data.games.tetris);
+          addLog('✅ Tetris data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Tetris data: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Tetris data loading error: ${error.message}`);
+      }
+    }
+
+    function displayTetrisData(tetrisData) {
+      try {
+        // Update Tetris statistics from season_data
+        if (document.getElementById('tetrisTotalScores')) document.getElementById('tetrisTotalScores').textContent = tetrisData.season_data?.total_scores || '-';
+        if (document.getElementById('tetrisUniquePlayers')) document.getElementById('tetrisUniquePlayers').textContent = tetrisData.season_data?.unique_players || '-';
+        if (document.getElementById('tetrisMaxScore')) document.getElementById('tetrisMaxScore').textContent = tetrisData.season_data?.max_score || '-';
+        if (document.getElementById('tetrisAvgScore')) document.getElementById('tetrisAvgScore').textContent = tetrisData.season_data?.avg_score || '-';
+        if (document.getElementById('tetrisRecent24h')) document.getElementById('tetrisRecent24h').textContent = tetrisData.season_data?.recent_24h || '-';
+        if (document.getElementById('tetrisRecent7d')) document.getElementById('tetrisRecent7d').textContent = tetrisData.season_data?.recent_7d || '-';
+        if (document.getElementById('tetrisRecent30d')) document.getElementById('tetrisRecent30d').textContent = tetrisData.season_data?.recent_30d || '-';
+
+        // Update season data
+        if (document.getElementById('tetrisCurrentSeason')) document.getElementById('tetrisCurrentSeason').textContent = tetrisData.season_data?.current_season || '-';
+        if (document.getElementById('tetrisSeasonScores')) document.getElementById('tetrisSeasonScores').textContent = tetrisData.season_data?.total_scores || '-';
+        if (document.getElementById('tetrisSeasonPlayers')) document.getElementById('tetrisSeasonPlayers').textContent = tetrisData.season_data?.unique_players || '-';
+
+        // Update leaderboard
+        const leaderboard = document.getElementById('tetrisLeaderboard');
+        if (leaderboard && tetrisData.top_players) {
+          leaderboard.innerHTML = tetrisData.top_players.map((player, index) => `
+            <div class="flex justify-between items-center bg-gray-600 p-2 rounded">
+              <div class="flex items-center space-x-2">
+                <span class="text-yellow-400 font-bold">#${index + 1}</span>
+                <span class="text-white">${player.username}</span>
+              </div>
+              <span class="text-green-400 font-semibold">${player.score.toLocaleString()}</span>
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('Error displaying Tetris data:', error);
+        addLog(`❌ Error displaying Tetris data: ${error.message}`);
+      }
+    }
+
+    // Snake Tab Functions
+    async function loadSnakeData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Loading Snake data...');
+
+      try {
+        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.games && data.data.games.snake) {
+          displaySnakeData(data.data.games.snake);
+          addLog('✅ Snake data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Snake data: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Snake data loading error: ${error.message}`);
+      }
+    }
+
+    function displaySnakeData(snakeData) {
+      try {
+        // Update Snake statistics from season_data
+        if (document.getElementById('snakeTotalScores')) document.getElementById('snakeTotalScores').textContent = snakeData.season_data?.total_scores || '-';
+        if (document.getElementById('snakeUniquePlayers')) document.getElementById('snakeUniquePlayers').textContent = snakeData.season_data?.unique_players || '-';
+        if (document.getElementById('snakeMaxScore')) document.getElementById('snakeMaxScore').textContent = snakeData.season_data?.max_score || '-';
+        if (document.getElementById('snakeAvgScore')) document.getElementById('snakeAvgScore').textContent = snakeData.season_data?.avg_score || '-';
+        if (document.getElementById('snakeRecent24h')) document.getElementById('snakeRecent24h').textContent = snakeData.season_data?.recent_24h || '-';
+        if (document.getElementById('snakeRecent7d')) document.getElementById('snakeRecent7d').textContent = snakeData.season_data?.recent_7d || '-';
+
+        // Update player statistics (these fields don't exist in API, so we'll use defaults)
+        if (document.getElementById('snakeActivePlayers')) document.getElementById('snakeActivePlayers').textContent = snakeData.season_data?.unique_players || '-';
+        if (document.getElementById('snakeNewPlayers')) document.getElementById('snakeNewPlayers').textContent = '-';
+        if (document.getElementById('snakeReturningPlayers')) document.getElementById('snakeReturningPlayers').textContent = '-';
+        if (document.getElementById('snakeGrowthRate')) document.getElementById('snakeGrowthRate').textContent = '-';
+
+        // Update leaderboard
+        const leaderboard = document.getElementById('snakeLeaderboard');
+        if (leaderboard && snakeData.top_players) {
+          leaderboard.innerHTML = snakeData.top_players.map((player, index) => `
+            <div class="flex justify-between items-center bg-gray-600 p-2 rounded">
+              <div class="flex items-center space-x-2">
+                <span class="text-yellow-400 font-bold">#${index + 1}</span>
+                <span class="text-white">${player.username}</span>
+              </div>
+              <span class="text-green-400 font-semibold">${player.score.toLocaleString()}</span>
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('Error displaying Snake data:', error);
+        addLog(`❌ Error displaying Snake data: ${error.message}`);
+      }
+    }
+
+    // Cheese Invaders Tab Functions
+    async function loadInvadersData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Loading Cheese Invaders data...');
+
+      try {
+        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.games && data.data.games.cheese_invaders) {
+          displayInvadersData(data.data.games.cheese_invaders);
+          addLog('✅ Cheese Invaders data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Cheese Invaders data: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Cheese Invaders data loading error: ${error.message}`);
+      }
+    }
+
+    function displayInvadersData(invadersData) {
+      try {
+        // Update Cheese Invaders statistics from season_data
+        if (document.getElementById('invadersTotalWaves')) document.getElementById('invadersTotalWaves').textContent = invadersData.season_data?.total_scores || '-';
+        if (document.getElementById('invadersWavesCompleted')) document.getElementById('invadersWavesCompleted').textContent = invadersData.season_data?.total_scores || '-';
+        if (document.getElementById('invadersHighestWave')) document.getElementById('invadersHighestWave').textContent = invadersData.season_data?.max_score || '-';
+        if (document.getElementById('invadersSuccessRate')) document.getElementById('invadersSuccessRate').textContent = '-';
+        if (document.getElementById('invadersTotalPlayers')) document.getElementById('invadersTotalPlayers').textContent = invadersData.season_data?.unique_players || '-';
+        if (document.getElementById('invadersAchievements')) document.getElementById('invadersAchievements').textContent = '-';
+        if (document.getElementById('invadersCompletionRate')) document.getElementById('invadersCompletionRate').textContent = '-';
+        if (document.getElementById('invadersRecent24h')) document.getElementById('invadersRecent24h').textContent = invadersData.season_data?.recent_24h || '-';
+        if (document.getElementById('invadersRecent7d')) document.getElementById('invadersRecent7d').textContent = invadersData.season_data?.recent_7d || '-';
+        if (document.getElementById('invadersAvgTime')) document.getElementById('invadersAvgTime').textContent = '-';
+
+        // Update leaderboard
+        const leaderboard = document.getElementById('invadersLeaderboard');
+        if (leaderboard && invadersData.top_players) {
+          leaderboard.innerHTML = invadersData.top_players.map((player, index) => `
+            <div class="flex justify-between items-center bg-gray-600 p-2 rounded">
+              <div class="flex items-center space-x-2">
+                <span class="text-yellow-400 font-bold">#${index + 1}</span>
+                <span class="text-white">${player.username}</span>
+              </div>
+              <span class="text-green-400 font-semibold">Wave ${player.wave}</span>
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('Error displaying Cheese Invaders data:', error);
+        addLog(`❌ Error displaying Cheese Invaders data: ${error.message}`);
+      }
+    }
+
+    // Cheese Hunt Tab Functions
+    async function loadCheeseData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Loading Cheese Hunt data...');
+
+      try {
+        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.games && data.data.games.cheese_hunt) {
+          displayCheeseData(data.data.games.cheese_hunt);
+          addLog('✅ Cheese Hunt data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Cheese Hunt data: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Cheese Hunt data loading error: ${error.message}`);
+      }
+    }
+
+    function displayCheeseData(cheeseData) {
+      try {
+        // Update Cheese Hunt statistics from current_data
+        if (document.getElementById('cheeseTotalClicks')) document.getElementById('cheeseTotalClicks').textContent = cheeseData.current_data?.total_clicks || '-';
+        if (document.getElementById('cheeseUniquePlayers')) document.getElementById('cheeseUniquePlayers').textContent = cheeseData.current_data?.unique_players || '-';
+        if (document.getElementById('cheeseClicksToday')) document.getElementById('cheeseClicksToday').textContent = cheeseData.current_data?.recent_24h || '-';
+        if (document.getElementById('cheeseAvgClicks')) document.getElementById('cheeseAvgClicks').textContent = '-';
+        if (document.getElementById('cheeseRegularEggs')) document.getElementById('cheeseRegularEggs').textContent = '-';
+        if (document.getElementById('cheeseGoldenEggs')) document.getElementById('cheeseGoldenEggs').textContent = '-';
+        if (document.getElementById('cheeseRareEggs')) document.getElementById('cheeseRareEggs').textContent = '-';
+        if (document.getElementById('cheeseAchievements')) document.getElementById('cheeseAchievements').textContent = '-';
+        if (document.getElementById('cheeseCompletionRate')) document.getElementById('cheeseCompletionRate').textContent = '-';
+        if (document.getElementById('cheeseActiveHunters')) document.getElementById('cheeseActiveHunters').textContent = cheeseData.current_data?.unique_players || '-';
+
+        // Update leaderboard
+        const leaderboard = document.getElementById('cheeseLeaderboard');
+        if (leaderboard && cheeseData.top_players) {
+          leaderboard.innerHTML = cheeseData.top_players.map((player, index) => `
+            <div class="flex justify-between items-center bg-gray-600 p-2 rounded">
+              <div class="flex items-center space-x-2">
+                <span class="text-yellow-400 font-bold">#${index + 1}</span>
+                <span class="text-white">${player.username}</span>
+              </div>
+              <span class="text-green-400 font-semibold">${player.clicks.toLocaleString()} clicks</span>
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('Error displaying Cheese Hunt data:', error);
+        addLog(`❌ Error displaying Cheese Hunt data: ${error.message}`);
+      }
+    }
+
+    // Discord Cheese Race Tab Functions
+    async function loadRaceData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Loading Discord Cheese Race data...');
+
+      try {
+        const response = await fetch('/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.games && data.data.games.discord_race) {
+          displayRaceData(data.data.games.discord_race);
+          addLog('✅ Discord Cheese Race data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Discord Cheese Race data: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Discord Cheese Race data loading error: ${error.message}`);
+      }
+    }
+
+    function displayRaceData(raceData) {
+      try {
+        // Update Discord Race statistics
+        if (document.getElementById('raceTotalRaces')) document.getElementById('raceTotalRaces').textContent = raceData.race_data?.total_races || '-';
+        if (document.getElementById('raceCompletedRaces')) document.getElementById('raceCompletedRaces').textContent = raceData.race_data?.completed_races || '-';
+        if (document.getElementById('raceActiveRaces')) document.getElementById('raceActiveRaces').textContent = raceData.race_data?.active_races || '-';
+        if (document.getElementById('raceSuccessRate')) document.getElementById('raceSuccessRate').textContent = raceData.race_data?.success_rate || '-';
+        if (document.getElementById('raceTotalWinners')) document.getElementById('raceTotalWinners').textContent = raceData.race_data?.total_winners || '-';
+        if (document.getElementById('raceUniqueWinners')) document.getElementById('raceUniqueWinners').textContent = raceData.race_data?.unique_winners || '-';
+        if (document.getElementById('raceTopWinner')) document.getElementById('raceTopWinner').textContent = raceData.race_data?.top_winner || '-';
+        if (document.getElementById('raceTotalParticipants')) document.getElementById('raceTotalParticipants').textContent = raceData.race_data?.total_participants || '-';
+        if (document.getElementById('raceAvgParticipants')) document.getElementById('raceAvgParticipants').textContent = raceData.race_data?.avg_participants || '-';
+        if (document.getElementById('racePeakParticipation')) document.getElementById('racePeakParticipation').textContent = raceData.race_data?.peak_participation || '-';
+
+        // Update leaderboard
+        const leaderboard = document.getElementById('raceLeaderboard');
+        if (leaderboard && raceData.race_data?.top_racers) {
+          leaderboard.innerHTML = raceData.race_data.top_racers.map((racer, index) => `
+            <div class="flex justify-between items-center bg-gray-600 p-2 rounded">
+              <div class="flex items-center space-x-2">
+                <span class="text-yellow-400 font-bold">#${index + 1}</span>
+                <span class="text-white">${racer.username}</span>
+              </div>
+              <span class="text-green-400 font-semibold">${racer.wins} wins</span>
+            </div>
+          `).join('');
+        }
+
+        // Update recent activity
+        const recentActivity = document.getElementById('recentRaceActivity');
+        if (recentActivity && raceData.race_data?.recent_activity) {
+          recentActivity.innerHTML = raceData.race_data.recent_activity.map(activity => `
+            <div class="bg-gray-600 p-2 rounded mb-2">
+              <div class="text-sm text-gray-300">${activity.timestamp}</div>
+              <div class="text-white">${activity.description}</div>
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('Error displaying Discord Race data:', error);
+        addLog(`❌ Error displaying Discord Race data: ${error.message}`);
+      }
+    }
+
+    // Utility Functions
+    function resetTetrisScores() {
+      addLog('🔄 Tetris score reset requested...');
+      if (confirm('⚠️ This will reset ALL Tetris scores. This action cannot be undone. Are you sure?')) {
+        fetch('/api/admin/reset-game-scores-v2.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            game_type: 'tetris',
+            reason: 'Admin requested Tetris reset'
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            addLog('✅ Tetris scores reset successfully');
+            loadTetrisData(); // Refresh the data
+          } else {
+            addLog('❌ Failed to reset Tetris scores: ' + data.error);
+          }
+        })
+        .catch(error => {
+          console.error('Reset error:', error);
+          addLog('❌ Reset failed: ' + error.message);
+        });
+      }
+    }
+
+    function resetSnakeScores() {
+      addLog('🔄 Snake score reset requested...');
+      if (confirm('⚠️ This will reset ALL Snake scores. This action cannot be undone. Are you sure?')) {
+        fetch('/api/admin/reset-game-scores-v2.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            game_type: 'snake',
+            reason: 'Admin requested Snake reset'
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            addLog('✅ Snake scores reset successfully');
+            loadSnakeData(); // Refresh the data
+          } else {
+            addLog('❌ Failed to reset Snake scores: ' + data.error);
+          }
+        })
+        .catch(error => {
+          console.error('Reset error:', error);
+          addLog('❌ Reset failed: ' + error.message);
+        });
+      }
+    }
+
+    function resetInvadersScores() {
+      addLog('🔄 Cheese Invaders score reset requested...');
+      if (confirm('⚠️ This will reset ALL Cheese Invaders scores. This action cannot be undone. Are you sure?')) {
+        fetch('/api/admin/reset-game-scores-v2.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            game_type: 'cheese_invaders',
+            reason: 'Admin requested Cheese Invaders reset'
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            addLog('✅ Cheese Invaders scores reset successfully');
+            loadInvadersData(); // Refresh the data
+          } else {
+            addLog('❌ Failed to reset Cheese Invaders scores: ' + data.error);
+          }
+        })
+        .catch(error => {
+          console.error('Reset error:', error);
+          addLog('❌ Reset failed: ' + error.message);
+        });
+      }
+    }
+
+    function resetCheeseData() {
+      addLog('🔄 Cheese Hunt data reset requested...');
+      if (confirm('⚠️ This will reset ALL Cheese Hunt data. This action cannot be undone. Are you sure?')) {
+        fetch('/api/admin/reset-game-scores-v2.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            game_type: 'cheese_hunt',
+            reason: 'Admin requested Cheese Hunt reset'
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            addLog('✅ Cheese Hunt data reset successfully');
+            loadCheeseData(); // Refresh the data
+          } else {
+            addLog('❌ Failed to reset Cheese Hunt data: ' + data.error);
+          }
+        })
+        .catch(error => {
+          console.error('Reset error:', error);
+          addLog('❌ Reset failed: ' + error.message);
+        });
+      }
+    }
+
+    function exportTetrisData() {
+      addLog('📊 Tetris data export requested...');
+      fetch('/api/admin/get-all-games-stats.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const tetrisData = data.games.tetris || {};
+            const csvContent = generateTetrisCSV(tetrisData);
+            downloadCSV(csvContent, 'tetris_data_export.csv');
+            addLog('✅ Tetris data exported successfully');
+          } else {
+            addLog('❌ Failed to fetch Tetris data for export');
+          }
+        })
+        .catch(error => {
+          console.error('Export error:', error);
+          addLog('❌ Export failed: ' + error.message);
+        });
+    }
+
+    function exportSnakeData() {
+      addLog('📊 Snake data export requested...');
+      fetch('/api/admin/get-all-games-stats.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const snakeData = data.games.snake || {};
+            const csvContent = generateSnakeCSV(snakeData);
+            downloadCSV(csvContent, 'snake_data_export.csv');
+            addLog('✅ Snake data exported successfully');
+          } else {
+            addLog('❌ Failed to fetch Snake data for export');
+          }
+        })
+        .catch(error => {
+          console.error('Export error:', error);
+          addLog('❌ Export failed: ' + error.message);
+        });
+    }
+
+    function exportInvadersData() {
+      addLog('📊 Cheese Invaders data export requested...');
+      fetch('/api/admin/get-all-games-stats.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const cheeseInvadersData = data.games.cheese_invaders || {};
+            const csvContent = generateCheeseInvadersCSV(cheeseInvadersData);
+            downloadCSV(csvContent, 'cheese_invaders_data_export.csv');
+            addLog('✅ Cheese Invaders data exported successfully');
+          } else {
+            addLog('❌ Failed to fetch Cheese Invaders data for export');
+          }
+        })
+        .catch(error => {
+          console.error('Export error:', error);
+          addLog('❌ Export failed: ' + error.message);
+        });
+    }
+
+    function exportCheeseData() {
+      addLog('📊 Cheese Hunt data export requested...');
+      fetch('/api/admin/get-cheese-stats.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const csvContent = generateCheeseHuntCSV(data);
+            downloadCSV(csvContent, 'cheese_hunt_data_export.csv');
+            addLog('✅ Cheese Hunt data exported successfully');
+          } else {
+            addLog('❌ Failed to fetch Cheese Hunt data for export');
+          }
+        })
+        .catch(error => {
+          console.error('Export error:', error);
+          addLog('❌ Export failed: ' + error.message);
+        });
+    }
+
+    function exportRaceData() {
+      addLog('📊 Discord Cheese Race data export requested...');
+      fetch('/api/admin/get-discord-activity.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const csvContent = generateDiscordRaceCSV(data.events);
+            downloadCSV(csvContent, 'discord_race_data_export.csv');
+            addLog('✅ Discord Race data exported successfully');
+          } else {
+            addLog('❌ Failed to fetch Discord Race data for export');
+          }
+        })
+        .catch(error => {
+          console.error('Export error:', error);
+          addLog('❌ Export failed: ' + error.message);
+        });
+    }
+
+    // CSV Generation functions
+    function generateTetrisCSV(data) {
+      let csv = 'Player,Score,Season,Date\n';
+      if (data.leaderboard) {
+        data.leaderboard.forEach(player => {
+          csv += `${player.username},${player.score},${player.season || 'Current'},${player.date || 'N/A'}\n`;
+        });
+      }
+      return csv;
+    }
+
+    function generateSnakeCSV(data) {
+      let csv = 'Player,Score,Season,Date\n';
+      if (data.leaderboard) {
+        data.leaderboard.forEach(player => {
+          csv += `${player.username},${player.score},${player.season || 'Current'},${player.date || 'N/A'}\n`;
+        });
+      }
+      return csv;
+    }
+
+    function generateCheeseInvadersCSV(data) {
+      let csv = 'Player,Score,Wave,Season,Date\n';
+      if (data.leaderboard) {
+        data.leaderboard.forEach(player => {
+          csv += `${player.username},${player.score},${player.wave || 'N/A'},${player.season || 'Current'},${player.date || 'N/A'}\n`;
+        });
+      }
+      return csv;
+    }
+
+    function generateCheeseHuntCSV(data) {
+      let csv = 'Player,Clicks,Date\n';
+      if (data.cheese_clicks) {
+        data.cheese_clicks.forEach(click => {
+          csv += `${click.discord_name},${click.clicks},${click.timestamp}\n`;
+        });
+      }
+      return csv;
+    }
+
+    function generateDiscordRaceCSV(events) {
+      let csv = 'Type,User,Channel,Description,Timestamp\n';
+      events.forEach(event => {
+        csv += `${event.type},${event.user_name},${event.channel_name},${event.description},${event.timestamp}\n`;
+      });
+      return csv;
+    }
+
+    // Utility function to download CSV
+    function downloadCSV(content, filename) {
+      const blob = new Blob([content], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }
+
+    // Generate comprehensive CSV for all games
+    function generateAllGamesCSV(games) {
+      let csv = 'Game,Player,Score,Season,Date,Additional Info\n';
+      
+      // Tetris data
+      if (games.tetris && games.tetris.leaderboard) {
+        games.tetris.leaderboard.forEach(player => {
+          csv += `Tetris,${player.username},${player.score},${player.season || 'Current'},${player.date || 'N/A'},Level: ${player.level || 'N/A'}\n`;
+        });
+      }
+      
+      // Snake data
+      if (games.snake && games.snake.leaderboard) {
+        games.snake.leaderboard.forEach(player => {
+          csv += `Snake,${player.username},${player.score},${player.season || 'Current'},${player.date || 'N/A'},Length: ${player.length || 'N/A'}\n`;
+        });
+      }
+      
+      // Cheese Invaders data
+      if (games.cheese_invaders && games.cheese_invaders.leaderboard) {
+        games.cheese_invaders.leaderboard.forEach(player => {
+          csv += `Cheese Invaders,${player.username},${player.score},${player.season || 'Current'},${player.date || 'N/A'},Wave: ${player.wave || 'N/A'}\n`;
+        });
+      }
+      
+      return csv;
+    }
+
+    function exportGameData() {
+      addLog('📊 Game data export requested...');
+      // Export all games data in one comprehensive CSV
+      fetch('/api/admin/get-all-games-stats.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const csvContent = generateAllGamesCSV(data.games);
+            downloadCSV(csvContent, 'all_games_data_export.csv');
+            addLog('✅ All games data exported successfully');
+          } else {
+            addLog('❌ Failed to fetch games data for export');
+          }
+        })
+        .catch(error => {
+          console.error('Export error:', error);
+          addLog('❌ Export failed: ' + error.message);
+        });
+    }
+
+    function backupGameData() {
+      addLog('💾 Game data backup requested...');
+      // Create a comprehensive backup of all game data
+      Promise.all([
+        fetch('/api/admin/get-all-games-stats.php'),
+        fetch('/api/admin/get-cheese-stats.php'),
+        fetch('/api/admin/get-discord-activity.php')
+      ])
+      .then(responses => Promise.all(responses.map(r => r.json())))
+      .then(dataArray => {
+        const backupData = {
+          timestamp: new Date().toISOString(),
+          games_stats: dataArray[0],
+          cheese_stats: dataArray[1],
+          discord_activity: dataArray[2]
+        };
+        
+        const backupContent = JSON.stringify(backupData, null, 2);
+        const blob = new Blob([backupContent], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `game_data_backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        addLog('✅ Game data backup created successfully');
+      })
+      .catch(error => {
+        console.error('Backup error:', error);
+        addLog('❌ Backup failed: ' + error.message);
+      });
+    }
+
+    function resetAllGameScores() {
+      addLog('🔄 All game scores reset requested...');
+      if (confirm('⚠️ This will reset ALL game scores for ALL players. This action cannot be undone. Are you sure?')) {
+        fetch('/api/admin/reset-game-scores-v2.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            reset_all: true,
+            reason: 'Admin requested full reset'
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            addLog('✅ All game scores reset successfully');
+            // Refresh the dashboard
+            loadGameManagementData();
+          } else {
+            addLog('❌ Failed to reset game scores: ' + data.error);
+          }
+        })
+        .catch(error => {
+          console.error('Reset error:', error);
+          addLog('❌ Reset failed: ' + error.message);
+        });
+      }
+    }
+
+    function manageRaceBot() {
+      addLog('🤖 Race bot settings requested...');
+      // Open race bot configuration modal
+      document.getElementById('raceBotModal').classList.remove('hidden');
+    }
+
     // Season Statistics Functions
     async function loadSeasonStats() {
       if (!currentAdmin) {
@@ -6781,6 +8114,110 @@ require_once 'discord-invite.php';
       }
     }
 
+    // Race Bot Modal Functions
+    function hideRaceBotModal() {
+      document.getElementById('raceBotModal').classList.add('hidden');
+    }
+
+    async function saveRaceBotConfig() {
+      addLog('💾 Saving race bot configuration...');
+      
+      const config = {
+        maxPlayers: document.getElementById('defaultMaxPlayers').value,
+        duration: document.getElementById('defaultDuration').value,
+        dspoincReward: document.getElementById('defaultDspoincReward').value,
+        roleReward: document.getElementById('defaultRoleReward').value
+      };
+
+      try {
+        const response = await fetch('/api/admin/save-race-bot-config.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(config)
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Race bot configuration saved successfully');
+        } else {
+          addLog('❌ Failed to save configuration: ' + data.error);
+        }
+      } catch (error) {
+        addLog('❌ Configuration save error: ' + error.message);
+      }
+    }
+
+    async function refreshRaceBotData() {
+      addLog('🔄 Refreshing race bot data...');
+      
+      try {
+        // Load race statistics
+        const statsResponse = await fetch('/api/admin/get-race-stats.php');
+        const statsData = await statsResponse.json();
+        
+        if (statsData.success) {
+          updateRaceBotStats(statsData.data);
+          addLog('✅ Race bot data refreshed successfully');
+        } else {
+          addLog('❌ Failed to load race statistics: ' + statsData.error);
+        }
+
+        // Load recent races
+        const racesResponse = await fetch('/api/admin/get-recent-races.php');
+        const racesData = await racesResponse.json();
+        
+        if (racesData.success) {
+          updateRecentRacesList(racesData.data);
+        } else {
+          addLog('❌ Failed to load recent races: ' + racesData.error);
+        }
+      } catch (error) {
+        addLog('❌ Data refresh error: ' + error.message);
+      }
+    }
+
+    function updateRaceBotStats(stats) {
+      document.getElementById('activeRacesCount').textContent = stats.activeRaces || 0;
+      document.getElementById('totalRacesToday').textContent = stats.totalRacesToday || 0;
+      document.getElementById('participantsToday').textContent = stats.participantsToday || 0;
+      document.getElementById('dspoincDistributed').textContent = stats.dspoincDistributed || 0;
+    }
+
+    function updateRecentRacesList(races) {
+      const container = document.getElementById('recentRacesList');
+      
+      if (!races || races.length === 0) {
+        container.innerHTML = '<p class="text-sm text-gray-500">No recent races found</p>';
+        return;
+      }
+
+      let html = '';
+      races.forEach(race => {
+        const statusColor = race.status === 'active' ? 'text-green-600' : 
+                           race.status === 'completed' ? 'text-blue-600' : 'text-gray-600';
+        
+        html += `
+          <div class="border-b border-gray-200 pb-2 mb-2">
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-medium">${race.creator_name}</span>
+              <span class="text-xs ${statusColor}">${race.status}</span>
+            </div>
+            <div class="text-xs text-gray-500">
+              ${race.max_players} players • ${race.duration}min • ${race.dspoinc_reward} DSPOINC
+            </div>
+            <div class="text-xs text-gray-400">
+              Created: ${new Date(race.created_at).toLocaleString()}
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
   </script>
 
   <!-- Database Upload Modal -->
@@ -6860,6 +8297,93 @@ require_once 'discord-invite.php';
         <button onclick="unlockDatabase()" class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
           🔓 Unlock Access
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Race Bot Configuration Modal -->
+  <div id="raceBotModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">🤖 Discord Cheese Race Bot Configuration</h3>
+        <button onclick="hideRaceBotModal()" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="overflow-y-auto max-h-[calc(90vh-120px)]">
+        <!-- Bot Status Section -->
+        <div class="mb-6">
+          <h4 class="text-md font-semibold text-gray-700 mb-3">📊 Bot Status</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-100 p-3 rounded">
+              <p class="text-sm text-gray-600">Active Races:</p>
+              <p class="text-lg font-bold text-blue-600" id="activeRacesCount">0</p>
+            </div>
+            <div class="bg-gray-100 p-3 rounded">
+              <p class="text-sm text-gray-600">Total Races Today:</p>
+              <p class="text-lg font-bold text-green-600" id="totalRacesToday">0</p>
+            </div>
+            <div class="bg-gray-100 p-3 rounded">
+              <p class="text-sm text-gray-600">Participants Today:</p>
+              <p class="text-lg font-bold text-purple-600" id="participantsToday">0</p>
+            </div>
+            <div class="bg-gray-100 p-3 rounded">
+              <p class="text-sm text-gray-600">DSPOINC Distributed:</p>
+              <p class="text-lg font-bold text-yellow-600" id="dspoincDistributed">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Race Configuration Section -->
+        <div class="mb-6">
+          <h4 class="text-md font-semibold text-gray-700 mb-3">⚙️ Race Configuration</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Default Max Players:</label>
+              <input type="number" id="defaultMaxPlayers" value="10" min="2" max="50" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Default Duration (minutes):</label>
+              <input type="number" id="defaultDuration" value="5" min="1" max="60" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Default DSPOINC Reward:</label>
+              <input type="number" id="defaultDspoincReward" value="100" min="10" max="1000" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Role Reward:</label>
+              <input type="text" id="defaultRoleReward" placeholder="Optional role name" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Races Section -->
+        <div class="mb-6">
+          <h4 class="text-md font-semibold text-gray-700 mb-3">🏁 Recent Races</h4>
+          <div id="recentRacesList" class="bg-gray-100 p-3 rounded max-h-40 overflow-y-auto">
+            <p class="text-sm text-gray-500">Loading recent races...</p>
+          </div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="hideRaceBotModal()" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300">
+            Close
+          </button>
+          <button onclick="saveRaceBotConfig()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            💾 Save Configuration
+          </button>
+          <button onclick="refreshRaceBotData()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+            🔄 Refresh Data
+          </button>
+        </div>
       </div>
     </div>
   </div>

@@ -106,6 +106,16 @@ try {
     $stmt->execute();
     $tetris_stats['all_time']['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
 
+    // Get top Tetris players for current season
+    $stmt = $pdo->prepare("SELECT ts.discord_id, u.username, ts.score 
+                           FROM tbl_tetris_scores ts 
+                           LEFT JOIN tbl_users u ON ts.discord_id = u.discord_id 
+                           WHERE ts.game = 'tetris' AND ts.season = ? AND ts.is_current_season = 1 
+                           ORDER BY ts.score DESC 
+                           LIMIT 10");
+    $stmt->execute([$current_season_name]);
+    $tetris_stats['top_players'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     $consolidated_stats['games']['tetris'] = $tetris_stats;
 
     // ===== SNAKE GAME STATISTICS =====
@@ -171,6 +181,16 @@ try {
     $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'snake'");
     $stmt->execute();
     $snake_stats['all_time']['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
+
+    // Get top Snake players for current season
+    $stmt = $pdo->prepare("SELECT ts.discord_id, u.username, ts.score 
+                           FROM tbl_tetris_scores ts 
+                           LEFT JOIN tbl_users u ON ts.discord_id = u.discord_id 
+                           WHERE ts.game = 'snake' AND ts.season = ? AND ts.is_current_season = 1 
+                           ORDER BY ts.score DESC 
+                           LIMIT 10");
+    $stmt->execute([$current_season_name]);
+    $snake_stats['top_players'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $consolidated_stats['games']['snake'] = $snake_stats;
 
@@ -281,6 +301,16 @@ try {
     $stmt = $pdo->prepare("SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game_type = 'cheese_invaders'");
     $stmt->execute();
     $cheese_invaders_stats['all_time']['avg_score'] = round($stmt->fetch(PDO::FETCH_ASSOC)['avg_score'], 2);
+
+    // Get top Cheese Invaders players for current season
+    $stmt = $pdo->prepare("SELECT us.user_id, u.username, us.score 
+                           FROM tbl_user_scores us 
+                           LEFT JOIN tbl_users u ON us.user_id = u.discord_id 
+                           WHERE us.game_type = 'cheese_invaders' AND us.season = ? 
+                           ORDER BY us.score DESC 
+                           LIMIT 10");
+    $stmt->execute([$current_season_name]);
+    $cheese_invaders_stats['top_players'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $consolidated_stats['games']['cheese_invaders'] = $cheese_invaders_stats;
 
