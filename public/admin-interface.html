@@ -1604,6 +1604,9 @@ require_once 'discord-invite.php';
             <button onclick="testBackup()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-300 ml-2">
               🧪 Test Backup
             </button>
+            <button onclick="testDatabasePath()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-all duration-300 ml-2">
+              🔍 Test DB Path
+            </button>
           </div>
         </div>
       </div>
@@ -2470,7 +2473,6 @@ require_once 'discord-invite.php';
               <div class="game-stat-label">Game status</div>
               <div class="game-stat-subvalue">Achievements: <span id="cheeseAchievements" class="text-blue-400">-</span></div>
             </div>
-          </div>
           </div>
 
           <!-- Cheese Hunt Leaderboard -->
@@ -5528,6 +5530,44 @@ require_once 'discord-invite.php';
       }
     }
     
+    // Test database path detection (for debugging)
+    async function testDatabasePath() {
+      try {
+        addLog('🧪 Testing database path detection...');
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/test-database-path.php', {
+          method: 'GET'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('🔍 Database Path Test Results:');
+          addLog(`📁 Database path: ${data.database_path}`);
+          addLog(`📁 File exists: ${data.file_exists ? '✅' : '❌'}`);
+          addLog(`📊 File size: ${data.file_size}`);
+          addLog(`📖 Is readable: ${data.is_readable ? '✅' : '❌'}`);
+          addLog(`🏠 Environment: ${data.environment}`);
+          addLog(`💻 PHP OS: ${data.php_os}`);
+          addLog(`📁 Document root: ${data.document_root}`);
+          addLog(`👤 Current user: ${data.current_user}`);
+          
+          // Critical verification
+          if (data.file_exists && data.is_readable) {
+            addLog('✅ CRITICAL: Database path detection successful');
+            addLog(`📊 Database size: ${data.file_size} - This should match your live database size`);
+          } else {
+            addLog('❌ CRITICAL: Database path detection FAILED');
+            addLog('🚨 This indicates a serious configuration issue!');
+          }
+        } else {
+          addLog('❌ Database path test failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Database path test error: ' + error.message);
+      }
+    }
+    
     // Show upload modal
     function showUploadModal() {
       const modal = document.getElementById('uploadModal');
@@ -6264,11 +6304,13 @@ require_once 'discord-invite.php';
           loadSnakeData();
           break;
         case 'cheese-invaders':
-          console.log('Loading Cheese Invaders data...');
+          console.log('🧀 Loading Cheese Invaders data...');
+          addLog('🧀 Loading Cheese Invaders data...');
           loadInvadersData();
           break;
         case 'cheese-hunt':
-          console.log('Loading Cheese Hunt data...');
+          console.log('🧀 Loading Cheese Hunt data...');
+          addLog('🧀 Loading Cheese Hunt data...');
           loadCheeseData();
           break;
         case 'discord-race':
@@ -6809,15 +6851,17 @@ require_once 'discord-invite.php';
         
         console.log('Full API response for Cheese Invaders:', data);
         if (data.success && data.data && data.data.games && data.data.games.cheese_invaders) {
-          console.log('Cheese Invaders data found in response:', data.data.games.cheese_invaders);
+          console.log('🧀 Cheese Invaders data found in response:', data.data.games.cheese_invaders);
+          addLog('🧀 Cheese Invaders data found in API response');
           // Add a small delay to ensure DOM is ready
           setTimeout(() => {
             displayInvadersData(data.data.games.cheese_invaders);
           }, 100);
           addLog('✅ Cheese Invaders data loaded successfully');
         } else {
-          console.error('Cheese Invaders data not found in response:', data);
-          addLog(`❌ Failed to load Cheese Invaders data: ${data.error}`);
+          console.error('🧀 Cheese Invaders data not found in response:', data);
+          addLog(`❌ Failed to load Cheese Invaders data: ${data.error || 'No data in response'}`);
+          addLog(`🧀 API Response structure: ${JSON.stringify(data, null, 2)}`);
         }
       } catch (error) {
         addLog(`❌ Cheese Invaders data loading error: ${error.message}`);
@@ -6826,14 +6870,17 @@ require_once 'discord-invite.php';
 
     function displayInvadersData(invadersData) {
       try {
-        console.log('Cheese Invaders data received:', invadersData);
-        console.log('Cheese Invaders data structure:', JSON.stringify(invadersData, null, 2));
-        console.log('Cheese Invaders season_data:', invadersData.season_data);
-        console.log('Cheese Invaders top_players:', invadersData.top_players);
+        console.log('🧀 Cheese Invaders data received:', invadersData);
+        console.log('🧀 Cheese Invaders data structure:', JSON.stringify(invadersData, null, 2));
+        console.log('🧀 Cheese Invaders season_data:', invadersData.season_data);
+        console.log('🧀 Cheese Invaders top_players:', invadersData.top_players);
         
         // Debug: Check if we're in the right tab
-        console.log('Current active tab:', document.querySelector('.game-tab-content[style*="display: block"]')?.id);
-        console.log('Cheese Invaders tab visible:', document.getElementById('cheeseInvadersTab')?.style.display !== 'none');
+        console.log('🧀 Current active tab:', document.querySelector('.game-tab-content[style*="display: block"]')?.id);
+        console.log('🧀 Cheese Invaders tab visible:', document.getElementById('cheeseInvadersTab')?.style.display !== 'none');
+        
+        // Add log to admin interface
+        addLog('🧀 Displaying Cheese Invaders data...');
         
         // Helper function to format numbers nicely
         const formatNumber = (num) => {
@@ -6988,18 +7035,50 @@ require_once 'discord-invite.php';
         // Update leaderboard with enhanced styling
         const leaderboard = document.getElementById('invadersLeaderboard');
         if (leaderboard) {
-          // Since the API doesn't provide top_players for Cheese Invaders yet, show a placeholder
-          leaderboard.innerHTML = `
-            <div class="text-gray-400 text-center py-8">
-              <div class="text-4xl mb-2">👾</div>
-              <p class="text-lg font-semibold mb-2">No Cheese Invaders Yet</p>
-              <p class="text-sm">Start playing to appear on the leaderboard!</p>
-              <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
-                <p class="text-sm text-gray-300">Season: ${invadersData.season_data?.current_season || 'Season 1'}</p>
-                <p class="text-xs text-gray-400">Status: ${invadersData.status || 'Active'}</p>
+          if (invadersData.top_players && invadersData.top_players.length > 0) {
+            // Show actual player data in a grid format like other tabs
+            leaderboard.innerHTML = `
+              <div class="space-y-2">
+                ${invadersData.top_players.map((player, index) => `
+                  <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-all duration-200 border-l-4 border-l-${index === 0 ? 'yellow' : index === 1 ? 'gray' : index === 2 ? 'orange' : 'blue'}-500">
+                    <div class="flex items-center space-x-3">
+                      <span class="text-lg font-bold text-${index === 0 ? 'yellow' : index === 1 ? 'gray' : index === 2 ? 'orange' : 'blue'}-400">#${index + 1}</span>
+                      <div>
+                        <div class="font-semibold text-white">${player.username || 'Anonymous'}</div>
+                        <div class="text-xs text-gray-400">ID: ${player.user_id || 'N/A'}</div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-lg font-bold text-green-400">${formatNumber(player.score || 0)}</div>
+                      <div class="text-sm text-blue-400">Wave ${player.wave || 'N/A'}</div>
+                      <div class="text-xs text-gray-400">${player.games || 1} game${player.games !== 1 ? 's' : ''}</div>
+                    </div>
+                  </div>
+                `).join('')}
               </div>
-            </div>
-          `;
+            `;
+          } else {
+            // Show a proper grid structure even when no data
+            leaderboard.innerHTML = `
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-gray-700 p-4 rounded-lg text-center">
+                  <div class="text-3xl mb-2">👾</div>
+                  <div class="text-lg font-semibold text-white mb-2">No Players Yet</div>
+                  <div class="text-sm text-gray-400">Start playing to appear here!</div>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-lg text-center">
+                  <div class="text-3xl mb-2">📊</div>
+                  <div class="text-lg font-semibold text-white mb-2">Season: ${invadersData.season_data?.current_season || 'Season 1'}</div>
+                  <div class="text-sm text-gray-400">Status: ${invadersData.status || 'Active'}</div>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-lg text-center">
+                  <div class="text-3xl mb-2">🎯</div>
+                  <div class="text-lg font-semibold text-white mb-2">Total Waves: ${formatNumber(invadersData.season_data?.total_scores || 0)}</div>
+                  <div class="text-sm text-gray-400">Players: ${formatNumber(invadersData.season_data?.unique_players || 0)}</div>
+                </div>
+              </div>
+            `;
+          }
         }
 
         // Add data summary at the top
@@ -7107,15 +7186,17 @@ require_once 'discord-invite.php';
         
         console.log('Full API response for Cheese Hunt:', data);
         if (data.success && data.data && data.data.games && data.data.games.cheese_hunt) {
-          console.log('Cheese Hunt data found in response:', data.data.games.cheese_hunt);
+          console.log('🧀 Cheese Hunt data found in response:', data.data.games.cheese_hunt);
+          addLog('🧀 Cheese Hunt data found in API response');
           // Add a small delay to ensure DOM is ready
           setTimeout(() => {
             displayCheeseData(data.data.games.cheese_hunt);
           }, 100);
           addLog('✅ Cheese Hunt data loaded successfully');
         } else {
-          console.error('Cheese Hunt data not found in response:', data);
-          addLog(`❌ Failed to load Cheese Hunt data: ${data.error}`);
+          console.error('🧀 Cheese Hunt data not found in response:', data);
+          addLog(`❌ Failed to load Cheese Hunt data: ${data.error || 'No data in response'}`);
+          addLog(`🧀 API Response structure: ${JSON.stringify(data, null, 2)}`);
         }
       } catch (error) {
         addLog(`❌ Cheese Hunt data loading error: ${error.message}`);
@@ -7124,10 +7205,13 @@ require_once 'discord-invite.php';
 
     function displayCheeseData(cheeseData) {
       try {
-        console.log('Cheese Hunt data received:', cheeseData);
-        console.log('Cheese Hunt data structure:', JSON.stringify(cheeseData, null, 2));
-        console.log('Cheese Hunt current_data:', cheeseData.current_data);
-        console.log('Cheese Hunt top_players:', cheeseData.top_players);
+        console.log('🧀 Cheese Hunt data received:', cheeseData);
+        console.log('🧀 Cheese Hunt data structure:', JSON.stringify(cheeseData, null, 2));
+        console.log('🧀 Cheese Hunt current_data:', cheeseData.current_data);
+        console.log('🧀 Cheese Hunt top_players:', cheeseData.top_players);
+        
+        // Add log to admin interface
+        addLog('🧀 Displaying Cheese Hunt data...');
         // Update Cheese Hunt statistics from current_data
         console.log('Looking for cheeseTotalClicks element:', document.getElementById('cheeseTotalClicks'));
         if (document.getElementById('cheeseTotalClicks')) {
@@ -7235,18 +7319,50 @@ require_once 'discord-invite.php';
         // Update leaderboard with enhanced styling using new CSS classes
         const leaderboard = document.getElementById('cheeseLeaderboard');
         if (leaderboard) {
-          // Since the API doesn't provide top_players for Cheese Hunt yet, show a placeholder
-          leaderboard.innerHTML = `
-            <div class="text-gray-400 text-center py-8">
-              <div class="text-4xl mb-2">🧀</div>
-              <p class="text-lg font-semibold mb-2">No Cheese Hunters Yet</p>
-              <p class="text-sm">Start hunting cheese to appear on the leaderboard!</p>
-              <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
-                <p class="text-sm text-gray-300">Total Clicks: ${cheeseData.current_data?.total_clicks || 0}</p>
-                <p class="text-xs text-gray-400">Status: ${cheeseData.status || 'Active'}</p>
+          if (cheeseData.top_players && cheeseData.top_players.length > 0) {
+            // Show actual player data in a grid format like other tabs
+            leaderboard.innerHTML = `
+              <div class="space-y-2">
+                ${cheeseData.top_players.map((player, index) => `
+                  <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-all duration-200 border-l-4 border-l-${index === 0 ? 'yellow' : index === 1 ? 'gray' : index === 2 ? 'orange' : 'blue'}-500">
+                    <div class="flex items-center space-x-3">
+                      <span class="text-lg font-bold text-${index === 0 ? 'yellow' : index === 1 ? 'gray' : index === 2 ? 'orange' : 'blue'}-400">#${index + 1}</span>
+                      <div>
+                        <div class="font-semibold text-white">${player.username || 'Anonymous'}</div>
+                        <div class="text-xs text-gray-400">ID: ${player.user_id || 'N/A'}</div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-lg font-bold text-yellow-400">${player.clicks || 0} clicks</div>
+                      <div class="text-sm text-blue-400">${player.games || 1} game${player.games !== 1 ? 's' : ''}</div>
+                      <div class="text-xs text-gray-400">Avg: ${player.games > 0 ? Math.round((player.clicks || 0) / player.games) : 0}</div>
+                    </div>
+                  </div>
+                `).join('')}
               </div>
-            </div>
-          `;
+            `;
+          } else {
+            // Show a proper grid structure even when no data
+            leaderboard.innerHTML = `
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-gray-700 p-4 rounded-lg text-center">
+                  <div class="text-3xl mb-2">🧀</div>
+                  <div class="text-lg font-semibold text-white mb-2">No Hunters Yet</div>
+                  <div class="text-sm text-gray-400">Start hunting to appear here!</div>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-lg text-center">
+                  <div class="text-3xl mb-2">📊</div>
+                  <div class="text-lg font-semibold text-white mb-2">Total Clicks: ${cheeseData.current_data?.total_clicks || 0}</div>
+                  <div class="text-sm text-gray-400">Status: ${cheeseData.status || 'Active'}</div>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-lg text-center">
+                  <div class="text-3xl mb-2">🎯</div>
+                  <div class="text-lg font-semibold text-white mb-2">Players: ${cheeseData.current_data?.unique_players || 0}</div>
+                  <div class="text-sm text-gray-400">Today: ${cheeseData.current_data?.recent_24h || 0}</div>
+                </div>
+              </div>
+            `;
+          }
         }
       } catch (error) {
         console.error('Error displaying Cheese Hunt data:', error);
