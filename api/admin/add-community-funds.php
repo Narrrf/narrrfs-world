@@ -33,8 +33,7 @@ if (empty($type) || empty($description) || $amount <= 0) {
 }
 
 try {
-    $pdo = new PDO("sqlite:../../db/narrrf_world.sqlite");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = getDatabaseConnection();
     
     // Insert new community funds entry
     $stmt = $pdo->prepare("

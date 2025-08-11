@@ -23,37 +23,37 @@ if (!$admin) {
 }
 
 try {
-    // Always use the correct production database path
-    $dbPath = '/var/www/html/db/narrrf_world.sqlite';
+    // Always download from the LIVE database in /var/www/html/db/
+    $liveDbPath = '/var/www/html/db/narrrf_world.sqlite';
     
     // Log the path being used for debugging
-    error_log("Download API: Attempting to download from: " . $dbPath);
+    error_log("Download API: Downloading from LIVE database: " . $liveDbPath);
     
-    if (!file_exists($dbPath)) {
+    if (!file_exists($liveDbPath)) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'error' => 'Database file not found at: ' . $dbPath]);
+        echo json_encode(['success' => false, 'error' => 'Live database not found at: ' . $liveDbPath]);
         exit;
     }
     
     // Get file size for verification
-    $fileSize = filesize($dbPath);
-    error_log("Download API: Database file size: " . $fileSize . " bytes");
+    $fileSize = filesize($liveDbPath);
+    error_log("Download API: Live database file size: " . $fileSize . " bytes");
     
     // Set headers for file download
     header('Content-Type: application/octet-stream');
-    header('Content-Disposition: attachment; filename="narrrf_world_database_' . date('Y-m-d') . '.sqlite"');
+    header('Content-Disposition: attachment; filename="narrrf_world_live_database_' . date('Y-m-d') . '.sqlite"');
     header('Content-Length: ' . $fileSize);
     header('Cache-Control: no-cache, must-revalidate');
     header('Expires: 0');
     
-    // Output the database file
-    readfile($dbPath);
+    // Output the LIVE database file
+    readfile($liveDbPath);
     exit;
     
 } catch (Exception $e) {
     error_log("Download API Error: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Database download failed: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'error' => 'Live database download failed: ' . $e->getMessage()]);
 }
 
 function getBearerToken() {

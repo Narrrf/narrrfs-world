@@ -23,7 +23,7 @@ function getDatabasePath() {
         error_log("Document root: " . ($_SERVER['DOCUMENT_ROOT'] ?? 'NOT SET'));
     } else {
         // Production - use environment variable or default
-        $db_path = getenv('DB_PATH') ?: '/var/www/html/db/narrrf_world.sqlite';
+        $db_path = getenv('DB_PATH') ?: '/data/narrrf_world.sqlite';
         error_log("Production environment detected. Database path: " . $db_path);
     }
     
@@ -82,7 +82,7 @@ function validateDatabasePath($path) {
     
     // Check if path is within allowed directory
     $real_path = realpath($path);
-    $allowed_dir = realpath('/var/www/html/db');
+    $allowed_dir = realpath('/data');
     
     if ($real_path === false || $allowed_dir === false) {
         return false;

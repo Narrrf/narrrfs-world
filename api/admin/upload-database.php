@@ -53,7 +53,7 @@ try {
     }
     
     // Create backup of current database before replacing - use correct path for production
-    $currentDbPath = '/var/www/html/db/narrrf_world.sqlite';
+    $currentDbPath = '/data/narrrf_world.sqlite';
     
     // Create backup directory if it doesn't exist - use correct path for production
     $backupDir = '/data/backups';
@@ -73,7 +73,7 @@ try {
     }
     
     // Set target path for the new database - use correct path for production
-    $targetPath = '/var/www/html/db/narrrf_world.sqlite';
+    $targetPath = '/data/narrrf_world.sqlite';
     if (move_uploaded_file($uploadedFile['tmp_name'], $targetPath)) {
         // Set proper permissions
         chmod($targetPath, 0644);

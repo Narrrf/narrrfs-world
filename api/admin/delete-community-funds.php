@@ -31,8 +31,7 @@ if ($id <= 0) {
 }
 
 try {
-    $pdo = new PDO("sqlite:../../db/narrrf_world.sqlite");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = getDatabaseConnection();
     
     // Check if entry exists
     $checkStmt = $pdo->prepare("SELECT id FROM tbl_community_funds WHERE id = ?");

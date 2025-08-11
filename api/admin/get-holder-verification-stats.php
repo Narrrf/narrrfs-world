@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Database configuration
-$dbPath = '/var/www/html/db/narrrf_world.sqlite';
+$dbPath = '/data/narrrf_world.sqlite';
 
 try {
     // Connect to database

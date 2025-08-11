@@ -7,8 +7,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 require_once '../config/database.php';
 
 try {
-    $pdo = new PDO("sqlite:../../db/narrrf_world.sqlite");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = getDatabaseConnection();
     
     // Get all community funds entries ordered by date (newest first)
     $stmt = $pdo->prepare("

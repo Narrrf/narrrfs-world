@@ -2252,6 +2252,16 @@ require_once 'discord-invite.php';
         <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
           <h3 class="text-lg font-semibold mb-3">👾 Cheese Invaders Management</h3>
           
+          <!-- Cheese Invaders Top Players -->
+          <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+              <h4 class="font-semibold text-purple-400 mb-3">👾 Cheese Invaders Top Players</h4>
+              <div id="invadersTopPlayers" class="space-y-2 max-h-64 overflow-y-auto">
+                <div class="text-gray-300">Loading top players...</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Cheese Invaders Statistics -->
           <div class="game-stats-grid">
             <div class="game-stat-card bg-gray-700 p-3 rounded">
@@ -2365,6 +2375,16 @@ require_once 'discord-invite.php';
         <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
           <h3 class="text-lg font-semibold mb-3">🧀 Cheese Hunt Management</h3>
           
+          <!-- Cheese Hunt Top Players -->
+          <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+              <h4 class="font-semibold text-yellow-400 mb-3">🧀 Cheese Hunt Top Players</h4>
+              <div id="cheeseHuntTopPlayers" class="space-y-2 max-h-64 overflow-y-auto">
+                <div class="text-gray-300">Loading top players...</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Cheese Hunt Statistics -->
           <div class="game-stats-grid">
             <div class="game-stat-card">
@@ -6805,6 +6825,33 @@ require_once 'discord-invite.php';
           document.getElementById('invadersAvgTime').className = 'text-blue-400 text-sm';
         }
 
+        // Update Top Players section
+        const topPlayers = document.getElementById('invadersTopPlayers');
+        if (topPlayers) {
+          if (invadersData.top_players && invadersData.top_players.length > 0) {
+            topPlayers.innerHTML = invadersData.top_players.map((player, index) => `
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded hover:bg-gray-600 transition-colors">
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm font-semibold text-gray-300">#${index + 1}</span>
+                  <span class="text-white font-medium">${player.username || 'Anonymous'}</span>
+                </div>
+                <div class="text-right">
+                  <div class="text-green-400 font-semibold">${formatNumber(player.score || 0)}</div>
+                  <div class="text-xs text-gray-400">Wave ${player.wave || 'N/A'}</div>
+                </div>
+              </div>
+            `).join('');
+          } else {
+            topPlayers.innerHTML = `
+              <div class="text-gray-400 text-center py-4">
+                <div class="text-2xl mb-2">👾</div>
+                <p class="text-sm">No players yet</p>
+                <p class="text-xs text-gray-500">Start playing to appear here!</p>
+              </div>
+            `;
+          }
+        }
+
         // Update leaderboard with enhanced styling
         const leaderboard = document.getElementById('invadersLeaderboard');
         if (leaderboard) {
@@ -6977,6 +7024,33 @@ require_once 'discord-invite.php';
         if (document.getElementById('cheeseAchievements')) document.getElementById('cheeseAchievements').textContent = '-';
         if (document.getElementById('cheeseCompletionRate')) document.getElementById('cheeseCompletionRate').textContent = '-';
         if (document.getElementById('cheeseActiveHunters')) document.getElementById('cheeseActiveHunters').textContent = cheeseData.current_data?.unique_players || '-';
+
+        // Update Top Players section
+        const topPlayers = document.getElementById('cheeseHuntTopPlayers');
+        if (topPlayers) {
+          if (cheeseData.top_players && cheeseData.top_players.length > 0) {
+            topPlayers.innerHTML = cheeseData.top_players.map((player, index) => `
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded hover:bg-gray-600 transition-colors">
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm font-semibold text-gray-300">#${index + 1}</span>
+                  <span class="text-white font-medium">${player.username || 'Anonymous'}</span>
+                </div>
+                <div class="text-right">
+                  <div class="text-yellow-400 font-semibold">${player.clicks || 0}</div>
+                  <div class="text-xs text-gray-400">${player.games || 0} games</div>
+                </div>
+              </div>
+            `).join('');
+          } else {
+            topPlayers.innerHTML = `
+              <div class="text-gray-400 text-center py-4">
+                <div class="text-2xl mb-2">🧀</div>
+                <p class="text-sm">No hunters yet</p>
+                <p class="text-xs text-gray-500">Start hunting to appear here!</p>
+              </div>
+            `;
+          }
+        }
 
         // Update leaderboard with enhanced styling using new CSS classes
         const leaderboard = document.getElementById('cheeseLeaderboard');
