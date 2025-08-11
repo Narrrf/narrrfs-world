@@ -2263,6 +2263,22 @@ require_once 'discord-invite.php';
                 <div class="text-gray-300">Loading top players...</div>
               </div>
             </div>
+            
+            <!-- Cheese Invaders Recent Activity -->
+            <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+              <h4 class="font-semibold text-blue-400 mb-3">📊 Recent Activity</h4>
+              <div id="invadersRecentActivity" class="space-y-2 max-h-64 overflow-y-auto">
+                <div class="text-gray-300">Loading recent activity...</div>
+              </div>
+            </div>
+            
+            <!-- Cheese Invaders Achievements -->
+            <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+              <h4 class="font-semibold text-green-400 mb-3">🏆 Achievements</h4>
+              <div id="invadersAchievements" class="space-y-2 max-h-64 overflow-y-auto">
+                <div class="text-gray-300">Loading achievements...</div>
+              </div>
+            </div>
           </div>
 
           <!-- Cheese Invaders Statistics -->
@@ -2384,6 +2400,26 @@ require_once 'discord-invite.php';
               <h4 class="font-semibold text-yellow-400 mb-3">🧀 Cheese Hunt Top Players</h4>
               <div id="cheeseHuntTopPlayers" class="space-y-2 max-h-64 overflow-y-auto">
                 <div class="text-gray-300">Loading top players...</div>
+              </div>
+            </div>
+            
+            <!-- Cheese Hunt Recent Activity -->
+            <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+              <h4 class="font-semibold text-blue-400 mb-3">📊 Recent Activity</h4>
+              <div id="cheeseHuntRecentActivity" class="space-y-2 max-h-64 overflow-y-auto">
+                <div class="text-gray-300">Loading recent activity...</div>
+              </div>
+            </div>
+            
+            <!-- Cheese Hunt Achievements -->
+            <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+              <h4 class="font-semibold text-green-400 mb-3">🏆 Achievements</h4>
+              <div id="cheeseHuntAchievements" class="space-y-2 max-h-64 overflow-y-auto">
+                <div class="text-gray-400 text-center py-4">
+                  <div class="text-2xl mb-2">🧀</div>
+                  <p class="text-sm">No achievements yet</p>
+                  <p class="text-xs text-gray-500">Start hunting to unlock!</p>
+                </div>
               </div>
             </div>
           </div>
@@ -2539,6 +2575,7 @@ require_once 'discord-invite.php';
           <!-- Discord Race Actions -->
           <div class="flex flex-wrap gap-3">
             <button onclick="loadRaceData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+            <button onclick="syncDiscordRaceData()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded admin-button">🔄 Sync Discord Bot</button>
             <button onclick="exportRaceData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
             <button onclick="manageRaceBot()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded admin-button">🤖 Bot Settings</button>
           </div>
@@ -5464,14 +5501,25 @@ require_once 'discord-invite.php';
         
         if (data.test) {
           addLog('🔍 Backup Test Results:');
+          addLog(`📁 Source path: ${data.source_path}`);
           addLog(`📁 Source exists: ${data.source_exists ? '✅' : '❌'}`);
           addLog(`📖 Source readable: ${data.source_readable ? '✅' : '❌'}`);
           addLog(`📊 Source size: ${data.source_size}`);
+          addLog(`🏠 Environment: ${data.is_local ? 'Local Development' : 'Production'}`);
           addLog(`📁 Target dir exists: ${data.target_dir_exists ? '✅' : '❌'}`);
           addLog(`✏️ Target dir writable: ${data.target_dir_writable ? '✅' : '❌'}`);
           addLog(`👤 Current user: ${data.current_user}`);
           addLog(`🐘 PHP user: ${data.php_user}`);
           addLog(`🌐 Web server user: ${data.web_server_user}`);
+          
+          // Critical verification
+          if (data.source_exists && data.source_readable) {
+            addLog('✅ CRITICAL: Database path verification successful');
+            addLog(`📊 Database size: ${data.source_size} - This should match your live database size`);
+          } else {
+            addLog('❌ CRITICAL: Database path verification FAILED');
+            addLog('🚨 This indicates a serious configuration issue!');
+          }
         } else {
           addLog('❌ Test failed: ' + (data.error || 'Unknown error'));
         }
@@ -6891,6 +6939,52 @@ require_once 'discord-invite.php';
           }
         }
 
+        // Update Recent Activity section
+        const recentActivity = document.getElementById('invadersRecentActivity');
+        if (recentActivity) {
+          const recent24h = invadersData.season_data?.recent_24h || 0;
+          const recent7d = invadersData.season_data?.recent_7d || 0;
+          recentActivity.innerHTML = `
+            <div class="space-y-3">
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Last 24h:</span>
+                <span class="text-green-400 font-semibold">${formatNumber(recent24h)}</span>
+              </div>
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Last 7 days:</span>
+                <span class="text-blue-400 font-semibold">${formatNumber(recent7d)}</span>
+              </div>
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Status:</span>
+                <span class="text-green-400 font-semibold">🟢 Active</span>
+              </div>
+            </div>
+          `;
+        }
+
+        // Update Achievements section
+        const achievements = document.getElementById('invadersAchievements');
+        if (achievements) {
+          const totalPlayers = invadersData.season_data?.unique_players || 0;
+          const totalScores = invadersData.season_data?.total_scores || 0;
+          achievements.innerHTML = `
+            <div class="space-y-3">
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Total Players:</span>
+                <span class="text-white font-semibold">${formatNumber(totalPlayers)}</span>
+              </div>
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Total Waves:</span>
+                <span class="text-green-400 font-semibold">${formatNumber(totalScores)}</span>
+              </div>
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Avg. Waves:</span>
+                <span class="text-blue-400 font-semibold">${totalPlayers > 0 ? Math.round(totalScores / totalPlayers) : 0}</span>
+              </div>
+            </div>
+          `;
+        }
+
         // Update leaderboard with enhanced styling
         const leaderboard = document.getElementById('invadersLeaderboard');
         if (leaderboard) {
@@ -7091,6 +7185,53 @@ require_once 'discord-invite.php';
           }
         }
 
+        // Update Recent Activity section
+        const recentActivity = document.getElementById('cheeseHuntRecentActivity');
+        if (recentActivity) {
+          const recent24h = cheeseData.current_data?.recent_24h || 0;
+          const recent7d = cheeseData.current_data?.recent_7d || 0;
+          recentActivity.innerHTML = `
+            <div class="space-y-3">
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Last 24h:</span>
+                <span class="text-green-400 font-semibold">${recent24h}</span>
+              </div>
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Last 7 days:</span>
+                <span class="text-blue-400 font-semibold">${recent7d}</span>
+              </div>
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Status:</span>
+                <span class="text-green-400 font-semibold">🟢 Active</span>
+              </div>
+            </div>
+          `;
+        }
+
+        // Update Achievements section
+        const achievements = document.getElementById('cheeseHuntAchievements');
+        if (achievements) {
+          const totalClicks = cheeseData.current_data?.total_clicks || 0;
+          const uniquePlayers = cheeseData.current_data?.unique_players || 0;
+          const avgClicks = uniquePlayers > 0 ? Math.round(totalClicks / uniquePlayers) : 0;
+          achievements.innerHTML = `
+            <div class="space-y-3">
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Total Clicks:</span>
+                <span class="text-white font-semibold">${totalClicks}</span>
+              </div>
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Unique Players:</span>
+                <span class="text-green-400 font-semibold">${uniquePlayers}</span>
+              </div>
+              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span class="text-gray-300 text-sm">Avg. Clicks:</span>
+                <span class="text-blue-400 font-semibold">${avgClicks}</span>
+              </div>
+            </div>
+          `;
+        }
+
         // Update leaderboard with enhanced styling using new CSS classes
         const leaderboard = document.getElementById('cheeseLeaderboard');
         if (leaderboard) {
@@ -7139,6 +7280,63 @@ require_once 'discord-invite.php';
         }
       } catch (error) {
         addLog(`❌ Discord Race data loading error: ${error.message}`);
+      }
+    }
+
+    // Discord Race Sync Function - Syncs with Discord bot data
+    async function syncDiscordRaceData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Syncing Discord Race data with bot...');
+
+      try {
+        // Show loading state
+        const syncButton = document.querySelector('button[onclick="syncDiscordRaceData()"]');
+        if (syncButton) {
+          syncButton.disabled = true;
+          syncButton.innerHTML = '🔄 Syncing...';
+        }
+
+        // Call the Discord bot sync API
+        const response = await fetch(API_BASE_URL + '/api/admin/sync-discord-race.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'sync_race_data',
+            admin_username: currentAdmin
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Discord Race sync completed! ${data.message || ''}`);
+          
+          // Refresh the race data after sync
+          setTimeout(() => {
+            loadRaceData();
+          }, 1000);
+          
+          // Show success notification
+          showNotification('🔄 Discord Race Sync Complete', 'Race data has been synchronized with the Discord bot!', 'success');
+        } else {
+          addLog(`❌ Discord Race sync failed: ${data.error || 'Unknown error'}`);
+          showNotification('❌ Sync Failed', data.error || 'Failed to sync Discord race data', 'error');
+        }
+      } catch (error) {
+        addLog(`❌ Discord Race sync error: ${error.message}`);
+        showNotification('❌ Sync Error', `Error: ${error.message}`, 'error');
+      } finally {
+        // Restore button state
+        if (syncButton) {
+          syncButton.disabled = false;
+          syncButton.innerHTML = '🔄 Sync Discord Bot';
+        }
       }
     }
 

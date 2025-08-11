@@ -23,15 +23,16 @@ if (!$admin) {
 }
 
 try {
-    // Always download from the LIVE database in /var/www/html/db/
-    $liveDbPath = '/var/www/html/db/narrrf_world.sqlite';
+    // Use the centralized database configuration to get the correct path
+    require_once '../config/database.php';
+    $liveDbPath = getDatabasePath();
     
     // Log the path being used for debugging
-    error_log("Download API: Downloading from LIVE database: " . $liveDbPath);
+    error_log("Download API: Downloading from database: " . $liveDbPath);
     
     if (!file_exists($liveDbPath)) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'error' => 'Live database not found at: ' . $liveDbPath]);
+        echo json_encode(['success' => false, 'error' => 'Database not found at: ' . $liveDbPath]);
         exit;
     }
     
