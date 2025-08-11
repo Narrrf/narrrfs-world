@@ -6313,11 +6313,6 @@ require_once 'discord-invite.php';
             const completedRaces = raceData.race_data.recent_activity.filter(race => race.status === 'completed').length;
             const activeRaces = raceData.race_data.recent_activity.filter(race => race.status === 'active').length;
             
-            // Add summary at the top
-            const totalRaces = raceData.race_data.recent_activity.length;
-            const completedRaces = raceData.race_data.recent_activity.filter(race => race.status === 'completed').length;
-            const activeRaces = raceData.race_data.recent_activity.filter(race => race.status === 'active').length;
-            
             recentRacesElement.innerHTML = `
               <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
                 <div class="grid grid-cols-3 gap-4 text-center">
