@@ -52,27 +52,28 @@ try {
         exit;
     }
     
-    // Create backup of current database before replacing - use correct path for production/local
-    $currentDbPath = getenv('RENDER_ENVIRONMENT') ? '/data/narrrf_world.sqlite' : '../db/narrrf_world.sqlite';
-    if (file_exists($currentDbPath)) {
-        $backupDir = getenv('RENDER_ENVIRONMENT') ? '/data/backups' : '../db/backups';
-        if (!is_dir($backupDir)) {
-            mkdir($backupDir, 0755, true);
-        }
-        
-        $timestamp = date('Y-m-d_H-i-s');
-        $backupFilename = "narrrf_world_before_upload_{$timestamp}.sqlite";
-        $backupPath = $backupDir . '/' . $backupFilename;
-        
-        if (!copy($currentDbPath, $backupPath)) {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => 'Failed to create backup of current database']);
-            exit;
-        }
+    // Create backup of current database before replacing - use correct path for production
+    $currentDbPath = '/var/www/html/db/narrrf_world.sqlite';
+    
+    // Create backup directory if it doesn't exist - use correct path for production
+    $backupDir = '/data/backups';
+    if (!is_dir($backupDir)) {
+        mkdir($backupDir, 0755, true);
     }
     
-    // Move uploaded file to database location - use correct path for production/local
-    $targetPath = getenv('RENDER_ENVIRONMENT') ? '/data/narrrf_world.sqlite' : '../db/narrrf_world.sqlite';
+    // Generate backup filename with timestamp
+    $timestamp = date('Y-m-d_H-i-s');
+    $backupFilename = "narrrf_world_before_upload_{$timestamp}.sqlite";
+    $backupPath = $backupDir . '/' . $backupFilename;
+    
+    if (!copy($currentDbPath, $backupPath)) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Failed to create backup of current database']);
+        exit;
+    }
+    
+    // Set target path for the new database - use correct path for production
+    $targetPath = '/var/www/html/db/narrrf_world.sqlite';
     if (move_uploaded_file($uploadedFile['tmp_name'], $targetPath)) {
         // Set proper permissions
         chmod($targetPath, 0644);

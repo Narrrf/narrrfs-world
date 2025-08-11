@@ -23,8 +23,8 @@ if (!$admin) {
 }
 
 try {
-    // Check if database file exists - use correct path for production/local
-    $dbPath = getenv('RENDER_ENVIRONMENT') ? '/data/narrrf_world.sqlite' : '../db/narrrf_world.sqlite';
+    // Check if database file exists - use correct path for production
+    $dbPath = '/var/www/html/db/narrrf_world.sqlite';
     if (!file_exists($dbPath)) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Database file not found at: ' . $dbPath]);
