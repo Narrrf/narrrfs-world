@@ -1,4 +1,7 @@
 <?php
+// Enable debug logging for bot authentication
+define('DEBUG', true);
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
@@ -17,10 +20,17 @@ $is_authenticated = false;
 $auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
 if ($auth_header && strpos($auth_header, 'Bearer ') === 0) {
     $bot_token = substr($auth_header, 7);
-    $expected_token = getenv('DISCORD_BOT_TOKEN');
+    
+    // Try multiple ways to get the bot token
+    $expected_token = getenv('DISCORD_BOT_TOKEN') ?: 
+                     (file_exists(__DIR__ . '/../../discord/config.json') ? 
+                      json_decode(file_get_contents(__DIR__ . '/../../discord/config.json'), true)['botToken'] : null);
     
     if ($bot_token === $expected_token) {
         $is_authenticated = true;
+        if (DEBUG) error_log("Bot token authentication successful");
+    } else {
+        if (DEBUG) error_log("Bot token mismatch. Expected: " . substr($expected_token, 0, 10) . "... Got: " . substr($bot_token, 0, 10) . "...");
     }
 }
 

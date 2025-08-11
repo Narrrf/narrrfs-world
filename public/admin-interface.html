@@ -1601,6 +1601,9 @@ require_once 'discord-invite.php';
             <button onclick="triggerBackup()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-300">
               💾 Backup DB
             </button>
+            <button onclick="testBackup()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-300 ml-2">
+              🧪 Test Backup
+            </button>
           </div>
         </div>
       </div>
@@ -5432,12 +5435,48 @@ require_once 'discord-invite.php';
         
         if (data.success) {
           addLog('✅ Database backup completed successfully');
-          addLog(`📁 Backup saved to: ${data.backup_path || 'server backup directory'}`);
+          addLog(`📁 Backup saved to: ${data.target_path || 'server backup directory'}`);
+          addLog(`🔧 Backup method used: ${data.backup_method || 'Unknown'}`);
+          addLog(`📊 Source size: ${data.source_size || 'Unknown'}`);
+          addLog(`📊 Target size: ${data.target_size || 'Unknown'}`);
         } else {
           addLog('❌ Database backup failed: ' + (data.error || 'Server error'));
+          if (data.source_path) addLog(`📁 Source: ${data.source_path}`);
+          if (data.target_path) addLog(`📁 Target: ${data.target_path}`);
+          if (data.source_size) addLog(`📊 Source size: ${data.source_size}`);
         }
       } catch (error) {
         addLog('❌ Database backup error: ' + error.message);
+      }
+    }
+    
+    // Test backup functionality (for debugging)
+    async function testBackup() {
+      try {
+        addLog('🧪 Testing backup functionality...');
+        
+        // Test the backup endpoint with test parameter
+        const response = await fetch(API_BASE_URL + '/api/admin/backup-database.php?test=true', {
+          method: 'GET'
+        });
+        
+        const data = await response.json();
+        
+        if (data.test) {
+          addLog('🔍 Backup Test Results:');
+          addLog(`📁 Source exists: ${data.source_exists ? '✅' : '❌'}`);
+          addLog(`📖 Source readable: ${data.source_readable ? '✅' : '❌'}`);
+          addLog(`📊 Source size: ${data.source_size}`);
+          addLog(`📁 Target dir exists: ${data.target_dir_exists ? '✅' : '❌'}`);
+          addLog(`✏️ Target dir writable: ${data.target_dir_writable ? '✅' : '❌'}`);
+          addLog(`👤 Current user: ${data.current_user}`);
+          addLog(`🐘 PHP user: ${data.php_user}`);
+          addLog(`🌐 Web server user: ${data.web_server_user}`);
+        } else {
+          addLog('❌ Test failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Test error: ' + error.message);
       }
     }
     
