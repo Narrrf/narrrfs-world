@@ -649,32 +649,6 @@ require_once 'discord-invite.php';
     }
   </style>
 </head>
-<!DOCTYPE html>
-<html lang="en">
-<?php
-// Include Discord invite configuration
-require_once 'discord-invite.php';
-?>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Narrrf's World Admin Interface</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- 🔗 Discord Token of Render System -->
-  <script src="discord-config.js"></script>
-  
-  <!-- 🌍 Environment Detection -->
-  <script>
-    // Detect environment and set API base URL
-    const isProduction = window.location.hostname === 'narrrfs.world';
-    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
-    
-    console.log('🌍 Environment detected:', isProduction ? 'Production' : 'Local');
-    console.log('🔗 API Base URL:', API_BASE_URL);
-  </script>
   
   <style>
     .admin-card {
@@ -2344,6 +2318,10 @@ require_once 'discord-invite.php';
                   <span class="text-gray-400">Avg. Time:</span>
                   <span class="text-green-400 font-semibold" id="invadersAvgTime">-</span>
                 </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Last 7d:</span>
+                  <span class="text-blue-400 font-semibold" id="invadersRecent7d">-</span>
+                </div>
               </div>
             </div>
             
@@ -2388,82 +2366,67 @@ require_once 'discord-invite.php';
           <h3 class="text-lg font-semibold mb-3">🧀 Cheese Hunt Management</h3>
           
           <!-- Cheese Hunt Statistics -->
-          <div class="stats-grid">
-            <div class="stat-card stat-card-primary">
-              <div class="stat-icon">📊</div>
-              <div class="stat-content">
-                <div class="stat-value" id="cheeseTotalClicks">-</div>
-                <div class="stat-label">Total Clicks</div>
-                <div class="stat-trend stat-trend-up">+15% this week</div>
+          <div class="game-stats-grid">
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>📊</span>
+                <span>Click Statistics</span>
               </div>
+              <div class="game-stat-value" id="cheeseTotalClicks">-</div>
+              <div class="game-stat-label">Total Clicks</div>
+              <div class="game-stat-subvalue">Players: <span id="cheeseUniquePlayers" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Today: <span id="cheeseClicksToday" class="text-green-400">-</span></div>
             </div>
 
-            <div class="stat-card stat-card-success">
-              <div class="stat-icon">🥚</div>
-              <div class="stat-content">
-                <div class="stat-value" id="cheeseUniquePlayers">-</div>
-                <div class="stat-label">Unique Players</div>
-                <div class="stat-trend stat-trend-up">+12% this week</div>
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>🥚</span>
+                <span>Egg Data</span>
               </div>
+              <div class="game-stat-value" id="cheeseAvgClicks">-</div>
+              <div class="game-stat-label">Average Clicks</div>
+              <div class="game-stat-subvalue">Regular: <span id="cheeseRegularEggs" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Golden: <span id="cheeseGoldenEggs" class="text-yellow-400">-</span></div>
+              <div class="game-stat-subvalue">Rare: <span id="cheeseRareEggs" class="text-purple-400">-</span></div>
             </div>
 
-            <div class="stat-card stat-card-warning">
-              <div class="stat-icon">📈</div>
-              <div class="stat-content">
-                <div class="stat-value" id="cheeseClicksToday">-</div>
-                <div class="stat-label">Clicks Today</div>
-                <div class="stat-trend stat-trend-up">+8% this week</div>
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>📈</span>
+                <span>Recent Activity</span>
               </div>
+              <div class="game-stat-value" id="cheeseClicksToday">-</div>
+              <div class="game-stat-label">Last 24 hours</div>
+              <div class="game-stat-subvalue">7 days: <span id="cheeseRecent7d" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Active: <span id="cheeseActiveHunters" class="text-green-400">-</span></div>
+              <div class="game-stat-subvalue">Completion: <span id="cheeseCompletionRate" class="text-purple-400">-</span></div>
             </div>
 
-            <div class="stat-card stat-card-info">
-              <div class="stat-icon">⚙️</div>
-              <div class="stat-content">
-                <div class="stat-value" id="cheeseAvgClicks">-</div>
-                <div class="stat-label">Average Clicks</div>
-                <div class="stat-trend stat-trend-stable">+3% this week</div>
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>⚙️</span>
+                <span>Game Settings</span>
               </div>
+              <div class="game-stat-value" id="cheeseStatus">🟢 Active</div>
+              <div class="game-stat-label">Game status</div>
+              <div class="game-stat-subvalue">Achievements: <span id="cheeseAchievements" class="text-blue-400">-</span></div>
             </div>
           </div>
           </div>
 
           <!-- Cheese Hunt Leaderboard -->
-          <div class="leaderboard-section">
-            <div class="leaderboard-header">
-              <h4 class="leaderboard-title">
-                <span class="leaderboard-icon">🏆</span>
-                Top 10 Cheese Hunters
-              </h4>
-              <div class="leaderboard-actions">
-                <button class="leaderboard-action-btn" onclick="exportCheeseLeaderboard()">
-                  <span class="action-icon">📊</span>Export
-                </button>
-              </div>
-            </div>
-            <div class="leaderboard-content">
-              <div id="cheeseLeaderboard" class="leaderboard-list">
-                <div class="leaderboard-loading">
-                  <div class="loading-spinner"></div>
-                  <span>Loading leaderboard...</span>
-                </div>
-              </div>
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Cheese Hunters</h4>
+            <div id="cheeseLeaderboard" class="space-y-2">
+              <div class="text-gray-400 text-center">Loading leaderboard...</div>
             </div>
           </div>
 
           <!-- Cheese Hunt Actions -->
-          <div class="action-buttons">
-            <button onclick="loadCheeseData()" class="action-btn action-btn-primary">
-              <span class="action-icon">🔄</span>
-              <span class="action-text">Refresh Data</span>
-            </button>
-            <button onclick="resetCheeseData()" class="action-btn action-btn-danger">
-              <span class="action-icon">🔄</span>
-              <span class="action-text">Reset Data</span>
-            </button>
-            <button onclick="exportCheeseData()" class="action-btn action-btn-success">
-              <span class="action-icon">📊</span>
-              <span class="action-text">Export Data</span>
-            </button>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="loadCheeseData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+            <button onclick="resetCheeseData()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">🔄 Reset Data</button>
+            <button onclick="exportCheeseData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
           </div>
         </div>
       </div>
@@ -2474,64 +2437,56 @@ require_once 'discord-invite.php';
           <h3 class="text-lg font-semibold mb-3">🏁 Discord Cheese Race Management</h3>
           
           <!-- Discord Race Statistics -->
-          <div class="stats-grid">
-            <div class="stat-card stat-card-primary">
-              <div class="stat-icon">🏁</div>
-              <div class="stat-content">
-                <div class="stat-value" id="raceTotalRaces">-</div>
-                <div class="stat-label">Total Races</div>
-                <div class="stat-trend stat-trend-up">+25% this week</div>
+          <div class="game-stats-grid">
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>🏁</span>
+                <span>Race Statistics</span>
               </div>
+              <div class="game-stat-value" id="raceTotalRaces">-</div>
+              <div class="game-stat-label">Total Races</div>
+              <div class="game-stat-subvalue">Participants: <span id="raceTotalParticipants" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Winners: <span id="raceTotalWinners" class="text-green-400">-</span></div>
             </div>
 
-            <div class="stat-card stat-card-success">
-              <div class="stat-icon">👥</div>
-              <div class="stat-content">
-                <div class="stat-value" id="raceCompletedRaces">-</div>
-                <div class="stat-label">Completed Races</div>
-                <div class="stat-trend stat-trend-up">+18% this week</div>
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>👥</span>
+                <span>Participation</span>
               </div>
+              <div class="game-stat-value" id="raceCompletedRaces">-</div>
+              <div class="game-stat-label">Completed Races</div>
+              <div class="game-stat-subvalue">Active: <span id="raceActiveRaces" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Avg: <span id="raceAvgParticipants" class="text-green-400">-</span></div>
             </div>
 
-            <div class="stat-card stat-card-warning">
-              <div class="stat-icon">📊</div>
-              <div class="stat-content">
-                <div class="stat-value" id="raceActiveRaces">-</div>
-                <div class="stat-label">Active Races</div>
-                <div class="stat-trend stat-trend-stable">+2 this week</div>
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>📊</span>
+                <span>Performance</span>
               </div>
+              <div class="game-stat-value" id="raceSuccessRate">-</div>
+              <div class="game-stat-label">Success Rate</div>
+              <div class="game-stat-subvalue">Peak: <span id="racePeakParticipation" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Top: <span id="raceTopWinner" class="text-yellow-400">-</span></div>
             </div>
 
-            <div class="stat-card stat-card-info">
-              <div class="stat-icon">🤖</div>
-              <div class="stat-content">
-                <div class="stat-value" id="raceSuccessRate">-</div>
-                <div class="stat-label">Success Rate</div>
-                <div class="stat-trend stat-trend-up">+5% this week</div>
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>⚙️</span>
+                <span>Race Settings</span>
               </div>
+              <div class="game-stat-value" id="raceStatus">🟢 Active</div>
+              <div class="game-stat-label">Bot status</div>
+              <div class="game-stat-subvalue">Unique: <span id="raceUniqueWinners" class="text-blue-400">-</span></div>
             </div>
           </div>
 
           <!-- Discord Race Leaderboard -->
-          <div class="leaderboard-section">
-            <div class="leaderboard-header">
-              <h4 class="leaderboard-title">
-                <span class="leaderboard-icon">🏆</span>
-                Top 10 Racers
-              </h4>
-              <div class="leaderboard-actions">
-                <button class="leaderboard-action-btn" onclick="exportRaceLeaderboard()">
-                  <span class="action-icon">📊</span>Export
-                </button>
-              </div>
-            </div>
-            <div class="leaderboard-content">
-              <div id="raceLeaderboard" class="leaderboard-list">
-                <div class="leaderboard-loading">
-                  <div class="loading-spinner"></div>
-                  <span>Loading leaderboard...</span>
-                </div>
-              </div>
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Racers</h4>
+            <div id="raceLeaderboard" class="space-y-2">
+              <div class="text-gray-400 text-center">Loading leaderboard...</div>
             </div>
           </div>
 
@@ -2559,19 +2514,10 @@ require_once 'discord-invite.php';
           </div>
 
           <!-- Discord Race Actions -->
-          <div class="action-buttons">
-            <button onclick="loadRaceData()" class="action-btn action-btn-primary">
-              <span class="action-icon">🔄</span>
-              <span class="action-text">Refresh Data</span>
-            </button>
-            <button onclick="exportRaceData()" class="action-btn action-btn-success">
-              <span class="action-icon">📊</span>
-              <span class="action-text">Export Data</span>
-            </button>
-            <button onclick="manageRaceBot()" class="action-btn action-btn-info">
-              <span class="action-icon">🤖</span>
-              <span class="action-text">Bot Settings</span>
-            </button>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="loadRaceData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+            <button onclick="exportRaceData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
+            <button onclick="manageRaceBot()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded admin-button">🤖 Bot Settings</button>
           </div>
         </div>
       </div>
@@ -3501,8 +3447,12 @@ require_once 'discord-invite.php';
       const navPanel = document.getElementById('navPanel');
       if (navPanel) navPanel.style.display = 'block';
       
-      // Show dashboard tab by default
+      // Show dashboard tab by default and load overview game stats
       showTab('dashboard');
+      // Load overview game statistics for the dashboard
+      setTimeout(() => {
+        loadOverviewGameStats();
+      }, 500); // Small delay to ensure dashboard is loaded first
     }
 
     // Show specific tab
@@ -3523,6 +3473,14 @@ require_once 'discord-invite.php';
       addLog(`📋 Switched to ${tabName} tab`);
       
       // Load tab-specific data
+      if (tabName === 'overview') {
+        loadDashboardData();
+        loadOverviewGameStats();
+      }
+      if (tabName === 'dashboard') {
+        loadDashboardData();
+        loadOverviewGameStats();
+      }
       if (tabName === 'store') loadStoreItems();
       if (tabName === 'quests') loadQuests();
       if (tabName === 'games') {
@@ -3543,6 +3501,115 @@ require_once 'discord-invite.php';
       }
       if (tabName === 'holderVerification') loadHolderVerificationData();
       if (tabName === 'communityFunds') loadCommunityFundsData();
+    }
+
+    // Load overview game statistics for Cheese Hunt and Discord Race
+    async function loadOverviewGameStats() {
+      console.log('🔄 Loading overview game statistics...');
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.games) {
+          // Load Cheese Hunt statistics
+          if (data.data.games.cheese_hunt) {
+            displayOverviewCheeseHuntStats(data.data.games.cheese_hunt);
+          }
+          
+          // Load Discord Race statistics
+          if (data.data.games.discord_race) {
+            displayOverviewDiscordRaceStats(data.data.games.discord_race);
+          }
+          
+          console.log('✅ Overview game statistics loaded successfully');
+        } else {
+          console.error(`❌ Failed to load overview game statistics: ${data.error || 'No data available'}`);
+        }
+      } catch (error) {
+        console.error(`❌ Overview game statistics loading error: ${error.message}`);
+      }
+    }
+
+    // Display Cheese Hunt statistics in Overview Dashboard
+    function displayOverviewCheeseHuntStats(cheeseData) {
+      const statsElement = document.getElementById('cheeseHuntStats');
+      if (!statsElement) {
+        console.error('Cheese Hunt stats element not found');
+        return;
+      }
+
+      try {
+        const currentData = cheeseData.current_data || {};
+        const allTimeData = cheeseData.all_time || {};
+        
+        statsElement.innerHTML = `
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Total Clicks</div>
+              <div class="text-xl font-bold text-yellow-400">${currentData.total_clicks || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Unique Players</div>
+              <div class="text-xl font-bold text-blue-400">${currentData.unique_players || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Max Clicks</div>
+              <div class="text-xl font-bold text-green-400">${currentData.max_clicks || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Avg Clicks</div>
+              <div class="text-xl font-bold text-purple-400">${Math.round(currentData.avg_clicks || 0)}</div>
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-gray-400">
+            Recent 24h: ${currentData.recent_24h || 0} | Recent 7d: ${currentData.recent_7d || 0}
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error displaying overview Cheese Hunt stats:', error);
+        statsElement.innerHTML = '<div class="text-red-400">Error loading Cheese Hunt statistics</div>';
+      }
+    }
+
+    // Display Discord Race statistics in Overview Dashboard
+    function displayOverviewDiscordRaceStats(raceData) {
+      const statsElement = document.getElementById('discordRaceStats');
+      if (!statsElement) {
+        console.error('Discord Race stats element not found');
+        return;
+      }
+
+      try {
+        const raceStats = raceData.race_data || {};
+        
+        statsElement.innerHTML = `
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Total Races</div>
+              <div class="text-xl font-bold text-purple-400">${raceStats.total_races || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Total Participants</div>
+              <div class="text-xl font-bold text-blue-400">${raceStats.total_participants || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Prizes Awarded</div>
+              <div class="text-xl font-bold text-yellow-400">${raceStats.total_prizes_awarded || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Recent 24h</div>
+              <div class="text-xl font-bold text-green-400">${raceStats.recent_24h || 0}</div>
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-gray-400">
+            Recent 7d: ${raceStats.recent_7d || 0} | Current Race: ${raceStats.current_race ? 'Active' : 'None'}
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error displaying overview Discord Race stats:', error);
+        statsElement.innerHTML = '<div class="text-red-400">Error loading Discord Race statistics</div>';
+      }
     }
 
     // Load dashboard data
@@ -6029,9 +6096,14 @@ require_once 'discord-invite.php';
     
     // Tab switching functionality
     function switchGameTab(tabName) {
-      // Hide all game tab contents
+      console.log('🔄 switchGameTab called with:', tabName);
+      
+      // Hide all game tab contents with !important to override CSS
       const allTabs = document.querySelectorAll('.game-tab-content');
-      allTabs.forEach(tab => tab.style.display = 'none');
+      allTabs.forEach(tab => {
+        tab.style.setProperty('display', 'none', 'important');
+        console.log('Hidden tab:', tab.id);
+      });
       
       // Remove active class from all tab buttons
       const allButtons = document.querySelectorAll('.tab-btn');
@@ -6052,17 +6124,25 @@ require_once 'discord-invite.php';
       const selectedTab = document.getElementById(selectedTabId);
       const selectedButton = document.querySelector(`[data-game-tab="${tabName}"]`);
       
+      console.log('Selected tab ID:', selectedTabId);
+      console.log('Selected tab element:', selectedTab);
+      
       if (selectedTab) {
-        selectedTab.style.display = 'block';
-        console.log('Showing tab:', selectedTabId);
+        selectedTab.style.setProperty('display', 'block', 'important');
+        console.log('✅ Showing tab:', selectedTabId);
       } else {
-        console.error('Tab not found:', selectedTabId);
+        console.error('❌ Tab not found:', selectedTabId);
       }
       
-      if (selectedButton) selectedButton.classList.add('active');
+      if (selectedButton) {
+        selectedButton.classList.add('active');
+        console.log('✅ Activated button for:', tabName);
+      } else {
+        console.error('❌ Button not found for:', tabName);
+      }
       
       // Load data for the selected tab
-      console.log('Switching to tab:', tabName);
+      console.log('🔄 Loading data for tab:', tabName);
       switch(tabName) {
         case 'overview':
           console.log('Loading overview data...');
@@ -6164,6 +6244,8 @@ require_once 'discord-invite.php';
         addLog(`❌ Error displaying game overview: ${error.message}`);
       }
     }
+
+
 
     // Tetris Tab Functions
     async function loadTetrisData() {
@@ -6974,6 +7056,7 @@ require_once 'discord-invite.php';
           document.getElementById('raceTotalParticipants').textContent = raceData.race_data?.total_participants || 0;
         } else {
           console.error('Element raceTotalParticipants not found!');
+          console.error('Available elements with "race" in ID:', Array.from(document.querySelectorAll('[id*="race"]')).map(el => el.id));
         }
         
         if (document.getElementById('raceTotalWinners')) {
