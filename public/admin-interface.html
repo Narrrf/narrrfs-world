@@ -2634,6 +2634,124 @@ require_once 'discord-invite.php';
 
   </div>
 
+    <!-- Holder Verification Tab -->
+    <div class="admin-card mb-6" id="holderVerificationTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">🎴 Holder Verification Management</h2>
+      
+      <!-- Verification Statistics -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">📊 Verification Statistics</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-green-400" id="totalVerifications">-</div>
+            <div class="text-sm text-gray-300">Total Verifications</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-400" id="pendingVerifications">-</div>
+            <div class="text-sm text-gray-300">Pending</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-yellow-400" id="approvedVerifications">-</div>
+            <div class="text-sm text-gray-300">Approved</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-red-400" id="rejectedVerifications">-</div>
+            <div class="text-sm text-gray-300">Rejected</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification Actions -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🔍 Verification Actions</h3>
+        <div class="flex flex-wrap gap-4">
+          <button onclick="refreshVerificationStats()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            🔄 Refresh Stats
+          </button>
+          <button onclick="exportVerificationData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            📥 Export Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Verification Log -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">📝 Verification Log</h3>
+        <div id="verificationLog" class="bg-gray-700 p-3 rounded max-h-40 overflow-y-auto text-sm text-gray-300">
+          <div class="text-gray-400">Verification log will appear here...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community Funds Tab -->
+    <div class="admin-card mb-6" id="communityFundsTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">💰 Community Funds Management</h2>
+      
+      <!-- Community Wallet Overview -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🏦 Community Wallet Overview</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-green-400" id="solBalance">-</div>
+            <div class="text-sm text-gray-300">SOL Balance</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-400" id="totalNfts">-</div>
+            <div class="text-sm text-gray-300">Total NFTs</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-yellow-400" id="totalCollections">-</div>
+            <div class="text-sm text-gray-300">Collections</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-purple-400" id="totalEntries">-</div>
+            <div class="text-sm text-gray-300">Fund Entries</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fund Management -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">💸 Fund Management</h3>
+        <div class="flex flex-wrap gap-4 mb-4">
+          <button onclick="showAddFundsModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            ➕ Add Funds
+          </button>
+          <button onclick="refreshCommunityFundsData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            🔄 Refresh Data
+          </button>
+        </div>
+        
+        <!-- Funds Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-gray-300">
+            <thead class="text-xs uppercase bg-gray-700">
+              <tr>
+                <th class="px-4 py-2 text-left">Type</th>
+                <th class="px-4 py-2 text-left">Description</th>
+                <th class="px-4 py-2 text-left">Amount</th>
+                <th class="px-4 py-2 text-left">Date</th>
+                <th class="px-4 py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="communityFundsTableBody">
+              <tr>
+                <td colspan="5" class="px-4 py-2 text-center text-gray-400">Loading community funds...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">📈 Recent Activity</h3>
+        <div id="recentActivity" class="text-gray-400 text-sm">
+          Loading recent activity...
+        </div>
+      </div>
+    </div>
+
   <script>
     // Global variables
     let currentAdmin = null;
@@ -2739,6 +2857,15 @@ require_once 'discord-invite.php';
         loadSeasonStats();
         loadGameSettings();
         loadCurrentSeasonSettings();
+        
+        // Load all game data for the tabs
+        setTimeout(() => {
+          loadTetrisData();
+          loadSnakeData();
+          loadInvadersData();
+          loadCheeseData();
+          loadRaceData();
+        }, 500); // Small delay to ensure overview loads first
       }
       if (tabName === 'holderVerification') loadHolderVerificationData();
       if (tabName === 'communityFunds') loadCommunityFundsData();
@@ -6186,7 +6313,12 @@ require_once 'discord-invite.php';
             const completedRaces = raceData.race_data.recent_activity.filter(race => race.status === 'completed').length;
             const activeRaces = raceData.race_data.recent_activity.filter(race => race.status === 'active').length;
             
-            recentRaces.innerHTML = `
+            // Add summary at the top
+            const totalRaces = raceData.race_data.recent_activity.length;
+            const completedRaces = raceData.race_data.recent_activity.filter(race => race.status === 'completed').length;
+            const activeRaces = raceData.race_data.recent_activity.filter(race => race.status === 'active').length;
+            
+            recentRacesElement.innerHTML = `
               <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
                 <div class="grid grid-cols-3 gap-4 text-center">
                   <div>
@@ -6232,14 +6364,14 @@ require_once 'discord-invite.php';
               `).join('')}
             `;
           } else {
-            recentRaces.innerHTML = `
+            recentRacesElement.innerHTML = `
               <div class="text-gray-400 text-center py-8">
                 <div class="text-4xl mb-2">🏁</div>
                 <p class="text-lg font-semibold mb-2">No Recent Races</p>
                 <p class="text-sm">Start a new race to see activity here!</p>
                 <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
                   <p class="text-sm text-gray-300">Total races: ${raceData.race_data?.total_races || 0}</p>
-                  <p class="text-xs text-gray-400">Total participants: ${raceData.race_data?.total_participants || 0}</p>
+                  <div class="text-xs text-gray-400">Total participants: ${raceData.race_data?.total_participants || 0}</div>
                 </div>
               </div>
             `;
@@ -8316,7 +8448,7 @@ require_once 'discord-invite.php';
 
     async function loadCommunityWalletData() {
       try {
-        const response = await fetch('api/admin/get-community-wallet-nfts.php');
+        const response = await fetch(API_BASE_URL + '/api/admin/get-community-wallet-nfts.php');
         const data = await response.json();
         
         if (data.success) {
@@ -8365,7 +8497,7 @@ require_once 'discord-invite.php';
 
     async function loadCommunityFundsEntries() {
       try {
-        const response = await fetch('api/admin/get-community-funds.php');
+        const response = await fetch(API_BASE_URL + '/api/admin/get-community-funds.php');
         const data = await response.json();
         
         if (data.success) {
@@ -8427,7 +8559,7 @@ require_once 'discord-invite.php';
       }
       
       try {
-        const response = await fetch('api/admin/add-community-funds.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/add-community-funds.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -8466,7 +8598,7 @@ require_once 'discord-invite.php';
       }
       
       try {
-        const response = await fetch('api/admin/delete-community-funds.php', {
+        const response = await fetch(API_BASE_URL + '/api/admin/delete-community-funds.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

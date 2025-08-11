@@ -334,49 +334,68 @@ try {
     ];
 
     // Discord Race stats (with table existence checks)
-    if (tableExists($pdo, 'tbl_discord_events')) {
-        $discord_race_stats['race_data']['total_races'] = safeQuery($pdo, 'tbl_discord_events', 
-            "SELECT COUNT(*) as total_races FROM tbl_discord_events WHERE event_type = 'cheese_race'");
+    if (tableExists($pdo, 'tbl_cheese_races')) {
+        // Count total races
+        $discord_race_stats['race_data']['total_races'] = safeQuery($pdo, 'tbl_cheese_races', 
+            "SELECT COUNT(*) as total_races FROM tbl_cheese_races");
         
-        $discord_race_stats['race_data']['total_participants'] = safeQuery($pdo, 'tbl_discord_events', 
-            "SELECT COUNT(*) as total_participants FROM tbl_discord_events WHERE event_type = 'cheese_race_participant'");
+        // Count total participants from race_participants table
+        if (tableExists($pdo, 'tbl_race_participants')) {
+            $discord_race_stats['race_data']['total_participants'] = safeQuery($pdo, 'tbl_race_participants', 
+                "SELECT COUNT(*) as total_participants FROM tbl_race_participants");
+        }
         
-        $discord_race_stats['race_data']['total_prizes_awarded'] = safeQuery($pdo, 'tbl_discord_events', 
-            "SELECT COUNT(*) as total_prizes FROM tbl_discord_events WHERE event_type = 'cheese_race_winner'");
+        // Count races with winners
+        $discord_race_stats['race_data']['total_prizes_awarded'] = safeQuery($pdo, 'tbl_cheese_races', 
+            "SELECT COUNT(*) as total_prizes FROM tbl_cheese_races WHERE status = 'finished' AND winner_id IS NOT NULL");
         
-        $discord_race_stats['race_data']['recent_24h'] = safeQuery($pdo, 'tbl_discord_events', 
-            "SELECT COUNT(*) as recent_races FROM tbl_discord_events WHERE event_type = 'cheese_race' AND created_at >= datetime('now', '-1 day')");
+        // Count recent races (last 24 hours)
+        $discord_race_stats['race_data']['recent_24h'] = safeQuery($pdo, 'tbl_cheese_races', 
+            "SELECT COUNT(*) as recent_races FROM tbl_cheese_races WHERE created_at >= datetime('now', '-1 day')");
         
-        $discord_race_stats['race_data']['recent_7d'] = safeQuery($pdo, 'tbl_discord_events', 
-            "SELECT COUNT(*) as recent_races FROM tbl_discord_events WHERE event_type = 'cheese_race' AND created_at >= datetime('now', '-7 days')");
+        // Count recent races (last 7 days)
+        $discord_race_stats['race_data']['recent_7d'] = safeQuery($pdo, 'tbl_cheese_races', 
+            "SELECT COUNT(*) as recent_races FROM tbl_cheese_races WHERE created_at >= datetime('now', '-7 days')");
+        
+        // Get active races with participant counts
+        $active_races = safeQueryArray($pdo, 'tbl_cheese_races', 
+            "SELECT cr.race_id, cr.creator_name, cr.status, cr.max_players, cr.created_at,
+                    COUNT(rp.user_id) as current_participants
+             FROM tbl_cheese_races cr
+             LEFT JOIN tbl_race_participants rp ON cr.race_id = rp.race_id
+             WHERE cr.status IN ('waiting', 'active')
+             GROUP BY cr.race_id
+             ORDER BY cr.created_at DESC
+             LIMIT 5");
         
         // Get top racers (winners) - only if both tables exist
         if (tableExists($pdo, 'tbl_users')) {
-            $discord_race_stats['race_data']['top_racers'] = safeQueryArray($pdo, 'tbl_discord_events', 
-                "SELECT de.user_id, u.username, COUNT(*) as wins
-                 FROM tbl_discord_events de
-                 LEFT JOIN tbl_users u ON de.user_id = u.discord_id
-                 WHERE de.event_type = 'cheese_race_winner'
-                 GROUP BY de.user_id
+            $discord_race_stats['race_data']['top_racers'] = safeQueryArray($pdo, 'tbl_cheese_races', 
+                "SELECT cr.winner_id as user_id, cr.winner_name as username, COUNT(*) as wins
+                 FROM tbl_cheese_races cr
+                 WHERE cr.status = 'finished' AND cr.winner_id IS NOT NULL
+                 GROUP BY cr.winner_id
                  ORDER BY wins DESC
                  LIMIT 10");
         }
         
-        // Get recent activity - only if both tables exist
-        if (tableExists($pdo, 'tbl_users')) {
-            $recent_activities = safeQueryArray($pdo, 'tbl_discord_events', 
-                "SELECT de.event_type, de.user_id, u.username, de.created_at
-                 FROM tbl_discord_events de
-                 LEFT JOIN tbl_users u ON de.user_id = u.discord_id
-                 WHERE de.event_type IN ('cheese_race', 'cheese_race_participant', 'cheese_race_winner')
-                 ORDER BY de.created_at DESC
+        // Get recent activity from both tables
+        if (tableExists($pdo, 'tbl_race_participants')) {
+            $recent_activities = safeQueryArray($pdo, 'tbl_cheese_races', 
+                "SELECT 'race_started' as event_type, creator_id as user_id, creator_name as username, created_at
+                 FROM tbl_cheese_races 
+                 WHERE created_at >= datetime('now', '-7 days')
+                 UNION ALL
+                 SELECT 'player_joined' as event_type, user_id, username, joined_at as created_at
+                 FROM tbl_race_participants 
+                 WHERE joined_at >= datetime('now', '-7 days')
+                 ORDER BY created_at DESC
                  LIMIT 10");
             
             $discord_race_stats['race_data']['recent_activity'] = array_map(function($activity) {
                 $event_descriptions = [
-                    'cheese_race' => 'Race started',
-                    'cheese_race_participant' => 'Joined race',
-                    'cheese_race_winner' => 'Won race'
+                    'race_started' => 'Started race',
+                    'player_joined' => 'Joined race'
                 ];
                 
                 return [
@@ -384,6 +403,21 @@ try {
                     'description' => ($activity['username'] ?? 'Unknown') . ' ' . ($event_descriptions[$activity['event_type']] ?? $activity['event_type'])
                 ];
             }, $recent_activities);
+        }
+        
+        // Add current active race information
+        $current_race = safeQueryArray($pdo, 'tbl_cheese_races', 
+            "SELECT cr.race_id, cr.creator_name, cr.status, cr.max_players, cr.created_at,
+                    COUNT(rp.user_id) as current_participants
+             FROM tbl_cheese_races cr
+             LEFT JOIN tbl_race_participants rp ON cr.race_id = rp.race_id
+             WHERE cr.status = 'waiting'
+             GROUP BY cr.race_id
+             ORDER BY cr.created_at DESC
+             LIMIT 1");
+        
+        if (!empty($current_race)) {
+            $discord_race_stats['race_data']['current_race'] = $current_race[0];
         }
     }
 
