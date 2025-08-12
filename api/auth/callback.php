@@ -25,7 +25,7 @@ curl_setopt_array($tokenRequest, [
         'grant_type' => 'authorization_code',
         'code' => $code,
         'redirect_uri' => $redirectUri, // Use exact redirect URI without parameters
-        'scope' => 'guilds identify guilds.members.read' // Exact scope order from working URL
+        'scope' => 'guilds+identify+guilds.members.read' // Exact scope order from working URL
     ]),
     CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded']
 ]);
@@ -36,7 +36,22 @@ $token = json_decode($response, true);
 
 if (!isset($token['access_token'])) {
     error_log('❌ Failed to get access token: ' . $response);
-    die("❌ Failed to get access token. Please try logging in again.");
+    
+    // Check for specific Discord OAuth errors
+    if (isset($token['error'])) {
+        switch ($token['error']) {
+            case 'invalid_grant':
+                die("❌ OAuth-Fehler: Der Autorisierungscode ist abgelaufen oder wurde bereits verwendet. Bitte versuchen Sie sich erneut anzumelden.");
+            case 'redirect_uri_mismatch':
+                die("❌ OAuth-Fehler: Die Weiterleitungs-URL stimmt nicht überein. Bitte kontaktieren Sie den Administrator.");
+            case 'invalid_client':
+                die("❌ OAuth-Fehler: Ungültige Client-Konfiguration. Bitte kontaktieren Sie den Administrator.");
+            default:
+                die("❌ OAuth-Fehler: " . ($token['error_description'] ?? $token['error']) . ". Bitte versuchen Sie es erneut.");
+        }
+    }
+    
+    die("❌ Fehler beim Abrufen des Zugriffstokens. Bitte versuchen Sie sich erneut anzumelden.");
 }
 $accessToken = $token['access_token'];
 
@@ -55,7 +70,12 @@ $user = json_decode($userResponse, true);
 
 if (!isset($user['id'])) {
     error_log('❌ Failed to get user info: ' . $userResponse);
-    die("❌ Failed to get user information. Please try again.");
+    
+    if (isset($user['error'])) {
+        die("❌ Discord-Fehler: " . ($user['error_description'] ?? $user['error']) . ". Bitte versuchen Sie es erneut.");
+    }
+    
+    die("❌ Fehler beim Abrufen der Benutzerinformationen. Bitte versuchen Sie es erneut.");
 }
 
 // 🧀 Save key user fields to session
