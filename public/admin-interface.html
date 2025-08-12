@@ -5914,7 +5914,7 @@ require_once 'discord-invite.php';
       discordAuthStatus.textContent = 'Redirecting to Discord OAuth...';
       
       // Redirect to Discord OAuth URL as specified by user
-      const oauthUrl = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+      const oauthUrl = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
       
       // Store the intended destination for after OAuth redirect
       localStorage.setItem('adminRedirect', 'true');

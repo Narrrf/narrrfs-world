@@ -203,7 +203,7 @@ require_once 'discord-invite.php';
 
 <!-- 🖼️ User Avatar or Discord Login -->
 <div class="w-24 h-24 mx-auto mb-4">
-  <a id="login-link" href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read">
+  <a id="login-link" href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read">
     <img id="avatar"
          class="rounded-full border-4 border-yellow-500 shadow animate-bounce cursor-pointer transition hover:scale-105"
          src="img/grumpy-cheese.png"
@@ -564,7 +564,7 @@ require_once 'discord-invite.php';
 
 <!-- 🔑 Fallback Login Button -->
 <div id="loginBlock" class="mt-6 text-center">
-  <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read"
+  <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
      class="inline-block bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-5 rounded-full shadow-md border-2 border-yellow-600 animate-bounce transition">
     🧀 Click to Login with Discord
   </a>
@@ -749,7 +749,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         // Make sure login link is visible and clickable
         if (loginLink) {
-          loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+          loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
           loginLink.style.display = 'block';
         }
         if (avatar) {
@@ -875,7 +875,7 @@ if (user.discord_id) {
     
     // Make sure login link is visible
     if (loginLink) {
-      loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+      loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
       loginLink.style.display = 'block';
     }
     if (avatar) {
@@ -1076,7 +1076,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 <script>
   function loginAndReload() {
     // Redirect to Discord OAuth
-    window.location.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=identify+guilds+guilds.members.read";
+    window.location.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
   }
 </script>
 
