@@ -1444,6 +1444,11 @@ require_once 'discord-invite.php';
           <button onclick="testBackupEndpoint()" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
             🧪 Test Backup Endpoint
           </button>
+          
+          <!-- Sync Active Game Tab button -->
+          <button onclick="syncActiveGameTab()" class="inline-block bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
+            🔄 Sync Active Game Tab
+          </button>
       </div>
     </div>
 
@@ -2051,6 +2056,15 @@ require_once 'discord-invite.php';
           <div class="text-gray-300">Click "Refresh Claims" to load quest submissions...</div>
         </div>
       </div>
+    </div>
+
+    <!-- Admin Activity Log -->
+    <div class="admin-card mb-6">
+      <h2 class="text-xl font-semibold mb-4">📊 Admin Activity Log</h2>
+      <div id="statusLog" class="bg-gray-800 p-4 rounded text-sm font-mono h-40 overflow-y-auto border border-gray-600">
+        <div class="text-green-400">🔄 Admin interface initializing...</div>
+      </div>
+      <div class="text-xs text-gray-400 mt-2 text-center">💡 Activity log moved to top for better visibility - no more scrolling needed!</div>
     </div>
 
     <!-- Game Management Tab -->
@@ -2936,13 +2950,7 @@ require_once 'discord-invite.php';
       </div>
     </div>
 
-    <!-- Admin Activity Log -->
-    <div class="admin-card">
-      <h2 class="text-xl font-semibold mb-4">📊 Admin Activity Log</h2>
-      <div id="statusLog" class="bg-gray-800 p-4 rounded text-sm font-mono h-32 overflow-y-auto">
-        <div class="text-green-400">🔄 Admin interface initializing...</div>
-      </div>
-    </div>
+
 
     <!-- Cheese Egg Difficulty Guide Tab -->
     <div class="admin-card mb-6" id="cheeseGuideTab" style="display: none;">
@@ -3905,6 +3913,79 @@ require_once 'discord-invite.php';
         }
       } catch (error) {
         addLog('❌ Backup endpoint test error: ' + error.message);
+      }
+    }
+
+    // Sync Active Game Tab function - Loads data for currently active game tab only
+    async function syncActiveGameTab() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Syncing active game tab data...');
+      
+      try {
+        // Find which game tab is currently active
+        const activeGameTab = document.querySelector('.game-tab-content[style*="display: block"]');
+        
+        if (!activeGameTab) {
+          addLog('❌ No active game tab found. Please switch to a game tab first.');
+          return;
+        }
+
+        const tabId = activeGameTab.id;
+        addLog(`🎯 Detected active tab: ${tabId}`);
+        
+        // Determine which game data to load based on the active tab
+        let gameName = '';
+        let loadFunction = null;
+        
+        switch(tabId) {
+          case 'overviewTab':
+            gameName = 'Overview Dashboard';
+            loadFunction = () => loadGameOverview();
+            break;
+          case 'tetrisTab':
+            gameName = 'Tetris';
+            loadFunction = () => loadTetrisData();
+            break;
+          case 'snakeTab':
+            gameName = 'Snake';
+            loadFunction = () => loadSnakeData();
+            break;
+          case 'spaceInvadersTab':
+            gameName = 'Space Invaders';
+            loadFunction = () => loadSpaceInvadersData();
+            break;
+          case 'cheeseInvadersTab':
+            gameName = 'Cheese Invaders';
+            loadFunction = () => loadCheeseInvadersData();
+            break;
+          case 'cheeseHuntTab':
+            gameName = 'Cheese Hunt';
+            loadFunction = () => loadCheeseHuntData();
+            break;
+          case 'discordRaceTab':
+            gameName = 'Discord Race';
+            loadFunction = () => loadDiscordRaceData();
+            break;
+          default:
+            addLog(`❌ Unknown tab type: ${tabId}`);
+            return;
+        }
+        
+        addLog(`🔄 Loading ${gameName} data...`);
+        
+        // Load the specific game data
+        if (loadFunction) {
+          await loadFunction();
+          addLog(`✅ ${gameName} data synced successfully`);
+        }
+        
+      } catch (error) {
+        addLog(`❌ Error syncing active game tab: ${error.message}`);
+        console.error('Error syncing active game tab:', error);
       }
     }
 
@@ -6819,6 +6900,14 @@ require_once 'discord-invite.php';
     function switchGameTab(tabName) {
       console.log('🔄 switchGameTab called with:', tabName);
       
+      // Store the current tab content before hiding
+      const currentTab = document.querySelector('.game-tab-content:not([style*="display: none"])');
+      let currentTabContent = '';
+      if (currentTab) {
+        currentTabContent = currentTab.innerHTML;
+        console.log('💾 Preserving content from current tab:', currentTab.id);
+      }
+      
       // Hide all game tab contents by adding a hidden class and setting display
       const allTabs = document.querySelectorAll('.game-tab-content');
       allTabs.forEach(tab => {
@@ -6852,6 +6941,7 @@ require_once 'discord-invite.php';
       
       if (selectedTab) {
         selectedTab.classList.remove('hidden');
+        selectedTab.classList.add('show-tab');
         selectedTab.style.display = 'block';
         console.log('✅ Showing tab:', selectedTabId);
         console.log('🔍 Tab display style after setting:', selectedTab.style.display);
@@ -6897,23 +6987,20 @@ require_once 'discord-invite.php';
             case 'cheese-invaders':
               console.log('🧀 Loading Cheese Invaders data...');
               addLog('🧀 Loading Cheese Invaders data...');
+              // Don't call refreshCheeseInvadersDisplay here - it clears content
               await loadCheeseInvadersData();
-              // Force refresh display for Cheese Invaders
-              await refreshCheeseInvadersDisplay();
               break;
             case 'cheese-hunt':
               console.log('🧀 Loading Cheese Hunt data...');
               addLog('🧀 Loading Cheese Hunt data...');
+              // Don't call refreshCheeseHuntDisplay here - it clears content
               await loadCheeseHuntData();
-              // Force refresh display for Cheese Hunt
-              await refreshCheeseHuntDisplay();
               break;
             case 'discord-race':
               console.log('🏁 Loading Discord Race data...');
               addLog('🏁 Loading Discord Race data...');
+              // Don't call refreshDiscordRaceDisplay here - it clears content
               await loadDiscordRaceData();
-              // Force refresh display for Discord Race
-              await refreshDiscordRaceDisplay();
               break;
           }
           
@@ -6936,6 +7023,12 @@ require_once 'discord-invite.php';
               selectedTab.style.display = 'block';
               selectedTab.style.visibility = 'visible';
               selectedTab.classList.remove('hidden');
+              
+              // If the tab still has no content, restore the preserved content
+              if (selectedTab.innerHTML.trim() === '' && currentTabContent) {
+                console.log('🔄 Restoring preserved content to tab:', selectedTabId);
+                selectedTab.innerHTML = currentTabContent;
+              }
             }
           }
         } catch (error) {
@@ -11783,6 +11876,16 @@ require_once 'discord-invite.php';
         0% { opacity: 1; }
         50% { opacity: 0.5; }
         100% { opacity: 1; }
+      }
+      
+      /* Ensure tabs are visible when explicitly shown */
+      .game-tab-content.show-tab {
+        display: block !important;
+      }
+      
+      /* Override any conflicting display rules */
+      .game-tab-content[style*="display: block"] {
+        display: block !important;
       }
     `;
     document.head.appendChild(style);
