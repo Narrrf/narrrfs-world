@@ -2028,8 +2028,9 @@ require_once 'discord-invite.php';
           <div class="flex flex-wrap gap-2 mb-6">
             <button class="tab-btn px-4 py-2 rounded active" data-game-tab="overview" onclick="switchGameTab('overview')">📊 Overview Dashboard</button>
             <button class="tab-btn px-4 py-2 rounded" data-game-tab="tetris" onclick="switchGameTab('tetris')">🧩 Tetris</button>
-            <button class="tab-btn px-4 py-2 rounded" data-game-tab="snake" onclick="switchGameTab('snake')">🐍 Snake</button>
-            <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-invaders" onclick="switchGameTab('cheese-invaders')">👾 Cheese Invaders</button>
+                    <button class="tab-btn px-4 py-2 rounded" data-game-tab="snake" onclick="switchGameTab('snake')">🐍 Snake</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="space-invaders" onclick="switchGameTab('space-invaders')">👾 Space Invaders</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-invaders" onclick="switchGameTab('cheese-invaders')">👾 Cheese Invaders</button>
             <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt" onclick="switchGameTab('cheese-hunt')">🧀 Cheese Hunt</button>
             <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="switchGameTab('discord-race')">🏁 Discord Cheese Race</button>
             <button onclick="refreshAllGameData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded ml-2">🔄 Refresh All Games</button>
@@ -2258,120 +2259,50 @@ require_once 'discord-invite.php';
         <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
           <h3 class="text-lg font-semibold mb-3">👾 Cheese Invaders Management</h3>
           
-          <!-- Cheese Invaders Top Players -->
-          <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
-              <h4 class="font-semibold text-purple-400 mb-3">👾 Cheese Invaders Top Players</h4>
-              <div id="invadersTopPlayers" class="space-y-2 max-h-64 overflow-y-auto">
-                <div class="text-gray-300">Loading top players...</div>
-              </div>
-            </div>
-            
-            <!-- Cheese Invaders Recent Activity -->
-            <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
-              <h4 class="font-semibold text-blue-400 mb-3">📊 Recent Activity</h4>
-              <div id="invadersRecentActivity" class="space-y-2 max-h-64 overflow-y-auto">
-                <div class="text-gray-300">Loading recent activity...</div>
-              </div>
-            </div>
-            
-            <!-- Cheese Invaders Achievements -->
-            <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
-              <h4 class="font-semibold text-green-400 mb-3">🏆 Achievements</h4>
-              <div id="invadersAchievements" class="space-y-2 max-h-64 overflow-y-auto">
-                <div class="text-gray-300">Loading achievements...</div>
-              </div>
-            </div>
-          </div>
-
           <!-- Cheese Invaders Statistics -->
           <div class="game-stats-grid">
-            <div class="game-stat-card bg-gray-700 p-3 rounded">
+            <div class="game-stat-card">
               <div class="game-stat-header">
                 <span>📊</span>
                 <span>Wave Statistics</span>
               </div>
-              <div class="space-y-1 text-sm">
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Total Waves:</span>
-                  <span class="text-white font-semibold" id="invadersTotalWaves">-</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Waves Completed:</span>
-                  <span class="text-green-400 font-semibold" id="invadersWavesCompleted">-</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Highest Wave:</span>
-                  <span class="text-blue-400 font-semibold" id="invadersHighestWave">-</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Success Rate:</span>
-                  <span class="text-purple-400 font-semibold" id="invadersSuccessRate">-</span>
-                </div>
-              </div>
+              <div class="game-stat-value" id="invadersTotalWaves">-</div>
+              <div class="game-stat-label">Total Waves</div>
+              <div class="game-stat-subvalue">Players: <span id="invadersUniquePlayers" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Highest: <span id="invadersHighestWave" class="text-green-400">-</span></div>
+              <div class="game-stat-subvalue">Average: <span id="invadersAvgWave" class="text-blue-400">-</span></div>
             </div>
 
-            <div class="game-stat-card bg-gray-700 p-3 rounded">
+            <div class="game-stat-card">
               <div class="game-stat-header">
-                <span>🏆</span>
-                <span>Achievement Data</span>
+                <span>👥</span>
+                <span>Player Statistics</span>
               </div>
-              <div class="space-y-1 text-sm">
-              <div class="flex justify-between">
-                <span class="text-gray-400">Total Players:</span>
-                  <span class="text-white font-semibold" id="invadersTotalPlayers">-</span>
-              </div>
-              <div class="flex justify-between">
-                  <span class="text-gray-400">Achievements:</span>
-                  <span class="text-green-400 font-semibold" id="invadersAchievements">-</span>
-              </div>
-              <div class="flex justify-between">
-                  <span class="text-gray-400">Completion Rate:</span>
-                  <span class="text-blue-400 font-semibold" id="invadersCompletionRate">-</span>
-              </div>
-              </div>
+              <div class="game-stat-value" id="invadersTotalPlayers">-</div>
+              <div class="game-stat-label">Total Players</div>
+              <div class="game-stat-subvalue">Active: <span id="invadersActivePlayers" class="text-green-400">-</span></div>
+              <div class="game-stat-subvalue">New: <span id="invadersNewPlayers" class="text-blue-400">-</span></div>
             </div>
 
-            <div class="game-stat-card bg-gray-700 p-3 rounded">
+            <div class="game-stat-card">
               <div class="game-stat-header">
                 <span>📈</span>
-                <span>Performance</span>
+                <span>Activity Trends</span>
               </div>
-              <div class="space-y-1 text-sm">
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Last 24h:</span>
-                  <span class="text-white font-semibold" id="invadersRecent24h">-</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Last 7d:</span>
-                  <span class="text-blue-400 font-semibold" id="invadersRecent7d">-</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Avg. Time:</span>
-                  <span class="text-green-400 font-semibold" id="invadersAvgTime">-</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Last 7d:</span>
-                  <span class="text-blue-400 font-semibold" id="invadersRecent7d">-</span>
-                </div>
-              </div>
+              <div class="game-stat-value" id="invadersRecent24h">-</div>
+              <div class="game-stat-label">Last 24 hours</div>
+              <div class="game-stat-subvalue">7 days: <span id="invadersRecent7d" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Growth: <span id="invadersGrowthRate" class="text-green-400">-</span></div>
             </div>
-            
-            <div class="game-stat-card bg-gray-700 p-3 rounded">
+
+            <div class="game-stat-card">
               <div class="game-stat-header">
                 <span>⚙️</span>
-                <span>Difficulty Settings</span>
+                <span>Game Configuration</span>
               </div>
-              <div class="space-y-1 text-sm">
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Status:</span>
-                  <span class="text-green-400 font-semibold" id="invadersStatus">🟢 Active</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Difficulty:</span>
-                  <span class="text-blue-400 font-semibold" id="invadersDifficulty">Normal</span>
-                </div>
-              </div>
+              <div class="game-stat-value" id="invadersStatus">🟢 Active</div>
+              <div class="game-stat-label">Game status</div>
+              <div class="game-stat-subvalue">Difficulty: <span id="invadersDifficulty" class="text-blue-400">Normal</span></div>
             </div>
           </div>
 
@@ -2387,7 +2318,7 @@ require_once 'discord-invite.php';
           <div class="flex flex-wrap gap-3">
             <button onclick="loadInvadersData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
             <button onclick="resetInvadersScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">🔄 Reset Scores</button>
-            <button onclick="exportInvadersData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
+            <button onclick="exportInvadersData()" class="bg-green-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
           </div>
         </div>
       </div>
@@ -2488,6 +2419,75 @@ require_once 'discord-invite.php';
             <button onclick="loadCheeseData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
             <button onclick="resetCheeseData()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">🔄 Reset Data</button>
             <button onclick="exportCheeseData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Space Invaders Tab -->
+      <div id="spaceInvadersTab" class="game-tab-content" style="display: none;">
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">👾 Space Invaders Management</h3>
+          
+          <!-- Space Invaders Statistics -->
+          <div class="game-stats-grid">
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>📊</span>
+                <span>Invader Statistics</span>
+              </div>
+              <div class="game-stat-value" id="invadersTotalInvaders">-</div>
+              <div class="game-stat-label">Total Invaders</div>
+              <div class="game-stat-subvalue">Players: <span id="invadersUniquePlayers" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Highest: <span id="invadersHighestScore" class="text-green-400">-</span></div>
+              <div class="game-stat-subvalue">Average: <span id="invadersAvgScore" class="text-blue-400">-</span></div>
+            </div>
+
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>👥</span>
+                <span>Player Statistics</span>
+              </div>
+              <div class="game-stat-value" id="invadersTotalPlayers">-</div>
+              <div class="game-stat-label">Total Players</div>
+              <div class="game-stat-subvalue">Active: <span id="invadersActivePlayers" class="text-green-400">-</span></div>
+              <div class="game-stat-subvalue">New: <span id="invadersNewPlayers" class="text-blue-400">-</span></div>
+            </div>
+
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>📈</span>
+                <span>Activity Trends</span>
+              </div>
+              <div class="game-stat-value" id="invadersRecent24h">-</div>
+              <div class="game-stat-label">Last 24 hours</div>
+              <div class="game-stat-subvalue">7 days: <span id="invadersRecent7d" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Growth: <span id="invadersGrowthRate" class="text-green-400">-</span></div>
+            </div>
+
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>⚙️</span>
+                <span>Game Configuration</span>
+              </div>
+              <div class="game-stat-value" id="invadersStatus">🟢 Active</div>
+              <div class="game-stat-label">Game status</div>
+              <div class="game-stat-subvalue">Difficulty: <span id="invadersDifficulty" class="text-blue-400">Normal</span></div>
+            </div>
+          </div>
+
+          <!-- Space Invaders Leaderboard -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Players</h4>
+            <div id="invadersLeaderboard" class="space-y-2">
+              <div class="text-gray-400 text-center">Loading leaderboard...</div>
+            </div>
+          </div>
+
+          <!-- Space Invaders Actions -->
+          <div class="flex flex-wrap gap-3">
+            <button onclick="loadInvadersData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+            <button onclick="resetInvadersScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">🔄 Reset Scores</button>
+            <button onclick="exportInvadersData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
           </div>
         </div>
       </div>
@@ -6261,6 +6261,7 @@ require_once 'discord-invite.php';
         'overview': 'overviewTab',
         'tetris': 'tetrisTab',
         'snake': 'snakeTab',
+        'space-invaders': 'spaceInvadersTab',
         'cheese-invaders': 'cheeseInvadersTab',
         'cheese-hunt': 'cheeseHuntTab',
         'discord-race': 'discordRaceTab'
@@ -6302,6 +6303,11 @@ require_once 'discord-invite.php';
         case 'snake':
           console.log('Loading Snake data...');
           loadSnakeData();
+          break;
+        case 'space-invaders':
+          console.log('👾 Loading Space Invaders data...');
+          addLog('👾 Loading Space Invaders data...');
+          loadInvadersData();
           break;
         case 'cheese-invaders':
           console.log('🧀 Loading Cheese Invaders data...');
@@ -6881,6 +6887,7 @@ require_once 'discord-invite.php';
         
         // Add log to admin interface
         addLog('🧀 Displaying Cheese Invaders data...');
+        addLog('🧀 Data structure: ' + JSON.stringify(invadersData, null, 2));
         
         // Helper function to format numbers nicely
         const formatNumber = (num) => {
@@ -6959,83 +6966,66 @@ require_once 'discord-invite.php';
           document.getElementById('invadersAvgTime').className = 'text-blue-400 text-sm';
         }
 
-        // Update Top Players section
-        const topPlayers = document.getElementById('invadersTopPlayers');
-        if (topPlayers) {
-          if (invadersData.top_players && invadersData.top_players.length > 0) {
-            topPlayers.innerHTML = invadersData.top_players.map((player, index) => `
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded hover:bg-gray-600 transition-colors">
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm font-semibold text-gray-300">#${index + 1}</span>
-                  <span class="text-white font-medium">${player.username || 'Anonymous'}</span>
-                </div>
-                <div class="text-right">
-                  <div class="text-green-400 font-semibold">${formatNumber(player.score || 0)}</div>
-                  <div class="text-xs text-gray-400">Wave ${player.wave || 'N/A'}</div>
-                </div>
-              </div>
-            `).join('');
-          } else {
-            topPlayers.innerHTML = `
-              <div class="text-gray-400 text-center py-4">
-                <div class="text-2xl mb-2">👾</div>
-                <p class="text-sm">No players yet</p>
-                <p class="text-xs text-gray-500">Start playing to appear here!</p>
-              </div>
-            `;
-          }
+        // Update statistics cards with new structure
+        if (document.getElementById('invadersTotalWaves')) {
+          const totalWaves = invadersData.season_data?.total_scores || 0;
+          document.getElementById('invadersTotalWaves').textContent = formatNumber(totalWaves);
         }
-
-        // Update Recent Activity section
-        const recentActivity = document.getElementById('invadersRecentActivity');
-        if (recentActivity) {
-          const recent24h = invadersData.season_data?.recent_24h || 0;
-          const recent7d = invadersData.season_data?.recent_7d || 0;
-          recentActivity.innerHTML = `
-            <div class="space-y-3">
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Last 24h:</span>
-                <span class="text-green-400 font-semibold">${formatNumber(recent24h)}</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Last 7 days:</span>
-                <span class="text-blue-400 font-semibold">${formatNumber(recent7d)}</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Status:</span>
-                <span class="text-green-400 font-semibold">🟢 Active</span>
-              </div>
-            </div>
-          `;
+        
+        if (document.getElementById('invadersUniquePlayers')) {
+          const uniquePlayers = invadersData.season_data?.unique_players || 0;
+          document.getElementById('invadersUniquePlayers').textContent = formatNumber(uniquePlayers);
         }
-
-        // Update Achievements section
-        const achievements = document.getElementById('invadersAchievements');
-        if (achievements) {
+        
+        if (document.getElementById('invadersHighestWave')) {
+          const highestWave = invadersData.season_data?.max_score || 0;
+          document.getElementById('invadersHighestWave').textContent = formatNumber(highestWave);
+        }
+        
+        if (document.getElementById('invadersAvgWave')) {
+          const totalWaves = invadersData.season_data?.total_scores || 0;
+          const uniquePlayers = invadersData.season_data?.unique_players || 0;
+          const avgWave = uniquePlayers > 0 ? Math.round(totalWaves / uniquePlayers) : 0;
+          document.getElementById('invadersAvgWave').textContent = formatNumber(avgWave);
+        }
+        
+        if (document.getElementById('invadersTotalPlayers')) {
           const totalPlayers = invadersData.season_data?.unique_players || 0;
-          const totalScores = invadersData.season_data?.total_scores || 0;
-          achievements.innerHTML = `
-            <div class="space-y-3">
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Total Players:</span>
-                <span class="text-white font-semibold">${formatNumber(totalPlayers)}</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Total Waves:</span>
-                <span class="text-green-400 font-semibold">${formatNumber(totalScores)}</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Avg. Waves:</span>
-                <span class="text-blue-400 font-semibold">${totalPlayers > 0 ? Math.round(totalScores / totalPlayers) : 0}</span>
-              </div>
-            </div>
-          `;
+          document.getElementById('invadersTotalPlayers').textContent = formatNumber(totalPlayers);
+        }
+        
+        if (document.getElementById('invadersActivePlayers')) {
+          const activePlayers = invadersData.season_data?.recent_24h > 0 ? invadersData.season_data?.unique_players || 0 : 0;
+          document.getElementById('invadersActivePlayers').textContent = formatNumber(activePlayers);
+        }
+        
+        if (document.getElementById('invadersNewPlayers')) {
+          document.getElementById('invadersNewPlayers').textContent = '📊 Coming Soon';
+        }
+        
+        if (document.getElementById('invadersRecent24h')) {
+          const recent24h = invadersData.season_data?.recent_24h || 0;
+          document.getElementById('invadersRecent24h').textContent = formatNumber(recent24h);
+        }
+        
+        if (document.getElementById('invadersRecent7d')) {
+          const recent7d = invadersData.season_data?.recent_7d || 0;
+          document.getElementById('invadersRecent7d').textContent = formatNumber(recent7d);
+        }
+        
+        if (document.getElementById('invadersGrowthRate')) {
+          document.getElementById('invadersGrowthRate').textContent = '📊 Coming Soon';
         }
 
         // Update leaderboard with enhanced styling
         const leaderboard = document.getElementById('invadersLeaderboard');
+        console.log('🧀 Looking for invadersLeaderboard element:', leaderboard);
+        addLog('🧀 Looking for invadersLeaderboard element: ' + (leaderboard ? 'FOUND' : 'NOT FOUND'));
+        
         if (leaderboard) {
+          addLog('🧀 Updating Cheese Invaders leaderboard...');
           if (invadersData.top_players && invadersData.top_players.length > 0) {
+            addLog('🧀 Found ' + invadersData.top_players.length + ' top players, showing data grid');
             // Show actual player data in a grid format like other tabs
             leaderboard.innerHTML = `
               <div class="space-y-2">
@@ -7057,7 +7047,9 @@ require_once 'discord-invite.php';
                 `).join('')}
               </div>
             `;
+            addLog('🧀 Cheese Invaders leaderboard updated with player data');
           } else {
+            addLog('🧀 No top players found, showing empty state grid');
             // Show a proper grid structure even when no data
             leaderboard.innerHTML = `
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -7078,7 +7070,11 @@ require_once 'discord-invite.php';
                 </div>
               </div>
             `;
+            addLog('🧀 Cheese Invaders leaderboard updated with empty state grid');
           }
+        } else {
+          addLog('❌ ERROR: invadersLeaderboard element not found!');
+          console.error('❌ invadersLeaderboard element not found!');
         }
 
         // Add data summary at the top
@@ -7212,6 +7208,7 @@ require_once 'discord-invite.php';
         
         // Add log to admin interface
         addLog('🧀 Displaying Cheese Hunt data...');
+        addLog('🧀 Data structure: ' + JSON.stringify(cheeseData, null, 2));
         // Update Cheese Hunt statistics from current_data
         console.log('Looking for cheeseTotalClicks element:', document.getElementById('cheeseTotalClicks'));
         if (document.getElementById('cheeseTotalClicks')) {
@@ -7242,84 +7239,67 @@ require_once 'discord-invite.php';
         if (document.getElementById('cheeseCompletionRate')) document.getElementById('cheeseCompletionRate').textContent = '-';
         if (document.getElementById('cheeseActiveHunters')) document.getElementById('cheeseActiveHunters').textContent = cheeseData.current_data?.unique_players || '-';
 
-        // Update Top Players section
-        const topPlayers = document.getElementById('cheeseHuntTopPlayers');
-        if (topPlayers) {
-          if (cheeseData.top_players && cheeseData.top_players.length > 0) {
-            topPlayers.innerHTML = cheeseData.top_players.map((player, index) => `
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded hover:bg-gray-600 transition-colors">
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm font-semibold text-gray-300">#${index + 1}</span>
-                  <span class="text-white font-medium">${player.username || 'Anonymous'}</span>
-                </div>
-                <div class="text-right">
-                  <div class="text-yellow-400 font-semibold">${player.clicks || 0}</div>
-                  <div class="text-xs text-gray-400">${player.games || 0} games</div>
-                </div>
-              </div>
-            `).join('');
-          } else {
-            topPlayers.innerHTML = `
-              <div class="text-gray-400 text-center py-4">
-                <div class="text-2xl mb-2">🧀</div>
-                <p class="text-sm">No hunters yet</p>
-                <p class="text-xs text-gray-500">Start hunting to appear here!</p>
-              </div>
-            `;
-          }
+        // Update statistics cards with new structure
+        if (document.getElementById('cheeseTotalClicks')) {
+          const totalClicks = cheeseData.current_data?.total_clicks || 0;
+          document.getElementById('cheeseTotalClicks').textContent = formatNumber(totalClicks);
         }
-
-        // Update Recent Activity section
-        const recentActivity = document.getElementById('cheeseHuntRecentActivity');
-        if (recentActivity) {
-          const recent24h = cheeseData.current_data?.recent_24h || 0;
-          const recent7d = cheeseData.current_data?.recent_7d || 0;
-          recentActivity.innerHTML = `
-            <div class="space-y-3">
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Last 24h:</span>
-                <span class="text-green-400 font-semibold">${recent24h}</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Last 7 days:</span>
-                <span class="text-blue-400 font-semibold">${recent7d}</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Status:</span>
-                <span class="text-green-400 font-semibold">🟢 Active</span>
-              </div>
-            </div>
-          `;
+        
+        if (document.getElementById('cheeseUniquePlayers')) {
+          const uniquePlayers = cheeseData.current_data?.unique_players || 0;
+          document.getElementById('cheeseUniquePlayers').textContent = formatNumber(uniquePlayers);
         }
-
-        // Update Achievements section
-        const achievements = document.getElementById('cheeseHuntAchievements');
-        if (achievements) {
+        
+        if (document.getElementById('cheeseClicksToday')) {
+          const clicksToday = cheeseData.current_data?.recent_24h || 0;
+          document.getElementById('cheeseClicksToday').textContent = formatNumber(clicksToday);
+        }
+        
+        if (document.getElementById('cheeseAvgClicks')) {
           const totalClicks = cheeseData.current_data?.total_clicks || 0;
           const uniquePlayers = cheeseData.current_data?.unique_players || 0;
           const avgClicks = uniquePlayers > 0 ? Math.round(totalClicks / uniquePlayers) : 0;
-          achievements.innerHTML = `
-            <div class="space-y-3">
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Total Clicks:</span>
-                <span class="text-white font-semibold">${totalClicks}</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Unique Players:</span>
-                <span class="text-green-400 font-semibold">${uniquePlayers}</span>
-              </div>
-              <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
-                <span class="text-gray-300 text-sm">Avg. Clicks:</span>
-                <span class="text-blue-400 font-semibold">${avgClicks}</span>
-              </div>
-            </div>
-          `;
+          document.getElementById('cheeseAvgClicks').textContent = formatNumber(avgClicks);
+        }
+        
+        if (document.getElementById('cheeseRegularEggs')) {
+          document.getElementById('cheeseRegularEggs').textContent = '📊 Coming Soon';
+        }
+        
+        if (document.getElementById('cheeseGoldenEggs')) {
+          document.getElementById('cheeseGoldenEggs').textContent = '📊 Coming Soon';
+        }
+        
+        if (document.getElementById('cheeseRareEggs')) {
+          document.getElementById('cheeseRareEggs').textContent = '📊 Coming Soon';
+        }
+        
+        if (document.getElementById('cheeseRecent24h')) {
+          const recent24h = cheeseData.current_data?.recent_24h || 0;
+          document.getElementById('cheeseRecent24h').textContent = formatNumber(recent24h);
+        }
+        
+        if (document.getElementById('cheeseRecent7d')) {
+          const recent7d = cheeseData.current_data?.recent_7d || 0;
+          document.getElementById('cheeseRecent7d').textContent = formatNumber(recent7d);
+        }
+        
+        if (document.getElementById('cheeseGrowthRate')) {
+          document.getElementById('cheeseGrowthRate').textContent = '📊 Coming Soon';
+        }
+        
+        if (document.getElementById('cheeseDifficulty')) {
+          document.getElementById('cheeseDifficulty').textContent = 'Normal';
         }
 
         // Update leaderboard with enhanced styling using new CSS classes
         const leaderboard = document.getElementById('cheeseLeaderboard');
+        console.log('🧀 Looking for cheeseLeaderboard element:', leaderboard);
+        addLog('🧀 Looking for cheeseLeaderboard element: ' + (leaderboard ? 'FOUND' : 'NOT FOUND'));
+        
         if (leaderboard) {
           if (cheeseData.top_players && cheeseData.top_players.length > 0) {
+            addLog('🧀 Found ' + cheeseData.top_players.length + ' top hunters, showing data grid');
             // Show actual player data in a grid format like other tabs
             leaderboard.innerHTML = `
               <div class="space-y-2">
@@ -7342,6 +7322,7 @@ require_once 'discord-invite.php';
               </div>
             `;
           } else {
+            addLog('🧀 No top hunters found, showing empty state grid');
             // Show a proper grid structure even when no data
             leaderboard.innerHTML = `
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -7363,6 +7344,9 @@ require_once 'discord-invite.php';
               </div>
             `;
           }
+        } else {
+          addLog('❌ ERROR: cheeseLeaderboard element not found!');
+          console.error('❌ cheeseLeaderboard element not found!');
         }
       } catch (error) {
         console.error('Error displaying Cheese Hunt data:', error);
@@ -7504,6 +7488,11 @@ require_once 'discord-invite.php';
         if (document.getElementById('raceUniqueWinners')) document.getElementById('raceUniqueWinners').textContent = 'Coming Soon';
         if (document.getElementById('raceTopWinner')) document.getElementById('raceTopWinner').textContent = 'Coming Soon';
         if (document.getElementById('racePeakParticipation')) document.getElementById('racePeakParticipation').textContent = 'Coming Soon';
+        
+        // Update status and other elements
+        if (document.getElementById('raceStatus')) {
+          document.getElementById('raceStatus').textContent = '🟢 Active';
+        }
 
         // Update recent races list
         const recentRacesElement = document.getElementById('recentRaceActivity');
