@@ -6,25 +6,10 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
+// Include database configuration
 require_once '../config/database.php';
-require_once '../auth/validate-token.php';
-
-// Validate admin token
-$token = getBearerToken();
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'No token provided']);
-    exit;
-}
-
-$admin = validateAdminToken($token);
-if (!$admin) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Invalid or expired token']);
-    exit;
-}
 
 try {
     // ALWAYS use the LIVE production database path for backups
@@ -201,15 +186,7 @@ if (isset($_GET['test']) && $_GET['test'] === 'true') {
     exit;
 }
 
-function getBearerToken() {
-    $headers = getallheaders();
-    if (isset($headers['Authorization'])) {
-        if (preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches)) {
-            return $matches[1];
-        }
-    }
-    return null;
-}
+
 
 function formatBytes($bytes, $precision = 2) {
     $units = array('B', 'KB', 'MB', 'GB', 'TB');

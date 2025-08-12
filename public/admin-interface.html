@@ -3777,7 +3777,7 @@ require_once 'discord-invite.php';
     }
     
     // Test tab display function
-    function testTabDisplay() {
+    async function testTabDisplay() {
       console.log('🧪 Testing tab display...');
       addLog('🧪 Testing tab display...');
       
@@ -3814,6 +3814,29 @@ require_once 'discord-invite.php';
       } else {
         console.log('🧪 snakeTab not found');
         addLog('🧪 snakeTab not found');
+      }
+      
+      // Enhanced: Test all game tabs to ensure they're working properly
+      addLog('🧪 Testing all game tabs display...');
+      
+      try {
+        // Test Cheese Invaders tab
+        console.log('🧪 Testing Cheese Invaders tab...');
+        await refreshCheeseInvadersDisplay();
+        
+        // Test Cheese Hunt tab
+        console.log('🧪 Testing Cheese Hunt tab...');
+        await refreshCheeseHuntDisplay();
+        
+        // Test Discord Race tab
+        console.log('🧪 Testing Discord Race tab...');
+        await refreshDiscordRaceDisplay();
+        
+        addLog('✅ All game tabs tested and refreshed successfully');
+        console.log('✅ All game tabs tested and refreshed successfully');
+      } catch (error) {
+        console.error('❌ Error testing game tabs:', error);
+        addLog(`❌ Error testing game tabs: ${error.message}`);
       }
     }
     
@@ -6752,6 +6775,9 @@ require_once 'discord-invite.php';
         console.log('✅ Showing tab:', selectedTabId);
         console.log('🔍 Tab display style after setting:', selectedTab.style.display);
         console.log('🔍 Tab computed style:', window.getComputedStyle(selectedTab).display);
+        
+        // Force a reflow to ensure the tab is properly displayed
+        selectedTab.offsetHeight;
       } else {
         console.error('❌ Tab not found:', selectedTabId);
       }
@@ -6763,42 +6789,79 @@ require_once 'discord-invite.php';
         console.error('❌ Button not found for:', tabName);
       }
       
-      // Load data for the selected tab
+      // Load data for the selected tab with enhanced error handling and display refresh
       console.log('🔄 Loading data for tab:', tabName);
-      switch(tabName) {
-        case 'overview':
-          console.log('Loading overview data...');
-          loadGameOverview();
-          break;
-        case 'tetris':
-          console.log('Loading Tetris data...');
-          loadTetrisData();
-          break;
-        case 'snake':
-          console.log('Loading Snake data...');
-          loadSnakeData();
-          break;
-        case 'space-invaders':
-          console.log('👾 Loading Space Invaders data...');
-          addLog('👾 Loading Space Invaders data...');
-          loadSpaceInvadersData();
-          break;
-        case 'cheese-invaders':
-          console.log('🧀 Loading Cheese Invaders data...');
-          addLog('🧀 Loading Cheese Invaders data...');
-          loadCheeseInvadersData();
-          break;
-        case 'cheese-hunt':
-          console.log('🧀 Loading Cheese Hunt data...');
-          addLog('🧀 Loading Cheese Hunt data...');
-          loadCheeseHuntData();
-          break;
-        case 'discord-race':
-          console.log('🏁 Loading Discord Race data...');
-          addLog('🏁 Loading Discord Race data...');
-          loadDiscordRaceData();
-          break;
-      }
+      
+      // Use setTimeout to ensure DOM is fully updated before loading data
+      setTimeout(async () => {
+        try {
+          switch(tabName) {
+            case 'overview':
+              console.log('Loading overview data...');
+              await loadGameOverview();
+              break;
+            case 'tetris':
+              console.log('Loading Tetris data...');
+              await loadTetrisData();
+              break;
+            case 'snake':
+              console.log('Loading Snake data...');
+              await loadSnakeData();
+              break;
+            case 'space-invaders':
+              console.log('👾 Loading Space Invaders data...');
+              addLog('👾 Loading Space Invaders data...');
+              await loadSpaceInvadersData();
+              break;
+            case 'cheese-invaders':
+              console.log('🧀 Loading Cheese Invaders data...');
+              addLog('🧀 Loading Cheese Invaders data...');
+              await loadCheeseInvadersData();
+              // Force refresh display for Cheese Invaders
+              await refreshCheeseInvadersDisplay();
+              break;
+            case 'cheese-hunt':
+              console.log('🧀 Loading Cheese Hunt data...');
+              addLog('🧀 Loading Cheese Hunt data...');
+              await loadCheeseHuntData();
+              // Force refresh display for Cheese Hunt
+              await refreshCheeseHuntDisplay();
+              break;
+            case 'discord-race':
+              console.log('🏁 Loading Discord Race data...');
+              addLog('🏁 Loading Discord Race data...');
+              await loadDiscordRaceData();
+              // Force refresh display for Discord Race
+              await refreshDiscordRaceDisplay();
+              break;
+          }
+          
+          // Additional verification that tab is visible after data loading
+          if (selectedTab) {
+            const computedStyle = window.getComputedStyle(selectedTab);
+            const isVisible = computedStyle.display !== 'none' && 
+                            computedStyle.visibility !== 'hidden' && 
+                            selectedTab.offsetHeight > 0;
+            
+            console.log('🔍 Tab visibility check after data loading:', {
+              display: computedStyle.display,
+              visibility: computedStyle.visibility,
+              height: selectedTab.offsetHeight,
+              isVisible: isVisible
+            });
+            
+            if (!isVisible) {
+              console.warn('⚠️ Tab not visible after data loading, forcing display...');
+              selectedTab.style.display = 'block';
+              selectedTab.style.visibility = 'visible';
+              selectedTab.classList.remove('hidden');
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error loading data for tab:', tabName, error);
+          addLog(`❌ Error loading data for tab ${tabName}: ${error.message}`);
+        }
+      }, 100); // Small delay to ensure DOM updates
     }
 
     // Overview Dashboard Functions
@@ -8227,6 +8290,141 @@ require_once 'discord-invite.php';
       } catch (error) {
         console.error('Error displaying Discord Race data:', error);
         addLog(`❌ Error displaying Discord Race data: ${error.message}`);
+      }
+    }
+
+    // Enhanced Tab Display Refresh Functions
+    // These functions ensure proper display refresh for the last 3 tabs
+    
+    async function refreshCheeseInvadersDisplay() {
+      console.log('🧀 Refreshing Cheese Invaders display...');
+      try {
+        // Force a reflow and ensure visibility
+        const tab = document.getElementById('cheeseInvadersTab');
+        if (tab) {
+          // Force DOM reflow
+          tab.offsetHeight;
+          
+          // Ensure proper display
+          tab.style.display = 'block';
+          tab.style.visibility = 'visible';
+          tab.classList.remove('hidden');
+          
+          // Verify visibility
+          const computedStyle = window.getComputedStyle(tab);
+          const isVisible = computedStyle.display !== 'none' && 
+                          computedStyle.visibility !== 'hidden' && 
+                          tab.offsetHeight > 0;
+          
+          console.log('🧀 Cheese Invaders tab visibility check:', {
+            display: computedStyle.display,
+            visibility: computedStyle.visibility,
+            height: tab.offsetHeight,
+            isVisible: isVisible
+          });
+          
+          if (!isVisible) {
+            console.warn('⚠️ Cheese Invaders tab not visible, forcing display...');
+            tab.style.display = 'block';
+            tab.style.visibility = 'visible';
+            tab.classList.remove('hidden');
+          }
+        }
+        
+        // Refresh the data display
+        await loadCheeseInvadersData();
+        addLog('✅ Cheese Invaders display refreshed successfully');
+      } catch (error) {
+        console.error('❌ Error refreshing Cheese Invaders display:', error);
+        addLog(`❌ Error refreshing Cheese Invaders display: ${error.message}`);
+      }
+    }
+    
+    async function refreshCheeseHuntDisplay() {
+      console.log('🧀 Refreshing Cheese Hunt display...');
+      try {
+        // Force a reflow and ensure visibility
+        const tab = document.getElementById('cheeseHuntTab');
+        if (tab) {
+          // Force DOM reflow
+          tab.offsetHeight;
+          
+          // Ensure proper display
+          tab.style.display = 'block';
+          tab.style.visibility = 'visible';
+          tab.classList.remove('hidden');
+          
+          // Verify visibility
+          const computedStyle = window.getComputedStyle(tab);
+          const isVisible = computedStyle.display !== 'none' && 
+                          computedStyle.visibility !== 'hidden' && 
+                          tab.offsetHeight > 0;
+          
+          console.log('🧀 Cheese Hunt tab visibility check:', {
+            display: computedStyle.display,
+            visibility: computedStyle.visibility,
+            height: tab.offsetHeight,
+            isVisible: isVisible
+          });
+          
+          if (!isVisible) {
+            console.warn('⚠️ Cheese Hunt tab not visible, forcing display...');
+            tab.style.display = 'block';
+            tab.style.visibility = 'visible';
+            tab.classList.remove('hidden');
+          }
+        }
+        
+        // Refresh the data display
+        await loadCheeseHuntData();
+        addLog('✅ Cheese Hunt display refreshed successfully');
+      } catch (error) {
+        console.error('❌ Error refreshing Cheese Hunt display:', error);
+        addLog(`❌ Error refreshing Cheese Hunt display: ${error.message}`);
+      }
+    }
+    
+    async function refreshDiscordRaceDisplay() {
+      console.log('🏁 Refreshing Discord Race display...');
+      try {
+        // Force a reflow and ensure visibility
+        const tab = document.getElementById('discordRaceTab');
+        if (tab) {
+          // Force DOM reflow
+          tab.offsetHeight;
+          
+          // Ensure proper display
+          tab.style.display = 'block';
+          tab.style.visibility = 'visible';
+          tab.classList.remove('hidden');
+          
+          // Verify visibility
+          const computedStyle = window.getComputedStyle(tab);
+          const isVisible = computedStyle.display !== 'none' && 
+                          computedStyle.visibility !== 'hidden' && 
+                          tab.offsetHeight > 0;
+          
+          console.log('🏁 Discord Race tab visibility check:', {
+            display: computedStyle.display,
+            visibility: computedStyle.visibility,
+            height: tab.offsetHeight,
+            isVisible: isVisible
+          });
+          
+          if (!isVisible) {
+            console.warn('⚠️ Discord Race tab not visible, forcing display...');
+            tab.style.display = 'block';
+            tab.style.visibility = 'visible';
+            tab.classList.remove('hidden');
+          }
+        }
+        
+        // Refresh the data display
+        await loadDiscordRaceData();
+        addLog('✅ Discord Race display refreshed successfully');
+      } catch (error) {
+        console.error('❌ Error refreshing Discord Race display:', error);
+        addLog(`❌ Error refreshing Discord Race display: ${error.message}`);
       }
     }
 

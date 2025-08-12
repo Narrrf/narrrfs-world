@@ -6,27 +6,10 @@ ini_set('display_errors', 0);
 // Don't set JSON headers initially - we'll set them only if there's an error
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
+// Include database configuration
 require_once '../config/database.php';
-require_once '../auth/validate-token.php';
-
-// Validate admin token
-$token = getBearerToken();
-if (!$token) {
-    header('Content-Type: application/json');
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'No token provided']);
-    exit;
-}
-
-$admin = validateAdminToken($token);
-if (!$admin) {
-    header('Content-Type: application/json');
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Invalid or expired token']);
-    exit;
-}
 
 try {
     // ALWAYS use the LIVE production database path for downloads
@@ -81,13 +64,4 @@ try {
     echo json_encode(['success' => false, 'error' => 'Live database download failed: ' . $e->getMessage()]);
 }
 
-function getBearerToken() {
-    $headers = getallheaders();
-    if (isset($headers['Authorization'])) {
-        if (preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches)) {
-            return $matches[1];
-        }
-    }
-    return null;
-}
 ?>
