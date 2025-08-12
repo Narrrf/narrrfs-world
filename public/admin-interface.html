@@ -1434,6 +1434,16 @@ require_once 'discord-invite.php';
           <button onclick="testAllGameTabsComprehensive()" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
             🧪 Test All Game Tabs
           </button>
+          
+          <!-- Test tab display button -->
+          <button onclick="testTabDisplay()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
+            🧪 Test Tab Display
+          </button>
+          
+          <!-- Test backup endpoint button -->
+          <button onclick="testBackupEndpoint()" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
+            🧪 Test Backup Endpoint
+          </button>
       </div>
     </div>
 
@@ -3765,6 +3775,104 @@ require_once 'discord-invite.php';
         addLog('🧪 Download test error: ' + error.message);
       }
     }
+    
+    // Test tab display function
+    function testTabDisplay() {
+      console.log('🧪 Testing tab display...');
+      addLog('🧪 Testing tab display...');
+      
+      // Test showing a specific tab
+      const testTab = document.getElementById('snakeTab');
+      if (testTab) {
+        console.log('🧪 Found snakeTab, testing display...');
+        addLog('🧪 Found snakeTab, testing display...');
+        
+        // Check current state
+        console.log('🧪 Current display style:', testTab.style.display);
+        console.log('🧪 Current computed display:', window.getComputedStyle(testTab).display);
+        addLog(`🧪 Current display style: ${testTab.style.display}`);
+        addLog(`🧪 Current computed display: ${window.getComputedStyle(testTab).display}`);
+        
+        // Try to show it
+        testTab.style.display = 'block';
+        console.log('🧪 Set display to block');
+        addLog('🧪 Set display to block');
+        
+        // Check new state
+        console.log('🧪 New display style:', testTab.style.display);
+        console.log('🧪 New computed display:', window.getComputedStyle(testTab).display);
+        addLog(`🧪 New display style: ${testTab.style.display}`);
+        addLog(`🧪 New computed display: ${window.getComputedStyle(testTab).display}`);
+        
+        // Check if it's actually visible
+        const rect = testTab.getBoundingClientRect();
+        const isVisible = rect.width > 0 && rect.height > 0;
+        console.log('🧪 Tab dimensions:', rect.width, 'x', rect.height);
+        console.log('🧪 Tab is visible:', isVisible);
+        addLog(`🧪 Tab dimensions: ${rect.width} x ${rect.height}`);
+        addLog(`🧪 Tab is visible: ${isVisible ? 'YES' : 'NO'}`);
+      } else {
+        console.log('🧪 snakeTab not found');
+        addLog('🧪 snakeTab not found');
+      }
+    }
+    
+    // Test backup endpoint function
+    async function testBackupEndpoint() {
+      try {
+        addLog('🧪 Testing backup endpoint directly...');
+        
+        // Test the backup endpoint with test parameter
+        const response = await fetch(API_BASE_URL + '/api/admin/backup-database.php?test=true', {
+          method: 'GET'
+        });
+        
+        addLog('🔍 Backup endpoint test response status: ' + response.status + ' ' + response.statusText);
+        addLog('🔍 Backup endpoint test response headers: ' + JSON.stringify([...response.headers.entries()]));
+        
+        let data;
+        try {
+          data = await response.json();
+          addLog('✅ Backup endpoint test response parsed successfully');
+        } catch (jsonError) {
+          addLog('❌ Backup endpoint test response parsing failed: ' + jsonError.message);
+          try {
+            const responseText = await response.text();
+            addLog('🔍 Backup endpoint test response body: ' + responseText);
+          } catch (textError) {
+            addLog('🔍 Could not read backup endpoint test response body');
+          }
+          return;
+        }
+        
+        if (data.test) {
+          addLog('🔍 Backup Endpoint Test Results:');
+          addLog(`📁 Source path: ${data.source_path}`);
+          addLog(`📁 Source exists: ${data.source_exists ? '✅' : '❌'}`);
+          addLog(`📖 Source readable: ${data.source_readable ? '✅' : '❌'}`);
+          addLog(`📊 Source size: ${data.source_size}`);
+          addLog(`🏠 Environment: ${data.production_mode || 'Unknown'}`);
+          addLog(`📁 Target dir exists: ${data.target_dir_exists ? '✅' : '❌'}`);
+          addLog(`✏️ Target dir writable: ${data.target_dir_writable ? '✅' : '❌'}`);
+          addLog(`👤 Current user: ${data.current_user}`);
+          addLog(`🐘 PHP user: ${data.php_user}`);
+          addLog(`🌐 Web server user: ${data.web_server_user}`);
+          
+          // Critical verification
+          if (data.source_exists && data.source_readable) {
+            addLog('✅ CRITICAL: Database path verification successful');
+            addLog(`📊 Database size: ${data.source_size} - This should match your live database size`);
+          } else {
+            addLog('❌ CRITICAL: Database path verification FAILED');
+            addLog('🚨 This indicates a serious configuration issue!');
+          }
+        } else {
+          addLog('❌ Backup endpoint test failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Backup endpoint test error: ' + error.message);
+      }
+    }
 
     // Show specific tab
     function showTab(tabName) {
@@ -5744,8 +5852,13 @@ require_once 'discord-invite.php';
             errorMessage = errorData.error || 'Server error';
           } catch (jsonError) {
             // If response is not JSON, get the text content
-            const errorText = await response.text();
-            errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`;
+            try {
+              const errorText = await response.text();
+              errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`;
+            } catch (textError) {
+              // If we can't read the response body at all, use status info
+              errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            }
           }
           addLog('❌ LIVE production database download failed: ' + errorMessage);
         }
@@ -5771,7 +5884,20 @@ require_once 'discord-invite.php';
           }
         });
         
-        const data = await response.json();
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          addLog('❌ Backup response parsing failed: ' + jsonError.message);
+          addLog('🔍 Response status: ' + response.status + ' ' + response.statusText);
+          try {
+            const responseText = await response.text();
+            addLog('🔍 Response body: ' + responseText);
+          } catch (textError) {
+            addLog('🔍 Could not read response body');
+          }
+          return;
+        }
         
         if (data.success) {
           addLog('✅ LIVE production database backup completed successfully');
@@ -5801,7 +5927,22 @@ require_once 'discord-invite.php';
           method: 'GET'
         });
         
-        const data = await response.json();
+        addLog('🔍 Backup test response status: ' + response.status + ' ' + response.statusText);
+        addLog('🔍 Backup test response headers: ' + JSON.stringify([...response.headers.entries()]));
+        
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          addLog('❌ Backup test response parsing failed: ' + jsonError.message);
+          try {
+            const responseText = await response.text();
+            addLog('🔍 Backup test response body: ' + responseText);
+          } catch (textError) {
+            addLog('🔍 Could not read backup test response body');
+          }
+          return;
+        }
         
         if (data.test) {
           addLog('🔍 Backup Test Results:');
@@ -5809,7 +5950,7 @@ require_once 'discord-invite.php';
           addLog(`📁 Source exists: ${data.source_exists ? '✅' : '❌'}`);
           addLog(`📖 Source readable: ${data.source_readable ? '✅' : '❌'}`);
           addLog(`📊 Source size: ${data.source_size}`);
-          addLog(`🏠 Environment: ${data.is_local ? 'Local Development' : 'Production'}`);
+          addLog(`🏠 Environment: ${data.production_mode || 'Unknown'}`);
           addLog(`📁 Target dir exists: ${data.target_dir_exists ? '✅' : '❌'}`);
           addLog(`✏️ Target dir writable: ${data.target_dir_writable ? '✅' : '❌'}`);
           addLog(`👤 Current user: ${data.current_user}`);
@@ -6574,10 +6715,11 @@ require_once 'discord-invite.php';
     function switchGameTab(tabName) {
       console.log('🔄 switchGameTab called with:', tabName);
       
-      // Hide all game tab contents with !important to override CSS
+      // Hide all game tab contents by adding a hidden class and setting display
       const allTabs = document.querySelectorAll('.game-tab-content');
       allTabs.forEach(tab => {
-        tab.style.setProperty('display', 'none', 'important');
+        tab.classList.add('hidden');
+        tab.style.display = 'none';
         console.log('Hidden tab:', tab.id);
       });
       
@@ -6605,8 +6747,11 @@ require_once 'discord-invite.php';
       console.log('Selected tab element:', selectedTab);
       
       if (selectedTab) {
-        selectedTab.style.setProperty('display', 'block', 'important');
+        selectedTab.classList.remove('hidden');
+        selectedTab.style.display = 'block';
         console.log('✅ Showing tab:', selectedTabId);
+        console.log('🔍 Tab display style after setting:', selectedTab.style.display);
+        console.log('🔍 Tab computed style:', window.getComputedStyle(selectedTab).display);
       } else {
         console.error('❌ Tab not found:', selectedTabId);
       }
