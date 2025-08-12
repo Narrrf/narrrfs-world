@@ -2317,11 +2317,11 @@ require_once 'discord-invite.php';
                 <span>📊</span>
                 <span>Wave Statistics</span>
               </div>
-              <div class="game-stat-value" id="invadersTotalWaves">-</div>
-              <div class="game-stat-label">Total Waves</div>
-              <div class="game-stat-subvalue">Players: <span id="invadersUniquePlayers" class="text-blue-400">-</span></div>
-              <div class="game-stat-subvalue">Highest: <span id="invadersHighestWave" class="text-green-400">-</span></div>
-              <div class="game-stat-subvalue">Average: <span id="invadersAvgWave" class="text-blue-400">-</span></div>
+              <div class="game-stat-value" id="cheeseInvadersTotalScores">-</div>
+              <div class="game-stat-label">Total Scores</div>
+              <div class="game-stat-subvalue">Players: <span id="cheeseInvadersUniquePlayers" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Highest: <span id="cheeseInvadersMaxScore" class="text-green-400">-</span></div>
+              <div class="game-stat-subvalue">Average: <span id="cheeseInvadersAvgScore" class="text-blue-400">-</span></div>
             </div>
 
             <div class="game-stat-card">
@@ -2329,10 +2329,10 @@ require_once 'discord-invite.php';
                 <span>👥</span>
                 <span>Player Statistics</span>
               </div>
-              <div class="game-stat-value" id="invadersTotalPlayers">-</div>
-              <div class="game-stat-label">Total Players</div>
-              <div class="game-stat-subvalue">Active: <span id="invadersActivePlayers" class="text-green-400">-</span></div>
-              <div class="game-stat-subvalue">New: <span id="invadersNewPlayers" class="text-blue-400">-</span></div>
+              <div class="game-stat-value" id="cheeseInvadersActivePlayers">-</div>
+              <div class="game-stat-label">Active Players</div>
+              <div class="game-stat-subvalue">New: <span id="cheeseInvadersNewPlayers" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Returning: <span id="cheeseInvadersReturningPlayers" class="text-green-400">-</span></div>
             </div>
 
             <div class="game-stat-card">
@@ -2340,27 +2340,29 @@ require_once 'discord-invite.php';
                 <span>📈</span>
                 <span>Activity Trends</span>
               </div>
-              <div class="game-stat-value" id="invadersRecent24h">-</div>
+              <div class="game-stat-value" id="cheeseInvadersRecent24h">-</div>
               <div class="game-stat-label">Last 24 hours</div>
-              <div class="game-stat-subvalue">7 days: <span id="invadersRecent7d" class="text-blue-400">-</span></div>
-              <div class="game-stat-subvalue">Growth: <span id="invadersGrowthRate" class="text-green-400">-</span></div>
+              <div class="game-stat-subvalue">7 days: <span id="cheeseInvadersRecent7d" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Growth: <span id="cheeseInvadersGrowthRate" class="text-green-400">-</span></div>
             </div>
 
             <div class="game-stat-card">
               <div class="game-stat-header">
-                <span>⚙️</span>
-                <span>Game Configuration</span>
+                <span>📊</span>
+                <span>Season Data</span>
               </div>
-              <div class="game-stat-value" id="invadersStatus">🟢 Active</div>
-              <div class="game-stat-label">Game status</div>
-              <div class="game-stat-subvalue">Difficulty: <span id="invadersDifficulty" class="text-blue-400">Normal</span></div>
+              <div class="game-stat-value" id="cheeseInvadersSeasonScores">-</div>
+              <div class="game-stat-label">Season Scores</div>
+              <div class="game-stat-subvalue">Current: <span id="cheeseInvadersCurrentSeason" class="text-blue-400">Season 1</span></div>
             </div>
+
+
           </div>
 
           <!-- Cheese Invaders Leaderboard -->
           <div class="bg-gray-700 p-4 rounded mb-4">
             <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Players</h4>
-            <div id="invadersLeaderboard" class="space-y-2">
+            <div id="cheeseInvadersLeaderboard" class="space-y-2">
               <div class="text-gray-400 text-center">Loading leaderboard...</div>
             </div>
           </div>
@@ -2486,11 +2488,11 @@ require_once 'discord-invite.php';
                 <span>📊</span>
                 <span>Invader Statistics</span>
               </div>
-              <div class="game-stat-value" id="invadersTotalInvaders">-</div>
-              <div class="game-stat-label">Total Invaders</div>
-              <div class="game-stat-subvalue">Players: <span id="invadersUniquePlayers" class="text-blue-400">-</span></div>
-              <div class="game-stat-subvalue">Highest: <span id="invadersHighestScore" class="text-green-400">-</span></div>
-              <div class="game-stat-subvalue">Average: <span id="invadersAvgScore" class="text-blue-400">-</span></div>
+              <div class="game-stat-value" id="spaceInvadersTotalScores">-</div>
+              <div class="game-stat-label">Total Scores</div>
+              <div class="game-stat-subvalue">Players: <span id="spaceInvadersUniquePlayers" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Highest: <span id="spaceInvadersMaxScore" class="text-green-400">-</span></div>
+              <div class="game-stat-subvalue">Average: <span id="spaceInvadersAvgScore" class="text-blue-400">-</span></div>
             </div>
 
             <div class="game-stat-card">
@@ -2498,10 +2500,10 @@ require_once 'discord-invite.php';
                 <span>👥</span>
                 <span>Player Statistics</span>
               </div>
-              <div class="game-stat-value" id="invadersTotalPlayers">-</div>
-              <div class="game-stat-label">Total Players</div>
-              <div class="game-stat-subvalue">Active: <span id="invadersActivePlayers" class="text-green-400">-</span></div>
-              <div class="game-stat-subvalue">New: <span id="invadersNewPlayers" class="text-blue-400">-</span></div>
+              <div class="game-stat-value" id="spaceInvadersActivePlayers">-</div>
+              <div class="game-stat-label">Active Players</div>
+              <div class="game-stat-subvalue">New: <span id="spaceInvadersNewPlayers" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Returning: <span id="spaceInvadersReturningPlayers" class="text-green-400">-</span></div>
             </div>
 
             <div class="game-stat-card">
@@ -2509,27 +2511,29 @@ require_once 'discord-invite.php';
                 <span>📈</span>
                 <span>Activity Trends</span>
               </div>
-              <div class="game-stat-value" id="invadersRecent24h">-</div>
+              <div class="game-stat-value" id="spaceInvadersRecent24h">-</div>
               <div class="game-stat-label">Last 24 hours</div>
-              <div class="game-stat-subvalue">7 days: <span id="invadersRecent7d" class="text-blue-400">-</span></div>
-              <div class="game-stat-subvalue">Growth: <span id="invadersGrowthRate" class="text-green-400">-</span></div>
+              <div class="game-stat-subvalue">7 days: <span id="spaceInvadersRecent7d" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Growth: <span id="spaceInvadersGrowthRate" class="text-green-400">-</span></div>
             </div>
 
             <div class="game-stat-card">
               <div class="game-stat-header">
-                <span>⚙️</span>
-                <span>Game Configuration</span>
+                <span>📊</span>
+                <span>Season Data</span>
               </div>
-              <div class="game-stat-value" id="invadersStatus">🟢 Active</div>
-              <div class="game-stat-label">Game status</div>
-              <div class="game-stat-subvalue">Difficulty: <span id="invadersDifficulty" class="text-blue-400">Normal</span></div>
+              <div class="game-stat-value" id="spaceInvadersSeasonScores">-</div>
+              <div class="game-stat-label">Season Scores</div>
+              <div class="game-stat-subvalue">Current: <span id="spaceInvadersCurrentSeason" class="text-blue-400">Season 1</span></div>
             </div>
+
+
           </div>
 
           <!-- Space Invaders Leaderboard -->
           <div class="bg-gray-700 p-4 rounded mb-4">
             <h4 class="font-semibold text-yellow-400 mb-3">🏆 Top 10 Players</h4>
-            <div id="invadersLeaderboard" class="space-y-2">
+            <div id="spaceInvadersLeaderboard" class="space-y-2">
               <div class="text-gray-400 text-center">Loading leaderboard...</div>
             </div>
           </div>
