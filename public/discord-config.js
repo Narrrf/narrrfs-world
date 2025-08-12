@@ -1,12 +1,12 @@
 // Discord Configuration - Token of Render System
 // This file manages Discord invite links dynamically across all pages
 // Environment Variable Support: DISCORD_INVITE_CODE
-// Fallback: 'hx4EvgBG' (current Discord invite code)
+// Fallback: 'CR5mYu49' (current Discord invite code)
 
 let DISCORD_CONFIG = {
     // 🔧 ENVIRONMENT VARIABLE SUPPORT
     // Will be loaded from server-side PHP endpoint
-    inviteCode: '3hRRh3gB', // Fallback Discord invite code
+    inviteCode: 'CR5mYu49', // Fallback Discord invite code
     
     // Base Discord URL
     baseUrl: 'https://discord.gg/',
@@ -18,7 +18,7 @@ let DISCORD_CONFIG = {
     
     // Version tracking
     version: '12.0',
-    lastUpdated: '2025-06-25',
+    lastUpdated: '2025-01-28',
     
     // Enhanced Discord link detection patterns
     discordPatterns: [
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 // Also update on window load for dynamic content
 window.addEventListener('load', async function() {
     console.log('🔄 Window Loaded - Checking Discord config...');
-    if (!DISCORD_CONFIG.inviteCode || DISCORD_CONFIG.inviteCode === 'hx4EvgBG') {
+    if (!DISCORD_CONFIG.inviteCode || DISCORD_CONFIG.inviteCode === 'CR5mYu49') {
         console.log('🔄 Config not loaded or using fallback, loading from server...');
         await DISCORD_CONFIG.loadServerConfig();
     }
