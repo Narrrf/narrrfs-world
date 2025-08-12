@@ -22,9 +22,21 @@ function getDatabasePath() {
         error_log("PHP OS: " . PHP_OS_FAMILY);
         error_log("Document root: " . ($_SERVER['DOCUMENT_ROOT'] ?? 'NOT SET'));
     } else {
-        // Production - use environment variable or default
-        $db_path = getenv('DB_PATH') ?: '/data/narrrf_world.sqlite';
-        error_log("Production environment detected. Database path: " . $db_path);
+        // Production - use the ACTUAL production database path
+        // Based on the user's report, the live DB is at /var/www/html/db/narrrf_world.sqlite
+        $db_path = '/var/www/html/db/narrrf_world.sqlite';
+        error_log("Production environment detected. Using live database path: " . $db_path);
+        
+        // Verify the live database exists and is readable
+        if (!file_exists($db_path)) {
+            error_log("ERROR: Live database not found at: " . $db_path);
+            // Fallback to /data if live DB doesn't exist
+            $db_path = '/data/narrrf_world.sqlite';
+            error_log("Falling back to: " . $db_path);
+        } else {
+            $size = filesize($db_path);
+            error_log("Live database found at: " . $db_path . " (Size: " . $size . " bytes)");
+        }
     }
     
     // Validate path for security

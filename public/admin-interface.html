@@ -1607,6 +1607,9 @@ require_once 'discord-invite.php';
             <button onclick="testDatabasePath()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-all duration-300 ml-2">
               🔍 Test DB Path
             </button>
+            <button onclick="debugDatabasePaths()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-all duration-300 ml-2">
+              🐛 Debug DB Paths
+            </button>
           </div>
         </div>
       </div>
@@ -5567,6 +5570,26 @@ require_once 'discord-invite.php';
         addLog('❌ Database path test error: ' + error.message);
       }
     }
+
+    // Debug database paths (detailed debugging)
+    async function debugDatabasePaths() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🐛 Debugging database paths...');
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/debug-database-paths.php');
+        const text = await response.text();
+        
+        addLog('🐛 Database path debug output:');
+        addLog(text);
+      } catch (error) {
+        addLog(`❌ Database path debug error: ${error.message}`);
+      }
+    }
     
     // Show upload modal
     function showUploadModal() {
@@ -6031,6 +6054,13 @@ require_once 'discord-invite.php';
       `;
     }
 
+    function formatNumber(num) {
+      if (num === null || num === undefined || num === '') return '0';
+      if (typeof num === 'string') num = parseFloat(num);
+      if (isNaN(num)) return '0';
+      return num.toLocaleString();
+    }
+
     function formatDate(dateString) {
       if (!dateString) return 'N/A';
       return new Date(dateString).toLocaleString();
@@ -6352,15 +6382,40 @@ require_once 'discord-invite.php';
 
     function displayGameOverview(data) {
       try {
+        console.log('📊 Dashboard data received:', data);
+        console.log('📊 Dashboard data structure:', JSON.stringify(data, null, 2));
+        
         // Update system overview cards
         if (data.overview) {
           const overview = data.overview;
-          if (document.getElementById('totalActivePlayers')) document.getElementById('totalActivePlayers').textContent = overview.total_active_players || '-';
-          if (document.getElementById('totalWeeklyPlayers')) document.getElementById('totalWeeklyPlayers').textContent = overview.total_weekly_players || '-';
-          if (document.getElementById('totalGamesPlayed')) document.getElementById('totalGamesPlayed').textContent = overview.total_games_played || '-';
-          if (document.getElementById('totalGamesToday')) document.getElementById('totalGamesToday').textContent = overview.total_games_today || '-';
-          if (document.getElementById('topPerformersWeek')) document.getElementById('topPerformersWeek').textContent = overview.top_performers_week || '-';
-          if (document.getElementById('topPerformersAllTime')) document.getElementById('topPerformersAllTime').textContent = overview.top_performers_all_time || '-';
+          console.log('📊 Overview data:', overview);
+          
+          if (document.getElementById('totalActivePlayers')) {
+            document.getElementById('totalActivePlayers').textContent = overview.total_active_players || '-';
+            console.log('📊 Updated totalActivePlayers:', overview.total_active_players || '-');
+          }
+          if (document.getElementById('totalWeeklyPlayers')) {
+            document.getElementById('totalWeeklyPlayers').textContent = overview.total_weekly_players || '-';
+            console.log('📊 Updated totalWeeklyPlayers:', overview.total_weekly_players || '-');
+          }
+          if (document.getElementById('totalGamesPlayed')) {
+            document.getElementById('totalGamesPlayed').textContent = overview.total_games_played || '-';
+            console.log('📊 Updated totalGamesPlayed:', overview.total_games_played || '-');
+          }
+          if (document.getElementById('totalGamesToday')) {
+            document.getElementById('totalGamesToday').textContent = overview.total_games_today || '-';
+            console.log('📊 Updated totalGamesToday:', overview.total_games_today || '-');
+          }
+          if (document.getElementById('topPerformersWeek')) {
+            document.getElementById('topPerformersWeek').textContent = overview.top_performers_week || '-';
+            console.log('📊 Updated topPerformersWeek:', overview.top_performers_week || '-');
+          }
+          if (document.getElementById('topPerformersAllTime')) {
+            document.getElementById('topPerformersAllTime').textContent = overview.top_performers_all_time || '-';
+            console.log('📊 Updated topPerformersAllTime:', overview.top_performers_all_time || '-');
+          }
+        } else {
+          console.log('❌ No overview data found in response');
         }
 
         // Update daily activity chart (placeholder for now)
@@ -6967,9 +7022,14 @@ require_once 'discord-invite.php';
         }
 
         // Update statistics cards with new structure
+        console.log('🧀 Updating Cheese Invaders statistics cards...');
+        
         if (document.getElementById('invadersTotalWaves')) {
           const totalWaves = invadersData.season_data?.total_scores || 0;
           document.getElementById('invadersTotalWaves').textContent = formatNumber(totalWaves);
+          console.log('🧀 Updated invadersTotalWaves:', totalWaves);
+        } else {
+          console.log('❌ invadersTotalWaves element not found');
         }
         
         if (document.getElementById('invadersUniquePlayers')) {
@@ -7240,9 +7300,14 @@ require_once 'discord-invite.php';
         if (document.getElementById('cheeseActiveHunters')) document.getElementById('cheeseActiveHunters').textContent = cheeseData.current_data?.unique_players || '-';
 
         // Update statistics cards with new structure
+        console.log('🧀 Updating Cheese Hunt statistics cards...');
+        
         if (document.getElementById('cheeseTotalClicks')) {
           const totalClicks = cheeseData.current_data?.total_clicks || 0;
           document.getElementById('cheeseTotalClicks').textContent = formatNumber(totalClicks);
+          console.log('🧀 Updated cheeseTotalClicks:', totalClicks);
+        } else {
+          console.log('❌ cheeseTotalClicks element not found');
         }
         
         if (document.getElementById('cheeseUniquePlayers')) {

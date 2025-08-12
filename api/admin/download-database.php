@@ -34,6 +34,20 @@ try {
     
     // Log the path being used for debugging
     error_log("Download API: Downloading from database: " . $liveDbPath);
+    error_log("Download API: File exists: " . (file_exists($liveDbPath) ? 'YES' : 'NO'));
+    error_log("Download API: File readable: " . (is_readable($liveDbPath) ? 'YES' : 'NO'));
+    
+    // Additional verification - check if this is the live database
+    if (file_exists('/var/www/html/db/narrrf_world.sqlite')) {
+        $liveSize = filesize('/var/www/html/db/narrrf_world.sqlite');
+        error_log("Download API: Live database at /var/www/html/db/ exists, size: " . $liveSize . " bytes");
+        
+        // If the detected path is different from the live path, use the live path
+        if ($liveDbPath !== '/var/www/html/db/narrrf_world.sqlite') {
+            error_log("Download API: Path mismatch detected. Using live database path instead.");
+            $liveDbPath = '/var/www/html/db/narrrf_world.sqlite';
+        }
+    }
     
     if (!file_exists($liveDbPath)) {
         header('Content-Type: application/json');
