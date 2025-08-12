@@ -5701,7 +5701,8 @@ require_once 'discord-invite.php';
     // Download database
     async function downloadDatabase() {
       try {
-        addLog('📥 Initiating database download...');
+        addLog('📥 Initiating LIVE production database download...');
+        addLog('🎯 Target: /var/www/html/db/narrrf_world.sqlite (Render production)');
         
         // Call server-side download endpoint
         const response = await fetch(API_BASE_URL + '/api/admin/download-database.php', {
@@ -5726,14 +5727,15 @@ require_once 'discord-invite.php';
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `narrrfs_world_live_database_${new Date().toISOString().split('T')[0]}.sqlite`;
+          a.download = `narrrfs_world_LIVE_PRODUCTION_${new Date().toISOString().split('T')[0]}.sqlite`;
           document.body.appendChild(a);
           a.click();
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
           
-          addLog('✅ Database downloaded successfully');
+          addLog('✅ LIVE production database downloaded successfully');
           addLog(`📁 File size: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
+          addLog(`🎯 Source: /var/www/html/db/narrrf_world.sqlite (Render production)`);
         } else {
           // Handle error response - try to parse as JSON, but handle non-JSON gracefully
           let errorMessage = 'Server error';
@@ -5745,10 +5747,10 @@ require_once 'discord-invite.php';
             const errorText = await response.text();
             errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`;
           }
-          addLog('❌ Database download failed: ' + errorMessage);
+          addLog('❌ LIVE production database download failed: ' + errorMessage);
         }
       } catch (error) {
-        addLog('❌ Database download error: ' + error.message);
+        addLog('❌ LIVE production database download error: ' + error.message);
         console.error('Download error details:', error);
       }
     }
@@ -5756,7 +5758,9 @@ require_once 'discord-invite.php';
     // Trigger database backup
     async function triggerBackup() {
       try {
-        addLog('🗄️ Initiating database backup...');
+        addLog('🗄️ Initiating LIVE production database backup...');
+        addLog('🎯 Source: /var/www/html/db/narrrf_world.sqlite (Render production)');
+        addLog('🎯 Target: /data/narrrf_world.sqlite (Production backup)');
         
         // Call server-side backup endpoint
         const response = await fetch(API_BASE_URL + '/api/admin/backup-database.php', {
@@ -5770,13 +5774,14 @@ require_once 'discord-invite.php';
         const data = await response.json();
         
         if (data.success) {
-          addLog('✅ Database backup completed successfully');
-          addLog(`📁 Backup saved to: ${data.target_path || 'server backup directory'}`);
+          addLog('✅ LIVE production database backup completed successfully');
+          addLog(`📁 Backup saved to: ${data.target_path || '/data/narrrf_world.sqlite'}`);
           addLog(`🔧 Backup method used: ${data.backup_method || 'Unknown'}`);
           addLog(`📊 Source size: ${data.source_size || 'Unknown'}`);
           addLog(`📊 Target size: ${data.target_size || 'Unknown'}`);
+          addLog(`🎯 Production backup: LIVE database backed up to /data/`);
         } else {
-          addLog('❌ Database backup failed: ' + (data.error || 'Server error'));
+          addLog('❌ LIVE production database backup failed: ' + (data.error || 'Server error'));
           if (data.source_path) addLog(`📁 Source: ${data.source_path}`);
           if (data.target_path) addLog(`📁 Target: ${data.target_path}`);
           if (data.source_size) addLog(`📊 Source size: ${data.source_size}`);
@@ -7619,40 +7624,6 @@ require_once 'discord-invite.php';
               <div class="text-red-400 text-lg mb-2">❌ Error Loading Data</div>
               <div class="text-gray-500 text-sm">Failed to display Cheese Invaders data</div>
               <div class="text-orange-400 text-sm mt-2">Check console for details</div>
-            </div>
-          `;
-        }
-
-        dataSummary.innerHTML = `
-          <div class="text-blue-200 text-sm">
-            <strong>📊 Data Summary:</strong> 
-            ${invadersData.season_data?.total_scores || 0} scores from ${invadersData.season_data?.unique_players || 0} players in ${invadersData.season_data?.current_season || 'Season 1'}
-            ${invadersData.season_data?.total_scores > 0 ? '✅' : '❌ No data yet'}
-          </div>
-          <div class="text-blue-300 text-xs mt-2">
-            <strong>🕒 Last Updated:</strong> ${new Date().toLocaleString()}
-          </div>
-        `;
-        
-        // Insert summary at the top of the Cheese Invaders tab
-        const cheeseInvadersTab = document.getElementById('cheeseInvadersTab');
-        if (cheeseInvadersTab && !cheeseInvadersTab.querySelector('.data-summary')) {
-          dataSummary.className += ' data-summary';
-          cheeseInvadersTab.insertBefore(dataSummary, cheeseInvadersTab.firstChild);
-        }
-
-      } catch (error) {
-        console.error('Error displaying Cheese Invaders data:', error);
-        addLog(`❌ Error displaying Cheese Invaders data: ${error.message}`);
-        
-        // Show error state in the display
-        const leaderboard = document.getElementById('cheeseInvadersLeaderboard');
-        if (leaderboard) {
-          leaderboard.innerHTML = `
-            <div class="text-center p-6">
-              <div class="text-red-400 text-lg mb-2">❌ Error Loading Data</div>
-              <div class="text-gray-500 text-sm">Failed to display Cheese Invaders data</div>
-              <div class="text-blue-400 text-sm mt-2">Check console for details</div>
             </div>
           `;
         }

@@ -27,27 +27,29 @@ if (!$admin) {
 }
 
 try {
-    // Use the centralized database configuration to get the correct source path
-    require_once '../config/database.php';
-    $sourceDbPath = getDatabasePath();
+    // ALWAYS use the LIVE production database path for backups
+    $sourceDbPath = '/var/www/html/db/narrrf_world.sqlite';
     
-    // Destination: Production database in /data/ (for production) or local backup (for local)
-    $is_local = PHP_OS_FAMILY === 'Windows' || strpos($_SERVER['DOCUMENT_ROOT'] ?? '', 'xampp') !== false;
+    // Destination: Always backup to /data/ (production backup location)
+    $targetDbPath = '/data/narrrf_world.sqlite';
     
-    // Force production mode if we're on the live server
+    // Log the paths being used for debugging
+    error_log("Backup API: ALWAYS backing up from LIVE production database: " . $sourceDbPath);
+    error_log("Backup API: ALWAYS backing up to production backup location: " . $targetDbPath);
+    
+    // Verify this is the actual live database
     if (file_exists('/var/www/html/db/narrrf_world.sqlite')) {
-        $is_local = false;
-        error_log("Force production mode detected - live database exists at /var/www/html/db/");
-    }
-    
-    if ($is_local) {
-        // Local development - backup to local backup directory
-        $targetDbPath = dirname($sourceDbPath) . '/backup_' . date('Y-m-d_H-i-s') . '.sqlite';
-        error_log("Local backup mode - target: " . $targetDbPath);
+        $liveSize = filesize('/var/www/html/db/narrrf_world.sqlite');
+        error_log("Backup API: LIVE production database confirmed at /var/www/html/db/, size: " . $liveSize . " bytes");
     } else {
-        // Production - backup to /data/
-        $targetDbPath = '/data/narrrf_world.sqlite';
-        error_log("Production backup mode - target: " . $targetDbPath);
+        error_log("Backup API: WARNING - Live database not found at /var/www/html/db/");
+        
+        // Fallback to /data if live DB doesn't exist (should not happen in production)
+        if (file_exists('/data/narrrf_world.sqlite')) {
+            $sourceDbPath = '/data/narrrf_world.sqlite';
+            $fallbackSize = filesize($sourceDbPath);
+            error_log("Backup API: Using fallback database at /data/, size: " . $fallbackSize . " bytes");
+        }
     }
     
     // Log the paths being used for debugging
@@ -146,17 +148,18 @@ try {
         $fileSizeFormatted = formatBytes($targetSize);
         
         // Log successful backup
-        error_log("Backup API: Successfully copied live DB to production using $backupMethod. Size: " . $targetSize . " bytes");
+        error_log("Backup API: Successfully copied LIVE production DB to /data/ using $backupMethod. Size: " . $targetSize . " bytes");
         
         echo json_encode([
             'success' => true,
-            'message' => 'Live database successfully backed up to production',
+            'message' => 'LIVE production database successfully backed up to /data/',
             'backup_method' => $backupMethod,
             'source_path' => $sourceDbPath,
             'target_path' => $targetDbPath,
             'source_size' => formatBytes($sourceSize),
             'target_size' => $fileSizeFormatted,
-            'timestamp' => date('Y-m-d H:i:s')
+            'timestamp' => date('Y-m-d H:i:s'),
+            'production_backup' => 'LIVE production database backed up to /data/'
         ]);
     } else {
         http_response_code(500);
@@ -177,9 +180,9 @@ try {
 
 // Add a simple test function for debugging
 if (isset($_GET['test']) && $_GET['test'] === 'true') {
-    require_once '../config/database.php';
-    $sourceDbPath = getDatabasePath();
-    $is_local = PHP_OS_FAMILY === 'Windows' || strpos($_SERVER['DOCUMENT_ROOT'] ?? '', 'xampp') !== false;
+    // ALWAYS test with LIVE production database path
+    $sourceDbPath = '/var/www/html/db/narrrf_world.sqlite';
+    $targetDbPath = '/data/narrrf_world.sqlite';
     
     echo json_encode([
         'test' => true,
@@ -187,12 +190,13 @@ if (isset($_GET['test']) && $_GET['test'] === 'true') {
         'source_exists' => file_exists($sourceDbPath),
         'source_readable' => is_readable($sourceDbPath),
         'source_size' => file_exists($sourceDbPath) ? filesize($sourceDbPath) : 'N/A',
-        'is_local' => $is_local,
-        'target_dir_exists' => $is_local ? is_dir(dirname($sourceDbPath)) : is_dir('/data'),
-        'target_dir_writable' => $is_local ? is_writable(dirname($sourceDbPath)) : is_writable('/data'),
+        'target_path' => $targetDbPath,
+        'target_dir_exists' => is_dir('/data'),
+        'target_dir_writable' => is_writable('/data'),
         'current_user' => get_current_user(),
         'php_user' => function_exists('posix_getpwuid') ? (posix_getpwuid(posix_geteuid())['name'] ?? 'Unknown') : 'Unknown',
-        'web_server_user' => $_SERVER['USER'] ?? 'Unknown'
+        'web_server_user' => $_SERVER['USER'] ?? 'Unknown',
+        'production_mode' => 'ALWAYS - Hardcoded production paths'
     ]);
     exit;
 }

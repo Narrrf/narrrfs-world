@@ -29,23 +29,26 @@ if (!$admin) {
 }
 
 try {
-    // Use the centralized database configuration to get the correct path
-    $liveDbPath = getDatabasePath();
+    // ALWAYS use the LIVE production database path for downloads
+    $liveDbPath = '/var/www/html/db/narrrf_world.sqlite';
     
     // Log the path being used for debugging
-    error_log("Download API: Downloading from database: " . $liveDbPath);
+    error_log("Download API: ALWAYS downloading from LIVE production database: " . $liveDbPath);
     error_log("Download API: File exists: " . (file_exists($liveDbPath) ? 'YES' : 'NO'));
     error_log("Download API: File readable: " . (is_readable($liveDbPath) ? 'YES' : 'NO'));
     
-    // Additional verification - check if this is the live database
+    // Verify this is the actual live database
     if (file_exists('/var/www/html/db/narrrf_world.sqlite')) {
         $liveSize = filesize('/var/www/html/db/narrrf_world.sqlite');
-        error_log("Download API: Live database at /var/www/html/db/ exists, size: " . $liveSize . " bytes");
+        error_log("Download API: LIVE production database confirmed at /var/www/html/db/, size: " . $liveSize . " bytes");
+    } else {
+        error_log("Download API: WARNING - Live database not found at /var/www/html/db/");
         
-        // If the detected path is different from the live path, use the live path
-        if ($liveDbPath !== '/var/www/html/db/narrrf_world.sqlite') {
-            error_log("Download API: Path mismatch detected. Using live database path instead.");
-            $liveDbPath = '/var/www/html/db/narrrf_world.sqlite';
+        // Fallback to /data if live DB doesn't exist (should not happen in production)
+        if (file_exists('/data/narrrf_world.sqlite')) {
+            $liveDbPath = '/data/narrrf_world.sqlite';
+            $fallbackSize = filesize($liveDbPath);
+            error_log("Download API: Using fallback database at /data/, size: " . $fallbackSize . " bytes");
         }
     }
     
@@ -62,7 +65,7 @@ try {
     
     // Set headers for file download
     header('Content-Type: application/octet-stream');
-    header('Content-Disposition: attachment; filename="narrrf_world_live_database_' . date('Y-m-d') . '.sqlite"');
+    header('Content-Disposition: attachment; filename="narrrfs_world_LIVE_PRODUCTION_' . date('Y-m-d') . '.sqlite"');
     header('Content-Length: ' . $fileSize);
     header('Cache-Control: no-cache, must-revalidate');
     header('Expires: 0');
