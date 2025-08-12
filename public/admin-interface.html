@@ -2057,6 +2057,7 @@ require_once 'discord-invite.php';
             <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt" onclick="switchGameTab('cheese-hunt')">🧀 Cheese Hunt</button>
             <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="switchGameTab('discord-race')">🏁 Discord Cheese Race</button>
             <button onclick="refreshAllGameData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded ml-2">🔄 Refresh All Games</button>
+        <button onclick="debugAllGameTabs()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded ml-2">🔍 Debug All Game Tabs</button>
           </div>
 
       <!-- Overview Dashboard Tab -->
@@ -3694,6 +3695,32 @@ require_once 'discord-invite.php';
       } catch (error) {
         addLog(`❌ Comprehensive test error: ${error.message}`);
         console.error('Comprehensive test error:', error);
+      }
+    }
+    
+    // Refresh All Game Data Function
+    async function refreshAllGameData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Refreshing all game data...');
+      
+      try {
+        // Load all game tabs in sequence
+        await loadGameOverview();
+        await loadTetrisData();
+        await loadSnakeData();
+        await loadSpaceInvadersData();
+        await loadCheeseInvadersData();
+        await loadCheeseHuntData();
+        await loadDiscordRaceData();
+        
+        addLog('✅ All game data refreshed successfully');
+      } catch (error) {
+        addLog(`❌ Error refreshing game data: ${error.message}`);
+        console.error('Error refreshing game data:', error);
       }
     }
     
@@ -7204,11 +7231,11 @@ require_once 'discord-invite.php';
           if (score === null || score === undefined || score === '-') return '-';
           if (typeof score === 'string') score = parseFloat(score);
           if (isNaN(score)) return '-';
-          const dspoinc = score * 0.01; // Space Invaders uses 0.01 multiplier
+          const dspoinc = score * 10; // Space Invaders uses 10x multiplier like other games
           return `${score.toLocaleString()} (${dspoinc.toLocaleString()} DSPOINC)`;
         };
 
-        // Update Space Invaders statistics
+        // Update Space Invaders statistics from season_data with better formatting
         if (document.getElementById('spaceInvadersTotalScores')) {
           const totalScores = invadersData.season_data?.total_scores || 0;
           document.getElementById('spaceInvadersTotalScores').textContent = formatNumber(totalScores);
@@ -7232,32 +7259,99 @@ require_once 'discord-invite.php';
           document.getElementById('spaceInvadersAvgScore').textContent = formatScore(avgScore);
           document.getElementById('spaceInvadersAvgScore').className = avgScore > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
         }
+        
+        if (document.getElementById('spaceInvadersRecent24h')) {
+          const recent24h = invadersData.season_data?.recent_24h || 0;
+          document.getElementById('spaceInvadersRecent24h').textContent = formatNumber(recent24h);
+          document.getElementById('spaceInvadersRecent24h').className = recent24h > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('spaceInvadersRecent7d')) {
+          const recent7d = invadersData.season_data?.recent_7d || 0;
+          document.getElementById('spaceInvadersRecent7d').textContent = formatNumber(recent7d);
+          document.getElementById('spaceInvadersRecent7d').className = recent7d > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
 
-        // Update leaderboard with grid system
+        // Update player statistics with better formatting
+        if (document.getElementById('spaceInvadersActivePlayers')) {
+          const activePlayers = invadersData.season_data?.unique_players || 0;
+          document.getElementById('spaceInvadersActivePlayers').textContent = formatNumber(activePlayers);
+          document.getElementById('spaceInvadersActivePlayers').className = activePlayers > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('spaceInvadersNewPlayers')) {
+          document.getElementById('spaceInvadersNewPlayers').textContent = '📊 Coming Soon';
+          document.getElementById('spaceInvadersNewPlayers').className = 'text-blue-400 text-sm';
+        }
+        
+        if (document.getElementById('spaceInvadersReturningPlayers')) {
+          document.getElementById('spaceInvadersReturningPlayers').textContent = '📊 Coming Soon';
+          document.getElementById('spaceInvadersReturningPlayers').className = 'text-blue-400 text-sm';
+        }
+        
+        if (document.getElementById('spaceInvadersGrowthRate')) {
+          document.getElementById('spaceInvadersGrowthRate').textContent = '📊 Coming Soon';
+          document.getElementById('spaceInvadersGrowthRate').className = 'text-blue-400 text-sm';
+        }
+
+        // Update leaderboard with enhanced styling and animations (matching Snake tab)
         const leaderboard = document.getElementById('spaceInvadersLeaderboard');
         if (leaderboard) {
           if (invadersData.top_players && invadersData.top_players.length > 0) {
-            leaderboard.innerHTML = `
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                ${invadersData.top_players.map((player, index) => `
-                  <div class="bg-gray-700 p-4 rounded-lg border border-gray-600">
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-lg font-bold text-yellow-400">#${index + 1}</span>
-                      <span class="text-sm text-gray-400">${player.username || 'Unknown'}</span>
-                    </div>
-                    <div class="text-2xl font-bold text-green-400">${formatScore(player.score || 0)}</div>
-                    <div class="text-sm text-gray-300">${player.date || 'No date'}</div>
+            leaderboard.innerHTML = invadersData.top_players.map((player, index) => {
+              const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+              const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
+              const scoreValue = player.score || 0;
+              const dspoincValue = scoreValue * 10;
+              
+              return `
+                <div class="leaderboard-item" style="animation-delay: ${index * 0.1}s;">
+                  <div class="leaderboard-rank ${rankClass}">
+                    ${rankEmoji} #${index + 1}
                   </div>
-                `).join('')}
+                  <div class="leaderboard-info">
+                    <div class="leaderboard-name">
+                      ${player.username || 'Unknown Player'}
+                      ${index < 3 ? `<span class="text-xs ml-2 px-2 py-1 bg-blue-900 bg-opacity-50 rounded-full text-blue-200">Top Player</span>` : ''}
+                    </div>
+                    <div class="leaderboard-score">
+                      <span class="font-bold text-blue-300">${scoreValue.toLocaleString()}</span>
+                      <span class="text-xs text-gray-400 ml-2">(${dspoincValue.toLocaleString()} DSPOINC)</span>
+                    </div>
+                  </div>
+                  <div class="leaderboard-date">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-400 mb-1">Discord ID</div>
+                      <div class="font-mono text-sm">${player.discord_id || 'N/A'}</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+            
+            // Add leaderboard summary
+            const summary = document.createElement('div');
+            summary.className = 'mt-4 p-4 bg-blue-900 bg-opacity-30 rounded-lg border border-blue-700 border-opacity-50';
+            summary.innerHTML = `
+              <div class="flex items-center justify-between text-sm">
+                <div class="text-blue-200">
+                  <span class="font-semibold">🏆 Leaderboard Summary:</span>
+                  ${invadersData.top_players.length} players ranked
+                </div>
+                <div class="text-blue-300">
+                  <span class="font-semibold">Total DSPOINC:</span>
+                  ${invadersData.top_players.reduce((sum, p) => sum + (p.score || 0) * 10, 0).toLocaleString()}
+                </div>
               </div>
             `;
+            leaderboard.appendChild(summary);
           } else {
             leaderboard.innerHTML = `
               <div class="text-center p-8 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700 border-opacity-50">
                 <div class="text-gray-300 text-2xl mb-3">👾</div>
                 <div class="text-gray-400 text-lg mb-2 font-semibold">No Leaderboard Data</div>
                 <div class="text-gray-500 text-sm mb-4">No players have completed Space Invaders games yet</div>
-                <div class="text-green-400 text-sm bg-green-900 bg-opacity-30 px-4 py-2 rounded-full border border-green-700 border-opacity-50">
+                <div class="text-blue-400 text-sm bg-blue-900 bg-opacity-30 px-4 py-2 rounded-full border border-blue-700 border-opacity-50">
                   Start playing to see rankings! 🎮
                 </div>
               </div>
@@ -7265,7 +7359,7 @@ require_once 'discord-invite.php';
           }
         }
 
-        // Add data summary
+        // Add data summary at the top (matching Snake tab)
         const dataSummary = document.createElement('div');
         dataSummary.className = 'mb-4 p-3 bg-blue-900 bg-opacity-50 rounded-lg';
         dataSummary.innerHTML = `
@@ -7279,6 +7373,7 @@ require_once 'discord-invite.php';
           </div>
         `;
         
+        // Insert summary at the top of the Space Invaders tab
         const spaceInvadersTab = document.getElementById('spaceInvadersTab');
         if (spaceInvadersTab && !spaceInvadersTab.querySelector('.data-summary')) {
           dataSummary.className += ' data-summary';
@@ -7288,6 +7383,279 @@ require_once 'discord-invite.php';
       } catch (error) {
         console.error('Error displaying Space Invaders data:', error);
         addLog(`❌ Error displaying Space Invaders data: ${error.message}`);
+        
+        // Show error state in the display
+        const leaderboard = document.getElementById('spaceInvadersLeaderboard');
+        if (leaderboard) {
+          leaderboard.innerHTML = `
+            <div class="text-center p-6">
+              <div class="text-red-400 text-lg mb-2">❌ Error Loading Data</div>
+              <div class="text-gray-500 text-sm">Failed to display Space Invaders data</div>
+              <div class="text-blue-400 text-sm mt-2">Check console for details</div>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // Cheese Invaders Tab Functions
+    async function loadCheeseInvadersData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🧀 Loading Cheese Invaders data...');
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.games && data.data.games.cheese_invaders) {
+          displayCheeseInvadersData(data.data.games.cheese_invaders);
+          addLog('✅ Cheese Invaders data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Cheese Invaders data: ${data.error || 'No data available'}`);
+        }
+      } catch (error) {
+        addLog(`❌ Cheese Invaders data loading error: ${error.message}`);
+      }
+    }
+
+    function displayCheeseInvadersData(invadersData) {
+      try {
+        console.log('🧀 Cheese Invaders data received:', invadersData);
+        
+        // Helper function to format numbers nicely
+        const formatNumber = (num) => {
+          if (num === null || num === undefined || num === '-') return '-';
+          if (typeof num === 'string') num = parseFloat(num);
+          if (isNaN(num)) return '-';
+          return num.toLocaleString();
+        };
+
+        // Helper function to format scores with DSPOINC conversion
+        const formatScore = (score) => {
+          if (score === null || score === undefined || score === '-') return '-';
+          if (typeof score === 'string') score = parseFloat(score);
+          if (isNaN(score)) return '-';
+          const dspoinc = score * 10;
+          return `${score.toLocaleString()} (${dspoinc.toLocaleString()} DSPOINC)`;
+        };
+
+        // Update Cheese Invaders statistics from season_data with better formatting
+        if (document.getElementById('cheeseInvadersTotalScores')) {
+          const totalScores = invadersData.season_data?.total_scores || 0;
+          document.getElementById('cheeseInvadersTotalScores').textContent = formatNumber(totalScores);
+          document.getElementById('cheeseInvadersTotalScores').className = totalScores > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseInvadersUniquePlayers')) {
+          const uniquePlayers = invadersData.season_data?.unique_players || 0;
+          document.getElementById('cheeseInvadersUniquePlayers').textContent = formatNumber(uniquePlayers);
+          document.getElementById('cheeseInvadersUniquePlayers').className = uniquePlayers > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseInvadersMaxScore')) {
+          const maxScore = invadersData.season_data?.max_score || 0;
+          document.getElementById('cheeseInvadersMaxScore').textContent = formatScore(maxScore);
+          document.getElementById('cheeseInvadersMaxScore').className = maxScore > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseInvadersAvgScore')) {
+          const avgScore = invadersData.season_data?.avg_score || 0;
+          document.getElementById('cheeseInvadersAvgScore').textContent = formatScore(avgScore);
+          document.getElementById('cheeseInvadersAvgScore').className = avgScore > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseInvadersRecent24h')) {
+          const recent24h = invadersData.season_data?.recent_24h || 0;
+          document.getElementById('cheeseInvadersRecent24h').textContent = formatNumber(recent24h);
+          document.getElementById('cheeseInvadersRecent24h').className = recent24h > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseInvadersRecent7d')) {
+          const recent7d = invadersData.season_data?.recent_7d || 0;
+          document.getElementById('cheeseInvadersRecent7d').textContent = formatNumber(recent7d);
+          document.getElementById('cheeseInvadersRecent7d').className = recent7d > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+
+        // Update player statistics with better formatting
+        if (document.getElementById('cheeseInvadersActivePlayers')) {
+          const activePlayers = invadersData.season_data?.unique_players || 0;
+          document.getElementById('cheeseInvadersActivePlayers').textContent = formatNumber(activePlayers);
+          document.getElementById('cheeseInvadersActivePlayers').className = activePlayers > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseInvadersNewPlayers')) {
+          document.getElementById('cheeseInvadersNewPlayers').textContent = '📊 Coming Soon';
+          document.getElementById('cheeseInvadersNewPlayers').className = 'text-blue-400 text-sm';
+        }
+        
+        if (document.getElementById('cheeseInvadersReturningPlayers')) {
+          document.getElementById('cheeseInvadersReturningPlayers').textContent = '📊 Coming Soon';
+          document.getElementById('cheeseInvadersReturningPlayers').className = 'text-blue-400 text-sm';
+        }
+        
+        if (document.getElementById('cheeseInvadersGrowthRate')) {
+          document.getElementById('cheeseInvadersGrowthRate').textContent = '📊 Coming Soon';
+          document.getElementById('cheeseInvadersGrowthRate').className = 'text-blue-400 text-sm';
+        }
+
+        // Update season data with better formatting
+        if (document.getElementById('cheeseInvadersCurrentSeason')) {
+          const currentSeason = invadersData.season_data?.current_season || 'Season 1';
+          document.getElementById('cheeseInvadersCurrentSeason').textContent = currentSeason;
+          document.getElementById('cheeseInvadersCurrentSeason').className = 'text-white font-semibold';
+        }
+        
+        if (document.getElementById('cheeseInvadersSeasonScores')) {
+          const seasonScores = invadersData.season_data?.total_scores || 0;
+          document.getElementById('cheeseInvadersSeasonScores').textContent = formatNumber(seasonScores);
+          document.getElementById('cheeseInvadersSeasonScores').className = seasonScores > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseInvadersSeasonPlayers')) {
+          const seasonPlayers = invadersData.season_data?.unique_players || 0;
+          document.getElementById('cheeseInvadersSeasonPlayers').textContent = formatNumber(seasonPlayers);
+          document.getElementById('cheeseInvadersSeasonPlayers').className = seasonPlayers > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
+        }
+
+        // Update leaderboard with enhanced styling and animations (matching Snake tab)
+        const leaderboard = document.getElementById('cheeseInvadersLeaderboard');
+        if (leaderboard) {
+          if (invadersData.top_players && invadersData.top_players.length > 0) {
+            leaderboard.innerHTML = invadersData.top_players.map((player, index) => {
+              const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+              const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
+              const scoreValue = player.score || 0;
+              const dspoincValue = scoreValue * 10;
+              
+              return `
+                <div class="leaderboard-item" style="animation-delay: ${index * 0.1}s;">
+                  <div class="leaderboard-rank ${rankClass}">
+                    ${rankEmoji} #${index + 1}
+                  </div>
+                  <div class="leaderboard-info">
+                    <div class="leaderboard-name">
+                      ${player.username || 'Unknown Player'}
+                      ${index < 3 ? `<span class="text-xs ml-2 px-2 py-1 bg-orange-900 bg-opacity-50 rounded-full text-orange-200">Top Player</span>` : ''}
+                    </div>
+                    <div class="leaderboard-score">
+                      <span class="font-bold text-orange-300">${scoreValue.toLocaleString()}</span>
+                      <span class="text-xs text-gray-400 ml-2">(${dspoincValue.toLocaleString()} DSPOINC)</span>
+                    </div>
+                  </div>
+                  <div class="leaderboard-date">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-400 mb-1">Discord ID</div>
+                      <div class="font-mono text-sm">${player.discord_id || 'N/A'}</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+            
+            // Add leaderboard summary
+            const summary = document.createElement('div');
+            summary.className = 'mt-4 p-4 bg-orange-900 bg-opacity-30 rounded-lg border border-orange-700 border-opacity-50';
+            summary.innerHTML = `
+              <div class="flex items-center justify-between text-sm">
+                <div class="text-orange-200">
+                  <span class="font-semibold">🏆 Leaderboard Summary:</span>
+                  ${invadersData.top_players.length} players ranked
+                </div>
+                <div class="text-orange-300">
+                  <span class="font-semibold">Total DSPOINC:</span>
+                  ${invadersData.top_players.reduce((sum, p) => sum + (p.score || 0) * 10, 0).toLocaleString()}
+                </div>
+              </div>
+            `;
+            leaderboard.appendChild(summary);
+          } else {
+            leaderboard.innerHTML = `
+              <div class="text-center p-8 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700 border-opacity-50">
+                <div class="text-gray-300 text-2xl mb-3">🧀</div>
+                <div class="text-gray-400 text-lg mb-2 font-semibold">No Leaderboard Data</div>
+                <div class="text-gray-500 text-sm mb-4">No players have completed Cheese Invaders games yet</div>
+                <div class="text-orange-400 text-sm bg-orange-900 bg-opacity-30 px-4 py-2 rounded-full border border-orange-700 border-opacity-50">
+                  Start playing to see rankings! 🎮
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        // Add data summary at the top (matching Snake tab)
+        const dataSummary = document.createElement('div');
+        dataSummary.className = 'mb-4 p-3 bg-orange-900 bg-opacity-50 rounded-lg';
+        dataSummary.innerHTML = `
+          <div class="text-orange-200 text-sm">
+            <strong>📊 Data Summary:</strong> 
+            ${invadersData.season_data?.total_scores || 0} scores from ${invadersData.season_data?.unique_players || 0} players in ${invadersData.season_data?.current_season || 'Season 1'}
+            ${invadersData.season_data?.total_scores > 0 ? '✅' : '❌ No data yet'}
+          </div>
+          <div class="text-orange-300 text-xs mt-2">
+            <strong>🕒 Last Updated:</strong> ${new Date().toLocaleString()}
+          </div>
+        `;
+        
+        // Insert summary at the top of the Cheese Invaders tab
+        const cheeseInvadersTab = document.getElementById('cheeseInvadersTab');
+        if (cheeseInvadersTab && !cheeseInvadersTab.querySelector('.data-summary')) {
+          dataSummary.className += ' data-summary';
+          cheeseInvadersTab.insertBefore(dataSummary, cheeseInvadersTab.firstChild);
+        }
+
+      } catch (error) {
+        console.error('Error displaying Cheese Invaders data:', error);
+        addLog(`❌ Error displaying Cheese Invaders data: ${error.message}`);
+        
+        // Show error state in the display
+        const leaderboard = document.getElementById('cheeseInvadersLeaderboard');
+        if (leaderboard) {
+          leaderboard.innerHTML = `
+            <div class="text-center p-6">
+              <div class="text-red-400 text-lg mb-2">❌ Error Loading Data</div>
+              <div class="text-gray-500 text-sm">Failed to display Cheese Invaders data</div>
+              <div class="text-orange-400 text-sm mt-2">Check console for details</div>
+            </div>
+          `;
+        }
+
+        dataSummary.innerHTML = `
+          <div class="text-blue-200 text-sm">
+            <strong>📊 Data Summary:</strong> 
+            ${invadersData.season_data?.total_scores || 0} scores from ${invadersData.season_data?.unique_players || 0} players in ${invadersData.season_data?.current_season || 'Season 1'}
+            ${invadersData.season_data?.total_scores > 0 ? '✅' : '❌ No data yet'}
+          </div>
+          <div class="text-blue-300 text-xs mt-2">
+            <strong>🕒 Last Updated:</strong> ${new Date().toLocaleString()}
+          </div>
+        `;
+        
+        // Insert summary at the top of the Cheese Invaders tab
+        const cheeseInvadersTab = document.getElementById('cheeseInvadersTab');
+        if (cheeseInvadersTab && !cheeseInvadersTab.querySelector('.data-summary')) {
+          dataSummary.className += ' data-summary';
+          cheeseInvadersTab.insertBefore(dataSummary, cheeseInvadersTab.firstChild);
+        }
+
+      } catch (error) {
+        console.error('Error displaying Cheese Invaders data:', error);
+        addLog(`❌ Error displaying Cheese Invaders data: ${error.message}`);
+        
+        // Show error state in the display
+        const leaderboard = document.getElementById('cheeseInvadersLeaderboard');
+        if (leaderboard) {
+          leaderboard.innerHTML = `
+            <div class="text-center p-6">
+              <div class="text-red-400 text-lg mb-2">❌ Error Loading Data</div>
+              <div class="text-gray-500 text-sm">Failed to display Cheese Invaders data</div>
+              <div class="text-blue-400 text-sm mt-2">Check console for details</div>
+            </div>
+          `;
+        }
       }
     }
 
@@ -7545,7 +7913,7 @@ require_once 'discord-invite.php';
           
           // Show success notification
           showNotification('🔄 Discord Race Sync Complete', 'Race data has been synchronized with the Discord bot!', 'success');
-        } else {
+          } else {
           addLog(`❌ Discord Race sync failed: ${data.error || 'Unknown error'}`);
           showNotification('❌ Sync Failed', data.error || 'Failed to sync Discord race data', 'error');
         }
@@ -7700,7 +8068,7 @@ require_once 'discord-invite.php';
                 </div>
               </div>
             `;
-          } else {
+        } else {
             // Enhanced leaderboard with the new CSS classes
             const topRacers = raceData.race_data.top_racers.slice(0, 10);
             leaderboard.innerHTML = `
@@ -7765,7 +8133,7 @@ require_once 'discord-invite.php';
           if (data.success) {
             addLog('✅ Tetris scores reset successfully');
             loadTetrisData(); // Refresh the data
-          } else {
+        } else {
             addLog('❌ Failed to reset Tetris scores: ' + data.error);
           }
         })
@@ -7794,7 +8162,7 @@ require_once 'discord-invite.php';
           if (data.success) {
             addLog('✅ Snake scores reset successfully');
             loadSnakeData(); // Refresh the data
-          } else {
+        } else {
             addLog('❌ Failed to reset Snake scores: ' + data.error);
           }
         })
@@ -7823,7 +8191,7 @@ require_once 'discord-invite.php';
           if (data.success) {
             addLog('✅ Cheese Invaders scores reset successfully');
             loadCheeseInvadersData(); // Refresh the data
-          } else {
+        } else {
             addLog('❌ Failed to reset Cheese Invaders scores: ' + data.error);
           }
         })
@@ -8578,8 +8946,8 @@ require_once 'discord-invite.php';
     async function saveGameSettings() {
       if (!currentAdmin) {
         addLog('❌ Please authenticate first');
-        return;
-      }
+          return;
+        }
 
                const tetrisWlEnabled = document.getElementById('tetrisWlEnabled').checked ? 1 : 0;
          const tetrisWlThreshold = parseInt(document.getElementById('tetrisWlThreshold').value);
@@ -8715,7 +9083,7 @@ require_once 'discord-invite.php';
           
           // Refresh active quests
           loadActiveQuests();
-        } else {
+          } else {
           addLog(`❌ Failed to create quest: ${data.error}`);
         }
       } catch (error) {
@@ -9251,7 +9619,7 @@ require_once 'discord-invite.php';
           } else {
             addVerificationLog(`❌ Search failed: ${data.error}`);
           }
-        } catch (error) {
+      } catch (error) {
           addVerificationLog(`❌ Search error: ${error.message}`);
         }
       }, 300);
@@ -9644,7 +10012,7 @@ require_once 'discord-invite.php';
               });
             }
           }
-        } catch (error) {
+      } catch (error) {
           console.error('Error fetching Discord activity:', error);
         }
       }, 2000); // Poll every 2 seconds
