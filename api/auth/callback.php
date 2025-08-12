@@ -1,21 +1,19 @@
 <?php
 session_start();
 
-// ✅ Load from Render environment
-$clientId = getenv('DISCORD_CLIENT_ID');
+// ✅ Load from Render environment with exact values from working OAuth URL
+$clientId = '1357927342265204858'; // Use exact client ID from working URL
 $clientSecret = getenv('DISCORD_SECRET');
-$redirectUri = 'https://narrrfs.world/api/auth/callback.php';
-if (isset($_GET['redirect'])) {
-    $redirectUri .= '?redirect=' . $_GET['redirect'];
-}
+$redirectUri = 'https://narrrfs.world/api/auth/callback.php'; // Exact redirect URI from working URL
 
 // ✅ Step 1: Get code
 if (!isset($_GET['code'])) {
-    die('❌ No code returned from Discord');
+    error_log('❌ No authorization code received from Discord');
+    die('❌ No authorization code returned from Discord. Please try logging in again.');
 }
 $code = $_GET['code'];
 
-// ✅ Step 2: Exchange code for token
+// ✅ Step 2: Exchange code for token using exact format from working URL
 $tokenRequest = curl_init();
 curl_setopt_array($tokenRequest, [
     CURLOPT_URL => 'https://discord.com/api/oauth2/token',
@@ -26,8 +24,8 @@ curl_setopt_array($tokenRequest, [
         'client_secret' => $clientSecret,
         'grant_type' => 'authorization_code',
         'code' => $code,
-        'redirect_uri' => $redirectUri,
-        'scope' => 'identify guilds guilds.members.read'
+        'redirect_uri' => $redirectUri, // Use exact redirect URI without parameters
+        'scope' => 'guilds identify guilds.members.read' // Exact scope order from working URL
     ]),
     CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded']
 ]);
@@ -37,7 +35,8 @@ curl_close($tokenRequest);
 $token = json_decode($response, true);
 
 if (!isset($token['access_token'])) {
-    die("❌ Failed to get access token:\n$response");
+    error_log('❌ Failed to get access token: ' . $response);
+    die("❌ Failed to get access token. Please try logging in again.");
 }
 $accessToken = $token['access_token'];
 
@@ -55,7 +54,8 @@ curl_close($userRequest);
 $user = json_decode($userResponse, true);
 
 if (!isset($user['id'])) {
-    die("❌ Failed to get user info:\n$userResponse");
+    error_log('❌ Failed to get user info: ' . $userResponse);
+    die("❌ Failed to get user information. Please try again.");
 }
 
 // 🧀 Save key user fields to session
@@ -125,7 +125,7 @@ try {
 // ✅ Sync roles
 include_once(__DIR__ . '/sync-role.php');
 
-// 📌 Determine redirect target (now dynamic)
+// 📌 Determine redirect target from session (stored during login)
 $target = 'https://narrrfs.world/profile.html';
 if (isset($_SESSION['oauth_final_redirect'])) {
     $target = 'https://narrrfs.world' . $_SESSION['oauth_final_redirect'];
