@@ -1429,6 +1429,11 @@ require_once 'discord-invite.php';
           <button onclick="testDownloadEndpoint()" class="inline-block bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
             🧪 Test Download
           </button>
+          
+          <!-- Test all game tabs button -->
+          <button onclick="testAllGameTabsComprehensive()" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
+            🧪 Test All Game Tabs
+          </button>
       </div>
     </div>
 
@@ -3609,6 +3614,72 @@ require_once 'discord-invite.php';
       showTab('users');
       setTimeout(() => showTab('points'), 1000);
       setTimeout(() => showTab('dashboard'), 2000);
+    }
+
+    // Comprehensive test function for all game tabs
+    async function testAllGameTabsComprehensive() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🧪 Starting comprehensive game tabs test...');
+      
+      try {
+        // Test API endpoint
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (!data.success) {
+          addLog('❌ API test failed: ' + (data.error || 'Unknown error'));
+          return;
+        }
+
+        addLog('✅ API test passed - data structure verified');
+        
+        // Test each game tab individually
+        const games = ['tetris', 'snake', 'space_invaders', 'cheese_invaders', 'cheese_hunt', 'discord_race'];
+        
+        for (const game of games) {
+          if (data.data.games[game]) {
+            addLog(`✅ ${game.toUpperCase()} data available: ${JSON.stringify(data.data.games[game].game_name)}`);
+            
+            // Test specific data loading
+            switch(game) {
+              case 'tetris':
+                await loadTetrisData();
+                break;
+              case 'snake':
+                await loadSnakeData();
+                break;
+              case 'space_invaders':
+                await loadSpaceInvadersData();
+                break;
+              case 'cheese_invaders':
+                await loadCheeseInvadersData();
+                break;
+              case 'cheese_hunt':
+                await loadCheeseHuntData();
+                break;
+              case 'discord_race':
+                await loadDiscordRaceData();
+                break;
+            }
+          } else {
+            addLog(`❌ ${game.toUpperCase()} data missing from API`);
+          }
+        }
+        
+        // Test overview totals
+        const overview = data.data.overview;
+        addLog(`📊 Overview totals: ${overview.total_games} games, ${overview.total_active_players} players, ${overview.total_games_played} games played`);
+        
+        addLog('🧪 Comprehensive test completed!');
+        
+      } catch (error) {
+        addLog(`❌ Comprehensive test error: ${error.message}`);
+        console.error('Comprehensive test error:', error);
+      }
     }
     
     // Test download endpoint function
@@ -7224,7 +7295,7 @@ require_once 'discord-invite.php';
       }
     }
 
-    function displayInvadersData(invadersData) {
+    function displayCheeseInvadersData(invadersData) {
       try {
         console.log('🧀 Cheese Invaders data received:', invadersData);
         console.log('🧀 Cheese Invaders data structure:', JSON.stringify(invadersData, null, 2));
