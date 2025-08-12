@@ -132,10 +132,20 @@ if (isset($_SESSION['oauth_final_redirect'])) {
     unset($_SESSION['oauth_final_redirect']); // clean up
 }
 
-// ✅ Inject localStorage and redirect
+// ✅ Inject localStorage and redirect with admin redirect check
 echo "<script>
   localStorage.setItem('discord_id', '{$user['id']}');
   localStorage.setItem('discord_name', '{$user['username']}');
-  window.location.href = '$target';
+  
+  // Check if user was redirected from admin interface
+  const adminRedirect = localStorage.getItem('adminRedirect');
+  if (adminRedirect) {
+    localStorage.removeItem('adminRedirect'); // Clear the flag
+    console.log('🔄 Admin redirect detected, redirecting to admin interface');
+    window.location.href = 'https://narrrfs.world/admin-interface.html';
+  } else {
+    console.log('🔄 No admin redirect, going to profile page');
+    window.location.href = '$target';
+  }
 </script>";
 exit;
