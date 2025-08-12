@@ -2339,7 +2339,7 @@ require_once 'discord-invite.php';
 
           <!-- Cheese Invaders Actions -->
           <div class="flex flex-wrap gap-3">
-            <button onclick="loadInvadersData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+            <button onclick="loadCheeseInvadersData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
             <button onclick="resetInvadersScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">🔄 Reset Scores</button>
             <button onclick="exportInvadersData()" class="bg-green-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
           </div>
@@ -2439,7 +2439,7 @@ require_once 'discord-invite.php';
 
           <!-- Cheese Hunt Actions -->
           <div class="flex flex-wrap gap-3">
-            <button onclick="loadCheeseData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+            <button onclick="loadCheeseHuntData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
             <button onclick="resetCheeseData()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">🔄 Reset Data</button>
             <button onclick="exportCheeseData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
           </div>
@@ -2508,7 +2508,7 @@ require_once 'discord-invite.php';
 
           <!-- Space Invaders Actions -->
           <div class="flex flex-wrap gap-3">
-            <button onclick="loadInvadersData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+            <button onclick="loadSpaceInvadersData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
             <button onclick="resetInvadersScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">🔄 Reset Scores</button>
             <button onclick="exportInvadersData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
           </div>
@@ -2599,7 +2599,7 @@ require_once 'discord-invite.php';
 
           <!-- Discord Race Actions -->
           <div class="flex flex-wrap gap-3">
-            <button onclick="loadRaceData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+            <button onclick="loadDiscordRaceData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
             <button onclick="syncDiscordRaceData()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded admin-button">🔄 Sync Discord Bot</button>
             <button onclick="exportRaceData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
             <button onclick="manageRaceBot()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded admin-button">🤖 Bot Settings</button>
@@ -3782,9 +3782,10 @@ require_once 'discord-invite.php';
         setTimeout(() => {
           loadTetrisData();
           loadSnakeData();
-          loadInvadersData();
-          loadCheeseData();
-          loadRaceData();
+          loadSpaceInvadersData();
+          loadCheeseInvadersData();
+          loadCheeseHuntData();
+          loadDiscordRaceData();
         }, 500); // Small delay to ensure overview loads first
       }
       if (tabName === 'holderVerification') loadHolderVerificationData();
@@ -7563,9 +7564,10 @@ require_once 'discord-invite.php';
         await Promise.all([
           loadTetrisData(),
           loadSnakeData(),
-          loadInvadersData(),
-          loadCheeseData(),
-          loadRaceData()
+          loadSpaceInvadersData(),
+          loadCheeseInvadersData(),
+          loadCheeseHuntData(),
+          loadDiscordRaceData()
         ]);
         
         addLog('✅ All game data refreshed successfully');
@@ -7593,8 +7595,7 @@ require_once 'discord-invite.php';
       }
     }
 
-    // Cheese Hunt Tab Functions
-    async function loadCheeseData() {
+    // Cheese Hunt Tab Functions - REMOVED (replaced with loadCheeseHuntData)
       if (!currentAdmin) {
         addLog('❌ Please authenticate first');
         return;
@@ -7785,8 +7786,7 @@ require_once 'discord-invite.php';
       }
     }
 
-    // Discord Cheese Race Tab Functions
-    async function loadRaceData() {
+    // Discord Cheese Race Tab Functions - REMOVED (replaced with loadDiscordRaceData)
       if (!currentAdmin) {
         addLog('❌ Please authenticate first');
         return;
@@ -7850,7 +7850,7 @@ require_once 'discord-invite.php';
           
           // Refresh the race data after sync
           setTimeout(() => {
-            loadRaceData();
+            loadDiscordRaceData();
           }, 1000);
           
           // Show success notification
@@ -7871,7 +7871,7 @@ require_once 'discord-invite.php';
       }
     }
 
-    function displayRaceData(raceData) {
+    // function displayRaceData(raceData) - REMOVED (replaced with displayDiscordRaceData)
       try {
         console.log('Discord Race data received:', raceData);
         console.log('Discord Race data structure:', JSON.stringify(raceData, null, 2));
@@ -8131,7 +8131,7 @@ require_once 'discord-invite.php';
         .then(data => {
           if (data.success) {
             addLog('✅ Cheese Invaders scores reset successfully');
-            loadInvadersData(); // Refresh the data
+            loadCheeseInvadersData(); // Refresh the data
           } else {
             addLog('❌ Failed to reset Cheese Invaders scores: ' + data.error);
           }
@@ -8160,7 +8160,7 @@ require_once 'discord-invite.php';
         .then(data => {
           if (data.success) {
             addLog('✅ Cheese Hunt data reset successfully');
-            loadCheeseData(); // Refresh the data
+            loadCheeseHuntData(); // Refresh the data
           } else {
             addLog('❌ Failed to reset Cheese Hunt data: ' + data.error);
           }
@@ -10954,32 +10954,26 @@ require_once 'discord-invite.php';
         };
 
         // Update Cheese Hunt statistics
-        if (document.getElementById('cheeseHuntTotalClicks')) {
+        if (document.getElementById('cheeseTotalClicks')) {
           const totalClicks = cheeseData.current_data?.total_clicks || 0;
-          document.getElementById('cheeseHuntTotalClicks').textContent = formatNumber(totalClicks);
-          document.getElementById('cheeseHuntTotalClicks').className = totalClicks > 0 ? 'text-white font-semibold' : 'text-gray-400';
+          document.getElementById('cheeseTotalClicks').textContent = formatNumber(totalClicks);
+          document.getElementById('cheeseTotalClicks').className = totalClicks > 0 ? 'text-white font-semibold' : 'text-gray-400';
         }
         
-        if (document.getElementById('cheeseHuntUniquePlayers')) {
+        if (document.getElementById('cheeseUniquePlayers')) {
           const uniquePlayers = cheeseData.current_data?.unique_players || 0;
-          document.getElementById('cheeseHuntUniquePlayers').textContent = formatNumber(uniquePlayers);
-          document.getElementById('cheeseHuntUniquePlayers').className = uniquePlayers > 0 ? 'text-white font-semibold' : 'text-gray-400';
+          document.getElementById('cheeseUniquePlayers').textContent = formatNumber(uniquePlayers);
+          document.getElementById('cheeseUniquePlayers').className = uniquePlayers > 0 ? 'text-white font-semibold' : 'text-gray-400';
         }
         
-        if (document.getElementById('cheeseHuntMaxClicks')) {
-          const maxClicks = cheeseData.current_data?.max_clicks || 0;
-          document.getElementById('cheeseHuntMaxClicks').textContent = formatNumber(maxClicks);
-          document.getElementById('cheeseHuntMaxClicks').className = maxClicks > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
-        }
-        
-        if (document.getElementById('cheeseHuntAvgClicks')) {
+        if (document.getElementById('cheeseAvgClicks')) {
           const avgClicks = cheeseData.current_data?.avg_clicks || 0;
-          document.getElementById('cheeseHuntAvgClicks').textContent = formatNumber(avgClicks);
-          document.getElementById('cheeseHuntAvgClicks').className = avgClicks > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
+          document.getElementById('cheeseAvgClicks').textContent = formatNumber(avgClicks);
+          document.getElementById('cheeseAvgClicks').className = avgClicks > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
         }
 
         // Update leaderboard with grid system
-        const leaderboard = document.getElementById('cheeseHuntLeaderboard');
+        const leaderboard = document.getElementById('cheeseLeaderboard');
         if (leaderboard) {
           if (cheeseData.top_hunters && cheeseData.top_hunters.length > 0) {
             leaderboard.innerHTML = `
@@ -11074,26 +11068,26 @@ require_once 'discord-invite.php';
         };
 
         // Update Discord Race statistics
-        if (document.getElementById('discordRaceTotalRaces')) {
+        if (document.getElementById('raceTotalRaces')) {
           const totalRaces = raceData.race_data?.total_races || 0;
-          document.getElementById('discordRaceTotalRaces').textContent = formatNumber(totalRaces);
-          document.getElementById('discordRaceTotalRaces').className = totalRaces > 0 ? 'text-white font-semibold' : 'text-gray-400';
+          document.getElementById('raceTotalRaces').textContent = formatNumber(totalRaces);
+          document.getElementById('raceTotalRaces').className = totalRaces > 0 ? 'text-white font-semibold' : 'text-gray-400';
         }
         
-        if (document.getElementById('discordRaceTotalParticipants')) {
+        if (document.getElementById('raceTotalParticipants')) {
           const totalParticipants = raceData.race_data?.total_participants || 0;
-          document.getElementById('discordRaceTotalParticipants').textContent = formatNumber(totalParticipants);
-          document.getElementById('discordRaceTotalParticipants').className = totalParticipants > 0 ? 'text-white font-semibold' : 'text-gray-400';
+          document.getElementById('raceTotalParticipants').textContent = formatNumber(totalParticipants);
+          document.getElementById('raceTotalParticipants').className = totalParticipants > 0 ? 'text-white font-semibold' : 'text-gray-400';
         }
         
-        if (document.getElementById('discordRaceTotalPrizes')) {
+        if (document.getElementById('raceTotalWinners')) {
           const totalPrizes = raceData.race_data?.total_prizes_awarded || 0;
-          document.getElementById('discordRaceTotalPrizes').textContent = formatNumber(totalPrizes);
-          document.getElementById('discordRaceTotalPrizes').className = totalPrizes > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
+          document.getElementById('raceTotalWinners').textContent = formatNumber(totalPrizes);
+          document.getElementById('raceTotalWinners').className = totalPrizes > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
         }
 
         // Update top racers leaderboard with grid system
-        const leaderboard = document.getElementById('discordRaceLeaderboard');
+        const leaderboard = document.getElementById('raceLeaderboard');
         if (leaderboard) {
           if (raceData.race_data?.top_racers && raceData.race_data.top_racers.length > 0) {
             leaderboard.innerHTML = `
@@ -11125,7 +11119,7 @@ require_once 'discord-invite.php';
         }
 
         // Update recent activity
-        const recentActivity = document.getElementById('discordRaceRecentActivity');
+        const recentActivity = document.getElementById('recentRaceActivity');
         if (recentActivity && raceData.race_data?.recent_activity) {
           recentActivity.innerHTML = `
             <div class="space-y-2">
