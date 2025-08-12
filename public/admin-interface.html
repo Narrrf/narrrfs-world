@@ -1371,7 +1371,7 @@ require_once 'discord-invite.php';
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="admin-card mb-6" id="navPanel" style="display: none;">
+    <div class="admin-card mb-6" id="navPanel" style="display: block;">
       <div class="flex flex-wrap gap-2 mb-4">
         <button class="tab-btn active px-4 py-2 rounded" data-tab="dashboard">📊 Dashboard</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="users">👥 User Management</button>
@@ -1410,10 +1410,25 @@ require_once 'discord-invite.php';
           </button>
         </div>
         
-        <!-- All admin users can see Home link -->
-        <a href="index.html" class="inline-block bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
-          🏠 Home
-        </a>
+                  <!-- All admin users can see Home link -->
+          <a href="index.html" class="inline-block bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+            🏠 Home
+          </a>
+          
+          <!-- Debug button to manually show navigation -->
+          <button onclick="debugShowNavigation()" class="inline-block bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
+            🐛 Debug Nav
+          </button>
+          
+          <!-- Test all tabs button -->
+          <button onclick="testAllTabs()" class="inline-block bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
+            🧪 Test Tabs
+          </button>
+          
+          <!-- Test download button -->
+          <button onclick="testDownloadEndpoint()" class="inline-block bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
+            🧪 Test Download
+          </button>
       </div>
     </div>
 
@@ -3445,7 +3460,10 @@ require_once 'discord-invite.php';
 
     // Initialize the interface
     document.addEventListener('DOMContentLoaded', async function() {
+      console.log('🚀 DOMContentLoaded event fired');
+      
       setTimeout(async () => {
+        console.log('⏰ Initialization timeout started');
         updateDisplay();
         
         // Add event listener for quest type input
@@ -3455,17 +3473,30 @@ require_once 'discord-invite.php';
         console.log('🧀 Event listener attached successfully');
         
         // Check for existing Discord authentication first
+        console.log('🔐 Checking Discord authentication...');
         const discordAuthResult = await checkDiscordAuth();
+        console.log('🔐 Discord auth result:', discordAuthResult);
         
         if (!discordAuthResult) {
           // Hide all admin content until authentication
+          console.log('❌ No Discord auth, hiding admin content');
           hideAllAdminContent();
           addLog('🎯 Admin interface loaded successfully');
           addLog('🔐 Please authenticate to access admin features');
         } else {
           // User is authenticated, show admin content
+          console.log('✅ Discord auth successful, showing admin content');
           showAdminContent();
           loadDashboardData();
+          
+          // Force navigation panel to be visible as a fallback
+          setTimeout(() => {
+            const navPanel = document.getElementById('navPanel');
+            if (navPanel) {
+              navPanel.style.display = 'block';
+              console.log('🔧 Force-fixed navigation panel visibility');
+            }
+          }, 1000);
         }
       }, 100);
     });
@@ -3504,13 +3535,23 @@ require_once 'discord-invite.php';
 
     // Show admin content after authentication
     function showAdminContent() {
+      console.log('🔓 showAdminContent() called - showing admin interface');
+      
       // Hide authentication panel
       const authPanel = document.getElementById('authPanel');
-      if (authPanel) authPanel.style.display = 'none';
+      if (authPanel) {
+        authPanel.style.display = 'none';
+        console.log('✅ Authentication panel hidden');
+      }
       
       // Show navigation panel
       const navPanel = document.getElementById('navPanel');
-      if (navPanel) navPanel.style.display = 'block';
+      if (navPanel) {
+        navPanel.style.display = 'block';
+        console.log('✅ Navigation panel shown');
+      } else {
+        console.error('❌ Navigation panel not found!');
+      }
       
       // Show dashboard tab by default and load overview game stats
       showTab('dashboard');
@@ -3518,21 +3559,132 @@ require_once 'discord-invite.php';
       setTimeout(() => {
         loadOverviewGameStats();
       }, 500); // Small delay to ensure dashboard is loaded first
+      
+      console.log('🔓 Admin content should now be visible');
+    }
+    
+    // Debug function to manually show navigation
+    function debugShowNavigation() {
+      console.log('🐛 Debug: Manually showing navigation panel');
+      
+      const navPanel = document.getElementById('navPanel');
+      if (navPanel) {
+        navPanel.style.display = 'block';
+        console.log('✅ Navigation panel manually shown');
+        addLog('🐛 Navigation panel manually shown via debug button');
+      } else {
+        console.error('❌ Navigation panel not found in debug function');
+        addLog('❌ Navigation panel not found in debug function');
+      }
+      
+      // Also try to show all tabs
+      const allTabs = document.querySelectorAll('[id$="Tab"]');
+      console.log(`🐛 Found ${allTabs.length} tab elements`);
+      allTabs.forEach((tab, index) => {
+        console.log(`🐛 Tab ${index}: ${tab.id} - display: ${tab.style.display}`);
+      });
+    }
+    
+    // Test all tabs function
+    function testAllTabs() {
+      console.log('🧪 Testing all tabs...');
+      addLog('🧪 Testing all tabs...');
+      
+      const tabNames = ['dashboard', 'users', 'points', 'store', 'quests', 'games', 'discord', 'holderVerification', 'cheeseGuide', 'communityFunds'];
+      
+      tabNames.forEach(tabName => {
+        console.log(`🧪 Testing tab: ${tabName}`);
+        const tabElement = document.getElementById(tabName + 'Tab');
+        if (tabElement) {
+          console.log(`✅ Tab ${tabName} found: ${tabElement.id}`);
+          console.log(`📊 Current display: ${tabElement.style.display}`);
+          console.log(`📊 Computed display: ${window.getComputedStyle(tabElement).display}`);
+        } else {
+          console.error(`❌ Tab ${tabName} not found: ${tabName}Tab`);
+        }
+      });
+      
+      // Test tab switching
+      console.log('🧪 Testing tab switching...');
+      showTab('users');
+      setTimeout(() => showTab('points'), 1000);
+      setTimeout(() => showTab('dashboard'), 2000);
+    }
+    
+    // Test download endpoint function
+    async function testDownloadEndpoint() {
+      console.log('🧪 Testing download endpoint...');
+      addLog('🧪 Testing download endpoint...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/download-database.php', {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer ' + (currentAdmin ? currentAdmin.token : '')
+          }
+        });
+        
+        console.log('🧪 Download test response:', response);
+        console.log('🧪 Response status:', response.status);
+        console.log('🧪 Response headers:', response.headers);
+        
+        const contentType = response.headers.get('content-type');
+        console.log('🧪 Content-Type:', contentType);
+        
+        if (response.ok) {
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            console.log('🧪 JSON error response:', errorData);
+            addLog('🧪 Download endpoint returned JSON error: ' + JSON.stringify(errorData));
+          } else {
+            const blob = await response.blob();
+            console.log('🧪 File blob received:', blob);
+            console.log('🧪 Blob size:', blob.size, 'bytes');
+            addLog(`🧪 Download endpoint returned file blob: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
+          }
+        } else {
+          const errorText = await response.text();
+          console.log('🧪 Error response text:', errorText);
+          addLog('🧪 Download endpoint error: ' + errorText);
+        }
+      } catch (error) {
+        console.error('🧪 Download test error:', error);
+        addLog('🧪 Download test error: ' + error.message);
+      }
     }
 
     // Show specific tab
     function showTab(tabName) {
+      console.log(`🔄 showTab(${tabName}) called`);
+      
       // Update active tab button
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
-      if (activeBtn) activeBtn.classList.add('active');
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+        console.log(`✅ Active tab button updated: ${tabName}`);
+      } else {
+        console.error(`❌ Tab button not found for: ${tabName}`);
+      }
       
       // Hide all tabs
-      document.querySelectorAll('[id$="Tab"]').forEach(t => t.style.display = 'none');
+      const allTabs = document.querySelectorAll('[id$="Tab"]');
+      console.log(`🔄 Hiding ${allTabs.length} tabs`);
+      allTabs.forEach(t => {
+        if (t) {
+          t.style.display = 'none';
+          console.log(`🔄 Hidden tab: ${t.id}`);
+        }
+      });
       
       // Show selected tab
       const selectedTab = document.getElementById(tabName + 'Tab');
-      if (selectedTab) selectedTab.style.display = 'block';
+      if (selectedTab) {
+        selectedTab.style.display = 'block';
+        console.log(`✅ Showing tab: ${tabName}Tab`);
+      } else {
+        console.error(`❌ Tab not found: ${tabName}Tab`);
+      }
       
       currentTab = tabName;
       addLog(`📋 Switched to ${tabName} tab`);
@@ -5324,10 +5476,12 @@ require_once 'discord-invite.php';
             };
             
             // Show admin content after authentication
+            console.log('🔐 Auto-authentication successful, calling showAdminContent()');
             showAdminContent();
             loadDashboardData();
             
             addLog(`✅ Auto-authenticated as Discord moderator: ${user.discord_name}`);
+            console.log('🔐 Auto-authentication complete');
             return true;
           }
         }
@@ -5438,24 +5592,44 @@ require_once 'discord-invite.php';
         });
         
         if (response.ok) {
+          // Check if response is actually a file (not JSON error)
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            // This is an error response, not a file
+            const errorData = await response.json();
+            addLog('❌ Database download failed: ' + (errorData.error || 'Server error'));
+            return;
+          }
+          
           // Create blob and download
           const blob = await response.blob();
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `narrrfs_world_database_${new Date().toISOString().split('T')[0]}.sqlite`;
+          a.download = `narrrfs_world_live_database_${new Date().toISOString().split('T')[0]}.sqlite`;
           document.body.appendChild(a);
           a.click();
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
           
           addLog('✅ Database downloaded successfully');
+          addLog(`📁 File size: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
         } else {
-          const errorData = await response.json();
-          addLog('❌ Database download failed: ' + (errorData.error || 'Server error'));
+          // Handle error response - try to parse as JSON, but handle non-JSON gracefully
+          let errorMessage = 'Server error';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || 'Server error';
+          } catch (jsonError) {
+            // If response is not JSON, get the text content
+            const errorText = await response.text();
+            errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`;
+          }
+          addLog('❌ Database download failed: ' + errorMessage);
         }
       } catch (error) {
         addLog('❌ Database download error: ' + error.message);
+        console.error('Download error details:', error);
       }
     }
     
@@ -6337,21 +6511,22 @@ require_once 'discord-invite.php';
         case 'space-invaders':
           console.log('👾 Loading Space Invaders data...');
           addLog('👾 Loading Space Invaders data...');
-          loadInvadersData();
+          loadSpaceInvadersData();
           break;
         case 'cheese-invaders':
           console.log('🧀 Loading Cheese Invaders data...');
           addLog('🧀 Loading Cheese Invaders data...');
-          loadInvadersData();
+          loadCheeseInvadersData();
           break;
         case 'cheese-hunt':
           console.log('🧀 Loading Cheese Hunt data...');
           addLog('🧀 Loading Cheese Hunt data...');
-          loadCheeseData();
+          loadCheeseHuntData();
           break;
         case 'discord-race':
-          console.log('Loading Discord Race data...');
-          loadRaceData();
+          console.log('🏁 Loading Discord Race data...');
+          addLog('🏁 Loading Discord Race data...');
+          loadDiscordRaceData();
           break;
       }
     }
@@ -6897,32 +7072,152 @@ require_once 'discord-invite.php';
       }
     }
 
-    // Cheese Invaders Tab Functions
-    async function loadInvadersData() {
+    // Space Invaders Tab Functions
+    async function loadSpaceInvadersData() {
       if (!currentAdmin) {
         addLog('❌ Please authenticate first');
         return;
       }
 
-      addLog('🔄 Loading Cheese Invaders data...');
+      addLog('👾 Loading Space Invaders data...');
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
         const data = await response.json();
         
-        console.log('Full API response for Cheese Invaders:', data);
+        if (data.success && data.data && data.data.games && data.data.games.space_invaders) {
+          displaySpaceInvadersData(data.data.games.space_invaders);
+          addLog('✅ Space Invaders data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Space Invaders data: ${data.error || 'No data available'}`);
+        }
+      } catch (error) {
+        addLog(`❌ Space Invaders data loading error: ${error.message}`);
+      }
+    }
+
+    function displaySpaceInvadersData(invadersData) {
+      try {
+        console.log('👾 Space Invaders data received:', invadersData);
+        
+        // Helper function to format numbers nicely
+        const formatNumber = (num) => {
+          if (num === null || num === undefined || num === '-') return '-';
+          if (typeof num === 'string') num = parseFloat(num);
+          if (isNaN(num)) return '-';
+          return num.toLocaleString();
+        };
+
+        // Helper function to format scores with DSPOINC conversion
+        const formatScore = (score) => {
+          if (score === null || score === undefined || score === '-') return '-';
+          if (typeof score === 'string') score = parseFloat(score);
+          if (isNaN(score)) return '-';
+          const dspoinc = score * 0.01; // Space Invaders uses 0.01 multiplier
+          return `${score.toLocaleString()} (${dspoinc.toLocaleString()} DSPOINC)`;
+        };
+
+        // Update Space Invaders statistics
+        if (document.getElementById('spaceInvadersTotalScores')) {
+          const totalScores = invadersData.season_data?.total_scores || 0;
+          document.getElementById('spaceInvadersTotalScores').textContent = formatNumber(totalScores);
+          document.getElementById('spaceInvadersTotalScores').className = totalScores > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('spaceInvadersUniquePlayers')) {
+          const uniquePlayers = invadersData.season_data?.unique_players || 0;
+          document.getElementById('spaceInvadersUniquePlayers').textContent = formatNumber(uniquePlayers);
+          document.getElementById('spaceInvadersUniquePlayers').className = uniquePlayers > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('spaceInvadersMaxScore')) {
+          const maxScore = invadersData.season_data?.max_score || 0;
+          document.getElementById('spaceInvadersMaxScore').textContent = formatScore(maxScore);
+          document.getElementById('spaceInvadersMaxScore').className = maxScore > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('spaceInvadersAvgScore')) {
+          const avgScore = invadersData.season_data?.avg_score || 0;
+          document.getElementById('spaceInvadersAvgScore').textContent = formatScore(avgScore);
+          document.getElementById('spaceInvadersAvgScore').className = avgScore > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
+        }
+
+        // Update leaderboard with grid system
+        const leaderboard = document.getElementById('spaceInvadersLeaderboard');
+        if (leaderboard) {
+          if (invadersData.top_players && invadersData.top_players.length > 0) {
+            leaderboard.innerHTML = `
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                ${invadersData.top_players.map((player, index) => `
+                  <div class="bg-gray-700 p-4 rounded-lg border border-gray-600">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-lg font-bold text-yellow-400">#${index + 1}</span>
+                      <span class="text-sm text-gray-400">${player.username || 'Unknown'}</span>
+                    </div>
+                    <div class="text-2xl font-bold text-green-400">${formatScore(player.score || 0)}</div>
+                    <div class="text-sm text-gray-300">${player.date || 'No date'}</div>
+                  </div>
+                `).join('')}
+              </div>
+            `;
+          } else {
+            leaderboard.innerHTML = `
+              <div class="text-center p-8 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700 border-opacity-50">
+                <div class="text-gray-300 text-2xl mb-3">👾</div>
+                <div class="text-gray-400 text-lg mb-2 font-semibold">No Leaderboard Data</div>
+                <div class="text-gray-500 text-sm mb-4">No players have completed Space Invaders games yet</div>
+                <div class="text-green-400 text-sm bg-green-900 bg-opacity-30 px-4 py-2 rounded-full border border-green-700 border-opacity-50">
+                  Start playing to see rankings! 🎮
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        // Add data summary
+        const dataSummary = document.createElement('div');
+        dataSummary.className = 'mb-4 p-3 bg-blue-900 bg-opacity-50 rounded-lg';
+        dataSummary.innerHTML = `
+          <div class="text-blue-200 text-sm">
+            <strong>📊 Data Summary:</strong> 
+            ${invadersData.season_data?.total_scores || 0} scores from ${invadersData.season_data?.unique_players || 0} players in ${invadersData.season_data?.current_season || 'Season 1'}
+            ${invadersData.season_data?.total_scores > 0 ? '✅' : '❌ No data yet'}
+          </div>
+          <div class="text-blue-300 text-xs mt-2">
+            <strong>🕒 Last Updated:</strong> ${new Date().toLocaleString()}
+          </div>
+        `;
+        
+        const spaceInvadersTab = document.getElementById('spaceInvadersTab');
+        if (spaceInvadersTab && !spaceInvadersTab.querySelector('.data-summary')) {
+          dataSummary.className += ' data-summary';
+          spaceInvadersTab.insertBefore(dataSummary, spaceInvadersTab.firstChild);
+        }
+
+      } catch (error) {
+        console.error('Error displaying Space Invaders data:', error);
+        addLog(`❌ Error displaying Space Invaders data: ${error.message}`);
+      }
+    }
+
+    // Cheese Invaders Tab Functions
+    async function loadCheeseInvadersData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🧀 Loading Cheese Invaders data...');
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
         if (data.success && data.data && data.data.games && data.data.games.cheese_invaders) {
-          console.log('🧀 Cheese Invaders data found in response:', data.data.games.cheese_invaders);
-          addLog('🧀 Cheese Invaders data found in API response');
-          // Add a small delay to ensure DOM is ready
-          setTimeout(() => {
-            displayInvadersData(data.data.games.cheese_invaders);
-          }, 100);
+          displayCheeseInvadersData(data.data.games.cheese_invaders);
           addLog('✅ Cheese Invaders data loaded successfully');
         } else {
-          console.error('🧀 Cheese Invaders data not found in response:', data);
-          addLog(`❌ Failed to load Cheese Invaders data: ${data.error || 'No data in response'}`);
-          addLog(`🧀 API Response structure: ${JSON.stringify(data, null, 2)}`);
+          addLog(`❌ Failed to load Cheese Invaders data: ${data.error || 'No data available'}`);
         }
       } catch (error) {
         addLog(`❌ Cheese Invaders data loading error: ${error.message}`);
@@ -10548,6 +10843,255 @@ require_once 'discord-invite.php';
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+    
+    // Cheese Hunt Tab Functions
+    async function loadCheeseHuntData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🧀 Loading Cheese Hunt data...');
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.games && data.data.games.cheese_hunt) {
+          displayCheeseHuntData(data.data.games.cheese_hunt);
+          addLog('✅ Cheese Hunt data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Cheese Hunt data: ${data.error || 'No data available'}`);
+        }
+      } catch (error) {
+        addLog(`❌ Cheese Hunt data loading error: ${error.message}`);
+      }
+    }
+
+    function displayCheeseHuntData(cheeseData) {
+      try {
+        console.log('🧀 Cheese Hunt data received:', cheeseData);
+        addLog('🧀 Displaying Cheese Hunt data...');
+        
+        // Helper function to format numbers nicely
+        const formatNumber = (num) => {
+          if (num === null || num === undefined || num === '-') return '-';
+          if (typeof num === 'string') num = parseFloat(num);
+          if (isNaN(num)) return '-';
+          return num.toLocaleString();
+        };
+
+        // Update Cheese Hunt statistics
+        if (document.getElementById('cheeseHuntTotalClicks')) {
+          const totalClicks = cheeseData.current_data?.total_clicks || 0;
+          document.getElementById('cheeseHuntTotalClicks').textContent = formatNumber(totalClicks);
+          document.getElementById('cheeseHuntTotalClicks').className = totalClicks > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseHuntUniquePlayers')) {
+          const uniquePlayers = cheeseData.current_data?.unique_players || 0;
+          document.getElementById('cheeseHuntUniquePlayers').textContent = formatNumber(uniquePlayers);
+          document.getElementById('cheeseHuntUniquePlayers').className = uniquePlayers > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseHuntMaxClicks')) {
+          const maxClicks = cheeseData.current_data?.max_clicks || 0;
+          document.getElementById('cheeseHuntMaxClicks').textContent = formatNumber(maxClicks);
+          document.getElementById('cheeseHuntMaxClicks').className = maxClicks > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseHuntAvgClicks')) {
+          const avgClicks = cheeseData.current_data?.avg_clicks || 0;
+          document.getElementById('cheeseHuntAvgClicks').textContent = formatNumber(avgClicks);
+          document.getElementById('cheeseHuntAvgClicks').className = avgClicks > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
+        }
+
+        // Update leaderboard with grid system
+        const leaderboard = document.getElementById('cheeseHuntLeaderboard');
+        if (leaderboard) {
+          if (cheeseData.top_hunters && cheeseData.top_hunters.length > 0) {
+            leaderboard.innerHTML = `
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                ${cheeseData.top_hunters.map((hunter, index) => `
+                  <div class="bg-gray-700 p-4 rounded-lg border border-gray-600">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-lg font-bold text-yellow-400">#${index + 1}</span>
+                      <span class="text-sm text-gray-400">${hunter.username || 'Unknown'}</span>
+                    </div>
+                    <div class="text-2xl font-bold text-green-400">${formatNumber(hunter.clicks || 0)} clicks</div>
+                    <div class="text-sm text-gray-300">${hunter.date || 'No date'}</div>
+                  </div>
+                `).join('')}
+              </div>
+            `;
+          } else {
+            leaderboard.innerHTML = `
+              <div class="text-center p-8 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700 border-opacity-50">
+                <div class="text-gray-300 text-2xl mb-3">🧀🎯</div>
+                <div class="text-gray-400 text-lg mb-2 font-semibold">No Leaderboard Data</div>
+                <div class="text-gray-500 text-sm mb-4">No players have completed Cheese Hunt games yet</div>
+                <div class="text-green-400 text-sm bg-green-900 bg-opacity-30 px-4 py-2 rounded-full border border-green-700 border-opacity-50">
+                  Start playing to see rankings! 🎮
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        // Add data summary
+        const dataSummary = document.createElement('div');
+        dataSummary.className = 'mb-4 p-3 bg-orange-900 bg-opacity-50 rounded-lg';
+        dataSummary.innerHTML = `
+          <div class="text-orange-200 text-sm">
+            <strong>📊 Data Summary:</strong> 
+            ${cheeseData.current_data?.total_clicks || 0} total clicks from ${cheeseData.current_data?.unique_players || 0} players
+            ${cheeseData.current_data?.total_clicks > 0 ? '✅' : '❌ No data yet'}
+          </div>
+          <div class="text-orange-300 text-xs mt-2">
+            <strong>🕒 Last Updated:</strong> ${new Date().toLocaleString()}
+          </div>
+        `;
+        
+        const cheeseHuntTab = document.getElementById('cheeseHuntTab');
+        if (cheeseHuntTab && !cheeseHuntTab.querySelector('.data-summary')) {
+          dataSummary.className += ' data-summary';
+          cheeseHuntTab.insertBefore(dataSummary, cheeseHuntTab.firstChild);
+        }
+
+      } catch (error) {
+        console.error('Error displaying Cheese Hunt data:', error);
+        addLog(`❌ Error displaying Cheese Hunt data: ${error.message}`);
+      }
+    }
+    
+    // Discord Race Tab Functions
+    async function loadDiscordRaceData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🏁 Loading Discord Race data...');
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.games && data.data.games.discord_race) {
+          displayDiscordRaceData(data.data.games.discord_race);
+          addLog('✅ Discord Race data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Discord Race data: ${data.error || 'No data available'}`);
+        }
+      } catch (error) {
+        addLog(`❌ Discord Race data loading error: ${error.message}`);
+      }
+    }
+
+    function displayDiscordRaceData(raceData) {
+      try {
+        console.log('🏁 Discord Race data received:', raceData);
+        addLog('🏁 Displaying Discord Race data...');
+        
+        // Helper function to format numbers nicely
+        const formatNumber = (num) => {
+          if (num === null || num === undefined || num === '-') return '-';
+          if (typeof num === 'string') num = parseFloat(num);
+          if (isNaN(num)) return '-';
+          return num.toLocaleString();
+        };
+
+        // Update Discord Race statistics
+        if (document.getElementById('discordRaceTotalRaces')) {
+          const totalRaces = raceData.race_data?.total_races || 0;
+          document.getElementById('discordRaceTotalRaces').textContent = formatNumber(totalRaces);
+          document.getElementById('discordRaceTotalRaces').className = totalRaces > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('discordRaceTotalParticipants')) {
+          const totalParticipants = raceData.race_data?.total_participants || 0;
+          document.getElementById('discordRaceTotalParticipants').textContent = formatNumber(totalParticipants);
+          document.getElementById('discordRaceTotalParticipants').className = totalParticipants > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('discordRaceTotalPrizes')) {
+          const totalPrizes = raceData.race_data?.total_prizes_awarded || 0;
+          document.getElementById('discordRaceTotalPrizes').textContent = formatNumber(totalPrizes);
+          document.getElementById('discordRaceTotalPrizes').className = totalPrizes > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
+        }
+
+        // Update top racers leaderboard with grid system
+        const leaderboard = document.getElementById('discordRaceLeaderboard');
+        if (leaderboard) {
+          if (raceData.race_data?.top_racers && raceData.race_data.top_racers.length > 0) {
+            leaderboard.innerHTML = `
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                ${raceData.race_data.top_racers.map((racer, index) => `
+                  <div class="bg-gray-700 p-4 rounded-lg border border-gray-600">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-lg font-bold text-yellow-400">#${index + 1}</span>
+                      <span class="text-sm text-gray-400">${racer.username || 'Unknown'}</span>
+                    </div>
+                    <div class="text-2xl font-bold text-green-400">${formatNumber(racer.wins || 0)} wins</div>
+                    <div class="text-sm text-gray-300">ID: ${racer.user_id || 'N/A'}</div>
+                  </div>
+                `).join('')}
+              </div>
+            `;
+          } else {
+            leaderboard.innerHTML = `
+              <div class="text-center p-8 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700 border-opacity-50">
+                <div class="text-gray-300 text-2xl mb-3">🏁🧀</div>
+                <div class="text-gray-400 text-lg mb-2 font-semibold">No Leaderboard Data</div>
+                <div class="text-gray-500 text-sm mb-4">No players have completed Discord races yet</div>
+                <div class="text-green-400 text-sm bg-green-900 bg-opacity-30 px-4 py-2 rounded-full border border-green-700 border-opacity-50">
+                  Start racing to see rankings! 🎮
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        // Update recent activity
+        const recentActivity = document.getElementById('discordRaceRecentActivity');
+        if (recentActivity && raceData.race_data?.recent_activity) {
+          recentActivity.innerHTML = `
+            <div class="space-y-2">
+              ${raceData.race_data.recent_activity.slice(0, 10).map(activity => `
+                <div class="bg-gray-700 p-3 rounded-lg border-l-4 border-l-blue-500">
+                  <div class="text-sm text-gray-300">${activity.timestamp}</div>
+                  <div class="text-white">${activity.description}</div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        // Add data summary
+        const dataSummary = document.createElement('div');
+        dataSummary.className = 'mb-4 p-3 bg-green-900 bg-opacity-50 rounded-lg';
+        dataSummary.innerHTML = `
+          <div class="text-green-200 text-sm">
+            <strong>📊 Data Summary:</strong> 
+            ${raceData.race_data?.total_races || 0} total races with ${raceData.race_data?.total_participants || 0} participants
+            ${raceData.race_data?.total_races > 0 ? '✅' : '❌ No data yet'}
+          </div>
+          <div class="text-green-300 text-xs mt-2">
+            <strong>🕒 Last Updated:</strong> ${new Date().toLocaleString()}
+          </div>
+        `;
+        
+        const discordRaceTab = document.getElementById('discordRaceTab');
+        if (discordRaceTab && !discordRaceTab.querySelector('.data-summary')) {
+          dataSummary.className += ' data-summary';
+          discordRaceTab.insertBefore(dataSummary, discordRaceTab.firstChild);
+        }
+
+      } catch (error) {
+        console.error('Error displaying Discord Race data:', error);
+        addLog(`❌ Error displaying Discord Race data: ${error.message}`);
+      }
     }
   </script>
 
