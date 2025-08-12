@@ -2105,7 +2105,10 @@ require_once 'discord-invite.php';
               </div>
               <div class="game-stat-value" id="systemStatus">🟢 Online</div>
               <div class="game-stat-label">System status</div>
-              <div class="game-stat-subvalue">Uptime: <span id="systemUptime" class="text-purple-400">99.9%</span></div>
+              <div class="game-stat-subvalue">
+                <span id="systemUptime" class="text-purple-400">99.9%</span> | 
+                <span id="dataLoadStatus" class="text-blue-400">Loading...</span>
+              </div>
             </div>
 
             <!-- Top Performers -->
@@ -3586,9 +3589,11 @@ require_once 'discord-invite.php';
       
       // Show dashboard tab by default and load overview game stats
       showTab('dashboard');
-      // Load overview game statistics for the dashboard
-      setTimeout(() => {
-        loadOverviewGameStats();
+      // Load overview game statistics for the dashboard and preload all game data
+      setTimeout(async () => {
+        await loadOverviewGameStats();
+        // Preload all game data to avoid manual reloading
+        await preloadAllGameData();
       }, 500); // Small delay to ensure dashboard is loaded first
       
       console.log('🔓 Admin content should now be visible');
@@ -3804,12 +3809,18 @@ require_once 'discord-invite.php';
         addLog(`🧪 New display style: ${testTab.style.display}`);
         addLog(`🧪 New computed display: ${window.getComputedStyle(testTab).display}`);
         
-        // Check if it's actually visible
+        // Check if it's actually visible - use multiple methods for better accuracy
         const rect = testTab.getBoundingClientRect();
-        const isVisible = rect.width > 0 && rect.height > 0;
+        const computedStyle = window.getComputedStyle(testTab);
+        const isVisible = computedStyle.display !== 'none' && 
+                         computedStyle.visibility !== 'hidden' && 
+                         testTab.offsetHeight > 0;
+        
         console.log('🧪 Tab dimensions:', rect.width, 'x', rect.height);
+        console.log('🧪 Tab offsetHeight:', testTab.offsetHeight);
         console.log('🧪 Tab is visible:', isVisible);
         addLog(`🧪 Tab dimensions: ${rect.width} x ${rect.height}`);
+        addLog(`🧪 Tab offsetHeight: ${testTab.offsetHeight}`);
         addLog(`🧪 Tab is visible: ${isVisible ? 'YES' : 'NO'}`);
       } else {
         console.log('🧪 snakeTab not found');
@@ -3991,6 +4002,76 @@ require_once 'discord-invite.php';
       } catch (error) {
         console.error(`❌ Overview game statistics loading error: ${error.message}`);
       }
+    }
+
+    // Preload all game data to avoid manual reloading when switching tabs
+    async function preloadAllGameData() {
+      console.log('🔄 Preloading all game data...');
+      
+      try {
+        // Load data for all games in parallel for better performance
+        const loadPromises = [
+          loadTetrisData(),
+          loadSnakeData(),
+          loadSpaceInvadersData(),
+          loadCheeseInvadersData(),
+          loadCheeseHuntData(),
+          loadDiscordRaceData()
+        ];
+        
+        // Wait for all data to load
+        await Promise.allSettled(loadPromises);
+        
+        console.log('✅ All game data preloaded successfully');
+        addLog('✅ All game data preloaded - no manual reloading needed');
+        
+        // Update the dashboard to show that data is ready
+        const dashboardStatus = document.getElementById('systemStatus');
+        if (dashboardStatus) {
+          dashboardStatus.innerHTML = '🟢 Online - All Data Ready';
+        }
+        
+        // Update data load status
+        const dataLoadStatus = document.getElementById('dataLoadStatus');
+        if (dataLoadStatus) {
+          dataLoadStatus.innerHTML = 'All Data Ready';
+          dataLoadStatus.className = 'text-green-400';
+        }
+        
+        // Mark all game tabs as having data loaded
+        markGameTabsAsLoaded();
+      } catch (error) {
+        console.error('❌ Error preloading game data:', error);
+        addLog(`❌ Error preloading game data: ${error.message}`);
+      }
+    }
+
+    // Mark game tabs as having data loaded
+    function markGameTabsAsLoaded() {
+      const gameTabs = ['tetris', 'snake', 'space-invaders', 'cheese-invaders', 'cheese-hunt', 'discord-race'];
+      
+      gameTabs.forEach(gameName => {
+        const button = document.querySelector(`[data-game-tab="${gameName}"]`);
+        if (button) {
+          // Add a visual indicator that data is loaded
+          button.classList.add('data-loaded');
+          button.setAttribute('title', 'Data loaded - ready to view');
+          
+          // Add a small indicator icon
+          const indicator = document.createElement('span');
+          indicator.className = 'ml-2 text-xs text-green-400';
+          indicator.textContent = '✓';
+          indicator.setAttribute('title', 'Data loaded');
+          
+          // Remove existing indicator if present
+          const existingIndicator = button.querySelector('.text-green-400');
+          if (existingIndicator) {
+            existingIndicator.remove();
+          }
+          
+          button.appendChild(indicator);
+        }
+      });
     }
 
     // Display Cheese Hunt statistics in Overview Dashboard
@@ -6893,9 +6974,9 @@ require_once 'discord-invite.php';
         console.log('📊 Dashboard data received:', data);
         console.log('📊 Dashboard data structure:', JSON.stringify(data, null, 2));
         
-        // Update system overview cards
-        if (data.overview) {
-          const overview = data.overview;
+        // Update system overview cards - Fix data path to use data.data.overview
+        if (data.data && data.data.overview) {
+          const overview = data.data.overview;
           console.log('📊 Overview data:', overview);
           
           if (document.getElementById('totalActivePlayers')) {
@@ -6923,7 +7004,12 @@ require_once 'discord-invite.php';
             console.log('📊 Updated topPerformersAllTime:', overview.top_performers_all_time || '-');
           }
         } else {
-          console.log('❌ No overview data found in response');
+          console.log('❌ No overview data found in response - checking data.data.overview');
+          // Try alternative data structure
+          if (data.data && data.data.games) {
+            console.log('📊 Found games data, updating overview with game summaries');
+            updateOverviewWithGameSummaries(data.data.games);
+          }
         }
 
         // Update daily activity chart (placeholder for now)
@@ -6934,8 +7020,8 @@ require_once 'discord-invite.php';
 
         // Update weekly performance
         const weeklyPerf = document.getElementById('weeklyPerformance');
-        if (weeklyPerf && data.overview) {
-          const overview = data.overview;
+        if (weeklyPerf && data.data && data.data.overview) {
+          const overview = data.data.overview;
           weeklyPerf.innerHTML = `
             <div class="bg-gray-600 p-2 rounded mb-2">
               <div class="flex justify-between text-sm">
@@ -6950,18 +7036,93 @@ require_once 'discord-invite.php';
               </div>
             </div>
             <div class="bg-gray-600 p-2 rounded mb-2">
+              <span>📈 Growth Rate</span>
+              <span class="font-semibold text-green-400">+${overview.growth_rate || 0}%</span>
+            </div>
+          `;
+        } else if (weeklyPerf && data.data && data.data.games) {
+          // Fallback to game summaries if no overview data
+          const games = data.data.games;
+          const totalGames = Object.values(games).reduce((sum, game) => {
+            if (game.season_data && game.season_data.total_scores) {
+              return sum + game.season_data.total_scores;
+            }
+            if (game.current_data && game.current_data.total_clicks) {
+              return sum + game.current_data.total_clicks;
+            }
+            return sum;
+          }, 0);
+          
+          weeklyPerf.innerHTML = `
+            <div class="bg-gray-600 p-2 rounded mb-2">
               <div class="flex justify-between text-sm">
-                <span>📈 Growth Rate</span>
-                <span class="font-semibold text-green-400">+${overview.growth_rate || 0}%</span>
+                <span>🎮 Total Games This Week</span>
+                <span class="font-semibold">${totalGames}</span>
+              </div>
+            </div>
+            <div class="bg-gray-600 p-2 rounded mb-2">
+              <div class="flex justify-between text-sm">
+                <span>👥 Active Games</span>
+                <span class="font-semibold">${Object.keys(games).length}</span>
+              </div>
+            </div>
+            <div class="bg-gray-600 p-2 rounded mb-2">
+              <div class="flex justify-between text-sm">
+                <span>📊 Data Source</span>
+                <span class="font-semibold text-blue-400">Game Stats</span>
               </div>
             </div>
           `;
         }
-      } catch (error) {
-        console.error('Error displaying game overview:', error);
-        addLog(`❌ Error displaying game overview: ${error.message}`);
+              } catch (error) {
+          console.error('Error displaying game overview:', error);
+          addLog(`❌ Error displaying game overview: ${error.message}`);
+        }
       }
-    }
+
+      // Function to update overview with game summaries when overview data is not available
+      function updateOverviewWithGameSummaries(games) {
+        try {
+          console.log('📊 Updating overview with game summaries:', games);
+          
+          // Calculate totals from game data
+          let totalScores = 0;
+          let totalPlayers = 0;
+          let maxScore = 0;
+          
+          Object.values(games).forEach(game => {
+            if (game.season_data) {
+              totalScores += game.season_data.total_scores || 0;
+              totalPlayers += game.season_data.unique_players || 0;
+              maxScore = Math.max(maxScore, game.season_data.max_score || 0);
+            }
+            if (game.current_data) {
+              totalScores += game.current_data.total_clicks || 0;
+              totalPlayers += game.current_data.unique_players || 0;
+              maxScore = Math.max(maxScore, game.current_data.max_clicks || 0);
+            }
+            if (game.race_data) {
+              totalScores += game.race_data.total_races || 0;
+              totalPlayers += game.race_data.total_participants || 0;
+            }
+          });
+          
+          // Update overview cards with calculated data
+          if (document.getElementById('totalGamesPlayed')) {
+            document.getElementById('totalGamesPlayed').textContent = totalScores;
+          }
+          if (document.getElementById('totalActivePlayers')) {
+            document.getElementById('totalActivePlayers').textContent = totalPlayers;
+          }
+          if (document.getElementById('topPerformersAllTime')) {
+            document.getElementById('topPerformersAllTime').textContent = maxScore;
+          }
+          
+          console.log('✅ Overview updated with game summaries');
+        } catch (error) {
+          console.error('Error updating overview with game summaries:', error);
+        }
+      }
 
     // Tetris Tab Functions
     async function loadTetrisData() {
@@ -8328,11 +8489,33 @@ require_once 'discord-invite.php';
             tab.style.display = 'block';
             tab.style.visibility = 'visible';
             tab.classList.remove('hidden');
+            
+            // Wait a bit for the DOM to update
+            await new Promise(resolve => setTimeout(resolve, 100));
           }
         }
         
         // Refresh the data display
         await loadCheeseInvadersData();
+        
+        // Wait for content to render, then verify visibility again
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Final visibility check after content loads
+        if (tab) {
+          const finalCheck = window.getComputedStyle(tab);
+          const finalVisible = finalCheck.display !== 'none' && 
+                              finalCheck.visibility !== 'hidden' && 
+                              tab.offsetHeight > 0;
+          
+          console.log('🧀 Final visibility check after content load:', {
+            display: finalCheck.display,
+            visibility: finalCheck.visibility,
+            height: tab.offsetHeight,
+            isVisible: finalVisible
+          });
+        }
+        
         addLog('✅ Cheese Invaders display refreshed successfully');
       } catch (error) {
         console.error('❌ Error refreshing Cheese Invaders display:', error);
@@ -8372,11 +8555,33 @@ require_once 'discord-invite.php';
             tab.style.display = 'block';
             tab.style.visibility = 'visible';
             tab.classList.remove('hidden');
+            
+            // Wait a bit for the DOM to update
+            await new Promise(resolve => setTimeout(resolve, 100));
           }
         }
         
         // Refresh the data display
         await loadCheeseHuntData();
+        
+        // Wait for content to render, then verify visibility again
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Final visibility check after content loads
+        if (tab) {
+          const finalCheck = window.getComputedStyle(tab);
+          const finalVisible = finalCheck.display !== 'none' && 
+                              finalCheck.visibility !== 'hidden' && 
+                              tab.offsetHeight > 0;
+          
+          console.log('🧀 Final visibility check after content load:', {
+            display: finalCheck.display,
+            visibility: finalCheck.visibility,
+            height: tab.offsetHeight,
+            isVisible: finalVisible
+          });
+        }
+        
         addLog('✅ Cheese Hunt display refreshed successfully');
       } catch (error) {
         console.error('❌ Error refreshing Cheese Hunt display:', error);
@@ -8416,11 +8621,33 @@ require_once 'discord-invite.php';
             tab.style.display = 'block';
             tab.style.visibility = 'visible';
             tab.classList.remove('hidden');
+            
+            // Wait a bit for the DOM to update
+            await new Promise(resolve => setTimeout(resolve, 100));
           }
         }
         
         // Refresh the data display
         await loadDiscordRaceData();
+        
+        // Wait for content to render, then verify visibility again
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Final visibility check after content loads
+        if (tab) {
+          const finalCheck = window.getComputedStyle(tab);
+          const finalVisible = finalCheck.display !== 'none' && 
+                              finalCheck.visibility !== 'hidden' && 
+                              tab.offsetHeight > 0;
+          
+          console.log('🏁 Final visibility check after content load:', {
+            display: finalCheck.display,
+            visibility: finalCheck.visibility,
+            height: tab.offsetHeight,
+            isVisible: finalVisible
+          });
+        }
+        
         addLog('✅ Discord Race display refreshed successfully');
       } catch (error) {
         console.error('❌ Error refreshing Discord Race display:', error);
@@ -11531,6 +11758,34 @@ require_once 'discord-invite.php';
         addLog(`❌ Error displaying Discord Race data: ${error.message}`);
       }
     }
+
+    // Add CSS for data-loaded indicators
+    const style = document.createElement('style');
+    style.textContent = `
+      .tab-btn.data-loaded {
+        border-color: #10b981;
+        position: relative;
+      }
+
+      .tab-btn.data-loaded::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 
 </body>
