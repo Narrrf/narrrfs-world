@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Race API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1f2937; color: white; }
+        .test-section { background: #374151; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .data-display { background: #111827; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #2563eb; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <h1>🏁 Discord Race API Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Discord Race Data Loading</h2>
+        <button onclick="testDiscordRaceAPI()">Test API</button>
+        <button onclick="testDatabaseTables()">Test Database Tables</button>
+        
+        <div id="results" class="data-display">
+            <p>Click a button to test the Discord Race functionality...</p>
+        </div>
+    </div>
+
+    <script>
+        async function testDiscordRaceAPI() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p class="info">🔄 Testing Discord Race API...</p>';
+            
+            try {
+                const response = await fetch('/api/admin/get-all-games-stats.php');
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.games && data.data.games.discord_race) {
+                    const raceData = data.data.games.discord_race;
+                    results.innerHTML = `
+                        <h3 class="success">✅ API Test Successful!</h3>
+                        <div class="data-display">
+                            <h4>Race Statistics:</h4>
+                            <ul>
+                                <li>Total Races: ${raceData.race_data.total_races}</li>
+                                <li>Total Participants: ${raceData.race_data.total_participants}</li>
+                                <li>Completed Races: ${raceData.race_data.total_prizes_awarded}</li>
+                                <li>Recent 24h: ${raceData.race_data.recent_24h}</li>
+                                <li>Recent 7d: ${raceData.race_data.recent_7d}</li>
+                            </ul>
+                            
+                            <h4>Race Overview:</h4>
+                            <p>Races found: ${raceData.race_data.race_overview ? raceData.race_data.race_overview.length : 0}</p>
+                            
+                            <h4>Top Racers:</h4>
+                            <p>Top racers found: ${raceData.race_data.top_racers ? raceData.race_data.top_racers.length : 0}</p>
+                            
+                            <h4>Recent Activity:</h4>
+                            <p>Recent events: ${raceData.race_data.recent_activity ? raceData.race_data.recent_activity.length : 0}</p>
+                        </div>
+                        
+                        <h4>Raw Data:</h4>
+                        <pre style="background: #000; padding: 10px; border-radius: 5px; overflow-x: auto;">${JSON.stringify(raceData, null, 2)}</pre>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <h3 class="error">❌ API Test Failed</h3>
+                        <p>Error: ${data.error || 'Unknown error'}</p>
+                        <pre style="background: #000; padding: 10px; border-radius: 5px; overflow-x: auto;">${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <h3 class="error">❌ API Test Error</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+        
+        async function testDatabaseTables() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p class="info">🔄 Testing database tables...</p>';
+            
+            try {
+                // Test if we can access the database through the API
+                const response = await fetch('/api/admin/get-all-games-stats.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    results.innerHTML = `
+                        <h3 class="success">✅ Database Test Successful!</h3>
+                        <p>The API can access the database and retrieve Discord race data.</p>
+                        <p>Total games available: ${Object.keys(data.data.games).length}</p>
+                        <ul>
+                            ${Object.keys(data.data.games).map(game => `<li>${game}: ${data.data.games[game].game_name}</li>`).join('')}
+                        </ul>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <h3 class="error">❌ Database Test Failed</h3>
+                        <p>Error: ${data.error || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <h3 class="error">❌ Database Test Error</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

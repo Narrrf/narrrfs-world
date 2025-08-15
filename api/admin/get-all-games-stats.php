@@ -393,7 +393,9 @@ try {
             'total_prizes_awarded' => 0,
             'recent_24h' => 0,
             'recent_7d' => 0,
-            'top_racers' => []
+            'top_racers' => [],
+            'recent_activity' => [],
+            'race_overview' => []
         ]
     ];
 
@@ -409,9 +411,9 @@ try {
                 "SELECT COUNT(*) as total_participants FROM tbl_race_participants");
         }
         
-        // Count races with winners
+        // Count completed races (finished status)
         $discord_race_stats['race_data']['total_prizes_awarded'] = safeQuery($pdo, 'tbl_cheese_races', 
-            "SELECT COUNT(*) as total_prizes FROM tbl_cheese_races WHERE status = 'finished' AND winner_id IS NOT NULL");
+            "SELECT COUNT(*) as total_prizes FROM tbl_cheese_races WHERE status = 'finished'");
         
         // Count recent races (last 24 hours)
         $discord_race_stats['race_data']['recent_24h'] = safeQuery($pdo, 'tbl_cheese_races', 
@@ -421,40 +423,113 @@ try {
         $discord_race_stats['race_data']['recent_7d'] = safeQuery($pdo, 'tbl_cheese_races', 
             "SELECT COUNT(*) as recent_races FROM tbl_cheese_races WHERE created_at >= datetime('now', '-7 days')");
         
-        // Get active races with participant counts
-        $active_races = safeQueryArray($pdo, 'tbl_cheese_races', 
-            "SELECT cr.race_id, cr.creator_name, cr.status, cr.max_players, cr.created_at,
-                    COUNT(rp.user_id) as current_participants
+        // Get race overview with detailed information
+        $race_overview = safeQueryArray($pdo, 'tbl_cheese_races', 
+            "SELECT 
+                cr.race_id,
+                cr.creator_name,
+                cr.status,
+                cr.max_players,
+                cr.created_at,
+                cr.started_at,
+                cr.ended_at,
+                cr.dspoinc_reward,
+                COUNT(rp.user_id) as participant_count,
+                AVG(rp.cheese_count) as avg_cheese_collected,
+                MAX(rp.cheese_count) as max_cheese_collected,
+                MIN(rp.cheese_count) as min_cheese_collected
              FROM tbl_cheese_races cr
              LEFT JOIN tbl_race_participants rp ON cr.race_id = rp.race_id
-             WHERE cr.status IN ('waiting', 'active')
              GROUP BY cr.race_id
              ORDER BY cr.created_at DESC
-             LIMIT 5");
+             LIMIT 20");
         
-        // Get top racers (winners) - only if both tables exist
-        if (tableExists($pdo, 'tbl_users')) {
-            $discord_race_stats['race_data']['top_racers'] = safeQueryArray($pdo, 'tbl_cheese_races', 
-                "SELECT cr.winner_id as user_id, cr.winner_name as username, COUNT(*) as wins
-                 FROM tbl_cheese_races cr
-                 WHERE cr.status = 'finished' AND cr.winner_id IS NOT NULL
-                 GROUP BY cr.winner_id
-                 ORDER BY wins DESC
+        if (!empty($race_overview)) {
+            $discord_race_stats['race_data']['race_overview'] = array_map(function($race) {
+                // Calculate race duration
+                $duration = 'N/A';
+                if ($race['started_at'] && $race['ended_at']) {
+                    $start = new DateTime($race['started_at']);
+                    $end = new DateTime($race['ended_at']);
+                    $diff = $start->diff($end);
+                    $duration = $diff->format('%H:%M:%S');
+                } elseif ($race['started_at']) {
+                    $duration = 'In Progress';
+                }
+                
+                // Calculate race status with better formatting
+                $status_display = ucfirst($race['status']);
+                $status_icon = match($race['status']) {
+                    'finished' => '🏁',
+                    'active' => '🟢',
+                    'waiting' => '⏳',
+                    'cancelled' => '❌',
+                    default => '❓'
+                };
+                
+                return [
+                    'id' => $race['race_id'],
+                    'creator_name' => $race['creator_name'],
+                    'status' => $race['status'],
+                    'status_display' => $status_display,
+                    'status_icon' => $status_icon,
+                    'max_players' => $race['max_players'],
+                    'participant_count' => $race['participant_count'],
+                    'created_at' => $race['created_at'],
+                    'started_at' => $race['started_at'],
+                    'ended_at' => $race['ended_at'],
+                    'duration' => $duration,
+                    'dspoinc_reward' => $race['dspoinc_reward'],
+                    'avg_cheese_collected' => round($race['avg_cheese_collected'] ?? 0, 2),
+                    'max_cheese_collected' => $race['max_cheese_collected'] ?? 0,
+                    'min_cheese_collected' => $race['min_cheese_collected'] ?? 0
+                ];
+            }, $race_overview);
+        }
+        
+        // Get top racers based on cheese collection (since we don't have winner_id)
+        if (tableExists($pdo, 'tbl_race_participants')) {
+            $top_racers = safeQueryArray($pdo, 'tbl_race_participants', 
+                "SELECT 
+                    rp.user_id,
+                    rp.username,
+                    COUNT(DISTINCT rp.race_id) as total_races,
+                    SUM(rp.cheese_count) as total_cheese,
+                    AVG(rp.cheese_count) as avg_cheese,
+                    MAX(rp.cheese_count) as best_cheese,
+                    COUNT(CASE WHEN rp.position = 1 THEN 1 END) as first_place_finishes
+                 FROM tbl_race_participants rp
+                 GROUP BY rp.user_id, rp.username
+                 ORDER BY total_cheese DESC, first_place_finishes DESC
                  LIMIT 10");
+            
+            if (!empty($top_racers)) {
+                $discord_race_stats['race_data']['top_racers'] = array_map(function($racer) {
+                    return [
+                        'user_id' => $racer['user_id'],
+                        'username' => $racer['username'],
+                        'total_races' => $racer['total_races'],
+                        'total_cheese' => round($racer['total_cheese'], 2),
+                        'avg_cheese' => round($racer['avg_cheese'], 2),
+                        'best_cheese' => round($racer['best_cheese'], 2),
+                        'first_place_finishes' => $racer['first_place_finishes']
+                    ];
+                }, $top_racers);
+            }
         }
         
         // Get recent activity from both tables
         if (tableExists($pdo, 'tbl_race_participants')) {
             $recent_activities = safeQueryArray($pdo, 'tbl_cheese_races', 
-                "SELECT 'race_started' as event_type, creator_id as user_id, creator_name as username, created_at
+                "SELECT 'race_started' as event_type, creator_id as user_id, creator_name as username, created_at, race_id
                  FROM tbl_cheese_races 
                  WHERE created_at >= datetime('now', '-7 days')
                  UNION ALL
-                 SELECT 'player_joined' as event_type, user_id, username, joined_at as created_at
+                 SELECT 'player_joined' as event_type, user_id, username, joined_at as created_at, race_id
                  FROM tbl_race_participants 
                  WHERE joined_at >= datetime('now', '-7 days')
                  ORDER BY created_at DESC
-                 LIMIT 10");
+                 LIMIT 15");
             
             $discord_race_stats['race_data']['recent_activity'] = array_map(function($activity) {
                 $event_descriptions = [
@@ -463,7 +538,11 @@ try {
                 ];
                 
                 return [
-                    'timestamp' => date('M j, Y g:i A', strtotime($activity['created_at'])),
+                    'event_type' => $activity['event_type'],
+                    'user_id' => $activity['user_id'],
+                    'username' => $activity['username'],
+                    'created_at' => $activity['created_at'],
+                    'race_id' => $activity['race_id'],
                     'description' => ($activity['username'] ?? 'Unknown') . ' ' . ($event_descriptions[$activity['event_type']] ?? $activity['event_type'])
                 ];
             }, $recent_activities);
@@ -475,7 +554,7 @@ try {
                     COUNT(rp.user_id) as current_participants
              FROM tbl_cheese_races cr
              LEFT JOIN tbl_race_participants rp ON cr.race_id = rp.race_id
-             WHERE cr.status = 'waiting'
+             WHERE cr.status IN ('waiting', 'active')
              GROUP BY cr.race_id
              ORDER BY cr.created_at DESC
              LIMIT 1");

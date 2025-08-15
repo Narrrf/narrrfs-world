@@ -2536,6 +2536,32 @@ require_once 'discord-invite.php';
             </div>
           </div>
 
+          <!-- Race Overview Table -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-yellow-400 mb-3">🏁 Race Overview</h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-gray-600">
+                    <th class="text-left p-2">Race ID</th>
+                    <th class="text-left p-2">Creator</th>
+                    <th class="text-left p-2">Status</th>
+                    <th class="text-left p-2">Players</th>
+                    <th class="text-left p-2">Created</th>
+                    <th class="text-left p-2">Duration</th>
+                    <th class="text-left p-2">Reward</th>
+                    <th class="text-left p-2">Cheese Stats</th>
+                  </tr>
+                </thead>
+                <tbody id="raceOverviewTable">
+                  <tr>
+                    <td colspan="8" class="text-center p-4 text-gray-400">Loading race overview...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- Recent Race Activity -->
           <div class="activity-section">
             <div class="activity-header">
@@ -8226,7 +8252,7 @@ require_once 'discord-invite.php';
           console.log('Discord Race data found in response:', data.data.games.discord_race);
           // Add a small delay to ensure DOM is ready
           setTimeout(() => {
-            displayRaceData(data.data.games.discord_race);
+            displayDiscordRaceData(data.data.games.discord_race);
           }, 100);
           addLog('✅ Discord Cheese Race data loaded successfully');
         } else {
@@ -8349,56 +8375,92 @@ require_once 'discord-invite.php';
           document.getElementById('raceStatus').textContent = '🟢 Active';
         }
 
+        // Update race overview table
+        const raceOverviewTable = document.getElementById('raceOverviewTable');
+        if (raceOverviewTable && raceData.race_data?.race_overview) {
+          if (raceData.race_data.race_overview.length > 0) {
+            raceOverviewTable.innerHTML = raceData.race_data.race_overview.map((race, index) => `
+              <tr class="border-b border-gray-600 hover:bg-gray-600 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
+                <td class="p-2 text-xs font-mono text-blue-400">${race.id.substring(0, 12)}...</td>
+                <td class="p-2 text-white font-semibold">${race.creator_name}</td>
+                <td class="p-2">
+                  <span class="px-2 py-1 text-xs rounded-full ${
+                    race.status === 'finished' ? 'bg-green-600 text-green-100' : 
+                    race.status === 'active' ? 'bg-blue-600 text-blue-100' : 
+                    race.status === 'waiting' ? 'bg-yellow-600 text-yellow-100' : 
+                    'bg-gray-600 text-gray-100'
+                  }">
+                    ${race.status_icon} ${race.status_display}
+                  </span>
+                </td>
+                <td class="p-2 text-center">
+                  <span class="text-blue-400 font-semibold">${race.participant_count}</span>
+                  <span class="text-gray-400 text-xs">/${race.max_players}</span>
+                </td>
+                <td class="p-2 text-xs text-gray-300">
+                  ${race.created_at ? new Date(race.created_at).toLocaleDateString() + ' ' + new Date(race.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}
+                </td>
+                <td class="p-2 text-xs text-gray-300">${race.duration}</td>
+                <td class="p-2 text-yellow-400 font-semibold">${race.dspoinc_reward}</td>
+                <td class="p-2 text-xs">
+                  <div class="text-green-400">Max: ${race.max_cheese_collected}</div>
+                  <div class="text-blue-400">Avg: ${race.avg_cheese_collected}</div>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            raceOverviewTable.innerHTML = `
+              <tr>
+                <td colspan="8" class="text-center p-4 text-gray-400">No races found</td>
+              </tr>
+            `;
+          }
+        }
+
         // Update recent races list
         const recentRacesElement = document.getElementById('recentRaceActivity');
         if (recentRacesElement) {
           if (raceData.race_data?.recent_activity && raceData.race_data.recent_activity.length > 0) {
             // Add summary at the top
             const totalRaces = raceData.race_data.recent_activity.length;
-            const completedRaces = raceData.race_data.recent_activity.filter(race => race.status === 'completed').length;
-            const activeRaces = raceData.race_data.recent_activity.filter(race => race.status === 'active').length;
+            const raceEvents = raceData.race_data.recent_activity.filter(activity => activity.event_type === 'race_started').length;
+            const playerJoins = raceData.race_data.recent_activity.filter(activity => activity.event_type === 'player_joined').length;
             
             recentRacesElement.innerHTML = `
               <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
                 <div class="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div class="text-2xl font-bold text-blue-400">${totalRaces}</div>
-                    <div class="text-xs text-gray-300">Total Races</div>
+                    <div class="text-xs text-gray-300">Total Events</div>
                   </div>
                   <div>
-                    <div class="text-2xl font-bold text-green-400">${completedRaces}</div>
-                    <div class="text-xs text-gray-300">Completed</div>
+                    <div class="text-2xl font-bold text-green-400">${raceEvents}</div>
+                    <div class="text-xs text-gray-300">Races Started</div>
                   </div>
                   <div>
-                    <div class="text-2xl font-bold text-yellow-400">${activeRaces}</div>
-                    <div class="text-xs text-gray-300">Active</div>
+                    <div class="text-2xl font-bold text-yellow-400">${playerJoins}</div>
+                    <div class="text-xs text-gray-300">Players Joined</div>
                   </div>
                 </div>
               </div>
-              ${raceData.race_data.recent_activity.map((race, index) => `
+              ${raceData.race_data.recent_activity.map((activity, index) => `
                 <div class="history-item bg-gray-600 p-3 rounded-lg mb-3 border border-gray-500 hover:bg-gray-500 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
                   <div class="flex justify-between items-start mb-2">
                     <div class="flex items-center space-x-2">
-                      <span class="text-lg">🏁</span>
-                      <span class="text-white font-semibold">${race.creator_name || 'Unknown'}</span>
+                      <span class="text-lg">${activity.event_type === 'race_started' ? '🏁' : '👤'}</span>
+                      <span class="text-white font-semibold">${activity.username || 'Unknown'}</span>
                       <span class="px-2 py-1 text-xs rounded-full ${
-                        race.status === 'completed' ? 'bg-green-600 text-green-100' : 
-                        race.status === 'active' ? 'bg-blue-600 text-blue-100' : 
-                        'bg-gray-600 text-gray-100'
-                      }">${race.status || 'unknown'}</span>
+                        activity.event_type === 'race_started' ? 'bg-blue-600 text-blue-100' : 
+                        'bg-green-600 text-green-100'
+                      }">${activity.event_type === 'race_started' ? 'Race Started' : 'Player Joined'}</span>
                     </div>
                     <div class="text-right">
-                      <div class="text-sm text-gray-300">${race.created_at ? new Date(race.created_at).toLocaleString() : 'No date'}</div>
-                      <div class="text-xs text-gray-400">${race.participant_count || 0} players</div>
+                      <div class="text-sm text-gray-300">${activity.created_at ? new Date(activity.created_at).toLocaleString() : 'No date'}</div>
+                      <div class="text-xs text-gray-400">Race: ${activity.race_id ? activity.race_id.substring(0, 8) + '...' : 'N/A'}</div>
                     </div>
                   </div>
-                  <div class="flex justify-between items-center">
-                    <div class="text-sm text-gray-300">
-                      <span class="text-yellow-400">💰</span> Reward: <span class="text-yellow-300 font-semibold">${race.dspoinc_reward || 0} DSPOINC</span>
-                    </div>
-                    <div class="text-xs text-gray-400">
-                      ID: ${race.id || 'N/A'}
-                    </div>
+                  <div class="text-sm text-gray-300">
+                    <span class="text-blue-400">📅</span> ${activity.description}
                   </div>
                 </div>
               `).join('')}
@@ -8407,7 +8469,7 @@ require_once 'discord-invite.php';
             recentRacesElement.innerHTML = `
               <div class="text-gray-400 text-center py-8">
                 <div class="text-4xl mb-2">🏁</div>
-                <p class="text-lg font-semibold mb-2">No Recent Races</p>
+                <p class="text-lg font-semibold mb-2">No Recent Activity</p>
                 <p class="text-sm">Start a new race to see activity here!</p>
                 <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
                   <p class="text-sm text-gray-300">Total races: ${raceData.race_data?.total_races || 0}</p>
@@ -8438,7 +8500,7 @@ require_once 'discord-invite.php';
             const topRacers = raceData.race_data.top_racers.slice(0, 10);
             leaderboard.innerHTML = `
               <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
-                <div class="grid grid-cols-2 gap-4 text-center">
+                <div class="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div class="text-2xl font-bold text-blue-400">${topRacers.length}</div>
                     <div class="text-xs text-gray-300">Top Racers</div>
@@ -8446,6 +8508,10 @@ require_once 'discord-invite.php';
                   <div>
                     <div class="text-2xl font-bold text-green-400">${raceData.race_data.total_races || 0}</div>
                     <div class="text-xs text-gray-300">Total Races</div>
+                  </div>
+                  <div>
+                    <div class="text-2xl font-bold text-yellow-400">${raceData.race_data.total_participants || 0}</div>
+                    <div class="text-xs text-gray-300">Participants</div>
                   </div>
                 </div>
               </div>
@@ -8460,12 +8526,13 @@ require_once 'discord-invite.php';
                       </div>
                       <div class="leaderboard-info">
                         <div class="leaderboard-name text-white font-semibold">${racer.username || 'Unknown Player'}</div>
-                        <div class="text-xs text-gray-400">${racer.discord_id || 'No Discord ID'}</div>
+                        <div class="text-xs text-gray-400">${racer.user_id || 'No User ID'}</div>
                       </div>
                     </div>
                     <div class="text-right">
-                      <div class="leaderboard-score text-lg font-bold text-green-400">${racer.races_won || 0} wins</div>
+                      <div class="leaderboard-score text-lg font-bold text-green-400">${racer.total_cheese || 0} cheese</div>
                       <div class="text-xs text-gray-400">${racer.total_races || 0} races</div>
+                      <div class="text-xs text-yellow-400">🏆 ${racer.first_place_finishes || 0} wins</div>
                     </div>
                   </div>
                 </div>
@@ -8482,7 +8549,17 @@ require_once 'discord-invite.php';
     // Enhanced Tab Display Refresh Functions
     // These functions ensure proper display refresh for the last 3 tabs
     
-
+    // Refresh race activity
+    async function refreshRaceActivity() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      addLog('🔄 Refreshing race activity...');
+      await loadDiscordRaceData();
+      addLog('✅ Race activity refreshed');
+    }
     
     async function refreshCheeseHuntDisplay() {
       console.log('🧀 Refreshing Cheese Hunt display...');
