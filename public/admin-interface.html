@@ -8323,9 +8323,12 @@ require_once 'discord-invite.php';
     // Display Discord Race data
     function displayDiscordRaceData(raceData) {
       try {
-        console.log('Discord Race data received:', raceData);
-        console.log('Discord Race data structure:', JSON.stringify(raceData, null, 2));
-        console.log('Discord Race race_data:', raceData.race_data);
+        console.log('🏁 Discord Race data received:', raceData);
+        console.log('🏁 Discord Race data structure:', JSON.stringify(raceData, null, 2));
+        console.log('🏁 Discord Race race_data:', raceData.race_data);
+        console.log('🏁 Race overview available:', raceData.race_data?.race_overview);
+        console.log('🏁 Top racers available:', raceData.race_data?.top_racers);
+        console.log('🏁 Recent activity available:', raceData.race_data?.recent_activity);
         
         // Update Discord Race statistics from race_data API
         console.log('Looking for raceTotalRaces element:', document.getElementById('raceTotalRaces'));
@@ -8378,40 +8381,57 @@ require_once 'discord-invite.php';
         // Update race overview table
         const raceOverviewTable = document.getElementById('raceOverviewTable');
         if (raceOverviewTable && raceData.race_data?.race_overview) {
+          console.log('Race overview data:', raceData.race_data.race_overview);
           if (raceData.race_data.race_overview.length > 0) {
-            raceOverviewTable.innerHTML = raceData.race_data.race_overview.map((race, index) => `
-              <tr class="border-b border-gray-600 hover:bg-gray-600 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
-                <td class="p-2 text-xs font-mono text-blue-400">${race.id.substring(0, 12)}...</td>
-                <td class="p-2 text-white font-semibold">${race.creator_name}</td>
-                <td class="p-2">
-                  <span class="px-2 py-1 text-xs rounded-full ${
-                    race.status === 'finished' ? 'bg-green-600 text-green-100' : 
-                    race.status === 'active' ? 'bg-blue-600 text-blue-100' : 
-                    race.status === 'waiting' ? 'bg-yellow-600 text-yellow-100' : 
-                    'bg-gray-600 text-gray-100'
-                  }">
-                    ${race.status_icon} ${race.status_display}
-                  </span>
-                </td>
-                <td class="p-2 text-center">
-                  <span class="text-blue-400 font-semibold">${race.participant_count}</span>
-                  <span class="text-gray-400 text-xs">/${race.max_players}</span>
-                </td>
-                <td class="p-2 text-xs text-gray-300">
-                  ${race.created_at ? new Date(race.created_at).toLocaleDateString() + ' ' + new Date(race.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}
-                </td>
-                <td class="p-2 text-xs text-gray-300">${race.duration}</td>
-                <td class="p-2 text-yellow-400 font-semibold">${race.dspoinc_reward}</td>
-                <td class="p-2 text-xs">
-                  <div class="text-green-400">Max: ${race.max_cheese_collected}</div>
-                  <div class="text-blue-400">Avg: ${race.avg_cheese_collected}</div>
-                </td>
-              </tr>
-            `).join('');
+            raceOverviewTable.innerHTML = raceData.race_data.race_overview.map((race, index) => {
+              console.log('Processing race:', race);
+              return `
+                <tr class="border-b border-gray-600 hover:bg-gray-600 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
+                  <td class="p-2 text-xs font-mono text-blue-400">${race.id ? race.id.substring(0, 12) + '...' : 'N/A'}</td>
+                  <td class="p-2 text-white font-semibold">${race.creator_name || 'Unknown'}</td>
+                  <td class="p-2">
+                    <span class="px-2 py-1 text-xs rounded-full ${
+                      race.status === 'finished' ? 'bg-green-600 text-green-100' : 
+                      race.status === 'active' ? 'bg-blue-600 text-blue-100' : 
+                      race.status === 'waiting' ? 'bg-yellow-600 text-yellow-100' : 
+                      'bg-gray-600 text-gray-100'
+                    }">
+                      ${race.status_icon || '❓'} ${race.status_display || race.status || 'Unknown'}
+                    </span>
+                  </td>
+                  <td class="p-2 text-center">
+                    <span class="text-blue-400 font-semibold">${race.participant_count || 0}</span>
+                    <span class="text-gray-400 text-xs">/${race.max_players || '?'}</span>
+                  </td>
+                  <td class="p-2 text-xs text-gray-300">
+                    ${race.created_at ? new Date(race.created_at).toLocaleDateString() + ' ' + new Date(race.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}
+                  </td>
+                  <td class="p-2 text-xs text-gray-300">${race.duration || 'N/A'}</td>
+                  <td class="p-2 text-yellow-400 font-semibold">${race.dspoinc_reward || 0}</td>
+                  <td class="p-2 text-xs">
+                    <div class="text-green-400">Max: ${race.max_cheese_collected || 0}</div>
+                    <div class="text-blue-400">Avg: ${race.avg_cheese_collected || 0}</div>
+                  </td>
+                </tr>
+              `;
+            }).join('');
           } else {
             raceOverviewTable.innerHTML = `
               <tr>
                 <td colspan="8" class="text-center p-4 text-gray-400">No races found</td>
+              </tr>
+            `;
+          }
+        } else {
+          console.log('Race overview table or data not found:', {
+            table: raceOverviewTable,
+            raceData: raceData.race_data,
+            raceOverview: raceData.race_data?.race_overview
+          });
+          if (raceOverviewTable) {
+            raceOverviewTable.innerHTML = `
+              <tr>
+                <td colspan="8" class="text-center p-4 text-gray-400">Loading race overview...</td>
               </tr>
             `;
           }
@@ -8420,6 +8440,7 @@ require_once 'discord-invite.php';
         // Update recent races list
         const recentRacesElement = document.getElementById('recentRaceActivity');
         if (recentRacesElement) {
+          console.log('Recent activity data:', raceData.race_data?.recent_activity);
           if (raceData.race_data?.recent_activity && raceData.race_data.recent_activity.length > 0) {
             // Add summary at the top
             const totalRaces = raceData.race_data.recent_activity.length;
@@ -8443,27 +8464,30 @@ require_once 'discord-invite.php';
                   </div>
                 </div>
               </div>
-              ${raceData.race_data.recent_activity.map((activity, index) => `
-                <div class="history-item bg-gray-600 p-3 rounded-lg mb-3 border border-gray-500 hover:bg-gray-500 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
-                  <div class="flex justify-between items-start mb-2">
-                    <div class="flex items-center space-x-2">
-                      <span class="text-lg">${activity.event_type === 'race_started' ? '🏁' : '👤'}</span>
-                      <span class="text-white font-semibold">${activity.username || 'Unknown'}</span>
-                      <span class="px-2 py-1 text-xs rounded-full ${
-                        activity.event_type === 'race_started' ? 'bg-blue-600 text-blue-100' : 
-                        'bg-green-600 text-green-100'
-                      }">${activity.event_type === 'race_started' ? 'Race Started' : 'Player Joined'}</span>
+              ${raceData.race_data.recent_activity.map((activity, index) => {
+                console.log('Processing activity:', activity);
+                return `
+                  <div class="history-item bg-gray-600 p-3 rounded-lg mb-3 border border-gray-500 hover:bg-gray-500 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
+                    <div class="flex justify-between items-start mb-2">
+                      <div class="flex items-center space-x-2">
+                        <span class="text-lg">${activity.event_type === 'race_started' ? '🏁' : '👤'}</span>
+                        <span class="text-white font-semibold">${activity.username || 'Unknown'}</span>
+                        <span class="px-2 py-1 text-xs rounded-full ${
+                          activity.event_type === 'race_started' ? 'bg-blue-600 text-blue-100' : 
+                          'bg-green-600 text-green-100'
+                        }">${activity.event_type === 'race_started' ? 'Race Started' : 'Player Joined'}</span>
+                      </div>
+                      <div class="text-right">
+                        <div class="text-sm text-gray-300">${activity.created_at ? new Date(activity.created_at).toLocaleString() : 'No date'}</div>
+                        <div class="text-xs text-gray-400">Race: ${activity.race_id ? activity.race_id.substring(0, 8) + '...' : 'N/A'}</div>
+                      </div>
                     </div>
-                    <div class="text-right">
-                      <div class="text-sm text-gray-300">${activity.created_at ? new Date(activity.created_at).toLocaleString() : 'No date'}</div>
-                      <div class="text-xs text-gray-400">Race: ${activity.race_id ? activity.race_id.substring(0, 8) + '...' : 'N/A'}</div>
+                    <div class="text-sm text-gray-300">
+                      <span class="text-blue-400">📅</span> ${activity.description || 'No description'}
                     </div>
                   </div>
-                  <div class="text-sm text-gray-300">
-                    <span class="text-blue-400">📅</span> ${activity.description}
-                  </div>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             `;
           } else {
             recentRacesElement.innerHTML = `
@@ -8478,11 +8502,14 @@ require_once 'discord-invite.php';
               </div>
             `;
           }
+        } else {
+          console.log('Recent activity element not found:', recentRacesElement);
         }
 
         // Update leaderboard with enhanced styling
         const leaderboard = document.getElementById('raceLeaderboard');
         if (leaderboard) {
+          console.log('Leaderboard data:', raceData.race_data?.top_racers);
           if (!raceData.race_data || !raceData.race_data.top_racers || raceData.race_data.top_racers.length === 0) {
             leaderboard.innerHTML = `
               <div class="text-gray-400 text-center py-8">
@@ -8495,9 +8522,10 @@ require_once 'discord-invite.php';
                 </div>
               </div>
             `;
-        } else {
+          } else {
             // Enhanced leaderboard with the new CSS classes
             const topRacers = raceData.race_data.top_racers.slice(0, 10);
+            console.log('Processing top racers:', topRacers);
             leaderboard.innerHTML = `
               <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
                 <div class="grid grid-cols-3 gap-4 text-center">
@@ -8515,30 +8543,35 @@ require_once 'discord-invite.php';
                   </div>
                 </div>
               </div>
-              ${topRacers.map((racer, index) => `
-                <div class="leaderboard-item bg-gray-600 p-3 rounded-lg mb-2 border border-gray-500 hover:bg-gray-500 transition-all duration-200 transform hover:scale-105" style="animation-delay: ${index * 0.1}s">
-                  <div class="flex justify-between items-center">
-                    <div class="flex items-center space-x-3">
-                      <div class="leaderboard-rank w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'bg-gray-500 text-gray-200'
-                      }">
-                        ${index + 1}
+              ${topRacers.map((racer, index) => {
+                console.log('Processing racer:', racer);
+                return `
+                  <div class="leaderboard-item bg-gray-600 p-3 rounded-lg mb-2 border border-gray-500 hover:bg-gray-500 transition-all duration-200 transform hover:scale-105" style="animation-delay: ${index * 0.1}s">
+                    <div class="flex justify-between items-center">
+                      <div class="flex items-center space-x-3">
+                        <div class="leaderboard-rank w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                          index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'bg-gray-500 text-gray-200'
+                        }">
+                          ${index + 1}
+                        </div>
+                        <div class="leaderboard-info">
+                          <div class="leaderboard-name text-white font-semibold">${racer.username || 'Unknown Player'}</div>
+                          <div class="text-xs text-gray-400">${racer.user_id || 'No User ID'}</div>
+                        </div>
                       </div>
-                      <div class="leaderboard-info">
-                        <div class="leaderboard-name text-white font-semibold">${racer.username || 'Unknown Player'}</div>
-                        <div class="text-xs text-gray-400">${racer.user_id || 'No User ID'}</div>
+                      <div class="text-right">
+                        <div class="leaderboard-score text-lg font-bold text-green-400">${racer.total_cheese || 0} cheese</div>
+                        <div class="text-xs text-gray-400">${racer.total_races || 0} races</div>
+                        <div class="text-xs text-yellow-400">🏆 ${racer.first_place_finishes || 0} wins</div>
                       </div>
-                    </div>
-                    <div class="text-right">
-                      <div class="leaderboard-score text-lg font-bold text-green-400">${racer.total_cheese || 0} cheese</div>
-                      <div class="text-xs text-gray-400">${racer.total_races || 0} races</div>
-                      <div class="text-xs text-yellow-400">🏆 ${racer.first_place_finishes || 0} wins</div>
                     </div>
                   </div>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             `;
           }
+        } else {
+          console.log('Leaderboard element not found:', leaderboard);
         }
       } catch (error) {
         console.error('Error displaying Discord Race data:', error);
@@ -11634,110 +11667,7 @@ require_once 'discord-invite.php';
       }
     }
 
-    function displayDiscordRaceData(raceData) {
-      try {
-        console.log('🏁 Discord Race data received:', raceData);
-        addLog('🏁 Displaying Discord Race data...');
-        
-        // Helper function to format numbers nicely
-        const formatNumber = (num) => {
-          if (num === null || num === undefined || num === '-') return '-';
-          if (typeof num === 'string') num = parseFloat(num);
-          if (isNaN(num)) return '-';
-          return num.toLocaleString();
-        };
-
-        // Update Discord Race statistics
-        if (document.getElementById('raceTotalRaces')) {
-          const totalRaces = raceData.race_data?.total_races || 0;
-          document.getElementById('raceTotalRaces').textContent = formatNumber(totalRaces);
-          document.getElementById('raceTotalRaces').className = totalRaces > 0 ? 'text-white font-semibold' : 'text-gray-400';
-        }
-        
-        if (document.getElementById('raceTotalParticipants')) {
-          const totalParticipants = raceData.race_data?.total_participants || 0;
-          document.getElementById('raceTotalParticipants').textContent = formatNumber(totalParticipants);
-          document.getElementById('raceTotalParticipants').className = totalParticipants > 0 ? 'text-white font-semibold' : 'text-gray-400';
-        }
-        
-        if (document.getElementById('raceTotalWinners')) {
-          const totalPrizes = raceData.race_data?.total_prizes_awarded || 0;
-          document.getElementById('raceTotalWinners').textContent = formatNumber(totalPrizes);
-          document.getElementById('raceTotalWinners').className = totalPrizes > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
-        }
-
-        // Update top racers leaderboard with grid system
-        const leaderboard = document.getElementById('raceLeaderboard');
-        if (leaderboard) {
-          if (raceData.race_data?.top_racers && raceData.race_data.top_racers.length > 0) {
-            leaderboard.innerHTML = `
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                ${raceData.race_data.top_racers.map((racer, index) => `
-                  <div class="bg-gray-700 p-4 rounded-lg border border-gray-600">
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-lg font-bold text-yellow-400">#${index + 1}</span>
-                      <span class="text-sm text-gray-400">${racer.username || 'Unknown'}</span>
-                    </div>
-                    <div class="text-2xl font-bold text-green-400">${formatNumber(racer.wins || 0)} wins</div>
-                    <div class="text-sm text-gray-300">ID: ${racer.user_id || 'N/A'}</div>
-                  </div>
-                `).join('')}
-              </div>
-            `;
-          } else {
-            leaderboard.innerHTML = `
-              <div class="text-center p-8 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700 border-opacity-50">
-                <div class="text-gray-300 text-2xl mb-3">🏁🧀</div>
-                <div class="text-gray-400 text-lg mb-2 font-semibold">No Leaderboard Data</div>
-                <div class="text-gray-500 text-sm mb-4">No players have completed Discord races yet</div>
-                <div class="text-green-400 text-sm bg-green-900 bg-opacity-30 px-4 py-2 rounded-full border border-green-700 border-opacity-50">
-                  Start racing to see rankings! 🎮
-                </div>
-              </div>
-            `;
-          }
-        }
-
-        // Update recent activity
-        const recentActivity = document.getElementById('recentRaceActivity');
-        if (recentActivity && raceData.race_data?.recent_activity) {
-          recentActivity.innerHTML = `
-            <div class="space-y-2">
-              ${raceData.race_data.recent_activity.slice(0, 10).map(activity => `
-                <div class="bg-gray-700 p-3 rounded-lg border-l-4 border-l-blue-500">
-                  <div class="text-sm text-gray-300">${activity.timestamp}</div>
-                  <div class="text-white">${activity.description}</div>
-                </div>
-              `).join('')}
-            </div>
-          `;
-        }
-
-        // Add data summary
-        const dataSummary = document.createElement('div');
-        dataSummary.className = 'mb-4 p-3 bg-green-900 bg-opacity-50 rounded-lg';
-        dataSummary.innerHTML = `
-          <div class="text-green-200 text-sm">
-            <strong>📊 Data Summary:</strong> 
-            ${raceData.race_data?.total_races || 0} total races with ${raceData.race_data?.total_participants || 0} participants
-            ${raceData.race_data?.total_races > 0 ? '✅' : '❌ No data yet'}
-          </div>
-          <div class="text-green-300 text-xs mt-2">
-            <strong>🕒 Last Updated:</strong> ${new Date().toLocaleString()}
-          </div>
-        `;
-        
-        const discordRaceTab = document.getElementById('discordRaceTab');
-        if (discordRaceTab && !discordRaceTab.querySelector('.data-summary')) {
-          dataSummary.className += ' data-summary';
-          discordRaceTab.insertBefore(dataSummary, discordRaceTab.firstChild);
-        }
-
-      } catch (error) {
-        console.error('Error displaying Discord Race data:', error);
-        addLog(`❌ Error displaying Discord Race data: ${error.message}`);
-      }
-    }
+    // Discord Race data loading function - uses the enhanced displayDiscordRaceData function above
 
     // Add CSS for data-loaded indicators
     const style = document.createElement('style');

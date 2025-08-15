@@ -435,9 +435,9 @@ try {
                 cr.ended_at,
                 cr.dspoinc_reward,
                 COUNT(rp.user_id) as participant_count,
-                AVG(rp.cheese_count) as avg_cheese_collected,
-                MAX(rp.cheese_count) as max_cheese_collected,
-                MIN(rp.cheese_count) as min_cheese_collected
+                AVG(CAST(rp.position AS REAL)) as avg_cheese_collected,
+                MAX(CAST(rp.position AS REAL)) as max_cheese_collected,
+                MIN(CAST(rp.position AS REAL)) as min_cheese_collected
              FROM tbl_cheese_races cr
              LEFT JOIN tbl_race_participants rp ON cr.race_id = rp.race_id
              GROUP BY cr.race_id
@@ -494,10 +494,10 @@ try {
                     rp.user_id,
                     rp.username,
                     COUNT(DISTINCT rp.race_id) as total_races,
-                    SUM(rp.cheese_count) as total_cheese,
-                    AVG(rp.cheese_count) as avg_cheese,
-                    MAX(rp.cheese_count) as best_cheese,
-                    COUNT(CASE WHEN rp.position = 1 THEN 1 END) as first_place_finishes
+                    SUM(CAST(rp.position AS REAL)) as total_cheese,
+                    AVG(CAST(rp.position AS REAL)) as avg_cheese,
+                    MAX(CAST(rp.position AS REAL)) as best_cheese,
+                    COUNT(CASE WHEN CAST(rp.position AS REAL) = (SELECT MAX(CAST(rp2.position AS REAL)) FROM tbl_race_participants rp2 WHERE rp2.race_id = rp.race_id) THEN 1 END) as first_place_finishes
                  FROM tbl_race_participants rp
                  GROUP BY rp.user_id, rp.username
                  ORDER BY total_cheese DESC, first_place_finishes DESC
