@@ -309,19 +309,63 @@ require_once 'discord-invite.php';
 
 <!-- 🎴 Web3 Wallet Verification Section -->
 <section class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-6 shadow-2xl my-20 relative">
-  <!-- 🔨 Under Construction Ribbon -->
-  <div class="absolute -top-4 -right-4 rotate-6 bg-yellow-400 text-black text-xs font-extrabold px-3 py-1 rounded-full shadow-lg z-10 animate-pulse ring-2 ring-yellow-300">
-    🚧 Under Cheese-struction
+  <!-- ✅ Fully Functional Badge -->
+  <div class="absolute -top-4 -right-4 rotate-6 bg-green-400 text-black text-xs font-extrabold px-3 py-1 rounded-full shadow-lg z-10 animate-pulse ring-2 ring-green-300">
+    ✅ Fully Functional
   </div>
   
   <div class="text-center">
     <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-center gap-2">
       🎴 NFT Holder Verification
     </h2>
-    <p class="text-gray-300 mb-6">
-      Connect your Phantom wallet to verify NFT ownership and get automatic Discord roles!
-      <br><span class="text-yellow-400 text-sm">🔐 Secure: Requires cryptographic signature to prove wallet ownership</span>
-    </p>
+         <p class="text-gray-300 mb-6">
+       Connect your Phantom wallet to verify NFT ownership and get automatic Discord roles!
+       <br><span class="text-green-400 text-sm">🔐 Secure: Requires cryptographic signature to prove wallet ownership</span>
+     </p>
+     
+     <!-- 🔍 Verification Process Info -->
+     <div class="bg-gray-800/50 rounded-lg p-4 mb-6 text-left">
+       <h3 class="text-lg font-semibold text-blue-300 mb-3 flex items-center gap-2">
+         🔍 How NFT Verification Works
+       </h3>
+       <div class="space-y-3 text-sm">
+         <div class="flex items-start gap-3">
+           <span class="text-blue-400 font-bold">1.</span>
+           <div>
+             <strong class="text-blue-200">Wallet Connection:</strong> Connect your Phantom wallet securely
+           </div>
+         </div>
+         <div class="flex items-start gap-3">
+           <span class="text-blue-400 font-bold">2.</span>
+           <div>
+             <strong class="text-blue-200">Helius API Check:</strong> We use <a href="https://www.helius.dev/docs" target="_blank" class="text-yellow-400 hover:text-yellow-300 underline">Helius APIs</a> to efficiently search your wallet for our specific NFT collections
+           </div>
+         </div>
+         <div class="flex items-start gap-3">
+           <span class="text-blue-400 font-bold">3.</span>
+           <div>
+             <strong class="text-blue-200">Cryptographic Proof:</strong> Sign a message with your wallet to prove ownership
+           </div>
+         </div>
+         <div class="flex items-start gap-3">
+           <span class="text-blue-400 font-bold">4.</span>
+           <div>
+             <strong class="text-blue-200">Automatic Role Grant:</strong> Get Discord roles instantly based on your NFT holdings
+           </div>
+         </div>
+       </div>
+       
+       <div class="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
+         <div class="flex items-center gap-2 text-blue-200 mb-2">
+           <span class="text-lg">🔗</span>
+           <strong>Powered by Helius</strong>
+         </div>
+         <p class="text-xs text-blue-300">
+           We use Helius' high-performance Solana infrastructure for fast, reliable NFT verification. 
+           <a href="https://www.helius.dev/docs" target="_blank" class="text-yellow-400 hover:text-yellow-300 underline">Learn more about Helius APIs</a>
+         </p>
+       </div>
+     </div>
     
     <!-- Wallet Connection Status -->
     <div id="wallet-status" class="hidden bg-gray-800 rounded-lg p-4 mb-4">
@@ -368,8 +412,8 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
-<!-- DSPOINC Graph & Score Changes -->
-<div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
+<!-- DSPOINC Graph & Score Changes - Only Visible When Logged In -->
+<div id="dspoincJourneySection" class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto hidden">
   <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
     <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
     Your $DSPOINC Journey
@@ -383,13 +427,25 @@ require_once 'discord-invite.php';
     <canvas id="pointsGraph" width="400" height="180"></canvas>
     <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
   </div>
-<div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
-  <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
-  <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
-    <!-- Populated by JS -->
-  </ul>
+  <div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
+    <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
+    <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
+      <!-- Populated by JS -->
+    </ul>
+  </div>
 </div>
 
+<!-- Login Prompt for DSPOINC Journey -->
+<div id="dspoincLoginPrompt" class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
+  <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
+    <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
+    $DSPOINC Journey
+  </h2>
+  <p class="text-gray-400 mb-4">Login with Discord to view your DSPOINC balance and history</p>
+  <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read" 
+     class="inline-block bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-yellow-500 transition-all duration-300 transform hover:scale-105">
+    🔐 Login with Discord
+  </a>
 </div>
 
 </section>
@@ -725,12 +781,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     // We'll handle the admin redirect after user data is loaded
   }
 
-  try {
-    // Unified fetch from profile.php
-    const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
-      credentials: 'include',
-      headers: { 'Accept': 'application/json' }
-    });
+    try {
+     // Unified fetch from profile.php
+     const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
+       credentials: 'include',
+       headers: { 'Accept': 'application/json' }
+     });
+
+     // Ensure DSPOINC sections are hidden by default for non-logged-in users
+     hideElement('dspoincJourneySection');
+     showElement('dspoincLoginPrompt');
 
     if (!res.ok) {
       if (res.status === 401) {
@@ -793,21 +853,30 @@ document.addEventListener("DOMContentLoaded", async function () {
       setText('user-spoinc', user.stats.sources !== undefined ? user.stats.sources.toLocaleString() : '');
     }
 
-    // Trophy pokal shelf — render immediately from roles
-    if (user.roles) renderTrophyShelf(user.roles);
+         // Trophy pokal shelf — render immediately from roles
+     if (user.roles) renderTrophyShelf(user.roles);
 
-    // VIP/Golden Cheese logic check on top menu
-if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
-  showElement('goldenCheeseGate'); // optional if defined elsewhere
-  showElement('vipSection');       // ✅ Matches the DOM ID
-} else {
-  showElement('noCheeseJoke');
-}
-	
-// ✅ Show Bingo banner if user is logged in
-if (user.discord_id) {
-  showElement('bingoBanner');
-}
+     // VIP/Golden Cheese logic check on top menu
+     if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
+       showElement('goldenCheeseGate'); // optional if defined elsewhere
+       showElement('vipSection');       // ✅ Matches the DOM ID
+     } else {
+       showElement('noCheeseJoke');
+     }
+ 	
+     // ✅ Show Bingo banner if user is logged in
+     if (user.discord_id) {
+       showElement('bingoBanner');
+     }
+     
+     // ✅ Show DSPOINC Journey section when logged in
+     if (user.discord_id) {
+       showElement('dspoincJourneySection');
+       hideElement('dspoincLoginPrompt');
+     } else {
+       hideElement('dspoincJourneySection');
+       showElement('dspoincLoginPrompt');
+     }
 
     // 🔧 Show Admin Access Button for admins/moderators
     if (user.roles && (
@@ -862,26 +931,28 @@ if (user.discord_id) {
 
   } catch (err) {
     console.error('Profile fetch failed:', err);
-    // Show login UI on error
-    setText('username', 'Guest#0000');
-    setText('welcome-name', 'Guest');
-    setText('email', 'Please log in');
-    setText('guilds', 'No guilds connected');
-    setText('traits', 'No traits available');
-    setText('user-roles', 'No roles');
-    setText('wallet-address', 'Wallet not linked');
-    hideElement('goldenCheeseGate');
-    hideElement('noCheeseJoke');
-    
-    // Make sure login link is visible
-    if (loginLink) {
-      loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
-      loginLink.style.display = 'block';
-    }
-    if (avatar) {
-      avatar.src = 'img/grumpy-cheese.png';
-      avatar.style.cursor = 'pointer';
-    }
+         // Show login UI on error
+     setText('username', 'Guest#0000');
+     setText('welcome-name', 'Guest');
+     setText('email', 'Please log in');
+     setText('guilds', 'No guilds connected');
+     setText('traits', 'No traits available');
+     setText('user-roles', 'No roles');
+     setText('wallet-address', 'Wallet not linked');
+     hideElement('goldenCheeseGate');
+     hideElement('noCheeseJoke');
+     hideElement('dspoincJourneySection');
+     showElement('dspoincLoginPrompt');
+     
+     // Make sure login link is visible
+     if (loginLink) {
+       loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
+       loginLink.style.display = 'block';
+     }
+     if (avatar) {
+       avatar.src = 'img/grumpy-cheese.png';
+       avatar.style.cursor = 'pointer';
+     }
   }
 });
 </script>
@@ -1116,50 +1187,66 @@ document.addEventListener('DOMContentLoaded', function() {
     if (canvas) canvas.style.display = 'none';
   }
 
+  // Only show chart if user is logged in
   if (!userId) {
-    showMsg('Please log in to see your DSPOINC history.');
+    console.log('User not logged in, hiding DSPOINC chart');
+    if (canvas) canvas.style.display = 'none';
+    if (msgBox) {
+      msgBox.innerText = 'Please log in to see your DSPOINC history.';
+      msgBox.classList.remove('hidden');
+    }
     return;
   }
+
   if (!canvas) {
     console.error('pointsGraph canvas missing!');
     return;
   }
+
+  // Fetch DSPOINC history for logged-in user
   fetch(`/api/discord/score-history.php?user_id=${userId}`)
     .then(res => res.json())
     .then(json => {
       if (msgBox) msgBox.classList.add('hidden');
       canvas.style.display = '';
+      
       let cumulative = 0, labels = [], data = [];
-      for (const entry of json.history) {
-        cumulative += entry.amount;
-        labels.push(entry.timestamp.split('T')[0]);
-        data.push(cumulative);
-      }
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label: '$DSPOINC Over Time',
-            data,
-            fill: false,
-            tension: 0.3,
-            borderColor: '#fcd34d',
-            backgroundColor: '#fde68a',
-            pointRadius: 4,
-            pointHoverRadius: 7
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: true } },
-          scales: { y: { beginAtZero: true } }
+      
+      if (json.history && json.history.length > 0) {
+        for (const entry of json.history) {
+          cumulative += entry.amount;
+          labels.push(entry.timestamp.split('T')[0]);
+          data.push(cumulative);
         }
-      });
+        
+        new Chart(canvas, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: '$DSPOINC Over Time',
+              data,
+              fill: false,
+              tension: 0.3,
+              borderColor: '#fcd34d',
+              backgroundColor: '#fde68a',
+              pointRadius: 4,
+              pointHoverRadius: 7
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: true } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      } else {
+        showMsg('No DSPOINC history found.');
+      }
     })
     .catch(err => {
+      console.error('Error loading DSPOINC history:', err);
       showMsg('Could not load history. Please try again.');
-      console.error('Graph error:', err);
     });
 });
 </script>
@@ -1169,60 +1256,98 @@ document.addEventListener('DOMContentLoaded', async function() {
   let user = {};
   let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
 
-  // Fetch user profile and set balances
-  if (userId) {
-    try {
-      const res = await fetch('/api/user/profile.php?user_id=' + encodeURIComponent(userId));
-      user = await res.json();
-
-      // Set both balances (top and journey widget)
-      const dspoincEl = document.getElementById('user-dspoinc');
-      const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
-      if (dspoincEl) dspoincEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
-      if (dspoincJourneyEl) dspoincJourneyEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
-
-    } catch (e) { /* handle error if you want */ }
+  // Only proceed if user is logged in
+  if (!userId) {
+    console.log('User not logged in, skipping DSPOINC data fetch');
+    return;
   }
 
-  // Fetch recent adjustments
-// Fetch recent adjustments
-if (user && user.discord_id) {
-  fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
-    .then(res => res.json())
-    .then(response => {
-      const recentList = document.getElementById('recentAdjustments');
-      const emptyMsg = document.getElementById('no-score-history');
-      const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+  try {
+    // Fetch user profile and set balances
+    const res = await fetch('/api/user/profile.php?user_id=' + encodeURIComponent(userId));
+    user = await res.json();
 
-      // If there are adjustments, hide the message and show the list
-      if (adjustments.length > 0) {
-        if (recentList) {
-          recentList.innerHTML = adjustments
-            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-            .slice(0, 10)
-            .map(a =>
-              `<li>
-                <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
-                <span class="italic">(${a.reason || a.action})</span>
-              </li>`
-            ).join('');
-        }
-        if (emptyMsg) emptyMsg.style.display = "none";
-      } else {
-        // No score changes: show the empty msg and clear the list
-        if (recentList) recentList.innerHTML = '';
-        if (emptyMsg) emptyMsg.style.display = "";
-      }
-    })
-    .catch(() => {
-      // On error, show a fallback error in the list and show the empty msg
-      const recentList = document.getElementById('recentAdjustments');
-      if (recentList) recentList.innerHTML = '<li class="text-red-400">Could not load recent changes.</li>';
-      const emptyMsg = document.getElementById('no-score-history');
-      if (emptyMsg) emptyMsg.style.display = "";
+    if (user.error) {
+      console.error('Error fetching user profile:', user.error);
+      return;
+    }
+
+    // Set DSPOINC balance - ensure it matches points adjustments
+    const dspoincEl = document.getElementById('user-dspoinc');
+    const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
+    
+    // Debug: Log all available user data for DSPOINC calculation
+    console.log('User data for DSPOINC calculation:', {
+      total_dspoinc: user.total_dspoinc,
+      stats_scoreAdjustments: user.stats?.scoreAdjustments,
+      stats_sources: user.stats?.sources,
+      raw_user_data: user
     });
-}
+    
+    // Use the correct field from user data - should match points adjustments
+    // Priority: total_dspoinc > stats.scoreAdjustments > 0
+    const dspoincBalance = user.total_dspoinc || user.stats?.scoreAdjustments || 0;
+    
+    if (dspoincEl) dspoincEl.textContent = dspoincBalance.toLocaleString();
+    if (dspoincJourneyEl) dspoincJourneyEl.textContent = dspoincBalance.toLocaleString();
+    
+    console.log('Final DSPOINC Balance set to:', dspoincBalance);
+    console.log('This should match the points adjustments from the user stats');
+    
+    // Verify DSPOINC balance matches points adjustments
+    if (user.stats?.scoreAdjustments !== undefined) {
+      const pointsAdjustments = user.stats.scoreAdjustments;
+      if (dspoincBalance === pointsAdjustments) {
+        console.log('✅ DSPOINC Balance matches points adjustments:', dspoincBalance);
+      } else {
+        console.warn('⚠️ DSPOINC Balance does NOT match points adjustments:', {
+          dspoincBalance,
+          pointsAdjustments,
+          difference: dspoincBalance - pointsAdjustments
+        });
+      }
+    } else {
+      console.log('ℹ️ No points adjustments data available for comparison');
+    }
+
+    // Fetch recent adjustments to show in the journey section
+    if (user.discord_id) {
+      fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
+        .then(res => res.json())
+        .then(response => {
+          const recentList = document.getElementById('recentAdjustments');
+          const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+
+          if (recentList) {
+            if (adjustments.length > 0) {
+              recentList.innerHTML = adjustments
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .slice(0, 10)
+                .map(a =>
+                  `<li>
+                    <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
+                    : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
+                    <span class="italic">(${a.reason || a.action})</span>
+                  </li>`
+                ).join('');
+            } else {
+              recentList.innerHTML = '<li class="text-gray-400">No recent score changes</li>';
+            }
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching recent adjustments:', error);
+          const recentList = document.getElementById('recentAdjustments');
+          if (recentList) {
+            recentList.innerHTML = '<li class="text-red-400">Could not load recent changes</li>';
+          }
+        });
+    }
+
+  } catch (e) { 
+    console.error('Error in DSPOINC data fetch:', e);
+  }
+});
 
 
   // 2. Load and display quests for this user
