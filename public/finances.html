@@ -48,6 +48,53 @@ require_once 'discord-invite.php';
     .animate-lab-bubble {
       animation: labBubble 5s ease-in-out infinite;
     }
+
+    /* New Role System Style Animations */
+    @keyframes trophyGlow {
+      0%, 100% { 
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
+        transform: scale(1);
+      }
+      50% { 
+        box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
+        transform: scale(1.05);
+      }
+    }
+    
+    @keyframes rolePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.02); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .trophy-glow {
+      animation: trophyGlow 3s ease-in-out infinite;
+    }
+    
+    .role-pulse {
+      animation: rolePulse 4s ease-in-out infinite;
+    }
+    
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .finance-card {
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .finance-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(251, 191, 36, 0.5);
+    }
   </style>
 
   <!-- 📜 Dev Notes: Finance portal for charting SPOINC + riddle-based unlockables. Future API ready. -->
@@ -93,7 +140,20 @@ and move on like a cheese ninja. ASk our Brain 3.1. SQL expert for this spot ;-)
 -->
 
 
-<body class="relative bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900 font-sans overflow-x-hidden min-h-screen">
+<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans overflow-x-hidden min-h-screen">
+
+  <!-- 🌟 Floating Background Elements -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
+    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
+    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
+    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
+  </div>
+
+  <!-- 🧬 Lab Status Badge -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
+    🧬 Finance Portal v2.0 Active
+  </div>
 
 <!-- 
 🧪 CRITICAL LAB NOTES: THE CHEESE WORLD SYSTEM OVERVIEW
@@ -126,11 +186,6 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
 -->
 
 
-<!-- 🧪 $SPOINC Badge -->
-<div class="fixed top-4 left-4 z-50 bg-yellow-500 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg animate-pulse">
-  🧪 Cooked with $SPOINC
-</div>
-
 <!-- 🔥 Finance Flask + Glow & Bubbles -->
 <div class="absolute bottom-8 right-8 z-[1] pointer-events-none">
   <div class="w-40 h-40 bg-yellow-300 opacity-30 rounded-full blur-2xl absolute animate-pulse"></div>
@@ -150,21 +205,21 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
 
 
 <!-- Navigation Bar -->
-<header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
+<header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
-    <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
+    <a href="index.html" class="text-xl font-bold tracking-tight text-yellow-400">🧠 Narrrf's World</a>
     <nav class="space-x-4 text-sm md:text-base flex items-center">
-      <a href="index.html" class="hover:text-pink-400">Home</a>
-      <a href="mint.html" class="hover:text-pink-400">Mint</a>
-      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
-      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
-      <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
-      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+      <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
+      <a href="mint.html" class="hover:text-yellow-400 transition-colors">Mint</a>
+      <a href="whitepaper.html" class="hover:text-yellow-400 transition-colors">Whitepaper</a>
+      <a href="get-roles.html" class="hover:text-yellow-400 transition-colors">Get Roles</a>
+      <a href="project-updates.html" class="hover:text-yellow-400 transition-colors">Updates</a>
+      <a href="faq.html" class="hover:text-yellow-400 transition-colors">FAQ</a>
       <button id="connect-wallet-btn" onclick="connectWallet()" 
-        class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
+        class="ml-2 mt-2 md:mt-0 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
         🔌 Connect
       </button>
-      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
+      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-yellow-400 ml-2 shadow-lg" />
       <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
         ❌
       </button>
@@ -173,26 +228,26 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
 </header>
 
 <!-- Finance Intro -->
-<section class="text-center py-12 px-6">
-  <h1 class="text-4xl font-extrabold mb-2">💸 Narrrf's Financial Transparency</h1>
-  <p class="text-md max-w-2xl mx-auto">We're building a fair and fun ecosystem — where capital flows back to those who drive it. Here's how it works.</p>
+<section class="text-center py-12 px-6 relative z-10">
+  <h1 class="text-4xl font-extrabold mb-2 text-yellow-400">💸 Narrrf's Financial Transparency</h1>
+  <p class="text-md max-w-2xl mx-auto text-gray-300">We're building a fair and fun ecosystem — where capital flows back to those who drive it. Here's how it works.</p>
 </section>
 
 <!-- Revenue Phases Grid -->
-<section class="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-6">
-  <div class="bg-white rounded-xl shadow p-6 border-l-4 border-pink-400">
-    <h2 class="text-xl font-bold mb-2">🧪 Phase 1 – Genesis Revenue</h2>
-    <ul class="list-disc list-inside text-sm space-y-1">
+<section class="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-6 relative z-10">
+  <div class="finance-card rounded-2xl p-6 border-l-4 border-pink-500">
+    <h2 class="text-xl font-bold mb-2 text-pink-400">🧪 Phase 1 – Genesis Revenue</h2>
+    <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
       <li>GEN1 NFT Mint – Primary source of launch funds</li>
       <li>Trait Redemption Mint – Special NFTs or upgrades ("Alien," etc.)</li>
       <li>GEN1 Public Mint – Long-term holder strategy</li>
-	  <li>GEN1 VIP NFT Airdrop – Long-term holder strategy</li>
+      <li>GEN1 VIP NFT Airdrop – Long-term holder strategy</li>
     </ul>
   </div>
 
-  <div class="bg-white rounded-xl shadow p-6 border-l-4 border-yellow-400">
-    <h2 class="text-xl font-bold mb-2">💸 Phase 2 – Ecosystem Growth</h2>
-    <ul class="list-disc list-inside text-sm space-y-1">
+  <div class="finance-card rounded-2xl p-6 border-l-4 border-yellow-500">
+    <h2 class="text-xl font-bold mb-2 text-yellow-400">💸 Phase 2 – Ecosystem Growth</h2>
+    <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
       <li>Secondary Market Royalties – 5% SOL standard</li>
       <li>$DSPOINC Utility Fees – Rake, staking, raffles, etc.</li>
       <li>Benefit Seasons – Gamified NFT utility cycles</li>
@@ -200,9 +255,9 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
     </ul>
   </div>
 
-  <div class="bg-white rounded-xl shadow p-6 border-l-4 border-green-400">
-    <h2 class="text-xl font-bold mb-2">🌍 Phase 3 – Hytopia Revenue (2026–2030)</h2>
-    <ul class="list-disc list-inside text-sm space-y-1">
+  <div class="finance-card rounded-2xl p-6 border-l-4 border-green-500">
+    <h2 class="text-xl font-bold mb-2 text-green-400">🌍 Phase 3 – Hytopia Revenue (2026–2030)</h2>
+    <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
       <li>Real-World Partner Tabs – Merch & services in Discord</li>
       <li>Land NFTs – Digital ownership, shop features</li>
       <li>Retail Collabs – % of tokenized product sales</li>
@@ -212,10 +267,12 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
 </section>
 
 <!-- Allocation Pie Chart Section -->
-<section class="max-w-4xl mx-auto py-12 px-6 text-center">
-  <h2 class="text-3xl font-bold mb-4">📊 Updated Funding Distribution</h2>
-  <p class="mb-6 text-sm max-w-xl mx-auto">Our mission is to redistribute value to those who contribute most to the ecosystem. Here's how every dollar flows:</p>
-  <canvas id="financeChart" class="mx-auto max-w-md"></canvas>
+<section class="max-w-4xl mx-auto py-12 px-6 text-center relative z-10">
+  <h2 class="text-3xl font-bold mb-4 text-yellow-400">📊 Updated Funding Distribution</h2>
+  <p class="mb-6 text-sm max-w-xl mx-auto text-gray-300">Our mission is to redistribute value to those who contribute most to the ecosystem. Here's how every dollar flows:</p>
+  <div class="finance-card rounded-2xl p-6">
+    <canvas id="financeChart" class="mx-auto max-w-md"></canvas>
+  </div>
 </section>
 
 <!-- Chart Script -->
@@ -233,45 +290,77 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
       ],
       datasets: [{
         data: [70, 15, 7, 5, 3],
-        borderWidth: 2
+        backgroundColor: [
+          '#3b82f6', // Blue for Benefits
+          '#ec4899', // Pink for Marketing
+          '#10b981', // Green for Development
+          '#f59e0b', // Orange for Tools
+          '#ef4444'  // Red for Team
+        ],
+        borderColor: [
+          '#1d4ed8', // Darker blue
+          '#be185d', // Darker pink
+          '#047857', // Darker green
+          '#d97706', // Darker orange
+          '#dc2626'  // Darker red
+        ],
+        borderWidth: 2,
+        hoverOffset: 4
       }]
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom'
+          position: 'bottom',
+          labels: {
+            color: '#e5e7eb', // Light gray text for dark theme
+            font: {
+              size: 12,
+              weight: '500'
+            },
+            padding: 20,
+            usePointStyle: true,
+            pointStyle: 'circle'
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          titleColor: '#fbbf24', // Yellow title
+          bodyColor: '#e5e7eb', // Light gray body
+          borderColor: '#fbbf24',
+          borderWidth: 1,
+          cornerRadius: 8
         }
+      },
+      animation: {
+        animateRotate: true,
+        animateScale: true
       }
     }
   });
 </script>
 
 <!-- Call to Action -->
-<section class="text-center py-12">
-  <a href="mint.html" class="inline-block bg-purple-700 text-white text-lg font-semibold px-8 py-3 rounded-xl shadow hover:bg-purple-800 transition">
+<section class="text-center py-12 relative z-10">
+  <a href="mint.html" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black text-lg font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
     🚀 Go to Mint Lab
   </a>
 </section>
 
-<!-- Footer -->
-<footer class="text-center py-6 text-sm text-purple-700">
-              Built with 💜 & Web3 clarity | <a href="<?php echo $discord_url; ?>" class="underline text-pink-600">Join us on Discord</a>
-</footer>
-
 <!-- Final Thoughts Section -->
-<section class="bg-gradient-to-br from-purple-100 to-pink-50 py-16 px-6 mt-20">
+<section class="bg-gradient-to-r from-purple-900/30 to-pink-900/30 py-16 px-6 mt-20 relative z-10 rounded-2xl border border-purple-500/30">
   <div class="max-w-4xl mx-auto text-center">
-    <h2 class="text-3xl font-bold mb-4">🧠 Final Thoughts</h2>
-    <p class="text-md mb-6 max-w-2xl mx-auto">
+    <h2 class="text-3xl font-bold mb-4 text-purple-400">🧠 Final Thoughts</h2>
+    <p class="text-md mb-6 max-w-2xl mx-auto text-gray-300">
       Narrrf's World isn't just another NFT drop. It's a social experiment, a chaotic cartoon economy, and a mission to put value back in the hands of the community. Our finances are structured to reward holders, empower builders, and push the boundaries of Web3 storytelling.
     </p>
-    <blockquote class="italic text-lg text-purple-800 font-semibold">
+    <blockquote class="italic text-lg text-purple-300 font-semibold">
       "In a world run by cheese and chaos, only those who dare to play win big." 🚀
     </blockquote>
   </div>
 </section>
-
 
 <!-- Global Wallet Connect + PFP Script -->
 <script>
@@ -307,7 +396,20 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
       avatar?.classList.remove('hidden');
     }
   });
+
+  function disconnectWallet() {
+    localStorage.removeItem('walletAddress');
+    const avatar = document.getElementById('user-avatar');
+    const connectButton = document.getElementById('connect-wallet-btn');
+
+    if (avatar) avatar.classList.add('hidden');
+    if (connectButton) {
+      connectButton.innerText = '🔌 Connect';
+      connectButton.disabled = false;
+    }
+  }
 </script>
+
 <!-- 🐭 Investor Mouse Mascot -->
 <div class="fixed bottom-8 left-8 z-40">
   <img src="img/investor-mouse1.png" alt="Investor Mouse"
@@ -316,146 +418,6 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
                        onclick="window.location.href='<?php echo $discord_url; ?>'"
        style="cursor: pointer;" />
 </div>
-
-<!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
----------------------------------------------------------
-🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien
-🌍 This **Genesis 2.0** package represents the culmination of **Narrrf's World** project: integrating **Web2/Web3**, **NFT ownership**, and **SQL-based game mechanics** into a self-sustaining ecosystem.
-
-💾 **Stored in the Lab's digital archives**, it will continue to evolve and serve as a reference for **future generations** of developers.
-
-⚡ Officially ready for **scaling**, **real-time integration**, and continuous **user interaction**.
-
-🎮 **Masterchief** will guide the **backend SQL** operations and ensure that **cheese never spoils**.
-
-🧪 **Future devs**: add your **name**, **refine the platform**, and **keep expanding** on this legendary system.
-
-🔧 **Critical Dev Reminders for the Next Generations**:
-  - Ensure **minting** is **tested across all wallet types** (e.g., Phantom, Solana).
-  - Validate **SQL integration** for minting, supply tracking, and wallet syncing.
-  - Always monitor **egg tracking** and **wallet connectivity** across all pages.
-  - Keep testing **Web3 wallets** and integrating future wallet systems.
-  - **Optimize the minting process** for **scalability** and **future-proofing**.
-
-🔮 Maintain the **core focus on Web3** principles, **game progression**, and **community empowerment**.
-
----------------------------------------------------------
-🧪 **Cheese Engine v1.4: The Riddle System Core**
----------------------------------------------------------
-This system powers **moving riddle nodes** throughout Narrrf's World. All **cheese clicks** are tracked and used for:
-- Lore progression
-- Inventory events
-- Trait-gated puzzles
-
-**Riddle Engine** is the heart of the **Narrrfverse**, integrating with:
-- **SQL tracking** for each riddle solved (stored in the `tbl_cheese_clicks` table).
-- **User interaction**, where progress is stored and retrieved based on wallet address, egg ID, and timestamp.
-- **Unlocking Easter Eggs** as users progress, ensuring a dynamic and immersive game world.
-
-📦 **DB Dev:**
-Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
-→ Use **wallet address** from localStorage, **timestamp**, and **egg ID** for progress tracking.
-
-🚀 **Future Ideas**:
-- **Massive map-wide riddle hunts** integrated with time-locked eggs and rotating cheese dungeons.
-- Enhance **user experience** with dynamic **puzzle-solving mechanics**.
-  
-🧑‍💻 Future devs can expand the **riddle system** and **reward mechanics** with more complex features and interactivity.
-
----------------------------------------------------------
-🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
----------------------------------------------------------
--->
--->
-
-<!-- ======================================== -->
-<!-- 🧠 HTML Brain 4.0 Footer Lab Declaration -->
-<!-- ======================================== -->
-<footer class="text-center mt-16 mb-10">
-  <!-- Back to Top Link -->
-  <div class="mb-6">
-    <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition-colors duration-200">
-      🔝 Back to Top
-    </a>
-  </div>
-  
-  <!-- 🧀 Narrrf's Cheese Universe Section -->
-  <div class="mb-8 p-6 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 rounded-xl border border-yellow-300/30">
-    <div class="text-lg font-bold text-yellow-800 mb-4">
-      🧀 Narrrf's Cheese Universe
-    </div>
-    <div class="text-sm text-yellow-700 mb-6">
-      Where gaming meets cheese innovation
-    </div>
-    
-    <!-- Quick Links -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <a href="/index.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🏠 Home
-      </a>
-      <a href="/whitepaper-pro.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        📜 Read the Whitepaper
-      </a>
-      <a href="/mint.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🎨 Mint Your NFT
-      </a>
-      <a href="/profile.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🎭 Get Roles
-      </a>
-    </div>
-    
-    <!-- Socials -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium">
-        🐦 Twitter / X
-      </a>
-      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
-        🎮 Join Discord
-      </a>
-      <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-800 transition-colors duration-200 font-medium">
-        🃏 Poker ClubGG
-      </a>
-      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
-        📧 Open a Ticket
-      </a>
-    </div>
-    
-    <!-- Contact & Location -->
-    <div class="text-xs text-yellow-600/80 mb-4">
-      🌍 Web3 Only – Austria Based
-    </div>
-  </div>
-  
-  <!-- Legal & Important Links - More Prominent -->
-  <div class="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-lg border border-blue-200/30">
-    <div class="text-sm font-semibold text-blue-800 mb-3">
-      📋 Important Legal & Support Links
-    </div>
-    <div class="flex flex-wrap justify-center gap-6 text-sm">
-      <a href="/privacy-policy.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        🍪 Privacy Policy
-      </a>
-      <a href="/faq.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        ❓ FAQ
-      </a>
-      <a href="/profile.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        👤 Profile
-      </a>
-    </div>
-  </div>
-  
-  <!-- Copyright & Branding -->
-  <div class="pt-6 border-t border-yellow-600/30 text-xs text-yellow-600/80">
-    <div class="mb-2">
-      © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
-    </div>
-    <div class="text-yellow-500/70">
-      🚀 Powered by the ultimate cheese gaming technology
-    </div>
-  </div>
-</footer>
-<!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
-<!-- 🔐 Do not remove unless instructed by the Over Brain. -->
 
 <!-- Add wallet.js before the closing body tag -->
 <script src="js/wallet.js"></script>

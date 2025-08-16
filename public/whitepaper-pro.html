@@ -56,11 +56,71 @@ require_once 'discord-invite.php';
     .investor-glow:hover {
       transform: scale(1.08);
     }
+
+    /* New Role System Style Animations */
+    @keyframes trophyGlow {
+      0%, 100% { 
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
+        transform: scale(1);
+      }
+      50% { 
+        box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
+        transform: scale(1.05);
+      }
+    }
+    
+    @keyframes rolePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.02); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .trophy-glow {
+      animation: trophyGlow 3s ease-in-out infinite;
+    }
+    
+    .role-pulse {
+      animation: rolePulse 4s ease-in-out infinite;
+    }
+    
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .roadmap-card {
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .roadmap-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(251, 191, 36, 0.5);
+    }
   </style>
 </head>
 
 
-<body class="relative bg-gradient-to-br from-yellow-50 to-pink-100 text-gray-900 font-sans overflow-x-hidden min-h-screen">
+<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans overflow-x-hidden min-h-screen">
+
+  <!-- 🌟 Floating Background Elements -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
+    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
+    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
+    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
+  </div>
+
+  <!-- 🧬 Lab Status Badge -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
+    🧬 Pro Whitepaper v2.0 Active
+  </div>
 
 <!-- 
 🧪 CRITICAL LAB NOTES: THE CHEESE WORLD SYSTEM OVERVIEW
@@ -94,43 +154,43 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
 
 
 <!-- Navigation Bar -->
-<header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
+<header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
-    <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
+    <a href="index.html" class="text-xl font-bold tracking-tight text-yellow-400">🧠 Narrrf's World</a>
     <nav class="space-x-4 text-sm md:text-base flex items-center">
-      <a href="index.html" class="text-pink-400 font-semibold">Home</a>
-      <a href="mint.html" class="hover:text-pink-400">Mint</a>
-      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
-      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
-      <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
-      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+      <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
+      <a href="mint.html" class="hover:text-yellow-400 transition-colors">Mint</a>
+      <a href="whitepaper.html" class="hover:text-yellow-400 transition-colors">Whitepaper</a>
+      <a href="get-roles.html" class="hover:text-yellow-400 transition-colors">Get Roles</a>
+      <a href="project-updates.html" class="hover:text-yellow-400 transition-colors">Updates</a>
+      <a href="faq.html" class="hover:text-yellow-400 transition-colors">FAQ</a>
 
       <!-- Wallet Connect Button -->
       <button id="top-connect-wallet-btn"
         onclick="connectWallet()"
-        class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
+        class="ml-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
         🔌 Connect
       </button>
 
       <!-- Avatar Placeholder (Hidden by default) -->
       <img id="user-avatar" src="img/cheese.png" alt="PFP"
-        class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
+        class="hidden w-8 h-8 rounded-full border-2 border-yellow-400 ml-4 shadow-lg" />
     </nav>
   </div>
 </header>
 
   <!-- Header -->
-  <header class="bg-black text-white py-6 px-4 text-center">
-    <h1 class="text-4xl font-bold">🧠 Narrrf's World: Pro Investor Whitepaper</h1>
-    <p class="text-sm mt-2">Detailed roadmap & execution plan toward 2030</p>
+  <header class="bg-black/80 backdrop-blur-md text-white py-6 px-4 text-center border-b border-yellow-400/30">
+    <h1 class="text-4xl font-bold text-yellow-400">🧠 Narrrf's World: Pro Investor Whitepaper</h1>
+    <p class="text-gray-300 mt-2">Detailed roadmap & execution plan toward 2030</p>
   </header>
 
-<main class="max-w-5xl mx-auto px-6 py-12 space-y-12 pb-48">
+<main class="max-w-5xl mx-auto px-6 py-12 space-y-12 pb-48 relative z-10">
 
     <!-- 2024 Overview -->
-    <section>
-      <h2 class="text-3xl font-bold mb-2">🛠️ 2024 – Rebuild & Foundation Phase</h2>
-      <ul class="list-disc list-inside space-y-1">
+    <section class="roadmap-card rounded-2xl p-6 border-l-4 border-green-500">
+      <h2 class="text-3xl font-bold mb-2 text-green-400">🛠️ 2024 – Rebuild & Foundation Phase</h2>
+      <ul class="list-disc list-inside space-y-1 text-gray-300">
         <li>Partner networking: Kaleido, Weedery, CryptoCorn, Rabbits</li>
         <li>Initial poker + staking ideas born</li>
         <li>Discord bot and point system trials</li>
@@ -141,11 +201,11 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
 
     <!-- 2025 Activation -->
     <section>
-      <h2 class="text-3xl font-bold mb-2">🚀 2025 – Narrrf’s World Launch & Scaling</h2>
+      <h2 class="text-3xl font-bold mb-2 text-yellow-400">🚀 2025 – Narrrf's World Launch & Scaling</h2>
       <div class="grid md:grid-cols-2 gap-6">
-        <div class="bg-white rounded-xl p-6 shadow border-l-4 border-pink-400">
-          <h3 class="text-xl font-semibold mb-2">Q1</h3>
-          <ul class="list-disc list-inside text-sm space-y-1">
+        <div class="roadmap-card rounded-2xl p-6 border-l-4 border-pink-500">
+          <h3 class="text-xl font-semibold mb-2 text-pink-400">Q1</h3>
+          <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
             <li>New Discord server launched (Jan)</li>
             <li>Snapshots restored: $DSPOINC + roles</li>
             <li>Collabs fixed: CryptoCorn, Kaleido, Weedery, Rabbits</li>
@@ -154,9 +214,9 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
             <li>First Benefit Season Alpha draft</li>
           </ul>
         </div>
-        <div class="bg-white rounded-xl p-6 shadow border-l-4 border-purple-400">
-          <h3 class="text-xl font-semibold mb-2">Q2</h3>
-          <ul class="list-disc list-inside text-sm space-y-1">
+        <div class="roadmap-card rounded-2xl p-6 border-l-4 border-purple-500">
+          <h3 class="text-xl font-semibold mb-2 text-purple-400">Q2</h3>
+          <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
             <li>Website online (GitHub Pages)</li>
             <li>Phantom wallet connect integration</li>
             <li>VIP list airdrop setup via Sheety API</li>
@@ -165,9 +225,9 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
             <li>Marketing push and WL buildup begins</li>
           </ul>
         </div>
-        <div class="bg-white rounded-xl p-6 shadow border-l-4 border-yellow-400">
-          <h3 class="text-xl font-semibold mb-2">Q3</h3>
-          <ul class="list-disc list-inside text-sm space-y-1">
+        <div class="roadmap-card rounded-2xl p-6 border-l-4 border-yellow-500">
+          <h3 class="text-xl font-semibold mb-2 text-yellow-400">Q3</h3>
+          <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
             <li>Whitelist mint (July)</li>
             <li>VIP NFTs distributed (41 units)</li>
             <li>Staking system launched</li>
@@ -176,9 +236,9 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
             <li>Alpha Calls & restricted partner channels live</li>
           </ul>
         </div>
-        <div class="bg-white rounded-xl p-6 shadow border-l-4 border-blue-400">
-          <h3 class="text-xl font-semibold mb-2">Q4</h3>
-          <ul class="list-disc list-inside text-sm space-y-1">
+        <div class="roadmap-card rounded-2xl p-6 border-l-4 border-blue-500">
+          <h3 class="text-xl font-semibold mb-2 text-blue-400">Q4</h3>
+          <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
             <li>Public mint + Redemption tier opens</li>
             <li>Benefit Showdown Season 2 (finale)</li>
             <li>VIP Monthly Poker events gain traction</li>
@@ -191,18 +251,20 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
 
     <!-- 2026 Utility Phase -->
     <section>
-      <h2 class="text-3xl font-bold mb-2">💼 2026 – Real-World Utility & Expansion</h2>
+      <h2 class="text-3xl font-bold mb-2 text-blue-400">💼 2026 – Real-World Utility & Expansion</h2>
       <div class="grid md:grid-cols-2 gap-6">
-        <div class="bg-white rounded-xl p-6 shadow border-l-4 border-green-400">
-          <h3 class="text-xl font-semibold mb-2">Q1 – Q2</h3>
-          <ul class="list-disc list-inside text-sm space-y-1">
+        <div class="roadmap-card rounded-2xl p-6 border-l-4 border-green-500">
+          <h3 class="text-xl font-semibold mb-2 text-green-400">Q1 – Q2</h3>
+          <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
             <li>Hytopia World land system launched</li>
             <li>Real-world businesses integrated into Discord tabs</li>
             <li>Partner coins (WDYR, Corn) integrated</li>
             <li>$SPOINC > $DSPOINC mechanics refined</li>
           </ul>
-          <h3 class="text-xl font-semibold mb-2 mt-4">Q3 – Q4</h3>
-          <ul class="list-disc list-inside text-sm space-y-1">
+        </div>
+        <div class="roadmap-card rounded-2xl p-6 border-l-4 border-orange-500">
+          <h3 class="text-xl font-semibold mb-2 text-orange-400">Q3 – Q4</h3>
+          <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
             <li>Retail & shop collabs (Austria launch pad)</li>
             <li>Benefit Showdown Season 3</li>
             <li>First real estate NFT trial with plot-based perks</li>
@@ -213,9 +275,9 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
     </section>
 
 <!-- 🧠 2027 Expansion Section -->
-<section class="bg-white border-l-4 border-pink-400 p-6 rounded-xl shadow space-y-2">
-  <h2 class="text-2xl font-bold">🌐 2027 – Scaling, CEX/DEX, 2nd Collection</h2>
-  <ul class="list-disc list-inside text-sm space-y-1">
+<section class="roadmap-card rounded-2xl p-6 border-l-4 border-pink-500">
+  <h2 class="text-2xl font-bold text-pink-400">🌐 2027 – Scaling, CEX/DEX, 2nd Collection</h2>
+  <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
     <li>2nd Collection "GEN2" announced (Q1)</li>
     <li>Atari / retro brand collabs for new games (Q2)</li>
     <li>DEX listing for $SPOINC (Q3)</li>
@@ -227,12 +289,12 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
 
 
 <!-- 📅 2028–2030 – Mass Adoption with Investor Mouse -->
-<section class="bg-white/90 border-l-4 border-purple-500 p-6 rounded-xl shadow-md flex flex-col md:flex-row items-center gap-6 mt-12">
+<section class="roadmap-card rounded-2xl p-6 border-l-4 border-purple-500 flex flex-col md:flex-row items-center gap-6 mt-12">
 
   <!-- 📈 Text -->
   <div class="flex-1">
-    <h3 class="text-2xl font-bold mb-2">📅 2028–2030 – Mass Adoption</h3>
-    <p class="text-sm md:text-base">
+    <h3 class="text-2xl font-bold mb-2 text-purple-400">📅 2028–2030 – Mass Adoption</h3>
+    <p class="text-sm md:text-base text-gray-300">
       Full B2B rollout, Hytopia goes live, VIP World Events, and Narrrf's World becomes a Web3-powered company.
     </p>
   </div>
@@ -248,20 +310,20 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
 </section>
 
 
-<section class="bg-white border-l-4 border-purple-500 p-6 rounded-xl shadow text-center">
-      <h3 class="text-xl font-bold mb-2">📜 Final Note</h3>
-      <p class="text-sm">
+<section class="roadmap-card rounded-2xl p-6 border-l-4 border-purple-500 text-center">
+      <h3 class="text-xl font-bold mb-2 text-purple-400">📜 Final Note</h3>
+      <p class="text-sm text-gray-300">
         Narrrf's World is built with friends, powered by community. The roadmap is living and adaptive, yet grounded in real milestones.
       </p>
     </section>
 
     <!-- Secret Link to Financials -->
-    <section class="text-center text-sm text-gray-600 italic mt-12">
+    <section class="text-center text-sm text-gray-400 italic mt-12">
       <p>🧠 This roadmap is dynamic, evolving with each experiment...</p>
       <p class="mt-4">
-        Psst... curious minds might <a href="finances.html" class="text-pink-500 underline hover:text-purple-600">unlock deeper layers</a>.
+        Psst... curious minds might <a href="finances.html" class="text-pink-400 underline hover:text-purple-400 transition-colors">unlock deeper layers</a>.
       </p>
-      <p class="mt-2 text-xs text-yellow-600">🧀 Only the real cheese-chasers find the vault.</p>
+      <p class="mt-2 text-xs text-yellow-400">🧀 Only the real cheese-chasers find the vault.</p>
     </section>
 	
 	
@@ -305,51 +367,51 @@ To create a **self-sustaining virtual world** powered by **Web3 principles**, **
   <!-- ======================================== -->
   <!-- 🍩 Footer GENESIS 12.0 - Enhanced Cheese Universe Footer -->
   <!-- ======================================== -->
-  <footer class="text-center mt-16 mb-10">
+  <footer class="text-center mt-16 mb-10 relative z-10">
     <!-- Back to Top Link -->
     <div class="mb-6">
-      <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition-colors duration-200">
+      <a href="#top" class="text-sm text-gray-400 hover:text-yellow-400 transition-colors duration-200">
         🔝 Back to Top
       </a>
     </div>
     
     <!-- 🧀 Narrrf's Cheese Universe Section -->
-    <div class="mb-8 p-6 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 rounded-xl border border-yellow-300/30">
-      <div class="text-lg font-bold text-yellow-800 mb-4">
+    <div class="mb-8 p-6 bg-gradient-to-r from-yellow-900/30 to-orange-900/30 rounded-xl border border-yellow-500/30">
+      <div class="text-lg font-bold text-yellow-400 mb-4">
         🧀 Narrrf's Cheese Universe
       </div>
-      <div class="text-sm text-yellow-700 mb-6">
+      <div class="text-sm text-yellow-300 mb-6">
         Where gaming meets cheese innovation
       </div>
       
       <!-- Quick Links -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <a href="/index.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        <a href="/index.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
           🏠 Home
         </a>
-        <a href="/whitepaper-pro.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        <a href="/whitepaper-pro.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
           📜 Read the Whitepaper
         </a>
-        <a href="/mint.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        <a href="/mint.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
           🎨 Mint Your NFT
         </a>
-        <a href="/profile.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        <a href="/get-roles.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
           🎭 Get Roles
         </a>
       </div>
       
       <!-- Socials -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium">
+        <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium">
           🐦 Twitter / X
         </a>
-        <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
+        <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 transition-colors duration-200 font-medium">
           🎮 Join Discord
         </a>
-        <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-800 transition-colors duration-200 font-medium">
+        <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-400 hover:text-green-300 transition-colors duration-200 font-medium">
           🃏 Poker ClubGG
         </a>
-        <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
+        <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-400 hover:text-purple-300 transition-colors duration-200 font-medium">
           📧 Open a Ticket
         </a>
       </div>

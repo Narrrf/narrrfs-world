@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+<?php
+// Include Discord invite configuration
+require_once 'discord-invite.php';
+?>
 <head>
-  <!-- Meta Essentials -->
+  <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Project Updates | Narrrf's World</title>
 
-  <!-- Favicon & Metadata -->
+  <!-- 🧀 Favicon & Metadata -->
   <link rel="icon" type="image/png" href="favicon-phantom.png" />
   <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
   <meta name="theme-color" content="#facc15" />
@@ -15,382 +19,333 @@
   <meta name="title" content="Narrrf's World" />
   <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
 
-  <!-- Tailwind CSS -->
+  <!-- 🎨 Tailwind CSS (Dev CDN Mode) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- 🔗 Discord Token of Render System -->
   <script src="discord-config.js"></script>
 
-  <!-- 🔬 Lab Animations -->
+  <!-- 💫 Enhanced Project Updates Styles -->
   <style>
+    @keyframes trophyGlow {
+      0%, 100% { 
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
+        transform: scale(1);
+      }
+      50% { 
+        box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
+        transform: scale(1.05);
+      }
+    }
+    
+    @keyframes rolePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.02); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .trophy-glow {
+      animation: trophyGlow 3s ease-in-out infinite;
+    }
+    
+    .role-pulse {
+      animation: rolePulse 4s ease-in-out infinite;
+    }
+    
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .updates-card {
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .updates-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(251, 191, 36, 0.5);
+    }
+    
+    .lab-bubble {
+      animation: labBubble 5s ease-in-out infinite;
+    }
+    
     @keyframes labBubble {
       0% { transform: translateY(0) scale(1); opacity: 0.7; }
       100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
     }
-    .animate-lab-bubble {
-      animation: labBubble 5s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(1.05); }
-    }
-    .animate-pulse {
-      animation: pulse 2s ease-in-out infinite;
-    }
   </style>
 </head>
 
-<body class="relative bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans overflow-x-hidden min-h-screen">
+<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
 
-<!-- 🧪 LAB NOTE: PROJECT-UPDATES.HTML (Ultra Edition) -->
-<!-- 🌉 Web3-to-Web2 Bridge — connecting trait-based wallets to HTML content -->
-<!-- 📌 Purpose: Display dynamic project updates -->
-<!-- 💾 Backend Systems: wallet_traits, trait_content_access, project_updates -->
-<!-- 🧠 SQL STRUCTURE IDEA: Tables for wallet traits and content access -->
-<!-- 🔥 5-Year-Old Dev Reminder: Use PHP if-statements for trait-based content -->
-<!-- ✅ No blockchain interaction needed — traits come from synced DB -->
-<!-- 🗂️ All paths: /img/ + /sounds/ -->
+  <!-- 🌟 Floating Background Elements -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
+    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
+    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
+    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
+  </div>
 
-<!-- 🧪 $SPOINC Badge -->
-<div class="fixed top-4 left-4 z-50 bg-pink-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg animate-pulse">
-  🧪 Cooked with $SPOINC
-</div>
+  <!-- 🧬 Lab Status Badge -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
+    🧬 Project Updates v2.0 Active
+  </div>
 
-<!-- 🔥 Lab Flask + Bubbles -->
-<div class="absolute inset-0 z-10 pointer-events-none">
-  <!-- 🔮 Glow Effect Behind the Flask -->
-  <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-64 h-64 bg-pink-300 opacity-20 rounded-full blur-3xl"></div>
+  <!-- 🧭 Navigation Bar (Sticky Top) -->
+  <header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="index.html" class="text-xl font-bold tracking-tight text-yellow-400">🧠 Narrrf's World</a>
 
-  <!-- 🧪 Flask Itself (SVG) -->
-  <div class="absolute bottom-24 left-1/2 transform -translate-x-1/2">
-    <svg width="100" height="150" viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M40 0 H60 V50 L85 120 Q90 135 75 140 H25 Q10 135 15 120 L40 50 Z" fill="#f472b6" stroke="#000" stroke-width="2" />
-    </svg>
-    <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-      <div class="w-3 h-3 bg-pink-400 rounded-full blur-sm animate-lab-bubble absolute" style="left:-10px"></div>
-      <div class="w-4 h-4 bg-purple-400 rounded-full blur-md animate-lab-bubble absolute delay-1000" style="left:10px"></div>
-      <div class="w-2.5 h-2.5 bg-lime-300 rounded-full blur-sm animate-lab-bubble absolute delay-2000" style="left:0px"></div>
+      <!-- 🧠 Main Navigation -->
+      <nav aria-label="Main Navigation" class="space-x-4 text-sm md:text-base flex items-center">
+        <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
+        <a href="mint.html" class="hover:text-yellow-400 transition-colors">Mint</a>
+        <a href="whitepaper.html" class="hover:text-yellow-400 transition-colors">Whitepaper</a>
+        <a href="get-roles.html" class="hover:text-yellow-400 transition-colors">Get Roles</a>
+        <a href="project-updates.html" class="text-yellow-400 font-semibold border-b-2 border-yellow-400">Updates</a>
+        <a href="faq.html" class="hover:text-yellow-400 transition-colors">FAQ</a>
+
+        <!-- 🧠 Wallet Connect Button -->
+        <button id="connect-wallet-btn"
+          onclick="connectWallet()"
+          class="ml-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+          🔌 Connect Wallet
+        </button>
+
+        <!-- 🧀 Avatar Placeholder -->
+        <img id="user-avatar" src="img/cheese.png" alt="PFP"
+          class="hidden w-8 h-8 rounded-full border-2 border-yellow-400 ml-4 shadow-lg" />
+
+        <!-- 🧀 Wallet Disconnect Button -->
+        <button id="wallet-disconnect"
+          onclick="disconnectWallet()"
+          class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow transition-colors">
+          ❌
+        </button>
+      </nav>
     </div>
-  </div>
-</div>
+  </header>
 
-<!-- 🧠 Navigation Bar Next -->
-<header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
-  <div class="max-w-6xl mx-auto flex justify-between items-center">
-    <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
-    <nav class="space-x-4 text-sm md:text-base flex items-center">
-      <a href="index.html" class="hover:text-pink-400">Home</a>
-      <a href="mint.html" class="hover:text-pink-400">Mint</a>
-      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
-      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
-      <a href="project-updates.html" class="text-pink-400 font-semibold">Updates</a>
-      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
-      <button id="connect-wallet-btn" onclick="connectWallet()" 
-        class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
-        🔌 Connect
-      </button>
-      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
-      <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
-        ❌
-      </button>
-    </nav>
-  </div>
-</header>
+  <!-- 🧠 MasterChief Style: Lab Neon Header Frame (Dark Theme) -->
+  <main class="relative z-10 max-w-4xl mx-auto py-12 px-6 space-y-12 pb-40">
+    <div class="relative bg-gradient-to-r from-yellow-900/50 to-orange-900/50 p-8 md:p-10 rounded-3xl shadow-xl border-4 border-yellow-400/50 drop-shadow-md mb-12 flex flex-col items-center justify-center">
+      <!-- Neon Orbs (Balanced Left & Right) -->
+      <div class="absolute -top-3 left-8 w-4 h-4 bg-pink-400 rounded-full animate-bounce-slow blur-sm opacity-70"></div>
+      <div class="absolute -top-6 left-1/2 -translate-x-1/2 w-6 h-6 bg-yellow-200 rounded-full animate-pulse blur-sm opacity-60"></div>
+      <div class="absolute -top-4 right-8 w-3 h-3 bg-purple-300 rounded-full animate-bounce blur-sm opacity-70"></div>
+      <div class="absolute -bottom-4 left-14 w-3 h-3 bg-pink-200 rounded-full animate-pulse blur-sm opacity-60"></div>
+      <div class="absolute -bottom-6 right-14 w-4 h-4 bg-yellow-100 rounded-full animate-bounce-slow blur-sm opacity-50"></div>
 
-<!-- Fix Duplicate Button -->
-<!-- Removed duplicate button and made the code cleaner -->
-
-<!-- 🧠 MasterChief Style: Lab Neon Header Frame (Optimized July 2025) -->
-<main class="relative z-10 max-w-4xl mx-auto py-12 px-6 space-y-12 pb-40">
-<div class="relative bg-gradient-to-r from-pink-100 via-purple-100 to-yellow-50 p-8 md:p-10 rounded-3xl shadow-xl border-4 border-yellow-300 drop-shadow-md mb-12 flex flex-col items-center justify-center">
-  <!-- Neon Orbs (Balanced Left & Right) -->
-  <div class="absolute -top-3 left-8 w-4 h-4 bg-pink-400 rounded-full animate-bounce-slow blur-sm opacity-70"></div>
-  <div class="absolute -top-6 left-1/2 -translate-x-1/2 w-6 h-6 bg-yellow-200 rounded-full animate-pulse blur-sm opacity-60"></div>
-  <div class="absolute -top-4 right-8 w-3 h-3 bg-purple-300 rounded-full animate-bounce blur-sm opacity-70"></div>
-  <div class="absolute -bottom-4 left-14 w-3 h-3 bg-pink-200 rounded-full animate-pulse blur-sm opacity-60"></div>
-  <div class="absolute -bottom-6 right-14 w-4 h-4 bg-yellow-100 rounded-full animate-bounce-slow blur-sm opacity-50"></div>
-
-  <!-- 🔮 Animated Title -->
-  <h1 class="text-4xl md:text-5xl font-extrabold text-pink-700 drop-shadow-glow animate-pulse mb-2 text-center">
-    📚 Project Updates & Dev Log
-  </h1>
-  <!-- 🧠 Subtext -->
-  <p class="text-base md:text-lg text-gray-700 max-w-xl mx-auto mb-3 text-center">
-    Tracking cheese leaks, trait tweaks & Narrrf brainwaves — logged and pulsing.
-  </p>
-</div>
-
-<!-- 🧠 Friendly Subtext (keep as separate for page rhythm) -->
-<p class="text-base md:text-lg text-gray-700 max-w-xl mx-auto mb-10 text-center">
-  Narrrf's World expands. Trait engines hum. Scrolls whisper. HYtopia Level 1 construction is live — and the riddles only grow deeper.
-</p>
-
-<!-- 🧀 COMING UP NEXT SECTION – PHASE 2 LAUNCH CYCLE -->
-<!-- 🧠 MasterChief Dev Notes:
-   ✅ Updated for Phase 4 rollout cycle (May 20, 2025)
-   ✅ Highlights: JSON Sync, Bingo Launch, Lore Reveal
-   ✅ Synced with index.html — keep layout consistent
--->
-<!-- 🧀 COMING UP NEXT SECTION – GENESIS 11.0 CYCLE (JULY 2025) -->
-<!-- 🧠 Dev Note: Updated for Phase 6 and Gensuki Partnership Launchpad. Mint & events fully synced. -->
-<section id="coming-up" class="bg-gradient-to-br from-yellow-50 to-pink-100 py-16 px-6 rounded-t-3xl shadow-inner">
-  <div class="max-w-5xl mx-auto text-center">
-    <h2 class="text-4xl md:text-5xl font-extrabold text-yellow-600 drop-shadow-sm mb-4">
-      🧠 Phase 6: Gensuki Mint & Game Surge (August 2025)
-    </h2>
-    <p class="text-md md:text-lg text-gray-700 max-w-xl mx-auto mb-10">
-      Narrrfs World enters a new era: partner-powered, game-infused, and scroll-logged. Your next adventure is minted on the Gensuki Launchpad.
-    </p>
-
-    <div class="bg-white border-l-4 border-pink-400 p-6 rounded-xl shadow mb-8 text-left max-w-xl mx-auto transition-transform duration-500 hover:scale-[1.01]">
-      <h3 class="text-lg font-semibold mb-2">🔥 Current Highlights – Genesis 12.0</h3>
-             <ul class="list-disc list-inside text-sm space-y-1 text-gray-800">
-         <li>🤝 <strong>Partnered with Gensuki</strong> – Our mint will take place on their Launchpad, mid-August!</li>
-         <li>🎲 <strong>Golden Baboons Bingo Night</strong> returns – August 28, 2025. Prizes and lore for every mouse.</li>
-         <li>🏆 <strong>Quests now live</strong> – Earn rewards, chase badges, and explore new puzzles.</li>
-         <li>🎮 <strong>Tetris & Snake Leaderboards RESET</strong> – Can you claim the #1 spot this season?</li>
-         <li>🖥️ <strong>Major UI + Game Updates</strong> – Fresh visuals, new zones, and more cheese coming soon.</li>
-         <li>🧀 <strong>WL Mint is LIVE</strong> – Check the countdown, follow the crumbles to get on the WL until public starts!</li>
-       </ul>
-      <p class="mt-4 text-xs italic text-gray-500">
-        All scrolls are synced. Mutation is not only allowed — it's destiny.
+      <!-- 🔮 Animated Title -->
+      <h1 class="text-4xl md:text-5xl font-extrabold text-yellow-400 drop-shadow-glow animate-pulse mb-2 text-center">
+        📚 Project Updates & Dev Log
+      </h1>
+      <!-- 🧠 Subtext -->
+      <p class="text-base md:text-lg text-gray-300 max-w-xl mx-auto mb-3 text-center">
+        Tracking cheese leaks, trait tweaks & Narrrf brainwaves — logged and pulsing.
       </p>
     </div>
 
-    <div class="bg-white border-l-4 border-yellow-400 p-6 rounded-xl shadow mb-8">
-      <h2 class="text-xl font-semibold">📣 August 28th – Golden Baboons Bingo Night</h2>
-      <ul class="list-disc list-inside mt-2 text-sm">
-        <li>🎲 Join us for our monthly Bingo Night event with special prizes</li>
-        <li>🧬 Win exclusive rewards and cheese-powered lore</li>
-        <li>💥 Community fun and the return of the Golden Baboons!</li>
-      </ul>
-    </div>
-
-    <div class="bg-white border-l-4 border-indigo-400 p-6 rounded-xl shadow mb-8">
-      <h2 class="text-xl font-semibold">🗣️ Weekly Gensuki Team Spaces</h2>
-      <ul class="list-disc list-inside mt-2 text-sm">
-        <li>📅 Every Tuesday – Join the Gensuki team for weekly spaces</li>
-        <li>🎨 Updates, announcements, and community discussions</li>
-        <li>🧠 Stay connected with the latest developments and partnerships</li>
-      </ul>
-    </div>
-
-    <div class="bg-white border-l-4 border-green-400 p-6 rounded-xl shadow mb-8">
-      <h2 class="text-xl font-semibold">🎁 Benefit Season 1 Coming Soon</h2>
-      <ul class="list-disc list-inside mt-2 text-sm">
-        <li>🌟 Exclusive benefits for holders starting soon</li>
-        <li>🎯 Special rewards and perks for the community</li>
-        <li>🚀 Get ready for the next phase of Narrrf's World</li>
-      </ul>
-    </div>
-
-    <div class="bg-white border-l-4 border-blue-400 p-6 rounded-xl shadow mb-8">
-      <h2 class="text-xl font-semibold">🎮 Quests, Games & New Zones</h2>
-      <ul class="list-disc list-inside mt-2 text-sm">
-        <li>🧩 Quests now live with new rewards</li>
-        <li>🏆 Tetris & Snake leaderboards reset for August – will you take the top?</li>
-        <li>🌟 Game and UI updates rolling out all month</li>
-      </ul>
-    </div>
-
-    <p class="mt-4 text-xs italic text-yellow-700">
-      "A mouse with a quest is never lost. Scrolls mutate, partners rise. The cheese glows anew."
+    <!-- 🧠 Friendly Subtext (keep as separate for page rhythm) -->
+    <p class="text-base md:text-lg text-gray-300 max-w-xl mx-auto mb-10 text-center">
+      Narrrf's World expands. Trait engines hum. Scrolls whisper. HYtopia Level 1 construction is live — and the riddles only grow deeper.
     </p>
+
+    <!-- 🧀 COMING UP NEXT SECTION – PHASE 2 LAUNCH CYCLE -->
+    <!-- 🧠 MasterChief Dev Notes:
+       ✅ Updated for Phase 4 rollout cycle (May 20, 2025)
+       ✅ Highlights: JSON Sync, Bingo Launch, Lore Reveal
+       ✅ Synced with index.html — keep layout consistent
+    -->
+    <!-- 🧀 COMING UP NEXT SECTION – GENESIS 11.0 CYCLE (JULY 2025) -->
+    <!-- 🧠 Dev Note: Updated for Phase 6 and Gensuki Partnership Launchpad. Mint & events fully synced. -->
+    <section id="coming-up" class="bg-gradient-to-r from-purple-900/30 to-pink-900/30 py-16 px-6 rounded-3xl shadow-inner">
+      <div class="max-w-5xl mx-auto text-center">
+        <h2 class="text-4xl md:text-5xl font-extrabold text-yellow-400 drop-shadow-sm mb-4">
+          🧠 Phase 6: Gensuki Mint & Game Surge (August 2025)
+        </h2>
+        <p class="text-md md:text-lg text-gray-300 max-w-xl mx-auto mb-10">
+          Narrrfs World enters a new era: partner-powered, game-infused, and scroll-logged. Your next adventure is minted on the Gensuki Launchpad.
+        </p>
+
+        <div class="updates-card border-l-4 border-pink-500 p-6 rounded-xl shadow mb-8 text-left max-w-xl mx-auto transition-transform duration-500 hover:scale-[1.01]">
+          <h3 class="text-lg font-semibold mb-2 text-pink-400">🔥 Current Highlights – Genesis 12.0</h3>
+          <ul class="list-disc list-inside text-sm space-y-1 text-gray-300">
+            <li>🤝 <strong>Partnered with Gensuki</strong> – Our mint will take place on their Launchpad, mid-August!</li>
+            <li>🎲 <strong>Golden Baboons Bingo Night</strong> returns – August 28, 2025. Prizes and lore for every mouse.</li>
+            <li>🏆 <strong>Quests now live</strong> – Earn rewards, chase badges, and explore new puzzles.</li>
+            <li>🎮 <strong>Tetris & Snake Leaderboards RESET</strong> – Can you claim the #1 spot this season?</li>
+            <li>🖥️ <strong>Major UI + Game Updates</strong> – Fresh visuals, new zones, and more cheese coming soon.</li>
+            <li>🧀 <strong>WL Mint is LIVE</strong> – Check the countdown, follow the crumbles to get on the WL until public starts!</li>
+          </ul>
+          <p class="mt-4 text-xs italic text-gray-400">
+            All scrolls are synced. Mutation is not only allowed — it's destiny.
+          </p>
+        </div>
+
+        <div class="updates-card border-l-4 border-yellow-500 p-6 rounded-xl shadow mb-8">
+          <h2 class="text-xl font-semibold text-yellow-400">📣 August 28th – Golden Baboons Bingo Night</h2>
+          <ul class="list-disc list-inside mt-2 text-sm text-gray-300">
+            <li>🎲 Join us for our monthly Bingo Night event with special prizes</li>
+            <li>🧬 Win exclusive rewards and cheese-powered lore</li>
+            <li>💥 Community fun and the return of the Golden Baboons!</li>
+          </ul>
+        </div>
+
+        <div class="updates-card border-l-4 border-indigo-500 p-6 rounded-xl shadow mb-8">
+          <h2 class="text-xl font-semibold text-indigo-400">🗣️ Weekly Gensuki Team Spaces</h2>
+          <ul class="list-disc list-inside mt-2 text-sm text-gray-300">
+            <li>📅 Every Tuesday – Join the Gensuki team for weekly spaces</li>
+            <li>🎨 Updates, announcements, and community discussions</li>
+            <li>🧠 Stay connected with the latest developments and partnerships</li>
+          </ul>
+        </div>
+
+        <div class="updates-card border-l-4 border-green-500 p-6 rounded-xl shadow mb-8">
+          <h2 class="text-xl font-semibold text-green-400">🎁 Benefit Season 1 Coming Soon</h2>
+          <ul class="list-disc list-inside mt-2 text-sm text-gray-300">
+            <li>🌟 Exclusive benefits for holders starting soon</li>
+            <li>🎯 Special rewards and perks for the community</li>
+            <li>🚀 Get ready for the next phase of Narrrf's World</li>
+          </ul>
+        </div>
+
+        <div class="updates-card border-l-4 border-blue-500 p-6 rounded-xl shadow mb-8">
+          <h2 class="text-xl font-semibold text-blue-400">🎮 Quests, Games & New Zones</h2>
+          <ul class="list-disc list-inside mt-2 text-sm text-gray-300">
+            <li>🧩 Quests now live with new rewards</li>
+            <li>🏆 Tetris & Snake leaderboards reset for August – will you take the top?</li>
+            <li>🌟 Game and UI updates rolling out all month</li>
+          </ul>
+        </div>
+
+        <p class="mt-4 text-xs italic text-yellow-300">
+          "A mouse with a quest is never lost. Scrolls mutate, partners rise. The cheese glows anew."
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 🔥 Lab Flask + Bubbles (Bottom Right Corner) -->
+  <div class="absolute bottom-8 right-4 z-[1] pointer-events-none">
+    <div class="w-40 h-40 bg-pink-300 opacity-20 rounded-full blur-2xl absolute bottom-0 right-0"></div>
+    <div class="relative bottom-2">
+      <svg width="80" height="120" viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M40 0 H60 V50 L85 120 Q90 135 75 140 H25 Q10 135 15 120 L40 50 Z"
+              fill="#f472b6" stroke="#000" stroke-width="2" />
+      </svg>
+      <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <div class="w-3 h-3 bg-pink-400 rounded-full blur-sm lab-bubble absolute" style="left:-10px"></div>
+        <div class="w-4 h-4 bg-purple-400 rounded-full blur-md lab-bubble absolute delay-1000" style="left:10px"></div>
+        <div class="w-2.5 h-2.5 bg-lime-300 rounded-full blur-sm lab-bubble absolute delay-2000" style="left:0px"></div>
+      </div>
+    </div>
   </div>
-</section>
 
+  <!-- Footer -->
+  <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-yellow-500/20">
+    <div class="max-w-4xl mx-auto px-6">
+      <!-- Quick Links -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <a href="index.html" class="text-yellow-400 hover:text-yellow-300 transition-colors">🏠 Home</a>
+        <a href="whitepaper-pro.html" class="text-yellow-400 hover:text-yellow-300 transition-colors">📜 Whitepaper</a>
+        <a href="mint.html" class="text-yellow-400 hover:text-yellow-300 transition-colors">🎨 Mint</a>
+        <a href="get-roles.html" class="text-yellow-400 hover:text-yellow-300 transition-colors">🏆 Get Roles</a>
+      </div>
+      
+      <!-- Social Links -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 transition-colors">🐦 Twitter / X</a>
+        <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 transition-colors">🎮 Discord</a>
+        <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-400 hover:text-green-300 transition-colors">🃏 ClubGG</a>
+        <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-400 hover:text-purple-300 transition-colors">📧 Support</a>
+      </div>
+      
+      <!-- Legal Links -->
+      <div class="flex flex-wrap justify-center gap-6 mb-8">
+        <a href="privacy-policy.html" class="text-gray-400 hover:text-gray-300 transition-colors">🍪 Privacy Policy</a>
+        <a href="faq.html" class="text-gray-400 hover:text-gray-300 transition-colors">❓ FAQ</a>
+        <a href="profile.html" class="text-gray-400 hover:text-gray-300 transition-colors">👤 Profile</a>
+      </div>
+      
+      <!-- Copyright -->
+      <p class="mb-4">
+        Made with 🧪 & strategy in Narrrf's Lab | 
+        <a href="<?php echo $discord_url; ?>" class="text-yellow-400 hover:text-yellow-300 underline transition-colors">
+          Join us on Discord
+        </a>
+      </p>
+      <p class="text-sm">
+        © 2025 Narrrf's World. Built with brain & cheese 🧠🧀 | 
+        <a href="privacy-policy.html" class="text-gray-500 hover:text-gray-300 underline">Privacy Policy</a> | 
+        <a href="faq.html" class="text-gray-500 hover:text-gray-300 underline">FAQ</a>
+      </p>
+    </div>
+  </footer>
 
+  <!-- Global Wallet Connect + PFP Script -->
+  <script>
+    async function connectWallet() {
+      const avatar = document.getElementById('user-avatar');
+      const connectButton = document.getElementById('connect-wallet-btn');
 
-</main> <!-- ✅ CLOSES THE <main> TAG CORRECTLY -->
+      if ('solana' in window) {
+        const provider = window.solana;
 
+        if (provider.isPhantom) {
+          try {
+            const response = await provider.connect();
+            const walletAddress = response.publicKey.toString();
 
+            // Store wallet
+            localStorage.setItem('walletAddress', walletAddress);
 
-<!-- Global Wallet Connect + PFP Script -->
-<script>
-  async function connectWallet() {
-    const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('connect-wallet-btn');
-
-    if ('solana' in window) {
-      const provider = window.solana;
-
-      if (provider.isPhantom) {
-        try {
-          const response = await provider.connect();
-          const walletAddress = response.publicKey.toString();
-
-          // Store wallet
-          localStorage.setItem('walletAddress', walletAddress);
-
-          // Update UI
-          connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
-          connectButton.disabled = true;
-          avatar.classList.remove('hidden');
-        } catch (err) {
-          console.error("❌ Wallet connect error:", err);
+            // Update UI
+            connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+            connectButton.disabled = true;
+            avatar.classList.remove('hidden');
+          } catch (err) {
+            console.error("❌ Wallet connect error:", err);
+          }
         }
       }
     }
-  }
 
-  // Auto-show avatar if logged in
-  window.addEventListener('DOMContentLoaded', () => {
-    const storedWallet = localStorage.getItem('walletAddress');
-    const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('connect-wallet-btn');
+    // Auto-show avatar if logged in
+    window.addEventListener('DOMContentLoaded', () => {
+      const storedWallet = localStorage.getItem('walletAddress');
+      const avatar = document.getElementById('user-avatar');
+      const connectButton = document.getElementById('connect-wallet-btn');
 
-    if (storedWallet && avatar && connectButton) {
-      avatar.classList.remove('hidden');
-      connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
-      connectButton.disabled = true;
+      if (storedWallet && avatar && connectButton) {
+        avatar.classList.remove('hidden');
+        connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
+        connectButton.disabled = true;
+      }
+    });
+
+    function disconnectWallet() {
+      localStorage.removeItem('walletAddress');
+      const avatar = document.getElementById('user-avatar');
+      const connectButton = document.getElementById('connect-wallet-btn');
+      if (avatar) avatar.classList.add('hidden');
+      if (connectButton) {
+        connectButton.innerText = '🔌 Connect Wallet';
+        connectButton.disabled = false;
+      }
     }
-  });
+  </script>
 
-  function disconnectWallet() {
-    localStorage.removeItem('walletAddress');
-    const avatar = document.getElementById('user-avatar');
-    if (avatar) avatar.classList.add('hidden');
-  }
-</script>
-<!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
----------------------------------------------------------
-🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien
-🌍 This **Genesis 2.0** package represents the culmination of **Narrrf's World** project: integrating **Web2/Web3**, **NFT ownership**, and **SQL-based game mechanics** into a self-sustaining ecosystem.
-
-💾 **Stored in the Lab's digital archives**, it will continue to evolve and serve as a reference for **future generations** of developers.
-
-⚡ Officially ready for **scaling**, **real-time integration**, and continuous **user interaction**.
-
-🎮 **Masterchief** will guide the **backend SQL** operations and ensure that **cheese never spoils**.
-
-🧪 **Future devs**: add your **name**, **refine the platform**, and **keep expanding** on this legendary system.
-
-🔧 **Critical Dev Reminders for the Next Generations**:
-  - Ensure **minting** is **tested across all wallet types** (e.g., Phantom, Solana).
-  - Validate **SQL integration** for minting, supply tracking, and wallet syncing.
-  - Always monitor **egg tracking** and **wallet connectivity** across all pages.
-  - Keep testing **Web3 wallets** and integrating future wallet systems.
-  - **Optimize the minting process** for **scalability** and **future-proofing**.
-
-🔮 Maintain the **core focus on Web3** principles, **game progression**, and **community empowerment**.
-
----------------------------------------------------------
-🧪 **Cheese Engine v1.4: The Riddle System Core**
----------------------------------------------------------
-This system powers **moving riddle nodes** throughout Narrrf's World. All **cheese clicks** are tracked and used for:
-- Lore progression
-- Inventory events
-- Trait-gated puzzles
-
-**Riddle Engine** is the heart of the **Narrrfverse**, integrating with:
-- **SQL tracking** for each riddle solved (stored in the `tbl_cheese_clicks` table).
-- **User interaction**, where progress is stored and retrieved based on wallet address, egg ID, and timestamp.
-- **Unlocking Easter Eggs** as users progress, ensuring a dynamic and immersive game world.
-
-📦 **DB Dev:**
-Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
-→ Use **wallet address** from localStorage, **timestamp**, and **egg ID** for progress tracking.
-
-�� **Future Ideas**:
-- **Massive map-wide riddle hunts** integrated with time-locked eggs and rotating cheese dungeons.
-- Enhance **user experience** with dynamic **puzzle-solving mechanics**.
-  
-🧑‍💻 Future devs can expand the **riddle system** and **reward mechanics** with more complex features and interactivity.
-
----------------------------------------------------------
-🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
----------------------------------------------------------
-
-<!-- ======================================== -->
-<!-- 🧠 HTML Brain 4.0 Footer Lab Declaration -->
-<!-- ======================================== -->
-<footer class="text-center mt-16 mb-10">
-  <!-- Back to Top Link -->
-  <div class="mb-6">
-    <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition-colors duration-200">
-      🔝 Back to Top
-    </a>
-  </div>
-  
-  <!-- 🧀 Narrrf's Cheese Universe Section -->
-  <div class="mb-8 p-6 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 rounded-xl border border-yellow-300/30">
-    <div class="text-lg font-bold text-yellow-800 mb-4">
-      🧀 Narrrf's Cheese Universe
-    </div>
-    <div class="text-sm text-yellow-700 mb-6">
-      Where gaming meets cheese innovation
-    </div>
-    
-    <!-- Quick Links -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <a href="/index.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🏠 Home
-      </a>
-      <a href="/whitepaper-pro.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        📜 Read the Whitepaper
-      </a>
-      <a href="/mint.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🎨 Mint Your NFT
-      </a>
-      <a href="/profile.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🎭 Get Roles
-      </a>
-    </div>
-    
-    <!-- Socials -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium">
-        🐦 Twitter / X
-      </a>
-      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
-        🎮 Join Discord
-      </a>
-      <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-800 transition-colors duration-200 font-medium">
-        🃏 Poker ClubGG
-      </a>
-      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
-        📧 Open a Ticket
-      </a>
-    </div>
-    
-    <!-- Contact & Location -->
-    <div class="text-xs text-yellow-600/80 mb-4">
-      🌍 Web3 Only – Austria Based
-    </div>
-  </div>
-  
-  <!-- Legal & Important Links - More Prominent -->
-  <div class="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-lg border border-blue-200/30">
-    <div class="text-sm font-semibold text-blue-800 mb-3">
-      📋 Important Legal & Support Links
-    </div>
-    <div class="flex flex-wrap justify-center gap-6 text-sm">
-      <a href="/privacy-policy.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        🍪 Privacy Policy
-      </a>
-      <a href="/faq.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        ❓ FAQ
-      </a>
-      <a href="/profile.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        👤 Profile
-      </a>
-    </div>
-  </div>
-  
-  <!-- Copyright & Branding -->
-  <div class="pt-6 border-t border-yellow-600/30 text-xs text-yellow-600/80">
-    <div class="mb-2">
-      © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
-    </div>
-    <div class="text-yellow-500/70">
-      🚀 Powered by the ultimate cheese gaming technology
-    </div>
-  </div>
-</footer>
-<!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
-<!-- 🔐 Do not remove unless instructed by the Over Brain. -->
-
-<!-- Add wallet.js before the closing body tag -->
-<script src="js/wallet.js"></script>
+  <!-- Add wallet.js before the closing body tag -->
+  <script src="js/wallet.js"></script>
 </body>
 </html>

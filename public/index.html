@@ -147,6 +147,21 @@ require_once 'discord-invite.php';
   animation: scaleIn 0.6s ease-out forwards;
 }
 
+    /* 🎯 Boundless Collection Tab Styles */
+    .boundless-tab-content {
+      transition: all 0.3s ease-in-out;
+    }
+    
+    .boundless-tab-content.hidden {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    
+    .boundless-tab-content:not(.hidden) {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
     /* 🖼️ HDR Viewer Landscape Optimizations */
     @media (orientation: landscape) {
       /* Hide menu and other UI elements in landscape for better HDR viewing */
@@ -1064,12 +1079,38 @@ The next wave is close — don't miss the real Genesis scroll.
       </a>
     </div>
     
-    <!-- Special Collection (ETH) - Sponsored by Boundless8Designs -->
+    <!-- Boundless Collection Tabs - Multiple Marketplace Options -->
     <div class="text-center">
-      <a href="https://magiceden.io/collections/ethereum/0x08b639bc48eb4615952e2c4bbdc42b60ff5e9694" target="_blank"
-         class="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white font-extrabold px-8 py-4 rounded-full shadow-xl hover:from-purple-700 hover:to-blue-700 transition duration-300 animate-pulse transform hover:scale-105">
-        🌟 Special Collection on ETH (Sponsored by Boundless8Designs) →
-      </a>
+      <div class="bg-gray-100 rounded-lg p-2 inline-block">
+        <!-- Tab Buttons -->
+        <div class="flex space-x-2 mb-4">
+                       <button onclick="showBoundlessTab('magic-eden')"
+                     id="boundless-tab-magic-eden"
+                     class="px-4 py-2 rounded-lg font-semibold transition-all duration-300 bg-yellow-400 text-black hover:bg-yellow-300">
+               🧀 Magic Eden (ETH)
+             </button>
+          <button onclick="showBoundlessTab('foundation')" 
+                  id="boundless-tab-foundation"
+                  class="px-4 py-2 rounded-lg font-semibold transition-all duration-300 bg-gray-300 text-gray-700 hover:bg-gray-200">
+            🌟 Foundation (ETH)
+          </button>
+        </div>
+        
+        <!-- Tab Content -->
+                   <div id="boundless-content-magic-eden" class="boundless-tab-content">
+             <a href="https://magiceden.io/collections/ethereum/narrrfs-world-genesis-genetic" target="_blank"
+                class="inline-block bg-black text-yellow-300 font-extrabold px-8 py-4 rounded-full shadow-xl hover:bg-yellow-300 hover:text-black transition duration-300 animate-pulse transform hover:scale-105">
+               🧀 Boundless Collection on Magic Eden (ETH) →
+             </a>
+           </div>
+        
+        <div id="boundless-content-foundation" class="boundless-tab-content hidden">
+          <a href="https://foundation.app/collection/spoinc" target="_blank"
+             class="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white font-extrabold px-8 py-4 rounded-full shadow-xl hover:from-purple-700 hover:to-blue-700 transition duration-300 animate-pulse transform hover:scale-105">
+            🌟 Boundless Collection on Foundation (ETH) →
+          </a>
+        </div>
+      </div>
     </div>
     
     <!-- Genesis Genetic Collection (SOL) -->
@@ -3037,6 +3078,33 @@ function handleHDRDragEnd() {
       `;
       mainCTA.className = mainCTA.className.replace('from-purple-500 to-pink-500', 'from-green-500 to-blue-500');
       mainCTA.className = mainCTA.className.replace('hover:from-purple-600 hover:to-pink-600', 'hover:from-green-600 hover:to-blue-600');
+    }
+  }
+
+  // 🎯 Boundless Collection Tab Switching Function
+  function showBoundlessTab(tabName) {
+    // Hide all tab contents
+    const allContents = document.querySelectorAll('.boundless-tab-content');
+    allContents.forEach(content => content.classList.add('hidden'));
+    
+    // Remove active state from all tab buttons
+    const allTabs = document.querySelectorAll('[id^="boundless-tab-"]');
+    allTabs.forEach(tab => {
+      tab.classList.remove('bg-yellow-400', 'text-black');
+      tab.classList.add('bg-gray-300', 'text-gray-700');
+    });
+    
+    // Show selected tab content
+    const selectedContent = document.getElementById(`boundless-content-${tabName}`);
+    if (selectedContent) {
+      selectedContent.classList.remove('hidden');
+    }
+    
+    // Update selected tab button styling
+    const selectedTab = document.getElementById(`boundless-tab-${tabName}`);
+    if (selectedTab) {
+      selectedTab.classList.remove('bg-gray-300', 'text-gray-700');
+      selectedTab.classList.add('bg-yellow-400', 'text-black');
     }
   }
 </script>

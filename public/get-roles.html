@@ -8,7 +8,7 @@ require_once 'discord-invite.php';
   <!-- 🧠 Meta Essentials -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Get Roles & Game Guide | Narrrf's World</title>
+  <title>🏆 Role System & Trophy Collection | Narrrf's World</title>
 
   <!-- 🧀 Favicon & Metadata -->
   <link rel="icon" type="image/png" href="favicon-phantom.png" />
@@ -16,18 +16,18 @@ require_once 'discord-invite.php';
   <meta name="theme-color" content="#facc15" />
   <meta name="msapplication-TileColor" content="#facc15" />
   <meta name="msapplication-TileImage" content="favicon-phantom.png" />
-  <meta name="title" content="Narrrf's World" />
-  <meta name="description" content="Web3 meets chaos – Join Narrrf's World and mint your legacy." />
+  <meta name="title" content="Narrrf's World - Role System & Trophy Collection" />
+  <meta name="description" content="Discover your role, collect trophies, and unlock the full potential of Narrrf's World. Join the cheese revolution!" />
 
   <!-- 🧵 OpenGraph for Discord & Socials -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Get Roles in Narrrf's World" />
-  <meta property="og:description" content="Unlock your role, discover perks, and mutate through the cheese-verse." />
+  <meta property="og:title" content="🏆 Role System & Trophy Collection - Narrrf's World" />
+  <meta property="og:description" content="Unlock ranks, collect trophies, and discover your place in the cheese-verse. Every role has power!" />
   <meta property="og:image" content="img/roles_bottle.png" />
   <meta property="og:url" content="https://narrrfs.world/get-roles.html" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Get Roles in Narrrf's World" />
-  <meta name="twitter:description" content="Every wallet is unique. Every cheese role has power." />
+  <meta name="twitter:title" content="🏆 Role System & Trophy Collection - Narrrf's World" />
+  <meta name="twitter:description" content="Every wallet is unique. Every cheese role has power. Collect your trophies!" />
   <meta name="twitter:image" content="img/roles_bottle.png" />
 
   <!-- 🎨 Tailwind (Dev CDN) -->
@@ -36,426 +36,872 @@ require_once 'discord-invite.php';
   <!-- 🔗 Discord Token of Render System -->
   <script src="discord-config.js"></script>
 
-  <!-- 💫 Role Glow Style -->
+  <!-- 💫 Enhanced Role System Styles -->
   <style>
-    @keyframes pulseGlow {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.7; transform: scale(1.02); }
+    @keyframes trophyGlow {
+      0%, 100% { 
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
+        transform: scale(1);
+      }
+      50% { 
+        box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
+        transform: scale(1.05);
+      }
     }
-    .animate-pulse-glow {
-      animation: pulseGlow 6s ease-in-out infinite;
+    
+    @keyframes rolePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.02); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .trophy-glow {
+      animation: trophyGlow 3s ease-in-out infinite;
+    }
+    
+    .role-pulse {
+      animation: rolePulse 4s ease-in-out infinite;
+    }
+    
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .role-card {
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .role-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(251, 191, 36, 0.5);
+    }
+    
+    .trophy-shelf {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(251, 191, 36, 0.3);
+    }
+    
+    .roadmap-item {
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .roadmap-item:hover {
+      transform: translateX(10px);
+    }
+    
+    .roadmap-item::before {
+      content: '';
+      position: absolute;
+      left: -20px;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      background: #fbbf24;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+    }
+    
+    .roadmap-item.completed::before {
+      background: #10b981;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+    }
+    
+    .roadmap-item.in-progress::before {
+      background: #f59e0b;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+    }
+    
+    .roadmap-item.future::before {
+      background: #6b7280;
+      box-shadow: 0 0 20px rgba(107, 114, 128, 0.6);
     }
   </style>
-
-  <!-- 📜 Dev Notes: This page dynamically maps users to roles. Later, SQL can inject roles based on wallet or session. -->
 </head>
 
-<!-- ✅ Background image using bottle (/img/roles_bottle.png) -->
-<!-- 🗂️ PATH NOTE: All images must use /img/, all sounds in /sounds/. Legacy paths removed. -->
+<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
 
-<body class="relative bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans bg-cover bg-center bg-no-repeat min-h-screen overflow-x-hidden animate-pulse-glow" style="background-image: url('img/roles_bottle.png');">
-
-<!-- 
-🧪 NARRRF'S LAB CORE FILE: GET-ROLES.HTML
-------------------------------------------------------------
-This file is the CHEESE PORTAL identity page.
-
-💡 Purpose:
-- Maps connected wallets to Narrrf roles
-- Connects to Discord roles via API/PHP
-- Uses SQL table: `user_roles`
-- Entry point to advanced unlocks: staking, perks, upgrades
-- Will grow into multi-source login flow (wallet + Discord + secret riddle answers)
-
-⚠️ DO NOT DELETE STRUCTURAL DIVS MARKED WITH:
-  - data-role-id
-  - id="user-roles"
-  - class="role-card"
-
-💾 Backend Touchpoints:
-  - PHP/SQL can inject user roles into #user-roles-container
-  - Use `walletAddress` from localStorage
-  - Discord sync via backend API POST to /sync-role.php
-
-🛠️ Future Features:
-  - Dynamic rendering from `/api/roles.json`
-  - Deep linking to specific roles via #anchors
-  - Real-time WebSocket updates (2026+)
-
-🔐 Guard this file like the Cheese Vault. It's the soul of the user system.
--->
-
-
-
-  <!-- ☁️ Optional fog layer -->
-  <div class="absolute inset-0 bg-white opacity-10 z-0 pointer-events-none"></div>
-
-  <!-- 💫 Floating Neon Bubbles -->
-  <div class="absolute inset-0 pointer-events-none z-0">
-    <div class="absolute w-3 h-3 bg-pink-400 rounded-full blur-sm animate-lab-bubble" style="top:20%; left:15%;"></div>
-    <div class="absolute w-4 h-4 bg-purple-400 rounded-full blur-md animate-lab-bubble delay-1000" style="top:55%; left:80%;"></div>
-    <div class="absolute w-2.5 h-2.5 bg-lime-300 rounded-full blur-sm animate-lab-bubble delay-2000" style="top:40%; left:50%;"></div>
-    <div class="absolute w-3 h-3 bg-fuchsia-300 rounded-full blur-md animate-lab-bubble delay-300" style="top:70%; left:25%;"></div>
+  <!-- 🌟 Floating Background Elements -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
+    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
+    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
+    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
   </div>
 
-  <!-- 🧬 Neon Lab Badge -->
-  <div class="fixed top-4 left-4 z-50 bg-purple-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg animate-pulse">
-    🧬 Lab Roles Activated
+  <!-- 🧬 Lab Status Badge -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
+    🧬 Role System v2.0 Active
   </div>
 
   <!-- 🧭 Navigation Bar (Sticky Top) -->
-  <header class="bg-black text-white py-4 px-6 shadow-md sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto flex justify-between items-center">
-      <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
+  <header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="index.html" class="text-xl font-bold tracking-tight text-yellow-400">🧠 Narrrf's World</a>
 
       <!-- 🧠 Main Navigation -->
       <nav aria-label="Main Navigation" class="space-x-4 text-sm md:text-base flex items-center">
-        <a href="index.html" class="hover:text-pink-400">Home</a>
-        <a href="mint.html" class="hover:text-pink-400">Mint</a>
-        <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
-        <a href="get-roles.html" class="text-pink-400 font-semibold">Get Roles</a>
-        <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
-        <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+        <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
+        <a href="mint.html" class="hover:text-yellow-400 transition-colors">Mint</a>
+        <a href="whitepaper.html" class="hover:text-yellow-400 transition-colors">Whitepaper</a>
+        <a href="get-roles.html" class="text-yellow-400 font-semibold border-b-2 border-yellow-400">Get Roles</a>
+        <a href="project-updates.html" class="hover:text-yellow-400 transition-colors">Updates</a>
+        <a href="faq.html" class="hover:text-yellow-400 transition-colors">FAQ</a>
 
         <!-- 🧠 Wallet Connect Button -->
         <button id="connect-wallet-btn"
           onclick="connectWallet()"
-          class="ml-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
-          🔌 Connect
+          class="ml-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+          🔌 Connect Wallet
         </button>
 
         <!-- 🧀 Avatar Placeholder -->
         <img id="user-avatar" src="img/cheese.png" alt="PFP"
-          class="hidden w-8 h-8 rounded-full border-2 border-white ml-4 shadow-lg" />
+          class="hidden w-8 h-8 rounded-full border-2 border-yellow-400 ml-4 shadow-lg" />
 
         <!-- 🧀 Wallet Disconnect Button -->
         <button id="wallet-disconnect"
           onclick="disconnectWallet()"
-          class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
+          class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow transition-colors">
           ❌
         </button>
       </nav>
     </div>
   </header>
 
-  <!-- 📜 Role Game Guide Hero Header -->
-  <header class="bg-pink-600 text-white py-10 text-center">
-    <h1 class="text-4xl font-bold">🎮 Narrrf Role Game Guide</h1>
-    <p class="mt-2">Unlock ranks, climb missions, and spin the wheel of Web3 glory!</p>
-  </header>
+  <!-- 🏆 Hero Section -->
+  <section class="relative z-10 py-20 px-4 md:px-6 text-center">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">
+        🏆 Role System
+      </h1>
+      <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+        Discover your destiny in Narrrf's World. Every role is a trophy, every achievement a step toward greatness.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="#trophy-shelf" class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+          🏆 View Trophies
+        </a>
+        <a href="#roadmap" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+          🗺️ Project Roadmap
+        </a>
+      </div>
+    </div>
+  </section>
 
-  <!-- 🧪 Main Role Content Container -->
-  <main class="relative z-10 py-12 px-4 md:px-6">
-    <div class="max-w-4xl mx-auto bg-white/80 backdrop-blur-md border border-pink-200 rounded-3xl shadow-xl p-6 md:p-10 space-y-10">
+  <!-- 🏆 Trophy Shelf Section -->
+  <section id="trophy-shelf" class="relative z-10 py-16 px-4 md:px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">
+          🏆 Trophy Collection
+        </h2>
+        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+          Each role represents a unique achievement and unlocks special privileges in Narrrf's World
+        </p>
+      </div>
 
-      <!-- 🎭 SECTION: What Are Roles -->
+      <!-- Trophy Grid -->
+      <div class="trophy-shelf rounded-3xl p-8 mb-12">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          
+          <!-- Alpha Caller Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_alphacaller.png" alt="Alpha Caller" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Alpha Caller</h3>
+            <p class="text-sm text-gray-300 mb-3">Exclusive alpha access</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +2 Wheel Bonus<br>
+              #alpha-lab Access<br>
+              Signal Posts
+            </div>
+          </div>
 
-    <section>
-      <h2 class="text-2xl font-bold mb-4">🧠 What Are Roles?</h2>
-      <p>Roles in Narrrf's World aren't just cosmetic — they define your experience and unlock in-game advantages like:</p>
-      <ul class="list-disc list-inside mt-4 space-y-1">
-        <li>🎡 Extra slots or bonuses on Wheel Events</li>
-        <li>🎫 Access to VIP raffles and invite-only giveaways</li>
-        <li>🏆 Eligibility for TOC (Tournament of Champions)</li>
-        <li>🎁 Rank-based $DSPOINC rewards & special drops</li>
-      </ul>
-    </section>
+          <!-- Champion Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_champion.png" alt="Champion" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Champion</h3>
+            <p class="text-sm text-gray-300 mb-3">Tournament winner</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +2 Wheel Bonus<br>
+              TOC Entry<br>
+              Elite Raffles
+            </div>
+          </div>
 
-    <!-- Bonus Roles -->
-    <section>
-      <h2 class="text-2xl font-bold mb-4">🏅 Current Role Bonus System</h2>
-      <p class="mb-2">Each of these roles gives you a +1 bonus on wheels and VIP events:</p>
-      <ul class="list-disc list-inside text-purple-700 font-mono font-semibold">
-        <li>@Holder</li>
-        <li>@WL</li>
-        <li>@Champion</li>
-        <li>@Engage</li>
-        <li>@Early Bird</li>
-        <li>@PokerOG</li>
-        <li>@AlphaCaller</li>
-      </ul>
-      <p class="text-sm mt-2 italic">These bonuses may evolve as we grow. Check Discord regularly for updates!</p>
-    </section>
+          <!-- Community Member Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_community.png" alt="Community Member" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Community Member</h3>
+            <p class="text-sm text-gray-300 mb-3">Active community participant</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              Basic Access<br>
+              Community Events
+            </div>
+          </div>
 
+          <!-- Corny Companion Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_cryptocornfriends.png" alt="Corny Companion" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Corny Companion</h3>
+            <p class="text-sm text-gray-300 mb-3">Crypto Corn supporter</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              Special Events<br>
+              Corn Rewards
+            </div>
+          </div>
 
-    <!-- Discord Impact -->
-    <section>
-      <h2 class="text-2xl font-bold mb-4">🎮 Unlock Discord Roles</h2>
-      <p>Each role is a real Discord tag with in-game impact: bonuses, invites, raffles & alpha access.</p>
-    </section>
+          <!-- Engager Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_engage.png" alt="Engager" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Engager</h3>
+            <p class="text-sm text-gray-300 mb-3">Active community member</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              Activity Rewards<br>
+              Community Perks
+            </div>
+          </div>
 
-    <!-- How to Play & Earn -->
-    <section>
-      <h2 class="text-2xl font-bold mb-4">📜 How to Play & Earn Roles</h2>
-      <ol class="list-decimal list-inside space-y-2">
-        <li>🕒 Join Friday community games at 2pm EST & participate in rumbles</li>
-        <li>💬 Stay active in chat & help others — we notice you!</li>
-        <li>🎮 Play in ClubGG tournaments (ID: <strong>821719</strong>) for VIP roles</li>
-        <li>🏆 Win raffles or complete missions to earn Discord coins & rank up</li>
-        <li>📜 Exchange $DSPOINC for wheel entries, upgrades, or NFT prizes</li>
-      </ol>
-    </section>
+          <!-- Kaleido Supporter Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_kaleidofriends.png" alt="Kaleido Supporter" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Kaleido Supporter</h3>
+            <p class="text-sm text-gray-300 mb-3">Kaleido project supporter</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              Kaleido Events<br>
+              Special Access
+            </div>
+          </div>
 
-  </div>
-</main>
+          <!-- PokerOG Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_PokerOG.png" alt="Poker OG" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Poker OG</h3>
+            <p class="text-sm text-gray-300 mb-3">VIP poker access</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              VIP Tournaments<br>
+              Exclusive Tables
+            </div>
+          </div>
 
-<!-- Role Badges -->
-<section class="max-w-4xl mx-auto px-6 py-12 grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-  <div class="bg-white p-4 rounded-xl shadow border-l-4 border-pink-400">
-    <h3 class="text-lg font-bold">@Holder</h3>
-    <p class="text-sm">+1 spin bonus on weekly wheels</p>
-  </div>
-  <div class="bg-white p-4 rounded-xl shadow border-l-4 border-purple-400">
-    <h3 class="text-lg font-bold">@WL</h3>
-    <p class="text-sm">Whitelist mint + early drops</p>
-  </div>
-  <div class="bg-white p-4 rounded-xl shadow border-l-4 border-yellow-400">
-    <h3 class="text-lg font-bold">@Champion</h3>
-    <p class="text-sm">Entry to TOC and elite raffles</p>
-  </div>
-  <div class="bg-white p-4 rounded-xl shadow border-l-4 border-green-400">
-    <h3 class="text-lg font-bold">@Engage</h3>
-    <p class="text-sm">Server activity bonus rewards</p>
-  </div>
-  <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-400">
-    <h3 class="text-lg font-bold">@Early Bird</h3>
-    <p class="text-sm">Legacy airdrops + OG perks</p>
-  </div>
-  <div class="bg-white p-4 rounded-xl shadow border-l-4 border-rose-400">
-    <h3 class="text-lg font-bold">@PokerOG</h3>
-    <p class="text-sm">Access to VIP poker tournaments</p>
-  </div>
-  <div class="bg-white p-4 rounded-xl shadow border-l-4 border-indigo-400">
-    <h3 class="text-lg font-bold">@AlphaCaller</h3>
-    <p class="text-sm">Post in #alpha-lab + claim boosts</p>
-  </div>
-</section>
+          <!-- Bunny Buddy Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_rabbitfriends.png" alt="Bunny Buddy" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Bunny Buddy</h3>
+            <p class="text-sm text-gray-300 mb-3">Rabbit project supporter</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              Rabbit Events<br>
+              Special Rewards
+            </div>
+          </div>
 
-<!-- How to Earn -->
-<section class="bg-white py-16 px-6">
-  <div class="max-w-4xl mx-auto text-center">
-    <h2 class="text-2xl font-bold mb-4">📈 How to Earn Roles</h2>
-    <ul class="list-disc list-inside text-left max-w-md mx-auto text-sm space-y-2">
-      <li>Join <strong>ClubGG</strong> (ID: 821719) & play poker</li>
-      <li>Participate in Friday <strong>rumbles & games</strong></li>
-      <li>Stay active and <strong>help the community</strong></li>
-      <li>Win raffles or <strong>complete weekly missions</strong></li>
-      <li>Trade $DSPOINC for <strong>role upgrades</strong></li>
-    </ul>
-  </div>
-</section>
+          <!-- Rumble Champ Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_rumble.png" alt="Rumble Champ" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Rumble Champ</h3>
+            <p class="text-sm text-gray-300 mb-3">Rumble tournament winner</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +2 Wheel Bonus<br>
+              Rumble Access<br>
+              Champion Status
+            </div>
+          </div>
 
-<!-- Alpha Info -->
-<section class="py-16 px-6 bg-purple-50">
-  <div class="max-w-3xl mx-auto text-center">
-    <h2 class="text-xl font-bold mb-4">🔐 Alpha Lab Access</h2>
-    <p class="text-sm text-gray-700">
-      Hold a VIP role or GEN1 NFT to unlock <strong>#alpha-lab</strong> in Discord.
-      Only verified Alpha Callers may post signals, hidden raffles, or token alerts.
-    </p>
-  </div>
-</section>
+          <!-- Server Booster Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_serverbooster.png" alt="Server Booster" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Server Booster</h3>
+            <p class="text-sm text-gray-300 mb-3">Discord server booster</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              Booster Perks<br>
+              VIP Channels
+            </div>
+          </div>
 
-<!-- Legal Note -->
-<section class="text-sm text-gray-600 text-center px-6 py-10">
-  <p>⚠️ All roles are Discord-based and evolve as Narrrf's World grows. Always follow local laws. Participation is voluntary. Web3 is wild – stay safe.</p>
-</section>
+          <!-- Verified Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_verified.png" alt="Verified" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Verified</h3>
+            <p class="text-sm text-gray-300 mb-3">Verified community member</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              Trust Status<br>
+              Special Access
+            </div>
+          </div>
 
-</main> <!-- ✅ CLOSES THE <main> TAG CORRECTLY -->
+          <!-- Weedery Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_weederyfriends.png" alt="Weedery" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Weedery</h3>
+            <p class="text-sm text-gray-300 mb-3">Weedery project supporter</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              Weedery Events<br>
+              Special Rewards
+            </div>
+          </div>
 
-<!-- Footer -->
-<footer class="text-center py-6 text-sm text-purple-700">
-              Made with 🧪 & strategy in Narrrf's Lab | <a href="<?php echo $discord_url; ?>" class="underline text-pink-600">Join us on Discord</a>
-</footer>
+          <!-- VIP Holder Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_VIP.png" alt="VIP Holder" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">VIP Holder</h3>
+            <p class="text-sm text-gray-300 mb-3">Elite status with exclusive access</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +2 Wheel Bonus<br>
+              VIP Raffles<br>
+              Early Drops
+            </div>
+          </div>
 
+          <!-- Holder Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_holder.png" alt="Holder" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Holder</h3>
+            <p class="text-sm text-gray-300 mb-3">Core community member</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              Community Access<br>
+              Basic Rewards
+            </div>
+          </div>
 
-<!-- Global Wallet Connect + PFP Script (Excluding Mint Page) -->
-<script>
-  async function connectWallet() {
-    const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('connect-wallet-btn');
+          <!-- Cheese Hunter Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_cheese_hunter.png" alt="Cheese Hunter" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">Cheese Hunter</h3>
+            <p class="text-sm text-gray-300 mb-3">Game achievement unlocked</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              +1 Wheel Bonus<br>
+              Game Rewards<br>
+              Special Events
+            </div>
+          </div>
 
-    if ('solana' in window) {
-      const provider = window.solana;
+          <!-- Gaming Zone - Link to Profile -->
+          <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-violet-900/50 to-purple-900/50 border-2 border-violet-500/50 hover:border-violet-400/70 transition-all duration-300 transform hover:scale-105">
+            <div class="text-6xl mb-4">🎮</div>
+            <h3 class="text-lg font-bold text-violet-400 mb-2">Gaming Zone</h3>
+            <p class="text-sm text-gray-300 mb-3">Verify roles & play games</p>
+            <div class="text-xs text-violet-300 font-mono mb-4">
+              Role Verification<br>
+              Game Access<br>
+              Trophy Collection
+            </div>
+            <a href="profile.html" class="inline-block bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+              🚀 Enter Zone
+            </a>
+          </div>
 
-      if (provider.isPhantom) {
-        try {
-          const response = await provider.connect();
-          const walletAddress = response.publicKey.toString();
+        </div>
+      </div>
 
-          // Store wallet
-          localStorage.setItem('walletAddress', walletAddress);
+      <!-- 🔐 Hidden Moderator Section (Only visible to moderators) -->
+      <div id="moderator-section" class="hidden bg-gradient-to-r from-red-900/30 to-purple-900/30 rounded-2xl p-6 border border-red-500/30 mb-8">
+        <div class="text-center">
+          <h3 class="text-2xl font-bold text-red-400 mb-4">🛡️ Moderator Access</h3>
+          <p class="text-gray-300 mb-4">Welcome, Moderator. You have access to administrative functions.</p>
+          
+          <!-- Moderator Trophy Display -->
+          <div class="flex justify-center mb-4">
+            <div class="role-card rounded-2xl p-6 text-center trophy-glow border-2 border-red-500/50">
+              <img src="img/trophy_moderator.png" alt="Moderator" class="w-24 h-24 mx-auto mb-4 drop-shadow-2xl" />
+              <h4 class="text-lg font-bold text-red-400 mb-2">Moderator</h4>
+              <p class="text-sm text-gray-300 mb-3">Community moderator</p>
+              <div class="text-xs text-red-300 font-mono">
+                +2 Wheel Bonus<br>
+                Mod Powers<br>
+                VIP Access
+              </div>
+            </div>
+          </div>
+          
+          <div class="text-sm text-red-300">
+            <p>🔒 This section is only visible to users with moderator privileges</p>
+          </div>
+        </div>
+      </div>
 
-          // Update UI
-          connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
-          connectButton.disabled = true;
-          avatar.classList.remove('hidden');
-        } catch (err) {
-          console.error("❌ Wallet connect error:", err);
+      <!-- Role Benefits Summary -->
+      <div class="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 rounded-2xl p-8 border border-yellow-500/30">
+        <h3 class="text-2xl font-bold text-yellow-400 mb-6 text-center">🎯 Role Benefits Overview</h3>
+        <div class="grid md:grid-cols-2 gap-8">
+          <div>
+            <h4 class="text-lg font-semibold text-yellow-300 mb-4">🎮 Gaming Advantages</h4>
+            <ul class="space-y-2 text-gray-300">
+              <li>• <strong>Wheel Bonuses:</strong> Extra spins on weekly reward wheels</li>
+              <li>• <strong>VIP Access:</strong> Exclusive tournaments and events</li>
+              <li>• <strong>Early Drops:</strong> First access to new releases</li>
+              <li>• <strong>Special Rewards:</strong> Role-specific bonuses and perks</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-lg font-semibold text-yellow-300 mb-4">🌟 Community Perks</h4>
+            <ul class="space-y-2 text-gray-300">
+              <li>• <strong>Discord Roles:</strong> Real Discord permissions and access</li>
+              <li>• <strong>Alpha Channels:</strong> Exclusive information and signals</li>
+              <li>• <strong>VIP Raffles:</strong> Higher chances in community giveaways</li>
+              <li>• <strong>Direct Access:</strong> Connect with team and community leaders</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 🎮 How to Earn Roles -->
+  <section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-purple-900/30 to-pink-900/30">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl md:text-5xl font-bold text-purple-400 mb-4">
+          🎮 How to Earn Roles
+        </h2>
+        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+          Multiple paths to unlock your potential in Narrrf's World
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- Gaming Path -->
+        <div class="role-card rounded-2xl p-6 text-center">
+          <div class="text-4xl mb-4">🎮</div>
+          <h3 class="text-xl font-bold text-purple-400 mb-4">Gaming Excellence</h3>
+          <ul class="text-left text-gray-300 space-y-2">
+            <li>• Win Tetris tournaments</li>
+            <li>• Master Snake challenges</li>
+            <li>• Complete Cheese Hunt missions</li>
+            <li>• Dominate Discord races</li>
+            <li>• Achieve high scores</li>
+          </ul>
+        </div>
+
+        <!-- Community Path -->
+        <div class="role-card rounded-2xl p-6 text-center">
+          <div class="text-4xl mb-4">🤝</div>
+          <h3 class="text-xl font-bold text-purple-400 mb-4">Community Engagement</h3>
+          <ul class="text-left text-gray-300 space-y-2">
+            <li>• Active Discord participation</li>
+            <li>• Help new community members</li>
+            <li>• Contribute to discussions</li>
+            <li>• Attend community events</li>
+            <li>• Share valuable insights</li>
+          </ul>
+        </div>
+
+        <!-- NFT Path -->
+        <div class="role-card rounded-2xl p-6 text-center">
+          <div class="text-4xl mb-4">🎨</div>
+          <h3 class="text-xl font-bold text-purple-400 mb-4">NFT Ownership</h3>
+          <ul class="text-left text-gray-300 space-y-2">
+            <li>• Hold Genesis NFTs</li>
+            <li>• Collect rare traits</li>
+            <li>• Participate in mints</li>
+            <li>• Support community projects</li>
+            <li>• Long-term holding</li>
+          </ul>
+        </div>
+
+        <!-- Poker Path -->
+        <div class="role-card rounded-2xl p-6 text-center">
+          <div class="text-4xl mb-4">🃏</div>
+          <h3 class="text-xl font-bold text-purple-400 mb-4">Poker Excellence</h3>
+          <ul class="text-left text-gray-300 space-y-2">
+            <li>• Join ClubGG (ID: 821719)</li>
+            <li>• Win poker tournaments</li>
+            <li>• Build reputation</li>
+            <li>• Mentor new players</li>
+            <li>• Consistent performance</li>
+          </ul>
+        </div>
+
+        <!-- Alpha Path -->
+        <div class="role-card rounded-2xl p-6 text-center">
+          <div class="text-4xl mb-4">🔐</div>
+          <h3 class="text-xl font-bold text-purple-400 mb-4">Alpha Contribution</h3>
+          <ul class="text-left text-gray-300 space-y-2">
+            <li>• Share valuable insights</li>
+            <li>• Post in #alpha-lab</li>
+            <li>• Contribute signals</li>
+            <li>• Help community research</li>
+            <li>• Build knowledge base</li>
+          </ul>
+        </div>
+
+        <!-- Special Events -->
+        <div class="role-card rounded-2xl p-6 text-center">
+          <div class="text-4xl mb-4">🎉</div>
+          <h3 class="text-xl font-bold text-purple-400 mb-4">Special Events</h3>
+          <ul class="text-left text-gray-300 space-y-2">
+            <li>• Friday community games</li>
+            <li>• Seasonal tournaments</li>
+            <li>• Community challenges</li>
+            <li>• Milestone celebrations</li>
+            <li>• Exclusive raffles</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 🗺️ Project Roadmap -->
+  <section id="roadmap" class="relative z-10 py-16 px-4 md:px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">
+          🗺️ Project Roadmap
+        </h2>
+        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+          The future of Narrrf's World - where we're going and what's coming next
+        </p>
+      </div>
+
+      <div class="space-y-8">
+        
+        <!-- Phase 1: Foundation (Completed) -->
+        <div class="bg-white/90 rounded-xl p-6 shadow border-l-4 border-green-500">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-2xl font-bold text-green-600">Phase 1: Foundation</h3>
+            <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">✅ COMPLETED</span>
+          </div>
+          <p class="text-gray-700 mb-4">Core infrastructure and basic role system established</p>
+          <ul class="text-gray-600 space-y-2">
+            <li>• Discord bot integration with role management</li>
+            <li>• Basic trophy system and role visualization</li>
+            <li>• Community foundation and initial user base</li>
+            <li>• Basic gaming infrastructure (Tetris, Snake, Cheese Hunt)</li>
+            <li>• NFT collection launch and minting system</li>
+          </ul>
+        </div>
+
+        <!-- Phase 2: Expansion (In Progress) -->
+        <div class="bg-white/90 rounded-xl p-6 shadow border-l-4 border-yellow-500">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-2xl font-bold text-yellow-600">Phase 2: Expansion</h3>
+            <span class="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold">🔄 IN PROGRESS</span>
+          </div>
+          <p class="text-gray-700 mb-4">Enhanced gaming experience and advanced role system</p>
+          <ul class="text-gray-600 space-y-2">
+            <li>• Advanced trophy system with dynamic rewards</li>
+            <li>• Enhanced Discord race system and leaderboards</li>
+            <li>• Community governance and voting systems</li>
+            <li>• Advanced gaming mechanics and competitions</li>
+            <li>• Mobile app development and cross-platform support</li>
+          </ul>
+        </div>
+
+        <!-- Phase 3: Innovation (Future) -->
+        <div class="bg-white/90 rounded-xl p-6 shadow border-l-4 border-blue-500">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-2xl font-bold text-blue-600">Phase 3: Innovation</h3>
+            <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold">🔮 FUTURE</span>
+          </div>
+          <p class="text-gray-700 mb-4">Cutting-edge features and ecosystem expansion</p>
+          <ul class="text-gray-600 space-y-2">
+            <li>• AI-powered role recommendations and matching</li>
+            <li>• Advanced staking and DeFi integration</li>
+            <li>• Cross-chain NFT bridges and interoperability</li>
+            <li>• Virtual reality gaming experiences</li>
+            <li>• Global tournament series and championships</li>
+          </ul>
+        </div>
+
+        <!-- Phase 4: Metaverse (Future) with Investor Mouse -->
+        <div class="bg-white/90 rounded-xl p-6 shadow border-l-4 border-purple-500 flex flex-col md:flex-row items-center gap-6">
+          
+          <!-- Text Content -->
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-2xl font-bold text-purple-600">Phase 4: Metaverse</h3>
+              <span class="bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-bold">🚀 FUTURE</span>
+            </div>
+            <p class="text-gray-700 mb-4">Full metaverse integration and global dominance</p>
+            <ul class="text-gray-600 space-y-2">
+              <li>• Full 3D metaverse with virtual real estate</li>
+              <li>• Advanced AI NPCs and dynamic storytelling</li>
+              <li>• Global partnerships and brand integrations</li>
+              <li>• Advanced governance and DAO structures</li>
+              <li>• Cross-platform gaming and social experiences</li>
+            </ul>
+          </div>
+
+          <!-- 🐭 Investor Mouse -->
+          <div class="relative z-10">
+            <div class="absolute inset-0 w-full h-full blur-xl opacity-20 rounded-full bg-yellow-200 -z-10"></div>
+            <img src="img/investor-mouse1.png" alt="Investor Mouse"
+                 class="w-32 md:w-40 hover:scale-105 transition-transform duration-300 drop-shadow-xl investor-glow"
+                 title="The future is made of cheese & business." />
+          </div>
+
+        </div>
+
+        <!-- Link to Detailed Whitepaper -->
+        <div class="bg-gradient-to-r from-yellow-100/50 to-orange-100/50 rounded-xl border border-yellow-300/30 p-6 text-center">
+          <h3 class="text-xl font-bold text-yellow-800 mb-2">📜 Want More Details?</h3>
+          <p class="text-yellow-700 mb-4">Explore our comprehensive roadmap to 2030 and beyond</p>
+          <a href="whitepaper-pro.html" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+            🚀 Read Full Whitepaper
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 🔥 Lab Flask + Bubbles (Bottom Right Corner) -->
+    <div class="absolute bottom-0 right-4 z-[1] pointer-events-none">
+      <div class="w-40 h-40 bg-pink-300 opacity-20 rounded-full blur-2xl absolute bottom-0 right-0"></div>
+      <div class="relative bottom-2">
+        <svg width="80" height="120" viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M40 0 H60 V50 L85 120 Q90 135 75 140 H25 Q10 135 15 120 L40 50 Z"
+                fill="#f472b6" stroke="#000" stroke-width="2" />
+        </svg>
+        <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div class="w-3 h-3 bg-pink-400 rounded-full blur-sm animate-lab-bubble absolute" style="left:-10px"></div>
+          <div class="w-4 h-4 bg-purple-400 rounded-full blur-md animate-lab-bubble absolute delay-1000" style="left:10px"></div>
+          <div class="w-2.5 h-2.5 bg-lime-300 rounded-full blur-sm animate-lab-bubble absolute delay-2000" style="left:0px"></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 🎯 Current Season & Events -->
+  <section class="relative z-10 py-16 px-4 md:px-6 bg-gradient-to-r from-pink-900/30 to-red-900/30">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl md:text-5xl font-bold text-pink-400 mb-4">
+          🎯 Current Season & Events
+        </h2>
+        <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+          What's happening right now in Narrrf's World
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        
+        <!-- Current Season -->
+        <div class="role-card rounded-2xl p-6">
+          <h3 class="text-2xl font-bold text-pink-400 mb-4">🌱 Season 2: Growth & Expansion</h3>
+          <div class="space-y-4">
+            <div class="bg-pink-900/30 rounded-lg p-4">
+              <h4 class="font-semibold text-pink-300 mb-2">Current Focus</h4>
+              <ul class="text-gray-300 text-sm space-y-1">
+                <li>• Enhanced role system implementation</li>
+                <li>• Discord race system optimization</li>
+                <li>• Community governance development</li>
+                <li>• Mobile app beta testing</li>
+              </ul>
+            </div>
+            <div class="bg-pink-900/30 rounded-lg p-4">
+              <h4 class="font-semibold text-pink-300 mb-2">Season Rewards</h4>
+              <ul class="text-gray-300 text-sm space-y-1">
+                <li>• Exclusive Season 2 trophies</li>
+                <li>• Special role unlocks</li>
+                <li>• Community voting rights</li>
+                <li>• Early access to new features</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="role-card rounded-2xl p-6">
+          <h3 class="text-2xl font-bold text-pink-400 mb-4">📅 Upcoming Events</h3>
+          <div class="space-y-4">
+            <div class="bg-pink-900/30 rounded-lg p-4">
+              <h4 class="font-semibold text-pink-300 mb-2">Weekly Schedule</h4>
+              <ul class="text-gray-300 text-sm space-y-1">
+                <li>• <strong>Fridays 2pm EST:</strong> Community Games & Rumbles</li>
+                <li>• <strong>Daily:</strong> Cheese Hunt missions</li>
+                <li>• <strong>Weekends:</strong> Special tournaments</li>
+                <li>• <strong>Monthly:</strong> Role review & promotions</li>
+              </ul>
+            </div>
+            <div class="bg-pink-900/30 rounded-lg p-4">
+              <h4 class="font-semibold text-pink-300 mb-2">Special Events</h4>
+              <ul class="text-gray-300 text-sm space-y-1">
+                <li>• <strong>February:</strong> Valentine's Cheese Festival</li>
+                <li>• <strong>March:</strong> Spring Gaming Championship</li>
+                <li>• <strong>April:</strong> Community Anniversary</li>
+                <li>• <strong>May:</strong> Summer Role Tournament</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 🔗 Call to Action -->
+  <section class="relative z-10 py-16 px-4 md:px-6 text-center">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-6">
+        🚀 Ready to Start Your Journey?
+      </h2>
+      <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+        Join Narrrf's World today and begin collecting your trophies. Every role is a step toward greatness.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="mint.html" class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+          🎨 Mint Your NFT
+        </a>
+        <a href="<?php echo $discord_url; ?>" target="_blank" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+          🎮 Join Discord
+        </a>
+        <a href="profile.html" class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+          👤 View Profile
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-yellow-500/20">
+    <div class="max-w-4xl mx-auto px-6">
+      <p class="mb-4">
+        Made with 🧪 & strategy in Narrrf's Lab | 
+        <a href="<?php echo $discord_url; ?>" class="text-yellow-400 hover:text-yellow-300 underline transition-colors">
+          Join us on Discord
+        </a>
+      </p>
+      <p class="text-sm">
+        © 2025 Narrrf's World. Built with brain & cheese 🧠🧀 | 
+        <a href="privacy-policy.html" class="text-gray-500 hover:text-gray-300 underline">Privacy Policy</a> | 
+        <a href="faq.html" class="text-gray-500 hover:text-gray-300 underline">FAQ</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Global Wallet Connect + PFP Script -->
+  <script>
+    async function connectWallet() {
+      const avatar = document.getElementById('user-avatar');
+      const connectButton = document.getElementById('connect-wallet-btn');
+
+      if ('solana' in window) {
+        const provider = window.solana;
+
+        if (provider.isPhantom) {
+          try {
+            const response = await provider.connect();
+            const walletAddress = response.publicKey.toString();
+
+            // Store wallet
+            localStorage.setItem('walletAddress', walletAddress);
+
+            // Update UI
+            connectButton.innerText = `🟢 ${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+            connectButton.disabled = true;
+            avatar.classList.remove('hidden');
+
+            // Check if user is a moderator
+            // TODO: Replace with proper moderator detection system
+            // Options:
+            // 1. Check Discord roles via API
+            // 2. Use environment variable for moderator wallet addresses
+            // 3. Check against database of moderator users
+            checkModeratorStatus(walletAddress);
+          } catch (err) {
+            console.error("❌ Wallet connect error:", err);
+          }
         }
       }
     }
-  }
 
-  // Auto-show avatar if logged in
-  window.addEventListener('DOMContentLoaded', () => {
-    const storedWallet = localStorage.getItem('walletAddress');
-    const avatar = document.getElementById('user-avatar');
-    const connectButton = document.getElementById('connect-wallet-btn');
-
-    if (storedWallet && avatar && connectButton) {
-      avatar.classList.remove('hidden');
-      connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
-      connectButton.disabled = true;
+    // Function to check if user has moderator privileges
+    function checkModeratorStatus(walletAddress) {
+      if (!walletAddress) return;
+      
+      // TODO: Implement proper moderator detection
+      // For now, this is a placeholder that can be customized
+      
+      // Option 1: Check specific wallet addresses
+      const moderatorWallets = [
+        // Add moderator wallet addresses here
+        // 'wallet_address_1',
+        // 'wallet_address_2'
+      ];
+      
+      // Option 2: Check Discord roles (if connected)
+      // This would require Discord integration
+      
+      // Option 3: Check database for moderator status
+      // This would require API call to your backend
+      
+      const isModerator = moderatorWallets.includes(walletAddress.toLowerCase());
+      
+      if (isModerator) {
+        document.getElementById('moderator-section').classList.remove('hidden');
+        console.log('🔐 Moderator access granted');
+      } else {
+        document.getElementById('moderator-section').classList.add('hidden');
+      }
     }
-  });
 
-  function disconnectWallet() {
-    localStorage.removeItem('walletAddress');
-    const avatar = document.getElementById('user-avatar');
-    if (avatar) avatar.classList.add('hidden');
-  }
-</script>
-<!-- 🧪 FINAL PROOF: NARRRF'S WORLD GENESIS 2.0 – COMPLETE SYSTEM PACKAGE
----------------------------------------------------------
-🧠 Signed by Brain 3.1, Narrrf (5yo Padawan), and the Alien
-🌍 This **Genesis 2.0** package represents the culmination of **Narrrf's World** project: integrating **Web2/Web3**, **NFT ownership**, and **SQL-based game mechanics** into a self-sustaining ecosystem.
+    // Auto-show avatar if logged in
+    window.addEventListener('DOMContentLoaded', () => {
+      const storedWallet = localStorage.getItem('walletAddress');
+      const avatar = document.getElementById('user-avatar');
+      const connectButton = document.getElementById('connect-wallet-btn');
 
-💾 **Stored in the Lab's digital archives**, it will continue to evolve and serve as a reference for **future generations** of developers.
+      if (storedWallet && avatar && connectButton) {
+        avatar.classList.remove('hidden');
+        connectButton.innerText = `🟢 ${storedWallet.slice(0, 4)}...${storedWallet.slice(-4)}`;
+        connectButton.disabled = true;
+        
+        // Check if user is a moderator
+        checkModeratorStatus(storedWallet);
+      }
+    });
 
-⚡ Officially ready for **scaling**, **real-time integration**, and continuous **user interaction**.
+    function disconnectWallet() {
+      localStorage.removeItem('walletAddress');
+      const avatar = document.getElementById('user-avatar');
+      const connectButton = document.getElementById('connect-wallet-btn');
+      if (avatar) avatar.classList.add('hidden');
+      if (connectButton) {
+        connectButton.innerText = '🔌 Connect Wallet';
+        connectButton.disabled = false;
+      }
+      // Hide moderator section on disconnect
+      document.getElementById('moderator-section').classList.add('hidden');
+    }
 
-🎮 **Masterchief** will guide the **backend SQL** operations and ensure that **cheese never spoils**.
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
 
-🧪 **Future devs**: add your **name**, **refine the platform**, and **keep expanding** on this legendary system.
-
-🔧 **Critical Dev Reminders for the Next Generations**:
-  - Ensure **minting** is **tested across all wallet types** (e.g., Phantom, Solana).
-  - Validate **SQL integration** for minting, supply tracking, and wallet syncing.
-  - Always monitor **egg tracking** and **wallet connectivity** across all pages.
-  - Keep testing **Web3 wallets** and integrating future wallet systems.
-  - **Optimize the minting process** for **scalability** and **future-proofing**.
-
-🔮 Maintain the **core focus on Web3** principles, **game progression**, and **community empowerment**.
-
----------------------------------------------------------
-🧪 **Cheese Engine v1.4: The Riddle System Core**
----------------------------------------------------------
-This system powers **moving riddle nodes** throughout Narrrf's World. All **cheese clicks** are tracked and used for:
-- Lore progression
-- Inventory events
-- Trait-gated puzzles
-
-**Riddle Engine** is the heart of the **Narrrfverse**, integrating with:
-- **SQL tracking** for each riddle solved (stored in the `tbl_cheese_clicks` table).
-- **User interaction**, where progress is stored and retrieved based on wallet address, egg ID, and timestamp.
-- **Unlocking Easter Eggs** as users progress, ensuring a dynamic and immersive game world.
-
-📦 **DB Dev:**
-Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
-→ Use **wallet address** from localStorage, **timestamp**, and **egg ID** for progress tracking.
-
-🚀 **Future Ideas**:
-- **Massive map-wide riddle hunts** integrated with time-locked eggs and rotating cheese dungeons.
-- Enhance **user experience** with dynamic **puzzle-solving mechanics**.
-  
-🧑‍💻 Future devs can expand the **riddle system** and **reward mechanics** with more complex features and interactivity.
-
----------------------------------------------------------
-🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
----------------------------------------------------------
--->
-
-<!-- ======================================== -->
-<!-- 🧠 HTML Brain 12.0 Footer Lab Declaration -->
-<!-- ======================================== -->
-<footer class="text-center mt-16 mb-10">
-  <!-- Back to Top Link -->
-  <div class="mb-6">
-    <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition-colors duration-200">
-      🔝 Back to Top
-    </a>
-  </div>
-  
-  <!-- 🧀 Narrrf's Cheese Universe Section -->
-  <div class="mb-8 p-6 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 rounded-xl border border-yellow-300/30">
-    <div class="text-lg font-bold text-yellow-800 mb-4">
-      🧀 Narrrf's Cheese Universe
-    </div>
-    <div class="text-sm text-yellow-700 mb-6">
-      Where gaming meets cheese innovation
-    </div>
-    
-    <!-- Quick Links -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <a href="/index.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🏠 Home
-      </a>
-      <a href="/whitepaper-pro.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        📜 Read the Whitepaper
-      </a>
-      <a href="/mint.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🎨 Mint Your NFT
-      </a>
-      <a href="/profile.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🎭 Get Roles
-      </a>
-    </div>
-    
-    <!-- Socials -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium">
-        🐦 Twitter / X
-      </a>
-      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
-        🎮 Join Discord
-      </a>
-      <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-800 transition-colors duration-200 font-medium">
-        🃏 Poker ClubGG
-      </a>
-      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
-        📧 Open a Ticket
-      </a>
-    </div>
-    
-    <!-- Contact & Location -->
-    <div class="text-xs text-yellow-600/80 mb-4">
-      🌍 Web3 Only – Austria Based
-    </div>
-  </div>
-  
-  <!-- Legal & Important Links - More Prominent -->
-  <div class="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-lg border border-blue-200/30">
-    <div class="text-sm font-semibold text-blue-800 mb-3">
-      📋 Important Legal & Support Links
-    </div>
-    <div class="flex flex-wrap justify-center gap-6 text-sm">
-      <a href="/privacy-policy.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        🍪 Privacy Policy
-      </a>
-      <a href="/faq.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        ❓ FAQ
-      </a>
-      <a href="/profile.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        👤 Profile
-      </a>
-    </div>
-  </div>
-  
-  <!-- Copyright & Branding -->
-  <div class="pt-6 border-t border-yellow-600/30 text-xs text-yellow-600/80">
-    <div class="mb-2">
-      © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
-    </div>
-    <div class="text-yellow-500/70">
-      🚀 Powered by the ultimate cheese gaming technology
-    </div>
-  </div>
-</footer>
-<!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
-<!-- 🔐 Do not remove unless instructed by the Over Brain. -->
-
-<!-- Add wallet.js before the closing body tag -->
-<script src="js/wallet.js"></script>
+  <!-- Add wallet.js before the closing body tag -->
+  <script src="js/wallet.js"></script>
 </body>
 </html>

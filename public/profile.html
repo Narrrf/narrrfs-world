@@ -279,6 +279,7 @@ require_once 'discord-invite.php';
     <div class="mt-6 bg-gray-700 rounded-lg p-4 shadow-inner">
       <h2 class="font-semibold text-lg mb-2 text-yellow-300">📊 User Statistics</h2>
       <ul class="text-sm space-y-1">
+        <li>💰 Total DSPOINC Balance: <strong id="user-spoinc" class="text-yellow-400">Loading...</strong></li>
         <li>🎯 Score Adjustments: <strong id="stats-adjustments">Loading...</strong></li>
         <li>🎮 Score Sources: <strong id="stats-sources">Loading...</strong></li>
         <li>⭐ Active Roles: <strong id="stats-roles">Loading...</strong></li>
@@ -792,7 +793,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     try {
      // Unified fetch from profile.php
-     const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
+     const res = await fetch('/api/user/profile.php', { 
        credentials: 'include',
        headers: { 'Accept': 'application/json' }
      });
@@ -858,8 +859,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Scores/stats (if present in JSON)
     if (user.stats) {
-      setText('user-dspoinc', user.stats.scoreAdjustments !== undefined ? user.stats.scoreAdjustments.toLocaleString() : '');
-      setText('user-spoinc', user.stats.sources !== undefined ? user.stats.sources.toLocaleString() : '');
+      // Note: DSPOINC balance is now fetched separately via score-total API
+      setText('stats-adjustments', user.stats.scoreAdjustments || 0);
+      setText('stats-sources', user.stats.sources || 0);
+      setText('stats-roles', user.stats.roles || 0);
+    }
+    
+    // Set member since date
+    if (user.member_since) {
+      setText('stats-member-since', user.member_since);
     }
 
          // Trophy pokal shelf — render immediately from roles
@@ -885,13 +893,37 @@ document.addEventListener("DOMContentLoaded", async function () {
        
        // 🧀 Populate DSPOINC Journey data immediately
        try {
-         // Set DSPOINC balance in the journey section
-         const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
-         if (dspoincJourneyEl) {
-           const dspoincBalance = user.stats?.scoreAdjustments || 0;
-           dspoincJourneyEl.textContent = dspoincBalance.toLocaleString();
-           console.log('✅ DSPOINC Journey balance set to:', dspoincBalance);
+         // Fetch actual DSPOINC balance from the score-total API
+         const balanceResponse = await fetch(`/api/user/score-total.php`, { 
+           credentials: 'include' 
+         });
+         if (balanceResponse.ok) {
+           const balanceData = await balanceResponse.json();
+           if (balanceData.total_dspoinc !== undefined) {
+             const dspoincBalance = balanceData.total_dspoinc || 0;
+             
+             // Update DSPOINC Journey display
+             const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
+             if (dspoincJourneyEl) {
+               dspoincJourneyEl.textContent = dspoincBalance.toLocaleString();
+               console.log('✅ DSPOINC Journey balance set to:', dspoincBalance);
+             }
+             
+             // Update main User Statistics display
+             const userSpoincEl = document.getElementById('user-spoinc');
+             if (userSpoincEl) {
+               userSpoincEl.textContent = dspoincBalance.toLocaleString();
+               console.log('✅ Total DSPOINC balance set to:', dspoincBalance);
+             }
+           } else {
+             console.error('❌ Score total API error:', balanceData.error);
+           }
+         } else {
+           console.error('❌ Score total API request failed:', balanceResponse.status);
          }
+       } catch (balanceError) {
+         console.error('❌ Error fetching DSPOINC balance:', balanceError);
+       }
          
          // Fetch and display recent adjustments
          fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
@@ -1034,7 +1066,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 <script>
   async function loadCombinedLeaderboards() {
     try {
-      const res = await fetch("https://narrrfs.world/api/dev/get-leaderboard.php");
+      const res = await fetch("/api/dev/get-leaderboard.php");
       const result = await res.json();
 
       const tetrisList = document.getElementById("leaderboard-tetris-list");
@@ -1155,7 +1187,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const statsRoles = document.getElementById('stats-roles');
   const statsMemberSince = document.getElementById('stats-member-since');
   
-  if (statsAdjustments) statsAdjustments.innerText = user.stats?.scoreAdjustments ?? "–";
+  if (statsAdjustments) statsAdjustments.innerText = "–"; // DSPOINC balance now fetched separately
   if (statsSources) statsSources.innerText = user.stats?.sources ?? "–";
   if (statsRoles) statsRoles.innerText = user.stats?.roles ?? "–";
   if (statsMemberSince) statsMemberSince.innerText = user.member_since ?? "–";
@@ -1259,8 +1291,8 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // Fetch DSPOINC history for logged-in user
-  fetch(`/api/discord/score-history.php?user_id=${userId}`)
+  // Fetch DSPOINC history for logged-in user using session-based API
+  fetch(`/api/user/recent-adjustments.php`, { credentials: 'include' })
     .then(res => res.json())
     .then(json => {
       if (msgBox) msgBox.classList.add('hidden');
@@ -1268,8 +1300,11 @@ document.addEventListener('DOMContentLoaded', function() {
       
       let cumulative = 0, labels = [], data = [];
       
-      if (json.history && json.history.length > 0) {
-        for (const entry of json.history) {
+      if (json.adjustments && json.adjustments.length > 0) {
+        // Sort by timestamp to ensure chronological order
+        const sortedAdjustments = json.adjustments.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        
+        for (const entry of sortedAdjustments) {
           cumulative += entry.amount;
           labels.push(entry.timestamp.split('T')[0]);
           data.push(cumulative);
@@ -1297,12 +1332,12 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         });
       } else {
-        showMsg('No DSPOINC history found.');
+        showMsg('No DSPOINC adjustments found.');
       }
     })
     .catch(err => {
-      console.error('Error loading DSPOINC history:', err);
-      showMsg('Could not load history. Please try again.');
+      console.error('Error loading DSPOINC adjustments:', err);
+      showMsg('Could not load adjustments. Please try again.');
     });
 });
 </script>
