@@ -747,6 +747,27 @@ require_once 'discord-invite.php';
 <!-- ⏫ Spacer to offset fixed banner height -->
 <div class="h-10"></div>
 
+<!-- 🎴 Floating NFT Verification Notification -->
+<div id="nft-verification-notification" class="fixed top-20 right-2 md:right-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 md:p-4 rounded-xl shadow-2xl z-50 max-w-[280px] md:max-w-sm transform translate-x-full transition-all duration-500 ease-out border border-purple-400/30">
+  <div class="flex items-start gap-2 md:gap-3">
+    <div class="text-xl md:text-2xl animate-bounce">🎴</div>
+    <div class="flex-1 min-w-0">
+      <h4 class="font-bold text-sm mb-1">NFT Holder?</h4>
+      <p class="text-xs text-purple-100 mb-3 leading-relaxed">Verify your NFTs to unlock exclusive Discord roles and features!</p>
+      <div class="flex gap-2">
+        <a href="/profile.html#nft-verification" 
+           class="bg-white text-purple-600 hover:bg-purple-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md">
+          🔍 Verify Now
+        </a>
+        <button onclick="dismissNFTNotification()" 
+                class="text-purple-200 hover:text-white text-xs px-2 py-1.5 rounded transition-colors hover:bg-white/10">
+          ✕
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 🧭 Sticky Navigation Bar -->
 <header class="bg-black text-white py-3 px-6 shadow-md sticky top-10 z-40 w-full">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
@@ -864,6 +885,104 @@ require_once 'discord-invite.php';
 
 <!-- ✅ Cleanly closes hero section visual layout -->
 
+<!-- 🎴 NFT Verification Section - Gateway to Profile -->
+<section class="relative py-16 px-6 bg-gradient-to-br from-purple-900 via-indigo-800 to-blue-900 text-center shadow-2xl border-t-4 border-purple-400 overflow-hidden">
+  
+  <!-- ✨ Animated Background Elements -->
+  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent opacity-30 animate-pulse pointer-events-none"></div>
+  <div class="absolute top-10 left-10 w-20 h-20 bg-purple-400 rounded-full blur-xl opacity-20 animate-bounce-slow pointer-events-none"></div>
+  <div class="absolute bottom-10 right-10 w-16 h-16 bg-blue-400 rounded-full blur-lg opacity-25 animate-bounce-slow pointer-events-none" style="animation-delay: 1s;"></div>
+  
+  <div class="max-w-4xl mx-auto relative z-10">
+    
+    <!-- 🎯 Section Header -->
+    <div class="mb-8">
+      <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-4 flex items-center justify-center gap-3">
+        <span class="text-2xl">🎴</span>
+        NFT Holder Verification
+        <span class="text-2xl">🔐</span>
+      </h2>
+      <p class="text-lg text-purple-200 max-w-2xl mx-auto">
+        Connect your Phantom wallet and verify your NFT ownership to unlock exclusive Discord roles and access to special features!
+      </p>
+    </div>
+
+    <!-- 🧀 Verification Benefits -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-purple-800/50 rounded-xl p-6 border border-purple-600 hover:border-purple-400 transition-all duration-300 hover:scale-105">
+        <div class="text-3xl mb-3">🏆</div>
+        <h3 class="text-lg font-semibold text-white mb-2">Holder Role</h3>
+        <p class="text-purple-200 text-sm">Get the exclusive "🏆 Holder" role for Genesis Genetic NFT owners</p>
+      </div>
+      
+      <div class="bg-indigo-800/50 rounded-xl p-6 border border-indigo-600 hover:border-indigo-400 transition-all duration-300 hover:scale-105">
+        <div class="text-3xl mb-3">🎴</div>
+        <h3 class="text-lg font-semibold text-white mb-2">VIP Access</h3>
+        <p class="text-indigo-200 text-sm">Unlock VIP Holder role and access to premium content</p>
+      </div>
+      
+      <div class="bg-blue-800/50 rounded-xl p-6 border border-blue-600 hover:border-blue-400 transition-all duration-300 hover:scale-105">
+        <div class="text-3xl mb-3">🔓</div>
+        <h3 class="text-lg font-semibold text-white mb-2">Special Features</h3>
+        <p class="text-blue-200 text-sm">Access to exclusive games, traits, and community features</p>
+      </div>
+    </div>
+
+    <!-- 🚀 CTA Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      
+      <!-- 🔗 Go to Profile for Verification -->
+      <a href="/profile.html#nft-verification" 
+         class="group inline-flex items-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-8 py-4 rounded-xl shadow-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-purple-500/25">
+        <span class="text-xl">🔍</span>
+        <span>Verify My NFTs</span>
+        <span class="text-sm opacity-80 group-hover:translate-x-1 transition-transform">→</span>
+      </a>
+      
+      <!-- 📱 Quick Info -->
+      <div class="text-center sm:text-left">
+        <p class="text-purple-200 text-sm mb-2">Powered by Helius APIs</p>
+        <p class="text-purple-300 text-xs opacity-80">Secure • Fast • Reliable</p>
+      </div>
+    </div>
+
+    <!-- ℹ️ How It Works -->
+    <div class="mt-8 bg-black/30 rounded-xl p-6 border border-purple-500/30 max-w-3xl mx-auto">
+      <h3 class="text-lg font-semibold text-purple-200 mb-4 flex items-center justify-center gap-2">
+        <span>🔍</span>
+        How NFT Verification Works
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-purple-200">
+        <div class="flex items-start gap-3">
+          <span class="text-purple-400 font-bold text-lg">1.</span>
+          <div>
+            <strong class="text-purple-100">Connect Wallet:</strong> Link your Phantom wallet securely
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="text-purple-400 font-bold text-lg">2.</span>
+          <div>
+            <strong class="text-purple-100">Auto-Detect:</strong> We scan for your NFT collections
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="text-purple-400 font-bold text-lg">3.</span>
+          <div>
+            <strong class="text-purple-100">Sign Message:</strong> Prove wallet ownership cryptographically
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="text-purple-400 font-bold text-lg">4.</span>
+          <div>
+            <strong class="text-purple-100">Get Roles:</strong> Receive Discord roles instantly
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 <!-- ✅ Promo Section: VIP collection + MP4 + CTA -->
 
 <section class="relative py-32 px-6 bg-gradient-to-br from-yellow-100 via-pink-50 to-white text-center shadow-inner border-t-4 border-yellow-300">
@@ -935,12 +1054,31 @@ on Magic Eden.
 The next wave is close — don't miss the real Genesis scroll.
   </p>
 
-  <!-- 🎯 Magic Eden CTA -->
-  <div class="my-12">
-    <a href="https://magiceden.io/marketplace/narrrf_genesis_vip_drop" target="_blank"
-       class="inline-block bg-black text-yellow-300 font-extrabold px-8 py-4 rounded-full shadow-xl hover:bg-yellow-300 hover:text-black transition duration-300 animate-pulse transform hover:scale-105">
-      🧀 View VIP Collection on Magic Eden →
-    </a>
+  <!-- 🎯 Magic Eden Collections CTA -->
+  <div class="my-12 space-y-4">
+    <!-- VIP Collection (SOL) -->
+    <div class="text-center">
+      <a href="https://magiceden.io/marketplace/narrrf_genesis_vip_drop" target="_blank"
+         class="inline-block bg-black text-yellow-300 font-extrabold px-8 py-4 rounded-full shadow-xl hover:bg-yellow-300 hover:text-black transition duration-300 animate-pulse transform hover:scale-105">
+        🧀 View VIP Collection on Magic Eden (SOL) →
+      </a>
+    </div>
+    
+    <!-- Special Collection (ETH) - Sponsored by Boundless8Designs -->
+    <div class="text-center">
+      <a href="https://magiceden.io/collections/ethereum/0x08b639bc48eb4615952e2c4bbdc42b60ff5e9694" target="_blank"
+         class="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white font-extrabold px-8 py-4 rounded-full shadow-xl hover:from-purple-700 hover:to-blue-700 transition duration-300 animate-pulse transform hover:scale-105">
+        🌟 Special Collection on ETH (Sponsored by Boundless8Designs) →
+      </a>
+    </div>
+    
+    <!-- Genesis Genetic Collection (SOL) -->
+    <div class="text-center">
+      <a href="https://magiceden.io/marketplace/narrrfs_world_genesis_genetic" target="_blank"
+         class="inline-block bg-gradient-to-r from-green-600 to-teal-600 text-white font-extrabold px-8 py-4 rounded-full shadow-xl hover:from-green-700 hover:to-teal-700 transition duration-300 animate-pulse transform hover:scale-105">
+        🧬 Genesis Genetic Collection (SOL) →
+      </a>
+    </div>
   </div>
 
   <!-- 🎥 MP4 Promo -->
@@ -1519,65 +1657,7 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
 </section>
 
 
-<!-- 🧠 Enhanced Lab Footer Section with Social Links & Contact -->
-<footer class="bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white py-16 px-6 mt-20 relative overflow-hidden">
-  <!-- 🧀 Footer Background Decorations -->
-  <div class="absolute inset-0 pointer-events-none">
-    <div class="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full blur-3xl opacity-10 animate-pulse"></div>
-    <div class="absolute bottom-10 right-10 w-24 h-24 bg-orange-400 rounded-full blur-2xl opacity-10 animate-pulse" style="animation-delay: 2s;"></div>
-    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-pink-400 rounded-full blur-3xl opacity-5 animate-pulse" style="animation-delay: 4s;"></div>
-  </div>
-  
-  <div class="max-w-6xl mx-auto text-center relative z-10">
-    <!-- 🧀 Footer Header -->
-    <div class="mb-12">
-      <h3 class="text-3xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">
-        🧀 Narrrf's Cheese Universe
-      </h3>
-      <p class="text-gray-300 text-lg">
-        Where gaming meets cheese innovation
-      </p>
-    </div>
-
-    <!-- Footer Nav -->
-    <div class="grid md:grid-cols-3 gap-8 mb-12 text-sm">
-      <div class="bg-gradient-to-br from-gray-800 to-gray-700 p-6 rounded-2xl border border-gray-600">
-        <h4 class="font-bold text-yellow-400 mb-4 text-lg">Quick Links</h4>
-        <ul class="space-y-3 text-gray-300">
-          <li><a href="index.html" class="hover:text-yellow-400 transition-colors duration-200 flex items-center"><span class="mr-2">🏠</span>Home</a></li>
-          <li><a href="whitepaper.html" class="hover:text-yellow-400 transition-colors duration-200 flex items-center"><span class="mr-2">📜</span>Read the Whitepaper</a></li>
-          <li><a href="mint.html" class="hover:text-yellow-400 transition-colors duration-200 flex items-center"><span class="mr-2">🎨</span>Mint Your NFT</a></li>
-          <li><a href="get-roles.html" class="hover:text-yellow-400 transition-colors duration-200 flex items-center"><span class="mr-2">🎭</span>Get Roles</a></li>
-        </ul>
-      </div>
-      <div class="bg-gradient-to-br from-gray-800 to-gray-700 p-6 rounded-2xl border border-gray-600">
-        <h4 class="font-bold text-orange-400 mb-4 text-lg">Socials</h4>
-        <ul class="space-y-3 text-gray-300">
-          <li><a href="https://twitter.com/narrrf12345" target="_blank" class="hover:text-orange-400 transition-colors duration-200 flex items-center"><span class="mr-2">🐦</span>Twitter / X</a></li>
-                          <li><a href="<?php echo $discord_url; ?>" target="_blank" class="hover:text-orange-400 transition-colors duration-200 flex items-center"><span class="mr-2">🎮</span>Join Discord</a></li>
-          <li><a href="https://play.clubgg.com/dlink/TN4oRnWBK356PWat5" target="_blank" class="hover:text-orange-400 transition-colors duration-200 flex items-center"><span class="mr-2">🃏</span>Poker ClubGG</a></li>
-        </ul>
-      </div>
-      <div class="bg-gradient-to-br from-gray-800 to-gray-700 p-6 rounded-2xl border border-gray-600">
-        <h4 class="font-bold text-pink-400 mb-4 text-lg">Contact</h4>
-        <ul class="space-y-3 text-gray-300">
-          <li class="flex items-center"><span class="mr-2">📧</span>Email: Open a Ticket in Discord</li>
-          <li class="flex items-center"><span class="mr-2">🌍</span>Web3 Only – Austria Based</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 🧀 Footer Bottom -->
-    <div class="border-t border-gray-700 pt-8">
-      <p class="text-sm text-gray-400">
-        &copy; 2025 Narrrf's World. Built with brain & cheese 🧠🧀
-      </p>
-      <p class="text-xs text-gray-500 mt-2">
-        🚀 Powered by the ultimate cheese gaming technology
-      </p>
-    </div>
-  </div>
-</footer>
+<!-- 🧀 Footer removed - consolidated into single footer below -->
 
 <!-- ✅ Wallet Connect & Avatar -->
 <script src="js/wallet.js"></script>
@@ -1841,18 +1921,90 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
   </div>
 </section>
 
-<footer class="text-center text-xs text-yellow-600 py-4 mt-12">
-  🧠 Powered by Cheese Architect 12.0 — HTML Brain of Narrrf's World<br>
-  🧀 Brain Sync 12.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊<br>
-  🧀 Built with brain & cheese · Genesis 12.0 Protocol Active
+<!-- 🍩 Footer GENESIS 12.0 - Enhanced Cheese Universe Footer -->
+<footer class="text-center mt-16 mb-10">
+  <!-- Back to Top Link -->
+  <div class="mb-6">
+    <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition-colors duration-200">
+      🔝 Back to Top
+    </a>
+  </div>
+  
+  <!-- 🧀 Narrrf's Cheese Universe Section -->
+  <div class="mb-8 p-6 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 rounded-xl border border-yellow-300/30">
+    <div class="text-lg font-bold text-yellow-800 mb-4">
+      🧀 Narrrf's Cheese Universe
+    </div>
+    <div class="text-sm text-yellow-700 mb-6">
+      Where gaming meets cheese innovation
+    </div>
+    
+    <!-- Quick Links -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <a href="/index.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        🏠 Home
+      </a>
+      <a href="/whitepaper-pro.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        📜 Read the Whitepaper
+      </a>
+      <a href="/mint.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        🎨 Mint Your NFT
+      </a>
+      <a href="/profile.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        🎭 Get Roles
+      </a>
+    </div>
+    
+    <!-- Socials -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium">
+        🐦 Twitter / X
+      </a>
+                     <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
+                 🎮 Join Discord
+               </a>
+      <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-800 transition-colors duration-200 font-medium">
+        🃏 Poker ClubGG
+      </a>
+                     <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
+                 📧 Open a Ticket
+               </a>
+    </div>
+    
+    <!-- Contact & Location -->
+    <div class="text-xs text-yellow-600/80 mb-4">
+      🌍 Web3 Only – Austria Based
+    </div>
+  </div>
+  
+  <!-- Legal & Important Links - More Prominent -->
+  <div class="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-lg border border-blue-200/30">
+    <div class="text-sm font-semibold text-blue-800 mb-3">
+      📋 Important Legal & Support Links
+    </div>
+    <div class="flex flex-wrap justify-center gap-6 text-sm">
+      <a href="/privacy-policy.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+        🍪 Privacy Policy
+      </a>
+      <a href="/faq.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+        ❓ FAQ
+      </a>
+      <a href="/profile.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+        👤 Profile
+      </a>
+    </div>
+  </div>
+  
+  <!-- Copyright & Branding -->
+  <div class="pt-6 border-t border-yellow-600/30 text-xs text-yellow-600/80">
+    <div class="mb-2">
+      © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
+    </div>
+    <div class="text-yellow-500/70">
+      🚀 Powered by the ultimate cheese gaming technology
+    </div>
+  </div>
 </footer>
-<!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
-<!-- 🔐 Do not remove unless instructed by the Over Brain. -->
-<div class="text-center mt-20 mb-10">
-  <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition">
-    🔝 Back to Top
-  </a>
-</div>
 <noscript>
   <div class="bg-red-100 text-center text-red-600 py-2 font-bold">
     JavaScript is required to experience Narrrf's World. Please enable JS!
@@ -2726,8 +2878,207 @@ function handleHDRDragEnd() {
       statusBar.remove();
     }
   }
+
+  // 🎴 NFT Verification Personalization Script
+  document.addEventListener('DOMContentLoaded', async function() {
+    // 🍪 Initialize Cookie Consent Banner
+    initializeCookieConsent();
+    
+    try {
+      // Check if user is logged in by trying to fetch profile
+      const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (res.ok) {
+        const user = await res.json();
+        if (user.discord_id) {
+          // User is logged in - personalize the NFT verification section
+          personalizeNFTVerification(user);
+        }
+      }
+    } catch (error) {
+      // User not logged in or error - keep default state
+      console.log('User not logged in, showing default NFT verification section');
+    }
+  });
+
+  // 🍪 Cookie Consent Management
+  function initializeCookieConsent() {
+    const banner = document.getElementById('cookie-consent-banner');
+    const spacer = document.getElementById('cookie-banner-spacer');
+    
+    // Check if user has already made a choice
+    const cookieChoice = localStorage.getItem('cookie-consent');
+    
+    if (cookieChoice) {
+      // User has already made a choice - hide banner and adjust spacing
+      hideCookieBanner();
+    } else {
+      // Show banner and adjust spacing
+      showCookieBanner();
+    }
+    
+    // Add event listeners
+    document.getElementById('cookie-accept')?.addEventListener('click', acceptAllCookies);
+    document.getElementById('cookie-decline')?.addEventListener('click', declineNonEssentialCookies);
+  }
+  
+  function acceptAllCookies() {
+    localStorage.setItem('cookie-consent', 'accepted');
+    localStorage.setItem('cookie-preferences', JSON.stringify({
+      essential: true,
+      analytics: true,
+      marketing: true,
+      timestamp: new Date().toISOString()
+    }));
+    
+    hideCookieBanner();
+    showCookieSuccess('All cookies accepted! 🍪');
+  }
+  
+  function declineNonEssentialCookies() {
+    localStorage.setItem('cookie-consent', 'declined');
+    localStorage.setItem('cookie-preferences', JSON.stringify({
+      essential: true,
+      analytics: false,
+      marketing: false,
+      timestamp: new Date().toISOString()
+    }));
+    
+    hideCookieBanner();
+    showCookieSuccess('Only essential cookies enabled! 🔒');
+  }
+  
+  function hideCookieBanner() {
+    const banner = document.getElementById('cookie-consent-banner');
+    const spacer = document.getElementById('cookie-banner-spacer');
+    
+    if (banner) {
+      banner.style.transform = 'translateY(-100%)';
+      setTimeout(() => {
+        banner.style.display = 'none';
+        if (spacer) spacer.style.display = 'none';
+      }, 500);
+    }
+  }
+  
+  function showCookieBanner() {
+    const banner = document.getElementById('cookie-consent-banner');
+    const spacer = document.getElementById('cookie-banner-spacer');
+    
+    if (banner) {
+      banner.style.display = 'block';
+      banner.style.transform = 'translateY(0)';
+      if (spacer) spacer.style.display = 'block';
+    }
+  }
+  
+  function showCookieSuccess(message) {
+    // Create temporary success notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in max-w-sm';
+    notification.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span>✅</span>
+        <span>${message}</span>
+        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white hover:text-gray-200 text-lg">×</button>
+      </div>
+    `;
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 4000);
+  }
+
+  // 🎴 NFT Verification Personalization Function
+  function personalizeNFTVerification(user) {
+    // Find the NFT verification section
+    const nftSection = document.querySelector('section[id="nft-verification"]');
+    if (!nftSection) return;
+
+    // Add a personalized welcome banner
+    const welcomeBanner = document.createElement('div');
+    welcomeBanner.className = 'mb-6 bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-4 border-2 border-green-400 shadow-lg';
+    welcomeBanner.innerHTML = `
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">👋</span>
+          <div>
+            <h3 class="text-white font-bold">Welcome back, ${user.discord_name || 'Cheese Lord'}!</h3>
+            <p class="text-green-100 text-sm">Ready to verify your NFTs and unlock exclusive roles?</p>
+          </div>
+        </div>
+        <a href="/profile.html#nft-verification" 
+           class="bg-white text-green-600 hover:bg-green-50 font-semibold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105">
+          🔍 Go Verify
+        </a>
+      </div>
+    `;
+
+    // Insert the welcome banner at the top of the section
+    const sectionContent = nftSection.querySelector('.max-w-4xl');
+    if (sectionContent) {
+      sectionContent.insertBefore(welcomeBanner, sectionContent.firstChild);
+    }
+
+    // Update the main CTA button to be more personalized
+    const mainCTA = nftSection.querySelector('a[href="/profile.html#nft-verification"]');
+    if (mainCTA) {
+      mainCTA.innerHTML = `
+        <span class="text-xl">🚀</span>
+        <span>Continue to Profile & Verify</span>
+        <span class="text-sm opacity-80 group-hover:translate-x-1 transition-transform">→</span>
+      `;
+      mainCTA.className = mainCTA.className.replace('from-purple-500 to-pink-500', 'from-green-500 to-blue-500');
+      mainCTA.className = mainCTA.className.replace('hover:from-purple-600 hover:to-pink-600', 'hover:from-green-600 hover:to-blue-600');
+    }
+  }
 </script>
 
+<!-- 🍪 Cookie Consent Banner - GDPR Compliant -->
+<div id="cookie-consent-banner" class="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900 text-white p-4 shadow-2xl z-50 border-b-2 border-blue-400 transform transition-transform duration-500 ease-out">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex-1 text-center md:text-left">
+      <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
+        <span class="text-2xl">🍪</span>
+        <h3 class="text-lg font-semibold">Cookie Policy</h3>
+      </div>
+      <p class="text-sm text-blue-100 leading-relaxed">
+        We use cookies and similar technologies to provide you with the best experience on our website. 
+        This includes essential cookies for authentication, session management, and website functionality. 
+        By clicking "Accept All", you consent to our use of cookies as described in our 
+        <a href="/privacy-policy.html" class="text-yellow-300 hover:text-yellow-200 underline font-semibold">Privacy Policy</a>.
+      </p>
+      <div class="mt-2">
+        <a href="/privacy-policy.html" class="text-xs text-blue-200 hover:text-blue-100 underline">
+          📖 Read Full Privacy Policy
+        </a>
+      </div>
+    </div>
+    
+    <div class="flex flex-col sm:flex-row gap-3 items-center">
+      <button id="cookie-decline" 
+              class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors duration-200 border border-gray-500">
+        Decline Non-Essential
+      </button>
+      <button id="cookie-accept" 
+              class="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg font-semibold text-sm transition-all duration-200 transform hover:scale-105 shadow-lg">
+        Accept All Cookies
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ⏫ Spacer to offset fixed banner height -->
+<div id="cookie-banner-spacer" class="h-24 md:h-20"></div>
+
+<!-- 🍩 Footer removed - integrated into main footer section above -->
 </body>
 </html>
 

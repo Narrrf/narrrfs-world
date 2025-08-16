@@ -1,9 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php
-// Include Discord invite configuration
-require_once 'discord-invite.php';
-?>
 <head>
   <!-- Meta Essentials -->
   <meta charset="UTF-8" />
@@ -44,63 +40,17 @@ require_once 'discord-invite.php';
   </style>
 </head>
 
-
 <body class="relative bg-gradient-to-br from-purple-50 to-pink-100 text-gray-900 font-sans overflow-x-hidden min-h-screen">
 
-<!-- 
-🧪 LAB NOTE: PROJECT-UPDATES.HTML (Ultra Edition)
-------------------------------------------------------------
-🌉 Web3-to-Web2 Bridge — connecting trait-based wallets to HTML content.
+<!-- 🧪 LAB NOTE: PROJECT-UPDATES.HTML (Ultra Edition) -->
+<!-- 🌉 Web3-to-Web2 Bridge — connecting trait-based wallets to HTML content -->
+<!-- 📌 Purpose: Display dynamic project updates -->
+<!-- 💾 Backend Systems: wallet_traits, trait_content_access, project_updates -->
+<!-- 🧠 SQL STRUCTURE IDEA: Tables for wallet traits and content access -->
+<!-- 🔥 5-Year-Old Dev Reminder: Use PHP if-statements for trait-based content -->
+<!-- ✅ No blockchain interaction needed — traits come from synced DB -->
+<!-- 🗂️ All paths: /img/ + /sounds/ -->
 
-📌 Purpose:
-- Display dynamic project updates
-- Optionally hide/show parts of this page based on wallet traits, NFT class, or Discord roles
-- Can be powered fully with PHP + SQL — no JS required
-
-💾 Backend Systems:
-- `wallet_traits`: (wallet, trait)
-- `trait_content_access`: (trait, content_id, visible)
-- `project_updates`: (title, body, visibleTo)
-
-🧠 SQL STRUCTURE IDEA
--- Who owns what trait
-Table: wallet_traits
-wallet TEXT
-trait TEXT -- e.g., "oracle", "map-unlocked"
-
--- What content is linked to which trait
-Table: trait_content_access
-trait TEXT
-content_id TEXT
-visible BOOLEAN
-
-Then in PHP:
-
-php
-
-<?php
-$wallet = $_SESSION['wallet']; // Already connected?
-$traits = getTraits($wallet);  // e.g. ['oracle', 'easter-map']
-
-if (in_array('easter-map', $traits)) {
-  include('map-easteregg.php');
-}
-?>
-
-🧠 Interactions You Can Build:
-- Unlock maps, lore, visuals based on NFT traits
-- Gate sections with PHP: if user has trait → show special HTML
-- Use walletConnect only to grab walletAddress, then switch to PHP
-- Players with role "Chaos Cartographer" = unlock secret dev map
-- Users with trait "riddle-solved-3" = see bonus update or easter egg
-
-🔥 5-Year-Old Dev Reminder:
-"If I want something to show only for someone special, I write a PHP if-statement with their trait name. No JS needed. Just cheese and logic."
-
-✅ No blockchain interaction needed — traits come from synced DB (backed by snapshot or API).
-
-🗂️ All paths: /img/ + /sounds/
--->
 <!-- 🧪 $SPOINC Badge -->
 <div class="fixed top-4 left-4 z-50 bg-pink-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg animate-pulse">
   🧪 Cooked with $SPOINC
@@ -151,6 +101,7 @@ if (in_array('easter-map', $traits)) {
 <!-- Removed duplicate button and made the code cleaner -->
 
 <!-- 🧠 MasterChief Style: Lab Neon Header Frame (Optimized July 2025) -->
+<main class="relative z-10 max-w-4xl mx-auto py-12 px-6 space-y-12 pb-40">
 <div class="relative bg-gradient-to-r from-pink-100 via-purple-100 to-yellow-50 p-8 md:p-10 rounded-3xl shadow-xl border-4 border-yellow-300 drop-shadow-md mb-12 flex flex-col items-center justify-center">
   <!-- Neon Orbs (Balanced Left & Right) -->
   <div class="absolute -top-3 left-8 w-4 h-4 bg-pink-400 rounded-full animate-bounce-slow blur-sm opacity-70"></div>
@@ -252,15 +203,7 @@ if (in_array('easter-map', $traits)) {
 
 </main> <!-- ✅ CLOSES THE <main> TAG CORRECTLY -->
 
-<!-- ✅ Footer -->
-<footer class="text-center py-6 text-sm text-purple-700">
-  <!-- 🧠 5-Year-Old Dev Reminder for Masterchief SQL :
-If you ever want to make this list dynamic, ask the SQL wizard (Brian 3.1 style):
-"Can we load these dev logs from a table called project_updates or cheese_tasks?"
-Then let the PHP file echo each one. Or just ping Brain 3.1.
--->
-              Made with 🧀 & Dev Logs in Narrrf's Lab | <a href="<?php echo $discord_url; ?>" class="underline text-pink-600">Join us on Discord</a>
-</footer>
+
 
 <!-- Global Wallet Connect + PFP Script -->
 <script>
@@ -357,17 +300,92 @@ Ensure endpoint `/api/track-egg-click` writes to `tbl_cheese_clicks`:
 ---------------------------------------------------------
 🧪 Certified by Narrrf | Last Updated: 2025-04-03 – Brain 3.1 Approved
 ---------------------------------------------------------
--->
--->
 
 <!-- ======================================== -->
 <!-- 🧠 HTML Brain 4.0 Footer Lab Declaration -->
 <!-- ======================================== -->
-<footer class="text-center text-xs text-yellow-600 py-4 mt-12">
-  🧠 Powered by Cheese Architect 12.0 — HTML Brain of Narrrf's World<br>
-  🧀 Brain Sync 12.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊<br>
-  🧀 Built with brain & cheese · Genesis 12.0 Protocol Active
-  🧀 Brain Sync 9.0 Confirmed · Last Update: 2025 · Guided by the Corebrain 📊
+<footer class="text-center mt-16 mb-10">
+  <!-- Back to Top Link -->
+  <div class="mb-6">
+    <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition-colors duration-200">
+      🔝 Back to Top
+    </a>
+  </div>
+  
+  <!-- 🧀 Narrrf's Cheese Universe Section -->
+  <div class="mb-8 p-6 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 rounded-xl border border-yellow-300/30">
+    <div class="text-lg font-bold text-yellow-800 mb-4">
+      🧀 Narrrf's Cheese Universe
+    </div>
+    <div class="text-sm text-yellow-700 mb-6">
+      Where gaming meets cheese innovation
+    </div>
+    
+    <!-- Quick Links -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <a href="/index.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        🏠 Home
+      </a>
+      <a href="/whitepaper-pro.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        📜 Read the Whitepaper
+      </a>
+      <a href="/mint.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        🎨 Mint Your NFT
+      </a>
+      <a href="/profile.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        🎭 Get Roles
+      </a>
+    </div>
+    
+    <!-- Socials -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium">
+        🐦 Twitter / X
+      </a>
+      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
+        🎮 Join Discord
+      </a>
+      <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-800 transition-colors duration-200 font-medium">
+        🃏 Poker ClubGG
+      </a>
+      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
+        📧 Open a Ticket
+      </a>
+    </div>
+    
+    <!-- Contact & Location -->
+    <div class="text-xs text-yellow-600/80 mb-4">
+      🌍 Web3 Only – Austria Based
+    </div>
+  </div>
+  
+  <!-- Legal & Important Links - More Prominent -->
+  <div class="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-lg border border-blue-200/30">
+    <div class="text-sm font-semibold text-blue-800 mb-3">
+      📋 Important Legal & Support Links
+    </div>
+    <div class="flex flex-wrap justify-center gap-6 text-sm">
+      <a href="/privacy-policy.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+        🍪 Privacy Policy
+      </a>
+      <a href="/faq.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+        ❓ FAQ
+      </a>
+      <a href="/profile.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+        👤 Profile
+      </a>
+    </div>
+  </div>
+  
+  <!-- Copyright & Branding -->
+  <div class="pt-6 border-t border-yellow-600/30 text-xs text-yellow-600/80">
+    <div class="mb-2">
+      © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
+    </div>
+    <div class="text-yellow-500/70">
+      🚀 Powered by the ultimate cheese gaming technology
+    </div>
+  </div>
 </footer>
 <!-- 🧬 This marks the official footer of every riddle-enabled HTML interface. -->
 <!-- 🔐 Do not remove unless instructed by the Over Brain. -->

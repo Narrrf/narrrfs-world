@@ -161,6 +161,43 @@ require_once 'discord-invite.php';
   </div>
 </header>
 
+<!-- 🍪 Cookie Consent Banner - GDPR Compliant -->
+<div id="cookie-consent-banner" class="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900 text-white p-4 shadow-2xl z-50 border-b-2 border-blue-400 transform transition-transform duration-500 ease-out">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex-1 text-center md:text-left">
+      <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
+        <span class="text-2xl">🍪</span>
+        <h3 class="text-lg font-semibold">Cookie Policy</h3>
+      </div>
+      <p class="text-sm text-blue-100 leading-relaxed">
+        We use cookies and similar technologies to provide you with the best experience on our website. 
+        This includes essential cookies for authentication, session management, and website functionality. 
+        By clicking "Accept All", you consent to our use of cookies as described in our 
+        <a href="/privacy-policy.html" class="text-yellow-300 hover:text-yellow-200 underline font-semibold">Privacy Policy</a>.
+      </p>
+      <div class="mt-2">
+        <a href="/privacy-policy.html" class="text-xs text-blue-200 hover:text-blue-100 underline">
+          📖 Read Full Privacy Policy
+        </a>
+      </div>
+    </div>
+    
+    <div class="flex flex-col sm:flex-row gap-3 items-center">
+      <button id="cookie-decline" 
+              class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors duration-200 border border-gray-500">
+        Decline Non-Essential
+      </button>
+      <button id="cookie-accept" 
+              class="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg font-semibold text-sm transition-all duration-200 transform hover:scale-105 shadow-lg">
+        Accept All Cookies
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ⏫ Spacer to offset fixed banner height -->
+<div id="cookie-banner-spacer" class="h-24 md:h-20"></div>
+
 <!-- VIP Section: Grouped and spaced -->
 <div id="vipSection" class="flex flex-col items-center gap-3 mb-6 mt-4 hidden">
   <div class="bg-yellow-100 border-2 border-yellow-300 px-6 py-3 rounded-xl font-bold text-yellow-900 shadow mb-1 text-center">
@@ -308,7 +345,7 @@ require_once 'discord-invite.php';
 </section>
 
 <!-- 🎴 Web3 Wallet Verification Section -->
-<section class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-6 shadow-2xl my-20 relative">
+<section id="nft-verification" class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-6 shadow-2xl my-20 relative">
   <!-- ✅ Fully Functional Badge -->
   <div class="absolute -top-4 -right-4 rotate-6 bg-green-400 text-black text-xs font-extrabold px-3 py-1 rounded-full shadow-lg z-10 animate-pulse ring-2 ring-green-300">
     ✅ Fully Functional
@@ -609,15 +646,6 @@ require_once 'discord-invite.php';
   </div>
 </section>
 
-<!-- 🍩 Footer GENESIS 12.0 -->
-<footer class="text-center mt-16 text-xs text-yellow-600">
-  Powered by 🧀 Cheese Architect <b>12.0</b> · Genesis Protocol · Discord + Game + Wallet Sync Engine 🌍<br>
-  <span class="opacity-70">
-    Vault Synced | 2025 | Scroll-Safe for 100 Years of Cheese | 
-                    <a href="<?php echo $discord_url; ?>" class="underline text-pink-500 hover:text-pink-600">Join Discord</a>
-  </span>
-</footer>
-
 <!-- 🔑 Fallback Login Button -->
 <div id="loginBlock" class="mt-6 text-center">
   <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
@@ -627,35 +655,12 @@ require_once 'discord-invite.php';
   <p class="mt-2 text-xs text-gray-400 italic">When the Grumpy Cheese gives no love, this does.</p>
 </div>
 
-
-
+<!-- 🧪 Back to Lab Button -->
 <div class="w-full flex justify-center mt-6">
   <a href="/index.html"
      class="bg-yellow-500 text-white px-5 py-2 rounded-full shadow hover:bg-yellow-600 text-sm sm:text-base text-center">
     🧪 Back to the Lab
   </a>
-</div>
-
-  
-  <!-- 🔑 Login / Sync -->
-  <!-- <a href="/profile.html" class="bg-indigo-500 text-white px-5 py-2 rounded-full shadow hover:bg-indigo-600 text-sm sm:text-base w-full sm:w-auto text-center">
-    🔑 Login / Sync Profile
-  </a> -->
-
-  <!-- 🧬 View Traits -->
-  <!-- <a href="#traits" class="bg-pink-500 text-white px-5 py-2 rounded-full shadow hover:bg-pink-600 text-sm sm:text-base w-full sm:w-auto text-center">
-    🧬 View Traits
-  </a> -->
-
-  <!-- 🚪 Portals -->
-  <!-- <a href="#portals" class="bg-blue-500 text-white px-5 py-2 rounded-full shadow hover:bg-blue-600 text-sm sm:text-base w-full sm:w-auto text-center">
-    🚪 Open Portals
-  </a> -->
-
-  <!-- 💰 Wallet -->
-  <!-- <a href="#wallet" class="bg-purple-500 text-white px-5 py-2 rounded-full shadow hover:bg-purple-600 text-sm sm:text-base w-full sm:w-auto text-center">
-    💰 Manage Wallet
-  </a> -->
 </div>
 
   <!-- 🌀 Cheese Portal to Hytopia -->
@@ -668,14 +673,15 @@ require_once 'discord-invite.php';
           🧀 Portal Closed · Opening Soon!
         </div>
       </div>
+    </div>
+  </a>
+      </div>
       
 <!-- 🔐 Dynamic Fetch Script logged in or not -->
 <!-- 👑 VIP Logic + Trophy Shelf (KEEP AS IS) -->
-<!-- 🔐 Dynamic Fetch Script logged in or not -->
 <!-- Patched profile.html by Cheese Architect 🧀✨ -->
+<!-- Patched profile.html with working fetch logic 🧠 -->
 
-<!-- Patched profile.html with working fetch logic 🧠 -->
-<!-- Patched profile.html with working fetch logic 🧠 -->
 <script>
 const trophies = {
   "VIP Holder": { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
@@ -771,6 +777,9 @@ function goToAdminInterface() {
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
+  // 🍪 Initialize Cookie Consent Banner
+  initializeCookieConsent();
+  
   const avatar = document.getElementById('avatar');
   const loginLink = document.getElementById('login-link');
 
@@ -873,6 +882,53 @@ document.addEventListener("DOMContentLoaded", async function () {
      if (user.discord_id) {
        showElement('dspoincJourneySection');
        hideElement('dspoincLoginPrompt');
+       
+       // 🧀 Populate DSPOINC Journey data immediately
+       try {
+         // Set DSPOINC balance in the journey section
+         const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
+         if (dspoincJourneyEl) {
+           const dspoincBalance = user.stats?.scoreAdjustments || 0;
+           dspoincJourneyEl.textContent = dspoincBalance.toLocaleString();
+           console.log('✅ DSPOINC Journey balance set to:', dspoincBalance);
+         }
+         
+         // Fetch and display recent adjustments
+         fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
+           .then(res => res.json())
+           .then(response => {
+             const recentList = document.getElementById('recentAdjustments');
+             const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+
+             if (recentList) {
+               if (adjustments.length > 0) {
+                 recentList.innerHTML = adjustments
+                   .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                   .slice(0, 10)
+                   .map(a =>
+                     `<li>
+                       <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
+                       : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
+                       <span class="italic">(${a.reason || a.action})</span>
+                     </li>`
+                   ).join('');
+                 console.log('✅ Recent adjustments loaded:', adjustments.length);
+               } else {
+                 recentList.innerHTML = '<li class="text-gray-400">No recent score changes</li>';
+                 console.log('ℹ️ No recent adjustments found');
+               }
+             }
+           })
+           .catch((error) => {
+             console.error('Error fetching recent adjustments:', error);
+             const recentList = document.getElementById('recentAdjustments');
+             if (recentList) {
+               recentList.innerHTML = '<li class="text-red-400">Could not load recent changes</li>';
+             }
+           });
+       } catch (e) {
+         console.error('Error populating DSPOINC Journey:', e);
+       }
      } else {
        hideElement('dspoincJourneySection');
        showElement('dspoincLoginPrompt');
@@ -1251,164 +1307,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+</script>
+
 <script>
-document.addEventListener('DOMContentLoaded', async function() {
-  let user = {};
-  let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
-
-  // Only proceed if user is logged in
-  if (!userId) {
-    console.log('User not logged in, skipping DSPOINC data fetch');
-    return;
-  }
-
-  try {
-    // Fetch user profile and set balances
-    const res = await fetch('/api/user/profile.php?user_id=' + encodeURIComponent(userId));
-    user = await res.json();
-
-    if (user.error) {
-      console.error('Error fetching user profile:', user.error);
-      return;
-    }
-
-    // Set DSPOINC balance - ensure it matches points adjustments
-    const dspoincEl = document.getElementById('user-dspoinc');
-    const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
-    
-    // Debug: Log all available user data for DSPOINC calculation
-    console.log('User data for DSPOINC calculation:', {
-      total_dspoinc: user.total_dspoinc,
-      stats_scoreAdjustments: user.stats?.scoreAdjustments,
-      stats_sources: user.stats?.sources,
-      raw_user_data: user
-    });
-    
-    // Use the correct field from user data - should match points adjustments
-    // Priority: total_dspoinc > stats.scoreAdjustments > 0
-    const dspoincBalance = user.total_dspoinc || user.stats?.scoreAdjustments || 0;
-    
-    if (dspoincEl) dspoincEl.textContent = dspoincBalance.toLocaleString();
-    if (dspoincJourneyEl) dspoincJourneyEl.textContent = dspoincBalance.toLocaleString();
-    
-    console.log('Final DSPOINC Balance set to:', dspoincBalance);
-    console.log('This should match the points adjustments from the user stats');
-    
-    // Verify DSPOINC balance matches points adjustments
-    if (user.stats?.scoreAdjustments !== undefined) {
-      const pointsAdjustments = user.stats.scoreAdjustments;
-      if (dspoincBalance === pointsAdjustments) {
-        console.log('✅ DSPOINC Balance matches points adjustments:', dspoincBalance);
-      } else {
-        console.warn('⚠️ DSPOINC Balance does NOT match points adjustments:', {
-          dspoincBalance,
-          pointsAdjustments,
-          difference: dspoincBalance - pointsAdjustments
-        });
-      }
-    } else {
-      console.log('ℹ️ No points adjustments data available for comparison');
-    }
-
-    // Fetch recent adjustments to show in the journey section
-    if (user.discord_id) {
-      fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
-        .then(res => res.json())
-        .then(response => {
-          const recentList = document.getElementById('recentAdjustments');
-          const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
-
-          if (recentList) {
-            if (adjustments.length > 0) {
-              recentList.innerHTML = adjustments
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                .slice(0, 10)
-                .map(a =>
-                  `<li>
-                    <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                    : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
-                    <span class="italic">(${a.reason || a.action})</span>
-                  </li>`
-                ).join('');
-            } else {
-              recentList.innerHTML = '<li class="text-gray-400">No recent score changes</li>';
-            }
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching recent adjustments:', error);
-          const recentList = document.getElementById('recentAdjustments');
-          if (recentList) {
-            recentList.innerHTML = '<li class="text-red-400">Could not load recent changes</li>';
-          }
-        });
-    }
-
-  } catch (e) { 
-    console.error('Error in DSPOINC data fetch:', e);
-  }
-});
-
-
-  // 2. Load and display quests for this user
-  if (userId) {
-    try {
-      const res = await fetch('/api/user/quests.php?user_id=' + encodeURIComponent(userId));
-      const data = await res.json();
-      const questList = document.getElementById('user-quests-list');
-      if (!questList) return;
-
-      if (!data.quests || !data.quests.length) {
-        questList.innerHTML = '<div class="text-gray-400">No quests found.</div>';
-        return;
-      }
-
-      questList.innerHTML = data.quests.map(q => `
-        <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
-          <div class="flex-1 min-w-0">
-            <div class="font-bold text-lg text-yellow-200 mb-1">
-              ${q.type === "Custom" ? "📝 Custom Quest" : "🐦 Twitter Quest"}
-            </div>
-            <div class="mb-1 break-words">${q.description}</div>
-            ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank">Open Link</a>` : ''}
-            <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
-          </div>
-          <div class="flex flex-col items-end gap-2 min-w-[140px]">
-            <span class="px-3 py-1 rounded-full text-xs font-semibold 
-              ${q.is_active ? 'bg-green-600' : 'bg-gray-600'} text-white">
-              ${q.is_active ? 'Active' : 'Closed'}
-            </span>
-            <span class="px-3 py-1 rounded-full text-xs font-semibold 
-              ${
-                q.claim_status === "approved" ? 'bg-green-500'
-                : q.claim_status === "rejected" ? 'bg-red-500'
-                : q.claim_status === "pending" ? 'bg-yellow-400 text-gray-900'
-                : 'bg-gray-700'
-              }">
-              ${
-                q.claim_status === "approved" ? 'Claimed & Rewarded'
-                : q.claim_status === "rejected" ? 'Rejected'
-                : q.claim_status === "pending" ? 'Pending Review'
-                : 'Not Claimed'
-              }
-            </span>
-            ${q.claimed_at ? `<span class="text-xs text-gray-300 text-right">Claimed at:<br>${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
-            ${
-              q.is_active && !q.claim_status
-                ? `<button onclick="claimQuest('${q.quest_id}', this)" class="mt-2 px-4 py-1 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg font-semibold text-xs transition whitespace-nowrap">
-                    Claim Quest
-                  </button>`
-                : ''
-            }
-          </div>
-        </div>
-      `).join('');
-    } catch (e) {
-      const questList = document.getElementById('user-quests-list');
-      if (questList) questList.innerHTML = '<div class="text-red-400">Failed to load quests.</div>';
-    }
-  }
-});
+// 🧀 DSPOINC Journey logic consolidated into main profile fetch script above
 
 // --- Claim Quest: Exposed for onclick ---
 window.claimQuest = async function(questId, btn) {
@@ -1858,6 +1760,185 @@ async function connectWallet() {
   }
 }
 </script>
+
+<script>
+// 🍪 Cookie Consent Management
+function initializeCookieConsent() {
+  const banner = document.getElementById('cookie-consent-banner');
+  const spacer = document.getElementById('cookie-banner-spacer');
+  
+  // Check if user has already made a choice
+  const cookieChoice = localStorage.getItem('cookie-consent');
+  
+  if (cookieChoice) {
+    // User has already made a choice - hide banner and adjust spacing
+    hideCookieBanner();
+  } else {
+    // Show banner and adjust spacing
+    showCookieBanner();
+  }
+  
+  // Add event listeners
+  document.getElementById('cookie-accept')?.addEventListener('click', acceptAllCookies);
+  document.getElementById('cookie-decline')?.addEventListener('click', declineNonEssentialCookies);
+}
+
+function acceptAllCookies() {
+  localStorage.setItem('cookie-consent', 'accepted');
+  localStorage.setItem('cookie-preferences', JSON.stringify({
+    essential: true,
+    analytics: true,
+    marketing: true,
+    timestamp: new Date().toISOString()
+  }));
+  
+  hideCookieBanner();
+  showCookieSuccess('All cookies accepted! 🍪');
+}
+
+function declineNonEssentialCookies() {
+  localStorage.setItem('cookie-consent', 'declined');
+  localStorage.setItem('cookie-preferences', JSON.stringify({
+    essential: true,
+    analytics: false,
+    marketing: false,
+    timestamp: new Date().toISOString()
+  }));
+  
+  hideCookieBanner();
+  showCookieSuccess('Only essential cookies enabled! 🔒');
+}
+
+function hideCookieBanner() {
+  const banner = document.getElementById('cookie-consent-banner');
+  const spacer = document.getElementById('cookie-banner-spacer');
+  
+  if (banner) {
+    banner.style.transform = 'translateY(-100%)';
+    setTimeout(() => {
+      banner.style.display = 'none';
+      if (spacer) spacer.style.display = 'none';
+    }, 500);
+  }
+}
+
+function showCookieBanner() {
+  const banner = document.getElementById('cookie-consent-banner');
+  const spacer = document.getElementById('cookie-banner-spacer');
+  
+  if (banner) {
+    banner.style.display = 'block';
+    banner.style.transform = 'translateY(0)';
+    if (spacer) spacer.style.display = 'block';
+  }
+}
+
+function showCookieSuccess(message) {
+  // Create temporary success notification
+  const notification = document.createElement('div');
+  notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in max-w-sm';
+  notification.innerHTML = `
+    <div class="flex items-center gap-2">
+      <span>✅</span>
+      <span>${message}</span>
+      <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white hover:text-gray-200 text-lg">×</button>
+    </div>
+  `;
+  document.body.appendChild(notification);
+  
+  // Auto-remove after 4 seconds
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.remove();
+    }
+  }, 4000);
+}
+</script>
+
+<!-- 🍩 Footer GENESIS 12.0 - Enhanced Cheese Universe Footer -->
+<footer class="text-center mt-16 mb-10">
+  <!-- Back to Top Link -->
+  <div class="mb-6">
+    <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition-colors duration-200">
+      🔝 Back to Top
+    </a>
+  </div>
+  
+  <!-- 🧀 Narrrf's Cheese Universe Section -->
+  <div class="mb-8 p-6 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 rounded-xl border border-yellow-300/30">
+    <div class="text-lg font-bold text-yellow-800 mb-4">
+      🧀 Narrrf's Cheese Universe
+    </div>
+    <div class="text-sm text-yellow-700 mb-6">
+      Where gaming meets cheese innovation
+    </div>
+    
+    <!-- Quick Links -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <a href="/index.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        🏠 Home
+      </a>
+      <a href="/whitepaper-pro.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        📜 Read the Whitepaper
+      </a>
+      <a href="/mint.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        🎨 Mint Your NFT
+      </a>
+      <a href="/profile.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+        🎭 Get Roles
+      </a>
+    </div>
+    
+    <!-- Socials -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium">
+        🐦 Twitter / X
+      </a>
+                     <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
+                 🎮 Join Discord
+               </a>
+      <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-800 transition-colors duration-200 font-medium">
+        🃏 Poker ClubGG
+      </a>
+                     <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
+                 📧 Open a Ticket
+               </a>
+    </div>
+    
+    <!-- Contact & Location -->
+    <div class="text-xs text-yellow-600/80 mb-4">
+      🌍 Web3 Only – Austria Based
+    </div>
+  </div>
+  
+  <!-- Legal & Important Links - More Prominent -->
+  <div class="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-lg border border-blue-200/30">
+    <div class="text-sm font-semibold text-blue-800 mb-3">
+      📋 Important Legal & Support Links
+    </div>
+    <div class="flex flex-wrap justify-center gap-6 text-sm">
+      <a href="/privacy-policy.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+        🍪 Privacy Policy
+      </a>
+      <a href="/faq.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+        ❓ FAQ
+      </a>
+      <a href="/profile.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/700 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+        👤 Profile
+      </a>
+    </div>
+  </div>
+  
+  <!-- Copyright & Branding -->
+  <div class="pt-6 border-t border-yellow-600/30 text-xs text-yellow-600/80">
+    <div class="mb-2">
+      © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
+    </div>
+    <div class="text-yellow-500/70">
+      🚀 Powered by the ultimate cheese gaming technology
+    </div>
+  </div>
+</footer>
 
 </body>
 </html>
