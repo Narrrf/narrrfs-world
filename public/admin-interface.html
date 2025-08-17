@@ -3410,6 +3410,43 @@ require_once 'discord-invite.php';
             <div class="text-sm text-gray-300">Fund Entries</div>
           </div>
         </div>
+        
+        <!-- Statistics Section -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="text-center p-3 bg-gray-700 bg-opacity-50 rounded">
+            <div class="text-lg font-semibold text-green-400" id="monthlyTotal">-</div>
+            <div class="text-sm text-gray-300">This Month</div>
+          </div>
+          <div class="text-center p-3 bg-gray-700 bg-opacity-50 rounded">
+            <div class="text-lg font-semibold text-blue-400" id="lastMonthTotal">-</div>
+            <div class="text-sm text-gray-300">Last Month</div>
+          </div>
+          <div class="text-center p-3 bg-gray-700 bg-opacity-50 rounded">
+            <div class="text-lg font-semibold text-yellow-400" id="averageEntry">-</div>
+            <div class="text-sm text-gray-300">Average Entry</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collections and NFTs Section -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🖼️ Collections & NFTs</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Collections Summary -->
+          <div>
+            <h4 class="text-md font-semibold mb-2 text-blue-400">Collections</h4>
+            <div id="collectionsSummary" class="min-h-[200px]">
+              <div class="text-center text-gray-300">Loading collections...</div>
+            </div>
+          </div>
+          <!-- NFT Gallery -->
+          <div>
+            <h4 class="text-md font-semibold mb-2 text-green-400">NFT Gallery</h4>
+            <div id="nftGallery" class="min-h-[200px]">
+              <div class="text-center text-gray-300">Loading NFTs...</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Fund Management -->
@@ -4024,10 +4061,6 @@ require_once 'discord-invite.php';
       addLog(`📋 Switched to ${tabName} tab`);
       
       // Load tab-specific data
-      if (tabName === 'overview') {
-        loadDashboardData();
-        loadOverviewGameStats();
-      }
       if (tabName === 'dashboard') {
         loadDashboardData();
         loadOverviewGameStats();
@@ -4509,8 +4542,8 @@ require_once 'discord-invite.php';
             displayRecentQuestClaims(stats.recent_claims);
             displayActiveQuestsByType(stats.active_quests_by_type);
             
-            // Load quest claims for management
-            loadEnhancedQuestClaims();
+            // Note: Quest claims are now loaded only when the quests tab is selected
+            // to avoid showing quest data on every tab
           }
         } else {
           // Hide quest stats for non-authenticated users
@@ -5686,6 +5719,7 @@ require_once 'discord-invite.php';
     // Load quests
     async function loadQuests() {
       try {
+        // Load quests list
         const response = await fetch(API_BASE_URL + '/api/admin/get-quests.php');
         const data = await response.json();
         
@@ -5694,6 +5728,11 @@ require_once 'discord-invite.php';
           addLog(`🏆 Loaded ${data.quests.length} quests`);
         } else {
           addLog(`❌ Failed to load quests: ${data.error}`);
+        }
+        
+        // Load quest claims for management (only when quests tab is selected)
+        if (currentAdmin) {
+          loadEnhancedQuestClaims();
         }
       } catch (error) {
         addLog(`❌ Quests error: ${error.message}`);
@@ -11056,6 +11095,8 @@ require_once 'discord-invite.php';
 
     // Community Funds Management Functions
     function loadCommunityFundsData() {
+      addLog('💰 Loading Community Funds data...');
+      
       // Show loading states
       showCommunityFundsLoadingStates();
       
@@ -11087,8 +11128,16 @@ require_once 'discord-invite.php';
 
     async function loadCommunityWalletData() {
       try {
+        addLog('🔄 Loading community wallet data...');
         const response = await fetch(API_BASE_URL + '/api/admin/get-community-wallet-nfts.php');
+        addLog(`📡 Wallet API response status: ${response.status}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
+        addLog(`📊 Wallet API response: ${JSON.stringify(data).substring(0, 200)}...`);
         
         if (data.success) {
           // Update SOL balance
@@ -11112,8 +11161,11 @@ require_once 'discord-invite.php';
           // Store NFT data for modal
           window.communityNFTs = data.nfts.list;
           window.communityCollections = data.nfts.collections;
+          
+          addLog('✅ Community wallet data loaded successfully');
         } else {
           console.error('Error loading wallet data:', data.error);
+          addLog(`❌ Wallet API error: ${data.error}`);
           document.getElementById('solBalance').textContent = 'Error';
           document.getElementById('totalNfts').textContent = 'Error';
           document.getElementById('totalCollections').textContent = 'Error';
@@ -11124,6 +11176,7 @@ require_once 'discord-invite.php';
         }
       } catch (error) {
         console.error('Error loading wallet data:', error);
+        addLog(`❌ Wallet data loading error: ${error.message}`);
         document.getElementById('solBalance').textContent = 'Error';
         document.getElementById('totalNfts').textContent = 'Error';
         document.getElementById('totalCollections').textContent = 'Error';
@@ -11136,8 +11189,16 @@ require_once 'discord-invite.php';
 
     async function loadCommunityFundsEntries() {
       try {
+        addLog('🔄 Loading community funds entries...');
         const response = await fetch(API_BASE_URL + '/api/admin/get-community-funds.php');
+        addLog(`📡 Funds API response status: ${response.status}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
+        addLog(`📊 Funds API response: ${JSON.stringify(data).substring(0, 200)}...`);
         
         if (data.success) {
           displayCommunityFundsEntries(data.entries);
@@ -11146,11 +11207,15 @@ require_once 'discord-invite.php';
           
           // Update total entries count
           document.getElementById('totalEntries').textContent = data.entries.length;
+          
+          addLog(`✅ Community funds entries loaded: ${data.entries.length} entries`);
         } else {
           console.error('Error loading community funds:', data.message);
+          addLog(`❌ Funds API error: ${data.message}`);
         }
       } catch (error) {
         console.error('Error loading community funds:', error);
+        addLog(`❌ Funds entries loading error: ${error.message}`);
       }
     }
 
@@ -11442,6 +11507,107 @@ require_once 'discord-invite.php';
         filter.appendChild(option.cloneNode(true));
         modalFilter.appendChild(option);
       });
+    }
+
+    // Add Funds Modal Functions
+    function showAddFundsModal() {
+      // Create modal HTML
+      const modalHTML = `
+        <div id="addFundsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4 text-white">➕ Add Community Funds Entry</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Type</label>
+                <select id="fundType" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white">
+                  <option value="income">💰 Income</option>
+                  <option value="expense">💸 Expense</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                <input type="text" id="fundDescription" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       placeholder="e.g., NFT Purchase, Community Donation">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Amount (SOL)</label>
+                <input type="number" id="fundAmount" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       step="0.0001" min="0" placeholder="0.0000">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Date</label>
+                <input type="date" id="fundDate" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white">
+              </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+              <button onclick="closeAddFundsModal()" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded">
+                Cancel
+              </button>
+              <button onclick="submitAddFunds()" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded">
+                Add Entry
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Add modal to page
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+      
+      // Set default date to today
+      document.getElementById('fundDate').value = new Date().toISOString().split('T')[0];
+    }
+
+    function closeAddFundsModal() {
+      const modal = document.getElementById('addFundsModal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    async function submitAddFunds() {
+      const type = document.getElementById('fundType').value;
+      const description = document.getElementById('fundDescription').value;
+      const amount = parseFloat(document.getElementById('fundAmount').value);
+      const date = document.getElementById('fundDate').value;
+      
+      if (!description || isNaN(amount) || amount <= 0 || !date) {
+        addLog('❌ Please fill in all fields with valid values');
+        return;
+      }
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/add-community-funds.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: type,
+            description: description,
+            amount: amount,
+            date: date
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Community funds entry added successfully');
+          closeAddFundsModal();
+          loadCommunityFundsData(); // Refresh data
+        } else {
+          addLog('❌ Failed to add entry: ' + (data.message || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Error adding entry: ' + error.message);
+        console.error('Add funds error:', error);
+      }
     }
 
     // NFT Modal Functions
