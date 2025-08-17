@@ -127,6 +127,18 @@ let lastPlayerShootTime = 0; // NEW: Track last player shoot time for auto-shoot
 let autoShootCooldown = 300; // NEW: 300ms cooldown between auto-shots
   let autoShootEnabled = false; // NEW: Auto-shoot toggle (disabled by default)
 
+// 🚀 NEW: Boss System Variables
+let boss = null;
+let bossHealth = 0;
+let bossMaxHealth = 0;
+let bossPhase = 'idle';
+let bossAttackTimer = 0;
+let bossAttackPattern = 0;
+let bossBullets = [];
+let bossExplosions = [];
+let bossDefeated = false;
+let bossReward = 0;
+
 // 🚀 NEW: Enhanced weapon system variables
 let currentWeaponType = 'normal'; // 'normal', 'laser', 'bomb'
 let weaponCooldowns = {
@@ -243,20 +255,35 @@ let canvasHeight;
     }
     
     // 🚀 NEW: Much more aggressive scaling for higher waves
-    let spawnChance = 0.001; // Base rate for early waves
+    let spawnChance = 0.015; // Base rate for early waves (1.5% - much higher!)
     
     // Progressive scaling that ACTUALLY helps in higher waves
-    if (waveNumber >= 5) spawnChance = 0.005;   // 0.5% for wave 5+
-    if (waveNumber >= 10) spawnChance = 0.012;  // 1.2% for wave 10+
-    if (waveNumber >= 15) spawnChance = 0.025;  // 2.5% for wave 15+
-    if (waveNumber >= 18) spawnChance = 0.040;  // 4.0% for wave 18+ (where you are!)
-    if (waveNumber >= 20) spawnChance = 0.060;  // 6.0% for wave 20+
-    if (waveNumber >= 25) spawnChance = 0.085;  // 8.5% for wave 25+
-    if (waveNumber >= 30) spawnChance = 0.120;  // 12.0% for wave 30+
-    if (waveNumber >= 35) spawnChance = 0.160;  // 16.0% for wave 35+
+    if (waveNumber >= 5) spawnChance = 0.025;   // 2.5% for wave 5+
+    if (waveNumber >= 10) spawnChance = 0.040;  // 4.0% for wave 10+
+    if (waveNumber >= 15) spawnChance = 0.060;  // 6.0% for wave 15+
+    if (waveNumber >= 18) spawnChance = 0.080;  // 8.0% for wave 18+ (where you are!)
+    if (waveNumber >= 20) spawnChance = 0.100;  // 10.0% for wave 20+
+    if (waveNumber >= 25) spawnChance = 0.125;  // 12.5% for wave 25+
+    if (waveNumber >= 30) spawnChance = 0.150;  // 15.0% for wave 30+
+    if (waveNumber >= 35) spawnChance = 0.200;  // 20.0% for wave 35+
     
     if (Math.random() < spawnChance) {
-      const powerUpType = Math.random() < 0.5 ? 'speed' : 'ammo';
+      // 🚀 NEW: Better power-up distribution - ensure all types appear
+      const powerUpRoll = Math.random();
+      let powerUpType, ammoType;
+      
+      if (powerUpRoll < 0.33) {
+        // 33% chance: Speed boost power-up (green ⚡)
+        powerUpType = 'speed';
+      } else if (powerUpRoll < 0.66) {
+        // 33% chance: Laser ammo (cyan 🔫)
+        powerUpType = 'ammo';
+        ammoType = 'laser';
+      } else {
+        // 34% chance: Bomb ammo (magenta 💣)
+        powerUpType = 'ammo';
+        ammoType = 'bomb';
+      }
       
       if (powerUpType === 'speed') {
         // Speed boost power-up
@@ -276,7 +303,6 @@ let canvasHeight;
         window.powerUps.push(powerUp);
       } else {
         // Ammo power-up
-        const ammoType = Math.random() < 0.5 ? 'laser' : 'bomb';
         const powerUp = {
           x: Math.random() * (canvasWidth - 20),
           y: -20,
@@ -290,6 +316,9 @@ let canvasHeight;
         };
         
         if (!window.powerUps) window.powerUps.push(powerUp);
+        
+        // 🚀 NEW: Debug logging for power-up spawning
+        console.log(`🎁 Power-up spawned: ${powerUpType}${ammoType ? ' (' + ammoType + ')' : ''} at wave ${waveNumber} (${Math.round(spawnChance * 100)}% chance)`);
       }
     }
   }
@@ -2409,8 +2438,8 @@ let canvasHeight;
   function drawScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // Space Invaders scoring: 1 invader = 0.1 DSPOINC
-      const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places
+      // Space Invaders scoring: 1 invader = 0.01 DSPOINC
+      const dspoinEarned = Math.round((spaceInvadersCount * 0.01) * 100) / 100; // Round to 2 decimal places (1 invader = 0.01 DSPOINC)
       scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} game points, ${spaceInvadersCount.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC)`;
     } else {
       console.warn('⚠️ Score display element not found');
@@ -2524,8 +2553,8 @@ let canvasHeight;
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // Space Invaders scoring: 1 invader = 0.1 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places
+    // Space Invaders scoring: 1 invader = 0.01 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersCount * 0.01) * 100) / 100; // Round to 2 decimal places (1 invader = 0.01 DSPOINC)
     
     if (gameOverModal && finalScoreText) {
       finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersCount.toLocaleString()} invaders destroyed)`;
@@ -3040,8 +3069,8 @@ window.testWeaponSystem = function() {
   function updateScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // Space Invaders scoring: 1 invader = 0.1 DSPOINC
-      const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places
+      // Space Invaders scoring: 1 invader = 0.01 DSPOINC
+      const dspoinEarned = Math.round((spaceInvadersCount * 0.01) * 100) / 100; // Round to 2 decimal places (1 invader = 0.01 DSPOINC)
       scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} game points, ${spaceInvadersCount.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC)`;
     } else {
       console.warn('⚠️ Score display element not found');
@@ -3054,8 +3083,8 @@ window.testWeaponSystem = function() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // Space Invaders scoring: 1 invader = 0.1 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places
+    // Space Invaders scoring: 1 invader = 0.01 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersCount * 0.01) * 100) / 100; // Round to 2 decimal places (1 invader = 0.01 DSPOINC)
     
     if (winModal && winScoreText) {
       winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersCount.toLocaleString()} invaders destroyed)`;
@@ -3080,8 +3109,8 @@ window.testWeaponSystem = function() {
       return;
     }
 
-    // Space Invaders scoring: 10 DSPOINC per invader (matches backend)
-    const dspoincScore = Math.floor(invaderCount * 10); // Convert to DSPOINC (1 invader = 10 DSPOINC)
+    // Space Invaders scoring: 0.01 DSPOINC per invader (matches backend database)
+    const dspoincScore = Math.round((invaderCount * 0.01) * 100) / 100; // Convert to DSPOINC (1 invader = 0.01 DSPOINC)
 
     console.log(`💾 Saving Space Invaders score: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
 
