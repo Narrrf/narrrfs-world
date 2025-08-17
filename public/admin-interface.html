@@ -3481,6 +3481,35 @@ require_once 'discord-invite.php';
         </div>
       </div>
 
+      <!-- Real Wallet Transaction History -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">📊 Real Wallet Transaction History</h3>
+        <div class="flex flex-wrap gap-4 mb-4">
+          <button onclick="loadRealWalletData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors">
+            🔄 Refresh History
+          </button>
+          <span class="text-sm text-gray-300">Showing imported CSV data</span>
+        </div>
+        
+        <!-- Wallet Transactions Table -->
+        <div class="overflow-x-auto max-h-96">
+          <table class="min-w-full bg-gray-700 bg-opacity-50 rounded-lg">
+            <thead class="sticky top-0 bg-gray-700">
+              <tr class="border-b border-gray-600">
+                <th class="px-4 py-2 text-left text-gray-300">TIME</th>
+                <th class="px-4 py-2 text-left text-gray-300">TYPE</th>
+                <th class="px-4 py-2 text-left text-gray-300">AMOUNT (SOL)</th>
+                <th class="px-4 py-2 text-left text-gray-300">BALANCE (SOL)</th>
+                <th class="px-4 py-2 text-left text-gray-300">FEE</th>
+              </tr>
+            </thead>
+            <tbody id="walletTransactionsTableBody">
+              <tr><td colspan="5" class="text-center text-gray-400">Loading transaction history...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Fund Management -->
       <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">💸 Fund Management</h3>
@@ -4113,6 +4142,12 @@ require_once 'discord-invite.php';
       const communityFundsTableBody = document.getElementById('communityFundsTableBody');
       if (communityFundsTableBody) {
         communityFundsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400">Loading community funds...</td></tr>';
+      }
+      
+      // Clear wallet transaction history table
+      const walletTransactionsTableBody = document.getElementById('walletTransactionsTableBody');
+      if (walletTransactionsTableBody) {
+        walletTransactionsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400">Loading transaction history...</td></tr>';
       }
       
       // Clear any other dynamic content areas
@@ -11307,6 +11342,9 @@ require_once 'discord-invite.php';
               statusElement.innerHTML = `<span class="text-yellow-400">⚠️ No wallet data imported yet</span>`;
             }
           }
+          
+          // Display transaction history in the new table
+          displayWalletTransactionHistory(data);
         } else {
           // Handle error case
           const balanceElement = document.getElementById('walletBalance');
@@ -11335,6 +11373,43 @@ require_once 'discord-invite.php';
     async function refreshWalletData() {
       addLog('🔄 Refreshing wallet data...');
       await loadRealWalletData();
+    }
+    
+    // Display wallet transaction history
+    function displayWalletTransactionHistory(data) {
+      const tableBody = document.getElementById('walletTransactionsTableBody');
+      if (!tableBody) return;
+      
+      if (data.transactions && data.transactions.recent && data.transactions.recent.length > 0) {
+        let html = '';
+        
+        data.transactions.recent.forEach(tx => {
+          const amountSol = tx.amount_sol || 0;
+          const balanceSol = tx.post_balance_sol || 0;
+          const feeSol = tx.fee_sol || 0;
+          const time = tx.time || 'Unknown';
+          const type = tx.type || 'Unknown';
+          
+          const amountClass = amountSol > 0 ? 'text-green-400' : 'text-red-400';
+          const typeClass = type === 'inc' ? 'text-green-400' : 'text-red-400';
+          
+          html += `
+            <tr class="border-b border-gray-600 hover:bg-gray-600 hover:bg-opacity-50">
+              <td class="px-4 py-2 text-sm">${time}</td>
+              <td class="px-4 py-2 text-sm ${typeClass}">${type === 'inc' ? '📥 Incoming' : '📤 Outgoing'}</td>
+              <td class="px-4 py-2 text-sm ${amountClass}">${amountSol.toFixed(9)}</td>
+              <td class="px-4 py-2 text-sm text-blue-400">${balanceSol.toFixed(9)}</td>
+              <td class="px-4 py-2 text-sm text-yellow-400">${feeSol.toFixed(6)}</td>
+            </tr>
+          `;
+        });
+        
+        tableBody.innerHTML = html;
+        addLog(`📊 Displayed ${data.transactions.recent.length} wallet transactions`);
+      } else {
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400">No transaction history available</td></tr>';
+        addLog('⚠️ No transaction history to display');
+      }
     }
 
     function showCommunityFundsLoadingStates() {
@@ -11468,11 +11543,14 @@ require_once 'discord-invite.php';
         row.className = 'hover:bg-gray-50';
         
         row.innerHTML = `
-          <td class="px-4 py-2 border-b">${entry.date}</td>
           <td class="px-4 py-2 border-b">${entry.type}</td>
           <td class="px-4 py-2 border-b">${entry.description}</td>
           <td class="px-4 py-2 border-b text-right">${entry.amount} SOL</td>
+          <td class="px-4 py-2 border-b">${entry.date}</td>
           <td class="px-4 py-2 border-b text-center">
+            <button onclick="editCommunityFundsEntry(${entry.id}, '${entry.type}', '${entry.description.replace(/'/g, "\\'")}', ${entry.amount})" class="text-blue-600 hover:text-blue-800 px-2 py-1 mr-2">
+              ✏️
+            </button>
             <button onclick="deleteCommunityFundsEntry(${entry.id})" class="text-red-600 hover:text-red-800 px-2 py-1">
               🗑️
             </button>
@@ -11838,6 +11916,101 @@ require_once 'discord-invite.php';
       } catch (error) {
         addLog('❌ Error adding entry: ' + error.message);
         console.error('Add funds error:', error);
+      }
+    }
+
+    // Edit Funds Modal Functions
+    function showEditFundsModal(id, type, description, amount) {
+      // Create modal HTML
+      const modalHTML = `
+        <div id="editFundsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4 text-white">✏️ Edit Community Funds Entry</h3>
+            
+            <input type="hidden" id="editFundId" value="${id}">
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Type</label>
+                <select id="editFundType" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white">
+                  <option value="income" ${type === 'income' ? 'selected' : ''}>💰 Income</option>
+                  <option value="expense" ${type === 'expense' ? 'selected' : ''}>💸 Expense</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                <input type="text" id="editFundDescription" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       value="${description}" placeholder="e.g., NFT Purchase, Community Donation">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Amount (SOL)</label>
+                <input type="number" id="editFundAmount" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       step="0.0001" min="0" value="${amount}" placeholder="0.0000">
+              </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+              <button onclick="closeEditFundsModal()" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded">
+                Cancel
+              </button>
+              <button onclick="submitEditFunds()" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                Update Entry
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Add modal to page
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    function closeEditFundsModal() {
+      const modal = document.getElementById('editFundsModal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    async function submitEditFunds() {
+      const id = document.getElementById('editFundId').value;
+      const type = document.getElementById('editFundType').value;
+      const description = document.getElementById('editFundDescription').value;
+      const amount = parseFloat(document.getElementById('editFundAmount').value);
+      
+      if (!description || isNaN(amount) || amount <= 0) {
+        addLog('❌ Please fill in all fields with valid values');
+        return;
+      }
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/update-community-funds.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: id,
+            type: type,
+            description: description,
+            amount: amount
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Community funds entry updated successfully');
+          closeEditFundsModal();
+          loadCommunityFundsData(); // Refresh data
+        } else {
+          addLog('❌ Failed to update entry: ' + (data.message || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Error updating entry: ' + error.message);
+        console.error('Edit funds error:', error);
       }
     }
 

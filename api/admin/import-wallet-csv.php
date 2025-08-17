@@ -190,7 +190,7 @@ try {
                                 'exists' => $csvExists,
                                 'path' => $csvFile,
                                 'size' => $csvSize,
-                                'note' => $csvExists ? 'CSV file ready for import' : 'CSV file not found - upload SOL-Community-wallet.csv to private/ directory'
+                                'note' => $csvExists ? 'CSV file ready for import' : 'CSV file not found - upload SOL-Community-wallet.csv to root directory'
                             )
                         ]);
                     }
