@@ -124,7 +124,7 @@ let dropDuration = 1000; // NEW: 1 second drop duration
 let breakDuration = 60000; // NEW: 1 minute break duration
 let lastPlayerShootTime = 0; // NEW: Track last player shoot time for auto-shoot cooldown
 let autoShootCooldown = 300; // NEW: 300ms cooldown between auto-shots
-let autoShootEnabled = true; // NEW: Auto-shoot toggle (enabled by default)
+  let autoShootEnabled = false; // NEW: Auto-shoot toggle (disabled by default)
 
 // 🚀 NEW: Enhanced weapon system variables
 let currentWeaponType = 'normal'; // 'normal', 'laser', 'bomb'
@@ -175,6 +175,11 @@ let canvasHeight;
       
       // Update weapon display
       updateWeaponDisplay();
+      
+      // 🚀 NEW: Update reload button immediately when weapon changes
+      if (reloadButton) {
+        updateReloadButton();
+      }
     } else {
       console.log(`❌ No ammo for ${weaponType} weapon`);
     }
@@ -310,6 +315,11 @@ let canvasHeight;
           weaponAmmo[powerUp.ammoType] += 2; // Add 2 ammo
           console.log(`🔫 Added 2 ${powerUp.ammoType} ammo!`);
           updateWeaponDisplay();
+          
+          // 🚀 NEW: Update reload button when ammo is collected
+          if (reloadButton) {
+            updateReloadButton();
+          }
         }
       }
       
@@ -456,12 +466,8 @@ let canvasHeight;
       displayHelpInfoOutside();
     }, 200);
     
-    // 🆘 NEW: Add mobile controls toggle button for easy access
-    if (window.innerWidth <= 768) {
-      setTimeout(() => {
-        addMobileControlsToggle();
-      }, 300);
-    }
+    // 🆘 NEW: Game panel is now created automatically with createEnhancedMobileControls
+    // No need for separate toggle button - the game panel button is included
     
     // Initial draw
     draw();
@@ -496,7 +502,7 @@ let canvasHeight;
     
     switch (pattern) {
       case 'v_formation':
-        // V-shaped formation - much smaller and slower
+        // 🚀 NEW: V-shaped formation - MUCH closer to player and more aggressive!
         const vPositions = [
           [3, 0], [4, 0], [5, 0],
           [2, 1], [3, 1], [4, 1], [5, 1], [6, 1],
@@ -504,23 +510,27 @@ let canvasHeight;
           [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3]
         ];
         vPositions.forEach(([col, row]) => {
-          invaders.push(createInvader(col * 45 + 30, row * 35 + 50, row, 'v_formation'));
+          // 🚀 NEW: Spawn invaders at reasonable distance (canvasHeight - 350 instead of 50)
+          const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+          invaders.push(createInvader(col * 45 + 30, spawnY, row, 'v_formation'));
         });
         break;
         
       case 'pyramid':
-        // Pyramid formation - gradual build-up
+        // 🚀 NEW: Pyramid formation - MUCH closer to player and more aggressive!
         for (let row = 0; row < 4; row++) {
           const colsInRow = row + 1;
           const startCol = 4 - row;
           for (let col = 0; col < colsInRow; col++) {
-            invaders.push(createInvader((startCol + col) * 45 + 30, row * 35 + 50, row, 'pyramid'));
+            // 🚀 NEW: Spawn invaders at reasonable distance
+            const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+            invaders.push(createInvader((startCol + col) * 45 + 30, spawnY, row, 'pyramid'));
           }
         }
         break;
         
       case 'diamond':
-        // Diamond formation - more strategic
+        // 🚀 NEW: Diamond formation - MUCH closer to player and more aggressive!
         const diamondPositions = [
           [4, 0],
           [3, 1], [4, 1], [5, 1],
@@ -529,23 +539,27 @@ let canvasHeight;
           [4, 4]
         ];
         diamondPositions.forEach(([col, row]) => {
-          invaders.push(createInvader(col * 45 + 30, row * 35 + 50, row, 'diamond'));
+          // 🚀 NEW: Spawn invaders at reasonable distance
+          const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+          invaders.push(createInvader(col * 45 + 30, spawnY, row, 'diamond'));
         });
         break;
         
       case 'cross':
-        // Cross formation - challenging pattern
+        // 🚀 NEW: Cross formation - MUCH closer to player and more aggressive!
         const crossPositions = [
           [4, 0], [4, 1], [4, 2], [4, 3], [4, 4],
           [2, 2], [3, 2], [5, 2], [6, 2]
         ];
         crossPositions.forEach(([col, row]) => {
-          invaders.push(createInvader(col * 45 + 30, row * 35 + 50, row, 'cross'));
+          // 🚀 NEW: Spawn invaders at reasonable distance
+          const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+          invaders.push(createInvader(col * 45 + 30, spawnY, row, 'cross'));
         });
         break;
         
       case 'spiral':
-        // Spiral formation - complex pattern
+        // 🚀 NEW: Spiral formation - MUCH closer to player and more aggressive!
         const spiralPositions = [
           [4, 0], [5, 0], [6, 0],
           [3, 1], [7, 1],
@@ -554,46 +568,56 @@ let canvasHeight;
           [0, 4], [10, 4]
         ];
         spiralPositions.forEach(([col, row]) => {
-          invaders.push(createInvader(col * 40 + 20, row * 35 + 50, row, 'spiral'));
+          // 🚀 NEW: Spawn invaders at reasonable distance
+          const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+          invaders.push(createInvader(col * 40 + 20, spawnY, row, 'spiral'));
         });
         break;
         
       case 'random_cluster':
-        // Random cluster - unpredictable
+        // 🚀 NEW: Random cluster - MUCH closer to player and more aggressive!
         for (let i = 0; i < 12; i++) {
           const col = Math.floor(Math.random() * 8);
           const row = Math.floor(Math.random() * 4);
-          invaders.push(createInvader(col * 45 + 30, row * 35 + 50, row, 'random_cluster'));
+          // 🚀 NEW: Spawn invaders at reasonable distance
+          const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+          invaders.push(createInvader(col * 45 + 30, spawnY, row, 'random_cluster'));
         }
         break;
         
       case 'ultra_swarm':
-        // NEW: Ultra dense swarm - much more invaders!
+        // 🚀 NEW: Ultra dense swarm - MUCH closer to player and more aggressive!
         for (let row = 0; row < 6; row++) {
           for (let col = 0; col < 12; col++) {
-            invaders.push(createInvader(col * 35 + 20, row * 30 + 30, row, 'ultra_swarm'));
+            // 🚀 NEW: Spawn invaders at reasonable distance
+            const spawnY = canvasHeight - 350 + (row * 30); // Reasonable distance spawn, tighter spacing
+            invaders.push(createInvader(col * 35 + 20, spawnY, row, 'ultra_swarm'));
           }
         }
-        // Add extra random invaders
+        // Add extra random invaders at reasonable distance
         for (let i = 0; i < 15; i++) {
           const x = Math.random() * (canvasWidth - 60);
-          const y = Math.random() * 200;
+          const y = canvasHeight - 400 + Math.random() * 150; // Reasonable distance random spawns
           invaders.push(createInvader(x, y, Math.floor(Math.random() * 3), 'ultra_swarm_extra'));
         }
         break;
         
       case 'double_formation':
-        // NEW: Double formation - two layers of invaders
+        // 🚀 NEW: Double formation - MUCH closer to player and more aggressive!
         // First layer
         for (let row = 0; row < 4; row++) {
           for (let col = 0; col < 8; col++) {
-            invaders.push(createInvader(col * 45 + 30, row * 35 + 50, row, 'double_formation_1'));
+            // 🚀 NEW: Spawn invaders at reasonable distance
+            const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+            invaders.push(createInvader(col * 45 + 30, spawnY, row, 'double_formation_1'));
           }
         }
-        // Second layer (offset)
+        // Second layer (offset) - also at reasonable distance
         for (let row = 0; row < 3; row++) {
           for (let col = 0; col < 6; col++) {
-            invaders.push(createInvader(col * 45 + 60, row * 35 + 200, row + 4, 'double_formation_2'));
+            // 🚀 NEW: Spawn second layer invaders at reasonable distance
+            const spawnY = canvasHeight - 300 + (row * 30); // Reasonable distance for second layer
+            invaders.push(createInvader(col * 45 + 60, spawnY, row + 4, 'double_formation_2'));
           }
         }
         break;
@@ -733,10 +757,13 @@ let canvasHeight;
       checkPlayerHit();
       checkTetrisCollisions();
       
+      // 🚀 NEW: Check invader-player collisions
+      checkInvaderPlayerCollisions();
+      
       // 🚀 NEW: Update power-ups
       updatePowerUps();
       
-      if (phaseTimer > 100) { // 10 seconds at 100ms intervals (was 60 seconds)
+      if (phaseTimer > 50) { // 🚀 NEW: 5 seconds at 100ms intervals (was 10 seconds) - MUCH more aggressive!
         gamePhase = 'attack';
         phaseTimer = 0;
         invaderDropPhase = false;
@@ -752,6 +779,9 @@ let canvasHeight;
       checkBulletCollisions();
       checkPlayerHit();
       checkTetrisCollisions();
+      
+      // 🚀 NEW: Check invader-player collisions
+      checkInvaderPlayerCollisions();
       
       // 🚀 NEW: Update power-ups
       updatePowerUps();
@@ -876,46 +906,67 @@ let canvasHeight;
       invaders.forEach(invader => {
         if (!invader.alive) return;
         
-        // Wave-based speed multiplier - gets MUCH faster each wave!
-        const waveSpeedMultiplier = 1 + (waveNumber - 1) * 1.2; // 120% faster each wave - EXTREMELY dangerous!
+        // 🚀 NEW: MUCH more aggressive wave-based speed multiplier!
+        const waveSpeedMultiplier = 2 + (waveNumber - 1) * 2.5; // 250% faster each wave - EXTREMELY dangerous!
         
-        // Different movement patterns based on invader type - more aggressive in later waves
+        // 🚀 NEW: Different movement patterns - ALL much more aggressive!
         if (invader.movePattern === 'zigzag') {
-          // Zigzag pattern - more dangerous and faster each wave
-          invader.x += invaderDirection * gameSpeed * 0.3 * waveSpeedMultiplier;
-          invader.y += 1.2 * waveSpeedMultiplier;
+          // Zigzag pattern - MUCH more dangerous and faster
+          invader.x += invaderDirection * gameSpeed * 1.5 * waveSpeedMultiplier;
+          invader.y += 3.0 * waveSpeedMultiplier; // 3x faster downward movement
           
           // Zigzag movement - more frequent direction changes in later waves
-          if (Math.random() < (0.15 + waveNumber * 0.03)) { // More direction changes
+          if (Math.random() < (0.25 + waveNumber * 0.05)) { // More direction changes
             invaderDirection *= -1;
           }
         } else if (invader.movePattern === 'dive') {
-          // NEW: Dive pattern - invaders dive straight down at player
-          invader.y += 2.0 * waveSpeedMultiplier;
-          invader.x += (playerShip.x - invader.x) * 0.02 * waveSpeedMultiplier; // Move towards player
+          // 🚀 NEW: Dive pattern - invaders dive STRAIGHT DOWN at player aggressively
+          invader.y += 4.0 * waveSpeedMultiplier; // 4x faster downward movement
+          invader.x += (playerShip.x - invader.x) * 0.08 * waveSpeedMultiplier; // Much more aggressive targeting
         } else if (invader.movePattern === 'spiral') {
-          // NEW: Spiral pattern - invaders move in spiral motion
-          const spiralRadius = 30 + waveNumber * 5;
-          const spiralSpeed = 0.1 + waveNumber * 0.02;
+          // 🚀 NEW: Spiral pattern - invaders move in aggressive spiral motion
+          const spiralRadius = 20 + waveNumber * 3; // Smaller, tighter spirals
+          const spiralSpeed = 0.3 + waveNumber * 0.05; // Much faster spiraling
           invader.spiralOffset += spiralSpeed;
-          invader.x += Math.cos(invader.spiralOffset) * spiralRadius * 0.1;
-          invader.y += 1.0 * waveSpeedMultiplier;
+          invader.x += Math.cos(invader.spiralOffset) * spiralRadius * 0.2;
+          invader.y += 2.5 * waveSpeedMultiplier; // 2.5x faster downward movement
         } else if (invader.movePattern === 'hover') {
-          // NEW: Hover pattern - invaders hover and move side to side
-          invader.y += 0.3 * waveSpeedMultiplier;
-          invader.x += Math.sin(currentTime * 0.005 + invader.x * 0.01) * 2 * waveSpeedMultiplier;
+          // 🚀 NEW: Hover pattern - invaders hover and move side to side aggressively
+          invader.y += 1.5 * waveSpeedMultiplier; // 1.5x faster downward movement
+          invader.x += Math.sin(currentTime * 0.01 + invader.x * 0.02) * 4 * waveSpeedMultiplier; // More aggressive side movement
         } else {
-          // Standard movement - straight down with slight horizontal movement
-          invader.x += invaderDirection * gameSpeed * 0.15 * waveSpeedMultiplier;
-          invader.y += 0.8 * waveSpeedMultiplier;
+          // 🚀 NEW: Standard movement - straight down with much more aggressive movement
+          invader.x += invaderDirection * gameSpeed * 0.8 * waveSpeedMultiplier;
+          invader.y += 2.2 * waveSpeedMultiplier; // 2.2x faster downward movement
         }
         
-        // Bounce off walls with more aggressive behavior in later waves
+        // 🚀 NEW: Bounce off walls with MUCH more aggressive behavior
         if (invader.x <= 0 || invader.x >= canvasWidth - invader.width) {
           invaderDirection *= -1;
-          // In later waves, invaders can bounce back more aggressively
-          if (waveNumber >= 3) {
-            invader.y += 5; // Drop down when hitting walls
+          // 🚀 NEW: ALL waves now have aggressive wall bouncing
+          invader.y += 8 + waveNumber * 2; // Much more aggressive drop down
+          
+          // 🚀 NEW: Add extra speed boost when hitting walls
+          invader.wallBounceBoost = true;
+          invader.wallBounceTimer = 30; // 3 seconds of boosted speed
+        }
+        
+        // 🚀 NEW: Apply wall bounce speed boost
+        if (invader.wallBounceBoost && invader.wallBounceTimer > 0) {
+          invader.y += 3; // Extra downward speed
+          invader.wallBounceTimer--;
+          if (invader.wallBounceTimer <= 0) {
+            invader.wallBounceBoost = false;
+          }
+        }
+        
+        // 🚀 NEW: Ensure invaders can reach the player area
+        if (invader.y < canvasHeight - 100) { // Allow invaders to go close to player area
+          // No restrictions - invaders can move freely and reach the player!
+          
+          // 🚀 NEW: Extra aggressive behavior when close to player
+          if (invader.y > canvasHeight - 200) {
+            invader.y += 1; // Moderate speed boost when close to player
           }
         }
       });
@@ -1496,6 +1547,49 @@ let canvasHeight;
     });
   }
 
+  // 🚀 NEW: Check for collisions between invaders and player ship
+  function checkInvaderPlayerCollisions() {
+    invaders.forEach((invader, index) => {
+      if (!invader.alive) return;
+      
+      // Check if invader collides with player ship
+      if (checkCollision(invader, playerShip)) {
+        console.log(`💥 Invader collision with player! Player health: ${playerShip.health} -> ${playerShip.health - 1}`);
+        
+        // Damage player (invader collision is deadly!)
+        playerShip.health--;
+        
+        // Kill the invading invader
+        invader.alive = false;
+        spaceInvadersScore += invader.points;
+        
+        // Create explosion effect at collision point
+        explosions.push({
+          x: invader.x + invader.width / 2,
+          y: invader.y + invader.height / 2,
+          size: 30,
+          timer: 15,
+          isInvaderCollision: true
+        });
+        
+        // Create additional explosion at player ship
+        explosions.push({
+          x: playerShip.x + playerShip.width / 2,
+          y: playerShip.y + playerShip.height / 2,
+          size: 25,
+          timer: 12,
+          isPlayerHit: true
+        });
+        
+        // Check if player is dead
+        if (playerShip.health <= 0) {
+          console.log('💀 Player destroyed by invader collision!');
+          onGameOver();
+        }
+      }
+    });
+  }
+
   function checkCollision(rect1, rect2) {
     return rect1.x < rect2.x + rect2.width &&
            rect1.x + rect1.width > rect2.x &&
@@ -1981,6 +2075,58 @@ let canvasHeight;
           ctx.arc(particleX, particleY, 3 * alpha, 0, Math.PI * 2);
           ctx.fill();
         }
+      } else if (explosion.isBombKill) {
+        // 💥 NEW: Bomb kill explosion effects for individual invaders
+        ctx.fillStyle = `rgba(255, 0, 255, ${alpha})`; // Magenta bomb kill
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size * alpha, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Inner bomb kill effect
+        ctx.fillStyle = `rgba(255, 20, 147, ${alpha * 0.8})`; // Deep pink center
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size * alpha * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Bomb kill particles - intense and chaotic
+        for (let i = 0; i < 10; i++) {
+          const angle = (i / 10) * Math.PI * 2;
+          const distance = explosion.size * alpha * 1.0;
+          const particleX = explosion.x + Math.cos(angle) * distance;
+          const particleY = explosion.y + Math.sin(angle) * distance;
+          
+          const colors = ['#ff00ff', '#ff1493', '#c71585', '#db7093'];
+          ctx.fillStyle = colors[i % colors.length] + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+          ctx.beginPath();
+          ctx.arc(particleX, particleY, 4 * alpha, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else if (explosion.isBombSubExplosion) {
+        // 💥 NEW: Bomb sub-explosion effects across the screen
+        ctx.fillStyle = `rgba(255, 165, 0, ${alpha})`; // Orange sub-explosion
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size * alpha, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Inner sub-explosion effect
+        ctx.fillStyle = `rgba(255, 69, 0, ${alpha * 0.8})`; // Red-orange center
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size * alpha * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Sub-explosion particles
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2;
+          const distance = explosion.size * alpha * 0.8;
+          const particleX = explosion.x + Math.cos(angle) * distance;
+          const particleY = explosion.y + Math.sin(angle) * distance;
+          
+          const colors = ['#ff4500', '#ff6347', '#ff8c00', '#ffa500'];
+          ctx.fillStyle = colors[i % colors.length] + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+          ctx.beginPath();
+          ctx.arc(particleX, particleY, 3 * alpha, 0, Math.PI * 2);
+          ctx.fill();
+        }
       } else if (explosion.isEyeExplosion) {
         // 🐍 NEW: Eye explosion effects from snake head hits
         const eyeColor = explosion.eyeType === 'red' ? '#ff0000' : '#0000ff';
@@ -2131,6 +2277,72 @@ let canvasHeight;
           ctx.arc(particleX, particleY, 4 * alpha, 0, Math.PI * 2);
           ctx.fill();
         }
+      } else if (explosion.isInvaderCollision) {
+        // 💥 NEW: Invader collision explosion effects
+        ctx.fillStyle = `rgba(255, 0, 255, ${alpha})`; // Magenta collision
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size * alpha, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Inner collision effect
+        ctx.fillStyle = `rgba(255, 20, 147, ${alpha * 0.8})`; // Deep pink center
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size * alpha * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Collision particles - intense and chaotic
+        for (let i = 0; i < 15; i++) {
+          const angle = (i / 15) * Math.PI * 2;
+          const distance = explosion.size * alpha * 1.1;
+          const particleX = explosion.x + Math.cos(angle) * distance;
+          const particleY = explosion.y + Math.sin(angle) * distance;
+          
+          const colors = ['#ff00ff', '#ff1493', '#c71585', '#db7093', '#ff69b4'];
+          ctx.fillStyle = colors[i % colors.length] + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+          ctx.beginPath();
+          ctx.arc(particleX, particleY, 5 * alpha, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        // Collision shockwave
+        ctx.strokeStyle = `rgba(255, 0, 255, ${alpha * 0.6})`;
+        ctx.lineWidth = 3 * alpha;
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size * alpha * 1.5, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (explosion.isPlayerHit) {
+        // 💥 NEW: Player hit explosion effects
+        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`; // Red player hit
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size * alpha, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Inner player hit effect
+        ctx.fillStyle = `rgba(255, 69, 0, ${alpha * 0.8})`; // Red-orange center
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size * alpha * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Player hit particles - warning effect
+        for (let i = 0; i < 10; i++) {
+          const angle = (i / 10) * Math.PI * 2;
+          const distance = explosion.size * alpha * 0.9;
+          const particleX = explosion.x + Math.cos(angle) * distance;
+          const particleY = explosion.y + Math.sin(angle) * distance;
+          
+          const colors = ['#ff0000', '#ff4500', '#ff6347', '#dc143c'];
+          ctx.fillStyle = colors[i % colors.length] + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+          ctx.beginPath();
+          ctx.arc(particleX, particleY, 3 * alpha, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        // Player hit warning ring
+        ctx.strokeStyle = `rgba(255, 0, 0, ${alpha * 0.8})`;
+        ctx.lineWidth = 2 * alpha;
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.size * alpha * 1.3, 0, Math.PI * 2);
+        ctx.stroke();
       } else {
         // Try to draw cheese explosion image first
         if (cheeseExplosionImg.complete && cheeseExplosionImg.naturalWidth > 0) {
@@ -2189,82 +2401,102 @@ let canvasHeight;
     }
   }
 
-  // ❤️ NEW: Draw health display
+  // ❤️ NEW: Draw health display (compact layout)
   function drawHealth() {
     ctx.fillStyle = '#ff0000';
     ctx.font = '16px Arial';
-    ctx.fillText(`Health: ${'❤'.repeat(playerShip.health)}`, 10, 30);
+    ctx.fillText(`❤${playerShip.health}`, 10, 30);
     
-    // 🚀 NEW: Draw bomb count closer to health
+    // 🚀 NEW: Compact ammo display in one line
+    let ammoText = '';
+    let ammoColor = '#ffffff';
+    
     if (weaponAmmo.bomb > 0) {
-      ctx.fillStyle = '#ff00ff';
-      ctx.fillText(`💣 ${weaponAmmo.bomb}`, 150, 30);
+      ammoText += `💣${weaponAmmo.bomb} `;
     }
-    
-    // ⚡ NEW: Draw speed boost count closer to health
-    ctx.fillStyle = '#00ff00';
-    if (speedBoostAmmo > 0) {
-      ctx.fillText(`⚡ ${speedBoostAmmo}`, 200, 30);
-    }
-    
-    // 🔫 NEW: Draw laser ammo closer to health
     if (weaponAmmo.laser > 0) {
-      ctx.fillStyle = '#00ffff';
-      ctx.fillText(`🔫 ${weaponAmmo.laser}`, 250, 30);
+      ammoText += `🔫${weaponAmmo.laser} `;
+    }
+    if (speedBoostAmmo > 0) {
+      ammoText += `⚡${speedBoostAmmo} `;
     }
     
-    // 🚀 NEW: Draw speed boost status closer to health
+    // Position ammo info to the right of health
+    if (ammoText) {
+      ctx.fillStyle = ammoColor;
+      ctx.fillText(ammoText, 80, 30);
+    }
+    
+    // 🚀 NEW: Speed boost timer (if active) - positioned on the right side
     if (speedBoostActive) {
       ctx.fillStyle = '#00ff00';
       const timeLeft = Math.ceil(speedBoostTimer / 10);
-      ctx.fillText(`⚡ ${timeLeft}s`, 300, 30);
+      const timeText = `⚡${timeLeft}s`;
+      const timeWidth = ctx.measureText(timeText).width;
+      // Position on the right side with some margin
+      ctx.fillText(timeText, canvasWidth - timeWidth - 10, 30);
+    }
+    
+    // 🚀 NEW: Weapon ready indicator for desktop players
+    if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
+      ctx.fillStyle = '#00ffff';
+      ctx.font = '12px Arial';
+      ctx.fillText('🔫 READY', canvasWidth - 80, 50);
+    } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
+      ctx.fillStyle = '#ff00ff';
+      ctx.font = '12px Arial';
+      ctx.fillText('💣 READY', canvasWidth - 80, 50);
     }
   }
 
-  // 📊 NEW: Draw phase information with bomb status
+  // 📊 NEW: Draw phase information with bomb status (compact layout)
   function drawPhaseInfo() {
     if (!ctx || typeof canvasHeight === 'undefined') {
       return; // Don't draw if context or canvas height is not available
     }
     
-    ctx.fillStyle = '#ffffff';
     ctx.font = '14px Arial';
     
-    // 🚀 NEW: Consolidate all info into one line for compact display
+    // 🚀 NEW: Compact phase display
     let phaseText = '';
     let phaseColor = '#ffffff';
     
     if (gamePhase === 'formation') {
       phaseColor = '#4ade80'; // Green for formation
-      phaseText = `🎯 FORM - W${waveNumber}`; // 🚀 NEW: Shortened text
+      phaseText = `🎯W${waveNumber}`; // Ultra compact
     } else if (gamePhase === 'attack') {
       if (invaderDropPhase) {
         phaseColor = '#ff6b6b'; // Red for drop phase
-        phaseText = `🚀 DROP - W${waveNumber}`; // 🚀 NEW: Shortened text
+        phaseText = `🚀W${waveNumber}`; // Ultra compact
       } else {
         phaseColor = '#4ecdc4'; // Cyan for break phase
-        phaseText = `⏸️ BREAK - W${waveNumber}`; // 🚀 NEW: Shortened text
+        phaseText = `⏸️W${waveNumber}`; // Ultra compact
       }
     }
     
-    // 🚀 NEW: Show all info in one compact line
+    // 🚀 NEW: Show phase info on the left
     ctx.fillStyle = phaseColor;
     ctx.fillText(phaseText, 10, 50);
     
-    // Add auto-shoot status and weapon type to the same line
-    ctx.fillStyle = autoShootEnabled ? '#4ade80' : '#ff6b6b';
-    ctx.fillText(` | AUTO: ${autoShootEnabled ? 'ON' : 'OFF'}`, 10 + ctx.measureText(phaseText).width + 10, 50);
-    
-    // Add weapon type to the same line
-    ctx.fillStyle = '#ffffff';
-    const autoText = ` | AUTO: ${autoShootEnabled ? 'ON' : 'OFF'}`;
+    // 🚀 NEW: Show auto-shoot status in the center
+    const autoText = `AUTO: ${autoShootEnabled ? 'ON' : 'OFF'}`;
     const autoWidth = ctx.measureText(autoText).width;
-    ctx.fillText(` | 🔫 ${currentWeaponType.toUpperCase()}`, 10 + ctx.measureText(phaseText).width + 10 + autoWidth + 10, 50);
+    ctx.fillStyle = autoShootEnabled ? '#4ade80' : '#ff6b6b';
+    ctx.fillText(autoText, (canvasWidth - autoWidth) / 2, 50);
     
-    // Show ammo if not normal weapon (minimal) - positioned below hearts
-    if (currentWeaponType === 'laser') {
-      ctx.fillStyle = weaponAmmo.laser > 0 ? '#00ffff' : '#666666';
-      ctx.fillText(`⚡ ${weaponAmmo.laser}`, 10, 70);
+    // 🚀 NEW: Show weapon type on the right
+    const weaponText = `🔫${currentWeaponType.toUpperCase()}`;
+    const weaponWidth = ctx.measureText(weaponText).width;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(weaponText, canvasWidth - weaponWidth - 10, 50);
+    
+    // 🚀 NEW: Show special weapon ammo below if available
+    if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
+      ctx.fillStyle = '#00ffff';
+      ctx.fillText(`⚡${weaponAmmo.laser}`, 10, 70);
+    } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
+      ctx.fillStyle = '#ff00ff';
+      ctx.fillText(`💣${weaponAmmo.bomb}`, 10, 70);
     }
   }
 
@@ -2296,6 +2528,8 @@ let canvasHeight;
   function playerShoot() {
     if (isSpaceInvadersPaused) return;
     
+    console.log(`🔫 playerShoot called with weapon: ${currentWeaponType}, isQuickShotCall: ${window.isQuickShotCall}`);
+    
     // 🚀 NEW: Enhanced shooting system with weapon types
     switch (currentWeaponType) {
       case 'normal':
@@ -2312,63 +2546,95 @@ let canvasHeight;
         break;
         
       case 'laser':
-        // Laser beam - powerful piercing weapon
+        // Laser beam - powerful piercing weapon (ONLY through Quick Shot button)
         if (weaponAmmo.laser > 0 && weaponCooldowns.laser <= 0) {
-          bullets.push({
-            x: playerShip.x + playerShip.width / 2 - 2,
-            y: playerShip.y,
-            width: 4,
-            height: canvasHeight, // Full screen height
-            speed: 8,
-            type: 'laser',
-            damage: 3,
-            pierce: true, // Can hit multiple invaders
-            color: '#00ffff',
-            // 🚀 NEW: Enhanced laser properties
-            beamIntensity: 1.0,
-            pulsePhase: 0,
-            energyLevel: 100,
-            isCharged: true
-          });
-          
-          weaponAmmo.laser--;
-          weaponCooldowns.laser = 20; // 2 second cooldown
-          updateWeaponDisplay();
-          
-          // 🚀 NEW: Create spectacular laser effect
-          createSpectacularLaserEffect();
+          // Check if this is a Quick Shot button call
+          if (window.isQuickShotCall) {
+            bullets.push({
+              x: playerShip.x + playerShip.width / 2 - 2,
+              y: playerShip.y,
+              width: 4,
+              height: canvasHeight, // Full screen height
+              speed: 8,
+              type: 'laser',
+              damage: 3,
+              pierce: true, // Can hit multiple invaders
+              color: '#00ffff',
+              // 🚀 NEW: Enhanced laser properties
+              beamIntensity: 1.0,
+              pulsePhase: 0,
+              energyLevel: 100,
+              isCharged: true
+            });
+            
+            weaponAmmo.laser--;
+            weaponCooldowns.laser = 20; // 2 second cooldown
+            updateWeaponDisplay();
+            
+            // 🚀 NEW: Create spectacular laser effect
+            createSpectacularLaserEffect();
+            
+            // Reset the flag
+            window.isQuickShotCall = false;
+          } else {
+            console.log('🚫 Laser can only be fired through Quick Shot button!');
+            return; // Don't shoot
+          }
+        } else {
+          console.log('🚫 Laser ammo or cooldown not ready!');
+          return; // Don't shoot
         }
         break;
         
       case 'bomb':
-        // Bomb weapon - screen clearing explosion
+        // Bomb weapon - screen clearing explosion (ONLY through Quick Shot button)
         if (weaponAmmo.bomb > 0 && weaponCooldowns.bomb <= 0) {
-          // Create bomb explosion effect
-          createBombExplosion();
-          
-          // Kill all invaders on screen
-          invaders.forEach(invader => {
-            if (invader.alive) {
-              invader.alive = false;
-              spaceInvadersScore += invader.points;
-              
-              // Create explosion for each killed invader
-              explosions.push({
-                x: invader.x + invader.width / 2,
-                y: invader.y + invader.height / 2,
-                size: 25,
-                timer: 15,
-                isBombKill: true
-              });
-            }
-          });
-          
-          // Clear all invader bullets
-          invaderBullets = [];
-          
-          weaponAmmo.bomb--;
-          weaponCooldowns.bomb = 60; // 6 second cooldown
-          updateWeaponDisplay();
+          // Check if this is a Quick Shot button call
+          if (window.isQuickShotCall) {
+            console.log('💣 BOMB FIRED! Creating explosion and killing invaders...');
+            
+            // Create bomb explosion effect
+            createBombExplosion();
+            
+            // Kill all invaders on screen
+            let invadersKilled = 0;
+            invaders.forEach(invader => {
+              if (invader.alive) {
+                invader.alive = false;
+                invadersKilled++;
+                spaceInvadersScore += invader.points;
+                
+                // Create explosion for each killed invader
+                explosions.push({
+                  x: invader.x + invader.width / 2,
+                  y: invader.y + invader.height / 2,
+                  size: 25,
+                  timer: 15,
+                  isBombKill: true
+                });
+              }
+            });
+            
+            console.log(`💣 BOMB KILLED ${invadersKilled} invaders!`);
+            
+            // Clear all invader bullets
+            const bulletsCleared = invaderBullets.length;
+            invaderBullets = [];
+            console.log(`💣 BOMB CLEARED ${bulletsCleared} invader bullets!`);
+            
+            weaponAmmo.bomb--;
+            weaponCooldowns.bomb = 60; // 6 second cooldown
+            updateWeaponDisplay();
+            
+            // Reset the flag
+            window.isQuickShotCall = false;
+          } else {
+            console.log('🚫 Bomb can only be fired through Quick Shot button!');
+            return; // Don't shoot
+          }
+        } else {
+          console.log('🚫 Bomb ammo or cooldown not ready!');
+          return; // Don't shoot
         }
         break;
     }
@@ -2512,8 +2778,8 @@ let canvasHeight;
         break;
     }
     
-    // Auto-shoot when ship moves (with cooldown) - only if enabled
-    if (autoShootEnabled && (oldX !== playerShip.x || oldY !== playerShip.y)) {
+    // Auto-shoot when ship moves (with cooldown) - only if enabled AND using normal weapon
+    if (autoShootEnabled && currentWeaponType === 'normal' && (oldX !== playerShip.x || oldY !== playerShip.y)) {
       const currentTime = Date.now();
       if (currentTime - lastPlayerShootTime > autoShootCooldown) {
         playerShoot();
@@ -2564,6 +2830,31 @@ let canvasHeight;
     if (['1', '2', '3'].includes(e.key)) {
       if (typeof window.switchWeaponByKey === 'function') {
         window.switchWeaponByKey(e.key);
+      }
+      return;
+    }
+    
+    // 🚀 NEW: Handle direct special weapon firing
+    if (e.key === 'l' || e.key === 'L') {
+      // Direct laser fire
+      if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
+        window.isQuickShotCall = true;
+        console.log('🚀 L key: Direct laser fire!');
+        playerShoot();
+      } else {
+        console.log('⚠️ L key: No laser ammo or wrong weapon selected');
+      }
+      return;
+    }
+    
+    if (e.key === 'b' || e.key === 'B') {
+      // Direct bomb fire
+      if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
+        window.isQuickShotCall = true;
+        console.log('🚀 B key: Direct bomb launch!');
+        playerShoot();
+      } else {
+        console.log('⚠️ B key: No bomb ammo or wrong weapon selected');
       }
       return;
     }
@@ -2624,12 +2915,20 @@ let canvasHeight;
         }
         break;
       case ' ':
+        // 🚀 NEW: Enhanced spacebar support for all weapon types
         if (typeof window.playerShoot === 'function') {
+          // For special weapons, set the flag to allow shooting
+          if (currentWeaponType === 'laser' || currentWeaponType === 'bomb') {
+            window.isQuickShotCall = true;
+            console.log(`🚀 Spacebar: Setting isQuickShotCall = true for ${currentWeaponType}`);
+          }
           window.playerShoot();
         }
         break;
     }
   });
+
+  // 🆘 REMOVED: Duplicate touch handling - using existing system below
 
   // 🎮 Make game functions globally available
   window.startGameWithCountdown = startGameWithCountdown;
@@ -2650,6 +2949,10 @@ let canvasHeight;
   window.toggleMobileControls = toggleMobileControls;
   window.createEnhancedMobileControls = createEnhancedMobileControls;
   window.displayHelpInfoOutside = displayHelpInfoOutside;
+
+  // 🎮 NEW: Make game panel functions globally available
+  window.toggleGamePanel = toggleGamePanel;
+  window.updateWeaponAmmoDisplay = updateWeaponAmmoDisplay;
 
 // 🎮 Make initSpaceInvaders globally available
 window.initSpaceInvaders = initSpaceInvaders;
@@ -2827,23 +3130,57 @@ window.testWeaponSystem = function() {
   let touchStartY = 0;
   let touchStartTime = 0;
   let isTouching = false;
+  let holdShootInterval = null;
+  let holdShootDelay = 150; // 150ms between shots for rapid fire
+  let reloadButton = null; // 🚀 NEW: Floating reload button
+  let reloadButtonInterval = null; // 🚀 NEW: Interval to check ammo and show/hide button
 
   function handleTouchStart(e) {
     if (e.target.closest("#space-invaders-canvas")) {
-    e.preventDefault();
-    const touch = e.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
+      e.preventDefault();
+      e.stopPropagation();
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
       isTouching = true;
       
       // Store touch start time for tap detection
       touchStartTime = Date.now();
+      
+      // 🚀 NEW: Start continuous shooting while holding (smart weapon handling)
+      if (holdShootInterval) {
+        clearInterval(holdShootInterval);
+      }
+      
+      // Start rapid fire shooting based on weapon type
+      holdShootInterval = setInterval(() => {
+        if (isTouching && !isSpaceInvadersPaused) {
+          // Smart shooting based on weapon type
+          if (currentWeaponType === 'normal') {
+            // Normal weapon: shoot continuously (infinite ammo)
+            playerShoot();
+          }
+          // Special weapons (laser/bomb) can ONLY be fired through Quick Shot button
+          // No automatic shooting through hold-to-shoot for special weapons
+        }
+      }, holdShootDelay);
+      
+      // First immediate shot (smart weapon handling)
+      setTimeout(() => {
+        if (isTouching && !isSpaceInvadersPaused) {
+          if (currentWeaponType === 'normal') {
+            playerShoot();
+          }
+          // Special weapons require Quick Shot button
+        }
+      }, 50); // Small delay for first shot
     }
   }
 
   function handleTouchMove(e) {
     if (isTouching && e.target.closest("#space-invaders-canvas")) {
       e.preventDefault();
+      e.stopPropagation();
       const touch = e.touches[0];
       const deltaX = touch.clientX - touchStartX;
       const deltaY = touch.clientY - touchStartY;
@@ -2863,17 +3200,20 @@ window.testWeaponSystem = function() {
         // Auto-shoot is handled in movePlayer function
       }
       
-      // 🆘 IMPROVED: Better shooting detection
+      // 🆘 IMPROVED: Better shooting detection (smart weapon handling)
       // Quick swipe up to shoot (like modern mobile games)
       if (deltaY < -15) {
-        playerShoot();
+        if (currentWeaponType === 'normal') {
+          playerShoot();
+        }
+        // Special weapons (laser/bomb) can ONLY be fired through Quick Shot button
         // Reset touch to prevent multiple shots
         touchStartY = touch.clientY;
       }
       
-      // 🆘 NEW: Quick swipe down for special action (could be bomb)
+      // 🆘 NEW: Quick swipe down for special action (bomb only)
       if (deltaY > 25) {
-        // Could activate bomb or special weapon
+        // Swipe down only works with bomb weapon and available ammo
         if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
           playerShoot(); // This will use bomb if selected
         }
@@ -2885,16 +3225,27 @@ window.testWeaponSystem = function() {
   function handleTouchEnd(e) {
     // 🆘 IMPROVED: Better tap-to-shoot detection
     if (isTouching) {
+      e.preventDefault();
+      e.stopPropagation();
       const touchDuration = Date.now() - touchStartTime;
       const touch = e.changedTouches[0];
       const deltaX = Math.abs(touch.clientX - touchStartX);
       const deltaY = Math.abs(touch.clientY - touchStartY);
       
-      // 🆘 IMPROVED: More forgiving tap detection for mobile
+      // 🚀 NEW: Stop continuous shooting
+      if (holdShootInterval) {
+        clearInterval(holdShootInterval);
+        holdShootInterval = null;
+      }
+      
+      // 🆘 IMPROVED: More forgiving tap detection for mobile (smart weapon handling)
       // If it's a quick tap (less than 200ms) with minimal movement (less than 12px)
       if (touchDuration < 200 && deltaX < 12 && deltaY < 12) {
-        playerShoot();
-        console.log('🎯 Tap-to-shoot activated');
+        if (currentWeaponType === 'normal') {
+          playerShoot();
+          console.log('🎯 Tap-to-shoot activated');
+        }
+        // Special weapons (laser/bomb) can ONLY be fired through Quick Shot button
       }
       
       // 🆘 NEW: Long press detection for special actions
@@ -3046,12 +3397,251 @@ window.testWeaponSystem = function() {
   enableGlobalSpaceInvadersTouch();
   // Don't lock scroll immediately - only lock when game starts
 
+  // 🚀 NEW: Create floating reload button for special weapons
+  function createReloadButton() {
+    if (reloadButton) {
+      document.body.removeChild(reloadButton);
+    }
+    
+    reloadButton = document.createElement('button');
+    reloadButton.id = 'reload-button';
+    reloadButton.innerHTML = `
+      <div style="font-size: 1.2em; margin-bottom: 5px;">🚀</div>
+      <div style="font-size: 0.9em; margin-bottom: 3px;">QUICK SHOT</div>
+      <div style="font-size: 0.8em; color: #9ca3af;" id="reload-button-ammo">Loading...</div>
+    `;
+    
+    reloadButton.style.cssText = `
+      position: fixed;
+      bottom: 120px;
+      right: 25px;
+      width: 85px;
+      height: 85px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      border: 3px solid #dc2626;
+      border-radius: 50%;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 999;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(239, 68, 68, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.2;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    `;
+    
+    // Add hover effects
+    reloadButton.addEventListener('mouseenter', () => {
+      reloadButton.style.transform = 'scale(1.15) rotate(8deg)';
+      reloadButton.style.boxShadow = '0 12px 35px rgba(0,0,0,0.6), 0 0 30px rgba(239, 68, 68, 0.5)';
+    });
+    
+    reloadButton.addEventListener('mouseleave', () => {
+      reloadButton.style.transform = 'scale(1) rotate(0deg)';
+      reloadButton.style.boxShadow = '0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(239, 68, 68, 0.3)';
+    });
+    
+    // Add click to handle both functions (shoot special weapon OR toggle auto-shoot)
+    reloadButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleReloadButtonClick();
+    });
+    
+    // Prevent touch events from causing screenshots
+    reloadButton.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, { passive: false });
+    
+    reloadButton.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleReloadButtonClick();
+    }, { passive: false });
+    
+    document.body.appendChild(reloadButton);
+    
+    // Start monitoring ammo and showing/hiding button
+    startReloadButtonMonitoring();
+  }
+  
+  // 🚀 NEW: Handle reload button click based on current function
+  function handleReloadButtonClick() {
+    if (!reloadButton) return;
+    
+    const buttonFunction = reloadButton.dataset.function;
+    
+    if (buttonFunction === 'toggle') {
+      // Normal weapon mode - toggle auto-shoot
+      toggleAutoShoot();
+      console.log('🎯 Auto-shoot toggled through Quick Shot button');
+      // Update button immediately after toggle
+      setTimeout(() => updateReloadButton(), 100);
+    } else if (buttonFunction === 'shoot') {
+      // Special weapon mode - shoot weapon
+      shootSpecialWeapon();
+    }
+  }
+  
+  // 🚀 NEW: Shoot special weapon based on current selection (only when ammo available)
+  function shootSpecialWeapon() {
+    console.log(`🚀 Quick shot called for weapon: ${currentWeaponType}, ammo:`, weaponAmmo);
+    
+    if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
+      // Set flag to allow laser shooting
+      window.isQuickShotCall = true;
+      console.log('🚀 Setting isQuickShotCall = true for laser');
+      playerShoot(); // This will use laser
+      console.log('🚀 Quick shot: Laser fired!');
+      // Update button immediately after shooting
+      setTimeout(() => updateReloadButton(), 100);
+    } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
+      // Set flag to allow bomb shooting
+      window.isQuickShotCall = true;
+      console.log('🚀 Setting isQuickShotCall = true for bomb');
+      playerShoot(); // This will use bomb
+      console.log('🚀 Quick shot: Bomb launched!');
+      // Update button immediately after shooting
+      setTimeout(() => updateReloadButton(), 100);
+    } else {
+      console.log('⚠️ No special weapon ammo available');
+      // Show visual feedback that button is disabled
+      if (reloadButton) {
+        reloadButton.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          if (reloadButton) {
+            reloadButton.style.transform = 'scale(1)';
+          }
+        }, 150);
+      }
+    }
+  }
+  
+  // 🚀 NEW: Start monitoring ammo and showing/hiding reload button
+  function startReloadButtonMonitoring() {
+    if (reloadButtonInterval) {
+      clearInterval(reloadButtonInterval);
+    }
+    
+    reloadButtonInterval = setInterval(() => {
+      if (reloadButton && !isSpaceInvadersPaused) {
+        updateReloadButton();
+      }
+    }, 500); // Check every 500ms
+  }
+  
+  // 🚀 NEW: Update reload button based on current weapon and ammo (always visible)
+  function updateReloadButton() {
+    if (!reloadButton) return;
+    
+    let ammoText = '';
+    let buttonColor = '';
+    let isActive = false;
+    let buttonFunction = 'shoot'; // Default function
+    
+    if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
+      ammoText = `Laser: ${weaponAmmo.laser}`;
+      buttonColor = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+      isActive = true;
+      buttonFunction = 'shoot';
+    } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
+      ammoText = `Bomb: ${weaponAmmo.bomb}`;
+      buttonColor = 'linear-gradient(135deg, #f59e0b, #d97706)';
+      isActive = true;
+      buttonFunction = 'shoot';
+    } else if (currentWeaponType === 'laser') {
+      ammoText = 'Laser: 0';
+      buttonColor = 'linear-gradient(135deg, #6b7280, #4b5563)';
+      isActive = false;
+      buttonFunction = 'shoot';
+    } else if (currentWeaponType === 'bomb') {
+      ammoText = 'Bomb: 0';
+      buttonColor = 'linear-gradient(135deg, #6b7280, #4b5563)';
+      isActive = false;
+      buttonFunction = 'shoot';
+    } else {
+      // Normal weapon mode - button becomes Auto-Shoot toggle
+      ammoText = `Auto: ${autoShootEnabled ? 'ON' : 'OFF'}`;
+      buttonColor = autoShootEnabled ? 
+        'linear-gradient(135deg, #10b981, #059669)' : 
+        'linear-gradient(135deg, #6b7280, #4b5563)';
+      isActive = true; // Always active for normal weapon
+      buttonFunction = 'toggle';
+    }
+    
+    // Always show the button
+    reloadButton.style.display = 'flex';
+    reloadButton.style.background = buttonColor;
+    
+    // Update button text and icon based on function
+    const buttonIcon = reloadButton.querySelector('div:first-child');
+    const buttonTitle = reloadButton.querySelector('div:nth-child(2)');
+    
+    if (buttonIcon && buttonTitle) {
+      if (buttonFunction === 'toggle') {
+        buttonIcon.innerHTML = '🎯';
+        buttonTitle.textContent = 'AUTO-SHOOT';
+      } else {
+        buttonIcon.innerHTML = '🚀';
+        buttonTitle.textContent = 'QUICK SHOT';
+      }
+    }
+    
+    // Update ammo text
+    const ammoElement = reloadButton.querySelector('#reload-button-ammo');
+    if (ammoElement) {
+      ammoElement.textContent = ammoText;
+    }
+    
+    // Update button interactivity
+    if (isActive) {
+      reloadButton.style.cursor = 'pointer';
+      reloadButton.style.opacity = '1';
+    } else {
+      reloadButton.style.cursor = 'not-allowed';
+      reloadButton.style.opacity = '0.6';
+    }
+    
+    // Store current function for click handling
+    reloadButton.dataset.function = buttonFunction;
+  }
+  
   // 🧹 Cleanup function
   function cleanupSpaceInvadersControls() {
     // Note: We can't easily remove the specific keydown listener since it's anonymous
     // The browser will clean it up when the page is unloaded
     disableGlobalSpaceInvadersTouch();
     unlockSpaceInvadersScroll();
+    
+    // 🚀 NEW: Clean up hold-to-shoot interval
+    if (holdShootInterval) {
+      clearInterval(holdShootInterval);
+      holdShootInterval = null;
+    }
+    
+    // 🚀 NEW: Clean up reload button
+    if (reloadButtonInterval) {
+      clearInterval(reloadButtonInterval);
+      reloadButtonInterval = null;
+    }
+    
+    if (reloadButton) {
+      document.body.removeChild(reloadButton);
+      reloadButton = null;
+    }
   }
 
   // 🆘 NEW: Toggle help overlay
@@ -3218,55 +3808,502 @@ window.testWeaponSystem = function() {
 
   // 🆘 NEW: Create enhanced mobile controls - IMPROVED FOR BETTER MOBILE UX
   function createEnhancedMobileControls() {
+    console.log('🎮 Creating enhanced mobile controls...');
+    
     const mobileControls = document.getElementById('mobile-controls');
-    if (!mobileControls) return;
+    if (!mobileControls) {
+      console.warn('⚠️ Mobile controls container not found');
+      return;
+    }
+    
+    console.log('✅ Mobile controls container found, creating game panel...');
     
     // Clear existing content
     mobileControls.innerHTML = '';
     
-    // Add toggle button
-    const toggleBtn = document.createElement('button');
-    toggleBtn.id = 'mobile-controls-toggle';
-    toggleBtn.textContent = '📱 Hide Controls';
-    toggleBtn.style.cssText = `
-      position: absolute;
-      top: -40px;
-      right: 10px;
-      background: #fbbf24;
+    // 🆘 NEW: Create floating game panel button (bottom right)
+    const gamePanelBtn = document.createElement('button');
+    gamePanelBtn.id = 'game-panel-btn';
+    gamePanelBtn.innerHTML = '🎮<br><span style="font-size: 0.7em;">GAME PANEL</span>';
+    gamePanelBtn.style.cssText = `
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 85px;
+      height: 85px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
       color: #1a1a1a;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 20px;
-      font-size: 0.9em;
+      border: 3px solid #f59e0b;
+      border-radius: 50%;
+      font-size: 1.3em;
       font-weight: bold;
       cursor: pointer;
-      z-index: 100;
+      z-index: 1000;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(251, 191, 36, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.2;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     `;
-    toggleBtn.addEventListener('click', toggleMobileControls);
-    mobileControls.appendChild(toggleBtn);
     
-    // Add help button
-    const helpBtn = document.createElement('button');
-    helpBtn.textContent = '❓ HELP';
-    helpBtn.style.cssText = `
+    // Add hover effects
+    gamePanelBtn.addEventListener('mouseenter', () => {
+      gamePanelBtn.style.transform = 'scale(1.15) rotate(8deg)';
+      gamePanelBtn.style.boxShadow = '0 12px 35px rgba(0,0,0,0.6), 0 0 30px rgba(251, 191, 36, 0.5)';
+    });
+    
+    gamePanelBtn.addEventListener('mouseleave', () => {
+      gamePanelBtn.style.transform = 'scale(1) rotate(0deg)';
+      gamePanelBtn.style.boxShadow = '0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(251, 191, 36, 0.3)';
+    });
+    
+    // Add click to open game panel
+    gamePanelBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleGamePanel();
+    });
+    
+    // Prevent touch events from causing screenshots
+    gamePanelBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, { passive: false });
+    
+    gamePanelBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleGamePanel();
+    }, { passive: false });
+    
+    document.body.appendChild(gamePanelBtn);
+    
+    console.log('✅ Game panel button created and added to body');
+    console.log('🎮 Game panel button position:', gamePanelBtn.style.position, gamePanelBtn.style.bottom, gamePanelBtn.style.right);
+    console.log('🎮 Game panel button z-index:', gamePanelBtn.style.zIndex);
+    
+    // 🆘 NEW: Create popup game panel overlay
+    const gamePanel = document.createElement('div');
+    gamePanel.id = 'game-panel-overlay';
+    gamePanel.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    `;
+    
+    // Create panel content
+    const panelContent = document.createElement('div');
+    panelContent.style.cssText = `
+      background: linear-gradient(135deg, #1a1a1a, #374151);
+      border: 3px solid #fbbf24;
+      border-radius: 25px;
+      padding: 30px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(251, 191, 36, 0.2);
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    `;
+    
+    // Add close button
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '✕';
+    closeBtn.style.cssText = `
       position: absolute;
-      top: -40px;
-      left: 10px;
-      background: #8b5cf6;
+      top: 20px;
+      right: 20px;
+      width: 35px;
+      height: 35px;
+      background: #ef4444;
       color: white;
       border: none;
-      padding: 8px 15px;
-      border-radius: 20px;
-      font-size: 0.9em;
-      font-weight: bold;
+      border-radius: 50%;
+      font-size: 1.3em;
       cursor: pointer;
-      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
     `;
-    helpBtn.addEventListener('click', toggleHelpOverlay);
-    mobileControls.appendChild(helpBtn);
+    closeBtn.addEventListener('click', function() {
+      toggleGamePanel();
+    });
     
-    // 🆘 IMPROVED: Remove movement buttons - players should SWIPE to move
-    // Add swipe instruction instead
+    // Add hover effects to close button
+    closeBtn.addEventListener('mouseenter', function() {
+      this.style.transform = 'scale(1.1)';
+      this.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.6)';
+    });
+    
+    closeBtn.addEventListener('mouseleave', function() {
+      this.style.transform = 'scale(1)';
+      this.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+    });
+    panelContent.appendChild(closeBtn);
+    
+    // Add panel title
+    const panelTitle = document.createElement('h2');
+    panelTitle.textContent = '🎮 GAME CONTROL PANEL';
+    panelTitle.style.cssText = `
+      color: #fbbf24;
+      text-align: center;
+      margin: 0 0 20px 0;
+      font-size: 1.5em;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    `;
+    panelContent.appendChild(panelTitle);
+    
+    // 🚀 NEW: Simple weapon selection buttons
+    const weaponSection = document.createElement('div');
+    weaponSection.style.cssText = `
+      margin-bottom: 25px;
+      text-align: center;
+    `;
+    
+    const weaponTitle = document.createElement('h3');
+    weaponTitle.textContent = '🔫 WEAPONS';
+    weaponTitle.style.cssText = `
+      color: #ffffff;
+      margin: 0 0 15px 0;
+      font-size: 1.2em;
+    `;
+    weaponSection.appendChild(weaponTitle);
+    
+    const weaponGrid = document.createElement('div');
+    weaponGrid.className = 'weapon-grid';
+    weaponGrid.style.cssText = `
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 15px;
+    `;
+    
+    const weaponTypes = [
+      { type: 'normal', label: '1️⃣ NORMAL', color: '#6b7280', ammo: '∞' },
+      { type: 'laser', label: '2️⃣ LASER', color: '#00ffff', ammo: weaponAmmo.laser },
+      { type: 'bomb', label: '3️⃣ BOMB', color: '#ff00ff', ammo: weaponAmmo.bomb }
+    ];
+    
+    weaponTypes.forEach((weapon, index) => {
+      const weaponBtn = document.createElement('button');
+      weaponBtn.id = `weapon-btn-${weapon.type}`;
+      weaponBtn.innerHTML = `
+        <div style="font-size: 1.1em; margin-bottom: 5px;">${weapon.label.split(' ')[0]}</div>
+        <div style="font-size: 0.9em; margin-bottom: 3px;">${weapon.label.split(' ')[1]}</div>
+        <div style="font-size: 0.8em; color: #9ca3af;">Ammo: ${weapon.ammo}</div>
+      `;
+      
+
+      weaponBtn.style.cssText = `
+        background: ${currentWeaponType === weapon.type ? '#fbbf24' : weapon.color};
+        color: ${currentWeaponType === weapon.type ? '#1a1a1a' : 'white'};
+        border: 3px solid ${currentWeaponType === weapon.type ? '#f59e0b' : weapon.color};
+        border-radius: 18px;
+        padding: 18px 12px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: bold;
+        min-height: 90px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: ${currentWeaponType === weapon.type ? '0 0 25px rgba(251, 191, 36, 0.7)' : '0 6px 16px rgba(0, 0, 0, 0.15)'};
+        transform: ${currentWeaponType === weapon.type ? 'scale(1.08)' : 'scale(1)'};
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      `;
+      
+      weaponBtn.addEventListener('click', function() {
+        if (typeof switchWeapon === 'function') {
+          switchWeapon(weapon.type);
+          // Update all weapon button colors and effects
+          weaponGrid.querySelectorAll('button').forEach((btn, i) => {
+            const weaponData = weaponTypes[i];
+            const isSelected = currentWeaponType === weaponData.type;
+            btn.style.background = isSelected ? '#fbbf24' : weaponData.color;
+            btn.style.color = isSelected ? '#1a1a1a' : 'white';
+            btn.style.borderColor = isSelected ? '#f59e0b' : weaponData.color;
+            btn.style.borderWidth = isSelected ? '3px' : '2px';
+            btn.style.boxShadow = isSelected ? '0 0 20px rgba(251, 191, 36, 0.6)' : 'none';
+            btn.style.transform = isSelected ? 'scale(1.05)' : 'scale(1)';
+          });
+          // Update ammo display
+          updateWeaponAmmoDisplay();
+        }
+        
+        // Close the game panel after weapon selection
+        setTimeout(() => {
+          toggleGamePanel();
+        }, 300);
+      });
+      
+      weaponGrid.appendChild(weaponBtn);
+    });
+    
+    weaponSection.appendChild(weaponGrid);
+    panelContent.appendChild(weaponSection);
+    
+
+    
+    // 🚀 NEW: Power-ups section with auto-shoot and speed boost
+    const powerUpsSection = document.createElement('div');
+    powerUpsSection.style.cssText = `
+      margin-bottom: 25px;
+      text-align: center;
+    `;
+    
+    const powerUpsTitle = document.createElement('h3');
+    powerUpsTitle.textContent = '⚡ POWER-UPS';
+    powerUpsTitle.style.cssText = `
+      color: #ffffff;
+      margin: 0 0 15px 0;
+      font-size: 1.2em;
+    `;
+    powerUpsSection.appendChild(powerUpsTitle);
+    
+    const powerUpsGrid = document.createElement('div');
+    powerUpsGrid.style.cssText = `
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 15px;
+    `;
+    
+    // Auto-shoot button
+    const autoShootBtn = document.createElement('button');
+    autoShootBtn.innerHTML = `
+      <div style="font-size: 1.1em; margin-bottom: 5px;">🎯</div>
+      <div style="font-size: 0.9em; margin-bottom: 3px;">AUTO-SHOOT</div>
+      <div style="font-size: 0.8em; color: #9ca3af;">${autoShootEnabled ? 'ON' : 'OFF'}</div>
+    `;
+    autoShootBtn.style.cssText = `
+      background: ${autoShootEnabled ? '#10b981' : '#6b7280'};
+      color: white;
+      border: 2px solid ${autoShootEnabled ? '#059669' : '#6b7280'};
+      border-radius: 18px;
+      padding: 18px 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: bold;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    `;
+    
+    autoShootBtn.addEventListener('click', function() {
+      if (typeof toggleAutoShoot === 'function') {
+        toggleAutoShoot();
+        // Update button appearance
+        autoShootBtn.style.background = autoShootEnabled ? '#10b981' : '#6b7280';
+        autoShootBtn.style.borderColor = autoShootEnabled ? '#059669' : '#6b7280';
+        autoShootBtn.querySelector('div:last-child').textContent = autoShootEnabled ? 'ON' : 'OFF';
+      }
+      
+      // Close panel after selection
+      setTimeout(() => {
+        toggleGamePanel();
+      }, 300);
+    });
+    
+    // Speed boost button
+    const speedBoostBtn = document.createElement('button');
+    speedBoostBtn.innerHTML = `
+      <div style="font-size: 1.1em; margin-bottom: 5px;">⚡</div>
+      <div style="font-size: 0.9em; margin-bottom: 3px;">SPEED BOOST</div>
+      <div style="font-size: 0.8em; color: #9ca3af;">Available: ${speedBoostAmmo}</div>
+    `;
+    speedBoostBtn.style.cssText = `
+      background: ${speedBoostAmmo > 0 ? '#f59e0b' : '#6b7280'};
+      color: white;
+      border: 2px solid ${speedBoostAmmo > 0 ? '#d97706' : '#6b7280'};
+      border-radius: 18px;
+      padding: 18px 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: bold;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    `;
+    
+    speedBoostBtn.addEventListener('click', function() {
+      if (speedBoostAmmo > 0) {
+        if (typeof activateSpeedBoost === 'function') {
+          activateSpeedBoost();
+          // Update button appearance
+          speedBoostBtn.style.background = '#6b7280';
+          speedBoostBtn.style.borderColor = '#6b7280';
+          speedBoostBtn.querySelector('div:last-child').textContent = 'Available: 0';
+        }
+      }
+      
+      // Close panel after activation
+      setTimeout(() => {
+        toggleGamePanel();
+      }, 300);
+    });
+    
+    powerUpsGrid.appendChild(autoShootBtn);
+    powerUpsGrid.appendChild(speedBoostBtn);
+    powerUpsSection.appendChild(powerUpsGrid);
+    panelContent.appendChild(powerUpsSection);
+    
+    // 🚀 NEW: Quick actions section
+    const quickActionsSection = document.createElement('div');
+    quickActionsSection.style.cssText = `
+      margin-bottom: 25px;
+      text-align: center;
+    `;
+    
+    const quickActionsTitle = document.createElement('h3');
+    quickActionsTitle.textContent = '🎮 QUICK ACTIONS';
+    quickActionsTitle.style.cssText = `
+      color: #ffffff;
+      margin: 0 0 15px 0;
+      font-size: 1.2em;
+    `;
+    quickActionsSection.appendChild(quickActionsTitle);
+    
+    const quickActionsGrid = document.createElement('div');
+    quickActionsGrid.style.cssText = `
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 15px;
+    `;
+    
+    // Manual shoot button
+    const manualShootBtn = document.createElement('button');
+    manualShootBtn.innerHTML = `
+      <div style="font-size: 1.1em; margin-bottom: 5px;">🎯</div>
+      <div style="font-size: 0.9em; margin-bottom: 3px;">MANUAL SHOOT</div>
+      <div style="font-size: 0.8em; color: #9ca3af;">Tap to fire</div>
+    `;
+    manualShootBtn.style.cssText = `
+      background: #3b82f6;
+      color: white;
+      border: 2px solid #2563eb;
+      border-radius: 18px;
+      padding: 18px 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: bold;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    `;
+    
+    manualShootBtn.addEventListener('click', function() {
+      if (typeof playerShoot === 'function') {
+        playerShoot();
+      }
+      
+      // Close panel after action
+      setTimeout(() => {
+        toggleGamePanel();
+      }, 300);
+    });
+    
+    // Help button
+    const helpBtn = document.createElement('button');
+    helpBtn.innerHTML = `
+      <div style="font-size: 1.1em; margin-bottom: 5px;">❓</div>
+      <div style="font-size: 0.9em; margin-bottom: 3px;">HELP</div>
+      <div style="font-size: 0.8em; color: #9ca3af;">Game info</div>
+    `;
+    helpBtn.style.cssText = `
+      background: #8b5cf6;
+      color: white;
+      border: 2px solid #7c3aed;
+      border-radius: 18px;
+      padding: 18px 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: bold;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    `;
+    
+    helpBtn.addEventListener('click', function() {
+      // Close panel after action
+      setTimeout(() => {
+        toggleGamePanel();
+      }, 300);
+    });
+    
+    quickActionsGrid.appendChild(manualShootBtn);
+    quickActionsGrid.appendChild(helpBtn);
+    quickActionsSection.appendChild(quickActionsGrid);
+    panelContent.appendChild(quickActionsSection);
+    
+    console.log('✅ Game panel overlay created with weapon grid, power-ups, and quick actions');
+    
+    // Add panel content to overlay
+    gamePanel.appendChild(panelContent);
+    document.body.appendChild(gamePanel);
+    
+    // 🚀 REMOVED: Overly aggressive touch prevention that was blocking button clicks
+    console.log('✅ Game panel ready for button interactions');
+    
+    // 🆘 IMPROVED: Add swipe instruction
     const swipeInstruction = document.createElement('div');
     swipeInstruction.style.cssText = `
       text-align: center;
@@ -3277,128 +4314,16 @@ window.testWeaponSystem = function() {
       border: 1px solid #fbbf24;
     `;
     swipeInstruction.innerHTML = `
-      <div style="color: #fbbf24; font-weight: bold; margin-bottom: 5px;">🎮 SWIPE TO MOVE</div>
+      <div style="color: #fbbf24; font-weight: bold; margin-bottom: 5px;">🎮 MOBILE CONTROLS</div>
       <div style="color: #9ca3af; font-size: 0.8em;">
         • Swipe left/right to move ship<br>
         • Swipe up/down for vertical movement<br>
-        • Tap to shoot (or use auto-shoot)
+        • Tap to shoot (single shot)<br>
+        • 🚀 <strong>HOLD to shoot continuously!</strong><br>
+        • Use 🎮 GAME PANEL for all controls
       </div>
     `;
     mobileControls.appendChild(swipeInstruction);
-    
-    // Action controls
-    const actionControls = document.createElement('div');
-    actionControls.style.cssText = `
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      align-items: center;
-    `;
-    
-    // Shoot button
-    const shootBtn = document.createElement('button');
-    shootBtn.id = 'mobile-shoot-btn';
-    shootBtn.textContent = '🔫 SHOOT';
-    shootBtn.style.cssText = `
-      width: 120px;
-      height: 50px;
-      background: #ef4444;
-      color: white;
-      border: none;
-      border-radius: 25px;
-      font-size: 1.1em;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    `;
-    shootBtn.addEventListener('click', () => {
-      if (!isSpaceInvadersPaused) playerShoot();
-    });
-    actionControls.appendChild(shootBtn);
-    
-    // Auto-shoot toggle
-    const autoShootBtn = document.createElement('button');
-    autoShootBtn.id = 'mobile-auto-shoot-btn';
-    autoShootBtn.textContent = '🎯 Auto: ON';
-    autoShootBtn.style.cssText = `
-      width: 120px;
-      height: 40px;
-      background: #8b5cf6;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      font-size: 0.9em;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    `;
-    autoShootBtn.addEventListener('click', () => {
-      toggleAutoShoot();
-      autoShootBtn.textContent = autoShootEnabled ? "🎯 Auto: ON" : "🎯 Auto: OFF";
-      autoShootBtn.style.background = autoShootEnabled ? "#8b5cf6" : "#6b7280";
-    });
-    actionControls.appendChild(autoShootBtn);
-    
-    // Weapon selection
-    const weaponControls = document.createElement('div');
-    weaponControls.style.cssText = `
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    `;
-    
-    const weaponLabels = ['1️⃣ Normal', '2️⃣ Laser', '3️⃣ Bomb'];
-    const weaponTypes = ['normal', 'laser', 'bomb'];
-    
-    weaponLabels.forEach((label, index) => {
-      const weaponBtn = document.createElement('button');
-      weaponBtn.textContent = label;
-      weaponBtn.style.cssText = `
-        width: 80px;
-        height: 35px;
-        background: ${currentWeaponType === weaponTypes[index] ? '#fbbf24' : '#6b7280'};
-        color: ${currentWeaponType === weaponTypes[index] ? '#1a1a1a' : 'white'};
-        border: none;
-        border-radius: 17px;
-        font-size: 0.8em;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      `;
-      weaponBtn.addEventListener('click', () => {
-        switchWeapon(weaponTypes[index]);
-        // Update all weapon button colors
-        weaponControls.querySelectorAll('button').forEach((btn, i) => {
-          btn.style.background = currentWeaponType === weaponTypes[i] ? '#fbbf24' : '#6b7280';
-          btn.style.color = currentWeaponType === weaponTypes[i] ? '#1a1a1a' : 'white';
-        });
-      });
-      weaponControls.appendChild(weaponBtn);
-    });
-    
-    actionControls.appendChild(weaponControls);
-    
-    // Speed boost button
-    const speedBtn = document.createElement('button');
-    speedBtn.textContent = '⚡ SPEED';
-    speedBtn.style.cssText = `
-      width: 120px;
-      height: 40px;
-      background: #10b981;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      font-size: 0.9em;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    `;
-    speedBtn.addEventListener('click', () => {
-      activateSpeedBoost();
-    });
-    actionControls.appendChild(speedBtn);
-    
-    mobileControls.appendChild(actionControls);
     
     // Add quick help text
     const helpText = document.createElement('div');
@@ -3410,70 +4335,83 @@ window.testWeaponSystem = function() {
       max-width: 300px;
     `;
     helpText.innerHTML = `
-      <p><strong>💡 Mobile Controls:</strong></p>
-      <p>🎮 <strong>Swipe anywhere on screen to move ship</strong></p>
-      <p>👆 <strong>Tap to shoot</strong> (or use auto-shoot)</p>
-      <p>⚡ <strong>Long press for speed boost</strong></p>
-      <p>💣 <strong>Swipe down for bomb</strong> (if available)</p>
-      <p>🎯 <strong>Auto-shoot toggle</strong> for hands-free play</p>
-      <p>🔫 <strong>Weapon switching</strong> for different strategies</p>
+      <p><strong>💡 Quick Access:</strong></p>
+      <p>🎮 <strong>Tap the GAME PANEL button</strong> (bottom right) to access all controls</p>
+      <p>📱 <strong>No need to pause</strong> - use controls while playing!</p>
+      <p>⚡ <strong>Quick weapon switching</strong> and power-ups</p>
+      <p>🎯 <strong>All features</strong> in one convenient panel</p>
+      <p><strong>🚀 NEW: Hold-to-Shoot!</strong></p>
+      <p>🎯 <strong>Hold your finger</strong> on the screen for continuous rapid fire!</p>
+      <p>⚡ <strong>150ms delay</strong> between shots for smooth gameplay</p>
+      <p><strong>🔫 Smart Weapon System:</strong></p>
+      <p>• <strong>Normal:</strong> Infinite ammo, shoots on movement</p>
+      <p>• <strong>Laser:</strong> Limited ammo, only shoots when you want</p>
+      <p>• <strong>Bomb:</strong> Limited ammo, only shoots when you want</p>
+      <p><strong>🚀 NEW: Smart Quick Shot Button!</strong></p>
+      <p>🎯 <strong>Always visible</strong> - shows current weapon and ammo</p>
+      <p>⚡ <strong>ONLY way to fire</strong> laser and bomb weapons!</p>
+      <p>🎯 <strong>Auto-Shoot toggle</strong> when using Normal weapon!</p>
+      <p>🔫 <strong>Normal weapon</strong> works with touch/swipe as usual</p>
+      <p><strong>🖥️ NEW: Desktop Controls!</strong></p>
+      <p>🎯 <strong>SPACEBAR:</strong> Shoot with current weapon (works with all weapons!)</p>
+      <p>🔫 <strong>L key:</strong> Direct laser fire (if laser weapon selected)</p>
+      <p>💣 <strong>B key:</strong> Direct bomb launch (if bomb weapon selected)</p>
+      <p>⚡ <strong>1/2/3:</strong> Switch weapons instantly</p>
+      <p>🎮 <strong>S key:</strong> Activate speed boost</p>
     `;
     mobileControls.appendChild(helpText);
+    
+    // 🚀 NEW: Create the floating reload button
+    createReloadButton();
+    
+    console.log('🎮 Enhanced mobile controls with game panel and reload button created');
   }
 
-  // 🆘 NEW: Add mobile controls toggle button for easy access
-  function addMobileControlsToggle() {
-    // Check if toggle already exists
-    if (document.getElementById('mobile-controls-toggle-float')) return;
-    
-    const toggleFloat = document.createElement('button');
-    toggleFloat.id = 'mobile-controls-toggle-float';
-    toggleFloat.textContent = '🎮';
-    toggleFloat.title = 'Show/Hide Mobile Controls';
-    toggleFloat.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      background: #fbbf24;
-      color: #1a1a1a;
-      border: none;
-      border-radius: 50%;
-      font-size: 1.5em;
-      font-weight: bold;
-      cursor: pointer;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
-    `;
-    
-    toggleFloat.addEventListener('click', () => {
-      toggleMobileControls();
-      // Update button appearance
-      if (mobileControlsVisible) {
-        toggleFloat.style.background = '#6b7280';
-        toggleFloat.textContent = '🎮';
-      } else {
-        toggleFloat.style.background = '#fbbf24';
-        toggleFloat.textContent = '🎮';
+  // 🆘 NEW: Toggle game panel overlay
+  function toggleGamePanel() {
+    const gamePanel = document.getElementById('game-panel-overlay');
+    if (gamePanel) {
+      const isVisible = gamePanel.style.display === 'flex';
+      gamePanel.style.display = isVisible ? 'none' : 'flex';
+      
+      // Update weapon ammo display when opening
+      if (!isVisible) {
+        updateWeaponAmmoDisplay();
       }
-    });
-    
-    // Add hover effects
-    toggleFloat.addEventListener('mouseenter', () => {
-      toggleFloat.style.transform = 'scale(1.1)';
-      toggleFloat.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
-    });
-    
-    toggleFloat.addEventListener('mouseleave', () => {
-      toggleFloat.style.transform = 'scale(1)';
-      toggleFloat.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-    });
-    
-    document.body.appendChild(toggleFloat);
-    console.log('🎮 Mobile controls toggle button added');
+    }
   }
+
+  // 🚀 NEW: Update weapon ammo display in game panel
+  function updateWeaponAmmoDisplay() {
+    const weaponGrid = document.querySelector('#game-panel-overlay .weapon-grid');
+    if (weaponGrid) {
+      const weaponButtons = weaponGrid.querySelectorAll('button');
+      
+      weaponButtons.forEach((btn, index) => {
+        const weaponTypes = ['normal', 'laser', 'bomb'];
+        const weaponType = weaponTypes[index];
+        const ammoElement = btn.querySelector('div:last-child');
+        if (ammoElement) {
+          if (weaponType === 'normal') {
+            ammoElement.textContent = 'Ammo: ∞';
+          } else {
+            ammoElement.textContent = `Ammo: ${weaponAmmo[weaponType]}`;
+          }
+        }
+      });
+    }
+    
+    // Update speed boost display
+    const speedBtn = document.querySelector('#game-panel-overlay button[onclick*="activateSpeedBoost"]');
+    if (speedBtn) {
+      const ammoElement = speedBtn.querySelector('div:last-child');
+      if (ammoElement) {
+        ammoElement.textContent = `Available: ${speedBoostAmmo}`;
+      }
+    }
+  }
+
+  // 🆘 REMOVED: Old mobile controls toggle function - replaced with game panel system
 
   // 🚀 NEW: Test help system
   window.testHelpSystem = function() {

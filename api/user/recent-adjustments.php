@@ -11,7 +11,8 @@ if (!$user_id) {
     exit;
 }
 
-$dbPath = '/var/www/html/db/narrrf_world.sqlite';
+// Use a safe relative path so it works both locally and on Render!
+$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 try {
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

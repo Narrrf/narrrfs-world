@@ -2,11 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>🧀 Space Cheese Invaders - Test</title>
   <script src="https://cdn.tailwindcss.com"></script>
   
   <style>
+    /* 🚀 NEW: Prevent mobile screenshot and selection issues */
+    * {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Allow text selection in specific areas if needed */
+    .allow-select {
+      -webkit-user-select: text;
+      -khtml-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+    
     @keyframes pop {
       0% { transform: scale(0.9); opacity: 0.3; }
       100% { transform: scale(1); opacity: 1; }
@@ -26,6 +49,77 @@
     }
     .animate-fade-in {
       animation: fade-in 0.3s ease-out;
+    }
+    
+    /* 🆘 NEW: Mobile-friendly game panel styles */
+    @media (max-width: 768px) {
+      #game-panel-overlay {
+        padding: 10px;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      
+      #game-panel-overlay > div {
+        max-width: 95vw;
+        max-height: 95vh;
+        padding: 20px;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      
+      #game-panel-overlay button {
+        min-height: 60px;
+        font-size: 0.9em;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      
+      #game-panel-overlay h2 {
+        font-size: 1.3em;
+      }
+      
+      #game-panel-overlay h3 {
+        font-size: 1.1em;
+      }
+    }
+    
+    /* 🎮 Game panel button animations */
+    #game-panel-btn {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    
+    #game-panel-btn:hover {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    }
+    
+    #game-panel-btn:active {
+      transform: scale(0.95);
     }
   </style>
 </head>
@@ -65,31 +159,29 @@
     </div>
 
     <!-- 🎮 Mobile Controls -->
-    <div id="mobile-controls" class="hidden md:hidden mt-3 flex flex-col items-center space-y-2">
-      <!-- Up button -->
-      <button id="mobile-up-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg text-lg">⬆️</button>
-      
-      <!-- Middle row: Left, Shoot, Right -->
-      <div class="flex space-x-4">
-        <button id="mobile-left-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-3 rounded-xl shadow-lg text-lg">⬅️</button>
-        <button id="mobile-shoot-btn" class="bg-red-500 hover:bg-red-400 text-white font-bold px-6 py-3 rounded-xl shadow-lg text-lg">🔥 SHOOT</button>
-        <button id="mobile-right-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-3 rounded-xl shadow-lg text-lg">➡️</button>
+    <div id="mobile-controls" class="block md:hidden mt-3 flex flex-col items-center space-y-2">
+      <!-- 🆘 NEW: Enhanced mobile controls with game panel -->
+      <div class="text-center p-3 bg-gray-800 rounded-lg border border-yellow-400">
+        <p class="text-yellow-300 font-bold mb-2">📱 MOBILE CONTROLS</p>
+        <p class="text-sm text-gray-300 mb-2">🎮 <strong>Swipe on canvas to move ship</strong></p>
+        <p class="text-sm text-gray-300 mb-2">👆 <strong>Tap on canvas to shoot</strong></p>
+        <p class="text-sm text-yellow-300 font-bold">🎮 Use GAME PANEL button (bottom right) for all controls!</p>
       </div>
-      
-      <!-- Down button -->
-      <button id="mobile-down-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg text-lg">⬇️</button>
-      
-      <!-- Auto-shoot toggle -->
-      <button id="mobile-auto-shoot-btn" class="bg-blue-500 hover:bg-blue-400 text-white font-bold px-4 py-2 rounded-xl shadow-lg text-sm mt-2">🎯 Auto: OFF</button>
     </div>
 
     <p id="space-invaders-score" class="text-center mt-4 text-sm font-semibold text-yellow-200 animate-pulse">
       💰 Space Invaders Score: $0 DSPOINC
     </p>
+    
+    <!-- 🚀 NEW: Weapon Display -->
+    <p id="weapon-display" class="text-center mt-2 text-sm font-semibold text-cyan-300">
+      🔫 Weapon: NORMAL
+    </p>
 
     <div class="text-xs italic text-center text-gray-500 mt-1 mb-2">
       🎮 Controls: WASD/Arrows to move (up/down/left/right), Space to shoot, P to pause, T to toggle auto-shoot<br>
-      📱 Mobile: Use buttons below or swipe on canvas to move and shoot
+      📱 Mobile: Swipe on canvas to move, tap to shoot, or use 🎮 GAME PANEL button for all controls<br>
+      🚀 NEW: Enhanced mobile controls with popup game panel - no need to pause!
     </div>
   </section>
 </section>
