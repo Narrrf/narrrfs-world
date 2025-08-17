@@ -97,6 +97,21 @@ require_once 'discord-invite.php';
     }
     .animate-glow { animation: labGlow 2s infinite; }
 
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fade-in 0.3s ease-out;
+    }
+
     :root {
       --primary-color: #f472b6;
       --secondary-color: #3b82f6;
@@ -3107,6 +3122,103 @@ function handleHDRDragEnd() {
       selectedTab.classList.add('bg-yellow-400', 'text-black');
     }
   }
+
+  // 🍪 Cookie Consent Management
+  function initializeCookieConsent() {
+    const banner = document.getElementById('cookie-consent-banner');
+    const spacer = document.getElementById('cookie-banner-spacer');
+    
+    // Check if user has already made a choice
+    const cookieChoice = localStorage.getItem('cookie-consent');
+    
+    if (cookieChoice) {
+      // User has already made a choice - hide banner and adjust spacing
+      hideCookieBanner();
+    } else {
+      // Show banner and adjust spacing
+      showCookieBanner();
+    }
+    
+    // Add event listeners
+    document.getElementById('cookie-accept')?.addEventListener('click', acceptAllCookies);
+    document.getElementById('cookie-decline')?.addEventListener('click', declineNonEssentialCookies);
+  }
+
+  function acceptAllCookies() {
+    localStorage.setItem('cookie-consent', 'accepted');
+    localStorage.setItem('cookie-preferences', JSON.stringify({
+      essential: true,
+      analytics: true,
+      marketing: true,
+      timestamp: new Date().toISOString()
+    }));
+    
+    hideCookieBanner();
+    showCookieSuccess('All cookies accepted! 🍪');
+  }
+
+  function declineNonEssentialCookies() {
+    localStorage.setItem('cookie-consent', 'declined');
+    localStorage.setItem('cookie-preferences', JSON.stringify({
+      essential: true,
+      analytics: false,
+      marketing: false,
+      timestamp: new Date().toISOString()
+    }));
+    
+    hideCookieBanner();
+    showCookieSuccess('Only essential cookies enabled! 🔒');
+  }
+
+  function hideCookieBanner() {
+    const banner = document.getElementById('cookie-consent-banner');
+    const spacer = document.getElementById('cookie-banner-spacer');
+    
+    if (banner) {
+      banner.style.transform = 'translateY(-100%)';
+      setTimeout(() => {
+        banner.style.display = 'none';
+        if (spacer) spacer.style.display = 'none';
+      }, 500);
+    }
+  }
+
+  function showCookieBanner() {
+    const banner = document.getElementById('cookie-consent-banner');
+    const spacer = document.getElementById('cookie-banner-spacer');
+    
+    if (banner) {
+      banner.style.display = 'block';
+      banner.style.transform = 'translateY(0)';
+      if (spacer) spacer.style.display = 'block';
+    }
+  }
+
+  function showCookieSuccess(message) {
+    // Create temporary success notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in max-w-sm';
+    notification.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span>✅</span>
+        <span>${message}</span>
+        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white hover:text-gray-200 text-lg">×</button>
+      </div>
+    `;
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 4000);
+  }
+
+  // Initialize cookie consent when DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    initializeCookieConsent();
+  });
 </script>
 
 <!-- 🍪 Cookie Consent Banner - GDPR Compliant -->

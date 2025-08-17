@@ -13,6 +13,120 @@ require_once 'discord-invite.php';
   <title>🧠 Your Narrrf Profile</title>
   <script>
   window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
+  
+  // 🍪 Cookie Consent Management - Moved to head for early availability
+  function initializeCookieConsent() {
+    const banner = document.getElementById('cookie-consent-banner');
+    const spacer = document.getElementById('cookie-banner-spacer');
+    
+    // Check if user has already made a choice
+    const cookieChoice = localStorage.getItem('cookie-consent');
+    
+    if (cookieChoice) {
+      // User has already made a choice - hide banner and adjust spacing
+      hideCookieBanner();
+    } else {
+      // Show banner and adjust spacing
+      showCookieBanner();
+    }
+    
+    // Add event listeners
+    const acceptBtn = document.getElementById('cookie-accept');
+    const declineBtn = document.getElementById('cookie-decline');
+    
+    if (acceptBtn) {
+      acceptBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        acceptAllCookies();
+      });
+    }
+    
+    if (declineBtn) {
+      declineBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        declineNonEssentialCookies();
+      });
+    }
+  }
+
+  function acceptAllCookies() {
+    localStorage.setItem('cookie-consent', 'accepted');
+    localStorage.setItem('cookie-preferences', JSON.stringify({
+      essential: true,
+      analytics: true,
+      marketing: true,
+      timestamp: new Date().toISOString()
+    }));
+    
+    hideCookieBanner();
+    showCookieSuccess('All cookies accepted! 🍪');
+  }
+
+  function declineNonEssentialCookies() {
+    localStorage.setItem('cookie-consent', 'declined');
+    localStorage.setItem('cookie-preferences', JSON.stringify({
+      essential: true,
+      analytics: false,
+      marketing: false,
+      timestamp: new Date().toISOString()
+    }));
+    
+    hideCookieBanner();
+    showCookieSuccess('Only essential cookies enabled! 🔒');
+  }
+
+  function hideCookieBanner() {
+    const banner = document.getElementById('cookie-consent-banner');
+    const spacer = document.getElementById('cookie-banner-spacer');
+    
+    if (banner) {
+      banner.style.transform = 'translateY(-100%)';
+      setTimeout(() => {
+        banner.style.display = 'none';
+        if (spacer) spacer.style.display = 'none';
+      }, 500);
+    }
+  }
+
+  function showCookieBanner() {
+    const banner = document.getElementById('cookie-consent-banner');
+    const spacer = document.getElementById('cookie-banner-spacer');
+    
+    if (banner) {
+      banner.style.display = 'block';
+      banner.style.transform = 'translateY(0)';
+      if (spacer) spacer.style.display = 'block';
+    }
+  }
+
+  function showCookieSuccess(message) {
+    // Create temporary success notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in max-w-sm';
+    notification.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span>✅</span>
+        <span>${message}</span>
+        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white hover:text-gray-200 text-lg">×</button>
+      </div>
+    `;
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 4000);
+  }
+
+  // 🍪 Initialize cookie consent when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('🍪 DOM ready, initializing cookie consent...');
+    initializeCookieConsent();
+  });
 </script>
   <script src="https://cdn.tailwindcss.com"></script>
   
@@ -25,13 +139,22 @@ require_once 'discord-invite.php';
   <style>
     /* 🎨 Style Card Elements */
     .card {
-      background: #36393f;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
       border-radius: 12px;
       padding: 30px;
       box-shadow: 0 0 12px rgba(0,0,0,0.3);
       max-width: 400px;
       width: 100%;
       text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(251, 191, 36, 0.5);
     }
 
     /* 🖼️ Avatar */
@@ -121,6 +244,40 @@ require_once 'discord-invite.php';
 .wiggle-text {
   animation: wiggle 1s infinite ease-in-out;
 }
+
+/* New Role System Style Animations */
+@keyframes trophyGlow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes rolePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.trophy-glow {
+  animation: trophyGlow 3s ease-in-out infinite;
+}
+
+.role-pulse {
+  animation: rolePulse 4s ease-in-out infinite;
+}
+
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
   </style>
 </head>
 
@@ -136,10 +293,23 @@ require_once 'discord-invite.php';
   ========================================
 -->
 
-<body class="bg-[#2f3136] text-white font-sans min-h-screen">
+<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
+
+  <!-- 🌟 Floating Background Elements -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
+    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
+    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
+    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
+  </div>
+
+  <!-- 🧬 Lab Status Badge -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
+    🧬 Profile Portal v2.0 Active
+  </div>
 
 <!-- 🔰 Header with App Context -->
-<header class="w-full bg-black py-4 px-6 text-yellow-400 shadow-md">
+<header class="w-full bg-black/90 backdrop-blur-md py-4 px-6 text-yellow-400 shadow-xl border-b border-yellow-400/30">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Phase 5 Portal</h1>
     <nav class="space-x-4 text-sm md:text-base flex items-center">
@@ -267,6 +437,8 @@ require_once 'discord-invite.php';
         <!-- Status message will be populated here -->
       </div>
     </div>
+    
+
 
     <!-- 🧪 Traits + Wallet View -->
     <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner">
@@ -778,8 +950,10 @@ function goToAdminInterface() {
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
-  // 🍪 Initialize Cookie Consent Banner
-  initializeCookieConsent();
+  console.log('🚀 DOM Content Loaded - Starting profile initialization...');
+  
+  
+
   
   const avatar = document.getElementById('avatar');
   const loginLink = document.getElementById('login-link');
@@ -1796,99 +1970,7 @@ async function connectWallet() {
 }
 </script>
 
-<script>
-// 🍪 Cookie Consent Management
-function initializeCookieConsent() {
-  const banner = document.getElementById('cookie-consent-banner');
-  const spacer = document.getElementById('cookie-banner-spacer');
-  
-  // Check if user has already made a choice
-  const cookieChoice = localStorage.getItem('cookie-consent');
-  
-  if (cookieChoice) {
-    // User has already made a choice - hide banner and adjust spacing
-    hideCookieBanner();
-  } else {
-    // Show banner and adjust spacing
-    showCookieBanner();
-  }
-  
-  // Add event listeners
-  document.getElementById('cookie-accept')?.addEventListener('click', acceptAllCookies);
-  document.getElementById('cookie-decline')?.addEventListener('click', declineNonEssentialCookies);
-}
-
-function acceptAllCookies() {
-  localStorage.setItem('cookie-consent', 'accepted');
-  localStorage.setItem('cookie-preferences', JSON.stringify({
-    essential: true,
-    analytics: true,
-    marketing: true,
-    timestamp: new Date().toISOString()
-  }));
-  
-  hideCookieBanner();
-  showCookieSuccess('All cookies accepted! 🍪');
-}
-
-function declineNonEssentialCookies() {
-  localStorage.setItem('cookie-consent', 'declined');
-  localStorage.setItem('cookie-preferences', JSON.stringify({
-    essential: true,
-    analytics: false,
-    marketing: false,
-    timestamp: new Date().toISOString()
-  }));
-  
-  hideCookieBanner();
-  showCookieSuccess('Only essential cookies enabled! 🔒');
-}
-
-function hideCookieBanner() {
-  const banner = document.getElementById('cookie-consent-banner');
-  const spacer = document.getElementById('cookie-banner-spacer');
-  
-  if (banner) {
-    banner.style.transform = 'translateY(-100%)';
-    setTimeout(() => {
-      banner.style.display = 'none';
-      if (spacer) spacer.style.display = 'none';
-    }, 500);
-  }
-}
-
-function showCookieBanner() {
-  const banner = document.getElementById('cookie-consent-banner');
-  const spacer = document.getElementById('cookie-banner-spacer');
-  
-  if (banner) {
-    banner.style.display = 'block';
-    banner.style.transform = 'translateY(0)';
-    if (spacer) spacer.style.display = 'block';
-  }
-}
-
-function showCookieSuccess(message) {
-  // Create temporary success notification
-  const notification = document.createElement('div');
-  notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in max-w-sm';
-  notification.innerHTML = `
-    <div class="flex items-center gap-2">
-      <span>✅</span>
-      <span>${message}</span>
-      <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white hover:text-gray-200 text-lg">×</button>
-    </div>
-  `;
-  document.body.appendChild(notification);
-  
-  // Auto-remove after 4 seconds
-  setTimeout(() => {
-    if (notification.parentElement) {
-      notification.remove();
-    }
-  }, 4000);
-}
-</script>
+<!-- 🍪 Cookie functions moved to head section for early availability -->
 
 <!-- 🍩 Footer GENESIS 12.0 - Enhanced Cheese Universe Footer -->
 <footer class="text-center mt-16 mb-10">
