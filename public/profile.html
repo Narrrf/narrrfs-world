@@ -431,49 +431,42 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
-<!-- DSPOINC Graph & Score Changes -->
-<div class="bg-gradient-to-br from-gray-900/30 via-purple-900/30 to-gray-800/30 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-purple-400/50 ring-2 ring-purple-400/20 mx-auto relative z-10">
-  <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
-    <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
-    Your $DSPOINC Journey
-  </h2>
-  <div>
-    <span class="font-mono text-yellow-300">Balance:</span>
-    <span id="user-dspoinc-journey" class="font-mono text-yellow-100 text-lg">0</span>
+<!-- DSPOINC Graph & Score Changes - Only visible when logged in -->
+<div id="dspoincSection" class="hidden">
+  <div class="bg-gradient-to-br from-gray-900/30 via-purple-900/30 to-gray-800/30 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-purple-400/50 ring-2 ring-purple-400/20 mx-auto relative z-10">
+    <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
+      <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
+      Your $DSPOINC Journey
+    </h2>
+    <div>
+      <span class="font-mono text-yellow-300">Total DSPOINC:</span>
+      <span id="user-dspoinc" class="font-mono text-yellow-100 text-lg">0</span>
+    </div>
+    
+    <div class="relative">
+      <canvas id="pointsGraph" width="400" height="180"></canvas>
+      <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
+    </div>
+    <div class="bg-gradient-to-br from-gray-800/30 via-purple-800/20 to-gray-700/30 rounded-xl shadow-lg p-4 mt-6 max-w-lg w-full mx-auto border border-purple-400/30">
+      <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
+      <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
+        <!-- Populated by JS -->
+      </ul>
+      <!-- 🆘 ADDED: No score history message element -->
+      <div id="no-score-history" class="text-gray-400 text-center py-4 hidden">
+        No recent score changes found.
+      </div>
+    </div>
   </div>
-  
-  <!-- 🆘 ADDED: Main DSPOINC display element for JavaScript compatibility -->
-  <div class="mt-2">
-    <span class="font-mono text-yellow-300">Total DSPOINC:</span>
-    <span id="user-dspoinc" class="font-mono text-yellow-100 text-lg">0</span>
-  </div>
-  
-  <div class="relative">
-    <canvas id="pointsGraph" width="400" height="180"></canvas>
-    <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
-  </div>
-  <div class="bg-gradient-to-br from-gray-800/30 via-purple-800/20 to-gray-700/30 rounded-xl shadow-lg p-4 mt-6 max-w-lg w-full mx-auto border border-purple-400/30">
-    <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
-    <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
+
+  <!-- 🆘 ADDED: User Quests Section -->
+  <div class="bg-gradient-to-br from-gray-800/30 via-purple-800/20 to-gray-700/30 rounded-xl shadow-lg p-4 mt-4 max-w-lg w-full mx-auto border border-purple-400/30 relative z-10">
+    <h3 class="text-yellow-300 font-semibold mb-2">Your Quests</h3>
+    <div id="user-quests-list" class="text-sm text-yellow-100">
       <!-- Populated by JS -->
-    </ul>
-  <!-- 🆘 ADDED: No score history message element -->
-  <div id="no-score-history" class="text-gray-400 text-center py-4 hidden">
-    No recent score changes found.
+    </div>
   </div>
 </div>
-
-</div>
-
-<!-- 🆘 ADDED: User Quests Section -->
-<div class="bg-gradient-to-br from-gray-800/30 via-purple-800/20 to-gray-700/30 rounded-xl shadow-lg p-4 mt-4 max-w-lg w-full mx-auto border border-purple-400/30 relative z-10">
-  <h3 class="text-yellow-300 font-semibold mb-2">Your Quests</h3>
-  <div id="user-quests-list" class="text-sm text-yellow-100">
-    <!-- Populated by JS -->
-  </div>
-</div>
-
-</section>
 
 <!-- 🎮 Triple Game Panel — Tetris + Snake + Space Invaders -->
 <section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col lg:flex-row gap-8 items-start justify-center relative z-10">
@@ -826,6 +819,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         hideElement('goldenCheeseGate');
         hideElement('noCheeseJoke');
 		hideElement('bingoBanner');
+        hideElement('dspoincSection');
 
 
         // Make sure login link is visible and clickable
@@ -888,6 +882,13 @@ document.addEventListener("DOMContentLoaded", async function () {
      // ✅ Show Bingo banner if user is logged in
      if (user.discord_id) {
        showElement('bingoBanner');
+     }
+
+     // ✅ Show DSPOINC section if user is logged in
+     if (user.discord_id) {
+       showElement('dspoincSection');
+     } else {
+       hideElement('dspoincSection');
      }
 
     // 🔧 Show Admin Access Button for admins/moderators
@@ -1250,17 +1251,25 @@ document.addEventListener('DOMContentLoaded', async function() {
   let user = {};
   let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
 
+  // Show/hide DSPOINC section based on login status
+  const dspoincSection = document.getElementById('dspoincSection');
+  if (dspoincSection) {
+    if (userId) {
+      dspoincSection.classList.remove('hidden');
+    } else {
+      dspoincSection.classList.add('hidden');
+    }
+  }
+
   // Fetch user profile and set balances
   if (userId) {
     try {
       const res = await fetch('/api/user/profile.php?user_id=' + encodeURIComponent(userId));
       user = await res.json();
 
-      // Set both balances (top and journey widget)
+      // Set DSPOINC balance
       const dspoincEl = document.getElementById('user-dspoinc');
-      const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
       if (dspoincEl) dspoincEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
-      if (dspoincJourneyEl) dspoincJourneyEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
 
     } catch (e) { /* handle error if you want */ }
   }
@@ -1273,11 +1282,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         const balanceData = await balanceRes.json();
         const dspoincBalance = balanceData.total_dspoinc || 0;
         
-        // Update both DSPOINC displays with the most accurate data
+        // Update DSPOINC display with the most accurate data
         const dspoincEl = document.getElementById('user-dspoinc');
-        const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
         if (dspoincEl) dspoincEl.textContent = dspoincBalance.toLocaleString();
-        if (dspoincJourneyEl) dspoincJourneyEl.textContent = dspoincBalance.toLocaleString();
         
         console.log('✅ DSPOINC balance loaded:', dspoincBalance);
       }
