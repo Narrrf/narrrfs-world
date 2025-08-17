@@ -52,9 +52,35 @@ try {
             throw new Exception('CSV file not found at: ' . $csvFile . '. Please upload SOL-Community-wallet.csv to the private/ directory first.');
         }
         
-        // Clear existing data
-        $pdo->exec('DELETE FROM tbl_wallet_transactions');
-        $pdo->exec('DELETE FROM tbl_wallet_balance_history');
+        // Check if data already exists
+        $existingCount = $pdo->query('SELECT COUNT(*) FROM tbl_wallet_transactions')->fetchColumn();
+        
+        // Check if force reimport is requested
+        $forceReimport = isset($_POST['force_reimport']) && $_POST['force_reimport'] === 'true';
+        
+        if ($existingCount > 0 && !$forceReimport) {
+            // Data already exists, return current status
+            $balanceStmt = $pdo->query('SELECT * FROM tbl_wallet_balance_history ORDER BY id DESC LIMIT 1');
+            $currentBalance = $balanceStmt->fetch(PDO::FETCH_ASSOC);
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Wallet data already imported. Use force_reimport=true to reimport.',
+                'status' => 'already_imported',
+                'current_balance' => $currentBalance ? $currentBalance['balance_sol'] : 0,
+                'total_transactions' => $existingCount,
+                'timestamp' => date('Y-m-d H:i:s')
+            ]);
+            exit;
+        }
+        
+        // Clear existing data only if force reimport or first import
+        if ($existingCount > 0) {
+            $pdo->exec('DELETE FROM tbl_wallet_transactions');
+            $pdo->exec('DELETE FROM tbl_wallet_balance_history');
+        }
+        
+        // No existing data, proceed with import
         
         $handle = fopen($csvFile, 'r');
         if (!$handle) {
