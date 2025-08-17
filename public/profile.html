@@ -23,15 +23,31 @@ require_once 'discord-invite.php';
   <link rel="icon" href="favicon-phantom.png" type="image/png">
 
   <style>
+    /* 🎨 Enhanced Dark Theme Styles */
+    :root {
+      --primary-color: #f472b6;
+      --secondary-color: #3b82f6;
+      --accent-color: #fcd34d;
+      --dark-bg: #0f0f23;
+      --card-bg: #1a1a2e;
+      --border-color: #374151;
+    }
+    
+    body {
+      background: linear-gradient(135deg, var(--dark-bg) 0%, #1e1b4b 50%, #312e81 100%);
+      color: #ffffff;
+    }
+    
     /* 🎨 Style Card Elements */
     .card {
-      background: #36393f;
+      background: var(--card-bg);
       border-radius: 12px;
       padding: 30px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
       max-width: 400px;
       width: 100%;
       text-align: center;
+      border: 1px solid var(--border-color);
     }
 
     /* 🖼️ Avatar */
@@ -46,6 +62,8 @@ require_once 'discord-invite.php';
     .username {
       font-size: 1.5em;
       margin-bottom: 5px;
+      color: var(--accent-color);
+      text-shadow: 0 0 10px rgba(252, 211, 77, 0.5);
     }
 
     /* 🧬 Tagline + Guild Info */
@@ -65,62 +83,38 @@ require_once 'discord-invite.php';
       font-style: italic;
       color: #fcd34d;
     }
-    @keyframes pop {
-  0% { transform: scale(0.9); opacity: 0.3; }
-  100% { transform: scale(1); opacity: 1; }
-}
-.animate-pop {
-  animation: pop 0.4s ease-out;
-}
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
+    
+    /* Essential animations for professional interface */
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
 
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
-}
-@keyframes glow {
-  0% {
-    text-shadow: 0 0 5px #f472b6, 0 0 10px #f472b6, 0 0 15px #f472b6;
-  }
-  50% {
-    text-shadow: 0 0 10px #f472b6, 0 0 20px #f472b6, 0 0 25px #f472b6;
-  }
-  100% {
-    text-shadow: 0 0 5px #f472b6, 0 0 10px #f472b6, 0 0 15px #f472b6;
-  }
-}
+    .animate-fade-in {
+      animation: fade-in 0.3s ease-out;
+    }
+    
+    /* Finance card styling */
+    .finance-card {
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .finance-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(251, 191, 36, 0.5);
+    }
 
-.animate-glow {
-  animation: glow 1s ease-in-out infinite;
-}
 
-@keyframes sparkle {
-  0%, 100% { opacity: 0.8; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.2); }
-}
-.star-flash {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  background-image: url('/img/star-sparkle.png');
-  background-size: contain;
-  animation: sparkle 2s infinite ease-in-out;
-}
-@keyframes wiggle {
-  0%, 100% { transform: rotate(-1deg); }
-  50% { transform: rotate(1deg); }
-}
-.wiggle-text {
-  animation: wiggle 1s infinite ease-in-out;
-}
   </style>
 </head>
 
@@ -136,24 +130,37 @@ require_once 'discord-invite.php';
   ========================================
 -->
 
-<body class="bg-[#2f3136] text-white font-sans min-h-screen">
+<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans overflow-x-hidden min-h-screen">
+
+  <!-- 🌟 Subtle Background Elements (Reduced) -->
+  <div class="fixed inset-0 pointer-events-none z-0 opacity-30">
+    <div class="absolute w-4 h-4 bg-yellow-400/10 rounded-full blur-md" style="top:20%; left:15%;"></div>
+    <div class="absolute w-6 h-6 bg-purple-400/10 rounded-full blur-lg" style="top:60%; left:80%;"></div>
+    <div class="absolute w-3 h-3 bg-pink-400/10 rounded-full blur-sm" style="top:40%; left:50%;"></div>
+    <div class="absolute w-5 h-5 bg-blue-400/10 rounded-full blur-md" style="top:70%; left:25%;"></div>
+  </div>
+
+  <!-- 🧬 Lab Status Badge (Static) -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg border border-purple-400">
+    🧬 Profile Portal v2.0 Active
+  </div>
 
 <!-- 🔰 Header with App Context -->
-<header class="w-full bg-black py-4 px-6 text-yellow-400 shadow-md">
+<header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
-    <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Phase 5 Portal</h1>
+    <h1 class="text-xl font-bold tracking-wide text-yellow-400">🧠 Narrrf's Lab – Phase 5 Portal</h1>
     <nav class="space-x-4 text-sm md:text-base flex items-center">
-      <a href="index.html" class="hover:text-pink-400">Home</a>
-      <a href="mint.html" class="hover:text-pink-400">Mint</a>
-      <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
-      <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
-      <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
-      <a href="faq.html" class="hover:text-pink-400">FAQ</a>
+      <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
+      <a href="mint.html" class="hover:text-yellow-400 transition-colors">Mint</a>
+      <a href="whitepaper.html" class="hover:text-yellow-400 transition-colors">Whitepaper</a>
+      <a href="get-roles.html" class="hover:text-yellow-400 transition-colors">Get Roles</a>
+      <a href="project-updates.html" class="hover:text-yellow-400 transition-colors">Updates</a>
+      <a href="faq.html" class="hover:text-yellow-400 transition-colors">FAQ</a>
       <button id="connect-wallet-btn" onclick="connectWallet()" 
-        class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
+        class="ml-2 mt-2 md:mt-0 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs transition-all duration-300 transform hover:scale-105">
         🔌 Connect
       </button>
-      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
+      <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-yellow-400 ml-2 shadow-lg" />
       <button id="wallet-disconnect" onclick="disconnectWallet()" class="hidden ml-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-full px-3 py-1 shadow">
         ❌
       </button>
@@ -163,11 +170,11 @@ require_once 'discord-invite.php';
 
 <!-- VIP Section: Grouped and spaced -->
 <div id="vipSection" class="flex flex-col items-center gap-3 mb-6 mt-4 hidden">
-  <div class="bg-yellow-100 border-2 border-yellow-300 px-6 py-3 rounded-xl font-bold text-yellow-900 shadow mb-1 text-center">
+  <div class="bg-gradient-to-r from-yellow-400/90 via-yellow-300 to-yellow-400/90 border-2 border-yellow-500 px-6 py-3 rounded-xl font-bold text-yellow-900 shadow-lg mb-1 text-center">
     🧀 Welcome, VIP! You found the Golden Cheese
   </div>
   <a href="/api/user/download-vip-art.php"
-     class="bg-yellow-300 hover:bg-yellow-400 text-black font-bold px-6 py-2 rounded-xl shadow-md border-2 border-yellow-400 transition"
+     class="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold px-6 py-2 rounded-xl shadow-lg border-2 border-yellow-500 transition-all duration-300 transform hover:scale-105"
      download>
     📸 Download Your HD VIP NFT
   </a>
@@ -183,7 +190,7 @@ require_once 'discord-invite.php';
 
 
 <!-- 🔔 PROFESSIONAL BINGO CHECKER BANNER -->
-<div id="bingoBanner" class="hidden mt-6 relative p-5 mb-6 rounded-lg shadow-lg bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white text-center overflow-hidden border-4 border-yellow-300 animate-pulse">
+<div id="bingoBanner" class="hidden mt-6 relative p-5 mb-6 rounded-lg shadow-2xl bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white text-center overflow-hidden border-4 border-yellow-300 ring-4 ring-yellow-200/50">
   <div class="absolute inset-0 opacity-25 bg-[url('/img/cheese-texture.png')] bg-cover bg-center pointer-events-none"></div>
   <a href="/Bingo.html" class="relative z-10 text-2xl sm:text-3xl font-extrabold tracking-wide drop-shadow hover:underline">
     🎯 Try the New <span class="underline decoration-wavy decoration-white">Professional Bingo Checker</span> Now!
@@ -192,8 +199,8 @@ require_once 'discord-invite.php';
 
 
 <!-- 👤 User Profile Card -->
-<main class="container mx-auto px-4 py-8 max-w-6xl">
-  <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 w-full text-center border-4 border-yellow-400">
+<main class="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+  <div class="finance-card rounded-2xl shadow-2xl p-8 w-full text-center border-2 border-purple-500/50 ring-4 ring-purple-500/20">
 
     <!-- 👋 Welcome Message -->
 <span id="welcome-name"></span>
@@ -205,7 +212,7 @@ require_once 'discord-invite.php';
 <div class="w-24 h-24 mx-auto mb-4">
   <a id="login-link" href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read">
     <img id="avatar"
-         class="rounded-full border-4 border-yellow-500 shadow animate-bounce cursor-pointer transition hover:scale-105"
+         class="rounded-full border-4 border-yellow-500 shadow cursor-pointer transition hover:scale-105"
          src="img/grumpy-cheese.png"
          alt="Grumpy Guest Avatar"
          title="Click to login via Discord"
@@ -273,7 +280,7 @@ require_once 'discord-invite.php';
     <!-- 🔧 Admin Access Button (only visible to admins/moderators) -->
     <div id="adminAccessButton" class="mt-4 hidden">
       <button onclick="goToAdminInterface()" 
-         class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-red-500 transition-all duration-300 transform hover:scale-105 cursor-pointer">
+         class="inline-block bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-red-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-2 ring-red-400/30">
         🔧 ADMIN INTERFACE
       </button>
       <p class="text-xs text-gray-400 mt-2 italic">Access granted for administrators and moderators</p>
@@ -282,10 +289,15 @@ require_once 'discord-invite.php';
     <!-- 🎯 WL Role Mint Access Button (only visible to WL role users) -->
     <div id="wlMintButton" class="mt-4 hidden">
       <a href="/mint.html" 
-         class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-green-500 transition-all duration-300 transform hover:scale-105">
+         class="inline-block bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-green-500 transition-all duration-300 transform hover:scale-105 ring-2 ring-green-400/30">
         🧠 Go to Mint (WL Access)
       </a>
       <p class="text-xs text-gray-400 mt-2 italic">You have Discord WL role access for minting</p>
+    </div>
+    
+    <!-- 🧀 Golden Cheese Gate - VIP Access Indicator -->
+    <div id="goldenCheeseGate" class="hidden mt-4 p-4 bg-gradient-to-r from-yellow-400/90 via-yellow-300 to-yellow-400/90 text-yellow-900 font-bold rounded-xl shadow-lg border-2 border-yellow-500 ring-2 ring-yellow-200/50">
+      🧀 VIP Access Granted - Golden Cheese Portal Active
     </div>
 
     <!-- 👣 Footer Note -->
@@ -295,7 +307,7 @@ require_once 'discord-invite.php';
 	
 
 <!-- 🧀 Trophy Shelf Zone -->
-<section id="trophy-shelf" class="my-16 px-4">
+<section id="trophy-shelf" class="my-16 px-4 relative z-10">
   <h2 class="text-center text-2xl sm:text-3xl font-extrabold text-yellow-400 mb-6 drop-shadow">
     🏆 Role Trophy Shelf
   </h2>
@@ -308,52 +320,103 @@ require_once 'discord-invite.php';
 </section>
 
 <!-- 🎴 Web3 Wallet Verification Section -->
-<section class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-6 shadow-2xl my-20 relative">
+<section class="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-2xl p-6 shadow-2xl my-20 relative z-10 border border-purple-500/30">
   <!-- 🔨 Under Construction Ribbon -->
   <div class="absolute -top-4 -right-4 rotate-6 bg-yellow-400 text-black text-xs font-extrabold px-3 py-1 rounded-full shadow-lg z-10 animate-pulse ring-2 ring-yellow-300">
     🚧 Under Cheese-struction
   </div>
   
   <div class="text-center">
-    <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-center gap-2">
+    <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-center gap-2 animate-neon-glow">
       🎴 NFT Holder Verification
     </h2>
-    <p class="text-gray-300 mb-6">
-      Connect your Phantom wallet to verify NFT ownership and get automatic Discord roles!
+         <p class="text-gray-300 mb-6">
+       Connect your Phantom wallet to verify NFT ownership and get automatic Discord roles!
       <br><span class="text-yellow-400 text-sm">🔐 Secure: Requires cryptographic signature to prove wallet ownership</span>
     </p>
     
+    <!-- 🆘 ENHANCED: How NFT Verification Works Section -->
+    <div class="bg-gradient-to-br from-gray-800 via-purple-800/20 to-gray-700 rounded-xl p-6 mb-6 border border-purple-400/30">
+      <h3 class="text-lg font-semibold text-purple-300 mb-4 flex items-center gap-2">
+         🔍 How NFT Verification Works
+       </h3>
+      <div class="space-y-3 text-left">
+         <div class="flex items-start gap-3">
+          <span class="text-purple-400 font-bold text-lg">1.</span>
+           <div>
+            <strong class="text-purple-100">Wallet Connection:</strong> Connect your Phantom wallet securely
+           </div>
+         </div>
+         <div class="flex items-start gap-3">
+          <span class="text-purple-400 font-bold text-lg">2.</span>
+           <div>
+            <strong class="text-purple-100">Helius API Check:</strong> We use <a href="https://helius.xyz/" target="_blank" class="text-blue-400 underline hover:text-blue-300">Helius APIs</a> to efficiently search your wallet for our specific NFT collections
+           </div>
+         </div>
+         <div class="flex items-start gap-3">
+          <span class="text-purple-400 font-bold text-lg">3.</span>
+           <div>
+            <strong class="text-purple-100">Cryptographic Proof:</strong> Sign a message with your wallet to prove ownership
+           </div>
+         </div>
+         <div class="flex items-start gap-3">
+          <span class="text-purple-400 font-bold text-lg">4.</span>
+           <div>
+            <strong class="text-purple-100">Automatic Role Grant:</strong> Get Discord roles instantly based on your NFT holdings
+          </div>
+           </div>
+         </div>
+       </div>
+       
+    <!-- 🆘 ENHANCED: Powered by Helius Section -->
+    <div class="bg-gradient-to-br from-blue-900/30 via-blue-800/20 to-blue-900/30 rounded-xl p-4 mb-6 border border-blue-400/30">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-blue-400 text-lg">🔗</span>
+        <h4 class="text-blue-300 font-semibold">Powered by Helius</h4>
+         </div>
+      <p class="text-blue-200 text-sm">
+           We use Helius' high-performance Solana infrastructure for fast, reliable NFT verification. 
+        <a href="https://helius.xyz/" target="_blank" class="text-blue-300 underline hover:text-blue-200">Learn more about Helius APIs</a>
+         </p>
+     </div>
+    
     <!-- Wallet Connection Status -->
-    <div id="wallet-status" class="hidden bg-gray-800 rounded-lg p-4 mb-4">
-      <div class="text-green-400 font-semibold">✅ Wallet Connected</div>
-      <div id="wallet-address" class="text-gray-300 text-sm mt-1"></div>
+    <div id="wallet-status" class="hidden bg-gradient-to-br from-green-900/30 via-green-800/20 to-green-900/30 rounded-lg p-4 mb-4 border border-green-400/30">
+      <div class="text-green-400 font-semibold flex items-center gap-2">
+        <span class="text-green-300">✅</span> Wallet Connected
+      </div>
+      <div id="wallet-address" class="text-green-200 text-sm mt-1"></div>
     </div>
     
     <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <button id="connect-wallet-btn" onclick="connectWallet()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all">
+      <button id="connect-wallet-btn" onclick="connectWallet()" class="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
         <span>🔗</span> Connect Wallet
       </button>
-      <button id="verify-nfts-btn" onclick="verifyNFTs()" class="hidden bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all">
+      <button id="verify-nfts-btn" onclick="verifyNFTs()" class="hidden bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
         <span>🔍</span> Verify NFTs
       </button>
     </div>
     
     <!-- Loading Spinner -->
     <div id="verification-loading" class="hidden mt-4">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
-      <p class="text-gray-300 mt-2">Verifying NFTs...</p>
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mx-auto"></div>
+      <p class="text-purple-300 mt-2">Verifying NFTs...</p>
     </div>
     
     <!-- Error Display -->
-    <div id="verification-error" class="hidden mt-4 bg-red-900 border border-red-500 rounded-lg p-4">
-      <div class="text-red-300 font-semibold">❌ Error</div>
+    <div id="verification-error" class="hidden mt-4 bg-gradient-to-br from-red-900/30 via-red-800/20 to-red-900/30 border border-red-500/50 rounded-lg p-4">
+      <div class="text-red-300 font-semibold flex items-center gap-2">
+        <span class="text-red-400">❌</span> Error
+      </div>
       <div id="error-message" class="text-red-200 text-sm mt-1"></div>
     </div>
     
     <!-- Results Display -->
-    <div id="verification-results" class="hidden mt-4 bg-green-900 border border-green-500 rounded-lg p-4">
-      <div class="text-green-300 font-semibold">✅ Verification Results</div>
+    <div id="verification-results" class="hidden mt-4 bg-gradient-to-br from-green-900/30 via-green-800/20 to-green-900/30 border border-green-500/50 rounded-lg p-4">
+      <div class="text-green-300 font-semibold flex items-center gap-2">
+        <span class="text-green-400">✅</span> Verification Results
+      </div>
       <div id="results-content" class="text-green-200 text-sm mt-1"></div>
     </div>
   </div>
@@ -369,7 +432,7 @@ require_once 'discord-invite.php';
 </div>
 
 <!-- DSPOINC Graph & Score Changes -->
-<div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
+<div class="bg-gradient-to-br from-gray-900/30 via-purple-900/30 to-gray-800/30 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-purple-400/50 ring-2 ring-purple-400/20 mx-auto relative z-10">
   <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
     <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
     Your $DSPOINC Journey
@@ -389,11 +452,11 @@ require_once 'discord-invite.php';
     <canvas id="pointsGraph" width="400" height="180"></canvas>
     <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
   </div>
-<div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
-  <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
-  <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
-    <!-- Populated by JS -->
-  </ul>
+  <div class="bg-gradient-to-br from-gray-800/30 via-purple-800/20 to-gray-700/30 rounded-xl shadow-lg p-4 mt-6 max-w-lg w-full mx-auto border border-purple-400/30">
+    <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
+    <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
+      <!-- Populated by JS -->
+    </ul>
   <!-- 🆘 ADDED: No score history message element -->
   <div id="no-score-history" class="text-gray-400 text-center py-4 hidden">
     No recent score changes found.
@@ -403,7 +466,7 @@ require_once 'discord-invite.php';
 </div>
 
 <!-- 🆘 ADDED: User Quests Section -->
-<div class="bg-gray-800 rounded-xl shadow p-4 mt-4 max-w-lg w-full mx-auto">
+<div class="bg-gradient-to-br from-gray-800/30 via-purple-800/20 to-gray-700/30 rounded-xl shadow-lg p-4 mt-4 max-w-lg w-full mx-auto border border-purple-400/30 relative z-10">
   <h3 class="text-yellow-300 font-semibold mb-2">Your Quests</h3>
   <div id="user-quests-list" class="text-sm text-yellow-100">
     <!-- Populated by JS -->
@@ -413,10 +476,10 @@ require_once 'discord-invite.php';
 </section>
 
 <!-- 🎮 Triple Game Panel — Tetris + Snake + Space Invaders -->
-<section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col lg:flex-row gap-8 items-start justify-center">
+<section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col lg:flex-row gap-8 items-start justify-center relative z-10">
  <!-- 🎮 TETRIS PANEL -->
-  <section id="cheese-tetris" class="flex-1 relative bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 mb-8 lg:mb-0">
-    <div class="absolute top-4 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+  <section id="cheese-tetris" class="flex-1 relative finance-card py-8 px-6 rounded-3xl ring-2 ring-purple-500/50 border border-purple-400/30 mb-8 lg:mb-0 hover:ring-purple-400/70 transition-all duration-300">
+    <div class="absolute top-4 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow z-10">
       🎮 TETRIS
     </div>
 
@@ -439,16 +502,16 @@ require_once 'discord-invite.php';
       </div>
     </div>
 
-    <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1 animate-glow">💣 Incoming Cheese Bomb!</p>
-    <p id="spoink-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">
+    <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1">💣 Incoming Cheese Bomb!</p>
+    <p id="spoink-score" class="text-center mt-6 text-sm font-semibold text-yellow-200">
       💰 $DSPOINC earned: <span id="score-value" class="font-mono">0</span>
     </p>
 
   </section>
 
   <!-- 🟢 SNAKE PANEL -->
-  <section id="cheese-snake" class="flex-1 bg-black text-yellow-300 py-8 px-4 sm:px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 relative flex flex-col items-center mb-8 lg:mb-0">
-    <div class="absolute top-4 left-4 bg-green-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+  <section id="cheese-snake" class="flex-1 finance-card py-8 px-4 sm:px-6 rounded-3xl ring-2 ring-green-500/50 border border-green-400/30 relative flex flex-col items-center mb-8 lg:mb-0 hover:ring-green-400/70 transition-all duration-300">
+    <div class="absolute top-4 left-4 bg-green-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow z-10">
       🐍 SNAKE
     </div>
   <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">Cheese Snake</h2>
@@ -467,20 +530,20 @@ require_once 'discord-invite.php';
 
     <div class="text-center mt-4 space-y-2">
       <button id="start-snake-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
-      <button id="pause-snake-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
+      <button id="pause-snake-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded-xl shadow-md w-32">⏸️ Pause</button>
     </div>
 
-    <p id="snake-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse">💰 Snake Score: $0 DSPOINC</p>
+    <p id="snake-score" class="text-center mt-6 text-sm font-semibold text-yellow-200">💰 Snake Score: $0 DSPOINC</p>
     <div class="text-xs italic text-center text-gray-500 mt-1">&larr; first to 100 cheese triggers mutation</div>
   </section>
 
   <!-- 🚀 SPACE INVADERS PANEL -->
-  <section id="space-cheese-invaders" class="flex-1 bg-black text-yellow-300 py-8 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 relative cursor-pointer hover:ring-yellow-300 transition-all duration-300" onclick="window.location.href='space-invaders-test.html'">
-    <div class="absolute top-4 left-4 bg-purple-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+  <section id="space-cheese-invaders" class="flex-1 finance-card py-8 px-6 rounded-3xl ring-2 ring-blue-500/50 border border-blue-400/30 relative cursor-pointer hover:ring-blue-400/70 transition-all duration-300" onclick="window.location.href='space-invaders-test.html'">
+    <div class="absolute top-4 left-4 bg-purple-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow z-10">
       🚀 SPACE INVADERS
     </div>
     
-    <div class="absolute top-4 right-4 bg-orange-500 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+    <div class="absolute top-4 right-4 bg-orange-500 text-black text-xs font-bold px-3 py-1 rounded-full shadow z-10">
       🧀 CHEESE CONSTRUCTION
     </div>
 
@@ -501,10 +564,10 @@ require_once 'discord-invite.php';
 
     <div class="text-center mt-4 space-y-2 opacity-50">
       <button id="start-space-invaders-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
-      <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
+      <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded-xl shadow-md w-32">⏸️ Pause</button>
     </div>
 
-    <p id="space-invaders-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 animate-pulse opacity-50">
+    <p id="space-invaders-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 opacity-50">
       💰 Space Invaders Score: $0 DSPOINC
     </p>
 
@@ -553,7 +616,7 @@ require_once 'discord-invite.php';
 </div>
 
 <!-- 🏆 Leaderboard Section -->
-<section id="leaderboard" class="max-w-6xl mx-auto bg-black text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-yellow-400 mt-10">
+<section id="leaderboard" class="max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-yellow-400/50 mt-10 relative z-10 border border-yellow-400/30">
   <h3 class="text-center text-xl font-bold">🏆 Leaderboard</h3>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
     <div>
@@ -572,7 +635,7 @@ require_once 'discord-invite.php';
 </section>
 
 <!-- 🍩 Footer GENESIS 12.0 -->
-<footer class="text-center mt-16 text-xs text-yellow-600">
+<footer class="text-center mt-16 text-xs text-yellow-600 relative z-10">
   Powered by 🧀 Cheese Architect <b>12.0</b> · Genesis Protocol · Discord + Game + Wallet Sync Engine 🌍<br>
   <span class="opacity-70">
     Vault Synced | 2025 | Scroll-Safe for 100 Years of Cheese | 
@@ -606,7 +669,7 @@ require_once 'discord-invite.php';
 
   <!-- 🧬 View Traits -->
   <!-- <a href="#traits" class="bg-pink-500 text-white px-5 py-2 rounded-full shadow hover:bg-pink-600 text-sm sm:text-base w-full sm:w-auto text-center">
-    🧬 View Traits
+    �� View Traits
   </a> -->
 
   <!-- 🚪 Portals -->
@@ -743,12 +806,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     // We'll handle the admin redirect after user data is loaded
   }
 
-  try {
+    try {
     // Unified fetch from profile.php
-    const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
-      credentials: 'include',
-      headers: { 'Accept': 'application/json' }
-    });
+     const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
+       credentials: 'include',
+       headers: { 'Accept': 'application/json' }
+     });
 
     if (!res.ok) {
       if (res.status === 401) {
@@ -814,18 +877,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Trophy pokal shelf — render immediately from roles
     if (user.roles) renderTrophyShelf(user.roles);
 
-    // VIP/Golden Cheese logic check on top menu
-if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
-  showElement('goldenCheeseGate'); // optional if defined elsewhere
-  showElement('vipSection');       // ✅ Matches the DOM ID
-} else {
-  showElement('noCheeseJoke');
-}
-	
-// ✅ Show Bingo banner if user is logged in
-if (user.discord_id) {
-  showElement('bingoBanner');
-}
+     // VIP/Golden Cheese logic check on top menu
+     if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
+       showElement('goldenCheeseGate'); // optional if defined elsewhere
+       showElement('vipSection');       // ✅ Matches the DOM ID
+     } else {
+       showElement('noCheeseJoke');
+     }
+ 	
+     // ✅ Show Bingo banner if user is logged in
+     if (user.discord_id) {
+       showElement('bingoBanner');
+     }
 
     // 🔧 Show Admin Access Button for admins/moderators
     if (user.roles && (
@@ -878,28 +941,28 @@ if (user.discord_id) {
       }, 5000);
     }
 
-  } catch (err) {
-    console.error('Profile fetch failed:', err);
-    // Show login UI on error
-    setText('username', 'Guest#0000');
-    setText('welcome-name', 'Guest');
-    setText('email', 'Please log in');
-    setText('guilds', 'No guilds connected');
-    setText('traits', 'No traits available');
-    setText('user-roles', 'No roles');
-    setText('wallet-address', 'Wallet not linked');
-    hideElement('goldenCheeseGate');
-    hideElement('noCheeseJoke');
-    
-    // Make sure login link is visible
-    if (loginLink) {
-      loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
-      loginLink.style.display = 'block';
-    }
-    if (avatar) {
-      avatar.src = 'img/grumpy-cheese.png';
-      avatar.style.cursor = 'pointer';
-    }
+   } catch (err) {
+     console.error('Profile fetch failed:', err);
+     // Show login UI on error
+     setText('username', 'Guest#0000');
+     setText('welcome-name', 'Guest');
+     setText('email', 'Please log in');
+     setText('guilds', 'No guilds connected');
+     setText('traits', 'No traits available');
+     setText('user-roles', 'No roles');
+     setText('wallet-address', 'Wallet not linked');
+     hideElement('goldenCheeseGate');
+     hideElement('noCheeseJoke');
+     
+     // Make sure login link is visible
+     if (loginLink) {
+       loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
+       loginLink.style.display = 'block';
+     }
+     if (avatar) {
+       avatar.src = 'img/grumpy-cheese.png';
+       avatar.style.cursor = 'pointer';
+     }
   }
 });
 </script>
@@ -1149,31 +1212,31 @@ document.addEventListener('DOMContentLoaded', function() {
       canvas.style.display = '';
       let cumulative = 0, labels = [], data = [];
       for (const entry of json.history) {
-        cumulative += entry.amount;
-        labels.push(entry.timestamp.split('T')[0]);
-        data.push(cumulative);
-      }
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label: '$DSPOINC Over Time',
-            data,
-            fill: false,
-            tension: 0.3,
-            borderColor: '#fcd34d',
-            backgroundColor: '#fde68a',
-            pointRadius: 4,
-            pointHoverRadius: 7
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: true } },
-          scales: { y: { beginAtZero: true } }
+          cumulative += entry.amount;
+          labels.push(entry.timestamp.split('T')[0]);
+          data.push(cumulative);
         }
-      });
+        new Chart(canvas, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: '$DSPOINC Over Time',
+              data,
+              fill: false,
+              tension: 0.3,
+              borderColor: '#fcd34d',
+              backgroundColor: '#fde68a',
+              pointRadius: 4,
+              pointHoverRadius: 7
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: true } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
     })
     .catch(err => {
       showMsg('Could not load history. Please try again.');
@@ -1773,6 +1836,25 @@ async function connectWallet() {
 }
 </script>
 
+<!-- 🔥 Profile Flask + Glow & Bubbles (Bottom Right Corner) -->
+<div class="absolute bottom-8 right-8 z-[1] pointer-events-none opacity-20">
+  <div class="w-40 h-40 bg-yellow-300 opacity-20 rounded-full blur-2xl absolute"></div>
+  <div class="relative">
+    <svg width="80" height="120" viewBox="0 0 100 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-[0_0_8px_#facc15]">
+      <path d="M40 0 H60 V50 L85 120 Q90 135 75 140 H25 Q10 135 15 120 L40 50 Z" 
+            fill="#facc15" stroke="#000" stroke-width="2"/>
+    </svg>
+  </div>
+</div>
+
+<!-- 🐭 Profile Mouse Mascot (Static) -->
+<div class="fixed bottom-8 left-8 z-40">
+  <img src="img/profile-mouse1.png" alt="Profile Mouse"
+       class="w-28 md:w-36 drop-shadow-xl hover:scale-105 transition-transform duration-300"
+       title="Your profile guardian mouse!"
+                       onclick="window.location.href='<?php echo $discord_url; ?>'"
+       style="cursor: pointer;" />
+</div>
 </body>
 </html>
 

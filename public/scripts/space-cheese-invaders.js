@@ -448,14 +448,14 @@ let canvasHeight;
     updateWeaponDisplay();
     
     // 🆘 NEW: Create enhanced mobile controls - ALWAYS CREATE FOR BETTER UX
-    setTimeout(() => {
-      createEnhancedMobileControls();
+      setTimeout(() => {
+        createEnhancedMobileControls();
       // 🆘 IMPROVED: Show mobile controls by default on every game start
-      const mobileControls = document.getElementById('mobile-controls');
-      if (mobileControls) {
-        mobileControls.style.display = 'flex';
+          const mobileControls = document.getElementById('mobile-controls');
+          if (mobileControls) {
+            mobileControls.style.display = 'flex';
         console.log('✅ Mobile controls made visible on game start');
-      }
+          }
     }, 50); // Reduced delay for faster control creation
     
     // 🆘 NEW: Display help information outside game canvas
@@ -467,7 +467,7 @@ let canvasHeight;
     // No need for separate toggle button - the game panel button is included
     
     // 🆘 NEW: Ensure mobile controls are visible after initialization
-    setTimeout(() => {
+      setTimeout(() => {
       ensureMobileControlsVisible();
     }, 250);
     
@@ -2567,29 +2567,29 @@ let canvasHeight;
         if (weaponAmmo.laser > 0 && weaponCooldowns.laser <= 0) {
           // Check if this is a Quick Shot button call
           if (window.isQuickShotCall) {
-            bullets.push({
-              x: playerShip.x + playerShip.width / 2 - 2,
-              y: playerShip.y,
-              width: 4,
-              height: canvasHeight, // Full screen height
-              speed: 8,
-              type: 'laser',
-              damage: 3,
-              pierce: true, // Can hit multiple invaders
-              color: '#00ffff',
-              // 🚀 NEW: Enhanced laser properties
-              beamIntensity: 1.0,
-              pulsePhase: 0,
-              energyLevel: 100,
-              isCharged: true
-            });
-            
-            weaponAmmo.laser--;
-            weaponCooldowns.laser = 20; // 2 second cooldown
-            updateWeaponDisplay();
-            
-            // 🚀 NEW: Create spectacular laser effect
-            createSpectacularLaserEffect();
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 - 2,
+            y: playerShip.y,
+            width: 4,
+            height: canvasHeight, // Full screen height
+            speed: 8,
+            type: 'laser',
+            damage: 3,
+            pierce: true, // Can hit multiple invaders
+            color: '#00ffff',
+            // 🚀 NEW: Enhanced laser properties
+            beamIntensity: 1.0,
+            pulsePhase: 0,
+            energyLevel: 100,
+            isCharged: true
+          });
+          
+          weaponAmmo.laser--;
+          weaponCooldowns.laser = 20; // 2 second cooldown
+          updateWeaponDisplay();
+          
+          // 🚀 NEW: Create spectacular laser effect
+          createSpectacularLaserEffect();
             
             // Reset the flag
             window.isQuickShotCall = false;
@@ -2610,38 +2610,38 @@ let canvasHeight;
           if (window.isQuickShotCall) {
             console.log('💣 BOMB FIRED! Creating explosion and killing invaders...');
             
-            // Create bomb explosion effect
-            createBombExplosion();
-            
-            // Kill all invaders on screen
+          // Create bomb explosion effect
+          createBombExplosion();
+          
+          // Kill all invaders on screen
             let invadersKilled = 0;
-            invaders.forEach(invader => {
-              if (invader.alive) {
-                invader.alive = false;
+          invaders.forEach(invader => {
+            if (invader.alive) {
+              invader.alive = false;
                 invadersKilled++;
-                spaceInvadersScore += invader.points;
-                
-                // Create explosion for each killed invader
-                explosions.push({
-                  x: invader.x + invader.width / 2,
-                  y: invader.y + invader.height / 2,
-                  size: 25,
-                  timer: 15,
-                  isBombKill: true
-                });
-              }
-            });
+              spaceInvadersScore += invader.points;
+              
+              // Create explosion for each killed invader
+              explosions.push({
+                x: invader.x + invader.width / 2,
+                y: invader.y + invader.height / 2,
+                size: 25,
+                timer: 15,
+                isBombKill: true
+              });
+            }
+          });
             
             console.log(`💣 BOMB KILLED ${invadersKilled} invaders!`);
-            
-            // Clear all invader bullets
+          
+          // Clear all invader bullets
             const bulletsCleared = invaderBullets.length;
-            invaderBullets = [];
+          invaderBullets = [];
             console.log(`💣 BOMB CLEARED ${bulletsCleared} invader bullets!`);
-            
-            weaponAmmo.bomb--;
-            weaponCooldowns.bomb = 60; // 6 second cooldown
-            updateWeaponDisplay();
+          
+          weaponAmmo.bomb--;
+          weaponCooldowns.bomb = 60; // 6 second cooldown
+          updateWeaponDisplay();
             
             // Reset the flag
             window.isQuickShotCall = false;
@@ -3154,11 +3154,11 @@ window.testWeaponSystem = function() {
 
   function handleTouchStart(e) {
     if (e.target.closest("#space-invaders-canvas")) {
-      e.preventDefault();
+    e.preventDefault();
       e.stopPropagation();
-      const touch = e.touches[0];
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
       isTouching = true;
       
       // Store touch start time for tap detection
@@ -3221,7 +3221,7 @@ window.testWeaponSystem = function() {
       // Quick swipe up to shoot (like modern mobile games)
       if (deltaY < -15) {
         if (currentWeaponType === 'normal') {
-          playerShoot();
+        playerShoot();
         }
         // Special weapons (laser/bomb) can ONLY be fired through Quick Shot button
         // Reset touch to prevent multiple shots
@@ -3259,8 +3259,8 @@ window.testWeaponSystem = function() {
       // If it's a quick tap (less than 200ms) with minimal movement (less than 12px)
       if (touchDuration < 200 && deltaX < 12 && deltaY < 12) {
         if (currentWeaponType === 'normal') {
-          playerShoot();
-          console.log('🎯 Tap-to-shoot activated');
+        playerShoot();
+        console.log('🎯 Tap-to-shoot activated');
         }
         // Special weapons (laser/bomb) can ONLY be fired through Quick Shot button
       }
@@ -3639,7 +3639,7 @@ window.testWeaponSystem = function() {
     // Store current function for click handling
     reloadButton.dataset.function = buttonFunction;
   }
-  
+
   // 🧹 Cleanup function
   function cleanupSpaceInvadersControls() {
     // Note: We can't easily remove the specific keydown listener since it's anonymous
@@ -4072,9 +4072,9 @@ window.testWeaponSystem = function() {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         font-weight: bold;
         min-height: 90px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
         justify-content: center;
         box-shadow: ${currentWeaponType === weapon.type ? '0 0 25px rgba(251, 191, 36, 0.7)' : '0 6px 16px rgba(0, 0, 0, 0.15)'};
         transform: ${currentWeaponType === weapon.type ? 'scale(1.08)' : 'scale(1)'};
@@ -4166,7 +4166,7 @@ window.testWeaponSystem = function() {
     
     autoShootBtn.addEventListener('click', function() {
       if (typeof toggleAutoShoot === 'function') {
-        toggleAutoShoot();
+      toggleAutoShoot();
         // Update button appearance
         autoShootBtn.style.background = autoShootEnabled ? '#10b981' : '#6b7280';
         autoShootBtn.style.borderColor = autoShootEnabled ? '#059669' : '#6b7280';
