@@ -11706,6 +11706,305 @@ require_once 'discord-invite.php';
       }
     `;
     document.head.appendChild(style);
+
+    // ========================================
+    // 🚨 CRISIS RESPONSE: MISSING FUNCTIONS
+    // ========================================
+    // These functions were referenced in HTML but never implemented
+    // Adding them now to prevent JavaScript errors and restore basic functionality
+
+    // 📊 DASHBOARD TAB FUNCTIONS
+    function refreshDashboard() {
+      console.log('🔄 Refreshing dashboard data...');
+      loadDashboardData();
+      addLog('✅ Dashboard data refreshed');
+    }
+
+    function showUploadModal() {
+      console.log('📤 Showing upload modal...');
+      // TODO: Implement database upload modal
+      addLog('⚠️ Upload modal not yet implemented');
+    }
+
+    function showDatabaseViewer() {
+      console.log('👁️ Showing database viewer...');
+      // TODO: Implement database viewer
+      addLog('⚠️ Database viewer not yet implemented');
+    }
+
+    function triggerBackup() {
+      console.log('💾 Triggering database backup...');
+      // TODO: Implement database backup
+      addLog('⚠️ Database backup not yet implemented');
+    }
+
+    function testBackup() {
+      console.log('🧪 Testing backup functionality...');
+      // TODO: Implement backup testing
+      addLog('⚠️ Backup testing not yet implemented');
+    }
+
+    function testDatabasePath() {
+      console.log('🔍 Testing database path...');
+      // TODO: Implement database path testing
+      addLog('⚠️ Database path testing not yet implemented');
+    }
+
+    function debugDatabasePaths() {
+      console.log('🐛 Debugging database paths...');
+      // TODO: Implement database path debugging
+      addLog('⚠️ Database path debugging not yet implemented');
+    }
+
+    // 👥 USER MANAGEMENT TAB FUNCTIONS
+    function searchUsersInstant(searchTerm) {
+      if (searchTerm.length < 2) {
+        document.getElementById('userResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters...</div>';
+        return;
+      }
+      
+      console.log('🔍 Searching users:', searchTerm);
+      // TODO: Implement instant user search
+      addLog('⚠️ Instant user search not yet implemented');
+    }
+
+    function searchUsers() {
+      const searchTerm = document.getElementById('userSearch').value;
+      if (!searchTerm.trim()) {
+        addLog('❌ Please enter a search term');
+        return;
+      }
+      
+      console.log('🔍 Searching users:', searchTerm);
+      // TODO: Implement user search
+      addLog('⚠️ User search not yet implemented');
+    }
+
+    function loadUserQuestHistory() {
+      const userId = document.getElementById('questHistoryUserId').value;
+      if (!userId.trim()) {
+        addLog('❌ Please enter a user ID or username');
+        return;
+      }
+      
+      console.log('🏆 Loading quest history for:', userId);
+      // TODO: Implement quest history loading
+      addLog('⚠️ Quest history loading not yet implemented');
+    }
+
+    // 💰 POINT MANAGEMENT TAB FUNCTIONS
+    function quickSearchUsersInstant(searchTerm) {
+      if (searchTerm.length < 2) {
+        document.getElementById('quickUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters...</div>';
+        return;
+      }
+      
+      console.log('🔍 Quick searching users:', searchTerm);
+      // TODO: Implement quick user search
+      addLog('⚠️ Quick user search not yet implemented');
+    }
+
+    function quickSelectUser() {
+      const searchTerm = document.getElementById('quickUserId').value;
+      if (!searchTerm.trim()) {
+        addLog('❌ Please enter a search term');
+        return;
+      }
+      
+      console.log('🎯 Quick selecting user:', searchTerm);
+      // TODO: Implement quick user selection
+      addLog('⚠️ Quick user selection not yet implemented');
+    }
+
+    function addPoints() {
+      const userId = document.getElementById('addUserId').value;
+      const amount = document.getElementById('addAmount').value;
+      const reason = document.getElementById('addReason').value;
+      
+      if (!userId || !amount) {
+        addLog('❌ Please enter user ID and amount');
+        return;
+      }
+      
+      console.log('➕ Adding points:', { userId, amount, reason });
+      // TODO: Implement point addition
+      addLog('⚠️ Point addition not yet implemented');
+    }
+
+    function setPoints() {
+      const userId = document.getElementById('setUserId').value;
+      const amount = document.getElementById('setAmount').value;
+      const reason = document.getElementById('setReason').value;
+      
+      if (!userId || !amount) {
+        addLog('❌ Please enter user ID and amount');
+        return;
+      }
+      
+      console.log('🎯 Setting points:', { userId, amount, reason });
+      // TODO: Implement point setting
+      addLog('⚠️ Point setting not yet implemented');
+    }
+
+    function removePoints() {
+      const userId = document.getElementById('removeUserId').value;
+      const amount = document.getElementById('removeAmount').value;
+      const reason = document.getElementById('removeReason').value;
+      
+      if (!userId || !amount) {
+        addLog('❌ Please enter user ID and amount');
+        return;
+      }
+      
+      console.log('➖ Removing points:', { userId, amount, reason });
+      // TODO: Implement point removal
+      addLog('⚠️ Point removal not yet implemented');
+    }
+
+    function checkBalance() {
+      const userId = document.getElementById('balanceUserId').value;
+      if (!userId.trim()) {
+        addLog('❌ Please enter a user ID');
+        return;
+      }
+      
+      console.log('💳 Checking balance for:', userId);
+      // TODO: Implement balance checking
+      addLog('⚠️ Balance checking not yet implemented');
+    }
+
+    function getHistory() {
+      const userId = document.getElementById('historyUserId').value;
+      if (!userId.trim()) {
+        addLog('❌ Please enter a user ID');
+        return;
+      }
+      
+      console.log('📋 Getting history for:', userId);
+      // TODO: Implement history retrieval
+      addLog('⚠️ History retrieval not yet implemented');
+    }
+
+    // 🏪 STORE MANAGEMENT TAB FUNCTIONS
+    function loadStoreItems() {
+      console.log('📦 Loading store items...');
+      // TODO: Implement store items loading
+      addLog('⚠️ Store items loading not yet implemented');
+    }
+
+    function createStoreItem() {
+      const name = document.getElementById('newItemName').value;
+      const price = document.getElementById('newItemPrice').value;
+      const imageUrl = document.getElementById('newItemImageUrl').value;
+      const description = document.getElementById('newItemDescription').value;
+      
+      if (!name || !price) {
+        addLog('❌ Please enter item name and price');
+        return;
+      }
+      
+      console.log('➕ Creating store item:', { name, price, imageUrl, description });
+      // TODO: Implement store item creation
+      addLog('⚠️ Store item creation not yet implemented');
+    }
+
+    function giveItemToUser() {
+      const userId = document.getElementById('giveItemUserId').value;
+      const itemName = document.getElementById('giveItemName').value;
+      const quantity = document.getElementById('giveItemQuantity').value;
+      
+      if (!userId || !itemName) {
+        addLog('❌ Please enter user ID and item name');
+        return;
+      }
+      
+      console.log('🎁 Giving item to user:', { userId, itemName, quantity });
+      // TODO: Implement item giving
+      addLog('⚠️ Item giving not yet implemented');
+    }
+
+    function viewUserInventory() {
+      const userId = document.getElementById('viewInventoryUserId').value;
+      if (!userId.trim()) {
+        addLog('❌ Please enter a user ID');
+        return;
+      }
+      
+      console.log('👤 Viewing inventory for:', userId);
+      // TODO: Implement inventory viewing
+      addLog('⚠️ Inventory viewing not yet implemented');
+    }
+
+    // 🎮 GAME MANAGEMENT TAB FUNCTIONS
+    function switchGameTab(tabName) {
+      console.log('🎮 Switching to game tab:', tabName);
+      
+      // Hide all game tab content
+      document.querySelectorAll('.game-tab-content').forEach(tab => {
+        tab.style.display = 'none';
+      });
+      
+      // Show selected tab
+      const selectedTab = document.getElementById(tabName + 'Tab');
+      if (selectedTab) {
+        selectedTab.style.display = 'block';
+      }
+      
+      // Update active button state
+      document.querySelectorAll('[data-game-tab]').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      const activeBtn = document.querySelector(`[data-game-tab="${tabName}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+      }
+      
+      addLog(`✅ Switched to ${tabName} tab`);
+    }
+
+    function refreshAllGameData() {
+      console.log('🔄 Refreshing all game data...');
+      // TODO: Implement game data refresh
+      addLog('⚠️ Game data refresh not yet implemented');
+    }
+
+    function debugAllGameTabs() {
+      console.log('🔍 Debugging all game tabs...');
+      // TODO: Implement game tab debugging
+      addLog('⚠️ Game tab debugging not yet implemented');
+    }
+
+    function loadGameOverview() {
+      console.log('📊 Loading game overview...');
+      // TODO: Implement game overview loading
+      addLog('⚠️ Game overview loading not yet implemented');
+    }
+
+    function resetAllGameScores() {
+      console.log('🔄 Resetting all game scores...');
+      // TODO: Implement score reset
+      addLog('⚠️ Score reset not yet implemented');
+    }
+
+    function exportGameData() {
+      console.log('📊 Exporting game data...');
+      // TODO: Implement data export
+      addLog('⚠️ Data export not yet implemented');
+    }
+
+    function backupGameData() {
+      console.log('💾 Backing up game data...');
+      // TODO: Implement data backup
+      addLog('⚠️ Game data backup not yet implemented');
+    }
+
+    // ========================================
+    // ✅ CRISIS RESPONSE COMPLETED
+    // ========================================
+    // All missing functions have been implemented as stubs
+    // Admin interface should now be navigable without JavaScript errors
+    // Next step: Test each tab and implement actual functionality
   </script>
 
 </body>
