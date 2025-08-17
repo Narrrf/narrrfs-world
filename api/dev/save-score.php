@@ -80,21 +80,49 @@ try {
     $currentSeason = 'season_1'; // Default to season 1 for now
 
     // Get season settings for scoring and limits
-    $seasonStmt = $db->prepare("SELECT * FROM tbl_season_settings WHERE season_name = ?");
+    $seasonStmt = $db->prepare("SELECT season_name, tetris_max_score, snake_max_score, points_per_line, points_per_cheese, space_invaders_max_score, points_per_invader FROM tbl_season_settings WHERE season_name = ?");
     $seasonStmt->execute([$currentSeason]);
     $seasonSettings = $seasonStmt->fetch(PDO::FETCH_ASSOC);
 
+    // 🔍 DEBUG: Log the exact values retrieved from database
+    if ($game === 'space_invaders') {
+        error_log("🔍 DEBUG Space Invaders - Raw season settings: " . json_encode($seasonSettings));
+        error_log("🔍 DEBUG Space Invaders - points_per_invader value: " . ($seasonSettings['points_per_invader'] ?? 'NOT_FOUND'));
+        error_log("🔍 DEBUG Space Invaders - Raw score received: " . $raw_score);
+        
+        // 🔍 DEBUG: Show all available keys
+        error_log("🔍 DEBUG Space Invaders - Available keys: " . implode(', ', array_keys($seasonSettings)));
+        
+        // 🔍 DEBUG: Show the exact database row
+        $seasonStmt2 = $db->prepare("SELECT * FROM tbl_season_settings WHERE season_name = ?");
+        $seasonStmt2->execute([$currentSeason]);
+        $rawRow = $seasonStmt2->fetch(PDO::FETCH_NUM);
+        error_log("🔍 DEBUG Space Invaders - Raw database row: " . json_encode($rawRow));
+    }
+
     if (!$seasonSettings) {
-        // No season settings found - use safe defaults
-        error_log("No season settings found for season: $currentSeason - using safe defaults");
-        $seasonSettings = [
-            'tetris_max_score' => 10000,
-            'snake_max_score' => 10000,
-            'space_invaders_max_score' => 10000,
-            'points_per_line' => 10,
-            'points_per_cheese' => 10,
-            'points_per_invader' => 0.01 // 1,000 invaders = 10 DSPOINC
-        ];
+        // No season settings found - create default settings
+        error_log("No season settings found for season: $currentSeason - creating default settings");
+        
+        // Create default settings if none exist (1:1 ratio for tetris, 10:1 ratio for snake, 0.01 for space invaders)
+        $db->exec("INSERT INTO tbl_season_settings (season_name, tetris_max_score, snake_max_score, space_invaders_max_score, points_per_line, points_per_cheese, points_per_invader) VALUES ('season_1', 10000, 10000, 10000, 1, 10, 0.01)");
+        
+        // Fetch the newly created settings
+        $seasonStmt = $db->prepare("SELECT season_name, tetris_max_score, snake_max_score, points_per_line, points_per_cheese, space_invaders_max_score, points_per_invader FROM tbl_season_settings WHERE season_name = ?");
+        $seasonStmt->execute([$currentSeason]);
+        $seasonSettings = $seasonStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$seasonSettings) {
+            error_log("Failed to create season settings - using emergency defaults");
+            $seasonSettings = [
+                'tetris_max_score' => 10000,
+                'snake_max_score' => 10000,
+                'space_invaders_max_score' => 10000,
+                'points_per_line' => 1,
+                'points_per_cheese' => 10,
+                'points_per_invader' => 0.01
+            ];
+        }
     }
 
     // 🧀 Convert raw score to DSPOINC (use season settings for points per unit)
@@ -107,7 +135,20 @@ try {
         $pointsPerUnit = $seasonSettings['points_per_cheese'] ?? 10;
         $unit = 'cheese';
     } elseif ($game === 'space_invaders') {
-        $pointsPerUnit = $seasonSettings['points_per_invader'] ?? 0.01; // 1,000 invaders = 10 DSPOINC
+        // 🔍 DEBUG: Log the scoring calculation
+        error_log("🔍 DEBUG Space Invaders - pointsPerUnit: " . $pointsPerUnit);
+        error_log("🔍 DEBUG Space Invaders - raw_score: " . $raw_score);
+        error_log("🔍 DEBUG Space Invaders - calculation: " . $raw_score . " * " . $pointsPerUnit . " = " . ($raw_score * $pointsPerUnit));
+        
+        // 🧀 Explicit Space Invaders scoring - ensure correct value
+        if (isset($seasonSettings['points_per_invader']) && is_numeric($seasonSettings['points_per_invader'])) {
+            $pointsPerUnit = floatval($seasonSettings['points_per_invader']);
+            error_log("🔍 DEBUG Space Invaders - Using database value: " . $pointsPerUnit);
+        } else {
+            error_log("🔍 DEBUG Space Invaders - ERROR: points_per_invader not found in database!");
+            error_log("🔍 DEBUG Space Invaders - Available keys: " . implode(', ', array_keys($seasonSettings)));
+            throw new Exception("Space Invaders scoring configuration missing from database");
+        }
         $unit = 'invaders';
     } else {
         $pointsPerUnit = 10; // Default fallback

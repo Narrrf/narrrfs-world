@@ -22,6 +22,7 @@ window.addEventListener("keydown", function (e) {
 let spaceInvadersGameInterval;
 let isSpaceInvadersPaused = false;
 let spaceInvadersScore = 0;
+let spaceInvadersCount = 0; // NEW: Track actual invader count for DSPOINC calculation
 
 // 🧀 Load cheese-themed images
 const cheeseShipImg = new Image();
@@ -402,6 +403,7 @@ let canvasHeight;
 
     // Initialize game state
     spaceInvadersScore = 0;
+    spaceInvadersCount = 0; // NEW: Reset invader count
     gameSpeed = 0.1;
     waveNumber = 1;
     gamePhase = 'formation';
@@ -699,6 +701,7 @@ let canvasHeight;
     unlockSpaceInvadersScroll();
     
     spaceInvadersScore = 0;
+    spaceInvadersCount = 0; // NEW: Reset invader count
     gameSpeed = 0.1; // ULTRA SLOW STARTING SPEED
     waveNumber = 1;
     gamePhase = 'formation';
@@ -1388,7 +1391,8 @@ let canvasHeight;
           } else {
             // Normal hit - kill invader
             invader.alive = false;
-            spaceInvadersScore += invader.points;
+            spaceInvadersScore += invader.points; // Keep game points for display
+            spaceInvadersCount += 1; // NEW: Track invader count for DSPOINC
             
             // Create normal explosion
             explosions.push({
@@ -1573,7 +1577,8 @@ let canvasHeight;
         
         // Kill the invading invader
         invader.alive = false;
-        spaceInvadersScore += invader.points;
+        spaceInvadersScore += invader.points; // Keep game points for display
+        spaceInvadersCount += 1; // NEW: Track invader count for DSPOINC
         
         // Create explosion effect at collision point
         explosions.push({
@@ -2404,10 +2409,9 @@ let canvasHeight;
   function drawScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
-      const conversionRate = 1000; // 1,000 invaders = 10 DSPOINC
-      const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
-      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders (${dspoinEarned} DSPOINC)`;
+      // Space Invaders scoring: 1 invader = 0.1 DSPOINC
+      const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places
+      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} game points, ${spaceInvadersCount.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC)`;
     } else {
       console.warn('⚠️ Score display element not found');
     }
@@ -2520,17 +2524,16 @@ let canvasHeight;
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
-    const conversionRate = 1000;
-    const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
+    // Space Invaders scoring: 1 invader = 0.1 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places
     
     if (gameOverModal && finalScoreText) {
-      finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed)`;
+      finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersCount.toLocaleString()} invaders destroyed)`;
       gameOverModal.classList.remove("hidden");
     }
     
     // Save score to database
-    saveScore(spaceInvadersScore);
+    saveScore(spaceInvadersCount);
     cleanupSpaceInvadersControls();
 
     // 🆘 NEW: Ensure mobile controls are visible when game ends
@@ -2619,7 +2622,8 @@ let canvasHeight;
             if (invader.alive) {
               invader.alive = false;
                 invadersKilled++;
-              spaceInvadersScore += invader.points;
+              spaceInvadersScore += invader.points; // Keep game points for display
+              spaceInvadersCount += invadersKilled; // NEW: Track invader count for DSPOINC
               
               // Create explosion for each killed invader
               explosions.push({
@@ -3036,10 +3040,9 @@ window.testWeaponSystem = function() {
   function updateScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
-      const conversionRate = 1000; // 1,000 invaders = 10 DSPOINC
-      const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
-      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders (${dspoinEarned} DSPOINC)`;
+      // Space Invaders scoring: 1 invader = 0.1 DSPOINC
+      const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places
+      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} game points, ${spaceInvadersCount.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC)`;
     } else {
       console.warn('⚠️ Score display element not found');
     }
@@ -3051,24 +3054,23 @@ window.testWeaponSystem = function() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
-    const conversionRate = 1000;
-    const dspoinEarned = Math.floor(spaceInvadersScore / conversionRate);
+    // Space Invaders scoring: 1 invader = 0.1 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places
     
     if (winModal && winScoreText) {
-      winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed)`;
+      winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersCount.toLocaleString()} invaders destroyed)`;
       winModal.classList.remove("hidden");
     }
     
     // Save score to database
-    saveScore(spaceInvadersScore);
+    saveScore(spaceInvadersCount);
     cleanupSpaceInvadersControls();
 
     // Dispatch game end event for UI reset
     window.dispatchEvent(new Event('spaceInvadersGameEnd'));
   }
 
-  function saveScore(finalScore) {
+  function saveScore(invaderCount) {
     const discordId = localStorage.getItem('discord_id');
     const discordName = localStorage.getItem('discord_name') || 'Unknown Player';
     const wallet = localStorage.getItem('user_wallet') || discordId;
@@ -3078,11 +3080,10 @@ window.testWeaponSystem = function() {
       return;
     }
 
-    // Space Invaders scoring: 1,000 invaders = 10 DSPOINC
-    const conversionRate = 1000;
-    const dspoincScore = Math.floor(finalScore / conversionRate) * 10; // Convert to DSPOINC (1,000 invaders = 10 DSPOINC)
+    // Space Invaders scoring: 10 DSPOINC per invader (matches backend)
+    const dspoincScore = Math.floor(invaderCount * 10); // Convert to DSPOINC (1 invader = 10 DSPOINC)
 
-    console.log(`💾 Saving Space Invaders score: ${finalScore} invaders = ${dspoincScore} DSPOINC`);
+    console.log(`💾 Saving Space Invaders score: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
 
     // Save to the same API endpoint as Tetris and Snake
     fetch('/api/dev/save-score.php', {
@@ -3092,7 +3093,7 @@ window.testWeaponSystem = function() {
       },
       body: JSON.stringify({
         wallet: wallet,
-        score: finalScore, // Raw score (number of invaders destroyed)
+        score: invaderCount, // Raw score (number of invaders destroyed)
         discord_id: discordId,
         discord_name: discordName,
         game: 'space_invaders'
@@ -3111,10 +3112,10 @@ window.testWeaponSystem = function() {
     })
     .then(data => {
       if (data.success) {
-        console.log(`✅ Space Invaders score saved successfully: ${finalScore} invaders = ${dspoincScore} DSPOINC`);
+        console.log(`✅ Space Invaders score saved successfully: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
       } else {
         if (data.local_test) {
-          console.log(`🔄 Local testing detected - score would be saved in production: ${finalScore} invaders = ${dspoincScore} DSPOINC`);
+          console.log(`🔄 Local testing detected - score would be saved in production: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
         } else {
           console.error('❌ Failed to save Space Invaders score:', data.error || 'Unknown error');
         }
@@ -3125,7 +3126,7 @@ window.testWeaponSystem = function() {
       // Check if this is a local testing issue
       if (error.message.includes('HTML') || error.message.includes('fetch')) {
         console.log('🔄 Local testing detected - score saving disabled for local development');
-        console.log(`📊 Score would be saved in production: ${finalScore} invaders = ${dspoincScore} DSPOINC`);
+        console.log(`📊 Score would be saved in production: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
       }
     });
   }
