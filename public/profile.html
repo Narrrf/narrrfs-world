@@ -127,6 +127,90 @@ require_once 'discord-invite.php';
     console.log('🍪 DOM ready, initializing cookie consent...');
     initializeCookieConsent();
   });
+
+  // 🏆 Trophy Shelf Functions - Available early for other scripts
+  const trophies = {
+    "VIP Holder": { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
+    "Holder": { img: "img/trophy_holder.png", label: "🏆 Holder" },
+    "Cheese Hunter": { img: "img/trophy_cheese_hunter.png", label: "🧀 Cheese Hunter" },
+    "🧀 Cheese Hunter": { img: "img/trophy_cheese_hunter.png", label: "🧀 Cheese Hunter" },
+    "🏆 Holder": { img: "img/trophy_holder.png", label: "🏆 Holder" },
+    "🎴 VIP Holder": { img: "img/trophy_VIP.png", label: "🎴 VIP Holder" },
+    "PokerOG": { img: "img/trophy_PokerOG.png", label: "Poker OG" },
+    "Champion": { img: "img/trophy_champion.png", label: "Champion" },
+    "Rumble": { img: "img/trophy_rumble.png", label: "Rumble Champ" },
+    "Engage": { img: "img/trophy_engage.png", label: "Engager" },
+    "Moderator": { img: "img/trophy_moderator.png", label: "Moderator" },
+    "Server Booster": { img: "img/trophy_serverbooster.png", label: "Server Booster" },
+    "Alpha Caller": { img: "img/trophy_alphacaller.png", label: "Alpha Caller" },
+    "Crypto Corn Friends": { img: "img/trophy_cryptocornfriends.png", label: "Corny Companion" },
+    "Rabbit Friends": { img: "img/trophy_rabbitfriends.png", label: "Bunny Buddy" },
+    "Kaleido Friends": { img: "img/trophy_kaleidofriends.png", label: "Kaleido Supporter" },
+    "Weedery Friends": { img: "img/trophy_weederyfriends.png", label: "Weedery 🌿" },
+    "Community Member": { img: "img/trophy_community.png", label: "Community Member" },
+    "Verifiziert": { img: "img/trophy_verified.png", label: "Verified" }
+  };
+
+  function renderTrophyShelf(userRoles = []) {
+    const shelf = document.getElementById("cheeseShelf");
+    if (!shelf) return;
+    shelf.innerHTML = "";
+    const uniqueRoles = [...new Set(userRoles)];
+    
+    // Debug logging
+    console.log('Rendering trophy shelf with roles:', uniqueRoles);
+    
+    uniqueRoles.forEach(role => {
+      // Check for exact match first
+      let trophy = trophies[role];
+      
+      // If no exact match, try to find a match by removing emojis or adding them
+      if (!trophy) {
+        // Try removing emojis from role name
+        const cleanRole = role.replace(/[🏆🎴🧀]/g, '').trim();
+        trophy = trophies[cleanRole];
+        
+        // If still no match, try adding emojis
+        if (!trophy) {
+          if (cleanRole === 'Holder') {
+            trophy = trophies['🏆 Holder'];
+          } else if (cleanRole === 'VIP Holder') {
+            trophy = trophies['🎴 VIP Holder'];
+          } else if (cleanRole === 'Cheese Hunter') {
+            trophy = trophies['🧀 Cheese Hunter'];
+          }
+        }
+      }
+      
+      if (trophy) {
+        const trophyEl = document.createElement("div");
+        trophyEl.className = "flex flex-col items-center animate-pop transition-transform hover:scale-105";
+        trophyEl.innerHTML = `
+          <img src="${trophy.img}" alt="${trophy.label}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow mb-2" />
+          <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}</span>
+        `;
+        shelf.appendChild(trophyEl);
+        console.log('Added trophy for role:', role, '->', trophy.label);
+      } else {
+        console.log('No trophy found for role:', role);
+      }
+    });
+  }
+
+  // Helper for safe text setting
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = value;
+  }
+  // Helper for class toggle (show/hide)
+  function showElement(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('hidden');
+  }
+  function hideElement(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  }
 </script>
   <script src="https://cdn.tailwindcss.com"></script>
   
@@ -971,8 +1055,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
     try {
-     // Unified fetch from profile.php
-     const res = await fetch('/api/user/profile.php', { 
+     // Unified fetch from profile.php - Use full URL for live compatibility
+     const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
        credentials: 'include',
        headers: { 'Accept': 'application/json' }
      });
@@ -1110,42 +1194,42 @@ document.addEventListener("DOMContentLoaded", async function () {
          console.error('❌ Error fetching DSPOINC balance:', balanceError);
        }
          
-         // Fetch and display recent adjustments
-         fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
-           .then(res => res.json())
-           .then(response => {
-             const recentList = document.getElementById('recentAdjustments');
-             const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+       // Fetch and display recent adjustments
+       fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
+         .then(res => res.json())
+         .then(response => {
+           const recentList = document.getElementById('recentAdjustments');
+           const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
 
-             if (recentList) {
-               if (adjustments.length > 0) {
-                 recentList.innerHTML = adjustments
-                   .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                   .slice(0, 10)
-                   .map(a =>
-                     `<li>
-                       <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                       : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
-                       <span class="italic">(${a.reason || a.action})</span>
-                     </li>`
-                   ).join('');
-                 console.log('✅ Recent adjustments loaded:', adjustments.length);
-               } else {
-                 recentList.innerHTML = '<li class="text-gray-400">No recent score changes</li>';
-                 console.log('ℹ️ No recent adjustments found');
-               }
+           if (recentList) {
+             if (adjustments.length > 0) {
+               recentList.innerHTML = adjustments
+                 .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                 .slice(0, 10)
+                 .map(a =>
+                   `<li>
+                     <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
+                     : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
+                     <span class="italic">(${a.reason || a.action})</span>
+                   </li>`
+                 ).join('');
+               console.log('✅ Recent adjustments loaded:', adjustments.length);
+             } else {
+               recentList.innerHTML = '<li class="text-gray-400">No recent score changes</li>';
+               console.log('ℹ️ No recent adjustments found');
              }
-           })
-           .catch((error) => {
-             console.error('Error fetching recent adjustments:', error);
-             const recentList = document.getElementById('recentAdjustments');
-             if (recentList) {
-               recentList.innerHTML = '<li class="text-red-400">Could not load recent changes</li>';
-             }
-           });
-       } catch (e) {
-         console.error('Error populating DSPOINC Journey:', e);
-       }
+           }
+         })
+         .catch((error) => {
+           console.error('Error fetching recent adjustments:', error);
+           const recentList = document.getElementById('recentAdjustments');
+           if (recentList) {
+             recentList.innerHTML = '<li class="text-red-400">Could not load recent changes</li>';
+           }
+         });
+     } catch (e) {
+       console.error('Error populating DSPOINC Journey:', e);
+     }
      } else {
        hideElement('dspoincJourneySection');
        showElement('dspoincLoginPrompt');
@@ -1202,30 +1286,31 @@ document.addEventListener("DOMContentLoaded", async function () {
       }, 5000);
     }
 
-     } catch (err) {
+     }
+   } catch (err) {
      console.error('Profile fetch failed:', err);
-          // Show login UI on error
-      setText('username', 'Guest#0000');
-      setText('welcome-name', 'Guest');
-      setText('email', 'Please log in');
-      setText('guilds', 'No guilds connected');
-      setText('traits', 'No traits available');
-      setText('user-roles', 'No roles');
-      setText('wallet-address', 'Wallet not linked');
-      hideElement('goldenCheeseGate');
-      hideElement('noCheeseJoke');
-      hideElement('dspoincJourneySection');
-      showElement('dspoincLoginPrompt');
-      
-      // Make sure login link is visible
-      if (loginLink) {
-        loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
-        loginLink.style.display = 'block';
-      }
-      if (avatar) {
-        avatar.src = 'img/grumpy-cheese.png';
-        avatar.style.cursor = 'pointer';
-      }
+     // Show login UI on error
+     setText('username', 'Guest#0000');
+     setText('welcome-name', 'Guest');
+     setText('email', 'Please log in');
+     setText('guilds', 'No guilds connected');
+     setText('traits', 'No traits available');
+     setText('user-roles', 'No roles');
+     setText('wallet-address', 'Wallet not linked');
+     hideElement('goldenCheeseGate');
+     hideElement('noCheeseJoke');
+     hideElement('dspoincJourneySection');
+     showElement('dspoincLoginPrompt');
+     
+     // Make sure login link is visible
+     if (loginLink) {
+       loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
+       loginLink.style.display = 'block';
+     }
+     if (avatar) {
+       avatar.src = 'img/grumpy-cheese.png';
+       avatar.style.cursor = 'pointer';
+     }
    }
  });
 
@@ -1238,7 +1323,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 2. Fetch user profile data
   let user;
   try {
-    const res = await fetch(`/api/user/profile.php?user_id=${userId}`);
+    const res = await fetch(`https://narrrfs.world/api/user/profile.php?user_id=${userId}`);
     user = await res.json();
     if (user.error) throw new Error(user.error);
   } catch (e) {
@@ -1299,7 +1384,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 <!-- 🧠 Load Scroll Scripts -->
 <script src="scripts/tetris-scroll.js?v=9.9"></script>
 <script src="scripts/snake-scroll.js?v=1.1"></script>
-        <script src="scripts/space-cheese-invaders.js?v=1.1" onerror="console.error('❌ Failed to load space-cheese-invaders.js')" onload="console.log('✅ space-cheese-invaders.js loaded successfully')"></script>
+        <script src="scripts/space-cheese-invaders.js?v=1.2" onerror="console.error('❌ Failed to load space-cheese-invaders.js')" onload="console.log('✅ space-cheese-invaders.js loaded successfully')"></script>
         <script>
           // Check if initSpaceInvaders is available immediately after script loads
           console.log('🔍 Checking initSpaceInvaders availability after script load...');
@@ -1674,10 +1759,16 @@ async function checkWLRoleAndShowButton() {
     }
 }
 
-// Check for WL role on page load
+// Check for WL role on page load - moved to after DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Small delay to ensure page is loaded
-  setTimeout(checkWLRoleAndShowButton, 1000);
+  // Wait for all scripts to load and DOM to be ready
+  setTimeout(() => {
+    if (typeof checkWLRoleAndShowButton === 'function') {
+      checkWLRoleAndShowButton();
+    } else {
+      console.warn('⚠️ checkWLRoleAndShowButton function not available yet');
+    }
+  }, 2000); // Increased delay to ensure all scripts are loaded
 });
 
 // 🎴 Web3 Wallet Verification Functions
