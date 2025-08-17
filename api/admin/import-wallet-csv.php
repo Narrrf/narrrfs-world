@@ -175,23 +175,23 @@ try {
                             ],
                             'transactions' => $transactionCount,
                             'last_import' => $currentBalance['created_at'],
-                            'csv_file': {
-                                'exists': $csvExists,
-                                'path': $csvFile,
-                                'size': $csvSize
-                            }
+                            'csv_file' => array(
+                                'exists' => $csvExists,
+                                'path' => $csvFile,
+                                'size' => $csvSize
+                            )
                         ]);
                     } else {
                         echo json_encode([
                             'success' => true,
                             'wallet_status' => 'not_imported',
                             'message' => 'No wallet data imported yet. Use POST to import CSV.',
-                            'csv_file': {
-                                'exists': $csvExists,
-                                'path': $csvFile,
-                                'size': $csvSize,
-                                'note': $csvExists ? 'CSV file ready for import' : 'CSV file not found - upload SOL-Community-wallet.csv to private/ directory'
-                            }
+                            'csv_file' => array(
+                                'exists' => $csvExists,
+                                'path' => $csvFile,
+                                'size' => $csvSize,
+                                'note' => $csvExists ? 'CSV file ready for import' : 'CSV file not found - upload SOL-Community-wallet.csv to private/ directory'
+                            )
                         ]);
                     }
                 }
