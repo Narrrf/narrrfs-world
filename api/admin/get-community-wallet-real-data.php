@@ -45,20 +45,19 @@ try {
         exit;
     }
     
-    // Get recent transactions
-    $transactionStmt = $pdo->prepare("
-        SELECT 
-            txhash,
-            block_time,
-            change_type,
-            change_amount,
-            pre_balance,
-            post_balance,
-            fee_sol
-        FROM tbl_wallet_transactions 
-        ORDER BY block_time_unix DESC 
-        LIMIT 20
-    ");
+                    // Get all transactions (not limited to 20)
+                $transactionStmt = $pdo->prepare("
+                    SELECT 
+                        txhash,
+                        block_time,
+                        change_type,
+                        change_amount,
+                        pre_balance,
+                        post_balance,
+                        fee_sol
+                    FROM tbl_wallet_transactions 
+                    ORDER BY block_time_unix DESC
+                ");
     $transactionStmt->execute();
     $recentTransactions = $transactionStmt->execute() ? $transactionStmt->fetchAll(PDO::FETCH_ASSOC) : [];
     

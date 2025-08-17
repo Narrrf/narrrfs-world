@@ -3501,10 +3501,11 @@ require_once 'discord-invite.php';
                 <th class="px-4 py-2 text-left text-gray-300">AMOUNT (SOL)</th>
                 <th class="px-4 py-2 text-left text-gray-300">BALANCE (SOL)</th>
                 <th class="px-4 py-2 text-left text-gray-300">FEE</th>
+                <th class="px-4 py-2 text-left text-gray-300">ACTIONS</th>
               </tr>
             </thead>
             <tbody id="walletTransactionsTableBody">
-              <tr><td colspan="5" class="text-center text-gray-400">Loading transaction history...</td></tr>
+              <tr><td colspan="6" class="text-center text-gray-400">Loading transaction history...</td></tr>
             </tbody>
           </table>
         </div>
@@ -4147,7 +4148,7 @@ require_once 'discord-invite.php';
       // Clear wallet transaction history table
       const walletTransactionsTableBody = document.getElementById('walletTransactionsTableBody');
       if (walletTransactionsTableBody) {
-        walletTransactionsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400">Loading transaction history...</td></tr>';
+        walletTransactionsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400">Loading transaction history...</td></tr>';
       }
       
       // Clear any other dynamic content areas
@@ -11389,6 +11390,7 @@ require_once 'discord-invite.php';
           const feeSol = tx.fee_sol || 0;
           const time = tx.time || 'Unknown';
           const type = tx.type || 'Unknown';
+          const txhash = tx.hash || 'Unknown';
           
           const amountClass = amountSol > 0 ? 'text-green-400' : 'text-red-400';
           const typeClass = type === 'inc' ? 'text-green-400' : 'text-red-400';
@@ -11400,6 +11402,14 @@ require_once 'discord-invite.php';
               <td class="px-4 py-2 text-sm ${amountClass}">${amountSol.toFixed(9)}</td>
               <td class="px-4 py-2 text-sm text-blue-400">${balanceSol.toFixed(9)}</td>
               <td class="px-4 py-2 text-sm text-yellow-400">${feeSol.toFixed(6)}</td>
+              <td class="px-4 py-2 text-sm text-center">
+                <button onclick="editWalletTransaction('${txhash}', '${type}', ${amountSol}, ${balanceSol}, ${feeSol})" class="text-blue-600 hover:text-blue-800 px-2 py-1 mr-2">
+                  ✏️
+                </button>
+                <button onclick="viewTransactionDetails('${txhash}')" class="text-green-600 hover:text-green-800 px-2 py-1">
+                  👁️
+                </button>
+              </td>
             </tr>
           `;
         });
@@ -11407,9 +11417,127 @@ require_once 'discord-invite.php';
         tableBody.innerHTML = html;
         addLog(`📊 Displayed ${data.transactions.recent.length} wallet transactions`);
       } else {
-        tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400">No transaction history available</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400">No transaction history available</td></tr>';
         addLog('⚠️ No transaction history to display');
       }
+    }
+    
+    // Edit wallet transaction
+    function editWalletTransaction(txhash, type, amount, balance, fee) {
+      addLog(`✏️ Editing transaction: ${txhash}`);
+      
+      // Create modal HTML
+      const modalHTML = `
+        <div id="editWalletTransactionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4 text-white">✏️ Edit Wallet Transaction</h3>
+            
+            <input type="hidden" id="editTxHash" value="${txhash}">
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Transaction Hash</label>
+                <input type="text" id="editTxHashDisplay" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       value="${txhash}" readonly>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Type</label>
+                <select id="editTxType" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white">
+                  <option value="inc" ${type === 'inc' ? 'selected' : ''}>📥 Incoming</option>
+                  <option value="dec" ${type === 'dec' : ''}>📤 Outgoing</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Amount (SOL)</label>
+                <input type="number" id="editTxAmount" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       step="0.000000001" min="0" value="${amount}" placeholder="0.000000000">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Balance (SOL)</label>
+                <input type="number" id="editTxBalance" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       step="0.000000001" min="0" value="${balance}" placeholder="0.000000000">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Fee (SOL)</label>
+                <input type="number" id="editTxFee" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       step="0.000000001" min="0" value="${fee}" placeholder="0.000000000">
+              </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+              <button onclick="closeEditWalletTransactionModal()" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded">
+                Cancel
+              </button>
+              <button onclick="submitEditWalletTransaction()" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                Update Transaction
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Add modal to page
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+    
+    function closeEditWalletTransactionModal() {
+      const modal = document.getElementById('editWalletTransactionModal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+    
+    async function submitEditWalletTransaction() {
+      const txhash = document.getElementById('editTxHash').value;
+      const type = document.getElementById('editTxType').value;
+      const amount = parseFloat(document.getElementById('editTxAmount').value);
+      const balance = parseFloat(document.getElementById('editTxBalance').value);
+      const fee = parseFloat(document.getElementById('editTxFee').value);
+      
+      if (isNaN(amount) || amount < 0 || isNaN(balance) || balance < 0 || isNaN(fee) || fee < 0) {
+        addLog('❌ Please fill in all values with valid numbers');
+        return;
+      }
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/update-wallet-transaction.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            txhash: txhash,
+            type: type,
+            amount: amount,
+            balance: balance,
+            fee: fee
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Wallet transaction updated successfully');
+          closeEditWalletTransactionModal();
+          loadRealWalletData(); // Refresh data
+        } else {
+          addLog('❌ Failed to update transaction: ' + (data.message || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Error updating transaction: ' + error.message);
+        console.error('Edit wallet transaction error:', error);
+      }
+    }
+    
+    // View transaction details
+    function viewTransactionDetails(txhash) {
+      addLog(`👁️ Viewing transaction details: ${txhash}`);
+      // For now, just show the hash in a simple alert
+      alert(`Transaction Hash: ${txhash}\n\nThis feature can be expanded to show more details like:\n- Block information\n- Token transfers\n- Associated accounts\n- Raw transaction data`);
     }
 
     function showCommunityFundsLoadingStates() {
