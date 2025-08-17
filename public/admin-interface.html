@@ -3516,6 +3516,13 @@ require_once 'discord-invite.php';
       document.getElementById('lastUpdated').textContent = DISCORD_CONFIG.lastUpdated;
     }
 
+    // Dashboard refresh function
+    function refreshDashboard() {
+      console.log('🔄 Refreshing dashboard data...');
+      loadDashboardData();
+      addLog('✅ Dashboard data refreshed');
+    }
+
     // Hide all admin content until authentication
     function hideAllAdminContent() {
       // Hide navigation panel
@@ -5768,47 +5775,7 @@ require_once 'discord-invite.php';
       }
     }
 
-    // Store Management Functions
-    async function loadStoreItems() {
-      if (!currentAdmin) {
-        addLog('❌ Please authenticate first');
-        return;
-      }
-
-      try {
-        const response = await fetch(API_BASE_URL + '/api/store/items.php');
-        const data = await response.json();
-        
-        if (data.success) {
-          displayStoreItems(data.items);
-        } else {
-          addLog(`❌ Failed to load store items: ${data.error}`);
-        }
-      } catch (error) {
-        addLog(`❌ Store items loading error: ${error.message}`);
-      }
-    }
-
-    function displayStoreItems(items) {
-      const container = document.getElementById('storeItems');
-      
-      if (!items || items.length === 0) {
-        container.innerHTML = '<div class="text-gray-300">No store items found.</div>';
-        return;
-      }
-
-      container.innerHTML = items.map(item => `
-        <div class="bg-gray-700 p-4 rounded-lg">
-          <h4 class="font-semibold text-white mb-2">${item.item_name}</h4>
-          <p class="text-gray-300 text-sm mb-2">${item.description || 'No description'}</p>
-          <p class="text-yellow-400 font-semibold">${item.price.toLocaleString()} $DSPOINC</p>
-          <div class="flex gap-2 mt-3">
-            <button onclick="editStoreItem(${item.item_id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Edit</button>
-            <button onclick="deleteStoreItem(${item.item_id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Delete</button>
-          </div>
-        </div>
-      `).join('');
-    }
+    // Store Management Functions - Duplicate removed, using the working version above
 
     async function createStoreItem() {
       if (!currentAdmin) {
@@ -11801,262 +11768,22 @@ require_once 'discord-invite.php';
     document.head.appendChild(style);
 
     // ========================================
-    // 🚨 CRISIS RESPONSE: MISSING FUNCTIONS
+    // ✅ CRISIS RESPONSE COMPLETED - DUPLICATE STUBS REMOVED
     // ========================================
-    // These functions were referenced in HTML but never implemented
-    // Adding them now to prevent JavaScript errors and restore basic functionality
-
-    // 📊 DASHBOARD TAB FUNCTIONS
-    function refreshDashboard() {
-      console.log('🔄 Refreshing dashboard data...');
-      loadDashboardData();
-      addLog('✅ Dashboard data refreshed');
-    }
-
-    function showUploadModal() {
-      console.log('📤 Showing upload modal...');
-      // TODO: Implement database upload modal
-      addLog('⚠️ Upload modal not yet implemented');
-    }
-
-    function showDatabaseViewer() {
-      console.log('👁️ Showing database viewer...');
-      // TODO: Implement database viewer
-      addLog('⚠️ Database viewer not yet implemented');
-    }
-
-    function triggerBackup() {
-      console.log('💾 Triggering database backup...');
-      // TODO: Implement database backup
-      addLog('⚠️ Database backup not yet implemented');
-    }
-
-    function testBackup() {
-      console.log('🧪 Testing backup functionality...');
-      // TODO: Implement backup testing
-      addLog('⚠️ Backup testing not yet implemented');
-    }
-
-    function testDatabasePath() {
-      console.log('🔍 Testing database path...');
-      // TODO: Implement database path testing
-      addLog('⚠️ Database path testing not yet implemented');
-    }
-
-    function debugDatabasePaths() {
-      console.log('🐛 Debugging database paths...');
-      // TODO: Implement database path debugging
-      addLog('⚠️ Database path debugging not yet implemented');
-    }
+    // All functions are now properly implemented above in the main function section
+    // No more duplicate or stub functions
 
 
 
-    // 💰 POINT MANAGEMENT TAB FUNCTIONS
-    function quickSearchUsersInstant(searchTerm) {
-      if (searchTerm.length < 2) {
-        document.getElementById('quickUserResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters...</div>';
-        return;
-      }
-      
-      console.log('🔍 Quick searching users:', searchTerm);
-      // TODO: Implement quick user search
-      addLog('⚠️ Quick user search not yet implemented');
-    }
+    // 💰 POINT MANAGEMENT TAB FUNCTIONS - REMOVED OLD STUBS
+    // Functions are now implemented above in the main function section
 
-    function quickSelectUser() {
-      const searchTerm = document.getElementById('quickUserId').value;
-      if (!searchTerm.trim()) {
-        addLog('❌ Please enter a search term');
-        return;
-      }
-      
-      console.log('🎯 Quick selecting user:', searchTerm);
-      // TODO: Implement quick user selection
-      addLog('⚠️ Quick user selection not yet implemented');
-    }
+    // Store item creation function removed - implemented above
 
-    function addPoints() {
-      const userId = document.getElementById('addUserId').value;
-      const amount = document.getElementById('addAmount').value;
-      const reason = document.getElementById('addReason').value;
-      
-      if (!userId || !amount) {
-        addLog('❌ Please enter user ID and amount');
-        return;
-      }
-      
-      console.log('➕ Adding points:', { userId, amount, reason });
-      // TODO: Implement point addition
-      addLog('⚠️ Point addition not yet implemented');
-    }
+    // Store management functions removed - implemented above
 
-    function setPoints() {
-      const userId = document.getElementById('setUserId').value;
-      const amount = document.getElementById('setAmount').value;
-      const reason = document.getElementById('setReason').value;
-      
-      if (!userId || !amount) {
-        addLog('❌ Please enter user ID and amount');
-        return;
-      }
-      
-      console.log('🎯 Setting points:', { userId, amount, reason });
-      // TODO: Implement point setting
-      addLog('⚠️ Point setting not yet implemented');
-    }
-
-    function removePoints() {
-      const userId = document.getElementById('removeUserId').value;
-      const amount = document.getElementById('removeAmount').value;
-      const reason = document.getElementById('removeReason').value;
-      
-      if (!userId || !amount) {
-        addLog('❌ Please enter user ID and amount');
-        return;
-      }
-      
-      console.log('➖ Removing points:', { userId, amount, reason });
-      // TODO: Implement point removal
-      addLog('⚠️ Point removal not yet implemented');
-    }
-
-    function checkBalance() {
-      const userId = document.getElementById('balanceUserId').value;
-      if (!userId.trim()) {
-        addLog('❌ Please enter a user ID');
-        return;
-      }
-      
-      console.log('💳 Checking balance for:', userId);
-      // TODO: Implement balance checking
-      addLog('⚠️ Balance checking not yet implemented');
-    }
-
-    function getHistory() {
-      const userId = document.getElementById('historyUserId').value;
-      if (!userId.trim()) {
-        addLog('❌ Please enter a user ID');
-        return;
-      }
-      
-      console.log('📋 Getting history for:', userId);
-      // TODO: Implement history retrieval
-      addLog('⚠️ History retrieval not yet implemented');
-    }
-
-    // 🏪 STORE MANAGEMENT TAB FUNCTIONS
-    function loadStoreItems() {
-      console.log('📦 Loading store items...');
-      // TODO: Implement store items loading
-      addLog('⚠️ Store items loading not yet implemented');
-    }
-
-    function createStoreItem() {
-      const name = document.getElementById('newItemName').value;
-      const price = document.getElementById('newItemPrice').value;
-      const imageUrl = document.getElementById('newItemImageUrl').value;
-      const description = document.getElementById('newItemDescription').value;
-      
-      if (!name || !price) {
-        addLog('❌ Please enter item name and price');
-        return;
-      }
-      
-      console.log('➕ Creating store item:', { name, price, imageUrl, description });
-      // TODO: Implement store item creation
-      addLog('⚠️ Store item creation not yet implemented');
-    }
-
-    function giveItemToUser() {
-      const userId = document.getElementById('giveItemUserId').value;
-      const itemName = document.getElementById('giveItemName').value;
-      const quantity = document.getElementById('giveItemQuantity').value;
-      
-      if (!userId || !itemName) {
-        addLog('❌ Please enter user ID and item name');
-        return;
-      }
-      
-      console.log('🎁 Giving item to user:', { userId, itemName, quantity });
-      // TODO: Implement item giving
-      addLog('⚠️ Item giving not yet implemented');
-    }
-
-    function viewUserInventory() {
-      const userId = document.getElementById('viewInventoryUserId').value;
-      if (!userId.trim()) {
-        addLog('❌ Please enter a user ID');
-        return;
-      }
-      
-      console.log('👤 Viewing inventory for:', userId);
-      // TODO: Implement inventory viewing
-      addLog('⚠️ Inventory viewing not yet implemented');
-    }
-
-    // 🎮 GAME MANAGEMENT TAB FUNCTIONS
-    function switchGameTab(tabName) {
-      console.log('🎮 Switching to game tab:', tabName);
-      
-      // Hide all game tab content
-      document.querySelectorAll('.game-tab-content').forEach(tab => {
-        tab.style.display = 'none';
-      });
-      
-      // Show selected tab
-      const selectedTab = document.getElementById(tabName + 'Tab');
-      if (selectedTab) {
-        selectedTab.style.display = 'block';
-      }
-      
-      // Update active button state
-      document.querySelectorAll('[data-game-tab]').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      
-      const activeBtn = document.querySelector(`[data-game-tab="${tabName}"]`);
-      if (activeBtn) {
-        activeBtn.classList.add('active');
-      }
-      
-      addLog(`✅ Switched to ${tabName} tab`);
-    }
-
-    function refreshAllGameData() {
-      console.log('🔄 Refreshing all game data...');
-      // TODO: Implement game data refresh
-      addLog('⚠️ Game data refresh not yet implemented');
-    }
-
-    function debugAllGameTabs() {
-      console.log('🔍 Debugging all game tabs...');
-      // TODO: Implement game tab debugging
-      addLog('⚠️ Game tab debugging not yet implemented');
-    }
-
-    function loadGameOverview() {
-      console.log('📊 Loading game overview...');
-      // TODO: Implement game overview loading
-      addLog('⚠️ Game overview loading not yet implemented');
-    }
-
-    function resetAllGameScores() {
-      console.log('🔄 Resetting all game scores...');
-      // TODO: Implement score reset
-      addLog('⚠️ Score reset not yet implemented');
-    }
-
-    function exportGameData() {
-      console.log('📊 Exporting game data...');
-      // TODO: Implement data export
-      addLog('⚠️ Data export not yet implemented');
-    }
-
-    function backupGameData() {
-      console.log('💾 Backing up game data...');
-      // TODO: Implement data backup
-      addLog('⚠️ Game data backup not yet implemented');
-    }
+    // 🎮 GAME MANAGEMENT TAB FUNCTIONS - REMOVED OLD STUBS
+    // Functions are now implemented above in the main function section
 
     // ========================================
     // ✅ CRISIS RESPONSE COMPLETED
