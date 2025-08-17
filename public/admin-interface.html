@@ -1644,6 +1644,15 @@ require_once 'discord-invite.php';
             <button onclick="testBackup()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-300 ml-2">
               🧪 Test Backup
             </button>
+            <button onclick="testCopyOperation()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-all duration-300 ml-2">
+              📋 Test Copy to /data/
+            </button>
+            <button onclick="testBackupDryRun()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-all duration-300 ml-2">
+              🔍 Test Backup Dry Run
+            </button>
+            <button onclick="testShellCommand()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-all duration-300 ml-2">
+              🐚 Test Shell Command
+            </button>
             <button onclick="testDatabasePath()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-all duration-300 ml-2">
               🔍 Test DB Path
             </button>
@@ -6218,8 +6227,19 @@ require_once 'discord-invite.php';
           addLog('✅ LIVE production database backup completed successfully');
           addLog(`📁 Backup saved to: ${data.target_path || '/data/narrrf_world.sqlite'}`);
           addLog(`🔧 Backup method used: ${data.backup_method || 'Unknown'}`);
-          addLog(`📊 Source size: ${data.source_size || 'Unknown'}`);
-          addLog(`📊 Target size: ${data.target_size || 'Unknown'}`);
+          addLog(`📊 Source size: ${data.source_size_formatted || data.source_size || 'Unknown'}`);
+          addLog(`📊 Target size: ${data.target_size_formatted || data.target_size || 'Unknown'}`);
+          
+          // Show verification details if available
+          if (data.backup_verification) {
+            addLog('🔍 Backup Verification:');
+            addLog(`  📁 Source exists: ${data.backup_verification.source_exists ? '✅' : '❌'}`);
+            addLog(`  📖 Source readable: ${data.backup_verification.source_readable ? '✅' : '❌'}`);
+            addLog(`  📁 Target exists: ${data.backup_verification.target_exists ? '✅' : '❌'}`);
+            addLog(`  📖 Target readable: ${data.backup_verification.target_readable ? '✅' : '❌'}`);
+            addLog(`  📊 Size match: ${data.backup_verification.size_match ? '✅' : '❌'}`);
+          }
+          
           addLog(`🎯 Production backup: LIVE database backed up to /data/`);
         } else {
           addLog('❌ LIVE production database backup failed: ' + (data.error || 'Server error'));
@@ -6285,6 +6305,189 @@ require_once 'discord-invite.php';
         }
       } catch (error) {
         addLog('❌ Test error: ' + error.message);
+      }
+    }
+    
+    // Test copy operation to /data/ directory (for debugging backup issues)
+    async function testCopyOperation() {
+      try {
+        addLog('📋 Testing copy operation to /data/ directory...');
+        
+        // Test the backup endpoint with test_copy parameter
+        const response = await fetch(API_BASE_URL + '/api/admin/backup-database.php?test_copy=true', {
+          method: 'GET'
+        });
+        
+        addLog('🔍 Copy test response status: ' + response.status + ' ' + response.statusText);
+        
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          addLog('❌ Copy test response parsing failed: ' + jsonError.message);
+          try {
+            const responseText = await response.text();
+            addLog('🔍 Response body: ' + responseText);
+          } catch (textError) {
+            addLog('🔍 Could not read response body');
+          }
+          return;
+        }
+        
+        if (data.test_copy_mode) {
+          addLog('📋 Copy Test Results:');
+          addLog(`📁 Source path: ${data.source_path}`);
+          addLog(`📊 Source size: ${data.source_size_formatted || data.source_size}`);
+          addLog(`📁 Target path: ${data.target_path}`);
+          addLog(`✅ Copy success: ${data.copy_success ? '✅' : '❌'}`);
+          
+          if (!data.copy_success) {
+            addLog(`❌ Copy error: ${data.copy_error}`);
+          } else {
+            addLog(`📊 Target size: ${data.target_size_formatted || data.target_size}`);
+            addLog(`📊 Size match: ${data.size_match ? '✅' : '❌'}`);
+          }
+          
+          addLog(`📁 /data directory exists: ${data.data_dir_status.exists ? '✅' : '❌'}`);
+          addLog(`✏️ /data directory writable: ${data.data_dir_status.writable ? '✅' : '❌'}`);
+          addLog(`🔐 /data directory permissions: ${data.data_dir_status.permissions}`);
+          
+          // Critical verification
+          if (data.copy_success && data.size_match) {
+            addLog('✅ CRITICAL: Copy operation verification successful');
+            addLog('🎯 Database can be successfully copied to /data/ directory');
+          } else {
+            addLog('❌ CRITICAL: Copy operation verification FAILED');
+            addLog('🚨 This explains why backup to /data/ is not working!');
+          }
+        } else {
+          addLog('❌ Copy test failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Copy test error: ' + error.message);
+      }
+    }
+    
+    // Test backup dry run (test backup process without creating files)
+    async function testBackupDryRun() {
+      try {
+        addLog('🔍 Testing backup dry run...');
+        
+        // Test the backup endpoint with dry_run parameter
+        const response = await fetch(API_BASE_URL + '/api/admin/backup-database.php?dry_run=true', {
+          method: 'GET'
+        });
+        
+        addLog('🔍 Dry run response status: ' + response.status + ' ' + response.statusText);
+        
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          addLog('❌ Dry run response parsing failed: ' + jsonError.message);
+          try {
+            const responseText = await response.text();
+            addLog('🔍 Response body: ' + responseText);
+          } catch (textError) {
+            addLog('🔍 Could not read response body');
+          }
+          return;
+        }
+        
+        if (data.dry_run_mode) {
+          addLog('🔍 Backup Dry Run Results:');
+          addLog(`📁 Source path: ${data.source_path}`);
+          addLog(`📊 Source size: ${data.source_size_formatted || data.source_size}`);
+          addLog(`📁 Target path: ${data.target_path}`);
+          addLog(`📁 Production backup path: ${data.production_backup_path}`);
+          addLog(`📁 Backup dir writable: ${data.backup_dir_writable ? '✅' : '❌'}`);
+          addLog(`📁 /data directory exists: ${data.data_dir_exists ? '✅' : '❌'}`);
+          addLog(`✏️ /data directory writable: ${data.data_dir_writable ? '✅' : '❌'}`);
+          addLog(`📊 Estimated backup size: ${data.estimated_backup_size_formatted || data.estimated_backup_size}`);
+          
+          addLog('🔧 Available backup methods:');
+          addLog(`  📋 File copy: ${data.backup_methods_available.file_copy ? '✅' : '❌'}`);
+          addLog(`  🗄️ SQLite backup: ${data.backup_methods_available.sqlite_backup ? '✅' : '❌'}`);
+          addLog(`  📤 SQLite dump: ${data.backup_methods_available.sqlite_dump ? '✅' : '❌'}`);
+          
+          // Critical verification
+          if (data.data_dir_exists && data.data_dir_writable) {
+            addLog('✅ CRITICAL: /data directory is accessible and writable');
+            addLog('🎯 Production backup should work correctly');
+          } else {
+            addLog('❌ CRITICAL: /data directory is NOT accessible or writable');
+            addLog('🚨 This explains why production backup is failing!');
+          }
+        } else {
+          addLog('❌ Dry run failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Dry run error: ' + error.message);
+      }
+    }
+    
+    // Test shell command execution (test the actual cp command)
+    async function testShellCommand() {
+      try {
+        addLog('🐚 Testing shell command execution...');
+        
+        // Test the shell command endpoint
+        const response = await fetch(API_BASE_URL + '/api/admin/test-shell-command.php', {
+          method: 'GET'
+        });
+        
+        addLog('🔍 Shell command test response status: ' + response.status + ' ' + response.statusText);
+        
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          addLog('❌ Shell command test response parsing failed: ' + jsonError.message);
+          try {
+            const responseText = await response.text();
+            addLog('🔍 Response body: ' + responseText);
+          } catch (textError) {
+            addLog('🔍 Could not read response body');
+          }
+          return;
+        }
+        
+        if (data.shell_test_mode) {
+          addLog('🐚 Shell Command Test Results:');
+          addLog(`🔧 Shell command: ${data.shell_command}`);
+          addLog(`📁 Source path: ${data.source_path}`);
+          addLog(`📊 Source size: ${data.source_size_formatted || data.source_size}`);
+          addLog(`📁 Target path: ${data.target_path}`);
+          addLog(`✅ Shell command success: ${data.shell_success ? '✅' : '❌'}`);
+          addLog(`🔢 Return code: ${data.return_code}`);
+          
+          if (!data.shell_success) {
+            addLog(`❌ Shell command error: ${data.shell_error}`);
+            if (data.shell_output && data.shell_output.length > 0) {
+              addLog(`📤 Shell output: ${data.shell_output.join(' ')}`);
+            }
+          } else {
+            addLog(`📊 Target size: ${data.target_size_formatted || data.target_size}`);
+            addLog(`📊 Size match: ${data.size_match ? '✅' : '❌'}`);
+          }
+          
+          addLog(`📁 /data directory exists: ${data.data_dir_status.exists ? '✅' : '❌'}`);
+          addLog(`✏️ /data directory writable: ${data.data_dir_status.writable ? '✅' : '❌'}`);
+          addLog(`🔐 /data directory permissions: ${data.data_dir_status.permissions}`);
+          
+          // Critical verification
+          if (data.shell_success && data.size_match) {
+            addLog('✅ CRITICAL: Shell command execution successful');
+            addLog('🎯 The cp command works correctly and can copy to /data/');
+          } else {
+            addLog('❌ CRITICAL: Shell command execution FAILED');
+            addLog('🚨 This explains why the backup cp command is not working!');
+          }
+        } else {
+          addLog('❌ Shell command test failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Shell command test error: ' + error.message);
       }
     }
     

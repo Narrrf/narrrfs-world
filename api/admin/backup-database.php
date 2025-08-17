@@ -16,18 +16,126 @@ require_once __DIR__ . '/../config/database.php';
 try {
     // Check if this is a test request
     $isTest = isset($_GET['test']) && $_GET['test'] === 'true';
+    $isDryRun = isset($_GET['dry_run']) && $_GET['dry_run'] === 'true';
     
     if ($isTest) {
-        // Test mode - just verify the endpoint is working
+        // Test mode - comprehensive database verification
+        $dbPath = getDatabasePath();
+        $dbDir = dirname($dbPath);
+        $dataDir = '/data';
+        
         echo json_encode([
             'success' => true,
             'message' => 'Backup endpoint test successful',
             'test_mode' => true,
             'timestamp' => date('Y-m-d H:i:s'),
+            'source_path' => $dbPath,
+            'source_exists' => file_exists($dbPath),
+            'source_readable' => is_readable($dbPath),
+            'source_size' => file_exists($dbPath) ? filesize($dbPath) : 0,
+            'source_size_formatted' => file_exists($dbPath) ? formatBytes(filesize($dbPath)) : '0 B',
+            'production_mode' => is_dir('/data') ? 'Production (Render)' : 'Local/Development',
+            'target_dir_exists' => is_dir($dataDir),
+            'target_dir_writable' => is_dir($dataDir) && is_writable($dataDir),
+            'current_user' => get_current_user(),
+            'php_user' => function_exists('posix_getpwuid') ? posix_getpwuid(posix_geteuid())['name'] : 'Unknown',
+            'web_server_user' => $_SERVER['USER'] ?? 'www-data',
             'server_info' => [
                 'php_version' => PHP_VERSION,
                 'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
-                'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? 'Unknown'
+                'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? 'Unknown',
+                'script_name' => $_SERVER['SCRIPT_NAME'] ?? 'Unknown'
+            ]
+        ]);
+        exit();
+    }
+    
+    if ($isDryRun) {
+        // Dry run mode - test backup process without creating files
+        $dbPath = getDatabasePath();
+        $backupDir = dirname($dbPath);
+        $backupName = 'narrrf_world_backup_' . date('Y-m-d_H-i-s') . '.sqlite';
+        $targetPath = $backupDir . '/' . $backupName;
+        $productionBackupPath = '/data/' . $backupName;
+        
+        $sourceSize = file_exists($dbPath) ? filesize($dbPath) : 0;
+        $sourceSizeFormatted = formatBytes($sourceSize);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Backup dry run completed',
+            'dry_run_mode' => true,
+            'timestamp' => date('Y-m-d H:i:s'),
+            'source_path' => $dbPath,
+            'source_size' => $sourceSize,
+            'source_size_formatted' => $sourceSizeFormatted,
+            'target_path' => $targetPath,
+            'production_backup_path' => $productionBackupPath,
+            'backup_dir_writable' => is_writable($backupDir),
+            'data_dir_exists' => is_dir('/data'),
+            'data_dir_writable' => is_dir('/data') && is_writable('/data'),
+            'estimated_backup_size' => $sourceSize,
+            'estimated_backup_size_formatted' => $sourceSizeFormatted,
+            'backup_methods_available' => [
+                'file_copy' => is_writable($backupDir),
+                'sqlite_backup' => class_exists('SQLite3'),
+                'sqlite_dump' => function_exists('exec')
+            ]
+        ]);
+        exit();
+    }
+    
+    if (isset($_GET['test_copy']) && $_GET['test_copy'] === 'true') {
+        // Test copy mode - test actual file copy to /data/ directory
+        $dbPath = getDatabasePath();
+        $testFileName = 'test_copy_' . date('Y-m-d_H-i-s') . '.sqlite';
+        $testTargetPath = '/data/' . $testFileName;
+        
+        $sourceSize = file_exists($dbPath) ? filesize($dbPath) : 0;
+        $sourceSizeFormatted = formatBytes($sourceSize);
+        
+        $copySuccess = false;
+        $copyError = '';
+        $targetSize = 0;
+        
+        try {
+            if (is_dir('/data') && is_writable('/data')) {
+                if (copy($dbPath, $testTargetPath)) {
+                    $copySuccess = true;
+                    $targetSize = file_exists($testTargetPath) ? filesize($testTargetPath) : 0;
+                    
+                    // Clean up test file
+                    if (file_exists($testTargetPath)) {
+                        unlink($testTargetPath);
+                    }
+                } else {
+                    $copyError = 'Copy operation failed';
+                }
+            } else {
+                $copyError = '/data directory not accessible or not writable';
+            }
+        } catch (Exception $e) {
+            $copyError = 'Copy exception: ' . $e->getMessage();
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Copy test completed',
+            'test_copy_mode' => true,
+            'timestamp' => date('Y-m-d H:i:s'),
+            'source_path' => $dbPath,
+            'source_size' => $sourceSize,
+            'source_size_formatted' => $sourceSizeFormatted,
+            'target_path' => $testTargetPath,
+            'copy_success' => $copySuccess,
+            'copy_error' => $copyError,
+            'target_size' => $targetSize,
+            'target_size_formatted' => formatBytes($targetSize),
+            'size_match' => $sourceSize === $targetSize,
+            'data_dir_status' => [
+                'exists' => is_dir('/data'),
+                'writable' => is_dir('/data') && is_writable('/data'),
+                'permissions' => is_dir('/data') ? substr(sprintf('%o', fileperms('/data')), -4) : 'N/A'
             ]
         ]);
         exit();
@@ -41,6 +149,10 @@ try {
     $backupDir = dirname($backupPath);
     $backupName = 'narrrf_world_backup_' . date('Y-m-d_H-i-s') . '.sqlite';
     $targetPath = $backupDir . '/' . $backupName;
+    
+    // Get source database info before backup
+    $sourceSize = file_exists($backupPath) ? filesize($backupPath) : 0;
+    $sourceSizeFormatted = formatBytes($sourceSize);
     
     // For production, also backup to /data/ directory if accessible
     $productionBackupPath = null;
@@ -97,10 +209,12 @@ try {
     
     // Try production backup if possible
     $productionBackupSuccess = false;
+    $productionBackupSize = 0;
     if ($productionBackupPath) {
         try {
             if (copy($targetPath, $productionBackupPath)) {
                 $productionBackupSuccess = true;
+                $productionBackupSize = file_exists($productionBackupPath) ? filesize($productionBackupPath) : 0;
             }
         } catch (Exception $e) {
             error_log("Production backup failed: " . $e->getMessage());
@@ -123,7 +237,20 @@ try {
         'backup_method' => $backupMethod,
         'timestamp' => date('Y-m-d H:i:s'),
         'production_backup' => $productionBackupSuccess ? $productionBackupPath : null,
-        'target_path' => $productionBackupPath ?: $targetPath
+        'target_path' => $productionBackupPath ?: $targetPath,
+        // Enhanced response with source and target sizes
+        'source_size' => $sourceSize,
+        'source_size_formatted' => $sourceSizeFormatted,
+        'target_size' => $productionBackupSuccess ? $productionBackupSize : $backupSize,
+        'target_size_formatted' => $productionBackupSuccess ? formatBytes($productionBackupSize) : $backupSizeFormatted,
+        'source_path' => $backupPath,
+        'backup_verification' => [
+            'source_exists' => file_exists($backupPath),
+            'source_readable' => is_readable($backupPath),
+            'target_exists' => file_exists($productionBackupPath ?: $targetPath),
+            'target_readable' => is_readable($productionBackupPath ?: $targetPath),
+            'size_match' => $sourceSize === ($productionBackupSuccess ? $productionBackupSize : $backupSize)
+        ]
     ]);
     
 } catch (Exception $e) {
