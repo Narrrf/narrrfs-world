@@ -8794,7 +8794,21 @@ require_once 'discord-invite.php';
         
         if (data.success) {
           addLog('✅ Discord configuration data loaded successfully');
-          // The Discord config tab content is static, so no additional data loading needed
+          
+          // Update dynamic Discord data if available
+          const currentCodeElement = document.getElementById('currentCode');
+          const currentUrlElement = document.getElementById('currentUrl');
+          const lastUpdatedElement = document.getElementById('lastUpdated');
+          
+          if (currentCodeElement && data.invite_code) {
+            currentCodeElement.textContent = data.invite_code;
+          }
+          if (currentUrlElement && data.discord_url) {
+            currentUrlElement.textContent = data.discord_url;
+          }
+          if (lastUpdatedElement) {
+            lastUpdatedElement.textContent = new Date().toLocaleDateString();
+          }
         } else {
           addLog(`❌ Failed to load Discord config data: ${data.error}`);
         }
@@ -8816,6 +8830,17 @@ require_once 'discord-invite.php';
         // The Cheese Guide tab content is static, so no additional data loading needed
         // Just ensure the tab is visible and content is displayed
         addLog('✅ Cheese Guide data loaded successfully');
+        
+        // Update any dynamic content if available
+        const currentDate = new Date().toLocaleDateString();
+        const dateElements = document.querySelectorAll('#cheeseGuideTab .text-gray-400');
+        if (dateElements.length > 0) {
+          dateElements.forEach(element => {
+            if (element.textContent.includes('Last Updated')) {
+              element.textContent = `Last Updated: ${currentDate}`;
+            }
+          });
+        }
       } catch (error) {
         addLog(`❌ Cheese Guide data loading error: ${error.message}`);
       }
@@ -11342,12 +11367,30 @@ require_once 'discord-invite.php';
         
         if (data.success) {
           addLog('✅ Wallet CSV reimported successfully!');
-          addLog(`💰 Current Balance: ${data.balance.sol} SOL`);
-          addLog(`📊 Total Transactions: ${data.transactions.total}`);
           
-          // Update import status
-          document.getElementById('walletImportStatus').innerHTML = 
-            `<span class="text-green-400">✅ Reimported ${data.transactions.total} transactions</span>`;
+          // Handle both response formats (force reimport vs normal import)
+          if (data.data && data.data.current_balance && data.data.transactions) {
+            // Force reimport response format
+            addLog(`💰 Current Balance: ${data.data.current_balance.sol} SOL`);
+            addLog(`📊 Total Transactions: ${data.data.transactions.total}`);
+            
+            // Update import status
+            document.getElementById('walletImportStatus').innerHTML = 
+              `<span class="text-green-400">✅ Reimported ${data.data.transactions.total} transactions</span>`;
+          } else if (data.balance && data.transactions) {
+            // Normal import response format
+            addLog(`💰 Current Balance: ${data.balance.sol} SOL`);
+            addLog(`📊 Total Transactions: ${data.transactions.total}`);
+            
+            // Update import status
+            document.getElementById('walletImportStatus').innerHTML = 
+              `<span class="text-green-400">✅ Reimported ${data.transactions.total} transactions</span>`;
+          } else {
+            // Fallback for other response formats
+            addLog(`💰 Reimport completed successfully`);
+            document.getElementById('walletImportStatus').innerHTML = 
+              `<span class="text-green-400">✅ Reimport completed successfully</span>`;
+          }
           
           // Refresh wallet data display
           loadRealWalletData();
@@ -11366,6 +11409,13 @@ require_once 'discord-invite.php';
     // Load real wallet data from CSV import
     async function loadRealWalletData() {
       try {
+        // Check if we're on the community funds tab before proceeding
+        const communityFundsTab = document.getElementById('communityFundsTab');
+        if (!communityFundsTab || communityFundsTab.style.display === 'none') {
+          addLog('⚠️ Community Funds tab not visible, skipping wallet data load');
+          return;
+        }
+        
         const response = await fetch(API_BASE_URL + '/api/admin/get-community-wallet-real-data.php');
         const data = await response.json();
         
@@ -11378,8 +11428,12 @@ require_once 'discord-invite.php';
           const transactionsElement = document.getElementById('walletTransactions');
           const statusElement = document.getElementById('walletImportStatus');
           
+          // Safely update elements only if they exist
           if (balanceElement && data.balance && data.balance.sol !== undefined) {
             balanceElement.textContent = data.balance.sol.toFixed(9);
+            addLog(`💰 Updated wallet balance display: ${data.balance.sol.toFixed(9)} SOL`);
+          } else {
+            addLog(`⚠️ Could not update wallet balance: element=${!!balanceElement}, data.balance=${!!data.balance}, sol=${data.balance?.sol}`);
           }
           
           if (changeElement && data.balance && data.balance['24h_change'] !== undefined) {
@@ -11392,11 +11446,13 @@ require_once 'discord-invite.php';
             transactionsElement.textContent = data.transactions.total;
           }
           
-          // Update import status
+          // Update import status safely
           if (statusElement) {
             if (data.transactions && data.transactions.total > 0) {
               statusElement.innerHTML = `<span class="text-green-400">✅ ${data.transactions.total} transactions loaded</span>`;
-              addLog(`💰 Real wallet balance: ${data.balance.sol} SOL`);
+              if (data.balance && data.balance.sol !== undefined) {
+                addLog(`💰 Real wallet balance: ${data.balance.sol} SOL`);
+              }
             } else {
               statusElement.innerHTML = `<span class="text-yellow-400">⚠️ No wallet data imported yet</span>`;
             }
