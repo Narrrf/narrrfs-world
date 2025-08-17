@@ -45,6 +45,17 @@ cheeseInvaderImg.onerror = (e) => {
   console.error('❌ Attempted path:', cheeseInvaderImg.src);
 };
 
+// 🚀 NEW: Load second cheese invader type for variety
+const cheeseInvader2Img = new Image();
+cheeseInvader2Img.src = 'img/space/cheese_invader2.png';
+cheeseInvader2Img.onload = () => {
+  console.log('✅ Cheese invader 2 image loaded successfully');
+};
+cheeseInvader2Img.onerror = (e) => {
+  console.error('❌ Failed to load cheese invader 2 image:', e);
+  console.error('❌ Attempted path:', cheeseInvader2Img.src);
+};
+
 const cheeseBulletImg = new Image();
 cheeseBulletImg.src = 'img/space/cheese-bullet.png';
 cheeseBulletImg.onload = () => {
@@ -64,6 +75,31 @@ cheeseExplosionImg.onerror = (e) => {
   console.error('❌ Failed to load cheese explosion image:', e);
   console.error('❌ Attempted path:', cheeseExplosionImg.src);
 };
+
+// 🚀 NEW: Load all Power-Up Images
+const powerUpImages = {
+  speed: new Image(),
+  laser: new Image(),
+  bomb: new Image(),
+  collect: new Image()
+};
+
+// Load all power-up images
+powerUpImages.speed.src = 'img/space/powerup_speed.png';
+powerUpImages.laser.src = 'img/space/powerup_laser.png';
+powerUpImages.bomb.src = 'img/space/powerup_bomb.png';
+powerUpImages.collect.src = 'img/space/powerup_collect.png';
+
+// Power-up image loading callbacks
+powerUpImages.speed.onload = () => console.log('✅ Speed power-up image loaded');
+powerUpImages.laser.onload = () => console.log('✅ Laser power-up image loaded');
+powerUpImages.bomb.onload = () => console.log('✅ Bomb power-up image loaded');
+powerUpImages.collect.onload = () => console.log('✅ Collect power-up image loaded');
+
+powerUpImages.speed.onerror = () => console.warn('⚠️ Failed to load speed power-up image');
+powerUpImages.laser.onerror = () => console.warn('⚠️ Failed to load laser power-up image');
+powerUpImages.bomb.onerror = () => console.warn('⚠️ Failed to load bomb power-up image');
+powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collect power-up image');
 
   // 🧩 Load Tetris block images for danger items
   const tetrisBlockImages = {
@@ -104,6 +140,47 @@ cheeseExplosionImg.onerror = (e) => {
     console.warn('⚠️ Failed to load snake head image');
   };
 
+  // 🚀 NEW: Load Boss Images
+  const bossImages = {
+    cheeseKing: new Image(),
+    cheeseEmperor: new Image(),
+    cheeseGod: new Image(),
+    cheeseDestroyer: new Image()
+  };
+
+  // Load all boss images
+  bossImages.cheeseKing.src = 'img/space/Cheese_King.png';
+  bossImages.cheeseEmperor.src = 'img/space/cheese_emporer.png';
+  bossImages.cheeseGod.src = 'img/space/cheese_god.png';
+  bossImages.cheeseDestroyer.src = 'img/space/cheese_destroyer.png';
+
+  // Boss image loading callbacks
+  bossImages.cheeseKing.onload = () => console.log('✅ Cheese King boss image loaded');
+  bossImages.cheeseEmperor.onload = () => console.log('✅ Cheese Emperor boss image loaded');
+  bossImages.cheeseGod.onload = () => console.log('✅ Cheese God boss image loaded');
+  bossImages.cheeseDestroyer.onload = () => console.log('✅ Cheese Destroyer boss image loaded');
+
+  bossImages.cheeseKing.onerror = () => console.warn('⚠️ Failed to load Cheese King boss image');
+  bossImages.cheeseEmperor.onerror = () => console.warn('⚠️ Failed to load Cheese Emperor boss image');
+  bossImages.cheeseGod.onerror = () => console.warn('⚠️ Failed to load Cheese God boss image');
+  bossImages.cheeseDestroyer.onerror = () => console.warn('⚠️ Failed to load Cheese Destroyer boss image');
+
+  // 🚀 NEW: Load Boss Health Bar Image
+  const bossHealthBarImg = new Image();
+  bossHealthBarImg.src = 'img/space/boss_healthbar.png';
+  bossHealthBarImg.onload = () => console.log('✅ Boss health bar image loaded');
+  bossHealthBarImg.onerror = () => console.warn('⚠️ Failed to load boss health bar image');
+
+  // 🚀 NEW: Load Cheese Bullet Images
+  const cheeseBulletImages = [];
+  for (let i = 0; i < 8; i++) {
+    const bulletImg = new Image();
+    bulletImg.src = `img/space/cheese-bullet_${i}.png`;
+    bulletImg.onload = () => console.log(`✅ Cheese bullet ${i} image loaded`);
+    bulletImg.onerror = () => console.warn(`⚠️ Failed to load cheese bullet ${i} image`);
+    cheeseBulletImages.push(bulletImg);
+  }
+
 // 🎯 Game State - ULTRA SLOW REDESIGN
 let playerShip = { x: 0, y: 0 };
 let invaders = [];
@@ -138,6 +215,14 @@ let bossBullets = [];
 let bossExplosions = [];
 let bossDefeated = false;
 let bossReward = 0;
+let bossDirection = 1; // Boss movement direction
+
+// 🚀 NEW: Cool Boss Effects Variables
+let screenShake = 0;
+let bossParticles = [];
+let bossGlowEffect = 0;
+let bossEntranceEffect = 0;
+let bossDefeatEffect = 0;
 
 // 🚀 NEW: Enhanced weapon system variables
 let currentWeaponType = 'normal'; // 'normal', 'laser', 'bomb'
@@ -225,6 +310,17 @@ let canvasHeight;
       }
     }
   }
+  
+  // 🚀 NEW: Update player invincibility
+  function updatePlayerInvincibility() {
+    if (playerShip.invincible && playerShip.invincibleTimer > 0) {
+      playerShip.invincibleTimer--;
+      if (playerShip.invincibleTimer <= 0) {
+        playerShip.invincible = false;
+        console.log('🛡️ Invincibility expired');
+      }
+    }
+  }
 
   // 🚀 NEW: Get current player speed
   function getPlayerSpeed() {
@@ -254,35 +350,45 @@ let canvasHeight;
       return; // Don't spawn if we already have 4 or more (increased from 3)
     }
     
-    // 🚀 NEW: Much more aggressive scaling for higher waves
-    let spawnChance = 0.015; // Base rate for early waves (1.5% - much higher!)
+    // 🚀 ULTRA AGGRESSIVE: Much higher spawn rates for more action!
+    let spawnChance = 0.200; // Base rate for early waves (20% - MUCH higher!)
     
     // Progressive scaling that ACTUALLY helps in higher waves
-    if (waveNumber >= 5) spawnChance = 0.025;   // 2.5% for wave 5+
-    if (waveNumber >= 10) spawnChance = 0.040;  // 4.0% for wave 10+
-    if (waveNumber >= 15) spawnChance = 0.060;  // 6.0% for wave 15+
-    if (waveNumber >= 18) spawnChance = 0.080;  // 8.0% for wave 18+ (where you are!)
-    if (waveNumber >= 20) spawnChance = 0.100;  // 10.0% for wave 20+
-    if (waveNumber >= 25) spawnChance = 0.125;  // 12.5% for wave 25+
-    if (waveNumber >= 30) spawnChance = 0.150;  // 15.0% for wave 30+
-    if (waveNumber >= 35) spawnChance = 0.200;  // 20.0% for wave 35+
+    if (waveNumber >= 2) spawnChance = 0.250;   // 25% for wave 2+
+    if (waveNumber >= 3) spawnChance = 0.300;   // 30% for wave 3+
+    if (waveNumber >= 5) spawnChance = 0.400;   // 40% for wave 5+
+    if (waveNumber >= 8) spawnChance = 0.500;   // 50% for wave 8+
+    if (waveNumber >= 10) spawnChance = 0.600;  // 60% for wave 10+
+    if (waveNumber >= 15) spawnChance = 0.700;  // 70% for wave 15+
+    if (waveNumber >= 20) spawnChance = 0.800;  // 80% for wave 20+
+    if (waveNumber >= 25) spawnChance = 0.850;  // 85% for wave 25+
+    if (waveNumber >= 30) spawnChance = 0.900;  // 90% for wave 30+
+    if (waveNumber >= 35) spawnChance = 0.950;  // 95% for wave 35+
+    if (waveNumber >= 50) spawnChance = 0.980;  // 98% for wave 50+ (boss waves)
+    if (waveNumber >= 75) spawnChance = 0.990;  // 99% for wave 75+ (ultra waves)
+    if (waveNumber >= 100) spawnChance = 0.995; // 99.5% for wave 100+ (legendary waves)
+    if (waveNumber >= 150) spawnChance = 0.999; // 99.9% for wave 150+ (mythical waves)
+    if (waveNumber >= 200) spawnChance = 0.999; // 99.9% for wave 200+ (god-tier waves)
     
     if (Math.random() < spawnChance) {
       // 🚀 NEW: Better power-up distribution - ensure all types appear
       const powerUpRoll = Math.random();
       let powerUpType, ammoType;
       
-      if (powerUpRoll < 0.33) {
-        // 33% chance: Speed boost power-up (green ⚡)
+      if (powerUpRoll < 0.25) {
+        // 25% chance: Speed boost power-up (green ⚡)
         powerUpType = 'speed';
-      } else if (powerUpRoll < 0.66) {
-        // 33% chance: Laser ammo (cyan 🔫)
+      } else if (powerUpRoll < 0.50) {
+        // 25% chance: Laser ammo (cyan 🔫)
         powerUpType = 'ammo';
         ammoType = 'laser';
-      } else {
-        // 34% chance: Bomb ammo (magenta 💣)
+      } else if (powerUpRoll < 0.75) {
+        // 25% chance: Bomb ammo (magenta 💣)
         powerUpType = 'ammo';
         ammoType = 'bomb';
+      } else {
+        // 25% chance: Collect power-up (yellow ⭐)
+        powerUpType = 'collect';
       }
       
       if (powerUpType === 'speed') {
@@ -301,6 +407,21 @@ let canvasHeight;
         // Add to game objects (we'll need to create a powerUps array)
         if (!window.powerUps) window.powerUps = [];
         window.powerUps.push(powerUp);
+      } else if (powerUpType === 'collect') {
+        // Collect power-up (bonus points/effects)
+        const powerUp = {
+          x: Math.random() * (canvasWidth - 20),
+          y: -20,
+          width: 20,
+          height: 20,
+          type: 'collect',
+          color: '#ffff00',
+          speed: 2,
+          collected: false
+        };
+        
+        if (!window.powerUps) window.powerUps = [];
+        window.powerUps.push(powerUp);
       } else {
         // Ammo power-up
         const powerUp = {
@@ -315,11 +436,12 @@ let canvasHeight;
           collected: false
         };
         
-        if (!window.powerUps) window.powerUps.push(powerUp);
-        
-        // 🚀 NEW: Debug logging for power-up spawning
-        console.log(`🎁 Power-up spawned: ${powerUpType}${ammoType ? ' (' + ammoType + ')' : ''} at wave ${waveNumber} (${Math.round(spawnChance * 100)}% chance)`);
+        if (!window.powerUps) window.powerUps = [];
+        window.powerUps.push(powerUp);
       }
+      
+      // 🚀 NEW: Debug logging for power-up spawning
+      console.log(`🎁 Power-up spawned: ${powerUpType}${ammoType ? ' (' + ammoType + ')' : ''} at wave ${waveNumber} (${Math.round(spawnChance * 100)}% chance)`);
     }
   }
 
@@ -341,6 +463,16 @@ let canvasHeight;
           // 🚀 NEW: Add speed boost ammo instead of immediate activation
           speedBoostAmmo += 2; // Add 2 speed boost uses
           console.log(`⚡ Added 2 speed boost ammo! Total: ${speedBoostAmmo}`);
+        } else if (powerUp.type === 'collect') {
+          // 🚀 NEW: Collect power-up gives bonus points and temporary effects
+          spaceInvadersScore += 500; // Bonus points
+          spaceInvadersCount += 5; // Bonus invader count for DSPOINC
+          
+          // Temporary invincibility (1 second)
+          playerShip.invincible = true;
+          playerShip.invincibleTimer = 100; // 1 second at 100ms intervals
+          
+          console.log(`⭐ Collect power-up collected! +500 points, +5 invaders, temporary invincibility!`);
         } else if (powerUp.type === 'ammo') {
           weaponAmmo[powerUp.ammoType] += 2; // Add 2 ammo
           console.log(`🔫 Added 2 ${powerUp.ammoType} ammo!`);
@@ -360,29 +492,526 @@ let canvasHeight;
     });
   }
 
-  // 🚀 NEW: Draw power-ups
+  // 🚀 NEW: Draw power-ups with custom images
   function drawPowerUps() {
     if (!window.powerUps) return;
     
     window.powerUps.forEach(powerUp => {
       if (powerUp.collected) return;
       
-      ctx.fillStyle = powerUp.color;
-      ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
-      
-      // Add glow effect
-      ctx.fillStyle = powerUp.color + '40';
-      ctx.fillRect(powerUp.x - 2, powerUp.y - 2, powerUp.width + 4, powerUp.height + 4);
-      
-      // Draw power-up symbol
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '12px Arial';
+      // Try to draw custom power-up image first
+      let powerUpImg = null;
       if (powerUp.type === 'speed') {
-        ctx.fillText('⚡', powerUp.x + 4, powerUp.y + 15);
+        powerUpImg = powerUpImages.speed;
       } else if (powerUp.type === 'ammo') {
-        ctx.fillText('🔫', powerUp.x + 4, powerUp.y + 15);
+        powerUpImg = powerUpImages[powerUp.ammoType];
+      } else if (powerUp.type === 'collect') {
+        powerUpImg = powerUpImages.collect;
+      }
+      
+      if (powerUpImg && powerUpImg.complete && powerUpImg.naturalWidth > 0) {
+        // Draw custom power-up image
+        ctx.drawImage(powerUpImg, powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+        
+        // Add glow effect around the image
+        ctx.fillStyle = powerUp.color + '40';
+        ctx.fillRect(powerUp.x - 2, powerUp.y - 2, powerUp.width + 4, powerUp.height + 4);
+      } else {
+        // Fallback to colored rectangles with symbols
+        ctx.fillStyle = powerUp.color;
+        ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+        
+        // Add glow effect
+        ctx.fillStyle = powerUp.color + '40';
+        ctx.fillRect(powerUp.x - 2, powerUp.y - 2, powerUp.width + 4, powerUp.height + 4);
+        
+        // Draw power-up symbol
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '12px Arial';
+        if (powerUp.type === 'speed') {
+          ctx.fillText('⚡', powerUp.x + 4, powerUp.y + 15);
+        } else if (powerUp.type === 'ammo') {
+          ctx.fillText('🔫', powerUp.x + 4, powerUp.y + 15);
+        } else if (powerUp.type === 'collect') {
+          ctx.fillText('⭐', powerUp.x + 4, powerUp.y + 15);
+        }
       }
     });
+  }
+
+  // 🚀 NEW: Boss System Functions
+  function spawnBoss() {
+    console.log(`👑 BOSS WAVE ${waveNumber} - PREPARE FOR BATTLE!`);
+    
+    // Clear all existing invaders for boss fight
+    invaders = [];
+    invaderBullets = [];
+    
+    // Create boss with scaling difficulty
+    const bossLevel = Math.floor(waveNumber / 50); // Boss level (1, 2, 3, etc.)
+    bossMaxHealth = 100 + (bossLevel * 50); // 100, 150, 200, etc.
+    bossHealth = bossMaxHealth;
+    
+    // 🚀 NEW: Select boss type based on wave number
+    let bossType, bossName;
+    if (waveNumber >= 200) {
+      bossType = 'cheeseDestroyer';
+      bossName = 'Cheese Destroyer';
+    } else if (waveNumber >= 150) {
+      bossType = 'cheeseGod';
+      bossName = 'Cheese God';
+    } else if (waveNumber >= 100) {
+      bossType = 'cheeseEmperor';
+      bossName = 'Cheese Emperor';
+    } else {
+      bossType = 'cheeseKing';
+      bossName = 'Cheese King';
+    }
+    
+    boss = {
+      x: canvasWidth / 2 - 60,
+      y: 50,
+      width: 120,
+      height: 80,
+      speed: 2 + (bossLevel * 0.5),
+      health: bossHealth,
+      maxHealth: bossMaxHealth,
+      phase: 'entrance',
+      attackPattern: 0,
+      lastAttack: 0,
+      attackCooldown: 2000 - (bossLevel * 200), // Faster attacks at higher levels
+      bulletSpeed: 3 + (bossLevel * 0.5),
+      bulletDamage: 1 + Math.floor(bossLevel / 2),
+      type: bossType,
+      name: bossName
+    };
+    
+    bossPhase = 'entrance';
+    bossAttackTimer = 0;
+    bossAttackPattern = 0;
+    bossBullets = [];
+    bossExplosions = [];
+    bossDefeated = false;
+    bossReward = waveNumber * 10; // 500 DSPOINC for wave 50, 1000 for wave 100, etc.
+    
+    // Boss entrance animation
+    boss.y = -100;
+    console.log(`👑 Boss spawned: Level ${bossLevel}, Health: ${bossHealth}, Reward: ${bossReward} DSPOINC`);
+  }
+
+  function updateBoss() {
+    if (!boss || bossDefeated) return;
+    
+    const currentTime = Date.now();
+    
+    // 🚀 NEW: Update boss effects
+    updateBossEffects();
+    
+    // Boss entrance animation
+    if (bossPhase === 'entrance') {
+      boss.y += 1;
+      bossEntranceEffect += 0.1;
+      
+      // 🚀 NEW: Create entrance particles
+      if (Math.random() < 0.3) {
+        createBossParticle(boss.x + Math.random() * boss.width, boss.y + boss.height, 'entrance');
+      }
+      
+      if (boss.y >= 50) {
+        bossPhase = 'fighting';
+        boss.y = 50;
+        bossEntranceEffect = 0;
+        // 🚀 NEW: Screen shake on boss arrival
+        screenShake = 20;
+        console.log('👑 Boss entrance complete - FIGHT BEGINS!');
+      }
+      return;
+    }
+    
+    // Boss movement patterns
+    if (bossPhase === 'fighting') {
+      // Side-to-side movement
+      boss.x += boss.speed * (bossDirection || 1);
+      if (boss.x <= 0 || boss.x + boss.width >= canvasWidth) {
+        bossDirection = bossDirection ? -bossDirection : -1;
+      }
+      
+      // Boss attacks
+      if (currentTime - boss.lastAttack > boss.attackCooldown) {
+        bossAttack();
+        boss.lastAttack = currentTime;
+      }
+    }
+    
+    // Update boss bullets
+    bossBullets.forEach((bullet, index) => {
+      bullet.y += bullet.speed;
+      if (bullet.y > canvasHeight + 20) {
+        bossBullets.splice(index, 1);
+      }
+    });
+  }
+
+  function bossAttack() {
+    if (!boss) return;
+    
+    const attackPatterns = [
+      // Pattern 1: Single powerful shot
+      () => {
+        bossBullets.push({
+          x: boss.x + boss.width / 2 - 4,
+          y: boss.y + boss.height,
+          width: 8,
+          height: 16,
+          speed: boss.bulletSpeed,
+          damage: boss.bulletDamage,
+          color: '#ff0000'
+        });
+      },
+      // Pattern 2: Triple spread shot
+      () => {
+        for (let i = -1; i <= 1; i++) {
+          bossBullets.push({
+            x: boss.x + boss.width / 2 - 4,
+            y: boss.y + boss.height,
+            width: 8,
+            height: 16,
+            speed: boss.bulletSpeed,
+            damage: boss.bulletDamage,
+            color: '#ff0000',
+            angle: i * 0.3 // Spread angle
+          });
+        }
+      },
+      // Pattern 3: Rapid fire burst
+      () => {
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => {
+            if (boss && !bossDefeated) {
+              bossBullets.push({
+                x: boss.x + boss.width / 2 - 4,
+                y: boss.y + boss.height,
+                width: 8,
+                height: 16,
+                speed: boss.bulletSpeed,
+                damage: boss.bulletDamage,
+                color: '#ff0000'
+              });
+            }
+          }, i * 200);
+        }
+      }
+    ];
+    
+    // Cycle through attack patterns
+    bossAttackPattern = (bossAttackPattern + 1) % attackPatterns.length;
+    attackPatterns[bossAttackPattern]();
+    
+    // 🚀 NEW: Create attack particles
+    for (let i = 0; i < 5; i++) {
+      createBossParticle(boss.x + boss.width / 2, boss.y + boss.height, 'attack');
+    }
+    
+    // 🚀 NEW: Screen shake on boss attack
+    screenShake = 5;
+    
+    console.log(`👑 Boss attack pattern ${bossAttackPattern + 1} executed!`);
+  }
+
+  function checkBossCollisions() {
+    if (!boss || bossDefeated) return;
+    
+    // Check player bullets hitting boss
+    bullets.forEach((bullet, bulletIndex) => {
+      if (checkCollision(bullet, boss)) {
+        // Remove bullet
+        bullets.splice(bulletIndex, 1);
+        
+        // Damage boss
+        boss.health -= bullet.type === 'laser' ? 3 : 1;
+        
+        // Create explosion
+        createExplosion(bullet.x, bullet.y);
+        
+        // Check if boss is defeated
+        if (boss.health <= 0) {
+          bossDefeated = true;
+          bossReward = Math.floor(bossReward * (1 + (waveNumber / 100))); // Bonus for higher waves
+          console.log(`👑 BOSS DEFEATED! Reward: ${bossReward} DSPOINC`);
+          
+          // Add reward to score
+          spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
+          
+          // 🚀 NEW: Epic boss defeat effects
+          bossDefeatEffect = 100;
+          screenShake = 30;
+          
+          // Create massive defeat particles
+          for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+              createBossParticle(
+                boss.x + Math.random() * boss.width,
+                boss.y + Math.random() * boss.height,
+                'defeat'
+              );
+            }, i * 50);
+          }
+          
+          // 🚀 NEW: Create massive boss defeat celebration
+          for (let i = 0; i < 30; i++) {
+            setTimeout(() => {
+              createExplosion(
+                boss.x + Math.random() * boss.width,
+                boss.y + Math.random() * boss.height
+              );
+            }, i * 100);
+          }
+          
+          // 🚀 NEW: Special boss defeat message
+          setTimeout(() => {
+            console.log(`🎉 CONGRATULATIONS! You defeated the ${boss.name}!`);
+            console.log(`🏆 You earned ${bossReward} DSPOINC for this victory!`);
+            console.log(`🚀 The next waves will be even more challenging...`);
+          }, 1000);
+        }
+      }
+    });
+    
+    // Check boss bullets hitting player
+    bossBullets.forEach((bullet, bulletIndex) => {
+      if (checkCollision(bullet, playerShip)) {
+        // 🚀 NEW: Check if player is invincible
+        if (playerShip.invincible && playerShip.invincibleTimer > 0) {
+          console.log('🛡️ Player invincible - boss bullet blocked!');
+          bossBullets.splice(bulletIndex, 1);
+          return; // Don't take damage
+        }
+        
+        // Remove bullet
+        bossBullets.splice(bulletIndex, 1);
+        
+        // Damage player
+        playerShip.health--;
+        createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2);
+        
+        if (playerShip.health <= 0) {
+          onGameOver();
+        }
+      }
+    });
+  }
+
+  function drawBoss() {
+    if (!boss || bossDefeated) return;
+    
+    // 🚀 NEW: Draw custom boss image based on type
+    let bossImg = null;
+    switch (boss.type) {
+      case 'cheeseKing':
+        bossImg = bossImages.cheeseKing;
+        break;
+      case 'cheeseEmperor':
+        bossImg = bossImages.cheeseEmperor;
+        break;
+      case 'cheeseGod':
+        bossImg = bossImages.cheeseGod;
+        break;
+      case 'cheeseDestroyer':
+        bossImg = bossImages.cheeseDestroyer;
+        break;
+    }
+    
+    // Draw boss image if loaded, otherwise fallback to colored rectangle
+    if (bossImg && bossImg.complete && bossImg.naturalWidth > 0) {
+      ctx.drawImage(bossImg, boss.x, boss.y, boss.width, boss.height);
+    } else {
+      // Fallback to colored rectangle with boss-specific colors
+      let fallbackColor = '#ff0000';
+      switch (boss.type) {
+        case 'cheeseKing': fallbackColor = '#ff6b35'; break;      // Orange-red
+        case 'cheeseEmperor': fallbackColor = '#8b5cf6'; break;   // Purple
+        case 'cheeseGod': fallbackColor = '#f59e0b'; break;       // Gold
+        case 'cheeseDestroyer': fallbackColor = '#dc2626'; break; // Dark red
+      }
+      ctx.fillStyle = fallbackColor;
+      ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+    }
+    
+    // 🚀 NEW: Draw custom health bar image if loaded
+    if (bossHealthBarImg && bossHealthBarImg.complete && bossHealthBarImg.naturalWidth > 0) {
+      // Draw custom health bar background
+      ctx.drawImage(bossHealthBarImg, boss.x, boss.y - 20, 120, 10);
+      
+      // Draw health bar fill overlay
+      const healthPercentage = boss.health / boss.maxHealth;
+      const healthBarWidth = 120;
+      const healthBarHeight = 10;
+      const healthBarX = boss.x;
+      const healthBarY = boss.y - 20;
+      
+      // Health bar fill with boss-specific colors
+      let healthColor = '#00ff00';
+      if (healthPercentage <= 0.25) {
+        healthColor = '#ff0000'; // Red when critical
+      } else if (healthPercentage <= 0.5) {
+        healthColor = '#ffff00'; // Yellow when medium
+      }
+      
+      ctx.fillStyle = healthColor;
+      ctx.fillRect(healthBarX, healthBarY, healthBarWidth * healthPercentage, healthBarHeight);
+    } else {
+      // Fallback to basic health bar
+      const healthBarWidth = 120;
+      const healthBarHeight = 10;
+      const healthBarX = boss.x;
+      const healthBarY = boss.y - 20;
+      
+      // Health bar background
+      ctx.fillStyle = '#333333';
+      ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+      
+      // Health bar border
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+    }
+    
+    // Boss name and level indicator
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${boss.name} - Level ${Math.floor(waveNumber / 50)}`, boss.x + boss.width / 2, boss.y - 30);
+    ctx.textAlign = 'left';
+  }
+
+  function drawBossBullets() {
+    bossBullets.forEach((bullet, index) => {
+      // 🚀 NEW: Use custom cheese bullet images if available
+      const bulletImg = cheeseBulletImages[index % cheeseBulletImages.length];
+      
+      if (bulletImg && bulletImg.complete && bulletImg.naturalWidth > 0) {
+        ctx.drawImage(bulletImg, bullet.x, bullet.y, bullet.width, bullet.height);
+      } else {
+        // Fallback to colored rectangle with boss-specific colors
+        let bulletColor = '#ff0000';
+        switch (boss.type) {
+          case 'cheeseKing': bulletColor = '#ff6b35'; break;      // Orange-red
+          case 'cheeseEmperor': bulletColor = '#8b5cf6'; break;   // Purple
+          case 'cheeseGod': bulletColor = '#f59e0b'; break;       // Gold
+          case 'cheeseDestroyer': bulletColor = '#dc2626'; break; // Dark red
+        }
+        ctx.fillStyle = bulletColor;
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+      }
+    });
+  }
+
+  // 🚀 NEW: Boss Effects Functions
+  function updateBossEffects() {
+    // Update screen shake
+    if (screenShake > 0) {
+      screenShake--;
+    }
+    
+    // Update boss glow effect
+    bossGlowEffect += 0.1;
+    
+    // Update boss particles
+    bossParticles.forEach((particle, index) => {
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      particle.life--;
+      
+      if (particle.life <= 0) {
+        bossParticles.splice(index, 1);
+      }
+    });
+  }
+
+  function createBossParticle(x, y, type) {
+    const particle = {
+      x: x,
+      y: y,
+      vx: (Math.random() - 0.5) * 4,
+      vy: (Math.random() - 0.5) * 4,
+      life: 30 + Math.random() * 30,
+      type: type,
+      size: 2 + Math.random() * 3
+    };
+    
+    bossParticles.push(particle);
+  }
+
+  function drawBossEffects() {
+    if (!boss || bossDefeated) return;
+    
+    // 🚀 NEW: Draw boss glow effect
+    if (bossGlowEffect > 0) {
+      const glowIntensity = Math.sin(bossGlowEffect) * 0.3 + 0.7;
+      ctx.shadowColor = getBossGlowColor();
+      ctx.shadowBlur = 20 * glowIntensity;
+      
+      // Draw glow behind boss
+      ctx.globalAlpha = 0.3 * glowIntensity;
+      ctx.fillStyle = getBossGlowColor();
+      ctx.fillRect(boss.x - 10, boss.y - 10, boss.width + 20, boss.height + 20);
+      ctx.globalAlpha = 1.0;
+      ctx.shadowBlur = 0;
+    }
+    
+    // 🚀 NEW: Draw boss particles
+    bossParticles.forEach(particle => {
+      ctx.globalAlpha = particle.life / 60;
+      ctx.fillStyle = getBossParticleColor(particle.type);
+      ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+    });
+    ctx.globalAlpha = 1.0;
+  }
+
+  function getBossGlowColor() {
+    switch (boss.type) {
+      case 'cheeseKing': return '#ff6b35';      // Orange-red
+      case 'cheeseEmperor': return '#8b5cf6';   // Purple
+      case 'cheeseGod': return '#f59e0b';       // Gold
+      case 'cheeseDestroyer': return '#dc2626'; // Dark red
+      default: return '#ff0000';
+    }
+  }
+
+  function getBossParticleColor(type) {
+    switch (type) {
+      case 'entrance': return '#ffffff';
+      case 'attack': return '#ff0000';
+      case 'defeat': return '#ffff00';
+      default: return '#ffffff';
+    }
+  }
+
+  // 🚀 NEW: Draw boss wave announcement
+  function drawBossAnnouncement() {
+    if (!boss || bossDefeated) return;
+    
+    // Semi-transparent background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(0, 0, canvasWidth, 60);
+    
+    // Boss announcement text
+    ctx.fillStyle = '#ff0000';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    
+    const bossLevel = Math.floor(waveNumber / 50);
+    const bossText = `👑 BOSS WAVE ${waveNumber} - LEVEL ${bossLevel} BOSS`;
+    ctx.fillText(bossText, canvasWidth / 2, 30);
+    
+    // Boss health status
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '16px Arial';
+    const healthText = `Health: ${boss.health}/${boss.maxHealth}`;
+    ctx.fillText(healthText, canvasWidth / 2, 50);
+    
+    // Reset text alignment
+    ctx.textAlign = 'left';
   }
 
   function initSpaceInvaders() {
@@ -427,7 +1056,9 @@ let canvasHeight;
       width: 40,
       height: 30,
       speed: 5,
-      health: 3
+      health: 3,
+      invincible: false, // 🚀 NEW: Invincibility state
+      invincibleTimer: 0 // 🚀 NEW: Invincibility timer
     };
 
     // Initialize game state
@@ -447,6 +1078,15 @@ let canvasHeight;
     invaderDirection = 1;
     invaderDropTimer = 0;
     lastSpawnTime = Date.now();
+    
+    // 🚀 NEW: Reset boss effects
+    boss = null;
+    bossDefeated = false;
+    screenShake = 0;
+    bossParticles = [];
+    bossGlowEffect = 0;
+    bossEntranceEffect = 0;
+    bossDefeatEffect = 0;
     lastTetrisSpawnTime = Date.now();
 
     // 🚀 NEW: Initialize weapon system
@@ -535,12 +1175,13 @@ let canvasHeight;
     
     switch (pattern) {
       case 'v_formation':
-        // 🚀 NEW: V-shaped formation - MUCH closer to player and more aggressive!
+        // 🚀 ULTRA DENSE: V-shaped formation - MUCH more invaders for action!
         const vPositions = [
-          [3, 0], [4, 0], [5, 0],
-          [2, 1], [3, 1], [4, 1], [5, 1], [6, 1],
-          [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2],
-          [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3]
+          [2, 0], [3, 0], [4, 0], [5, 0], [6, 0],
+          [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1],
+          [0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2],
+          [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3], [9, 3],
+          [0, 4], [1, 4], [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4], [9, 4]
         ];
         vPositions.forEach(([col, row]) => {
           // 🚀 NEW: Spawn invaders at reasonable distance (canvasHeight - 350 instead of 50)
@@ -550,10 +1191,10 @@ let canvasHeight;
         break;
         
       case 'pyramid':
-        // 🚀 NEW: Pyramid formation - MUCH closer to player and more aggressive!
-        for (let row = 0; row < 4; row++) {
+        // 🚀 ULTRA DENSE: Pyramid formation - MUCH more invaders for action!
+        for (let row = 0; row < 6; row++) { // Increased from 4 to 6 rows
           const colsInRow = row + 1;
-          const startCol = 4 - row;
+          const startCol = 5 - row; // Adjusted for wider base
           for (let col = 0; col < colsInRow; col++) {
             // 🚀 NEW: Spawn invaders at reasonable distance
             const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
@@ -563,13 +1204,14 @@ let canvasHeight;
         break;
         
       case 'diamond':
-        // 🚀 NEW: Diamond formation - MUCH closer to player and more aggressive!
+        // 🚀 ULTRA DENSE: Diamond formation - MUCH more invaders for action!
         const diamondPositions = [
-          [4, 0],
-          [3, 1], [4, 1], [5, 1],
-          [2, 2], [3, 2], [4, 2], [5, 2], [6, 2],
-          [3, 3], [4, 3], [5, 3],
-          [4, 4]
+          [4, 0], [5, 0],
+          [3, 1], [4, 1], [5, 1], [6, 1],
+          [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2],
+          [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3],
+          [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4],
+          [3, 5], [4, 5], [5, 5], [6, 5]
         ];
         diamondPositions.forEach(([col, row]) => {
           // 🚀 NEW: Spawn invaders at reasonable distance
@@ -579,10 +1221,12 @@ let canvasHeight;
         break;
         
       case 'cross':
-        // 🚀 NEW: Cross formation - MUCH closer to player and more aggressive!
+        // 🚀 ULTRA DENSE: Cross formation - MUCH more invaders for action!
         const crossPositions = [
-          [4, 0], [4, 1], [4, 2], [4, 3], [4, 4],
-          [2, 2], [3, 2], [5, 2], [6, 2]
+          [4, 0], [4, 1], [4, 2], [4, 3], [4, 4], [4, 5], [4, 6],
+          [2, 2], [3, 2], [5, 2], [6, 2],
+          [1, 3], [7, 3],
+          [0, 4], [8, 4]
         ];
         crossPositions.forEach(([col, row]) => {
           // 🚀 NEW: Spawn invaders at reasonable distance
@@ -592,13 +1236,13 @@ let canvasHeight;
         break;
         
       case 'spiral':
-        // 🚀 NEW: Spiral formation - MUCH closer to player and more aggressive!
+        // 🚀 ULTRA DENSE: Spiral formation - MUCH more invaders for action!
         const spiralPositions = [
-          [4, 0], [5, 0], [6, 0],
-          [3, 1], [7, 1],
-          [2, 2], [8, 2],
-          [1, 3], [9, 3],
-          [0, 4], [10, 4]
+          [4, 0], [5, 0], [6, 0], [7, 0],
+          [3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1],
+          [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2], [9, 2],
+          [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3], [9, 3], [10, 3],
+          [0, 4], [1, 4], [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4], [9, 4], [10, 4], [11, 4]
         ];
         spiralPositions.forEach(([col, row]) => {
           // 🚀 NEW: Spawn invaders at reasonable distance
@@ -608,10 +1252,10 @@ let canvasHeight;
         break;
         
       case 'random_cluster':
-        // 🚀 NEW: Random cluster - MUCH closer to player and more aggressive!
-        for (let i = 0; i < 12; i++) {
-          const col = Math.floor(Math.random() * 8);
-          const row = Math.floor(Math.random() * 4);
+        // 🚀 ULTRA DENSE: Random cluster - MUCH more invaders for action!
+        for (let i = 0; i < 25; i++) { // Increased from 12 to 25 invaders
+          const col = Math.floor(Math.random() * 10); // Increased from 8 to 10 columns
+          const row = Math.floor(Math.random() * 6); // Increased from 4 to 6 rows
           // 🚀 NEW: Spawn invaders at reasonable distance
           const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
           invaders.push(createInvader(col * 45 + 30, spawnY, row, 'random_cluster'));
@@ -619,16 +1263,16 @@ let canvasHeight;
         break;
         
       case 'ultra_swarm':
-        // 🚀 NEW: Ultra dense swarm - MUCH closer to player and more aggressive!
-        for (let row = 0; row < 6; row++) {
-          for (let col = 0; col < 12; col++) {
+        // 🚀 ULTRA DENSE: Ultra dense swarm - MUCH more invaders for action!
+        for (let row = 0; row < 8; row++) { // Increased from 6 to 8 rows
+          for (let col = 0; col < 15; col++) { // Increased from 12 to 15 columns
             // 🚀 NEW: Spawn invaders at reasonable distance
             const spawnY = canvasHeight - 350 + (row * 30); // Reasonable distance spawn, tighter spacing
             invaders.push(createInvader(col * 35 + 20, spawnY, row, 'ultra_swarm'));
           }
         }
         // Add extra random invaders at reasonable distance
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 25; i++) { // Increased from 15 to 25 extra invaders
           const x = Math.random() * (canvasWidth - 60);
           const y = canvasHeight - 400 + Math.random() * 150; // Reasonable distance random spawns
           invaders.push(createInvader(x, y, Math.floor(Math.random() * 3), 'ultra_swarm_extra'));
@@ -636,18 +1280,18 @@ let canvasHeight;
         break;
         
       case 'double_formation':
-        // 🚀 NEW: Double formation - MUCH closer to player and more aggressive!
+        // 🚀 ULTRA DENSE: Double formation - MUCH more invaders for action!
         // First layer
-        for (let row = 0; row < 4; row++) {
-          for (let col = 0; col < 8; col++) {
+        for (let row = 0; row < 6; row++) { // Increased from 4 to 6 rows
+          for (let col = 0; col < 10; col++) { // Increased from 8 to 10 columns
             // 🚀 NEW: Spawn invaders at reasonable distance
             const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
             invaders.push(createInvader(col * 45 + 30, spawnY, row, 'double_formation_1'));
           }
         }
         // Second layer (offset) - also at reasonable distance
-        for (let row = 0; row < 3; row++) {
-          for (let col = 0; col < 6; col++) {
+        for (let row = 0; row < 5; row++) { // Increased from 3 to 5 rows
+          for (let col = 0; col < 8; col++) { // Increased from 6 to 8 columns
             // 🚀 NEW: Spawn second layer invaders at reasonable distance
             const spawnY = canvasHeight - 300 + (row * 30); // Reasonable distance for second layer
             invaders.push(createInvader(col * 45 + 60, spawnY, row + 4, 'double_formation_2'));
@@ -707,7 +1351,7 @@ let canvasHeight;
 
   function startGame() {
     resetGame();
-    spaceInvadersGameInterval = setInterval(gameLoop, 100); // ULTRA SLOW GAME LOOP (100ms instead of 50ms)
+    spaceInvadersGameInterval = setInterval(gameLoop, 50); // FAST GAME LOOP (50ms instead of 100ms) - MUCH more responsive!
     document.getElementById("start-space-invaders-btn").textContent = "🔄 Restart";
     
     // Lock scroll only when game is actually running
@@ -758,6 +1402,8 @@ let canvasHeight;
     
     playerShip.x = canvasWidth / 2;
     playerShip.health = 3;
+    playerShip.invincible = false; // 🚀 NEW: Reset invincibility
+    playerShip.invincibleTimer = 0; // 🚀 NEW: Reset invincibility timer
     
     initializeInvaders();
     updateScore();
@@ -791,6 +1437,9 @@ let canvasHeight;
     updateWeaponCooldowns();
     updateSpeedBoost();
     
+    // 🚀 NEW: Update player invincibility
+    updatePlayerInvincibility();
+    
     if (gamePhase === 'formation') {
       // Formation phase - much shorter and you can shoot!
       moveInvadersFormation();
@@ -807,7 +1456,10 @@ let canvasHeight;
       // 🚀 NEW: Update power-ups
       updatePowerUps();
       
-      if (phaseTimer > 50) { // 🚀 NEW: 5 seconds at 100ms intervals (was 10 seconds) - MUCH more aggressive!
+      // 🚀 NEW: Spawn power-ups during formation phase too!
+      spawnPowerUp();
+      
+      if (phaseTimer > 20) { // 🚀 ULTRA FAST: 2 seconds at 100ms intervals - MUCH more aggressive!
         gamePhase = 'attack';
         phaseTimer = 0;
         invaderDropPhase = false;
@@ -833,16 +1485,14 @@ let canvasHeight;
       // NEW: Check for stuck or hidden invaders
       checkForStuckInvaders();
       
-      // Phase transitions - check if only 2 or fewer invaders are left
+      // 🚀 ULTRA FAST: Check for wave completion in attack phase
       const aliveInvaders = invaders.filter(invader => invader.alive);
-      
-      // NEW: Time-based wave progression to prevent getting stuck
       const currentTime = Date.now();
-      const waveTimeLimit = 30000; // 30 seconds per wave
+      const waveTimeLimit = 15000; // 15 seconds per wave
       const timeSinceWaveStart = currentTime - dropStartTime;
       
-      // Debug: Log wave status every 10 seconds
-      if (phaseTimer % 100 === 0) { // Every 10 seconds
+      // Debug: Log wave status every 5 seconds
+      if (phaseTimer % 50 === 0) { // Every 5 seconds
         console.log(`🎯 Wave ${waveNumber} status: ${aliveInvaders.length} invaders alive, ${Math.round(timeSinceWaveStart/1000)}s elapsed`);
       }
       
@@ -853,13 +1503,57 @@ let canvasHeight;
           console.log(`⏰ Wave ${waveNumber} time limit reached (${Math.round(timeSinceWaveStart/1000)}s). Spawning wave ${waveNumber + 1}...`);
         }
         
+        // 🚀 NEW: Check if this is a boss wave
+        if (waveNumber % 50 === 0) {
+          console.log(`👑 BOSS WAVE DETECTED! Wave ${waveNumber} will be a boss fight!`);
+          gamePhase = 'boss';
+          phaseTimer = 0;
+          waveNumber++;
+          spawnBoss();
+        } else {
+          gamePhase = 'formation';
+          phaseTimer = 0;
+          waveNumber++;
+          invaderDropPhase = false;
+          dropStartTime = Date.now(); // Reset drop start time for new wave
+          spawnNewWave();
+        }
+      }
+    } else if (gamePhase === 'boss') {
+      // 🚀 NEW: Boss phase - boss battle!
+      updateBoss();
+      moveBullets();
+      checkBossCollisions();
+      checkPlayerHit();
+      
+      // 🚀 NEW: Update power-ups during boss fight
+      updatePowerUps();
+      
+      // 🚀 NEW: Spawn power-ups during boss phase too!
+      spawnPowerUp();
+      
+      // Boss phase timer - boss fights last 60 seconds
+      phaseTimer++;
+      if (phaseTimer > 600) { // 60 seconds at 100ms intervals
+        if (boss && !bossDefeated) {
+          console.log(`⏰ Boss fight time limit reached! Boss escapes...`);
+          boss = null;
+          bossDefeated = true;
+        }
+        
+        // Return to normal waves
         gamePhase = 'formation';
         phaseTimer = 0;
         waveNumber++;
         invaderDropPhase = false;
-        dropStartTime = Date.now(); // Reset drop start time for new wave
+        dropStartTime = Date.now();
         spawnNewWave();
       }
+      
+      // Phase transitions - check if only 2 or fewer invaders are left
+      const aliveInvaders = invaders.filter(invader => invader.alive);
+      
+      // 🚀 NEW: Boss phase wave progression handled in attack phase
     }
     
     // Spawn Tetris danger items periodically - much more frequent with snake invaders!
@@ -870,8 +1564,57 @@ let canvasHeight;
       lastTetrisSpawnTime = currentTime;
     }
     
-    // 🚀 NEW: Spawn power-ups periodically
+    // 🚀 ULTRA AGGRESSIVE: Spawn power-ups much more frequently!
     spawnPowerUp();
+    
+    // 🚀 BONUS: Extra power-up spawn chance for more action!
+    if (Math.random() < 0.05) { // 5% bonus chance every game loop
+      spawnPowerUp();
+    }
+    
+    // 🚀 WAVE BOOST: Higher waves get even more power-ups!
+    if (waveNumber >= 10) {
+      if (Math.random() < 0.1) { // 10% extra chance for wave 10+
+        spawnPowerUp();
+      }
+    }
+    if (waveNumber >= 20) {
+      if (Math.random() < 0.15) { // 15% extra chance for wave 20+
+        spawnPowerUp();
+      }
+    }
+    if (waveNumber >= 30) {
+      if (Math.random() < 0.2) { // 20% extra chance for wave 30+
+        spawnPowerUp();
+      }
+    }
+    
+    // 🚀 FORCE SPAWN: If no power-ups on screen for too long, force spawn one
+    if (!window.powerUps || window.powerUps.length === 0) {
+      if (Math.random() < 0.5) { // 50% chance to force spawn when screen is empty (was 30%)
+        console.log('🚨 FORCE SPAWNING power-up - screen was empty!');
+        spawnPowerUp();
+      }
+    }
+    
+    // 🚀 DEBUG: Log power-up status every 2 seconds
+    if (phaseTimer % 20 === 0) { // Every 2 seconds at 50ms intervals
+      console.log(`🎁 Power-up status: ${window.powerUps ? window.powerUps.length : 0} power-ups on screen, Wave: ${waveNumber}, Phase: ${gamePhase}`);
+    }
+    
+    // 🚀 FORCE WAVE PROGRESSION: If stuck in first wave for too long, force progression
+    if (waveNumber === 1 && gamePhase === 'attack') {
+      const timeSinceGameStart = Date.now() - dropStartTime;
+      if (timeSinceGameStart > 30000) { // 30 seconds in first wave
+        console.log('🚨 FORCE WAVE PROGRESSION - stuck in first wave too long!');
+        gamePhase = 'formation';
+        phaseTimer = 0;
+        waveNumber++;
+        invaderDropPhase = false;
+        dropStartTime = Date.now();
+        spawnNewWave();
+      }
+    }
   }
 
   // NEW: Function to check for stuck or hidden invaders
@@ -921,10 +1664,10 @@ let canvasHeight;
       const targetY = invader.targetY || invader.y;
       
       if (Math.abs(invader.x - targetX) > 1) {
-        invader.x += (targetX - invader.x) * 0.01; // Ultra slow movement
+        invader.x += (targetX - invader.x) * 0.05; // Much faster movement (was 0.01)
       }
       if (Math.abs(invader.y - targetY) > 1) {
-        invader.y += (targetY - invader.y) * 0.01; // Ultra slow movement
+        invader.y += (targetY - invader.y) * 0.05; // Much faster movement (was 0.01)
       }
     });
   }
@@ -951,7 +1694,26 @@ let canvasHeight;
         if (!invader.alive) return;
         
         // 🚀 NEW: MUCH more aggressive wave-based speed multiplier!
-        const waveSpeedMultiplier = 2 + (waveNumber - 1) * 2.5; // 250% faster each wave - EXTREMELY dangerous!
+        let waveSpeedMultiplier = 2 + (waveNumber - 1) * 2.5; // Base scaling
+        
+        // 🚀 NEW: EXTREME difficulty scaling beyond wave 50!
+        if (waveNumber >= 50) {
+          waveSpeedMultiplier *= 1.5; // 50% faster for boss waves
+        }
+        if (waveNumber >= 75) {
+          waveSpeedMultiplier *= 1.8; // 80% faster for ultra waves
+        }
+        if (waveNumber >= 100) {
+          waveSpeedMultiplier *= 2.2; // 120% faster for legendary waves
+        }
+        if (waveNumber >= 150) {
+          waveSpeedMultiplier *= 3.0; // 200% faster for mythical waves
+        }
+        if (waveNumber >= 200) {
+          waveSpeedMultiplier *= 4.0; // 300% faster for god-tier waves
+        }
+        
+        // 🚀 NEW: EXTREME difficulty scaling beyond wave 50!
         
         // 🚀 NEW: Different movement patterns - ALL much more aggressive!
         if (invader.movePattern === 'zigzag') {
@@ -1022,19 +1784,37 @@ let canvasHeight;
     // waveNumber is already incremented in updateGame, so don't increment here
     gameSpeed += 0.001; // TINY difficulty increase
     
-    // Choose a random formation pattern
-    const patterns = [
+    // 🚀 NEW: Choose formation pattern based on wave difficulty
+    let patterns = [
       'v_formation',    // V-shaped formation
       'pyramid',        // Pyramid formation  
       'diamond',        // Diamond formation
       'cross',          // Cross formation
       'spiral',         // Spiral formation
       'random_cluster', // Random cluster
-      'ultra_swarm',    // NEW: Ultra dense swarm
-      'double_formation' // NEW: Double formation
+      'ultra_swarm',    // Ultra dense swarm
+      'double_formation' // Double formation
     ];
     
+    // 🚀 NEW: Add ultra-difficult patterns for higher waves
+    if (waveNumber >= 50) {
+      patterns.push('chaos_storm');      // Chaos storm - random movement
+      patterns.push('death_spiral');     // Death spiral - aggressive spiral
+      patterns.push('wall_crusher');     // Wall crusher - destroys everything
+    }
+    if (waveNumber >= 75) {
+      patterns.push('void_walker');      // Void walker - teleports around
+      patterns.push('time_bomb');        // Time bomb - explodes after time
+      patterns.push('shadow_clone');     // Shadow clone - duplicates invaders
+    }
+    if (waveNumber >= 100) {
+      patterns.push('reality_breaker');  // Reality breaker - glitch effects
+      patterns.push('dimension_shift');  // Dimension shift - phase through walls
+      patterns.push('eternal_swarm');    // Eternal swarm - infinite invaders
+    }
+    
     const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+    console.log(`🎯 Wave ${waveNumber}: Using formation pattern: ${pattern}`);
     createFormation(pattern);
   }
 
@@ -1147,6 +1927,14 @@ let canvasHeight;
   function checkTetrisCollisions() {
     tetrisDangerItems.forEach((item, index) => {
       if (checkCollision(playerShip, item)) {
+        // 🚀 NEW: Check if player is invincible
+        if (playerShip.invincible && playerShip.invincibleTimer > 0) {
+          console.log('🛡️ Player invincible - Tetris item blocked!');
+          // Remove Tetris item without damaging player
+          tetrisDangerItems.splice(index, 1);
+          return; // Don't take damage
+        }
+        
         // Player hit by Tetris block
         spaceInvadersScore += item.points;
         
@@ -1265,6 +2053,9 @@ let canvasHeight;
       }
     }
     
+    // 🚀 NEW: Random invader type selection (original vs new variant)
+    const invaderType = Math.random() < 0.7 ? 'original' : 'variant'; // 70% original, 30% variant
+    
     return {
       x: x,
       y: y,
@@ -1283,7 +2074,8 @@ let canvasHeight;
       weakPointHealth: 2 + Math.floor(waveNumber / 3), // More health in later waves
       weakPointX: x + 15, // Center of invader
       weakPointY: y + 12, // Upper part of invader
-      weakPointSize: 6 + Math.floor(waveNumber / 4) // Bigger weak points in later waves
+      weakPointSize: 6 + Math.floor(waveNumber / 4), // Bigger weak points in later waves
+      invaderType: invaderType // 🚀 NEW: Track which invader type this is
     };
   }
 
@@ -1574,6 +2366,13 @@ let canvasHeight;
   function checkPlayerHit() {
     invaderBullets.forEach((bullet, index) => {
       if (checkCollision(playerShip, bullet)) {
+        // 🚀 NEW: Check if player is invincible
+        if (playerShip.invincible && playerShip.invincibleTimer > 0) {
+          console.log('🛡️ Player invincible - bullet blocked!');
+          invaderBullets.splice(index, 1);
+          return; // Don't take damage
+        }
+        
         playerShip.health--;
         invaderBullets.splice(index, 1);
         
@@ -1599,6 +2398,26 @@ let canvasHeight;
       
       // Check if invader collides with player ship
       if (checkCollision(invader, playerShip)) {
+        // 🚀 NEW: Check if player is invincible
+        if (playerShip.invincible && playerShip.invincibleTimer > 0) {
+          console.log('🛡️ Player invincible - invader collision blocked!');
+          // Kill the invading invader without damaging player
+          invader.alive = false;
+          spaceInvadersScore += invader.points; // Keep game points for display
+          spaceInvadersCount += 1; // NEW: Track invader count for DSPOINC
+          
+          // Create explosion effect at collision point
+          explosions.push({
+            x: invader.x + invader.width / 2,
+            y: invader.y + invader.height / 2,
+            size: 30,
+            timer: 15,
+            isInvaderCollision: true
+          });
+          
+          return; // Don't take damage
+        }
+        
         console.log(`💥 Invader collision with player! Player health: ${playerShip.health} -> ${playerShip.health - 1}`);
         
         // Damage player (invader collision is deadly!)
@@ -1648,6 +2467,14 @@ let canvasHeight;
       return; // Don't draw if context or canvas dimensions are not available
     }
     
+    // 🚀 NEW: Apply screen shake effect
+    if (screenShake > 0) {
+      const shakeX = (Math.random() - 0.5) * screenShake;
+      const shakeY = (Math.random() - 0.5) * screenShake;
+      ctx.save();
+      ctx.translate(shakeX, shakeY);
+    }
+    
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     
     drawStars();
@@ -1658,9 +2485,27 @@ let canvasHeight;
     drawTetrisDangerItems(); // NEW: Draw Tetris danger items
     drawExplosions();
     drawPowerUps(); // 🚀 NEW: Draw power-ups
+    
+    // 🚀 NEW: Draw boss if in boss phase
+    if (gamePhase === 'boss' && boss && !bossDefeated) {
+      drawBossEffects(); // Draw glow and particles first
+      drawBoss();
+      drawBossBullets();
+    }
+    
     drawScore();
     drawHealth();
     drawPhaseInfo(); // NEW: Show current phase info
+    
+    // 🚀 NEW: Draw boss wave announcement
+    if (gamePhase === 'boss' && boss && !bossDefeated) {
+      drawBossAnnouncement();
+    }
+    
+    // 🚀 NEW: Restore screen shake
+    if (screenShake > 0) {
+      ctx.restore();
+    }
   }
 
   function drawStars() {
@@ -1673,6 +2518,14 @@ let canvasHeight;
   }
 
   function drawPlayerShip() {
+    // 🚀 NEW: Add invincibility glow effect
+    if (playerShip.invincible && playerShip.invincibleTimer > 0) {
+      // Create pulsing invincibility glow
+      const glowIntensity = 0.3 + Math.sin(Date.now() * 0.01) * 0.2; // Pulsing effect
+      ctx.fillStyle = `rgba(255, 255, 0, ${glowIntensity})`; // Yellow glow
+      ctx.fillRect(playerShip.x - 4, playerShip.y - 4, playerShip.width + 8, playerShip.height + 8);
+    }
+    
     // Try to draw cheese ship image first
     if (cheeseShipImg.complete && cheeseShipImg.naturalWidth > 0) {
       ctx.drawImage(cheeseShipImg, playerShip.x, playerShip.y, playerShip.width, playerShip.height);
@@ -1695,15 +2548,31 @@ let canvasHeight;
       ctx.arc(playerShip.x + 20, playerShip.y + 25, 1, 0, Math.PI * 2);
       ctx.fill();
     }
+    
+    // 🚀 NEW: Add invincibility indicator text
+    if (playerShip.invincible && playerShip.invincibleTimer > 0) {
+      ctx.fillStyle = '#ffff00';
+      ctx.font = '12px Arial';
+      ctx.fillText('🛡️ INVINCIBLE', playerShip.x, playerShip.y - 10);
+    }
   }
 
   function drawInvaders() {
     invaders.forEach(invader => {
       if (!invader.alive) return;
       
-      // Try to draw cheese invader image first
-      if (cheeseInvaderImg.complete && cheeseInvaderImg.naturalWidth > 0) {
-        ctx.drawImage(cheeseInvaderImg, invader.x, invader.y, invader.width, invader.height);
+      // 🚀 NEW: Try to draw appropriate invader image based on type
+      let invaderImg = null;
+      if (invader.invaderType === 'variant' && cheeseInvader2Img.complete && cheeseInvader2Img.naturalWidth > 0) {
+        // Use the new variant invader image
+        invaderImg = cheeseInvader2Img;
+      } else if (cheeseInvaderImg.complete && cheeseInvaderImg.naturalWidth > 0) {
+        // Use the original invader image
+        invaderImg = cheeseInvaderImg;
+      }
+      
+      if (invaderImg) {
+        ctx.drawImage(invaderImg, invader.x, invader.y, invader.width, invader.height);
       } else {
         // Debug: Log when falling back to colored rectangles
         if (invader.x === 0 && invader.y === 0) { // Only log once per frame

@@ -78,3 +78,49 @@ These images will be used in a JavaScript canvas game where:
 - Explosions appear when ships are hit
 
 The images need to be small and clear enough to be recognizable at the specified pixel dimensions.
+
+🎨 BOSS IMAGE REQUIREMENTS:
+1. Main Boss Body (Primary Image):
+Size: 120x80 pixels (matches the boss.width and boss.height in code)
+Style: Wobbling/Animated cheese boss - like a giant, menacing cheese wheel
+Colors:
+Primary: Deep red/orange (#ff0000) for the boss body
+Secondary: Darker red for details and shadows
+Accents: White/yellow for cheese holes and highlights
+Features:
+Crown/tiara on top (�� symbol)
+Evil cheese eyes (glowing red or menacing)
+Cheese holes that look like battle scars
+Wobbling effect - like the cheese is alive and angry
+Battle-ready appearance - maybe some spikes or weapons
+2. Boss Health Bar (Optional Enhancement):
+Size: 120x10 pixels (matches healthBarWidth and healthBarHeight)
+Style: Animated health bar that changes color
+Green when health > 50%
+Yellow when health 25-50%
+Red when health < 25%
+Features:
+Glowing effect around the health bar
+Pulsing animation when health is low
+3. Boss Bullets (Optional Enhancement):
+Size: 8x16 pixels (matches bullet dimensions)
+Style: Cheese-themed projectiles
+Red cheese chunks flying at the player
+Glowing/trail effects for visual impact
+Different shapes for different attack patterns
+�� CHATGPT PROMPT SUGGESTIONS:
+For Main Boss:
+For Health Bar:
+For Bullets:
+🎯 INTEGRATION NOTES:
+Once you create these images, we can:
+Replace the red rectangle boss with your custom cheese boss image
+Add the health bar image for enhanced visual appeal
+Use the bullet images for more thematic boss attacks
+Create multiple boss variations for different levels (50, 100, 150, 200)
+�� BOSS THEME IDEAS:
+Wave 50: Cheese King - Classic cheese wheel boss
+Wave 100: Cheese Emperor - More elaborate, multiple cheese wheels
+Wave 150: Cheese God - Massive, cosmic cheese entity
+Wave 200: Cheese Destroyer - Ultimate cheese boss with multiple forms
+The wobbling cheese boss will be absolutely perfect for this game! It fits the cheese theme perfectly and will look amazing in battle! 🧀👑🎮
