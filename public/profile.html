@@ -1196,46 +1196,34 @@ document.addEventListener("DOMContentLoaded", async function () {
          } else {
            console.error('❌ Score total API request failed:', balanceResponse.status);
          }
-       } catch (balanceError) {
-         console.error('❌ Error fetching DSPOINC balance:', balanceError);
-       }
          
-       // Fetch and display recent adjustments
-       fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
-         .then(res => res.json())
-         .then(response => {
-           const recentList = document.getElementById('recentAdjustments');
-           const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+         // Fetch and display recent adjustments
+         const recentResponse = await fetch('/api/user/recent-adjustments.php', { credentials: 'include' });
+         const recentData = await recentResponse.json();
+         const recentList = document.getElementById('recentAdjustments');
+         const adjustments = Array.isArray(recentData.adjustments) ? recentData.adjustments : [];
 
-           if (recentList) {
-             if (adjustments.length > 0) {
-               recentList.innerHTML = adjustments
-                 .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                 .slice(0, 10)
-                 .map(a =>
-                   `<li>
-                     <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                     : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
-                     <span class="italic">(${a.reason || a.action})</span>
-                   </li>`
-                 ).join('');
-               console.log('✅ Recent adjustments loaded:', adjustments.length);
-             } else {
-               recentList.innerHTML = '<li class="text-gray-400">No recent score changes</li>';
-               console.log('ℹ️ No recent adjustments found');
-             }
+         if (recentList) {
+           if (adjustments.length > 0) {
+             recentList.innerHTML = adjustments
+               .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+               .slice(0, 10)
+               .map(a =>
+                 `<li>
+                   <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
+                   : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
+                   <span class="italic">(${a.reason || a.action})</span>
+                 </li>`
+               ).join('');
+             console.log('✅ Recent adjustments loaded:', adjustments.length);
+           } else {
+             recentList.innerHTML = '<li class="text-gray-400">No recent score changes</li>';
+             console.log('ℹ️ No recent adjustments found');
            }
-         })
-         .catch((error) => {
-           console.error('Error fetching recent adjustments:', error);
-           const recentList = document.getElementById('recentAdjustments');
-           if (recentList) {
-             recentList.innerHTML = '<li class="text-red-400">Could not load recent changes</li>';
-           }
-         });
-     } catch (e) {
-       console.error('Error populating DSPOINC Journey:', e);
-     }
+         }
+       } catch (e) {
+         console.error('Error populating DSPOINC Journey:', e);
+       }
      } else {
        hideElement('dspoincJourneySection');
        showElement('dspoincLoginPrompt');
@@ -1390,16 +1378,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 <!-- 🧠 Load Scroll Scripts -->
 <script src="scripts/tetris-scroll.js?v=9.9"></script>
 <script src="scripts/snake-scroll.js?v=1.1"></script>
-        <script src="scripts/space-cheese-invaders.js?v=1.2" onerror="console.error('❌ Failed to load space-cheese-invaders.js')" onload="console.log('✅ space-cheese-invaders.js loaded successfully')"></script>
+        <!-- 🎮 Game Script REMOVED: Not needed on profile page -->
         <script>
-          // Check if initSpaceInvaders is available immediately after script loads
-          console.log('🔍 Checking initSpaceInvaders availability after script load...');
-          console.log('🔍 window.initSpaceInvaders type:', typeof window.initSpaceInvaders);
-          if (typeof window.initSpaceInvaders === 'function') {
-            console.log('✅ initSpaceInvaders is available after script load');
-          } else {
-            console.error('❌ initSpaceInvaders is NOT available after script load');
-          }
+          // Profile page specific functionality
+          console.log('✅ Profile page scripts loaded successfully');
         </script>
 
 <!-- 🏆 Leaderboard Logic -->
@@ -1479,26 +1461,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (spaceInvadersBtn) {
       spaceInvadersBtn.addEventListener("click", () => {
-        console.log('🎮 Space Invaders button clicked');
-        console.log('🔍 window.initSpaceInvaders exists:', typeof window.initSpaceInvaders);
-        if (window.initSpaceInvaders) {
-          console.log('🚀 Calling window.initSpaceInvaders()');
-          window.initSpaceInvaders();
-        } else {
-          console.error('❌ window.initSpaceInvaders is not available');
-        }
-        spaceInvadersBtn.disabled = true;
-        spaceInvadersBtn.textContent = "🕹️ Playing...";
+        console.log('🎮 Space Invaders button clicked - redirecting to game page');
+        // Redirect to the dedicated game page instead of trying to load game here
+        window.location.href = 'space-invaders-test.html';
       });
     }
-
-    // Reset button states when game ends
-    window.addEventListener('spaceInvadersGameEnd', () => {
-      if (spaceInvadersBtn) {
-        spaceInvadersBtn.disabled = false;
-        spaceInvadersBtn.textContent = "▶️ Start";
-      }
-    });
 
     loadCombinedLeaderboards();
   });
