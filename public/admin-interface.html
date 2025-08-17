@@ -11275,30 +11275,59 @@ require_once 'discord-invite.php';
         const response = await fetch(API_BASE_URL + '/api/admin/get-community-wallet-real-data.php');
         const data = await response.json();
         
-        if (data.success && data.wallet_status === 'imported') {
-          // Update wallet balance display
-          document.getElementById('walletBalance').textContent = data.balance.sol.toFixed(9);
-          document.getElementById('wallet24hChange').textContent = data.balance['24h_change'].toFixed(9);
-          document.getElementById('walletTransactions').textContent = data.transactions.total;
+        addLog(`📊 Real wallet API response: ${JSON.stringify(data).substring(0, 200)}...`);
+        
+        if (data.success) {
+          // Update wallet balance display - handle both response formats
+          const balanceElement = document.getElementById('walletBalance');
+          const changeElement = document.getElementById('wallet24hChange');
+          const transactionsElement = document.getElementById('walletTransactions');
+          const statusElement = document.getElementById('walletImportStatus');
+          
+          if (balanceElement && data.balance && data.balance.sol !== undefined) {
+            balanceElement.textContent = data.balance.sol.toFixed(9);
+          }
+          
+          if (changeElement && data.balance && data.balance['24h_change'] !== undefined) {
+            changeElement.textContent = data.balance['24h_change'].toFixed(9);
+          } else if (changeElement) {
+            changeElement.textContent = '0.000000000';
+          }
+          
+          if (transactionsElement && data.transactions && data.transactions.total !== undefined) {
+            transactionsElement.textContent = data.transactions.total;
+          }
           
           // Update import status
-          document.getElementById('walletImportStatus').innerHTML = 
-            `<span class="text-green-400">✅ ${data.transactions.total} transactions loaded</span>`;
-          
-          addLog(`💰 Real wallet balance: ${data.balance.sol} SOL`);
+          if (statusElement) {
+            if (data.transactions && data.transactions.total > 0) {
+              statusElement.innerHTML = `<span class="text-green-400">✅ ${data.transactions.total} transactions loaded</span>`;
+              addLog(`💰 Real wallet balance: ${data.balance.sol} SOL`);
+            } else {
+              statusElement.innerHTML = `<span class="text-yellow-400">⚠️ No wallet data imported yet</span>`;
+            }
+          }
         } else {
-          // No data imported yet
-          document.getElementById('walletBalance').textContent = '-';
-          document.getElementById('wallet24hChange').textContent = '-';
-          document.getElementById('walletTransactions').textContent = '-';
+          // Handle error case
+          const balanceElement = document.getElementById('walletBalance');
+          const changeElement = document.getElementById('wallet24hChange');
+          const transactionsElement = document.getElementById('walletTransactions');
+          const statusElement = document.getElementById('walletImportStatus');
           
-          document.getElementById('walletImportStatus').innerHTML = 
-            `<span class="text-yellow-400">⚠️ No wallet data imported yet</span>`;
+          if (balanceElement) balanceElement.textContent = '-';
+          if (changeElement) changeElement.textContent = '-';
+          if (transactionsElement) transactionsElement.textContent = '-';
+          
+          if (statusElement) {
+            statusElement.innerHTML = `<span class="text-red-400">❌ ${data.error || 'Unknown error'}</span>`;
+          }
         }
       } catch (error) {
         addLog('❌ Error loading real wallet data: ' + error.message);
-        document.getElementById('walletImportStatus').innerHTML = 
-          `<span class="text-red-400">❌ Error loading data</span>`;
+        const statusElement = document.getElementById('walletImportStatus');
+        if (statusElement) {
+          statusElement.innerHTML = `<span class="text-red-400">❌ Error loading data</span>`;
+        }
       }
     }
     

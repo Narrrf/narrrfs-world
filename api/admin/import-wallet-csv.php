@@ -45,10 +45,11 @@ try {
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Import CSV data
-        $csvFile = __DIR__ . '/../../private/SOL-Community-wallet.csv';
+        $csvFile = __DIR__ . '/../../SOL-Community-wallet.csv';
         
         if (!file_exists($csvFile)) {
-            throw new Exception('CSV file not found');
+            // Provide helpful error message
+            throw new Exception('CSV file not found at: ' . $csvFile . '. Please upload SOL-Community-wallet.csv to the private/ directory first.');
         }
         
         // Clear existing data
@@ -143,42 +144,57 @@ try {
             ]
         ]);
         
-    } else {
-        // GET request - return current wallet status
-        $balanceStmt = $pdo->prepare("
-            SELECT * FROM tbl_wallet_balance_history 
-            ORDER BY created_at DESC 
-            LIMIT 1
-        ");
-        $balanceStmt->execute();
-        $currentBalance = $balanceStmt->fetch(PDO::FETCH_ASSOC);
-        
-        $transactionStmt = $pdo->prepare("
-            SELECT COUNT(*) as total FROM tbl_wallet_transactions
-        ");
-        $transactionStmt->execute();
-        $transactionCount = $transactionStmt->fetch(PDO::FETCH_ASSOC)['total'];
-        
-        if ($currentBalance) {
-            echo json_encode([
-                'success' => true,
-                'wallet_status' => 'imported',
-                'current_balance' => [
-                    'sol' => $currentBalance['balance_sol'],
-                    'lamports' => $currentBalance['balance_lamports'],
-                    'timestamp' => $currentBalance['timestamp']
-                ],
-                'transactions' => $transactionCount,
-                'last_import' => $currentBalance['created_at']
-            ]);
-        } else {
-            echo json_encode([
-                'success' => true,
-                'wallet_status' => 'not_imported',
-                'message' => 'No wallet data imported yet. Use POST to import CSV.'
-            ]);
-        }
-    }
+                    } else {
+                    // GET request - return current wallet status and CSV file info
+                    $csvFile = __DIR__ . '/../../SOL-Community-wallet.csv';
+                    $csvExists = file_exists($csvFile);
+                    $csvSize = $csvExists ? filesize($csvFile) : 0;
+                    
+                    $balanceStmt = $pdo->prepare("
+                        SELECT * FROM tbl_wallet_balance_history 
+                        ORDER BY created_at DESC 
+                        LIMIT 1
+                    ");
+                    $balanceStmt->execute();
+                    $currentBalance = $balanceStmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    $transactionStmt = $pdo->prepare("
+                        SELECT COUNT(*) as total FROM tbl_wallet_transactions
+                    ");
+                    $transactionStmt->execute();
+                    $transactionCount = $transactionStmt->fetch(PDO::FETCH_ASSOC)['total'];
+                    
+                    if ($currentBalance) {
+                        echo json_encode([
+                            'success' => true,
+                            'wallet_status' => 'imported',
+                            'current_balance' => [
+                                'sol' => $currentBalance['balance_sol'],
+                                'lamports' => $currentBalance['balance_lamports'],
+                                'timestamp' => $currentBalance['timestamp']
+                            ],
+                            'transactions' => $transactionCount,
+                            'last_import' => $currentBalance['created_at'],
+                            'csv_file': {
+                                'exists': $csvExists,
+                                'path': $csvFile,
+                                'size': $csvSize
+                            }
+                        ]);
+                    } else {
+                        echo json_encode([
+                            'success' => true,
+                            'wallet_status' => 'not_imported',
+                            'message' => 'No wallet data imported yet. Use POST to import CSV.',
+                            'csv_file': {
+                                'exists': $csvExists,
+                                'path': $csvFile,
+                                'size': $csvSize,
+                                'note': $csvExists ? 'CSV file ready for import' : 'CSV file not found - upload SOL-Community-wallet.csv to private/ directory'
+                            }
+                        ]);
+                    }
+                }
     
 } catch (Exception $e) {
     http_response_code(500);
