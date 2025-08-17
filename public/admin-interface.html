@@ -4024,9 +4024,95 @@ require_once 'discord-invite.php';
       }
     }
 
+    // Clear all tab content to prevent mixed displays
+    function clearAllTabContent() {
+      addLog('🧹 Clearing all tab content...');
+      
+      // Clear dashboard content
+      const dashboardElements = [
+        'totalUsers', 'totalScores', 'totalItems', 'activeQuests',
+        'solBalance', 'totalNfts', 'totalCollections', 'totalEntries',
+        'monthlyTotal', 'lastMonthTotal', 'averageEntry',
+        'collectionsSummary', 'nftGallery', 'recentActivity'
+      ];
+      
+      dashboardElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+            element.value = '';
+          } else {
+            element.innerHTML = '<div class="text-gray-400">-</div>';
+          }
+        }
+      });
+      
+      // Clear quest claims list
+      const questClaimsList = document.getElementById('questClaimsList');
+      if (questClaimsList) {
+        questClaimsList.innerHTML = '<div class="text-gray-300">Click "Refresh Claims" to load quest submissions...</div>';
+      }
+      
+      // Clear store items
+      const storeTableBody = document.getElementById('storeTableBody');
+      if (storeTableBody) {
+        storeTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400">Loading store items...</td></tr>';
+      }
+      
+      // Clear user management
+      const userResults = document.getElementById('userResults');
+      if (userResults) {
+        userResults.innerHTML = '<div class="text-gray-400">Search for users to see results...</div>';
+      }
+      
+      // Clear point management
+      const pointResults = document.getElementById('pointResults');
+      if (pointResults) {
+        pointResults.innerHTML = '<div class="text-gray-400">Search for users to manage points...</div>';
+      }
+      
+      // Clear holder verification
+      const holderTableBody = document.getElementById('holderTableBody');
+      if (holderTableBody) {
+        holderTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400">Loading holder verifications...</td></tr>';
+      }
+      
+      // Clear community funds table
+      const communityFundsTableBody = document.getElementById('communityFundsTableBody');
+      if (communityFundsTableBody) {
+        communityFundsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400">Loading community funds...</td></tr>';
+      }
+      
+      // Clear any other dynamic content areas
+      const dynamicElements = [
+        'recentAdjustments', 'topUsers', 'engagementStats', 'wealthStats',
+        'activeQuestsList', 'recentQuestClaims', 'activeQuestsByType'
+      ];
+      
+      dynamicElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.innerHTML = '<div class="text-gray-400">Loading...</div>';
+        }
+      });
+      
+      // Clear any search inputs
+      const searchInputs = document.querySelectorAll('input[type="text"], input[type="search"]');
+      searchInputs.forEach(input => {
+        if (input && input.placeholder && !input.placeholder.includes('Search')) {
+          input.value = '';
+        }
+      });
+      
+      addLog('✅ All tab content cleared');
+    }
+
     // Show specific tab
     function showTab(tabName) {
       console.log(`🔄 showTab(${tabName}) called`);
+      
+      // Clear all tab content first to prevent mixed displays
+      clearAllTabContent();
       
       // Update active tab button
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
