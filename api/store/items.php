@@ -1,26 +1,31 @@
 <?php
 header('Content-Type: application/json');
 
-// Connect to database
-$dbPath = '/var/www/html/db/narrrf_world.sqlite';
-try {
-    $db = new PDO("sqlite:$dbPath");
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo json_encode(['error' => 'Database connection failed']);
-    exit;
-}
+// Use centralized database configuration
+require_once __DIR__ . '/../config/database.php';
 
 try {
+    $db = getSQLite3Connection();
+    
     // Get all active items
     $stmt = $db->prepare("SELECT * FROM tbl_store_items WHERE is_active = 1 ORDER BY item_name");
-    $stmt->execute();
-    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $result = $stmt->execute();
+    
+    $items = [];
+    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+        $items[] = $row;
+    }
 
     echo json_encode([
         'success' => true,
         'items' => $items
     ]);
 } catch (Exception $e) {
-    echo json_encode(['error' => 'Failed to get items']);
-} 
+    echo json_encode([
+        'success' => false,
+        'error' => 'Failed to get items: ' . $e->getMessage()
+    ]);
+}
+
+$db->close();
+?> 

@@ -17,7 +17,6 @@ function getDatabasePath() {
         
         // Debug logging for local development
         error_log("Local development detected. Database path: " . $db_path);
-        error_log("API directory: " . $api_dir);
         error_log("File exists: " . (file_exists($db_path) ? 'YES' : 'NO'));
         error_log("PHP OS: " . PHP_OS_FAMILY);
         error_log("Document root: " . ($_SERVER['DOCUMENT_ROOT'] ?? 'NOT SET'));

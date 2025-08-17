@@ -4,6 +4,9 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
+// Use centralized database configuration
+require_once __DIR__ . '/../config/database.php';
+
 // === DATABASE PERSISTENCE FUNCTION ===
 function triggerDatabaseBackup() {
     try {
@@ -27,12 +30,8 @@ function triggerDatabaseBackup() {
     }
 }
 
-// Database connection
-$db_path = '/var/www/html/db/narrrf_world.sqlite';
-
 try {
-    $db = new SQLite3($db_path);
-    $db->enableExceptions(true);
+    $db = getSQLite3Connection();
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
@@ -55,6 +54,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $action = $input['action'] ?? $_GET['action'] ?? '';
 
 switch ($action) {
+    case 'get_items':
+        try {
+            // Get all active store items
+            $stmt = $db->prepare('SELECT * FROM tbl_store_items WHERE is_active = 1 ORDER BY item_name');
+            $result = $stmt->execute();
+            
+            $items = [];
+            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                $items[] = $row;
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'items' => $items
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Database error: ' . $e->getMessage()
+            ]);
+        }
+        break;
+        
     case 'create_item':
         $name = $input['name'] ?? '';
         $description = $input['description'] ?? '';

@@ -1430,6 +1430,11 @@ require_once 'discord-invite.php';
             🧪 Test Download
           </button>
           
+          <!-- Test database connection button -->
+          <button onclick="testDatabaseConnection()" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
+            🔗 Test Database
+          </button>
+          
           <!-- Test all game tabs button -->
           <button onclick="testAllGameTabsComprehensive()" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
             🧪 Test All Game Tabs
@@ -3704,6 +3709,29 @@ require_once 'discord-invite.php';
       }
     }
     
+    // Test database connection function
+    async function testDatabaseConnection() {
+      addLog('🔗 Testing database connection...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/test-database-connection.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Database connection successful!`);
+          addLog(`📁 Database path: ${data.database_path}`);
+          addLog(`📊 Tables count: ${data.tables_count}`);
+          addLog(`👥 User scores: ${data.user_scores_count}`);
+          addLog(`👤 Users: ${data.users_count}`);
+        } else {
+          addLog(`❌ Database connection failed: ${data.error}`);
+          addLog(`📁 Attempted path: ${data.database_path}`);
+        }
+      } catch (error) {
+        addLog(`❌ Database test error: ${error.message}`);
+      }
+    }
+
     // Test download endpoint function
     async function testDownloadEndpoint() {
       console.log('🧪 Testing download endpoint...');
@@ -3996,15 +4024,33 @@ require_once 'discord-invite.php';
         loadGameSettings();
         loadCurrentSeasonSettings();
         
-        // Load all game data for the tabs
+        // Load all game data for the tabs immediately
+        loadTetrisData();
+        loadSnakeData();
+        loadSpaceInvadersData();
+        loadCheeseHuntData();
+        loadDiscordRaceData();
+        
+        // Make sure the game overview tab is visible by default
         setTimeout(() => {
-          loadTetrisData();
-          loadSnakeData();
-          loadSpaceInvadersData();
-          loadCheeseHuntData();
-          loadDiscordRaceData();
-        }, 500); // Small delay to ensure overview loads first
+          // First ensure all game tab content divs are visible
+          const gameTabContents = document.querySelectorAll('.game-tab-content');
+          gameTabContents.forEach(tab => {
+            tab.style.display = 'block';
+            tab.classList.remove('hidden');
+          });
+          
+          // Then switch to overview tab
+          switchGameTab('overview');
+        }, 50);
+        
+        // Also trigger the comprehensive game tabs test to ensure all data is loaded and displayed
+        setTimeout(() => {
+          testAllGameTabsComprehensive();
+        }, 200); // Slightly longer delay to ensure overview loads first
       }
+      if (tabName === 'discord') loadDiscordConfigData();
+      if (tabName === 'cheeseGuide') loadCheeseGuideData();
       if (tabName === 'holderVerification') loadHolderVerificationData();
       if (tabName === 'communityFunds') loadCommunityFundsData();
     }
@@ -5531,7 +5577,11 @@ require_once 'discord-invite.php';
     // Load store items
     async function loadStoreItems() {
       try {
-        const response = await fetch(API_BASE_URL + '/api/store/items.php');
+        const response = await fetch(API_BASE_URL + '/api/admin/store-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get_items' })
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -8231,6 +8281,49 @@ require_once 'discord-invite.php';
       } catch (error) {
         console.error('Error displaying Cheese Hunt data:', error);
         addLog(`❌ Error displaying Cheese Hunt data: ${error.message}`);
+      }
+    }
+
+    // Discord Config Tab Functions
+    async function loadDiscordConfigData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Loading Discord configuration data...');
+
+      try {
+        // Load Discord bot configuration and status
+        const response = await fetch(API_BASE_URL + '/api/admin/get-discord-activity.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Discord configuration data loaded successfully');
+          // The Discord config tab content is static, so no additional data loading needed
+        } else {
+          addLog(`❌ Failed to load Discord config data: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Discord config data loading error: ${error.message}`);
+      }
+    }
+
+    // Cheese Guide Tab Functions
+    async function loadCheeseGuideData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🧀 Loading Cheese Guide data...');
+
+      try {
+        // The Cheese Guide tab content is static, so no additional data loading needed
+        // Just ensure the tab is visible and content is displayed
+        addLog('✅ Cheese Guide data loaded successfully');
+      } catch (error) {
+        addLog(`❌ Cheese Guide data loading error: ${error.message}`);
       }
     }
 

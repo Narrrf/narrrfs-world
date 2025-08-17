@@ -282,6 +282,8 @@ try {
             
             // Debug logging
             error_log("Search API: Searching for term: " . $searchTerm);
+            error_log("Search API: Input data: " . json_encode($input));
+            error_log("Search API: Database path: " . __DIR__ . '/../config/database.php');
             
             // Search by Discord ID or username - using same logic as bot
             $stmt = $db->prepare('
