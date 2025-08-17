@@ -3389,6 +3389,38 @@ require_once 'discord-invite.php';
     <div class="admin-card mb-6" id="communityFundsTab" style="display: none;">
       <h2 class="text-xl font-semibold mb-4">💰 Community Funds Management</h2>
       
+      <!-- CSV Import Section -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">📊 Real Wallet Data Import</h3>
+        <div class="flex flex-wrap gap-3 items-center mb-4">
+          <button onclick="importWalletCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors">
+            📥 Import CSV Data
+          </button>
+          <button onclick="refreshWalletData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors">
+            🔄 Refresh Data
+          </button>
+          <div class="text-sm text-gray-300" id="walletImportStatus">
+            No wallet data imported yet
+          </div>
+        </div>
+        
+        <!-- Real Wallet Balance Display -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="text-center p-3 bg-gray-700 bg-opacity-50 rounded">
+            <div class="text-2xl font-bold text-green-400" id="walletBalance">-</div>
+            <div class="text-sm text-gray-300">Current Balance (SOL)</div>
+          </div>
+          <div class="text-center p-3 bg-gray-700 bg-opacity-50 rounded">
+            <div class="text-xl font-semibold text-blue-400" id="wallet24hChange">-</div>
+            <div class="text-sm text-gray-300">24h Change</div>
+          </div>
+          <div class="text-center p-3 bg-gray-700 bg-opacity-50 rounded">
+            <div class="text-lg font-medium text-yellow-400" id="walletTransactions">-</div>
+            <div class="text-sm text-gray-300">Total Transactions</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Community Wallet Overview -->
       <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">🏦 Community Wallet Overview</h3>
@@ -4086,13 +4118,18 @@ require_once 'discord-invite.php';
       // Clear any other dynamic content areas
       const dynamicElements = [
         'recentAdjustments', 'topUsers', 'engagementStats', 'wealthStats',
-        'activeQuestsList', 'recentQuestClaims', 'activeQuestsByType'
+        'activeQuestsList', 'recentQuestClaims', 'activeQuestsByType',
+        'walletBalance', 'wallet24hChange', 'walletTransactions', 'walletImportStatus'
       ];
       
       dynamicElements.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
-          element.innerHTML = '<div class="text-gray-400">Loading...</div>';
+          if (id.includes('wallet')) {
+            element.innerHTML = id === 'walletImportStatus' ? 'No wallet data imported yet' : '-';
+          } else {
+            element.innerHTML = '<div class="text-gray-400">Loading...</div>';
+          }
         }
       });
       
@@ -11190,6 +11227,85 @@ require_once 'discord-invite.php';
       loadCommunityWalletData();
       // Load community funds entries
       loadCommunityFundsEntries();
+      
+      // Load real wallet data from CSV import
+      loadRealWalletData();
+    }
+    
+    // Import wallet CSV data
+    async function importWalletCSV() {
+      addLog('📥 Importing wallet CSV data...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/import-wallet-csv.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Wallet CSV imported successfully!');
+          addLog(`💰 Current Balance: ${data.data.current_balance.sol} SOL`);
+          addLog(`📊 Total Transactions: ${data.data.transactions.total}`);
+          
+          // Update import status
+          document.getElementById('walletImportStatus').innerHTML = 
+            `<span class="text-green-400">✅ Imported ${data.data.transactions.total} transactions</span>`;
+          
+          // Refresh wallet data display
+          loadRealWalletData();
+        } else {
+          addLog('❌ CSV import failed: ' + (data.error || 'Unknown error'));
+          document.getElementById('walletImportStatus').innerHTML = 
+            `<span class="text-red-400">❌ Import failed</span>`;
+        }
+      } catch (error) {
+        addLog('❌ CSV import error: ' + error.message);
+        document.getElementById('walletImportStatus').innerHTML = 
+          `<span class="text-red-400">❌ Import error</span>`;
+      }
+    }
+    
+    // Load real wallet data from CSV import
+    async function loadRealWalletData() {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-community-wallet-real-data.php');
+        const data = await response.json();
+        
+        if (data.success && data.wallet_status === 'imported') {
+          // Update wallet balance display
+          document.getElementById('walletBalance').textContent = data.balance.sol.toFixed(9);
+          document.getElementById('wallet24hChange').textContent = data.balance['24h_change'].toFixed(9);
+          document.getElementById('walletTransactions').textContent = data.transactions.total;
+          
+          // Update import status
+          document.getElementById('walletImportStatus').innerHTML = 
+            `<span class="text-green-400">✅ ${data.transactions.total} transactions loaded</span>`;
+          
+          addLog(`💰 Real wallet balance: ${data.balance.sol} SOL`);
+        } else {
+          // No data imported yet
+          document.getElementById('walletBalance').textContent = '-';
+          document.getElementById('wallet24hChange').textContent = '-';
+          document.getElementById('walletTransactions').textContent = '-';
+          
+          document.getElementById('walletImportStatus').innerHTML = 
+            `<span class="text-yellow-400">⚠️ No wallet data imported yet</span>`;
+        }
+      } catch (error) {
+        addLog('❌ Error loading real wallet data: ' + error.message);
+        document.getElementById('walletImportStatus').innerHTML = 
+          `<span class="text-red-400">❌ Error loading data</span>`;
+      }
+    }
+    
+    // Refresh wallet data
+    async function refreshWalletData() {
+      addLog('🔄 Refreshing wallet data...');
+      await loadRealWalletData();
     }
 
     function showCommunityFundsLoadingStates() {
