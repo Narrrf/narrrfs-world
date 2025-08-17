@@ -9,11 +9,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Database connection - using same path as Discord bot
-$db_path = __DIR__ . '/../../db/narrrf_world.sqlite';
+// Use centralized database configuration
+require_once __DIR__ . '/../config/database.php';
+
 try {
-    $db = new SQLite3($db_path);
-    $db->enableExceptions(true);
+    $db = getSQLite3Connection();
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);

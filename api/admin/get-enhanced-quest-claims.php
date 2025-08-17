@@ -16,12 +16,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-// Database path
-$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+// Use centralized database configuration
+require_once __DIR__ . '/../config/database.php';
 
 try {
-    $pdo = new PDO("sqlite:$dbPath");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = getPDOConnection();
+    
+    // Debug logging
+    error_log("Enhanced quest claims API called");
+    error_log("Status filter: " . ($_GET['status'] ?? 'all'));
+    error_log("Database connection successful");
 
     $status_filter = $_GET['status'] ?? 'all';
     $limit = min((int)($_GET['limit'] ?? 50), 100); // Max 100 records
@@ -176,7 +180,11 @@ try {
     }
     $total_count = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-    echo json_encode([
+    // Debug logging
+    error_log("Returning " . count($claims) . " quest claims");
+    error_log("Total count: " . $total_count);
+    
+    $response = [
         'success' => true,
         'claims' => $claims,
         'pagination' => [
@@ -188,7 +196,10 @@ try {
         'filters' => [
             'status' => $status_filter
         ]
-    ]);
+    ];
+    
+    error_log("Response: " . json_encode($response));
+    echo json_encode($response);
 
 } catch (Exception $e) {
     http_response_code(500);

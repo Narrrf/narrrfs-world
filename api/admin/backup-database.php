@@ -224,18 +224,18 @@ try {
     // Get backup file info
     $backupSize = filesize($targetPath);
     $backupSizeFormatted = formatBytes($backupSize);
-    
-    // Log successful backup
+        
+        // Log successful backup
     error_log("Database backup completed successfully: $targetPath ($backupSizeFormatted)");
-    
-    echo json_encode([
-        'success' => true,
+        
+        echo json_encode([
+            'success' => true,
         'message' => 'Database backup completed successfully',
         'backup_path' => $targetPath,
         'backup_size' => $backupSize,
         'backup_size_formatted' => $backupSizeFormatted,
-        'backup_method' => $backupMethod,
-        'timestamp' => date('Y-m-d H:i:s'),
+            'backup_method' => $backupMethod,
+            'timestamp' => date('Y-m-d H:i:s'),
         'production_backup' => $productionBackupSuccess ? $productionBackupPath : null,
         'target_path' => $productionBackupPath ?: $targetPath,
         // Enhanced response with source and target sizes
@@ -255,8 +255,8 @@ try {
     
 } catch (Exception $e) {
     error_log("Database backup error: " . $e->getMessage());
-    echo json_encode([
-        'success' => false,
+        echo json_encode([
+            'success' => false, 
         'error' => 'Backup failed: ' . $e->getMessage(),
         'timestamp' => date('Y-m-d H:i:s')
     ]);

@@ -2058,6 +2058,7 @@ require_once 'discord-invite.php';
         <h3 class="text-lg font-semibold mb-3">📋 Quest Claims Management</h3>
         <div class="mb-4">
           <button onclick="loadEnhancedQuestClaims()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mr-2">🔄 Refresh Claims</button>
+          <button onclick="testQuestClaimsTable()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded mr-2">🧪 Test Table</button>
           <select id="claimStatusFilter" onchange="filterQuestClaims()" class="px-3 py-2 rounded text-gray-800">
             <option value="all">All Claims</option>
             <option value="pending">Pending Review</option>
@@ -4507,6 +4508,9 @@ require_once 'discord-invite.php';
             // Display detailed quest stats
             displayRecentQuestClaims(stats.recent_claims);
             displayActiveQuestsByType(stats.active_quests_by_type);
+            
+            // Load quest claims for management
+            loadEnhancedQuestClaims();
           }
         } else {
           // Hide quest stats for non-authenticated users
@@ -7122,6 +7126,125 @@ require_once 'discord-invite.php';
 
     function filterQuestClaims() {
       loadQuestClaims();
+    }
+    
+    // Load enhanced quest claims with comprehensive data
+    async function loadEnhancedQuestClaims() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      addLog('🔄 Loading enhanced quest claims...');
+      
+      try {
+        const statusFilter = document.getElementById('claimStatusFilter')?.value || 'all';
+        const apiUrl = API_BASE_URL + `/api/admin/get-enhanced-quest-claims.php?status=${statusFilter}`;
+        
+        addLog(`🔗 API URL: ${apiUrl}`);
+        
+        const response = await fetch(apiUrl);
+        
+        addLog(`📡 Response status: ${response.status} ${response.statusText}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const responseText = await response.text();
+        addLog(`📄 Response body: ${responseText.substring(0, 200)}...`);
+        
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          addLog(`❌ JSON parse error: ${parseError.message}`);
+          addLog(`📄 Raw response: ${responseText}`);
+          return;
+        }
+        
+        if (data.success) {
+          addLog(`📊 Parsed data: ${data.claims ? data.claims.length : 'no'} claims, pagination: ${data.pagination ? 'yes' : 'no'}`);
+          displayEnhancedQuestClaims(data.claims);
+          addLog(`✅ Loaded ${data.claims.length} quest claims (${statusFilter} filter)`);
+          
+          // Update pagination info if available
+          if (data.pagination) {
+            addLog(`📊 Total claims: ${data.pagination.total}, Showing: ${data.pagination.offset + 1}-${Math.min(data.pagination.offset + data.pagination.limit, data.pagination.total)}`);
+          }
+        } else {
+          addLog(`❌ Failed to load quest claims: ${data.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error loading quest claims: ${error.message}`);
+        console.error('Quest claims loading error:', error);
+      }
+    }
+    
+    // Load quest claims (legacy function for compatibility)
+    async function loadQuestClaims() {
+      await loadEnhancedQuestClaims();
+    }
+    
+    // Toggle between quest claims and user history view
+    function toggleUserHistoryView() {
+      const claimsList = document.getElementById('questClaimsList');
+      const button = event.target;
+      
+      if (button.textContent.includes('Show User History')) {
+        // Switch to user history view
+        button.textContent = '📋 Show Quest Claims';
+        button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        button.classList.add('bg-green-600', 'hover:bg-green-700');
+        
+        // Load user quest history
+        loadUserQuestHistory();
+      } else {
+        // Switch back to quest claims view
+        button.textContent = '👤 Show User History';
+        button.classList.remove('bg-green-600', 'hover:bg-green-700');
+        button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        
+        // Load quest claims
+        loadEnhancedQuestClaims();
+      }
+    }
+    
+    // Test quest claims table structure and data
+    async function testQuestClaimsTable() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      addLog('🧪 Testing quest claims table...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/test-quest-claims.php');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Quest table test successful`);
+          addLog(`📊 Quest tables found: ${data.quest_tables.join(', ')}`);
+          addLog(`📋 Quest claims count: ${data.counts.quest_claims}`);
+          addLog(`🏆 Quests count: ${data.counts.quests}`);
+          addLog(`🔍 Sample claims: ${data.sample_claims.length} records`);
+          addLog(`🎯 Sample quests: ${data.sample_quests.length} records`);
+          
+          // Show sample data in console for debugging
+          console.log('Quest claims table test results:', data);
+        } else {
+          addLog(`❌ Quest table test failed: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error testing quest table: ${error.message}`);
+        console.error('Quest table test error:', error);
+      }
     }
 
     // Game Management Functions

@@ -66,6 +66,11 @@ function getDatabaseConnection() {
     }
 }
 
+// Get PDO connection (alias for getDatabaseConnection)
+function getPDOConnection() {
+    return getDatabaseConnection();
+}
+
 // Get SQLite3 connection (for backward compatibility)
 function getSQLite3Connection() {
     $db_path = getDatabasePath();
