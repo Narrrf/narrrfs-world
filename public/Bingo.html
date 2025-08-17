@@ -15,13 +15,61 @@ require_once 'discord-invite.php';
   <script src="discord-config.js"></script>
   
   <style>
+    /* 🎨 Dark Theme Animations */
+    @keyframes trophyGlow {
+      0%, 100% { filter: drop-shadow(0 0 5px #fcd34d) drop-shadow(0 0 10px #fcd34d); }
+      50% { filter: drop-shadow(0 0 15px #fcd34d) drop-shadow(0 0 20px #fcd34d) drop-shadow(0 0 25px #fcd34d); }
+    }
+    
+    @keyframes rolePulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes labBubble {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.7; }
+      50% { transform: scale(1.1) rotate(180deg); opacity: 1; }
+    }
+    
+    @keyframes animate-fade-in {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade-in {
+      animation: animate-fade-in 0.5s ease-out;
+    }
+    
+    .trophy-glow {
+      animation: trophyGlow 2s ease-in-out infinite;
+    }
+    
+    .role-pulse {
+      animation: rolePulse 2s ease-in-out infinite;
+    }
+    
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .lab-bubble {
+      animation: labBubble 4s ease-in-out infinite;
+    }
+
     /* Grid inputs */
     input.grid-input {
       width: 2rem;
       height: 2rem;
       text-align: center;
-      border: 2px solid #facc15;
+      border: 2px solid #fcd34d;
       border-radius: 0.25rem;
+      background: #1e293b;
+      color: #fcd34d;
     }
     @media (min-width: 768px) {
       input.grid-input {
@@ -31,71 +79,93 @@ require_once 'discord-invite.php';
     }
 
     .marked {
-      background-color: #facc15 !important;
-      color: white !important;
+      background-color: #fcd34d !important;
+      color: #0f172a !important;
     }
 
     .gold-shadow {
-      box-shadow: 0 0 15px #ffe066;
+      box-shadow: 0 0 15px #fcd34d;
     }
   </style>
 </head>
-<body class="bg-gradient-to-br from-yellow-50 to-yellow-200 text-gray-900">
+<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
 
-<!-- Golden Navbar -->
-<nav class="bg-yellow-100 border-b-4 border-yellow-300 shadow gold-shadow py-4">
+<!-- 🌟 Floating Background Elements -->
+<div class="fixed inset-0 pointer-events-none z-0">
+  <div class="absolute top-20 left-10 w-4 h-4 bg-yellow-400/30 rounded-full blur-md float-animation"></div>
+  <div class="absolute top-40 right-20 w-6 h-6 bg-purple-400/20 rounded-full blur-md float-animation" style="animation-delay: 1s;"></div>
+  <div class="absolute bottom-40 left-20 w-5 h-5 bg-blue-400/25 rounded-full blur-md float-animation" style="animation-delay: 2s;"></div>
+  <div class="absolute top-60 left-1/2 w-3 h-3 bg-green-400/30 rounded-full blur-md float-animation" style="animation-delay: 0.5s;"></div>
+  <div class="absolute bottom-60 right-1/3 w-4 h-4 bg-pink-400/20 rounded-full blur-md float-animation" style="animation-delay: 1.5s;"></div>
+</div>
+
+<!-- 🧪 Lab Status Badge - Only shown when logged in -->
+<div id="labStatusBadge" class="hidden fixed top-4 right-4 z-50">
+  <div class="bg-black/90 backdrop-blur-md border border-yellow-400/30 rounded-xl px-4 py-2 shadow-lg">
+    <div class="flex items-center gap-2">
+      <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+      <span class="text-yellow-400 text-sm font-semibold">Lab Status: Online</span>
+    </div>
+  </div>
+</div>
+
+<!-- 🧪 Dark Theme Navbar -->
+<nav class="bg-black/90 backdrop-blur-md border-b border-yellow-400/30 shadow-xl py-4">
   <div class="max-w-5xl mx-auto flex justify-between px-4">
-    <a href="index.html" class="text-xl font-bold text-yellow-700">🧪 Narrrf's Lab</a>
-    <a href="profile.html" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-4 py-2 rounded-full">🧀 Profile</a>
+    <a href="index.html" class="text-xl font-bold text-yellow-400 hover:text-yellow-300 transition-colors duration-200">🧪 Narrrf's Lab</a>
+    <a href="profile.html" class="bg-yellow-400 hover:bg-yellow-300 text-black font-semibold px-4 py-2 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg">🧀 Profile</a>
   </div>
 </nav>
 
-<!-- Golden Header -->
-<header class="text-center p-8 rounded-xl shadow-xl my-8 mx-4 gold-shadow bg-gradient-to-r from-yellow-100 to-pink-50">
-  <h1 class="text-5xl font-bold text-yellow-600 animate-pulse">🧀 Golden Bingo Vault</h1>
-  <p class="text-gray-700">Enter numbers, save tickets, and play freely!</p>
+<!-- 🧀 Dark Theme Header -->
+<header class="text-center p-8 rounded-xl shadow-2xl my-8 mx-4 bg-black/90 backdrop-blur-md border border-yellow-400/30">
+  <h1 class="text-5xl font-bold text-yellow-400 animate-pulse trophy-glow">🧀 Golden Bingo Vault</h1>
+  <p class="text-gray-300">Enter numbers, save tickets, and play freely!</p>
 </header>
 
 <!-- Main Bingo Section -->
 <main class="max-w-4xl mx-auto px-4 py-6">
   <section class="text-center mb-4">
     <div id="loginSection" class="mb-4">
-      <div class="mb-2 text-yellow-900 font-semibold">Login with Discord and come back to this page to save and load your Bingo tickets.</div>
+      <div class="mb-2 text-yellow-300 font-semibold">Login with Discord and come back to this page to save and load your Bingo tickets.</div>
       <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
-        class="bg-yellow-400 text-yellow-900 px-6 py-2 rounded-full shadow">🔑 Verify and come back</a>
+        class="bg-yellow-400 hover:bg-yellow-300 text-black font-semibold px-6 py-2 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105">🔑 Verify and come back</a>
     </div>
 
-    <button onclick="addTicketGrid()" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-6 py-2 rounded-full shadow">
+    <button onclick="addTicketGrid()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-semibold px-6 py-2 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105">
       ➕ Add New Ticket
     </button>
   </section>
 
   <div id="ticketGrids"></div>
 
-  <section class="bg-white border-l-4 border-yellow-400 p-4 rounded-xl shadow mb-8">
-    <label class="block mb-2">Enter Called Numbers (one at a time):</label>
+  <section class="bg-black/90 backdrop-blur-md border border-yellow-400/30 p-4 rounded-xl shadow-2xl mb-8">
+    <label class="block mb-2 text-yellow-300 font-semibold">Enter Called Numbers (one at a time):</label>
     <div class="flex gap-2">
-      <input id="calledNumberInput" type="number" class="w-full p-2 border rounded" placeholder="Type a number">
-      <button id="addCalledNumberBtn" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-4 py-2 rounded-full font-bold">Add</button>
+      <input id="calledNumberInput" type="number" class="w-full p-2 border border-yellow-400/50 rounded bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 focus:border-transparent" placeholder="Type a number">
+      <button id="addCalledNumberBtn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg">Add</button>
     </div>
     <div id="calledNumbersList" class="flex flex-wrap gap-2 mt-2"></div>
     <div class="flex gap-2 mt-2">
-      <button onclick="markNumbers()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Mark Numbers</button>
-      <button onclick="clearCards()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Clear Cards</button>
+      <button onclick="markNumbers()" class="bg-green-500 hover:bg-green-400 text-white font-bold px-4 py-2 rounded transition-all duration-200 transform hover:scale-105 shadow-lg">Mark Numbers</button>
+      <button onclick="clearCards()" class="bg-red-500 hover:bg-red-400 text-white font-bold px-4 py-2 rounded transition-all duration-200 transform hover:scale-105 shadow-lg">Clear Cards</button>
     </div>
   </section>
 
   <div id="ticketsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
 </main>
 
-<!-- Golden Footer -->
-<footer class="text-center py-4 text-xs bg-yellow-100 text-yellow-800 shadow-inner rounded-t-xl">
-              🧠 Powered by Cheese Architect 12.0 | <a href="<?php echo $discord_url; ?>" class="underline">Join Discord</a> <br>
-  🧀 Last Update: 2025 | Cheese & Luck are not financial advice!
+<!-- 🧠 Dark Theme Footer -->
+<footer class="text-center py-4 text-xs bg-black/90 backdrop-blur-md border-t border-yellow-400/30 shadow-xl rounded-t-xl">
+  <div class="text-yellow-400">🧠 Powered by Cheese Architect 12.0</div>
+  <div class="text-gray-300 mt-1">
+    <a href="<?php echo $discord_url; ?>" class="text-yellow-400 hover:text-yellow-300 underline transition-colors duration-200">Join Discord</a>
+  </div>
+  <div class="text-gray-400 mt-1">🧀 Last Update: 2025 | Cheese & Luck are not financial advice!</div>
 </footer>
 
 <!-- Notification Popup -->
-<div id="bingoNotification" style="display:none; position:fixed; top:30px; left:50%; transform:translateX(-50%); z-index:1000; background:#facc15; color:#222; padding:1.5rem 2.5rem; border-radius:1rem; box-shadow:0 4px 32px #0002; font-size:1.25rem; font-weight:bold; text-align:center; min-width:250px; max-width:90vw;">
+<div id="bingoNotification" style="display:none; position:fixed; top:30px; left:50%; transform:translateX(-50%); z-index:1000; background:#1e293b; color:#fcd34d; padding:1.5rem 2.5rem; border-radius:1rem; box-shadow:0 4px 32px rgba(0,0,0,0.8); font-size:1.25rem; font-weight:bold; text-align:center; min-width:250px; max-width:90vw; border:2px solid #fcd34d; backdrop-filter:blur(10px);">
   <span id="bingoNotificationMsg"></span>
 </div>
 
@@ -106,18 +176,23 @@ let calledNumbers = [];
 
 window.addEventListener('DOMContentLoaded', async () => {
   const loginSection = document.getElementById('loginSection');
+  const labStatusBadge = document.getElementById('labStatusBadge');
+  
   try {
     const res = await fetch('/api/load-bingo-tickets.php', { credentials: 'include' });
     if (res.ok) {
       if (loginSection) loginSection.style.display = 'none';
+      if (labStatusBadge) labStatusBadge.classList.remove('hidden'); // Show badge when logged in
       tickets = await res.json();   // <-- ADD THIS
       renderTickets();              // <-- AND THIS
     } else {
       if (loginSection) loginSection.style.display = 'block';
+      if (labStatusBadge) labStatusBadge.classList.add('hidden'); // Hide badge when not logged in
       console.warn("Login check failed. Status:", res.status);
     }
   } catch (error) {
     if (loginSection) loginSection.style.display = 'block';
+    if (labStatusBadge) labStatusBadge.classList.add('hidden'); // Hide badge on error
     console.log("Not logged in or error loading tickets:", error);
   }
 });
@@ -125,12 +200,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 function addTicketGrid() {
   const gridDiv = document.createElement('div');
-  gridDiv.className = 'bg-gradient-to-br from-yellow-100 via-pink-50 to-yellow-50 p-3 md:p-4 rounded-2xl shadow-lg border-2 border-yellow-200 relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300 mouse-lab-bg';
+  gridDiv.className = 'bg-black/90 backdrop-blur-md border border-yellow-400/30 p-3 md:p-4 rounded-2xl shadow-2xl relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300';
 
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
   nameInput.placeholder = 'Ticket Name or ID';
-  nameInput.className = 'w-full p-2 border rounded mb-2';
+  nameInput.className = 'w-full p-2 border border-yellow-400/50 rounded mb-2 bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 focus:border-transparent';
   gridDiv.appendChild(nameInput);
 
   const table = document.createElement('table');
@@ -223,10 +298,10 @@ function renderTickets() {
   tickets.forEach((ticketObj, tIndex) => {
     const ticket = ticketObj.grid;
     const grid = document.createElement('div');
-    grid.className = 'bg-gradient-to-br from-yellow-100 via-pink-50 to-yellow-50 p-3 md:p-4 rounded-2xl shadow-lg border-2 border-yellow-200 relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300 mouse-lab-bg';
+    grid.className = 'bg-black/90 backdrop-blur-md border border-yellow-400/30 p-3 md:p-4 rounded-2xl shadow-2xl relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300';
 
     const title = document.createElement('div');
-    title.className = 'font-bold mb-1';
+    title.className = 'font-bold mb-1 text-yellow-400';
     title.textContent = `${ticketObj.name} (ID: ${ticketObj.id})`;
     grid.appendChild(title);
 
@@ -235,7 +310,7 @@ function renderTickets() {
     ['B','I','N','G','O'].forEach(letter => {
       const col = document.createElement('div');
       col.textContent = letter;
-      col.className = 'w-10 h-10 flex items-center justify-center';
+      col.className = 'w-10 h-10 flex items-center justify-center text-yellow-400';
       header.appendChild(col);
     });
     grid.appendChild(header);
@@ -250,7 +325,7 @@ function renderTickets() {
         cell.dataset.ticket = tIndex;
         cell.dataset.row = rIndex;
         cell.dataset.col = cIndex;
-        cell.className = 'w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border m-0.5 rounded text-base md:text-lg bg-white/70';
+        cell.className = 'w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border border-yellow-400/30 m-0.5 rounded text-base md:text-lg bg-gray-800 text-white';
         if (num === 'FREE') cell.classList.add('marked');
         rowDiv.appendChild(cell);
       });
@@ -265,14 +340,14 @@ function renderTickets() {
 
     const editBtn = document.createElement('button');
 editBtn.textContent = 'Edit Ticket';
-editBtn.className = 'mt-2 bg-yellow-300 hover:bg-yellow-400 text-yellow-900 font-bold px-4 py-2 rounded-full shadow transition ml-2';
+editBtn.className = 'mt-2 bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105 ml-2';
 editBtn.onclick = () => editTicket(tIndex);
 grid.appendChild(editBtn);
 
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete Ticket';
-    deleteBtn.className = 'mt-2 bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-full shadow transition';
+    deleteBtn.className = 'mt-2 bg-red-500 hover:bg-red-400 text-white font-bold px-4 py-2 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105';
     deleteBtn.onclick = () => deleteTicket(tIndex);
     grid.appendChild(deleteBtn);
 
@@ -287,13 +362,13 @@ function editTicket(tIndex) {
 
   // Build a grid pre-filled with existing ticket data
   const gridDiv = document.createElement('div');
-  gridDiv.className = 'bg-gradient-to-br from-yellow-100 via-pink-50 to-yellow-50 p-3 md:p-4 rounded-2xl shadow-lg border-2 border-yellow-200 relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300 mouse-lab-bg';
+  gridDiv.className = 'bg-black/90 backdrop-blur-md border border-yellow-400/30 p-3 md:p-4 rounded-2xl shadow-2xl relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300';
 
   // Ticket name input
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
   nameInput.placeholder = 'Ticket Name or ID';
-  nameInput.className = 'w-full p-2 border rounded mb-2';
+  nameInput.className = 'w-full p-2 border border-yellow-400/50 rounded mb-2 bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 focus:border-transparent';
   nameInput.value = ticketObj.name || '';
   gridDiv.appendChild(nameInput);
 
@@ -406,7 +481,7 @@ function renderCalledNumbers() {
   calledNumbersList.innerHTML = '';
   calledNumbers.forEach((num, idx) => {
     const chip = document.createElement('span');
-    chip.className = 'bg-yellow-300 text-yellow-900 px-3 py-1 rounded-full font-bold flex items-center gap-1';
+    chip.className = 'bg-yellow-400 text-black px-3 py-1 rounded-full font-bold flex items-center gap-1';
     chip.textContent = num;
     const removeBtn = document.createElement('button');
     removeBtn.textContent = '×';
@@ -491,82 +566,82 @@ function checkBingo(ticket, tIndex, calledNumbers) {
 <footer class="text-center mt-16 mb-10">
   <!-- Back to Top Link -->
   <div class="mb-6">
-    <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition-colors duration-200">
+    <a href="#top" class="text-sm text-gray-400 hover:text-yellow-400 transition-colors duration-200">
       🔝 Back to Top
     </a>
   </div>
   
   <!-- 🧀 Narrrf's Cheese Universe Section -->
-  <div class="mb-8 p-6 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 rounded-xl border border-yellow-300/30">
-    <div class="text-lg font-bold text-yellow-800 mb-4">
+  <div class="mb-8 p-6 bg-black/90 backdrop-blur-md rounded-xl border border-yellow-400/30">
+    <div class="text-lg font-bold text-yellow-400 mb-4">
       🧀 Narrrf's Cheese Universe
     </div>
-    <div class="text-sm text-yellow-700 mb-6">
+    <div class="text-sm text-gray-300 mb-6">
       Where gaming meets cheese innovation
     </div>
     
     <!-- Quick Links -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <a href="/index.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+      <a href="/index.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
         🏠 Home
       </a>
-      <a href="/whitepaper-pro.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+      <a href="/whitepaper-pro.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
         📜 Read the Whitepaper
       </a>
-      <a href="/mint.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+      <a href="/mint.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
         🎨 Mint Your NFT
       </a>
-      <a href="/profile.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
+      <a href="/profile.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
         🎭 Get Roles
       </a>
     </div>
     
     <!-- Socials -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium">
+      <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium">
         🐦 Twitter / X
       </a>
-      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
+      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 transition-colors duration-200 font-medium">
         🎮 Join Discord
       </a>
-      <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-800 transition-colors duration-200 font-medium">
+      <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-400 hover:text-green-300 transition-colors duration-200 font-medium">
         🃏 Poker ClubGG
       </a>
-      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
+      <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-400 hover:text-purple-300 transition-colors duration-200 font-medium">
         📧 Open a Ticket
       </a>
     </div>
     
     <!-- Contact & Location -->
-    <div class="text-xs text-yellow-600/80 mb-4">
+    <div class="text-xs text-gray-400 mb-4">
       🌍 Web3 Only – Austria Based
     </div>
   </div>
   
   <!-- Legal & Important Links - More Prominent -->
-  <div class="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-lg border border-blue-200/30">
-    <div class="text-sm font-semibold text-blue-800 mb-3">
+  <div class="mb-6 p-4 bg-black/90 backdrop-blur-md rounded-lg border border-blue-400/30">
+    <div class="text-sm font-semibold text-blue-400 mb-3">
       📋 Important Legal & Support Links
     </div>
     <div class="flex flex-wrap justify-center gap-6 text-sm">
-      <a href="/privacy-policy.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+      <a href="/privacy-policy.html" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium px-3 py-2 bg-gray-800/70 rounded-lg border border-blue-400/50 hover:bg-gray-700 hover:shadow-md">
         🍪 Privacy Policy
       </a>
-      <a href="/faq.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+      <a href="/faq.html" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium px-3 py-2 bg-gray-800/70 rounded-lg border border-blue-400/50 hover:bg-gray-700 hover:shadow-md">
         ❓ FAQ
       </a>
-      <a href="/profile.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
+      <a href="/profile.html" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium px-3 py-2 bg-gray-800/70 rounded-lg border border-blue-400/50 hover:bg-gray-700 hover:shadow-md">
         👤 Profile
       </a>
     </div>
   </div>
   
   <!-- Copyright & Branding -->
-  <div class="pt-6 border-t border-yellow-600/30 text-xs text-yellow-600/80">
+  <div class="pt-6 border-t border-yellow-400/30 text-xs text-gray-400">
     <div class="mb-2">
       © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
     </div>
-    <div class="text-yellow-500/70">
+    <div class="text-yellow-400/70">
       🚀 Powered by the ultimate cheese gaming technology
     </div>
   </div>

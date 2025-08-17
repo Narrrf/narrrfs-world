@@ -420,11 +420,6 @@ let canvasHeight;
     // 🆘 NEW: Initialize help system
     helpOverlayVisible = false;
     mobileControlsVisible = window.innerWidth <= 768; // Show on mobile by default
-    
-    // 🆘 IMPROVED: Show mobile controls by default on mobile devices
-    if (window.innerWidth <= 768) {
-      mobileControlsVisible = true;
-    }
 
     console.log('✅ Game state initialized');
 
@@ -441,13 +436,6 @@ let canvasHeight;
     if (window.innerWidth <= 768) {
       setTimeout(() => {
         createEnhancedMobileControls();
-        // 🆘 IMPROVED: Show mobile controls by default on mobile
-        if (mobileControlsVisible) {
-          const mobileControls = document.getElementById('mobile-controls');
-          if (mobileControls) {
-            mobileControls.style.display = 'flex';
-          }
-        }
       }, 100);
     }
     
@@ -455,13 +443,6 @@ let canvasHeight;
     setTimeout(() => {
       displayHelpInfoOutside();
     }, 200);
-    
-    // 🆘 NEW: Add mobile controls toggle button for easy access
-    if (window.innerWidth <= 768) {
-      setTimeout(() => {
-        addMobileControlsToggle();
-      }, 300);
-    }
     
     // Initial draw
     draw();
@@ -2848,62 +2829,40 @@ window.testWeaponSystem = function() {
       const deltaX = touch.clientX - touchStartX;
       const deltaY = touch.clientY - touchStartY;
       
-      // 🆘 IMPROVED: More responsive touch controls
-      // Horizontal movement - reduced sensitivity for better control
-      if (Math.abs(deltaX) > 8) {
+      // Horizontal movement - more sensitive for mobile (like Tetris)
+      if (Math.abs(deltaX) > 10) {
         movePlayer(deltaX > 0 ? 'right' : 'left');
         touchStartX = touch.clientX;
         // Auto-shoot is handled in movePlayer function
       }
       
-      // Vertical movement - reduced sensitivity for better control
-      if (Math.abs(deltaY) > 8) {
+      // Vertical movement - more sensitive for mobile
+      if (Math.abs(deltaY) > 10) {
         movePlayer(deltaY > 0 ? 'down' : 'up');
         touchStartY = touch.clientY;
         // Auto-shoot is handled in movePlayer function
       }
       
-      // 🆘 IMPROVED: Better shooting detection
-      // Quick swipe up to shoot (like modern mobile games)
-      if (deltaY < -15) {
+      // Shooting - more reliable swipe up detection (like Snake)
+      if (deltaY < -20) {
         playerShoot();
         // Reset touch to prevent multiple shots
-        touchStartY = touch.clientY;
-      }
-      
-      // 🆘 NEW: Quick swipe down for special action (could be bomb)
-      if (deltaY > 25) {
-        // Could activate bomb or special weapon
-        if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
-          playerShoot(); // This will use bomb if selected
-        }
         touchStartY = touch.clientY;
       }
     }
   }
 
   function handleTouchEnd(e) {
-    // 🆘 IMPROVED: Better tap-to-shoot detection
+    // Check for tap-to-shoot (quick tap without movement) - like Tetris
     if (isTouching) {
       const touchDuration = Date.now() - touchStartTime;
       const touch = e.changedTouches[0];
       const deltaX = Math.abs(touch.clientX - touchStartX);
       const deltaY = Math.abs(touch.clientY - touchStartY);
       
-      // 🆘 IMPROVED: More forgiving tap detection for mobile
-      // If it's a quick tap (less than 200ms) with minimal movement (less than 12px)
-      if (touchDuration < 200 && deltaX < 12 && deltaY < 12) {
+      // If it's a quick tap (less than 150ms) with minimal movement (less than 8px)
+      if (touchDuration < 150 && deltaX < 8 && deltaY < 8) {
         playerShoot();
-        console.log('🎯 Tap-to-shoot activated');
-      }
-      
-      // 🆘 NEW: Long press detection for special actions
-      if (touchDuration > 500 && deltaX < 15 && deltaY < 15) {
-        // Long press could activate speed boost or special weapon
-        if (speedBoostAmmo > 0 && !speedBoostActive) {
-          activateSpeedBoost();
-          console.log('⚡ Long press activated speed boost');
-        }
       }
     }
     
@@ -3201,22 +3160,10 @@ window.testWeaponSystem = function() {
       toggleBtn.textContent = mobileControlsVisible ? '📱 Hide Controls' : '📱 Show Controls';
     }
     
-    // 🆘 IMPROVED: Update floating toggle button appearance
-    const toggleFloat = document.getElementById('mobile-controls-toggle-float');
-    if (toggleFloat) {
-      if (mobileControlsVisible) {
-        toggleFloat.style.background = '#fbbf24';
-        toggleFloat.textContent = '🎮';
-      } else {
-        toggleFloat.style.background = '#6b7280';
-        toggleFloat.textContent = '🎮';
-      }
-    }
-    
     console.log(`📱 Mobile controls ${mobileControlsVisible ? 'shown' : 'hidden'}`);
   }
 
-  // 🆘 NEW: Create enhanced mobile controls - IMPROVED FOR BETTER MOBILE UX
+  // 🆘 NEW: Create enhanced mobile controls
   function createEnhancedMobileControls() {
     const mobileControls = document.getElementById('mobile-controls');
     if (!mobileControls) return;
@@ -3265,26 +3212,97 @@ window.testWeaponSystem = function() {
     helpBtn.addEventListener('click', toggleHelpOverlay);
     mobileControls.appendChild(helpBtn);
     
-    // 🆘 IMPROVED: Remove movement buttons - players should SWIPE to move
-    // Add swipe instruction instead
-    const swipeInstruction = document.createElement('div');
-    swipeInstruction.style.cssText = `
-      text-align: center;
-      margin-bottom: 15px;
-      padding: 10px;
-      background: #374151;
-      border-radius: 10px;
-      border: 1px solid #fbbf24;
+    // Movement controls
+    const movementControls = document.createElement('div');
+    movementControls.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
     `;
-    swipeInstruction.innerHTML = `
-      <div style="color: #fbbf24; font-weight: bold; margin-bottom: 5px;">🎮 SWIPE TO MOVE</div>
-      <div style="color: #9ca3af; font-size: 0.8em;">
-        • Swipe left/right to move ship<br>
-        • Swipe up/down for vertical movement<br>
-        • Tap to shoot (or use auto-shoot)
-      </div>
+    
+    // Up button
+    const upBtn = document.createElement('button');
+    upBtn.id = 'mobile-up-btn';
+    upBtn.textContent = '⬆️';
+    upBtn.style.cssText = `
+      width: 60px;
+      height: 60px;
+      background: #4ade80;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.5em;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     `;
-    mobileControls.appendChild(swipeInstruction);
+    upBtn.addEventListener('click', () => {
+      if (!isSpaceInvadersPaused) movePlayer('up');
+    });
+    movementControls.appendChild(upBtn);
+    
+    // Left/Right buttons
+    const lrRow = document.createElement('div');
+    lrRow.style.cssText = 'display: flex; gap: 20px;';
+    
+    const leftBtn = document.createElement('button');
+    leftBtn.id = 'mobile-left-btn';
+    leftBtn.textContent = '⬅️';
+    leftBtn.style.cssText = `
+      width: 60px;
+      height: 60px;
+      background: #f59e0b;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.5em;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    `;
+    leftBtn.addEventListener('click', () => {
+      if (!isSpaceInvadersPaused) movePlayer('left');
+    });
+    
+    const rightBtn = document.createElement('button');
+    rightBtn.id = 'mobile-right-btn';
+    rightBtn.textContent = '➡️';
+    rightBtn.style.cssText = `
+      width: 60px;
+      height: 60px;
+      background: #f59e0b;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.5em;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    `;
+    rightBtn.addEventListener('click', () => {
+      if (!isSpaceInvadersPaused) movePlayer('right');
+    });
+    
+    lrRow.appendChild(leftBtn);
+    lrRow.appendChild(rightBtn);
+    movementControls.appendChild(lrRow);
+    
+    // Down button
+    const downBtn = document.createElement('button');
+    downBtn.id = 'mobile-down-btn';
+    downBtn.textContent = '⬇️';
+    downBtn.style.cssText = `
+      width: 60px;
+      height: 60px;
+      background: #4ade80;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.5em;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    `;
+    downBtn.addEventListener('click', () => {
+      if (!isSpaceInvadersPaused) movePlayer('down');
+    });
+    movementControls.appendChild(downBtn);
+    
+    mobileControls.appendChild(movementControls);
     
     // Action controls
     const actionControls = document.createElement('div');
@@ -3410,69 +3428,13 @@ window.testWeaponSystem = function() {
       max-width: 300px;
     `;
     helpText.innerHTML = `
-      <p><strong>💡 Mobile Controls:</strong></p>
-      <p>🎮 <strong>Swipe anywhere on screen to move ship</strong></p>
-      <p>👆 <strong>Tap to shoot</strong> (or use auto-shoot)</p>
-      <p>⚡ <strong>Long press for speed boost</strong></p>
-      <p>💣 <strong>Swipe down for bomb</strong> (if available)</p>
-      <p>🎯 <strong>Auto-shoot toggle</strong> for hands-free play</p>
-      <p>🔫 <strong>Weapon switching</strong> for different strategies</p>
+      <p><strong>💡 Quick Tips:</strong></p>
+      <p>• Swipe to move, tap to shoot</p>
+      <p>• Use different weapons for different situations</p>
+      <p>• Collect power-ups for advantages</p>
+      <p>• Tap ❓ HELP for full instructions</p>
     `;
     mobileControls.appendChild(helpText);
-  }
-
-  // 🆘 NEW: Add mobile controls toggle button for easy access
-  function addMobileControlsToggle() {
-    // Check if toggle already exists
-    if (document.getElementById('mobile-controls-toggle-float')) return;
-    
-    const toggleFloat = document.createElement('button');
-    toggleFloat.id = 'mobile-controls-toggle-float';
-    toggleFloat.textContent = '🎮';
-    toggleFloat.title = 'Show/Hide Mobile Controls';
-    toggleFloat.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      background: #fbbf24;
-      color: #1a1a1a;
-      border: none;
-      border-radius: 50%;
-      font-size: 1.5em;
-      font-weight: bold;
-      cursor: pointer;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
-    `;
-    
-    toggleFloat.addEventListener('click', () => {
-      toggleMobileControls();
-      // Update button appearance
-      if (mobileControlsVisible) {
-        toggleFloat.style.background = '#6b7280';
-        toggleFloat.textContent = '🎮';
-      } else {
-        toggleFloat.style.background = '#fbbf24';
-        toggleFloat.textContent = '🎮';
-      }
-    });
-    
-    // Add hover effects
-    toggleFloat.addEventListener('mouseenter', () => {
-      toggleFloat.style.transform = 'scale(1.1)';
-      toggleFloat.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
-    });
-    
-    toggleFloat.addEventListener('mouseleave', () => {
-      toggleFloat.style.transform = 'scale(1)';
-      toggleFloat.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-    });
-    
-    document.body.appendChild(toggleFloat);
-    console.log('🎮 Mobile controls toggle button added');
   }
 
   // 🚀 NEW: Test help system
