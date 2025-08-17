@@ -18,8 +18,15 @@ require_once __DIR__ . '/../config/database.php';
 
 try {
     $db = getSQLite3Connection();
+    // Test the connection
+    $testStmt = $db->prepare('SELECT COUNT(*) as count FROM sqlite_master WHERE type="table"');
+    $result = $testStmt->execute();
+    $row = $result->fetchArray(SQLITE3_ASSOC);
+    if (!$row) {
+        throw new Exception('Database connection test failed');
+    }
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'error' => 'Could not connect to database']);
+    echo json_encode(['success' => false, 'error' => 'Could not connect to database: ' . $e->getMessage()]);
     exit;
 }
 
@@ -273,6 +280,9 @@ try {
                 throw new Exception('Search term required');
             }
             
+            // Debug logging
+            error_log("Search API: Searching for term: " . $searchTerm);
+            
             // Search by Discord ID or username - using same logic as bot
             $stmt = $db->prepare('
                 SELECT us.user_id, SUM(us.score) as total_score, u.username, u.discord_id
@@ -288,6 +298,11 @@ try {
             $stmt->bindValue(2, $searchPattern, SQLITE3_TEXT);
             $result = $stmt->execute();
             
+            if (!$result) {
+                error_log("Search API: Query execution failed");
+                throw new Exception('Database query failed');
+            }
+            
             $users = [];
             while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                 $users[] = [
@@ -297,6 +312,8 @@ try {
                     'discord_id' => $row['discord_id']
                 ];
             }
+            
+            error_log("Search API: Found " . count($users) . " users");
             
             echo json_encode([
                 'success' => true,

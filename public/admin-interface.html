@@ -11756,41 +11756,7 @@ require_once 'discord-invite.php';
       addLog('⚠️ Database path debugging not yet implemented');
     }
 
-    // 👥 USER MANAGEMENT TAB FUNCTIONS
-    function searchUsersInstant(searchTerm) {
-      if (searchTerm.length < 2) {
-        document.getElementById('userResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters...</div>';
-        return;
-      }
-      
-      console.log('🔍 Searching users:', searchTerm);
-      // TODO: Implement instant user search
-      addLog('⚠️ Instant user search not yet implemented');
-    }
 
-    function searchUsers() {
-      const searchTerm = document.getElementById('userSearch').value;
-      if (!searchTerm.trim()) {
-        addLog('❌ Please enter a search term');
-        return;
-      }
-      
-      console.log('🔍 Searching users:', searchTerm);
-      // TODO: Implement user search
-      addLog('⚠️ User search not yet implemented');
-    }
-
-    function loadUserQuestHistory() {
-      const userId = document.getElementById('questHistoryUserId').value;
-      if (!userId.trim()) {
-        addLog('❌ Please enter a user ID or username');
-        return;
-      }
-      
-      console.log('🏆 Loading quest history for:', userId);
-      // TODO: Implement quest history loading
-      addLog('⚠️ Quest history loading not yet implemented');
-    }
 
     // 💰 POINT MANAGEMENT TAB FUNCTIONS
     function quickSearchUsersInstant(searchTerm) {
