@@ -447,19 +447,16 @@ let canvasHeight;
     // 🚀 NEW: Initialize weapon display
     updateWeaponDisplay();
     
-    // 🆘 NEW: Create enhanced mobile controls
-    if (window.innerWidth <= 768) {
-      setTimeout(() => {
-        createEnhancedMobileControls();
-        // 🆘 IMPROVED: Show mobile controls by default on mobile
-        if (mobileControlsVisible) {
-          const mobileControls = document.getElementById('mobile-controls');
-          if (mobileControls) {
-            mobileControls.style.display = 'flex';
-          }
-        }
-      }, 100);
-    }
+    // 🆘 NEW: Create enhanced mobile controls - ALWAYS CREATE FOR BETTER UX
+    setTimeout(() => {
+      createEnhancedMobileControls();
+      // 🆘 IMPROVED: Show mobile controls by default on every game start
+      const mobileControls = document.getElementById('mobile-controls');
+      if (mobileControls) {
+        mobileControls.style.display = 'flex';
+        console.log('✅ Mobile controls made visible on game start');
+      }
+    }, 50); // Reduced delay for faster control creation
     
     // 🆘 NEW: Display help information outside game canvas
     setTimeout(() => {
@@ -468,6 +465,11 @@ let canvasHeight;
     
     // 🆘 NEW: Game panel is now created automatically with createEnhancedMobileControls
     // No need for separate toggle button - the game panel button is included
+    
+    // 🆘 NEW: Ensure mobile controls are visible after initialization
+    setTimeout(() => {
+      ensureMobileControlsVisible();
+    }, 250);
     
     // Initial draw
     draw();
@@ -679,6 +681,11 @@ let canvasHeight;
     
     // Lock scroll only when game is actually running
     lockSpaceInvadersScroll();
+    
+    // 🆘 NEW: Ensure mobile controls are always visible when game starts
+    setTimeout(() => {
+      ensureMobileControlsVisible();
+    }, 100);
   }
 
   function resetGame() {
@@ -730,6 +737,11 @@ let canvasHeight;
     setTimeout(() => {
       displayHelpInfoOutside();
     }, 100);
+    
+    // 🆘 NEW: Ensure mobile controls are visible when game is reset
+    setTimeout(() => {
+      ensureMobileControlsVisible();
+    }, 150);
   }
 
   function gameLoop() {
@@ -2521,6 +2533,11 @@ let canvasHeight;
     saveScore(spaceInvadersScore);
     cleanupSpaceInvadersControls();
 
+    // 🆘 NEW: Ensure mobile controls are visible when game ends
+    setTimeout(() => {
+      ensureMobileControlsVisible();
+    }, 100);
+
     // Dispatch game end event for UI reset
     window.dispatchEvent(new Event('spaceInvadersGameEnd'));
   }
@@ -3320,6 +3337,10 @@ window.testWeaponSystem = function() {
       unlockSpaceInvadersScroll();
     } else {
       lockSpaceInvadersScroll();
+      // 🆘 NEW: Ensure mobile controls are visible when resuming game
+      setTimeout(() => {
+        ensureMobileControlsVisible();
+      }, 50);
     }
   }
 
@@ -3810,13 +3831,24 @@ window.testWeaponSystem = function() {
   function createEnhancedMobileControls() {
     console.log('🎮 Creating enhanced mobile controls...');
     
-    const mobileControls = document.getElementById('mobile-controls');
-    if (!mobileControls) {
-      console.warn('⚠️ Mobile controls container not found');
+    // 🆘 IMPROVED: Check if controls already exist to prevent duplicates
+    if (document.getElementById('game-panel-btn')) {
+      console.log('✅ Enhanced mobile controls already exist, skipping creation');
       return;
     }
     
-    console.log('✅ Mobile controls container found, creating game panel...');
+    const mobileControls = document.getElementById('mobile-controls');
+    if (!mobileControls) {
+      console.warn('⚠️ Mobile controls container not found, creating fallback container');
+      // Create fallback container if it doesn't exist
+      const fallbackContainer = document.createElement('div');
+      fallbackContainer.id = 'mobile-controls';
+      fallbackContainer.className = 'hidden fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 bg-black/90 backdrop-blur-md border border-yellow-400/30 rounded-xl p-4 shadow-2xl max-w-sm w-full';
+      document.body.appendChild(fallbackContainer);
+      console.log('✅ Created fallback mobile controls container');
+    }
+    
+    console.log('✅ Mobile controls container ready, creating game panel...');
     
     // Clear existing content
     mobileControls.innerHTML = '';
@@ -4365,6 +4397,41 @@ window.testWeaponSystem = function() {
     createReloadButton();
     
     console.log('🎮 Enhanced mobile controls with game panel and reload button created');
+  }
+
+  // 🆘 NEW: Function to ensure mobile controls are always visible when game starts
+  function ensureMobileControlsVisible() {
+    console.log('🎮 Ensuring mobile controls are visible...');
+    
+    // Check if the game panel button exists
+    const gamePanelBtn = document.getElementById('game-panel-btn');
+    if (!gamePanelBtn) {
+      console.log('⚠️ Game panel button not found, creating enhanced mobile controls...');
+      createEnhancedMobileControls();
+      return;
+    }
+    
+    // Ensure the game panel button is visible
+    if (gamePanelBtn.style.display === 'none') {
+      gamePanelBtn.style.display = 'flex';
+      console.log('✅ Game panel button made visible');
+    }
+    
+    // Ensure the mobile controls container is visible
+    const mobileControls = document.getElementById('mobile-controls');
+    if (mobileControls && mobileControls.style.display === 'none') {
+      mobileControls.style.display = 'flex';
+      console.log('✅ Mobile controls container made visible');
+    }
+    
+    // Check if the reload button exists and is visible
+    const reloadBtn = document.getElementById('reload-button');
+    if (reloadBtn && reloadBtn.style.display === 'none') {
+      reloadBtn.style.display = 'block';
+      console.log('✅ Reload button made visible');
+    }
+    
+    console.log('✅ Mobile controls visibility check complete');
   }
 
   // 🆘 NEW: Toggle game panel overlay

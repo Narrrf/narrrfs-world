@@ -13,204 +13,6 @@ require_once 'discord-invite.php';
   <title>🧠 Your Narrrf Profile</title>
   <script>
   window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
-  
-  // 🍪 Cookie Consent Management - Moved to head for early availability
-  function initializeCookieConsent() {
-    const banner = document.getElementById('cookie-consent-banner');
-    const spacer = document.getElementById('cookie-banner-spacer');
-    
-    // Check if user has already made a choice
-    const cookieChoice = localStorage.getItem('cookie-consent');
-    
-    if (cookieChoice) {
-      // User has already made a choice - hide banner and adjust spacing
-      hideCookieBanner();
-    } else {
-      // Show banner and adjust spacing
-      showCookieBanner();
-    }
-    
-    // Add event listeners
-    const acceptBtn = document.getElementById('cookie-accept');
-    const declineBtn = document.getElementById('cookie-decline');
-    
-    if (acceptBtn) {
-      acceptBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        acceptAllCookies();
-      });
-    }
-    
-    if (declineBtn) {
-      declineBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        declineNonEssentialCookies();
-      });
-    }
-  }
-
-  function acceptAllCookies() {
-    localStorage.setItem('cookie-consent', 'accepted');
-    localStorage.setItem('cookie-preferences', JSON.stringify({
-      essential: true,
-      analytics: true,
-      marketing: true,
-      timestamp: new Date().toISOString()
-    }));
-    
-    hideCookieBanner();
-    showCookieSuccess('All cookies accepted! 🍪');
-  }
-
-  function declineNonEssentialCookies() {
-    localStorage.setItem('cookie-consent', 'declined');
-    localStorage.setItem('cookie-preferences', JSON.stringify({
-      essential: true,
-      analytics: false,
-      marketing: false,
-      timestamp: new Date().toISOString()
-    }));
-    
-    hideCookieBanner();
-    showCookieSuccess('Only essential cookies enabled! 🔒');
-  }
-
-  function hideCookieBanner() {
-    const banner = document.getElementById('cookie-consent-banner');
-    const spacer = document.getElementById('cookie-banner-spacer');
-    
-    if (banner) {
-      banner.style.transform = 'translateY(-100%)';
-      setTimeout(() => {
-        banner.style.display = 'none';
-        if (spacer) spacer.style.display = 'none';
-      }, 500);
-    }
-  }
-
-  function showCookieBanner() {
-    const banner = document.getElementById('cookie-consent-banner');
-    const spacer = document.getElementById('cookie-banner-spacer');
-    
-    if (banner) {
-      banner.style.display = 'block';
-      banner.style.transform = 'translateY(0)';
-      if (spacer) spacer.style.display = 'block';
-    }
-  }
-
-  function showCookieSuccess(message) {
-    // Create temporary success notification
-    const notification = document.createElement('div');
-    notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in max-w-sm';
-    notification.innerHTML = `
-      <div class="flex items-center gap-2">
-        <span>✅</span>
-        <span>${message}</span>
-        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white hover:text-gray-200 text-lg">×</button>
-      </div>
-    `;
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 4 seconds
-    setTimeout(() => {
-      if (notification.parentElement) {
-        notification.remove();
-      }
-    }, 4000);
-  }
-
-  // 🍪 Initialize cookie consent when DOM is ready
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('🍪 DOM ready, initializing cookie consent...');
-    initializeCookieConsent();
-  });
-
-  // 🏆 Trophy Shelf Functions - Available early for other scripts
-  const trophies = {
-    "VIP Holder": { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
-    "Holder": { img: "img/trophy_holder.png", label: "🏆 Holder" },
-    "Cheese Hunter": { img: "img/trophy_cheese_hunter.png", label: "🧀 Cheese Hunter" },
-    "🧀 Cheese Hunter": { img: "img/trophy_cheese_hunter.png", label: "🧀 Cheese Hunter" },
-    "🏆 Holder": { img: "img/trophy_holder.png", label: "🏆 Holder" },
-    "🎴 VIP Holder": { img: "img/trophy_VIP.png", label: "🎴 VIP Holder" },
-    "PokerOG": { img: "img/trophy_PokerOG.png", label: "Poker OG" },
-    "Champion": { img: "img/trophy_champion.png", label: "Champion" },
-    "Rumble": { img: "img/trophy_rumble.png", label: "Rumble Champ" },
-    "Engage": { img: "img/trophy_engage.png", label: "Engager" },
-    "Moderator": { img: "img/trophy_moderator.png", label: "Moderator" },
-    "Server Booster": { img: "img/trophy_serverbooster.png", label: "Server Booster" },
-    "Alpha Caller": { img: "img/trophy_alphacaller.png", label: "Alpha Caller" },
-    "Crypto Corn Friends": { img: "img/trophy_cryptocornfriends.png", label: "Corny Companion" },
-    "Rabbit Friends": { img: "img/trophy_rabbitfriends.png", label: "Bunny Buddy" },
-    "Kaleido Friends": { img: "img/trophy_kaleidofriends.png", label: "Kaleido Supporter" },
-    "Weedery Friends": { img: "img/trophy_weederyfriends.png", label: "Weedery 🌿" },
-    "Community Member": { img: "img/trophy_community.png", label: "Community Member" },
-    "Verifiziert": { img: "img/trophy_verified.png", label: "Verified" }
-  };
-
-  function renderTrophyShelf(userRoles = []) {
-    const shelf = document.getElementById("cheeseShelf");
-    if (!shelf) return;
-    shelf.innerHTML = "";
-    const uniqueRoles = [...new Set(userRoles)];
-    
-    // Debug logging
-    console.log('Rendering trophy shelf with roles:', uniqueRoles);
-    
-    uniqueRoles.forEach(role => {
-      // Check for exact match first
-      let trophy = trophies[role];
-      
-      // If no exact match, try to find a match by removing emojis or adding them
-      if (!trophy) {
-        // Try removing emojis from role name
-        const cleanRole = role.replace(/[🏆🎴🧀]/g, '').trim();
-        trophy = trophies[cleanRole];
-        
-        // If still no match, try adding emojis
-        if (!trophy) {
-          if (cleanRole === 'Holder') {
-            trophy = trophies['🏆 Holder'];
-          } else if (cleanRole === 'VIP Holder') {
-            trophy = trophies['🎴 VIP Holder'];
-          } else if (cleanRole === 'Cheese Hunter') {
-            trophy = trophies['🧀 Cheese Hunter'];
-          }
-        }
-      }
-      
-      if (trophy) {
-        const trophyEl = document.createElement("div");
-        trophyEl.className = "flex flex-col items-center animate-pop transition-transform hover:scale-105";
-        trophyEl.innerHTML = `
-          <img src="${trophy.img}" alt="${trophy.label}" class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow mb-2" />
-          <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}</span>
-        `;
-        shelf.appendChild(trophyEl);
-        console.log('Added trophy for role:', role, '->', trophy.label);
-      } else {
-        console.log('No trophy found for role:', role);
-      }
-    });
-  }
-
-  // Helper for safe text setting
-  function setText(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.innerText = value;
-  }
-  // Helper for class toggle (show/hide)
-  function showElement(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('hidden');
-  }
-  function hideElement(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.add('hidden');
-  }
 </script>
   <script src="https://cdn.tailwindcss.com"></script>
   
@@ -223,22 +25,13 @@ require_once 'discord-invite.php';
   <style>
     /* 🎨 Style Card Elements */
     .card {
-      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
+      background: #36393f;
       border-radius: 12px;
       padding: 30px;
       box-shadow: 0 0 12px rgba(0,0,0,0.3);
       max-width: 400px;
       width: 100%;
       text-align: center;
-      transition: all 0.3s ease;
-    }
-    
-    .card:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      border-color: rgba(251, 191, 36, 0.5);
     }
 
     /* 🖼️ Avatar */
@@ -328,40 +121,6 @@ require_once 'discord-invite.php';
 .wiggle-text {
   animation: wiggle 1s infinite ease-in-out;
 }
-
-/* New Role System Style Animations */
-@keyframes trophyGlow {
-  0%, 100% { 
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
-    transform: scale(1);
-  }
-  50% { 
-    box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
-    transform: scale(1.05);
-  }
-}
-
-@keyframes rolePulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.02); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-.trophy-glow {
-  animation: trophyGlow 3s ease-in-out infinite;
-}
-
-.role-pulse {
-  animation: rolePulse 4s ease-in-out infinite;
-}
-
-.float-animation {
-  animation: float 6s ease-in-out infinite;
-}
   </style>
 </head>
 
@@ -377,23 +136,10 @@ require_once 'discord-invite.php';
   ========================================
 -->
 
-<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
-
-  <!-- 🌟 Floating Background Elements -->
-  <div class="fixed inset-0 pointer-events-none z-0">
-    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
-    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
-    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
-    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
-  </div>
-
-  <!-- 🧬 Lab Status Badge -->
-  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
-    🧬 Profile Portal v2.0 Active
-  </div>
+<body class="bg-[#2f3136] text-white font-sans min-h-screen">
 
 <!-- 🔰 Header with App Context -->
-<header class="w-full bg-black/90 backdrop-blur-md py-4 px-6 text-yellow-400 shadow-xl border-b border-yellow-400/30">
+<header class="w-full bg-black py-4 px-6 text-yellow-400 shadow-md">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <h1 class="text-xl font-bold tracking-wide">🧠 Narrrf's Lab – Phase 5 Portal</h1>
     <nav class="space-x-4 text-sm md:text-base flex items-center">
@@ -415,43 +161,6 @@ require_once 'discord-invite.php';
   </div>
 </header>
 
-<!-- 🍪 Cookie Consent Banner - GDPR Compliant -->
-<div id="cookie-consent-banner" class="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900 text-white p-4 shadow-2xl z-50 border-b-2 border-blue-400 transform transition-transform duration-500 ease-out">
-  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-    <div class="flex-1 text-center md:text-left">
-      <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
-        <span class="text-2xl">🍪</span>
-        <h3 class="text-lg font-semibold">Cookie Policy</h3>
-      </div>
-      <p class="text-sm text-blue-100 leading-relaxed">
-        We use cookies and similar technologies to provide you with the best experience on our website. 
-        This includes essential cookies for authentication, session management, and website functionality. 
-        By clicking "Accept All", you consent to our use of cookies as described in our 
-        <a href="/privacy-policy.html" class="text-yellow-300 hover:text-yellow-200 underline font-semibold">Privacy Policy</a>.
-      </p>
-      <div class="mt-2">
-        <a href="/privacy-policy.html" class="text-xs text-blue-200 hover:text-blue-100 underline">
-          📖 Read Full Privacy Policy
-        </a>
-      </div>
-    </div>
-    
-    <div class="flex flex-col sm:flex-row gap-3 items-center">
-      <button id="cookie-decline" 
-              class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium text-sm transition-colors duration-200 border border-gray-500">
-        Decline Non-Essential
-      </button>
-      <button id="cookie-accept" 
-              class="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg font-semibold text-sm transition-all duration-200 transform hover:scale-105 shadow-lg">
-        Accept All Cookies
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ⏫ Spacer to offset fixed banner height -->
-<div id="cookie-banner-spacer" class="h-24 md:h-20"></div>
-
 <!-- VIP Section: Grouped and spaced -->
 <div id="vipSection" class="flex flex-col items-center gap-3 mb-6 mt-4 hidden">
   <div class="bg-yellow-100 border-2 border-yellow-300 px-6 py-3 rounded-xl font-bold text-yellow-900 shadow mb-1 text-center">
@@ -467,11 +176,6 @@ require_once 'discord-invite.php';
 <!-- 🧂 VIP Absence Fallback -->
 <div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
   😅 ... no VIP pass? That's nacho cheese!
-</div>
-
-<!-- 🧀 Golden Cheese Gate - VIP Access Indicator -->
-<div id="goldenCheeseGate" class="hidden mt-4 p-4 bg-yellow-100 text-yellow-800 font-bold rounded-xl shadow-lg animate-pulse">
-  🧀 VIP Access Granted - Golden Cheese Portal Active
 </div>
 
 <!-- Spacer for top nav offset -->
@@ -526,22 +230,18 @@ require_once 'discord-invite.php';
         <!-- Status message will be populated here -->
       </div>
     </div>
-    
-
 
     <!-- 🧪 Traits + Wallet View -->
     <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner">
       <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
       <p id="wallet-address">🔗 Linked wallet: <em class="text-sm">coming soon</em></p>
       <p>🧬 Traits: <span id="traits">pending sync</span></p>
-      <p id="user-roles" class="mt-2">🎭 Roles: <em class="text-sm">loading...</em></p>
     </div>
 
     <!-- 📊 User Stats Section -->
     <div class="mt-6 bg-gray-700 rounded-lg p-4 shadow-inner">
       <h2 class="font-semibold text-lg mb-2 text-yellow-300">📊 User Statistics</h2>
       <ul class="text-sm space-y-1">
-        <li>💰 Total DSPOINC Balance: <strong id="user-spoinc" class="text-yellow-400">Loading...</strong></li>
         <li>🎯 Score Adjustments: <strong id="stats-adjustments">Loading...</strong></li>
         <li>🎮 Score Sources: <strong id="stats-sources">Loading...</strong></li>
         <li>⭐ Active Roles: <strong id="stats-roles">Loading...</strong></li>
@@ -608,64 +308,20 @@ require_once 'discord-invite.php';
 </section>
 
 <!-- 🎴 Web3 Wallet Verification Section -->
-<section id="nft-verification" class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-6 shadow-2xl my-20 relative">
-  <!-- ✅ Fully Functional Badge -->
-  <div class="absolute -top-4 -right-4 rotate-6 bg-green-400 text-black text-xs font-extrabold px-3 py-1 rounded-full shadow-lg z-10 animate-pulse ring-2 ring-green-300">
-    ✅ Fully Functional
+<section class="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-6 shadow-2xl my-20 relative">
+  <!-- 🔨 Under Construction Ribbon -->
+  <div class="absolute -top-4 -right-4 rotate-6 bg-yellow-400 text-black text-xs font-extrabold px-3 py-1 rounded-full shadow-lg z-10 animate-pulse ring-2 ring-yellow-300">
+    🚧 Under Cheese-struction
   </div>
   
   <div class="text-center">
     <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-center gap-2">
       🎴 NFT Holder Verification
     </h2>
-         <p class="text-gray-300 mb-6">
-       Connect your Phantom wallet to verify NFT ownership and get automatic Discord roles!
-       <br><span class="text-green-400 text-sm">🔐 Secure: Requires cryptographic signature to prove wallet ownership</span>
-     </p>
-     
-     <!-- 🔍 Verification Process Info -->
-     <div class="bg-gray-800/50 rounded-lg p-4 mb-6 text-left">
-       <h3 class="text-lg font-semibold text-blue-300 mb-3 flex items-center gap-2">
-         🔍 How NFT Verification Works
-       </h3>
-       <div class="space-y-3 text-sm">
-         <div class="flex items-start gap-3">
-           <span class="text-blue-400 font-bold">1.</span>
-           <div>
-             <strong class="text-blue-200">Wallet Connection:</strong> Connect your Phantom wallet securely
-           </div>
-         </div>
-         <div class="flex items-start gap-3">
-           <span class="text-blue-400 font-bold">2.</span>
-           <div>
-             <strong class="text-blue-200">Helius API Check:</strong> We use <a href="https://www.helius.dev/docs" target="_blank" class="text-yellow-400 hover:text-yellow-300 underline">Helius APIs</a> to efficiently search your wallet for our specific NFT collections
-           </div>
-         </div>
-         <div class="flex items-start gap-3">
-           <span class="text-blue-400 font-bold">3.</span>
-           <div>
-             <strong class="text-blue-200">Cryptographic Proof:</strong> Sign a message with your wallet to prove ownership
-           </div>
-         </div>
-         <div class="flex items-start gap-3">
-           <span class="text-blue-400 font-bold">4.</span>
-           <div>
-             <strong class="text-blue-200">Automatic Role Grant:</strong> Get Discord roles instantly based on your NFT holdings
-           </div>
-         </div>
-       </div>
-       
-       <div class="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
-         <div class="flex items-center gap-2 text-blue-200 mb-2">
-           <span class="text-lg">🔗</span>
-           <strong>Powered by Helius</strong>
-         </div>
-         <p class="text-xs text-blue-300">
-           We use Helius' high-performance Solana infrastructure for fast, reliable NFT verification. 
-           <a href="https://www.helius.dev/docs" target="_blank" class="text-yellow-400 hover:text-yellow-300 underline">Learn more about Helius APIs</a>
-         </p>
-       </div>
-     </div>
+    <p class="text-gray-300 mb-6">
+      Connect your Phantom wallet to verify NFT ownership and get automatic Discord roles!
+      <br><span class="text-yellow-400 text-sm">🔐 Secure: Requires cryptographic signature to prove wallet ownership</span>
+    </p>
     
     <!-- Wallet Connection Status -->
     <div id="wallet-status" class="hidden bg-gray-800 rounded-lg p-4 mb-4">
@@ -712,8 +368,8 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
-<!-- DSPOINC Graph & Score Changes - Only Visible When Logged In -->
-<div id="dspoincJourneySection" class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto hidden">
+<!-- DSPOINC Graph & Score Changes -->
+<div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
   <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
     <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
     Your $DSPOINC Journey
@@ -723,29 +379,35 @@ require_once 'discord-invite.php';
     <span id="user-dspoinc-journey" class="font-mono text-yellow-100 text-lg">0</span>
   </div>
   
+  <!-- 🆘 ADDED: Main DSPOINC display element for JavaScript compatibility -->
+  <div class="mt-2">
+    <span class="font-mono text-yellow-300">Total DSPOINC:</span>
+    <span id="user-dspoinc" class="font-mono text-yellow-100 text-lg">0</span>
+  </div>
+  
   <div class="relative">
     <canvas id="pointsGraph" width="400" height="180"></canvas>
     <div id="pointsGraphMsg" class="absolute inset-0 flex items-center justify-center text-yellow-200 text-lg font-semibold bg-gray-900 bg-opacity-80 hidden"></div>
   </div>
-  <div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
-    <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
-    <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
-      <!-- Populated by JS -->
-    </ul>
+<div class="bg-gray-800 rounded-xl shadow p-4 mt-6 max-w-lg w-full mx-auto">
+  <h3 class="text-yellow-300 font-semibold mb-2">Recent Score Changes</h3>
+  <ul id="recentAdjustments" class="text-sm text-yellow-100 space-y-1">
+    <!-- Populated by JS -->
+  </ul>
+  <!-- 🆘 ADDED: No score history message element -->
+  <div id="no-score-history" class="text-gray-400 text-center py-4 hidden">
+    No recent score changes found.
   </div>
 </div>
 
-<!-- Login Prompt for DSPOINC Journey -->
-<div id="dspoincLoginPrompt" class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-10 mb-4 border-2 border-yellow-300 mx-auto">
-  <h2 class="text-xl font-bold text-yellow-300 mb-4 flex items-center gap-2">
-    <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
-    $DSPOINC Journey
-  </h2>
-  <p class="text-gray-400 mb-4">Login with Discord to view your DSPOINC balance and history</p>
-  <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read" 
-     class="inline-block bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-yellow-500 transition-all duration-300 transform hover:scale-105">
-    🔐 Login with Discord
-  </a>
+</div>
+
+<!-- 🆘 ADDED: User Quests Section -->
+<div class="bg-gray-800 rounded-xl shadow p-4 mt-4 max-w-lg w-full mx-auto">
+  <h3 class="text-yellow-300 font-semibold mb-2">Your Quests</h3>
+  <div id="user-quests-list" class="text-sm text-yellow-100">
+    <!-- Populated by JS -->
+  </div>
 </div>
 
 </section>
@@ -847,11 +509,6 @@ require_once 'discord-invite.php';
     </p>
 
     <div class="text-xs italic text-center text-gray-500 mt-1">👾 Click to play the full Space Cheese Invaders game!</div>
-    
-    <!-- 🆘 MOBILE CONTROLS CONTAINER - Required for mobile features -->
-    <div id="mobile-controls" class="hidden fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 bg-black/90 backdrop-blur-md border border-yellow-400/30 rounded-xl p-4 shadow-2xl max-w-sm w-full">
-      <!-- Mobile controls will be dynamically created here by JavaScript -->
-    </div>
   </section>
 </section>
 
@@ -914,6 +571,15 @@ require_once 'discord-invite.php';
   </div>
 </section>
 
+<!-- 🍩 Footer GENESIS 12.0 -->
+<footer class="text-center mt-16 text-xs text-yellow-600">
+  Powered by 🧀 Cheese Architect <b>12.0</b> · Genesis Protocol · Discord + Game + Wallet Sync Engine 🌍<br>
+  <span class="opacity-70">
+    Vault Synced | 2025 | Scroll-Safe for 100 Years of Cheese | 
+                    <a href="<?php echo $discord_url; ?>" class="underline text-pink-500 hover:text-pink-600">Join Discord</a>
+  </span>
+</footer>
+
 <!-- 🔑 Fallback Login Button -->
 <div id="loginBlock" class="mt-6 text-center">
   <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
@@ -923,12 +589,35 @@ require_once 'discord-invite.php';
   <p class="mt-2 text-xs text-gray-400 italic">When the Grumpy Cheese gives no love, this does.</p>
 </div>
 
-<!-- 🧪 Back to Lab Button -->
+
+
 <div class="w-full flex justify-center mt-6">
   <a href="/index.html"
      class="bg-yellow-500 text-white px-5 py-2 rounded-full shadow hover:bg-yellow-600 text-sm sm:text-base text-center">
     🧪 Back to the Lab
   </a>
+</div>
+
+  
+  <!-- 🔑 Login / Sync -->
+  <!-- <a href="/profile.html" class="bg-indigo-500 text-white px-5 py-2 rounded-full shadow hover:bg-indigo-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    🔑 Login / Sync Profile
+  </a> -->
+
+  <!-- 🧬 View Traits -->
+  <!-- <a href="#traits" class="bg-pink-500 text-white px-5 py-2 rounded-full shadow hover:bg-pink-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    🧬 View Traits
+  </a> -->
+
+  <!-- 🚪 Portals -->
+  <!-- <a href="#portals" class="bg-blue-500 text-white px-5 py-2 rounded-full shadow hover:bg-blue-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    🚪 Open Portals
+  </a> -->
+
+  <!-- 💰 Wallet -->
+  <!-- <a href="#wallet" class="bg-purple-500 text-white px-5 py-2 rounded-full shadow hover:bg-purple-600 text-sm sm:text-base w-full sm:w-auto text-center">
+    💰 Manage Wallet
+  </a> -->
 </div>
 
   <!-- 🌀 Cheese Portal to Hytopia -->
@@ -941,15 +630,14 @@ require_once 'discord-invite.php';
           🧀 Portal Closed · Opening Soon!
         </div>
       </div>
-    </div>
-  </a>
-      </div>
       
 <!-- 🔐 Dynamic Fetch Script logged in or not -->
 <!-- 👑 VIP Logic + Trophy Shelf (KEEP AS IS) -->
+<!-- 🔐 Dynamic Fetch Script logged in or not -->
 <!-- Patched profile.html by Cheese Architect 🧀✨ -->
-<!-- Patched profile.html with working fetch logic 🧠 -->
 
+<!-- Patched profile.html with working fetch logic 🧠 -->
+<!-- Patched profile.html with working fetch logic 🧠 -->
 <script>
 const trophies = {
   "VIP Holder": { img: "img/trophy_VIP.png", label: "VIP Cheese Lord" },
@@ -1045,11 +733,6 @@ function goToAdminInterface() {
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
-  console.log('🚀 DOM Content Loaded - Starting profile initialization...');
-  
-  
-
-  
   const avatar = document.getElementById('avatar');
   const loginLink = document.getElementById('login-link');
 
@@ -1060,16 +743,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     // We'll handle the admin redirect after user data is loaded
   }
 
-    try {
-     // Unified fetch from profile.php - Use full URL for live compatibility
-     const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
-       credentials: 'include',
-       headers: { 'Accept': 'application/json' }
-     });
-
-     // Ensure DSPOINC sections are hidden by default for non-logged-in users
-     hideElement('dspoincJourneySection');
-     showElement('dspoincLoginPrompt');
+  try {
+    // Unified fetch from profile.php
+    const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    });
 
     if (!res.ok) {
       if (res.status === 401) {
@@ -1111,16 +790,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Username & avatar
     setText('username', user.discord_name || 'Unknown');
     setText('welcome-name', user.discord_name || 'Unknown');
-    console.log('👤 User data received:', { discord_name: user.discord_name, avatar_url: user.avatar_url, roles: user.roles });
-    
     if (avatar) {
       avatar.src = user.avatar_url || 'img/default-avatar.png';
       avatar.alt = user.discord_name || 'Unknown';
       avatar.title = user.discord_name || 'Unknown';
       avatar.classList.remove('cursor-pointer');
-      console.log('🖼️ Avatar updated:', avatar.src);
-    } else {
-      console.error('❌ Avatar element not found!');
     }
     if (loginLink) loginLink.removeAttribute('href');
 
@@ -1133,101 +807,25 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Scores/stats (if present in JSON)
     if (user.stats) {
-      setText('stats-adjustments', user.stats.scoreAdjustments || 0);
-      setText('stats-sources', user.stats.sources || 0);
-      setText('stats-roles', user.stats.roles || 0);
-    }
-    
-    // Set member since date
-    if (user.member_since) {
-      setText('stats-member-since', user.member_since);
+      setText('user-dspoinc', user.stats.scoreAdjustments !== undefined ? user.stats.scoreAdjustments.toLocaleString() : '');
+      setText('user-spoinc', user.stats.sources !== undefined ? user.stats.sources.toLocaleString() : '');
     }
 
     // Trophy pokal shelf — render immediately from roles
-    if (user.roles) {
-      renderTrophyShelf(user.roles);
-    }
+    if (user.roles) renderTrophyShelf(user.roles);
 
-     // VIP/Golden Cheese logic check on top menu
-     if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
-       showElement('goldenCheeseGate'); // optional if defined elsewhere
-       showElement('vipSection');       // ✅ Matches the DOM ID
-     } else {
-       showElement('noCheeseJoke');
-     }
- 	
-     // ✅ Show Bingo banner if user is logged in
-     if (user.discord_id) {
-       showElement('bingoBanner');
-     }
-     
-     // ✅ Show DSPOINC Journey section when logged in
-     if (user.discord_id) {
-       showElement('dspoincJourneySection');
-       hideElement('dspoincLoginPrompt');
-       
-       // 🧀 Populate DSPOINC Journey data immediately
-       try {
-         // Fetch actual DSPOINC balance from the score-total API
-         const balanceResponse = await fetch(`/api/user/score-total.php`, { 
-           credentials: 'include' 
-         });
-         if (balanceResponse.ok) {
-           const balanceData = await balanceResponse.json();
-           if (balanceData.total_dspoinc !== undefined) {
-             const dspoincBalance = balanceData.total_dspoinc || 0;
-             
-             // Update DSPOINC Journey display
-             const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
-             if (dspoincJourneyEl) {
-               dspoincJourneyEl.textContent = dspoincBalance.toLocaleString();
-               console.log('✅ DSPOINC Journey balance set to:', dspoincBalance);
-             }
-             
-             // Update main User Statistics display
-             const userSpoincEl = document.getElementById('user-spoinc');
-             if (userSpoincEl) {
-               userSpoincEl.textContent = dspoincBalance.toLocaleString();
-               console.log('✅ Total DSPOINC balance set to:', dspoincBalance);
-             }
-           } else {
-             console.error('❌ Score total API error:', balanceData.error);
-           }
-         } else {
-           console.error('❌ Score total API request failed:', balanceResponse.status);
-         }
-         
-         // Fetch and display recent adjustments
-         const recentResponse = await fetch('/api/user/recent-adjustments.php', { credentials: 'include' });
-         const recentData = await recentResponse.json();
-         const recentList = document.getElementById('recentAdjustments');
-         const adjustments = Array.isArray(recentData.adjustments) ? recentData.adjustments : [];
-
-         if (recentList) {
-           if (adjustments.length > 0) {
-             recentList.innerHTML = adjustments
-               .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-               .slice(0, 10)
-               .map(a =>
-                 `<li>
-                   <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                   : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
-                   <span class="italic">(${a.reason || a.action})</span>
-                 </li>`
-               ).join('');
-             console.log('✅ Recent adjustments loaded:', adjustments.length);
-           } else {
-             recentList.innerHTML = '<li class="text-gray-400">No recent score changes</li>';
-             console.log('ℹ️ No recent adjustments found');
-           }
-         }
-       } catch (e) {
-         console.error('Error populating DSPOINC Journey:', e);
-       }
-     } else {
-       hideElement('dspoincJourneySection');
-       showElement('dspoincLoginPrompt');
-     }
+    // VIP/Golden Cheese logic check on top menu
+if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
+  showElement('goldenCheeseGate'); // optional if defined elsewhere
+  showElement('vipSection');       // ✅ Matches the DOM ID
+} else {
+  showElement('noCheeseJoke');
+}
+	
+// ✅ Show Bingo banner if user is logged in
+if (user.discord_id) {
+  showElement('bingoBanner');
+}
 
     // 🔧 Show Admin Access Button for admins/moderators
     if (user.roles && (
@@ -1280,95 +878,28 @@ document.addEventListener("DOMContentLoaded", async function () {
       }, 5000);
     }
 
-     }
-   } catch (err) {
-     console.error('Profile fetch failed:', err);
-     // Show login UI on error
-     setText('username', 'Guest#0000');
-     setText('welcome-name', 'Guest');
-     setText('email', 'Please log in');
-     setText('guilds', 'No guilds connected');
-     setText('traits', 'No traits available');
-     setText('user-roles', 'No roles');
-     setText('wallet-address', 'Wallet not linked');
-     hideElement('goldenCheeseGate');
-     hideElement('noCheeseJoke');
-     hideElement('dspoincJourneySection');
-     showElement('dspoincLoginPrompt');
-     
-     // Make sure login link is visible
-     if (loginLink) {
-       loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
-       loginLink.style.display = 'block';
-     }
-     if (avatar) {
-       avatar.src = 'img/grumpy-cheese.png';
-       avatar.style.cursor = 'pointer';
-     }
-   }
- });
-
-// 🏆 RESTORE WORKING STATS FILLING SCRIPT FROM BACKUP
-document.addEventListener("DOMContentLoaded", async function () {
-  // 1. Try to get Discord ID (session or local)
-  const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
-  if (!userId) return; // Not logged in
-
-  // 2. Fetch user profile data
-  let user;
-  try {
-    const res = await fetch(`https://narrrfs.world/api/user/profile.php?user_id=${userId}`);
-    user = await res.json();
-    if (user.error) throw new Error(user.error);
-  } catch (e) {
-    // fallback to loading state
-    return;
-  }
-
-  // 3. Fill Stats
-  const statsAdjustments = document.getElementById('stats-adjustments');
-  const statsSources = document.getElementById('stats-sources');
-  const statsRoles = document.getElementById('stats-roles');
-  const statsMemberSince = document.getElementById('stats-member-since');
-  
-  if (statsAdjustments) statsAdjustments.innerText = user.stats?.scoreAdjustments ?? "–";
-  if (statsSources) statsSources.innerText = user.stats?.sources ?? "–";
-  if (statsRoles) statsRoles.innerText = user.stats?.roles ?? "–";
-  if (statsMemberSince) statsMemberSince.innerText = user.member_since ?? "–";
-
-  // 4. Fill Skills (all roles & traits as badges)
-  const skillsBox = document.querySelector('.skills-list');
-  if (skillsBox) {
-    skillsBox.innerHTML = '';
-    const allSkills = [...(user.roles || []), ...(user.traits || [])];
-    if (allSkills.length) {
-      allSkills.forEach(skill => {
-        const badge = document.createElement('span');
-        badge.className = "inline-block bg-yellow-300 text-black px-2 py-1 rounded-full m-1 text-xs font-semibold shadow";
-        badge.innerText = skill;
-        skillsBox.appendChild(badge);
-      });
-    } else {
-      skillsBox.innerHTML = '<span class="text-gray-300">No skills yet</span>';
+  } catch (err) {
+    console.error('Profile fetch failed:', err);
+    // Show login UI on error
+    setText('username', 'Guest#0000');
+    setText('welcome-name', 'Guest');
+    setText('email', 'Please log in');
+    setText('guilds', 'No guilds connected');
+    setText('traits', 'No traits available');
+    setText('user-roles', 'No roles');
+    setText('wallet-address', 'Wallet not linked');
+    hideElement('goldenCheeseGate');
+    hideElement('noCheeseJoke');
+    
+    // Make sure login link is visible
+    if (loginLink) {
+      loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
+      loginLink.style.display = 'block';
     }
-  }
-
-  // 5. Access Levels (portals): show unlocked based on role/trait logic
-  const portals = [
-    {name: "Lore Portal", role: "Lore Mage", color: "bg-green-500"},
-    {name: "Hytopia Portal", role: "Hytopia Hero", color: "bg-yellow-400"},
-    {name: "Lab 3", role: "Lab3 Access", color: "bg-red-500"},
-  ];
-  const accessEl = document.querySelector('.access-levels-list');
-  if (accessEl) {
-    accessEl.innerHTML = '';
-    const allSkills = [...(user.roles || []), ...(user.traits || [])];
-    portals.forEach(portal => {
-      const unlocked = allSkills.includes(portal.role);
-      accessEl.innerHTML += `<span class="px-3 py-1 rounded-full mr-2 mb-2 inline-block text-white text-xs font-bold shadow ${portal.color} ${!unlocked ? 'opacity-50 grayscale' : ''}">
-        ${portal.name}${!unlocked ? ' (Locked)' : ''}
-      </span>`;
-    });
+    if (avatar) {
+      avatar.src = 'img/grumpy-cheese.png';
+      avatar.style.cursor = 'pointer';
+    }
   }
 });
 </script>
@@ -1378,17 +909,23 @@ document.addEventListener("DOMContentLoaded", async function () {
 <!-- 🧠 Load Scroll Scripts -->
 <script src="scripts/tetris-scroll.js?v=9.9"></script>
 <script src="scripts/snake-scroll.js?v=1.1"></script>
-        <!-- 🎮 Game Script REMOVED: Not needed on profile page -->
+        <script src="scripts/space-cheese-invaders.js?v=1.1" onerror="console.error('❌ Failed to load space-cheese-invaders.js')" onload="console.log('✅ space-cheese-invaders.js loaded successfully')"></script>
         <script>
-          // Profile page specific functionality
-          console.log('✅ Profile page scripts loaded successfully');
+          // Check if initSpaceInvaders is available immediately after script loads
+          console.log('🔍 Checking initSpaceInvaders availability after script load...');
+          console.log('🔍 window.initSpaceInvaders type:', typeof window.initSpaceInvaders);
+          if (typeof window.initSpaceInvaders === 'function') {
+            console.log('✅ initSpaceInvaders is available after script load');
+          } else {
+            console.error('❌ initSpaceInvaders is NOT available after script load');
+          }
         </script>
 
 <!-- 🏆 Leaderboard Logic -->
 <script>
   async function loadCombinedLeaderboards() {
     try {
-      const res = await fetch("/api/dev/get-leaderboard.php");
+      const res = await fetch("https://narrrfs.world/api/dev/get-leaderboard.php");
       const result = await res.json();
 
       const tetrisList = document.getElementById("leaderboard-tetris-list");
@@ -1461,17 +998,98 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (spaceInvadersBtn) {
       spaceInvadersBtn.addEventListener("click", () => {
-        console.log('🎮 Space Invaders button clicked - redirecting to game page');
-        // Redirect to the dedicated game page instead of trying to load game here
-        window.location.href = 'space-invaders-test.html';
+        console.log('🎮 Space Invaders button clicked');
+        console.log('🔍 window.initSpaceInvaders exists:', typeof window.initSpaceInvaders);
+        if (window.initSpaceInvaders) {
+          console.log('🚀 Calling window.initSpaceInvaders()');
+          window.initSpaceInvaders();
+        } else {
+          console.error('❌ window.initSpaceInvaders is not available');
+        }
+        spaceInvadersBtn.disabled = true;
+        spaceInvadersBtn.textContent = "🕹️ Playing...";
       });
     }
+
+    // Reset button states when game ends
+    window.addEventListener('spaceInvadersGameEnd', () => {
+      if (spaceInvadersBtn) {
+        spaceInvadersBtn.disabled = false;
+        spaceInvadersBtn.textContent = "▶️ Start";
+      }
+    });
 
     loadCombinedLeaderboards();
   });
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+  // 1. Try to get Discord ID (session or local)
+  const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+  if (!userId) return; // Not logged in
 
+  // 2. Fetch user profile data
+  let user;
+  try {
+    const res = await fetch(`/api/user/profile.php?user_id=${userId}`);
+    user = await res.json();
+    if (user.error) throw new Error(user.error);
+  } catch (e) {
+    // fallback to loading state
+    return;
+  }
+
+  // 3. Fill Stats
+  const statsAdjustments = document.getElementById('stats-adjustments');
+  const statsSources = document.getElementById('stats-sources');
+  const statsRoles = document.getElementById('stats-roles');
+  const statsMemberSince = document.getElementById('stats-member-since');
+  
+  if (statsAdjustments) statsAdjustments.innerText = user.stats?.scoreAdjustments ?? "–";
+  if (statsSources) statsSources.innerText = user.stats?.sources ?? "–";
+  if (statsRoles) statsRoles.innerText = user.stats?.roles ?? "–";
+  if (statsMemberSince) statsMemberSince.innerText = user.member_since ?? "–";
+
+  // 4. Fill Skills (all roles & traits as badges)
+  const skillsBox = document.querySelector('.skills-list');
+  if (skillsBox) {
+    skillsBox.innerHTML = '';
+    const allSkills = [...(user.roles || []), ...(user.traits || [])];
+    if (allSkills.length) {
+      allSkills.forEach(skill => {
+        const badge = document.createElement('span');
+        badge.className = "inline-block bg-yellow-300 text-black px-2 py-1 rounded-full m-1 text-xs font-semibold shadow";
+        badge.innerText = skill;
+        skillsBox.appendChild(badge);
+      });
+    } else {
+      skillsBox.innerHTML = '<span class="text-gray-300">No skills yet</span>';
+    }
+  }
+
+  // 5. Access Levels (portals): show unlocked based on role/trait logic
+  const portals = [
+    {name: "Lore Portal", role: "Lore Mage", color: "bg-green-500"},
+    {name: "Hytopia Portal", role: "Hytopia Hero", color: "bg-yellow-400"},
+    {name: "Lab 3", role: "Lab3 Access", color: "bg-red-500"},
+  ];
+  const accessEl = document.querySelector('.access-levels-list');
+  if (accessEl) {
+    accessEl.innerHTML = '';
+    const allSkills = [...(user.roles || []), ...(user.traits || [])];
+    portals.forEach(portal => {
+      const unlocked = allSkills.includes(portal.role);
+      accessEl.innerHTML += `<span class="px-3 py-1 rounded-full mr-2 mb-2 inline-block text-white text-xs font-bold shadow ${portal.color} ${!unlocked ? 'opacity-50 grayscale' : ''}">
+        ${portal.name}${!unlocked ? ' (Locked)' : ''}
+      </span>`;
+    });
+  }
+
+  // 6. Optionally: Let user "highlight" a favorite skill/level
+  // You can add an event listener to the badges to let them pick a "main" skill, etc.
+});
+</script>
 
 <script>
   function loginAndReload() {
@@ -1516,77 +1134,195 @@ document.addEventListener('DOMContentLoaded', function() {
     if (canvas) canvas.style.display = 'none';
   }
 
-  // Only show chart if user is logged in
   if (!userId) {
-    console.log('User not logged in, hiding DSPOINC chart');
-    if (canvas) canvas.style.display = 'none';
-    if (msgBox) {
-      msgBox.innerText = 'Please log in to see your DSPOINC history.';
-      msgBox.classList.remove('hidden');
-    }
+    showMsg('Please log in to see your DSPOINC history.');
     return;
   }
-
   if (!canvas) {
     console.error('pointsGraph canvas missing!');
     return;
   }
-
-  // Fetch DSPOINC history for logged-in user using session-based API
-  fetch(`/api/user/recent-adjustments.php`, { credentials: 'include' })
+  fetch(`/api/discord/score-history.php?user_id=${userId}`)
     .then(res => res.json())
     .then(json => {
       if (msgBox) msgBox.classList.add('hidden');
       canvas.style.display = '';
-      
       let cumulative = 0, labels = [], data = [];
-      
-      if (json.adjustments && json.adjustments.length > 0) {
-        // Sort by timestamp to ensure chronological order
-        const sortedAdjustments = json.adjustments.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        
-        for (const entry of sortedAdjustments) {
-          cumulative += entry.amount;
-          labels.push(entry.timestamp.split('T')[0]);
-          data.push(cumulative);
-        }
-        
-        new Chart(canvas, {
-          type: 'line',
-          data: {
-            labels,
-            datasets: [{
-              label: '$DSPOINC Over Time',
-              data,
-              fill: false,
-              tension: 0.3,
-              borderColor: '#fcd34d',
-              backgroundColor: '#fde68a',
-              pointRadius: 4,
-              pointHoverRadius: 7
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: { legend: { display: true } },
-            scales: { y: { beginAtZero: true } }
-          }
-        });
-      } else {
-        showMsg('No DSPOINC adjustments found.');
+      for (const entry of json.history) {
+        cumulative += entry.amount;
+        labels.push(entry.timestamp.split('T')[0]);
+        data.push(cumulative);
       }
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: '$DSPOINC Over Time',
+            data,
+            fill: false,
+            tension: 0.3,
+            borderColor: '#fcd34d',
+            backgroundColor: '#fde68a',
+            pointRadius: 4,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: true } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
     })
     .catch(err => {
-      console.error('Error loading DSPOINC adjustments:', err);
-      showMsg('Could not load adjustments. Please try again.');
+      showMsg('Could not load history. Please try again.');
+      console.error('Graph error:', err);
     });
 });
 </script>
 
-</script>
-
 <script>
-// 🧀 DSPOINC Journey logic consolidated into main profile fetch script above
+document.addEventListener('DOMContentLoaded', async function() {
+  let user = {};
+  let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+
+  // Fetch user profile and set balances
+  if (userId) {
+    try {
+      const res = await fetch('/api/user/profile.php?user_id=' + encodeURIComponent(userId));
+      user = await res.json();
+
+      // Set both balances (top and journey widget)
+      const dspoincEl = document.getElementById('user-dspoinc');
+      const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
+      if (dspoincEl) dspoincEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
+      if (dspoincJourneyEl) dspoincJourneyEl.textContent = user.total_dspoinc !== undefined ? user.total_dspoinc.toLocaleString() : '0';
+
+    } catch (e) { /* handle error if you want */ }
+  }
+  
+  // 🆘 ENHANCED: Also fetch DSPOINC balance from score-total API for better data
+  if (userId) {
+    try {
+      const balanceRes = await fetch('/api/user/score-total.php', { credentials: 'include' });
+      if (balanceRes.ok) {
+        const balanceData = await balanceRes.json();
+        const dspoincBalance = balanceData.total_dspoinc || 0;
+        
+        // Update both DSPOINC displays with the most accurate data
+        const dspoincEl = document.getElementById('user-dspoinc');
+        const dspoincJourneyEl = document.getElementById('user-dspoinc-journey');
+        if (dspoincEl) dspoincEl.textContent = dspoincBalance.toLocaleString();
+        if (dspoincJourneyEl) dspoincJourneyEl.textContent = dspoincBalance.toLocaleString();
+        
+        console.log('✅ DSPOINC balance loaded:', dspoincBalance);
+      }
+    } catch (e) {
+      console.error('❌ Error loading DSPOINC balance:', e);
+    }
+  }
+
+  // Fetch recent adjustments
+// Fetch recent adjustments
+if (user && user.discord_id) {
+  fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
+    .then(res => res.json())
+    .then(response => {
+      const recentList = document.getElementById('recentAdjustments');
+      const emptyMsg = document.getElementById('no-score-history');
+      const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+
+      // If there are adjustments, hide the message and show the list
+      if (adjustments.length > 0) {
+        if (recentList) {
+          recentList.innerHTML = adjustments
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10)
+            .map(a =>
+              `<li>
+                <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
+                : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
+                <span class="italic">(${a.reason || a.action})</span>
+              </li>`
+            ).join('');
+        }
+        if (emptyMsg) emptyMsg.style.display = "none";
+      } else {
+        // No score changes: show the empty msg and clear the list
+        if (recentList) recentList.innerHTML = '';
+        if (emptyMsg) emptyMsg.style.display = "";
+      }
+    })
+    .catch(() => {
+      // On error, show a fallback error in the list and show the empty msg
+      const recentList = document.getElementById('recentAdjustments');
+      if (recentList) recentList.innerHTML = '<li class="text-red-400">Could not load recent changes.</li>';
+      const emptyMsg = document.getElementById('no-score-history');
+      if (emptyMsg) emptyMsg.style.display = "";
+    });
+}
+
+
+  // 2. Load and display quests for this user
+  if (userId) {
+    try {
+      const res = await fetch('/api/user/quests.php?user_id=' + encodeURIComponent(userId));
+      const data = await res.json();
+      const questList = document.getElementById('user-quests-list');
+      if (!questList) return;
+
+      if (!data.quests || !data.quests.length) {
+        questList.innerHTML = '<div class="text-gray-400">No quests found.</div>';
+        return;
+      }
+
+      questList.innerHTML = data.quests.map(q => `
+        <div class="bg-gray-800 rounded-xl p-4 shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-lg text-yellow-200 mb-1">
+              ${q.type === "Custom" ? "📝 Custom Quest" : "🐦 Twitter Quest"}
+            </div>
+            <div class="mb-1 break-words">${q.description}</div>
+            ${q.link ? `<a href="${q.link}" class="text-blue-400 underline break-all" target="_blank">Open Link</a>` : ''}
+            <div class="mt-2 text-yellow-300 font-semibold">Reward: ${q.reward} $DSPOINC</div>
+          </div>
+          <div class="flex flex-col items-end gap-2 min-w-[140px]">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold 
+              ${q.is_active ? 'bg-green-600' : 'bg-gray-600'} text-white">
+              ${q.is_active ? 'Active' : 'Closed'}
+            </span>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold 
+              ${
+                q.claim_status === "approved" ? 'bg-green-500'
+                : q.claim_status === "rejected" ? 'bg-red-500'
+                : q.claim_status === "pending" ? 'bg-yellow-400 text-gray-900'
+                : 'bg-gray-700'
+              }">
+              ${
+                q.claim_status === "approved" ? 'Claimed & Rewarded'
+                : q.claim_status === "rejected" ? 'Rejected'
+                : q.claim_status === "pending" ? 'Pending Review'
+                : 'Not Claimed'
+              }
+            </span>
+            ${q.claimed_at ? `<span class="text-xs text-gray-300 text-right">Claimed at:<br>${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
+            ${
+              q.is_active && !q.claim_status
+                ? `<button onclick="claimQuest('${q.quest_id}', this)" class="mt-2 px-4 py-1 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg font-semibold text-xs transition whitespace-nowrap">
+                    Claim Quest
+                  </button>`
+                : ''
+            }
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      const questList = document.getElementById('user-quests-list');
+      if (questList) questList.innerHTML = '<div class="text-red-400">Failed to load quests.</div>';
+    }
+  }
+});
 
 // --- Claim Quest: Exposed for onclick ---
 window.claimQuest = async function(questId, btn) {
@@ -1663,14 +1399,6 @@ async function checkWLRoleAndShowButton() {
         console.log('Role data received:', roleData);
         console.log('Available roles:', roleData.roles);
         
-        // 🏆 CRITICAL FIX: Render trophy shelf with the complete role data
-        if (roleData.roles && roleData.roles.length > 0) {
-            console.log('🏆 Rendering trophy shelf with complete role data:', roleData.roles.length, 'roles');
-            renderTrophyShelf(roleData.roles);
-        } else {
-            console.log('⚠️ No roles found in roleData');
-        }
-        
         // Check ONLY for WL role - specific role name or ID
         const hasWLRole = roleData.roles && roleData.roles.some(role => {
             // Only check for the specific WL role
@@ -1732,16 +1460,10 @@ async function checkWLRoleAndShowButton() {
     }
 }
 
-// Check for WL role on page load - moved to after DOM is fully loaded
+// Check for WL role on page load
 document.addEventListener('DOMContentLoaded', function() {
-  // Wait for all scripts to load and DOM to be ready
-  setTimeout(() => {
-    if (typeof checkWLRoleAndShowButton === 'function') {
-      checkWLRoleAndShowButton();
-    } else {
-      console.warn('⚠️ checkWLRoleAndShowButton function not available yet');
-    }
-  }, 2000); // Increased delay to ensure all scripts are loaded
+  // Small delay to ensure page is loaded
+  setTimeout(checkWLRoleAndShowButton, 1000);
 });
 
 // 🎴 Web3 Wallet Verification Functions
@@ -2050,93 +1772,6 @@ async function connectWallet() {
   }
 }
 </script>
-
-<!-- 🍪 Cookie functions moved to head section for early availability -->
-
-<!-- 🍩 Footer GENESIS 12.0 - Enhanced Cheese Universe Footer -->
-<footer class="text-center mt-16 mb-10">
-  <!-- Back to Top Link -->
-  <div class="mb-6">
-    <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition-colors duration-200">
-      🔝 Back to Top
-    </a>
-  </div>
-  
-  <!-- 🧀 Narrrf's Cheese Universe Section -->
-  <div class="mb-8 p-6 bg-gradient-to-r from-yellow-100/50 to-orange-100/50 rounded-xl border border-yellow-300/30">
-    <div class="text-lg font-bold text-yellow-800 mb-4">
-      🧀 Narrrf's Cheese Universe
-    </div>
-    <div class="text-sm text-yellow-700 mb-6">
-      Where gaming meets cheese innovation
-    </div>
-    
-    <!-- Quick Links -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <a href="/index.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🏠 Home
-      </a>
-      <a href="/whitepaper-pro.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        📜 Read the Whitepaper
-      </a>
-      <a href="/mint.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🎨 Mint Your NFT
-      </a>
-      <a href="/profile.html" class="text-yellow-600 hover:text-yellow-800 transition-colors duration-200 font-medium">
-        🎭 Get Roles
-      </a>
-    </div>
-    
-    <!-- Socials -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium">
-        🐦 Twitter / X
-      </a>
-                     <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
-                 🎮 Join Discord
-               </a>
-      <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-800 transition-colors duration-200 font-medium">
-        🃏 Poker ClubGG
-      </a>
-                     <a href="https://discord.gg/CR5mYu49" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
-                 📧 Open a Ticket
-               </a>
-    </div>
-    
-    <!-- Contact & Location -->
-    <div class="text-xs text-yellow-600/80 mb-4">
-      🌍 Web3 Only – Austria Based
-    </div>
-  </div>
-  
-  <!-- Legal & Important Links - More Prominent -->
-  <div class="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-lg border border-blue-200/30">
-    <div class="text-sm font-semibold text-blue-800 mb-3">
-      📋 Important Legal & Support Links
-    </div>
-    <div class="flex flex-wrap justify-center gap-6 text-sm">
-      <a href="/privacy-policy.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        🍪 Privacy Policy
-      </a>
-      <a href="/faq.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/70 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        ❓ FAQ
-      </a>
-      <a href="/profile.html" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium px-3 py-2 bg-white/700 rounded-lg border border-blue-200/50 hover:bg-white hover:shadow-md">
-        👤 Profile
-      </a>
-    </div>
-  </div>
-  
-  <!-- Copyright & Branding -->
-  <div class="pt-6 border-t border-yellow-600/30 text-xs text-yellow-600/80">
-    <div class="mb-2">
-      © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
-    </div>
-    <div class="text-yellow-500/70">
-      🚀 Powered by the ultimate cheese gaming technology
-    </div>
-  </div>
-</footer>
 
 </body>
 </html>
