@@ -185,34 +185,34 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
   const DEFAULT_BOSS_CONFIGS = {
     cheeseKing: {
       name: 'Cheese King',
-      description: 'The first boss - slower and more manageable for new players',
-      baseHealth: 120, // Reduced health for easier first boss
+      description: 'The first boss - beginner-friendly tutorial boss',
+      baseHealth: 80, // Much less health (was 120, originally 150)
       healthMultiplier: 1.0,
-      baseSpeed: 1.8, // Much slower speed (was 2.5)
+      baseSpeed: 1.2, // Even slower movement (was 1.8)
       speedMultiplier: 1.0,
-      baseAttackCooldown: 1200, // Slower attacks (was 800)
+      baseAttackCooldown: 1800, // Much slower attacks (was 1200)
       attackCooldownMultiplier: 1.0,
-      baseBulletSpeed: 2.5, // Even slower bullets (was 3.2)
+      baseBulletSpeed: 2.0, // Very slow bullets (was 2.5)
       bulletSpeedMultiplier: 1.0,
-      baseBulletDamage: 1, // Reduced damage (was 2)
+      baseBulletDamage: 1, // Keep low damage
       bulletDamageMultiplier: 1.0,
       size: 0.8,
-      movementPatterns: ['sideways', 'zigzag'], // Removed 'dash' - less aggressive
-      attackPatterns: [0, 1, 2], // Simplified attack patterns
+      movementPatterns: ['sideways'], // Only simple movement
+      attackPatterns: [0, 1], // Very simple attacks only
       abilities: {
-        canTeleport: true,
+        canTeleport: false, // Disabled teleport for easier fights
         canShield: false, // Disabled shield for easier fights
         canSummonMinions: false,
         canUseLaser: false,
         canCreateExplosions: false
       },
-      specialAttackChance: 0.2, // Reduced special attacks (was 0.3)
-      rageModeThreshold: 0.3, // Earlier rage mode but...
+      specialAttackChance: 0.1, // Rarely uses special attacks (was 0.2)
+      rageModeThreshold: 0.2, // Earlier rage mode but very mild
       rageModeMultipliers: {
-        speed: 1.5, // Less aggressive rage mode (was 2.0)
-        attackCooldown: 0.6, // Less frequent attacks (was 0.4)
-        bulletSpeed: 1.4, // Slower rage bullets (was 1.8)
-        bulletDamage: 1.2 // Less rage damage (was 1.5)
+        speed: 1.3, // Barely faster in rage (was 1.5)
+        attackCooldown: 0.8, // Slightly faster attacks (was 0.6)
+        bulletSpeed: 1.2, // Barely faster bullets (was 1.4)
+        bulletDamage: 1.0 // No damage increase in rage (was 1.2)
       },
       colors: {
         primary: '#ff6b35',
@@ -2132,9 +2132,20 @@ let canvasHeight;
         if (bullet.type === 'laser') damage = 3;
         else if (bullet.type === 'bomb') damage = 5;
         
+        // 🚀 NEW: Extra damage against first boss to make it beatable
+        if (boss.type === 'cheeseKing') {
+          damage *= 2; // Double damage against first boss for easier fights
+        }
+        
         // 🚀 NEW: Boss takes damage with invincibility frames
         boss.health -= damage;
-        boss.invincibilityFrames = 1; // Further reduced to 1 frame for easier boss fights
+        
+        // 🚀 NEW: No invincibility frames for first boss to make it very easy
+        if (boss.type === 'cheeseKing') {
+          boss.invincibilityFrames = 0; // No invincibility for tutorial boss
+        } else {
+          boss.invincibilityFrames = 1; // Normal invincibility for other bosses
+        }
         
         // 🚀 NEW: Create enhanced hit effects
         createExplosion(bullet.x, bullet.y);
