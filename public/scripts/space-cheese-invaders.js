@@ -34,6 +34,9 @@ let isSpaceInvadersPaused = false;
 let spaceInvadersScore = 0;
 let spaceInvadersCount = 0; // NEW: Track actual invader count for DSPOINC calculation
 
+// 🚀 NEW: Boss Reward Upgrades
+let hasDoubleShotUpgrade = false; // Unlocked after defeating first boss (Cheese King)
+
 // 🧀 Load cheese-themed images
 const cheeseShipImg = new Image();
 cheeseShipImg.src = 'img/space/cheese-ship.png';
@@ -765,6 +768,11 @@ let canvasHeight;
         displayText += ` (${weaponAmmo.laser} ammo)`;
       } else if (currentWeaponType === 'bomb') {
         displayText += ` (${weaponAmmo.bomb} ammo)`;
+      }
+      
+      // 🚀 NEW: Show double shot upgrade status
+      if (hasDoubleShotUpgrade && currentWeaponType === 'normal') {
+        displayText += ` 🎯 DOUBLE SHOT!`;
       }
       
       weaponDisplay.textContent = displayText;
@@ -2187,6 +2195,18 @@ let canvasHeight;
             }, i * 100);
           }
           
+          // 🚀 NEW: Boss-specific upgrade rewards
+          if (boss.type === 'cheeseKing' && !hasDoubleShotUpgrade) {
+            hasDoubleShotUpgrade = true;
+            console.log(`🎯 DOUBLE SHOT UPGRADE UNLOCKED! You can now fire two bullets at once!`);
+            console.log(`🔥 Your shooting power has been permanently upgraded!`);
+            
+            // Show upgrade notification on screen
+            setTimeout(() => {
+              console.log(`✨ UPGRADE NOTIFICATION: Double Shot mode activated!`);
+            }, 2000);
+          }
+          
           // 🚀 NEW: Special boss defeat message
           setTimeout(() => {
             console.log(`🎉 CONGRATULATIONS! You defeated the ${boss.name}!`);
@@ -3147,6 +3167,8 @@ let canvasHeight;
     speedBoostTimer = 0;
     speedBoostAmmo = 2; // 🚀 NEW: Limited speed boost ammo
     window.powerUps = [];
+    
+    // 🎯 NOTE: hasDoubleShotUpgrade is NOT reset - permanent upgrade after defeating first boss
     
     playerShip.x = canvasWidth / 2;
     playerShip.health = 3;
@@ -5338,16 +5360,39 @@ let canvasHeight;
     // 🚀 NEW: Enhanced shooting system with weapon types
     switch (currentWeaponType) {
       case 'normal':
-        // Normal cheese bullet
-        bullets.push({
-          x: playerShip.x + playerShip.width / 2 - 4,
-          y: playerShip.y,
-          width: 8,
-          height: 16,
-          speed: 6,
-          type: 'normal',
-          damage: 1
-        });
+        // 🚀 NEW: Double shot upgrade after defeating first boss
+        if (hasDoubleShotUpgrade) {
+          // Fire two bullets side by side
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 - 12, // Left bullet
+            y: playerShip.y,
+            width: 8,
+            height: 16,
+            speed: 6,
+            type: 'normal',
+            damage: 1
+          });
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 + 4, // Right bullet
+            y: playerShip.y,
+            width: 8,
+            height: 16,
+            speed: 6,
+            type: 'normal',
+            damage: 1
+          });
+        } else {
+          // Normal single bullet
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 - 4,
+            y: playerShip.y,
+            width: 8,
+            height: 16,
+            speed: 6,
+            type: 'normal',
+            damage: 1
+          });
+        }
         break;
         
       case 'laser':
