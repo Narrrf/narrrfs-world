@@ -19,16 +19,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-require_once '../config/database.php';
-require_once 'auth.php';
+// Use centralized database configuration
+require_once __DIR__ . '/../config/database.php';
 
-// Initialize database connection
-$db = new Database();
-$conn = $db->getConnection();
-
-if (!$conn) {
+try {
+    $db = getSQLite3Connection();
+    if (!$db) {
+        throw new Exception('Database connection failed');
+    }
+} catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Database connection failed']);
+    echo json_encode(['success' => false, 'error' => 'Database connection failed: ' . $e->getMessage()]);
     exit;
 }
 
@@ -36,43 +37,43 @@ if (!$conn) {
 $createTableSQL = "
 CREATE TABLE IF NOT EXISTS boss_level_notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    player_username VARCHAR(255) NOT NULL,
-    player_id INTEGER,
-    game_type VARCHAR(50) DEFAULT 'space_invaders',
+    player_username TEXT NOT NULL,
+    player_id TEXT,
+    game_type TEXT DEFAULT 'space_invaders',
     wave_number INTEGER NOT NULL,
     boss_level INTEGER NOT NULL,
-    boss_type VARCHAR(100),
-    boss_name VARCHAR(100),
+    boss_type TEXT,
+    boss_name TEXT,
     score INTEGER,
     dspoinc_earned INTEGER,
-    notification_type VARCHAR(50) DEFAULT 'boss_level_reached',
-    status VARCHAR(50) DEFAULT 'pending',
-    admin_reviewed_by VARCHAR(255),
+    notification_type TEXT DEFAULT 'boss_level_reached',
+    status TEXT DEFAULT 'pending',
+    admin_reviewed_by TEXT,
     admin_reviewed_at DATETIME,
-    special_reward_given BOOLEAN DEFAULT 0,
-    reward_description TEXT,
+    reward_amount INTEGER DEFAULT 0,
+    reward_note TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )";
 
 try {
-    $conn->exec($createTableSQL);
-} catch (PDOException $e) {
+    $db->exec($createTableSQL);
+} catch (Exception $e) {
     // Table might already exist, continue
 }
 
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'POST':
-        handleCreateNotification($conn);
+        handleCreateNotification($db);
         break;
     case 'GET':
-        handleGetNotifications($conn);
+        handleGetNotifications($db);
         break;
     case 'PUT':
-        handleUpdateNotification($conn);
+        handleUpdateNotification($db);
         break;
     case 'DELETE':
-        handleDeleteNotification($conn);
+        handleDeleteNotification($db);
         break;
     default:
         http_response_code(405);
@@ -80,7 +81,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
 }
 
-function handleCreateNotification($conn) {
+function handleCreateNotification($db) {
     $input = json_decode(file_get_contents('php://input'), true);
     
     if (!$input) {
@@ -89,9 +90,10 @@ function handleCreateNotification($conn) {
         return;
     }
     
-    $requiredFields = ['player_username', 'wave_number', 'boss_level'];
-    foreach ($requiredFields as $field) {
-        if (!isset($input[$field]) || empty($input[$field])) {
+    // Validate required fields
+    $required = ['player_username', 'wave_number', 'boss_level', 'boss_name'];
+    foreach ($required as $field) {
+        if (!isset($input[$field])) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => "Missing required field: $field"]);
             return;
@@ -99,172 +101,183 @@ function handleCreateNotification($conn) {
     }
     
     try {
-        $stmt = $conn->prepare("
+        $stmt = $db->prepare("
             INSERT INTO boss_level_notifications (
                 player_username, player_id, game_type, wave_number, boss_level, 
-                boss_type, boss_name, score, dspoinc_earned, notification_type, status
-            ) VALUES (
-                :username, :player_id, :game_type, :wave_number, :boss_level,
-                :boss_type, :boss_name, :score, :dspoinc_earned, :notification_type, 'pending'
-            )
+                boss_type, boss_name, score, dspoinc_earned, notification_type
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
-        $stmt->execute([
-            ':username' => $input['player_username'],
-            ':player_id' => $input['player_id'] ?? null,
-            ':game_type' => $input['game_type'] ?? 'space_invaders',
-            ':wave_number' => $input['wave_number'],
-            ':boss_level' => $input['boss_level'],
-            ':boss_type' => $input['boss_type'] ?? null,
-            ':boss_name' => $input['boss_name'] ?? null,
-            ':score' => $input['score'] ?? null,
-            ':dspoinc_earned' => $input['dspoinc_earned'] ?? null,
-            ':notification_type' => $input['notification_type'] ?? 'boss_level_reached'
-        ]);
+        $stmt->bindValue(1, $input['player_username'], SQLITE3_TEXT);
+        $stmt->bindValue(2, $input['player_id'] ?? null, SQLITE3_TEXT);
+        $stmt->bindValue(3, $input['game_type'] ?? 'space_invaders', SQLITE3_TEXT);
+        $stmt->bindValue(4, $input['wave_number'], SQLITE3_INTEGER);
+        $stmt->bindValue(5, $input['boss_level'], SQLITE3_INTEGER);
+        $stmt->bindValue(6, $input['boss_type'] ?? null, SQLITE3_TEXT);
+        $stmt->bindValue(7, $input['boss_name'], SQLITE3_TEXT);
+        $stmt->bindValue(8, $input['score'] ?? null, SQLITE3_INTEGER);
+        $stmt->bindValue(9, $input['dspoinc_earned'] ?? null, SQLITE3_INTEGER);
+        $stmt->bindValue(10, $input['notification_type'] ?? 'boss_level_reached', SQLITE3_TEXT);
         
-        $notificationId = $conn->lastInsertId();
+        $result = $stmt->execute();
         
-        echo json_encode([
-            'success' => true,
-            'message' => 'Boss level notification created successfully',
-            'notification_id' => $notificationId,
-            'data' => [
-                'player' => $input['player_username'],
-                'wave' => $input['wave_number'],
+        if ($result) {
+            $notificationId = $db->lastInsertRowID();
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Boss level notification created successfully',
+                'notification_id' => $notificationId,
+                'player_username' => $input['player_username'],
                 'boss_level' => $input['boss_level'],
-                'boss_name' => $input['boss_name'] ?? 'Unknown Boss'
-            ]
-        ]);
+                'boss_name' => $input['boss_name']
+            ]);
+        } else {
+            throw new Exception('Failed to insert notification');
+        }
         
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
     }
 }
 
-function handleGetNotifications($conn) {
-    // Check if requesting a specific notification by ID
-    if (isset($_GET['id'])) {
-        $notificationId = (int)$_GET['id'];
-        
-        try {
-            $stmt = $conn->prepare("
-                SELECT * FROM boss_level_notifications 
-                WHERE id = :id
-            ");
-            
-            $stmt->execute([':id' => $notificationId]);
-            $notification = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if ($notification) {
-                echo json_encode([
-                    'success' => true,
-                    'notifications' => [$notification]
-                ]);
-            } else {
-                http_response_code(404);
-                echo json_encode(['success' => false, 'error' => 'Notification not found']);
-            }
-            
-        } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
-        }
-        return;
-    }
-    
-    // Regular notification listing
-    $status = $_GET['status'] ?? 'all';
-    $limit = min((int)($_GET['limit'] ?? 50), 100);
-    $offset = (int)($_GET['offset'] ?? 0);
-    
+function handleGetNotifications($db) {
     try {
-        $whereClause = '';
+        $status = $_GET['status'] ?? 'all';
+        $limit = (int)($_GET['limit'] ?? 50);
+        $offset = (int)($_GET['offset'] ?? 0);
+        
+        $whereClause = "";
         $params = [];
+        $paramTypes = [];
         
         if ($status !== 'all') {
-            $whereClause = 'WHERE status = :status';
-            $params[':status'] = $status;
+            $whereClause = "WHERE status = ?";
+            $params[] = $status;
+            $paramTypes[] = SQLITE3_TEXT;
         }
         
-        $stmt = $conn->prepare("
+        $sql = "
             SELECT * FROM boss_level_notifications 
-            $whereClause
+            $whereClause 
             ORDER BY created_at DESC 
-            LIMIT :limit OFFSET :offset
-        ");
+            LIMIT ? OFFSET ?
+        ";
         
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt = $db->prepare($sql);
         
-        if ($status !== 'all') {
-            $stmt->bindValue(':status', $status);
+        $paramIndex = 1;
+        foreach ($params as $i => $param) {
+            $stmt->bindValue($paramIndex++, $param, $paramTypes[$i]);
         }
+        $stmt->bindValue($paramIndex++, $limit, SQLITE3_INTEGER);
+        $stmt->bindValue($paramIndex, $offset, SQLITE3_INTEGER);
         
-        $stmt->execute();
-        $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = $stmt->execute();
+        $notifications = [];
+        
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            $notifications[] = $row;
+        }
         
         // Get count for pagination
-        $countStmt = $conn->prepare("
-            SELECT COUNT(*) as total FROM boss_level_notifications $whereClause
-        ");
+        $countSql = "SELECT COUNT(*) as total FROM boss_level_notifications $whereClause";
+        $countStmt = $db->prepare($countSql);
         
-        if ($status !== 'all') {
-            $countStmt->bindValue(':status', $status);
+        $paramIndex = 1;
+        foreach ($params as $i => $param) {
+            $countStmt->bindValue($paramIndex++, $param, $paramTypes[$i]);
         }
         
-        $countStmt->execute();
-        $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+        $countResult = $countStmt->execute();
+        $countRow = $countResult->fetchArray(SQLITE3_ASSOC);
+        $total = $countRow['total'];
         
         echo json_encode([
             'success' => true,
             'notifications' => $notifications,
             'pagination' => [
-                'total' => (int)$totalCount,
+                'total' => $total,
                 'limit' => $limit,
                 'offset' => $offset,
-                'has_more' => ($offset + $limit) < $totalCount
+                'has_more' => ($offset + $limit) < $total
             ]
         ]);
         
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
     }
 }
 
-function handleUpdateNotification($conn) {
+function handleUpdateNotification($db) {
     $input = json_decode(file_get_contents('php://input'), true);
     
-    if (!$input || !isset($input['id'])) {
+    if (!$input || !isset($input['notification_id'])) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Missing notification ID']);
         return;
     }
     
     try {
+        // First get the notification to check if it exists and get player info
+        $getStmt = $db->prepare("SELECT * FROM boss_level_notifications WHERE id = ?");
+        $getStmt->bindValue(1, $input['notification_id'], SQLITE3_INTEGER);
+        $getResult = $getStmt->execute();
+        $notification = $getResult->fetchArray(SQLITE3_ASSOC);
+        
+        if (!$notification) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Notification not found']);
+            return;
+        }
+        
+        // If approving and reward amount specified, award the DSPOINC
+        if (isset($input['status']) && $input['status'] === 'approved' && isset($input['reward_amount'])) {
+            $rewardAmount = (int)$input['reward_amount'];
+            if ($rewardAmount > 0) {
+                // Award points using the point management system
+                awardBossReward($db, $notification['player_username'], $rewardAmount, $input['reward_note'] ?? '');
+            }
+        }
+        
+        // Build update SQL
         $updateFields = [];
-        $params = [':id' => $input['id']];
+        $params = [];
+        $paramTypes = [];
         
         if (isset($input['status'])) {
-            $updateFields[] = 'status = :status';
-            $params[':status'] = $input['status'];
+            $updateFields[] = "status = ?";
+            $params[] = $input['status'];
+            $paramTypes[] = SQLITE3_TEXT;
         }
         
-        if (isset($input['admin_reviewed_by'])) {
-            $updateFields[] = 'admin_reviewed_by = :admin_reviewed_by';
-            $params[':admin_reviewed_by'] = $input['admin_reviewed_by'];
+        if (isset($input['admin_id'])) {
+            $updateFields[] = "admin_reviewed_by = ?";
+            $params[] = $input['admin_id'];
+            $paramTypes[] = SQLITE3_TEXT;
+            
+            $updateFields[] = "admin_reviewed_at = ?";
+            $params[] = date('Y-m-d H:i:s');
+            $paramTypes[] = SQLITE3_TEXT;
         }
         
-        if (isset($input['special_reward_given'])) {
-            $updateFields[] = 'special_reward_given = :special_reward_given';
-            $params[':special_reward_given'] = $input['special_reward_given'] ? 1 : 0;
+        if (isset($input['reward_amount'])) {
+            $updateFields[] = "reward_amount = ?";
+            $params[] = (int)$input['reward_amount'];
+            $paramTypes[] = SQLITE3_INTEGER;
         }
         
-        if (isset($input['reward_description'])) {
-            $updateFields[] = 'reward_description = :reward_description';
-            $params[':reward_description'] = $input['reward_description'];
+        if (isset($input['reward_note'])) {
+            $updateFields[] = "reward_note = ?";
+            $params[] = $input['reward_note'];
+            $paramTypes[] = SQLITE3_TEXT;
         }
+        
+        $updateFields[] = "updated_at = ?";
+        $params[] = date('Y-m-d H:i:s');
+        $paramTypes[] = SQLITE3_TEXT;
         
         if (empty($updateFields)) {
             http_response_code(400);
@@ -272,32 +285,34 @@ function handleUpdateNotification($conn) {
             return;
         }
         
-        $updateFields[] = 'updated_at = CURRENT_TIMESTAMP';
-        if (isset($input['admin_reviewed_by'])) {
-            $updateFields[] = 'admin_reviewed_at = CURRENT_TIMESTAMP';
+        $sql = "UPDATE boss_level_notifications SET " . implode(', ', $updateFields) . " WHERE id = ?";
+        $params[] = $input['notification_id'];
+        $paramTypes[] = SQLITE3_INTEGER;
+        
+        $stmt = $db->prepare($sql);
+        foreach ($params as $i => $param) {
+            $stmt->bindValue($i + 1, $param, $paramTypes[$i]);
         }
         
-        $sql = "UPDATE boss_level_notifications SET " . implode(', ', $updateFields) . " WHERE id = :id";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute($params);
+        $result = $stmt->execute();
         
-        if ($stmt->rowCount() > 0) {
+        if ($result) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Notification updated successfully'
+                'message' => 'Notification updated successfully',
+                'player_username' => $notification['player_username']
             ]);
         } else {
-            http_response_code(404);
-            echo json_encode(['success' => false, 'error' => 'Notification not found']);
+            throw new Exception('Failed to update notification');
         }
         
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
     }
 }
 
-function handleDeleteNotification($conn) {
+function handleDeleteNotification($db) {
     $input = json_decode(file_get_contents('php://input'), true);
     
     if (!$input || !isset($input['id'])) {
@@ -307,10 +322,11 @@ function handleDeleteNotification($conn) {
     }
     
     try {
-        $stmt = $conn->prepare("DELETE FROM boss_level_notifications WHERE id = :id");
-        $stmt->execute([':id' => $input['id']]);
+        $stmt = $db->prepare("DELETE FROM boss_level_notifications WHERE id = ?");
+        $stmt->bindValue(1, $input['id'], SQLITE3_INTEGER);
+        $result = $stmt->execute();
         
-        if ($stmt->rowCount() > 0) {
+        if ($db->changes() > 0) {
             echo json_encode([
                 'success' => true,
                 'message' => 'Notification deleted successfully'
@@ -320,9 +336,54 @@ function handleDeleteNotification($conn) {
             echo json_encode(['success' => false, 'error' => 'Notification not found']);
         }
         
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    }
+}
+
+// Function to award DSPOINC using the point management system
+function awardBossReward($db, $username, $amount, $note) {
+    try {
+        // Insert into score adjustments table
+        $stmt = $db->prepare("
+            INSERT INTO tbl_score_adjustments (user_id, adjustment_type, adjustment_reason, points_before, points_after, adjustment_amount, admin_notes, created_at)
+            VALUES (?, 'boss_achievement', ?, 0, ?, ?, ?, ?)
+        ");
+        
+        $stmt->bindValue(1, $username, SQLITE3_TEXT);
+        $stmt->bindValue(2, "Boss Achievement Reward", SQLITE3_TEXT);
+        $stmt->bindValue(3, $amount, SQLITE3_INTEGER);
+        $stmt->bindValue(4, $amount, SQLITE3_INTEGER);
+        $stmt->bindValue(5, $note ?: "Boss achievement reward", SQLITE3_TEXT);
+        $stmt->bindValue(6, date('Y-m-d H:i:s'), SQLITE3_TEXT);
+        
+        $stmt->execute();
+        
+        // Also add to user scores if they exist
+        $checkStmt = $db->prepare("SELECT score FROM tbl_user_scores WHERE user_id = ? LIMIT 1");
+        $checkStmt->bindValue(1, $username, SQLITE3_TEXT);
+        $checkResult = $checkStmt->execute();
+        $existingScore = $checkResult->fetchArray(SQLITE3_ASSOC);
+        
+        if ($existingScore) {
+            // Update existing score
+            $updateStmt = $db->prepare("UPDATE tbl_user_scores SET score = score + ? WHERE user_id = ?");
+            $updateStmt->bindValue(1, $amount, SQLITE3_INTEGER);
+            $updateStmt->bindValue(2, $username, SQLITE3_TEXT);
+            $updateStmt->execute();
+        } else {
+            // Insert new score entry
+            $insertStmt = $db->prepare("INSERT INTO tbl_user_scores (user_id, score, game_type) VALUES (?, ?, 'boss_achievement')");
+            $insertStmt->bindValue(1, $username, SQLITE3_TEXT);
+            $insertStmt->bindValue(2, $amount, SQLITE3_INTEGER);
+            $insertStmt->execute();
+        }
+        
+        return true;
+    } catch (Exception $e) {
+        error_log("Boss reward error: " . $e->getMessage());
+        return false;
     }
 }
 ?>
