@@ -1317,6 +1317,10 @@ require_once 'discord-invite.php';
         <h3 class="text-lg font-semibold">🏆 Active Quests</h3>
         <p class="text-2xl font-bold" id="activeQuests">Loading...</p>
       </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+        <h3 class="text-lg font-semibold">👑 Boss Notifications</h3>
+        <p class="text-2xl font-bold" id="bossNotifications">Loading...</p>
+      </div>
     </div>
 
     <!-- Admin Authentication -->
@@ -1394,6 +1398,7 @@ require_once 'discord-invite.php';
         <button class="tab-btn px-4 py-2 rounded" data-tab="quests">🏆 Quest System</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="games">🎮 Game Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="bosses">👑 Boss Management</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="bossNotifications">🏆 Boss Notifications</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="discord">🔗 Discord Config</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="holderVerification">🎴 Holder Verification</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="cheeseGuide">🧀 Cheese Guide</button>
@@ -2123,6 +2128,30 @@ require_once 'discord-invite.php';
         </div>
         <div id="questClaimsList" class="space-y-4 max-h-96 overflow-y-auto">
           <div class="text-gray-300">Click "Refresh Claims" to load quest submissions...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boss Notifications Tab -->
+    <div class="admin-card mb-6" id="bossNotificationsTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">🏆 Boss Notifications - Space Invaders Achievements</h2>
+      
+      <!-- Boss Notification Management Controls -->
+      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-semibold mb-3">🎮 Boss Achievement Management</h3>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button onclick="loadBossNotifications()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Notifications</button>
+          <button onclick="testBossNotificationTable()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded mr-2">🧪 Test Table</button>
+          <select id="bossNotificationStatusFilter" onchange="filterBossNotifications()" class="px-3 py-2 rounded text-gray-800">
+            <option value="all">All Notifications</option>
+            <option value="pending">Pending Review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <button onclick="toggleBossUserHistoryView()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded ml-2">👤 Show User History</button>
+        </div>
+        <div id="bossNotificationsList" class="space-y-4 max-h-96 overflow-y-auto">
+          <div class="text-gray-300">Click "Refresh Notifications" to load boss achievements...</div>
         </div>
       </div>
     </div>
@@ -3786,7 +3815,7 @@ require_once 'discord-invite.php';
       if (authPanel) authPanel.style.display = 'block';
       
       // Clear sensitive data
-      const sensitiveElements = ['totalUsers', 'totalScores', 'totalItems', 'activeQuests'];
+      const sensitiveElements = ['totalUsers', 'totalScores', 'totalItems', 'activeQuests', 'bossNotifications'];
       sensitiveElements.forEach(id => {
         const element = document.getElementById(id);
         if (element) element.textContent = '🔒';
@@ -4363,6 +4392,7 @@ require_once 'discord-invite.php';
       }
       if (tabName === 'store') loadStoreItems();
       if (tabName === 'quests') loadQuests();
+      if (tabName === 'bossNotifications') loadBossNotifications();
       if (tabName === 'games') {
         // Initialize the new consolidated game management system
         loadGameOverview(); // Load overview dashboard by default
@@ -4754,6 +4784,9 @@ require_once 'discord-invite.php';
           document.getElementById('totalItems').textContent = stats.totalItems;
           document.getElementById('activeQuests').textContent = stats.activeQuests;
           
+          // Load boss notifications count
+          loadBossNotificationCount();
+          
           // Update detailed stats (only for authenticated users)
           if (currentAdmin) {
             document.getElementById('totalUsersDetail').textContent = stats.totalUsers;
@@ -4989,6 +5022,34 @@ require_once 'discord-invite.php';
         }
       } catch (error) {
         addLog(`❌ Error loading dashboard data: ${error.message}`);
+      }
+    }
+    
+    // Load boss notification count
+    async function loadBossNotificationCount() {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php?status=pending');
+        const data = await response.json();
+        
+        if (data.success) {
+          const count = data.notifications ? data.notifications.length : 0;
+          document.getElementById('bossNotifications').textContent = count;
+          
+          // Update color based on count
+          const element = document.getElementById('bossNotifications').parentElement;
+          if (count > 0) {
+            element.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+            element.style.animation = count > 5 ? 'pulse 2s infinite' : 'none';
+          } else {
+            element.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+            element.style.animation = 'none';
+          }
+        } else {
+          document.getElementById('bossNotifications').textContent = '❌';
+        }
+      } catch (error) {
+        console.error('Error loading boss notification count:', error);
+        document.getElementById('bossNotifications').textContent = '❌';
       }
     }
 
@@ -5382,6 +5443,7 @@ require_once 'discord-invite.php';
         // Load tab-specific data
         if (tab === 'store') loadStoreItems();
         if (tab === 'quests') loadQuests();
+        if (tab === 'bossNotifications') loadBossNotifications();
         if (tab === 'games') {
           loadGameStatistics();
           loadSeasonStats();
@@ -7643,6 +7705,303 @@ require_once 'discord-invite.php';
         addLog(`❌ Error testing quest table: ${error.message}`);
         console.error('Quest table test error:', error);
       }
+    }
+
+    // ============================================================================
+    // BOSS NOTIFICATION MANAGEMENT FUNCTIONS
+    // ============================================================================
+    
+    // Load boss notifications with filtering
+    async function loadBossNotifications() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      addLog('🔄 Loading boss notifications...');
+      
+      try {
+        const statusFilter = document.getElementById('bossNotificationStatusFilter')?.value || 'all';
+        const apiUrl = API_BASE_URL + `/api/admin/boss-level-notification.php?status=${statusFilter}`;
+        
+        addLog(`🔗 API URL: ${apiUrl}`);
+        
+        const response = await fetch(apiUrl);
+        
+        addLog(`📡 Response status: ${response.status} ${response.statusText}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const responseText = await response.text();
+        addLog(`📄 Response body: ${responseText.substring(0, 200)}...`);
+        
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          addLog(`❌ JSON parse error: ${parseError.message}`);
+          addLog(`📄 Raw response: ${responseText}`);
+          return;
+        }
+        
+        if (data.success) {
+          addLog(`📊 Parsed data: ${data.notifications ? data.notifications.length : 'no'} notifications`);
+          displayBossNotifications(data.notifications);
+          addLog(`✅ Loaded ${data.notifications.length} boss notifications (${statusFilter} filter)`);
+          
+          // Update the dashboard count
+          loadBossNotificationCount();
+        } else {
+          addLog(`❌ Failed to load boss notifications: ${data.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error loading boss notifications: ${error.message}`);
+        console.error('Boss notifications loading error:', error);
+      }
+    }
+    
+    // Display boss notifications with approve/reward options
+    function displayBossNotifications(notifications) {
+      const container = document.getElementById('bossNotificationsList');
+      
+      if (!notifications || notifications.length === 0) {
+        container.innerHTML = `<div class="text-gray-300">No boss notifications found.</div>`;
+        return;
+      }
+
+      container.innerHTML = notifications.map(notification => `
+        <div class="bg-gray-700 p-4 rounded-lg border-l-4 ${getBossStatusBorderColor(notification.status)}">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h4 class="font-semibold text-white">👑 ${notification.boss_name} (Boss Level ${notification.boss_level})</h4>
+              <p class="text-gray-300 text-sm">Notification ID: ${notification.id}</p>
+            </div>
+            <div class="text-right">
+              <span class="px-2 py-1 rounded text-xs font-semibold ${getBossStatusBadgeColor(notification.status)}">
+                ${notification.status || 'pending'}
+              </span>
+              <div class="mt-1">
+                <span class="px-2 py-1 rounded text-xs font-semibold bg-blue-600 text-white">
+                  WAVE ${notification.wave_number}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+            <div>
+              <p class="text-sm text-gray-300"><strong>Player:</strong> ${notification.player_username || 'Unknown'}</p>
+              <p class="text-sm text-gray-300"><strong>Score:</strong> ${(notification.score || 0).toLocaleString()}</p>
+              <p class="text-sm text-gray-300"><strong>DSPOINC Earned:</strong> ${(notification.dspoinc_earned || 0).toLocaleString()}</p>
+              <p class="text-sm text-gray-300"><strong>Reached:</strong> ${formatDate(notification.created_at)}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-300"><strong>Boss Type:</strong> ${notification.boss_type || 'Unknown'}</p>
+              <p class="text-sm text-gray-300"><strong>Game:</strong> ${notification.game_type || 'space_invaders'}</p>
+              ${notification.reviewed_at ? `<p class="text-sm text-gray-300"><strong>Reviewed:</strong> ${formatDate(notification.reviewed_at)}</p>` : ''}
+            </div>
+          </div>
+
+          <!-- Boss Achievement Details -->
+          <div class="bg-gray-800 p-3 rounded mb-3">
+            <h5 class="font-semibold text-blue-400 mb-2">🎮 Boss Achievement Details</h5>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+              <div>
+                <span class="text-gray-400">🌊 Wave Reached:</span>
+                <span class="text-white font-semibold">${notification.wave_number}</span>
+              </div>
+              <div>
+                <span class="text-gray-400">👑 Boss Level:</span>
+                <span class="text-yellow-400 font-semibold">${notification.boss_level}</span>
+              </div>
+              <div>
+                <span class="text-gray-400">📊 Final Score:</span>
+                <span class="text-green-400 font-semibold">${(notification.score || 0).toLocaleString()}</span>
+              </div>
+              <div>
+                <span class="text-gray-400">💰 DSPOINC:</span>
+                <span class="text-yellow-400 font-semibold">${(notification.dspoinc_earned || 0).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+          
+          ${notification.status === 'pending' ? `
+            <div class="flex gap-2 items-center">
+              <input type="number" 
+                     id="bossReward_${notification.id}" 
+                     placeholder="DSPOINC Reward" 
+                     value="${notification.dspoinc_earned || 0}"
+                     class="px-3 py-2 rounded text-gray-800 w-32" 
+                     min="0" 
+                     max="100000">
+              <input type="text" 
+                     id="bossNote_${notification.id}" 
+                     placeholder="Achievement note (optional)" 
+                     class="px-3 py-2 rounded text-gray-800 flex-1" 
+                     maxlength="255">
+              <button onclick="approveBossNotification(${notification.id})" 
+                      class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm whitespace-nowrap">
+                ✅ Approve & Pay
+              </button>
+              <button onclick="rejectBossNotification(${notification.id})" 
+                      class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                ❌ Reject
+              </button>
+            </div>
+          ` : notification.reward_note ? `
+            <div class="bg-gray-800 p-2 rounded mt-2">
+              <p class="text-sm text-gray-300"><strong>Admin Note:</strong> ${notification.reward_note}</p>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+    
+    // Approve boss notification and award DSPOINC
+    async function approveBossNotification(notificationId) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const rewardAmount = document.getElementById(`bossReward_${notificationId}`)?.value;
+      const rewardNote = document.getElementById(`bossNote_${notificationId}`)?.value || '';
+
+      if (!rewardAmount || rewardAmount <= 0) {
+        addLog('❌ Please enter a valid DSPOINC reward amount');
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to approve this boss achievement and award ${rewardAmount} DSPOINC?`)) {
+        return;
+      }
+
+      addLog(`🔄 Approving boss notification ${notificationId} with ${rewardAmount} DSPOINC...`);
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            notification_id: notificationId,
+            status: 'approved',
+            reward_amount: parseInt(rewardAmount),
+            reward_note: rewardNote,
+            admin_id: currentAdmin.discord_id
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Boss achievement approved! ${rewardAmount} DSPOINC awarded to ${data.player_username}`);
+          // Refresh the notifications list and dashboard count
+          loadBossNotifications();
+          loadBossNotificationCount();
+        } else {
+          addLog(`❌ Failed to approve boss notification: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Approve boss notification error: ${error.message}`);
+      }
+    }
+
+    // Reject boss notification
+    async function rejectBossNotification(notificationId) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const reason = prompt('Please provide a reason for rejecting this boss achievement:');
+      if (!reason) {
+        addLog('ℹ️ Boss notification rejection cancelled');
+        return;
+      }
+
+      addLog(`🔄 Rejecting boss notification ${notificationId}...`);
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            notification_id: notificationId,
+            status: 'rejected',
+            reward_note: reason,
+            admin_id: currentAdmin.discord_id
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Boss notification rejected successfully`);
+          // Refresh the notifications list and dashboard count
+          loadBossNotifications();
+          loadBossNotificationCount();
+        } else {
+          addLog(`❌ Failed to reject boss notification: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Reject boss notification error: ${error.message}`);
+      }
+    }
+    
+    // Filter boss notifications by status
+    function filterBossNotifications() {
+      loadBossNotifications();
+    }
+    
+    // Get border color for boss notification status
+    function getBossStatusBorderColor(status) {
+      switch(status) {
+        case 'approved': return 'border-green-500';
+        case 'rejected': return 'border-red-500';
+        case 'pending':
+        default: return 'border-yellow-500';
+      }
+    }
+    
+    // Get badge color for boss notification status
+    function getBossStatusBadgeColor(status) {
+      switch(status) {
+        case 'approved': return 'bg-green-600 text-white';
+        case 'rejected': return 'bg-red-600 text-white';
+        case 'pending':
+        default: return 'bg-yellow-600 text-white';
+      }
+    }
+    
+    // Test boss notification table
+    async function testBossNotificationTable() {
+      addLog('🧪 Testing boss notification table...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php?test_table=1');
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Boss notification table test passed`);
+          addLog(`📊 Table structure: ${JSON.stringify(data.table_info, null, 2)}`);
+          console.log('Boss notification table test results:', data);
+        } else {
+          addLog(`❌ Boss notification table test failed: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error testing boss notification table: ${error.message}`);
+        console.error('Boss notification table test error:', error);
+      }
+    }
+    
+    // Toggle boss user history view
+    function toggleBossUserHistoryView() {
+      addLog('👤 Boss user history view toggle (feature placeholder)');
+      // This could be implemented to show detailed user boss achievement history
     }
 
     // Game Management Functions

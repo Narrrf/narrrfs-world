@@ -1,11 +1,11 @@
-// 🧀 Space Cheese Invaders v3.0 - ULTRA SLOW WITH TETRIS BLOCKS
+// 🧀 Space Cheese Invaders v3.0 - EMERGENCY BOSS DAMAGE FIX - TIMESTAMP: ${Date.now()}
 // Much slower invaders (1 second drop, 1 minute break) with Tetris block danger items
 // NEW: Auto-shoot feature - automatically fires when ship moves (toggle with 'T' key)
 // NEW: Laser shot type, Speed boost power-up, and Bomb weapon
 
-// 🧪 TESTING CONFIGURATION: Bosses spawn every 5 waves instead of 50 for testing
-// 🧪 Boss types: Wave 5=Cheese King, Wave 10=Cheese Emperor, Wave 15=Cheese God, Wave 20=Cheese Destroyer
-// 🧪 REMEMBER TO RESET TO % 50 AFTER TESTING!
+// 🚀 PRODUCTION CONFIGURATION: Epic boss progression!
+// 🏆 Boss types: Wave 10=Cheese King, Wave 25=Cheese Emperor, Wave 75=Cheese God, Wave 100=Cheese Destroyer
+// 🎯 Balanced difficulty curve for challenging but achievable progression!
 
 // 🚫 Full page scroll prevention (same as other games)
 window.addEventListener("touchmove", function(e) {
@@ -177,13 +177,13 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
     cheeseKing: {
       name: 'Cheese King',
       description: 'The first boss - fast and agile with teleport abilities',
-      baseHealth: 3000,
+      baseHealth: 150, // Perfect balance for first boss - challenging but fair
       healthMultiplier: 1.0,
       baseSpeed: 2.5,
       speedMultiplier: 1.0,
       baseAttackCooldown: 800,
       attackCooldownMultiplier: 1.0,
-      baseBulletSpeed: 4,
+      baseBulletSpeed: 3.2, // 20% slower for better first boss balance
       bulletSpeedMultiplier: 1.0,
       baseBulletDamage: 2,
       bulletDamageMultiplier: 1.0,
@@ -214,16 +214,16 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
     
     cheeseEmperor: {
       name: 'Cheese Emperor',
-      description: 'The second boss - balanced with minion summoning and laser attacks',
-      baseHealth: 4000,
+      description: 'The second boss - more aggressive with minion summoning and laser attacks',
+      baseHealth: 300, // Double the first boss
       healthMultiplier: 1.0,
-      baseSpeed: 2.0,
+      baseSpeed: 2.8, // Faster movement
       speedMultiplier: 1.0,
-      baseAttackCooldown: 700,
+      baseAttackCooldown: 600, // Faster attacks
       attackCooldownMultiplier: 1.0,
-      baseBulletSpeed: 5,
+      baseBulletSpeed: 3.8, // Slightly faster bullets
       bulletSpeedMultiplier: 1.0,
-      baseBulletDamage: 3,
+      baseBulletDamage: 3, // More damage
       bulletDamageMultiplier: 1.0,
       size: 1.0,
       movementPatterns: ['sideways', 'hover', 'circle'],
@@ -252,16 +252,16 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
     
     cheeseGod: {
       name: 'Cheese God',
-      description: 'The third boss - powerful with explosions and enhanced abilities',
-      baseHealth: 5000,
+      description: 'The third boss - devastating with explosions and enhanced abilities',
+      baseHealth: 500, // Much tougher
       healthMultiplier: 1.0,
-      baseSpeed: 1.8,
+      baseSpeed: 3.2, // Very fast movement
       speedMultiplier: 1.0,
-      baseAttackCooldown: 600,
+      baseAttackCooldown: 500, // Very fast attacks
       attackCooldownMultiplier: 1.0,
-      baseBulletSpeed: 6,
+      baseBulletSpeed: 4.5, // Fast bullets
       bulletSpeedMultiplier: 1.0,
-      baseBulletDamage: 4,
+      baseBulletDamage: 4, // High damage
       bulletDamageMultiplier: 1.0,
       size: 1.2,
       movementPatterns: ['sideways', 'zigzag', 'circle', 'dash'],
@@ -290,16 +290,16 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
     
     cheeseDestroyer: {
       name: 'Cheese Destroyer',
-      description: 'The final boss - ultimate challenge with all abilities unlocked',
-      baseHealth: 6000,
+      description: 'The final boss - ultimate nightmare with all abilities unlocked',
+      baseHealth: 800, // Massive health pool
       healthMultiplier: 1.0,
-      baseSpeed: 1.5,
+      baseSpeed: 3.5, // Extremely fast
       speedMultiplier: 1.0,
-      baseAttackCooldown: 500,
+      baseAttackCooldown: 400, // Relentless attacks
       attackCooldownMultiplier: 1.0,
-      baseBulletSpeed: 7,
+      baseBulletSpeed: 5.0, // Very fast bullets
       bulletSpeedMultiplier: 1.0,
-      baseBulletDamage: 5,
+      baseBulletDamage: 5, // Devastating damage
       bulletDamageMultiplier: 1.0,
       size: 1.5,
       movementPatterns: ['sideways', 'zigzag', 'hover', 'circle', 'dash'],
@@ -793,6 +793,8 @@ let canvasHeight;
     if (waveNumber >= 200) spawnChance = 0.999; // 99.9% for wave 200+ (god-tier waves)
     
     if (Math.random() < spawnChance) {
+      console.log(`🎁 SPAWNING POWER-UP: Wave ${waveNumber}, Chance: ${spawnChance.toFixed(2)}, Current power-ups: ${window.powerUps?.length || 0}`);
+      
       // 🚀 NEW: Better power-up distribution - ensure all types appear
       const powerUpRoll = Math.random();
       let powerUpType, ammoType;
@@ -988,7 +990,7 @@ let canvasHeight;
       };
       
       // Send notification to admin API
-      fetch('/api/admin/boss-level-notification.php', {
+      fetch(API_BASE_URL + '/api/admin/boss-level-notification.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1049,42 +1051,39 @@ let canvasHeight;
     invaderBullets = [];
     console.log(`✅ Invaders cleared, arrays reset`);
     
-    // 🚀 ENHANCED: Create boss with MUCH higher difficulty for testing
+    // 🚀 ENHANCED: Create boss with balanced difficulty
     console.log(`📊 Calculating boss stats...`);
     const bossLevel = Math.floor(waveNumber / 5); // Boss level (1, 2, 3, 4 for testing)
-    bossMaxHealth = 2000 + (bossLevel * 1000); // 3000, 4000, 5000, 6000 for testing (DOUBLED!)
-    bossHealth = bossMaxHealth;
-    console.log(`📊 Boss level: ${bossLevel}, Max health: ${bossMaxHealth}, Current health: ${bossHealth}`);
     
     // 🚀 NEW: Select boss type based on wave number
-    // 🧪 TESTING: Modified for testing bosses at lower waves (every 5 waves)
+    // 🚀 PRODUCTION: Boss progression - Wave 10, 25, 75, 100
     console.log(`🎭 Selecting boss type for wave ${waveNumber}...`);
     let bossType, bossName;
     
     try {
-      if (waveNumber >= 20) {
+      if (waveNumber === 100) {
         bossType = 'cheeseDestroyer';
         bossName = 'Cheese Destroyer';
-      } else if (waveNumber >= 15) {
+        console.log(`👑 Wave 100: ULTIMATE FINAL BOSS - Cheese Destroyer!`);
+      } else if (waveNumber === 75) {
         bossType = 'cheeseGod';
         bossName = 'Cheese God';
-      } else if (waveNumber >= 10) {
+        console.log(`👑 Wave 75: THIRD BOSS - Cheese God!`);
+      } else if (waveNumber === 25) {
         bossType = 'cheeseEmperor';
         bossName = 'Cheese Emperor';
-      } else {
+        console.log(`👑 Wave 25: SECOND BOSS - Cheese Emperor!`);
+      } else if (waveNumber === 10) {
         bossType = 'cheeseKing';
         bossName = 'Cheese King';
+        console.log(`👑 Wave 10: FIRST BOSS - Cheese King!`);
+      } else {
+        // Fallback for any unexpected wave numbers
+        bossType = 'cheeseKing';
+        bossName = 'Cheese King';
+        console.log(`👑 Fallback boss - Cheese King for wave ${waveNumber}`);
       }
       console.log(`🎭 Selected boss: ${bossName} (${bossType})`);
-      
-      // 🚀 NEW: Get boss configuration from admin settings
-      const bossConfig = getBossConfiguration(bossType);
-      console.log(`⚙️ Boss config loaded:`, bossConfig);
-      
-      // 🚀 DEBUG: Log boss spawn with health info (AFTER variables are defined)
-      console.log(`👑 BOSS SPAWNED: ${bossName} (Level ${bossLevel}) with ${bossMaxHealth} HP`);
-      console.log(`🔍 Boss will take approximately ${Math.ceil(bossMaxHealth/10)} hits to defeat (assuming 10 damage per hit)`);
-      console.log(`🎯 Boss type: ${bossType}, Wave: ${waveNumber}, Boss level: ${bossLevel}`);
       
       // 🚀 CRITICAL DEBUG: Verify boss type selection
       if (!bossType || !bossName) {
@@ -1095,6 +1094,24 @@ let canvasHeight;
       console.error(`❌ ERROR in boss type selection:`, error);
       throw error;
     }
+    
+    // 🚀 NEW: Get boss configuration from admin settings (MOVED OUTSIDE TRY BLOCK)
+    const bossConfig = getBossConfiguration(bossType);
+    if (!bossConfig) {
+      console.error(`❌ Failed to load boss configuration for ${bossType}`);
+      throw new Error(`Boss configuration not found for type: ${bossType}`);
+    }
+    console.log(`⚙️ Boss config loaded:`, bossConfig);
+    
+    // 🚀 FIXED: Calculate boss health from configuration
+    bossMaxHealth = bossConfig.baseHealth * bossConfig.healthMultiplier;
+    bossHealth = bossMaxHealth;
+    console.log(`📊 Boss level: ${bossLevel}, Max health: ${bossMaxHealth}, Current health: ${bossHealth}`);
+    
+    // 🚀 DEBUG: Log boss spawn with health info (AFTER variables are defined)
+    console.log(`👑 BOSS SPAWNED: ${bossName} (Level ${bossLevel}) with ${bossMaxHealth} HP`);
+    console.log(`🔍 Boss will take approximately ${Math.ceil(bossMaxHealth/10)} hits to defeat (assuming 10 damage per hit)`);
+    console.log(`🎯 Boss type: ${bossType}, Wave: ${waveNumber}, Boss level: ${bossLevel}`);
     
     // 🚀 ENHANCED: Create boss with configuration-based properties
     console.log(`🏗️ Creating boss object using configuration...`);
@@ -1118,7 +1135,7 @@ let canvasHeight;
         bossPhase: 'entrance',
         attackPattern: 0,
         lastAttack: 0,
-        attackCooldown: config.baseAttackCooldown * config.attackCooldownMultiplier - (bossLevel * 100),
+        attackCooldown: (config.baseAttackCooldown * config.attackCooldownMultiplier) + (bossLevel * 200), // FIXED: Slower attacks, not faster
         bulletSpeed: config.baseBulletSpeed * config.bulletSpeedMultiplier + (bossLevel * 1),
         bulletDamage: config.baseBulletDamage * config.bulletDamageMultiplier + Math.floor(bossLevel),
         type: bossType,
@@ -1300,34 +1317,58 @@ let canvasHeight;
       if (boss.movementPattern === 'sideways') {
         // Enhanced side-to-side with acceleration
         boss.x += boss.speed * (bossDirection || 1);
-        if (boss.x <= 0 || boss.x + boss.width >= canvasWidth) {
-          bossDirection = bossDirection ? -bossDirection : -1;
+        
+        // 🚨 CRITICAL FIX: Enforce strict boundaries
+        if (boss.x <= 0) {
+          boss.x = 0;
+          bossDirection = 1;
+        } else if (boss.x + boss.width >= canvasWidth) {
+          boss.x = canvasWidth - boss.width;
+          bossDirection = -1;
+        }
+        
+        if (boss.x + boss.width >= canvasWidth) {
           boss.lastDirectionChange = currentTime;
           
-          // 🚀 NEW: Random movement pattern changes - MUCH more frequent!
-          if (Math.random() < 0.6) { // 60% chance instead of 30%
-            const availablePatterns = boss.availableMovementPatterns || ['sideways'];
+          // 🚀 ENHANCED: More varied movement pattern changes with longer durations
+          if (Math.random() < 0.8) { // 80% chance for more variety
+            const availablePatterns = boss.availableMovementPatterns || ['sideways', 'zigzag', 'hover', 'dash'];
             const newPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
             boss.movementPattern = newPattern;
             console.log(`🎭 ${boss.name} switches to ${newPattern} movement pattern!`);
             setTimeout(() => {
-              if (boss) boss.movementPattern = availablePatterns[0]; // Return to first pattern
-            }, 2000 + Math.random() * 1000); // Shorter duration
+              if (boss) {
+                // Switch to another random pattern instead of always returning to first
+                const nextPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+                boss.movementPattern = nextPattern;
+              }
+            }, 3000 + Math.random() * 2000); // Longer duration (3-5 seconds)
           }
         }
       } else if (boss.movementPattern === 'zigzag') {
         // Zigzag movement
         boss.x += boss.speed * (bossDirection || 1) * 0.7;
         boss.y = 100 + Math.sin(boss.wobble * 0.5) * 20;
-        if (boss.x <= 0 || boss.x + boss.width >= canvasWidth) {
-          bossDirection = bossDirection ? -bossDirection : -1;
+        
+        // 🚨 CRITICAL FIX: Enforce strict boundaries
+        if (boss.x <= 0) {
+          boss.x = 0;
+          bossDirection = 1;
+        } else if (boss.x + boss.width >= canvasWidth) {
+          boss.x = canvasWidth - boss.width;
+          bossDirection = -1;
         }
       } else if (boss.movementPattern === 'hover') {
         // Hovering movement
         boss.x += boss.speed * (bossDirection || 1) * 0.5;
         boss.y = 100 + Math.sin(boss.wobble * 0.3) * 15;
-        if (boss.x <= 0 || boss.x + boss.width >= canvasWidth) {
-          bossDirection = bossDirection ? -bossDirection : -1;
+        // 🚨 CRITICAL FIX: Enforce strict boundaries
+        if (boss.x <= 0) {
+          boss.x = 0;
+          bossDirection = 1;
+        } else if (boss.x + boss.width >= canvasWidth) {
+          boss.x = canvasWidth - boss.width;
+          bossDirection = -1;
         }
       } else if (boss.movementPattern === 'circle') {
         // 🚀 NEW: Circular movement pattern
@@ -1351,10 +1392,10 @@ let canvasHeight;
         }
       }
       
-      // 🚀 NEW: Special attacks based on boss abilities - MUCH more frequent!
-      if (currentTime - boss.lastSpecialAttack > 2000) { // Every 2 seconds (was 5)
-        // 🚀 NEW: Use configuration-based special attack chance
-        if (Math.random() < (boss.specialAttackChance || 0.3)) {
+      // 🚀 BALANCED: Special attacks based on boss abilities  
+      if (currentTime - boss.lastSpecialAttack > 5000) { // Every 5 seconds (balanced)
+        // 🚀 BALANCED: Reduced special attack chance
+        if (Math.random() < (boss.specialAttackChance || 0.15)) { // Reduced from 0.3 to 0.15
           bossSpecialAttack();
           boss.lastSpecialAttack = currentTime;
         }
@@ -1372,28 +1413,24 @@ let canvasHeight;
         bossAttack();
         boss.lastAttack = currentTime;
         
-        // 🚀 NEW: Sometimes fire multiple attacks in quick succession
-        if (Math.random() < 0.2) { // 20% chance for rapid fire
+        // 🚀 BALANCED: Sometimes fire multiple attacks in quick succession
+        if (Math.random() < 0.1) { // Reduced to 10% chance for rapid fire
           setTimeout(() => {
             if (boss && boss.health > 0) {
               bossAttack();
               console.log(`⚡ ${boss.name} uses RAPID FIRE attack!`);
             }
-          }, 300);
+          }, 800); // Increased delay from 300ms to 800ms
         }
       }
-        
-        // 🚀 NEW: Random attack pattern changes
-        boss.attackPattern = (boss.attackPattern + 1) % 5; // Now 5 patterns
-      }
       
-      // 🚀 NEW: Teleport ability for certain bosses - MUCH more frequent!
-      if (boss.canTeleport && Math.random() < 0.05) { // 5% chance per frame (was 1%)
+      // 🚀 BALANCED: Teleport ability for certain bosses
+      if (boss.canTeleport && Math.random() < 0.008) { // Reduced to 0.8% chance per frame
         bossTeleport();
       }
       
-      // 🚀 NEW: Shield ability for certain bosses - MUCH more frequent!
-      if (boss.canShield && boss.health < boss.maxHealth * 0.7 && Math.random() < 0.02) { // 2% chance (was 0.5%)
+      // 🚀 BALANCED: Shield ability for certain bosses
+      if (boss.canShield && boss.health < boss.maxHealth * 0.5 && Math.random() < 0.005) { // Reduced to 0.5% chance, activate at 50% health
         bossActivateShield();
       }
       
@@ -1414,18 +1451,88 @@ let canvasHeight;
         createBossParticle(boss.x + Math.random() * boss.width, boss.y + Math.random() * boss.height, 'defeat');
       }
       
-      // Remove boss when it falls off screen
-      if (boss.y > canvasHeight + 100) {
+      // 🧪 TESTING: Add safety timer to prevent premature boss deletion
+      if (!boss.defeatStartTime) {
+        boss.defeatStartTime = Date.now();
+        console.log('👑 Boss defeat sequence started - timer activated');
+      }
+      
+      // Only remove boss after minimum time AND falling off screen
+      const minDefeatTime = 2000; // 2 seconds minimum
+      const timeInDefeat = Date.now() - boss.defeatStartTime;
+      
+      if (timeInDefeat >= minDefeatTime && boss.y > canvasHeight + 100) {
         boss = null;
-        console.log('👑 Boss defeat sequence complete!');
+        console.log(`👑 Boss defeat sequence complete after ${timeInDefeat}ms!`);
+      } else if (timeInDefeat < minDefeatTime) {
+        console.log(`👑 Boss defeat in progress... ${Math.round((minDefeatTime - timeInDefeat)/1000)}s remaining`);
       }
     }
     
-    // 🚀 ENHANCED: Update boss bullets with enhanced movement
+    // 🧀 ENHANCED: Update boss bullets with crazy cheese physics
+    if (bossBullets.length > 0 && Date.now() % 2000 < 16) { // Log every 2 seconds
+      console.log(`🧪 UPDATING ${bossBullets.length} boss bullets`);
+    }
+    
     bossBullets.forEach((bullet, index) => {
-      // Handle different bullet types
-      if (bullet.vx && bullet.vy) {
-        // Explosion bullets with velocity
+      // 🧀 Handle special cheese bullet types
+      if (bullet.type === 'cheese_wheel' && bullet.rotation !== undefined) {
+        // Spinning cheese wheels
+        bullet.rotation += bullet.rotationSpeed;
+        bullet.y += bullet.speed;
+      } else if (bullet.type === 'melted_cheese' && bullet.trail) {
+        // Melted cheese with gravity effect
+        bullet.x += bullet.vx;
+        bullet.y += bullet.vy;
+        bullet.vy += 0.1; // Gravity effect for melted cheese
+      } else if (bullet.type === 'gouda_grenade' && bullet.explosive) {
+        // Gouda grenades with timer
+        bullet.x += bullet.vx;
+        bullet.y += bullet.vy;
+        bullet.timer--;
+        if (bullet.timer <= 0) {
+          // Create explosion
+          createExplosion(bullet.x, bullet.y);
+          // Create multiple smaller bullets from explosion
+          for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2;
+            bossBullets.push({
+              x: bullet.x,
+              y: bullet.y,
+              width: 6,
+              height: 6,
+              speed: 3,
+              damage: Math.floor(bullet.damage * 0.5),
+              vx: Math.cos(angle) * 3,
+              vy: Math.sin(angle) * 3,
+              color: '#ff6600',
+              type: 'explosion_fragment',
+              life: 60
+            });
+          }
+          bossBullets.splice(index, 1);
+          return;
+        }
+      } else if (bullet.type === 'brie_blast' && bullet.wobble) {
+        // Brie blasts wobble as they move
+        bullet.wobbleTime = (bullet.wobbleTime || 0) + bullet.wobbleSpeed;
+        bullet.x += bullet.vx + Math.sin(bullet.wobbleTime) * 2;
+        bullet.y += bullet.vy;
+      } else if (bullet.type === 'swiss_sniper' && bullet.piercing) {
+        // Swiss sniper bullets maintain trajectory
+        bullet.x += bullet.vx;
+        bullet.y += bullet.vy;
+      } else if (bullet.type === 'explosion_fragment' && bullet.life) {
+        // Explosion fragments fade out
+        bullet.x += bullet.vx;
+        bullet.y += bullet.vy;
+        bullet.life--;
+        if (bullet.life <= 0) {
+          bossBullets.splice(index, 1);
+          return;
+        }
+      } else if (bullet.vx && bullet.vy) {
+        // Standard velocity-based bullets
         bullet.x += bullet.vx;
         bullet.y += bullet.vy;
       } else if (bullet.duration) {
@@ -1435,12 +1542,26 @@ let canvasHeight;
           return;
         }
       } else {
-        // Regular bullets
-        bullet.y += bullet.speed;
+        // Regular bullets with angle adjustment
+        if (bullet.angle) {
+          bullet.x += Math.sin(bullet.angle) * bullet.speed;
+          bullet.y += Math.cos(bullet.angle) * bullet.speed;
+        } else {
+          // 🧪 DEBUG: Log bullet movement for default bullets
+          const oldY = bullet.y;
+          bullet.y += bullet.speed;
+          if (Date.now() % 3000 < 16 && bullet.type === 'test_bullet') { // Log test bullets
+            console.log(`🧪 Moving bullet: ${oldY} -> ${bullet.y} (speed: ${bullet.speed})`);
+          }
+        }
       }
       
-      // Remove bullets that are off screen
-      if (bullet.y > canvasHeight + 20 || bullet.x < -20 || bullet.x > canvasWidth + 20) {
+      // 🧀 Enhanced boundary checking with buffer for larger cheese bullets
+      const buffer = Math.max(bullet.width, bullet.height) + 10;
+      if (bullet.y > canvasHeight + buffer || 
+          bullet.x < -buffer || 
+          bullet.x > canvasWidth + buffer ||
+          bullet.y < -buffer) {
         bossBullets.splice(index, 1);
       }
     });
@@ -1450,90 +1571,203 @@ let canvasHeight;
     if (!boss) return;
     
     const attackPatterns = [
-      // Pattern 1: Single powerful shot
+      // 🧀 Pattern 1: CHEESE CANNON - Single devastating cheesy shot
       () => {
+        console.log(`🧀 ${boss.name} fires CHEESE CANNON!`);
+        const bulletX = boss.x + boss.width / 2 - 8;
+        const bulletY = boss.y + boss.height;
+        
+        // 🧪 DEBUG: Check for NaN positions
+        if (isNaN(bulletX) || isNaN(bulletY)) {
+          console.log(`🚨 NaN BULLET DETECTED! Boss pos: (${boss.x}, ${boss.y}), size: ${boss.width}x${boss.height}`);
+          console.log(`🚨 Calculated bullet pos: (${bulletX}, ${bulletY})`);
+        }
+        
+        bossBullets.push({
+          x: bulletX,
+          y: bulletY,
+          width: 16,
+          height: 24,
+          speed: boss.bulletSpeed * 1.3,
+          damage: Math.max(1, Math.floor(boss.bulletDamage * 1.2)), // Reduced from 2x to 1.2x
+          color: '#ffdd00',
+          type: 'cheese_cannon',
+          glow: true
+        });
+        screenShake = 8;
+      },
+      
+      // 🧀 Pattern 2: MELTED CHEESE SPREAD - Triple molten cheese spread
+      () => {
+        console.log(`🧀 ${boss.name} unleashes MELTED CHEESE SPREAD!`);
+        for (let i = -1; i <= 1; i++) {
+          bossBullets.push({
+            x: boss.x + boss.width / 2 - 6,
+            y: boss.y + boss.height,
+            width: 12,
+            height: 18,
+            speed: boss.bulletSpeed * 0.8,
+            damage: boss.bulletDamage * 1.5,
+            color: '#ff8c00',
+            type: 'melted_cheese',
+            angle: i * 0.4,
+            vx: Math.sin(i * 0.4) * boss.bulletSpeed * 0.8,
+            vy: boss.bulletSpeed * 0.8,
+            trail: true
+          });
+        }
+        screenShake = 6;
+      },
+      
+      // 🧀 Pattern 3: CHEESE WHEEL BARRAGE - Rapid spinning cheese wheels
+      () => {
+        console.log(`🧀 ${boss.name} launches CHEESE WHEEL BARRAGE!`);
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => {
+            if (boss && !bossDefeated) {
+              bossBullets.push({
+                x: boss.x + boss.width / 2 - 8,
+                y: boss.y + boss.height,
+                width: 16,
+                height: 16,
+                speed: boss.bulletSpeed * 1.2,
+                damage: boss.bulletDamage * 1.8,
+                color: '#ffd700',
+                type: 'cheese_wheel',
+                rotation: 0,
+                rotationSpeed: 0.3
+              });
+            }
+          }, i * 150);
+        }
+        screenShake = 10;
+      },
+      
+      // 🧀 Pattern 4: GOUDA GRENADE STORM - Explosive cheese balls in all directions
+      () => {
+        console.log(`🧀 ${boss.name} creates GOUDA GRENADE STORM!`);
+        for (let i = 0; i < 12; i++) {
+          const angle = (i / 12) * Math.PI * 2;
+          bossBullets.push({
+            x: boss.x + boss.width / 2 - 6,
+            y: boss.y + boss.height / 2,
+            width: 12,
+            height: 12,
+            speed: boss.bulletSpeed * 1.4,
+            damage: Math.max(1, Math.floor(boss.bulletDamage * 1.4)), // Reduced from 2.2x to 1.4x
+            vx: Math.cos(angle) * boss.bulletSpeed * 1.4,
+            vy: Math.sin(angle) * boss.bulletSpeed * 1.4,
+            color: '#ffaa00',
+            type: 'gouda_grenade',
+            explosive: true,
+            timer: 90 // Explodes after 1.5 seconds
+          });
+        }
+        screenShake = 15;
+      },
+      
+      // 🧀 Pattern 5: SWISS CHEESE SNIPER - Precision holes that pierce through
+      () => {
+        console.log(`🧀 ${boss.name} uses SWISS CHEESE SNIPER!`);
+        const playerX = playerShip.x + playerShip.width / 2;
+        const dx = playerX - (boss.x + boss.width / 2);
+        const dy = 400; // Distance to bottom
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
         bossBullets.push({
           x: boss.x + boss.width / 2 - 4,
           y: boss.y + boss.height,
           width: 8,
-          height: 16,
-          speed: boss.bulletSpeed,
-          damage: boss.bulletDamage,
-          color: '#ff0000'
+          height: 20,
+          speed: boss.bulletSpeed * 2.0, // Reduced from 2.5x to 2.0x for better balance
+          damage: Math.max(1, Math.floor(boss.bulletDamage * 1.8)), // Reduced from 3x to 1.8x
+          vx: (dx / distance) * boss.bulletSpeed * 2.0,
+          vy: (dy / distance) * boss.bulletSpeed * 2.0,
+          color: '#ffffff',
+          type: 'swiss_sniper',
+          piercing: true,
+          glow: true
         });
+        screenShake = 12;
       },
-      // Pattern 2: Triple spread shot
+      
+      // 🧀 Pattern 6: CHEDDAR CHAOS CROSS - Four-way molten cheddar attack
       () => {
-        for (let i = -1; i <= 1; i++) {
-          bossBullets.push({
-            x: boss.x + boss.width / 2 - 4,
-            y: boss.y + boss.height,
-            width: 8,
-            height: 16,
-            speed: boss.bulletSpeed,
-            damage: boss.bulletDamage,
-            color: '#ff0000',
-            angle: i * 0.3 // Spread angle
-          });
-        }
-      },
-      // Pattern 3: Rapid fire burst
-      () => {
-        for (let i = 0; i < 3; i++) {
-          setTimeout(() => {
-            if (boss && !bossDefeated) {
-              bossBullets.push({
-                x: boss.x + boss.width / 2 - 4,
-                y: boss.y + boss.height,
-                width: 8,
-                height: 16,
-                speed: boss.bulletSpeed,
-                damage: boss.bulletDamage,
-                color: '#ff0000'
-              });
-            }
-          }, i * 200);
-        }
-      },
-      // 🚀 NEW: Pattern 4: Massive bullet storm
-      () => {
-        for (let i = 0; i < 8; i++) {
-          const angle = (i / 8) * Math.PI * 2;
-          bossBullets.push({
-            x: boss.x + boss.width / 2 - 4,
-            y: boss.y + boss.height / 2 - 4,
-            width: 8,
-            height: 8,
-            speed: boss.bulletSpeed * 1.2,
-            damage: boss.bulletDamage,
-            vx: Math.cos(angle) * boss.bulletSpeed * 1.2,
-            vy: Math.sin(angle) * boss.bulletSpeed * 1.2,
-            color: '#ff6600'
-          });
-        }
-      },
-      // 🚀 NEW: Pattern 5: Cross pattern
-      () => {
-        const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+        console.log(`🧀 ${boss.name} unleashes CHEDDAR CHAOS CROSS!`);
+        const directions = [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]];
         directions.forEach(([dx, dy]) => {
           bossBullets.push({
-            x: boss.x + boss.width / 2 - 4,
-            y: boss.y + boss.height / 2 - 4,
-            width: 8,
-            height: 8,
-            speed: boss.bulletSpeed * 1.5,
-            damage: boss.bulletDamage * 1.5,
-            vx: dx * boss.bulletSpeed * 1.5,
-            vy: dy * boss.bulletSpeed * 1.5,
-            color: '#ff00ff'
+            x: boss.x + boss.width / 2 - 6,
+            y: boss.y + boss.height / 2,
+            width: 12,
+            height: 12,
+            speed: boss.bulletSpeed * 1.6,
+            damage: Math.max(1, Math.floor(boss.bulletDamage * 1.6)), // Reduced from 2.5x to 1.6x
+            vx: dx * boss.bulletSpeed * 1.6,
+            vy: dy * boss.bulletSpeed * 1.6,
+            color: '#ff6600',
+            type: 'cheddar_chaos',
+            trail: true,
+            heat: true
           });
         });
+        screenShake = 18;
+      },
+      
+      // 🧀 Pattern 7: PARMESAN PULSE WAVE - Expanding cheese wave
+      () => {
+        console.log(`🧀 ${boss.name} creates PARMESAN PULSE WAVE!`);
+        for (let ring = 0; ring < 3; ring++) {
+          setTimeout(() => {
+            if (boss && !bossDefeated) {
+              for (let i = 0; i < 16; i++) {
+                const angle = (i / 16) * Math.PI * 2;
+                const radius = 30 + (ring * 20);
+                bossBullets.push({
+                  x: boss.x + boss.width / 2 + Math.cos(angle) * radius,
+                  y: boss.y + boss.height / 2 + Math.sin(angle) * radius,
+                  width: 8,
+                  height: 8,
+                  speed: boss.bulletSpeed * (0.8 + ring * 0.3),
+                  damage: boss.bulletDamage * 1.3,
+                  vx: Math.cos(angle) * boss.bulletSpeed * (0.8 + ring * 0.3),
+                  vy: Math.sin(angle) * boss.bulletSpeed * (0.8 + ring * 0.3),
+                  color: '#ffffaa',
+                  type: 'parmesan_pulse',
+                  wave: ring
+                });
+              }
+            }
+          }, ring * 300);
+        }
+        screenShake = 20;
+      },
+      
+      // 🧀 Pattern 8: FOCUSED CHEESE SHOT - Single precise shot (replaces overwhelming barrage)
+      () => {
+        console.log(`🧀 ${boss.name} fires FOCUSED CHEESE SHOT!`);
+        bossBullets.push({
+          x: boss.x + boss.width / 2 - 8,
+          y: boss.y + boss.height,
+          width: 16,
+          height: 20,
+          speed: boss.bulletSpeed * 1.2,
+          damage: boss.bulletDamage * 1.5,
+          color: '#fff8dc',
+          type: 'focused_cheese',
+          glow: true
+        });
+        screenShake = 8;
       }
     ];
     
     // Cycle through attack patterns
+    const oldBulletCount = bossBullets.length;
     bossAttackPattern = (bossAttackPattern + 1) % attackPatterns.length;
     attackPatterns[bossAttackPattern]();
+    const newBulletCount = bossBullets.length;
+    
+    console.log(`🚀 BOSS ATTACK EXECUTED: Pattern ${bossAttackPattern}, Bullets: ${oldBulletCount} -> ${newBulletCount}`);
     
     // 🚀 NEW: Create attack particles
     for (let i = 0; i < 5; i++) {
@@ -1663,10 +1897,10 @@ let canvasHeight;
         y: boss.y + boss.height / 2 - 4,
         width: 10, // Bigger bullets
         height: 10,
-        speed: boss.bulletSpeed * 2, // Faster bullets
+        speed: boss.bulletSpeed * 1.6, // Reduced from 2x to 1.6x for better balance
         damage: boss.bulletDamage * 3, // Much higher damage
-        vx: Math.cos(angle) * boss.bulletSpeed * 2,
-        vy: Math.sin(angle) * boss.bulletSpeed * 2,
+        vx: Math.cos(angle) * boss.bulletSpeed * 1.6,
+        vy: Math.sin(angle) * boss.bulletSpeed * 1.6,
         color: '#ff6600'
       };
       
@@ -1698,10 +1932,10 @@ let canvasHeight;
         y: boss.y + boss.height / 2 - 6,
         width: 12, // Big cheese wheels
         height: 12,
-        speed: boss.bulletSpeed * 1.8,
+        speed: boss.bulletSpeed * 1.4, // Reduced from 1.8x to 1.4x for better balance
         damage: boss.bulletDamage * 2,
-        vx: Math.cos(angle) * boss.bulletSpeed * 1.8,
-        vy: Math.sin(angle) * boss.bulletSpeed * 1.8,
+        vx: Math.cos(angle) * boss.bulletSpeed * 1.4,
+        vy: Math.sin(angle) * boss.bulletSpeed * 1.4,
         color: '#ffdd00', // Cheese yellow
         type: 'cheese_wheel'
       };
@@ -1847,9 +2081,15 @@ let canvasHeight;
   function checkBossCollisions() {
     if (!boss || bossDefeated) return;
     
+    // 🧪 DEBUG: Log collision check
+    if (bullets.length > 0 && Date.now() % 1000 < 16) { // Log every second
+      console.log(`🧪 Checking ${bullets.length} bullets vs boss at (${boss.x}, ${boss.y})`);
+    }
+    
     // Check player bullets hitting boss
     bullets.forEach((bullet, bulletIndex) => {
       if (checkCollision(bullet, boss)) {
+        console.log(`💥 COLLISION DETECTED: Bullet hit boss!`);
         // 🚀 NEW: Check if boss has active shield
         if (boss.shieldActive) {
           console.log(`🛡️ ${boss.name} shield blocks the attack!`);
@@ -1906,10 +2146,12 @@ let canvasHeight;
         }
         
         // Check if boss is defeated
-        if (boss.health <= 0) {
+        if (boss.health <= 0 && !bossDefeated) {
           bossDefeated = true;
+          boss.health = 0; // Ensure it stays at 0
           bossReward = Math.floor(bossReward * (1 + (waveNumber / 100))); // Bonus for higher waves
-          console.log(`👑 BOSS DEFEATED! Reward: ${bossReward} DSPOINC`);
+          console.log(`👑 BOSS DEFEATED! ${boss.name} has been vanquished! Reward: ${bossReward} DSPOINC`);
+          console.log(`🎉 Final boss stats: Wave ${waveNumber}, Type: ${boss.type}, Max Health: ${boss.maxHealth}`);
           
           // Add reward to score
           spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
@@ -2144,7 +2386,7 @@ let canvasHeight;
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 16px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(`${boss.name} - Level ${Math.floor(waveNumber / 50)}`, boss.x + boss.width / 2, boss.y - 30);
+    ctx.fillText(`${boss.name} - Wave ${waveNumber}`, boss.x + boss.width / 2, boss.y - 30);
     ctx.textAlign = 'left';
     
     // 🚀 NEW: Restore context after all transformations
@@ -2153,60 +2395,209 @@ let canvasHeight;
 
   function drawBossBullets() {
     bossBullets.forEach((bullet, index) => {
-      // 🚀 ENHANCED: Handle different bullet types
-      if (bullet.duration) {
-        // 🚀 NEW: Draw laser bullets
-        ctx.save();
+      ctx.save();
+      
+      // 🧀 Handle different cheese bullet types with special effects
+      if (bullet.type === 'cheese_cannon') {
+        // 🧀 CHEESE CANNON - Large glowing yellow shot
+        ctx.fillStyle = bullet.color;
+        ctx.shadowColor = '#ffdd00';
+        ctx.shadowBlur = 15;
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        
+        // Extra glow effect
+        if (bullet.glow) {
+          ctx.globalAlpha = 0.5;
+          ctx.fillStyle = '#ffffaa';
+          ctx.fillRect(bullet.x - 2, bullet.y - 2, bullet.width + 4, bullet.height + 4);
+        }
+        
+      } else if (bullet.type === 'melted_cheese') {
+        // 🧀 MELTED CHEESE - Drippy orange cheese with trail
+        ctx.fillStyle = bullet.color;
+        ctx.shadowColor = '#ff8c00';
+        ctx.shadowBlur = 10;
+        
+        // Draw melted cheese with irregular shape
+        ctx.beginPath();
+        ctx.ellipse(bullet.x + bullet.width/2, bullet.y + bullet.height/2, 
+                   bullet.width/2, bullet.height/2 + 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Trail effect
+        if (bullet.trail) {
+          ctx.globalAlpha = 0.3;
+          ctx.fillStyle = '#ffaa44';
+          for (let i = 1; i <= 3; i++) {
+            ctx.fillRect(bullet.x - i * 2, bullet.y - i * 4, bullet.width, bullet.height * 0.8);
+          }
+        }
+        
+      } else if (bullet.type === 'cheese_wheel') {
+        // 🧀 CHEESE WHEEL - Spinning golden wheel
+        const centerX = bullet.x + bullet.width / 2;
+        const centerY = bullet.y + bullet.height / 2;
+        
+        ctx.translate(centerX, centerY);
+        ctx.rotate(bullet.rotation || 0);
+        ctx.translate(-centerX, -centerY);
+        
+        ctx.fillStyle = bullet.color;
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 8;
+        
+        // Draw cheese wheel
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, bullet.width/2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Add cheese holes
+        ctx.fillStyle = '#cc9900';
+        for (let i = 0; i < 3; i++) {
+          const angle = (i / 3) * Math.PI * 2 + (bullet.rotation || 0);
+          const holeX = centerX + Math.cos(angle) * 4;
+          const holeY = centerY + Math.sin(angle) * 4;
+          ctx.beginPath();
+          ctx.arc(holeX, holeY, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+      } else if (bullet.type === 'gouda_grenade') {
+        // 🧀 GOUDA GRENADE - Pulsating explosive cheese
+        const pulse = Math.sin(Date.now() * 0.01) * 0.2 + 1;
+        ctx.fillStyle = bullet.color;
+        ctx.shadowColor = '#ffaa00';
+        ctx.shadowBlur = 12 * pulse;
+        
+        // Draw pulsating grenade
+        ctx.beginPath();
+        ctx.arc(bullet.x + bullet.width/2, bullet.y + bullet.height/2, 
+               (bullet.width/2) * pulse, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Warning glow when about to explode
+        if (bullet.timer < 30) {
+          ctx.globalAlpha = 0.7;
+          ctx.fillStyle = '#ff0000';
+          ctx.beginPath();
+          ctx.arc(bullet.x + bullet.width/2, bullet.y + bullet.height/2, 
+                 bullet.width/2 + 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+      } else if (bullet.type === 'swiss_sniper') {
+        // 🧀 SWISS SNIPER - White piercing shot with holes
+        ctx.fillStyle = bullet.color;
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 20;
+        
+        // Draw main bullet
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        
+        // Add swiss holes
+        ctx.fillStyle = '#cccccc';
+        ctx.fillRect(bullet.x + 2, bullet.y + 4, 2, 2);
+        ctx.fillRect(bullet.x + 4, bullet.y + 8, 2, 2);
+        
+        if (bullet.glow) {
+          ctx.globalAlpha = 0.6;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(bullet.x - 3, bullet.y - 3, bullet.width + 6, bullet.height + 6);
+        }
+        
+      } else if (bullet.type === 'cheddar_chaos') {
+        // 🧀 CHEDDAR CHAOS - Hot orange chaos with heat waves
+        ctx.fillStyle = bullet.color;
+        ctx.shadowColor = '#ff6600';
+        ctx.shadowBlur = 15;
+        
+        // Draw main bullet
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        
+        // Heat effect
+        if (bullet.heat) {
+          for (let i = 0; i < 3; i++) {
+            ctx.globalAlpha = 0.3 - i * 0.1;
+            ctx.fillStyle = `hsl(${30 - i * 10}, 100%, 60%)`;
+            ctx.fillRect(bullet.x - i, bullet.y - i, bullet.width + i * 2, bullet.height + i * 2);
+          }
+        }
+        
+      } else if (bullet.type === 'parmesan_pulse') {
+        // 🧀 PARMESAN PULSE - Expanding wave bullets
+        const waveAlpha = 0.8 - (bullet.wave * 0.2);
+        ctx.globalAlpha = waveAlpha;
+        ctx.fillStyle = bullet.color;
+        ctx.shadowColor = '#ffffaa';
+        ctx.shadowBlur = 6;
+        
+        ctx.beginPath();
+        ctx.arc(bullet.x + bullet.width/2, bullet.y + bullet.height/2, 
+               bullet.width/2, 0, Math.PI * 2);
+        ctx.fill();
+        
+      } else if (bullet.type === 'brie_blast') {
+        // 🧀 BRIE BLAST - Soft wobbly cheese
+        ctx.fillStyle = bullet.color;
+        ctx.shadowColor = '#fff8dc';
+        ctx.shadowBlur = 8;
+        
+        // Draw wobbly brie
+        const wobbleOffset = bullet.wobbleTime ? Math.sin(bullet.wobbleTime) * 2 : 0;
+        ctx.beginPath();
+        ctx.ellipse(bullet.x + bullet.width/2 + wobbleOffset, bullet.y + bullet.height/2, 
+                   bullet.width/2, bullet.height/2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+      } else if (bullet.type === 'explosion_fragment') {
+        // 🧀 EXPLOSION FRAGMENTS - Small fading pieces
+        const alpha = bullet.life / 60;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = bullet.color;
+        ctx.shadowColor = bullet.color;
+        ctx.shadowBlur = 5;
+        
+        ctx.beginPath();
+        ctx.arc(bullet.x + bullet.width/2, bullet.y + bullet.height/2, 
+               bullet.width/2, 0, Math.PI * 2);
+        ctx.fill();
+        
+      } else if (bullet.duration) {
+        // 🚀 LASER BULLETS
         ctx.fillStyle = bullet.color || '#ff0000';
         ctx.shadowColor = bullet.color || '#ff0000';
         ctx.shadowBlur = 10;
-        
-        // Draw laser beam
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         
         // Laser glow effect
         ctx.globalAlpha = 0.6;
         ctx.fillRect(bullet.x - 2, bullet.y, bullet.width + 4, bullet.height);
-        ctx.restore();
-        
-      } else if (bullet.vx && bullet.vy) {
-        // 🚀 NEW: Draw explosion bullets
-        ctx.save();
-        ctx.fillStyle = bullet.color || '#ff6600';
-        ctx.shadowColor = bullet.color || '#ff6600';
-        ctx.shadowBlur = 8;
-        
-        // Draw explosion bullet
-        ctx.beginPath();
-        ctx.arc(bullet.x + bullet.width/2, bullet.y + bullet.height/2, bullet.width/2, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Explosion glow
-        ctx.globalAlpha = 0.7;
-        ctx.beginPath();
-        ctx.arc(bullet.x + bullet.width/2, bullet.y + bullet.height/2, bullet.width/2 + 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
         
       } else {
-        // 🚀 NEW: Draw regular bullets with enhanced effects
-        const bulletImg = cheeseBulletImages[index % cheeseBulletImages.length];
+        // DEFAULT BULLETS - Enhanced effects for regular bullets
+        ctx.fillStyle = bullet.color || '#ff0000';
+        ctx.shadowColor = bullet.color || '#ff0000';
+        ctx.shadowBlur = 8;
         
-        if (bulletImg && bulletImg.complete && bulletImg.naturalWidth > 0) {
-          ctx.drawImage(bulletImg, bullet.x, bullet.y, bullet.width, bullet.height);
-        } else {
-          // Fallback to colored rectangle with boss-specific colors
-          let bulletColor = '#ff0000';
+        // Draw with boss-specific colors
+        let bulletColor = bullet.color || '#ff0000';
+        if (boss) {
           switch (boss.type) {
             case 'cheeseKing': bulletColor = '#ff6b35'; break;      // Orange-red
             case 'cheeseEmperor': bulletColor = '#8b5cf6'; break;   // Purple
             case 'cheeseGod': bulletColor = '#f59e0b'; break;       // Gold
             case 'cheeseDestroyer': bulletColor = '#dc2626'; break; // Dark red
           }
-          ctx.fillStyle = bulletColor;
-          ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         }
+        ctx.fillStyle = bulletColor;
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        
+        // Add glow effect
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(bullet.x - 1, bullet.y - 1, bullet.width + 2, bullet.height + 2);
       }
+      
+      ctx.restore();
     });
   }
 
@@ -2326,24 +2717,40 @@ let canvasHeight;
   function drawBossAnnouncement() {
     if (!boss || bossDefeated) return;
     
-    // Semi-transparent background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-    ctx.fillRect(0, 0, canvasWidth, 60);
-    
-    // Boss announcement text
-    ctx.fillStyle = '#ff0000';
-    ctx.font = 'bold 24px Arial';
-    ctx.textAlign = 'center';
-    
-    const bossLevel = Math.floor(waveNumber / 50);
-    const bossText = `👑 BOSS WAVE ${waveNumber} - LEVEL ${bossLevel} BOSS`;
-    ctx.fillText(bossText, canvasWidth / 2, 30);
-    
-    // Boss health status
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '16px Arial';
-    const healthText = `Health: ${boss.health}/${boss.maxHealth}`;
-    ctx.fillText(healthText, canvasWidth / 2, 50);
+    // Only show full announcement during entrance phase
+    if (boss.phase === 'entrance') {
+      // Background overlay for entrance announcement
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.fillRect(0, 0, canvasWidth, 80);
+      
+      // Boss entrance announcement text
+      ctx.fillStyle = '#ff0000';
+      ctx.font = 'bold 28px Arial';
+      ctx.textAlign = 'center';
+      
+      const bossText = `👑 BOSS WAVE ${waveNumber}`;
+      ctx.fillText(bossText, canvasWidth / 2, 30);
+      
+      ctx.fillStyle = '#ffff00';
+      ctx.font = 'bold 24px Arial';
+      ctx.fillText(boss.name.toUpperCase(), canvasWidth / 2, 60);
+    } else {
+      // During fight - show only boss name and health in smaller, less intrusive way
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.fillRect(0, 0, canvasWidth, 50);
+      
+      // Boss name
+      ctx.fillStyle = '#ffff00';
+      ctx.font = 'bold 18px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`👑 ${boss.name}`, canvasWidth / 2, 20);
+      
+      // Health bar
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '14px Arial';
+      const healthText = `Health: ${boss.health}/${boss.maxHealth}`;
+      ctx.fillText(healthText, canvasWidth / 2, 40);
+    }
     
     // Reset text alignment
     ctx.textAlign = 'left';
@@ -2839,9 +3246,10 @@ let canvasHeight;
         }
         
         // 🚀 NEW: Check if NEXT wave will be a boss wave
-        // 🧪 TESTING: Temporarily changed from % 50 to % 5 for boss testing
-        if ((waveNumber + 1) % 5 === 0) {
-          console.log(`🧪 TESTING BOSS WAVE! Wave ${waveNumber + 1} will be a boss fight! (Normally every 50 waves)`);
+        // 🚀 PRODUCTION: Boss waves at proper progression levels
+        const nextWave = waveNumber + 1;
+        if (nextWave === 10 || nextWave === 25 || nextWave === 75 || nextWave === 100) {
+          console.log(`🏆 BOSS WAVE! Wave ${nextWave} will be an epic boss fight!`);
           gamePhase = 'boss';
           phaseTimer = 0;
           waveNumber++;
@@ -2857,6 +3265,9 @@ let canvasHeight;
       }
     } else if (gamePhase === 'boss') {
       // 🚀 NEW: Boss phase - boss battle!
+      if (Date.now() % 1000 < 16) { // Log every second during boss phase
+        console.log(`🧪 BOSS PHASE ACTIVE: Updating boss and checking collisions... Time: ${Date.now()}`);
+      }
       updateBoss();
       moveBullets();
       checkBossCollisions();
@@ -3322,6 +3733,15 @@ let canvasHeight;
   }
 
   // 🐍 NEW: Create eye explosion effect
+  function createExplosion(x, y, size = 25, timer = 15) {
+    explosions.push({
+      x: x,
+      y: y,
+      size: size,
+      timer: timer
+    });
+  }
+
   function createEyeExplosion(x, y) {
     // Create multiple eye explosions around the hit point
     for (let i = 0; i < 5; i++) {
@@ -3703,6 +4123,16 @@ let canvasHeight;
   }
 
   function checkPlayerHit() {
+    // 🧪 REDUCED DEBUG: Log less frequently during boss phase
+    if (gamePhase === 'boss' && Date.now() % 3000 < 16) { // Every 3 seconds
+      console.log(`🧪 checkPlayerHit() CALLED IN BOSS PHASE - Boss exists: ${!!boss}, Boss bullets: ${bossBullets?.length || 0}`);
+    }
+    
+    // 🧪 DEBUG: Confirm function is being called
+    if (Date.now() % 5000 < 16) { // Log every 5 seconds
+      console.log(`🧪 checkPlayerHit() called - Boss exists: ${!!boss}, Boss bullets: ${bossBullets?.length || 0}, Invader bullets: ${invaderBullets?.length || 0}`);
+    }
+    
     // Check invader bullets
     invaderBullets.forEach((bullet, index) => {
       if (checkCollision(playerShip, bullet)) {
@@ -3731,9 +4161,29 @@ let canvasHeight;
     });
     
     // 🚀 NEW: Check boss bullets for player damage
-    if (boss && bossBullets) {
+    // 🧪 REDUCED DEBUG: Check conditions less frequently
+    if (gamePhase === 'boss' && Date.now() % 2000 < 16) { // Every 2 seconds
+      console.log(`🧪 BOSS BULLET CONDITIONS: boss=${!!boss}, bossBullets=${!!bossBullets}, length=${bossBullets?.length || 0}, typeof bossBullets=${typeof bossBullets}`);
+    }
+    
+    if (boss && bossBullets && bossBullets.length > 0) {
+      // 🧪 ENHANCED DEBUG: Log detailed boss bullet check
+      if (Date.now() % 1000 < 16) { // Log every second
+        console.log(`🧪 BOSS BULLET CHECK: ${bossBullets.length} bullets, Player at (${Math.round(playerShip.x)}, ${Math.round(playerShip.y)})`);
+        console.log(`🧪 Boss position: (${Math.round(boss.x)}, ${Math.round(boss.y)}) size: ${boss.width}x${boss.height}`);
+        if (bossBullets.length > 0) {
+          const firstBullet = bossBullets[0];
+          console.log(`🧪 First bullet at (${Math.round(firstBullet.x)}, ${Math.round(firstBullet.y)}) type: ${firstBullet.type || 'normal'}`);
+          console.log(`🧪 First bullet properties: x=${firstBullet.x}, y=${firstBullet.y}, speed=${firstBullet.speed}, angle=${firstBullet.angle}`);
+        }
+      }
+      
       bossBullets.forEach((bullet, index) => {
-        if (checkCollision(playerShip, bullet)) {
+        // 🧪 DEBUG: Log every collision check attempt
+        const collisionResult = checkCollision(playerShip, bullet);
+        if (collisionResult) {
+          console.log(`💥 BOSS BULLET COLLISION DETECTED: ${bullet.type || 'normal'} hit player!`);
+          console.log(`🎯 Collision details: Bullet(${bullet.x}, ${bullet.y}, ${bullet.width}x${bullet.height}) vs Player(${playerShip.x}, ${playerShip.y}, ${playerShip.width}x${playerShip.height})`);
           // 🚀 NEW: Check if player is invincible
           if (playerShip.invincible && playerShip.invincibleTimer > 0) {
             console.log('🛡️ Player invincible - boss bullet blocked!');
@@ -3741,17 +4191,66 @@ let canvasHeight;
             return; // Don't take damage
           }
           
-          console.log(`💥 Boss bullet hits player! Health: ${playerShip.health} -> ${playerShip.health - 1}`);
-          playerShip.health--;
-          bossBullets.splice(index, 1);
+          // 🧀 Enhanced damage system for different cheese bullet types
+          let damage = bullet.damage || 1;
+          const bulletType = bullet.type || 'normal';
           
-          // Create enhanced explosion effect for boss bullet hit
+          console.log(`💥 ${bulletType.toUpperCase()} hits player! Damage: ${damage}, Health: ${playerShip.health} -> ${playerShip.health - damage}`);
+          
+          // 🧀 Special effects based on bullet type
+          if (bulletType === 'swiss_sniper' && bullet.piercing) {
+            // Swiss sniper bullets don't get removed and create special effect
+            console.log(`🧀 Swiss sniper pierces through player!`);
+            screenShake = 20; // Extra screen shake for piercing
+          } else {
+            // Regular bullets get removed
+            bossBullets.splice(index, 1);
+          }
+          
+          playerShip.health -= damage;
+          
+          // 🧀 Create enhanced explosion effect based on cheese bullet type
+          let explosionSize = 25;
+          let explosionTimer = 15;
+          
+          // Different explosion effects for different cheese types
+          switch (bulletType) {
+            case 'cheese_cannon':
+              explosionSize = 35;
+              explosionTimer = 20;
+              console.log(`🧀 CHEESE CANNON BLAST! The power of aged cheddar overwhelms you!`);
+              break;
+            case 'gouda_grenade':
+              explosionSize = 40;
+              explosionTimer = 25;
+              console.log(`🧀 GOUDA GRENADE EXPLOSION! You're covered in molten cheese!`);
+              break;
+            case 'swiss_sniper':
+              explosionSize = 30;
+              explosionTimer = 18;
+              console.log(`🧀 SWISS PRECISION STRIKE! Those holes aren't just for show!`);
+              break;
+            case 'cheddar_chaos':
+              explosionSize = 32;
+              explosionTimer = 20;
+              console.log(`🧀 CHEDDAR CHAOS BURNS! The heat of aged cheddar sears you!`);
+              break;
+            case 'melted_cheese':
+              explosionSize = 28;
+              explosionTimer = 22;
+              console.log(`🧀 MELTED CHEESE SPLASH! You're dripping with dairy destruction!`);
+              break;
+            default:
+              console.log(`🧀 Cheese attack hits! The dairy devastation continues!`);
+          }
+          
           explosions.push({
             x: playerShip.x + playerShip.width / 2,
             y: playerShip.y + playerShip.height / 2,
-            size: 25,
-            timer: 15,
-            isBossHit: true
+            size: explosionSize,
+            timer: explosionTimer,
+            isBossHit: true,
+            cheeseType: bulletType
           });
           
           // 🚀 NEW: Screen shake on boss bullet hit
@@ -5337,6 +5836,270 @@ window.testWeaponSystem = function() {
   console.log('✅ Bomb ammo:', weaponAmmo.bomb);
   console.log('✅ Speed boost active:', speedBoostActive);
   return true;
+};
+
+// 🧪 TESTING: Manual boss spawn function for testing
+window.testBossSpawn = function(waveNum = 5) {
+  console.log(`🧪 Manual boss spawn test for wave ${waveNum}...`);
+  if (boss && !bossDefeated) {
+    console.log('❌ Boss already active! Defeat current boss first.');
+    return false;
+  }
+  
+  waveNumber = waveNum;
+  gamePhase = 'boss';
+  phaseTimer = 0;
+  invaders = []; // Clear invaders
+  invaderBullets = [];
+  
+  try {
+    spawnBoss();
+    console.log(`✅ Boss spawned for wave ${waveNum}!`);
+    return true;
+  } catch (error) {
+    console.error('❌ Boss spawn failed:', error);
+    return false;
+  }
+};
+
+// 🧪 TESTING: Check boss status
+window.checkBossStatus = function() {
+  console.log('🔍 Boss Status Check:');
+  console.log('Boss exists:', !!boss);
+  if (boss) {
+    console.log('Boss type:', boss.type);
+    console.log('Boss name:', boss.name);
+    console.log('Boss health:', boss.health, '/', boss.maxHealth);
+    console.log('Boss defeated:', bossDefeated);
+    console.log('Boss phase:', bossPhase);
+    console.log('Game phase:', gamePhase);
+    console.log('Wave number:', waveNumber);
+    console.log('Boss attack pattern:', boss.attackPattern || 'undefined');
+    console.log('Boss damage:', boss.bulletDamage);
+    console.log('Boss speed:', boss.bulletSpeed);
+  }
+  return boss;
+};
+
+// 🧪 TESTING: Check boss bullets
+window.checkBossBullets = function() {
+  console.log('🧀 Boss Bullets Status:');
+  console.log('Total boss bullets:', bossBullets.length);
+  
+  if (bossBullets.length > 0) {
+    const bulletTypes = {};
+    bossBullets.forEach(bullet => {
+      const type = bullet.type || 'normal';
+      bulletTypes[type] = (bulletTypes[type] || 0) + 1;
+    });
+    
+    console.log('Bullet breakdown by type:', bulletTypes);
+    console.log('Sample bullet:', bossBullets[0]);
+    
+    // Show most dangerous bullets
+    const dangerousBullets = bossBullets.filter(b => b.damage > 3);
+    if (dangerousBullets.length > 0) {
+      console.log(`⚠️ ${dangerousBullets.length} high-damage bullets (>3 damage) detected!`);
+    }
+  }
+  
+  return bossBullets;
+};
+
+// 🧪 TESTING: Force boss attack for testing
+window.forceBossAttack = function(patternIndex = -1) {
+  if (!boss || bossDefeated) {
+    console.log('❌ No active boss to attack with!');
+    return false;
+  }
+  
+  if (patternIndex >= 0) {
+    bossAttackPattern = patternIndex;
+    console.log(`🧀 Forcing boss attack pattern ${patternIndex}`);
+  }
+  
+  bossAttack();
+  console.log(`✅ Boss attack executed! New bullet count: ${bossBullets.length}`);
+  return true;
+};
+
+// 🧪 TESTING: Validate boss configuration system
+window.testBossConfigs = function() {
+  console.log('🧪 Testing boss configuration system...');
+  
+  const bossTypes = ['cheeseKing', 'cheeseEmperor', 'cheeseGod', 'cheeseDestroyer'];
+  let allConfigsValid = true;
+  
+  bossTypes.forEach(bossType => {
+    try {
+      const config = getBossConfiguration(bossType);
+      if (config) {
+        console.log(`✅ ${bossType} config loaded:`, {
+          name: config.name,
+          health: config.baseHealth,
+          damage: config.baseBulletDamage,
+          abilities: config.abilities
+        });
+      } else {
+        console.error(`❌ ${bossType} config failed to load`);
+        allConfigsValid = false;
+      }
+    } catch (error) {
+      console.error(`❌ Error loading ${bossType} config:`, error);
+      allConfigsValid = false;
+    }
+  });
+  
+  if (allConfigsValid) {
+    console.log('✅ All boss configurations are valid!');
+  } else {
+    console.error('❌ Some boss configurations have issues!');
+  }
+  
+  return allConfigsValid;
+};
+
+// 🧪 TESTING: Test collision detection system
+window.testCollisions = function() {
+  console.log('🧪 Testing collision detection system...');
+  
+  console.log('Player ship:', {
+    x: playerShip.x,
+    y: playerShip.y,
+    width: playerShip.width,
+    height: playerShip.height,
+    health: playerShip.health,
+    invincible: playerShip.invincible,
+    invincibleTimer: playerShip.invincibleTimer
+  });
+  
+  if (boss) {
+    console.log('Boss:', {
+      x: boss.x,
+      y: boss.y,
+      width: boss.width,
+      height: boss.height,
+      health: boss.health,
+      defeated: bossDefeated
+    });
+  } else {
+    console.log('No boss active');
+  }
+  
+  console.log('Player bullets:', bullets.length);
+  console.log('Boss bullets:', bossBullets.length);
+  
+  // Test a collision manually
+  if (boss && bullets.length > 0) {
+    const testBullet = bullets[0];
+    const collision = checkCollision(testBullet, boss);
+    console.log('Test collision (first bullet vs boss):', collision);
+    console.log('Bullet position:', {x: testBullet.x, y: testBullet.y, width: testBullet.width, height: testBullet.height});
+  }
+  
+  if (bossBullets.length > 0) {
+    const testBossBullet = bossBullets[0];
+    const collision = checkCollision(playerShip, testBossBullet);
+    console.log('Test collision (player vs first boss bullet):', collision);
+    console.log('Boss bullet position:', {x: testBossBullet.x, y: testBossBullet.y, width: testBossBullet.width, height: testBossBullet.height});
+  }
+};
+
+// 🧪 TESTING: Remove player invincibility for testing
+window.removePlayerInvincibility = function() {
+  playerShip.invincible = false;
+  playerShip.invincibleTimer = 0;
+  console.log('✅ Player invincibility removed - ready for damage testing!');
+};
+
+// 🧪 TESTING: Set player health for testing
+window.setPlayerHealth = function(health) {
+  playerShip.health = health;
+  console.log(`✅ Player health set to ${health}`);
+};
+
+// 🧪 TESTING: Create a test bullet directly at player position
+window.createTestBullet = function() {
+  if (!boss) {
+    console.log('❌ No boss active! Spawn a boss first.');
+    return;
+  }
+  
+  // Create a simple bullet right at the player position for testing
+  const testBullet = {
+    x: playerShip.x,
+    y: playerShip.y - 50, // Start above player
+    width: 10,
+    height: 10,
+    speed: 2,
+    damage: 1,
+    color: '#ff0000',
+    type: 'test_bullet'
+  };
+  
+  bossBullets.push(testBullet);
+  console.log(`✅ Test bullet created at (${testBullet.x}, ${testBullet.y}) - should hit player in ~25 frames`);
+  console.log(`🎯 Player is at (${playerShip.x}, ${playerShip.y})`);
+  
+  return testBullet;
+};
+
+// 🧪 TESTING: Clear all boss bullets
+window.clearBossBullets = function() {
+  const count = bossBullets.length;
+  bossBullets.length = 0;
+  console.log(`✅ Cleared ${count} boss bullets`);
+};
+
+// 🚨 EMERGENCY: Force boss damage test
+window.emergencyDamageTest = function() {
+  console.log(`🚨 EMERGENCY DAMAGE TEST - Current player health: ${playerShip.health}`);
+  
+  // Force remove invincibility
+  playerShip.invincible = false;
+  playerShip.invincibleTimer = 0;
+  
+  // Manually damage player
+  const oldHealth = playerShip.health;
+  playerShip.health -= 5;
+  
+  console.log(`💥 MANUAL DAMAGE: ${oldHealth} -> ${playerShip.health}`);
+  
+  // Create explosion effect
+  explosions.push({
+    x: playerShip.x + playerShip.width / 2,
+    y: playerShip.y + playerShip.height / 2,
+    size: 30,
+    timer: 15
+  });
+  
+  return `Health changed from ${oldHealth} to ${playerShip.health}`;
+};
+
+// 🚨 EMERGENCY: Force collision check
+window.emergencyCollisionCheck = function() {
+  console.log(`🚨 EMERGENCY COLLISION CHECK`);
+  console.log(`Game phase: ${gamePhase}`);
+  console.log(`Boss exists: ${!!boss}`);
+  console.log(`Boss bullets: ${bossBullets?.length || 0}`);
+  console.log(`Player position: (${playerShip.x}, ${playerShip.y})`);
+  console.log(`Player invincible: ${playerShip.invincible}, timer: ${playerShip.invincibleTimer}`);
+  
+  if (bossBullets && bossBullets.length > 0) {
+    console.log(`🔍 First 3 bullets:`);
+    for (let i = 0; i < Math.min(3, bossBullets.length); i++) {
+      const bullet = bossBullets[i];
+      console.log(`  Bullet ${i}: (${Math.round(bullet.x)}, ${Math.round(bullet.y)}) type: ${bullet.type || 'normal'}`);
+      
+      // Check collision manually
+      const collision = checkCollision(playerShip, bullet);
+      console.log(`  Collision with player: ${collision}`);
+    }
+  }
+  
+  // Try calling checkPlayerHit manually
+  console.log(`🧪 Manually calling checkPlayerHit()...`);
+  checkPlayerHit();
 };
 
 // 🚀 NEW: Add missing functions that were referenced
