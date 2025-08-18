@@ -9245,7 +9245,16 @@ require_once 'discord-invite.php';
                   <span class="text-sm text-blue-400">Wave ${notification.wave_number}</span>
                   ${rewardBadge}
                 </div>
-                <div class="text-white font-semibold">${notification.player_username}</div>
+                <div class="text-white font-semibold">
+                  ${notification.discord_name ? 
+                    `🎮 ${notification.discord_name}` : 
+                    notification.player_username
+                  }
+                  ${notification.discord_id ? 
+                    `<span class="text-xs text-blue-400 ml-2">ID: ${notification.discord_id}</span>` : 
+                    ''
+                  }
+                </div>
                 <div class="text-sm text-gray-300">
                   Score: ${notification.score ? notification.score.toLocaleString() : 'N/A'} 
                   (${notification.dspoinc_earned ? notification.dspoinc_earned.toLocaleString() : 'N/A'} DSPOINC)

@@ -103,21 +103,23 @@ function handleCreateNotification($db) {
     try {
         $stmt = $db->prepare("
             INSERT INTO boss_level_notifications (
-                player_username, player_id, game_type, wave_number, boss_level, 
+                player_username, player_id, discord_id, discord_name, game_type, wave_number, boss_level, 
                 boss_type, boss_name, score, dspoinc_earned, notification_type
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->bindValue(1, $input['player_username'], SQLITE3_TEXT);
         $stmt->bindValue(2, $input['player_id'] ?? null, SQLITE3_TEXT);
-        $stmt->bindValue(3, $input['game_type'] ?? 'space_invaders', SQLITE3_TEXT);
-        $stmt->bindValue(4, $input['wave_number'], SQLITE3_INTEGER);
-        $stmt->bindValue(5, $input['boss_level'], SQLITE3_INTEGER);
-        $stmt->bindValue(6, $input['boss_type'] ?? null, SQLITE3_TEXT);
-        $stmt->bindValue(7, $input['boss_name'], SQLITE3_TEXT);
-        $stmt->bindValue(8, $input['score'] ?? null, SQLITE3_INTEGER);
-        $stmt->bindValue(9, $input['dspoinc_earned'] ?? null, SQLITE3_INTEGER);
-        $stmt->bindValue(10, $input['notification_type'] ?? 'boss_level_reached', SQLITE3_TEXT);
+        $stmt->bindValue(3, $input['discord_id'] ?? null, SQLITE3_TEXT);
+        $stmt->bindValue(4, $input['discord_name'] ?? null, SQLITE3_TEXT);
+        $stmt->bindValue(5, $input['game_type'] ?? 'space_invaders', SQLITE3_TEXT);
+        $stmt->bindValue(6, $input['wave_number'], SQLITE3_INTEGER);
+        $stmt->bindValue(7, $input['boss_level'], SQLITE3_INTEGER);
+        $stmt->bindValue(8, $input['boss_type'] ?? null, SQLITE3_TEXT);
+        $stmt->bindValue(9, $input['boss_name'], SQLITE3_TEXT);
+        $stmt->bindValue(10, $input['score'] ?? null, SQLITE3_INTEGER);
+        $stmt->bindValue(11, $input['dspoinc_earned'] ?? null, SQLITE3_INTEGER);
+        $stmt->bindValue(12, $input['notification_type'] ?? 'boss_level_reached', SQLITE3_TEXT);
         
         $result = $stmt->execute();
         
@@ -214,7 +216,10 @@ function handleGetNotifications($db) {
 function handleUpdateNotification($db) {
     $input = json_decode(file_get_contents('php://input'), true);
     
-    if (!$input || !isset($input['notification_id'])) {
+    // Accept both 'id' and 'notification_id' for compatibility
+    $notificationId = $input['notification_id'] ?? $input['id'] ?? null;
+    
+    if (!$input || !$notificationId) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Missing notification ID']);
         return;
@@ -223,7 +228,7 @@ function handleUpdateNotification($db) {
     try {
         // First get the notification to check if it exists and get player info
         $getStmt = $db->prepare("SELECT * FROM boss_level_notifications WHERE id = ?");
-        $getStmt->bindValue(1, $input['notification_id'], SQLITE3_INTEGER);
+        $getStmt->bindValue(1, $notificationId, SQLITE3_INTEGER);
         $getResult = $getStmt->execute();
         $notification = $getResult->fetchArray(SQLITE3_ASSOC);
         
@@ -253,9 +258,11 @@ function handleUpdateNotification($db) {
             $paramTypes[] = SQLITE3_TEXT;
         }
         
-        if (isset($input['admin_id'])) {
+        // Support both admin_id and admin_reviewed_by fields
+        $adminReviewer = $input['admin_id'] ?? $input['admin_reviewed_by'] ?? null;
+        if ($adminReviewer) {
             $updateFields[] = "admin_reviewed_by = ?";
-            $params[] = $input['admin_id'];
+            $params[] = $adminReviewer;
             $paramTypes[] = SQLITE3_TEXT;
             
             $updateFields[] = "admin_reviewed_at = ?";
@@ -286,7 +293,7 @@ function handleUpdateNotification($db) {
         }
         
         $sql = "UPDATE boss_level_notifications SET " . implode(', ', $updateFields) . " WHERE id = ?";
-        $params[] = $input['notification_id'];
+        $params[] = $notificationId;
         $paramTypes[] = SQLITE3_INTEGER;
         
         $stmt = $db->prepare($sql);

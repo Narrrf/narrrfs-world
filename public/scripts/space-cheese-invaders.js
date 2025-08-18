@@ -995,10 +995,16 @@ let canvasHeight;
       // Calculate DSPOINC earned (10x multiplier like other games)
       const dspoincEarned = currentScore * 10;
       
+      // Get Discord info for better identification
+      const discordId = (typeof localStorage !== 'undefined') ? localStorage.getItem('discord_id') : null;
+      const discordName = (typeof localStorage !== 'undefined') ? localStorage.getItem('discord_name') : null;
+      
       // Prepare notification data
       const notificationData = {
         player_username: playerUsername,
-        player_id: playerId,
+        player_id: playerId, // This will be Discord ID if available
+        discord_id: discordId, // Explicit Discord ID field
+        discord_name: discordName, // Explicit Discord name field
         game_type: 'space_invaders',
         wave_number: currentWave,
         boss_level: bossLevel,
@@ -1047,6 +1053,15 @@ let canvasHeight;
   
   // Helper functions to get player information
   function getCurrentPlayerUsername() {
+    // 🔥 PRIORITY 1: Try to get Discord name (best option)
+    if (typeof localStorage !== 'undefined') {
+      const discordName = localStorage.getItem('discord_name');
+      if (discordName && discordName !== 'null' && discordName !== '') {
+        console.log('👤 Using Discord name:', discordName);
+        return discordName;
+      }
+    }
+    
     // Try to get username from various sources
     if (typeof window !== 'undefined' && window.currentPlayer) {
       return window.currentPlayer.username;
@@ -1054,19 +1069,49 @@ let canvasHeight;
     if (typeof window !== 'undefined' && window.playerUsername) {
       return window.playerUsername;
     }
-    // You can add more fallbacks here based on your game's player system
+    
+    // Check localStorage for saved username (fallback)
+    if (typeof localStorage !== 'undefined') {
+      const savedUsername = localStorage.getItem('spaceInvadersUsername');
+      if (savedUsername && savedUsername !== 'null' && savedUsername !== '') {
+        return savedUsername;
+      }
+    }
+    
+    // If no username found, prompt for one and save it (last resort)
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const username = prompt('🎮 Enter your player name for the leaderboard and boss achievements:');
+      if (username && username.trim() !== '') {
+        const cleanUsername = username.trim().substring(0, 20); // Limit to 20 chars
+        localStorage.setItem('spaceInvadersUsername', cleanUsername);
+        console.log('👤 Player username saved:', cleanUsername);
+        return cleanUsername;
+      }
+    }
+    
+    // Fallback to anonymous
     return 'Anonymous Player';
   }
   
   function getCurrentPlayerId() {
-    // Try to get player ID from various sources
+    // 🔥 PRIORITY 1: Try to get Discord ID (best option)
+    if (typeof localStorage !== 'undefined') {
+      const discordId = localStorage.getItem('discord_id');
+      if (discordId && discordId !== 'null' && discordId !== '') {
+        console.log('🆔 Using Discord ID:', discordId);
+        return discordId;
+      }
+    }
+    
+    // Try to get player ID from various sources (fallback)
     if (typeof window !== 'undefined' && window.currentPlayer) {
       return window.currentPlayer.id;
     }
     if (typeof window !== 'undefined' && window.playerId) {
       return window.playerId;
     }
-    // You can add more fallbacks here based on your game's player system
+    
+    // Return null if no ID found
     return null;
   }
 
@@ -1269,18 +1314,20 @@ let canvasHeight;
   }
 
   function updateBoss() {
-    if (!boss || bossDefeated) return;
+    // 🚀 CRITICAL: Always update boss effects for cleanup even when boss is defeated
+    updateBossEffects();
+    
+    if (!boss || (bossDefeated && bossDefeatEffect <= 0)) return;
     
     const currentTime = Date.now();
     
     // 🚀 DEBUG: Log boss update status
     if (phaseTimer % 100 === 0) { // Every 10 seconds
-      console.log(`👑 BOSS UPDATE: ${boss.name} at ${boss.health}/${boss.maxHealth} HP, Phase: ${bossPhase}, Position: x=${boss.x}, y=${boss.y}`);
-      console.log(`🔍 BOSS PHASE DEBUG: bossPhase=${bossPhase}, typeof=${typeof bossPhase}, boss.phase=${boss.phase}`);
+      if (boss) {
+        console.log(`👑 BOSS UPDATE: ${boss.name} at ${boss.health}/${boss.maxHealth} HP, Phase: ${bossPhase}, Position: x=${boss.x}, y=${boss.y}`);
+        console.log(`🔍 BOSS PHASE DEBUG: bossPhase=${bossPhase}, typeof=${typeof bossPhase}, boss.phase=${boss.phase}`);
+      }
     }
-    
-    // 🚀 NEW: Update boss effects
-    updateBossEffects();
     
     // 🚀 NEW: Update boss bullets movement
     updateBossBullets();
@@ -2667,16 +2714,29 @@ let canvasHeight;
       bossDefeatEffect--;
       // During defeat effect, don't add extra screen shake
       if (bossDefeatEffect <= 0) {
-        console.log('✅ Boss defeat effect complete - cleaning up boss');
+        console.log('✅ Boss defeat effect complete - cleaning up boss and transitioning to next wave');
         // Clean up boss after defeat effect
         if (bossDefeated) {
+          // Clear all boss-related objects
           boss = null;
           bossDefeated = false;
           bossPhase = 'none';
           bossBullets = [];
           bossParticles = [];
           screenShake = 0; // Force stop any remaining screen shake
-          console.log('🧹 Boss cleanup complete - game ready for next wave');
+          
+          // Transition back to normal waves
+          gamePhase = 'formation';
+          phaseTimer = 0;
+          waveNumber++;
+          invaderDropPhase = false;
+          dropStartTime = Date.now();
+          
+          // Spawn the next wave
+          spawnNewWave();
+          
+          console.log('🧹 Boss cleanup complete - transitioned to wave ' + waveNumber);
+          console.log('🚀 Returning to normal waves after epic boss battle!');
         }
       }
     }
@@ -3357,23 +3417,8 @@ let canvasHeight;
       // 🚀 CRITICAL FIX: Boss phase timer - boss fights last UNTIL DEFEATED (no time limit!)
       phaseTimer++;
       
-      // 🚀 NEW: Check if boss was defeated and handle transition
-      if (bossDefeated && boss) {
-        console.log(`👑 Boss defeat sequence complete - returning to normal waves...`);
-        
-        // Wait a bit for defeat effects to finish
-        setTimeout(() => {
-          // Clear boss and return to normal waves
-          boss = null;
-          gamePhase = 'formation';
-          phaseTimer = 0;
-          waveNumber++;
-          invaderDropPhase = false;
-          dropStartTime = Date.now();
-          spawnNewWave();
-          console.log(`🚀 Returning to normal waves after epic boss battle!`);
-        }, 3000); // 3 second delay for defeat effects
-      }
+      // 🚀 CLEANED UP: Boss transition now handled in updateBossEffects() after defeat animation
+      // The boss cleanup and transition is now managed by the bossDefeatEffect countdown in updateBossEffects()
       
       // Phase transitions - check if only 2 or fewer invaders are left
       const aliveInvaders = invaders.filter(invader => invader.alive);
