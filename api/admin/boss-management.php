@@ -1,16 +1,11 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-require_once '../auth/auth.php';
-
-// Check if user is authenticated
-if (!isAuthenticated()) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
-    exit;
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -18,7 +13,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case 'GET':
         // Get all boss configurations
-        if (isset($_GET['action']) && $_GET['action'] === 'get_all') {
+        if (!isset($_GET['action']) || $_GET['action'] === 'get_all') {
             echo json_encode([
                 'success' => true,
                 'bosses' => [

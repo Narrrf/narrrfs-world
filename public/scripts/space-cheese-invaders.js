@@ -7,6 +7,12 @@
 // 🏆 Boss types: Wave 10=Cheese King, Wave 25=Cheese Emperor, Wave 75=Cheese God, Wave 100=Cheese Destroyer
 // 🎯 Balanced difficulty curve for challenging but achievable progression!
 
+// 🌍 Environment Detection for API calls
+const isProduction = window.location.hostname === 'narrrfs.world';
+const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
+console.log('🌍 Space Invaders Environment detected:', isProduction ? 'Production' : 'Local');
+console.log('🔗 Space Invaders API Base URL:', API_BASE_URL);
+
 // 🚫 Full page scroll prevention (same as other games)
 window.addEventListener("touchmove", function(e) {
   if (e.target.closest("#space-invaders-canvas")) {
@@ -176,34 +182,34 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
   const DEFAULT_BOSS_CONFIGS = {
     cheeseKing: {
       name: 'Cheese King',
-      description: 'The first boss - fast and agile with teleport abilities',
-      baseHealth: 150, // Perfect balance for first boss - challenging but fair
+      description: 'The first boss - slower and more manageable for new players',
+      baseHealth: 120, // Reduced health for easier first boss
       healthMultiplier: 1.0,
-      baseSpeed: 2.5,
+      baseSpeed: 1.8, // Much slower speed (was 2.5)
       speedMultiplier: 1.0,
-      baseAttackCooldown: 800,
+      baseAttackCooldown: 1200, // Slower attacks (was 800)
       attackCooldownMultiplier: 1.0,
-      baseBulletSpeed: 3.2, // 20% slower for better first boss balance
+      baseBulletSpeed: 2.5, // Even slower bullets (was 3.2)
       bulletSpeedMultiplier: 1.0,
-      baseBulletDamage: 2,
+      baseBulletDamage: 1, // Reduced damage (was 2)
       bulletDamageMultiplier: 1.0,
       size: 0.8,
-      movementPatterns: ['sideways', 'zigzag', 'dash'],
-      attackPatterns: [0, 1, 2, 3, 4],
+      movementPatterns: ['sideways', 'zigzag'], // Removed 'dash' - less aggressive
+      attackPatterns: [0, 1, 2], // Simplified attack patterns
       abilities: {
         canTeleport: true,
-        canShield: true,
+        canShield: false, // Disabled shield for easier fights
         canSummonMinions: false,
         canUseLaser: false,
         canCreateExplosions: false
       },
-      specialAttackChance: 0.3,
-      rageModeThreshold: 0.4,
+      specialAttackChance: 0.2, // Reduced special attacks (was 0.3)
+      rageModeThreshold: 0.3, // Earlier rage mode but...
       rageModeMultipliers: {
-        speed: 2.0,
-        attackCooldown: 0.4,
-        bulletSpeed: 1.8,
-        bulletDamage: 1.5
+        speed: 1.5, // Less aggressive rage mode (was 2.0)
+        attackCooldown: 0.6, // Less frequent attacks (was 0.4)
+        bulletSpeed: 1.4, // Slower rage bullets (was 1.8)
+        bulletDamage: 1.2 // Less rage damage (was 1.5)
       },
       colors: {
         primary: '#ff6b35',
@@ -2120,7 +2126,7 @@ let canvasHeight;
         
         // 🚀 NEW: Boss takes damage with invincibility frames
         boss.health -= damage;
-        boss.invincibilityFrames = 3; // Reduced from 10 to 3 frames for better gameplay
+        boss.invincibilityFrames = 1; // Further reduced to 1 frame for easier boss fights
         
         // 🚀 NEW: Create enhanced hit effects
         createExplosion(bullet.x, bullet.y);
