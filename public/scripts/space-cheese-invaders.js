@@ -2421,7 +2421,7 @@ let canvasHeight;
       
       // 🚀 NEW: Draw boss with invincibility flash
       if (boss.invincibilityFrames > 0) {
-        ctx.globalAlpha = 0.5 + (Math.sin(Date.now() * 0.01) * 0.3);
+        ctx.globalAlpha = 0.5 + (Math.sin(Date.now() * 0.1) * 0.3);
       }
       
       ctx.fillStyle = fallbackColor;
@@ -2565,7 +2565,7 @@ let canvasHeight;
         
       } else if (bullet.type === 'gouda_grenade') {
         // 🧀 GOUDA GRENADE - Pulsating explosive cheese
-        const pulse = Math.sin(Date.now() * 0.01) * 0.2 + 1;
+        const pulse = Math.sin(Date.now() * 0.1) * 0.2 + 1;
         ctx.fillStyle = bullet.color;
         ctx.shadowColor = '#ffaa00';
         ctx.shadowBlur = 12 * pulse;
@@ -3609,7 +3609,7 @@ let canvasHeight;
         } else if (invader.movePattern === 'hover') {
           // 🚀 NEW: Hover pattern - invaders hover and move side to side aggressively
           invader.y += 1.5 * waveSpeedMultiplier; // 1.5x faster downward movement
-          invader.x += Math.sin(currentTime * 0.01 + invader.x * 0.02) * 4 * waveSpeedMultiplier; // More aggressive side movement
+          invader.x += Math.sin(currentTime * 0.1 + invader.x * 0.02) * 4 * waveSpeedMultiplier; // More aggressive side movement
         } else {
           // 🚀 NEW: Standard movement - straight down with much more aggressive movement
           invader.x += invaderDirection * gameSpeed * 0.8 * waveSpeedMultiplier;
@@ -4012,7 +4012,7 @@ let canvasHeight;
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let i = 0; i < bullet.height; i += 10) {
-      const waveOffset = Math.sin(currentTime * 0.01 + i * 0.1) * 2;
+      const waveOffset = Math.sin(currentTime * 0.1 + i * 0.1) * 2;
       ctx.moveTo(beamX + waveOffset, bullet.y + i);
       ctx.lineTo(beamX + beamWidth + waveOffset, bullet.y + i);
     }
@@ -4519,7 +4519,7 @@ let canvasHeight;
     // 🚀 NEW: Add invincibility glow effect
     if (playerShip.invincible && playerShip.invincibleTimer > 0) {
       // Create pulsing invincibility glow
-      const glowIntensity = 0.3 + Math.sin(Date.now() * 0.01) * 0.2; // Pulsing effect
+      const glowIntensity = 0.3 + Math.sin(Date.now() * 0.1) * 0.2; // Pulsing effect
       ctx.fillStyle = `rgba(255, 255, 0, ${glowIntensity})`; // Yellow glow
       ctx.fillRect(playerShip.x - 4, playerShip.y - 4, playerShip.width + 8, playerShip.height + 8);
     }
@@ -4651,7 +4651,7 @@ let canvasHeight;
       if (invader.hasWeakPoint && invader.weakPointHealth > 0) {
         if (invader.weakPointType === 'eye') {
           // Draw glowing red eye
-          ctx.fillStyle = `rgba(255, 0, 0, ${0.8 + Math.sin(Date.now() * 0.01) * 0.2})`; // Pulsing red
+          ctx.fillStyle = `rgba(255, 0, 0, ${0.8 + Math.sin(Date.now() * 0.1) * 0.2})`; // Pulsing red
           ctx.beginPath();
           ctx.arc(invader.weakPointX, invader.weakPointY, invader.weakPointSize, 0, Math.PI * 2);
           ctx.fill();
@@ -4669,7 +4669,7 @@ let canvasHeight;
           ctx.fill();
         } else if (invader.weakPointType === 'dna') {
           // Draw glowing green DNA helix
-          ctx.fillStyle = `rgba(0, 255, 0, ${0.8 + Math.sin(Date.now() * 0.01) * 0.2})`; // Pulsing green
+          ctx.fillStyle = `rgba(0, 255, 0, ${0.8 + Math.sin(Date.now() * 0.1) * 0.2})`; // Pulsing green
           ctx.beginPath();
           ctx.arc(invader.weakPointX, invader.weakPointY, invader.weakPointSize, 0, Math.PI * 2);
           ctx.fill();
@@ -4756,7 +4756,7 @@ let canvasHeight;
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let i = 0; i < bullet.height; i += 10) {
-      const waveOffset = Math.sin(currentTime * 0.01 + i * 0.1) * 2;
+      const waveOffset = Math.sin(currentTime * 0.1 + i * 0.1) * 2;
       ctx.moveTo(beamX + waveOffset, bullet.y + i);
       ctx.lineTo(beamX + beamWidth + waveOffset, bullet.y + i);
     }
@@ -5305,8 +5305,8 @@ let canvasHeight;
   function drawScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // Space Invaders scoring: 1 invader = 0.01 DSPOINC
-      const dspoinEarned = Math.round((spaceInvadersCount * 0.01) * 100) / 100; // Round to 2 decimal places (1 invader = 0.01 DSPOINC)
+      // Space Invaders scoring: 10 invaders = 1 DSPOINC
+      const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places (10 invaders = 1 DSPOINC)
       scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} game points, ${spaceInvadersCount.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC)`;
     } else {
       console.warn('⚠️ Score display element not found');
@@ -5420,8 +5420,8 @@ let canvasHeight;
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // Space Invaders scoring: 1 invader = 0.01 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersCount * 0.01) * 100) / 100; // Round to 2 decimal places (1 invader = 0.01 DSPOINC)
+    // Space Invaders scoring: 10 invaders = 1 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places (10 invaders = 1 DSPOINC)
     
     if (gameOverModal && finalScoreText) {
       finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersCount.toLocaleString()} invaders destroyed)`;
@@ -6249,8 +6249,8 @@ window.emergencyCollisionCheck = function() {
   function updateScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // Space Invaders scoring: 1 invader = 0.01 DSPOINC
-      const dspoinEarned = Math.round((spaceInvadersCount * 0.01) * 100) / 100; // Round to 2 decimal places (1 invader = 0.01 DSPOINC)
+      // Space Invaders scoring: 10 invaders = 1 DSPOINC
+      const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places (10 invaders = 1 DSPOINC)
       scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} game points, ${spaceInvadersCount.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC)`;
     } else {
       console.warn('⚠️ Score display element not found');
@@ -6263,8 +6263,8 @@ window.emergencyCollisionCheck = function() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // Space Invaders scoring: 1 invader = 0.01 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersCount * 0.01) * 100) / 100; // Round to 2 decimal places (1 invader = 0.01 DSPOINC)
+    // Space Invaders scoring: 10 invaders = 1 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places (10 invaders = 1 DSPOINC)
     
     if (winModal && winScoreText) {
       winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersCount.toLocaleString()} invaders destroyed)`;
@@ -6289,8 +6289,8 @@ window.emergencyCollisionCheck = function() {
       return;
     }
 
-    // Space Invaders scoring: 0.01 DSPOINC per invader (matches backend database)
-    const dspoincScore = Math.round((invaderCount * 0.01) * 100) / 100; // Convert to DSPOINC (1 invader = 0.01 DSPOINC)
+    // Space Invaders scoring: 0.1 DSPOINC per invader (matches backend database)
+    const dspoincScore = Math.round((invaderCount * 0.1) * 100) / 100; // Convert to DSPOINC (10 invaders = 1 DSPOINC)
 
     console.log(`💾 Saving Space Invaders score: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
 

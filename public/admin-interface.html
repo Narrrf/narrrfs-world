@@ -3026,8 +3026,8 @@ require_once 'discord-invite.php';
             </div>
             <div>
               <label class="block text-sm font-medium mb-2">👾 Points Per Invader (Space Invaders):</label>
-              <input type="number" id="newPointsPerInvader" placeholder="0.01" min="0.001" max="1" step="0.001" class="w-full px-3 py-2 rounded text-gray-800">
-              <p class="text-xs text-gray-400 mt-1">DSPOINC points awarded per invader destroyed (0.01 = 1,000 invaders = 10 DSPOINC)</p>
+              <input type="number" id="newPointsPerInvader" placeholder="0.1" min="0.001" max="1" step="0.001" class="w-full px-3 py-2 rounded text-gray-800">
+              <p class="text-xs text-gray-400 mt-1">DSPOINC points awarded per invader destroyed (0.1 = 10 invaders = 1 DSPOINC)</p>
             </div>
           </div>
           
@@ -3035,10 +3035,10 @@ require_once 'discord-invite.php';
           <div class="mb-4 p-3 bg-gray-600 rounded-lg">
             <h6 class="font-semibold text-yellow-400 mb-2">⚡ Quick Ratio Presets</h6>
             <div class="flex flex-wrap gap-2">
-              <button onclick="setRatioPreset(1, 1, 0.01)" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">1:1:0.01 (Exact Score)</button>
-              <button onclick="setRatioPreset(10, 10, 0.01)" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">10:1:0.01 (10x Multiplier)</button>
-              <button onclick="setRatioPreset(5, 5, 0.01)" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">5:1:0.01 (5x Multiplier)</button>
-              <button onclick="setRatioPreset(2, 2, 0.01)" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm">2:1:0.01 (2x Multiplier)</button>
+              <button onclick="setRatioPreset(1, 1, 0.1)" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">1:1:0.1 (Exact Score)</button>
+              <button onclick="setRatioPreset(10, 10, 0.1)" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">10:1:0.1 (10x Multiplier)</button>
+              <button onclick="setRatioPreset(5, 5, 0.1)" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">5:1:0.1 (5x Multiplier)</button>
+              <button onclick="setRatioPreset(2, 2, 0.1)" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm">2:1:0.1 (2x Multiplier)</button>
             </div>
           </div>
           
@@ -12187,7 +12187,7 @@ require_once 'discord-invite.php';
     }
 
     // Set ratio preset
-    function setRatioPreset(tetrisRatio, snakeRatio, spaceInvadersRatio = 0.01) {
+    function setRatioPreset(tetrisRatio, snakeRatio, spaceInvadersRatio = 0.1) {
       document.getElementById('newPointsPerLine').value = tetrisRatio;
       document.getElementById('newPointsPerCheese').value = snakeRatio;
       document.getElementById('newPointsPerInvader').value = spaceInvadersRatio;
