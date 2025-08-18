@@ -1321,6 +1321,12 @@ require_once 'discord-invite.php';
         <h3 class="text-lg font-semibold">👑 Boss Notifications</h3>
         <p class="text-2xl font-bold" id="bossNotifications">Loading...</p>
       </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+        <h3 class="text-lg font-semibold">🔄 Discord Sync</h3>
+        <button onclick="syncDiscordUsers()" class="mt-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold transition-all duration-200">
+          🔄 Sync Users
+        </button>
+      </div>
     </div>
 
     <!-- Admin Authentication -->
@@ -14369,7 +14375,7 @@ require_once 'discord-invite.php';
         addLog(`💾 Saving boss configuration for ${bossType}...`);
         
         const response = await fetch(`${API_BASE_URL}/api/admin/boss-management.php`, {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -14430,6 +14436,78 @@ require_once 'discord-invite.php';
         console.error('❌ Error resetting boss configuration:', error);
         addLog(`❌ Error resetting boss configuration: ${error.message}`);
         showNotification(`Error resetting configuration: ${error.message}`, 'error');
+      }
+    }
+    
+    // Sync Discord Users
+    async function syncDiscordUsers() {
+      try {
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '🔄 Syncing...';
+        button.disabled = true;
+        
+        console.log('🔄 Starting Discord user synchronization...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/sync-users.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include' // Include cookies for authentication
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (data.success) {
+          console.log('✅ Discord sync completed:', data);
+          
+          // Show detailed results
+          const message = `✅ Discord Sync Complete!\n` +
+                         `• Added ${data.missing_users_added} new users\n` +
+                         `• Updated ${data.users_updated} existing users\n` +
+                         `• Synced ${data.balances_synced || 0} user balances`;
+          
+          alert(message);
+          
+          // Refresh stats to show updated user count
+          loadStats();
+          
+          // If nft_lovr was among the missing users, show special message with balance
+          const nftLovrAdded = data.details.missing_users.some(user => 
+            user.username.toLowerCase().includes('nft_lovr') || 
+            user.id === '1146994462468362250'
+          );
+          
+          if (nftLovrAdded) {
+            const nftLovrUser = data.details.missing_users.find(user => 
+              user.username.toLowerCase().includes('nft_lovr') || 
+              user.id === '1146994462468362250'
+            );
+            const balance = nftLovrUser ? nftLovrUser.balance : 0;
+            alert(`🎉 nft_lovr has been successfully added to the database!\n💰 Balance synced: ${balance.toLocaleString()} DSPOINC`);
+          }
+          
+          // Show balance sync details if any
+          if (data.details.balance_synced && data.details.balance_synced.length > 0) {
+            console.log('💰 Balances synced:', data.details.balance_synced);
+          }
+          
+        } else {
+          throw new Error(data.error || 'Unknown error');
+        }
+      } catch (error) {
+        console.error('❌ Error syncing Discord users:', error);
+        alert(`❌ Sync Error: ${error.message}\n\nNote: You need to be logged in as admin/moderator to sync users.`);
+      } finally {
+        // Reset button
+        if (button) {
+          button.innerHTML = originalText;
+          button.disabled = false;
+        }
       }
     }
     

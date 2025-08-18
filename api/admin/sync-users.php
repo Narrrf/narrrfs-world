@@ -117,9 +117,10 @@ $db_user_ids = array_column($db_users, 'discord_id');
 error_log("Sync Debug: Number of existing users in DB: " . count($db_users));
 error_log("Sync Debug: First DB user example: " . json_encode(array_slice($db_users, 0, 1)));
 
-// Find missing users
+// Find missing users and sync balances
 $missing_users = [];
 $updated_users = [];
+$balance_synced = [];
 
 foreach ($all_discord_members as $member) {
     $discord_id = $member['user']['id'];
@@ -129,7 +130,28 @@ foreach ($all_discord_members as $member) {
         // Add missing user to database
         $stmt = $db->prepare("INSERT INTO tbl_users (discord_id, username) VALUES (?, ?)");
         $stmt->execute([$discord_id, $username]);
-        $missing_users[] = ['id' => $discord_id, 'username' => $username];
+        
+        // Check if user has existing balance in user_scores table
+        $stmt = $db->prepare("SELECT SUM(score) as total FROM tbl_user_scores WHERE user_id = ?");
+        $stmt->execute([$discord_id]);
+        $balance_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $current_balance = $balance_result['total'] ?? 0;
+        
+        // If user has a balance but wasn't in tbl_users, they're now synced
+        if ($current_balance > 0) {
+            $balance_synced[] = [
+                'id' => $discord_id, 
+                'username' => $username, 
+                'balance' => $current_balance
+            ];
+            error_log("Sync Debug: User $username ($discord_id) has existing balance: $current_balance DSPOINC");
+        }
+        
+        $missing_users[] = [
+            'id' => $discord_id, 
+            'username' => $username, 
+            'balance' => $current_balance
+        ];
     } else {
         // Update existing username if changed
         $db_user = array_filter($db_users, function($u) use ($discord_id) {
@@ -145,15 +167,17 @@ foreach ($all_discord_members as $member) {
 }
 
 // Debug: Log final results
-error_log("Sync Debug: Added " . count($missing_users) . " new users, updated " . count($updated_users) . " existing users");
+error_log("Sync Debug: Added " . count($missing_users) . " new users, updated " . count($updated_users) . " existing users, synced " . count($balance_synced) . " balances");
 
 echo json_encode([
     'success' => true,
     'missing_users_added' => count($missing_users),
     'users_updated' => count($updated_users),
+    'balances_synced' => count($balance_synced),
     'details' => [
         'missing_users' => $missing_users,
-        'updated_users' => $updated_users
+        'updated_users' => $updated_users,
+        'balance_synced' => $balance_synced
     ]
 ]);
 ?> 
