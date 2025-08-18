@@ -980,6 +980,12 @@ let canvasHeight;
   // 🚀 NEW: Boss Level Notification Function
   function sendBossLevelNotification(bossLevel, bossName, bossType) {
     try {
+      // 🌍 Ensure API_BASE_URL is available (with fallback)
+      const apiBaseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 
+                        (window.location.hostname === 'narrrfs.world' ? 'https://narrrfs.world' : '');
+      
+      console.log('🌍 Boss Notification API Base URL:', apiBaseUrl);
+      
       // Get current player info (you may need to adjust this based on your game's player system)
       const playerUsername = getCurrentPlayerUsername() || 'Anonymous Player';
       const playerId = getCurrentPlayerId() || null;
@@ -1003,24 +1009,35 @@ let canvasHeight;
         notification_type: 'boss_level_reached'
       };
       
+      console.log('📤 Sending boss notification data:', notificationData);
+      
       // Send notification to admin API
-      fetch(API_BASE_URL + '/api/admin/boss-level-notification.php', {
+      fetch(apiBaseUrl + '/api/admin/boss-level-notification.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(notificationData)
       })
-      .then(response => response.json())
+      .then(response => {
+        console.log('📡 Boss notification response status:', response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then(data => {
+        console.log('📨 Boss notification response data:', data);
         if (data.success) {
-          console.log('👑 Boss level notification sent successfully:', data.message);
+          console.log('✅ Boss level notification sent successfully:', data.message);
+          console.log('🆔 Notification ID:', data.notification_id);
         } else {
-          console.warn('⚠️ Failed to send boss notification:', data.error);
+          console.error('❌ Failed to send boss notification:', data.error);
         }
       })
       .catch(error => {
-        console.warn('⚠️ Error sending boss notification:', error);
+        console.error('🚨 Error sending boss notification:', error);
+        console.error('🔍 Error details:', error.message);
       });
       
     } catch (error) {
