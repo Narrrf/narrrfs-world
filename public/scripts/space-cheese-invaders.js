@@ -181,6 +181,184 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
     cheeseBulletImages.push(bulletImg);
   }
 
+// 🎵 NEW: Cheese Sound Manager for epic audio effects
+class CheeseSoundManager {
+  constructor() {
+    this.audioContext = null;
+    this.soundEnabled = false; // 🚫 Start with sound DISABLED by default
+    this.masterVolume = 0.7;
+    this.initAudioContext();
+  }
+
+  // Initialize Web Audio API context
+  initAudioContext() {
+    try {
+      // Create audio context on first user interaction
+      if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+        this.audioContext = new (AudioContext || webkitAudioContext)();
+        console.log('✅ Audio context initialized successfully');
+      } else {
+        console.warn('⚠️ Web Audio API not supported');
+      }
+    } catch (error) {
+      console.warn('⚠️ Audio context initialization failed:', error);
+    }
+  }
+
+  // Create the iconic Star Wars laser sound with cheese twist
+  playStarWarsLaser() {
+    if (!this.soundEnabled || !this.audioContext) return;
+
+    try {
+      // Resume audio context if suspended (browser requirement)
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+      }
+
+      const now = this.audioContext.currentTime;
+
+      // Create oscillator for the laser sound
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      
+      // Connect nodes
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+
+      // 🚀 AUTHENTIC STAR WARS LASER SOUND
+      // The real Star Wars laser has a very specific character:
+      // 1. High-pitched "pew" with a quick attack
+      // 2. Slight pitch bend down
+      // 3. Very short duration (~80ms)
+      // 4. Clean, crisp sound (not filtered)
+      
+      // 🎯 AUTHENTIC STAR WARS FREQUENCY CHARACTERISTICS
+      // Start at high frequency (like the real sound)
+      oscillator.type = 'sine'; // Clean, pure tone like Star Wars
+      oscillator.frequency.setValueAtTime(2200, now); // High "pew" frequency
+      
+      // 🎵 AUTHENTIC PITCH BEND (this is the key!)
+      // The real Star Wars laser bends DOWN in pitch
+      oscillator.frequency.exponentialRampToValueAtTime(
+        1800, // Bend down to lower frequency
+        now + 0.08 // Over 80ms duration
+      );
+
+      // 🎚️ AUTHENTIC ENVELOPE SHAPE
+      // The real sound has a very quick attack and natural decay
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(this.masterVolume, now + 0.005); // Super quick attack
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.08); // Natural decay
+
+      // 🚀 PLAY THE AUTHENTIC SOUND
+      oscillator.start(now);
+      oscillator.stop(now + 0.08); // 80ms - exactly like Star Wars
+
+      console.log('🔊 AUTHENTIC Star Wars laser sound played!');
+      
+    } catch (error) {
+      console.warn('⚠️ Laser sound failed:', error);
+    }
+  }
+
+  // 🚀 NEW: Even more authentic Star Wars laser sound variant
+  playStarWarsLaserVariant() {
+    if (!this.soundEnabled || !this.audioContext) return;
+
+    try {
+      // Resume audio context if suspended
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+      }
+
+      const now = this.audioContext.currentTime;
+      
+      // 🎯 ULTRA-AUTHENTIC STAR WARS LASER
+      // This variant uses multiple oscillators for that rich, full sound
+      
+      // Main oscillator (the "pew" sound)
+      const mainOsc = this.audioContext.createOscillator();
+      const mainGain = this.audioContext.createGain();
+      
+      // Harmonic oscillator (adds richness)
+      const harmonicOsc = this.audioContext.createOscillator();
+      const harmonicGain = this.audioContext.createGain();
+      
+      // Connect main oscillator
+      mainOsc.connect(mainGain);
+      mainGain.connect(this.audioContext.destination);
+      
+      // Connect harmonic oscillator
+      harmonicOsc.connect(harmonicGain);
+      harmonicGain.connect(this.audioContext.destination);
+
+      // 🎵 MAIN OSCILLATOR - The iconic "pew"
+      mainOsc.type = 'sine';
+      mainOsc.frequency.setValueAtTime(2400, now); // Higher starting frequency
+      mainOsc.frequency.exponentialRampToValueAtTime(1600, now + 0.06); // Bend down faster
+      
+      // 🎵 HARMONIC OSCILLATOR - Adds richness
+      harmonicOsc.type = 'sine';
+      harmonicOsc.frequency.setValueAtTime(4800, now); // 2x frequency for harmonic
+      harmonicOsc.frequency.exponentialRampToValueAtTime(3200, now + 0.06); // Bend down proportionally
+      
+      // 🎚️ ENVELOPE SHAPES
+      // Main oscillator envelope
+      mainGain.gain.setValueAtTime(0, now);
+      mainGain.gain.linearRampToValueAtTime(this.masterVolume, now + 0.003); // Ultra quick attack
+      mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06); // Quick decay
+      
+      // Harmonic oscillator envelope (slightly different timing)
+      harmonicGain.gain.setValueAtTime(0, now);
+      harmonicGain.gain.linearRampToValueAtTime(this.masterVolume * 0.3, now + 0.004); // Slightly delayed, quieter
+      harmonicGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07); // Harmonic trails off slightly
+      
+      // 🚀 PLAY BOTH OSCILLATORS
+      mainOsc.start(now);
+      mainOsc.stop(now + 0.06); // 60ms - ultra quick like real Star Wars
+      
+      harmonicOsc.start(now);
+      harmonicOsc.stop(now + 0.07); // Harmonic trails off slightly
+
+      console.log('🔊 ULTRA-AUTHENTIC Star Wars laser variant played!');
+      
+    } catch (error) {
+      console.warn('⚠️ Laser variant failed:', error);
+    }
+  }
+
+  // Toggle sound on/off
+  toggleSound() {
+    this.soundEnabled = !this.soundEnabled;
+    console.log(`🔊 Sound ${this.soundEnabled ? 'enabled' : 'disabled'}`);
+    
+    // 🎨 Update UI styling based on sound state
+    this.updateSoundToggleButton();
+    
+    return this.soundEnabled;
+  }
+  
+  // 🎨 Update sound toggle button styling
+  updateSoundToggleButton() {
+    // Find all sound toggle buttons in the game UI
+    const soundButtons = document.querySelectorAll('[data-sound-toggle]');
+    soundButtons.forEach(btn => {
+      btn.style.background = this.soundEnabled ? 
+        'linear-gradient(135deg, #10b981, #059669)' : // Green when ON
+        'linear-gradient(135deg, #6b7280, #4b5563)'; // Gray when OFF
+    });
+  }
+
+  // Set master volume
+  setVolume(volume) {
+    this.masterVolume = Math.max(0, Math.min(1, volume));
+    console.log(`🔊 Volume set to: ${this.masterVolume}`);
+  }
+}
+
+// 🎵 Create global sound manager instance
+const cheeseSoundManager = new CheeseSoundManager();
+
 // 🎯 Game State - ULTRA SLOW REDESIGN
 let playerShip = { x: 0, y: 0 };
 let invaders = [];
@@ -539,6 +717,82 @@ let canvasHeight;
     });
   }
 
+  // 🚀 NEW: Boss Level Notification Function
+  function sendBossLevelNotification(bossLevel, bossName, bossType) {
+    try {
+      // Get current player info (you may need to adjust this based on your game's player system)
+      const playerUsername = getCurrentPlayerUsername() || 'Anonymous Player';
+      const playerId = getCurrentPlayerId() || null;
+      const currentScore = spaceInvadersScore || 0;
+      const currentWave = waveNumber || 0;
+      
+      // Calculate DSPOINC earned (10x multiplier like other games)
+      const dspoincEarned = currentScore * 10;
+      
+      // Prepare notification data
+      const notificationData = {
+        player_username: playerUsername,
+        player_id: playerId,
+        game_type: 'space_invaders',
+        wave_number: currentWave,
+        boss_level: bossLevel,
+        boss_type: bossType,
+        boss_name: bossName,
+        score: currentScore,
+        dspoinc_earned: dspoincEarned,
+        notification_type: 'boss_level_reached'
+      };
+      
+      // Send notification to admin API
+      fetch('/api/admin/boss-level-notification.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(notificationData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log('👑 Boss level notification sent successfully:', data.message);
+        } else {
+          console.warn('⚠️ Failed to send boss notification:', data.error);
+        }
+      })
+      .catch(error => {
+        console.warn('⚠️ Error sending boss notification:', error);
+      });
+      
+    } catch (error) {
+      console.warn('⚠️ Error in sendBossLevelNotification:', error);
+    }
+  }
+  
+  // Helper functions to get player information
+  function getCurrentPlayerUsername() {
+    // Try to get username from various sources
+    if (typeof window !== 'undefined' && window.currentPlayer) {
+      return window.currentPlayer.username;
+    }
+    if (typeof window !== 'undefined' && window.playerUsername) {
+      return window.playerUsername;
+    }
+    // You can add more fallbacks here based on your game's player system
+    return 'Anonymous Player';
+  }
+  
+  function getCurrentPlayerId() {
+    // Try to get player ID from various sources
+    if (typeof window !== 'undefined' && window.currentPlayer) {
+      return window.currentPlayer.id;
+    }
+    if (typeof window !== 'undefined' && window.playerId) {
+      return window.playerId;
+    }
+    // You can add more fallbacks here based on your game's player system
+    return null;
+  }
+
   // 🚀 NEW: Boss System Functions
   function spawnBoss() {
     console.log(`👑 BOSS WAVE ${waveNumber} - PREPARE FOR BATTLE!`);
@@ -597,6 +851,9 @@ let canvasHeight;
     // Boss entrance animation
     boss.y = -100;
     console.log(`👑 Boss spawned: Level ${bossLevel}, Health: ${bossHealth}, Reward: ${bossReward} DSPOINC`);
+    
+    // Send boss level notification to admin interface
+    sendBossLevelNotification(bossLevel, bossName, bossType);
   }
 
   function updateBoss() {
@@ -3448,6 +3705,9 @@ let canvasHeight;
     
     console.log(`🔫 playerShoot called with weapon: ${currentWeaponType}, isQuickShotCall: ${window.isQuickShotCall}`);
     
+    // 🎵 NEW: Play Star Wars laser sound for all weapon types!
+    cheeseSoundManager.playStarWarsLaser();
+    
     // 🚀 NEW: Enhanced shooting system with weapon types
     switch (currentWeaponType) {
       case 'normal':
@@ -3791,6 +4051,29 @@ let canvasHeight;
       if (typeof window.toggleHelpOverlay === 'function') {
         window.toggleHelpOverlay();
       }
+      return;
+    }
+    
+    // 🎵 NEW: Handle sound controls
+    if (e.key === 'm' || e.key === 'M') {
+      // Toggle sound on/off
+      cheeseSoundManager.toggleSound();
+      console.log(`🔊 Sound ${cheeseSoundManager.soundEnabled ? 'enabled' : 'disabled'}`);
+      return;
+    }
+    
+    if (e.key === 'v' || e.key === 'V') {
+      // Cycle through volume levels
+      const volumes = [0.3, 0.5, 0.7, 1.0];
+      const currentIndex = volumes.indexOf(cheeseSoundManager.masterVolume);
+      const nextIndex = (currentIndex + 1) % volumes.length;
+      const newVolume = volumes[nextIndex];
+      
+      cheeseSoundManager.setVolume(newVolume);
+      console.log(`🔊 Volume set to: ${Math.round(newVolume * 100)}%`);
+      
+      // Play test sound at new volume
+      cheeseSoundManager.playStarWarsLaser();
       return;
     }
     
@@ -4665,7 +4948,30 @@ window.testWeaponSystem = function() {
         <p><strong>Weak Points:</strong> Prioritize invaders with glowing weak points</p>
       </div>
       
+      <div style="text-align: left; margin-bottom: 20px;">
+        <h2 style="color: #fbbf24; border-bottom: 1px solid #fbbf24; padding-bottom: 5px;">🔊 SOUND CONTROLS</h2>
+        <p><strong>M Key:</strong> Toggle sound on/off</p>
+        <p><strong>V Key:</strong> Cycle through volume levels (30%, 50%, 70%, 100%)</p>
+        <p><strong>Game Panel:</strong> Access sound controls via 🎮 button</p>
+        <p><strong>Test Sound:</strong> Click volume button to hear Star Wars laser!</p>
+      </div>
+      
       <div style="text-align: center; margin-top: 30px;">
+        <button id="test-sound-btn" style="
+          background: #8b5cf6;
+          color: white;
+          border: none;
+          padding: 15px 30px;
+          border-radius: 25px;
+          font-size: 1.2em;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-right: 15px;
+        " onmouseover="this.style.background='#7c3aed'" onmouseout="this.style.background='#8b5cf6'">
+          🔊 TEST STAR WARS LASER!
+        </button>
+        
         <button id="close-help-btn" style="
           background: #fbbf24;
           color: #1a1a1a;
@@ -4687,6 +4993,11 @@ window.testWeaponSystem = function() {
     
     // Add close button functionality
     document.getElementById('close-help-btn').addEventListener('click', toggleHelpOverlay);
+    
+    // Add test sound button functionality
+    document.getElementById('test-sound-btn').addEventListener('click', () => {
+      cheeseSoundManager.playStarWarsLaser();
+    });
     
     // Close on escape key
     document.addEventListener('keydown', function(e) {
@@ -5125,6 +5436,114 @@ window.testWeaponSystem = function() {
     powerUpsGrid.appendChild(speedBoostBtn);
     powerUpsSection.appendChild(powerUpsGrid);
     panelContent.appendChild(powerUpsSection);
+    
+    // 🎵 NEW: Sound controls section
+    const soundSection = document.createElement('div');
+    soundSection.style.cssText = `
+      margin-bottom: 25px;
+      text-align: center;
+    `;
+    
+    const soundTitle = document.createElement('h3');
+    soundTitle.textContent = '🔊 SOUND CONTROLS';
+    soundTitle.style.cssText = `
+      color: #ffffff;
+      margin: 0 0 15px 0;
+      font-size: 1.2em;
+    `;
+    soundSection.appendChild(soundTitle);
+    
+    const soundGrid = document.createElement('div');
+    soundGrid.style.cssText = `
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 15px;
+    `;
+    
+    // Sound toggle button
+    const soundToggleBtn = document.createElement('button');
+    soundToggleBtn.innerHTML = `
+      <div style="font-size: 1.1em; margin-bottom: 5px;">🔊</div>
+      <div style="font-size: 0.9em; margin-bottom: 3px;">SOUND</div>
+      <div style="font-size: 0.8em; color: #9ca3af;">${cheeseSoundManager.soundEnabled ? 'ON' : 'OFF'}</div>
+    `;
+    soundToggleBtn.style.cssText = `
+      background: ${cheeseSoundManager.soundEnabled ? '#10b981' : '#6b7280'};
+      color: white;
+      border: 2px solid ${cheeseSoundManager.soundEnabled ? '#059669' : '#6b7280'};
+      border-radius: 18px;
+      padding: 18px 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: bold;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    `;
+    
+    soundToggleBtn.addEventListener('click', function() {
+      cheeseSoundManager.toggleSound();
+      // Update button appearance
+      soundToggleBtn.style.background = cheeseSoundManager.soundEnabled ? '#10b981' : '#6b7280';
+      soundToggleBtn.style.borderColor = cheeseSoundManager.soundEnabled ? '#059669' : '#6b7280';
+      soundToggleBtn.querySelector('div:last-child').textContent = cheeseSoundManager.soundEnabled ? 'ON' : 'OFF';
+      
+      // Play test sound if enabled
+      if (cheeseSoundManager.soundEnabled) {
+        cheeseSoundManager.playStarWarsLaser();
+      }
+    });
+    
+    // Volume control button
+    const volumeBtn = document.createElement('button');
+    volumeBtn.innerHTML = `
+      <div style="font-size: 1.1em; margin-bottom: 5px;">🎚️</div>
+      <div style="font-size: 0.9em; margin-bottom: 3px;">VOLUME</div>
+      <div style="font-size: 0.8em; color: #9ca3af;">${Math.round(cheeseSoundManager.masterVolume * 100)}%</div>
+    `;
+    volumeBtn.style.cssText = `
+      background: #8b5cf6;
+      color: white;
+      border: 2px solid #7c3aed;
+      border-radius: 18px;
+      padding: 18px 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: bold;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    `;
+    
+    volumeBtn.addEventListener('click', function() {
+      // Cycle through volume levels: 30% -> 50% -> 70% -> 100% -> 30%
+      const volumes = [0.3, 0.5, 0.7, 1.0];
+      const currentIndex = volumes.indexOf(cheeseSoundManager.masterVolume);
+      const nextIndex = (currentIndex + 1) % volumes.length;
+      const newVolume = volumes[nextIndex];
+      
+      cheeseSoundManager.setVolume(newVolume);
+      volumeBtn.querySelector('div:last-child').textContent = `${Math.round(newVolume * 100)}%`;
+      
+      // Play test sound at new volume
+      cheeseSoundManager.playStarWarsLaser();
+    });
+    
+    soundGrid.appendChild(soundToggleBtn);
+    soundGrid.appendChild(volumeBtn);
+    soundSection.appendChild(soundGrid);
+    panelContent.appendChild(soundSection);
     
     // 🚀 NEW: Quick actions section
     const quickActionsSection = document.createElement('div');

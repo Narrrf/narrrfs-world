@@ -83,6 +83,20 @@ require_once 'discord-invite.php';
       pointer-events: none;
     }
     
+    /* Boss notification animations */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    .notification-toast {
+      z-index: 9999;
+    }
+    
     /* Enhanced data display styles */
     .data-summary {
       border-left: 4px solid;
@@ -1561,6 +1575,45 @@ require_once 'discord-invite.php';
           </div>
         </div>
 
+        <!-- Boss Level Claims Statistics -->
+        <div class="mt-6 pt-6 border-t border-gray-600">
+          <h4 class="text-md font-semibold mb-3 text-orange-400">👑 Boss Level Claims</h4>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center">
+              <div class="text-xl font-bold text-orange-400" id="pendingBossClaims">-</div>
+              <div class="text-sm text-gray-300">Pending Boss Claims</div>
+            </div>
+            <div class="text-center">
+              <div class="text-xl font-bold text-green-400" id="totalBossRewards">-</div>
+              <div class="text-sm text-gray-300">Total DSPOINC Given</div>
+            </div>
+            <div class="text-center">
+              <div class="text-xl font-bold text-blue-400" id="bossClaimsToday">-</div>
+              <div class="text-sm text-gray-300">Claims Today</div>
+            </div>
+            <div class="text-center">
+              <div class="text-xl font-bold text-purple-400" id="avgBossReward">-</div>
+              <div class="text-sm text-gray-300">Avg Reward</div>
+            </div>
+          </div>
+          
+          <!-- Detailed Boss Stats -->
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h5 class="text-sm font-semibold mb-2 text-orange-300">Recent Boss Claims:</h5>
+              <div id="recentBossClaims" class="text-sm text-gray-300">
+                Loading boss claims...
+              </div>
+            </div>
+            <div>
+              <h5 class="text-sm font-semibold mb-2 text-green-300">Boss Achievement Types:</h5>
+              <div id="bossAchievementTypes" class="text-sm text-gray-300">
+                Loading boss types...
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Enhanced Statistics -->
         <div class="mt-6 pt-6 border-t border-gray-600">
           <h4 class="text-md font-semibold mb-3 text-cyan-400">🚀 Enhanced Statistics</h4>
@@ -2488,6 +2541,50 @@ require_once 'discord-invite.php';
             <button onclick="loadSpaceInvadersData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
             <button onclick="resetInvadersScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">🔄 Reset Scores</button>
             <button onclick="exportInvadersData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
+          </div>
+
+          <!-- Boss Level Notifications -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="font-semibold text-orange-400">👑 Boss Level Notifications</h4>
+              <div class="flex gap-3">
+                <div class="text-sm text-blue-400 bg-blue-900 bg-opacity-30 px-3 py-1 rounded-full">
+                  ⏳ Pending: <span id="pendingBossNotifications">0</span>
+                </div>
+                <div class="text-sm text-yellow-400 bg-yellow-900 bg-opacity-30 px-3 py-1 rounded-full">
+                  💰 Total DSPOINC Rewards: <span id="totalBossRewards">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="text-sm text-gray-300 mb-3">
+              Players who reach boss levels will appear here for admin review and potential special rewards
+            </div>
+            
+            <!-- Real-time notification indicator -->
+            <div id="bossNotificationIndicator" class="hidden mb-3 p-2 bg-orange-600 bg-opacity-50 border border-orange-500 rounded-lg">
+              <div class="flex items-center gap-2 text-orange-200">
+                <span class="animate-pulse">🔔</span>
+                <span class="text-sm font-semibold">New boss level notification received!</span>
+                <button onclick="loadBossNotifications()" class="ml-auto bg-orange-700 hover:bg-orange-800 text-white px-2 py-1 rounded text-xs">View Now</button>
+              </div>
+            </div>
+            
+            <!-- Notification Filters -->
+            <div class="flex flex-wrap gap-3 mb-4">
+              <select id="bossNotificationFilter" onchange="filterBossNotifications()" class="bg-gray-600 text-white px-3 py-2 rounded text-sm">
+                <option value="all">All Notifications</option>
+                <option value="pending">Pending Review</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="rewarded">Special Rewards Given</option>
+              </select>
+              <button onclick="loadBossNotifications()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">🔄 Refresh</button>
+              <button onclick="clearOldNotifications()" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm">🗑️ Clear Old</button>
+            </div>
+            
+            <!-- Notifications List -->
+            <div id="bossNotificationsList" class="space-y-3 max-h-64 overflow-y-auto">
+              <div class="text-gray-400 text-center py-4">Loading boss notifications...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -3616,6 +3713,18 @@ require_once 'discord-invite.php';
               console.log('🔧 Force-fixed navigation panel visibility');
             }
           }, 1000);
+          
+          // Check if Space Invaders tab is active and load boss notifications
+          setTimeout(() => {
+            const spaceInvadersTab = document.getElementById('spaceInvadersTab');
+            if (spaceInvadersTab && spaceInvadersTab.style.display !== 'none') {
+              loadBossNotifications();
+              startBossNotificationChecking();
+            }
+          }, 2000);
+          
+          // Start real-time boss stats updating for dashboard
+          startDashboardBossStatsUpdating();
         }
       }, 100);
     });
@@ -4715,6 +4824,69 @@ require_once 'discord-invite.php';
           document.getElementById('rolesGranted').textContent = '🔒';
           document.getElementById('recentQuestClaims').innerHTML = '<div class="text-gray-400">🔒 Authentication required</div>';
           document.getElementById('activeQuestsByType').innerHTML = '<div class="text-gray-400">🔒 Authentication required</div>';
+        }
+
+        // Load boss level claims statistics (only for authenticated users)
+        if (currentAdmin) {
+          try {
+            const bossStatsResponse = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php');
+            const bossStats = await bossStatsResponse.json();
+            
+            if (bossStats.success && bossStats.notifications) {
+              const notifications = bossStats.notifications;
+              
+              // Calculate boss stats
+              const pendingBossClaims = notifications.filter(n => n.status === 'pending').length;
+              const totalBossRewards = notifications
+                .filter(n => n.special_reward_given && n.dspoinc_earned)
+                .reduce((sum, n) => sum + (n.dspoinc_earned || 0), 0);
+              
+              const today = new Date().toDateString();
+              const bossClaimsToday = notifications
+                .filter(n => new Date(n.created_at).toDateString() === today).length;
+              
+              const rewardedNotifications = notifications.filter(n => n.special_reward_given && n.dspoinc_earned);
+              const avgBossReward = rewardedNotifications.length > 0 
+                ? Math.round(totalBossRewards / rewardedNotifications.length) 
+                : 0;
+              
+              // Update boss stats
+              document.getElementById('pendingBossClaims').textContent = pendingBossClaims;
+              document.getElementById('totalBossRewards').textContent = totalBossRewards.toLocaleString();
+              document.getElementById('bossClaimsToday').textContent = bossClaimsToday;
+              document.getElementById('avgBossReward').textContent = avgBossReward.toLocaleString();
+              
+              // Display detailed boss stats
+              displayRecentBossClaims(notifications.slice(0, 5)); // Show last 5
+              displayBossAchievementTypes(notifications);
+              
+            } else {
+              // Set default values if no boss notifications
+              document.getElementById('pendingBossClaims').textContent = '0';
+              document.getElementById('totalBossRewards').textContent = '0';
+              document.getElementById('bossClaimsToday').textContent = '0';
+              document.getElementById('avgBossReward').textContent = '0';
+              document.getElementById('recentBossClaims').innerHTML = '<div class="text-gray-400">No boss claims yet</div>';
+              document.getElementById('bossAchievementTypes').innerHTML = '<div class="text-gray-400">No boss achievements yet</div>';
+            }
+          } catch (error) {
+            addLog(`❌ Boss stats loading error: ${error.message}`);
+            // Set default values on error
+            document.getElementById('pendingBossClaims').textContent = '0';
+            document.getElementById('totalBossRewards').textContent = '0';
+            document.getElementById('bossClaimsToday').textContent = '0';
+            document.getElementById('avgBossReward').textContent = '0';
+            document.getElementById('recentBossClaims').innerHTML = '<div class="text-gray-400">Error loading boss stats</div>';
+            document.getElementById('bossAchievementTypes').innerHTML = '<div class="text-gray-400">Error loading boss types</div>';
+          }
+        } else {
+          // Hide boss stats for non-authenticated users
+          document.getElementById('pendingBossClaims').textContent = '🔒';
+          document.getElementById('totalBossRewards').textContent = '🔒';
+          document.getElementById('bossClaimsToday').textContent = '🔒';
+          document.getElementById('avgBossReward').textContent = '🔒';
+          document.getElementById('recentBossClaims').innerHTML = '<div class="text-gray-400">🔒 Authentication required</div>';
+          document.getElementById('bossAchievementTypes').innerHTML = '<div class="text-gray-400">🔒 Authentication required</div>';
         }
 
         // Load recent adjustments (only for authenticated users)
@@ -7557,6 +7729,11 @@ require_once 'discord-invite.php';
     function switchGameTab(tabName) {
       console.log('🔄 switchGameTab called with:', tabName);
       
+      // Stop notification checking for Space Invaders if switching away
+      if (tabName !== 'space-invaders') {
+        stopBossNotificationChecking();
+      }
+      
       // Store the current tab content before hiding
       const currentTab = document.querySelector('.game-tab-content:not([style*="display: none"])');
       let currentTabContent = '';
@@ -7640,8 +7817,9 @@ require_once 'discord-invite.php';
               console.log('👾 Loading Space Invaders data...');
               addLog('👾 Loading Space Invaders data...');
               await loadSpaceInvadersData();
+              await loadBossNotifications(); // Load boss notifications when tab is opened
+              startBossNotificationChecking(); // Start real-time notification checking
               break;
-
             case 'cheese-hunt':
               console.log('🧀 Loading Cheese Hunt data...');
               addLog('🧀 Loading Cheese Hunt data...');
@@ -8583,16 +8761,480 @@ require_once 'discord-invite.php';
       }
     }
 
+    // Boss Level Notification Functions
+    async function loadBossNotifications() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
 
+      addLog('👑 Loading boss level notifications...');
 
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php');
+        const data = await response.json();
+        
+        if (data.success && data.notifications) {
+          displayBossNotifications(data.notifications);
+          addLog(`✅ Loaded ${data.notifications.length} boss notifications`);
+        } else {
+          addLog(`❌ Failed to load boss notifications: ${data.error || 'No data available'}`);
+          displayBossNotifications([]);
+        }
+      } catch (error) {
+        addLog(`❌ Boss notifications loading error: ${error.message}`);
+        displayBossNotifications([]);
+      }
+    }
 
+    function displayBossNotifications(notifications) {
+      const container = document.getElementById('bossNotificationsList');
+      if (!container) return;
 
+      // Calculate total DSPOINC rewards given
+      const totalRewards = notifications
+        .filter(n => n.special_reward_given && n.dspoinc_earned)
+        .reduce((sum, n) => sum + (n.dspoinc_earned || 0), 0);
+      
+      // Calculate pending notifications
+      const pendingCount = notifications.filter(n => n.status === 'pending').length;
+      
+      // Update the total rewards display
+      const totalRewardsElement = document.getElementById('totalBossRewards');
+      if (totalRewardsElement) {
+        totalRewardsElement.textContent = totalRewards.toLocaleString();
+      }
+      
+      // Update the pending count display
+      const pendingElement = document.getElementById('pendingBossNotifications');
+      if (pendingElement) {
+        pendingElement.textContent = pendingCount;
+        // Highlight if there are pending notifications
+        pendingElement.parentElement.className = pendingCount > 0 
+          ? 'text-sm text-orange-400 bg-orange-900 bg-opacity-30 px-3 py-1 rounded-full animate-pulse'
+          : 'text-sm text-blue-400 bg-blue-900 bg-opacity-30 px-3 py-1 rounded-full';
+      }
 
+      if (!notifications || notifications.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-6 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700 border-opacity-50">
+            <div class="text-gray-300 text-2xl mb-3">👑</div>
+            <div class="text-gray-400 text-lg mb-2 font-semibold">No Boss Notifications</div>
+            <div class="text-gray-500 text-sm">Players haven't reached boss levels yet</div>
+            <div class="text-blue-400 text-sm bg-blue-900 bg-opacity-30 px-4 py-2 rounded-full border border-blue-700 border-opacity-50 mt-3">
+              Start playing Space Invaders! 🎮
+            </div>
+          </div>
+        `;
+        return;
+      }
 
+      container.innerHTML = notifications.map(notification => {
+        const statusColor = notification.status === 'pending' ? 'text-yellow-400' : 
+                           notification.status === 'reviewed' ? 'text-blue-400' : 
+                           notification.status === 'rewarded' ? 'text-green-400' : 'text-gray-400';
+        
+        const statusIcon = notification.status === 'pending' ? '⏳' : 
+                          notification.status === 'reviewed' ? '👁️' : 
+                          notification.status === 'rewarded' ? '✅' : '❓';
+        
+        const rewardBadge = notification.special_reward_given ? 
+          '<span class="inline-block bg-green-600 text-white text-xs px-2 py-1 rounded-full ml-2">🎁 Special Reward Given</span>' : '';
+        
+        const adminInfo = notification.admin_reviewed_by ? 
+          `<div class="text-xs text-gray-400 mt-1">Reviewed by: ${notification.admin_reviewed_by} on ${new Date(notification.admin_reviewed_at).toLocaleDateString()}</div>` : '';
+        
+        const rewardInfo = notification.reward_description ? 
+          `<div class="text-xs text-green-400 mt-1">🎁 Reward: ${notification.reward_description}</div>` : '';
+        
+        // Add DSPOINC reward info if available
+        const dspoincInfo = notification.dspoinc_earned ? 
+          `<div class="text-xs text-yellow-400 mt-1">💰 DSPOINC Earned: ${notification.dspoinc_earned.toLocaleString()}</div>` : '';
 
+        return `
+          <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 border-opacity-50 hover:border-orange-500 transition-all duration-300">
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-orange-400 font-bold">👑 ${notification.boss_name || 'Boss'}</span>
+                  <span class="text-sm text-gray-400">Level ${notification.boss_level}</span>
+                  <span class="text-sm text-blue-400">Wave ${notification.wave_number}</span>
+                  ${rewardBadge}
+                </div>
+                <div class="text-white font-semibold">${notification.player_username}</div>
+                <div class="text-sm text-gray-300">
+                  Score: ${notification.score ? notification.score.toLocaleString() : 'N/A'} 
+                  (${notification.dspoinc_earned ? notification.dspoinc_earned.toLocaleString() : 'N/A'} DSPOINC)
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                  ${new Date(notification.created_at).toLocaleString()}
+                </div>
+                ${adminInfo}
+                ${rewardInfo}
+                ${dspoincInfo}
+              </div>
+              <div class="flex flex-col gap-2 ml-4">
+                <span class="text-sm ${statusColor} font-semibold">${statusIcon} ${notification.status}</span>
+                ${notification.status === 'pending' ? `
+                  <button onclick="reviewBossNotification(${notification.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs">👁️ Review</button>
+                  <button onclick="giveSpecialReward(${notification.id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs">🎁 Give Reward</button>
+                ` : ''}
+                ${notification.status === 'reviewed' ? `
+                  <button onclick="giveSpecialReward(${notification.id})" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs">🎁 Give Reward</button>
+                ` : ''}
+                <button onclick="deleteBossNotification(${notification.id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs">🗑️ Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
+    async function reviewBossNotification(notificationId) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
 
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id: notificationId,
+            status: 'reviewed',
+            admin_reviewed_by: currentAdmin.username || 'Admin'
+          })
+        });
 
+        const data = await response.json();
+        if (data.success) {
+          addLog('✅ Boss notification marked as reviewed');
+          showNotification('✅ Boss notification marked as reviewed', 'success');
+          loadBossNotifications(); // Refresh the list
+        } else {
+          addLog(`❌ Failed to review notification: ${data.error}`);
+          showNotification(`❌ Failed to review notification: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        addLog(`❌ Error reviewing notification: ${error.message}`);
+      }
+    }
+
+    async function giveSpecialReward(notificationId) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      // Create a custom reward input modal
+      const rewardModal = document.createElement('div');
+      rewardModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      rewardModal.innerHTML = `
+        <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+          <h3 class="text-xl font-bold text-white mb-4">🎁 Give Special Boss Reward</h3>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">DSPOINC Amount</label>
+              <input type="number" id="rewardDspoincAmount" placeholder="100" min="1" max="10000" 
+                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:border-blue-500 focus:outline-none">
+              <p class="text-xs text-gray-400 mt-1">Enter the DSPOINC amount to give to the player</p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Reward Description</label>
+              <textarea id="rewardDescription" placeholder="Boss level achievement reward" rows="3"
+                        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:border-blue-500 focus:outline-none"></textarea>
+              <p class="text-xs text-gray-400 mt-1">Describe what this reward is for</p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Message to Player</label>
+              <textarea id="playerMessage" placeholder="Congratulations on reaching the boss level!" rows="2"
+                        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:border-blue-500 focus:outline-none"></textarea>
+              <p class="text-xs text-gray-400 mt-1">Optional message to send with the reward</p>
+            </div>
+          </div>
+          
+          <div class="flex gap-3 mt-6">
+            <button onclick="this.closest('.fixed').remove()" 
+                    class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors">
+              Cancel
+            </button>
+            <button onclick="submitBossReward(${notificationId})" 
+                    class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors">
+              🎁 Give Reward
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(rewardModal);
+    }
+
+    async function submitBossReward(notificationId) {
+      const dspoincAmount = document.getElementById('rewardDspoincAmount').value;
+      const rewardDescription = document.getElementById('rewardDescription').value;
+      const playerMessage = document.getElementById('playerMessage').value;
+      
+      if (!dspoincAmount || !rewardDescription) {
+        showNotification('❌ Please fill in DSPOINC amount and reward description', 'error');
+        return;
+      }
+      
+      try {
+        // First, update the notification status
+        const notificationResponse = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id: notificationId,
+            status: 'rewarded',
+            admin_reviewed_by: currentAdmin.username || 'Admin',
+            special_reward_given: true,
+            reward_description: rewardDescription
+          })
+        });
+
+        const notificationData = await notificationResponse.json();
+        if (!notificationData.success) {
+          throw new Error(`Failed to update notification: ${notificationData.error}`);
+        }
+
+        // Get the notification details to find the player
+        const getNotificationResponse = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php?id=' + notificationId);
+        const notificationDetails = await getNotificationResponse.json();
+        
+        if (!notificationDetails.success || !notificationDetails.notifications || notificationDetails.notifications.length === 0) {
+          throw new Error('Failed to get notification details');
+        }
+        
+        const notification = notificationDetails.notifications[0];
+        const playerUsername = notification.player_username;
+        const playerId = notification.player_id;
+        
+        // Now give the DSPOINC reward using the existing points system
+        const pointsResponse = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'adjust_points',
+            user_identifier: playerUsername,
+            points_change: parseInt(dspoincAmount),
+            reason: `Boss Level Achievement Reward: ${rewardDescription}`,
+            admin_username: currentAdmin.username || 'Admin',
+            game_type: 'space_invaders',
+            additional_notes: playerMessage || `Congratulations on reaching boss level ${notification.boss_level}!`
+          })
+        });
+
+        const pointsData = await pointsResponse.json();
+        if (!pointsData.success) {
+          throw new Error(`Failed to give DSPOINC reward: ${pointsData.error}`);
+        }
+
+        // Close the modal
+        document.querySelector('.fixed').remove();
+        
+        // Show success message
+        const successMessage = `✅ Gave ${dspoincAmount} DSPOINC to ${playerUsername} for boss level achievement!`;
+        addLog(successMessage);
+        showNotification(successMessage, 'success');
+        
+        // Refresh the notifications list
+        loadBossNotifications();
+        
+      } catch (error) {
+        addLog(`❌ Error giving boss reward: ${error.message}`);
+        showNotification(`❌ Error giving boss reward: ${error.message}`, 'error');
+      }
+    }
+
+    async function deleteBossNotification(notificationId) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to delete this boss notification?')) return;
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id: notificationId
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          addLog('✅ Boss notification deleted');
+          showNotification('✅ Boss notification deleted', 'success');
+          loadBossNotifications(); // Refresh the list
+        } else {
+          addLog(`❌ Failed to delete notification: ${data.error}`);
+          showNotification(`❌ Failed to delete notification: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        addLog(`❌ Error deleting notification: ${error.message}`);
+      }
+    }
+
+    function filterBossNotifications() {
+      const filter = document.getElementById('bossNotificationFilter').value;
+      loadBossNotifications(filter);
+    }
+
+    async function clearOldNotifications() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to clear old notifications? This will delete all reviewed and rewarded notifications older than 30 days.')) return;
+
+      try {
+        // This would need a separate API endpoint for bulk deletion
+        addLog('🔄 Clearing old notifications...');
+        // For now, just reload the current notifications
+        loadBossNotifications();
+        addLog('✅ Old notifications cleared (feature to be implemented)');
+      } catch (error) {
+        addLog(`❌ Error clearing notifications: ${error.message}`);
+      }
+    }
+
+    // Start real-time notification checking when Space Invaders tab is opened
+    let bossNotificationCheckInterval;
+    let dashboardBossStatsInterval;
+    
+    function startBossNotificationChecking() {
+      // Clear any existing interval
+      if (bossNotificationCheckInterval) {
+        clearInterval(bossNotificationCheckInterval);
+      }
+      
+      // Check for new notifications every 30 seconds
+      bossNotificationCheckInterval = setInterval(async () => {
+        if (document.getElementById('spaceInvadersTab').style.display !== 'none') {
+          await checkForNewBossNotifications();
+        }
+      }, 30000); // 30 seconds
+    }
+    
+    function startDashboardBossStatsUpdating() {
+      // Clear any existing interval
+      if (dashboardBossStatsInterval) {
+        clearInterval(dashboardBossStatsInterval);
+      }
+      
+      // Update dashboard boss stats every 60 seconds
+      dashboardBossStatsInterval = setInterval(async () => {
+        if (currentAdmin && document.getElementById('dashboardTab').style.display !== 'none') {
+          await updateDashboardBossStats();
+        }
+      }, 60000); // 60 seconds
+    }
+    
+    function stopBossNotificationChecking() {
+      if (bossNotificationCheckInterval) {
+        clearInterval(bossNotificationCheckInterval);
+        bossNotificationCheckInterval = null;
+      }
+    }
+    
+    function stopDashboardBossStatsUpdating() {
+      if (dashboardBossStatsInterval) {
+        clearInterval(dashboardBossStatsInterval);
+        dashboardBossStatsInterval = null;
+      }
+    }
+    
+    async function updateDashboardBossStats() {
+      try {
+        const bossStatsResponse = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php');
+        const bossStats = await bossStatsResponse.json();
+        
+        if (bossStats.success && bossStats.notifications) {
+          const notifications = bossStats.notifications;
+          
+          // Calculate boss stats
+          const pendingBossClaims = notifications.filter(n => n.status === 'pending').length;
+          const totalBossRewards = notifications
+            .filter(n => n.special_reward_given && n.dspoinc_earned)
+            .reduce((sum, n) => sum + (n.dspoinc_earned || 0), 0);
+          
+          const today = new Date().toDateString();
+          const bossClaimsToday = notifications
+            .filter(n => new Date(n.created_at).toDateString() === today).length;
+          
+          const rewardedNotifications = notifications.filter(n => n.special_reward_given && n.dspoinc_earned);
+          const avgBossReward = rewardedNotifications.length > 0 
+            ? Math.round(totalBossRewards / rewardedNotifications.length) 
+            : 0;
+          
+          // Update boss stats
+          document.getElementById('pendingBossClaims').textContent = pendingBossClaims;
+          document.getElementById('totalBossRewards').textContent = totalBossRewards.toLocaleString();
+          document.getElementById('bossClaimsToday').textContent = bossClaimsToday;
+          document.getElementById('avgBossReward').textContent = avgBossReward.toLocaleString();
+          
+          // Update detailed boss stats
+          displayRecentBossClaims(notifications.slice(0, 5)); // Show last 5
+          displayBossAchievementTypes(notifications);
+          
+          // Show notification if there are new pending claims
+          if (pendingBossClaims > 0) {
+            showNotification(`👑 ${pendingBossClaims} new boss level claim(s) pending review!`, 'info', 3000);
+          }
+        }
+      } catch (error) {
+        console.debug('Background dashboard boss stats update failed:', error);
+      }
+    }
+    
+    async function checkForNewBossNotifications() {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php?status=pending&limit=1');
+        const data = await response.json();
+        
+        if (data.success && data.notifications && data.notifications.length > 0) {
+          const latestNotification = data.notifications[0];
+          const notificationTime = new Date(latestNotification.created_at).getTime();
+          const currentTime = Date.now();
+          
+          // Show indicator if notification is less than 5 minutes old
+          if (currentTime - notificationTime < 300000) { // 5 minutes
+            showBossNotificationIndicator();
+          }
+        }
+      } catch (error) {
+        // Silently fail for background checks
+        console.debug('Background boss notification check failed:', error);
+      }
+    }
+    
+    function showBossNotificationIndicator() {
+      const indicator = document.getElementById('bossNotificationIndicator');
+      if (indicator) {
+        indicator.classList.remove('hidden');
+        
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+          indicator.classList.add('hidden');
+        }, 10000);
+      }
+    }
 
     // Cheese Hunt Tab Functions
     async function loadCheeseHuntData() {
@@ -10364,6 +11006,83 @@ require_once 'discord-invite.php';
       }).join('');
     }
 
+    // Display recent boss claims
+    function displayRecentBossClaims(claims) {
+      const container = document.getElementById('recentBossClaims');
+      
+      if (claims.length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No boss claims found</div>';
+        return;
+      }
+
+      container.innerHTML = claims.map(claim => {
+        const username = claim.player_username || 'Anonymous Player';
+        const displayName = username.length > 12 ? username.substring(0, 12) + '...' : username;
+        const statusColor = claim.status === 'rewarded' ? 'text-green-400' : 
+                           claim.status === 'reviewed' ? 'text-blue-400' : 'text-orange-400';
+        const statusText = claim.status === 'rewarded' ? '🎁 Rewarded' : 
+                          claim.status === 'reviewed' ? '👁️ Reviewed' : '⏳ Pending';
+        const date = new Date(claim.created_at).toLocaleDateString();
+        const bossInfo = `${claim.boss_name || 'Boss'} Lv.${claim.boss_level}`;
+        
+        return `
+          <div class="flex justify-between items-center py-1">
+            <div class="flex flex-col">
+              <span class="text-orange-300">
+                <a href="/profile.html?user_id=${encodeURIComponent(claim.player_id || '')}" 
+                   class="hover:text-orange-200 underline cursor-pointer" 
+                   title="View ${username}'s profile">
+                  ${displayName}
+                </a>
+              </span>
+              <span class="text-xs text-gray-400">${bossInfo}</span>
+            </div>
+            <div class="text-right">
+              <span class="${statusColor} text-xs">${statusText}</span>
+              <div class="text-gray-400 text-xs">${date}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Display boss achievement types
+    function displayBossAchievementTypes(notifications) {
+      const container = document.getElementById('bossAchievementTypes');
+      
+      // Group by boss type and count
+      const bossTypeCounts = {};
+      notifications.forEach(notification => {
+        const bossType = notification.boss_type || 'Unknown';
+        bossTypeCounts[bossType] = (bossTypeCounts[bossType] || 0) + 1;
+      });
+      
+      if (Object.keys(bossTypeCounts).length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No boss types found</div>';
+        return;
+      }
+
+      container.innerHTML = Object.entries(bossTypeCounts)
+        .sort(([,a], [,b]) => b - a) // Sort by count descending
+        .map(([bossType, count]) => {
+          const bossEmoji = bossType === 'cheeseKing' ? '👑' : 
+                           bossType === 'cheeseEmperor' ? '👑' : 
+                           bossType === 'cheeseGod' ? '🌟' : 
+                           bossType === 'cheeseDestroyer' ? '💥' : '👾';
+          const bossName = bossType === 'cheeseKing' ? 'Cheese King' : 
+                          bossType === 'cheeseEmperor' ? 'Cheese Emperor' : 
+                          bossType === 'cheeseGod' ? 'Cheese God' : 
+                          bossType === 'cheeseDestroyer' ? 'Cheese Destroyer' : bossType;
+          
+          return `
+            <div class="flex justify-between items-center py-1">
+              <span class="text-green-300">${bossEmoji} ${bossName}</span>
+              <span class="text-white font-semibold">${count}</span>
+            </div>
+          `;
+        }).join('');
+    }
+
     // Load and display user adjustments
     async function loadUserAdjustments(userId, username) {
       try {
@@ -12058,6 +12777,53 @@ require_once 'discord-invite.php';
         filter.appendChild(option.cloneNode(true));
         modalFilter.appendChild(option);
       });
+    }
+
+    // Notification System
+    function showNotification(message, type = 'info', duration = 5000) {
+      // Remove existing notifications
+      const existingNotifications = document.querySelectorAll('.notification-toast');
+      existingNotifications.forEach(notification => notification.remove());
+      
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification-toast fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+      
+      // Set notification content based on type
+      const typeConfig = {
+        success: { bg: 'bg-green-600', icon: '✅', text: 'text-white' },
+        error: { bg: 'bg-red-600', icon: '❌', text: 'text-white' },
+        warning: { bg: 'bg-yellow-600', icon: '⚠️', text: 'text-white' },
+        info: { bg: 'bg-blue-600', icon: 'ℹ️', text: 'text-white' }
+      };
+      
+      const config = typeConfig[type] || typeConfig.info;
+      
+      notification.innerHTML = `
+        <div class="flex items-center gap-3 ${config.bg} ${config.text} p-3 rounded-lg">
+          <span class="text-xl">${config.icon}</span>
+          <span class="font-semibold">${message}</span>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white hover:text-gray-200 text-xl">×</button>
+        </div>
+      `;
+      
+      // Add to page
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+      }, 100);
+      
+      // Auto remove after duration
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.remove();
+          }
+        }, 300);
+      }, duration);
     }
 
     // Add Funds Modal Functions
