@@ -2198,29 +2198,29 @@ let canvasHeight;
           // Add reward to score
           spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
           
-          // 🚀 NEW: Epic boss defeat effects
-          bossDefeatEffect = 100;
-          screenShake = 30;
+          // 🚀 NEW: Epic boss defeat effects (reduced intensity)
+          bossDefeatEffect = 60; // Reduced from 100 to 60 frames
+          screenShake = 15; // Reduced from 30 to 15 for less disorienting effect
           
-          // Create massive defeat particles
-          for (let i = 0; i < 50; i++) {
+          // Create defeat particles (reduced amount)
+          for (let i = 0; i < 20; i++) {
             setTimeout(() => {
               createBossParticle(
                 boss.x + Math.random() * boss.width,
                 boss.y + Math.random() * boss.height,
                 'defeat'
               );
-            }, i * 50);
+            }, i * 40);
           }
           
-          // 🚀 NEW: Create massive boss defeat celebration
-          for (let i = 0; i < 30; i++) {
+          // 🚀 NEW: Create boss defeat celebration (reduced amount)
+          for (let i = 0; i < 10; i++) {
             setTimeout(() => {
               createExplosion(
                 boss.x + Math.random() * boss.width,
                 boss.y + Math.random() * boss.height
               );
-            }, i * 100);
+            }, i * 80);
           }
           
           // 🚀 NEW: Boss-specific upgrade rewards
@@ -2660,6 +2660,25 @@ let canvasHeight;
     // Update screen shake
     if (screenShake > 0) {
       screenShake--;
+    }
+    
+    // 🚀 NEW: Update boss defeat effect
+    if (bossDefeatEffect > 0) {
+      bossDefeatEffect--;
+      // During defeat effect, don't add extra screen shake
+      if (bossDefeatEffect <= 0) {
+        console.log('✅ Boss defeat effect complete - cleaning up boss');
+        // Clean up boss after defeat effect
+        if (bossDefeated) {
+          boss = null;
+          bossDefeated = false;
+          bossPhase = 'none';
+          bossBullets = [];
+          bossParticles = [];
+          screenShake = 0; // Force stop any remaining screen shake
+          console.log('🧹 Boss cleanup complete - game ready for next wave');
+        }
+      }
     }
     
     // Update boss glow effect
