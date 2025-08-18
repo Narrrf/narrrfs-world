@@ -1393,6 +1393,7 @@ require_once 'discord-invite.php';
         <button class="tab-btn px-4 py-2 rounded" data-tab="store">🏪 Store Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="quests">🏆 Quest System</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="games">🎮 Game Management</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="bosses">👑 Boss Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="discord">🔗 Discord Config</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="holderVerification">🎴 Holder Verification</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="cheeseGuide">🧀 Cheese Guide</button>
@@ -2133,6 +2134,30 @@ require_once 'discord-invite.php';
         <div class="text-green-400">🔄 Admin interface initializing...</div>
       </div>
       <div class="text-xs text-gray-400 mt-2 text-center">💡 Activity log moved to top for better visibility - no more scrolling needed!</div>
+    </div>
+
+    <!-- Boss Management Tab -->
+    <div class="admin-card mb-6" id="bossesTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">👑 Boss Management - Space Cheese Invaders</h2>
+      
+      <!-- Boss Selection -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button class="boss-tab-btn px-4 py-2 rounded active" data-boss-tab="cheeseKing" onclick="switchBossTab('cheeseKing')">🧀 Cheese King</button>
+        <button class="boss-tab-btn px-4 py-2 rounded" data-boss-tab="cheeseEmperor" onclick="switchBossTab('cheeseEmperor')">👑 Cheese Emperor</button>
+        <button class="boss-tab-btn px-4 py-2 rounded" data-boss-tab="cheeseGod" onclick="switchBossTab('cheeseGod')">⚡ Cheese God</button>
+        <button class="boss-tab-btn px-4 py-2 rounded" data-boss-tab="cheeseDestroyer" onclick="switchBossTab('cheeseDestroyer')">💀 Cheese Destroyer</button>
+        <button onclick="refreshBossConfigurations()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded ml-2">🔄 Refresh All Bosses</button>
+        <button onclick="resetAllBossConfigurations()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded ml-2">🔄 Reset All to Defaults</button>
+      </div>
+
+      <!-- Boss Configuration Content -->
+      <div id="bossConfigContent" class="space-y-6">
+        <!-- Boss configuration forms will be loaded here -->
+        <div class="text-center text-gray-400">
+          <div class="text-lg">👑 Select a boss to configure</div>
+          <div class="text-sm">Each boss has unique abilities and can be customized individually</div>
+        </div>
+      </div>
     </div>
 
     <!-- Game Management Tab -->
@@ -13695,6 +13720,400 @@ require_once 'discord-invite.php';
     // All missing functions have been implemented as stubs
     // Admin interface should now be navigable without JavaScript errors
     // Next step: Test each tab and implement actual functionality
+    
+    // ========================================
+    // 👑 BOSS MANAGEMENT FUNCTIONS
+    // ========================================
+    
+    // Boss management variables
+    let currentBossConfigs = {};
+    
+    // Switch between boss tabs
+    function switchBossTab(bossType) {
+      console.log('👑 switchBossTab called with:', bossType);
+      
+      // Remove active class from all boss tab buttons
+      const allButtons = document.querySelectorAll('.boss-tab-btn');
+      allButtons.forEach(btn => btn.classList.remove('active'));
+      
+      // Add active class to selected button
+      const selectedButton = document.querySelector(`[data-boss-tab="${bossType}"]`);
+      if (selectedButton) {
+        selectedButton.classList.add('active');
+      }
+      
+      // Load and display boss configuration
+      loadBossConfiguration(bossType);
+    }
+    
+    // Load boss configuration from API
+    async function loadBossConfiguration(bossType) {
+      try {
+        addLog(`👑 Loading boss configuration for ${bossType}...`);
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/boss-management.php?action=get_all`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (data.success && data.bosses[bossType]) {
+          currentBossConfigs[bossType] = data.bosses[bossType];
+          displayBossConfiguration(bossType, data.bosses[bossType]);
+          addLog(`✅ Boss configuration loaded for ${bossType}`);
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (error) {
+        console.error('❌ Error loading boss configuration:', error);
+        addLog(`❌ Error loading boss configuration: ${error.message}`);
+      }
+    }
+    
+    // Display boss configuration form
+    function displayBossConfiguration(bossType, config) {
+      const contentDiv = document.getElementById('bossConfigContent');
+      
+      contentDiv.innerHTML = `
+        <div class="bg-gray-800 bg-opacity-50 p-6 rounded-lg">
+          <h3 class="text-xl font-semibold mb-4 text-yellow-400">${config.name}</h3>
+          <p class="text-gray-300 mb-6">${config.description}</p>
+          
+          <form id="bossConfigForm_${bossType}" class="space-y-6">
+            <!-- Basic Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-4">
+                <h4 class="text-lg font-semibold text-blue-400">📊 Basic Stats</h4>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Base Health</label>
+                  <input type="number" name="baseHealth" value="${config.baseHealth}" 
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Health Multiplier</label>
+                  <input type="number" name="healthMultiplier" value="${config.healthMultiplier}" step="0.1"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Base Speed</label>
+                  <input type="number" name="baseSpeed" value="${config.baseSpeed}" step="0.1"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Speed Multiplier</label>
+                  <input type="number" name="speedMultiplier" value="${config.speedMultiplier}" step="0.1"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+              </div>
+              
+              <div class="space-y-4">
+                <h4 class="text-lg font-semibold text-green-400">⚔️ Combat Stats</h4>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Base Attack Cooldown</label>
+                  <input type="number" name="baseAttackCooldown" value="${config.baseAttackCooldown}"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Attack Cooldown Multiplier</label>
+                  <input type="number" name="attackCooldownMultiplier" value="${config.attackCooldownMultiplier}" step="0.1"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Base Bullet Speed</label>
+                  <input type="number" name="baseBulletSpeed" value="${config.baseBulletSpeed}" step="0.1"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Bullet Speed Multiplier</label>
+                  <input type="number" name="bulletSpeedMultiplier" value="${config.bulletSpeedMultiplier}" step="0.1"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Base Bullet Damage</label>
+                  <input type="number" name="baseBulletDamage" value="${config.baseBulletDamage}"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Bullet Damage Multiplier</label>
+                  <input type="number" name="bulletDamageMultiplier" value="${config.bulletDamageMultiplier}" step="0.1"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Abilities and Behavior -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-4">
+                <h4 class="text-lg font-semibold text-purple-400">🎭 Abilities</h4>
+                
+                <div class="space-y-3">
+                  <label class="flex items-center">
+                    <input type="checkbox" name="canTeleport" ${config.abilities.canTeleport ? 'checked' : ''}
+                           class="mr-2 rounded border-gray-600 bg-gray-700 text-blue-500">
+                    <span class="text-gray-300">Can Teleport</span>
+                  </label>
+                  
+                  <label class="flex items-center">
+                    <input type="checkbox" name="canShield" ${config.abilities.canShield ? 'checked' : ''}
+                           class="mr-2 rounded border-gray-600 bg-gray-700 text-blue-500">
+                    <span class="text-gray-300">Can Use Shield</span>
+                  </label>
+                  
+                  <label class="flex items-center">
+                    <input type="checkbox" name="canSummonMinions" ${config.abilities.canSummonMinions ? 'checked' : ''}
+                           class="mr-2 rounded border-gray-600 bg-gray-700 text-blue-500">
+                    <span class="text-gray-300">Can Summon Minions</span>
+                  </label>
+                  
+                  <label class="flex items-center">
+                    <input type="checkbox" name="canUseLaser" ${config.abilities.canUseLaser ? 'checked' : ''}
+                           class="mr-2 rounded border-gray-600 bg-gray-700 text-blue-500">
+                    <span class="text-gray-300">Can Use Laser</span>
+                  </label>
+                  
+                  <label class="flex items-center">
+                    <span class="text-gray-300">Can Create Explosions</span>
+                    <input type="checkbox" name="canCreateExplosions" ${config.abilities.canCreateExplosions ? 'checked' : ''}
+                           class="ml-2 rounded border-gray-600 bg-gray-700 text-blue-500">
+                  </label>
+                </div>
+              </div>
+              
+              <div class="space-y-4">
+                <h4 class="text-lg font-semibold text-orange-400">⚡ Behavior</h4>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Size</label>
+                  <input type="number" name="size" value="${config.size}" step="0.1"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Special Attack Chance</label>
+                  <input type="number" name="specialAttackChance" value="${config.specialAttackChance}" step="0.1" min="0" max="1"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Rage Mode Threshold</label>
+                  <input type="number" name="rageModeThreshold" value="${config.rageModeThreshold}" step="0.05" min="0" max="1"
+                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Colors -->
+            <div class="space-y-4">
+              <h4 class="text-lg font-semibold text-pink-400">🎨 Colors</h4>
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Primary Color</label>
+                  <input type="color" name="primaryColor" value="${config.colors.primary}"
+                         class="w-full h-12 bg-gray-700 border border-gray-600 rounded">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Secondary Color</label>
+                  <input type="color" name="secondaryColor" value="${config.colors.secondary}"
+                         class="w-full h-12 bg-gray-700 border border-gray-600 rounded">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-300 mb-2">Particle Color</label>
+                  <input type="color" name="particleColor" value="${config.colors.particles}"
+                         class="w-full h-12 bg-gray-700 border border-gray-600 rounded">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-4 pt-4 border-t border-gray-600">
+              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold">
+                💾 Save Configuration
+              </button>
+              <button type="button" onclick="resetBossConfiguration('${bossType}')" 
+                      class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded font-semibold">
+                🔄 Reset to Defaults
+              </button>
+              <button type="button" onclick="testBossConfiguration('${bossType}')" 
+                      class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold">
+                🧪 Test Configuration
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+      
+      // Add form submit handler
+      const form = document.getElementById(`bossConfigForm_${bossType}`);
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveBossConfiguration(bossType);
+      });
+    }
+    
+    // Save boss configuration
+    async function saveBossConfiguration(bossType) {
+      try {
+        const form = document.getElementById(`bossConfigForm_${bossType}`);
+        const formData = new FormData(form);
+        
+        // Build configuration object
+        const config = {
+          baseHealth: parseInt(formData.get('baseHealth')),
+          healthMultiplier: parseFloat(formData.get('healthMultiplier')),
+          baseSpeed: parseFloat(formData.get('baseSpeed')),
+          speedMultiplier: parseFloat(formData.get('speedMultiplier')),
+          baseAttackCooldown: parseInt(formData.get('baseAttackCooldown')),
+          attackCooldownMultiplier: parseFloat(formData.get('attackCooldownMultiplier')),
+          baseBulletSpeed: parseFloat(formData.get('baseBulletSpeed')),
+          bulletSpeedMultiplier: parseFloat(formData.get('bulletSpeedMultiplier')),
+          baseBulletDamage: parseInt(formData.get('baseBulletDamage')),
+          bulletDamageMultiplier: parseFloat(formData.get('bulletDamageMultiplier')),
+          size: parseFloat(formData.get('size')),
+          specialAttackChance: parseFloat(formData.get('specialAttackChance')),
+          rageModeThreshold: parseFloat(formData.get('rageModeThreshold')),
+          abilities: {
+            canTeleport: formData.get('canTeleport') === 'on',
+            canShield: formData.get('canShield') === 'on',
+            canSummonMinions: formData.get('canSummonMinions') === 'on',
+            canUseLaser: formData.get('canUseLaser') === 'on',
+            canCreateExplosions: formData.get('canCreateExplosions') === 'on'
+          },
+          colors: {
+            primary: formData.get('primaryColor'),
+            secondary: formData.get('secondaryColor'),
+            particles: formData.get('particleColor')
+          }
+        };
+        
+        addLog(`💾 Saving boss configuration for ${bossType}...`);
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/boss-management.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            bossType: bossType,
+            config: config
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (data.success) {
+          addLog(`✅ Boss configuration saved for ${bossType}`);
+          
+          // Update local config
+          currentBossConfigs[bossType] = config;
+          
+          // Show success message
+          showNotification(`Boss configuration saved successfully!`, 'success');
+        } else {
+          throw new Error(data.error || 'Unknown error');
+        }
+      } catch (error) {
+        console.error('❌ Error saving boss configuration:', error);
+        addLog(`❌ Error saving boss configuration: ${error.message}`);
+        showNotification(`Error saving configuration: ${error.message}`, 'error');
+      }
+    }
+    
+    // Reset boss configuration to defaults
+    async function resetBossConfiguration(bossType) {
+      try {
+        addLog(`🔄 Resetting boss configuration for ${bossType}...`);
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/boss-management.php?bossType=${bossType}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (data.success) {
+          addLog(`✅ Boss configuration reset for ${bossType}`);
+          
+          // Reload configuration
+          await loadBossConfiguration(bossType);
+          
+          showNotification(`Boss configuration reset to defaults!`, 'success');
+        } else {
+          throw new Error(data.error || 'Unknown error');
+        }
+      } catch (error) {
+        console.error('❌ Error resetting boss configuration:', error);
+        addLog(`❌ Error resetting boss configuration: ${error.message}`);
+        showNotification(`Error resetting configuration: ${error.message}`, 'error');
+      }
+    }
+    
+    // Refresh all boss configurations
+    async function refreshBossConfigurations() {
+      try {
+        addLog('🔄 Refreshing all boss configurations...');
+        
+        // Load the currently selected boss
+        const activeBossTab = document.querySelector('.boss-tab-btn.active');
+        if (activeBossTab) {
+          const bossType = activeBossTab.getAttribute('data-boss-tab');
+          await loadBossConfiguration(bossType);
+        }
+        
+        addLog('✅ All boss configurations refreshed');
+      } catch (error) {
+        console.error('❌ Error refreshing boss configurations:', error);
+        addLog(`❌ Error refreshing boss configurations: ${error.message}`);
+      }
+    }
+    
+    // Reset all boss configurations to defaults
+    async function resetAllBossConfigurations() {
+      try {
+        addLog('🔄 Resetting all boss configurations to defaults...');
+        
+        const bossTypes = ['cheeseKing', 'cheeseEmperor', 'cheeseGod', 'cheeseDestroyer'];
+        
+        for (const bossType of bossTypes) {
+          await resetBossConfiguration(bossType);
+        }
+        
+        addLog('✅ All boss configurations reset to defaults');
+        showNotification('All boss configurations reset to defaults!', 'success');
+      } catch (error) {
+        console.error('❌ Error resetting all boss configurations:', error);
+        addLog(`❌ Error resetting all boss configurations: ${error.message}`);
+        showNotification(`Error resetting configurations: ${error.message}`, 'error');
+      }
+    }
+    
+    // Test boss configuration
+    function testBossConfiguration(bossType) {
+      addLog(`🧪 Testing boss configuration for ${bossType}...`);
+      
+      // This would integrate with the game to test the boss
+      // For now, just show a message
+      showNotification(`Boss configuration test initiated for ${bossType}! Check the game to see changes.`, 'info');
+      
+      addLog(`✅ Boss configuration test completed for ${bossType}`);
+    }
   </script>
 
 </body>

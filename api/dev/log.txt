@@ -1,0 +1,7 @@
+{
+    "wallet": "1337",
+    "score": 13831,
+    "discord_id": "1337",
+    "discord_name": "Anonymous Mouse",
+    "game": "space_invaders"
+}
