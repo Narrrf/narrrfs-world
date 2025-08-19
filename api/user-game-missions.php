@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Methods: POST, GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
 // Security headers
@@ -9,25 +9,50 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('X-XSS-Protection: 1; mode=block');
 
+// Handle GET requests for testing
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    echo json_encode([
+        'status' => 'API is working',
+        'method' => 'GET',
+        'timestamp' => date('Y-m-d H:i:s'),
+        'message' => 'Use POST method with user_id to get game missions'
+    ]);
+    exit;
+}
+
 try {
     // Get POST data
-    $input = json_decode(file_get_contents('php://input'), true);
+    $rawInput = file_get_contents('php://input');
+    error_log("Raw input received: " . $rawInput);
+    
+    $input = json_decode($rawInput, true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Invalid JSON input: ' . json_last_error_msg());
+    }
     
     if (!isset($input['user_id'])) {
         throw new Exception('user_id is required');
     }
     
     $discordId = $input['user_id'];
+    error_log("Processing request for Discord ID: " . $discordId);
     
-    // Initialize response data
+    // Connect to database using the correct path
+    try {
+        $db = new PDO('sqlite:/var/www/html/db/narrrf_world.sqlite');
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    } catch (Exception $e) {
+        throw new Exception('Database connection failed: ' . $e->getMessage());
+    }
+    
+    // Initialize response data structure
     $response = [
         'tetris' => [
             'total_games' => 0,
             'best_score' => 0,
             'total_score' => 0,
-            'last_played' => null,
-            'best_lines' => 0,
-            'level_reached' => 0
+            'last_played' => null
         ],
         'snake' => [
             'total_games' => 0,
@@ -61,11 +86,7 @@ try {
         ]
     ];
     
-    // Connect to database
-    $db = new PDO('sqlite:../db/narrrf_world.sqlite');
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // 1. TETRIS STATS (using discord_id)
+    // 1. TETRIS STATS (using discord_id from tbl_tetris_scores)
     try {
         $stmt = $db->prepare("
             SELECT 
@@ -89,7 +110,7 @@ try {
         error_log("Tetris query error: " . $e->getMessage());
     }
     
-    // 2. SNAKE STATS (using user_id)
+    // 2. SNAKE STATS (using user_id from tbl_user_scores)
     try {
         $stmt = $db->prepare("
             SELECT 
@@ -98,7 +119,7 @@ try {
                 SUM(score) as total_score,
                 MAX(timestamp) as last_played
             FROM tbl_user_scores 
-            WHERE user_id = ? AND game_type = 'snake'
+            WHERE user_id = ? AND game = 'snake'
         ");
         $stmt->execute([$discordId]);
         $snakeData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -113,7 +134,7 @@ try {
         error_log("Snake query error: " . $e->getMessage());
     }
     
-    // 3. SPACE INVADERS STATS (using user_id)
+    // 3. SPACE INVADERS STATS (using user_id from tbl_user_scores)
     try {
         $stmt = $db->prepare("
             SELECT 
@@ -122,7 +143,7 @@ try {
                 SUM(score) as total_score,
                 MAX(timestamp) as last_played
             FROM tbl_user_scores 
-            WHERE user_id = ? AND game_type = 'space_invaders'
+            WHERE user_id = ? AND game = 'space_invaders'
         ");
         $stmt->execute([$discordId]);
         $spaceData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -137,7 +158,7 @@ try {
         error_log("Space Invaders query error: " . $e->getMessage());
     }
     
-    // 4. CHEESE HUNT STATS (using user_wallet)
+    // 4. CHEESE HUNT STATS (using user_wallet from tbl_cheese_clicks)
     try {
         $stmt = $db->prepare("
             SELECT 
@@ -161,7 +182,7 @@ try {
         error_log("Cheese Hunt query error: " . $e->getMessage());
     }
     
-    // 5. DISCORD CHEESE RACE STATS (using user_id)
+    // 5. DISCORD CHEESE RACE STATS (using user_id from tbl_race_participants)
     try {
         $stmt = $db->prepare("
             SELECT 
@@ -185,7 +206,7 @@ try {
         error_log("Discord Race query error: " . $e->getMessage());
     }
     
-    // Calculate overall DSPOINC (using user_id)
+    // Calculate overall DSPOINC (using user_id from tbl_user_scores)
     try {
         $stmt = $db->prepare("
             SELECT SUM(score) as total_dspoinc
@@ -202,7 +223,7 @@ try {
         error_log("DSPOINC calculation error: " . $e->getMessage());
     }
     
-    // Quest stats (using user_id)
+    // Quest stats (using user_id from tbl_quest_claims)
     try {
         $stmt = $db->prepare("
             SELECT COUNT(*) as approved_quests
@@ -240,9 +261,13 @@ try {
         $response['overall']['level'] = 'Beginner Cheese Hunter';
     }
     
+    // Log the final response for debugging
+    error_log("Final response for user $discordId: " . json_encode($response));
+    
     echo json_encode($response);
     
 } catch (Exception $e) {
+    error_log("User game missions API error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'Error loading missions: ' . $e->getMessage()]);
 }
