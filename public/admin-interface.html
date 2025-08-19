@@ -14449,10 +14449,16 @@ require_once 'discord-invite.php';
         
         console.log('🔄 Starting Discord user synchronization...');
         
+        // Check if we have admin authentication first
+        if (!currentAdmin && !window.localStorage.getItem('discord_id')) {
+          throw new Error('Please login as admin/moderator first before syncing users');
+        }
+        
         const response = await fetch(`${API_BASE_URL}/api/admin/sync-users.php`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': currentAdmin ? `Bearer ${currentAdmin.token}` : '',
           },
           credentials: 'include' // Include cookies for authentication
         });
@@ -14501,7 +14507,14 @@ require_once 'discord-invite.php';
         }
       } catch (error) {
         console.error('❌ Error syncing Discord users:', error);
-        alert(`❌ Sync Error: ${error.message}\n\nNote: You need to be logged in as admin/moderator to sync users.`);
+        
+        // Get the actual response text for better debugging
+        let errorDetails = error.message;
+        if (error.message.includes('Unexpected token')) {
+          errorDetails += '\n\nThe API returned HTML instead of JSON. This usually means:\n1. Authentication failed\n2. Database connection issues\n3. PHP errors in the API';
+        }
+        
+        alert(`❌ Sync Error: ${errorDetails}\n\nTroubleshooting:\n• Make sure you're logged in as Discord admin\n• Check that you have Moderator/Founder role\n• Try refreshing the page and logging in again`);
       } finally {
         // Reset button
         if (button) {

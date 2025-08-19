@@ -5,6 +5,7 @@ header('Access-Control-Allow-Origin: https://narrrfs.world');
 header('Access-Control-Allow-Credentials: true');
 
 require_once __DIR__ . '/../config/discord.php';
+require_once __DIR__ . '/../config/database.php';
 
 // Check if user is admin
 if (!isset($_SESSION['discord_id'])) {
@@ -13,12 +14,13 @@ if (!isset($_SESSION['discord_id'])) {
     exit;
 }
 
-// Connect to database
-$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+// Connect to database using the same method as other APIs
 try {
-    $db = new PDO("sqlite:$dbPath");
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
+    $db = getSQLite3Connection();
+    if (!$db) {
+        throw new Exception('Database connection failed');
+    }
+} catch (Exception $e) {
     error_log("Sync Error: Database connection failed - " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'Database connection failed']);
@@ -30,8 +32,12 @@ error_log("Sync Debug: Starting user sync");
 
 // Get user roles
 $stmt = $db->prepare("SELECT role_name FROM tbl_user_roles WHERE user_id = ?");
-$stmt->execute([$_SESSION['discord_id']]);
-$roles = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$stmt->bindValue(1, $_SESSION['discord_id'], SQLITE3_TEXT);
+$result = $stmt->execute();
+$roles = [];
+while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+    $roles[] = $row['role_name'];
+}
 
 // Debug: Log roles
 error_log("Sync Debug: User roles for " . $_SESSION['discord_id'] . ": " . implode(", ", $roles));
@@ -109,9 +115,13 @@ error_log("Sync Debug: Fetched " . count($all_discord_members) . " members from 
 
 // Get existing users from database
 $stmt = $db->prepare("SELECT discord_id, username FROM tbl_users");
-$stmt->execute();
-$db_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-$db_user_ids = array_column($db_users, 'discord_id');
+$result = $stmt->execute();
+$db_users = [];
+$db_user_ids = [];
+while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+    $db_users[] = $row;
+    $db_user_ids[] = $row['discord_id'];
+}
 
 // Debug: Log existing users
 error_log("Sync Debug: Number of existing users in DB: " . count($db_users));
@@ -129,12 +139,15 @@ foreach ($all_discord_members as $member) {
     if (!in_array($discord_id, $db_user_ids)) {
         // Add missing user to database
         $stmt = $db->prepare("INSERT INTO tbl_users (discord_id, username) VALUES (?, ?)");
-        $stmt->execute([$discord_id, $username]);
+        $stmt->bindValue(1, $discord_id, SQLITE3_TEXT);
+        $stmt->bindValue(2, $username, SQLITE3_TEXT);
+        $stmt->execute();
         
         // Check if user has existing balance in user_scores table
         $stmt = $db->prepare("SELECT SUM(score) as total FROM tbl_user_scores WHERE user_id = ?");
-        $stmt->execute([$discord_id]);
-        $balance_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->bindValue(1, $discord_id, SQLITE3_TEXT);
+        $result = $stmt->execute();
+        $balance_result = $result->fetchArray(SQLITE3_ASSOC);
         $current_balance = $balance_result['total'] ?? 0;
         
         // If user has a balance but wasn't in tbl_users, they're now synced
@@ -160,7 +173,9 @@ foreach ($all_discord_members as $member) {
         
         if ($db_user['username'] !== $username) {
             $stmt = $db->prepare("UPDATE tbl_users SET username = ? WHERE discord_id = ?");
-            $stmt->execute([$username, $discord_id]);
+            $stmt->bindValue(1, $username, SQLITE3_TEXT);
+            $stmt->bindValue(2, $discord_id, SQLITE3_TEXT);
+            $stmt->execute();
             $updated_users[] = ['id' => $discord_id, 'username' => $username];
         }
     }
