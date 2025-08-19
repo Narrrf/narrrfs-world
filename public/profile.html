@@ -2189,17 +2189,31 @@ function displayGameMissions(data) {
   // Show results section
   resultsDiv.classList.remove('hidden');
   
-  // Update overall stats
-  document.getElementById('totalDSPOINC').textContent = data.total_dspoinc.toLocaleString();
-  document.getElementById('gamesPlayed').textContent = data.achievements.games_played + '/5';
-  document.getElementById('questsCompleted').textContent = data.quest_stats.approved_claims;
-  document.getElementById('cheeseLevel').textContent = data.achievements.cheese_hunter_level;
+  // Update overall stats with safe defaults
+  try {
+    document.getElementById('totalDSPOINC').textContent = (data.total_dspoinc || 0).toLocaleString();
+    document.getElementById('gamesPlayed').textContent = (data.achievements?.games_played || 0) + '/5';
+    document.getElementById('questsCompleted').textContent = (data.quest_stats?.approved_claims || 0);
+    document.getElementById('cheeseLevel').textContent = data.achievements?.cheese_hunter_level || 'Beginner';
+  } catch (error) {
+    console.error('Error updating overall stats:', error);
+    // Set fallback values
+    document.getElementById('totalDSPOINC').textContent = '0';
+    document.getElementById('gamesPlayed').textContent = '0/5';
+    document.getElementById('questsCompleted').textContent = '0';
+    document.getElementById('cheeseLevel').textContent = 'Beginner';
+  }
   
-  // Display games grid
+  // Display games grid with safe defaults
   const gamesGrid = document.getElementById('gamesGrid');
+  if (!data.games || Object.keys(data.games).length === 0) {
+    gamesGrid.innerHTML = '<div class="col-span-full text-center text-gray-400 py-8">No game data available</div>';
+    return;
+  }
+  
   gamesGrid.innerHTML = Object.entries(data.games).map(([gameKey, game]) => {
-    const statusColor = game.status === 'active' ? 'border-green-500 bg-green-900/20' : 'border-gray-500 bg-gray-900/20';
-    const statusIcon = game.status === 'active' ? '✅' : '⏸️';
+    const statusColor = (game.status === 'active') ? 'border-green-500 bg-green-900/20' : 'border-gray-500 bg-gray-900/20';
+    const statusIcon = (game.status === 'active') ? '✅' : '⏸️';
     
     return `
       <div class="game-card ${statusColor} border rounded-xl p-4 cursor-pointer hover:scale-105 transition-all duration-200" 
@@ -2225,19 +2239,19 @@ function displayGameMissions(data) {
     `;
   }).join('');
   
-  // Display quest progress
+  // Display quest progress with safe defaults
   const questProgress = document.getElementById('questProgress');
   questProgress.innerHTML = `
     <div class="text-center">
-      <div class="text-lg font-bold text-green-400">${data.quest_stats.approved_claims}</div>
+      <div class="text-lg font-bold text-green-400">${data.quest_stats?.approved_claims || 0}</div>
       <div class="text-purple-200">Approved</div>
     </div>
     <div class="text-center">
-      <div class="text-lg font-bold text-yellow-400">${data.quest_stats.pending_claims}</div>
+      <div class="text-lg font-bold text-yellow-400">${data.quest_stats?.pending_claims || 0}</div>
       <div class="text-purple-200">Pending</div>
     </div>
     <div class="text-center">
-      <div class="text-lg font-bold text-blue-400">${data.quest_stats.total_claims}</div>
+      <div class="text-lg font-bold text-blue-400">${data.quest_stats?.total_claims || 0}</div>
       <div class="text-purple-200">Total Claims</div>
     </div>
   `;
@@ -2247,39 +2261,40 @@ function getGameStats(gameKey, game) {
   switch(gameKey) {
     case 'tetris':
       return `
-        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games}</span></div>
-        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${game.best_score.toLocaleString()}</span></div>
-        <div>📊 Best Lines: <span class="text-blue-400 font-semibold">${game.best_lines}</span></div>
-        <div>🔥 Max Level: <span class="text-red-400 font-semibold">${game.highest_level}</span></div>
+        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games || 0}</span></div>
+        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${(game.best_score || 0).toLocaleString()}</span></div>
+        <div>💎 Total Score: <span class="text-green-400 font-semibold">${(game.total_score || 0).toLocaleString()}</span></div>
+        <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
       `;
     case 'snake':
       return `
-        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games}</span></div>
-        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${game.best_score.toLocaleString()}</span></div>
-        <div>💎 Total Score: <span class="text-green-400 font-semibold">${game.total_score.toLocaleString()}</span></div>
+        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games || 0}</span></div>
+        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${(game.best_score || 0).toLocaleString()}</span></div>
+        <div>💎 Total Score: <span class="text-green-400 font-semibold">${(game.total_score || 0).toLocaleString()}</span></div>
         <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
       `;
     case 'space_invaders':
       return `
-        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games}</span></div>
-        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${game.best_score.toLocaleString()}</span></div>
-        <div>💎 Total Score: <span class="text-green-400 font-semibold">${game.total_score.toLocaleString()}</span></div>
+        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games || 0}</span></div>
+        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${(game.best_score || 0).toLocaleString()}</span></div>
+        <div>💎 Total Score: <span class="text-green-400 font-semibold">${game.total_score || 0}</span></div>
         <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
       `;
     case 'cheese_hunt':
       return `
-        <div>🧀 Total Clicks: <span class="text-white font-semibold">${game.total_clicks}</span></div>
-        <div>🎯 Quest Clicks: <span class="text-orange-400 font-semibold">${game.quest_clicks}</span></div>
-        <div>🥚 Unique Eggs: <span class="text-blue-400 font-semibold">${game.unique_eggs}/3</span></div>
+        <div>🧀 Total Clicks: <span class="text-white font-semibold">${game.total_clicks || 0}</span></div>
+        <div>🎯 Quest Clicks: <span class="text-orange-400 font-semibold">${game.quest_clicks || 0}</span></div>
+        <div>🥚 Unique Eggs: <span class="text-blue-400 font-semibold">${game.unique_eggs || 0}/3</span></div>
         <div>📅 Last Click: <span class="text-gray-300">${game.last_click ? formatDateShort(game.last_click) : 'Never'}</span></div>
       `;
     case 'discord_race':
       return `
-        <div>🏁 Races: <span class="text-white font-semibold">${game.total_races}</span></div>
-        <div>🥇 Wins: <span class="text-yellow-400 font-semibold">${game.wins}</span></div>
-        <div>🏆 Podiums: <span class="text-orange-400 font-semibold">${game.podium_finishes}</span></div>
-        <div>📊 Best Position: <span class="text-green-400 font-semibold">#${game.best_position}</span></div>
+        <div>🏁 Total Races: <span class="text-white font-semibold">${game.total_races || 0}</span></div>
+        <div>🥇 Wins: <span class="text-yellow-400 font-semibold">${game.wins || 0}</span></div>
+        <div>🏆 Podiums: <span class="text-orange-400 font-semibold">${game.podium_finishes || 0}</span></div>
+        <div>📊 Best Position: <span class="text-green-400 font-semibold">#${game.best_position || 'N/A'}</span></div>
       `;
+
     default:
       return '<div>No stats available</div>';
   }

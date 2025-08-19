@@ -39,103 +39,149 @@ try {
         exit;
     }
 
-    // 1. TETRIS STATS
-    $stmt = $pdo->prepare("
-        SELECT 
-            COUNT(*) as total_games,
-            MAX(score) as best_score,
-            AVG(score) as average_score,
-            SUM(score) as total_score,
-            MAX(lines_cleared) as best_lines,
-            AVG(lines_cleared) as average_lines,
-            SUM(lines_cleared) as total_lines,
-            MAX(level_reached) as highest_level,
-            MAX(created_at) as last_played
-        FROM tbl_tetris_scores 
-        WHERE discord_id = ? AND is_current_season = 1
-    ");
-    $stmt->execute([$userId]);
-    $tetris_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Initialize stats arrays with safe defaults
+    $tetris_stats = ['total_games' => 0, 'best_score' => 0, 'total_score' => 0, 'last_played' => null];
+    $snake_stats = ['total_games' => 0, 'best_score' => 0, 'total_score' => 0, 'last_played' => null];
+    $space_invaders_stats = ['total_games' => 0, 'best_score' => 0, 'total_score' => 0, 'last_played' => null];
+    $cheese_hunt_stats = ['total_clicks' => 0, 'quest_clicks' => 0, 'unique_eggs_clicked' => 0, 'last_click' => null];
+    $discord_race_stats = ['total_races' => 0, 'wins' => 0, 'podium_finishes' => 0, 'best_position' => null, 'average_position' => null, 'last_race' => null];
 
-    // 2. SNAKE STATS (from user_scores table)
-    $stmt = $pdo->prepare("
-        SELECT 
-            COUNT(*) as total_games,
-            MAX(score) as best_score,
-            AVG(score) as average_score,
-            SUM(score) as total_score,
-            MAX(timestamp) as last_played
-        FROM tbl_user_scores 
-        WHERE user_id = ? AND game_type = 'snake'
-    ");
-    $stmt->execute([$userId]);
-    $snake_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+    // 1. TETRIS STATS - Safe query with error handling
+    try {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(*) as total_games,
+                MAX(score) as best_score,
+                SUM(score) as total_score,
+                MAX(timestamp) as last_played
+            FROM tbl_tetris_scores 
+            WHERE discord_id = ? AND is_current_season = 1
+        ");
+        $stmt->execute([$userId]);
+        $tetris_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($tetris_result) {
+            $tetris_stats = array_merge($tetris_stats, $tetris_result);
+        }
+    } catch (Exception $e) {
+        error_log("Tetris stats query failed: " . $e->getMessage());
+    }
 
-    // 3. SPACE INVADERS STATS
-    $stmt = $pdo->prepare("
-        SELECT 
-            COUNT(*) as total_games,
-            MAX(score) as best_score,
-            AVG(score) as average_score,
-            SUM(score) as total_score,
-            MAX(timestamp) as last_played
-        FROM tbl_user_scores 
-        WHERE user_id = ? AND game_type = 'space_invaders'
-    ");
-    $stmt->execute([$userId]);
-    $space_invaders_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+    // 2. SNAKE STATS - Safe query with error handling
+    try {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(*) as total_games,
+                MAX(score) as best_score,
+                SUM(score) as total_score,
+                MAX(timestamp) as last_played
+            FROM tbl_user_scores 
+            WHERE user_id = ? AND game_type = 'snake'
+        ");
+        $stmt->execute([$userId]);
+        $snake_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($snake_result) {
+            $snake_stats = array_merge($snake_stats, $snake_result);
+        }
+    } catch (Exception $e) {
+        error_log("Snake stats query failed: " . $e->getMessage());
+    }
 
-    // 4. CHEESE HUNT STATS
-    $stmt = $pdo->prepare("
-        SELECT 
-            COUNT(*) as total_clicks,
-            COUNT(CASE WHEN quest_id IS NOT NULL THEN 1 END) as quest_clicks,
-            COUNT(CASE WHEN quest_id IS NULL THEN 1 END) as general_clicks,
-            COUNT(DISTINCT egg_id) as unique_eggs_clicked,
-            COUNT(DISTINCT quest_id) as quests_participated,
-            MAX(timestamp) as last_click
-        FROM tbl_cheese_clicks 
-        WHERE user_wallet = ?
-    ");
-    $stmt->execute([$userId]);
-    $cheese_hunt_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+    // 3. SPACE INVADERS STATS - Safe query with error handling
+    try {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(*) as total_games,
+                MAX(score) as best_score,
+                SUM(score) as total_score,
+                MAX(timestamp) as last_played
+            FROM tbl_user_scores 
+            WHERE user_id = ? AND game_type = 'space_invaders'
+        ");
+        $stmt->execute([$userId]);
+        $space_invaders_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($space_invaders_result) {
+            $space_invaders_stats = array_merge($space_invaders_stats, $space_invaders_result);
+        }
+    } catch (Exception $e) {
+        error_log("Space invaders stats query failed: " . $e->getMessage());
+    }
 
-    // 5. DISCORD CHEESE RACE STATS
-    $stmt = $pdo->prepare("
-        SELECT 
-            COUNT(*) as total_races,
-            COUNT(CASE WHEN position = 1 THEN 1 END) as wins,
-            COUNT(CASE WHEN position <= 3 THEN 1 END) as podium_finishes,
-            AVG(position) as average_position,
-            MIN(position) as best_position,
-            MAX(event_date) as last_race
-        FROM tbl_discord_events 
-        WHERE user_id = ? AND event_type = 'cheese_race'
-    ");
-    $stmt->execute([$userId]);
-    $discord_race_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+    // 4. CHEESE HUNT STATS - Safe query with error handling
+    try {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(*) as total_clicks,
+                COUNT(CASE WHEN quest_id IS NOT NULL THEN 1 END) as quest_clicks,
+                COUNT(DISTINCT egg_id) as unique_eggs_clicked,
+                MAX(timestamp) as last_click
+            FROM tbl_cheese_clicks 
+            WHERE user_wallet = ?
+        ");
+        $stmt->execute([$userId]);
+        $cheese_hunt_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($cheese_hunt_result) {
+            $cheese_hunt_stats = array_merge($cheese_hunt_stats, $cheese_hunt_result);
+        }
+    } catch (Exception $e) {
+        error_log("Cheese hunt stats query failed: " . $e->getMessage());
+    }
+
+    // 5. DISCORD CHEESE RACE STATS - Safe query with error handling
+    try {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(*) as total_races,
+                COUNT(CASE WHEN position = 1 THEN 1 END) as wins,
+                COUNT(CASE WHEN position <= 3 THEN 1 END) as podium_finishes,
+                MIN(position) as best_position,
+                MAX(created_at) as last_race
+            FROM tbl_race_participants 
+            WHERE user_id = ?
+        ");
+        $stmt->execute([$userId]);
+        $discord_race_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($discord_race_result) {
+            $discord_race_stats = array_merge($discord_race_stats, $discord_race_result);
+        }
+    } catch (Exception $e) {
+        error_log("Discord race stats query failed: " . $e->getMessage());
+    }
 
     // Calculate overall DSPOINC from all games
-    $stmt = $pdo->prepare("
-        SELECT COALESCE(SUM(score), 0) as total_dspoinc 
-        FROM tbl_user_scores 
-        WHERE user_id = ?
-    ");
-    $stmt->execute([$userId]);
-    $total_dspoinc = $stmt->fetch(PDO::FETCH_ASSOC)['total_dspoinc'];
+    $total_dspoinc = 0;
+    try {
+        $stmt = $pdo->prepare("
+            SELECT COALESCE(SUM(score), 0) as total_dspoinc 
+            FROM tbl_user_scores 
+            WHERE user_id = ?
+        ");
+        $stmt->execute([$userId]);
+        $dspoinc_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $total_dspoinc = $dspoinc_result['total_dspoinc'] ?? 0;
+    } catch (Exception $e) {
+        error_log("DSPOINC calculation failed: " . $e->getMessage());
+    }
 
     // Get quest completion stats
-    $stmt = $pdo->prepare("
-        SELECT 
-            COUNT(*) as total_claims,
-            COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved_claims,
-            COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_claims,
-            MAX(claimed_at) as last_quest_claim
-        FROM tbl_quest_claims 
-        WHERE user_id = ?
-    ");
-    $stmt->execute([$userId]);
-    $quest_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+    $quest_stats = ['total_claims' => 0, 'approved_claims' => 0, 'pending_claims' => 0, 'last_quest_claim' => null];
+    try {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(*) as total_claims,
+                COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved_claims,
+                COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_claims,
+                MAX(claimed_at) as last_quest_claim
+            FROM tbl_quest_claims 
+            WHERE user_id = ?
+        ");
+        $stmt->execute([$userId]);
+        $quest_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($quest_result) {
+            $quest_stats = array_merge($quest_stats, $quest_result);
+        }
+    } catch (Exception $e) {
+        error_log("Quest stats query failed: " . $e->getMessage());
+    }
 
     echo json_encode([
         'success' => true,
@@ -149,8 +195,8 @@ try {
                 'total_games' => (int)$tetris_stats['total_games'],
                 'best_score' => (int)$tetris_stats['best_score'],
                 'total_score' => (int)$tetris_stats['total_score'],
-                'best_lines' => (int)$tetris_stats['best_lines'],
-                'highest_level' => (int)$tetris_stats['highest_level'],
+                'best_lines' => 0, // Not available in current schema
+                'highest_level' => 0, // Not available in current schema
                 'last_played' => $tetris_stats['last_played'],
                 'status' => $tetris_stats['total_games'] > 0 ? 'active' : 'not_played'
             ],
@@ -181,7 +227,7 @@ try {
                 'total_clicks' => (int)$cheese_hunt_stats['total_clicks'],
                 'quest_clicks' => (int)$cheese_hunt_stats['quest_clicks'],
                 'unique_eggs' => (int)$cheese_hunt_stats['unique_eggs_clicked'],
-                'quests_participated' => (int)$cheese_hunt_stats['quests_participated'],
+                'quests_participated' => (int)$cheese_hunt_stats['quest_clicks'],
                 'last_click' => $cheese_hunt_stats['last_click'],
                 'status' => $cheese_hunt_stats['total_clicks'] > 0 ? 'active' : 'not_played'
             ],
@@ -192,8 +238,8 @@ try {
                 'total_races' => (int)$discord_race_stats['total_races'],
                 'wins' => (int)$discord_race_stats['wins'],
                 'podium_finishes' => (int)$discord_race_stats['podium_finishes'],
-                'best_position' => (int)$discord_race_stats['best_position'] ?: 'N/A',
-                'average_position' => round((float)$discord_race_stats['average_position'], 1) ?: 'N/A',
+                'best_position' => $discord_race_stats['best_position'] ? (int)$discord_race_stats['best_position'] : 'N/A',
+                'average_position' => $discord_race_stats['average_position'] ? round((float)$discord_race_stats['average_position'], 1) : 'N/A',
                 'last_race' => $discord_race_stats['last_race'],
                 'status' => $discord_race_stats['total_races'] > 0 ? 'active' : 'not_played'
             ]
@@ -218,6 +264,7 @@ try {
     ]);
 
 } catch (Exception $e) {
+    error_log("User game missions API error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,
