@@ -75,7 +75,7 @@ try {
                 SUM(score) as total_score,
                 MAX(timestamp) as last_played
             FROM tbl_user_scores 
-            WHERE user_id = ? AND game_type = 'snake'
+            WHERE discord_id = ? AND game_type = 'snake'
         ");
         $stmt->execute([$userId]);
         $snake_result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -95,7 +95,7 @@ try {
                 SUM(score) as total_score,
                 MAX(timestamp) as last_played
             FROM tbl_user_scores 
-            WHERE user_id = ? AND game_type = 'space_invaders'
+            WHERE discord_id = ? AND game_type = 'space_invaders'
         ");
         $stmt->execute([$userId]);
         $space_invaders_result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -115,7 +115,7 @@ try {
                 COUNT(DISTINCT egg_id) as unique_eggs_clicked,
                 MAX(timestamp) as last_click
             FROM tbl_cheese_clicks 
-            WHERE user_wallet = ?
+            WHERE discord_id = ?
         ");
         $stmt->execute([$userId]);
         $cheese_hunt_result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -136,7 +136,7 @@ try {
                 MIN(position) as best_position,
                 MAX(created_at) as last_race
             FROM tbl_race_participants 
-            WHERE user_id = ?
+            WHERE discord_id = ?
         ");
         $stmt->execute([$userId]);
         $discord_race_result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -153,7 +153,7 @@ try {
         $stmt = $pdo->prepare("
             SELECT COALESCE(SUM(score), 0) as total_dspoinc 
             FROM tbl_user_scores 
-            WHERE user_id = ?
+            WHERE discord_id = ?
         ");
         $stmt->execute([$userId]);
         $dspoinc_result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -172,7 +172,7 @@ try {
                 COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_claims,
                 MAX(claimed_at) as last_quest_claim
             FROM tbl_quest_claims 
-            WHERE user_id = ?
+            WHERE discord_id = ?
         ");
         $stmt->execute([$userId]);
         $quest_result = $stmt->fetch(PDO::FETCH_ASSOC);
