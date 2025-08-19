@@ -264,7 +264,72 @@ try {
     // Log the final response for debugging
     error_log("Final response for user $discordId: " . json_encode($response));
     
-    echo json_encode($response);
+    // Return the response in the format expected by the frontend
+    echo json_encode([
+        'success' => true,
+        'total_dspoinc' => $response['overall']['total_dspoinc'],
+        'achievements' => [
+            'games_played' => $response['overall']['games_played'],
+            'cheese_hunter_level' => $response['overall']['level']
+        ],
+        'quest_stats' => [
+            'approved_claims' => $response['overall']['quests_approved'],
+            'pending_claims' => 0, // We can add this later if needed
+            'total_claims' => $response['overall']['quests_approved']
+        ],
+        'games' => [
+            'tetris' => [
+                'name' => 'Tetris Scroll',
+                'icon' => '🧩',
+                'url' => '/profile.html#cheese-tetris',
+                'total_games' => $response['tetris']['total_games'],
+                'best_score' => $response['tetris']['best_score'],
+                'total_score' => $response['tetris']['total_score'],
+                'last_played' => $response['tetris']['last_played'],
+                'status' => $response['tetris']['total_games'] > 0 ? 'active' : 'not_played'
+            ],
+            'snake' => [
+                'name' => 'Snake Scroll',
+                'icon' => '🐍',
+                'url' => '/profile.html#cheese-snake',
+                'total_games' => $response['snake']['total_games'],
+                'best_score' => $response['snake']['best_score'],
+                'total_score' => $response['snake']['total_score'],
+                'last_played' => $response['snake']['last_played'],
+                'status' => $response['snake']['total_games'] > 0 ? 'active' : 'not_played'
+            ],
+            'space_invaders' => [
+                'name' => 'Space Cheese Invaders',
+                'icon' => '👾',
+                'url' => '/profile.html#cheese-space-invaders',
+                'total_games' => $response['space_invaders']['total_games'],
+                'best_score' => $response['space_invaders']['best_score'],
+                'total_score' => $response['space_invaders']['total_score'],
+                'last_played' => $response['space_invaders']['last_played'],
+                'status' => $response['space_invaders']['total_games'] > 0 ? 'active' : 'not_played'
+            ],
+            'cheese_hunt' => [
+                'name' => 'Cheese Hunt',
+                'icon' => '🧀',
+                'url' => '/',
+                'total_clicks' => $response['cheese_hunt']['total_clicks'],
+                'quest_clicks' => $response['cheese_hunt']['quest_clicks'],
+                'unique_eggs' => $response['cheese_hunt']['unique_eggs'],
+                'last_click' => $response['cheese_hunt']['last_click'],
+                'status' => $response['cheese_hunt']['total_clicks'] > 0 ? 'active' : 'not_played'
+            ],
+            'discord_race' => [
+                'name' => 'Discord Cheese Race',
+                'icon' => '🏁',
+                'url' => 'https://discord.gg/narrrfs',
+                'total_races' => $response['discord_race']['total_races'],
+                'wins' => $response['discord_race']['wins'],
+                'podium_finishes' => $response['discord_race']['podiums'],
+                'best_position' => $response['discord_race']['best_position'] ? $response['discord_race']['best_position'] : 'N/A',
+                'status' => $response['discord_race']['total_races'] > 0 ? 'active' : 'not_played'
+            ]
+        ]
+    ]);
     
 } catch (Exception $e) {
     error_log("User game missions API error: " . $e->getMessage());
