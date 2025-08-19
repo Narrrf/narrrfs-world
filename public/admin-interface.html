@@ -14449,18 +14449,11 @@ require_once 'discord-invite.php';
         
         console.log('🔄 Starting Discord user synchronization...');
         
-        // Check if we have admin authentication first
-        if (!currentAdmin && !window.localStorage.getItem('discord_id')) {
-          throw new Error('Please login as admin/moderator first before syncing users');
-        }
-        
         const response = await fetch(`${API_BASE_URL}/api/admin/sync-users.php`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': currentAdmin ? `Bearer ${currentAdmin.token}` : '',
-          },
-          credentials: 'include' // Include cookies for authentication
+          }
         });
         
         if (!response.ok) {

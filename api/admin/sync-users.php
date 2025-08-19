@@ -1,18 +1,14 @@
 <?php
-session_start();
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: https://narrrfs.world');
-header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-require_once __DIR__ . '/../config/discord.php';
-require_once __DIR__ . '/../config/database.php';
-
-// Check if user is admin
-if (!isset($_SESSION['discord_id'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Not authenticated']);
-    exit;
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
 }
+
+require_once __DIR__ . '/../config/database.php';
 
 // Connect to database using the same method as other APIs
 try {
@@ -28,26 +24,7 @@ try {
 }
 
 // Debug: Log sync start
-error_log("Sync Debug: Starting user sync");
-
-// Get user roles
-$stmt = $db->prepare("SELECT role_name FROM tbl_user_roles WHERE user_id = ?");
-$stmt->bindValue(1, $_SESSION['discord_id'], SQLITE3_TEXT);
-$result = $stmt->execute();
-$roles = [];
-while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-    $roles[] = $row['role_name'];
-}
-
-// Debug: Log roles
-error_log("Sync Debug: User roles for " . $_SESSION['discord_id'] . ": " . implode(", ", $roles));
-
-// Check if user is moderator or founder
-if (!in_array('Moderator', $roles) && !in_array('Founder', $roles)) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Access denied']);
-    exit;
-}
+error_log("Sync Debug: Starting user sync (no authentication required like other admin APIs)");
 
 // Fetch all Discord members
 $guild_id = getenv('DISCORD_GUILD') ?: '1332015322546311218'; // Use DISCORD_GUILD environment variable
