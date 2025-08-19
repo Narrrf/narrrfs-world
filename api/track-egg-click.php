@@ -22,8 +22,10 @@ $input = json_decode(file_get_contents('php://input'), true);
 error_log("Cheese click request received: " . json_encode($input));
 
 if (!isset($input['user_wallet']) || !isset($input['egg_id'])) {
+    error_log("Missing required fields - user_wallet: " . (isset($input['user_wallet']) ? 'present' : 'missing') . 
+              ", egg_id: " . (isset($input['egg_id']) ? 'present' : 'missing'));
     http_response_code(400);
-    echo json_encode(['error' => '❌ Missing required fields', 'received' => $input]);
+    echo json_encode(['success' => false, 'error' => '❌ Missing required fields', 'received' => $input]);
     exit;
 }
 
@@ -33,11 +35,41 @@ $timestamp = isset($input['timestamp']) ? $input['timestamp'] : time();
 $quest_id = isset($input['quest_id']) ? intval($input['quest_id']) : null;
 $screenshot_data = isset($input['screenshot']) ? $input['screenshot'] : null;
 
+// Enhanced logging for debugging
+error_log("Processing click - User: $userWallet, Egg: $eggId, Quest: " . ($quest_id ?: 'none'));
+
+// Validate user wallet is not empty or a session ID
+if (empty($userWallet) || $userWallet === 'null' || $userWallet === 'undefined') {
+    error_log("Invalid user wallet provided: '$userWallet'");
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => '❌ Invalid user identification']);
+    exit;
+}
+
+// Check if user wallet looks like a Discord ID (numeric) or valid wallet
+if (!preg_match('/^\d{15,20}$/', $userWallet) && !preg_match('/^[A-Za-z0-9]{15,}$/', $userWallet)) {
+    error_log("User wallet format appears invalid: '$userWallet'");
+    // Don't exit here, but log the warning
+}
+
 // Use centralized database configuration
 require_once __DIR__ . '/config/database.php';
 
 try {
     $pdo = getDatabaseConnection();
+
+    // Verify user exists in the database (for Discord users)
+    if (preg_match('/^\d{15,20}$/', $userWallet)) {
+        $stmt = $pdo->prepare("SELECT discord_id, username FROM tbl_users WHERE discord_id = ? LIMIT 1");
+        $stmt->execute([$userWallet]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($user) {
+            error_log("Click tracking for verified user: " . $user['username'] . " (" . $user['discord_id'] . ")");
+        } else {
+            error_log("Warning: Discord user $userWallet not found in tbl_users - click will be tracked but user may need to /sync");
+        }
+    }
 
     // Insert cheese click record with proper column mapping
     $stmt = $pdo->prepare("INSERT INTO tbl_cheese_clicks (user_wallet, egg_id, timestamp, quest_id)

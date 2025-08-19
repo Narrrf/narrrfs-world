@@ -574,6 +574,78 @@ require_once 'discord-invite.php';
     }, 5000);
   }
 
+  // Show warning when user is not logged in
+  function showUserNotLoggedInWarning() {
+    // Remove any existing warning
+    const existingWarning = document.getElementById('login-warning-notification');
+    if (existingWarning) {
+      existingWarning.remove();
+    }
+
+    // Create warning notification
+    const warning = document.createElement('div');
+    warning.id = 'login-warning-notification';
+    warning.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10002;
+      max-width: 400px;
+      font-size: 14px;
+      line-height: 1.4;
+      border: 2px solid #f87171;
+      text-align: center;
+    `;
+    
+    warning.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+        <span style="font-size: 18px; margin-right: 8px;">⚠️</span>
+        <strong>Login Required!</strong>
+      </div>
+      <div style="font-size: 12px; opacity: 0.9;">
+        Please login with Discord to track your cheese clicks for quests.
+      </div>
+      <button onclick="window.location.href='/auth/login.php'" style="
+        margin-top: 8px;
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      ">Login with Discord</button>
+      <button onclick="this.parentElement.remove()" style="
+        position: absolute;
+        top: 4px;
+        right: 8px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        opacity: 0.7;
+      ">×</button>
+    `;
+    
+    document.body.appendChild(warning);
+    
+    // Auto-hide after 8 seconds
+    setTimeout(() => {
+      if (warning.parentElement) {
+        warning.remove();
+      }
+    }, 8000);
+  }
+
+
+
   // Initialize cheese eggs across the whole page
   window.addEventListener('DOMContentLoaded', async () => {
     // Track page load time for difficulty scaling
@@ -683,32 +755,47 @@ require_once 'discord-invite.php';
             }
           }
           
-          // Get user wallet or Discord ID
-          const currentUserWallet = localStorage.getItem('walletAddress') || 
-                                   localStorage.getItem('discord_id') || 
-                                   (localStorage.getItem('session_id') || 
-                                    (() => {
-                                      const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                                      localStorage.setItem('session_id', sessionId);
-                                      return sessionId;
-                                    })());
+          // Get user wallet or Discord ID with better validation
+          let currentUserWallet = localStorage.getItem('discord_id');
           
-          console.log('Tracking cheese click for user:', currentUserWallet, 'egg:', id);
+          // Validate Discord ID is not empty/null
+          if (!currentUserWallet || currentUserWallet === 'null' || currentUserWallet === 'undefined' || currentUserWallet.trim() === '') {
+            // Try wallet address as fallback
+            currentUserWallet = localStorage.getItem('walletAddress');
+            
+            if (!currentUserWallet || currentUserWallet === 'null' || currentUserWallet === 'undefined' || currentUserWallet.trim() === '') {
+              // No valid user identification - show warning and skip tracking
+              console.warn('⚠️ No valid user identification found for cheese click tracking');
+              console.warn('Discord ID:', localStorage.getItem('discord_id'));
+              console.warn('Wallet Address:', localStorage.getItem('walletAddress'));
+              
+              // Show user notification
+              showUserNotLoggedInWarning();
+              return;
+            }
+          }
           
-          // Track the click (simplified - no screenshot for now)
+          console.log('🧀 Tracking cheese click for user:', currentUserWallet, 'egg:', id);
+          console.log('🎯 Active quest:', activeCheeseHuntQuest ? activeCheeseHuntQuest.quest_id : 'None');
+          
+          // Track the click with enhanced error handling
           try {
             console.log('🚀 Sending API request to /api/track-egg-click.php...');
             
+            const requestData = {
+              user_wallet: currentUserWallet,
+              egg_id: id,
+              timestamp: Date.now(),
+              quest_id: activeCheeseHuntQuest ? activeCheeseHuntQuest.quest_id : null,
+              screenshot: null,
+              hunt_context: 'enhanced_tracking_v2'
+            };
+            
+            console.log('📤 Request data:', requestData);
+            
             const response = await fetch('/api/track-egg-click.php', {
               method: 'POST',
-              body: JSON.stringify({
-                user_wallet: currentUserWallet,
-                egg_id: id,
-                timestamp: Date.now(),
-                quest_id: activeCheeseHuntQuest ? activeCheeseHuntQuest.quest_id : null,
-                screenshot: null, // No screenshot for now
-                hunt_context: 'simplified_hunting_v3'
-              }),
+              body: JSON.stringify(requestData),
               headers: { 'Content-Type': 'application/json' }
             });
             
@@ -718,9 +805,17 @@ require_once 'discord-invite.php';
               const result = await response.json();
               console.log('✅ Cheese click tracked successfully:', result);
               
-              // Show quest progress if this was part of a cheese hunt
-              if (activeCheeseHuntQuest && (result.progress || result.quest_completed !== undefined)) {
-                showCheeseHuntProgress(result);
+              // Validate response structure
+              if (result.success) {
+                console.log('✅ Server confirmed tracking success');
+                
+                // Show quest progress if this was part of a cheese hunt
+                if (activeCheeseHuntQuest && (result.progress || result.quest_completed !== undefined)) {
+                  console.log('🎯 Quest progress update available:', result);
+                  showCheeseHuntProgress(result);
+                }
+              } else {
+                console.warn('⚠️ Server reported tracking failure:', result.error || 'Unknown error');
               }
               
               // Add a longer delay to see the success message

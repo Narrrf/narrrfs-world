@@ -468,6 +468,52 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
+<!-- 🔍 Debug & Tracking Status Section -->
+<div id="debugSection" class="hidden">
+  <div class="bg-gradient-to-br from-blue-900/30 via-indigo-900/30 to-blue-800/30 rounded-2xl shadow-2xl p-6 max-w-lg w-full text-center mt-6 mb-4 border-2 border-blue-400/50 ring-2 ring-blue-400/20 mx-auto relative z-10">
+    <h2 class="text-xl font-bold text-blue-300 mb-4 flex items-center gap-2 justify-center">
+      <span>🔍</span>
+      Cheese Click Tracking Status
+    </h2>
+    
+    <div class="text-sm text-blue-100 mb-4">
+      Having issues with cheese hunt tracking? Check your status here!
+    </div>
+    
+    <button onclick="checkTrackingStatus()" 
+            class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg mb-4 transition-all duration-200">
+      🔍 Check My Tracking Status
+    </button>
+    
+    <div id="trackingResults" class="hidden">
+      <div class="bg-blue-800/30 rounded-xl p-4 mt-4 border border-blue-500/30">
+        <h3 class="text-blue-300 font-semibold mb-3">📊 Your Tracking Status</h3>
+        <div id="trackingStatusContent" class="text-sm text-left space-y-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+      
+      <div class="bg-blue-800/30 rounded-xl p-4 mt-3 border border-blue-500/30">
+        <h3 class="text-blue-300 font-semibold mb-3">🧀 Recent Cheese Clicks</h3>
+        <div id="recentClicksContent" class="text-sm text-left">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+      
+      <div class="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-600">
+        <h4 class="text-yellow-300 font-semibold mb-2">💡 Troubleshooting Tips</h4>
+        <ul class="text-xs text-gray-300 text-left space-y-1">
+          <li>• Make sure you're logged in with Discord</li>
+          <li>• Disable ad blockers or privacy extensions</li>
+          <li>• Try refreshing the page and logging in again</li>
+          <li>• Check if there's an active cheese hunt quest</li>
+          <li>• Contact support if issues persist</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 🎮 Triple Game Panel — Tetris + Snake + Space Invaders -->
 <section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col lg:flex-row gap-8 items-start justify-center relative z-10">
  <!-- 🎮 TETRIS PANEL -->
@@ -887,8 +933,10 @@ document.addEventListener("DOMContentLoaded", async function () {
      // ✅ Show DSPOINC section if user is logged in
      if (user.discord_id) {
        showElement('dspoincSection');
+       showElement('debugSection');
      } else {
        hideElement('dspoincSection');
+       hideElement('debugSection');
      }
 
     // 🔧 Show Admin Access Button for admins/moderators
@@ -1251,13 +1299,23 @@ document.addEventListener('DOMContentLoaded', async function() {
   let user = {};
   let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
 
-  // Show/hide DSPOINC section based on login status
+  // Show/hide DSPOINC and debug sections based on login status
   const dspoincSection = document.getElementById('dspoincSection');
+  const debugSection = document.getElementById('debugSection');
+  
   if (dspoincSection) {
     if (userId) {
       dspoincSection.classList.remove('hidden');
     } else {
       dspoincSection.classList.add('hidden');
+    }
+  }
+  
+  if (debugSection) {
+    if (userId) {
+      debugSection.classList.remove('hidden');
+    } else {
+      debugSection.classList.add('hidden');
     }
   }
 
@@ -1841,6 +1899,164 @@ async function connectWallet() {
     showError('Failed to connect wallet: ' + error.message);
   }
 }
+</script>
+
+<!-- 🔍 Debug and Tracking Status Script -->
+<script>
+// Debug and tracking status functions
+async function checkTrackingStatus() {
+  const discordId = localStorage.getItem('discord_id');
+  const button = event.target;
+  
+  if (!discordId) {
+    alert('❌ Please login with Discord first to check your tracking status.');
+    return;
+  }
+
+  // Update button state
+  button.disabled = true;
+  button.textContent = '🔄 Checking...';
+
+  try {
+    console.log('🔍 Checking tracking status for user:', discordId);
+    
+    const response = await fetch('/api/debug-user-tracking.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: discordId })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      displayTrackingResults(data);
+      
+      // Also log to console for advanced debugging
+      console.log('📊 User Tracking Debug Report:');
+      console.table(data.user_info);
+      console.log('📈 Click Statistics:', data.click_statistics);
+      console.log('🔄 Recent Clicks:', data.recent_clicks);
+      console.log('🎯 Quest Claims:', data.quest_claims);
+      console.log('✅ Validation:', data.validation);
+    } else {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('❌ Error checking tracking status:', error);
+    displayTrackingError(error.message);
+  } finally {
+    // Reset button
+    button.disabled = false;
+    button.textContent = '🔍 Check My Tracking Status';
+  }
+}
+
+function displayTrackingResults(data) {
+  const resultsDiv = document.getElementById('trackingResults');
+  const statusContent = document.getElementById('trackingStatusContent');
+  const clicksContent = document.getElementById('recentClicksContent');
+  
+  // Show results section
+  resultsDiv.classList.remove('hidden');
+  
+  // Display tracking status
+  const stats = data.click_statistics;
+  const validation = data.validation;
+  const userInfo = data.user_info;
+  
+  statusContent.innerHTML = `
+    <div class="grid grid-cols-2 gap-2 text-xs">
+      <div>
+        <span class="text-blue-300">👤 User Status:</span>
+        <span class="${validation.user_exists ? 'text-green-400' : 'text-red-400'} font-semibold">
+          ${validation.user_exists ? '✅ Found' : '❌ Not Found'}
+        </span>
+      </div>
+      <div>
+        <span class="text-blue-300">🧀 Total Clicks:</span>
+        <span class="text-white font-semibold">${stats.total_clicks}</span>
+      </div>
+      <div>
+        <span class="text-blue-300">🎯 Quest Clicks:</span>
+        <span class="text-white font-semibold">${stats.quest_clicks}</span>
+      </div>
+      <div>
+        <span class="text-blue-300">🥚 Unique Eggs:</span>
+        <span class="text-white font-semibold">${stats.unique_eggs_clicked}</span>
+      </div>
+      <div>
+        <span class="text-blue-300">🕒 First Click:</span>
+        <span class="text-white font-semibold">${stats.first_click ? formatDateShort(stats.first_click) : 'Never'}</span>
+      </div>
+      <div>
+        <span class="text-blue-300">🔄 Last Click:</span>
+        <span class="text-white font-semibold">${stats.last_click ? formatDateShort(stats.last_click) : 'Never'}</span>
+      </div>
+    </div>
+    
+    ${!validation.user_exists ? `
+      <div class="mt-3 p-2 bg-red-800/30 rounded border border-red-500/50">
+        <span class="text-red-300 text-xs">⚠️ User not found in database. Please run <code>/sync-users</code> in Discord.</span>
+      </div>
+    ` : ''}
+    
+    ${validation.user_exists && stats.total_clicks == 0 ? `
+      <div class="mt-3 p-2 bg-yellow-800/30 rounded border border-yellow-500/50">
+        <span class="text-yellow-300 text-xs">⚠️ No clicks recorded. Try clicking cheese eggs on the main page.</span>
+      </div>
+    ` : ''}
+  `;
+  
+  // Display recent clicks
+  if (data.recent_clicks && data.recent_clicks.length > 0) {
+    clicksContent.innerHTML = `
+      <div class="space-y-1">
+        ${data.recent_clicks.slice(0, 5).map(click => `
+          <div class="flex justify-between items-center py-1 px-2 bg-blue-900/20 rounded text-xs">
+            <span class="text-blue-300">${click.egg_id}</span>
+            <span class="text-gray-300">${formatDateShort(click.timestamp)}</span>
+            <span class="text-white font-semibold">${click.quest_id ? `Quest ${click.quest_id}` : 'General'}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else {
+    clicksContent.innerHTML = `
+      <div class="text-center text-gray-400 py-3">
+        No recent clicks found
+      </div>
+    `;
+  }
+}
+
+function displayTrackingError(errorMessage) {
+  const resultsDiv = document.getElementById('trackingResults');
+  const statusContent = document.getElementById('trackingStatusContent');
+  
+  resultsDiv.classList.remove('hidden');
+  statusContent.innerHTML = `
+    <div class="text-center p-4 bg-red-800/30 rounded border border-red-500/50">
+      <span class="text-red-300">❌ Error checking tracking status:</span><br>
+      <span class="text-red-200 text-xs">${errorMessage}</span>
+    </div>
+  `;
+}
+
+function formatDateShort(dateString) {
+  if (!dateString) return 'Never';
+  
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  } catch (error) {
+    return 'Invalid date';
+  }
+}
+
+// Console debug function for advanced users
+window.debugUserTracking = async function() {
+  console.log('🔍 Running advanced tracking debug...');
+  await checkTrackingStatus();
+};
 </script>
 
 <!-- 🔥 Profile Flask + Glow & Bubbles (Bottom Right Corner) -->
