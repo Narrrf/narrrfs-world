@@ -514,6 +514,63 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
+<!-- 🎮 Cheese Missions Status Section -->
+<div id="missionsSection" class="hidden">
+  <div class="bg-gradient-to-br from-purple-900/30 via-pink-900/30 to-purple-800/30 rounded-2xl shadow-2xl p-6 max-w-4xl w-full text-center mt-6 mb-4 border-2 border-purple-400/50 ring-2 ring-purple-400/20 mx-auto relative z-10">
+    <h2 class="text-xl font-bold text-purple-300 mb-4 flex items-center gap-2 justify-center">
+      <span>🎮</span>
+      Cheese Missions Status
+    </h2>
+    
+    <div class="text-sm text-purple-100 mb-4">
+      Your complete gaming progress across all 5 Narrrf's World games!
+    </div>
+    
+    <button onclick="loadGameMissions()" 
+            class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg mb-4 transition-all duration-200">
+      🚀 Load My Missions Status
+    </button>
+    
+    <div id="missionsResults" class="hidden">
+      <!-- Overall Stats -->
+      <div class="bg-purple-800/30 rounded-xl p-4 mb-6 border border-purple-500/30">
+        <h3 class="text-purple-300 font-semibold mb-3">📊 Overall Progress</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-yellow-400" id="totalDSPOINC">0</div>
+            <div class="text-purple-200">Total $DSPOINC</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-purple-400" id="gamesPlayed">0</div>
+            <div class="text-purple-200">Games Played</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-green-400" id="questsCompleted">0</div>
+            <div class="text-purple-200">Quests Approved</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-orange-400" id="cheeseLevel">Beginner</div>
+            <div class="text-purple-200">Cheese Hunter Level</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Games Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="gamesGrid">
+        <!-- Games will be populated by JavaScript -->
+      </div>
+
+      <!-- Quest Stats -->
+      <div class="bg-purple-800/30 rounded-xl p-4 mt-6 border border-purple-500/30">
+        <h3 class="text-purple-300 font-semibold mb-3">🎯 Quest Progress</h3>
+        <div class="grid grid-cols-3 gap-4 text-sm" id="questProgress">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 🎮 Triple Game Panel — Tetris + Snake + Space Invaders -->
 <section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col lg:flex-row gap-8 items-start justify-center relative z-10">
  <!-- 🎮 TETRIS PANEL -->
@@ -934,9 +991,11 @@ document.addEventListener("DOMContentLoaded", async function () {
      if (user.discord_id) {
        showElement('dspoincSection');
        showElement('debugSection');
+       showElement('missionsSection');
      } else {
        hideElement('dspoincSection');
        hideElement('debugSection');
+       hideElement('missionsSection');
      }
 
     // 🔧 Show Admin Access Button for admins/moderators
@@ -1299,9 +1358,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   let user = {};
   let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
 
-  // Show/hide DSPOINC and debug sections based on login status
+  // Show/hide DSPOINC, debug, and missions sections based on login status
   const dspoincSection = document.getElementById('dspoincSection');
   const debugSection = document.getElementById('debugSection');
+  const missionsSection = document.getElementById('missionsSection');
   
   if (dspoincSection) {
     if (userId) {
@@ -1316,6 +1376,14 @@ document.addEventListener('DOMContentLoaded', async function() {
       debugSection.classList.remove('hidden');
     } else {
       debugSection.classList.add('hidden');
+    }
+  }
+  
+  if (missionsSection) {
+    if (userId) {
+      missionsSection.classList.remove('hidden');
+    } else {
+      missionsSection.classList.add('hidden');
     }
   }
 
@@ -2071,6 +2139,172 @@ window.debugUserTracking = async function() {
   console.log('🔍 Running advanced tracking debug...');
   await checkTrackingStatus();
 };
+
+// 🎮 Game Missions functions
+async function loadGameMissions() {
+  const discordId = localStorage.getItem('discord_id');
+  const button = event.target;
+  
+  if (!discordId) {
+    alert('❌ Please login with Discord first to view your missions status.');
+    return;
+  }
+
+  // Update button state
+  button.disabled = true;
+  button.textContent = '🔄 Loading...';
+
+  try {
+    console.log('🎮 Loading game missions for user:', discordId);
+    
+    const response = await fetch('/api/user-game-missions.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: discordId })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        displayGameMissions(data);
+      } else {
+        displayMissionsError(data.error, data.suggestion);
+      }
+    } else {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('❌ Error loading game missions:', error);
+    displayMissionsError(error.message);
+  } finally {
+    // Reset button
+    button.disabled = false;
+    button.textContent = '🚀 Load My Missions Status';
+  }
+}
+
+function displayGameMissions(data) {
+  const resultsDiv = document.getElementById('missionsResults');
+  
+  // Show results section
+  resultsDiv.classList.remove('hidden');
+  
+  // Update overall stats
+  document.getElementById('totalDSPOINC').textContent = data.total_dspoinc.toLocaleString();
+  document.getElementById('gamesPlayed').textContent = data.achievements.games_played + '/5';
+  document.getElementById('questsCompleted').textContent = data.quest_stats.approved_claims;
+  document.getElementById('cheeseLevel').textContent = data.achievements.cheese_hunter_level;
+  
+  // Display games grid
+  const gamesGrid = document.getElementById('gamesGrid');
+  gamesGrid.innerHTML = Object.entries(data.games).map(([gameKey, game]) => {
+    const statusColor = game.status === 'active' ? 'border-green-500 bg-green-900/20' : 'border-gray-500 bg-gray-900/20';
+    const statusIcon = game.status === 'active' ? '✅' : '⏸️';
+    
+    return `
+      <div class="game-card ${statusColor} border rounded-xl p-4 cursor-pointer hover:scale-105 transition-all duration-200" 
+           onclick="navigateToGame('${game.url}')">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">${game.icon}</span>
+            <span class="font-semibold text-white">${game.name}</span>
+          </div>
+          <span class="text-sm">${statusIcon}</span>
+        </div>
+        
+        <div class="text-xs text-left space-y-1">
+          ${getGameStats(gameKey, game)}
+        </div>
+        
+        <div class="mt-3 text-center">
+          <button class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded">
+            ${game.status === 'active' ? 'Play Again' : 'Start Playing'}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Display quest progress
+  const questProgress = document.getElementById('questProgress');
+  questProgress.innerHTML = `
+    <div class="text-center">
+      <div class="text-lg font-bold text-green-400">${data.quest_stats.approved_claims}</div>
+      <div class="text-purple-200">Approved</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg font-bold text-yellow-400">${data.quest_stats.pending_claims}</div>
+      <div class="text-purple-200">Pending</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg font-bold text-blue-400">${data.quest_stats.total_claims}</div>
+      <div class="text-purple-200">Total Claims</div>
+    </div>
+  `;
+}
+
+function getGameStats(gameKey, game) {
+  switch(gameKey) {
+    case 'tetris':
+      return `
+        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games}</span></div>
+        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${game.best_score.toLocaleString()}</span></div>
+        <div>📊 Best Lines: <span class="text-blue-400 font-semibold">${game.best_lines}</span></div>
+        <div>🔥 Max Level: <span class="text-red-400 font-semibold">${game.highest_level}</span></div>
+      `;
+    case 'snake':
+      return `
+        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games}</span></div>
+        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${game.best_score.toLocaleString()}</span></div>
+        <div>💎 Total Score: <span class="text-green-400 font-semibold">${game.total_score.toLocaleString()}</span></div>
+        <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
+      `;
+    case 'space_invaders':
+      return `
+        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games}</span></div>
+        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${game.best_score.toLocaleString()}</span></div>
+        <div>💎 Total Score: <span class="text-green-400 font-semibold">${game.total_score.toLocaleString()}</span></div>
+        <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
+      `;
+    case 'cheese_hunt':
+      return `
+        <div>🧀 Total Clicks: <span class="text-white font-semibold">${game.total_clicks}</span></div>
+        <div>🎯 Quest Clicks: <span class="text-orange-400 font-semibold">${game.quest_clicks}</span></div>
+        <div>🥚 Unique Eggs: <span class="text-blue-400 font-semibold">${game.unique_eggs}/3</span></div>
+        <div>📅 Last Click: <span class="text-gray-300">${game.last_click ? formatDateShort(game.last_click) : 'Never'}</span></div>
+      `;
+    case 'discord_race':
+      return `
+        <div>🏁 Races: <span class="text-white font-semibold">${game.total_races}</span></div>
+        <div>🥇 Wins: <span class="text-yellow-400 font-semibold">${game.wins}</span></div>
+        <div>🏆 Podiums: <span class="text-orange-400 font-semibold">${game.podium_finishes}</span></div>
+        <div>📊 Best Position: <span class="text-green-400 font-semibold">#${game.best_position}</span></div>
+      `;
+    default:
+      return '<div>No stats available</div>';
+  }
+}
+
+function navigateToGame(url) {
+  if (url.startsWith('http')) {
+    window.open(url, '_blank');
+  } else {
+    window.location.href = url;
+  }
+}
+
+function displayMissionsError(errorMessage, suggestion = '') {
+  const resultsDiv = document.getElementById('missionsResults');
+  
+  resultsDiv.classList.remove('hidden');
+  resultsDiv.innerHTML = `
+    <div class="text-center p-6 bg-red-800/30 rounded border border-red-500/50">
+      <span class="text-red-300 text-lg">❌ Error loading missions:</span><br>
+      <span class="text-red-200 text-sm">${errorMessage}</span>
+      ${suggestion ? `<br><br><span class="text-yellow-300 text-sm">💡 ${suggestion}</span>` : ''}
+    </div>
+  `;
+}
 </script>
 
 <!-- 🔥 Profile Flask + Glow & Bubbles (Bottom Right Corner) -->
