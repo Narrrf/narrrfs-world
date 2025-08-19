@@ -2046,8 +2046,22 @@ function formatDateShort(dateString) {
   
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    
+    // Format as: MM/DD/YYYY HH:MM
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    
+    return `${month}/${day}/${year} ${hours}:${minutes}`;
   } catch (error) {
+    console.error('Date formatting error:', error, 'Input:', dateString);
     return 'Invalid date';
   }
 }

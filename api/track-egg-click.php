@@ -31,12 +31,13 @@ if (!isset($input['user_wallet']) || !isset($input['egg_id'])) {
 
 $userWallet = trim($input['user_wallet']);
 $eggId = trim($input['egg_id']);
-$timestamp = isset($input['timestamp']) ? $input['timestamp'] : time();
+$timestamp = isset($input['timestamp']) ? ($input['timestamp'] / 1000) : time(); // Convert JS milliseconds to seconds
 $quest_id = isset($input['quest_id']) ? intval($input['quest_id']) : null;
 $screenshot_data = isset($input['screenshot']) ? $input['screenshot'] : null;
 
 // Enhanced logging for debugging
 error_log("Processing click - User: $userWallet, Egg: $eggId, Quest: " . ($quest_id ?: 'none'));
+error_log("Timestamp conversion - Original: " . ($input['timestamp'] ?? 'not set') . ", Converted: $timestamp, Formatted: " . date('Y-m-d H:i:s', $timestamp));
 
 // Validate user wallet is not empty or a session ID
 if (empty($userWallet) || $userWallet === 'null' || $userWallet === 'undefined') {

@@ -782,16 +782,18 @@ require_once 'discord-invite.php';
           try {
             console.log('🚀 Sending API request to /api/track-egg-click.php...');
             
+            const currentTimestamp = Date.now();
             const requestData = {
               user_wallet: currentUserWallet,
               egg_id: id,
-              timestamp: Date.now(),
+              timestamp: currentTimestamp,
               quest_id: activeCheeseHuntQuest ? activeCheeseHuntQuest.quest_id : null,
               screenshot: null,
               hunt_context: 'enhanced_tracking_v2'
             };
             
             console.log('📤 Request data:', requestData);
+            console.log('🕒 Timestamp debug - JS timestamp:', currentTimestamp, 'Date:', new Date(currentTimestamp).toISOString());
             
             const response = await fetch('/api/track-egg-click.php', {
               method: 'POST',
