@@ -449,10 +449,152 @@ require_once 'discord-invite.php';
     }, 800);
   }
 
+  // Global variable to store active cheese hunt quest
+  let activeCheeseHuntQuest = null;
+
+  // Show cheese hunt notification
+  function showCheeseHuntNotification(quest) {
+    // Remove any existing notification
+    const existingNotification = document.getElementById('cheese-hunt-notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+
+    // Create notification
+    const notification = document.createElement('div');
+    notification.id = 'cheese-hunt-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10000;
+      max-width: 300px;
+      font-size: 14px;
+      line-height: 1.4;
+      border: 2px solid #fbbf24;
+    `;
+    
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 18px; margin-right: 8px;">🧀</span>
+        <strong>Cheese Hunt Active!</strong>
+      </div>
+      <div style="font-size: 12px; opacity: 0.9;">
+        ${quest.description}<br>
+        <strong>Reward:</strong> ${quest.reward} $DSPOINC
+      </div>
+      <button onclick="this.parentElement.remove()" style="
+        position: absolute;
+        top: 4px;
+        right: 8px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        opacity: 0.7;
+      ">×</button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 10000);
+  }
+
+  // Show cheese hunt progress feedback
+  function showCheeseHuntProgress(result) {
+    // Create progress notification
+    const progressNotification = document.createElement('div');
+    progressNotification.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10001;
+      max-width: 300px;
+      font-size: 14px;
+      line-height: 1.4;
+      border: 2px solid #34d399;
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+    `;
+    
+    if (result.quest_completed) {
+      progressNotification.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 18px; margin-right: 8px;">🎉</span>
+          <strong>Quest Completed!</strong>
+        </div>
+        <div style="font-size: 12px; opacity: 0.9;">
+          ${result.winner_message || 'Congratulations! You completed the cheese hunt!'}
+        </div>
+      `;
+    } else if (result.progress) {
+      progressNotification.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 18px; margin-right: 8px;">🧀</span>
+          <strong>Progress Update!</strong>
+        </div>
+        <div style="font-size: 12px; opacity: 0.9;">
+          ${result.progress}<br>
+          ${result.message || 'Keep hunting for more cheese!'}
+        </div>
+      `;
+    }
+    
+    document.body.appendChild(progressNotification);
+    
+    // Animate in
+    setTimeout(() => {
+      progressNotification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      progressNotification.style.transform = 'translateX(100%)';
+      setTimeout(() => {
+        if (progressNotification.parentElement) {
+          progressNotification.remove();
+        }
+      }, 300);
+    }, 5000);
+  }
+
   // Initialize cheese eggs across the whole page
-  window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener('DOMContentLoaded', async () => {
     // Track page load time for difficulty scaling
     window.pageLoadTime = Date.now();
+    
+    // Load active cheese hunt quest
+    try {
+      const response = await fetch('/api/get-active-cheese-hunt.php');
+      const data = await response.json();
+      if (data.success && data.quest) {
+        activeCheeseHuntQuest = data.quest;
+        console.log('🧀 Active cheese hunt quest loaded:', activeCheeseHuntQuest);
+        
+        // Show cheese hunt notification
+        showCheeseHuntNotification(activeCheeseHuntQuest);
+      } else {
+        console.log('🧀 No active cheese hunt quest found');
+      }
+    } catch (error) {
+      console.error('Error loading active cheese hunt quest:', error);
+    }
     
     // 🧹 Clean up any existing status bar on page load
     cleanupStatusBar();
@@ -563,7 +705,7 @@ require_once 'discord-invite.php';
                 user_wallet: currentUserWallet,
                 egg_id: id,
                 timestamp: Date.now(),
-                quest_id: null, // Simplified for now
+                quest_id: activeCheeseHuntQuest ? activeCheeseHuntQuest.quest_id : null,
                 screenshot: null, // No screenshot for now
                 hunt_context: 'simplified_hunting_v3'
               }),
@@ -575,6 +717,11 @@ require_once 'discord-invite.php';
             if (response.ok) {
               const result = await response.json();
               console.log('✅ Cheese click tracked successfully:', result);
+              
+              // Show quest progress if this was part of a cheese hunt
+              if (activeCheeseHuntQuest && (result.progress || result.quest_completed !== undefined)) {
+                showCheeseHuntProgress(result);
+              }
               
               // Add a longer delay to see the success message
               setTimeout(() => {

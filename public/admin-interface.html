@@ -7254,6 +7254,32 @@ require_once 'discord-invite.php';
               </div>
             ` : ''}
           </div>
+
+          <!-- Quest-Specific Statistics (for cheese hunt quests) -->
+          ${claim.user_stats.quest_specific_clicks ? `
+            <div class="bg-orange-800 bg-opacity-30 p-3 rounded mb-3 border border-orange-600">
+              <h5 class="font-semibold text-orange-400 mb-2">🧀 Quest-Specific Cheese Hunt Data</h5>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                <div>
+                  <span class="text-orange-300">🎯 Quest Clicks:</span>
+                  <span class="text-white font-semibold">${claim.user_stats.quest_specific_clicks.quest_clicks}</span>
+                </div>
+                <div>
+                  <span class="text-orange-300">🥚 Unique Eggs:</span>
+                  <span class="text-white font-semibold">${claim.user_stats.quest_specific_clicks.unique_eggs_clicked}/3</span>
+                </div>
+                <div>
+                  <span class="text-orange-300">🕒 First Click:</span>
+                  <span class="text-white font-semibold">${claim.user_stats.quest_specific_clicks.first_quest_click ? formatDate(claim.user_stats.quest_specific_clicks.first_quest_click) : 'None'}</span>
+                </div>
+                <div class="col-span-2 md:col-span-3">
+                  <span class="text-orange-300">🧀 Eggs Clicked:</span>
+                  <span class="text-white font-semibold">${claim.user_stats.quest_specific_clicks.eggs_clicked.length > 0 ? claim.user_stats.quest_specific_clicks.eggs_clicked.join(', ') : 'None'}</span>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+          </div>
           
           ${claim.status === 'pending' ? `
             <div class="flex gap-2">

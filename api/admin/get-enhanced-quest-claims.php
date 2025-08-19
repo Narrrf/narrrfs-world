@@ -71,7 +71,7 @@ try {
     foreach ($claims as &$claim) {
         $user_id = $claim['user_id'];
         
-        // Get user's cheese click statistics
+        // Get user's general cheese click statistics
         $stmt = $pdo->prepare("
             SELECT 
                 COUNT(*) as total_clicks,
@@ -85,6 +85,23 @@ try {
         ");
         $stmt->execute([$user_id]);
         $cheese_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Get quest-specific cheese click statistics (if this is a cheese hunt quest)
+        $quest_specific_clicks = null;
+        if ($claim['quest_type'] === 'cheese_hunt' && $claim['quest_id']) {
+            $stmt = $pdo->prepare("
+                SELECT 
+                    COUNT(*) as quest_clicks,
+                    COUNT(DISTINCT egg_id) as unique_eggs_clicked,
+                    GROUP_CONCAT(DISTINCT egg_id) as eggs_clicked,
+                    MIN(timestamp) as first_quest_click,
+                    MAX(timestamp) as last_quest_click
+                FROM tbl_cheese_clicks 
+                WHERE user_wallet = ? AND quest_id = ?
+            ");
+            $stmt->execute([$user_id, $claim['quest_id']]);
+            $quest_specific_clicks = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
         
         // Get user's quest completion statistics
         $stmt = $pdo->prepare("
@@ -126,6 +143,13 @@ try {
                 'first_click' => $cheese_stats['first_click'],
                 'last_click' => $cheese_stats['last_click']
             ],
+            'quest_specific_clicks' => $quest_specific_clicks ? [
+                'quest_clicks' => (int)$quest_specific_clicks['quest_clicks'],
+                'unique_eggs_clicked' => (int)$quest_specific_clicks['unique_eggs_clicked'],
+                'eggs_clicked' => $quest_specific_clicks['eggs_clicked'] ? explode(',', $quest_specific_clicks['eggs_clicked']) : [],
+                'first_quest_click' => $quest_specific_clicks['first_quest_click'],
+                'last_quest_click' => $quest_specific_clicks['last_quest_click']
+            ] : null,
             'quests' => [
                 'total_claims' => (int)$quest_stats['total_claims'],
                 'approved' => (int)$quest_stats['approved_claims'],
@@ -141,12 +165,24 @@ try {
         $risk_level = 'LOW';
         $risk_factors = [];
         
+        // Check quest-specific risks first for cheese hunt quests
+        if ($claim['quest_type'] === 'cheese_hunt' && $quest_specific_clicks) {
+            if ($quest_specific_clicks['quest_clicks'] == 0) {
+                $risk_level = 'HIGH';
+                $risk_factors[] = 'No cheese clicks recorded for this quest';
+            } elseif ($quest_specific_clicks['unique_eggs_clicked'] < 3) {
+                $risk_level = 'MEDIUM';
+                $risk_factors[] = 'Incomplete cheese hunt - only ' . $quest_specific_clicks['unique_eggs_clicked'] . ' eggs clicked';
+            }
+        }
+        
+        // General cheese click activity assessment
         if ($cheese_stats['total_clicks'] < 10) {
             $risk_level = 'HIGH';
-            $risk_factors[] = 'Low cheese click activity';
+            $risk_factors[] = 'Low overall cheese click activity';
         } elseif ($cheese_stats['total_clicks'] < 50) {
-            $risk_level = 'MEDIUM';
-            $risk_factors[] = 'Moderate cheese click activity';
+            if ($risk_level !== 'HIGH') $risk_level = 'MEDIUM';
+            $risk_factors[] = 'Moderate overall cheese click activity';
         }
         
         if ($quest_stats['rejected_claims'] > $quest_stats['approved_claims']) {
