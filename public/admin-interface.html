@@ -2884,7 +2884,9 @@ require_once 'discord-invite.php';
           <div>
             <label class="block text-sm font-medium mb-2">📅 Select Season:</label>
             <select id="seasonSelector" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
-              <option value="current">Current Season</option>
+              <option value="season_2">Season 2 - The Great Reset (2025)</option>
+              <option value="season_1">Season 1 - Historical</option>
+              <option value="all">All Seasons Combined</option>
             </select>
           </div>
           <div>
@@ -2937,6 +2939,74 @@ require_once 'discord-invite.php';
           <span id="feedStats">Events: 0 | Last update: Never</span>
         </div>
       </div>
+
+      <!-- Season Management & Control -->
+      <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-yellow-400 mb-3">🎮 Season Management & Control</h4>
+        <p class="text-sm text-gray-300 mb-4">Manage active seasons, switch between seasons, and control which season is currently active for all 5 games.</p>
+        
+        <!-- Current Season Status -->
+        <div class="mb-6 p-4 bg-green-900 bg-opacity-30 rounded-lg border border-green-700">
+          <h5 class="font-semibold text-green-400 mb-3">🟢 Current Active Season</h5>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">🎯 Active Season:</span>
+                <span class="text-green-400 font-bold text-lg">Season 2 - The Great Reset (2025)</span>
+              </div>
+              <div class="flex justify-between mt-2">
+                <span class="text-gray-400">📅 Start Date:</span>
+                <span class="text-white">2025-08-05</span>
+              </div>
+              <div class="flex justify-between mt-2">
+                <span class="text-gray-400">🎮 Games Using Season 2:</span>
+                <span class="text-green-400">All 5 Games (New Default)</span>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">📊 Historical Data:</span>
+                <span class="text-blue-400">Season 1 Preserved</span>
+              </div>
+              <div class="flex justify-between mt-2">
+                <span class="text-gray-400">🔄 New Games:</span>
+                <span class="text-green-400">Auto-Use Season 2</span>
+              </div>
+              <div class="flex justify-between mt-2">
+                <span class="text-gray-400">🏆 Competition:</span>
+                <span class="text-yellow-400">Fresh Start Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Season Switching Controls -->
+        <div class="mb-6 p-4 bg-blue-900 bg-opacity-30 rounded-lg border border-blue-700">
+          <h5 class="font-semibold text-blue-400 mb-3">🔄 Season Switching Controls</h5>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">🎯 Switch to Season:</label>
+              <select id="seasonSwitchSelector" class="w-full px-3 py-2 rounded text-gray-800 mb-3">
+                <option value="season_2">Season 2 - The Great Reset (2025)</option>
+                <option value="season_1">Season 1 - Historical</option>
+              </select>
+              <button onclick="switchActiveSeason()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                🔄 Switch Active Season
+              </button>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">📊 View Season Data:</label>
+              <select id="viewSeasonSelector" class="w-full px-3 py-2 rounded text-gray-800 mb-3" onchange="loadSeasonData()">
+                <option value="season_2">Season 2 - Current Active</option>
+                <option value="season_1">Season 1 - Historical</option>
+                <option value="all">All Seasons Combined</option>
+              </select>
+              <button onclick="refreshSeasonData()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+                🔄 Refresh Data
+              </button>
+            </div>
+          </div>
+        </div>
 
       <!-- Season Settings Management -->
       <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
@@ -10770,6 +10840,136 @@ require_once 'discord-invite.php';
       } catch (error) {
         addLog(`❌ Season statistics loading error: ${error.message}`);
       }
+    }
+
+    // Season Management Functions
+    async function switchActiveSeason() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const newSeason = document.getElementById('seasonSwitchSelector').value;
+      addLog(`🔄 Switching active season to ${newSeason}...`);
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/switch-active-season.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            new_season: newSeason,
+            admin_id: currentAdmin
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Successfully switched to ${newSeason}`);
+          updateSeasonStatus(newSeason);
+          loadSeasonData(); // Refresh the display
+        } else {
+          addLog(`❌ Failed to switch season: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Season switch error: ${error.message}`);
+      }
+    }
+
+    async function loadSeasonData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const selectedSeason = document.getElementById('viewSeasonSelector').value;
+      addLog(`🔄 Loading data for ${selectedSeason}...`);
+
+      try {
+        const response = await fetch(API_BASE_URL + `/api/admin/get-season-data.php?season=${selectedSeason}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          displaySeasonData(data.data, selectedSeason);
+          addLog(`✅ ${selectedSeason} data loaded successfully`);
+        } else {
+          addLog(`❌ Failed to load ${selectedSeason} data: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Season data loading error: ${error.message}`);
+      }
+    }
+
+    function refreshSeasonData() {
+      loadSeasonData();
+    }
+
+    function updateSeasonStatus(activeSeason) {
+      // Update the current season status display
+      const statusElement = document.querySelector('.bg-green-900 .text-green-400.font-bold');
+      if (statusElement) {
+        statusElement.textContent = activeSeason === 'season_2' ? 
+          'Season 2 - The Great Reset (2025)' : 
+          'Season 1 - Historical';
+      }
+
+      // Update the season switch selector
+      const switchSelector = document.getElementById('seasonSwitchSelector');
+      if (switchSelector) {
+        switchSelector.value = activeSeason;
+      }
+
+      // Update the view season selector
+      const viewSelector = document.getElementById('viewSeasonSelector');
+      if (viewSelector) {
+        viewSelector.value = activeSeason;
+      }
+    }
+
+    function displaySeasonData(data, season) {
+      const container = document.getElementById('seasonStats');
+      
+      let html = `
+        <div class="bg-blue-900 bg-opacity-30 p-4 rounded-lg border border-blue-700 mb-4">
+          <h5 class="font-semibold text-blue-400 mb-3">📊 ${season.toUpperCase()} Data Overview</h5>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-white">${data.total_scores || 0}</div>
+              <div class="text-sm text-gray-300">Total Scores</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-white">${data.unique_players || 0}</div>
+              <div class="text-sm text-gray-300">Unique Players</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-white">${data.max_score || 0}</div>
+              <div class="text-sm text-gray-300">Max Score</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Add game-specific data
+      if (data.games) {
+        html += `
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${Object.entries(data.games).map(([game, stats]) => `
+              <div class="bg-gray-700 p-3 rounded">
+                <h6 class="font-semibold text-yellow-400 mb-2">🎮 ${game.charAt(0).toUpperCase() + game.slice(1)}</h6>
+                <div class="text-sm text-gray-300">
+                  <p>Scores: ${stats.total_scores || 0}</p>
+                  <p>Players: ${stats.unique_players || 0}</p>
+                  <p>Max Score: ${stats.max_score || 0}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
     }
 
     function displaySeasonStats(data) {
