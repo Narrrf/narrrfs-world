@@ -52,10 +52,10 @@ try {
         exit;
     }
     
-    // Create backup of current database before replacing - use correct path for production
-    $currentDbPath = '/data/narrrf_world.sqlite';
+    // Get the correct database path based on environment
+    $currentDbPath = getDatabasePath();
     
-    // Create backup directory if it doesn't exist - use correct path for production
+    // Create backup of current database before replacing
     $backupDir = '/data/backups';
     if (!is_dir($backupDir)) {
         mkdir($backupDir, 0755, true);
@@ -66,21 +66,32 @@ try {
     $backupFilename = "narrrf_world_before_upload_{$timestamp}.sqlite";
     $backupPath = $backupDir . '/' . $backupFilename;
     
-    if (!copy($currentDbPath, $backupPath)) {
-        http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Failed to create backup of current database']);
-        exit;
+    if (file_exists($currentDbPath)) {
+        if (!copy($currentDbPath, $backupPath)) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => 'Failed to create backup of current database']);
+            exit;
+        }
     }
     
-    // Set target path for the new database - use correct path for production
-    $targetPath = '/data/narrrf_world.sqlite';
-    if (move_uploaded_file($uploadedFile['tmp_name'], $targetPath)) {
+    // Set target paths - upload to both production and /data for persistence
+    $productionPath = '/var/www/html/db/narrrf_world.sqlite';
+    $dataPath = '/data/narrrf_world.sqlite';
+    
+    // Ensure the production db directory exists
+    $productionDir = dirname($productionPath);
+    if (!is_dir($productionDir)) {
+        mkdir($productionDir, 0755, true);
+    }
+    
+    // First, upload to production path
+    if (move_uploaded_file($uploadedFile['tmp_name'], $productionPath)) {
         // Set proper permissions
-        chmod($targetPath, 0644);
+        chmod($productionPath, 0644);
         
         // Verify the uploaded file is a valid SQLite database
         try {
-            $pdo = new PDO("sqlite:$targetPath");
+            $pdo = new PDO("sqlite:$productionPath");
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             
             // Test a simple query
@@ -90,25 +101,42 @@ try {
             if (empty($tables)) {
                 // Restore backup if uploaded file is invalid
                 if (file_exists($backupPath)) {
-                    copy($backupPath, $targetPath);
+                    copy($backupPath, $productionPath);
                 }
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => 'Uploaded file is not a valid SQLite database']);
                 exit;
             }
             
-            echo json_encode([
-                'success' => true,
-                'message' => 'Database uploaded successfully',
-                'tables_count' => count($tables),
-                'backup_created' => isset($backupPath) && file_exists($backupPath),
-                'backup_path' => isset($backupPath) ? $backupPath : null
-            ]);
+            // Now copy to /data for persistence
+            if (copy($productionPath, $dataPath)) {
+                chmod($dataPath, 0644);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Database uploaded successfully to production and /data',
+                    'tables_count' => count($tables),
+                    'backup_created' => file_exists($backupPath),
+                    'backup_path' => $backupPath,
+                    'production_path' => $productionPath,
+                    'data_path' => $dataPath
+                ]);
+            } else {
+                // Production upload succeeded but /data copy failed
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Database uploaded to production but failed to copy to /data',
+                    'tables_count' => count($tables),
+                    'backup_created' => file_exists($backupPath),
+                    'backup_path' => $backupPath,
+                    'production_path' => $productionPath,
+                    'warning' => 'Failed to copy to /data for persistence'
+                ]);
+            }
             
         } catch (PDOException $e) {
             // Restore backup if database is corrupted
             if (file_exists($backupPath)) {
-                copy($backupPath, $targetPath);
+                copy($backupPath, $productionPath);
             }
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Uploaded file is corrupted or not a valid SQLite database']);
@@ -116,7 +144,7 @@ try {
         
     } else {
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Failed to move uploaded file']);
+        echo json_encode(['success' => false, 'error' => 'Failed to move uploaded file to production']);
     }
     
 } catch (Exception $e) {
