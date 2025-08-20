@@ -187,27 +187,35 @@ try {
     // Snake stats (with table existence checks)
     if (tableExists($pdo, 'tbl_user_scores')) {
         $snake_stats['season_data']['total_scores'] = safeQuery($pdo, 'tbl_user_scores', 
-            "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'snake' AND season = ?", 
-            [$current_season_name]);
+            "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'snake'", 
+            []);
         
         $snake_stats['season_data']['unique_players'] = safeQuery($pdo, 'tbl_user_scores', 
-            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_user_scores WHERE game = 'snake' AND season = ?", 
-            [$current_season_name]);
+            "SELECT COUNT(DISTINCT user_id) as unique_players FROM tbl_user_scores WHERE game = 'snake'", 
+            []);
         
         $snake_stats['season_data']['max_score'] = safeQuery($pdo, 'tbl_user_scores', 
-            "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'snake' AND season = ?", 
-            [$current_season_name]);
+            "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'snake'", 
+            []);
         
         $snake_stats['season_data']['avg_score'] = safeQuery($pdo, 'tbl_user_scores', 
-            "SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game = 'snake' AND season = ?", 
-            [$current_season_name]);
+            "SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game = 'snake'", 
+            []);
+        
+        $snake_stats['season_data']['recent_24h'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(*) as recent_scores FROM tbl_user_scores WHERE game = 'snake' AND timestamp >= datetime('now', '-24 hours')", 
+            []);
+        
+        $snake_stats['season_data']['recent_7d'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(*) as recent_scores FROM tbl_user_scores WHERE game = 'snake' AND timestamp >= datetime('now', '-7 days')", 
+            []);
 
         // All-time Snake stats
         $snake_stats['all_time']['total_scores'] = safeQuery($pdo, 'tbl_user_scores', 
             "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'snake'");
         
         $snake_stats['all_time']['unique_players'] = safeQuery($pdo, 'tbl_user_scores', 
-            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_user_scores WHERE game = 'snake'");
+            "SELECT COUNT(DISTINCT user_id) as unique_players FROM tbl_user_scores WHERE game = 'snake'");
         
         $snake_stats['all_time']['max_score'] = safeQuery($pdo, 'tbl_user_scores', 
             "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'snake'");
@@ -241,43 +249,43 @@ try {
     ];
 
     // Space Invaders stats (with table existence checks)
-    if (tableExists($pdo, 'tbl_tetris_scores')) {
-        $space_invaders_stats['season_data']['total_scores'] = safeQuery($pdo, 'tbl_tetris_scores', 
-            "SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1", 
-            [$current_season_name]);
+    if (tableExists($pdo, 'tbl_user_scores')) {
+        $space_invaders_stats['season_data']['total_scores'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'space_invaders'", 
+            []);
         
-        $space_invaders_stats['season_data']['unique_players'] = safeQuery($pdo, 'tbl_tetris_scores', 
-            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1", 
-            [$current_season_name]);
+        $space_invaders_stats['season_data']['unique_players'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(DISTINCT user_id) as unique_players FROM tbl_user_scores WHERE game = 'space_invaders'", 
+            []);
         
-        $space_invaders_stats['season_data']['max_score'] = safeQuery($pdo, 'tbl_tetris_scores', 
-            "SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1", 
-            [$current_season_name]);
+        $space_invaders_stats['season_data']['max_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'space_invaders'", 
+            []);
         
-        $space_invaders_stats['season_data']['avg_score'] = safeQuery($pdo, 'tbl_tetris_scores', 
-            "SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1", 
-            [$current_season_name]);
+        $space_invaders_stats['season_data']['avg_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game = 'space_invaders'", 
+            []);
         
-        $space_invaders_stats['season_data']['recent_24h'] = safeQuery($pdo, 'tbl_tetris_scores', 
-            "SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-24 hours')", 
-            [$current_season_name]);
+        $space_invaders_stats['season_data']['recent_24h'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(*) as recent_scores FROM tbl_user_scores WHERE game = 'space_invaders' AND timestamp >= datetime('now', '-24 hours')", 
+            []);
         
-        $space_invaders_stats['season_data']['recent_7d'] = safeQuery($pdo, 'tbl_tetris_scores', 
-            "SELECT COUNT(*) as recent_scores FROM tbl_tetris_scores WHERE game = 'space_invaders' AND season = ? AND is_current_season = 1 AND timestamp >= datetime('now', '-7 days')", 
-            [$current_season_name]);
+        $space_invaders_stats['season_data']['recent_7d'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(*) as recent_scores FROM tbl_user_scores WHERE game = 'space_invaders' AND timestamp >= datetime('now', '-7 days')", 
+            []);
 
         // All-time Space Invaders stats
-        $space_invaders_stats['all_time']['total_scores'] = safeQuery($pdo, 'tbl_tetris_scores', 
-            "SELECT COUNT(*) as total_scores FROM tbl_tetris_scores WHERE game = 'space_invaders'");
+        $space_invaders_stats['all_time']['total_scores'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'space_invaders'");
         
-        $space_invaders_stats['all_time']['unique_players'] = safeQuery($pdo, 'tbl_tetris_scores', 
-            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_tetris_scores WHERE game = 'space_invaders'");
+        $space_invaders_stats['all_time']['unique_players'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT COUNT(DISTINCT user_id) as unique_players FROM tbl_user_scores WHERE game = 'space_invaders'");
         
-        $space_invaders_stats['all_time']['max_score'] = safeQuery($pdo, 'tbl_tetris_scores', 
-            "SELECT MAX(score) as max_score FROM tbl_tetris_scores WHERE game = 'space_invaders'");
+        $space_invaders_stats['all_time']['max_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'space_invaders'");
         
-        $space_invaders_stats['all_time']['avg_score'] = safeQuery($pdo, 'tbl_tetris_scores', 
-            "SELECT AVG(score) as avg_score FROM tbl_tetris_scores WHERE game = 'space_invaders'");
+        $space_invaders_stats['all_time']['avg_score'] = safeQuery($pdo, 'tbl_user_scores', 
+            "SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game = 'space_invaders'");
     }
 
     $consolidated_stats['games']['space_invaders'] = $space_invaders_stats;
@@ -307,27 +315,27 @@ try {
     // Cheese Invaders stats (with table existence checks)
     if (tableExists($pdo, 'tbl_user_scores')) {
         $cheese_invaders_stats['season_data']['total_scores'] = safeQuery($pdo, 'tbl_user_scores', 
-            "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'cheese_invaders' AND season = ?", 
-            [$current_season_name]);
+            "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'cheese_invaders'", 
+            []);
         
         $cheese_invaders_stats['season_data']['unique_players'] = safeQuery($pdo, 'tbl_user_scores', 
-            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_user_scores WHERE game = 'cheese_invaders' AND season = ?", 
-            [$current_season_name]);
+            "SELECT COUNT(DISTINCT user_id) as unique_players FROM tbl_user_scores WHERE game = 'cheese_invaders'", 
+            []);
         
         $cheese_invaders_stats['season_data']['max_score'] = safeQuery($pdo, 'tbl_user_scores', 
-            "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'cheese_invaders' AND season = ?", 
-            [$current_season_name]);
+            "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'cheese_invaders'", 
+            []);
         
         $cheese_invaders_stats['season_data']['avg_score'] = safeQuery($pdo, 'tbl_user_scores', 
-            "SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game = 'cheese_invaders' AND season = ?", 
-            [$current_season_name]);
+            "SELECT AVG(score) as avg_score FROM tbl_user_scores WHERE game = 'cheese_invaders'", 
+            []);
 
         // All-time Cheese Invaders stats
         $cheese_invaders_stats['all_time']['total_scores'] = safeQuery($pdo, 'tbl_user_scores', 
             "SELECT COUNT(*) as total_scores FROM tbl_user_scores WHERE game = 'cheese_invaders'");
         
         $cheese_invaders_stats['all_time']['unique_players'] = safeQuery($pdo, 'tbl_user_scores', 
-            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_user_scores WHERE game = 'cheese_invaders'");
+            "SELECT COUNT(DISTINCT user_id) as unique_players FROM tbl_user_scores WHERE game = 'cheese_invaders'");
         
         $cheese_invaders_stats['all_time']['max_score'] = safeQuery($pdo, 'tbl_user_scores', 
             "SELECT MAX(score) as max_score FROM tbl_user_scores WHERE game = 'cheese_invaders'");
@@ -365,7 +373,7 @@ try {
             "SELECT COUNT(*) as total_clicks FROM tbl_cheese_clicks");
         
         $cheese_hunt_stats['current_data']['unique_players'] = safeQuery($pdo, 'tbl_cheese_clicks', 
-            "SELECT COUNT(DISTINCT discord_id) as unique_players FROM tbl_cheese_clicks");
+            "SELECT COUNT(DISTINCT user_wallet) as unique_players FROM tbl_cheese_clicks");
         
         $cheese_hunt_stats['current_data']['max_clicks'] = safeQuery($pdo, 'tbl_cheese_clicks', 
             "SELECT MAX(clicks) as max_clicks FROM tbl_cheese_clicks");
