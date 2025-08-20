@@ -522,7 +522,7 @@ function rotatePiece() {
       
         const payload = {
           wallet,
-          score: linesClearedTotal, // Send actual lines cleared, not accumulated score
+          score: linesClearedTotal * 10, // Send DSPOINC value (10x multiplier)
           discord_id: discordId,
           discord_name: discordName
         };
