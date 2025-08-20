@@ -95,7 +95,7 @@ try {
                 SUM(score) as total_score,
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
-            WHERE discord_id = ? AND is_current_season = 1
+            WHERE discord_id = ?
         ");
         $stmt->execute([$discordId]);
         $tetrisData = $stmt->fetch(PDO::FETCH_ASSOC);
