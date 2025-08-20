@@ -1321,12 +1321,7 @@ require_once 'discord-invite.php';
         <h3 class="text-lg font-semibold">👑 Boss Notifications</h3>
         <p class="text-2xl font-bold" id="bossNotifications">Loading...</p>
       </div>
-      <div class="stats-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-        <h3 class="text-lg font-semibold">🔄 Discord Sync</h3>
-        <button onclick="syncDiscordUsers()" class="mt-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold transition-all duration-200">
-          🔄 Sync Users
-        </button>
-      </div>
+
     </div>
     
     <!-- Database Access Quick Button -->
@@ -5138,27 +5133,27 @@ require_once 'discord-invite.php';
         const stats = await statsResponse.json();
         
         if (stats.success) {
-          document.getElementById('totalUsers').textContent = stats.totalUsers;
-          document.getElementById('totalScores').textContent = stats.totalScores;
-          document.getElementById('totalItems').textContent = stats.totalItems;
-          document.getElementById('activeQuests').textContent = stats.activeQuests;
+          // Update top menu stats (the quick overview boxes)
+          updateTopMenuStats(stats.data || stats);
+          
+          // Update detailed dashboard stats
+          updateSystemStats(stats.data || stats);
           
           // Load boss notifications count
           loadBossNotificationCount();
+        } else {
+          console.error('❌ Stats API returned error:', stats.error);
+          addLog(`❌ Stats API error: ${stats.error || 'Unknown error'}`);
           
-          // Update detailed stats (only for authenticated users)
-          if (currentAdmin) {
-            document.getElementById('totalUsersDetail').textContent = stats.totalUsers;
-            document.getElementById('totalScoresDetail').textContent = stats.totalScores;
-            document.getElementById('totalItemsDetail').textContent = stats.totalItems;
-            document.getElementById('activeQuestsDetail').textContent = stats.activeQuests;
-          } else {
-            // Hide sensitive stats for non-authenticated users
-            document.getElementById('totalUsersDetail').textContent = '🔒';
-            document.getElementById('totalScoresDetail').textContent = '🔒';
-            document.getElementById('totalItemsDetail').textContent = stats.totalItems; // Keep visible
-            document.getElementById('activeQuestsDetail').textContent = stats.activeQuests; // Keep visible
-          }
+          // Set fallback values for both top menu and detailed stats
+          const fallbackData = {
+            total_users: 'Error',
+            total_scores: 'Error',
+            total_items: 'Error',
+            active_quests: 'Error'
+          };
+          updateTopMenuStats(fallbackData);
+          updateSystemStats(fallbackData);
         }
 
         // Load cheese click statistics (only for authenticated users)
@@ -6033,6 +6028,33 @@ require_once 'discord-invite.php';
         });
     }
 
+    // Update top menu stats (the quick overview boxes)
+    function updateTopMenuStats(data) {
+      console.log('📊 Updating top menu stats with data:', data);
+      
+      const topMenuElements = {
+        'totalUsers': data.total_users || data.totalUsers || '0',
+        'totalScores': data.total_scores || data.totalScores || '0',
+        'totalItems': data.total_items || data.totalItems || '0',
+        'activeQuests': data.active_quests || data.activeQuests || '0'
+      };
+      
+      Object.entries(topMenuElements).forEach(([elementId, value]) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.textContent = value;
+          // Remove "Loading..." text and show actual value
+          if (element.textContent.includes('Loading...')) {
+            element.textContent = value;
+          }
+        } else {
+          console.warn(`⚠️ Top menu element not found: ${elementId}`);
+        }
+      });
+      
+      addLog('✅ Top menu statistics updated successfully');
+    }
+
     function updateSystemStats(data) {
       console.log('📊 Updating system stats with data:', data);
       
@@ -6060,8 +6082,7 @@ require_once 'discord-invite.php';
       
       // Update additional dashboard elements if they exist
       const additionalElements = {
-        'bossNotificationsCount': data.boss_notifications || data.bossNotifications || '0',
-        'discordSyncStatus': data.discord_sync || data.discordSync || 'Sync Users'
+        'bossNotificationsCount': data.boss_notifications || data.bossNotifications || '0'
       };
       
       Object.entries(additionalElements).forEach(([elementId, value]) => {
@@ -6222,38 +6243,54 @@ require_once 'discord-invite.php';
       `).join('');
     }
     
-    // Load boss notification count
-    async function loadBossNotificationCount() {
+    // Unlock database access
+    async function unlockDatabaseAccess() {
+      console.log('🔓 Unlocking database access...');
+      addLog('🔓 Unlocking database access...');
+      
       try {
-        const response = await fetch(API_BASE_URL + '/api/admin/get-boss-notifications.php?status=pending');
+        const password = prompt('Enter database password to unlock access:');
+        if (!password) {
+          addLog('❌ No password entered');
+          return;
+        }
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/validate-db-password.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: password })
+        });
+        
         const data = await response.json();
         
         if (data.success) {
-          const count = data.notifications ? data.notifications.length : 0;
-          const element = document.getElementById('bossNotifications');
-          if (element) {
-            element.textContent = count;
-            
-            // Update color based on count
-            const parentElement = element.parentElement;
-            if (parentElement) {
-              if (count > 0) {
-                parentElement.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
-                parentElement.style.animation = count > 5 ? 'pulse 2s infinite' : 'none';
-              } else {
-                parentElement.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
-                parentElement.style.animation = 'none';
-              }
-            }
+          addLog('✅ Database access unlocked successfully');
+          
+          // Show database options
+          const databaseOptions = document.getElementById('databaseOptions');
+          const databaseQuickActions = document.getElementById('databaseQuickActions');
+          
+          if (databaseOptions) databaseOptions.style.display = 'block';
+          if (databaseQuickActions) databaseQuickActions.style.display = 'block';
+          
+          // Update button text
+          const unlockButton = document.querySelector('button[onclick="unlockDatabaseAccess()"]');
+          if (unlockButton) {
+            unlockButton.textContent = 'Database Access Unlocked';
+            unlockButton.className = 'bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold text-lg transition-all duration-300';
+            unlockButton.onclick = null; // Disable further clicks
+          }
+          
+          // Load game management data now that database is unlocked
+          if (typeof loadGameManagementData === 'function') {
+            loadGameManagementData();
           }
         } else {
-          const element = document.getElementById('bossNotifications');
-          if (element) element.textContent = '❌';
+          addLog(`❌ Database unlock failed: ${data.error || 'Invalid password'}`);
         }
       } catch (error) {
-        console.error('Error loading boss notification count:', error);
-        const element = document.getElementById('bossNotifications');
-        if (element) element.textContent = '❌';
+        console.error('❌ Error unlocking database:', error);
+        addLog(`❌ Error unlocking database: ${error.message}`);
       }
     }
 
@@ -6285,6 +6322,170 @@ require_once 'discord-invite.php';
           }
         });
       }
+    }
+    
+    // Load holder verification data
+    function loadHolderVerificationData() {
+      console.log('🎴 Loading holder verification data...');
+      addLog('🎴 Loading holder verification data...');
+      
+      try {
+        fetch(API_BASE_URL + '/api/admin/get-holder-verifications.php')
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              updateHolderVerificationDisplay(data.verifications || []);
+            } else {
+              addLog(`❌ Failed to load holder verifications: ${data.error}`);
+            }
+          })
+          .catch(error => {
+            console.error('❌ Error loading holder verifications:', error);
+            addLog(`❌ Error loading holder verifications: ${error.message}`);
+          });
+      } catch (error) {
+        console.error('❌ Error in loadHolderVerificationData:', error);
+        addLog(`❌ Error in loadHolderVerificationData: ${error.message}`);
+      }
+    }
+    
+    // Update holder verification display
+    function updateHolderVerificationDisplay(verifications) {
+      const container = document.getElementById('holderVerificationContainer');
+      if (!container) return;
+      
+      if (verifications.length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No holder verifications found</div>';
+        return;
+      }
+      
+      container.innerHTML = verifications.map(verification => `
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-600 mb-4">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="font-semibold text-white">${verification.username}</h4>
+              <p class="text-gray-300 text-sm">Wallet: ${verification.wallet}</p>
+              <p class="text-gray-300 text-sm">Collection: ${verification.collection}</p>
+              <p class="text-gray-300 text-sm">NFT Count: ${verification.nft_count}</p>
+            </div>
+            <div class="text-right">
+              <span class="px-2 py-1 rounded text-xs ${verification.role_granted ? 'bg-green-600' : 'bg-yellow-600'}">
+                ${verification.role_granted ? 'Role Granted' : 'Pending'}
+              </span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      addLog(`✅ Loaded ${verifications.length} holder verifications`);
+    }
+    
+    // Load cheese guide data
+    function loadCheeseGuideData() {
+      console.log('🧀 Loading Cheese Guide data...');
+      addLog('🧀 Loading Cheese Guide data...');
+      
+      // Cheese guide is static content, just mark as loaded
+      addLog('✅ Cheese Guide data loaded successfully');
+    }
+    
+    // Load community funds data
+    function loadCommunityFundsData() {
+      console.log('💰 Loading Community Funds data...');
+      addLog('💰 Loading Community Funds data...');
+      
+      try {
+        // Load community funds entries
+        fetch(API_BASE_URL + '/api/admin/get-community-funds.php')
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              updateCommunityFundsDisplay(data.entries || []);
+            } else {
+              addLog(`❌ Failed to load community funds: ${data.error}`);
+            }
+          })
+          .catch(error => {
+            console.error('❌ Error loading community funds:', error);
+            addLog(`❌ Error loading community funds: ${error.message}`);
+          });
+          
+        // Load community wallet data
+        loadCommunityWalletData();
+      } catch (error) {
+        console.error('❌ Error in loadCommunityFundsData:', error);
+        addLog(`❌ Error in loadCommunityFundsData: ${error.message}`);
+      }
+    }
+    
+    // Update community funds display
+    function updateCommunityFundsDisplay(entries) {
+      const container = document.getElementById('communityFundsContainer');
+      if (!container) return;
+      
+      if (entries.length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No community funds entries found</div>';
+        return;
+      }
+      
+      container.innerHTML = entries.map(entry => `
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-600 mb-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <h4 class="font-semibold text-white">${entry.description}</h4>
+              <p class="text-gray-300 text-sm">Type: ${entry.type}</p>
+              <p class="text-gray-300 text-sm">Date: ${entry.date}</p>
+            </div>
+            <div class="text-right">
+              <span class="text-lg font-bold ${entry.type === 'income' ? 'text-green-400' : 'text-red-400'}">
+                ${entry.type === 'income' ? '+' : '-'}${entry.amount} SOL
+              </span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      addLog(`✅ Loaded ${entries.length} community funds entries`);
+    }
+    
+    // Load community wallet data
+    function loadCommunityWalletData() {
+      console.log('🔄 Loading community wallet data...');
+      
+      try {
+        fetch(API_BASE_URL + '/api/admin/get-community-wallet-real-data.php')
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              updateCommunityWalletDisplay(data);
+            } else {
+              addLog(`❌ Failed to load community wallet: ${data.error}`);
+            }
+          })
+          .catch(error => {
+            console.error('❌ Error loading community wallet:', error);
+            addLog(`❌ Error loading community wallet: ${error.message}`);
+          });
+      } catch (error) {
+        console.error('❌ Error in loadCommunityWalletData:', error);
+        addLog(`❌ Error in loadCommunityWalletData: ${error.message}`);
+      }
+    }
+    
+    // Update community wallet display
+    function updateCommunityWalletDisplay(data) {
+      const balanceElement = document.getElementById('communityWalletBalance');
+      const nftElement = document.getElementById('communityWalletNFTs');
+      
+      if (balanceElement && data.balance) {
+        balanceElement.textContent = `${data.balance.sol || 0} SOL`;
+      }
+      
+      if (nftElement && data.nfts) {
+        nftElement.textContent = data.nfts.total || 0;
+      }
+      
+      addLog('✅ Community wallet data updated');
     }
 
     function loadStoreItems() {
@@ -15397,16 +15598,29 @@ function refreshSeasonData2() {
 }
 
 function updateSeasonDisplay2(data) {
-  if (data.current_season) {
-    document.getElementById('currentSeasonDisplay2').textContent = data.current_season;
+  console.log('📊 updateSeasonDisplay2 called with data:', data);
+  
+  // Handle different data structures safely
+  const currentSeason = data?.current_season || data?.season || 'Unknown';
+  const totalGames = data?.total_games || data?.total_scores || 0;
+  const activePlayers = data?.active_players || data?.unique_players || 0;
+  
+  // Update current season display
+  const currentSeasonElement = document.getElementById('currentSeasonDisplay2');
+  if (currentSeasonElement) {
+    currentSeasonElement.textContent = currentSeason;
   }
   
-  if (data.total_games !== undefined) {
-    document.getElementById('totalGamesDisplay2').textContent = data.total_games;
+  // Update total games display
+  const totalGamesElement = document.getElementById('totalGamesDisplay2');
+  if (totalGamesElement) {
+    totalGamesElement.textContent = totalGames;
   }
   
-  if (data.active_players !== undefined) {
-    document.getElementById('activePlayersDisplay2').textContent = data.active_players;
+  // Update active players display
+  const activePlayersElement = document.getElementById('activePlayersDisplay2');
+  if (activePlayersElement) {
+    activePlayersElement.textContent = activePlayers;
   }
 }
 
@@ -16033,83 +16247,7 @@ function testGames2Tab() {
       }
     }
     
-    // Sync Discord Users
-    async function syncDiscordUsers() {
-      try {
-        const button = event.target;
-        const originalText = button.innerHTML;
-        button.innerHTML = '🔄 Syncing...';
-        button.disabled = true;
-        
-        console.log('🔄 Starting Discord user synchronization...');
-        
-        const response = await fetch(`${API_BASE_URL}/api/admin/sync-users.php`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        if (data.success) {
-          console.log('✅ Discord sync completed:', data);
-          
-          // Show detailed results
-          const message = `✅ Discord Sync Complete!\n` +
-                         `• Added ${data.missing_users_added} new users\n` +
-                         `• Updated ${data.users_updated} existing users\n` +
-                         `• Synced ${data.balances_synced || 0} user balances`;
-          
-          alert(message);
-          
-          // Refresh stats to show updated user count
-          loadStats();
-          
-          // If nft_lovr was among the missing users, show special message with balance
-          const nftLovrAdded = data.details.missing_users.some(user => 
-            user.username.toLowerCase().includes('nft_lovr') || 
-            user.id === '1146994462468362250'
-          );
-          
-          if (nftLovrAdded) {
-            const nftLovrUser = data.details.missing_users.find(user => 
-              user.username.toLowerCase().includes('nft_lovr') || 
-              user.id === '1146994462468362250'
-            );
-            const balance = nftLovrUser ? nftLovrUser.balance : 0;
-            alert(`🎉 nft_lovr has been successfully added to the database!\n💰 Balance synced: ${balance.toLocaleString()} DSPOINC`);
-          }
-          
-          // Show balance sync details if any
-          if (data.details.balance_synced && data.details.balance_synced.length > 0) {
-            console.log('💰 Balances synced:', data.details.balance_synced);
-          }
-          
-        } else {
-          throw new Error(data.error || 'Unknown error');
-        }
-      } catch (error) {
-        console.error('❌ Error syncing Discord users:', error);
-        
-        // Get the actual response text for better debugging
-        let errorDetails = error.message;
-        if (error.message.includes('Unexpected token')) {
-          errorDetails += '\n\nThe API returned HTML instead of JSON. This usually means:\n1. Authentication failed\n2. Database connection issues\n3. PHP errors in the API';
-        }
-        
-        alert(`❌ Sync Error: ${errorDetails}\n\nTroubleshooting:\n• Make sure you're logged in as Discord admin\n• Check that you have Moderator/Founder role\n• Try refreshing the page and logging in again`);
-      } finally {
-        // Reset button
-        if (button) {
-          button.innerHTML = originalText;
-          button.disabled = false;
-        }
-      }
-    }
+    
     
     // Refresh all boss configurations
     async function refreshBossConfigurations() {
