@@ -1328,6 +1328,34 @@ require_once 'discord-invite.php';
         </button>
       </div>
     </div>
+    
+    <!-- Database Access Quick Button -->
+    <div class="text-center mb-6">
+      <div id="headerDatabaseUnlock">
+        <button onclick="showDatabaseUnlock()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 text-lg shadow-lg">
+          🔓 Unlock Database Access
+        </button>
+        <p class="text-sm text-gray-600 mt-2">Click to unlock database download, upload, and management features</p>
+      </div>
+      
+      <div id="headerDatabaseOptions" style="display: none;">
+        <h3 class="text-lg font-semibold text-green-600 mb-3">✅ Database Access Unlocked</h3>
+        <div class="flex flex-wrap justify-center gap-3">
+          <button onclick="downloadDatabase()" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+            📥 Download Database
+          </button>
+          <button onclick="showUploadModal()" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+            📤 Upload Database
+          </button>
+          <button onclick="showDatabaseViewer()" class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+            👁️ Database Viewer
+          </button>
+          <button onclick="triggerBackup()" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+            🗄️ Database Backup
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Admin Authentication -->
     <div class="admin-card mb-6" id="authPanel">
@@ -1412,10 +1440,21 @@ require_once 'discord-invite.php';
         <button class="tab-btn px-4 py-2 rounded" data-tab="communityFunds">💰 Community Funds</button>
       </div>
       
-      <!-- Additional Admin Links -->
+      <!-- Database Management Section -->
       <div class="text-center mt-4 pt-4 border-t border-gray-600">
+        <h3 class="text-lg font-semibold text-blue-300 mb-3">🗄️ Database Management</h3>
+        
+        <!-- Database access unlock button - PROMINENTLY DISPLAYED -->
+        <div id="databaseUnlockSection" class="mb-4">
+          <button onclick="showDatabaseUnlock()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4 text-lg">
+            🔓 Unlock Database Access
+          </button>
+          <p class="text-sm text-gray-400 mt-2">Click to unlock database download, upload, and management features</p>
+        </div>
+        
         <!-- Database options for all moderators (password protected) -->
         <div id="databaseOptions" style="display: none;">
+          <h4 class="text-md font-semibold text-green-300 mb-3">✅ Database Access Unlocked</h4>
           <button onclick="downloadDatabase()" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
             📥 Download Database
           </button>
@@ -1427,13 +1466,6 @@ require_once 'discord-invite.php';
           </button>
           <button onclick="triggerBackup()" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
             🗄️ Database Backup
-          </button>
-        </div>
-        
-        <!-- Database access unlock button -->
-        <div id="databaseUnlockSection">
-          <button onclick="showDatabaseUnlock()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
-            🔓 Unlock Database Access
           </button>
         </div>
         
@@ -1622,6 +1654,38 @@ require_once 'discord-invite.php';
               <h5 class="text-sm font-semibold mb-2 text-green-300">Boss Achievement Types:</h5>
               <div id="bossAchievementTypes" class="text-sm text-gray-300">
                 Loading boss types...
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Database Access Section -->
+        <div class="mt-6 pt-6 border-t border-gray-600">
+          <h4 class="text-md font-semibold mb-3 text-blue-400">🗄️ Database Access</h4>
+          <div class="text-center">
+            <!-- Database access unlock button - Dashboard version -->
+            <div id="dashboardDatabaseUnlock" class="mb-3">
+              <button onclick="showDatabaseUnlock()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+                🔓 Unlock Database Access
+              </button>
+              <p class="text-sm text-gray-400 mt-2">Unlock database management features</p>
+            </div>
+            
+            <!-- Database options for dashboard (password protected) -->
+            <div id="dashboardDatabaseOptions" style="display: none;">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button onclick="downloadDatabase()" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+                  📥 Download
+                </button>
+                <button onclick="showUploadModal()" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+                  📤 Upload
+                </button>
+                <button onclick="showDatabaseViewer()" class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+                  👁️ Viewer
+                </button>
+                <button onclick="triggerBackup()" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+                  🗄️ Backup
+                </button>
               </div>
             </div>
           </div>
@@ -3131,6 +3195,48 @@ require_once 'discord-invite.php';
     <div class="admin-card mb-6" id="games2Tab" style="display: none;">
       <h2 class="text-xl font-semibold mb-4">🚀 Game Management 2.0 - Advanced Season Management</h2>
       <p class="text-gray-300 mb-6">Comprehensive season management, game statistics, and advanced controls for all 5 games.</p>
+      
+      <!-- Debug Info -->
+      <div class="mb-4 p-3 bg-yellow-900 bg-opacity-50 rounded-lg border border-yellow-700">
+        <h3 class="text-lg font-semibold text-yellow-300 mb-2">🔍 Debug Information</h3>
+        <p class="text-yellow-200 text-sm">Tab ID: games2Tab | Status: <span id="games2TabStatus">Loading...</span></p>
+        <p class="text-yellow-200 text-sm">Functions Status: <span id="games2FunctionsStatus">Checking...</span></p>
+        <button onclick="testGames2Tab()" class="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+          🧪 Test Tab Functions
+        </button>
+      </div>
+      
+      <!-- Database Access Quick Button -->
+      <div class="mb-4 p-3 bg-blue-900 bg-opacity-50 rounded-lg border border-blue-700">
+        <h3 class="text-lg font-semibold text-blue-300 mb-2">🗄️ Database Access</h3>
+        <div class="text-center">
+          <!-- Database access unlock button - Games2 tab version -->
+          <div id="games2DatabaseUnlock">
+            <button onclick="showDatabaseUnlock()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+              🔓 Unlock Database Access
+            </button>
+            <p class="text-sm text-blue-200 mt-2">Unlock database management features</p>
+          </div>
+          
+          <!-- Database options for games2 tab (password protected) -->
+          <div id="games2DatabaseOptions" style="display: none;">
+            <div class="grid grid-cols-2 gap-3 mt-3">
+              <button onclick="downloadDatabase()" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+                📥 Download
+              </button>
+              <button onclick="showUploadModal()" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+                📤 Upload
+              </button>
+              <button onclick="showDatabaseViewer()" class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+                👁️ Viewer
+              </button>
+              <button onclick="triggerBackup()" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+                🗄️ Backup
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Season Overview Dashboard -->
       <div class="mb-8 bg-gradient-to-r from-blue-900 to-purple-900 p-6 rounded-lg border border-blue-700">
@@ -5660,8 +5766,10 @@ require_once 'discord-invite.php';
         const tabElement = document.getElementById(tab + 'Tab');
         if (tabElement) {
           tabElement.style.display = 'block';
+          addLog(`✅ Tab element found and displayed: ${tab}Tab`);
         } else {
           addLog(`❌ Tab element not found: ${tab}Tab`);
+          console.error(`Tab element not found: ${tab}Tab`);
         }
         
         currentTab = tab;
@@ -5676,6 +5784,91 @@ require_once 'discord-invite.php';
           loadSeasonStats();
           loadGameSettings();
           loadCurrentSeasonSettings();
+        }
+        if (tab === 'games2') {
+          // Initialize Game Management 2.0 - Advanced Season Management
+          addLog('🚀 Initializing Game Management 2.0 tab...');
+          
+          // First, verify the tab content is visible
+          const games2Tab = document.getElementById('games2Tab');
+          if (games2Tab) {
+            addLog('✅ games2Tab element found');
+            games2Tab.style.display = 'block';
+            
+            // Update debug info
+            const statusElement = document.getElementById('games2TabStatus');
+            if (statusElement) {
+              statusElement.textContent = 'Tab Found and Displayed';
+              statusElement.className = 'text-green-400 font-semibold';
+            }
+          } else {
+            addLog('❌ games2Tab element not found');
+            
+            // Update debug info
+            const statusElement = document.getElementById('games2TabStatus');
+            if (statusElement) {
+              statusElement.textContent = 'Tab NOT Found';
+              statusElement.className = 'text-red-400 font-semibold';
+            }
+          }
+          
+          try {
+            // Test if functions exist before calling them
+            if (typeof loadGameManagement2Data === 'function') {
+              loadGameManagement2Data();
+            } else {
+              addLog('❌ loadGameManagement2Data function not found');
+            }
+            
+            if (typeof loadSeasonOverview2 === 'function') {
+              loadSeasonOverview2();
+            } else {
+              addLog('❌ loadSeasonOverview2 function not found');
+            }
+            
+            if (typeof loadGameStatsBySeason2 === 'function') {
+              loadGameStatsBySeason2();
+            } else {
+              addLog('❌ loadGameStatsBySeason2 function not found');
+            }
+            
+            if (typeof loadTopPerformers2 === 'function') {
+              loadTopPerformers2();
+            } else {
+              addLog('❌ loadTopPerformers2 function not found');
+            }
+            
+            if (typeof loadSeasonComparison2 === 'function') {
+              loadSeasonComparison2();
+            } else {
+              addLog('❌ loadSeasonComparison2 function not found');
+            }
+            
+            if (typeof startLiveActivityFeed2 === 'function') {
+              startLiveActivityFeed2();
+            } else {
+              addLog('❌ startLiveActivityFeed2 function not found');
+            }
+            
+            addLog('✅ Game Management 2.0 tab initialization completed');
+            
+            // Update functions status
+            const functionsStatusElement = document.getElementById('games2FunctionsStatus');
+            if (functionsStatusElement) {
+              functionsStatusElement.textContent = 'All Functions Loaded Successfully';
+              functionsStatusElement.className = 'text-green-400 font-semibold';
+            }
+          } catch (error) {
+            addLog(`❌ Error initializing Game Management 2.0: ${error.message}`);
+            console.error('Game Management 2.0 initialization error:', error);
+            
+            // Update functions status
+            const functionsStatusElement = document.getElementById('games2FunctionsStatus');
+            if (functionsStatusElement) {
+              functionsStatusElement.textContent = 'Error Loading Functions';
+              functionsStatusElement.className = 'text-red-400 font-semibold';
+            }
+          }
         }
         if (tab === 'holderVerification') loadHolderVerificationData();
       });
@@ -6797,10 +6990,22 @@ require_once 'discord-invite.php';
         const data = await response.json();
         
         if (data.success) {
-          // Show database options
+          // Show database options in main navigation
           document.getElementById('databaseOptions').style.display = 'block';
           document.getElementById('databaseQuickActions').style.display = 'block';
           document.getElementById('databaseUnlockSection').style.display = 'none';
+          
+          // Show database options in dashboard
+          document.getElementById('dashboardDatabaseOptions').style.display = 'block';
+          document.getElementById('dashboardDatabaseUnlock').style.display = 'none';
+          
+          // Show database options in header
+          document.getElementById('headerDatabaseOptions').style.display = 'block';
+          document.getElementById('headerDatabaseUnlock').style.display = 'none';
+          
+          // Show database options in games2 tab
+          document.getElementById('games2DatabaseOptions').style.display = 'block';
+          document.getElementById('games2DatabaseUnlock').style.display = 'none';
           
           statusDiv.innerHTML = '<div class="text-green-600">✅ Database access unlocked!</div>';
           addLog('🔓 Database access unlocked successfully');
@@ -14834,6 +15039,40 @@ async function exportSeasonData2() {
   } catch (error) {
     addLog(`❌ Error exporting data: ${error.message}`);
   }
+}
+
+// Test function for Game Management 2.0 tab
+function testGames2Tab() {
+  addLog('🧪 Testing Game Management 2.0 tab functions...');
+  
+  // Test if tab element exists
+  const games2Tab = document.getElementById('games2Tab');
+  if (games2Tab) {
+    addLog('✅ games2Tab element found');
+    games2Tab.style.display = 'block';
+  } else {
+    addLog('❌ games2Tab element not found');
+  }
+  
+  // Test if functions exist
+  const functions = [
+    'loadGameManagement2Data',
+    'loadSeasonOverview2', 
+    'loadGameStatsBySeason2',
+    'loadTopPerformers2',
+    'loadSeasonComparison2',
+    'startLiveActivityFeed2'
+  ];
+  
+  functions.forEach(funcName => {
+    if (typeof window[funcName] === 'function') {
+      addLog(`✅ ${funcName} function exists`);
+    } else {
+      addLog(`❌ ${funcName} function NOT found`);
+    }
+  });
+  
+  addLog('🧪 Game Management 2.0 tab test completed');
 }
 
 // 🎮 GAME MANAGEMENT TAB FUNCTIONS - REMOVED OLD STUBS
