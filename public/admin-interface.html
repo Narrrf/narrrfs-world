@@ -4777,10 +4777,18 @@ require_once 'discord-invite.php';
     // Load overview game statistics for all 5 games in Overview Dashboard
     async function loadOverviewGameStats() {
       console.log('🔄 Loading overview game statistics for all 5 games...');
+      addLog('🔄 Loading overview game statistics for all 5 games...');
 
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        console.log('🎮 Games stats API response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
+        console.log('🎮 Games stats API data received:', data);
         
         if (data.success && data.data && data.data.games) {
           const games = data.data.games;
@@ -4811,11 +4819,19 @@ require_once 'discord-invite.php';
           }
           
           console.log('✅ Overview game statistics loaded successfully for all 5 games');
+          addLog('✅ Overview game statistics loaded successfully for all 5 games');
+          
+          // Update dashboard status
+          updateDashboardStatus('Games data loaded');
         } else {
           console.error(`❌ Failed to load overview game statistics: ${data.error || 'No data available'}`);
+          addLog(`❌ Failed to load overview game statistics: ${data.error || 'No data available'}`);
+          updateDashboardStatus('Games data error');
         }
       } catch (error) {
         console.error(`❌ Overview game statistics loading error: ${error.message}`);
+        addLog(`❌ Overview game statistics loading error: ${error.message}`);
+        updateDashboardStatus('Games data failed');
       }
     }
 
@@ -5814,50 +5830,460 @@ require_once 'discord-invite.php';
       }, 100);
     }
 
-    // Missing functions that the tab system needs
-    function loadDashboardData() {
+    // ULTIMATE COMBINED VERSION - Working Dashboard Functions
+    async function loadDashboardData() {
       console.log('📊 Loading dashboard data...');
       addLog('📊 Loading dashboard data...');
       
-      // Load system statistics
-      loadStats();
+      // Update dashboard status to loading
+      updateDashboardStatus('Loading dashboard data...');
       
-      // Load overview game stats
-      if (typeof loadOverviewGameStats === 'function') {
-        loadOverviewGameStats();
+      try {
+        // Load basic stats (always visible)
+        const statsResponse = await fetch(API_BASE_URL + '/api/admin/get-stats.php');
+        const stats = await statsResponse.json();
+        
+        if (stats.success) {
+          // Update basic dashboard stats
+          if (stats.data) {
+            updateSystemStats(stats.data);
+          } else {
+            // Fallback to direct stats if data structure is different
+            updateSystemStats({
+              total_users: stats.totalUsers || stats.total_users || '0',
+              total_scores: stats.totalScores || stats.total_scores || '0',
+              total_items: stats.totalItems || stats.total_items || '0',
+              active_quests: stats.activeQuests || stats.active_quests || '0'
+            });
+          }
+          
+          // Load boss notifications count
+          loadBossNotificationCount();
+        } else {
+          console.error('❌ Stats API returned error:', stats.error);
+          addLog(`❌ Stats API error: ${stats.error || 'Unknown error'}`);
+          updateSystemStats({
+            total_users: 'Error',
+            total_scores: 'Error',
+            total_items: 'Error',
+            active_quests: 'Error'
+          });
+        }
+
+        // Load cheese click statistics
+        try {
+          const cheeseStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-cheese-stats.php');
+          const cheeseStats = await cheeseStatsResponse.json();
+          
+          if (cheeseStats.success) {
+            updateCheeseClickStats(cheeseStats.stats || cheeseStats.data);
+          } else {
+            console.error('❌ Cheese stats API error:', cheeseStats.error);
+            addLog(`❌ Cheese stats API error: ${cheeseStats.error || 'Unknown error'}`);
+          }
+        } catch (error) {
+          console.error('❌ Error loading cheese stats:', error);
+          addLog(`❌ Error loading cheese stats: ${error.message}`);
+        }
+
+        // Load quest and role statistics
+        try {
+          const questStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-quest-stats.php');
+          const questStats = await questStatsResponse.json();
+          
+          if (questStats.success) {
+            updateQuestStats(questStats.stats || questStats.data);
+          } else {
+            console.error('❌ Quest stats API error:', questStats.error);
+            addLog(`❌ Quest stats API error: ${questStats.error || 'Unknown error'}`);
+          }
+        } catch (error) {
+          console.error('❌ Error loading quest stats:', error);
+          addLog(`❌ Error loading quest stats: ${error.message}`);
+        }
+
+        // Load boss notification statistics
+        try {
+          const bossResponse = await fetch(API_BASE_URL + '/api/admin/get-boss-notifications.php');
+          const bossData = await bossResponse.json();
+          
+          if (bossData.success) {
+            updateBossNotificationStats(bossData.notifications || bossData.data);
+          } else {
+            console.error('❌ Boss notifications API error:', bossData.error);
+            addLog(`❌ Boss notifications API error: ${bossData.error || 'Unknown error'}`);
+          }
+        } catch (error) {
+          console.error('❌ Error loading boss notifications:', error);
+          addLog(`❌ Error loading boss notifications: ${error.message}`);
+        }
+
+        // Load overview game stats
+        if (typeof loadOverviewGameStats === 'function') {
+          await loadOverviewGameStats();
+        }
+        
+        addLog('✅ Dashboard data loaded successfully');
+        updateDashboardStatus('Dashboard data loaded');
+        
+      } catch (error) {
+        console.error('❌ Error loading dashboard data:', error);
+        addLog(`❌ Error loading dashboard data: ${error.message}`);
+        updateDashboardStatus('Dashboard loading failed');
+        
+        // Set fallback values
+        updateSystemStats({
+          total_users: 'Error',
+          total_scores: 'Error',
+          total_items: 'Error',
+          active_quests: 'Error'
+        });
+      }
+    }
+    
+    // Load additional dashboard data (cheese clicks, quests, etc.)
+    async function loadAdditionalDashboardData() {
+      console.log('📊 Loading additional dashboard data...');
+      
+      try {
+        // Load cheese click statistics
+        const cheeseResponse = await fetch(API_BASE_URL + '/api/admin/get-enhanced-stats.php');
+        if (cheeseResponse.ok) {
+          const cheeseData = await cheeseResponse.json();
+          if (cheeseData.success) {
+            updateCheeseClickStats(cheeseData.data);
+          }
+        }
+        
+        // Load quest statistics
+        const questResponse = await fetch(API_BASE_URL + '/api/admin/get-quests.php');
+        if (questResponse.ok) {
+          const questData = await questResponse.json();
+          if (questData.success) {
+            updateQuestStats(questData.quests);
+          }
+        }
+        
+        // Load boss notification statistics
+        const bossResponse = await fetch(API_BASE_URL + '/api/admin/get-boss-notifications.php');
+        if (bossResponse.ok) {
+          const bossData = await bossResponse.json();
+          if (bossData.success) {
+            updateBossNotificationStats(bossData.notifications);
+          }
+        }
+        
+        addLog('✅ Additional dashboard data loaded successfully');
+      } catch (error) {
+        console.error('❌ Error loading additional dashboard data:', error);
+        addLog(`❌ Error loading additional dashboard data: ${error.message}`);
+      }
+    }
+    
+    // Update dashboard status
+    function updateDashboardStatus(status) {
+      const statusElement = document.getElementById('systemStatus');
+      if (statusElement) {
+        statusElement.innerHTML = status;
+        statusElement.className = status.includes('Error') || status.includes('failed') ? 
+          'text-red-400' : status.includes('Loading') ? 'text-yellow-400' : 'text-green-400';
       }
     }
 
     function loadStats() {
       console.log('📈 Loading system statistics...');
+      addLog('📈 Loading system statistics...');
       
       // Load basic stats
       fetch(API_BASE_URL + '/api/admin/get-stats.php')
-        .then(response => response.json())
+        .then(response => {
+          console.log('📊 Stats API response status:', response.status);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          return response.json();
+        })
         .then(data => {
-          if (data.success) {
+          console.log('📊 Stats API data received:', data);
+          if (data.success && data.data) {
             updateSystemStats(data.data);
+            addLog('✅ System statistics loaded successfully');
+          } else {
+            console.error('❌ Stats API returned error:', data.error);
+            addLog(`❌ Stats API error: ${data.error || 'Unknown error'}`);
+            // Set fallback values
+            updateSystemStats({
+              total_users: 'Error',
+              total_scores: 'Error',
+              total_items: 'Error',
+              active_quests: 'Error'
+            });
           }
         })
         .catch(error => {
-          console.error('Error loading stats:', error);
-          addLog('❌ Error loading system statistics');
+          console.error('❌ Error loading stats:', error);
+          addLog(`❌ Error loading system statistics: ${error.message}`);
+          // Set fallback values
+          updateSystemStats({
+            total_users: 'Error',
+            total_scores: 'Error',
+            total_items: 'Error',
+            active_quests: 'Error'
+          });
         });
     }
 
     function updateSystemStats(data) {
-      // Update dashboard statistics
-      if (data.total_users && document.getElementById('totalUsersDetail')) {
-        document.getElementById('totalUsersDetail').textContent = data.total_users;
+      console.log('📊 Updating system stats with data:', data);
+      
+      // Update dashboard statistics with better error handling
+      const elements = {
+        'totalUsersDetail': data.total_users || data.totalUsers || '0',
+        'totalScoresDetail': data.total_scores || data.totalScores || '0',
+        'totalItemsDetail': data.total_items || data.totalItems || '0',
+        'activeQuestsDetail': data.active_quests || data.activeQuests || '0'
+      };
+      
+      Object.entries(elements).forEach(([elementId, value]) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.textContent = value;
+          element.className = value === 'Error' ? 'text-2xl font-bold text-red-400' : 
+                            elementId === 'totalUsersDetail' ? 'text-2xl font-bold text-green-400' :
+                            elementId === 'totalScoresDetail' ? 'text-2xl font-bold text-blue-400' :
+                            elementId === 'totalItemsDetail' ? 'text-2xl font-bold text-yellow-400' :
+                            'text-2xl font-bold text-purple-400';
+        } else {
+          console.warn(`⚠️ Element not found: ${elementId}`);
+        }
+      });
+      
+      // Update additional dashboard elements if they exist
+      const additionalElements = {
+        'bossNotificationsCount': data.boss_notifications || data.bossNotifications || '0',
+        'discordSyncStatus': data.discord_sync || data.discordSync || 'Sync Users'
+      };
+      
+      Object.entries(additionalElements).forEach(([elementId, value]) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.textContent = value;
+        }
+      });
+      
+      addLog('✅ Dashboard statistics updated successfully');
+    }
+    
+    // Update cheese click statistics
+    function updateCheeseClickStats(data) {
+      console.log('🧀 Updating cheese click stats:', data);
+      
+      const elements = {
+        'totalCheeseClicks': data.total_clicks || '0',
+        'last24hClicks': data.recent_24h || '0',
+        'topClicker': data.top_clicker || 'None',
+        'mostClicked': data.most_clicked || 'None'
+      };
+      
+      Object.entries(elements).forEach(([elementId, value]) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.textContent = value;
+        }
+      });
+      
+      // Display detailed cheese stats if available
+      if (data.clicks_by_egg) {
+        displayCheeseClicksByType(data.clicks_by_egg);
       }
-      if (data.total_scores && document.getElementById('totalScoresDetail')) {
-        document.getElementById('totalScoresDetail').textContent = data.total_scores;
+      if (data.top_users) {
+        displayTopCheeseClickers(data.top_users);
       }
-      if (data.total_items && document.getElementById('totalItemsDetail')) {
-        document.getElementById('totalItemsDetail').textContent = data.total_items;
+    }
+    
+    // Display cheese clicks by type
+    function displayCheeseClicksByType(clicksByEgg) {
+      const container = document.getElementById('cheeseClicksByType');
+      if (!container) return;
+      
+      if (clicksByEgg.length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No cheese clicks recorded</div>';
+        return;
       }
-      if (data.active_quests && document.getElementById('activeQuestsDetail')) {
-        document.getElementById('activeQuestsDetail').textContent = data.active_quests;
+
+      container.innerHTML = clicksByEgg.map(click => `
+        <div class="flex justify-between items-center py-1">
+          <span class="text-orange-300">${click.egg_id}</span>
+          <span class="text-white font-semibold">${click.click_count}</span>
+        </div>
+      `).join('');
+    }
+
+    // Display top cheese clickers
+    function displayTopCheeseClickers(topUsers) {
+      const container = document.getElementById('topCheeseClickers');
+      if (!container) return;
+      
+      if (topUsers.length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No cheese clickers found</div>';
+        return;
+      }
+
+      container.innerHTML = topUsers.slice(0, 5).map((user, index) => {
+        const username = user.username || 'Anonymous Mouse';
+        const displayName = username.length > 12 ? username.substring(0, 12) + '...' : username;
+        const walletShort = user.user_wallet ? user.user_wallet.substring(0, 8) + '...' : 'Unknown';
+        
+        return `
+          <div class="flex justify-between items-center py-1">
+            <span class="text-orange-300">
+              #${index + 1} 
+              <a href="/profile.html?user_id=${encodeURIComponent(user.user_wallet)}" 
+                 class="hover:text-orange-200 underline cursor-pointer" 
+                 title="View ${username}'s profile">
+                ${displayName} (${walletShort})
+              </a>
+            </span>
+            <span class="text-white font-semibold">${user.click_count || 0}</span>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Update quest statistics
+    function updateQuestStats(quests) {
+      console.log('🏆 Updating quest stats:', quests);
+      
+      if (quests && Array.isArray(quests)) {
+        const openQuests = quests.filter(q => q.is_active).length;
+        const pendingClaims = quests.filter(q => q.status === 'pending').length;
+        const completedQuests = quests.filter(q => q.status === 'completed').length;
+        
+        const elements = {
+          'openQuests': openQuests.toString(),
+          'pendingClaims': pendingClaims.toString(),
+          'completedQuests': completedQuests.toString()
+        };
+        
+        Object.entries(elements).forEach(([elementId, value]) => {
+          const element = document.getElementById(elementId);
+          if (element) {
+            element.textContent = value;
+          }
+        });
+        
+        // Display detailed quest stats if available
+        if (quests.length > 0) {
+          displayRecentQuestClaims(quests.filter(q => q.status === 'completed').slice(0, 5));
+          displayActiveQuestsByType(quests.filter(q => q.is_active));
+        }
+      }
+    }
+    
+    // Display recent quest claims
+    function displayRecentQuestClaims(recentClaims) {
+      const container = document.getElementById('recentQuestClaims');
+      if (!container) return;
+      
+      if (recentClaims.length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No recent quest claims</div>';
+        return;
+      }
+
+      container.innerHTML = recentClaims.map(claim => `
+        <div class="flex justify-between items-center py-1">
+          <span class="text-green-300">${claim.username || 'Unknown User'}</span>
+          <span class="text-white font-semibold">${claim.reward || 0} DSPOINC</span>
+        </div>
+      `).join('');
+    }
+
+    // Display active quests by type
+    function displayActiveQuestsByType(activeQuests) {
+      const container = document.getElementById('activeQuestsByType');
+      if (!container) return;
+      
+      if (activeQuests.length === 0) {
+        container.innerHTML = '<div class="text-gray-400">No active quests</div>';
+        return;
+      }
+
+      const questsByType = {};
+      activeQuests.forEach(quest => {
+        const type = quest.type || 'Unknown';
+        questsByType[type] = (questsByType[type] || 0) + 1;
+      });
+
+      container.innerHTML = Object.entries(questsByType).map(([type, count]) => `
+        <div class="flex justify-between items-center py-1">
+          <span class="text-blue-300">${type}</span>
+          <span class="text-white font-semibold">${count}</span>
+        </div>
+      `).join('');
+    }
+    
+    // Load boss notification count
+    async function loadBossNotificationCount() {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-boss-notifications.php?status=pending');
+        const data = await response.json();
+        
+        if (data.success) {
+          const count = data.notifications ? data.notifications.length : 0;
+          const element = document.getElementById('bossNotifications');
+          if (element) {
+            element.textContent = count;
+            
+            // Update color based on count
+            const parentElement = element.parentElement;
+            if (parentElement) {
+              if (count > 0) {
+                parentElement.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+                parentElement.style.animation = count > 5 ? 'pulse 2s infinite' : 'none';
+              } else {
+                parentElement.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+                parentElement.style.animation = 'none';
+              }
+            }
+          }
+        } else {
+          const element = document.getElementById('bossNotifications');
+          if (element) element.textContent = '❌';
+        }
+      } catch (error) {
+        console.error('Error loading boss notification count:', error);
+        const element = document.getElementById('bossNotifications');
+        if (element) element.textContent = '❌';
+      }
+    }
+
+    // Update boss notification statistics
+    function updateBossNotificationStats(notifications) {
+      console.log('👑 Updating boss notification stats:', notifications);
+      
+      if (notifications && Array.isArray(notifications)) {
+        const pendingClaims = notifications.filter(n => n.status === 'pending').length;
+        const totalDspoinc = notifications.reduce((sum, n) => sum + (n.dspoinc_earned || 0), 0);
+        const claimsToday = notifications.filter(n => {
+          const today = new Date().toDateString();
+          const claimDate = new Date(n.created_at).toDateString();
+          return today === claimDate;
+        }).length;
+        const avgReward = notifications.length > 0 ? Math.round(totalDspoinc / notifications.length) : 0;
+        
+        const elements = {
+          'pendingBossClaims': pendingClaims.toString(),
+          'totalDspoincGiven': totalDspoinc.toString(),
+          'claimsToday': claimsToday.toString(),
+          'avgReward': avgReward.toString()
+        };
+        
+        Object.entries(elements).forEach(([elementId, value]) => {
+          const element = document.getElementById(elementId);
+          if (element) {
+            element.textContent = value;
+          }
+        });
       }
     }
 

@@ -21,16 +21,31 @@ $auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
 if ($auth_header && strpos($auth_header, 'Bearer ') === 0) {
     $bot_token = substr($auth_header, 7);
     
-    // Try multiple ways to get the bot token
-    $expected_token = getenv('DISCORD_BOT_TOKEN') ?: 
-                     (file_exists(__DIR__ . '/../../discord/config.json') ? 
-                      json_decode(file_get_contents(__DIR__ . '/../../discord/config.json'), true)['botToken'] : null);
+    // Try multiple authentication methods for the bot
+    $expected_tokens = [
+        getenv('DISCORD_BOT_SECRET'),  // Primary bot token
+        getenv('DISCORD_SECRET'),      // API secret as fallback
+        getenv('DISCORD_BOT_TOKEN')    // Legacy token name
+    ];
     
-    if ($bot_token === $expected_token) {
+    $is_bot_authenticated = false;
+    foreach ($expected_tokens as $expected_token) {
+        if ($expected_token && $bot_token === $expected_token) {
+            $is_bot_authenticated = true;
+            if (DEBUG) error_log("Bot token authentication successful with token type: " . ($expected_token === getenv('DISCORD_BOT_SECRET') ? 'DISCORD_BOT_SECRET' : ($expected_token === getenv('DISCORD_SECRET') ? 'DISCORD_SECRET' : 'DISCORD_BOT_TOKEN')));
+            break;
+        }
+    }
+    
+    if ($is_bot_authenticated) {
         $is_authenticated = true;
-        if (DEBUG) error_log("Bot token authentication successful");
     } else {
-        if (DEBUG) error_log("Bot token mismatch. Expected: " . substr($expected_token, 0, 10) . "... Got: " . substr($bot_token, 0, 10) . "...");
+        if (DEBUG) {
+            error_log("Bot token mismatch. Got: " . ($bot_token ? substr($bot_token, 0, 10) . "..." : "NULL"));
+            error_log("Environment check - DISCORD_BOT_SECRET: " . (getenv('DISCORD_BOT_SECRET') ? "SET" : "NOT SET"));
+            error_log("Environment check - DISCORD_SECRET: " . (getenv('DISCORD_SECRET') ? "SET" : "NOT SET"));
+            error_log("Environment check - DISCORD_BOT_TOKEN: " . (getenv('DISCORD_BOT_TOKEN') ? "SET" : "NOT SET"));
+        }
     }
 }
 
