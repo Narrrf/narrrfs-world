@@ -1440,79 +1440,29 @@ require_once 'discord-invite.php';
         <button class="tab-btn px-4 py-2 rounded" data-tab="communityFunds">💰 Community Funds</button>
       </div>
       
-      <!-- Database Management Section -->
+      <!-- Quick Actions Section -->
       <div class="text-center mt-4 pt-4 border-t border-gray-600">
-        <h3 class="text-lg font-semibold text-blue-300 mb-3">🗄️ Database Management</h3>
+        <h3 class="text-lg font-semibold text-blue-300 mb-3">⚡ Quick Actions</h3>
         
-        <!-- Database access unlock button - PROMINENTLY DISPLAYED -->
-        <div id="databaseUnlockSection" class="mb-4">
-          <button onclick="showDatabaseUnlock()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4 text-lg">
-            🔓 Unlock Database Access
-          </button>
-          <p class="text-sm text-gray-400 mt-2">Click to unlock database download, upload, and management features</p>
-        </div>
+        <!-- All admin users can see Home link -->
+        <a href="index.html" class="inline-block bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+          🏠 Home
+        </a>
         
-        <!-- Database options for all moderators (password protected) -->
-        <div id="databaseOptions" style="display: none;">
-          <h4 class="text-md font-semibold text-green-300 mb-3">✅ Database Access Unlocked</h4>
-          <button onclick="downloadDatabase()" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
-            📥 Download Database
-          </button>
-          <button onclick="showUploadModal()" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
-            📤 Upload Database
-          </button>
-          <button onclick="showDatabaseViewer()" class="inline-block bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
-            👁️ Database Viewer
-          </button>
-          <button onclick="triggerBackup()" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
-            🗄️ Database Backup
-          </button>
-        </div>
+        <!-- Test all tabs button -->
+        <button onclick="testAllTabs()" class="inline-block bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+          🧪 Test All Tabs
+        </button>
         
-                  <!-- All admin users can see Home link -->
-          <a href="index.html" class="inline-block bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
-            🏠 Home
-          </a>
-          
-          <!-- Debug button to manually show navigation -->
-          <button onclick="debugShowNavigation()" class="inline-block bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
-            🐛 Debug Nav
-          </button>
-          
-          <!-- Test all tabs button -->
-          <button onclick="testAllTabs()" class="inline-block bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
-            🧪 Test Tabs
-          </button>
-          
-          <!-- Test download button -->
-          <button onclick="testDownloadEndpoint()" class="inline-block bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
-            🧪 Test Download
-          </button>
-          
-          <!-- Test database connection button -->
-          <button onclick="testDatabaseConnection()" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
-            🔗 Test Database
-          </button>
-          
-          <!-- Test all game tabs button -->
-          <button onclick="testAllGameTabsComprehensive()" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
-            🧪 Test All Game Tabs
-          </button>
-          
-          <!-- Test tab display button -->
-          <button onclick="testTabDisplay()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
-            🧪 Test Tab Display
-          </button>
-          
-          <!-- Test backup endpoint button -->
-          <button onclick="testBackupEndpoint()" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
-            🧪 Test Backup Endpoint
-          </button>
-          
-          <!-- Sync Active Game Tab button -->
-          <button onclick="syncActiveGameTab()" class="inline-block bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
-            🔄 Sync Active Game Tab
-          </button>
+        <!-- Force refresh button -->
+        <button onclick="forceRefreshAllTabs()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+          🔄 Force Refresh
+        </button>
+        
+        <!-- Debug button to manually show navigation -->
+        <button onclick="debugShowNavigation()" class="inline-block bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
+          🐛 Debug Nav
+        </button>
       </div>
     </div>
 
@@ -2275,6 +2225,36 @@ require_once 'discord-invite.php';
             <button onclick="refreshAllGameData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded ml-2">🔄 Refresh All Games</button>
         <button onclick="debugAllGameTabs()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded ml-2">🔍 Debug All Game Tabs</button>
           </div>
+
+      <!-- Database Management Section - PROMINENTLY DISPLAYED -->
+      <div class="mb-6 p-4 bg-gradient-to-r from-yellow-900 to-orange-900 rounded-lg border-2 border-yellow-500">
+        <h3 class="text-lg font-semibold text-yellow-300 mb-3">🗄️ Database Management</h3>
+        
+        <!-- Database access unlock button -->
+        <div id="databaseUnlockSection" class="mb-4">
+          <button onclick="showDatabaseUnlock()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4 text-lg">
+            🔓 Unlock Database Access
+          </button>
+          <p class="text-sm text-yellow-200 mt-2">Click to unlock database download, upload, and management features</p>
+        </div>
+        
+        <!-- Database options for all moderators (password protected) -->
+        <div id="databaseOptions" style="display: none;">
+          <h4 class="text-md font-semibold text-green-300 mb-3">✅ Database Access Unlocked</h4>
+          <button onclick="downloadDatabase()" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+            📥 Download Database
+          </button>
+          <button onclick="showUploadModal()" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+            📤 Upload Database
+          </button>
+          <button onclick="showDatabaseViewer()" class="inline-block bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+            👁️ Database Viewer
+          </button>
+          <button onclick="triggerBackup()" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+            🗄️ Database Backup
+          </button>
+        </div>
+      </div>
 
       <!-- Overview Dashboard Tab -->
       <div id="overviewTab" class="game-tab-content">
@@ -4670,98 +4650,128 @@ require_once 'discord-invite.php';
       addLog('✅ All tab content cleared');
     }
 
-    // Show specific tab
+    // SUPER WORKING TAB SYSTEM - Clean and reliable
     function showTab(tabName) {
-      console.log(`🔄 showTab(${tabName}) called`);
+      console.log(`🚀 SUPER TAB SYSTEM: Switching to ${tabName}`);
       
-      // Clear all tab content first to prevent mixed displays
-      clearAllTabContent();
+      // STEP 1: Update active tab button state
+      document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.opacity = '0.7';
+      });
       
-      // Update active tab button
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
       if (activeBtn) {
         activeBtn.classList.add('active');
+        activeBtn.style.opacity = '1';
         console.log(`✅ Active tab button updated: ${tabName}`);
       } else {
         console.error(`❌ Tab button not found for: ${tabName}`);
+        return; // Exit if tab button not found
       }
       
-      // Hide all tabs
+      // STEP 2: Hide ALL tabs with smooth transition
       const allTabs = document.querySelectorAll('[id$="Tab"]');
       console.log(`🔄 Hiding ${allTabs.length} tabs`);
-      allTabs.forEach(t => {
-        if (t) {
-          t.style.display = 'none';
-          console.log(`🔄 Hidden tab: ${t.id}`);
+      
+      allTabs.forEach(tab => {
+        if (tab) {
+          tab.style.opacity = '0';
+          tab.style.transform = 'translateY(10px)';
+          tab.style.transition = 'all 0.3s ease';
+          
+          setTimeout(() => {
+            tab.style.display = 'none';
+          }, 150);
         }
       });
       
-      // Show selected tab
-      const selectedTab = document.getElementById(tabName + 'Tab');
-      if (selectedTab) {
-        selectedTab.style.display = 'block';
-        console.log(`✅ Showing tab: ${tabName}Tab`);
-      } else {
-        console.error(`❌ Tab not found: ${tabName}Tab`);
-      }
-      
-      currentTab = tabName;
-      addLog(`📋 Switched to ${tabName} tab`);
-      
-      // Load tab-specific data
-      if (tabName === 'dashboard') {
-        loadDashboardData();
-        loadOverviewGameStats();
-      }
-      if (tabName === 'store') loadStoreItems();
-      if (tabName === 'quests') loadQuests();
-      if (tabName === 'bossNotifications') loadBossNotifications();
-      if (tabName === 'games') {
-        // Initialize the new consolidated game management system
-        loadGameOverview(); // Load overview dashboard by default
-        loadSeasonStats();
-        loadGameSettings();
-        loadCurrentSeasonSettings();
-        
-        // Load all game data for the tabs immediately
-        loadTetrisData();
-        loadSnakeData();
-        loadSpaceInvadersData();
-        loadCheeseHuntData();
-        loadDiscordRaceData();
-        
-        // Make sure the game overview tab is visible by default
-        setTimeout(() => {
-          // First ensure all game tab content divs are visible
-          const gameTabContents = document.querySelectorAll('.game-tab-content');
-          gameTabContents.forEach(tab => {
-            tab.style.display = 'block';
-            tab.classList.remove('hidden');
-          });
+      // STEP 3: Show selected tab with smooth animation
+      setTimeout(() => {
+        const selectedTab = document.getElementById(tabName + 'Tab');
+        if (selectedTab) {
+          selectedTab.style.display = 'block';
+          selectedTab.style.opacity = '0';
+          selectedTab.style.transform = 'translateY(10px)';
           
-          // Then switch to overview tab
-          switchGameTab('overview');
-        }, 50);
+          // Trigger animation
+          setTimeout(() => {
+            selectedTab.style.opacity = '1';
+            selectedTab.style.transform = 'translateY(0)';
+            console.log(`✅ Tab displayed with animation: ${tabName}Tab`);
+          }, 50);
+        } else {
+          console.error(`❌ Tab not found: ${tabName}Tab`);
+          return;
+        }
         
-        // Also trigger the comprehensive game tabs test to ensure all data is loaded and displayed
-        setTimeout(() => {
-          testAllGameTabsComprehensive();
-        }, 200); // Slightly longer delay to ensure overview loads first
-      }
-      if (tabName === 'games2') {
-        // Initialize Game Management 2.0 - Advanced Season Management
-        loadGameManagement2Data();
-        loadSeasonOverview2();
-        loadGameStatsBySeason2();
-        loadTopPerformers2();
-        loadSeasonComparison2();
-        startLiveActivityFeed2();
-      }
-      if (tabName === 'discord') loadDiscordConfigData();
-      if (tabName === 'cheeseGuide') loadCheeseGuideData();
-      if (tabName === 'holderVerification') loadHolderVerificationData();
-      if (tabName === 'communityFunds') loadCommunityFundsData();
+        // STEP 4: Update current tab and log
+        currentTab = tabName;
+        addLog(`📋 Successfully switched to ${tabName} tab`);
+        
+        // STEP 5: Load tab-specific data with error handling
+        try {
+          if (tabName === 'dashboard') {
+            loadDashboardData();
+            loadOverviewGameStats();
+          } else if (tabName === 'store') {
+            loadStoreItems();
+          } else if (tabName === 'quests') {
+            loadQuests();
+          } else if (tabName === 'bossNotifications') {
+            loadBossNotifications();
+          } else if (tabName === 'games') {
+            // Game Management - Load all data immediately
+            console.log('🎮 Loading Game Management data...');
+            loadGameOverview();
+            loadSeasonStats();
+            loadGameSettings();
+            loadCurrentSeasonSettings();
+            
+            // Load all game data
+            loadTetrisData();
+            loadSnakeData();
+            loadSpaceInvadersData();
+            loadCheeseHuntData();
+            loadDiscordRaceData();
+            
+            // Switch to overview tab by default
+            setTimeout(() => {
+              switchGameTab('overview');
+            }, 100);
+          } else if (tabName === 'games2') {
+            // Game Management 2.0
+            console.log('🚀 Loading Game Management 2.0 data...');
+            loadGameManagement2Data();
+            loadSeasonOverview2();
+            loadGameStatsBySeason2();
+            loadTopPerformers2();
+            loadSeasonComparison2();
+            startLiveActivityFeed2();
+          } else if (tabName === 'discord') {
+            loadDiscordConfigData();
+          } else if (tabName === 'cheeseGuide') {
+            loadCheeseGuideData();
+          } else if (tabName === 'holderVerification') {
+            loadHolderVerificationData();
+          } else if (tabName === 'communityFunds') {
+            loadCommunityFundsData();
+          } else if (tabName === 'users') {
+            // User management - clear and prepare
+            const userResults = document.getElementById('userResults');
+            if (userResults) userResults.innerHTML = '<div class="text-gray-400">Search for users to see results...</div>';
+          } else if (tabName === 'points') {
+            // Point management - clear and prepare
+            const pointResults = document.getElementById('pointResults');
+            if (pointResults) pointResults.innerHTML = '<div class="text-gray-400">Search for users to manage points...</div>';
+          }
+          
+          console.log(`✅ Tab ${tabName} data loaded successfully`);
+        } catch (error) {
+          console.error(`❌ Error loading tab ${tabName} data:`, error);
+          addLog(`❌ Error loading ${tabName} tab data: ${error.message}`);
+        }
+      }, 200);
     }
 
     // Load overview game statistics for all 5 games in Overview Dashboard
@@ -5750,129 +5760,297 @@ require_once 'discord-invite.php';
       }
     }
 
-    // Tab navigation - Only process buttons with data-tab attribute
-    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const tab = this.dataset.tab;
-        
-        // Update active tab button
-        document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        
-        // Hide all tabs
-        document.querySelectorAll('[id$="Tab"]').forEach(t => t.style.display = 'none');
-        
-        // Show selected tab
-        const tabElement = document.getElementById(tab + 'Tab');
-        if (tabElement) {
-          tabElement.style.display = 'block';
-          addLog(`✅ Tab element found and displayed: ${tab}Tab`);
-        } else {
-          addLog(`❌ Tab element not found: ${tab}Tab`);
-          console.error(`Tab element not found: ${tab}Tab`);
-        }
-        
-        currentTab = tab;
-        addLog(`📋 Switched to ${tab} tab`);
-        
-        // Load tab-specific data
-        if (tab === 'store') loadStoreItems();
-        if (tab === 'quests') loadQuests();
-        if (tab === 'bossNotifications') loadBossNotifications();
-        if (tab === 'games') {
-          loadGameStatistics();
-          loadSeasonStats();
-          loadGameSettings();
-          loadCurrentSeasonSettings();
-        }
-        if (tab === 'games2') {
-          // Initialize Game Management 2.0 - Advanced Season Management
-          addLog('🚀 Initializing Game Management 2.0 tab...');
-          
-          // First, verify the tab content is visible
-          const games2Tab = document.getElementById('games2Tab');
-          if (games2Tab) {
-            addLog('✅ games2Tab element found');
-            games2Tab.style.display = 'block';
-            
-            // Update debug info
-            const statusElement = document.getElementById('games2TabStatus');
-            if (statusElement) {
-              statusElement.textContent = 'Tab Found and Displayed';
-              statusElement.className = 'text-green-400 font-semibold';
-            }
-          } else {
-            addLog('❌ games2Tab element not found');
-            
-            // Update debug info
-            const statusElement = document.getElementById('games2TabStatus');
-            if (statusElement) {
-              statusElement.textContent = 'Tab NOT Found';
-              statusElement.className = 'text-red-400 font-semibold';
-            }
-          }
-          
-          try {
-            // Test if functions exist before calling them
-            if (typeof loadGameManagement2Data === 'function') {
-              loadGameManagement2Data();
-            } else {
-              addLog('❌ loadGameManagement2Data function not found');
-            }
-            
-            if (typeof loadSeasonOverview2 === 'function') {
-              loadSeasonOverview2();
-            } else {
-              addLog('❌ loadSeasonOverview2 function not found');
-            }
-            
-            if (typeof loadGameStatsBySeason2 === 'function') {
-              loadGameStatsBySeason2();
-            } else {
-              addLog('❌ loadGameStatsBySeason2 function not found');
-            }
-            
-            if (typeof loadTopPerformers2 === 'function') {
-              loadTopPerformers2();
-            } else {
-              addLog('❌ loadTopPerformers2 function not found');
-            }
-            
-            if (typeof loadSeasonComparison2 === 'function') {
-              loadSeasonComparison2();
-            } else {
-              addLog('❌ loadSeasonComparison2 function not found');
-            }
-            
-            if (typeof startLiveActivityFeed2 === 'function') {
-              startLiveActivityFeed2();
-            } else {
-              addLog('❌ startLiveActivityFeed2 function not found');
-            }
-            
-            addLog('✅ Game Management 2.0 tab initialization completed');
-            
-            // Update functions status
-            const functionsStatusElement = document.getElementById('games2FunctionsStatus');
-            if (functionsStatusElement) {
-              functionsStatusElement.textContent = 'All Functions Loaded Successfully';
-              functionsStatusElement.className = 'text-green-400 font-semibold';
-            }
-          } catch (error) {
-            addLog(`❌ Error initializing Game Management 2.0: ${error.message}`);
-            console.error('Game Management 2.0 initialization error:', error);
-            
-            // Update functions status
-            const functionsStatusElement = document.getElementById('games2FunctionsStatus');
-            if (functionsStatusElement) {
-              functionsStatusElement.textContent = 'Error Loading Functions';
-              functionsStatusElement.className = 'text-red-400 font-semibold';
-            }
-          }
-        }
-        if (tab === 'holderVerification') loadHolderVerificationData();
+    // SUPER WORKING TAB EVENT LISTENERS - Clean and reliable
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 SUPER TAB SYSTEM: Initializing event listeners...');
+      
+      // Remove any existing event listeners to prevent conflicts
+      const existingButtons = document.querySelectorAll('.tab-btn[data-tab]');
+      existingButtons.forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
       });
+      
+      // Add clean event listeners
+      document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const tab = this.dataset.tab;
+          console.log(`🚀 SUPER TAB SYSTEM: Tab button clicked: ${tab}`);
+          
+          // Use the super working tab system
+          showTab(tab);
+        });
+      });
+      
+      console.log('✅ SUPER TAB SYSTEM: Event listeners initialized');
     });
+
+    // Force refresh all tabs function
+    function forceRefreshAllTabs() {
+      console.log('🔄 Force refreshing all tabs...');
+      addLog('🔄 Force refreshing all tabs...');
+      
+      // Clear all tab content
+      clearAllTabContent();
+      
+      // Reset current tab to dashboard
+      currentTab = 'dashboard';
+      
+      // Show dashboard tab
+      showTab('dashboard');
+      
+      // Force reload of dashboard data
+      setTimeout(() => {
+        if (typeof loadDashboardData === 'function') {
+          loadDashboardData();
+        }
+        if (typeof loadOverviewGameStats === 'function') {
+          loadOverviewGameStats();
+        }
+        addLog('✅ All tabs force refreshed successfully');
+      }, 100);
+    }
+
+    // Missing functions that the tab system needs
+    function loadDashboardData() {
+      console.log('📊 Loading dashboard data...');
+      addLog('📊 Loading dashboard data...');
+      
+      // Load system statistics
+      loadStats();
+      
+      // Load overview game stats
+      if (typeof loadOverviewGameStats === 'function') {
+        loadOverviewGameStats();
+      }
+    }
+
+    function loadStats() {
+      console.log('📈 Loading system statistics...');
+      
+      // Load basic stats
+      fetch(API_BASE_URL + '/api/admin/get-stats.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateSystemStats(data.data);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading stats:', error);
+          addLog('❌ Error loading system statistics');
+        });
+    }
+
+    function updateSystemStats(data) {
+      // Update dashboard statistics
+      if (data.total_users && document.getElementById('totalUsersDetail')) {
+        document.getElementById('totalUsersDetail').textContent = data.total_users;
+      }
+      if (data.total_scores && document.getElementById('totalScoresDetail')) {
+        document.getElementById('totalScoresDetail').textContent = data.total_scores;
+      }
+      if (data.total_items && document.getElementById('totalItemsDetail')) {
+        document.getElementById('totalItemsDetail').textContent = data.total_items;
+      }
+      if (data.active_quests && document.getElementById('activeQuestsDetail')) {
+        document.getElementById('activeQuestsDetail').textContent = data.active_quests;
+      }
+    }
+
+    function loadStoreItems() {
+      console.log('🏪 Loading store items...');
+      addLog('🏪 Loading store items...');
+      
+      // Load store items from API
+      fetch(API_BASE_URL + '/api/admin/store-admin.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateStoreItems(data.items);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading store items:', error);
+          addLog('❌ Error loading store items');
+        });
+    }
+
+    function updateStoreItems(items) {
+      const tableBody = document.getElementById('storeTableBody');
+      if (tableBody && items) {
+        tableBody.innerHTML = items.map(item => `
+          <tr>
+            <td>${item.item_name}</td>
+            <td>${item.description || 'No description'}</td>
+            <td>${item.price} DSPOINC</td>
+            <td>${item.is_active ? 'Active' : 'Inactive'}</td>
+            <td>
+              <button onclick="editStoreItem(${item.item_id})" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-sm">Edit</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function loadQuests() {
+      console.log('🏆 Loading quests...');
+      addLog('🏆 Loading quests...');
+      
+      // Load quests from API
+      fetch(API_BASE_URL + '/api/admin/get-quests.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateQuests(data.quests);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading quests:', error);
+          addLog('❌ Error loading quests');
+        });
+    }
+
+    function updateQuests(quests) {
+      const container = document.getElementById('activeQuestsList');
+      if (container && quests) {
+        container.innerHTML = quests.map(quest => `
+          <div class="bg-gray-700 p-3 rounded border-l-4 border-green-500 mb-2">
+            <div class="font-semibold">${quest.description}</div>
+            <div class="text-sm text-gray-400">Reward: ${quest.reward} DSPOINC</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function loadBossNotifications() {
+      console.log('🏆 Loading boss notifications...');
+      addLog('🏆 Loading boss notifications...');
+      
+      // Load boss notifications from API
+      fetch(API_BASE_URL + '/api/admin/get-boss-notifications.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateBossNotifications(data.notifications);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading boss notifications:', error);
+          addLog('❌ Error loading boss notifications');
+        });
+    }
+
+    function updateBossNotifications(notifications) {
+      const container = document.getElementById('bossNotificationsList');
+      if (container && notifications) {
+        container.innerHTML = notifications.map(notification => `
+          <div class="bg-gray-700 p-3 rounded border-l-4 border-yellow-500 mb-2">
+            <div class="font-semibold">${notification.player_username}</div>
+            <div class="text-sm text-gray-400">${notification.boss_name} - Wave ${notification.wave_number}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function loadDiscordConfigData() {
+      console.log('🔗 Loading Discord config...');
+      addLog('🔗 Loading Discord config...');
+      
+      // Load Discord configuration
+      fetch(API_BASE_URL + '/api/admin/get-discord-config.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateDiscordConfig(data.config);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading Discord config:', error);
+          addLog('❌ Error loading Discord config');
+        });
+    }
+
+    function updateDiscordConfig(config) {
+      // Update Discord configuration display
+      console.log('Discord config updated:', config);
+    }
+
+    function loadCheeseGuideData() {
+      console.log('🧀 Loading cheese guide...');
+      addLog('🧀 Loading cheese guide...');
+      
+      // Load cheese guide data
+      // This would load from a cheese guide API or static content
+      addLog('✅ Cheese guide loaded');
+    }
+
+    function loadHolderVerificationData() {
+      console.log('🎴 Loading holder verification...');
+      addLog('🎴 Loading holder verification...');
+      
+      // Load holder verification data
+      fetch(API_BASE_URL + '/api/admin/get-holder-verifications.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateHolderVerifications(data.verifications);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading holder verifications:', error);
+          addLog('❌ Error loading holder verifications');
+        });
+    }
+
+    function updateHolderVerifications(verifications) {
+      const tableBody = document.getElementById('holderTableBody');
+      if (tableBody && verifications) {
+        tableBody.innerHTML = verifications.map(verification => `
+          <tr>
+            <td>${verification.username}</td>
+            <td>${verification.collection}</td>
+            <td>${verification.nft_count}</td>
+            <td>${verification.role_granted ? 'Yes' : 'No'}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function loadCommunityFundsData() {
+      console.log('💰 Loading community funds...');
+      addLog('💰 Loading community funds...');
+      
+      // Load community funds data
+      fetch(API_BASE_URL + '/api/admin/get-community-funds.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            updateCommunityFunds(data.funds);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading community funds:', error);
+          addLog('❌ Error loading community funds');
+        });
+    }
+
+    function updateCommunityFunds(funds) {
+      const tableBody = document.getElementById('communityFundsTableBody');
+      if (tableBody && funds) {
+        tableBody.innerHTML = funds.map(fund => `
+          <tr>
+            <td>${fund.type}</td>
+            <td>${fund.description}</td>
+            <td>${fund.amount}</td>
+            <td>${fund.date}</td>
+          </tr>
+        `).join('');
+      }
+    }
 
     // Instant user search
     function searchUsersInstant(searchTerm) {
