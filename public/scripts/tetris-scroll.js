@@ -314,7 +314,7 @@ function collide(shape, row, col) {
         if (lines > 0) {
           linesClearedTotal += lines;
           score += lines * 10;
-          scoreDisplay.textContent = `💰 $DSPOINC earned: ${linesClearedTotal * 10}`;
+          scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
       
           // ⏩ Speed up every 20 lines
           if (linesClearedTotal % 20 === 0) {
@@ -456,7 +456,7 @@ if (collide(current.shape, current.row, current.col)) {
     if (gameOverText) {
       gameOverText.innerHTML = '🧠 GAME OVER';
     }
-    finalScoreText.textContent = `You earned $${linesClearedTotal * 10} DSPOINC`;
+    finalScoreText.textContent = `You earned $${score} DSPOINC`;
     modal.classList.remove('hidden');
 cleanupTouchControls();
   }
@@ -522,7 +522,7 @@ function rotatePiece() {
       
         const payload = {
           wallet,
-          score: linesClearedTotal * 10, // Send DSPOINC value (10x multiplier)
+          score: score, // Use the score variable which already has DSPOINC value
           discord_id: discordId,
           discord_name: discordName
         };
