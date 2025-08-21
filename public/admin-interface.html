@@ -5345,54 +5345,12 @@ require_once 'discord-invite.php';
           document.getElementById('topUsers').innerHTML = '<div class="text-gray-400">🔒 Authentication required</div>';
         }
 
-        // Load enhanced statistics (only for authenticated users)
-        if (currentAdmin) {
-          try {
-            const enhancedStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-enhanced-stats.php');
-            const enhancedStats = await enhancedStatsResponse.json();
-            
-            if (enhancedStats.success) {
-              const stats = enhancedStats;
-              
-              // Update immediate stats
-              document.getElementById('avgClicksPerUser').textContent = stats.immediate_stats.average_clicks_per_user;
-              document.getElementById('totalDSPOINC').textContent = stats.immediate_stats.total_dspoinc_circulation.toLocaleString();
-              document.getElementById('questCompletionRate').textContent = stats.immediate_stats.quest_completion_rate + '%';
-              document.getElementById('avgQuestReward').textContent = stats.immediate_stats.average_quest_reward.toLocaleString();
-              
-              // Update daily stats
-              document.getElementById('clicksLast24h').textContent = stats.daily_stats.clicks_last_24h;
-              document.getElementById('newUsersToday').textContent = stats.daily_stats.new_users_today;
-              document.getElementById('questsClaimedToday').textContent = stats.daily_stats.quests_claimed_today;
-              document.getElementById('rolesGrantedToday').textContent = stats.daily_stats.roles_granted_today;
-              
-              // Display engagement stats
-              displayEngagementStats(stats.engagement_stats);
-              
-              // Display wealth stats
-              displayWealthStats(stats.wealth_distribution);
-            } else {
-              addLog(`❌ Enhanced stats error: ${enhancedStats.error}`);
-              // Set default values on error
-              setDefaultEnhancedStats();
-            }
-          } catch (error) {
-            addLog(`❌ Enhanced stats loading error: ${error.message}`);
-            // Set default values on error
-            setDefaultEnhancedStats();
-          }
-        } else {
-          // Hide enhanced stats for non-authenticated users
-          document.getElementById('avgClicksPerUser').textContent = '🔒';
-          document.getElementById('totalDSPOINC').textContent = '🔒';
-          document.getElementById('questCompletionRate').textContent = '🔒';
-          document.getElementById('avgQuestReward').textContent = '🔒';
-          document.getElementById('clicksLast24h').textContent = '🔒';
-          document.getElementById('newUsersToday').textContent = '🔒';
-          document.getElementById('questsClaimedToday').textContent = '🔒';
-          document.getElementById('rolesGrantedToday').textContent = '🔒';
-          document.getElementById('engagementStats').innerHTML = '<div class="text-gray-400">🔒 Authentication required</div>';
-          document.getElementById('wealthStats').innerHTML = '<div class="text-gray-400">🔒 Authentication required</div>';
+        // Load enhanced statistics and engagement data
+        try {
+          await loadEnhancedDashboardStats();
+        } catch (error) {
+          console.error('❌ Error loading enhanced dashboard stats:', error);
+          addLog(`❌ Error loading enhanced dashboard stats: ${error.message}`);
         }
       } catch (error) {
         addLog(`❌ Error loading dashboard data: ${error.message}`);
