@@ -77,7 +77,12 @@ try {
     }
 
     // 🎮 Get current active season and settings
-    $currentSeason = 'season_1'; // Default to season 1 for now
+    // 🔍 Automatically detect current season from season_settings table
+    $seasonDetectStmt = $db->prepare("SELECT season_name FROM tbl_season_settings ORDER BY id DESC LIMIT 1");
+    $seasonDetectStmt->execute();
+    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'season_1'; // Fallback to season_1
+    
+    error_log("🔍 Current season detected: $currentSeason");
 
     // Get season settings for scoring and limits
     $seasonStmt = $db->prepare("SELECT season_name, tetris_max_score, snake_max_score, points_per_line, points_per_cheese, space_invaders_max_score, points_per_invader FROM tbl_season_settings WHERE season_name = ?");
@@ -182,8 +187,8 @@ try {
         if ($game === 'tetris') {
             // Tetris scores go to dedicated tetris table
             $stmt = $db->prepare("
-              INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game, season, is_current_season)
-              VALUES (:wallet, :score, :discord_id, :discord_name, :game, :season, 1)
+              INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game, season)
+              VALUES (:wallet, :score, :discord_id, :discord_name, :game, :season)
             ");
 
             $stmt->bindValue(':wallet', $wallet);
@@ -194,7 +199,7 @@ try {
             $stmt->bindValue(':season', $currentSeason);
             $stmt->execute();
             
-            error_log("Tetris score inserted: $raw_score lines = " . round($dspoinc_score) . " DSPOINC for user $discord_id");
+            error_log("Tetris score inserted: $raw_score lines = " . round($dspoinc_score) . " DSPOINC for user $discord_id in season $currentSeason");
         } else {
             // Snake and Space Invaders scores go to user_scores table
             // (Tetris scores are also added to user_scores below for consistency)
@@ -210,16 +215,17 @@ try {
     try {
         // Insert new record for this game score
         $insertStmt = $db->prepare("
-            INSERT INTO tbl_user_scores (user_id, score, game, source) 
-            VALUES (?, ?, ?, ?)
+            INSERT INTO tbl_user_scores (user_id, score, game, source, season) 
+            VALUES (?, ?, ?, ?, ?)
         ");
         $insertStmt->bindValue(1, $discord_id);
         $insertStmt->bindValue(2, round($dspoinc_score), PDO::PARAM_INT);
         $insertStmt->bindValue(3, $game);
         $insertStmt->bindValue(4, 'game_score');
+        $insertStmt->bindValue(5, $currentSeason);
         $insertStmt->execute();
         
-        error_log("User score inserted: " . round($dspoinc_score) . " DSPOINC for user $discord_id in game $game");
+        error_log("User score inserted: " . round($dspoinc_score) . " DSPOINC for user $discord_id in game $game (season: $currentSeason)");
         
         // 🎯 Create score adjustment entry for tracking
         $adjustmentStmt = $db->prepare("

@@ -1127,8 +1127,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 <script>
   async function loadCombinedLeaderboards() {
     try {
-      const res = await fetch("https://narrrfs.world/api/dev/get-leaderboard.php");
+      // 🌍 Environment-aware API endpoint (works both locally and in production)
+      const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+      const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
+      const leaderboardUrl = `${apiBaseUrl}/api/dev/get-leaderboard.php`;
+      
+      console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+      console.log(`🔗 Leaderboard API URL: ${leaderboardUrl}`);
+      
+      const res = await fetch(leaderboardUrl);
       const result = await res.json();
+
+      console.log('📊 Leaderboard data received:', result);
 
       const tetrisList = document.getElementById("leaderboard-tetris-list");
       const snakeList = document.getElementById("leaderboard-snake-list");
@@ -1138,28 +1148,57 @@ document.addEventListener("DOMContentLoaded", async function () {
       snakeList.innerHTML = "";
       spaceInvadersList.innerHTML = "";
 
-      (result.tetris || []).forEach((entry, i) => {
-        const li = document.createElement("li");
-        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-        tetrisList.appendChild(li);
-      });
+      // 🧩 Tetris Leaderboard
+      if (result.tetris && result.tetris.length > 0) {
+        result.tetris.forEach((entry, i) => {
+          const li = document.createElement("li");
+          const name = entry.discord_name || `${entry.discord_id.slice(0, 6)}...${entry.discord_id.slice(-4)}`;
+          li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+          li.className = "mb-2 text-sm";
+          tetrisList.appendChild(li);
+        });
+      } else {
+        tetrisList.innerHTML = '<li class="text-gray-500 text-sm">No Tetris scores yet</li>';
+      }
 
-      (result.snake || []).forEach((entry, i) => {
-        const li = document.createElement("li");
-        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-        snakeList.appendChild(li);
-      });
+      // 🐍 Snake Leaderboard
+      if (result.snake && result.snake.length > 0) {
+        result.snake.forEach((entry, i) => {
+          const li = document.createElement("li");
+          const name = entry.discord_name || `${entry.discord_id.slice(0, 6)}...${entry.discord_id.slice(-4)}`;
+          li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+          li.className = "mb-2 text-sm";
+          snakeList.appendChild(li);
+        });
+      } else {
+        snakeList.innerHTML = '<li class="text-gray-500 text-sm">No Snake scores yet</li>';
+      }
 
-      (result.space_invaders || []).forEach((entry, i) => {
-        const li = document.createElement("li");
-        const name = entry.discord_name || `${entry.wallet.slice(0, 6)}...${entry.wallet.slice(-4)}`;
-        li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
-        spaceInvadersList.appendChild(li);
-      });
+      // 👾 Space Invaders Leaderboard
+      if (result.space_invaders && result.space_invaders.length > 0) {
+        result.space_invaders.forEach((entry, i) => {
+          const li = document.createElement("li");
+          const name = entry.discord_name || `${entry.discord_id.slice(0, 6)}...${entry.discord_id.slice(-4)}`;
+          li.textContent = `#${i + 1} ${name} – ${entry.score} $DSPOINC`;
+          li.className = "mb-2 text-sm";
+          spaceInvadersList.appendChild(li);
+        });
+      } else {
+        spaceInvadersList.innerHTML = '<li class="text-gray-500 text-sm">No Space Invaders scores yet</li>';
+      }
+      
+      console.log('✅ Leaderboards updated successfully');
     } catch (err) {
-      console.error("Leaderboard fetch failed", err);
+      console.error("❌ Leaderboard fetch failed:", err);
+      
+      // Show error in leaderboards
+      const tetrisList = document.getElementById("leaderboard-tetris-list");
+      const snakeList = document.getElementById("leaderboard-snake-list");
+      const spaceInvadersList = document.getElementById("leaderboard-space-invaders-list");
+      
+      if (tetrisList) tetrisList.innerHTML = '<li class="text-red-500 text-sm">Failed to load Tetris scores</li>';
+      if (snakeList) snakeList.innerHTML = '<li class="text-red-500 text-sm">Failed to load Snake scores</li>';
+      if (spaceInvadersList) spaceInvadersList.innerHTML = '<li class="text-red-500 text-sm">Failed to load Space Invaders scores</li>';
     }
   }
 
