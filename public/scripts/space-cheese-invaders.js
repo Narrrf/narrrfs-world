@@ -3413,6 +3413,11 @@ let reloadButtonInterval = null;
     playerShip.invincible = false; // 🚀 NEW: Reset invincibility
     playerShip.invincibleTimer = 0; // 🚀 NEW: Reset invincibility timer
     
+    // 🔧 CRITICAL FIX: Initialize mouse targets to ship position to prevent 300px jumps
+    mouseTargetX = playerShip.x;
+    mouseTargetY = playerShip.y;
+    console.log(`🖱️ Mouse targets initialized to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
+    
     initializeInvaders();
     updateScore();
     
@@ -3429,7 +3434,7 @@ let reloadButtonInterval = null;
       ensureMobileControlsVisible();
     }, 150);
     
-    // 🧀 NEW: Reset custom cursor when game is reset
+    // 🚀 NEW: Reset ship cursor when game is reset
     cleanupCustomCursor();
     setTimeout(() => {
       showCustomCursor();
@@ -5679,11 +5684,11 @@ let reloadButtonInterval = null;
       gameOverModal.classList.remove("hidden");
     }
     
-    // Save score to database
-    saveScore(spaceInvadersScore); // 🚀 CRITICAL FIX: Save traditional score instead of invader count
+    // 🔧 CRITICAL FIX: Score is saved at game end, not during gameplay (prevents duplication)
+    // saveScore(spaceInvadersScore); // REMOVED: Duplicate call causing score duplication
     cleanupSpaceInvadersControls();
     
-    // 🧀 NEW: Clean up custom cursor when game ends
+    // 🚀 NEW: Clean up ship cursor when game ends
     cleanupCustomCursor();
 
     // 🆘 NEW: Ensure mobile controls are visible when game ends
@@ -6337,6 +6342,9 @@ let reloadButtonInterval = null;
   let mouseTargetX = 0;
   let mouseTargetY = 0;
   
+  // 🔧 CRITICAL FIX: Initialize mouse targets to prevent 300px jumps
+  // These will be properly set when the game starts and playerShip is available
+  
   // 🔥 OVERHEAT SYSTEM VARIABLES (GLOBAL SCOPE)
   let weaponHeat = 0; // Current heat level (0-100)
   let maxHeat = 100; // Maximum heat before overheating
@@ -6557,77 +6565,36 @@ let reloadButtonInterval = null;
   function showCustomCursor() {
     if (customCursor) return; // Already exists
     
-    // Create custom cursor element
+    // 🚀 NEW: Create ship cursor instead of cheese cursor for better control feel
     customCursor = document.createElement('div');
-    customCursor.id = 'custom-cheese-cursor';
-          customCursor.innerHTML = `
+    customCursor.id = 'ship-cursor';
+    
+    // 🎯 CRITICAL: Make cursor the actual ship sprite with golden glow
+    customCursor.innerHTML = `
       <div style="
         position: fixed;
         pointer-events: none;
         z-index: 10000;
         width: 32px;
         height: 32px;
-        background: radial-gradient(circle, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
-        border: 3px solid #ff8c00;
-        border-radius: 50%;
-        box-shadow: 
-          0 0 15px rgba(255, 215, 0, 1),
-          0 0 25px rgba(255, 215, 0, 0.8),
-          0 0 35px rgba(255, 215, 0, 0.6),
-          0 0 45px rgba(255, 215, 0, 0.4);
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect x="8" y="0" width="16" height="8" fill="%23ffd700" rx="2"/><rect x="6" y="8" width="20" height="16" fill="%23ffd700" rx="2"/><rect x="12" y="24" width="8" height="8" fill="%23ff8c00" rx="1"/><circle cx="16" cy="16" r="4" fill="%23ff6b35"/><circle cx="14" cy="14" r="1" fill="%23ff4500"/><circle cx="18" cy="14" r="1" fill="%23ff4500"/></svg>') center/contain no-repeat;
         transform: translate(-50%, -50%);
-        animation: cheeseCursorGlow 1.5s ease-in-out infinite alternate;
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+        animation: shipCursorGlow 2s ease-in-out infinite alternate;
       ">
-        <div style="
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 16px;
-          height: 16px;
-          background: #ff6b35;
-          border-radius: 50%;
-          border: 1px solid #ff4500;
-        "></div>
-        <div style="
-          position: absolute;
-          top: 20%;
-          left: 30%;
-          width: 4px;
-          height: 4px;
-          background: #ff4500;
-          border-radius: 50%;
-        "></div>
-        <div style="
-          position: absolute;
-          top: 25%;
-          left: 60%;
-          width: 3px;
-          height: 3px;
-          background: #ff4500;
-          border-radius: 50%;
-        "></div>
       </div>
     `;
     
-    // Add CSS animation for the glow effect
+    // Add CSS animation for ship cursor glow
     const style = document.createElement('style');
     style.textContent = `
-      @keyframes cheeseCursorGlow {
-        0% { 
-          box-shadow: 
-            0 0 15px rgba(255, 215, 0, 1),
-            0 0 25px rgba(255, 215, 0, 0.8),
-            0 0 35px rgba(255, 215, 0, 0.6),
-            0 0 45px rgba(255, 215, 0, 0.4);
+      @keyframes shipCursorGlow {
+        0% {
+          filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
           transform: translate(-50%, -50%) scale(1);
         }
-        100% { 
-          box-shadow: 
-            0 0 20px rgba(255, 215, 0, 1),
-            0 0 35px rgba(255, 215, 0, 0.9),
-            0 0 50px rgba(255, 215, 0, 0.7),
-            0 0 65px rgba(255, 215, 0, 0.5);
+        100% {
+          filter: drop-shadow(0 0 15px rgba(255, 215, 0, 1)) drop-shadow(0 0 25px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 35px rgba(255, 215, 0, 0.6));
           transform: translate(-50%, -50%) scale(1.1);
         }
       }
@@ -6635,14 +6602,21 @@ let reloadButtonInterval = null;
     document.head.appendChild(style);
     
     document.body.appendChild(customCursor);
-    console.log('🧀 Custom cheese cursor created and shown');
+    
+    // 🚀 CRITICAL: Set up global mouse listener for cursor tracking
+    globalMouseListener = (e) => {
+      updateCustomCursorPosition(e);
+    };
+    document.addEventListener('mousemove', globalMouseListener);
+    
+    console.log('🚀 Ship cursor created and visible');
   }
   
   function hideCustomCursor() {
     if (customCursor && customCursor.parentNode) {
       customCursor.parentNode.removeChild(customCursor);
       customCursor = null;
-      console.log('🧀 Custom cheese cursor hidden');
+      console.log('🚀 Ship cursor hidden');
     }
   }
   
@@ -6651,7 +6625,7 @@ let reloadButtonInterval = null;
     if (globalMouseListener) {
       document.removeEventListener('mousemove', globalMouseListener);
       globalMouseListener = null;
-      console.log('🧀 Custom cursor cleanup completed');
+      console.log('🚀 Ship cursor cleanup completed');
     }
   }
   
@@ -6682,7 +6656,7 @@ let reloadButtonInterval = null;
       canvas.style.border = '3px solid #10b981';
       canvas.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.5)';
       
-      // 🧀 NEW: Hide default cursor and show custom cheese cursor
+      // 🚀 NEW: Hide default cursor and show ship cursor
       canvas.style.cursor = 'none';
       showCustomCursor();
     });
@@ -6700,7 +6674,7 @@ let reloadButtonInterval = null;
           canvas.style.border = '';
           canvas.style.boxShadow = '';
           
-          // 🧀 NEW: Show default cursor when leaving canvas
+          // 🚀 NEW: Show default cursor when leaving canvas
           canvas.style.cursor = 'default';
           hideCustomCursor();
           
@@ -6718,7 +6692,7 @@ let reloadButtonInterval = null;
     canvas.addEventListener('mousemove', (e) => {
       if (!isMouseControlEnabled || !isMouseOverCanvas || isSpaceInvadersPaused) return;
       
-      // 🧀 NEW: Update custom cursor position
+      // 🚀 NEW: Update ship cursor position
       updateCustomCursorPosition(e);
       
       const rect = canvas.getBoundingClientRect();
