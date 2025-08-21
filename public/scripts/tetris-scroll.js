@@ -529,7 +529,15 @@ function rotatePiece() {
       
         console.log("⏎ Sending score payload:", payload);
       
-        fetch("https://narrrfs.world/api/dev/save-score.php", {
+        // 🌍 Environment-aware API endpoint (works both locally and in production)
+        const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+        const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
+        const apiUrl = `${apiBaseUrl}/api/dev/save-score.php`;
+        
+        console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+        console.log(`🔗 API URL: ${apiUrl}`);
+
+        fetch(apiUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -549,7 +557,11 @@ function rotatePiece() {
             // ✅ Force leaderboard refresh after short delay
             setTimeout(() => {
               if (document.getElementById("leaderboard-list")) {
-                fetch(`https://narrrfs.world/api/dev/get-leaderboard.php?t=${Date.now()}`)
+                // 🌍 Environment-aware API endpoint for leaderboard
+                const leaderboardUrl = `${apiBaseUrl}/api/dev/get-leaderboard.php?t=${Date.now()}`;
+                console.log(`🔗 Leaderboard API URL: ${leaderboardUrl}`);
+                
+                fetch(leaderboardUrl)
                   .then(res => res.json())
                   .then(result => {
                     const scores = result.leaderboard || [];

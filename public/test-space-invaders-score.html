@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Space Invaders Score Saving</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .test-section {
+            background-color: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: white;
+        }
+        .result {
+            background-color: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧀 Test Space Invaders Score Saving</h1>
+    
+    <div class="test-section">
+        <h2>🔧 Test Configuration</h2>
+        <p>This page tests the Space Invaders score saving functionality.</p>
+        
+        <div>
+            <label for="discordId">Discord ID:</label>
+            <input type="text" id="discordId" placeholder="Enter Discord ID" value="123456789">
+        </div>
+        
+        <div>
+            <label for="discordName">Discord Name:</label>
+            <input type="text" id="discordName" placeholder="Enter Discord Name" value="Test Player">
+        </div>
+        
+        <div>
+            <label for="userWallet">User Wallet:</label>
+            <input type="text" id="userWallet" placeholder="Enter wallet address" value="test_wallet_123">
+        </div>
+        
+        <div>
+            <label for="invaderCount">Invader Count (Score):</label>
+            <input type="number" id="invaderCount" placeholder="Enter invader count" value="150">
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Test Score Saving</h2>
+        <button onclick="testSaveScore()">💾 Test Save Score</button>
+        <button onclick="testGetStats()">📊 Test Get Stats</button>
+        <button onclick="testDiscordSetup()">🎮 Test Discord Setup</button>
+        <button onclick="clearResults()">🗑️ Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        // 🌍 Environment detection for API calls
+        const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+        const apiBaseUrl = isProduction ? '' : 'http://localhost/narrrfs-world';
+        
+        console.log('🌍 Environment detected:', isProduction ? 'Production' : 'Local');
+        console.log('🔗 API Base URL:', apiBaseUrl);
+        
+        // Set test data in localStorage
+        function setTestData() {
+            const discordId = document.getElementById('discordId').value;
+            const discordName = document.getElementById('discordName').value;
+            const userWallet = document.getElementById('userWallet').value;
+            
+            localStorage.setItem('discord_id', discordId);
+            localStorage.setItem('discord_name', discordName);
+            localStorage.setItem('user_wallet', userWallet);
+            
+            console.log('Test data set:', { discordId, discordName, userWallet });
+        }
+        
+        // Test score saving
+        async function testSaveScore() {
+            setTestData();
+            
+            const discordId = localStorage.getItem('discord_id');
+            const discordName = localStorage.getItem('discord_name');
+            const wallet = localStorage.getItem('user_wallet');
+            const invaderCount = parseInt(document.getElementById('invaderCount').value);
+            
+            if (!discordId) {
+                showResult('❌ Error: No Discord ID found', true);
+                return;
+            }
+            
+            showResult('🔄 Testing score saving...', false);
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/dev/save-score.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        wallet: wallet,
+                        score: invaderCount,
+                        discord_id: discordId,
+                        discord_name: discordName,
+                        game: 'space_invaders'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`✅ Score saved successfully!<br>
+                        Raw Score: ${data.raw_score} invaders<br>
+                        DSPOINC: ${data.dspoinc_score}<br>
+                        Conversion Rate: ${data.conversion_rate}<br>
+                        Message: ${data.message}`, false);
+                } else {
+                    showResult(`❌ Failed to save score: ${data.error || 'Unknown error'}`, true);
+                }
+                
+            } catch (error) {
+                showResult(`❌ Error saving score: ${error.message}`, true);
+                console.error('Error:', error);
+            }
+        }
+        
+        // Test getting stats
+        async function testGetStats() {
+            setTestData();
+            
+            const discordId = localStorage.getItem('discord_id');
+            
+            if (!discordId) {
+                showResult('❌ Error: No Discord ID found', true);
+                return;
+            }
+            
+            showResult('🔄 Testing stats retrieval...', false);
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/admin/get-all-games-stats.php`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const spaceInvaders = data.games?.space_invaders;
+                    if (spaceInvaders) {
+                        showResult(`📊 Space Invaders Stats Retrieved:<br>
+                            Season Data: ${JSON.stringify(spaceInvaders.season_data, null, 2)}<br>
+                            All Time: ${JSON.stringify(spaceInvaders.all_time, null, 2)}`, false);
+                    } else {
+                        showResult('❌ No Space Invaders stats found in response', true);
+                    }
+                } else {
+                    showResult(`❌ Failed to get stats: ${data.error || 'Unknown error'}`, true);
+                }
+                
+            } catch (error) {
+                showResult(`❌ Error getting stats: ${error.message}`, true);
+                console.error('Error:', error);
+            }
+        }
+        
+        // Test Discord setup
+        function testDiscordSetup() {
+            setTestData();
+            
+            const discordId = localStorage.getItem('discord_id');
+            const discordName = localStorage.getItem('discord_name');
+            const wallet = localStorage.getItem('user_wallet');
+            
+            showResult(`🎮 Discord Setup Test:<br>
+                Discord ID: ${discordId}<br>
+                Discord Name: ${discordName}<br>
+                Wallet: ${wallet}<br>
+                Status: ${discordId ? '✅ Set' : '❌ Missing'}`, !discordId);
+            
+            // Test if the Space Invaders game would be able to save scores
+            if (discordId && discordName && wallet) {
+                showResult('✅ Space Invaders game should be able to save scores!', false);
+            } else {
+                showResult('❌ Space Invaders game will NOT be able to save scores - missing required data', true);
+            }
+        }
+        
+        // Show result
+        function showResult(message, isError) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${isError ? 'error' : ''}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        // Clear results
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        // Initialize test data
+        window.onload = function() {
+            setTestData();
+        };
+    </script>
+</body>
+</html>

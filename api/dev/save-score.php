@@ -179,24 +179,30 @@ try {
 
     // 💾 Save to DB with DSPOINC score (always save, not just high scores)
     try {
-        $stmt = $db->prepare("
-          INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game, season, is_current_season)
-          VALUES (:wallet, :score, :discord_id, :discord_name, :game, :season, 1)
-        ");
+        if ($game === 'tetris') {
+            // Tetris scores go to dedicated tetris table
+            $stmt = $db->prepare("
+              INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game, season, is_current_season)
+              VALUES (:wallet, :score, :discord_id, :discord_name, :game, :season, 1)
+            ");
 
-        $stmt->bindValue(':wallet', $wallet);
-        $stmt->bindValue(':score', round($dspoinc_score), PDO::PARAM_INT);
-        $stmt->bindValue(':discord_id', $discord_id);
-        $stmt->bindValue(':discord_name', $discord_name);
-        $stmt->bindValue(':game', $game);
-        $stmt->bindValue(':season', $currentSeason);
-        $stmt->execute();
-        
-        // Log successful insert
-        error_log("Space Invaders score inserted: $raw_score invaders = " . round($dspoinc_score) . " DSPOINC for user $discord_id");
+            $stmt->bindValue(':wallet', $wallet);
+            $stmt->bindValue(':score', round($dspoinc_score), PDO::PARAM_INT);
+            $stmt->bindValue(':discord_id', $discord_id);
+            $stmt->bindValue(':discord_name', $discord_name);
+            $stmt->bindValue(':game', $game);
+            $stmt->bindValue(':season', $currentSeason);
+            $stmt->execute();
+            
+            error_log("Tetris score inserted: $raw_score lines = " . round($dspoinc_score) . " DSPOINC for user $discord_id");
+        } else {
+            // Snake and Space Invaders scores go to user_scores table
+            // (Tetris scores are also added to user_scores below for consistency)
+            error_log("Non-Tetris game score ($game) - will be saved to user_scores table");
+        }
         
     } catch (Exception $e) {
-        error_log("Error inserting Space Invaders score: " . $e->getMessage());
+        error_log("Error inserting game score: " . $e->getMessage());
         throw $e;
     }
 

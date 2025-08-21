@@ -9,7 +9,7 @@
 
 // 🌍 Environment Detection for API calls
 const isProduction = window.location.hostname === 'narrrfs.world';
-const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
+const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
 console.log('🌍 Space Invaders Environment detected:', isProduction ? 'Production' : 'Local');
 console.log('🔗 Space Invaders API Base URL:', API_BASE_URL);
 
@@ -727,7 +727,7 @@ let canvasHeight;
       speedBoostAmmo--; // Use one speed boost
       console.log('⚡ Speed boost extended! Speed boosts remaining:', speedBoostAmmo);
     } else if (speedBoostAmmo <= 0) {
-      console.log('❌ No speed boost ammo available!');
+      console.error('❌ No speed boost ammo available!');
     }
   }
 
@@ -2907,6 +2907,28 @@ let canvasHeight;
 
     console.log('✅ Canvas and context initialized');
 
+    // 🆘 NEW: Setup Discord ID and name for score saving (same as Tetris/Snake)
+    let discordId = localStorage.getItem("discord_id");
+    let discordName = localStorage.getItem("discord_name");
+    let wallet = localStorage.getItem("user_wallet");
+    
+    // 🛠️ Mock fallback if testing locally
+    if (!discordId) {
+      discordId = "1337";
+      discordName = "Anonymous Mouse";
+      localStorage.setItem("discord_id", discordId);
+      localStorage.setItem("discord_name", discordName);
+      console.log("🔄 Set fallback Discord ID for local testing:", discordId);
+    }
+    
+    if (!wallet) {
+      wallet = "TestWallet123456789XYZ";
+      localStorage.setItem("user_wallet", wallet);
+      console.log("🔄 Set fallback wallet for local testing:", wallet);
+    }
+    
+    console.log("✅ Discord setup complete - ID:", discordId, "Name:", discordName, "Wallet:", wallet);
+
     // Set canvas dimensions based on device
     let maxWidth = 400;
     let maxHeight = 600;
@@ -3121,8 +3143,8 @@ let canvasHeight;
         ];
         spiralPositions.forEach(([col, row]) => {
           // 🚀 NEW: Spawn invaders at reasonable distance
-          const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
-          invaders.push(createInvader(col * 40 + 20, spawnY, row, 'spiral'));
+          const spawnY = canvasHeight - 350 + (row * 30); // Reasonable distance spawn, tighter spacing
+          invaders.push(createInvader(col * 35 + 20, spawnY, row, 'spiral'));
         });
         break;
         
@@ -6294,8 +6316,16 @@ window.emergencyCollisionCheck = function() {
 
     console.log(`💾 Saving Space Invaders score: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
 
+    // 🌍 Environment-aware API endpoint (works both locally and in production)
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? '' : 'http://localhost/narrrfs-world';
+    const apiUrl = `${apiBaseUrl}/api/dev/save-score.php`;
+    
+    console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+    console.log(`🔗 API URL: ${apiUrl}`);
+
     // Save to the same API endpoint as Tetris and Snake
-    fetch('/api/dev/save-score.php', {
+    fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -7725,7 +7755,7 @@ window.emergencyCollisionCheck = function() {
       <p>• <strong>Normal:</strong> Infinite ammo, shoots on movement</p>
       <p>• <strong>Laser:</strong> Limited ammo, only shoots when you want</p>
       <p>• <strong>Bomb:</strong> Limited ammo, only shoots when you want</p>
-      <p><strong>🚀 NEW: Smart Quick Shot Button!</strong></p>
+      <p><strong>🚀 NEW: Smart Quick Shoot Button!</strong></p>
       <p>🎯 <strong>Always visible</strong> - shows current weapon and ammo</p>
       <p>⚡ <strong>ONLY way to fire</strong> laser and bomb weapons!</p>
       <p>🎯 <strong>Auto-Shoot toggle</strong> when using Normal weapon!</p>
