@@ -2222,6 +2222,7 @@ function displayGameMissions(data) {
           <div class="flex items-center gap-2">
             <span class="text-2xl">${game.icon}</span>
             <span class="font-semibold text-white">${game.name}</span>
+            <span class="text-xs text-gray-400" title="Click to navigate to: ${game.url}">ℹ️</span>
           </div>
           <span class="text-sm">${statusIcon}</span>
         </div>
@@ -2231,7 +2232,8 @@ function displayGameMissions(data) {
         </div>
         
         <div class="mt-3 text-center">
-          <button class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded">
+          <button class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded" 
+                  title="Navigate to: ${game.url}">
             ${game.status === 'active' ? 'Play Again' : 'Start Playing'}
           </button>
         </div>
@@ -2301,10 +2303,42 @@ function getGameStats(gameKey, game) {
 }
 
 function navigateToGame(url) {
+  if (!url) {
+    console.error('❌ No URL provided for game navigation');
+    return;
+  }
+  
+  console.log('🎮 Navigating to game:', url);
+  
   if (url.startsWith('http')) {
+    // External links (like Discord) open in new tab
+    console.log('🌐 Opening external link in new tab:', url);
     window.open(url, '_blank');
+  } else if (url.startsWith('#')) {
+    // Anchor links scroll within current page
+    console.log('📍 Scrolling to anchor:', url);
+    const element = document.querySelector(url);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      console.error('❌ Anchor element not found:', url);
+      // Fallback: try to find similar elements
+      const similarElements = document.querySelectorAll('[id*="' + url.substring(1) + '"]');
+      if (similarElements.length > 0) {
+        console.log('💡 Found similar elements:', similarElements);
+        similarElements[0].scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   } else {
-    window.location.href = url;
+    // Internal page navigation
+    console.log('🏠 Navigating to internal page:', url);
+    try {
+      window.location.href = url;
+    } catch (error) {
+      console.error('❌ Navigation error:', error);
+      // Fallback: try to navigate anyway
+      window.location.href = url;
+    }
   }
 }
 

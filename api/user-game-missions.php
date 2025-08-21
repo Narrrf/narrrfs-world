@@ -301,7 +301,7 @@ try {
             'space_invaders' => [
                 'name' => 'Space Cheese Invaders',
                 'icon' => '👾',
-                'url' => '/profile.html#cheese-space-invaders',
+                'url' => '/space-invaders-test.html',
                 'total_games' => $response['space_invaders']['total_games'],
                 'best_score' => $response['space_invaders']['best_score'],
                 'total_score' => $response['space_invaders']['total_score'],
@@ -321,7 +321,7 @@ try {
             'discord_race' => [
                 'name' => 'Discord Cheese Race',
                 'icon' => '🏁',
-                'url' => 'https://discord.gg/narrrfs',
+                'url' => 'https://discord.com/invite/qYYNGJrR43',
                 'total_races' => $response['discord_race']['total_races'],
                 'wins' => $response['discord_race']['wins'],
                 'podium_finishes' => $response['discord_race']['podiums'],
