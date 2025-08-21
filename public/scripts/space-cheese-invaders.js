@@ -1,7 +1,15 @@
-// 🧀 Space Cheese Invaders v3.0 - EMERGENCY BOSS DAMAGE FIX - TIMESTAMP: ${Date.now()}
+// 🧀 Space Cheese Invaders v3.1 - MOUSE CONTROL FIX - TIMESTAMP: ${Date.now()}
 // Much slower invaders (1 second drop, 1 minute break) with Tetris block danger items
 // NEW: Auto-shoot feature - automatically fires when ship moves (toggle with 'T' key)
 // NEW: Laser shot type, Speed boost power-up, and Bomb weapon
+// 
+// 🔧 CRITICAL FIXES APPLIED (2025-01-28):
+// - Fixed 300px ship jump when mouse re-enters canvas
+// - Improved mouse target positioning system
+// - Added global mouse coordinate tracking
+// - Enhanced mouse re-entry positioning logic
+// - Added safety checks for invalid mouse targets
+// - Improved bounds checking and movement smoothing
 
 // 🚀 PRODUCTION CONFIGURATION: Epic boss progression!
 // 🏆 Boss types: Wave 10=Cheese King, Wave 25=Cheese Emperor, Wave 75=Cheese God, Wave 100=Cheese Destroyer
@@ -3131,12 +3139,24 @@ let reloadButtonInterval = null;
       mouseTargetY = playerShip.y;
       console.log(`🖱️ Initial mouse target set to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
       
+      // 🔧 CRITICAL FIX: Initialize global mouse tracking variables
+      window.mouseX = 0;
+      window.mouseY = 0;
+      window.lastCanvasMouseX = undefined;
+      window.lastCanvasMouseY = undefined;
+      
       setupMouseControls();
       console.log('✅ Mouse controls setup completed');
       
       // 🧀 NEW: Add global mouse tracking for custom cursor
       globalMouseListener = updateCustomCursorPosition;
       document.addEventListener('mousemove', globalMouseListener);
+      
+      // 🔧 CRITICAL FIX: Add global mouse coordinate tracking for re-entry positioning
+      document.addEventListener('mousemove', (e) => {
+        window.mouseX = e.clientX;
+        window.mouseY = e.clientY;
+      });
       
       // Test mouse control variables
       console.log('🖱️ Mouse control test:', {
@@ -3413,10 +3433,16 @@ let reloadButtonInterval = null;
     playerShip.invincible = false; // 🚀 NEW: Reset invincibility
     playerShip.invincibleTimer = 0; // 🚀 NEW: Reset invincibility timer
     
-    // 🔧 CRITICAL FIX: Initialize mouse targets to ship position to prevent 300px jumps
-    mouseTargetX = playerShip.x;
-    mouseTargetY = playerShip.y;
-    console.log(`🖱️ Mouse targets initialized to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
+      // 🔧 CRITICAL FIX: Initialize mouse targets to ship position to prevent 300px jumps
+      mouseTargetX = playerShip.x;
+      mouseTargetY = playerShip.y;
+      console.log(`🖱️ Mouse targets initialized to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
+      
+      // 🔧 CRITICAL FIX: Initialize global mouse tracking variables
+      window.mouseX = 0;
+      window.mouseY = 0;
+      window.lastCanvasMouseX = undefined;
+      window.lastCanvasMouseY = undefined;
     
     initializeInvaders();
     updateScore();
@@ -6131,8 +6157,9 @@ let reloadButtonInterval = null;
       return;
     }
     
-    // Check if mouse target is set
-    if (typeof mouseTargetX !== 'undefined' && typeof mouseTargetY !== 'undefined') {
+    // Check if mouse target is set and valid
+    if (typeof mouseTargetX !== 'undefined' && typeof mouseTargetY !== 'undefined' && 
+        !isNaN(mouseTargetX) && !isNaN(mouseTargetY)) {
       const oldX = playerShip.x;
       const oldY = playerShip.y;
       
@@ -6168,6 +6195,12 @@ let reloadButtonInterval = null;
           lastPlayerShootTime = currentTime;
         }
       }
+    } else {
+      // 🔧 CRITICAL FIX: Reset invalid mouse targets to ship position
+      console.warn('⚠️ Invalid mouse targets detected in updateMouseMovement, resetting to ship position');
+      mouseTargetX = playerShip.x;
+      mouseTargetY = playerShip.y;
+      return; // Skip this update cycle to allow targets to stabilize
     }
   }
 
@@ -6659,6 +6692,37 @@ let reloadButtonInterval = null;
       // 🚀 NEW: Hide default cursor and show ship cursor
       canvas.style.cursor = 'none';
       showCustomCursor();
+      
+      // 🔧 CRITICAL FIX: Update mouse target to current mouse position when re-entering
+      // This prevents the 300px jump by ensuring target matches actual mouse location
+      const rect = canvas.getBoundingClientRect();
+      
+      // 🚀 IMPROVED: Use stored last canvas position if available, otherwise use global mouse position
+      let currentMouseX, currentMouseY;
+      if (window.lastCanvasMouseX !== undefined && window.lastCanvasMouseY !== undefined) {
+        // Use the last known position within the canvas
+        currentMouseX = window.lastCanvasMouseX;
+        currentMouseY = window.lastCanvasMouseY;
+        console.log(`🖱️ Using stored canvas position: X=${currentMouseX}, Y=${currentMouseY}`);
+      } else {
+        // Fallback to global mouse position
+        currentMouseX = (window.mouseX || 0) - rect.left;
+        currentMouseY = (window.mouseY || 0) - rect.top;
+        console.log(`🖱️ Using global mouse position: X=${currentMouseX}, Y=${currentMouseY}`);
+      }
+      
+      // Only update if we have valid mouse coordinates
+      if (currentMouseX >= 0 && currentMouseX <= canvasWidth && 
+          currentMouseY >= 0 && currentMouseY <= canvasHeight) {
+        mouseTargetX = currentMouseX - playerShip.width / 2;
+        mouseTargetY = currentMouseY - playerShip.height / 2 - 5;
+        console.log(`🖱️ Mouse re-entered canvas - updated target to mouse position: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
+      } else {
+        // Fallback: set target to ship position if mouse coordinates are invalid
+        mouseTargetX = playerShip.x;
+        mouseTargetY = playerShip.y;
+        console.log(`🖱️ Mouse re-entered canvas - set target to ship position: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
+      }
     });
 
     // Disable mouse control when mouse leaves canvas
@@ -6681,6 +6745,11 @@ let reloadButtonInterval = null;
           // 🚀 IMPROVED: Keep mouse target at current ship position for smoother re-entry
           // Don't reset - this prevents the 300px jump when re-entering
           console.log(`🖱️ Mouse left canvas - keeping target at ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
+          
+          // 🔧 CRITICAL FIX: Store the last valid mouse position for re-entry
+          // This ensures we can restore the exact mouse position when re-entering
+          window.lastCanvasMouseX = mouseX;
+          window.lastCanvasMouseY = mouseY;
         }
       }, 100); // 100ms delay to prevent accidental disabling
     });
@@ -6695,6 +6764,10 @@ let reloadButtonInterval = null;
       const rect = canvas.getBoundingClientRect();
       mouseX = e.clientX - rect.left;
       mouseY = e.clientY - rect.top;
+      
+      // 🔧 CRITICAL FIX: Track global mouse coordinates for re-entry positioning
+      window.mouseX = e.clientX;
+      window.mouseY = e.clientY;
       
       // 🚀 IMPROVED: More precise mouse targeting with buffer zone
       const bufferZone = 5; // Small buffer zone for smoother edge movement
@@ -6720,6 +6793,13 @@ let reloadButtonInterval = null;
         }
         if (Math.abs(mouseTargetY - softLimitY) > 5) {
           mouseTargetY = softLimitY;
+        }
+        
+        // 🔧 CRITICAL FIX: Ensure mouse targets are always valid numbers
+        if (isNaN(mouseTargetX) || isNaN(mouseTargetY)) {
+          console.warn('⚠️ Invalid mouse targets detected, resetting to ship position');
+          mouseTargetX = playerShip.x;
+          mouseTargetY = playerShip.y;
         }
       }
       
