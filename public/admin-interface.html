@@ -4805,32 +4805,62 @@ require_once 'discord-invite.php';
         const data = await response.json();
         console.log('🎮 Games stats API data received:', data);
         
+        // Debug: Log the exact structure
+        console.log('🔍 Data structure analysis:', {
+          success: data.success,
+          hasData: !!data.data,
+          hasGames: !!(data.data && data.data.games),
+          gamesKeys: data.data && data.data.games ? Object.keys(data.data.games) : 'No games object',
+          fullData: data.data
+        });
+        
         if (data.success && data.data && data.data.games) {
           const games = data.data.games;
+          console.log('🎯 Processing games data:', games);
           
           // Load Tetris top players
           if (games.tetris && games.tetris.top_players) {
+            console.log('🧩 Tetris data found:', games.tetris.top_players);
             displayOverviewTetrisTopPlayers(games.tetris.top_players);
+          } else {
+            console.log('⚠️ No Tetris data or top_players found');
+            displayOverviewTetrisTopPlayers([]);
           }
           
           // Load Snake top players
           if (games.snake && games.snake.top_players) {
+            console.log('🐍 Snake data found:', games.snake.top_players);
             displayOverviewSnakeTopPlayers(games.snake.top_players);
+          } else {
+            console.log('⚠️ No Snake data or top_players found');
+            displayOverviewSnakeTopPlayers([]);
           }
           
           // Load Space Invaders top players (combined from both variants)
           if (games.space_invaders || games.cheese_invaders) {
+            console.log('👾 Space Invaders data found:', { space: games.space_invaders, cheese: games.cheese_invaders });
             displayOverviewSpaceInvadersTopPlayers(games);
+          } else {
+            console.log('⚠️ No Space Invaders data found');
+            displayOverviewSpaceInvadersTopPlayers({});
           }
           
           // Load Cheese Hunt statistics
           if (games.cheese_hunt) {
+            console.log('🧀 Cheese Hunt data found:', games.cheese_hunt);
             displayOverviewCheeseHuntStats(games.cheese_hunt);
+          } else {
+            console.log('⚠️ No Cheese Hunt data found');
+            displayOverviewCheeseHuntStats({});
           }
           
           // Load Discord Race statistics
           if (games.discord_race) {
+            console.log('🏁 Discord Race data found:', games.discord_race);
             displayOverviewDiscordRaceStats(games.discord_race);
+          } else {
+            console.log('⚠️ No Discord Race data found');
+            displayOverviewDiscordRaceStats({});
           }
           
           console.log('✅ Overview game statistics loaded successfully for all 5 games');
@@ -4840,13 +4870,28 @@ require_once 'discord-invite.php';
           updateDashboardStatus('Games data loaded');
         } else {
           console.error(`❌ Failed to load overview game statistics: ${data.error || 'No data available'}`);
+          console.error('❌ Data structure:', data);
           addLog(`❌ Failed to load overview game statistics: ${data.error || 'No data available'}`);
           updateDashboardStatus('Games data error');
+          
+          // Try to display empty data to show containers exist
+          displayOverviewTetrisTopPlayers([]);
+          displayOverviewSnakeTopPlayers([]);
+          displayOverviewSpaceInvadersTopPlayers({});
+          displayOverviewCheeseHuntStats({});
+          displayOverviewDiscordRaceStats({});
         }
       } catch (error) {
         console.error(`❌ Overview game statistics loading error: ${error.message}`);
         addLog(`❌ Overview game statistics loading error: ${error.message}`);
         updateDashboardStatus('Games data failed');
+        
+        // Display error state in all containers
+        displayOverviewTetrisTopPlayers([]);
+        displayOverviewSnakeTopPlayers([]);
+        displayOverviewSpaceInvadersTopPlayers({});
+        displayOverviewCheeseHuntStats({});
+        displayOverviewDiscordRaceStats({});
       }
     }
 
@@ -5901,6 +5946,14 @@ require_once 'discord-invite.php';
         // Load overview game stats
         if (typeof loadOverviewGameStats === 'function') {
           await loadOverviewGameStats();
+        }
+        
+        // Load enhanced dashboard statistics
+        try {
+          await loadEnhancedDashboardStats();
+        } catch (error) {
+          console.error('❌ Error loading enhanced dashboard stats:', error);
+          addLog(`❌ Error loading enhanced dashboard stats: ${error.message}`);
         }
         
         addLog('✅ Dashboard data loaded successfully');
@@ -16572,6 +16625,314 @@ function testGames2Tab() {
         startAutoRefreshSystem();
       }, 5000); // 5 seconds after page load
     });
+        // Load enhanced dashboard statistics
+        async function loadEnhancedDashboardStats() {
+      console.log('🚀 Loading enhanced dashboard statistics...');
+      addLog('🚀 Loading enhanced dashboard statistics...');
+      
+      try {
+        // Load enhanced statistics from available APIs
+        await loadEnhancedStatsFromAvailableAPIs();
+        
+        // Load user engagement data
+        await loadUserEngagementData();
+        
+        // Load wealth distribution data
+        await loadWealthDistributionData();
+        
+        addLog('✅ Enhanced dashboard statistics loaded successfully');
+      } catch (error) {
+        console.error('❌ Error loading enhanced dashboard stats:', error);
+        addLog(`❌ Error loading enhanced dashboard stats: ${error.message}`);
+        // Set default values on error
+        setDefaultEnhancedStats();
+      }
+    }
+
+    // Load enhanced stats from available APIs
+    async function loadEnhancedStatsFromAvailableAPIs() {
+      try {
+        console.log('📊 Loading enhanced stats from available APIs...');
+        
+        // Try to get enhanced stats from quest claims API
+        const questClaimsResponse = await fetch(API_BASE_URL + '/api/admin/get-enhanced-quest-claims.php?status=all');
+        const questClaimsData = await questClaimsResponse.json();
+        
+        if (questClaimsData.success && questClaimsData.claims) {
+          const claims = questClaimsData.claims;
+          const completedClaims = claims.filter(c => c.status === 'approved');
+          const pendingClaims = claims.filter(c => c.status === 'pending');
+          
+          console.log('📊 Quest claims data:', { total: claims.length, completed: completedClaims.length, pending: pendingClaims.length });
+          
+          // Update enhanced stats elements
+          updateEnhancedStatsElement('questCompletionRate', 
+            claims.length > 0 ? Math.round((completedClaims.length / claims.length) * 100) : 0, '%');
+          updateEnhancedStatsElement('questsClaimedToday', 
+            claims.filter(c => {
+              const today = new Date().toDateString();
+              const claimDate = new Date(c.claimed_at).toDateString();
+              return today === claimDate;
+            }).length);
+          updateEnhancedStatsElement('rolesGrantedToday', completedClaims.length);
+        }
+        
+        // Try to get cheese stats for clicks data
+        const cheeseStatsResponse = await fetch(API_BASE_URL + '/api/admin/get-cheese-stats.php');
+        const cheeseStatsData = await cheeseStatsResponse.json();
+        
+        if (cheeseStatsData.success && cheeseStatsData.stats) {
+          const stats = cheeseStatsData.stats;
+          console.log('📊 Cheese stats data:', stats);
+          
+          updateEnhancedStatsElement('clicksLast24h', stats.recent_24h || 0);
+          updateEnhancedStatsElement('avgClicksPerUser', 
+            stats.total_users > 0 ? Math.round(stats.total_clicks / stats.total_users) : 0);
+        }
+        
+        // Calculate total DSPOINC from quest claims
+        if (questClaimsData.success && questClaimsData.claims) {
+          const totalDspoinc = questClaimsData.claims
+            .filter(c => c.status === 'approved')
+            .reduce((sum, c) => sum + (parseInt(c.reward) || 0), 0);
+          updateEnhancedStatsElement('totalDSPOINC', totalDspoinc.toLocaleString());
+        }
+        
+        // Calculate average quest reward
+        if (questClaimsData.success && questClaimsData.claims) {
+          const approvedClaims = questClaimsData.claims.filter(c => c.status === 'approved');
+          const avgReward = approvedClaims.length > 0 ? 
+            Math.round(approvedClaims.reduce((sum, c) => sum + (parseInt(c.reward) || 0), 0) / approvedClaims.length) : 0;
+          updateEnhancedStatsElement('avgQuestReward', avgReward.toLocaleString());
+        }
+        
+        // Try to get new users today from stats API
+        try {
+          const statsResponse = await fetch(API_BASE_URL + '/api/admin/get-stats.php');
+          const statsData = await statsResponse.json();
+          
+          if (statsData.success) {
+            updateEnhancedStatsElement('newUsersToday', statsData.newUsers24h || statsData.newUsersToday || 0);
+          }
+        } catch (error) {
+          console.warn('⚠️ Could not load new users data:', error);
+          updateEnhancedStatsElement('newUsersToday', 0);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error loading enhanced stats from APIs:', error);
+        addLog(`❌ Error loading enhanced stats from APIs: ${error.message}`);
+      }
+    }
+
+    // Load user engagement data
+    async function loadUserEngagementData() {
+      try {
+        console.log('👥 Loading user engagement data...');
+        const container = document.getElementById('engagementStats');
+        if (!container) {
+          console.warn('⚠️ engagementStats element not found');
+          return;
+        }
+        
+        // Try to get recent user activity from multiple sources
+        let engagementData = {
+          newUsers24h: 0,
+          activeUsers24h: 0,
+          totalSessions: 0
+        };
+        
+        try {
+          const statsResponse = await fetch(API_BASE_URL + '/api/admin/get-stats.php');
+          const statsData = await statsResponse.json();
+          
+          if (statsData.success) {
+            engagementData = {
+              newUsers24h: statsData.newUsers24h || statsData.newUsersToday || 0,
+              activeUsers24h: statsData.activeUsers24h || statsData.activeUsers || 0,
+              totalSessions: statsData.totalSessions || statsData.totalScores || 0
+            };
+          }
+        } catch (error) {
+          console.warn('⚠️ Could not load engagement data from stats API:', error);
+        }
+        
+        // Try to get additional engagement data from quest claims
+        try {
+          const questClaimsResponse = await fetch(API_BASE_URL + '/api/admin/get-enhanced-quest-claims.php?status=all');
+          const questClaimsData = await questClaimsResponse.json();
+          
+          if (questClaimsData.success && questClaimsData.claims) {
+            const claims = questClaimsData.claims;
+            const today = new Date().toDateString();
+            
+            const claimsToday = claims.filter(c => {
+              const claimDate = new Date(c.claimed_at).toDateString();
+              return today === claimDate;
+            }).length;
+            
+            engagementData.questsToday = claimsToday;
+          }
+        } catch (error) {
+          console.warn('⚠️ Could not load quest engagement data:', error);
+        }
+        
+        const engagementHTML = `
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-gray-300">New Users (24h):</span>
+              <span class="text-green-400 font-semibold">${engagementData.newUsers24h}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">Active Users (24h):</span>
+              <span class="text-blue-400 font-semibold">${engagementData.activeUsers24h}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">Total Sessions:</span>
+              <span class="text-purple-400 font-semibold">${engagementData.totalSessions}</span>
+            </div>
+            ${engagementData.questsToday !== undefined ? `
+            <div class="flex justify-between">
+              <span class="text-gray-300">Quests Today:</span>
+              <span class="text-yellow-400 font-semibold">${engagementData.questsToday}</span>
+            </div>
+            ` : ''}
+          </div>
+        `;
+        container.innerHTML = engagementHTML;
+        console.log('✅ User engagement data loaded:', engagementData);
+        
+      } catch (error) {
+        console.error('❌ Error loading user engagement data:', error);
+        const container = document.getElementById('engagementStats');
+        if (container) {
+          container.innerHTML = '<div class="text-red-400">Error loading engagement data</div>';
+        }
+      }
+    }
+
+    // Load wealth distribution data
+    async function loadWealthDistributionData() {
+      try {
+        console.log('💰 Loading wealth distribution data...');
+        const container = document.getElementById('wealthStats');
+        if (!container) {
+          console.warn('⚠️ wealthStats element not found');
+          return;
+        }
+        
+        // Try to get wealth distribution from quest claims
+        const questClaimsResponse = await fetch(API_BASE_URL + '/api/admin/get-enhanced-quest-claims.php?status=approved');
+        const questClaimsData = await questClaimsResponse.json();
+        
+        if (questClaimsData.success && questClaimsData.claims) {
+          const claims = questClaimsData.claims;
+          const totalDspoinc = claims.reduce((sum, c) => sum + (parseInt(c.reward) || 0), 0);
+          const avgReward = claims.length > 0 ? Math.round(totalDspoinc / claims.length) : 0;
+          const topReward = Math.max(...claims.map(c => parseInt(c.reward) || 0), 0);
+          
+          // Calculate wealth distribution tiers
+          const wealthTiers = {
+            low: claims.filter(c => (parseInt(c.reward) || 0) < 100).length,
+            medium: claims.filter(c => (parseInt(c.reward) || 0) >= 100 && (parseInt(c.reward) || 0) < 500).length,
+            high: claims.filter(c => (parseInt(c.reward) || 0) >= 500).length
+          };
+          
+          const wealthHTML = `
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-300">Total DSPOINC:</span>
+                <span class="text-green-400 font-semibold">${totalDspoinc.toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-300">Average Reward:</span>
+                <span class="text-blue-400 font-semibold">${avgReward.toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-300">Top Reward:</span>
+                <span class="text-purple-400 font-semibold">${topReward.toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-300">Low Tier (<100):</span>
+                <span class="text-gray-400">${wealthTiers.low}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-300">High Tier (500+):</span>
+                <span class="text-yellow-400">${wealthTiers.high}</span>
+              </div>
+            </div>
+          `;
+          container.innerHTML = wealthHTML;
+          console.log('✅ Wealth distribution data loaded:', { totalDspoinc, avgReward, topReward, wealthTiers });
+        } else {
+          container.innerHTML = '<div class="text-gray-400">No wealth data available</div>';
+        }
+      } catch (error) {
+        console.error('❌ Error loading wealth distribution data:', error);
+        const container = document.getElementById('wealthStats');
+        if (container) {
+          container.innerHTML = '<div class="text-red-400">Error loading wealth data</div>';
+        }
+      }
+    }
+
+    // Update enhanced stats element with fallback and styling
+    function updateEnhancedStatsElement(elementId, value, suffix = '') {
+      const element = document.getElementById(elementId);
+      if (element) {
+        const displayValue = value + suffix;
+        element.textContent = displayValue;
+        
+        // Add visual styling based on value
+        if (value > 0) {
+          element.className = 'text-white font-semibold';
+          element.style.textShadow = '0 0 10px rgba(255, 255, 255, 0.3)';
+        } else if (value === 0) {
+          element.className = 'text-gray-400';
+          element.style.textShadow = 'none';
+        } else {
+          element.className = 'text-red-400';
+          element.style.textShadow = '0 0 10px rgba(239, 68, 68, 0.3)';
+        }
+        
+        console.log(`✅ Updated ${elementId}: ${displayValue}`);
+      } else {
+        console.warn(`⚠️ Element not found: ${elementId}`);
+      }
+    }
+
+    // Set default enhanced stats values with better formatting
+    function setDefaultEnhancedStats() {
+      console.log('🔄 Setting default enhanced stats values...');
+      
+      const defaultStats = {
+        'avgClicksPerUser': '0',
+        'totalDSPOINC': '0',
+        'questCompletionRate': '0%',
+        'avgQuestReward': '0',
+        'clicksLast24h': '0',
+        'newUsersToday': '0',
+        'questsClaimedToday': '0',
+        'rolesGrantedToday': '0'
+      };
+      
+      Object.entries(defaultStats).forEach(([elementId, value]) => {
+        updateEnhancedStatsElement(elementId, value, elementId === 'questCompletionRate' ? '' : '');
+      });
+      
+      // Set default engagement and wealth displays
+      const engagementContainer = document.getElementById('engagementStats');
+      if (engagementContainer) {
+        engagementContainer.innerHTML = '<div class="text-gray-400">No engagement data available</div>';
+      }
+      
+      const wealthContainer = document.getElementById('wealthStats');
+      if (wealthContainer) {
+        wealthContainer.innerHTML = '<div class="text-gray-400">No wealth data available</div>';
+      }
+      
+      console.log('✅ Default enhanced stats values set');
+    }
   </script>
 
 </body>
