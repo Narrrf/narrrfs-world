@@ -103,3 +103,17 @@
     "discord_name": "Anonymous Mouse",
     "game": "space_invaders"
 }
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 1625,
+    "discord_id": "1337",
+    "discord_name": "Anonymous Mouse",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 1050,
+    "discord_id": "1337",
+    "discord_name": "Anonymous Mouse",
+    "game": "space_invaders"
+}

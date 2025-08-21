@@ -1028,7 +1028,7 @@ let reloadButtonInterval = null;
       console.log('📤 Sending boss notification data:', notificationData);
       
       // Send notification to admin API
-      fetch(apiBaseUrl + '/api/admin/boss-level-notification.php', {
+      fetch(API_BASE_URL + '/api/admin/boss-level-notification.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -3126,16 +3126,25 @@ let reloadButtonInterval = null;
     
     // 🖱️ NEW: Setup mouse controls for desktop
     setTimeout(() => {
+      // 🔧 CRITICAL FIX: Initialize mouse target to ship position
+      mouseTargetX = playerShip.x;
+      mouseTargetY = playerShip.y;
+      console.log(`🖱️ Initial mouse target set to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
+      
       setupMouseControls();
       console.log('✅ Mouse controls setup completed');
+      
+      // 🧀 NEW: Add global mouse tracking for custom cursor
+      globalMouseListener = updateCustomCursorPosition;
+      document.addEventListener('mousemove', globalMouseListener);
       
       // Test mouse control variables
       console.log('🖱️ Mouse control test:', {
         isMouseControlEnabled,
         isMouseOverCanvas,
         isSpaceInvadersPaused,
-        mouseTargetX: window.mouseTargetX,
-        mouseTargetY: window.mouseTargetY
+        mouseTargetX: mouseTargetX,
+        mouseTargetY: mouseTargetY
       });
     }, 300);
     
@@ -3300,7 +3309,7 @@ let reloadButtonInterval = null;
 
     // 💰 Load DSPOINC settings from admin panel
   function loadDspoinSettings() {
-    fetch('/api/admin/space-invaders-settings.php')
+    fetch(API_BASE_URL + '/api/admin/space-invaders-settings.php')
       .then(response => response.json())
       .then(data => {
         if (data.success && data.settings) {
@@ -3419,6 +3428,12 @@ let reloadButtonInterval = null;
     setTimeout(() => {
       ensureMobileControlsVisible();
     }, 150);
+    
+    // 🧀 NEW: Reset custom cursor when game is reset
+    cleanupCustomCursor();
+    setTimeout(() => {
+      showCustomCursor();
+    }, 200);
   }
 
   function gameLoop() {
@@ -5667,6 +5682,9 @@ let reloadButtonInterval = null;
     // Save score to database
     saveScore(spaceInvadersScore); // 🚀 CRITICAL FIX: Save traditional score instead of invader count
     cleanupSpaceInvadersControls();
+    
+    // 🧀 NEW: Clean up custom cursor when game ends
+    cleanupCustomCursor();
 
     // 🆘 NEW: Ensure mobile controls are visible when game ends
     setTimeout(() => {
@@ -6099,8 +6117,8 @@ let reloadButtonInterval = null;
         isMouseControlEnabled, 
         isMouseOverCanvas, 
         isSpaceInvadersPaused,
-        mouseTargetX: window.mouseTargetX,
-        mouseTargetY: window.mouseTargetY
+        mouseTargetX: mouseTargetX,
+        mouseTargetY: mouseTargetY
       });
     }
     
@@ -6114,9 +6132,9 @@ let reloadButtonInterval = null;
       const oldY = playerShip.y;
       
       // 🚀 IMPROVED: Much more responsive mouse movement
-      const easing = 0.35; // Increased from 0.15 for faster response
-      const minMoveDistance = 0.3; // Reduced threshold for more responsive movement
-      const maxMoveDistance = 10; // Maximum movement per frame to prevent jumping
+      const easing = 0.45; // Increased from 0.35 for even faster response
+      const minMoveDistance = 0.1; // Reduced threshold for more responsive movement
+      const maxMoveDistance = 15; // Increased maximum movement for better responsiveness
       
       // Calculate movement with improved responsiveness
       const deltaX = mouseTargetX - playerShip.x;
@@ -6532,6 +6550,118 @@ let reloadButtonInterval = null;
     }
   }
 
+  // 🧀 NEW: Custom cheese cursor system
+  let customCursor = null;
+  let globalMouseListener = null;
+  
+  function showCustomCursor() {
+    if (customCursor) return; // Already exists
+    
+    // Create custom cursor element
+    customCursor = document.createElement('div');
+    customCursor.id = 'custom-cheese-cursor';
+          customCursor.innerHTML = `
+      <div style="
+        position: fixed;
+        pointer-events: none;
+        z-index: 10000;
+        width: 32px;
+        height: 32px;
+        background: radial-gradient(circle, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+        border: 3px solid #ff8c00;
+        border-radius: 50%;
+        box-shadow: 
+          0 0 15px rgba(255, 215, 0, 1),
+          0 0 25px rgba(255, 215, 0, 0.8),
+          0 0 35px rgba(255, 215, 0, 0.6),
+          0 0 45px rgba(255, 215, 0, 0.4);
+        transform: translate(-50%, -50%);
+        animation: cheeseCursorGlow 1.5s ease-in-out infinite alternate;
+      ">
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 16px;
+          height: 16px;
+          background: #ff6b35;
+          border-radius: 50%;
+          border: 1px solid #ff4500;
+        "></div>
+        <div style="
+          position: absolute;
+          top: 20%;
+          left: 30%;
+          width: 4px;
+          height: 4px;
+          background: #ff4500;
+          border-radius: 50%;
+        "></div>
+        <div style="
+          position: absolute;
+          top: 25%;
+          left: 60%;
+          width: 3px;
+          height: 3px;
+          background: #ff4500;
+          border-radius: 50%;
+        "></div>
+      </div>
+    `;
+    
+    // Add CSS animation for the glow effect
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes cheeseCursorGlow {
+        0% { 
+          box-shadow: 
+            0 0 15px rgba(255, 215, 0, 1),
+            0 0 25px rgba(255, 215, 0, 0.8),
+            0 0 35px rgba(255, 215, 0, 0.6),
+            0 0 45px rgba(255, 215, 0, 0.4);
+          transform: translate(-50%, -50%) scale(1);
+        }
+        100% { 
+          box-shadow: 
+            0 0 20px rgba(255, 215, 0, 1),
+            0 0 35px rgba(255, 215, 0, 0.9),
+            0 0 50px rgba(255, 215, 0, 0.7),
+            0 0 65px rgba(255, 215, 0, 0.5);
+          transform: translate(-50%, -50%) scale(1.1);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(customCursor);
+    console.log('🧀 Custom cheese cursor created and shown');
+  }
+  
+  function hideCustomCursor() {
+    if (customCursor && customCursor.parentNode) {
+      customCursor.parentNode.removeChild(customCursor);
+      customCursor = null;
+      console.log('🧀 Custom cheese cursor hidden');
+    }
+  }
+  
+  function cleanupCustomCursor() {
+    hideCustomCursor();
+    if (globalMouseListener) {
+      document.removeEventListener('mousemove', globalMouseListener);
+      globalMouseListener = null;
+      console.log('🧀 Custom cursor cleanup completed');
+    }
+  }
+  
+  function updateCustomCursorPosition(e) {
+    if (customCursor) {
+      customCursor.style.left = e.clientX + 'px';
+      customCursor.style.top = e.clientY + 'px';
+    }
+  }
+  
   // 🖱️ NEW: Mouse control functions
   function setupMouseControls() {
     const canvas = document.getElementById('space-invaders-canvas');
@@ -6551,6 +6681,10 @@ let reloadButtonInterval = null;
       // Visual feedback: Add a border to show mouse control is active
       canvas.style.border = '3px solid #10b981';
       canvas.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.5)';
+      
+      // 🧀 NEW: Hide default cursor and show custom cheese cursor
+      canvas.style.cursor = 'none';
+      showCustomCursor();
     });
 
     // Disable mouse control when mouse leaves canvas
@@ -6566,9 +6700,16 @@ let reloadButtonInterval = null;
           canvas.style.border = '';
           canvas.style.boxShadow = '';
           
+          // 🧀 NEW: Show default cursor when leaving canvas
+          canvas.style.cursor = 'default';
+          hideCustomCursor();
+          
           // 🚀 IMPROVED: Reset mouse target when leaving canvas for smoother re-entry
           mouseTargetX = playerShip.x;
           mouseTargetY = playerShip.y;
+          
+          // 🔧 CRITICAL FIX: Ensure initial mouse target is properly set
+          console.log(`🖱️ Reset mouse target to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
         }
       }, 100); // 100ms delay to prevent accidental disabling
     });
@@ -6576,6 +6717,9 @@ let reloadButtonInterval = null;
     // Track mouse position for ship movement
     canvas.addEventListener('mousemove', (e) => {
       if (!isMouseControlEnabled || !isMouseOverCanvas || isSpaceInvadersPaused) return;
+      
+      // 🧀 NEW: Update custom cursor position
+      updateCustomCursorPosition(e);
       
       const rect = canvas.getBoundingClientRect();
       mouseX = e.clientX - rect.left;
@@ -6588,19 +6732,31 @@ let reloadButtonInterval = null;
       if (mouseX >= -bufferZone && mouseX <= canvasWidth + bufferZone && 
           mouseY >= -bufferZone && mouseY <= canvasHeight + bufferZone) {
         
-        // Set mouse target position for smooth movement
+        // Set mouse target position for smooth movement - ship center on mouse cursor
         mouseTargetX = mouseX - playerShip.width / 2;
         mouseTargetY = mouseY - playerShip.height / 2;
+        
+        // 🔧 PRECISION FIX: Make ship feel directly connected to mouse cursor
+        // Adjust Y offset to make ship feel more responsive and centered
+        mouseTargetX = mouseX - playerShip.width / 2;
+        mouseTargetY = mouseY - playerShip.height / 2 - 5; // Small Y offset for better feel
         
         // Keep target within canvas bounds with slight margin
         const margin = 2; // Small margin for smoother edge movement
         mouseTargetX = Math.max(margin, Math.min(canvasWidth - playerShip.width - margin, mouseTargetX));
         mouseTargetY = Math.max(margin, Math.min(canvasHeight - playerShip.height - margin, mouseTargetY));
+        
+        // 🔧 CRITICAL FIX: Ensure mouse target Y is properly aligned with game coordinates
+        // The ship should stay within the playable area (not too high, not too low)
+        const minY = 50; // Minimum Y position (top of playable area)
+        const maxY = canvasHeight - playerShip.height - 20; // Maximum Y position (bottom with margin)
+        mouseTargetY = Math.max(minY, Math.min(maxY, mouseTargetY));
       }
       
       // Debug: Log mouse movement (reduced frequency to avoid spam)
       if (Date.now() % 500 < 16) { // Log every 0.5 seconds
         console.log(`🖱️ Mouse: X=${mouseX.toFixed(1)}, Y=${mouseY.toFixed(1)}, Target: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
+        console.log(`🖱️ Canvas: Width=${canvasWidth}, Height=${canvasHeight}, Ship: X=${playerShip.x.toFixed(1)}, Y=${playerShip.y.toFixed(1)}`);
       }
       
       // Auto-shoot when mouse moves (if enabled)
@@ -7162,12 +7318,13 @@ window.emergencyCollisionCheck = function() {
     console.log(`💾 Saving Space Invaders score: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
 
     // 🌍 Environment-aware API endpoint (works both locally and in production)
-    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
-    const apiBaseUrl = isProduction ? 'http://localhost/narrrfs-world' : '';
-    const apiUrl = `${apiBaseUrl}/api/dev/save-score.php`;
+    const apiUrl = `${API_BASE_URL}/api/dev/save-score.php`;
     
-    console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+    console.log(`🌍 Environment: ${window.location.hostname === 'narrrfs.world' ? 'Production' : 'Local'}`);
     console.log(`🔗 API URL: ${apiUrl}`);
+    console.log(`🔑 Discord ID: ${discordId}`);
+    console.log(`👤 Discord Name: ${discordName}`);
+    console.log(`💰 Wallet: ${wallet}`);
 
     // Save to the same API endpoint as Tetris and Snake
     fetch(apiUrl, {
@@ -7195,13 +7352,17 @@ window.emergencyCollisionCheck = function() {
       return response.json();
     })
     .then(data => {
+      console.log(`📨 Server response:`, data);
       if (data.success) {
         console.log(`✅ Space Invaders score saved successfully: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
+        console.log(`🎯 Score ID: ${data.score_id || 'N/A'}`);
+        console.log(`📊 Database confirmation: ${data.message || 'Score recorded'}`);
       } else {
         if (data.local_test) {
           console.log(`🔄 Local testing detected - score would be saved in production: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
         } else {
           console.error('❌ Failed to save Space Invaders score:', data.error || 'Unknown error');
+          console.error('❌ Error details:', data);
         }
       }
     })
