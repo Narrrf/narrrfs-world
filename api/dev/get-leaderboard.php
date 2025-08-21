@@ -19,7 +19,8 @@ try {
     $seasonStmt->execute();
     $currentSeason = $seasonStmt->fetchColumn() ?: 'season_1'; // Fallback to season_1
     
-    echo "<!-- Current season detected: $currentSeason -->\n";
+    // Log the current season for debugging (but don't output to response)
+    error_log("Current season detected: $currentSeason");
     
     // Get Tetris leaderboard (from tbl_tetris_scores) - current season only
     $tetrisStmt = $db->prepare("
