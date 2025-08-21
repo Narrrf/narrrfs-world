@@ -114,6 +114,25 @@ require_once 'discord-invite.php';
       border-color: rgba(251, 191, 36, 0.5);
     }
 
+    /* 💣 Bomb defuse popup animation */
+    @keyframes pop {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .animate-pop {
+      animation: pop 0.4s ease-out;
+    }
 
   </style>
 </head>
@@ -581,9 +600,17 @@ require_once 'discord-invite.php';
     <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">TETRIS SPOINC MODE</h2>
     <canvas id="tetris-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
     
+    <!-- 🔮 Next Block Preview -->
+    <div class="text-center mt-4">
+      <p class="text-yellow-300 text-sm mb-2">Next Block:</p>
+      <canvas id="next-canvas" width="80" height="80" class="bg-gray-900 rounded-md block mx-auto"></canvas>
+    </div>
+    
     <div class="text-center mt-4 space-y-2">
       <button id="start-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
-      <button id="pause-tetris-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
+      <button id="pause-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">⏸️ Pause</button>
+      <p id="spoink-score" class="text-yellow-300 font-mono text-lg">💰 $DSPOINC earned: 0</p>
+      <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1">💣 Incoming Cheese Bomb!</p>
     </div>
     
     <p id="tetris-score" class="text-center mt-6 text-sm font-semibold text-yellow-200">💰 Tetris Score: $0 DSPOINC</p>
@@ -592,9 +619,14 @@ require_once 'discord-invite.php';
     <div id="game-over-modal" class="hidden absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm rounded-3xl">
       <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
         <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
-        <p id="tetris-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+        <p id="final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
         <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
       </div>
+    </div>
+    
+    <!-- 💣 Bomb Defused Popup -->
+    <div id="bomb-defused-popup" class="absolute top-[420px] right-6 md:right-12 bg-yellow-300 text-black px-2 py-1 rounded-lg text-xs md:text-sm shadow-lg hidden z-50 scale-75">
+      💣 BOMB DEFUSED! +50 DSPOINC
     </div>
   </section>
 
