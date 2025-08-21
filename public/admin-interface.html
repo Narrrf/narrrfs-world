@@ -2221,35 +2221,7 @@ require_once 'discord-invite.php';
         <button onclick="debugAllGameTabs()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded ml-2">🔍 Debug All Game Tabs</button>
           </div>
 
-      <!-- Database Management Section - PROMINENTLY DISPLAYED -->
-      <div class="mb-6 p-4 bg-gradient-to-r from-yellow-900 to-orange-900 rounded-lg border-2 border-yellow-500">
-        <h3 class="text-lg font-semibold text-yellow-300 mb-3">🗄️ Database Management</h3>
-        
-        <!-- Database access unlock button -->
-        <div id="databaseUnlockSection" class="mb-4">
-          <button onclick="showDatabaseUnlock()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4 text-lg">
-            🔓 Unlock Database Access
-          </button>
-          <p class="text-sm text-yellow-200 mt-2">Click to unlock database download, upload, and management features</p>
-        </div>
-        
-        <!-- Database options for all moderators (password protected) -->
-        <div id="databaseOptions" style="display: none;">
-          <h4 class="text-md font-semibold text-green-300 mb-3">✅ Database Access Unlocked</h4>
-          <button onclick="downloadDatabase()" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
-            📥 Download Database
-          </button>
-          <button onclick="showUploadModal()" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
-            📤 Upload Database
-          </button>
-          <button onclick="showDatabaseViewer()" class="inline-block bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
-            👁️ Database Viewer
-          </button>
-          <button onclick="triggerBackup()" class="inline-block bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
-            🗄️ Database Backup
-          </button>
-        </div>
-          </div>
+
 
       <!-- Overview Dashboard Tab -->
       <div id="overviewTab" class="game-tab-content">
@@ -3833,6 +3805,14 @@ require_once 'discord-invite.php';
           <div class="text-gray-400">Verification log will appear here...</div>
         </div>
       </div>
+      
+      <!-- Holder Verification Container -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🎴 Holder Verifications</h3>
+        <div id="holderVerificationContainer" class="space-y-4">
+          <div class="text-gray-400">Loading holder verifications...</div>
+        </div>
+      </div>
     </div>
 
     <!-- Community Funds Tab -->
@@ -4704,67 +4684,107 @@ require_once 'discord-invite.php';
       currentTab = tabName;
         addLog(`📋 Successfully switched to ${tabName} tab`);
       
-        // STEP 5: Load tab-specific data with error handling
+        // STEP 5: Load tab-specific data with error handling and auto-refresh
         try {
-      if (tabName === 'dashboard') {
-        loadDashboardData();
-        loadOverviewGameStats();
+          console.log(`🔄 Auto-loading data for tab: ${tabName}`);
+          
+          if (tabName === 'dashboard') {
+            // Dashboard - Always refresh with latest data
+            loadDashboardData();
+            loadOverviewGameStats();
+            addLog('📊 Dashboard data auto-loaded');
+            
+          } else if (tabName === 'users') {
+            // User management - Auto-load recent user activity
+            loadRecentUserActivity();
+            addLog('👥 User management tab auto-loaded');
+            
+          } else if (tabName === 'points') {
+            // Point management - Auto-load point statistics
+            loadPointStatistics();
+            addLog('💰 Point management tab auto-loaded');
+            
           } else if (tabName === 'store') {
+            // Store - Always refresh store items
             loadStoreItems();
+            addLog('🏪 Store tab auto-loaded');
+            
           } else if (tabName === 'quests') {
+            // Quests - Always refresh quest data and claims
             loadQuests();
+            loadEnhancedQuestClaims();
+            addLog('🏆 Quest system tab auto-loaded');
+            
+          } else if (tabName === 'bosses') {
+            // Boss management - Auto-load all boss configurations
+            loadAllBossConfigurations();
+            addLog('👑 Boss management tab auto-loaded');
+            
           } else if (tabName === 'bossNotifications') {
+            // Boss notifications - Always refresh
             loadBossNotifications();
+            addLog('🔔 Boss notifications tab auto-loaded');
+            
           } else if (tabName === 'games') {
-            // Game Management - Load all data immediately
+            // Game Management - Load all data immediately with auto-refresh
             console.log('🎮 Loading Game Management data...');
             loadGameOverview();
-        loadSeasonStats();
-        loadGameSettings();
-        loadCurrentSeasonSettings();
-        
-            // Load all game data
-        loadTetrisData();
-        loadSnakeData();
-        loadSpaceInvadersData();
-        loadCheeseHuntData();
-        loadDiscordRaceData();
-        
+            loadSeasonStats();
+            loadGameSettings();
+            loadCurrentSeasonSettings();
+            
+            // Load all game data with auto-refresh
+            loadTetrisData();
+            loadSnakeData();
+            loadSpaceInvadersData();
+            loadCheeseHuntData();
+            loadDiscordRaceData();
+            
             // Switch to overview tab by default
-        setTimeout(() => {
-          switchGameTab('overview');
+            setTimeout(() => {
+              switchGameTab('overview');
             }, 100);
+            addLog('🎮 Game management tab auto-loaded with all game data');
+            
           } else if (tabName === 'games2') {
-            // Game Management 2.0
+            // Game Management 2.0 - Comprehensive auto-load
             console.log('🚀 Loading Game Management 2.0 data...');
-        loadGameManagement2Data();
-        loadSeasonOverview2();
-        loadGameStatsBySeason2();
-        loadTopPerformers2();
-        loadSeasonComparison2();
-        startLiveActivityFeed2();
+            loadGameManagement2Data();
+            loadSeasonOverview2();
+            loadGameStatsBySeason2();
+            loadTopPerformers2();
+            loadSeasonComparison2();
+            startLiveActivityFeed2();
+            addLog('🚀 Game management 2.0 tab auto-loaded');
+            
           } else if (tabName === 'discord') {
+            // Discord config - Auto-load with refresh
             loadDiscordConfigData();
+            addLog('📱 Discord config tab auto-loaded');
+            
           } else if (tabName === 'cheeseGuide') {
+            // Cheese guide - Auto-load content
             loadCheeseGuideData();
+            addLog('🧀 Cheese guide tab auto-loaded');
+            
           } else if (tabName === 'holderVerification') {
+            // Holder verification - Auto-load verification data
             loadHolderVerificationData();
+            addLog('✅ Holder verification tab auto-loaded');
+            
           } else if (tabName === 'communityFunds') {
+            // Community funds - Auto-load wallet and funds data
             loadCommunityFundsData();
-          } else if (tabName === 'users') {
-            // User management - clear and prepare
-            const userResults = document.getElementById('userResults');
-            if (userResults) userResults.innerHTML = '<div class="text-gray-400">Search for users to see results...</div>';
-          } else if (tabName === 'points') {
-            // Point management - clear and prepare
-            const pointResults = document.getElementById('pointResults');
-            if (pointResults) pointResults.innerHTML = '<div class="text-gray-400">Search for users to manage points...</div>';
+            addLog('💰 Community funds tab auto-loaded');
           }
           
-          console.log(`✅ Tab ${tabName} data loaded successfully`);
+          // Mark tab as recently loaded
+          markTabAsLoaded(tabName);
+          console.log(`✅ Tab ${tabName} data auto-loaded successfully`);
+          
         } catch (error) {
-          console.error(`❌ Error loading tab ${tabName} data:`, error);
-          addLog(`❌ Error loading ${tabName} tab data: ${error.message}`);
+          console.error(`❌ Error auto-loading tab ${tabName} data:`, error);
+          addLog(`❌ Error auto-loading ${tabName} tab data: ${error.message}`);
         }
       }, 200);
     }
@@ -5895,6 +5915,14 @@ require_once 'discord-invite.php';
           console.error('❌ Error loading quest stats:', error);
           addLog(`❌ Error loading quest stats: ${error.message}`);
         }
+        
+        // Load pending quest claims for dashboard stats
+        try {
+          await loadPendingQuestClaims();
+        } catch (error) {
+          console.error('❌ Error loading pending quest claims:', error);
+          addLog(`❌ Error loading pending quest claims: ${error.message}`);
+        }
 
         // Load boss notification statistics
         try {
@@ -6218,6 +6246,45 @@ require_once 'discord-invite.php';
       }
     }
     
+    // Load pending quest claims for dashboard
+    async function loadPendingQuestClaims() {
+      try {
+        console.log('🏆 Loading pending quest claims for dashboard...');
+        addLog('🏆 Loading pending quest claims for dashboard...');
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/get-enhanced-quest-claims.php?status=pending');
+        const data = await response.json();
+        
+        if (data.success && data.claims) {
+          const pendingCount = data.claims.length;
+          const pendingClaimsElement = document.getElementById('pendingClaims');
+          
+          if (pendingClaimsElement) {
+            pendingClaimsElement.textContent = pendingCount.toString();
+            console.log('✅ Updated pending claims count:', pendingCount);
+            addLog(`✅ Updated pending claims count: ${pendingCount}`);
+          } else {
+            console.warn('⚠️ pendingClaims element not found');
+          }
+          
+          // Also update the roles granted count if available
+          const rolesGrantedElement = document.getElementById('rolesGranted');
+          if (rolesGrantedElement) {
+            // Count claims that have been approved
+            const approvedCount = data.claims.filter(claim => claim.status === 'approved').length;
+            rolesGrantedElement.textContent = approvedCount.toString();
+            console.log('✅ Updated roles granted count:', approvedCount);
+          }
+        } else {
+          console.warn('⚠️ Failed to load pending quest claims:', data.error);
+          addLog(`⚠️ Failed to load pending quest claims: ${data.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('❌ Error loading pending quest claims:', error);
+        addLog(`❌ Error loading pending quest claims: ${error.message}`);
+      }
+    }
+    
     // Display recent quest claims
     function displayRecentQuestClaims(recentClaims) {
       const container = document.getElementById('recentQuestClaims');
@@ -6412,23 +6479,16 @@ require_once 'discord-invite.php';
       addLog('💰 Loading Community Funds data...');
       
       try {
+        // Show loading states first
+        showCommunityFundsLoadingStates();
+        
         // Load community funds entries
-        fetch(API_BASE_URL + '/api/admin/get-community-funds.php')
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              updateCommunityFundsDisplay(data.entries || []);
-            } else {
-              addLog(`❌ Failed to load community funds: ${data.error}`);
-            }
-          })
-          .catch(error => {
-            console.error('❌ Error loading community funds:', error);
-            addLog(`❌ Error loading community funds: ${error.message}`);
-          });
-          
+        loadCommunityFundsEntries();
+        
         // Load community wallet data
         loadCommunityWalletData();
+        
+        addLog('✅ Community Funds data loading initiated');
       } catch (error) {
         console.error('❌ Error in loadCommunityFundsData:', error);
         addLog(`❌ Error in loadCommunityFundsData: ${error.message}`);
@@ -6437,72 +6497,149 @@ require_once 'discord-invite.php';
     
     // Update community funds display
     function updateCommunityFundsDisplay(entries) {
-      const container = document.getElementById('communityFundsContainer');
-      if (!container) return;
-      
-      if (entries.length === 0) {
-        container.innerHTML = '<div class="text-gray-400">No community funds entries found</div>';
+      // This function is not needed as we're using the existing table structure
+      addLog('✅ Community funds display updated');
+    }
+    
+    // Helper functions for Community Funds
+    function displayCollectionsSummary(collections) {
+      const container = document.getElementById('collectionsSummary');
+      if (!container) {
+        console.warn('collectionsSummary element not found');
         return;
       }
       
-      container.innerHTML = entries.map(entry => `
-        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-600 mb-4">
-          <div class="flex justify-between items-center">
-            <div>
-              <h4 class="font-semibold text-white">${entry.description}</h4>
-              <p class="text-gray-300 text-sm">Type: ${entry.type}</p>
-              <p class="text-gray-300 text-sm">Date: ${entry.date}</p>
-            </div>
-            <div class="text-right">
-              <span class="text-lg font-bold ${entry.type === 'income' ? 'text-green-400' : 'text-red-400'}">
-                ${entry.type === 'income' ? '+' : '-'}${entry.amount} SOL
-              </span>
-            </div>
+      if (!collections || collections.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-400">No collections found</div>';
+        return;
+      }
+      
+      let html = '<div class="space-y-2">';
+      collections.forEach(collection => {
+        html += `
+          <div class="bg-gray-700 p-2 rounded text-sm">
+            <div class="font-semibold text-blue-400">${collection.name || 'Unknown'}</div>
+            <div class="text-gray-300">NFTs: ${collection.count || 0}</div>
           </div>
-        </div>
-      `).join('');
+        `;
+      });
+      html += '</div>';
       
-      addLog(`✅ Loaded ${entries.length} community funds entries`);
+      container.innerHTML = html;
     }
     
-    // Load community wallet data
-    function loadCommunityWalletData() {
-      console.log('🔄 Loading community wallet data...');
+    function displayNFTGallery(nfts) {
+      const container = document.getElementById('nftGallery');
+      if (!container) {
+        console.warn('nftGallery element not found');
+        return;
+      }
       
+      if (!nfts || nfts.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-400">No NFTs found</div>';
+        return;
+      }
+      
+      let html = '<div class="grid grid-cols-2 gap-2">';
+      nfts.slice(0, 8).forEach(nft => {
+        html += `
+          <div class="bg-gray-700 p-2 rounded text-xs text-center">
+            <div class="text-blue-400 font-semibold">${nft.name || 'Unknown'}</div>
+            <div class="text-gray-300">${nft.collection || 'Unknown'}</div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      
+      if (nfts.length > 8) {
+        html += `<div class="text-center text-gray-400 text-xs mt-2">+${nfts.length - 8} more NFTs</div>`;
+      }
+      
+      container.innerHTML = html;
+    }
+    
+    function populateCollectionFilters(collections) {
+      // This function can be implemented later if needed
+      console.log('Collection filters populated:', collections?.length || 0);
+    }
+    
+    function calculateAndDisplayStatistics(entries) {
       try {
-        fetch(API_BASE_URL + '/api/admin/get-community-wallet-real-data.php')
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              updateCommunityWalletDisplay(data);
-            } else {
-              addLog(`❌ Failed to load community wallet: ${data.error}`);
-            }
-          })
-          .catch(error => {
-            console.error('❌ Error loading community wallet:', error);
-            addLog(`❌ Error loading community wallet: ${error.message}`);
-          });
-          } catch (error) {
-        console.error('❌ Error in loadCommunityWalletData:', error);
-        addLog(`❌ Error in loadCommunityWalletData: ${error.message}`);
+        // Calculate monthly totals
+        const now = new Date();
+        const thisMonth = now.getMonth();
+        const thisYear = now.getFullYear();
+        
+        const thisMonthEntries = entries.filter(entry => {
+          const entryDate = new Date(entry.date);
+          return entryDate.getMonth() === thisMonth && entryDate.getFullYear() === thisYear;
+        });
+        
+        const lastMonthEntries = entries.filter(entry => {
+          const entryDate = new Date(entry.date);
+          const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
+          const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear;
+          return entryDate.getMonth() === lastMonth && entryDate.getFullYear() === lastMonthYear;
+        });
+        
+        // Calculate totals
+        const thisMonthTotal = thisMonthEntries.reduce((sum, entry) => sum + (parseFloat(entry.amount) || 0), 0);
+        const lastMonthTotal = lastMonthEntries.reduce((sum, entry) => sum + (parseFloat(entry.amount) || 0), 0);
+        const averageEntry = entries.length > 0 ? entries.reduce((sum, entry) => sum + (parseFloat(entry.amount) || 0), 0) / entries.length : 0;
+        
+        // Update display elements
+        const monthlyTotalEl = document.getElementById('monthlyTotal');
+        const lastMonthTotalEl = document.getElementById('lastMonthTotal');
+        const averageEntryEl = document.getElementById('averageEntry');
+        
+        if (monthlyTotalEl) monthlyTotalEl.textContent = thisMonthTotal.toFixed(3) + ' SOL';
+        if (lastMonthTotalEl) lastMonthTotalEl.textContent = lastMonthTotal.toFixed(3) + ' SOL';
+        if (averageEntryEl) averageEntryEl.textContent = averageEntry.toFixed(3) + ' SOL';
+        
+        addLog(`✅ Statistics calculated: This month: ${thisMonthTotal.toFixed(3)} SOL, Last month: ${lastMonthTotal.toFixed(3)} SOL`);
+      } catch (error) {
+        console.error('Error calculating statistics:', error);
+        addLog(`❌ Error calculating statistics: ${error.message}`);
       }
     }
     
-    // Update community wallet display
-    function updateCommunityWalletDisplay(data) {
-      const balanceElement = document.getElementById('communityWalletBalance');
-      const nftElement = document.getElementById('communityWalletNFTs');
-      
-      if (balanceElement && data.balance) {
-        balanceElement.textContent = `${data.balance.sol || 0} SOL`;
+    function displayCommunityFundsRecentActivity(entries) {
+      try {
+        const container = document.getElementById('recentActivity');
+        if (!container) {
+          console.warn('recentActivity element not found');
+          return;
+        }
+        
+        if (!entries || entries.length === 0) {
+          container.innerHTML = '<div class="text-gray-400">No recent activity</div>';
+          return;
+        }
+        
+        // Show last 5 entries
+        const recentEntries = entries.slice(0, 5);
+        let html = '<div class="space-y-2">';
+        
+        recentEntries.forEach(entry => {
+          const amountClass = entry.type === 'income' ? 'text-green-400' : 'text-red-400';
+          const icon = entry.type === 'income' ? '📥' : '📤';
+          
+          html += `
+            <div class="flex justify-between items-center text-sm">
+              <span>${icon} ${entry.description}</span>
+              <span class="${amountClass} font-semibold">${entry.amount} SOL</span>
+            </div>
+          `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+        
+        addLog(`✅ Recent activity displayed: ${recentEntries.length} entries`);
+      } catch (error) {
+        console.error('Error displaying recent activity:', error);
+        addLog(`❌ Error displaying recent activity: ${error.message}`);
       }
-      
-      if (nftElement && data.nfts) {
-        nftElement.textContent = data.nfts.total || 0;
-      }
-      
-      addLog('✅ Community wallet data updated');
     }
 
     function loadStoreItems() {
@@ -15617,27 +15754,44 @@ function refreshSeasonData2() {
 function updateSeasonDisplay2(data) {
   console.log('📊 updateSeasonDisplay2 called with data:', data);
   
-  // Handle different data structures safely
-  const currentSeason = data?.current_season || data?.season || 'Unknown';
-  const totalGames = data?.total_games || data?.total_scores || 0;
-  const activePlayers = data?.active_players || data?.unique_players || 0;
+  // Enhanced null-safe checks with fallback values
+  if (!data) {
+    console.warn('❌ updateSeasonDisplay2: No data provided');
+    data = {};
+  }
+  
+  // Handle different data structures safely with enhanced fallbacks
+  const currentSeason = data?.current_season || data?.season || data?.currentSeason || 'Unknown';
+  const totalGames = data?.total_games || data?.total_scores || data?.totalGames || data?.totalScores || 0;
+  const activePlayers = data?.active_players || data?.unique_players || data?.activePlayers || data?.uniquePlayers || 0;
+  
+  console.log('📊 Parsed values:', { currentSeason, totalGames, activePlayers });
   
   // Update current season display
   const currentSeasonElement = document.getElementById('currentSeasonDisplay2');
   if (currentSeasonElement) {
     currentSeasonElement.textContent = currentSeason;
+    console.log('✅ Updated currentSeasonDisplay2:', currentSeason);
+  } else {
+    console.warn('⚠️ currentSeasonDisplay2 element not found');
   }
   
   // Update total games display
   const totalGamesElement = document.getElementById('totalGamesDisplay2');
   if (totalGamesElement) {
     totalGamesElement.textContent = totalGames;
+    console.log('✅ Updated totalGamesDisplay2:', totalGames);
+  } else {
+    console.warn('⚠️ totalGamesDisplay2 element not found');
   }
   
   // Update active players display
   const activePlayersElement = document.getElementById('activePlayersDisplay2');
   if (activePlayersElement) {
     activePlayersElement.textContent = activePlayers;
+    console.log('✅ Updated activePlayersDisplay2:', activePlayers);
+  } else {
+    console.warn('⚠️ activePlayersDisplay2 element not found');
   }
 }
 
@@ -16315,6 +16469,151 @@ function testGames2Tab() {
       
       addLog(`✅ Boss configuration test completed for ${bossType}`);
     }
+
+    // ========================================
+    // AUTO-LOADING SYSTEM HELPER FUNCTIONS
+    // ========================================
+
+    // Mark tab as recently loaded with timestamp
+    function markTabAsLoaded(tabName) {
+      const timestamp = Date.now();
+      if (!window.tabLoadHistory) {
+        window.tabLoadHistory = {};
+      }
+      window.tabLoadHistory[tabName] = timestamp;
+      console.log(`📅 Tab ${tabName} marked as loaded at ${new Date(timestamp).toLocaleTimeString()}`);
+    }
+
+    // Check if tab needs refresh (older than 5 minutes)
+    function shouldRefreshTab(tabName) {
+      if (!window.tabLoadHistory || !window.tabLoadHistory[tabName]) {
+        return true; // Never loaded, needs refresh
+      }
+      const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+      const timeSinceLastLoad = Date.now() - window.tabLoadHistory[tabName];
+      return timeSinceLastLoad > fiveMinutes;
+    }
+
+    // Auto-load recent user activity for users tab
+    async function loadRecentUserActivity() {
+      try {
+        addLog('👥 Loading recent user activity...');
+        
+        // Load recent user registrations and activity
+        const response = await fetch(`${API_BASE_URL}/api/admin/get-stats.php`);
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update user count display
+          const userResults = document.getElementById('userResults');
+          if (userResults) {
+            userResults.innerHTML = `
+              <div class="text-center p-4">
+                <div class="text-2xl font-bold text-blue-400 mb-2">${data.totalUsers || 0}</div>
+                <div class="text-sm text-gray-400">Total Users</div>
+                <div class="text-xs text-gray-500 mt-1">Last updated: ${new Date().toLocaleTimeString()}</div>
+              </div>
+              <div class="text-center p-2">
+                <div class="text-sm text-gray-400">Search for users to see detailed results...</div>
+              </div>
+            `;
+          }
+          addLog('✅ Recent user activity loaded');
+        }
+      } catch (error) {
+        console.error('❌ Error loading recent user activity:', error);
+        addLog(`❌ Error loading user activity: ${error.message}`);
+      }
+    }
+
+    // Auto-load point statistics for points tab
+    async function loadPointStatistics() {
+      try {
+        addLog('💰 Loading point statistics...');
+        
+        // Load point system overview
+        const response = await fetch(`${API_BASE_URL}/api/admin/get-stats.php`);
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update point statistics display
+          const pointResults = document.getElementById('pointResults');
+          if (pointResults) {
+            pointResults.innerHTML = `
+              <div class="text-center p-4">
+                <div class="text-2xl font-bold text-green-400 mb-2">${data.totalScores || 0}</div>
+                <div class="text-sm text-gray-400">Total Points Awarded</div>
+                <div class="text-xs text-gray-500 mt-1">Last updated: ${new Date().toLocaleTimeString()}</div>
+              </div>
+              <div class="text-center p-2">
+                <div class="text-sm text-gray-400">Search for users to manage points...</div>
+              </div>
+            `;
+          }
+          addLog('✅ Point statistics loaded');
+        }
+      } catch (error) {
+        console.error('❌ Error loading point statistics:', error);
+        addLog(`❌ Error loading point statistics: ${error.message}`);
+      }
+    }
+
+    // Auto-load all boss configurations for bosses tab
+    async function loadAllBossConfigurations() {
+      try {
+        addLog('👑 Loading all boss configurations...');
+        
+        const bossTypes = ['cheeseKing', 'cheeseEmperor', 'cheeseGod', 'cheeseDestroyer'];
+        
+        // Load configurations for all bosses
+        for (const bossType of bossTypes) {
+          await loadBossConfiguration(bossType);
+        }
+        
+        addLog('✅ All boss configurations loaded');
+      } catch (error) {
+        console.error('❌ Error loading boss configurations:', error);
+        addLog(`❌ Error loading boss configurations: ${error.message}`);
+      }
+    }
+
+    // Enhanced tab switching with auto-refresh
+    function switchTabWithAutoRefresh(tabName) {
+      console.log(`🔄 Switching to tab with auto-refresh: ${tabName}`);
+      
+      // Check if tab needs refresh
+      if (shouldRefreshTab(tabName)) {
+        console.log(`🔄 Tab ${tabName} needs refresh, auto-loading data...`);
+        showTab(tabName); // This will auto-load the data
+      } else {
+        console.log(`✅ Tab ${tabName} recently loaded, switching without refresh`);
+        // Just switch the tab without reloading data
+        showTab(tabName);
+      }
+    }
+
+    // Auto-refresh all tabs periodically (every 10 minutes)
+    function startAutoRefreshSystem() {
+      console.log('🔄 Starting auto-refresh system...');
+      
+      setInterval(() => {
+        const currentTab = window.currentTab;
+        if (currentTab && shouldRefreshTab(currentTab)) {
+          console.log(`🔄 Auto-refreshing current tab: ${currentTab}`);
+          showTab(currentTab);
+        }
+      }, 10 * 60 * 1000); // 10 minutes
+      
+      addLog('✅ Auto-refresh system started (10-minute intervals)');
+    }
+
+    // Initialize auto-refresh system when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      // Start auto-refresh system after a short delay
+      setTimeout(() => {
+        startAutoRefreshSystem();
+      }, 5000); // 5 seconds after page load
+    });
   </script>
 
 </body>
