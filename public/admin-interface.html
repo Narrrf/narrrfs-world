@@ -1439,25 +1439,25 @@ require_once 'discord-invite.php';
       <div class="text-center mt-4 pt-4 border-t border-gray-600">
         <h3 class="text-lg font-semibold text-blue-300 mb-3">⚡ Quick Actions</h3>
         
-        <!-- All admin users can see Home link -->
+                  <!-- All admin users can see Home link -->
         <a href="index.html" class="inline-block bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
-          🏠 Home
-        </a>
-        
-        <!-- Test all tabs button -->
+            🏠 Home
+          </a>
+          
+          <!-- Test all tabs button -->
         <button onclick="testAllTabs()" class="inline-block bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
           🧪 Test All Tabs
-        </button>
-        
+          </button>
+          
         <!-- Force refresh button -->
         <button onclick="forceRefreshAllTabs()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
           🔄 Force Refresh
-        </button>
-        
+          </button>
+          
         <!-- Debug button to manually show navigation -->
         <button onclick="debugShowNavigation()" class="inline-block bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 ml-2">
           🐛 Debug Nav
-        </button>
+          </button>
       </div>
     </div>
 
@@ -2249,7 +2249,7 @@ require_once 'discord-invite.php';
             🗄️ Database Backup
           </button>
         </div>
-      </div>
+          </div>
 
       <!-- Overview Dashboard Tab -->
       <div id="overviewTab" class="game-tab-content">
@@ -4683,9 +4683,9 @@ require_once 'discord-invite.php';
       
       // STEP 3: Show selected tab with smooth animation
       setTimeout(() => {
-        const selectedTab = document.getElementById(tabName + 'Tab');
-        if (selectedTab) {
-          selectedTab.style.display = 'block';
+      const selectedTab = document.getElementById(tabName + 'Tab');
+      if (selectedTab) {
+        selectedTab.style.display = 'block';
           selectedTab.style.opacity = '0';
           selectedTab.style.transform = 'translateY(10px)';
           
@@ -4695,20 +4695,20 @@ require_once 'discord-invite.php';
             selectedTab.style.transform = 'translateY(0)';
             console.log(`✅ Tab displayed with animation: ${tabName}Tab`);
           }, 50);
-        } else {
-          console.error(`❌ Tab not found: ${tabName}Tab`);
+      } else {
+        console.error(`❌ Tab not found: ${tabName}Tab`);
           return;
-        }
-        
+      }
+      
         // STEP 4: Update current tab and log
-        currentTab = tabName;
+      currentTab = tabName;
         addLog(`📋 Successfully switched to ${tabName} tab`);
-        
+      
         // STEP 5: Load tab-specific data with error handling
         try {
-          if (tabName === 'dashboard') {
-            loadDashboardData();
-            loadOverviewGameStats();
+      if (tabName === 'dashboard') {
+        loadDashboardData();
+        loadOverviewGameStats();
           } else if (tabName === 'store') {
             loadStoreItems();
           } else if (tabName === 'quests') {
@@ -4719,30 +4719,30 @@ require_once 'discord-invite.php';
             // Game Management - Load all data immediately
             console.log('🎮 Loading Game Management data...');
             loadGameOverview();
-            loadSeasonStats();
-            loadGameSettings();
-            loadCurrentSeasonSettings();
-            
+        loadSeasonStats();
+        loadGameSettings();
+        loadCurrentSeasonSettings();
+        
             // Load all game data
-            loadTetrisData();
-            loadSnakeData();
-            loadSpaceInvadersData();
-            loadCheeseHuntData();
-            loadDiscordRaceData();
-            
+        loadTetrisData();
+        loadSnakeData();
+        loadSpaceInvadersData();
+        loadCheeseHuntData();
+        loadDiscordRaceData();
+        
             // Switch to overview tab by default
-            setTimeout(() => {
-              switchGameTab('overview');
+        setTimeout(() => {
+          switchGameTab('overview');
             }, 100);
           } else if (tabName === 'games2') {
             // Game Management 2.0
             console.log('🚀 Loading Game Management 2.0 data...');
-            loadGameManagement2Data();
-            loadSeasonOverview2();
-            loadGameStatsBySeason2();
-            loadTopPerformers2();
-            loadSeasonComparison2();
-            startLiveActivityFeed2();
+        loadGameManagement2Data();
+        loadSeasonOverview2();
+        loadGameStatsBySeason2();
+        loadTopPerformers2();
+        loadSeasonComparison2();
+        startLiveActivityFeed2();
           } else if (tabName === 'discord') {
             loadDiscordConfigData();
           } else if (tabName === 'cheeseGuide') {
@@ -5141,7 +5141,7 @@ require_once 'discord-invite.php';
           
           // Load boss notifications count
           loadBossNotificationCount();
-        } else {
+          } else {
           console.error('❌ Stats API returned error:', stats.error);
           addLog(`❌ Stats API error: ${stats.error || 'Unknown error'}`);
           
@@ -5783,12 +5783,12 @@ require_once 'discord-invite.php';
       });
       
       // Add clean event listeners
-      document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
         btn.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
           
-          const tab = this.dataset.tab;
+        const tab = this.dataset.tab;
           console.log(`🚀 SUPER TAB SYSTEM: Tab button clicked: ${tab}`);
           
           // Use the super working tab system
@@ -5839,18 +5839,17 @@ require_once 'discord-invite.php';
         const stats = await statsResponse.json();
         
         if (stats.success) {
-          // Update basic dashboard stats
-          if (stats.data) {
-            updateSystemStats(stats.data);
-          } else {
-            // Fallback to direct stats if data structure is different
-            updateSystemStats({
-              total_users: stats.totalUsers || stats.total_users || '0',
-              total_scores: stats.totalScores || stats.total_scores || '0',
-              total_items: stats.totalItems || stats.total_items || '0',
-              active_quests: stats.activeQuests || stats.active_quests || '0'
-            });
-          }
+          // Update basic dashboard stats - API returns data directly
+          const dashboardStats = {
+            total_users: stats.totalUsers || '0',
+            total_scores: stats.totalScores || '0',
+            total_items: stats.totalItems || '0',
+            active_quests: stats.activeQuests || '0'
+          };
+          
+          updateSystemStats(dashboardStats);
+          // CRITICAL FIX: Update top menu stats
+          updateTopMenuStats(dashboardStats);
           
           // Load boss notifications count
           loadBossNotificationCount();
@@ -5899,7 +5898,7 @@ require_once 'discord-invite.php';
 
         // Load boss notification statistics
         try {
-          const bossResponse = await fetch(API_BASE_URL + '/api/admin/get-boss-notifications.php');
+          const bossResponse = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php');
           const bossData = await bossResponse.json();
           
           if (bossData.success) {
@@ -5927,12 +5926,15 @@ require_once 'discord-invite.php';
         updateDashboardStatus('Dashboard loading failed');
         
         // Set fallback values
-        updateSystemStats({
+        const errorStats = {
           total_users: 'Error',
           total_scores: 'Error',
           total_items: 'Error',
           active_quests: 'Error'
-        });
+        };
+        updateSystemStats(errorStats);
+        // CRITICAL FIX: Update top menu stats with error values
+        updateTopMenuStats(errorStats);
       }
     }
     
@@ -5960,7 +5962,7 @@ require_once 'discord-invite.php';
         }
         
         // Load boss notification statistics
-        const bossResponse = await fetch(API_BASE_URL + '/api/admin/get-boss-notifications.php');
+        const bossResponse = await fetch(API_BASE_URL + '/api/admin/boss-level-notification.php');
         if (bossResponse.ok) {
           const bossData = await bossResponse.json();
           if (bossData.success) {
@@ -6000,31 +6002,46 @@ require_once 'discord-invite.php';
         })
         .then(data => {
           console.log('📊 Stats API data received:', data);
-          if (data.success && data.data) {
-            updateSystemStats(data.data);
+          if (data.success) {
+            // API returns data directly, not nested under data property
+            const statsData = {
+              total_users: data.totalUsers || '0',
+              total_scores: data.totalScores || '0',
+              total_items: data.totalItems || '0',
+              active_quests: data.activeQuests || '0'
+            };
+            updateSystemStats(statsData);
+            // CRITICAL FIX: Update top menu stats
+            updateTopMenuStats(statsData);
             addLog('✅ System statistics loaded successfully');
-          } else {
+            } else {
             console.error('❌ Stats API returned error:', data.error);
             addLog(`❌ Stats API error: ${data.error || 'Unknown error'}`);
             // Set fallback values
-            updateSystemStats({
+            const errorStats = {
               total_users: 'Error',
               total_scores: 'Error',
               total_items: 'Error',
               active_quests: 'Error'
-            });
+            };
+            updateSystemStats(errorStats);
+            // CRITICAL FIX: Update top menu stats with error values
+            updateTopMenuStats(errorStats);
           }
         })
         .catch(error => {
           console.error('❌ Error loading stats:', error);
           addLog(`❌ Error loading system statistics: ${error.message}`);
           // Set fallback values
-          updateSystemStats({
+          const errorStats = {
             total_users: 'Error',
             total_scores: 'Error',
             total_items: 'Error',
             active_quests: 'Error'
-          });
+          };
+          updateSystemStats(errorStats);
+          // CRITICAL FIX: Update top menu stats with error values
+          updateTopMenuStats(errorStats);
         });
     }
 
@@ -6047,7 +6064,7 @@ require_once 'discord-invite.php';
           if (element.textContent.includes('Loading...')) {
             element.textContent = value;
           }
-        } else {
+            } else {
           console.warn(`⚠️ Top menu element not found: ${elementId}`);
         }
       });
@@ -6075,7 +6092,7 @@ require_once 'discord-invite.php';
                             elementId === 'totalScoresDetail' ? 'text-2xl font-bold text-blue-400' :
                             elementId === 'totalItemsDetail' ? 'text-2xl font-bold text-yellow-400' :
                             'text-2xl font-bold text-purple-400';
-        } else {
+            } else {
           console.warn(`⚠️ Element not found: ${elementId}`);
         }
       });
@@ -6285,7 +6302,7 @@ require_once 'discord-invite.php';
           if (typeof loadGameManagementData === 'function') {
             loadGameManagementData();
           }
-        } else {
+            } else {
           addLog(`❌ Database unlock failed: ${data.error || 'Invalid password'}`);
         }
       } catch (error) {
@@ -6466,7 +6483,7 @@ require_once 'discord-invite.php';
             console.error('❌ Error loading community wallet:', error);
             addLog(`❌ Error loading community wallet: ${error.message}`);
           });
-      } catch (error) {
+          } catch (error) {
         console.error('❌ Error in loadCommunityWalletData:', error);
         addLog(`❌ Error in loadCommunityWalletData: ${error.message}`);
       }
@@ -6558,7 +6575,7 @@ require_once 'discord-invite.php';
       addLog('🏆 Loading boss notifications...');
       
       // Load boss notifications from API
-      fetch(API_BASE_URL + '/api/admin/get-boss-notifications.php')
+              fetch(API_BASE_URL + '/api/admin/boss-level-notification.php')
         .then(response => response.json())
         .then(data => {
           if (data.success) {

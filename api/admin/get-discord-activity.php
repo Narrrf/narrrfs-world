@@ -79,7 +79,7 @@ try {
     $stmt = $pdo->prepare("
         SELECT 
             'game_score' as type,
-            discord_name as user_name,
+            discord_id as user_name,
             discord_id as user_id,
             game as channel_name,
             timestamp,
@@ -135,8 +135,8 @@ try {
     $stmt = $pdo->prepare("
         SELECT 
             'cheese_click' as type,
-            discord_name as user_name,
-            discord_id as user_id,
+            user_wallet as user_name,
+            user_wallet as user_id,
             'cheeseboard' as channel_name,
             timestamp,
             'Clicked the cheese!' as description
