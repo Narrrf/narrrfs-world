@@ -34,8 +34,10 @@ let isSpaceInvadersPaused = false;
 let spaceInvadersScore = 0;
 let spaceInvadersCount = 0; // NEW: Track actual invader count for DSPOINC calculation
 
-// 🚀 NEW: Boss Reward Upgrades
+// 🚀 NEW: Progressive Multi-Shot Upgrades
 let hasDoubleShotUpgrade = false; // Unlocked after defeating first boss (Cheese King)
+let hasTripleShotUpgrade = false; // Unlocked after defeating second boss (Cheese Emperor)
+let hasQuadShotUpgrade = false; // Unlocked after defeating third boss (Cheese God)
 
 // 🧀 Load cheese-themed images
 const cheeseShipImg = new Image();
@@ -223,20 +225,20 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
     
     cheeseEmperor: {
       name: 'Cheese Emperor',
-      description: 'The second boss - more aggressive with minion summoning and laser attacks',
-      baseHealth: 300, // Double the first boss
+      description: 'The second boss - balanced for double shot players',
+      baseHealth: 200, // Reduced from 300 - beatable with double shot
       healthMultiplier: 1.0,
-      baseSpeed: 2.8, // Faster movement
+      baseSpeed: 2.0, // Reduced from 2.8 - more manageable
       speedMultiplier: 1.0,
-      baseAttackCooldown: 600, // Faster attacks
+      baseAttackCooldown: 800, // Increased from 600 - gives players time to react
       attackCooldownMultiplier: 1.0,
-      baseBulletSpeed: 3.8, // Slightly faster bullets
+      baseBulletSpeed: 3.0, // Reduced from 3.8 - easier to dodge
       bulletSpeedMultiplier: 1.0,
-      baseBulletDamage: 3, // More damage
+      baseBulletDamage: 2, // Reduced from 3 - less punishing
       bulletDamageMultiplier: 1.0,
       size: 1.0,
-      movementPatterns: ['sideways', 'hover', 'circle'],
-      attackPatterns: [0, 1, 2, 3, 4],
+      movementPatterns: ['sideways', 'hover'], // Removed circle for simplicity
+      attackPatterns: [0, 1, 2], // Reduced from 5 to 3 patterns
       abilities: {
         canTeleport: false,
         canShield: false,
@@ -244,13 +246,13 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
         canUseLaser: true,
         canCreateExplosions: false
       },
-      specialAttackChance: 0.4,
-      rageModeThreshold: 0.35,
+      specialAttackChance: 0.25, // Reduced from 0.4
+      rageModeThreshold: 0.4, // Increased from 0.35 - later rage mode
       rageModeMultipliers: {
-        speed: 2.2,
-        attackCooldown: 0.35,
-        bulletSpeed: 2.0,
-        bulletDamage: 1.8
+        speed: 1.8, // Reduced from 2.2
+        attackCooldown: 0.5, // Increased from 0.35
+        bulletSpeed: 1.5, // Reduced from 2.0
+        bulletDamage: 1.5 // Reduced from 1.8
       },
       colors: {
         primary: '#8b5cf6',
@@ -261,20 +263,20 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
     
     cheeseGod: {
       name: 'Cheese God',
-      description: 'The third boss - devastating with explosions and enhanced abilities',
-      baseHealth: 500, // Much tougher
+      description: 'The third boss - balanced for triple shot players',
+      baseHealth: 350, // Reduced from 500 - beatable with triple shot
       healthMultiplier: 1.0,
-      baseSpeed: 3.2, // Very fast movement
+      baseSpeed: 2.5, // Reduced from 3.2 - manageable with triple shot
       speedMultiplier: 1.0,
-      baseAttackCooldown: 500, // Very fast attacks
+      baseAttackCooldown: 600, // Increased from 500 - gives triple shot players time
       attackCooldownMultiplier: 1.0,
-      baseBulletSpeed: 4.5, // Fast bullets
+      baseBulletSpeed: 3.5, // Reduced from 4.5 - easier to dodge
       bulletSpeedMultiplier: 1.0,
-      baseBulletDamage: 4, // High damage
+      baseBulletDamage: 3, // Reduced from 4 - less punishing
       bulletDamageMultiplier: 1.0,
       size: 1.2,
-      movementPatterns: ['sideways', 'zigzag', 'circle', 'dash'],
-      attackPatterns: [0, 1, 2, 3, 4],
+      movementPatterns: ['sideways', 'zigzag', 'hover'], // Removed dash for balance
+      attackPatterns: [0, 1, 2, 3], // Reduced from 5 to 4 patterns
       abilities: {
         canTeleport: false,
         canShield: true,
@@ -282,13 +284,13 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
         canUseLaser: true,
         canCreateExplosions: true
       },
-      specialAttackChance: 0.5,
-      rageModeThreshold: 0.3,
+      specialAttackChance: 0.35, // Reduced from 0.5
+      rageModeThreshold: 0.4, // Increased from 0.3 - later rage mode
       rageModeMultipliers: {
-        speed: 2.5,
-        attackCooldown: 0.3,
-        bulletSpeed: 2.2,
-        bulletDamage: 2.0
+        speed: 2.0, // Reduced from 2.5
+        attackCooldown: 0.4, // Increased from 0.3
+        bulletSpeed: 1.8, // Reduced from 2.2
+        bulletDamage: 1.6 // Reduced from 2.0
       },
       colors: {
         primary: '#f59e0b',
@@ -299,20 +301,20 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
     
     cheeseDestroyer: {
       name: 'Cheese Destroyer',
-      description: 'The final boss - ultimate nightmare with all abilities unlocked',
-      baseHealth: 800, // Massive health pool
+      description: 'The final boss - balanced for quad shot players',
+      baseHealth: 600, // Reduced from 800 - beatable with quad shot
       healthMultiplier: 1.0,
-      baseSpeed: 3.5, // Extremely fast
+      baseSpeed: 3.0, // Reduced from 3.5 - manageable with quad shot
       speedMultiplier: 1.0,
-      baseAttackCooldown: 400, // Relentless attacks
+      baseAttackCooldown: 500, // Increased from 400 - gives quad shot players time
       attackCooldownMultiplier: 1.0,
-      baseBulletSpeed: 5.0, // Very fast bullets
+      baseBulletSpeed: 4.0, // Reduced from 5.0 - easier to dodge
       bulletSpeedMultiplier: 1.0,
-      baseBulletDamage: 5, // Devastating damage
+      baseBulletDamage: 4, // Reduced from 5 - less punishing
       bulletDamageMultiplier: 1.0,
       size: 1.5,
-      movementPatterns: ['sideways', 'zigzag', 'hover', 'circle', 'dash'],
-      attackPatterns: [0, 1, 2, 3, 4],
+      movementPatterns: ['sideways', 'zigzag', 'hover', 'circle'], // Removed dash for balance
+      attackPatterns: [0, 1, 2, 3, 4], // Keep all 5 patterns for final challenge
       abilities: {
         canTeleport: true,
         canShield: true,
@@ -320,13 +322,13 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
         canUseLaser: true,
         canCreateExplosions: true
       },
-      specialAttackChance: 0.6,
-      rageModeThreshold: 0.25,
+      specialAttackChance: 0.45, // Reduced from 0.6
+      rageModeThreshold: 0.35, // Increased from 0.25 - later rage mode
       rageModeMultipliers: {
-        speed: 3.0,
-        attackCooldown: 0.25,
-        bulletSpeed: 2.5,
-        bulletDamage: 2.5
+        speed: 2.5, // Reduced from 3.0
+        attackCooldown: 0.35, // Increased from 0.25
+        bulletSpeed: 2.0, // Reduced from 2.5
+        bulletDamage: 2.0 // Reduced from 2.5
       },
       colors: {
         primary: '#dc2626',
@@ -682,6 +684,10 @@ let ctx;
 let canvasWidth;
 let canvasHeight;
 
+// 🚀 NEW: Floating reload button (global scope)
+let reloadButton = null;
+let reloadButtonInterval = null;
+
   // 🧩 NEW: Tetris block danger types with snake invaders and bombs
   const TETRIS_DANGER_TYPES = {
     I_BLOCK: { type: 'I', speed: 1.0, points: -30, size: 20, color: '#00f0f0' },
@@ -770,8 +776,12 @@ let canvasHeight;
         displayText += ` (${weaponAmmo.bomb} ammo)`;
       }
       
-      // 🚀 NEW: Show double shot upgrade status
-      if (hasDoubleShotUpgrade && currentWeaponType === 'normal') {
+      // 🚀 NEW: Show progressive multi-shot upgrade status
+      if (hasQuadShotUpgrade && currentWeaponType === 'normal') {
+        displayText += ` 🎯 QUAD SHOT!`;
+      } else if (hasTripleShotUpgrade && currentWeaponType === 'normal') {
+        displayText += ` 🎯 TRIPLE SHOT!`;
+      } else if (hasDoubleShotUpgrade && currentWeaponType === 'normal') {
         displayText += ` 🎯 DOUBLE SHOT!`;
       }
       
@@ -903,8 +913,8 @@ let canvasHeight;
           console.log(`⚡ Added 2 speed boost ammo! Total: ${speedBoostAmmo}`);
         } else if (powerUp.type === 'collect') {
           // 🚀 NEW: Collect power-up gives bonus points and temporary effects
-          spaceInvadersScore += 500; // Bonus points
-          spaceInvadersCount += 5; // Bonus invader count for DSPOINC
+                  spaceInvadersScore += 500; // Bonus points
+        spaceInvadersCount += 5; // Bonus invader count for DSPOINC (kept for legacy compatibility)
           
           // Temporary invincibility (1 second)
           playerShip.invincible = true;
@@ -1400,10 +1410,13 @@ let canvasHeight;
         if (boss.x <= 0) {
           boss.x = 0;
           bossDirection = 1;
-        } else if (boss.x + boss.width >= canvasWidth) {
+        } else         if (boss.x + boss.width >= canvasWidth) {
           boss.x = canvasWidth - boss.width;
           bossDirection = -1;
         }
+        
+        // 🚨 CRITICAL FIX: Prevent boss from going too low
+        boss.y = Math.max(50, boss.y);
         
         if (boss.x + boss.width >= canvasWidth) {
           boss.lastDirectionChange = currentTime;
@@ -1436,6 +1449,9 @@ let canvasHeight;
           boss.x = canvasWidth - boss.width;
           bossDirection = -1;
         }
+        
+        // 🚨 CRITICAL FIX: Prevent boss from going too low
+        boss.y = Math.max(50, boss.y);
       } else if (boss.movementPattern === 'hover') {
         // Hovering movement
         boss.x += boss.speed * (bossDirection || 1) * 0.5;
@@ -1448,6 +1464,9 @@ let canvasHeight;
           boss.x = canvasWidth - boss.width;
           bossDirection = -1;
         }
+        
+        // 🚨 CRITICAL FIX: Prevent boss from going too low
+        boss.y = Math.max(50, boss.y);
       } else if (boss.movementPattern === 'circle') {
         // 🚀 NEW: Circular movement pattern
         const radius = 30;
@@ -1455,6 +1474,9 @@ let canvasHeight;
         const centerY = 100;
         boss.x = centerX + Math.cos(boss.wobble * 0.2) * radius;
         boss.y = centerY + Math.sin(boss.wobble * 0.2) * radius;
+        
+        // 🚨 CRITICAL FIX: Prevent boss from going too low
+        boss.y = Math.max(50, boss.y);
       } else if (boss.movementPattern === 'dash') {
         // 🚀 NEW: Dash movement pattern - quick side-to-side dashes
         if (!boss.dashTimer) boss.dashTimer = 0;
@@ -1468,6 +1490,9 @@ let canvasHeight;
           boss.dashTimer = 0;
           bossDirection = bossDirection ? -bossDirection : -1;
         }
+        
+        // 🚨 CRITICAL FIX: Prevent boss from going too low
+        boss.y = Math.max(50, boss.y);
       }
       
       // 🚀 BALANCED: Special attacks based on boss abilities  
@@ -1515,6 +1540,15 @@ let canvasHeight;
       // 🚀 NEW: Update invincibility frames
       if (boss.invincibilityFrames > 0) {
         boss.invincibilityFrames--;
+      }
+      
+      // 🚨 FINAL SAFETY CHECK: Ensure boss never gets too close to player
+      if (boss && !bossDefeated) {
+        const bossPlayerDistance = Math.abs(boss.y - playerShip.y);
+        if (bossPlayerDistance < 60) { // If boss is within 60 pixels of player
+          console.log(`🚨 FINAL SAFETY: Boss too close to player! Distance: ${bossPlayerDistance}px - Moving boss up!`);
+          boss.y = Math.max(60, boss.y - 15); // Move boss up away from player
+        }
       }
     }
     
@@ -1646,7 +1680,7 @@ let canvasHeight;
   }
 
   function bossAttack() {
-    if (!boss) return;
+    if (!boss || bossDefeated) return;
     
     const attackPatterns = [
       // 🧀 Pattern 1: CHEESE CANNON - Single devastating cheesy shot
@@ -1860,7 +1894,7 @@ let canvasHeight;
 
   // 🚀 NEW: Boss special attack function
   function bossSpecialAttack() {
-    if (!boss) return;
+    if (!boss || bossDefeated) return;
     
     console.log(`👑 ${boss.name} uses SPECIAL ATTACK!`);
     
@@ -1906,7 +1940,7 @@ let canvasHeight;
 
   // 🚀 NEW: Boss laser attack - MUCH more dangerous!
   function bossLaserAttack() {
-    if (!boss) return;
+    if (!boss || bossDefeated) return;
     
     // Create massive laser beam
     const laser = {
@@ -1934,7 +1968,7 @@ let canvasHeight;
 
   // 🚀 NEW: Boss minion summoning - MUCH more aggressive!
   function bossSummonMinions() {
-    if (!boss) return;
+    if (!boss || bossDefeated) return;
     
     // Spawn 4-8 minion invaders (more aggressive)
     const minionCount = 4 + Math.floor(Math.random() * 5);
@@ -1965,7 +1999,7 @@ let canvasHeight;
 
   // 🚀 NEW: Boss explosion attack - MUCH more dangerous!
   function bossExplosionAttack() {
-    if (!boss) return;
+    if (!boss || bossDefeated) return;
     
     // Create explosion bullets in ALL directions with more bullets
     for (let i = 0; i < 16; i++) { // 16 bullets instead of 8
@@ -1998,7 +2032,7 @@ let canvasHeight;
   
   // 🧀 NEW: CHEESE RUMBLE ATTACK - Epic cheese-themed special!
   function bossCheeseRumbleAttack() {
-    if (!boss) return;
+    if (!boss || bossDefeated) return;
     
     console.log(`🧀 ${boss.name} unleashes the CHEESE RUMBLE ATTACK!`);
     
@@ -2042,7 +2076,7 @@ let canvasHeight;
   
   // 🚀 NEW: Boss cheese storm attack - devastating multi-directional barrage!
   function bossCheeseStormAttack() {
-    if (!boss) return;
+    if (!boss || bossDefeated) return;
     
     console.log(`👑 ${boss.name} unleashes the DEVASTATING CHEESE STORM!`);
     
@@ -2087,7 +2121,7 @@ let canvasHeight;
 
   // 🚀 NEW: Boss teleport attack - MUCH more aggressive!
   function bossTeleportAttack() {
-    if (!boss) return;
+    if (!boss || bossDefeated) return;
     
     // Teleport to random position with better positioning
     const newX = Math.random() * (canvasWidth - boss.width);
@@ -2115,7 +2149,7 @@ let canvasHeight;
 
   // 🚀 NEW: Boss teleport ability - MUCH more aggressive!
   function bossTeleport() {
-    if (!boss) return;
+    if (!boss || bossDefeated) return;
     
     // Quick teleport to dodge with larger range
     const newX = Math.max(0, Math.min(canvasWidth - boss.width, boss.x + (Math.random() - 0.5) * 150));
@@ -2132,7 +2166,7 @@ let canvasHeight;
 
   // 🚀 NEW: Boss shield activation - MUCH more aggressive!
   function bossActivateShield() {
-    if (!boss) return;
+    if (!boss || bossDefeated) return;
     
     boss.shieldActive = true;
     boss.shieldTimer = Date.now();
@@ -2158,6 +2192,13 @@ let canvasHeight;
 
   function checkBossCollisions() {
     if (!boss || bossDefeated) return;
+    
+    // 🚨 CRITICAL FIX: Check if boss is too close to player to prevent instant death
+    const bossPlayerDistance = Math.abs(boss.y - playerShip.y);
+    if (bossPlayerDistance < 50) { // If boss is within 50 pixels of player
+      console.log(`🚨 BOSS TOO CLOSE TO PLAYER! Distance: ${bossPlayerDistance}px - Moving boss up!`);
+      boss.y = Math.max(50, boss.y - 10); // Move boss up away from player
+    }
     
     // 🧪 DEBUG: Log collision check
     if (bullets.length > 0 && Date.now() % 1000 < 16) { // Log every second
@@ -2242,8 +2283,15 @@ let canvasHeight;
           console.log(`👑 BOSS DEFEATED! ${boss.name} has been vanquished! Reward: ${bossReward} DSPOINC`);
           console.log(`🎉 Final boss stats: Wave ${waveNumber}, Type: ${boss.type}, Max Health: ${boss.maxHealth}`);
           
-          // Add reward to score
-          spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
+          // 🚀 CRITICAL FIX: Immediately clear boss bullets to prevent game over
+          bossBullets = [];
+          console.log(`🧹 Boss bullets cleared immediately to prevent player death`);
+          
+                  // Add reward to score
+        spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
+        
+        // 🚀 CRITICAL FIX: Also add to traditional score for consistency
+        spaceInvadersScore += bossReward * 1000; // Convert invader count to traditional points (1 DSPOINC = 1000 points)
           
           // 🚀 NEW: Epic boss defeat effects (reduced intensity)
           bossDefeatEffect = 60; // Reduced from 100 to 60 frames
@@ -2270,7 +2318,7 @@ let canvasHeight;
             }, i * 80);
           }
           
-          // 🚀 NEW: Boss-specific upgrade rewards
+          // 🚀 NEW: Progressive Boss Upgrade Rewards
           if (boss.type === 'cheeseKing' && !hasDoubleShotUpgrade) {
             hasDoubleShotUpgrade = true;
             console.log(`🎯 DOUBLE SHOT UPGRADE UNLOCKED! You can now fire two bullets at once!`);
@@ -2279,6 +2327,28 @@ let canvasHeight;
             // Show upgrade notification on screen
             setTimeout(() => {
               console.log(`✨ UPGRADE NOTIFICATION: Double Shot mode activated!`);
+            }, 2000);
+          }
+          
+          if (boss.type === 'cheeseEmperor' && !hasTripleShotUpgrade) {
+            hasTripleShotUpgrade = true;
+            console.log(`🎯 TRIPLE SHOT UPGRADE UNLOCKED! You can now fire three bullets at once!`);
+            console.log(`🔥 Your shooting power has been massively upgraded!`);
+            
+            // Show upgrade notification on screen
+            setTimeout(() => {
+              console.log(`✨ UPGRADE NOTIFICATION: Triple Shot mode activated!`);
+            }, 2000);
+          }
+          
+          if (boss.type === 'cheeseGod' && !hasQuadShotUpgrade) {
+            hasQuadShotUpgrade = true;
+            console.log(`🎯 QUAD SHOT UPGRADE UNLOCKED! You can now fire four bullets at once!`);
+            console.log(`🔥 Your shooting power has been ULTIMATELY upgraded!`);
+            
+            // Show upgrade notification on screen
+            setTimeout(() => {
+              console.log(`✨ UPGRADE NOTIFICATION: Quad Shot mode activated!`);
             }, 2000);
           }
           
@@ -2294,6 +2364,12 @@ let canvasHeight;
     
     // Check boss bullets hitting player
     bossBullets.forEach((bullet, bulletIndex) => {
+      // 🚀 CRITICAL FIX: Don't process boss bullets if boss is defeated
+      if (bossDefeated) {
+        bossBullets.splice(bulletIndex, 1);
+        return;
+      }
+      
       if (checkCollision(bullet, playerShip)) {
         // 🚀 NEW: Check if player is invincible
         if (playerShip.invincible && playerShip.invincibleTimer > 0) {
@@ -2317,8 +2393,12 @@ let canvasHeight;
   }
 
   function drawBoss() {
-    if (!boss) {
-      console.log(`❌ DRAW BOSS: No boss object to draw`);
+    if (!boss || bossDefeated) {
+      if (!boss) {
+        console.log(`❌ DRAW BOSS: No boss object to draw`);
+      } else {
+        console.log(`✅ DRAW BOSS: Boss defeated, not drawing`);
+      }
       return;
     }
     
@@ -2758,7 +2838,7 @@ let canvasHeight;
   
   // 🚀 NEW: Update boss bullets movement
   function updateBossBullets() {
-    if (!bossBullets) return;
+    if (!bossBullets || bossDefeated) return;
     
     bossBullets.forEach((bullet, index) => {
       // Update bullet position
@@ -2789,6 +2869,11 @@ let canvasHeight;
 
   function drawBossEffects() {
     if (!boss || bossDefeated) return;
+    
+    // 🚀 CRITICAL FIX: Don't draw effects for defeated boss
+    if (bossDefeated) {
+      return;
+    }
     
     // 🚀 NEW: Draw boss glow effect
     if (bossGlowEffect > 0) {
@@ -3038,6 +3123,21 @@ let canvasHeight;
       setTimeout(() => {
       ensureMobileControlsVisible();
     }, 250);
+    
+    // 🖱️ NEW: Setup mouse controls for desktop
+    setTimeout(() => {
+      setupMouseControls();
+      console.log('✅ Mouse controls setup completed');
+      
+      // Test mouse control variables
+      console.log('🖱️ Mouse control test:', {
+        isMouseControlEnabled,
+        isMouseOverCanvas,
+        isSpaceInvadersPaused,
+        mouseTargetX: window.mouseTargetX,
+        mouseTargetY: window.mouseTargetY
+      });
+    }, 300);
     
     // Initial draw
     draw();
@@ -3338,6 +3438,12 @@ let canvasHeight;
     
     // 🚀 NEW: Update player invincibility
     updatePlayerInvincibility();
+    
+    // 🖱️ NEW: Update mouse movement for ship positioning
+    updateMouseMovement();
+    
+    // 🔥 NEW: Update weapon heat system
+    updateHeat();
     
     if (gamePhase === 'formation') {
       // Formation phase - much shorter and you can shoot!
@@ -5327,9 +5433,12 @@ let canvasHeight;
   function drawScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // Space Invaders scoring: 10 invaders = 1 DSPOINC
-      const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places (10 invaders = 1 DSPOINC)
-      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} game points, ${spaceInvadersCount.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC)`;
+      // 🚀 CRITICAL FIX: Space Invaders scoring: 1000 traditional points = 1 DSPOINC
+      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 points = 1 DSPOINC)
+      
+      // Add mouse control indicator
+      const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
+      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} traditional points (${dspoinEarned} DSPOINC) ${mouseIndicator}`;
     } else {
       console.warn('⚠️ Score display element not found');
     }
@@ -5424,6 +5533,30 @@ let canvasHeight;
     ctx.fillStyle = '#ffffff';
     ctx.fillText(weaponText, canvasWidth - weaponWidth - 10, 50);
     
+    // 🎯 NEW: Show multi-shot upgrade status
+    if (currentWeaponType === 'normal') {
+      let upgradeText = '';
+      let upgradeColor = '#ffffff';
+      
+      if (hasQuadShotUpgrade) {
+        upgradeText = '🎯 QUAD SHOT';
+        upgradeColor = '#ff00ff'; // Magenta for quad shot
+      } else if (hasTripleShotUpgrade) {
+        upgradeText = '🎯 TRIPLE SHOT';
+        upgradeColor = '#ff8800'; // Orange for triple shot
+      } else if (hasDoubleShotUpgrade) {
+        upgradeText = '🎯 DOUBLE SHOT';
+        upgradeColor = '#00ff00'; // Green for double shot
+      }
+      
+      if (upgradeText) {
+        ctx.fillStyle = upgradeColor;
+        ctx.font = '12px Arial';
+        const upgradeWidth = ctx.measureText(upgradeText).width;
+        ctx.fillText(upgradeText, canvasWidth - upgradeWidth - 10, 70);
+      }
+    }
+    
     // 🚀 NEW: Show special weapon ammo below if available
     if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
       ctx.fillStyle = '#00ffff';
@@ -5431,6 +5564,87 @@ let canvasHeight;
     } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
       ctx.fillStyle = '#ff00ff';
       ctx.fillText(`💣${weaponAmmo.bomb}`, 10, 70);
+    }
+    
+    // 🖱️ NEW: Show mouse control status
+    if (isMouseOverCanvas && isMouseControlEnabled) {
+      ctx.fillStyle = '#10b981';
+      ctx.fillText('🖱️ MOUSE', canvasWidth - 80, 70);
+      
+      // 🚀 NEW: Show rapid fire status
+      if (typeof window.isMouseButtonDown !== 'undefined' && window.isMouseButtonDown) {
+        ctx.fillStyle = '#ff6b6b';
+        ctx.fillText('🔥 RAPID FIRE', canvasWidth - 100, 85);
+      }
+      
+      // 🔥 NEW: Show weapon heat bar
+      if (typeof window.weaponHeat !== 'undefined') {
+        const heatBarWidth = 80;
+        const heatBarHeight = 8;
+        const heatBarX = canvasWidth - heatBarWidth - 10;
+        const heatBarY = 95;
+        
+        // Heat bar background
+        ctx.fillStyle = '#333333';
+        ctx.fillRect(heatBarX, heatBarY, heatBarWidth, heatBarHeight);
+        
+        // Heat bar fill
+        const heatPercentage = window.weaponHeat / 100;
+        const heatFillWidth = heatBarWidth * heatPercentage;
+        
+        if (window.isOverheated) {
+          // Overheated - red bar
+          ctx.fillStyle = '#ff0000';
+          ctx.fillText('🔥 OVERHEATED!', heatBarX, heatBarY - 5);
+        } else if (heatPercentage > 0.7) {
+          // High heat - orange bar
+          ctx.fillStyle = '#ff8800';
+        } else if (heatPercentage > 0.4) {
+          // Medium heat - yellow bar
+          ctx.fillStyle = '#ffcc00';
+        } else {
+          // Low heat - green bar
+          ctx.fillStyle = '#00ff00';
+        }
+        
+        ctx.fillRect(heatBarX, heatBarY, heatFillWidth, heatBarHeight);
+        
+        // Heat percentage text
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px Arial';
+        ctx.fillText(`${Math.round(window.weaponHeat)}%`, heatBarX + heatBarWidth + 5, heatBarY + 7);
+      }
+      
+      // Debug: Show mouse position and target
+      if (typeof window.mouseTargetX !== 'undefined' && typeof window.mouseTargetY !== 'undefined') {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px Arial';
+        ctx.fillText(`Mouse: ${Math.round(mouseX)},${Math.round(mouseY)}`, 10, 90);
+        ctx.fillText(`Target: ${Math.round(window.mouseTargetX)},${Math.round(window.mouseTargetY)}`, 10, 105);
+        ctx.fillText(`Ship: ${Math.round(playerShip.x)},${Math.round(playerShip.y)}`, 10, 120);
+      }
+      
+      // 🎯 NEW: Show all unlocked upgrades permanently
+      let upgradeY = 140;
+      ctx.font = '12px Arial';
+      
+      if (hasDoubleShotUpgrade) {
+        ctx.fillStyle = '#00ff00';
+        ctx.fillText('✅ DOUBLE SHOT UNLOCKED', 10, upgradeY);
+        upgradeY += 15;
+      }
+      
+      if (hasTripleShotUpgrade) {
+        ctx.fillStyle = '#ff8800';
+        ctx.fillText('✅ TRIPLE SHOT UNLOCKED', 10, upgradeY);
+        upgradeY += 15;
+      }
+      
+      if (hasQuadShotUpgrade) {
+        ctx.fillStyle = '#ff00ff';
+        ctx.fillText('✅ QUAD SHOT UNLOCKED', 10, upgradeY);
+        upgradeY += 15;
+      }
     }
   }
 
@@ -5442,16 +5656,16 @@ let canvasHeight;
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // Space Invaders scoring: 10 invaders = 1 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places (10 invaders = 1 DSPOINC)
+    // 🚀 CRITICAL FIX: Space Invaders scoring: 1000 traditional points = 1 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 points = 1 DSPOINC)
     
     if (gameOverModal && finalScoreText) {
-      finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersCount.toLocaleString()} invaders destroyed)`;
+      finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} traditional points)`;
       gameOverModal.classList.remove("hidden");
     }
     
     // Save score to database
-    saveScore(spaceInvadersCount);
+    saveScore(spaceInvadersScore); // 🚀 CRITICAL FIX: Save traditional score instead of invader count
     cleanupSpaceInvadersControls();
 
     // 🆘 NEW: Ensure mobile controls are visible when game ends
@@ -5474,9 +5688,79 @@ let canvasHeight;
     // 🚀 NEW: Enhanced shooting system with weapon types
     switch (currentWeaponType) {
       case 'normal':
-        // 🚀 NEW: Double shot upgrade after defeating first boss
-        if (hasDoubleShotUpgrade) {
-          // Fire two bullets side by side
+        // 🚀 NEW: Progressive Multi-Shot System
+        if (hasQuadShotUpgrade) {
+          // 🎯 QUAD SHOT: Fire four bullets in a spread pattern
+          console.log('🎯 QUAD SHOT MODE: Firing 4 bullets!');
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 - 16, // Far left bullet
+            y: playerShip.y,
+            width: 8,
+            height: 16,
+            speed: 6,
+            type: 'normal',
+            damage: 1
+          });
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 - 8, // Left bullet
+            y: playerShip.y,
+            width: 8,
+            height: 16,
+            speed: 6,
+            type: 'normal',
+            damage: 1
+          });
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2, // Center bullet
+            y: playerShip.y,
+            width: 8,
+            height: 16,
+            speed: 6,
+            type: 'normal',
+            damage: 1
+          });
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 + 8, // Right bullet
+            y: playerShip.y,
+            width: 8,
+            height: 16,
+            speed: 6,
+            type: 'normal',
+            damage: 1
+          });
+        } else if (hasTripleShotUpgrade) {
+          // 🎯 TRIPLE SHOT: Fire three bullets in a spread pattern
+          console.log('🎯 TRIPLE SHOT MODE: Firing 3 bullets!');
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 - 12, // Left bullet
+            y: playerShip.y,
+            width: 8,
+            height: 16,
+            speed: 6,
+            type: 'normal',
+            damage: 1
+          });
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2, // Center bullet
+            y: playerShip.y,
+            width: 8,
+            height: 16,
+            speed: 6,
+            type: 'normal',
+            damage: 1
+          });
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 + 12, // Right bullet
+            y: playerShip.y,
+            width: 8,
+            height: 16,
+            speed: 6,
+            type: 'normal',
+            damage: 1
+          });
+        } else if (hasDoubleShotUpgrade) {
+          // 🎯 DOUBLE SHOT: Fire two bullets side by side
+          console.log('🎯 DOUBLE SHOT MODE: Firing 2 bullets!');
           bullets.push({
             x: playerShip.x + playerShip.width / 2 - 12, // Left bullet
             y: playerShip.y,
@@ -5541,8 +5825,32 @@ let canvasHeight;
             // Reset the flag
             window.isQuickShotCall = false;
           } else {
-            console.log('🚫 Laser can only be fired through Quick Shot button!');
-            return; // Don't shoot
+            // 🔧 FIXED: Allow laser to fire with mouse/touch when ammo is available
+            console.log('🔫 LASER FIRED! (Mouse/Touch trigger)');
+            
+            bullets.push({
+              x: playerShip.x + playerShip.width / 2 - 2,
+              y: playerShip.y,
+              width: 4,
+              height: canvasHeight, // Full screen height
+              speed: 8,
+              type: 'laser',
+              damage: 3,
+              pierce: true, // Can hit multiple invaders
+              color: '#00ffff',
+              // 🚀 NEW: Enhanced laser properties
+              beamIntensity: 1.0,
+              pulsePhase: 0,
+              energyLevel: 100,
+              isCharged: true
+            });
+            
+            weaponAmmo.laser--;
+            weaponCooldowns.laser = 20; // 2 second cooldown
+            updateWeaponDisplay();
+            
+            // 🚀 NEW: Create spectacular laser effect
+            createSpectacularLaserEffect();
           }
         } else {
           console.log('🚫 Laser ammo or cooldown not ready!');
@@ -5594,8 +5902,42 @@ let canvasHeight;
             // Reset the flag
             window.isQuickShotCall = false;
           } else {
-            console.log('🚫 Bomb can only be fired through Quick Shot button!');
-            return; // Don't shoot
+            // 🔧 FIXED: Allow bomb to fire with mouse/touch when ammo is available
+            console.log('💣 BOMB FIRED! (Mouse/Touch trigger)');
+            
+            // Create bomb explosion effect
+            createBombExplosion();
+            
+            // Kill all invaders on screen
+            let invadersKilled = 0;
+            invaders.forEach(invader => {
+              if (invader.alive) {
+                invader.alive = false;
+                invadersKilled++;
+                spaceInvadersScore += invader.points; // Keep game points for display
+                spaceInvadersCount += invadersKilled; // NEW: Track invader count for DSPOINC
+                
+                // Create explosion for each killed invader
+                explosions.push({
+                  x: invader.x + invader.width / 2,
+                  y: invader.y + invader.height / 2,
+                  size: 25,
+                  timer: 15,
+                  isBombKill: true
+                });
+              }
+            });
+            
+            console.log(`💣 BOMB KILLED ${invadersKilled} invaders!`);
+            
+            // Clear all invader bullets
+            const bulletsCleared = invaderBullets.length;
+            invaderBullets = [];
+            console.log(`💣 BOMB CLEARED ${bulletsCleared} invader bullets!`);
+            
+            weaponAmmo.bomb--;
+            weaponCooldowns.bomb = 60; // 6 second cooldown
+            updateWeaponDisplay();
           }
         } else {
           console.log('🚫 Bomb ammo or cooldown not ready!');
@@ -5649,9 +5991,7 @@ let canvasHeight;
     }
     
     // 🚀 NEW: Create screen shake effect
-    if (window.screenShake) {
-      window.screenShake(15, 200); // Laser shake effect
-    }
+    // Note: screenShake function not implemented yet
     
     // 🚀 NEW: Add energy drain effect
     createEnergyDrainEffect();
@@ -5706,9 +6046,7 @@ let canvasHeight;
     }
     
     // Screen shake effect
-    if (window.screenShake) {
-      window.screenShake(20, 300); // Intensity 20, duration 300ms
-    }
+    // Note: screenShake function not implemented yet
   }
 
   // 🚀 NEW: Update weapon cooldowns
@@ -5749,6 +6087,63 @@ let canvasHeight;
       if (currentTime - lastPlayerShootTime > autoShootCooldown) {
         playerShoot();
         lastPlayerShootTime = currentTime;
+      }
+    }
+  }
+
+  // 🖱️ NEW: Handle mouse movement for ship positioning
+  function updateMouseMovement() {
+    // Debug: Log mouse movement update state (reduced frequency)
+    if (Date.now() % 2000 < 16) { // Log every 2 seconds instead of every second
+      console.log('🖱️ Mouse movement update state:', { 
+        isMouseControlEnabled, 
+        isMouseOverCanvas, 
+        isSpaceInvadersPaused,
+        mouseTargetX: window.mouseTargetX,
+        mouseTargetY: window.mouseTargetY
+      });
+    }
+    
+    if (!isMouseControlEnabled || !isMouseOverCanvas || isSpaceInvadersPaused) {
+      return;
+    }
+    
+    // Check if mouse target is set
+    if (typeof mouseTargetX !== 'undefined' && typeof mouseTargetY !== 'undefined') {
+      const oldX = playerShip.x;
+      const oldY = playerShip.y;
+      
+      // 🚀 IMPROVED: Much more responsive mouse movement
+      const easing = 0.35; // Increased from 0.15 for faster response
+      const minMoveDistance = 0.3; // Reduced threshold for more responsive movement
+      const maxMoveDistance = 10; // Maximum movement per frame to prevent jumping
+      
+      // Calculate movement with improved responsiveness
+      const deltaX = mouseTargetX - playerShip.x;
+      const deltaY = mouseTargetY - playerShip.y;
+      
+      // Only move if the distance is significant enough
+      if (Math.abs(deltaX) > minMoveDistance) {
+        const moveX = Math.min(Math.abs(deltaX) * easing, maxMoveDistance) * Math.sign(deltaX);
+        playerShip.x += moveX;
+      }
+      if (Math.abs(deltaY) > minMoveDistance) {
+        const moveY = Math.min(Math.abs(deltaY) * easing, maxMoveDistance) * Math.sign(deltaY);
+        playerShip.y += moveY;
+      }
+      
+      // Debug: Log ship movement (reduced frequency)
+      if ((oldX !== playerShip.x || oldY !== playerShip.y) && Date.now() % 1000 < 16) {
+        console.log(`🚀 Ship moved: X=${oldX.toFixed(1)}→${playerShip.x.toFixed(1)}, Y=${oldY.toFixed(1)}→${playerShip.y.toFixed(1)}`);
+      }
+      
+      // Auto-shoot when ship moves due to mouse (if enabled)
+      if (autoShootEnabled && currentWeaponType === 'normal' && (oldX !== playerShip.x || oldY !== playerShip.y)) {
+        const currentTime = Date.now();
+        if (currentTime - lastPlayerShootTime > autoShootCooldown) {
+          playerShoot();
+          lastPlayerShootTime = currentTime;
+        }
       }
     }
   }
@@ -5916,6 +6311,448 @@ let canvasHeight;
     }
   });
 
+  // 🖱️ NEW: Mouse control variables (GLOBAL SCOPE for proper access)
+  let isMouseControlEnabled = true;
+  let mouseX = 0;
+  let mouseY = 0;
+  let isMouseOverCanvas = false;
+  let mouseTargetX = 0;
+  let mouseTargetY = 0;
+  
+  // 🔥 OVERHEAT SYSTEM VARIABLES (GLOBAL SCOPE)
+  let weaponHeat = 0; // Current heat level (0-100)
+  let maxHeat = 100; // Maximum heat before overheating
+  let heatPerShot = 3; // Heat generated per shot (reduced from 8 for better balance)
+  let heatDecayRate = 3; // Heat decay per frame when not shooting (increased for faster cooling)
+  let isOverheated = false; // Overheated state
+  let overheatCooldown = 2000; // 2 seconds to cool down from overheated state (reduced from 3)
+  let lastOverheatTime = 0; // When overheating occurred
+  
+  // Function to get heat per shot based on weapon type
+  function getHeatPerShot() {
+    switch (currentWeaponType) {
+      case 'normal':
+        return 3; // Normal shots - low heat (reduced from 8)
+      case 'laser':
+        return 8; // Laser shots - moderate heat (reduced from 15)
+      case 'bomb':
+        return 15; // Bomb shots - high heat (reduced from 25)
+      default:
+        return 3;
+    }
+  }
+  
+  // Function to get rapid fire rate based on weapon type
+  function getRapidFireRate() {
+    switch (currentWeaponType) {
+      case 'normal':
+        return 50; // 20 shots per second - rapid fire!
+      case 'laser':
+        return 200; // 5 shots per second - slower but powerful
+      case 'bomb':
+        return 300; // 3 shots per second - slow but devastating
+      default:
+        return 50;
+    }
+  }
+  
+  // 🔥 NEW: Overheat management functions (GLOBAL SCOPE)
+  function addHeat(amount) {
+    weaponHeat = Math.min(weaponHeat + amount, maxHeat);
+    
+    // Check for overheating
+    if (weaponHeat >= maxHeat && !isOverheated) {
+      overheat();
+    }
+    
+    // 🔥 CRITICAL HEAT WARNING (at 80% heat)
+    if (weaponHeat >= 80 && weaponHeat < maxHeat) {
+      console.log('⚠️ WARNING: Weapon heat critical! Consider cooling down...');
+      // Visual feedback - could add screen flash or sound here
+    }
+    
+    // Update mobile heat display
+    updateMobileHeatDisplay();
+    
+    // 🔥 NEW: Mobile overheat notification
+    if (isOverheated) {
+      showMobileOverheatNotification();
+    }
+  }
+  
+  function overheat() {
+    isOverheated = true;
+    lastOverheatTime = Date.now();
+    console.log('🔥 WEAPON OVERHEATED! Need to cool down...');
+    
+    // Stop rapid fire immediately
+    if (mouseRapidFireInterval) {
+      clearInterval(mouseRapidFireInterval);
+      mouseRapidFireInterval = null;
+    }
+    isMouseButtonDown = false;
+    window.isMouseButtonDown = false;
+    
+    // Visual and audio feedback
+    if (typeof cheeseSoundManager !== 'undefined') {
+      cheeseSoundManager.playStarWarsLaserVariant(); // Different sound for overheat
+    }
+  }
+  
+  function updateHeat() {
+    if (isOverheated) {
+      // Check if cooldown period is over
+      if (Date.now() - lastOverheatTime > overheatCooldown) {
+        isOverheated = false;
+        weaponHeat = 0;
+        console.log('❄️ Weapon cooled down! Ready to fire again!');
+      }
+    } else if (weaponHeat > 0) {
+      // Natural heat decay when not shooting
+      weaponHeat = Math.max(0, weaponHeat - heatDecayRate);
+    }
+    
+    // Update global variables for UI display
+    window.weaponHeat = weaponHeat;
+    window.isOverheated = isOverheated;
+    
+    // Update mobile heat display
+    updateMobileHeatDisplay();
+  }
+  
+  // 🔥 NEW: Mobile overheat notification function (GLOBAL SCOPE)
+  function showMobileOverheatNotification() {
+    // Create mobile-friendly overheat notification
+    const notification = document.createElement('div');
+    notification.id = 'mobile-overheat-notification';
+    notification.innerHTML = `
+      <div style="text-align: center; padding: 20px;">
+        <div style="font-size: 2em; margin-bottom: 10px;">🔥</div>
+        <div style="font-size: 1.2em; font-weight: bold; color: #ff6b6b; margin-bottom: 10px;">
+          WEAPON OVERHEATED!
+        </div>
+        <div style="font-size: 1em; color: #ffffff; margin-bottom: 15px;">
+          Your weapon needs to cool down
+        </div>
+        <div style="font-size: 0.9em; color: #9ca3af;">
+          Wait 3 seconds or switch weapons
+        </div>
+      </div>
+    `;
+    
+    notification.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #1a1a1a, #374151);
+      border: 3px solid #ff6b6b;
+      border-radius: 20px;
+      padding: 20px;
+      z-index: 10000;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(255, 107, 107, 0.3);
+      animation: overheatPulse 0.5s ease-in-out;
+      max-width: 300px;
+      width: 90vw;
+    `;
+    
+    // Add CSS animation for overheat effect
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes overheatPulse {
+        0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+        50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 3 seconds (cooldown period)
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 3000);
+  }
+  
+  // 🔥 NEW: Update mobile heat display function (GLOBAL SCOPE)
+  function updateMobileHeatDisplay() {
+    const heatStatus = document.getElementById('mobile-heat-status');
+    const heatBarFill = document.getElementById('mobile-heat-bar-fill');
+    const heatPercentage = document.getElementById('mobile-heat-percentage');
+    const overheatWarning = document.getElementById('mobile-overheat-warning');
+    
+    if (!heatStatus || !heatBarFill || !heatPercentage || !overheatWarning) {
+      return; // Mobile controls not created yet
+    }
+    
+    // Update heat status text
+    if (isOverheated) {
+      heatStatus.textContent = '🔥 WEAPON OVERHEATED!';
+      heatStatus.style.color = '#ff6b6b';
+      overheatWarning.textContent = '❄️ Cooling down... Wait 3 seconds';
+      overheatWarning.style.display = 'block';
+    } else if (weaponHeat >= 80) {
+      heatStatus.textContent = '⚠️ CRITICAL HEAT!';
+      heatStatus.style.color = '#ff8800';
+      overheatWarning.textContent = '🔥 Consider cooling down soon!';
+      overheatWarning.style.display = 'block';
+    } else if (weaponHeat >= 50) {
+      heatStatus.textContent = '🔥 HIGH HEAT';
+      heatStatus.style.color = '#ffcc00';
+      overheatWarning.style.display = 'none';
+    } else if (weaponHeat >= 20) {
+      heatStatus.textContent = '🌡️ MEDIUM HEAT';
+      heatStatus.style.color = '#ffffff';
+      overheatWarning.style.display = 'none';
+    } else {
+      heatStatus.textContent = '❄️ COOL';
+      heatStatus.style.color = '#00ff00';
+      overheatWarning.style.display = 'none';
+    }
+    
+    // Update heat bar fill
+    const heatPercent = (weaponHeat / maxHeat) * 100;
+    heatBarFill.style.width = `${heatPercent}%`;
+    
+    // Update heat percentage text
+    heatPercentage.textContent = `${Math.round(weaponHeat)}% / ${maxHeat}%`;
+    
+    // Update heat bar color based on heat level
+    if (isOverheated) {
+      heatBarFill.style.background = '#ff0000';
+    } else if (heatPercent >= 80) {
+      heatBarFill.style.background = '#ff8800';
+    } else if (heatPercent >= 50) {
+      heatBarFill.style.background = '#ffcc00';
+    } else {
+      heatBarFill.style.background = 'linear-gradient(90deg, #00ff00, #ffcc00, #ff8800, #ff0000)';
+    }
+  }
+
+  // 🖱️ NEW: Mouse control functions
+  function setupMouseControls() {
+    const canvas = document.getElementById('space-invaders-canvas');
+    if (!canvas) {
+      console.warn('⚠️ Canvas not available for mouse controls');
+      return;
+    }
+
+    console.log('🖱️ Setting up mouse controls for canvas:', canvas);
+
+    // Enable mouse control when mouse enters canvas
+    canvas.addEventListener('mouseenter', () => {
+      isMouseOverCanvas = true;
+      console.log('🖱️ Mouse entered canvas - mouse control enabled');
+      console.log('🖱️ Mouse control state:', { isMouseControlEnabled, isMouseOverCanvas, isSpaceInvadersPaused });
+      
+      // Visual feedback: Add a border to show mouse control is active
+      canvas.style.border = '3px solid #10b981';
+      canvas.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.5)';
+    });
+
+    // Disable mouse control when mouse leaves canvas
+    canvas.addEventListener('mouseleave', () => {
+      // 🔧 FIXED: Add delay before disabling mouse control to prevent flickering
+      setTimeout(() => {
+        if (!canvas.matches(':hover')) { // Double-check mouse is really gone
+          isMouseOverCanvas = false;
+          console.log('🖱️ Mouse left canvas - mouse control disabled');
+          console.log('🖱️ Mouse control state:', { isMouseControlEnabled, isMouseOverCanvas, isSpaceInvadersPaused });
+          
+          // Visual feedback: Remove border when mouse control is inactive
+          canvas.style.border = '';
+          canvas.style.boxShadow = '';
+          
+          // 🚀 IMPROVED: Reset mouse target when leaving canvas for smoother re-entry
+          mouseTargetX = playerShip.x;
+          mouseTargetY = playerShip.y;
+        }
+      }, 100); // 100ms delay to prevent accidental disabling
+    });
+
+    // Track mouse position for ship movement
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isMouseControlEnabled || !isMouseOverCanvas || isSpaceInvadersPaused) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+      
+      // 🚀 IMPROVED: More precise mouse targeting with buffer zone
+      const bufferZone = 5; // Small buffer zone for smoother edge movement
+      
+      // Check if mouse is within canvas bounds (with buffer)
+      if (mouseX >= -bufferZone && mouseX <= canvasWidth + bufferZone && 
+          mouseY >= -bufferZone && mouseY <= canvasHeight + bufferZone) {
+        
+        // Set mouse target position for smooth movement
+        mouseTargetX = mouseX - playerShip.width / 2;
+        mouseTargetY = mouseY - playerShip.height / 2;
+        
+        // Keep target within canvas bounds with slight margin
+        const margin = 2; // Small margin for smoother edge movement
+        mouseTargetX = Math.max(margin, Math.min(canvasWidth - playerShip.width - margin, mouseTargetX));
+        mouseTargetY = Math.max(margin, Math.min(canvasHeight - playerShip.height - margin, mouseTargetY));
+      }
+      
+      // Debug: Log mouse movement (reduced frequency to avoid spam)
+      if (Date.now() % 500 < 16) { // Log every 0.5 seconds
+        console.log(`🖱️ Mouse: X=${mouseX.toFixed(1)}, Y=${mouseY.toFixed(1)}, Target: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
+      }
+      
+      // Auto-shoot when mouse moves (if enabled)
+      if (autoShootEnabled && currentWeaponType === 'normal') {
+        const currentTime = Date.now();
+        if (currentTime - lastPlayerShootTime > autoShootCooldown) {
+          playerShoot();
+          lastPlayerShootTime = currentTime;
+        }
+      }
+    });
+
+        // 🚀 NEW: Rapid-fire mouse shooting system with OVERHEAT MECHANICS!
+    let isMouseButtonDown = false;
+    let mouseRapidFireInterval = null;
+    
+    // Make variables globally accessible for UI display
+    window.isMouseButtonDown = isMouseButtonDown;
+    
+    // Mouse button down - start rapid fire
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button === 0 && !isMouseButtonDown) { // Left mouse button
+        if (!isMouseControlEnabled || !isMouseOverCanvas || isSpaceInvadersPaused) return;
+        
+        // 🔥 CHECK FOR OVERHEATING
+        if (isOverheated) {
+          console.log('🔥 Weapon is overheated! Wait for cooldown...');
+          return; // Can't shoot when overheated
+        }
+        
+        isMouseButtonDown = true;
+        window.isMouseButtonDown = true; // Update global state
+        console.log('🖱️ Left mouse button pressed - starting rapid fire!');
+        
+        // Start rapid fire immediately
+        playerShoot();
+        addHeat(getHeatPerShot()); // Add heat for first shot
+        
+        // Set up rapid fire interval for continuous shooting
+        mouseRapidFireInterval = setInterval(() => {
+          if (isMouseButtonDown && !isSpaceInvadersPaused && isMouseOverCanvas && !isOverheated) {
+            // For special weapons, set the flag to allow shooting
+            if (currentWeaponType === 'laser' || currentWeaponType === 'bomb') {
+              window.isQuickShotCall = true;
+            }
+            
+                                    // 🚀 ENHANCED: Add rapid fire visual feedback
+                        if (currentWeaponType === 'normal') {
+                          // Create small screen shake effect for rapid fire
+                          // Note: screenShake function not implemented yet
+                        }
+            
+            playerShoot();
+            addHeat(getHeatPerShot()); // Add heat for each shot
+          }
+        }, getRapidFireRate());
+      }
+    });
+    
+    // Mouse button up - stop rapid fire
+    canvas.addEventListener('mouseup', (e) => {
+      if (e.button === 0) { // Left mouse button
+        if (isMouseButtonDown) {
+          isMouseButtonDown = false;
+          window.isMouseButtonDown = false; // Update global state
+          console.log('🖱️ Left mouse button released - stopping rapid fire');
+          
+          // Clear rapid fire interval
+          if (mouseRapidFireInterval) {
+            clearInterval(mouseRapidFireInterval);
+            mouseRapidFireInterval = null;
+          }
+        }
+      } else if (e.button === 2) { // Right mouse button
+        e.preventDefault(); // Prevent context menu
+        if (!isMouseOverCanvas || isSpaceInvadersPaused) return;
+        
+        // Cycle through weapons on right-click
+        const weapons = ['normal', 'laser', 'bomb'];
+        const currentIndex = weapons.indexOf(currentWeaponType);
+        const nextIndex = (currentIndex + 1) % weapons.length;
+        const nextWeapon = weapons[nextIndex];
+        
+        switchWeapon(nextWeapon);
+        console.log(`🖱️ Right-click: Switched to ${nextWeapon} weapon`);
+      }
+    });
+    
+    // Mouse leave canvas - stop rapid fire
+    canvas.addEventListener('mouseleave', () => {
+      if (isMouseButtonDown) {
+        isMouseButtonDown = false;
+        window.isMouseButtonDown = false; // Update global state
+        console.log('🖱️ Mouse left canvas - stopping rapid fire');
+        
+        // Clear rapid fire interval
+        if (mouseRapidFireInterval) {
+          clearInterval(mouseRapidFireInterval);
+          mouseRapidFireInterval = null;
+        }
+      }
+    });
+
+    // Prevent context menu on right-click
+    canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault(); // Prevent context menu (Save image, etc.)
+    });
+
+    console.log('✅ Mouse controls setup complete');
+  }
+
+  // 🖱️ NEW: Notification function for mouse control feedback
+  function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 10000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+      notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.style.transform = 'translateX(400px)';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, 3000);
+  }
+
   // 🆘 REMOVED: Duplicate touch handling - using existing system below
 
   // 🎮 Make game functions globally available
@@ -5937,6 +6774,10 @@ let canvasHeight;
   window.toggleMobileControls = toggleMobileControls;
   window.createEnhancedMobileControls = createEnhancedMobileControls;
   window.displayHelpInfoOutside = displayHelpInfoOutside;
+  
+  // 🔥 NEW: Make heat system functions globally available
+  window.updateMobileHeatDisplay = updateMobileHeatDisplay;
+  window.showMobileOverheatNotification = showMobileOverheatNotification;
 
   // 🎮 NEW: Make game panel functions globally available
   window.toggleGamePanel = toggleGamePanel;
@@ -6271,9 +7112,12 @@ window.emergencyCollisionCheck = function() {
   function updateScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // Space Invaders scoring: 10 invaders = 1 DSPOINC
-      const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places (10 invaders = 1 DSPOINC)
-      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} game points, ${spaceInvadersCount.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC)`;
+      // 🚀 CRITICAL FIX: Space Invaders scoring: 1000 traditional points = 1 DSPOINC
+      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 points = 1 DSPOINC)
+      
+      // Add mouse control indicator
+      const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
+      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} traditional points (${dspoinEarned} DSPOINC) ${mouseIndicator}`;
     } else {
       console.warn('⚠️ Score display element not found');
     }
@@ -6285,23 +7129,23 @@ window.emergencyCollisionCheck = function() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // Space Invaders scoring: 10 invaders = 1 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersCount * 0.1) * 100) / 100; // Round to 2 decimal places (10 invaders = 1 DSPOINC)
+    // 🚀 CRITICAL FIX: Space Invaders scoring: 1000 traditional points = 1 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 points = 1 DSPOINC)
     
     if (winModal && winScoreText) {
-      winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersCount.toLocaleString()} invaders destroyed)`;
+      winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} traditional points)`;
       winModal.classList.remove("hidden");
     }
     
     // Save score to database
-    saveScore(spaceInvadersCount);
+    saveScore(spaceInvadersScore); // 🚀 CRITICAL FIX: Save traditional score instead of invader count
     cleanupSpaceInvadersControls();
 
     // Dispatch game end event for UI reset
     window.dispatchEvent(new Event('spaceInvadersGameEnd'));
   }
 
-  function saveScore(invaderCount) {
+  function saveScore(traditionalScore) {
     const discordId = localStorage.getItem('discord_id');
     const discordName = localStorage.getItem('discord_name') || 'Unknown Player';
     const wallet = localStorage.getItem('user_wallet') || discordId;
@@ -6311,14 +7155,15 @@ window.emergencyCollisionCheck = function() {
       return;
     }
 
-    // Space Invaders scoring: 0.1 DSPOINC per invader (matches backend database)
-    const dspoincScore = Math.round((invaderCount * 0.1) * 100) / 100; // Convert to DSPOINC (10 invaders = 1 DSPOINC)
+    // 🚀 CRITICAL FIX: Space Invaders now saves traditional score (like classic Space Invaders)
+    // Traditional score: 100 points per invader, 500 points per power-up, etc.
+    const dspoincScore = Math.round((traditionalScore * 0.001) * 100) / 100; // Convert to DSPOINC (1000 points = 1 DSPOINC)
 
-    console.log(`💾 Saving Space Invaders score: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
+    console.log(`💾 Saving Space Invaders score: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
 
     // 🌍 Environment-aware API endpoint (works both locally and in production)
     const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
-    const apiBaseUrl = isProduction ? '' : 'http://localhost/narrrfs-world';
+    const apiBaseUrl = isProduction ? 'http://localhost/narrrfs-world' : '';
     const apiUrl = `${apiBaseUrl}/api/dev/save-score.php`;
     
     console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
@@ -6332,7 +7177,7 @@ window.emergencyCollisionCheck = function() {
       },
       body: JSON.stringify({
         wallet: wallet,
-        score: invaderCount, // Raw score (number of invaders destroyed)
+        score: traditionalScore, // 🚀 CRITICAL FIX: Raw traditional score (like classic Space Invaders)
         discord_id: discordId,
         discord_name: discordName,
         game: 'space_invaders'
@@ -6351,10 +7196,10 @@ window.emergencyCollisionCheck = function() {
     })
     .then(data => {
       if (data.success) {
-        console.log(`✅ Space Invaders score saved successfully: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
+        console.log(`✅ Space Invaders score saved successfully: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
       } else {
         if (data.local_test) {
-          console.log(`🔄 Local testing detected - score would be saved in production: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
+          console.log(`🔄 Local testing detected - score would be saved in production: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
         } else {
           console.error('❌ Failed to save Space Invaders score:', data.error || 'Unknown error');
         }
@@ -6365,7 +7210,7 @@ window.emergencyCollisionCheck = function() {
       // Check if this is a local testing issue
       if (error.message.includes('HTML') || error.message.includes('fetch')) {
         console.log('🔄 Local testing detected - score saving disabled for local development');
-        console.log(`📊 Score would be saved in production: ${invaderCount} invaders = ${dspoincScore} DSPOINC`);
+        console.log(`📊 Score would be saved in production: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
       }
     });
   }
@@ -6389,8 +7234,6 @@ window.emergencyCollisionCheck = function() {
   let isTouching = false;
   let holdShootInterval = null;
   let holdShootDelay = 150; // 150ms between shots for rapid fire
-  let reloadButton = null; // 🚀 NEW: Floating reload button
-  let reloadButtonInterval = null; // 🚀 NEW: Interval to check ammo and show/hide button
 
   function handleTouchStart(e) {
     if (e.target.closest("#space-invaders-canvas")) {
@@ -6404,6 +7247,12 @@ window.emergencyCollisionCheck = function() {
       // Store touch start time for tap detection
       touchStartTime = Date.now();
       
+      // 🔥 CHECK FOR OVERHEATING
+      if (isOverheated) {
+        console.log('🔥 Weapon is overheated! Wait for cooldown...');
+        return; // Can't shoot when overheated
+      }
+      
       // 🚀 NEW: Start continuous shooting while holding (smart weapon handling)
       if (holdShootInterval) {
         clearInterval(holdShootInterval);
@@ -6411,11 +7260,12 @@ window.emergencyCollisionCheck = function() {
       
       // Start rapid fire shooting based on weapon type
       holdShootInterval = setInterval(() => {
-        if (isTouching && !isSpaceInvadersPaused) {
+        if (isTouching && !isSpaceInvadersPaused && !isOverheated) {
           // Smart shooting based on weapon type
           if (currentWeaponType === 'normal') {
             // Normal weapon: shoot continuously (infinite ammo)
             playerShoot();
+            addHeat(getHeatPerShot()); // Add heat for each shot
           }
           // Special weapons (laser/bomb) can ONLY be fired through Quick Shot button
           // No automatic shooting through hold-to-shoot for special weapons
@@ -6424,9 +7274,10 @@ window.emergencyCollisionCheck = function() {
       
       // First immediate shot (smart weapon handling)
       setTimeout(() => {
-        if (isTouching && !isSpaceInvadersPaused) {
+        if (isTouching && !isSpaceInvadersPaused && !isOverheated) {
           if (currentWeaponType === 'normal') {
             playerShoot();
+            addHeat(getHeatPerShot()); // Add heat for first shot
           }
           // Special weapons require Quick Shot button
         }
@@ -6460,8 +7311,9 @@ window.emergencyCollisionCheck = function() {
       // 🆘 IMPROVED: Better shooting detection (smart weapon handling)
       // Quick swipe up to shoot (like modern mobile games)
       if (deltaY < -15) {
-        if (currentWeaponType === 'normal') {
-        playerShoot();
+        if (currentWeaponType === 'normal' && !isOverheated) {
+          playerShoot();
+          addHeat(getHeatPerShot()); // Add heat for swipe shot
         }
         // Special weapons (laser/bomb) can ONLY be fired through Quick Shot button
         // Reset touch to prevent multiple shots
@@ -6471,8 +7323,9 @@ window.emergencyCollisionCheck = function() {
       // 🆘 NEW: Quick swipe down for special action (bomb only)
       if (deltaY > 25) {
         // Swipe down only works with bomb weapon and available ammo
-        if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
+        if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0 && !isOverheated) {
           playerShoot(); // This will use bomb if selected
+          addHeat(getHeatPerShot()); // Add heat for bomb shot
         }
         touchStartY = touch.clientY;
       }
@@ -6961,6 +7814,7 @@ window.emergencyCollisionCheck = function() {
         <h2 style="color: #fbbf24; border-bottom: 1px solid #fbbf24; padding-bottom: 5px;">🎮 MOVEMENT CONTROLS</h2>
         <p><strong>WASD Keys:</strong> W=Up, A=Left, S=Down, D=Right</p>
         <p><strong>Arrow Keys:</strong> ↑=Up, ←=Left, ↓=Down, →=Right</p>
+        <p><strong>🖱️ Mouse Control:</strong> Move mouse to control ship (smooth movement)</p>
         <p><strong>Mobile:</strong> Swipe or tap directional buttons</p>
       </div>
       
@@ -6970,6 +7824,8 @@ window.emergencyCollisionCheck = function() {
         <p><strong>2 Key:</strong> Laser Beam (5 ammo, pierces enemies)</p>
         <p><strong>3 Key:</strong> Bomb (3 ammo, clears screen)</p>
         <p><strong>Space Bar:</strong> Shoot current weapon</p>
+        <p><strong>🖱️ Mouse Click:</strong> Shoot current weapon</p>
+        <p><strong>🖱️ Right-Click:</strong> Switch weapons (cycle through)</p>
         <p><strong>Mobile:</strong> Tap shoot button or swipe up</p>
       </div>
       
@@ -6985,6 +7841,7 @@ window.emergencyCollisionCheck = function() {
         <h2 style="color: #fbbf24; border-bottom: 1px solid #fbbf24; padding-bottom: 5px;">🎯 GAME FEATURES</h2>
         <p><strong>T Key:</strong> Toggle Auto-shoot</p>
         <p><strong>P Key:</strong> Pause/Resume game</p>
+        <p><strong>M Key:</strong> Toggle Mouse/Keyboard control</p>
         <p><strong>Auto-shoot:</strong> Automatically fires when moving</p>
         <p><strong>Weak Points:</strong> Hit glowing eyes/DNA for bonus points</p>
       </div>
@@ -7495,6 +8352,98 @@ window.emergencyCollisionCheck = function() {
     powerUpsSection.appendChild(powerUpsGrid);
     panelContent.appendChild(powerUpsSection);
     
+    // 🔥 NEW: Weapon Heat System section for mobile
+    const heatSection = document.createElement('div');
+    heatSection.style.cssText = `
+      margin-bottom: 25px;
+      text-align: center;
+    `;
+    
+    const heatTitle = document.createElement('h3');
+    heatTitle.textContent = '🔥 WEAPON HEAT';
+    heatTitle.style.cssText = `
+      color: #ffffff;
+      margin: 0 0 15px 0;
+      font-size: 1.2em;
+    `;
+    heatSection.appendChild(heatTitle);
+    
+    // Heat bar container
+    const heatBarContainer = document.createElement('div');
+    heatBarContainer.style.cssText = `
+      background: #1f2937;
+      border: 2px solid #374151;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 15px;
+    `;
+    
+    // Heat status text
+    const heatStatusText = document.createElement('div');
+    heatStatusText.id = 'mobile-heat-status';
+    heatStatusText.style.cssText = `
+      color: #ffffff;
+      font-size: 1.1em;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+    `;
+    heatBarContainer.appendChild(heatStatusText);
+    
+    // Heat bar
+    const heatBar = document.createElement('div');
+    heatBar.id = 'mobile-heat-bar';
+    heatBar.style.cssText = `
+      width: 100%;
+      height: 20px;
+      background: #374151;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 10px;
+    `;
+    
+    // Heat bar fill
+    const heatBarFill = document.createElement('div');
+    heatBarFill.id = 'mobile-heat-bar-fill';
+    heatBarFill.style.cssText = `
+      height: 100%;
+      background: linear-gradient(90deg, #00ff00, #ffcc00, #ff8800, #ff0000);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    `;
+    
+    heatBar.appendChild(heatBarFill);
+    heatBarContainer.appendChild(heatBar);
+    
+    // Heat percentage
+    const heatPercentage = document.createElement('div');
+    heatPercentage.id = 'mobile-heat-percentage';
+    heatPercentage.style.cssText = `
+      color: #ffffff;
+      font-size: 1em;
+      text-align: center;
+      font-weight: bold;
+    `;
+    heatBarContainer.appendChild(heatPercentage);
+    
+    // Overheat warning
+    const overheatWarning = document.createElement('div');
+    overheatWarning.id = 'mobile-overheat-warning';
+    overheatWarning.style.cssText = `
+      color: #ff6b6b;
+      font-size: 0.9em;
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+      display: none;
+    `;
+    heatBarContainer.appendChild(overheatWarning);
+    
+    heatSection.appendChild(heatBarContainer);
+    panelContent.appendChild(heatSection);
+    
     // 🎵 NEW: Sound controls section
     const soundSection = document.createElement('div');
     soundSection.style.cssText = `
@@ -7771,6 +8720,11 @@ window.emergencyCollisionCheck = function() {
     
     // 🚀 NEW: Create the floating reload button
     createReloadButton();
+    
+    // 🔥 NEW: Initialize mobile heat display
+    setTimeout(() => {
+      updateMobileHeatDisplay();
+    }, 100);
     
     console.log('🎮 Enhanced mobile controls with game panel and reload button created');
   }

@@ -196,32 +196,32 @@ function startTetris() {
   }
 
   // --- Drawing blocks: PNG if available, else color ---
-  function drawBlock(x, y, val) {
-    context.save();
+function drawBlock(x, y, val) {
+  context.save();
 
-    // 💣 Bomb glow (active countdown)
-    if (activeExplosive && activeExplosive.x === x && activeExplosive.y === y) {
-      const timeElapsed = (Date.now() - activeExplosive.start) / 1000;
-      const remaining = activeExplosive.countdown - timeElapsed;
-      const intensity = Math.max(0, Math.min(1, 1 - remaining / activeExplosive.countdown));
-      context.shadowColor = '#facc15';
-      context.shadowBlur = 10 + 30 * intensity;
-    }
-
-    const img = blockImages[val];
-    if (img && img.complete) {
-      context.drawImage(img, x * blockSize, y * blockSize, blockSize, blockSize);
-    } else {
-      context.fillStyle = colors[val] || "#FFFFFF";
-      context.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
-
-      // 👁️ Optional stroke for clarity
-      context.strokeStyle = "#1f2937";
-      context.strokeRect(x * blockSize + 0.5, y * blockSize + 0.5, blockSize - 1, blockSize - 1);
-    }
-
-    context.restore();
+  // 💣 Bomb glow (active countdown)
+  if (activeExplosive && activeExplosive.x === x && activeExplosive.y === y) {
+    const timeElapsed = (Date.now() - activeExplosive.start) / 1000;
+    const remaining = activeExplosive.countdown - timeElapsed;
+    const intensity = Math.max(0, Math.min(1, 1 - remaining / activeExplosive.countdown));
+    context.shadowColor = '#facc15';
+    context.shadowBlur = 10 + 30 * intensity;
   }
+
+  const img = blockImages[val];
+  if (img && img.complete) {
+    context.drawImage(img, x * blockSize, y * blockSize, blockSize, blockSize);
+  } else {
+    context.fillStyle = colors[val] || "#FFFFFF";
+    context.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+
+    // 👁️ Optional stroke for clarity
+    context.strokeStyle = "#1f2937";
+    context.strokeRect(x * blockSize + 0.5, y * blockSize + 0.5, blockSize - 1, blockSize - 1);
+  }
+
+  context.restore();
+}
 
   // --- Main draw loop ---
   function draw() {
@@ -270,251 +270,251 @@ function startTetris() {
     }
   }
 
-  function collide(shape, row, col) {
-    return shape.some((r, y) =>
-      r.some((v, x) => {
-        const ny = row + y;
-        const nx = col + x;
-        return v && (ny >= gridHeight || nx < 0 || nx >= gridWidth || (ny >= 0 && grid[ny][nx]));
-      })
-    );
-  }
-
-  function merge() {
-    current.shape.forEach((row, y) =>
-      row.forEach((val, x) => {
-        if (val) grid[current.row + y][current.col + x] = val;
-      })
-    );
-  }
-
-  function clearLines() {
-    let lines = 0;
-    for (let y = gridHeight - 1; y >= 0; y--) {
-      if (grid[y].every(v => v !== 0)) {
-        // 🧠 Check for bomb BEFORE removing the row
-        if (grid[y].includes(6)) {
-          showBombDefusedPopup();
+function collide(shape, row, col) {
+          return shape.some((r, y) =>
+            r.some((v, x) => {
+              const ny = row + y;
+              const nx = col + x;
+              return v && (ny >= gridHeight || nx < 0 || nx >= gridWidth || (ny >= 0 && grid[ny][nx]));
+            })
+          );
+        }
+      
+        function merge() {
+          current.shape.forEach((row, y) =>
+            row.forEach((val, x) => {
+              if (val) grid[current.row + y][current.col + x] = val;
+            })
+          );
+        }
+      
+      function clearLines() {
+        let lines = 0;
+        for (let y = gridHeight - 1; y >= 0; y--) {
+          if (grid[y].every(v => v !== 0)) {
+            // 🧠 Check for bomb BEFORE removing the row
+            if (grid[y].includes(6)) {
+              showBombDefusedPopup();
           score += 50; // Bonus for defusing bomb
           if (scoreDisplay) {
             scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
           }
-        }
-
-        grid.splice(y, 1);
-        grid.unshift(Array(gridWidth).fill(0));
-        lines++;
-        y++; // Re-check same row index
-      }
-    }
-
-    if (lines > 0) {
-      linesClearedTotal += lines;
-      score += lines * 10;
-      if (scoreDisplay) {
-        scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
-      }
-
-      // ⏩ Speed up every 20 lines
-      if (linesClearedTotal % 20 === 0) {
-        dropInterval = Math.max(100, dropInterval - 50);
-        clearInterval(gameInterval);
-        gameInterval = setInterval(drop, dropInterval);
-      }
-    }
-  }
-
-  // 🔔 Defused popup UI logic
-  function showBombDefusedPopup() {
-    const popup = document.getElementById("bomb-defused-popup");
-    if (!popup) return;
-
-    popup.classList.remove("hidden");
-    popup.classList.add("animate-pop");
-
-    setTimeout(() => {
-      popup.classList.add("hidden");
-      popup.classList.remove("animate-pop");
-    }, 2000);
-  }
-
-  // 🛑 Pause Logic — now mobile compatible
-  let isTetrisPaused = false;
-  let gameInterval;
-
-  const pauseBtn = document.getElementById("pause-tetris-btn");
-  if (pauseBtn) {
-    pauseBtn.style.padding = "12px 24px";
-    pauseBtn.style.fontSize = "18px";
-    pauseBtn.style.touchAction = "manipulation";
-
-    const pauseHandler = (e) => {
-      e.preventDefault();
-
-      isTetrisPaused = !isTetrisPaused;
-      pauseBtn.textContent = isTetrisPaused ? "▶️ Resume" : "⏸️ Pause";
-
-      if (isTetrisPaused) {
-        clearInterval(gameInterval);
-      } else {
-        clearInterval(gameInterval); // always reset interval
-        gameInterval = setInterval(drop, dropInterval);
-        drop(); // redraw immediately
-      }
-    };
-
-    pauseBtn.addEventListener("click", pauseHandler);
-    pauseBtn.addEventListener("touchend", pauseHandler, { passive: false });
-  }
-
-  // Add keyboard event listener for movement controls
-  document.addEventListener("keydown", e => {
-    if (isTetrisPaused) return; // Prevent movement while paused
-
-    switch (e.key) {
-      case "ArrowLeft":
-      case "a":
-        if (!collide(current.shape, current.row, current.col - 1)) {
-          current.col--;
-          draw();
-        }
-        break;
-      case "ArrowRight":
-      case "d":
-        if (!collide(current.shape, current.row, current.col + 1)) {
-          current.col++;
-          draw();
-        }
-        break;
-      case "ArrowDown":
-      case "s":
-        if (!collide(current.shape, current.row + 1, current.col)) {
-          current.row++;
-          draw();
-        }
-        break;
-      case "ArrowUp":
-      case "w":
-      case " ":
-        rotatePiece();
-        draw();
-        break;
-    }
-  });
-
-  // 🧱 Drop Function
-  function drop() {
-    if (isTetrisPaused) return; // ⛔ Early return if paused
-
-    if (!collide(current.shape, current.row + 1, current.col)) {
-      current.row++;
-    } else {
-      // 💣 Bomb piece logic
-      if (
-        current.shape.length === 1 &&
-        current.shape[0].length === 1 &&
-        current.shape[0][0] === 6
-      ) {
-        const cx = current.col;
-        const cy = current.row;
-        const countdown = Math.floor(Math.random() * 30) + 1;
-
-        activeExplosive = { x: cx, y: cy, countdown, start: Date.now() };
-
-        setTimeout(() => {
-          if (grid[cy]?.[cx] === 6) {
-            explode(cx, cy);
+            }
+      
+            grid.splice(y, 1);
+            grid.unshift(Array(gridWidth).fill(0));
+            lines++;
+            y++; // Re-check same row index
           }
-          activeExplosive = null;
-        }, countdown * 1000);
+        }
+      
+        if (lines > 0) {
+          linesClearedTotal += lines;
+          score += lines * 10;
+      if (scoreDisplay) {
+          scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
       }
+      
+          // ⏩ Speed up every 20 lines
+          if (linesClearedTotal % 20 === 0) {
+            dropInterval = Math.max(100, dropInterval - 50);
+            clearInterval(gameInterval);
+            gameInterval = setInterval(drop, dropInterval);
+          }
+        }
+      }
+      
+// 🔔 Defused popup UI logic
+function showBombDefusedPopup() {
+  const popup = document.getElementById("bomb-defused-popup");
+  if (!popup) return;
 
-      merge();
-      clearLines();
+  popup.classList.remove("hidden");
+  popup.classList.add("animate-pop");
 
-      current = {
-        shape: nextPiece,
-        row: 0,
-        col: 3
-      };
-      nextPiece = randomPiece();
-      renderNextBlock(nextPiece);
+  setTimeout(() => {
+    popup.classList.add("hidden");
+    popup.classList.remove("animate-pop");
+  }, 2000);
+}
+
+// 🛑 Pause Logic — now mobile compatible
+let isTetrisPaused = false;
+let gameInterval;
+
+const pauseBtn = document.getElementById("pause-tetris-btn");
+if (pauseBtn) {
+  pauseBtn.style.padding = "12px 24px";
+  pauseBtn.style.fontSize = "18px";
+  pauseBtn.style.touchAction = "manipulation";
+
+  const pauseHandler = (e) => {
+    e.preventDefault();
+
+    isTetrisPaused = !isTetrisPaused;
+    pauseBtn.textContent = isTetrisPaused ? "▶️ Resume" : "⏸️ Pause";
+
+    if (isTetrisPaused) {
+      clearInterval(gameInterval);
+    } else {
+      clearInterval(gameInterval); // always reset interval
+      gameInterval = setInterval(drop, dropInterval);
+      drop(); // redraw immediately
+    }
+  };
+
+  pauseBtn.addEventListener("click", pauseHandler);
+  pauseBtn.addEventListener("touchend", pauseHandler, { passive: false });
+}
+
+// Add keyboard event listener for movement controls
+document.addEventListener("keydown", e => {
+  if (isTetrisPaused) return; // Prevent movement while paused
+
+  switch (e.key) {
+    case "ArrowLeft":
+    case "a":
+      if (!collide(current.shape, current.row, current.col - 1)) {
+        current.col--;
+        draw();
+      }
+      break;
+    case "ArrowRight":
+    case "d":
+      if (!collide(current.shape, current.row, current.col + 1)) {
+        current.col++;
+        draw();
+      }
+      break;
+    case "ArrowDown":
+    case "s":
+      if (!collide(current.shape, current.row + 1, current.col)) {
+        current.row++;
+        draw();
+      }
+      break;
+    case "ArrowUp":
+    case "w":
+    case " ":
+      rotatePiece();
+      draw();
+      break;
+  }
+});
+
+// 🧱 Drop Function
+function drop() {
+  if (isTetrisPaused) return; // ⛔ Early return if paused
+
+  if (!collide(current.shape, current.row + 1, current.col)) {
+    current.row++;
+  } else {
+    // 💣 Bomb piece logic
+    if (
+      current.shape.length === 1 &&
+      current.shape[0].length === 1 &&
+      current.shape[0][0] === 6
+    ) {
+      const cx = current.col;
+      const cy = current.row;
+      const countdown = Math.floor(Math.random() * 30) + 1;
+
+      activeExplosive = { x: cx, y: cy, countdown, start: Date.now() };
+
+      setTimeout(() => {
+        if (grid[cy]?.[cx] === 6) {
+          explode(cx, cy);
+        }
+        activeExplosive = null;
+      }, countdown * 1000);
+    }
+
+    merge();
+    clearLines();
+
+    current = {
+      shape: nextPiece,
+      row: 0,
+      col: 3
+    };
+    nextPiece = randomPiece();
+    renderNextBlock(nextPiece);
 
       // 🚨 CRITICAL: Check for game over (blocks reached top)
-      if (collide(current.shape, current.row, current.col)) {
-        clearInterval(gameInterval);
-        gameInterval = null;
-        isTetrisPaused = true;
-        onTetrisGameOver(score);
+if (collide(current.shape, current.row, current.col)) {
+  clearInterval(gameInterval);
+  gameInterval = null;
+  isTetrisPaused = true;
+  onTetrisGameOver(score);
 
-        const modal = document.getElementById("game-over-modal");
-        const finalScoreText = document.getElementById("final-score-text");
-        const pauseBtn = document.getElementById("pause-tetris-btn");
+  const modal = document.getElementById("game-over-modal");
+  const finalScoreText = document.getElementById("final-score-text");
+  const pauseBtn = document.getElementById("pause-tetris-btn");
 
-        if (modal && finalScoreText) {
-          const gameOverText = modal.querySelector('h2') || modal.querySelector('strong');
-          if (gameOverText) {
-            gameOverText.innerHTML = '🧠 GAME OVER';
-          }
-          finalScoreText.textContent = `You earned $${score} DSPOINC`;
-          modal.classList.remove('hidden');
-          cleanupTouchControls();
-        }
-
-        if (pauseBtn) {
-          pauseBtn.textContent = "⏸️ Pause";
-        }
-
-        if (typeof loadCombinedLeaderboards === "function") {
-          loadCombinedLeaderboards();
-        }
-
-        return;
-      }
+  if (modal && finalScoreText) {
+    const gameOverText = modal.querySelector('h2') || modal.querySelector('strong');
+    if (gameOverText) {
+      gameOverText.innerHTML = '🧠 GAME OVER';
     }
-
-    draw(); // ✅ Always redraw
+    finalScoreText.textContent = `You earned $${score} DSPOINC`;
+    modal.classList.remove('hidden');
+cleanupTouchControls();
   }
 
-  function rotatePiece() {
-    if (isTetrisPaused) return; // Prevent rotation while paused
-
-    const rotated = current.shape[0].map((_, i) =>
-      current.shape.map(row => row[i]).reverse()
-    );
-    if (!collide(rotated, current.row, current.col)) {
-      current.shape = rotated;
-    }
+  if (pauseBtn) {
+    pauseBtn.textContent = "⏸️ Pause";
   }
 
-  function onTetrisGameOver(finalScore) {
-    let wallet = localStorage.getItem("walletAddress");
-    let discordId = localStorage.getItem("discord_id");
-    let discordName = localStorage.getItem("discord_name");
+  if (typeof loadCombinedLeaderboards === "function") {
+    loadCombinedLeaderboards();
+  }
 
-    // 🛠️ Mock fallback if testing locally
-    if (!discordId) {
-      discordId = "1337";
-      discordName = "Anonymous Mouse";
-      localStorage.setItem("discord_id", discordId);
-      localStorage.setItem("discord_name", discordName);
-    }
+  return;
+}
+  }
 
-    if (!wallet) {
+  draw(); // ✅ Always redraw
+}
+
+function rotatePiece() {
+  if (isTetrisPaused) return; // Prevent rotation while paused
+
+  const rotated = current.shape[0].map((_, i) =>
+    current.shape.map(row => row[i]).reverse()
+  );
+  if (!collide(rotated, current.row, current.col)) {
+    current.shape = rotated;
+  }
+}
+
+      function onTetrisGameOver(finalScore) {
+        let wallet = localStorage.getItem("walletAddress");
+        let discordId = localStorage.getItem("discord_id");
+        let discordName = localStorage.getItem("discord_name");
+      
+        // 🛠️ Mock fallback if testing locally
+        if (!discordId) {
+          discordId = "1337";
+          discordName = "Anonymous Mouse";
+          localStorage.setItem("discord_id", discordId);
+          localStorage.setItem("discord_name", discordName);
+        }
+      
+        if (!wallet) {
       wallet = discordId; // fallback
     }
 
     // 💾 Save score to database
-    const payload = {
+        const payload = {
       wallet: wallet,
       score: finalScore,
-      discord_id: discordId,
+          discord_id: discordId,
       discord_name: discordName,
       game: "tetris"
-    };
-
-    console.log("⏎ Sending score payload:", payload);
-
+        };
+      
+        console.log("⏎ Sending score payload:", payload);
+      
     // 🌍 Environment-aware API endpoint (works both locally and in production)
     const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
     const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
@@ -524,7 +524,7 @@ function startTetris() {
     console.log(`🔗 API URL: ${apiUrl}`);
 
     fetch(apiUrl, {
-      method: "POST",
+          method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
@@ -533,9 +533,9 @@ function startTetris() {
       .then((response) => response.json())
       .then((data) => {
         console.log("✅ Score saved successfully:", data);
-        // ✅ Force leaderboard refresh after short delay
-        setTimeout(() => {
-          if (document.getElementById("leaderboard-list")) {
+            // ✅ Force leaderboard refresh after short delay
+            setTimeout(() => {
+              if (document.getElementById("leaderboard-list")) {
             // 🌍 Environment-aware API endpoint for leaderboard
             const leaderboardUrl = `${apiBaseUrl}/api/dev/get-leaderboard.php?t=${Date.now()}`;
             console.log(`🔗 Leaderboard API URL: ${leaderboardUrl}`);
@@ -560,109 +560,109 @@ function startTetris() {
   }
 
   // Touch controls setup
-  let heldDown = false;
+let heldDown = false;
   let dropHoldTimeout;
   let touchDropInterval;
   const sensitivity = 50;
 
-  function lockTetrisScroll() {
+function lockTetrisScroll() {
     document.body.style.overflow = "hidden";
-  }
-
-  function unlockTetrisScroll() {
-    document.body.style.overflow = "";
-  }
-
-  // Listen anywhere on screen!
-  document.addEventListener("touchstart", e => {
-    // Don't handle touch events if game is paused or over
-    if (isTetrisPaused || !gameInterval) return;
-
-    if (e.cancelable) e.preventDefault();
-    lockTetrisScroll();
-
-    const touch = e.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-
-    heldDown = false;
-
-    // Clear any existing intervals first
-    clearTimeout(dropHoldTimeout);
-    clearInterval(touchDropInterval);
-
-    dropHoldTimeout = setTimeout(() => {
-      if (!isTetrisPaused && gameInterval) {
-        heldDown = true;
-        touchDropInterval = setInterval(() => {
-          if (!isTetrisPaused && gameInterval) {
-            drop();
-            draw();
-          }
-        }, 75);
-      }
-    }, 500);
-  }, { passive: false });
-
-  document.addEventListener("touchend", e => {
-    // Always clear timeouts/intervals on touch end
-    clearTimeout(dropHoldTimeout);
-    clearInterval(touchDropInterval);
-
-    // Don't process swipes if game is paused or over
-    if (isTetrisPaused || !gameInterval) {
-      unlockTetrisScroll();
-      return;
-    }
-
-    if (heldDown) {
-      heldDown = false;
-      unlockTetrisScroll();
-      return;
-    }
-
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - touchStartX;
-    const deltaY = touch.clientY - touchStartY;
-
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) {
-        current.col++;
-        draw();
-      } else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) {
-        current.col--;
-        draw();
-      }
-    } else {
-      if (deltaY < -sensitivity) {
-        rotatePiece(); // swipe up = rotate
-        draw();
-      }
-      // Optionally enable quick drop on swipe down:
-      // else if (deltaY > sensitivity) {
-      //   while (!collide(current.shape, current.row + 1, current.col)) {
-      //     current.row++;
-      //   }
-      //   draw();
-      // }
-    }
-
-    unlockTetrisScroll();
-  }, { passive: false });
-
-  // Clean up touch controls on game over
-  function cleanupTouchControls() {
-    clearTimeout(dropHoldTimeout);
-    clearInterval(touchDropInterval);
-    heldDown = false;
-    unlockTetrisScroll();
-  }
-
-  // ✅ Final game loop initialization
-  draw();
-  renderNextBlock(nextPiece);
-  gameInterval = setInterval(drop, dropInterval);
 }
+
+function unlockTetrisScroll() {
+    document.body.style.overflow = "";
+}
+
+// Listen anywhere on screen!
+document.addEventListener("touchstart", e => {
+  // Don't handle touch events if game is paused or over
+  if (isTetrisPaused || !gameInterval) return;
+  
+  if (e.cancelable) e.preventDefault();
+  lockTetrisScroll();
+
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+
+  heldDown = false;
+
+  // Clear any existing intervals first
+  clearTimeout(dropHoldTimeout);
+  clearInterval(touchDropInterval);
+
+  dropHoldTimeout = setTimeout(() => {
+    if (!isTetrisPaused && gameInterval) {
+      heldDown = true;
+      touchDropInterval = setInterval(() => {
+        if (!isTetrisPaused && gameInterval) {
+          drop();
+          draw();
+        }
+      }, 75);
+    }
+  }, 500);
+}, { passive: false });
+
+document.addEventListener("touchend", e => {
+  // Always clear timeouts/intervals on touch end
+  clearTimeout(dropHoldTimeout);
+  clearInterval(touchDropInterval);
+
+  // Don't process swipes if game is paused or over
+  if (isTetrisPaused || !gameInterval) {
+    unlockTetrisScroll();
+    return;
+  }
+
+  if (heldDown) {
+    heldDown = false;
+    unlockTetrisScroll();
+    return;
+  }
+
+  const touch = e.changedTouches[0];
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
+
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) {
+      current.col++;
+      draw();
+    } else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) {
+      current.col--;
+      draw();
+    }
+  } else {
+    if (deltaY < -sensitivity) {
+      rotatePiece(); // swipe up = rotate
+      draw();
+    }
+    // Optionally enable quick drop on swipe down:
+    // else if (deltaY > sensitivity) {
+    //   while (!collide(current.shape, current.row + 1, current.col)) {
+    //     current.row++;
+    //   }
+    //   draw();
+    // }
+  }
+
+  unlockTetrisScroll();
+}, { passive: false });
+
+// Clean up touch controls on game over
+function cleanupTouchControls() {
+  clearTimeout(dropHoldTimeout);
+  clearInterval(touchDropInterval);
+  heldDown = false;
+  unlockTetrisScroll();
+}
+      
+      // ✅ Final game loop initialization
+      draw();
+      renderNextBlock(nextPiece);
+      gameInterval = setInterval(drop, dropInterval);
+    }
 
 
 
