@@ -3957,6 +3957,42 @@ require_once 'discord-invite.php';
         </div>
         
         <!-- Funds Table -->
+        <!-- 🔧 NEW: CSV Import Section -->
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">📊 Community Funds CSV Import</h3>
+          <div class="flex flex-wrap gap-4 items-center">
+            <input type="file" id="communityFundsCsvInput" accept=".csv" class="text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+            <button onclick="importCommunityFundsCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+              📥 Import Community Funds
+            </button>
+            <button onclick="downloadCommunityFundsCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+              📤 Export Community Funds
+            </button>
+            <button onclick="loadCommunityFundsData()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+              🔄 Refresh
+            </button>
+          </div>
+          <div id="communityFundsCsvStatus" class="mt-2 text-sm text-gray-400"></div>
+        </div>
+        
+        <!-- 🔧 NEW: Wallet Transactions CSV Import Section -->
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">💰 Wallet Transactions CSV Import</h3>
+          <div class="flex flex-wrap gap-4 items-center">
+            <input type="file" id="walletTransactionsCsvInput" accept=".csv" class="text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+            <button onclick="importWalletTransactionsCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+              📥 Import Wallet Transactions
+            </button>
+            <button onclick="downloadWalletTransactionsCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+              📤 Export Wallet Transactions
+            </button>
+            <button onclick="loadWalletTransactionsData()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+              🔄 Refresh
+            </button>
+          </div>
+          <div id="walletTransactionsCsvStatus" class="mt-2 text-sm text-gray-400"></div>
+        </div>
+        
         <div class="overflow-x-auto">
           <table class="w-full text-sm text-gray-300">
             <thead class="text-xs uppercase bg-gray-700">
@@ -6814,37 +6850,9 @@ require_once 'discord-invite.php';
       }
     }
 
-    function loadCommunityFundsData() {
-      console.log('💰 Loading community funds...');
-      addLog('💰 Loading community funds...');
-      
-      // Load community funds data
-      fetch(API_BASE_URL + '/api/admin/get-community-funds.php')
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            updateCommunityFunds(data.funds);
-          }
-        })
-        .catch(error => {
-          console.error('Error loading community funds:', error);
-          addLog('❌ Error loading community funds');
-        });
-    }
-
-    function updateCommunityFunds(funds) {
-      const tableBody = document.getElementById('communityFundsTableBody');
-      if (tableBody && funds) {
-        tableBody.innerHTML = funds.map(fund => `
-          <tr>
-            <td>${fund.type}</td>
-            <td>${fund.description}</td>
-            <td>${fund.amount}</td>
-            <td>${fund.date}</td>
-          </tr>
-        `).join('');
-      }
-    }
+    // 🔧 REMOVED: Duplicate loadCommunityFundsData function (conflicting with main implementation)
+    
+    // 🔧 REMOVED: Duplicate updateCommunityFunds function (conflicting with main implementation)
 
     // Instant user search
     function searchUsersInstant(searchTerm) {
@@ -13960,21 +13968,7 @@ require_once 'discord-invite.php';
       stats.textContent = 'Events: 0 | Last update: Never';
     }
 
-    // Community Funds Management Functions
-    function loadCommunityFundsData() {
-      addLog('💰 Loading Community Funds data...');
-      
-      // Show loading states
-      showCommunityFundsLoadingStates();
-      
-      // Load wallet data (SOL balance, NFTs, collections)
-      loadCommunityWalletData();
-      // Load community funds entries
-      loadCommunityFundsEntries();
-      
-      // Load real wallet data from CSV import
-      loadRealWalletData();
-    }
+    // 🔧 REMOVED: Duplicate loadCommunityFundsData function (conflicting with main implementation)
     
     // Import wallet CSV data
     async function importWalletCSV() {
@@ -14571,6 +14565,274 @@ require_once 'discord-invite.php';
       } catch (error) {
         console.error('Error deleting entry:', error);
         alert('Error deleting entry. Please try again.');
+      }
+    }
+    
+    // 🔧 NEW: CSV Import/Export Functions for Community Funds
+    async function importCommunityFundsCSV() {
+      const fileInput = document.getElementById('communityFundsCsvInput');
+      const statusDiv = document.getElementById('communityFundsCsvStatus');
+      
+      if (!fileInput.files[0]) {
+        statusDiv.innerHTML = '<span class="text-red-400">❌ Please select a CSV file first</span>';
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = async function(e) {
+        try {
+          const csvText = e.target.result;
+          const lines = csvText.split('\n');
+          const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+          
+          // Validate CSV structure
+          const requiredHeaders = ['type', 'description', 'amount', 'date'];
+          const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+          
+          if (missingHeaders.length > 0) {
+            statusDiv.innerHTML = `<span class="text-red-400">❌ Missing required headers: ${missingHeaders.join(', ')}</span>`;
+            return;
+          }
+          
+          statusDiv.innerHTML = '<span class="text-blue-400">⏳ Processing CSV file...</span>';
+          
+          let successCount = 0;
+          let errorCount = 0;
+          
+          // Process each line (skip header)
+          for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim() === '') continue;
+            
+            const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+            if (values.length < 4) continue;
+            
+            const entry = {
+              type: values[0],
+              description: values[1],
+              amount: parseFloat(values[2]),
+              date: values[3]
+            };
+            
+            try {
+              const response = await fetch(API_BASE_URL + '/api/admin/add-community-funds.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(entry)
+              });
+              
+              const result = await response.json();
+              if (result.success) {
+                successCount++;
+              } else {
+                errorCount++;
+                console.error(`Error importing line ${i + 1}:`, result.message);
+              }
+            } catch (error) {
+              errorCount++;
+              console.error(`Error importing line ${i + 1}:`, error);
+            }
+          }
+          
+          statusDiv.innerHTML = `<span class="text-green-400">✅ Import completed: ${successCount} successful, ${errorCount} errors</span>`;
+          
+          // Refresh the display
+          setTimeout(() => {
+            loadCommunityFundsData();
+          }, 1000);
+          
+        } catch (error) {
+          statusDiv.innerHTML = `<span class="text-red-400">❌ Error processing CSV: ${error.message}</span>`;
+          console.error('CSV processing error:', error);
+        }
+      };
+      
+      reader.readAsText(file);
+    }
+    
+    async function downloadCommunityFundsCSV() {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-community-funds.php');
+        const data = await response.json();
+        
+        if (!data.success || !data.entries) {
+          alert('Error loading community funds data for export');
+          return;
+        }
+        
+        // Create CSV content
+        const headers = ['Type', 'Description', 'Amount', 'Date', 'Created At'];
+        const csvContent = [
+          headers.join(','),
+          ...data.entries.map(entry => [
+            entry.type,
+            `"${entry.description}"`,
+            entry.amount,
+            entry.date,
+            entry.created_at
+          ].join(','))
+        ].join('\n');
+        
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `community-funds-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        addLog('✅ Community funds CSV exported successfully');
+        
+      } catch (error) {
+        console.error('Error exporting CSV:', error);
+        alert('Error exporting CSV. Please try again.');
+      }
+    }
+    
+    // 🔧 NEW: Wallet Transactions CSV Import/Export Functions
+    async function importWalletTransactionsCSV() {
+      const fileInput = document.getElementById('walletTransactionsCsvInput');
+      const statusDiv = document.getElementById('walletTransactionsCsvStatus');
+      
+      if (!fileInput.files[0]) {
+        statusDiv.innerHTML = '<span class="text-red-400">❌ Please select a CSV file first</span>';
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = async function(e) {
+        try {
+          const csvText = e.target.result;
+          const lines = csvText.split('\n');
+          const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+          
+          // Validate CSV structure for wallet transactions
+          const requiredHeaders = ['txhash', 'type', 'amount', 'balance', 'fee'];
+          const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+          
+          if (missingHeaders.length > 0) {
+            statusDiv.innerHTML = `<span class="text-red-400">❌ Missing required headers: ${missingHeaders.join(', ')}</span>`;
+            return;
+          }
+          
+          statusDiv.innerHTML = '<span class="text-blue-400">⏳ Processing wallet transactions CSV...</span>';
+          
+          let successCount = 0;
+          let errorCount = 0;
+          
+          // Process each line (skip header)
+          for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim() === '') continue;
+            
+            const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+            if (values.length < 5) continue;
+            
+            const transaction = {
+              txhash: values[0],
+              type: values[1], // 'inc' or 'dec'
+              amount: parseFloat(values[2]),
+              balance: parseFloat(values[3]),
+              fee: parseFloat(values[4])
+            };
+            
+            try {
+              // Use the update-wallet-transaction.php API
+              const response = await fetch(API_BASE_URL + '/api/admin/update-wallet-transaction.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(transaction)
+              });
+              
+              const result = await response.json();
+              if (result.success) {
+                successCount++;
+              } else {
+                errorCount++;
+                console.error(`Error importing line ${i + 1}:`, result.message);
+              }
+            } catch (error) {
+              errorCount++;
+              console.error(`Error importing line ${i + 1}:`, error);
+            }
+          }
+          
+          statusDiv.innerHTML = `<span class="text-green-400">✅ Wallet transactions import completed: ${successCount} successful, ${errorCount} errors</span>`;
+          
+          // Refresh the wallet data display
+          setTimeout(() => {
+            loadCommunityWalletData();
+          }, 1000);
+          
+        } catch (error) {
+          statusDiv.innerHTML = `<span class="text-red-400">❌ Error processing CSV: ${error.message}</span>`;
+          console.error('CSV processing error:', error);
+        }
+      };
+      
+      reader.readAsText(file);
+    }
+    
+    async function downloadWalletTransactionsCSV() {
+      try {
+        // Get wallet transactions data from the correct API
+        const response = await fetch(API_BASE_URL + '/api/admin/get-wallet-transactions.php?limit=10000');
+        const data = await response.json();
+        
+        if (!data.success || !data.transactions) {
+          alert('Error loading wallet transactions data for export');
+          return;
+        }
+        
+        // Create CSV content for wallet transactions
+        const headers = ['Transaction Hash', 'Block Time', 'Change Type', 'Amount (SOL)', 'Pre Balance (SOL)', 'Post Balance (SOL)', 'Fee (SOL)', 'Token Account', 'Token Address', 'Created At'];
+        const csvContent = [
+          headers.join(','),
+          ...data.transactions.map(tx => [
+            tx.txhash || 'N/A',
+            tx.block_time || 'N/A',
+            tx.change_type || 'N/A',
+            tx.amount_sol || 0,
+            tx.pre_balance_sol || 0,
+            tx.post_balance_sol || 0,
+            tx.fee_sol || 0,
+            tx.token_account || 'N/A',
+            tx.token_address || 'N/A',
+            tx.created_at || 'N/A'
+          ].join(','))
+        ].join('\n');
+        
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wallet-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        addLog(`✅ Wallet transactions CSV exported successfully: ${data.transactions.length} transactions`);
+        
+      } catch (error) {
+        console.error('Error exporting CSV:', error);
+        alert('Error exporting CSV. Please try again.');
+      }
+    }
+    
+    async function loadWalletTransactionsData() {
+      try {
+        addLog('💰 Loading wallet transactions data...');
+        await loadCommunityWalletData();
+        addLog('✅ Wallet transactions data refreshed');
+      } catch (error) {
+        addLog(`❌ Error loading wallet transactions: ${error.message}`);
       }
     }
 

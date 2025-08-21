@@ -2310,7 +2310,7 @@ let reloadButtonInterval = null;
         spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
         
         // 🚀 CRITICAL FIX: Also add to traditional score for consistency
-        spaceInvadersScore += bossReward * 1000; // Convert invader count to traditional points (1 DSPOINC = 1000 points)
+        spaceInvadersScore += bossReward * 10; // Convert invader count to traditional points (1 DSPOINC = 10 points)
           
           // 🚀 NEW: Epic boss defeat effects (reduced intensity)
           bossDefeatEffect = 60; // Reduced from 100 to 60 frames
@@ -5700,8 +5700,8 @@ let reloadButtonInterval = null;
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // 🚀 CRITICAL FIX: Space Invaders scoring: 1000 traditional points = 1 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 points = 1 DSPOINC)
+    // 🚀 CRITICAL FIX: Space Invaders scoring: 10 traditional points = 1 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersScore * 0.1) * 100) / 100; // Round to 2 decimal places (10 points = 1 DSPOINC)
     
     if (gameOverModal && finalScoreText) {
       finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} traditional points)`;
@@ -7690,8 +7690,8 @@ window.emergencyCollisionCheck = function() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // 🚀 CRITICAL FIX: Space Invaders scoring: 1000 traditional points = 1 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 points = 1 DSPOINC)
+    // 🚀 CRITICAL FIX: Space Invaders scoring: 10 traditional points = 1 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersScore * 0.1) * 100) / 100; // Round to 2 decimal places (10 points = 1 DSPOINC)
     
     if (winModal && winScoreText) {
       winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} traditional points)`;
@@ -7718,7 +7718,7 @@ window.emergencyCollisionCheck = function() {
 
     // 🚀 CRITICAL FIX: Space Invaders now saves traditional score (like classic Space Invaders)
     // Traditional score: 100 points per invader, 500 points per power-up, etc.
-    const dspoincScore = Math.round((traditionalScore * 0.001) * 100) / 100; // Convert to DSPOINC (1000 points = 1 DSPOINC)
+    const dspoincScore = Math.round((traditionalScore * 0.1) * 100) / 100; // Convert to DSPOINC (10 points = 1 DSPOINC)
 
     console.log(`💾 Saving Space Invaders score: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
 
