@@ -6512,6 +6512,8 @@ require_once 'discord-invite.php';
       addLog('✅ Community funds display updated');
     }
     
+    // 🔧 REMOVED: Sample data function no longer needed since real data exists
+    
     // Helper functions for Community Funds
     function displayCollectionsSummary(collections) {
       const container = document.getElementById('collectionsSummary');
@@ -14458,6 +14460,14 @@ require_once 'discord-invite.php';
 
     function displayCommunityFundsEntries(entries) {
       const tbody = document.getElementById('communityFundsTableBody');
+      
+      // 🔧 CRITICAL FIX: Check if element exists before accessing
+      if (!tbody) {
+        console.error('❌ communityFundsTableBody element not found');
+        addLog('❌ Community funds table body element not found');
+        return;
+      }
+      
       tbody.innerHTML = '';
       
       if (!entries || entries.length === 0) {
@@ -16146,34 +16156,58 @@ function testGames2Tab() {
         if (data.success) {
           if (data.bosses && data.bosses[bossType]) {
             // Standard response format
-            currentBossConfigs[bossType] = data.bosses[bossType];
-            displayBossConfiguration(bossType, data.bosses[bossType]);
+            const bossConfig = data.bosses[bossType];
+            const mappedConfig = mapDatabaseFieldsToExpected(bossConfig);
+            currentBossConfigs[bossType] = mappedConfig;
+            displayBossConfiguration(bossType, mappedConfig);
             addLog(`✅ Boss configuration loaded for ${bossType}`);
           } else if (data.bosses && Array.isArray(data.bosses)) {
             // Array format - find boss by type
             const bossConfig = data.bosses.find(boss => boss.boss_type === bossType);
             if (bossConfig) {
-              currentBossConfigs[bossType] = bossConfig;
-              displayBossConfiguration(bossType, bossConfig);
+              const mappedConfig = mapDatabaseFieldsToExpected(bossConfig);
+              currentBossConfigs[bossType] = mappedConfig;
+              displayBossConfiguration(bossType, mappedConfig);
               addLog(`✅ Boss configuration loaded for ${bossType} (array format)`);
             } else {
-              throw new Error(`Boss type ${bossType} not found in response`);
+              // 🔧 NEW: Create default configuration if none exists
+              addLog(`⚠️ No boss configuration found for ${bossType}, creating default...`);
+              const defaultConfig = createDefaultBossConfig(bossType);
+              currentBossConfigs[bossType] = defaultConfig;
+              displayBossConfiguration(bossType, defaultConfig);
+              addLog(`✅ Default boss configuration created for ${bossType}`);
             }
           } else if (data.bosses && typeof data.bosses === 'object') {
             // Direct object format
             const bossConfig = data.bosses[bossType] || data.bosses;
             if (bossConfig) {
-              currentBossConfigs[bossType] = bossConfig;
-              displayBossConfiguration(bossType, bossConfig);
+              const mappedConfig = mapDatabaseFieldsToExpected(bossConfig);
+              currentBossConfigs[bossType] = mappedConfig;
+              displayBossConfiguration(bossType, mappedConfig);
               addLog(`✅ Boss configuration loaded for ${bossType} (direct format)`);
             } else {
-              throw new Error(`Boss configuration not found for ${bossType}`);
+              // 🔧 NEW: Create default configuration if none exists
+              addLog(`⚠️ No boss configuration found for ${bossType}, creating default...`);
+              const defaultConfig = createDefaultBossConfig(bossType);
+              currentBossConfigs[bossType] = defaultConfig;
+              displayBossConfiguration(bossType, defaultConfig);
+              addLog(`✅ Default boss configuration created for ${bossType}`);
             }
           } else {
-            throw new Error('Unexpected API response structure');
+            // 🔧 NEW: Handle empty response by creating default configuration
+            addLog(`⚠️ Empty boss response, creating default configuration for ${bossType}...`);
+            const defaultConfig = createDefaultBossConfig(bossType);
+            currentBossConfigs[bossType] = defaultConfig;
+            displayBossConfiguration(bossType, defaultConfig);
+            addLog(`✅ Default boss configuration created for ${bossType}`);
           }
         } else {
-          throw new Error(data.error || 'API request failed');
+          // 🔧 NEW: Handle API failure by creating default configuration
+          addLog(`⚠️ API request failed, creating default configuration for ${bossType}...`);
+          const defaultConfig = createDefaultBossConfig(bossType);
+          currentBossConfigs[bossType] = defaultConfig;
+          displayBossConfiguration(bossType, defaultConfig);
+          addLog(`✅ Default boss configuration created for ${bossType}`);
         }
       } catch (error) {
         console.error('❌ Error loading boss configuration:', error);
@@ -16526,6 +16560,241 @@ function testGames2Tab() {
       showNotification(`Boss configuration test initiated for ${bossType}! Check the game to see changes.`, 'info');
       
       addLog(`✅ Boss configuration test completed for ${bossType}`);
+    }
+    
+    // 🔧 NEW: Map database field names to expected field names
+    function mapDatabaseFieldsToExpected(dbConfig) {
+      if (!dbConfig) return null;
+      
+      return {
+        name: dbConfig.name || `Unknown Boss: ${dbConfig.boss_type || 'Unknown'}`,
+        description: dbConfig.description || 'No description available',
+        baseHealth: dbConfig.base_health || dbConfig.baseHealth || 100,
+        healthMultiplier: dbConfig.health_multiplier || dbConfig.healthMultiplier || 1.0,
+        baseSpeed: dbConfig.base_speed || dbConfig.baseSpeed || 1.0,
+        speedMultiplier: dbConfig.speed_multiplier || dbConfig.speedMultiplier || 1.0,
+        baseAttackCooldown: dbConfig.base_attack_cooldown || dbConfig.baseAttackCooldown || 2000,
+        attackCooldownMultiplier: dbConfig.attack_cooldown_multiplier || dbConfig.attackCooldownMultiplier || 1.0,
+        baseBulletSpeed: dbConfig.base_bullet_speed || dbConfig.baseBulletSpeed || 2.0,
+        bulletSpeedMultiplier: dbConfig.bullet_speed_multiplier || dbConfig.bulletSpeedMultiplier || 1.0,
+        baseBulletDamage: dbConfig.base_bullet_damage || dbConfig.baseBulletDamage || 15,
+        bulletDamageMultiplier: dbConfig.bullet_damage_multiplier || dbConfig.bulletDamageMultiplier || 1.0,
+        size: dbConfig.size || 1.0,
+        movementPatterns: dbConfig.movement_patterns ? JSON.parse(dbConfig.movement_patterns) : ['sideways'],
+        attackPatterns: dbConfig.attack_patterns ? JSON.parse(dbConfig.attack_patterns) : [0],
+        abilities: dbConfig.abilities ? JSON.parse(dbConfig.abilities) : {
+          canTeleport: false,
+          canShield: false,
+          canSummonMinions: false,
+          canUseLaser: false,
+          canCreateExplosions: false
+        },
+        specialAttackChance: dbConfig.special_attack_chance || dbConfig.specialAttackChance || 0.2,
+        rageModeThreshold: dbConfig.rage_mode_threshold || dbConfig.rageModeThreshold || 0.5,
+        rageModeMultipliers: dbConfig.rage_mode_multipliers ? JSON.parse(dbConfig.rage_mode_multipliers) : {
+          speed: 1.2,
+          attackCooldown: 0.9,
+          bulletSpeed: 1.1,
+          bulletDamage: 1.1
+        },
+        colors: dbConfig.colors ? JSON.parse(dbConfig.colors) : {
+          primary: '#808080',
+          secondary: '#a0a0a0',
+          particles: '#c0c0c0'
+        }
+      };
+    }
+    
+    // 🔧 NEW: Create default boss configuration when none exists
+    function createDefaultBossConfig(bossType) {
+      const defaults = {
+        cheeseKing: {
+          name: '🧀 Cheese King',
+          description: 'The mighty ruler of the cheese realm, with enhanced health and devastating attacks.',
+          baseHealth: 200,
+          healthMultiplier: 1.5,
+          baseSpeed: 2.0,
+          speedMultiplier: 1.2,
+          baseAttackCooldown: 1500,
+          attackCooldownMultiplier: 0.8,
+          baseBulletSpeed: 3.0,
+          bulletSpeedMultiplier: 1.1,
+          baseBulletDamage: 25,
+          bulletDamageMultiplier: 1.3,
+          size: 1.2,
+          movementPatterns: ['sideways', 'diagonal'],
+          attackPatterns: [0, 1, 2],
+          abilities: {
+            canTeleport: true,
+            canShield: false,
+            canSummonMinions: true,
+            canUseLaser: true,
+            canCreateExplosions: false
+          },
+          specialAttackChance: 0.4,
+          rageModeThreshold: 0.3,
+          rageModeMultipliers: {
+            speed: 1.4,
+            attackCooldown: 0.7,
+            bulletSpeed: 1.3,
+            bulletDamage: 1.2
+          },
+          colors: {
+            primary: '#ffd700',
+            secondary: '#ff8c00',
+            particles: '#ffff00'
+          }
+        },
+        cheeseEmperor: {
+          name: '👑 Cheese Emperor',
+          description: 'The supreme leader with ultimate power, capable of devastating the battlefield.',
+          baseHealth: 300,
+          healthMultiplier: 2.0,
+          baseSpeed: 2.5,
+          speedMultiplier: 1.4,
+          baseAttackCooldown: 1200,
+          attackCooldownMultiplier: 0.6,
+          baseBulletSpeed: 3.5,
+          bulletSpeedMultiplier: 1.3,
+          baseBulletDamage: 35,
+          bulletDamageMultiplier: 1.5,
+          size: 1.4,
+          movementPatterns: ['sideways', 'diagonal', 'zigzag'],
+          attackPatterns: [0, 1, 2, 3],
+          abilities: {
+            canTeleport: true,
+            canShield: true,
+            canSummonMinions: true,
+            canUseLaser: true,
+            canCreateExplosions: true
+          },
+          specialAttackChance: 0.5,
+          rageModeThreshold: 0.25,
+          rageModeMultipliers: {
+            speed: 1.6,
+            attackCooldown: 0.5,
+            bulletSpeed: 1.5,
+            bulletDamage: 1.4
+          },
+          colors: {
+            primary: '#ff4500',
+            secondary: '#ff6347',
+            particles: '#ff1493'
+          }
+        },
+        cheeseGod: {
+          name: '⚡ Cheese God',
+          description: 'The divine entity of cheese, with godlike powers and unstoppable force.',
+          baseHealth: 500,
+          healthMultiplier: 3.0,
+          baseSpeed: 3.0,
+          speedMultiplier: 1.8,
+          baseAttackCooldown: 1000,
+          attackCooldownMultiplier: 0.4,
+          baseBulletSpeed: 4.0,
+          bulletSpeedMultiplier: 1.6,
+          baseBulletDamage: 50,
+          bulletDamageMultiplier: 2.0,
+          size: 1.6,
+          movementPatterns: ['sideways', 'diagonal', 'zigzag', 'spiral'],
+          attackPatterns: [0, 1, 2, 3, 4],
+          abilities: {
+            canTeleport: true,
+            canShield: true,
+            canSummonMinions: true,
+            canUseLaser: true,
+            canCreateExplosions: true
+          },
+          specialAttackChance: 0.6,
+          rageModeThreshold: 0.2,
+          rageModeMultipliers: {
+            speed: 2.0,
+            attackCooldown: 0.3,
+            bulletSpeed: 2.0,
+            bulletDamage: 1.8
+          },
+          colors: {
+            primary: '#9400d3',
+            secondary: '#8a2be2',
+            particles: '#ff00ff'
+          }
+        },
+        cheeseDestroyer: {
+          name: '💥 Cheese Destroyer',
+          description: 'The ultimate destroyer, designed to annihilate everything in its path.',
+          baseHealth: 800,
+          healthMultiplier: 4.0,
+          baseSpeed: 3.5,
+          speedMultiplier: 2.0,
+          baseAttackCooldown: 800,
+          attackCooldownMultiplier: 0.3,
+          baseBulletSpeed: 5.0,
+          bulletSpeedMultiplier: 2.0,
+          baseBulletDamage: 75,
+          bulletDamageMultiplier: 2.5,
+          size: 1.8,
+          movementPatterns: ['sideways', 'diagonal', 'zigzag', 'spiral', 'chaos'],
+          attackPatterns: [0, 1, 2, 3, 4, 5],
+          abilities: {
+            canTeleport: true,
+            canShield: true,
+            canSummonMinions: true,
+            canUseLaser: true,
+            canCreateExplosions: true
+          },
+          specialAttackChance: 0.7,
+          rageModeThreshold: 0.15,
+          rageModeMultipliers: {
+            speed: 2.5,
+            attackCooldown: 0.2,
+            bulletSpeed: 2.5,
+            bulletDamage: 2.2
+          },
+          colors: {
+            primary: '#ff0000',
+            secondary: '#dc143c',
+            particles: '#ff4500'
+          }
+        }
+      };
+      
+      return defaults[bossType] || {
+        name: `Unknown Boss: ${bossType}`,
+        description: 'Default configuration for unknown boss type.',
+        baseHealth: 100,
+        healthMultiplier: 1.0,
+        baseSpeed: 1.0,
+        speedMultiplier: 1.0,
+        baseAttackCooldown: 2000,
+        attackCooldownMultiplier: 1.0,
+        baseBulletSpeed: 2.0,
+        bulletSpeedMultiplier: 1.0,
+        baseBulletDamage: 15,
+        bulletDamageMultiplier: 1.0,
+        size: 1.0,
+        movementPatterns: ['sideways'],
+        attackPatterns: [0],
+        abilities: {
+          canTeleport: false,
+          canShield: false,
+          canSummonMinions: false,
+          canUseLaser: false,
+          canCreateExplosions: false
+        },
+        specialAttackChance: 0.2,
+        rageModeThreshold: 0.5,
+        rageModeMultipliers: {
+          speed: 1.2,
+          attackCooldown: 0.9,
+          bulletSpeed: 1.1,
+          bulletDamage: 1.1
+        },
+        colors: {
+          primary: '#808080',
+          secondary: '#a0a0a0',
+          particles: '#c0c0c0'
+        }
+      };
     }
 
     // ========================================

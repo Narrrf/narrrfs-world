@@ -643,7 +643,18 @@ let dropDuration = 1000; // NEW: 1 second drop duration
 let breakDuration = 60000; // NEW: 1 minute break duration
 let lastPlayerShootTime = 0; // NEW: Track last player shoot time for auto-shoot cooldown
 let autoShootCooldown = 300; // NEW: 300ms cooldown between auto-shots
-  let autoShootEnabled = false; // NEW: Auto-shoot toggle (disabled by default)
+let autoShootEnabled = false; // NEW: Auto-shoot toggle (disabled by default)
+
+// 🔥 CRITICAL FIX: Unified firing rate system for consistent heat buildup
+let unifiedFiringRate = 60; // 60ms between ANY shots (16.7 shots/sec) - faster for better heat buildup!
+let lastUnifiedShotTime = 0; // Track last shot time for unified system
+let isUnifiedShotReady = true; // Whether a shot can be fired
+
+// 🔥 CRITICAL FIX: Auto-shoot system with separate cooldown and no heat buildup
+let autoShootFiringRate = 200; // 200ms between auto-shoot shots (5 shots per second max)
+let lastAutoShootTime = 0; // Track last auto-shoot time
+let isAutoShootReady = true; // Whether auto-shoot can fire
+let lastMovementPosition = { x: 0, y: 0 }; // Track last position for movement detection
 
 // 🚀 NEW: Boss System Variables
 let boss = null;
@@ -3144,6 +3155,7 @@ let reloadButtonInterval = null;
       window.mouseY = 0;
       window.lastCanvasMouseX = undefined;
       window.lastCanvasMouseY = undefined;
+      window.hasMouseMovedInCanvas = false;
       
       setupMouseControls();
       console.log('✅ Mouse controls setup completed');
@@ -3170,6 +3182,9 @@ let reloadButtonInterval = null;
     
     // Initial draw
     draw();
+    
+    // 🔥 NEW: Create always-visible heat display
+    createAlwaysVisibleHeatDisplay();
     
     console.log('✅ Space Invaders initialization complete');
   }
@@ -3426,6 +3441,15 @@ let reloadButtonInterval = null;
     speedBoostAmmo = 2; // 🚀 NEW: Limited speed boost ammo
     window.powerUps = [];
     
+    // 🔥 CRITICAL FIX: Reset heat system on game start/reset
+    weaponHeat = 0;
+    isOverheated = false;
+    lastOverheatTime = 0;
+    lastUnifiedShotTime = 0; // Reset unified firing rate timer
+    lastAutoShootTime = 0; // Reset auto-shoot timer
+    lastMovementPosition = { x: 0, y: 0 }; // Reset movement position tracking
+    console.log('🔥 Heat system reset - weapon ready to fire!');
+    
     // 🎯 NOTE: hasDoubleShotUpgrade is NOT reset - permanent upgrade after defeating first boss
     
     playerShip.x = canvasWidth / 2;
@@ -3443,6 +3467,7 @@ let reloadButtonInterval = null;
       window.mouseY = 0;
       window.lastCanvasMouseX = undefined;
       window.lastCanvasMouseY = undefined;
+      window.hasMouseMovedInCanvas = false;
     
     initializeInvaders();
     updateScore();
@@ -3465,6 +3490,9 @@ let reloadButtonInterval = null;
     setTimeout(() => {
       showCustomCursor();
     }, 200);
+    
+    // 🔥 NEW: Recreate always-visible heat display on game reset
+    createAlwaysVisibleHeatDisplay();
   }
 
   function gameLoop() {
@@ -4727,6 +4755,10 @@ let reloadButtonInterval = null;
       ctx.font = '12px Arial';
       ctx.fillText('🛡️ INVINCIBLE', playerShip.x, playerShip.y - 10);
     }
+    
+    // 🔥 REMOVED: Duplicate heat warnings (now using unified heat display only)
+    // This eliminates the duplicate "HIGH HEAT" and "OVERHEATED!" text that was causing confusion
+    // The unified heat display in the top-right corner now handles all heat warnings consistently
   }
 
   function drawInvaders() {
@@ -5623,43 +5655,9 @@ let reloadButtonInterval = null;
         ctx.fillText('🔥 RAPID FIRE', canvasWidth - 100, 85);
       }
       
-      // 🔥 NEW: Show weapon heat bar
-      if (typeof window.weaponHeat !== 'undefined') {
-        const heatBarWidth = 80;
-        const heatBarHeight = 8;
-        const heatBarX = canvasWidth - heatBarWidth - 10;
-        const heatBarY = 95;
-        
-        // Heat bar background
-        ctx.fillStyle = '#333333';
-        ctx.fillRect(heatBarX, heatBarY, heatBarWidth, heatBarHeight);
-        
-        // Heat bar fill
-        const heatPercentage = window.weaponHeat / 100;
-        const heatFillWidth = heatBarWidth * heatPercentage;
-        
-        if (window.isOverheated) {
-          // Overheated - red bar
-          ctx.fillStyle = '#ff0000';
-          ctx.fillText('🔥 OVERHEATED!', heatBarX, heatBarY - 5);
-        } else if (heatPercentage > 0.7) {
-          // High heat - orange bar
-          ctx.fillStyle = '#ff8800';
-        } else if (heatPercentage > 0.4) {
-          // Medium heat - yellow bar
-          ctx.fillStyle = '#ffcc00';
-        } else {
-          // Low heat - green bar
-          ctx.fillStyle = '#00ff00';
-        }
-        
-        ctx.fillRect(heatBarX, heatBarY, heatFillWidth, heatBarHeight);
-        
-        // Heat percentage text
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '10px Arial';
-        ctx.fillText(`${Math.round(window.weaponHeat)}%`, heatBarX + heatBarWidth + 5, heatBarY + 7);
-      }
+      // 🔥 REMOVED: Canvas-based heat bar (now using unified HTML heat display only)
+      // This eliminates the duplicate heat bar that was causing confusion
+      // The unified heat display in the top-right corner now handles all heat information consistently
       
       // Debug: Show mouse position and target
       if (typeof window.mouseTargetX !== 'undefined' && typeof window.mouseTargetY !== 'undefined') {
@@ -5728,6 +5726,24 @@ let reloadButtonInterval = null;
 
   function playerShoot() {
     if (isSpaceInvadersPaused) return;
+    
+    // 🔥 CRITICAL FIX: Check for overheating FIRST - before any shooting logic
+    if (isOverheated) {
+      console.log('🚫 Cannot shoot - weapon is overheated!');
+      return; // Don't allow shooting when overheated
+    }
+    
+    // 🔥 CRITICAL FIX: Unified firing rate check for ALL control methods
+    const currentTime = Date.now();
+    if (currentTime - lastUnifiedShotTime < unifiedFiringRate) {
+      // Don't block shots completely - just add a small delay for heat balance
+      // This prevents the "wishy" mouse movement while maintaining heat balance
+      const remainingDelay = unifiedFiringRate - (currentTime - lastUnifiedShotTime);
+      if (remainingDelay > 20) { // Only block if delay is significant (>20ms)
+        console.log(`🚫 Shot delayed by unified firing rate - ${remainingDelay}ms remaining`);
+        return; // Shot blocked by unified firing rate
+      }
+    }
     
     console.log(`🔫 playerShoot called with weapon: ${currentWeaponType}, isQuickShotCall: ${window.isQuickShotCall}`);
     
@@ -5994,8 +6010,93 @@ let reloadButtonInterval = null;
         }
         break;
     }
+    
+    // 🔥 CRITICAL FIX: Add heat for ALL shots regardless of control method
+    // This ensures mobile, keyboard, and mouse all use the same heat system
+    const heatToAdd = getHeatPerShot();
+    addHeat(heatToAdd);
+    console.log(`🔥 Heat added: +${heatToAdd} (Total: ${weaponHeat}/${maxHeat})`);
+    
+    // Check if this shot caused overheating
+    if (isOverheated) {
+      console.log('🔥 WEAPON OVERHEATED from playerShoot!');
+      // Stop any ongoing rapid fire
+      if (mouseRapidFireInterval) {
+        clearInterval(mouseRapidFireInterval);
+        mouseRapidFireInterval = null;
+      }
+      isMouseButtonDown = false;
+      window.isMouseButtonDown = false;
+    }
+    
+    // Update last shoot time for cooldown management
+    lastPlayerShootTime = Date.now();
+    
+    // 🔥 CRITICAL FIX: Update unified firing rate timer
+    lastUnifiedShotTime = currentTime;
+    console.log(`✅ Shot fired successfully - next shot available in ${unifiedFiringRate}ms`);
   }
 
+  // 🔥 CRITICAL FIX: Auto-shoot function that doesn't add heat
+  function autoShoot() {
+    if (isSpaceInvadersPaused) return;
+    
+    console.log('🚀 Auto-shoot fired! (no heat added)');
+    
+    // 🎵 Play sound for auto-shoot
+    cheeseSoundManager.playStarWarsLaser();
+    
+    // Create bullet based on weapon type
+    switch (currentWeaponType) {
+      case 'normal':
+        // Create normal bullet
+        bullets.push({
+          x: playerShip.x + playerShip.width / 2 - 2,
+          y: playerShip.y,
+          width: 4,
+          height: 10,
+          speed: 8,
+          type: 'normal'
+        });
+        break;
+        
+      case 'laser':
+        // Create laser beam
+        if (weaponAmmo.laser > 0) {
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 - 3,
+            y: playerShip.y,
+            width: 6,
+            height: 20,
+            speed: 12,
+            type: 'laser'
+          });
+          weaponAmmo.laser--;
+          updateWeaponDisplay();
+        }
+        break;
+        
+      case 'bomb':
+        // Create bomb
+        if (weaponAmmo.bomb > 0) {
+          bullets.push({
+            x: playerShip.x + playerShip.width / 2 - 4,
+            y: playerShip.y,
+            width: 8,
+            height: 8,
+            speed: 6,
+            type: 'bomb'
+          });
+          weaponAmmo.bomb--;
+          updateWeaponDisplay();
+        }
+        break;
+    }
+    
+    // Update auto-shoot timer
+    lastAutoShootTime = Date.now();
+  }
+  
   // 🚀 NEW: Create spectacular laser visual effect
   function createSpectacularLaserEffect() {
     // 🚀 NEW: Intense screen flash effect
@@ -6130,77 +6231,56 @@ let reloadButtonInterval = null;
         break;
     }
     
-    // Auto-shoot when ship moves (with cooldown) - only if enabled AND using normal weapon
-    if (autoShootEnabled && currentWeaponType === 'normal' && (oldX !== playerShip.x || oldY !== playerShip.y)) {
+    // 🔥 CRITICAL FIX: Auto-shoot when ship moves (if enabled) - NO HEAT BUILDUP
+    if (autoShootEnabled && (oldX !== playerShip.x || oldY !== playerShip.y)) {
       const currentTime = Date.now();
-      if (currentTime - lastPlayerShootTime > autoShootCooldown) {
-        playerShoot();
-        lastPlayerShootTime = currentTime;
+      
+      // Check if enough time has passed since last auto-shoot
+      if (currentTime - lastAutoShootTime >= autoShootFiringRate) {
+        // Check if we've moved to a new position (prevent multiple shots during continuous movement)
+        const currentPos = { x: Math.round(playerShip.x / 10), y: Math.round(playerShip.y / 10) };
+        if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
+          autoShoot(); // Use special auto-shoot function that doesn't add heat
+          lastMovementPosition = currentPos; // Update last position
+        }
       }
     }
   }
 
-  // 🖱️ NEW: Handle mouse movement for ship positioning
+  // 🖱️ SIMPLIFIED: Handle mouse movement for ship positioning
   function updateMouseMovement() {
-    // Debug: Log mouse movement update state (reduced frequency)
-    if (Date.now() % 2000 < 16) { // Log every 2 seconds instead of every second
-      console.log('🖱️ Mouse movement update state:', { 
-        isMouseControlEnabled, 
-        isMouseOverCanvas, 
-        isSpaceInvadersPaused,
-        mouseTargetX: mouseTargetX,
-        mouseTargetY: mouseTargetY
-      });
-    }
-    
     if (!isMouseControlEnabled || !isMouseOverCanvas || isSpaceInvadersPaused) {
       return;
     }
     
-    // Check if mouse target is set and valid
+    // 🔥 CRITICAL FIX: Simple, direct mouse control - ship follows cursor
     if (typeof mouseTargetX !== 'undefined' && typeof mouseTargetY !== 'undefined' && 
         !isNaN(mouseTargetX) && !isNaN(mouseTargetY)) {
+      
       const oldX = playerShip.x;
       const oldY = playerShip.y;
       
-      // 🚀 IMPROVED: Smooth and responsive mouse movement
-      const easing = 0.3; // Reduced for smoother movement (less jerky)
-      const minMoveDistance = 0.5; // Increased threshold to prevent micro-jitters
-      const maxMoveDistance = 8; // Reduced for smoother movement (less jumpy)
+      // 🚀 SIMPLIFIED: Direct movement with smooth easing
+      const easing = 0.4; // Responsive but smooth movement
       
-      // Calculate movement with improved responsiveness
-      const deltaX = mouseTargetX - playerShip.x;
-      const deltaY = mouseTargetY - playerShip.y;
+      // Move ship directly toward mouse target
+      playerShip.x += (mouseTargetX - playerShip.x) * easing;
+      playerShip.y += (mouseTargetY - playerShip.y) * easing;
       
-      // Only move if the distance is significant enough
-      if (Math.abs(deltaX) > minMoveDistance) {
-        const moveX = Math.min(Math.abs(deltaX) * easing, maxMoveDistance) * Math.sign(deltaX);
-        playerShip.x += moveX;
-      }
-      if (Math.abs(deltaY) > minMoveDistance) {
-        const moveY = Math.min(Math.abs(deltaY) * easing, maxMoveDistance) * Math.sign(deltaY);
-        playerShip.y += moveY;
-      }
-      
-      // Debug: Log ship movement (reduced frequency)
-      if ((oldX !== playerShip.x || oldY !== playerShip.y) && Date.now() % 1000 < 16) {
-        console.log(`🚀 Ship moved: X=${oldX.toFixed(1)}→${playerShip.x.toFixed(1)}, Y=${oldY.toFixed(1)}→${playerShip.y.toFixed(1)}`);
-      }
-      
-      // Auto-shoot when ship moves due to mouse (if enabled)
-      if (autoShootEnabled && currentWeaponType === 'normal' && (oldX !== playerShip.x || oldY !== playerShip.y)) {
+      // 🔥 CRITICAL FIX: Auto-shoot when ship moves (if enabled) - NO HEAT BUILDUP
+      if (autoShootEnabled && (oldX !== playerShip.x || oldY !== playerShip.y)) {
         const currentTime = Date.now();
-        if (currentTime - lastPlayerShootTime > autoShootCooldown) {
-          playerShoot();
-          lastPlayerShootTime = currentTime;
+        
+        // Check if enough time has passed since last auto-shoot
+        if (currentTime - lastAutoShootTime >= autoShootFiringRate) {
+          // Check if we've moved to a new position (prevent multiple shots during continuous movement)
+          const currentPos = { x: Math.round(playerShip.x / 10), y: Math.round(playerShip.y / 10) };
+          if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
+            autoShoot(); // Use special auto-shoot function that doesn't add heat
+            lastMovementPosition = currentPos; // Update last position
+          }
         }
       }
-    } else {
-      // 🔧 CRITICAL FIX: Reset invalid mouse targets to ship position
-      console.warn('⚠️ Invalid mouse targets detected in updateMouseMovement, resetting to ship position');
-      mouseTargetX = playerShip.x;
-      mouseTargetY = playerShip.y;
-      return; // Skip this update cycle to allow targets to stabilize
     }
   }
 
@@ -6354,14 +6434,17 @@ let reloadButtonInterval = null;
         }
         break;
       case ' ':
-        // 🚀 NEW: Enhanced spacebar support for all weapon types
-        if (typeof window.playerShoot === 'function') {
+        // 🔥 CRITICAL FIX: Enhanced spacebar shooting support
+        if (!isOverheated) {
           // For special weapons, set the flag to allow shooting
           if (currentWeaponType === 'laser' || currentWeaponType === 'bomb') {
             window.isQuickShotCall = true;
             console.log(`🚀 Spacebar: Setting isQuickShotCall = true for ${currentWeaponType}`);
           }
-          window.playerShoot();
+          console.log('🚀 Spacebar: Manual shot fired!');
+          playerShoot();
+        } else {
+          console.log('🔥 Spacebar: Cannot shoot - weapon overheated!');
         }
         break;
     }
@@ -6380,24 +6463,24 @@ let reloadButtonInterval = null;
   
   // 🔥 OVERHEAT SYSTEM VARIABLES (GLOBAL SCOPE)
   let weaponHeat = 0; // Current heat level (0-100)
-  let maxHeat = 100; // Maximum heat before overheating
-  let heatPerShot = 3; // Heat generated per shot (reduced from 8 for better balance)
-  let heatDecayRate = 3; // Heat decay per frame when not shooting (increased for faster cooling)
+  let maxHeat = 150; // Maximum heat before overheating (increased for longer firing time)
+  let heatPerShot = 6; // Heat generated per shot (reduced for slower overheating)
+  let heatDecayRate = 2; // Heat decay per frame when not shooting (slower cooling for balance)
   let isOverheated = false; // Overheated state
-  let overheatCooldown = 2000; // 2 seconds to cool down from overheated state (reduced from 3)
+  let overheatCooldown = 3000; // 3 seconds to cool down from overheated state
   let lastOverheatTime = 0; // When overheating occurred
   
   // Function to get heat per shot based on weapon type
   function getHeatPerShot() {
     switch (currentWeaponType) {
       case 'normal':
-        return 3; // Normal shots - low heat (reduced from 8)
+        return 6; // Normal shots - moderate heat (balanced for longer firing time)
       case 'laser':
-        return 8; // Laser shots - moderate heat (reduced from 15)
+        return 12; // Laser shots - high heat (balanced for longer firing time)
       case 'bomb':
-        return 15; // Bomb shots - high heat (reduced from 25)
+        return 20; // Bomb shots - very high heat (balanced for longer firing time)
       default:
-        return 3;
+        return 6;
     }
   }
   
@@ -6425,18 +6508,13 @@ let reloadButtonInterval = null;
     }
     
     // 🔥 CRITICAL HEAT WARNING (at 80% heat)
-    if (weaponHeat >= 80 && weaponHeat < maxHeat) {
+    if (weaponHeat >= 120 && weaponHeat < maxHeat) {
       console.log('⚠️ WARNING: Weapon heat critical! Consider cooling down...');
       // Visual feedback - could add screen flash or sound here
     }
     
-    // Update mobile heat display
-    updateMobileHeatDisplay();
-    
-    // 🔥 NEW: Mobile overheat notification
-    if (isOverheated) {
-      showMobileOverheatNotification();
-    }
+    // 🔥 CRITICAL FIX: Update unified heat display (mobile display removed)
+    updateAlwaysVisibleHeatDisplay();
   }
   
   function overheat() {
@@ -6452,6 +6530,45 @@ let reloadButtonInterval = null;
     isMouseButtonDown = false;
     window.isMouseButtonDown = false;
     
+    // 🔥 NEW: Enhanced visual feedback for overheat
+    // Create screen flash effect
+    const overheatFlash = document.createElement('div');
+    overheatFlash.id = 'overheat-flash';
+    overheatFlash.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 0, 0, 0.3);
+      z-index: 9998;
+      pointer-events: none;
+      animation: overheatFlash 0.5s ease-out;
+    `;
+    
+    // Add CSS animation for overheat flash
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes overheatFlash {
+        0% { opacity: 0.8; }
+        50% { opacity: 0.4; }
+        100% { opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(overheatFlash);
+    
+    // Remove flash after animation
+    setTimeout(() => {
+      if (overheatFlash.parentNode) {
+        overheatFlash.parentNode.removeChild(overheatFlash);
+      }
+    }, 500);
+    
+    // 🔥 NEW: Create persistent overheat warning on screen
+    createPersistentOverheatWarning();
+    
     // Visual and audio feedback
     if (typeof cheeseSoundManager !== 'undefined') {
       cheeseSoundManager.playStarWarsLaserVariant(); // Different sound for overheat
@@ -6465,6 +6582,12 @@ let reloadButtonInterval = null;
         isOverheated = false;
         weaponHeat = 0;
         console.log('❄️ Weapon cooled down! Ready to fire again!');
+        
+        // 🔥 NEW: Remove overheat warning when cooldown is complete
+        const warning = document.getElementById('persistent-overheat-warning');
+        if (warning) {
+          warning.remove();
+        }
       }
     } else if (weaponHeat > 0) {
       // Natural heat decay when not shooting
@@ -6475,88 +6598,249 @@ let reloadButtonInterval = null;
     window.weaponHeat = weaponHeat;
     window.isOverheated = isOverheated;
     
-    // Update mobile heat display
-    updateMobileHeatDisplay();
+    // 🔥 CRITICAL FIX: Update unified heat display only
+    updateAlwaysVisibleHeatDisplay();
   }
   
-  // 🔥 NEW: Mobile overheat notification function (GLOBAL SCOPE)
-  function showMobileOverheatNotification() {
-    // Create mobile-friendly overheat notification
-    const notification = document.createElement('div');
-    notification.id = 'mobile-overheat-notification';
-    notification.innerHTML = `
-      <div style="text-align: center; padding: 20px;">
-        <div style="font-size: 2em; margin-bottom: 10px;">🔥</div>
-        <div style="font-size: 1.2em; font-weight: bold; color: #ff6b6b; margin-bottom: 10px;">
-          WEAPON OVERHEATED!
-        </div>
-        <div style="font-size: 1em; color: #ffffff; margin-bottom: 15px;">
-          Your weapon needs to cool down
-        </div>
-        <div style="font-size: 0.9em; color: #9ca3af;">
-          Wait 3 seconds or switch weapons
-        </div>
-      </div>
-    `;
+  // 🔥 NEW: Create persistent overheat warning on screen
+  function createPersistentOverheatWarning() {
+    // Remove any existing warning first
+    const existingWarning = document.getElementById('persistent-overheat-warning');
+    if (existingWarning) {
+      existingWarning.remove();
+    }
     
-    notification.style.cssText = `
+    // Create persistent overheat warning
+    const warning = document.createElement('div');
+    warning.id = 'persistent-overheat-warning';
+    warning.style.cssText = `
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: linear-gradient(135deg, #1a1a1a, #374151);
-      border: 3px solid #ff6b6b;
-      border-radius: 20px;
-      padding: 20px;
+      background: rgba(255, 0, 0, 0.9);
+      color: white;
+      padding: 30px;
+      border-radius: 15px;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
       z-index: 10000;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(255, 107, 107, 0.3);
-      animation: overheatPulse 0.5s ease-in-out;
-      max-width: 300px;
-      width: 90vw;
+      border: 3px solid #ff4444;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+      animation: overheatWarningPulse 1s infinite;
     `;
     
-    // Add CSS animation for overheat effect
+    warning.innerHTML = `
+      <div style="font-size: 48px; margin-bottom: 15px;">🔥</div>
+      <div>WEAPON OVERHEATED!</div>
+      <div style="font-size: 16px; margin-top: 10px; opacity: 0.8;">
+        Wait for cooldown to finish
+      </div>
+    `;
+    
+    // Add pulsing animation
     const style = document.createElement('style');
     style.textContent = `
-      @keyframes overheatPulse {
-        0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-        50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      @keyframes overheatWarningPulse {
+        0% { transform: translate(-50%, -50%) scale(1); }
+        50% { transform: translate(-50%, -50%) scale(1.05); }
+        100% { transform: translate(-50%, -50%) scale(1); }
       }
     `;
     document.head.appendChild(style);
     
-    document.body.appendChild(notification);
+    document.body.appendChild(warning);
     
-    // Auto-remove after 3 seconds (cooldown period)
+    // Remove warning when cooldown is complete
     setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
+      if (warning.parentNode) {
+        warning.parentNode.removeChild(warning);
       }
-    }, 3000);
+    }, overheatCooldown);
   }
   
-  // 🔥 NEW: Update mobile heat display function (GLOBAL SCOPE)
+  // 🔥 REMOVED: Mobile overheat notification (consolidated into always-visible display)
+  function showMobileOverheatNotification() {
+    // Function kept for compatibility but no longer creates separate notifications
+    // The always-visible heat display now handles all overheat notifications
+  }
+  
+  // 🔥 REMOVED: Mobile heat display function (consolidated into always-visible display)
+  // This eliminates the duplicate heat display that was causing confusion
   function updateMobileHeatDisplay() {
-    const heatStatus = document.getElementById('mobile-heat-status');
-    const heatBarFill = document.getElementById('mobile-heat-bar-fill');
-    const heatPercentage = document.getElementById('mobile-heat-percentage');
-    const overheatWarning = document.getElementById('mobile-overheat-warning');
+    // Function kept for compatibility but now just calls the unified display
+    updateAlwaysVisibleHeatDisplay();
+  }
+  
+  // 🔥 NEW: Always-visible heat display for all input methods
+  function createAlwaysVisibleHeatDisplay() {
+    // Remove existing display if it exists
+    const existingDisplay = document.getElementById('always-visible-heat-display');
+    if (existingDisplay) {
+      existingDisplay.remove();
+    }
+    
+    // Create the heat display container
+    const heatDisplay = document.createElement('div');
+    heatDisplay.id = 'always-visible-heat-display';
+    heatDisplay.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, rgba(26, 26, 26, 0.9), rgba(55, 65, 81, 0.9));
+      border: 2px solid #4b5563;
+      border-radius: 15px;
+      padding: 15px;
+      z-index: 9999;
+      min-width: 200px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    `;
+    
+    // Create title
+    const title = document.createElement('div');
+    title.textContent = '🔥 WEAPON HEAT';
+    title.style.cssText = `
+      color: #ffffff;
+      font-size: 1.1em;
+      font-weight: bold;
+      margin-bottom: 12px;
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    `;
+    heatDisplay.appendChild(title);
+    
+    // Create heat status
+    const heatStatus = document.createElement('div');
+    heatStatus.id = 'always-visible-heat-status';
+    heatStatus.style.cssText = `
+      color: #00ff00;
+      font-size: 1em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    `;
+    heatDisplay.appendChild(heatStatus);
+    
+    // Create heat bar container
+    const heatBarContainer = document.createElement('div');
+    heatBarContainer.style.cssText = `
+      margin-bottom: 10px;
+    `;
+    
+    // Create heat bar
+    const heatBar = document.createElement('div');
+    heatBar.id = 'always-visible-heat-bar';
+    heatBar.style.cssText = `
+      width: 100%;
+      height: 18px;
+      background: #374151;
+      border-radius: 9px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid #6b7280;
+    `;
+    
+    // Create heat bar fill
+    const heatBarFill = document.createElement('div');
+    heatBarFill.id = 'always-visible-heat-bar-fill';
+    heatBarFill.style.cssText = `
+      height: 100%;
+      background: linear-gradient(90deg, #00ff00, #ffcc00, #ff8800, #ff0000);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 8px;
+    `;
+    
+    heatBar.appendChild(heatBarFill);
+    heatBarContainer.appendChild(heatBar);
+    heatDisplay.appendChild(heatBarContainer);
+    
+    // Create heat percentage
+    const heatPercentage = document.createElement('div');
+    heatPercentage.id = 'always-visible-heat-percentage';
+    heatPercentage.style.cssText = `
+      color: #ffffff;
+      font-size: 0.9em;
+      text-align: center;
+      font-weight: bold;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    `;
+    heatDisplay.appendChild(heatPercentage);
+    
+    // Create overheat warning
+    const overheatWarning = document.createElement('div');
+    overheatWarning.id = 'always-visible-overheat-warning';
+    overheatWarning.style.cssText = `
+      color: #ff6b6b;
+      font-size: 0.8em;
+      text-align: center;
+      margin-top: 8px;
+      font-weight: bold;
+      display: none;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    `;
+    heatDisplay.appendChild(overheatWarning);
+    
+    // Add to body
+    document.body.appendChild(heatDisplay);
+    
+    // Initial update
+    updateAlwaysVisibleHeatDisplay();
+    
+    console.log('🔥 Always-visible heat display created!');
+    
+    // 🔥 NEW: Add toggle functionality for heat display
+    window.toggleHeatDisplay = () => {
+      const heatDisplay = document.getElementById('always-visible-heat-display');
+      if (heatDisplay) {
+        if (heatDisplay.style.display === 'none') {
+          heatDisplay.style.display = 'block';
+          console.log('🔥 Heat display shown');
+        } else {
+          heatDisplay.style.display = 'none';
+          console.log('🔥 Heat display hidden');
+        }
+      }
+    };
+    
+    // 🔥 NEW: Add keyboard shortcut to toggle heat display (H key)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'h' || e.key === 'H') {
+        if (e.ctrlKey || e.metaKey) { // Ctrl+H or Cmd+H
+          e.preventDefault();
+          window.toggleHeatDisplay();
+        }
+      }
+    });
+    
+    console.log('🔥 Heat display toggle available: Ctrl+H or window.toggleHeatDisplay()');
+  }
+  
+  // 🔥 NEW: Update always-visible heat display
+  function updateAlwaysVisibleHeatDisplay() {
+    const heatStatus = document.getElementById('always-visible-heat-status');
+    const heatBarFill = document.getElementById('always-visible-heat-bar-fill');
+    const heatPercentage = document.getElementById('always-visible-heat-percentage');
+    const overheatWarning = document.getElementById('always-visible-overheat-warning');
     
     if (!heatStatus || !heatBarFill || !heatPercentage || !overheatWarning) {
-      return; // Mobile controls not created yet
+      return; // Display not created yet
     }
     
     // Update heat status text
     if (isOverheated) {
-      heatStatus.textContent = '🔥 WEAPON OVERHEATED!';
+      heatStatus.textContent = '🔥 OVERHEATED!';
       heatStatus.style.color = '#ff6b6b';
-      overheatWarning.textContent = '❄️ Cooling down... Wait 3 seconds';
+      overheatWarning.textContent = '❄️ COOLING DOWN...';
       overheatWarning.style.display = 'block';
     } else if (weaponHeat >= 80) {
       heatStatus.textContent = '⚠️ CRITICAL HEAT!';
       heatStatus.style.color = '#ff8800';
-      overheatWarning.textContent = '🔥 Consider cooling down soon!';
+      overheatWarning.textContent = '🔥 COOL DOWN SOON!';
       overheatWarning.style.display = 'block';
     } else if (weaponHeat >= 50) {
       heatStatus.textContent = '🔥 HIGH HEAT';
@@ -6693,36 +6977,21 @@ let reloadButtonInterval = null;
       canvas.style.cursor = 'none';
       showCustomCursor();
       
-      // 🔧 CRITICAL FIX: Update mouse target to current mouse position when re-entering
-      // This prevents the 300px jump by ensuring target matches actual mouse location
-      const rect = canvas.getBoundingClientRect();
+      // 🔧 CRITICAL FIX: DO NOT change mouse target on entry - wait for actual mouse movement
+      // This prevents the "magnetic pull" toward invaders by keeping ship in place
+      console.log('🔍 === MOUSE ENTERED CANVAS ===');
+      console.log(`🖱️ Mouse entered canvas - keeping ship at current position: X=${playerShip.x.toFixed(1)}, Y=${playerShip.y.toFixed(1)}`);
+      console.log(`🎯 Mouse targets remain at: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
+      console.log(`📍 Ship center would be at: X=${(mouseTargetX + playerShip.width / 2).toFixed(1)}, Y=${(mouseTargetY + playerShip.height / 2).toFixed(1)}`);
+      console.log(`📏 Canvas dimensions: ${canvasWidth}x${canvasHeight}`);
+      console.log(`🔄 Mouse movement flag reset: false`);
       
-      // 🚀 IMPROVED: Use stored last canvas position if available, otherwise use global mouse position
-      let currentMouseX, currentMouseY;
-      if (window.lastCanvasMouseX !== undefined && window.lastCanvasMouseY !== undefined) {
-        // Use the last known position within the canvas
-        currentMouseX = window.lastCanvasMouseX;
-        currentMouseY = window.lastCanvasMouseY;
-        console.log(`🖱️ Using stored canvas position: X=${currentMouseX}, Y=${currentMouseY}`);
-      } else {
-        // Fallback to global mouse position
-        currentMouseX = (window.mouseX || 0) - rect.left;
-        currentMouseY = (window.mouseY || 0) - rect.top;
-        console.log(`🖱️ Using global mouse position: X=${currentMouseX}, Y=${currentMouseY}`);
-      }
+      // 🔧 CRITICAL FIX: Reset mouse movement flag to prevent upward movement on entry
+      window.hasMouseMovedInCanvas = false;
       
-      // Only update if we have valid mouse coordinates
-      if (currentMouseX >= 0 && currentMouseX <= canvasWidth && 
-          currentMouseY >= 0 && currentMouseY <= canvasHeight) {
-        mouseTargetX = currentMouseX - playerShip.width / 2;
-        mouseTargetY = currentMouseY - playerShip.height / 2 - 5;
-        console.log(`🖱️ Mouse re-entered canvas - updated target to mouse position: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
-      } else {
-        // Fallback: set target to ship position if mouse coordinates are invalid
-        mouseTargetX = playerShip.x;
-        mouseTargetY = playerShip.y;
-        console.log(`🖱️ Mouse re-entered canvas - set target to ship position: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
-      }
+      // 🚀 IMPROVED: Only update targets when mouse actually moves within canvas
+      // This ensures smooth, controlled movement without sudden jumps
+      console.log('🔍 === END MOUSE ENTER DEBUG ===');
     });
 
     // Disable mouse control when mouse leaves canvas
@@ -6744,77 +7013,55 @@ let reloadButtonInterval = null;
           
           // 🚀 IMPROVED: Keep mouse target at current ship position for smoother re-entry
           // Don't reset - this prevents the 300px jump when re-entering
-          console.log(`🖱️ Mouse left canvas - keeping target at ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
+          console.log('🔍 === MOUSE LEFT CANVAS ===');
+          console.log(`🖱️ Mouse left canvas - keeping target at ship position: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
+          console.log(`🚀 Ship current position: X=${playerShip.x.toFixed(1)}, Y=${playerShip.y.toFixed(1)}`);
+          console.log(`📍 Ship center position: X=${(mouseTargetX + playerShip.width / 2).toFixed(1)}, Y=${(mouseTargetY + playerShip.height / 2).toFixed(1)}`);
+          console.log(`🔄 Mouse movement flag: ${window.hasMouseMovedInCanvas}`);
           
-          // 🔧 CRITICAL FIX: Store the last valid mouse position for re-entry
-          // This ensures we can restore the exact mouse position when re-entering
-          window.lastCanvasMouseX = mouseX;
-          window.lastCanvasMouseY = mouseY;
+          // 🔧 CRITICAL FIX: Clear stored mouse positions to prevent invalid re-entry
+          // This prevents the "magnetic pull" toward invaders
+          window.lastCanvasMouseX = undefined;
+          window.lastCanvasMouseY = undefined;
+          console.log('🔍 === END MOUSE LEAVE DEBUG ===');
         }
       }, 100); // 100ms delay to prevent accidental disabling
     });
 
-    // Track mouse position for ship movement
+    // 🔥 SIMPLIFIED: Track mouse position for ship movement
     canvas.addEventListener('mousemove', (e) => {
       if (!isMouseControlEnabled || !isMouseOverCanvas || isSpaceInvadersPaused) return;
       
-      // 🚀 NEW: Update ship cursor position
+      // Update ship cursor position
       updateCustomCursorPosition(e);
       
       const rect = canvas.getBoundingClientRect();
       mouseX = e.clientX - rect.left;
       mouseY = e.clientY - rect.top;
       
-      // 🔧 CRITICAL FIX: Track global mouse coordinates for re-entry positioning
+      // Track global mouse coordinates
       window.mouseX = e.clientX;
       window.mouseY = e.clientY;
       
-      // 🚀 IMPROVED: More precise mouse targeting with buffer zone
-      const bufferZone = 5; // Small buffer zone for smoother edge movement
+      // 🔥 CRITICAL FIX: Simple, direct mouse targeting - ship follows cursor
+      mouseTargetX = mouseX - playerShip.width / 2;
+      mouseTargetY = mouseY - playerShip.height / 2;
       
-      // Check if mouse is within canvas bounds (with buffer)
-      if (mouseX >= -bufferZone && mouseX <= canvasWidth + bufferZone && 
-          mouseY >= -bufferZone && mouseY <= canvasHeight + bufferZone) {
-        
-        // 🔧 PRECISION FIX: Set mouse target position ONCE for smooth movement
-        // Ship center follows mouse cursor with small Y offset for better feel
-        mouseTargetX = mouseX - playerShip.width / 2;
-        mouseTargetY = mouseY - playerShip.height / 2 - 5; // Small Y offset for better feel
-        
-        // 🔧 CRITICAL FIX: Smooth bounds checking to prevent sudden jumps
-        // Use soft bounds that gradually limit movement instead of hard cuts
-        const margin = 10; // Larger margin for smoother edge movement
-        const softLimitX = Math.max(margin, Math.min(canvasWidth - playerShip.width - margin, mouseTargetX));
-        const softLimitY = Math.max(margin, Math.min(canvasHeight - playerShip.height - margin, mouseTargetY));
-        
-        // Apply soft bounds with gradual limiting (prevents sudden jumps)
-        if (Math.abs(mouseTargetX - softLimitX) > 5) {
-          mouseTargetX = softLimitX;
-        }
-        if (Math.abs(mouseTargetY - softLimitY) > 5) {
-          mouseTargetY = softLimitY;
-        }
-        
-        // 🔧 CRITICAL FIX: Ensure mouse targets are always valid numbers
-        if (isNaN(mouseTargetX) || isNaN(mouseTargetY)) {
-          console.warn('⚠️ Invalid mouse targets detected, resetting to ship position');
-          mouseTargetX = playerShip.x;
-          mouseTargetY = playerShip.y;
-        }
-      }
+      // Mark that mouse has moved in canvas
+      window.hasMouseMovedInCanvas = true;
       
-      // Debug: Log mouse movement (reduced frequency to avoid spam)
-      if (Date.now() % 500 < 16) { // Log every 0.5 seconds
-        console.log(`🖱️ Mouse: X=${mouseX.toFixed(1)}, Y=${mouseY.toFixed(1)}, Target: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
-        console.log(`🖱️ Canvas: Width=${canvasWidth}, Height=${canvasHeight}, Ship: X=${playerShip.x.toFixed(1)}, Y=${playerShip.y.toFixed(1)}`);
-      }
-      
-      // Auto-shoot when mouse moves (if enabled)
-      if (autoShootEnabled && currentWeaponType === 'normal') {
+      // 🔥 CRITICAL FIX: Auto-shoot when mouse moves (if enabled) - NO HEAT BUILDUP
+      if (autoShootEnabled) {
         const currentTime = Date.now();
-        if (currentTime - lastPlayerShootTime > autoShootCooldown) {
-          playerShoot();
-          lastPlayerShootTime = currentTime;
+        
+        // Check if enough time has passed since last auto-shoot
+        if (currentTime - lastAutoShootTime >= autoShootFiringRate) {
+          // Check if we've moved to a new position (prevent multiple shots during continuous movement)
+          const currentPos = { x: Math.round(playerShip.x / 10), y: Math.round(playerShip.y / 10) };
+          if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
+            autoShoot(); // Use special auto-shoot function that doesn't add heat
+            lastMovementPosition = currentPos; // Update last position
+          }
         }
       }
     });
@@ -6843,26 +7090,46 @@ let reloadButtonInterval = null;
         
         // Start rapid fire immediately
         playerShoot();
-        addHeat(getHeatPerShot()); // Add heat for first shot
         
-        // Set up rapid fire interval for continuous shooting
+        // 🔥 CRITICAL FIX: Use unified firing rate instead of separate interval
+        // This ensures consistent heat buildup across all control methods
         mouseRapidFireInterval = setInterval(() => {
-          if (isMouseButtonDown && !isSpaceInvadersPaused && isMouseOverCanvas && !isOverheated) {
+          if (isMouseButtonDown && !isSpaceInvadersPaused && isMouseOverCanvas) {
+            // 🔥 CRITICAL FIX: Check for overheating in mouse rapid fire
+            if (isOverheated) {
+              console.log('🔥 Mouse rapid fire stopped - weapon overheated!');
+              // Stop rapid fire when overheated
+              clearInterval(mouseRapidFireInterval);
+              mouseRapidFireInterval = null;
+              isMouseButtonDown = false;
+              window.isMouseButtonDown = false;
+              return;
+            }
+            
             // For special weapons, set the flag to allow shooting
             if (currentWeaponType === 'laser' || currentWeaponType === 'bomb') {
               window.isQuickShotCall = true;
             }
             
-                                    // 🚀 ENHANCED: Add rapid fire visual feedback
-                        if (currentWeaponType === 'normal') {
-                          // Create small screen shake effect for rapid fire
-                          // Note: screenShake function not implemented yet
-                        }
+            // 🚀 ENHANCED: Add rapid fire visual feedback
+            if (currentWeaponType === 'normal') {
+              // Create small screen shake effect for rapid fire
+              // Note: screenShake function not implemented yet
+            }
             
-            playerShoot();
-            addHeat(getHeatPerShot()); // Add heat for each shot
+            // 🔥 CRITICAL FIX: Use unified firing rate check with mouse priority
+            const currentTime = Date.now();
+            if (currentTime - lastUnifiedShotTime >= unifiedFiringRate) {
+              playerShoot(); // This will handle heat addition and firing rate
+            } else {
+              // 🔥 CRITICAL FIX: Allow mouse to override firing rate slightly for responsiveness
+              const remainingDelay = unifiedFiringRate - (currentTime - lastUnifiedShotTime);
+              if (remainingDelay <= 15) { // Allow mouse to fire if delay is very small
+                playerShoot(); // Override for mouse responsiveness
+              }
+            }
           }
-        }, getRapidFireRate());
+        }, unifiedFiringRate); // Use unified firing rate instead of weapon-specific rate
       }
     });
     
@@ -6916,6 +7183,94 @@ let reloadButtonInterval = null;
     });
 
     console.log('✅ Mouse controls setup complete');
+    
+    // 🔍 DEBUG: Add global debug function for troubleshooting
+    window.debugMouseControl = () => {
+      console.log('🔍 === MOUSE CONTROL STATE DEBUG ===');
+      console.log(`🖱️ Mouse Control Enabled: ${isMouseControlEnabled}`);
+      console.log(`🖱️ Mouse Over Canvas: ${isMouseOverCanvas}`);
+      console.log(`⏸️ Game Paused: ${isSpaceInvadersPaused}`);
+      console.log(`🎯 Mouse Target X: ${mouseTargetX}`);
+      console.log(`🎯 Mouse Target Y: ${mouseTargetY}`);
+      console.log(`🚀 Ship X: ${playerShip.x}`);
+      console.log(`🚀 Ship Y: ${playerShip.y}`);
+      console.log(`📏 Canvas: ${canvasWidth}x${canvasHeight}`);
+      console.log(`🔄 Has Mouse Moved: ${window.hasMouseMovedInCanvas}`);
+      console.log(`🌍 Global Mouse X: ${window.mouseX}`);
+      console.log(`🌍 Global Mouse Y: ${window.mouseY}`);
+      console.log(`💾 Last Canvas X: ${window.lastCanvasMouseX}`);
+      console.log(`💾 Last Canvas Y: ${window.lastCanvasMouseY}`);
+      console.log('🔍 === END STATE DEBUG ===');
+    };
+    
+    console.log('🔍 Debug function available: window.debugMouseControl()');
+    
+    // 🔥 NEW: Add heat system debug functions
+    window.debugHeatSystem = () => {
+      console.log('🔥 === HEAT SYSTEM DEBUG ===');
+      console.log(`🌡️ Current Heat: ${weaponHeat}/${maxHeat}`);
+      console.log(`🔥 Overheated: ${isOverheated}`);
+      console.log(`⏰ Last Overheat: ${lastOverheatTime}`);
+      console.log(`❄️ Cooldown Remaining: ${isOverheated ? Math.max(0, overheatCooldown - (Date.now() - lastOverheatTime)) : 0}ms`);
+      console.log(`🔫 Heat Per Shot: ${getHeatPerShot()}`);
+      console.log(`📉 Heat Decay Rate: ${heatDecayRate}`);
+      console.log(`⚡ Unified Firing Rate: ${unifiedFiringRate}ms (${(1000/unifiedFiringRate).toFixed(1)} shots/sec)`);
+      console.log(`⏱️ Time Since Last Shot: ${Date.now() - lastUnifiedShotTime}ms`);
+      console.log(`🎯 Next Shot Available: ${Math.max(0, unifiedFiringRate - (Date.now() - lastUnifiedShotTime))}ms`);
+      console.log('🔥 === END HEAT DEBUG ===');
+    };
+    
+    window.testHeatSystem = () => {
+      console.log('🧪 Testing heat system...');
+      addHeat(50);
+      console.log(`🔥 Added 50 heat - Current: ${weaponHeat}/${maxHeat}`);
+    };
+    
+    window.resetHeatSystem = () => {
+      weaponHeat = 0;
+      isOverheated = false;
+      lastOverheatTime = 0;
+      console.log('🔥 Heat system manually reset!');
+      updateAlwaysVisibleHeatDisplay();
+    };
+    
+    window.setUnifiedFiringRate = (rateMs) => {
+      unifiedFiringRate = Math.max(50, Math.min(500, rateMs)); // Limit between 50ms and 500ms
+      console.log(`⚡ Unified firing rate set to ${unifiedFiringRate}ms (${(1000/unifiedFiringRate).toFixed(1)} shots/sec)`);
+    };
+    
+    window.testFiringRate = () => {
+      console.log('🧪 === FIRING RATE TEST ===');
+      console.log(`⚡ Current Rate: ${unifiedFiringRate}ms (${(1000/unifiedFiringRate).toFixed(1)} shots/sec)`);
+      console.log(`⏱️ Time Since Last Shot: ${Date.now() - lastUnifiedShotTime}ms`);
+      console.log(`🎯 Can Fire Now: ${(Date.now() - lastUnifiedShotTime) >= unifiedFiringRate ? 'YES' : 'NO'}`);
+      console.log(`🔥 Current Heat: ${weaponHeat}/${maxHeat}`);
+      console.log(`🔥 Overheated: ${isOverheated}`);
+      console.log('🧪 === END TEST ===');
+    };
+    
+    window.testOverheatSystem = () => {
+      console.log('🔥 === OVERHEAT SYSTEM TEST ===');
+      console.log(`🌡️ Current Heat: ${weaponHeat}/${maxHeat}`);
+      console.log(`🔥 Overheated: ${isOverheated}`);
+      console.log(`⏰ Last Overheat: ${lastOverheatTime}`);
+      console.log(`❄️ Cooldown Remaining: ${isOverheated ? Math.max(0, overheatCooldown - (Date.now() - lastOverheatTime)) : 0}ms`);
+      console.log(`🔫 Heat Per Shot: ${getHeatPerShot()}`);
+      console.log(`📉 Heat Decay Rate: ${heatDecayRate}`);
+      console.log(`⚡ Firing Rate: ${unifiedFiringRate}ms`);
+      console.log('🔥 === END TEST ===');
+    };
+    
+    console.log('🔥 Heat debug functions available:');
+    console.log('  window.debugHeatSystem() - Show heat status');
+    console.log('  window.testHeatSystem() - Test heat addition');
+    console.log('  window.resetHeatSystem() - Reset heat manually');
+    console.log('  window.setUnifiedFiringRate(rateMs) - Set firing rate (50-500ms)');
+    console.log('  window.testFiringRate() - Test firing rate system');
+    console.log('  window.testOverheatSystem() - Test overheat system');
+    console.log('  window.debugHeatSystem() - Show heat status');
+    console.log('  window.testHeatSystem() - Test heat addition');
+    console.log('  window.resetHeatSystem() - Reset heat manually');
   }
 
   // 🖱️ NEW: Notification function for mouse control feedback
@@ -6982,7 +7337,7 @@ let reloadButtonInterval = null;
   window.displayHelpInfoOutside = displayHelpInfoOutside;
   
   // 🔥 NEW: Make heat system functions globally available
-  window.updateMobileHeatDisplay = updateMobileHeatDisplay;
+  // Mobile heat display removed - now using unified always-visible display
   window.showMobileOverheatNotification = showMobileOverheatNotification;
 
   // 🎮 NEW: Make game panel functions globally available
@@ -8041,6 +8396,16 @@ window.emergencyCollisionCheck = function() {
       </div>
       
       <div style="text-align: left; margin-bottom: 20px;">
+        <h2 style="color: #fbbf24; border-bottom: 1px solid #fbbf24; padding-bottom: 5px;">🔥 HEAT SYSTEM</h2>
+        <p><strong>Heat Display:</strong> Always visible in top-right corner during gameplay</p>
+        <p><strong>Heat Build-up:</strong> Each shot adds heat to your weapon</p>
+        <p><strong>Overheat:</strong> Weapon stops working when heat reaches 100%</p>
+        <p><strong>Cooling:</strong> Heat naturally decreases when not shooting</p>
+        <p><strong>Strategy:</strong> Switch weapons or pause shooting to manage heat</p>
+        <p><strong>Toggle Display:</strong> Ctrl+H to show/hide heat display</p>
+      </div>
+      
+      <div style="text-align: left; margin-bottom: 20px;">
         <h2 style="color: #fbbf24; border-bottom: 1px solid #fbbf24; padding-bottom: 5px;">⚡ POWER-UPS & SPECIALS</h2>
         <p><strong>S Key:</strong> Activate Speed Boost (2x speed)</p>
         <p><strong>Green ⚡:</strong> Speed Boost power-up</p>
@@ -8934,7 +9299,7 @@ window.emergencyCollisionCheck = function() {
     
     // 🔥 NEW: Initialize mobile heat display
     setTimeout(() => {
-      updateMobileHeatDisplay();
+      updateAlwaysVisibleHeatDisplay();
     }, 100);
     
     console.log('🎮 Enhanced mobile controls with game panel and reload button created');
