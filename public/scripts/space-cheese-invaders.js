@@ -5684,8 +5684,8 @@ let reloadButtonInterval = null;
       gameOverModal.classList.remove("hidden");
     }
     
-    // 🔧 CRITICAL FIX: Score is saved at game end, not during gameplay (prevents duplication)
-    // saveScore(spaceInvadersScore); // REMOVED: Duplicate call causing score duplication
+    // 🔧 CRITICAL FIX: Score MUST be saved here for all players (not just winners)
+    saveScore(spaceInvadersScore); // RESTORED: This is the main score saving point
     cleanupSpaceInvadersControls();
     
     // 🚀 NEW: Clean up ship cursor when game ends
@@ -6136,10 +6136,10 @@ let reloadButtonInterval = null;
       const oldX = playerShip.x;
       const oldY = playerShip.y;
       
-      // 🚀 IMPROVED: Much more responsive mouse movement
-      const easing = 0.45; // Increased from 0.35 for even faster response
-      const minMoveDistance = 0.1; // Reduced threshold for more responsive movement
-      const maxMoveDistance = 15; // Increased maximum movement for better responsiveness
+      // 🚀 IMPROVED: Smooth and responsive mouse movement
+      const easing = 0.3; // Reduced for smoother movement (less jerky)
+      const minMoveDistance = 0.5; // Increased threshold to prevent micro-jitters
+      const maxMoveDistance = 8; // Reduced for smoother movement (less jumpy)
       
       // Calculate movement with improved responsiveness
       const deltaX = mouseTargetX - playerShip.x;
@@ -6678,12 +6678,9 @@ let reloadButtonInterval = null;
           canvas.style.cursor = 'default';
           hideCustomCursor();
           
-          // 🚀 IMPROVED: Reset mouse target when leaving canvas for smoother re-entry
-          mouseTargetX = playerShip.x;
-          mouseTargetY = playerShip.y;
-          
-          // 🔧 CRITICAL FIX: Ensure initial mouse target is properly set
-          console.log(`🖱️ Reset mouse target to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
+          // 🚀 IMPROVED: Keep mouse target at current ship position for smoother re-entry
+          // Don't reset - this prevents the 300px jump when re-entering
+          console.log(`🖱️ Mouse left canvas - keeping target at ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
         }
       }, 100); // 100ms delay to prevent accidental disabling
     });
@@ -6706,25 +6703,24 @@ let reloadButtonInterval = null;
       if (mouseX >= -bufferZone && mouseX <= canvasWidth + bufferZone && 
           mouseY >= -bufferZone && mouseY <= canvasHeight + bufferZone) {
         
-        // Set mouse target position for smooth movement - ship center on mouse cursor
-        mouseTargetX = mouseX - playerShip.width / 2;
-        mouseTargetY = mouseY - playerShip.height / 2;
-        
-        // 🔧 PRECISION FIX: Make ship feel directly connected to mouse cursor
-        // Adjust Y offset to make ship feel more responsive and centered
+        // 🔧 PRECISION FIX: Set mouse target position ONCE for smooth movement
+        // Ship center follows mouse cursor with small Y offset for better feel
         mouseTargetX = mouseX - playerShip.width / 2;
         mouseTargetY = mouseY - playerShip.height / 2 - 5; // Small Y offset for better feel
         
-        // Keep target within canvas bounds with slight margin
-        const margin = 2; // Small margin for smoother edge movement
-        mouseTargetX = Math.max(margin, Math.min(canvasWidth - playerShip.width - margin, mouseTargetX));
-        mouseTargetY = Math.max(margin, Math.min(canvasHeight - playerShip.height - margin, mouseTargetY));
+        // 🔧 CRITICAL FIX: Smooth bounds checking to prevent sudden jumps
+        // Use soft bounds that gradually limit movement instead of hard cuts
+        const margin = 10; // Larger margin for smoother edge movement
+        const softLimitX = Math.max(margin, Math.min(canvasWidth - playerShip.width - margin, mouseTargetX));
+        const softLimitY = Math.max(margin, Math.min(canvasHeight - playerShip.height - margin, mouseTargetY));
         
-        // 🔧 CRITICAL FIX: Ensure mouse target Y is properly aligned with game coordinates
-        // The ship should stay within the playable area (not too high, not too low)
-        const minY = 50; // Minimum Y position (top of playable area)
-        const maxY = canvasHeight - playerShip.height - 20; // Maximum Y position (bottom with margin)
-        mouseTargetY = Math.max(minY, Math.min(maxY, mouseTargetY));
+        // Apply soft bounds with gradual limiting (prevents sudden jumps)
+        if (Math.abs(mouseTargetX - softLimitX) > 5) {
+          mouseTargetX = softLimitX;
+        }
+        if (Math.abs(mouseTargetY - softLimitY) > 5) {
+          mouseTargetY = softLimitY;
+        }
       }
       
       // Debug: Log mouse movement (reduced frequency to avoid spam)

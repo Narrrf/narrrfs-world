@@ -7939,10 +7939,18 @@ require_once 'discord-invite.php';
         return;
       }
       
-      // Require proper authentication before database access
+      // 🔧 CRITICAL FIX: Better authentication checking
+      console.log('🔍 Current admin state:', currentAdmin); // Debug logging
+      
       if (!currentAdmin) {
-        statusDiv.innerHTML = '<div class="text-red-600">❌ Authentication required</div>';
+        statusDiv.innerHTML = '<div class="text-red-600">❌ Authentication required - Please log in first</div>';
         addLog('❌ Database unlock failed: Authentication required');
+        return;
+      }
+      
+      if (!currentAdmin.token) {
+        statusDiv.innerHTML = '<div class="text-red-600">❌ Admin token missing - Please re-authenticate</div>';
+        addLog('❌ Database unlock failed: Admin token missing');
         return;
       }
       
@@ -14419,17 +14427,28 @@ require_once 'discord-invite.php';
         addLog(`📊 Funds API response: ${JSON.stringify(data).substring(0, 200)}...`);
         
         if (data.success) {
-          displayCommunityFundsEntries(data.entries);
-          calculateAndDisplayStatistics(data.entries);
-          displayCommunityFundsRecentActivity(data.entries);
-          
-          // Update total entries count
-          document.getElementById('totalEntries').textContent = data.entries.length;
-          
-          addLog(`✅ Community funds entries loaded: ${data.entries.length} entries`);
+          // 🔧 CRITICAL FIX: Better data validation
+          if (data.entries && Array.isArray(data.entries)) {
+            displayCommunityFundsEntries(data.entries);
+            calculateAndDisplayStatistics(data.entries);
+            displayCommunityFundsRecentActivity(data.entries);
+            
+            // Update total entries count
+            const totalElement = document.getElementById('totalEntries');
+            if (totalElement) {
+              totalElement.textContent = data.entries.length;
+            }
+            
+            addLog(`✅ Community funds entries loaded: ${data.entries.length} entries`);
+          } else {
+            console.error('❌ Invalid entries format:', data.entries);
+            addLog(`❌ Funds API returned invalid entries format: ${typeof data.entries}`);
+            displayCommunityFundsEntries([]); // Show empty state
+          }
         } else {
-          console.error('Error loading community funds:', data.message);
+          console.error('❌ Funds API error:', data.message);
           addLog(`❌ Funds API error: ${data.message}`);
+          displayCommunityFundsEntries([]); // Show empty state
         }
       } catch (error) {
         console.error('Error loading community funds:', error);
@@ -16121,12 +16140,40 @@ function testGames2Tab() {
         }
         
         const data = await response.json();
-        if (data.success && data.bosses[bossType]) {
-          currentBossConfigs[bossType] = data.bosses[bossType];
-          displayBossConfiguration(bossType, data.bosses[bossType]);
-          addLog(`✅ Boss configuration loaded for ${bossType}`);
+        console.log('🔍 Boss API response:', data); // Debug logging
+        
+        // 🔧 CRITICAL FIX: Handle different API response structures
+        if (data.success) {
+          if (data.bosses && data.bosses[bossType]) {
+            // Standard response format
+            currentBossConfigs[bossType] = data.bosses[bossType];
+            displayBossConfiguration(bossType, data.bosses[bossType]);
+            addLog(`✅ Boss configuration loaded for ${bossType}`);
+          } else if (data.bosses && Array.isArray(data.bosses)) {
+            // Array format - find boss by type
+            const bossConfig = data.bosses.find(boss => boss.boss_type === bossType);
+            if (bossConfig) {
+              currentBossConfigs[bossType] = bossConfig;
+              displayBossConfiguration(bossType, bossConfig);
+              addLog(`✅ Boss configuration loaded for ${bossType} (array format)`);
+            } else {
+              throw new Error(`Boss type ${bossType} not found in response`);
+            }
+          } else if (data.bosses && typeof data.bosses === 'object') {
+            // Direct object format
+            const bossConfig = data.bosses[bossType] || data.bosses;
+            if (bossConfig) {
+              currentBossConfigs[bossType] = bossConfig;
+              displayBossConfiguration(bossType, bossConfig);
+              addLog(`✅ Boss configuration loaded for ${bossType} (direct format)`);
+            } else {
+              throw new Error(`Boss configuration not found for ${bossType}`);
+            }
+          } else {
+            throw new Error('Unexpected API response structure');
+          }
         } else {
-          throw new Error('Invalid response format');
+          throw new Error(data.error || 'API request failed');
         }
       } catch (error) {
         console.error('❌ Error loading boss configuration:', error);
