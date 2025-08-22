@@ -206,21 +206,40 @@ try {
         error_log("Discord Race query error: " . $e->getMessage());
     }
     
-    // Calculate overall DSPOINC (using user_id from tbl_user_scores)
+    // 🚀 CRITICAL FIX: Calculate overall DSPOINC with correct conversion rates for each game
     try {
-        $stmt = $db->prepare("
-            SELECT SUM(score) as total_dspoinc
-            FROM tbl_user_scores 
-            WHERE user_id = ?
-        ");
-        $stmt->execute([$discordId]);
-        $dspoincData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $totalDspoinc = 0;
         
-        if ($dspoincData && $dspoincData['total_dspoinc']) {
-            $response['overall']['total_dspoinc'] = (int)$dspoincData['total_dspoinc'];
+        // 1. TETRIS: 1000 traditional points = 1 DSPOINC (already correct)
+        if ($response['tetris']['total_score'] > 0) {
+            $tetrisDspoinc = floor($response['tetris']['total_score'] / 1000);
+            $totalDspoinc += $tetrisDspoinc;
+            error_log("Tetris: {$response['tetris']['total_score']} points = {$tetrisDspoinc} DSPOINC");
         }
+        
+        // 2. SNAKE: 1000 traditional points = 1 DSPOINC (already correct)
+        if ($response['snake']['total_score'] > 0) {
+            $snakeDspoinc = floor($response['snake']['total_score'] / 1000);
+            $totalDspoinc += $snakeDspoinc;
+            error_log("Snake: {$response['snake']['total_score']} points = {$snakeDspoinc} DSPOINC");
+        }
+        
+        // 3. SPACE INVADERS: 50 traditional points = 1 DSPOINC (FIXED for balance)
+        if ($response['space_invaders']['total_score'] > 0) {
+            $spaceDspoinc = floor($response['space_invaders']['total_score'] / 50);
+            $totalDspoinc += $spaceDspoinc;
+            error_log("Space Invaders: {$response['space_invaders']['total_score']} points = {$spaceDspoinc} DSPOINC");
+        }
+        
+        // 4. CHEESE HUNT: No DSPOINC conversion (clicks only)
+        // 5. DISCORD RACE: No DSPOINC conversion (races only)
+        
+        $response['overall']['total_dspoinc'] = $totalDspoinc;
+        error_log("Total DSPOINC calculated: {$totalDspoinc}");
+        
     } catch (Exception $e) {
         error_log("DSPOINC calculation error: " . $e->getMessage());
+        $response['overall']['total_dspoinc'] = 0;
     }
     
     // Quest stats (using user_id from tbl_quest_claims)
@@ -285,6 +304,7 @@ try {
                 'total_games' => $response['tetris']['total_games'],
                 'best_score' => $response['tetris']['best_score'],
                 'total_score' => $response['tetris']['total_score'],
+                'dspoinc_earned' => $response['tetris']['total_score'] > 0 ? floor($response['tetris']['total_score'] / 1000) : 0,
                 'last_played' => $response['tetris']['last_played'],
                 'status' => $response['tetris']['total_games'] > 0 ? 'active' : 'not_played'
             ],
@@ -295,6 +315,7 @@ try {
                 'total_games' => $response['snake']['total_games'],
                 'best_score' => $response['snake']['best_score'],
                 'total_score' => $response['snake']['total_score'],
+                'dspoinc_earned' => $response['snake']['total_score'] > 0 ? floor($response['snake']['total_score'] / 1000) : 0,
                 'last_played' => $response['snake']['last_played'],
                 'status' => $response['snake']['total_games'] > 0 ? 'active' : 'not_played'
             ],
@@ -305,6 +326,7 @@ try {
                 'total_games' => $response['space_invaders']['total_games'],
                 'best_score' => $response['space_invaders']['best_score'],
                 'total_score' => $response['space_invaders']['total_score'],
+                'dspoinc_earned' => $response['space_invaders']['total_score'] > 0 ? floor($response['space_invaders']['total_score'] / 50) : 0,
                 'last_played' => $response['space_invaders']['last_played'],
                 'status' => $response['space_invaders']['total_games'] > 0 ? 'active' : 'not_played'
             ],

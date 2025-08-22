@@ -1305,7 +1305,7 @@ let reloadButtonInterval = null;
       bossBullets = [];
       bossExplosions = [];
       bossDefeated = false;
-      bossReward = waveNumber * 10; // 500 DSPOINC for wave 50, 1000 for wave 100, etc.
+              bossReward = waveNumber * 2; // 100 DSPOINC for wave 50, 200 for wave 100, etc. (REDUCED for balance)
       console.log(`✅ Boss phase variables set: phase=${bossPhase}, reward=${bossReward}`);
       
       // 🚀 CRITICAL DEBUG: Verify phase variables
@@ -2310,7 +2310,7 @@ let reloadButtonInterval = null;
         spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
         
         // 🚀 CRITICAL FIX: Also add to traditional score for consistency
-        spaceInvadersScore += bossReward * 10; // Convert invader count to traditional points (1 DSPOINC = 10 points)
+        spaceInvadersScore += bossReward * 5; // Convert invader count to traditional points (1 DSPOINC = 5 points) (REDUCED for balance)
           
           // 🚀 NEW: Epic boss defeat effects (reduced intensity)
           bossDefeatEffect = 60; // Reduced from 100 to 60 frames
@@ -5700,8 +5700,8 @@ let reloadButtonInterval = null;
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // 🚀 CRITICAL FIX: Space Invaders scoring: 10 traditional points = 1 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersScore * 0.1) * 100) / 100; // Round to 2 decimal places (10 points = 1 DSPOINC)
+    // 🚀 CRITICAL FIX: Space Invaders scoring: 50 traditional points = 1 DSPOINC (REDUCED for balance)
+    const dspoinEarned = Math.round((spaceInvadersScore * 0.02) * 100) / 100; // Round to 2 decimal places (50 points = 1 DSPOINC)
     
     if (gameOverModal && finalScoreText) {
       finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} traditional points)`;
@@ -6681,64 +6681,53 @@ let reloadButtonInterval = null;
       existingDisplay.remove();
     }
     
-    // Create the heat display container
+    // Create the heat display container - COMPACT & INTEGRATED DESIGN
     const heatDisplay = document.createElement('div');
     heatDisplay.id = 'always-visible-heat-display';
     heatDisplay.style.cssText = `
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background: linear-gradient(135deg, rgba(26, 26, 26, 0.9), rgba(55, 65, 81, 0.9));
-      border: 2px solid #4b5563;
-      border-radius: 15px;
-      padding: 15px;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid #4b5563;
+      border-radius: 8px;
+      padding: 8px;
       z-index: 9999;
-      min-width: 200px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      width: 120px;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
       transition: all 0.3s ease;
+      font-family: 'Courier New', monospace;
     `;
     
-    // Create title
-    const title = document.createElement('div');
-    title.textContent = '🔥 WEAPON HEAT';
-    title.style.cssText = `
-      color: #ffffff;
-      font-size: 1.1em;
-      font-weight: bold;
-      margin-bottom: 12px;
-      text-align: center;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    `;
-    heatDisplay.appendChild(title);
-    
-    // Create heat status
+    // Create compact heat status (no title to save space)
     const heatStatus = document.createElement('div');
     heatStatus.id = 'always-visible-heat-status';
     heatStatus.style.cssText = `
       color: #00ff00;
-      font-size: 1em;
+      font-size: 0.75em;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       text-align: center;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+      line-height: 1;
     `;
     heatDisplay.appendChild(heatStatus);
     
-    // Create heat bar container
+    // Create compact heat bar container
     const heatBarContainer = document.createElement('div');
     heatBarContainer.style.cssText = `
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     `;
     
-    // Create heat bar
+    // Create compact heat bar
     const heatBar = document.createElement('div');
     heatBar.id = 'always-visible-heat-bar';
     heatBar.style.cssText = `
       width: 100%;
-      height: 18px;
+      height: 12px;
       background: #374151;
-      border-radius: 9px;
+      border-radius: 6px;
       overflow: hidden;
       position: relative;
       border: 1px solid #6b7280;
@@ -6752,46 +6741,79 @@ let reloadButtonInterval = null;
       background: linear-gradient(90deg, #00ff00, #ffcc00, #ff8800, #ff0000);
       width: 0%;
       transition: width 0.3s ease;
-      border-radius: 8px;
+      border-radius: 5px;
     `;
     
     heatBar.appendChild(heatBarFill);
     heatBarContainer.appendChild(heatBar);
     heatDisplay.appendChild(heatBarContainer);
     
-    // Create heat percentage
+    // Create compact heat percentage
     const heatPercentage = document.createElement('div');
     heatPercentage.id = 'always-visible-heat-percentage';
     heatPercentage.style.cssText = `
       color: #ffffff;
-      font-size: 0.9em;
+      font-size: 0.7em;
       text-align: center;
       font-weight: bold;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+      line-height: 1;
     `;
     heatDisplay.appendChild(heatPercentage);
     
-    // Create overheat warning
+    // Create compact overheat warning
     const overheatWarning = document.createElement('div');
     overheatWarning.id = 'always-visible-overheat-warning';
     overheatWarning.style.cssText = `
       color: #ff6b6b;
-      font-size: 0.8em;
+      font-size: 0.65em;
       text-align: center;
-      margin-top: 8px;
+      margin-top: 4px;
       font-weight: bold;
       display: none;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+      line-height: 1;
     `;
     heatDisplay.appendChild(overheatWarning);
     
     // Add to body
     document.body.appendChild(heatDisplay);
     
+    // 🔥 NEW: Add hover effects for better integration
+    heatDisplay.addEventListener('mouseenter', () => {
+      heatDisplay.style.transform = 'scale(1.05)';
+      heatDisplay.style.background = 'rgba(0, 0, 0, 0.85)';
+      heatDisplay.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.6)';
+    });
+    
+    heatDisplay.addEventListener('mouseleave', () => {
+      heatDisplay.style.transform = 'scale(1)';
+      heatDisplay.style.background = 'rgba(0, 0, 0, 0.7)';
+      heatDisplay.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.4)';
+    });
+    
+    // 🔥 NEW: Auto-hide when heat is low (less intrusive)
+    heatDisplay.style.opacity = '0.8';
+    heatDisplay.style.transition = 'all 0.3s ease, opacity 0.5s ease';
+    
+    // 🔥 NEW: Auto-hide when game is paused or inactive
+    let heatDisplayTimeout = null;
+    const autoHideHeatDisplay = () => {
+      if (heatDisplayTimeout) clearTimeout(heatDisplayTimeout);
+      heatDisplayTimeout = setTimeout(() => {
+        if (weaponHeat < 20 && !isOverheated) {
+          heatDisplay.style.opacity = '0.4'; // Very subtle when not needed
+        }
+      }, 3000); // Hide after 3 seconds of low heat
+    };
+    
+    // Call auto-hide function
+    autoHideHeatDisplay();
+    
     // Initial update
     updateAlwaysVisibleHeatDisplay();
     
-    console.log('🔥 Always-visible heat display created!');
+    console.log('🔥 Compact heat display created!');
     
     // 🔥 NEW: Add toggle functionality for heat display
     window.toggleHeatDisplay = () => {
@@ -6807,7 +6829,25 @@ let reloadButtonInterval = null;
       }
     };
     
-    // 🔥 NEW: Add keyboard shortcut to toggle heat display (H key)
+    // 🔥 NEW: Add mini mode toggle for ultra-compact display
+    window.toggleHeatMiniMode = () => {
+      const heatDisplay = document.getElementById('always-visible-heat-display');
+      if (heatDisplay) {
+        if (heatDisplay.classList.contains('mini-mode')) {
+          heatDisplay.classList.remove('mini-mode');
+          heatDisplay.style.width = '120px';
+          heatDisplay.style.padding = '8px';
+          console.log('🔥 Heat display: Normal mode');
+        } else {
+          heatDisplay.classList.add('mini-mode');
+          heatDisplay.style.width = '80px';
+          heatDisplay.style.padding = '4px';
+          console.log('🔥 Heat display: Mini mode');
+        }
+      }
+    };
+    
+    // 🔥 NEW: Add keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'h' || e.key === 'H') {
         if (e.ctrlKey || e.metaKey) { // Ctrl+H or Cmd+H
@@ -6815,9 +6855,15 @@ let reloadButtonInterval = null;
           window.toggleHeatDisplay();
         }
       }
+      if (e.key === 'm' || e.key === 'M') {
+        if (e.ctrlKey || e.metaKey) { // Ctrl+M or Cmd+M
+          e.preventDefault();
+          window.toggleHeatMiniMode();
+        }
+      }
     });
     
-    console.log('🔥 Heat display toggle available: Ctrl+H or window.toggleHeatDisplay()');
+    console.log('🔥 Heat display controls: Ctrl+H (toggle), Ctrl+M (mini mode)');
   }
   
   // 🔥 NEW: Update always-visible heat display
@@ -6831,23 +6877,23 @@ let reloadButtonInterval = null;
       return; // Display not created yet
     }
     
-    // Update heat status text
+    // Update heat status text with compact design
     if (isOverheated) {
       heatStatus.textContent = '🔥 OVERHEATED!';
       heatStatus.style.color = '#ff6b6b';
-      overheatWarning.textContent = '❄️ COOLING DOWN...';
+      overheatWarning.textContent = '❄️ COOLING...';
       overheatWarning.style.display = 'block';
     } else if (weaponHeat >= 80) {
-      heatStatus.textContent = '⚠️ CRITICAL HEAT!';
+      heatStatus.textContent = '⚠️ CRITICAL!';
       heatStatus.style.color = '#ff8800';
-      overheatWarning.textContent = '🔥 COOL DOWN SOON!';
+      overheatWarning.textContent = '🔥 COOL SOON!';
       overheatWarning.style.display = 'block';
     } else if (weaponHeat >= 50) {
-      heatStatus.textContent = '🔥 HIGH HEAT';
+      heatStatus.textContent = '🔥 HIGH';
       heatStatus.style.color = '#ffcc00';
       overheatWarning.style.display = 'none';
     } else if (weaponHeat >= 20) {
-      heatStatus.textContent = '🌡️ MEDIUM HEAT';
+      heatStatus.textContent = '🌡️ MED';
       heatStatus.style.color = '#ffffff';
       overheatWarning.style.display = 'none';
     } else {
@@ -6872,6 +6918,33 @@ let reloadButtonInterval = null;
       heatBarFill.style.background = '#ffcc00';
     } else {
       heatBarFill.style.background = 'linear-gradient(90deg, #00ff00, #ffcc00, #ff8800, #ff0000)';
+    }
+    
+    // 🔥 NEW: Dynamic opacity based on heat level for better integration
+    const heatDisplay = document.getElementById('always-visible-heat-display');
+    if (heatDisplay) {
+      if (isOverheated || heatPercent >= 80) {
+        heatDisplay.style.opacity = '1.0'; // Full visibility when critical
+        heatDisplay.style.background = 'rgba(0, 0, 0, 0.9)';
+      } else if (heatPercent >= 50) {
+        heatDisplay.style.opacity = '0.9'; // High visibility when hot
+        heatDisplay.style.background = 'rgba(0, 0, 0, 0.8)';
+      } else if (heatPercent >= 20) {
+        heatDisplay.style.opacity = '0.8'; // Medium visibility
+        heatDisplay.style.background = 'rgba(0, 0, 0, 0.7)';
+      } else {
+        heatDisplay.style.opacity = '0.6'; // Low visibility when cool (less intrusive)
+        heatDisplay.style.background = 'rgba(0, 0, 0, 0.6)';
+      }
+      
+      // 🔥 NEW: Trigger auto-hide for low heat situations
+      if (weaponHeat < 20 && !isOverheated) {
+        setTimeout(() => {
+          if (weaponHeat < 20 && !isOverheated) {
+            heatDisplay.style.opacity = '0.4'; // Very subtle when not needed
+          }
+        }, 2000);
+      }
     }
   }
 
@@ -7690,8 +7763,8 @@ window.emergencyCollisionCheck = function() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // 🚀 CRITICAL FIX: Space Invaders scoring: 10 traditional points = 1 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersScore * 0.1) * 100) / 100; // Round to 2 decimal places (10 points = 1 DSPOINC)
+    // 🚀 CRITICAL FIX: Space Invaders scoring: 50 traditional points = 1 DSPOINC (REDUCED for balance)
+    const dspoinEarned = Math.round((spaceInvadersScore * 0.02) * 100) / 100; // Round to 2 decimal places (50 points = 1 DSPOINC)
     
     if (winModal && winScoreText) {
       winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} traditional points)`;
@@ -7718,7 +7791,7 @@ window.emergencyCollisionCheck = function() {
 
     // 🚀 CRITICAL FIX: Space Invaders now saves traditional score (like classic Space Invaders)
     // Traditional score: 100 points per invader, 500 points per power-up, etc.
-    const dspoincScore = Math.round((traditionalScore * 0.1) * 100) / 100; // Convert to DSPOINC (10 points = 1 DSPOINC)
+    const dspoincScore = Math.round((traditionalScore * 0.02) * 100) / 100; // Convert to DSPOINC (50 points = 1 DSPOINC)
 
     console.log(`💾 Saving Space Invaders score: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
 

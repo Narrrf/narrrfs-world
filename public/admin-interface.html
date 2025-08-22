@@ -4809,8 +4809,10 @@ require_once 'discord-invite.php';
             addLog('✅ Holder verification tab auto-loaded');
             
           } else if (tabName === 'communityFunds') {
-            // Community funds - Auto-load wallet and funds data
-            loadCommunityFundsData();
+            // Community funds - Auto-load wallet and funds data with delay to ensure DOM is ready
+            setTimeout(() => {
+              loadCommunityFundsData();
+            }, 100);
             addLog('💰 Community funds tab auto-loaded');
           }
           
@@ -14453,15 +14455,31 @@ require_once 'discord-invite.php';
     }
 
     function displayCommunityFundsEntries(entries) {
+      console.log('🔍 displayCommunityFundsEntries called with:', entries);
+      
       const tbody = document.getElementById('communityFundsTableBody');
+      console.log('🔍 communityFundsTableBody element:', tbody);
       
       // 🔧 CRITICAL FIX: Check if element exists before accessing
       if (!tbody) {
         console.error('❌ communityFundsTableBody element not found');
         addLog('❌ Community funds table body element not found');
+        
+        // Try to find the element again after a short delay
+        setTimeout(() => {
+          const retryTbody = document.getElementById('communityFundsTableBody');
+          if (retryTbody) {
+            console.log('✅ Found communityFundsTableBody on retry');
+            displayCommunityFundsEntries(entries);
+          } else {
+            console.error('❌ Still cannot find communityFundsTableBody after retry');
+            addLog('❌ Community funds table body element still not found after retry');
+          }
+        }, 500);
         return;
       }
       
+      console.log('✅ Found communityFundsTableBody, updating display');
       tbody.innerHTML = '';
       
       if (!entries || entries.length === 0) {
@@ -14470,10 +14488,14 @@ require_once 'discord-invite.php';
             <td colspan="5" class="px-4 py-4 text-center text-gray-500">No community funds entries found</td>
           </tr>
         `;
+        addLog('ℹ️ No community funds entries to display');
         return;
       }
       
-      entries.forEach(entry => {
+      console.log(`📊 Displaying ${entries.length} community funds entries`);
+      addLog(`📊 Displaying ${entries.length} community funds entries`);
+      
+      entries.forEach((entry, index) => {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50';
         
@@ -14494,6 +14516,9 @@ require_once 'discord-invite.php';
         
         tbody.appendChild(row);
       });
+      
+      console.log('✅ Community funds display updated successfully');
+      addLog('✅ Community funds display updated successfully');
     }
 
     async function addCommunityFundsEntry() {
