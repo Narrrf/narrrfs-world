@@ -40,7 +40,14 @@ try {
     
     // Connect to database using the correct path
     try {
-        $db = new PDO('sqlite:/var/www/html/db/narrrf_world.sqlite');
+        // Use environment-aware database path
+        if (file_exists('/var/www/html/db/narrrf_world.sqlite')) {
+            // Production environment (Render)
+            $db = new PDO('sqlite:/var/www/html/db/narrrf_world.sqlite');
+        } else {
+            // Local environment (XAMPP)
+            $db = new PDO('sqlite:' . __DIR__ . '/../db/narrrf_world.sqlite');
+        }
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (Exception $e) {
         throw new Exception('Database connection failed: ' . $e->getMessage());
@@ -184,6 +191,12 @@ try {
     
     // 5. DISCORD CHEESE RACE STATS (using user_id from tbl_race_participants)
     try {
+        // Debug: Check what races exist for this user
+        $debugStmt = $db->prepare("SELECT race_id, user_id, username, position, cheese_count, joined_at FROM tbl_race_participants WHERE user_id = ?");
+        $debugStmt->execute([$discordId]);
+        $debugRaces = $debugStmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("Debug: Found " . count($debugRaces) . " races for user $discordId: " . json_encode($debugRaces));
+        
         $stmt = $db->prepare("
             SELECT 
                 COUNT(*) as total_races,
@@ -195,6 +208,8 @@ try {
         ");
         $stmt->execute([$discordId]);
         $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        error_log("Debug: Race query result for user $discordId: " . json_encode($raceData));
         
         if ($raceData) {
             $response['discord_race']['total_races'] = (int)$raceData['total_races'];

@@ -556,6 +556,88 @@ try {
             }, $recent_activities);
         }
         
+        // Get individual player race statistics
+        if (tableExists($pdo, 'tbl_race_participants')) {
+            $player_race_stats = safeQueryArray($pdo, 'tbl_race_participants', 
+                "SELECT 
+                    user_id,
+                    username,
+                    COUNT(DISTINCT race_id) as total_races,
+                    COUNT(CASE WHEN position = 1 THEN 1 END) as wins,
+                    COUNT(CASE WHEN position <= 3 THEN 1 END) as podium_finishes,
+                    MIN(position) as best_position,
+                    SUM(CAST(cheese_count AS REAL)) as total_cheese_collected,
+                    AVG(CAST(cheese_count AS REAL)) as avg_cheese_per_race,
+                    MAX(CAST(cheese_count AS REAL)) as best_cheese_race,
+                    MAX(joined_at) as last_race_date
+                 FROM tbl_race_participants 
+                 GROUP BY user_id, username
+                 ORDER BY wins DESC, total_cheese_collected DESC
+                 LIMIT 50");
+            
+            if (!empty($player_race_stats)) {
+                $discord_race_stats['race_data']['player_statistics'] = array_map(function($player) {
+                    return [
+                        'user_id' => $player['user_id'],
+                        'username' => $player['username'],
+                        'total_races' => $player['total_races'],
+                        'wins' => $player['wins'],
+                        'podium_finishes' => $player['podium_finishes'],
+                        'best_position' => $player['best_position'] ?? 'N/A',
+                        'total_cheese_collected' => round($player['total_cheese_collected'] ?? 0, 2),
+                        'avg_cheese_per_race' => round($player['avg_cheese_per_race'] ?? 0, 2),
+                        'best_cheese_race' => round($player['best_cheese_race'] ?? 0, 2),
+                        'last_race_date' => $player['last_race_date'],
+                        'win_rate' => $player['total_races'] > 0 ? round(($player['wins'] / $player['total_races']) * 100, 1) : 0
+                    ];
+                }, $player_race_stats);
+            }
+        }
+        
+        // Get race completion statistics
+        if (tableExists($pdo, 'tbl_cheese_races') && tableExists($pdo, 'tbl_race_participants')) {
+            $race_completion_stats = safeQueryArray($pdo, 'tbl_cheese_races', 
+                "SELECT 
+                    cr.race_id,
+                    cr.creator_name,
+                    cr.status,
+                    cr.max_players,
+                    cr.created_at,
+                    cr.started_at,
+                    cr.ended_at,
+                    COUNT(rp.user_id) as participants,
+                    COUNT(CASE WHEN rp.finished_at IS NOT NULL THEN 1 END) as finishers,
+                    AVG(CAST(rp.cheese_count AS REAL)) as avg_cheese_collected,
+                    MAX(CAST(rp.cheese_count AS REAL)) as max_cheese_collected,
+                    MIN(CAST(rp.cheese_count AS REAL)) as min_cheese_collected
+                 FROM tbl_cheese_races cr
+                 LEFT JOIN tbl_race_participants rp ON cr.race_id = rp.race_id
+                 WHERE cr.status = 'finished'
+                 GROUP BY cr.race_id
+                 ORDER BY cr.ended_at DESC
+                 LIMIT 20");
+            
+            if (!empty($race_completion_stats)) {
+                $discord_race_stats['race_data']['completed_races'] = array_map(function($race) {
+                    $completion_rate = $race['participants'] > 0 ? round(($race['finishers'] / $race['participants']) * 100, 1) : 0;
+                    
+                    return [
+                        'race_id' => $race['race_id'],
+                        'creator_name' => $race['creator_name'],
+                        'max_players' => $race['max_players'],
+                        'participants' => $race['participants'],
+                        'finishers' => $race['finishers'],
+                        'completion_rate' => $completion_rate,
+                        'avg_cheese_collected' => round($race['avg_cheese_collected'] ?? 0, 2),
+                        'max_cheese_collected' => round($race['max_cheese_collected'] ?? 0, 2),
+                        'min_cheese_collected' => round($race['min_cheese_collected'] ?? 0, 2),
+                        'created_at' => $race['created_at'],
+                        'ended_at' => $race['ended_at']
+                    ];
+                }, $race_completion_stats);
+            }
+        }
+        
         // Add current active race information
         $current_race = safeQueryArray($pdo, 'tbl_cheese_races', 
             "SELECT cr.race_id, cr.creator_name, cr.status, cr.max_players, cr.created_at,
