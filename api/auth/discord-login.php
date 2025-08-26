@@ -127,7 +127,7 @@ function getDiscordUser($token) {
 }
 
 function getUserDiscordRoles($token, $user_id) {
-    $guild_id = getenv('DISCORD_GUILD_ID'); // Your Discord server ID
+    $guild_id = getenv('DISCORD_GUILD'); // ✅ CORRECT: Uses DISCORD_GUILD from your environment
     
     $ch = curl_init("https://discord.com/api/guilds/{$guild_id}/members/{$user_id}");
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
