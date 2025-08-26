@@ -1,45 +1,56 @@
 <?php
 header('Content-Type: application/json');
-session_start();
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Credentials: true');
 
-// Debug: Log session data
-error_log("Session data: " . print_r($_SESSION, true));
-
-// Check if user is logged in and has admin role
-if (isset($_SESSION['user']) && isset($_SESSION['discord_id'])) {
-    // Get the user's roles from the database
-    require_once __DIR__ . '/../config/discord.php';
-    $db = new SQLite3('/var/www/html/db/narrrf_world.sqlite');
-    
-    $stmt = $db->prepare('SELECT roles FROM discord_users WHERE discord_id = :discord_id');
-    $stmt->bindValue(':discord_id', $_SESSION['discord_id'], SQLITE3_TEXT);
-    $result = $stmt->execute();
-    $row = $result->fetchArray(SQLITE3_ASSOC);
-    
-    // Debug: Log database query results
-    error_log("Database query for discord_id " . $_SESSION['discord_id'] . ": " . print_r($row, true));
-    
-    if ($row && strpos($row['roles'], 'admin') !== false) {
-        // User is an admin
-        $response = [
-            'success' => true,
-            'user' => [
-                'id' => $_SESSION['discord_id'],
-                'username' => $_SESSION['user']['username'],
-                'avatar' => $_SESSION['user']['avatar'],
-                'roles' => $row['roles']
-            ]
-        ];
-        error_log("Sending success response: " . print_r($response, true));
-        echo json_encode($response);
-        exit;
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
 }
 
-// Not logged in or not an admin
-$response = [
-    'success' => false,
-    'error' => 'Not authenticated or not an admin'
-];
-error_log("Sending error response: " . print_r($response, true));
-echo json_encode($response); 
+require_once __DIR__ . '/../config/database.php';
+
+try {
+    // Start session to check authentication
+    session_start();
+    
+    // Check if user is authenticated
+    if (isset($_SESSION['admin_authenticated']) && $_SESSION['admin_authenticated'] === true) {
+        // User is authenticated
+        $user = $_SESSION['discord_user'] ?? null;
+        $role = $_SESSION['user_role'] ?? 'moderator';
+        
+        if ($user) {
+            echo json_encode([
+                'success' => true,
+                'user' => [
+                    'discord_id' => $user['id'],
+                    'discord_name' => $user['username'],
+                    'avatar_url' => $user['avatar'] ?? null
+                ],
+                'role' => $role,
+                'message' => 'User authenticated via Discord session'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Session data incomplete'
+            ]);
+        }
+    } else {
+        // User not authenticated
+        echo json_encode([
+            'success' => false,
+            'error' => 'No active session'
+        ]);
+    }
+    
+} catch (Exception $e) {
+    error_log("Session check error: " . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'error' => 'Session check failed'
+    ]);
+}
+?> 

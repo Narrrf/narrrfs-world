@@ -191,12 +191,17 @@ try {
     
     // 5. DISCORD CHEESE RACE STATS (using user_id from tbl_race_participants)
     try {
-        // Debug: Check what races exist for this user
-        $debugStmt = $db->prepare("SELECT race_id, user_id, username, position, cheese_count, joined_at FROM tbl_race_participants WHERE user_id = ?");
-        $debugStmt->execute([$discordId]);
+        // Debug: Check what races exist for this user (check both user_id and discord_id)
+        $debugStmt = $db->prepare("
+            SELECT race_id, user_id, discord_id, username, position, cheese_count, joined_at 
+            FROM tbl_race_participants 
+            WHERE user_id = ? OR discord_id = ?
+        ");
+        $debugStmt->execute([$discordId, $discordId]);
         $debugRaces = $debugStmt->fetchAll(PDO::FETCH_ASSOC);
         error_log("Debug: Found " . count($debugRaces) . " races for user $discordId: " . json_encode($debugRaces));
         
+        // Query using both user_id and discord_id to ensure we find the data
         $stmt = $db->prepare("
             SELECT 
                 COUNT(*) as total_races,
@@ -204,9 +209,9 @@ try {
                 COUNT(CASE WHEN position <= 3 THEN 1 END) as podiums,
                 MIN(position) as best_position
             FROM tbl_race_participants 
-            WHERE user_id = ?
+            WHERE user_id = ? OR discord_id = ?
         ");
-        $stmt->execute([$discordId]);
+        $stmt->execute([$discordId, $discordId]);
         $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
         
         error_log("Debug: Race query result for user $discordId: " . json_encode($raceData));

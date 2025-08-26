@@ -1328,13 +1328,13 @@ require_once 'discord-invite.php';
     <div class="text-center mb-6">
       <div id="headerDatabaseUnlock">
         <button onclick="showDatabaseUnlock()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 text-lg shadow-lg">
-          🔓 Unlock Database Access
+          🔓 Database Download/Upload Access
         </button>
-        <p class="text-sm text-gray-600 mt-2">Click to unlock database download, upload, and management features</p>
+        <p class="text-sm text-gray-600 mt-2">✅ Game stats are already visible! This unlocks database download/upload operations only</p>
       </div>
       
-      <div id="headerDatabaseOptions" style="display: none;">
-        <h3 class="text-lg font-semibold text-green-600 mb-3">✅ Database Access Unlocked</h3>
+              <div id="headerDatabaseOptions" style="display: none;">
+          <h3 class="text-lg font-semibold text-green-600 mb-3">✅ Database Download/Upload Access Unlocked</h3>
         <div class="flex flex-wrap justify-center gap-3">
           <button onclick="downloadDatabase()" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
             📥 Download Database
@@ -7864,38 +7864,121 @@ require_once 'discord-invite.php';
 // 🔧 CRITICAL FIX: Proper Discord admin authentication
 async function checkDiscordAuth() {
     try {
-        const response = await fetch(API_BASE_URL + '/api/auth/discord-login.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: 'discord_auth' })
+        // Check if user is already authenticated via session
+        const response = await fetch(API_BASE_URL + '/api/auth/check-session.php', {
+            method: 'GET',
+            credentials: 'include'
         });
         
-        const data = await response.json();
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success && data.user) {
+                // ✅ Discord user already authenticated via session
+                currentAdmin = {
+                    username: data.user.discord_name || 'Discord Admin',
+                    discord_id: data.user.discord_id,
+                    role: data.role || 'moderator',
+                    auth_type: 'discord',
+                    token: 'discord_auth_' + data.user.discord_id, // ✅ Add token for Discord users
+                    has_database_access: true // ✅ Grant database access to Discord admins
+                };
+                
+                console.log('✅ Discord admin authenticated via session:', currentAdmin);
+                
+                // Show admin interface elements
+                showAdminElements();
+                
+                // Show database unlock button for Discord admins
+                showDatabaseUnlockForDiscordAdmin();
+                
+                return true;
+            }
+        }
         
-        if (data.success && data.user) {
-            // ✅ Discord user authenticated successfully
+        // If no session, try to authenticate with Discord
+        console.log('🔄 No existing session, attempting Discord authentication...');
+        
+        // Check if we have Discord auth data in localStorage from profile page
+        const discordId = localStorage.getItem('discord_id');
+        const discordName = localStorage.getItem('discord_name');
+        
+        if (discordId && discordName) {
+            // User is logged in via Discord on profile page
             currentAdmin = {
-                username: data.user.discord_name || 'Discord Admin',
-                discord_id: data.user.discord_id,
-                role: data.role || 'moderator',
+                username: discordName,
+                discord_id: discordId,
+                role: 'moderator', // Assume moderator role for now
                 auth_type: 'discord',
-                token: 'discord_auth_' + data.user.discord_id, // ✅ Add token for Discord users
-                has_database_access: true // ✅ Grant database access to Discord admins
+                token: 'discord_auth_' + discordId,
+                has_database_access: true
             };
             
-            console.log('✅ Discord admin authenticated:', currentAdmin);
+            console.log('✅ Discord admin authenticated via localStorage:', currentAdmin);
             
             // Show admin interface elements
             showAdminElements();
             
-            // Hide database unlock modal from game tabs
-            hideDatabaseUnlock();
+            // Show database unlock button for Discord admins
+            showDatabaseUnlockForDiscordAdmin();
             
-        } else {
-            console.error('❌ Discord authentication failed:', data.error);
+            return true;
         }
+        
+        console.log('❌ No Discord authentication found');
+        return false;
+        
     } catch (error) {
         console.error('❌ Discord auth error:', error);
+        return false;
+    }
+}
+
+// 🔧 CRITICAL FIX: Show game stats and database unlock for Discord admins
+function showDatabaseUnlockForDiscordAdmin() {
+    if (currentAdmin && currentAdmin.auth_type === 'discord') {
+        // Show the database unlock button in header (for download/upload only)
+        const headerUnlock = document.getElementById('headerDatabaseUnlock');
+        if (headerUnlock) {
+            headerUnlock.style.display = 'block';
+            console.log('✅ Database unlock button shown for Discord admin (download/upload only)');
+        }
+        
+        // Hide the Discord auth section since user is already authenticated
+        const discordAuthSection = document.querySelector('[id*="discordAuth"]');
+        if (discordAuthSection) {
+            discordAuthSection.style.display = 'none';
+        }
+        
+        // 🔧 CRITICAL: Load game stats immediately for authenticated users
+        console.log('🚀 Loading game stats for authenticated Discord admin...');
+        loadAllGameStatsForAuthenticatedUser();
+    }
+}
+
+// 🔧 CRITICAL: Load game stats for authenticated users without database unlock
+async function loadAllGameStatsForAuthenticatedUser() {
+    try {
+        console.log('📊 Loading game statistics for authenticated user...');
+        
+        // Load dashboard stats
+        await loadDashboardStats();
+        
+        // Load all game tabs data
+        await loadTetrisData();
+        await loadSnakeData();
+        await loadSpaceInvadersData();
+        await loadCheeseHuntData();
+        await loadDiscordRaceData();
+        
+        console.log('✅ All game statistics loaded successfully for authenticated user');
+        
+        // Show success message
+        addLog('✅ Game statistics loaded automatically for Discord admin');
+        
+    } catch (error) {
+        console.error('❌ Error loading game stats for authenticated user:', error);
+        addLog('❌ Error loading game stats: ' + error.message);
     }
 }
 
@@ -7921,6 +8004,29 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.classList.add('hidden');
         }
     }
+    
+    // 🔧 CRITICAL FIX: Check Discord authentication on page load
+    setTimeout(async () => {
+        console.log('🔄 Checking Discord authentication on page load...');
+        const authResult = await checkDiscordAuth();
+        if (authResult) {
+            console.log('✅ Discord authentication successful on page load');
+            // Force show the database unlock button
+            const headerUnlock = document.getElementById('headerDatabaseUnlock');
+            if (headerUnlock) {
+                headerUnlock.style.display = 'block';
+                console.log('✅ Database unlock button forced visible');
+            }
+            
+            // 🔧 CRITICAL: Auto-load game stats for authenticated users
+            console.log('🚀 Auto-loading game stats for authenticated user...');
+            setTimeout(() => {
+                loadAllGameStatsForAuthenticatedUser();
+            }, 500);
+        } else {
+            console.log('❌ Discord authentication failed on page load');
+        }
+    }, 1000);
 });
 
 // ... existing code ...
@@ -8008,7 +8114,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // === DATABASE FUNCTIONS ===
     
-    // Show database unlock modal
+    // Show database unlock modal (only needed for download/upload operations)
     function showDatabaseUnlock() {
       // Only show modal if user is in header, not in game tabs
       const currentTab = getCurrentActiveTab();
@@ -8020,11 +8126,17 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      // Show the modal
+      // Show the modal with clear purpose
       const modal = document.getElementById('unlockModal');
       if (modal) {
         modal.classList.remove('hidden');
-        addLog('🔓 Database unlock modal displayed');
+        addLog('🔓 Database unlock modal displayed (for download/upload operations only)');
+        
+        // Update modal title to clarify purpose
+        const modalTitle = modal.querySelector('.modal-title');
+        if (modalTitle) {
+          modalTitle.textContent = '🔓 Database Access Required (Download/Upload Only)';
+        }
       }
     }
     
