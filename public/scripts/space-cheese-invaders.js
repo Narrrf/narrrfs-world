@@ -5511,12 +5511,13 @@ let reloadButtonInterval = null;
   function drawScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // 🚀 CRITICAL FIX: Space Invaders scoring: 1000 traditional points = 1 DSPOINC
-      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 points = 1 DSPOINC)
+      // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
+      // Based on screenshot: 2185 invaders = 21.85 DSPOINC, so 100 invaders = 1 DSPOINC
+      const dspoinEarned = Math.round((spaceInvadersScore * 0.01) * 100) / 100; // Round to 2 decimal places (100 invaders = 1 DSPOINC)
       
       // Add mouse control indicator
       const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
-      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} traditional points (${dspoinEarned} DSPOINC) ${mouseIndicator}`;
+      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC) ${mouseIndicator}`;
     } else {
       console.warn('⚠️ Score display element not found');
     }
@@ -5700,11 +5701,12 @@ let reloadButtonInterval = null;
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // 🚀 CRITICAL FIX: Space Invaders scoring: 50 traditional points = 1 DSPOINC (REDUCED for balance)
-    const dspoinEarned = Math.round((spaceInvadersScore * 0.02) * 100) / 100; // Round to 2 decimal places (50 points = 1 DSPOINC)
+    // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
+    // Based on screenshot: 2185 invaders = 21.85 DSPOINC, so 100 invaders = 1 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersScore * 0.01) * 100) / 100; // Round to 2 decimal places (100 invaders = 1 DSPOINC)
     
     if (gameOverModal && finalScoreText) {
-      finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} traditional points)`;
+      finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed)`;
       gameOverModal.classList.remove("hidden");
     }
     
@@ -7746,12 +7748,13 @@ window.emergencyCollisionCheck = function() {
   function updateScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // 🚀 CRITICAL FIX: Space Invaders scoring: 1000 traditional points = 1 DSPOINC
-      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 points = 1 DSPOINC)
+      // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
+      // Based on screenshot: 2185 invaders = 21.85 DSPOINC, so 100 invaders = 1 DSPOINC
+      const dspoinEarned = Math.round((spaceInvadersScore * 0.01) * 100) / 100; // Round to 2 decimal places (100 invaders = 1 DSPOINC)
       
       // Add mouse control indicator
       const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
-      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} traditional points (${dspoinEarned} DSPOINC) ${mouseIndicator}`;
+      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC) ${mouseIndicator}`;
     } else {
       console.warn('⚠️ Score display element not found');
     }
@@ -7763,11 +7766,12 @@ window.emergencyCollisionCheck = function() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // 🚀 CRITICAL FIX: Space Invaders scoring: 50 traditional points = 1 DSPOINC (REDUCED for balance)
-    const dspoinEarned = Math.round((spaceInvadersScore * 0.02) * 100) / 100; // Round to 2 decimal places (50 points = 1 DSPOINC)
+    // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
+    // Based on screenshot: 2185 invaders = 21.85 DSPOINC, so 100 invaders = 1 DSPOINC
+    const dspoinEarned = Math.round((spaceInvadersScore * 0.01) * 100) / 100; // Round to 2 decimal places (100 invaders = 1 DSPOINC)
     
     if (winModal && winScoreText) {
-      winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} traditional points)`;
+      winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed)`;
       winModal.classList.remove("hidden");
     }
     
@@ -7790,10 +7794,10 @@ window.emergencyCollisionCheck = function() {
     }
 
     // 🚀 CRITICAL FIX: Space Invaders now saves traditional score (like classic Space Invaders)
-    // Traditional score: 100 points per invader, 500 points per power-up, etc.
-    const dspoincScore = Math.round((traditionalScore * 0.02) * 100) / 100; // Convert to DSPOINC (50 points = 1 DSPOINC)
+    // Based on screenshot: 2185 invaders = 21.85 DSPOINC, so 100 invaders = 1 DSPOINC
+    const dspoincScore = Math.round((traditionalScore * 0.01) * 100) / 100; // Convert to DSPOINC (100 invaders = 1 DSPOINC)
 
-    console.log(`💾 Saving Space Invaders score: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
+    console.log(`💾 Saving Space Invaders score: ${traditionalScore} invaders destroyed = ${dspoincScore} DSPOINC`);
 
     // 🌍 Environment-aware API endpoint (works both locally and in production)
     const apiUrl = `${API_BASE_URL}/api/dev/save-score.php`;
@@ -7832,12 +7836,12 @@ window.emergencyCollisionCheck = function() {
     .then(data => {
       console.log(`📨 Server response:`, data);
       if (data.success) {
-        console.log(`✅ Space Invaders score saved successfully: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
+        console.log(`✅ Space Invaders score saved successfully: ${traditionalScore} invaders destroyed = ${dspoincScore} DSPOINC`);
         console.log(`🎯 Score ID: ${data.score_id || 'N/A'}`);
         console.log(`📊 Database confirmation: ${data.message || 'Score recorded'}`);
       } else {
         if (data.local_test) {
-          console.log(`🔄 Local testing detected - score would be saved in production: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
+          console.log(`🔄 Local testing detected - score would be saved in production: ${traditionalScore} invaders destroyed = ${dspoincScore} DSPOINC`);
         } else {
           console.error('❌ Failed to save Space Invaders score:', data.error || 'Unknown error');
           console.error('❌ Error details:', data);
@@ -7849,7 +7853,7 @@ window.emergencyCollisionCheck = function() {
       // Check if this is a local testing issue
       if (error.message.includes('HTML') || error.message.includes('fetch')) {
         console.log('🔄 Local testing detected - score saving disabled for local development');
-        console.log(`📊 Score would be saved in production: ${traditionalScore} traditional points = ${dspoincScore} DSPOINC`);
+        console.log(`📊 Score would be saved in production: ${traditionalScore} invaders destroyed = ${dspoincScore} DSPOINC`);
       }
     });
   }

@@ -4762,25 +4762,33 @@ require_once 'discord-invite.php';
             addLog('🔔 Boss notifications tab auto-loaded');
             
           } else if (tabName === 'games') {
-            // Game Management - Load all data immediately with auto-refresh
+            // Game Management - Load all data after tab animation completes
             console.log('🎮 Loading Game Management data...');
-            loadGameOverview();
-            loadSeasonStats();
-            loadGameSettings();
-            loadCurrentSeasonSettings();
             
-            // Load all game data with auto-refresh
-            loadTetrisData();
-            loadSnakeData();
-            loadSpaceInvadersData();
-            loadCheeseHuntData();
-            loadDiscordRaceData();
-            
-            // Switch to overview tab by default
+            // Wait for tab animation to complete before loading data
             setTimeout(() => {
-              switchGameTab('overview');
-            }, 100);
-            addLog('🎮 Game management tab auto-loaded with all game data');
+              loadGameOverview();
+              loadSeasonStats();
+              loadGameSettings();
+              loadCurrentSeasonSettings();
+              
+              // Load all game data with auto-refresh
+              loadTetrisData();
+              loadSnakeData();
+              loadSpaceInvadersData();
+              loadCheeseHuntData();
+              loadDiscordRaceData();
+              
+              // Switch to overview tab by default
+              setTimeout(() => {
+                switchGameTab('overview');
+              }, 100);
+              
+              // Display any pending data that was loaded while tab was hidden
+              displayPendingGameData();
+              
+              addLog('🎮 Game management tab auto-loaded with all game data');
+            }, 250); // Wait for tab animation to complete
             
           } else if (tabName === 'games2') {
             // Game Management 2.0 - Comprehensive auto-load
@@ -4825,6 +4833,37 @@ require_once 'discord-invite.php';
           addLog(`❌ Error auto-loading ${tabName} tab data: ${error.message}`);
         }
       }, 200);
+    }
+
+    // Display any pending game data that was loaded while tab was hidden
+    function displayPendingGameData() {
+      console.log('🔄 Checking for pending game data to display...');
+      
+      if (window.pendingTetrisData) {
+        console.log('📊 Displaying pending Tetris data...');
+        displayTetrisData(window.pendingTetrisData);
+        delete window.pendingTetrisData;
+      }
+      
+      if (window.pendingSnakeData) {
+        console.log('🐍 Displaying pending Snake data...');
+        displaySnakeData(window.pendingSnakeData);
+        delete window.pendingSnakeData;
+      }
+      
+      if (window.pendingSpaceInvadersData) {
+        console.log('👾 Displaying pending Space Invaders data...');
+        displaySpaceInvadersData(window.pendingSpaceInvadersData);
+        delete window.pendingSpaceInvadersData;
+      }
+      
+      if (window.pendingDiscordRaceData) {
+        console.log('🏁 Displaying pending Discord Race data...');
+        displayDiscordRaceData(window.pendingDiscordRaceData);
+        delete window.pendingDiscordRaceData;
+      }
+      
+      console.log('✅ Pending game data display completed');
     }
 
     // Load overview game statistics for all 5 games in Overview Dashboard
@@ -10342,7 +10381,21 @@ function updateGameTabContent(gameType, gameData) {
 
     function displayTetrisData(tetrisData) {
       try {
-        console.log('Tetris data received:', tetrisData);
+        console.log('🔍 DEBUG: displayTetrisData called with:', tetrisData);
+        console.log('🔍 DEBUG: tetrisData.season_data:', tetrisData.season_data);
+        console.log('🔍 DEBUG: tetrisData.all_time:', tetrisData.all_time);
+        console.log('🔍 DEBUG: Full tetrisData structure:', JSON.stringify(tetrisData, null, 2));
+        
+        // Check if the games tab is visible before trying to update elements
+        const gamesTab = document.getElementById('gamesTab');
+        if (!gamesTab || gamesTab.style.display === 'none') {
+          console.log('⚠️ Games tab not visible, deferring Tetris data display');
+          // Store the data to display later when tab becomes visible
+          window.pendingTetrisData = tetrisData;
+          return;
+        }
+        
+        console.log('✅ Games tab is visible, proceeding with Tetris data display');
         
         // Helper function to format numbers nicely
         const formatNumber = (num) => {
@@ -10362,10 +10415,17 @@ function updateGameTabContent(gameType, gameData) {
         };
 
         // Update Tetris statistics from season_data with better formatting
-        if (document.getElementById('tetrisTotalScores')) {
+        console.log('🔍 DEBUG: Looking for tetrisTotalScores element...');
+        const tetrisTotalScoresEl = document.getElementById('tetrisTotalScores');
+        console.log('🔍 DEBUG: tetrisTotalScores element found:', !!tetrisTotalScoresEl);
+        
+        if (tetrisTotalScoresEl) {
           const totalScores = tetrisData.season_data?.total_scores || 0;
-          document.getElementById('tetrisTotalScores').textContent = formatNumber(totalScores);
-          document.getElementById('tetrisTotalScores').className = totalScores > 0 ? 'text-white font-semibold' : 'text-gray-400';
+          console.log('🔍 DEBUG: Setting tetrisTotalScores to:', totalScores);
+          tetrisTotalScoresEl.textContent = formatNumber(totalScores);
+          tetrisTotalScoresEl.className = totalScores > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        } else {
+          console.error('❌ tetrisTotalScores element not found!');
         }
         
         if (document.getElementById('tetrisUniquePlayers')) {
@@ -10553,7 +10613,20 @@ function updateGameTabContent(gameType, gameData) {
 
     function displaySnakeData(snakeData) {
       try {
-        console.log('Snake data received:', snakeData);
+        console.log('🔍 DEBUG: displaySnakeData called with:', snakeData);
+        console.log('🔍 DEBUG: snakeData.season_data:', snakeData.season_data);
+        console.log('🔍 DEBUG: snakeData.all_time:', snakeData.all_time);
+        
+        // Check if the games tab is visible before trying to update elements
+        const gamesTab = document.getElementById('gamesTab');
+        if (!gamesTab || gamesTab.style.display === 'none') {
+          console.log('⚠️ Games tab not visible, deferring Snake data display');
+          // Store the data to display later when tab becomes visible
+          window.pendingSnakeData = snakeData;
+          return;
+        }
+        
+        console.log('✅ Games tab is visible, proceeding with Snake data display');
         
         // Helper function to format numbers nicely
         const formatNumber = (num) => {
@@ -10822,7 +10895,20 @@ function updateGameTabContent(gameType, gameData) {
 
     function displaySpaceInvadersData(invadersData) {
       try {
-        console.log('👾 Space Invaders data received:', invadersData);
+        console.log('🔍 DEBUG: displaySpaceInvadersData called with:', invadersData);
+        console.log('🔍 DEBUG: invadersData.combined_stats:', invadersData.combined_stats);
+        console.log('🔍 DEBUG: invadersData.combined_top_players:', invadersData.combined_top_players);
+        
+        // Check if the games tab is visible before trying to update elements
+        const gamesTab = document.getElementById('gamesTab');
+        if (!gamesTab || gamesTab.style.display === 'none') {
+          console.log('⚠️ Games tab not visible, deferring Space Invaders data display');
+          // Store the data to display later when tab becomes visible
+          window.pendingSpaceInvadersData = invadersData;
+          return;
+        }
+        
+        console.log('✅ Games tab is visible, proceeding with Space Invaders data display');
         
         // Helper function to format numbers nicely
         const formatNumber = (num) => {
@@ -11834,7 +11920,20 @@ function updateGameTabContent(gameType, gameData) {
     // Display Discord Race data
     function displayDiscordRaceData(raceData) {
       try {
-        console.log('🏁 Discord Race data received:', raceData);
+        console.log('🔍 DEBUG: displayDiscordRaceData called with:', raceData);
+        console.log('🔍 DEBUG: raceData.race_data:', raceData.race_data);
+        console.log('🔍 DEBUG: raceData.race_data?.race_overview:', raceData.race_data?.race_overview);
+        
+        // Check if the games tab is visible before trying to update elements
+        const gamesTab = document.getElementById('gamesTab');
+        if (!gamesTab || gamesTab.style.display === 'none') {
+          console.log('⚠️ Games tab not visible, deferring Discord Race data display');
+          // Store the data to display later when tab becomes visible
+          window.pendingDiscordRaceData = raceData;
+          return;
+        }
+        
+        console.log('✅ Games tab is visible, proceeding with Discord Race data display');
         console.log('🏁 Discord Race data structure:', JSON.stringify(raceData, null, 2));
         console.log('🏁 Discord Race race_data:', raceData.race_data);
         console.log('🏁 Race overview available:', raceData.race_data?.race_overview);
