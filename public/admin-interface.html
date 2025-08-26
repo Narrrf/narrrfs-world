@@ -7851,12 +7851,16 @@ require_once 'discord-invite.php';
     }
 
     // Add log entry
-    function addLog(message) {
-      const log = document.getElementById('statusLog');
-      const timestamp = new Date().toLocaleTimeString();
-      log.innerHTML += `<div class="text-blue-400">[${timestamp}] ${message}</div>`;
-      log.scrollTop = log.scrollHeight;
-    }
+function addLog(message) {
+  const log = document.getElementById('statusLog');
+  if (log) {
+    const timestamp = new Date().toLocaleTimeString();
+    log.innerHTML += `<div class="text-blue-400">[${timestamp}] ${message}</div>`;
+    log.scrollTop = log.scrollHeight;
+  } else {
+    console.log(`[${new Date().toLocaleTimeString()}] ${message}`);
+  }
+}
 
     // Check for existing Discord authentication on page load
 // ... existing code ...
@@ -8029,6 +8033,68 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
 });
 
+// 🔧 CRITICAL FIX: Add missing showDatabaseUnlock function
+function showDatabaseUnlock() {
+    if (!currentAdmin) {
+        addLog('❌ Please authenticate as admin first');
+        return;
+    }
+    
+    try {
+        // Show the modal with clear purpose
+        const modal = document.getElementById('unlockModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            addLog('🔓 Database unlock modal displayed (for download/upload operations only)');
+            
+            // Update modal title to clarify purpose
+            const modalTitle = modal.querySelector('.modal-title');
+            if (modalTitle) {
+                modalTitle.textContent = '🔓 Database Access Required (Download/Upload Only)';
+            }
+        }
+        
+        // Show database options container
+        const headerOptions = document.getElementById('headerDatabaseOptions');
+        if (headerOptions) {
+            headerOptions.style.display = 'block';
+        }
+        
+        // Hide the unlock button
+        const headerUnlock = document.getElementById('headerDatabaseUnlock');
+        if (headerUnlock) {
+            headerUnlock.style.display = 'none';
+        }
+        
+        addLog('✅ Database access unlocked for download/upload operations');
+        
+    } catch (error) {
+        console.error('Database unlock error:', error);
+        addLog('❌ Database unlock error: ' + error.message);
+    }
+}
+
+// 🔧 CRITICAL FIX: Add missing authenticateDiscord function
+async function authenticateDiscord() {
+    try {
+        addLog('🔄 Starting Discord authentication...');
+        
+        // Redirect to Discord OAuth
+        const clientId = '1357927342265204858';
+        const redirectUri = encodeURIComponent('https://narrrfs.world/api/auth/callback.php');
+        const scope = 'guilds+identify+guilds.members.read';
+        
+        const authUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=${scope}`;
+        
+        addLog('🔗 Redirecting to Discord OAuth...');
+        window.location.href = authUrl;
+        
+    } catch (error) {
+        console.error('Discord authentication error:', error);
+        addLog('❌ Discord authentication error: ' + error.message);
+    }
+}
+
 // ... existing code ...
 
 // ... existing code ...
@@ -8111,34 +8177,28 @@ document.addEventListener('DOMContentLoaded', function() {
         addLog('❌ Database unlock error: ' + error.message);
       }
     }
-
-    // === DATABASE FUNCTIONS ===
     
-    // Show database unlock modal (only needed for download/upload operations)
-    function showDatabaseUnlock() {
-      // Only show modal if user is in header, not in game tabs
-      const currentTab = getCurrentActiveTab();
-      
-      // Check if user is authenticated
-      if (!currentAdmin) {
-        alert('❌ Please log in as admin first to unlock database access');
-        addLog('❌ Database unlock failed: Authentication required');
-        return;
-      }
-      
-      // Show the modal with clear purpose
-      const modal = document.getElementById('unlockModal');
-      if (modal) {
-        modal.classList.remove('hidden');
-        addLog('🔓 Database unlock modal displayed (for download/upload operations only)');
+    // Validate database password
+    async function validateDatabasePassword(password) {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/validate-db-password.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            password: password,
+            discord_id: currentAdmin ? currentAdmin.discord_id : null
+          })
+        });
         
-        // Update modal title to clarify purpose
-        const modalTitle = modal.querySelector('.modal-title');
-        if (modalTitle) {
-          modalTitle.textContent = '🔓 Database Access Required (Download/Upload Only)';
-        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Password validation error:', error);
+        return { success: false, error: error.message };
       }
     }
+
+    // === DATABASE FUNCTIONS ===
     
     // Hide database unlock modal
     function hideDatabaseUnlock() {
