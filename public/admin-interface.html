@@ -7859,55 +7859,73 @@ require_once 'discord-invite.php';
     }
 
     // Check for existing Discord authentication on page load
-    async function checkDiscordAuth() {
-      try {
-        // Check if user is already authenticated via Discord
-        const res = await fetch(API_BASE_URL + '/api/user/profile.php', { 
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' }
-        });
+// ... existing code ...
 
-        if (res.ok) {
-          const user = await res.json();
-          console.log('🔐 User profile loaded:', user);
-          
-          // Check if user has admin/moderator roles
-          if (user.roles && (
-              user.roles.includes("Moderator") || 
-              user.roles.includes("Admin") || 
-              user.roles.includes("super_admin") ||
-              user.roles.includes("Founder") ||
-              user.roles.includes("Bot Master") ||
-              user.discord_id === "328601656659017732" // narrrf's Discord ID
-          )) {
-            // Auto-login as Discord moderator
+// 🔧 CRITICAL FIX: Proper Discord admin authentication
+async function checkDiscordAuth() {
+    try {
+        const response = await fetch(API_BASE_URL + '/api/auth/discord-login.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: 'discord_auth' })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+            // ✅ Discord user authenticated successfully
             currentAdmin = {
-              username: user.discord_name || 'Discord Moderator',
-              discord_id: user.discord_id,
-              role: 'moderator',
-              auth_type: 'discord'
+                username: data.user.discord_name || 'Discord Admin',
+                discord_id: data.user.discord_id,
+                role: data.role || 'moderator',
+                auth_type: 'discord',
+                token: 'discord_auth_' + data.user.discord_id, // ✅ Add token for Discord users
+                has_database_access: true // ✅ Grant database access to Discord admins
             };
             
-            // Show admin content after authentication
-            console.log('🔐 Auto-authentication successful, calling showAdminContent()');
-            showAdminContent();
-            loadDashboardData();
+            console.log('✅ Discord admin authenticated:', currentAdmin);
             
-            addLog(`✅ Auto-authenticated as Discord moderator: ${user.discord_name}`);
-            console.log('🔐 Auto-authentication complete');
-            return true;
-          } else {
-            console.log('🔐 User authenticated but no admin roles found');
-            addLog(`ℹ️ User ${user.discord_name} authenticated but no admin access`);
-          }
+            // Show admin interface elements
+            showAdminElements();
+            
+            // Hide database unlock modal from game tabs
+            hideDatabaseUnlock();
+            
         } else {
-          console.log('🔐 Profile request failed:', res.status, res.statusText);
+            console.error('❌ Discord authentication failed:', data.error);
         }
-      } catch (error) {
-        console.log('No existing Discord session found');
-      }
-      return false;
+    } catch (error) {
+        console.error('❌ Discord auth error:', error);
     }
+}
+
+// ... existing code ...
+
+// �� CRITICAL FIX: Hide database unlock modal from game tabs
+function hideDatabaseUnlockModal() {
+    const modal = document.getElementById('unlockModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        console.log('✅ Database unlock modal hidden from game tabs');
+    }
+}
+
+// 🔧 CRITICAL FIX: Prevent modal from showing in game tabs
+document.addEventListener('DOMContentLoaded', function() {
+    // Hide modal if it appears in wrong place
+    const modal = document.getElementById('unlockModal');
+    if (modal) {
+        // Only show modal in header, never in game tabs
+        const currentTab = getCurrentActiveTab();
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+});
+
+// ... existing code ...
+
+// ... existing code ...
 
     // Discord Authentication for Moderators
     async function authenticateDiscord() {
@@ -7924,32 +7942,6 @@ require_once 'discord-invite.php';
       window.location.href = oauthUrl;
     }
 
-    // === DATABASE FUNCTIONS ===
-    
-    // Show database unlock modal
-    function showDatabaseUnlock() {
-      const modal = document.getElementById('unlockModal');
-      modal.classList.remove('hidden');
-      document.getElementById('databasePassword').focus();
-    }
-    
-    // Hide database unlock modal
-    function hideDatabaseUnlock() {
-      const modal = document.getElementById('unlockModal');
-      modal.classList.add('hidden');
-      document.getElementById('databasePassword').value = '';
-      document.getElementById('unlockStatus').innerHTML = '';
-    }
-    
-    // Unlock database access
-    async function unlockDatabase() {
-      const password = document.getElementById('databasePassword').value;
-      const statusDiv = document.getElementById('unlockStatus');
-      
-      if (!password) {
-        statusDiv.innerHTML = '<div class="text-red-600">❌ Please enter a password</div>';
-        return;
-      }
       
       // 🔧 CRITICAL FIX: Better authentication checking
       console.log('🔍 Current admin state:', currentAdmin); // Debug logging
@@ -8014,7 +8006,141 @@ require_once 'discord-invite.php';
       }
     }
 
-    // === MISSING DATABASE FUNCTIONS ===
+    // === DATABASE FUNCTIONS ===
+    
+    // Show database unlock modal
+    function showDatabaseUnlock() {
+      // Only show modal if user is in header, not in game tabs
+      const currentTab = getCurrentActiveTab();
+      
+      // Check if user is authenticated
+      if (!currentAdmin) {
+        alert('❌ Please log in as admin first to unlock database access');
+        addLog('❌ Database unlock failed: Authentication required');
+        return;
+      }
+      
+      // Show the modal
+      const modal = document.getElementById('unlockModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        addLog('🔓 Database unlock modal displayed');
+      }
+    }
+    
+    // Hide database unlock modal
+    function hideDatabaseUnlock() {
+      const modal = document.getElementById('unlockModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        addLog('🔒 Database unlock modal hidden');
+      }
+    }
+    
+    // Get current active tab
+    function getCurrentActiveTab() {
+      const tabs = ['dashboard', 'games', 'games2', 'users', 'quests', 'store', 'discord', 'database'];
+      for (const tab of tabs) {
+        const tabElement = document.getElementById(tab + 'Tab');
+        if (tabElement && tabElement.classList.contains('active')) {
+          return tab;
+        }
+      }
+      return 'dashboard';
+    }
+    
+    // Unlock database access
+    async function unlockDatabase() {
+      try {
+        // Check if user is authenticated as admin
+        if (!currentAdmin) {
+          console.log('❌ Admin authentication required');
+          alert('❌ Please log in as admin first to unlock database access');
+          addLog('❌ Database unlock failed: Admin authentication required');
+          return false;
+        }
+        
+        // For Discord users, we don't need a traditional token
+        if (currentAdmin.auth_type === 'discord' && currentAdmin.discord_id) {
+          console.log('✅ Discord moderator authenticated, proceeding with database unlock');
+        } else if (!currentAdmin.token) {
+          console.log('❌ Admin token missing');
+          alert('❌ Admin token missing - Please re-authenticate');
+          addLog('❌ Database unlock failed: Admin token missing');
+          return false;
+        }
+        
+        // Show password prompt
+        const password = prompt('Enter database password to unlock access:');
+        if (!password) {
+          addLog('❌ No password entered');
+          return false;
+        }
+        
+        // Call secure server-side validation endpoint
+        const headers = {
+          'Content-Type': 'application/json'
+        };
+        
+        // Add authorization header for non-Discord users
+        if (currentAdmin.auth_type !== 'discord') {
+          headers['Authorization'] = 'Bearer ' + (currentAdmin ? currentAdmin.token : '');
+        }
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/validate-db-password.php', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({ 
+            password: password,
+            discord_id: currentAdmin.discord_id || null
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Database access unlocked successfully');
+          
+          // Show ALL database options containers
+          const databaseContainers = [
+            'headerDatabaseOptions',
+            'dashboardDatabaseOptions', 
+            'games2DatabaseOptions',
+            'databaseQuickActions'
+          ];
+          
+          databaseContainers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) {
+              container.style.display = 'block';
+            }
+          });
+          
+          // Hide unlock buttons
+          const unlockButtons = [
+            'headerDatabaseUnlock',
+            'dashboardDatabaseUnlock',
+            'games2DatabaseUnlock'
+          ];
+          
+          unlockButtons.forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+              button.style.display = 'none';
+            }
+          });
+          
+          return true;
+        } else {
+          addLog('❌ Database unlock failed: ' + (data.error || 'Incorrect password'));
+          return false;
+        }
+      } catch (error) {
+        console.error('Database unlock error:', error);
+        addLog('❌ Database unlock error: ' + error.message);
+        return false;
+      }
+    }
     
     // Download database
     async function downloadDatabase() {
@@ -9453,6 +9579,106 @@ require_once 'discord-invite.php';
     }
 
     // Game Management Functions
+
+    // ... existing code ...
+
+// �� CRITICAL FIX: Load real game data in tabs
+async function loadGameTabData(gameType) {
+    try {
+        console.log(`�� Loading ${gameType} data...`);
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data.games[gameType]) {
+            const gameData = data.data.games[gameType];
+            
+            // Update the specific game tab with real data
+            updateGameTabContent(gameType, gameData);
+            
+            console.log(`✅ ${gameType} data loaded successfully:`, gameData);
+        } else {
+            console.error(`❌ Failed to load ${gameType} data:`, data);
+        }
+    } catch (error) {
+        console.error(`❌ Error loading ${gameType} data:`, error);
+    }
+}
+
+// 🔧 CRITICAL FIX: Update game tab content with real data
+function updateGameTabContent(gameType, gameData) {
+    const tabContent = document.getElementById(`${gameType}TabContent`);
+    if (!tabContent) return;
+    
+    // Clear any existing content
+    tabContent.innerHTML = '';
+    
+    // Create real data display based on game type
+    let html = `<div class="bg-white rounded-lg p-6 shadow-lg">`;
+    html += `<h3 class="text-xl font-bold mb-4">${gameData.game_name} Statistics</h3>`;
+    
+    switch(gameType) {
+        case 'tetris':
+        case 'snake':
+        case 'space_invaders':
+            html += `
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">${gameData.season_data.total_scores}</div>
+                        <div class="text-sm text-gray-600">Total Scores</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">${gameData.season_data.unique_players}</div>
+                        <div class="text-sm text-gray-600">Unique Players</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-yellow-600">${gameData.season_data.max_score}</div>
+                        <div class="text-sm text-gray-600">Max Score</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600">${gameData.season_data.avg_score}</div>
+                        <div class="text-sm text-gray-600">Average Score</div>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'cheese_hunt':
+            html += `
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">${gameData.current_data.total_clicks}</div>
+                        <div class="text-sm text-gray-600">Total Clicks</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">${gameData.current_data.unique_players}</div>
+                        <div class="text-sm text-gray-600">Unique Players</div>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'discord_race':
+            html += `
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">${gameData.race_data.total_races}</div>
+                        <div class="text-sm text-gray-600">Total Races</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">${gameData.race_data.total_participants}</div>
+                        <div class="text-sm text-gray-600">Total Participants</div>
+                    </div>
+                </div>
+            `;
+            break;
+    }
+    
+    html += `</div>`;
+    tabContent.innerHTML = html;
+}
+
+// ... existing code ...
     async function loadGameStatistics() {
       if (!currentAdmin) {
         addLog('❌ Please authenticate first');
