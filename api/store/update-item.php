@@ -37,7 +37,7 @@ if (!isset($input['item_id']) || empty($input['item_id'])) {
 }
 
 // Check if at least one field to update is provided
-$updateable_fields = ['item_name', 'description', 'price', 'image_url', 'is_active'];
+$updateable_fields = ['item_name', 'description', 'price', 'quantity', 'image_url', 'is_active'];
 $has_updates = false;
 foreach ($updateable_fields as $field) {
     if (isset($input[$field])) {
@@ -92,6 +92,12 @@ try {
     if (isset($input['price'])) {
         $update_parts[] = "price = ?";
         $params[] = $input['price'];
+        $param_count++;
+    }
+    
+    if (isset($input['quantity'])) {
+        $update_parts[] = "quantity = ?";
+        $params[] = $input['quantity'];
         $param_count++;
     }
     

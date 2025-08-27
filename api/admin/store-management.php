@@ -81,6 +81,7 @@ switch ($action) {
         $name = $input['name'] ?? '';
         $description = $input['description'] ?? '';
         $price = intval($input['price'] ?? 0);
+        $quantity = intval($input['quantity'] ?? 0);
         $image_url = $input['image_url'] ?? '';
         $created_by = $input['created_by'] ?? '';
         
@@ -96,14 +97,15 @@ switch ($action) {
         try {
             // Insert new store item
             $stmt = $db->prepare('
-                INSERT INTO tbl_store_items (item_name, description, price, image_url, created_at, is_active) 
-                VALUES (?, ?, ?, ?, datetime("now"), 1)
+                INSERT INTO tbl_store_items (item_name, description, price, quantity, image_url, created_at, is_active) 
+                VALUES (?, ?, ?, ?, ?, datetime("now"), 1)
             ');
             
             $stmt->bindValue(1, $name, SQLITE3_TEXT);
             $stmt->bindValue(2, $description, SQLITE3_TEXT);
             $stmt->bindValue(3, $price, SQLITE3_INTEGER);
-            $stmt->bindValue(4, $created_by, SQLITE3_TEXT);
+            $stmt->bindValue(4, $quantity, SQLITE3_INTEGER);
+            $stmt->bindValue(5, $image_url, SQLITE3_TEXT);
             
             $result = $stmt->execute();
             
@@ -122,7 +124,8 @@ switch ($action) {
                         'item_name' => $name,
                         'description' => $description,
                         'price' => $price,
-                        'category' => $created_by,
+                        'quantity' => $quantity,
+                        'image_url' => $image_url,
                         'is_active' => 1
                     ]
                 ]);

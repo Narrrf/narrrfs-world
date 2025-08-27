@@ -1964,6 +1964,7 @@ require_once 'discord-invite.php';
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input type="text" id="newItemName" placeholder="Item Name" class="px-3 py-2 rounded text-gray-800">
           <input type="number" id="newItemPrice" placeholder="Price in $DSPOINC" class="px-3 py-2 rounded text-gray-800">
+          <input type="number" id="newItemQuantity" placeholder="Quantity (0 = unlimited)" class="px-3 py-2 rounded text-gray-800" min="0" value="0">
           <input type="text" id="newItemImageUrl" placeholder="Image URL (optional)" class="px-3 py-2 rounded text-gray-800">
           <textarea id="newItemDescription" placeholder="Item Description" class="px-3 py-2 rounded text-gray-800 md:col-span-2"></textarea>
           <button onclick="createStoreItem()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Create Item</button>
@@ -7808,23 +7809,45 @@ require_once 'discord-invite.php';
         return;
       }
 
-      container.innerHTML = items.map(item => `
-        <div class="user-card">
-          <h4 class="font-semibold mb-2">${item.item_name}</h4>
-          <p class="text-sm text-gray-300 mb-2">${item.description || 'No description'}</p>
-          <p class="text-lg font-bold text-yellow-400 mb-3">${item.price?.toLocaleString() || 0} $DSPOINC</p>
-          <div class="flex gap-2">
-            <button onclick="editStoreItem(${item.item_id})" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex-1">
-              Edit
-            </button>
-            <button onclick="deleteStoreItem(${item.item_id})" 
-                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm flex-1">
-              Delete
-            </button>
-          </div>
-        </div>
-      `).join('');
+      container.innerHTML = items.map(item => {
+        const statusClass = item.is_active == 1 ? 'bg-green-600' : 'bg-red-600';
+        const statusText = item.is_active == 1 ? '🟢 Active' : '🔴 Inactive';
+        const statusBorder = item.is_active == 1 ? 'border-green-500' : 'border-red-500';
+        
+        return `
+          <div class="user-card ${statusBorder}">
+            <div class="flex justify-between items-start mb-2">
+              <h4 class="font-semibold">${item.item_name}</h4>
+              <span class="px-2 py-1 rounded text-xs text-white ${statusClass}">${statusText}</span>
+            </div>
+            <p class="text-sm text-gray-300 mb-2">${item.description || 'No description'}</p>
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <div class="text-center">
+                <div class="text-lg font-bold text-yellow-400">${item.price?.toLocaleString() || 0}</div>
+                <div class="text-xs text-gray-400">Price ($DSPOINC)</div>
+              </div>
+              <div class="text-center">
+                <div class="text-lg font-bold text-blue-400">${item.quantity || '∞'}</div>
+                <div class="text-xs text-gray-400">Available</div>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="editStoreItem(${item.item_id})" 
+                      class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex-1">
+                Edit
+              </button>
+              <button onclick="toggleItemStatus(${item.item_id}, ${item.is_active})" 
+                      class="${item.is_active == 1 ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'} text-white px-3 py-1 rounded text-sm flex-1">
+                ${item.is_active == 1 ? 'Deactivate' : 'Activate'}
+              </button>
+              <button onclick="deleteStoreItem(${item.item_id})" 
+                      class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm flex-1">
+                Delete
+              </button>
+              </div>
+            </div>
+        `;
+      }).join('');
     }
 
     // Edit store item functionality
@@ -7882,6 +7905,14 @@ require_once 'discord-invite.php';
             </div>
             
             <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Quantity Available</label>
+              <input type="number" id="editItemQuantity" value="${item.quantity || 0}" min="0" 
+                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                     placeholder="0 = unlimited">
+              <p class="text-xs text-gray-400 mt-1">Set to 0 for unlimited quantity</p>
+            </div>
+            
+            <div>
               <label class="block text-sm font-medium text-gray-300 mb-2">Image URL (optional)</label>
               <input type="url" id="editItemImageUrl" value="${item.image_url || ''}" 
                      class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
@@ -7931,6 +7962,7 @@ require_once 'discord-invite.php';
         const name = document.getElementById('editItemName').value.trim();
         const description = document.getElementById('editItemDescription').value.trim();
         const price = parseInt(document.getElementById('editItemPrice').value);
+        const quantity = parseInt(document.getElementById('editItemQuantity').value);
         const imageUrl = document.getElementById('editItemImageUrl').value.trim();
         const active = parseInt(document.getElementById('editItemActive').value);
 
@@ -7947,6 +7979,7 @@ require_once 'discord-invite.php';
             item_name: name,
             description: description,
             price: price,
+            quantity: quantity,
             image_url: imageUrl,
             is_active: active
           })
@@ -7963,6 +7996,39 @@ require_once 'discord-invite.php';
         }
       } catch (error) {
         addLog(`❌ Update store item error: ${error.message}`);
+      }
+    }
+
+    // Toggle item status (active/inactive)
+    async function toggleItemStatus(itemId, currentStatus) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const newStatus = currentStatus == 1 ? 0 : 1;
+      const statusText = newStatus == 1 ? 'activated' : 'deactivated';
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/store/update-item.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            item_id: itemId,
+            is_active: newStatus
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Store item ${statusText} successfully! Item ID: ${itemId}`);
+          loadStoreItems(); // Refresh the store items list
+        } else {
+          addLog(`❌ Failed to ${statusText} store item: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Toggle item status error: ${error.message}`);
       }
     }
 
@@ -8122,6 +8188,7 @@ require_once 'discord-invite.php';
       const name = document.getElementById('newItemName').value.trim();
       const description = document.getElementById('newItemDescription').value.trim();
       const price = parseInt(document.getElementById('newItemPrice').value);
+      const quantity = parseInt(document.getElementById('newItemQuantity').value);
       const imageUrl = document.getElementById('newItemImageUrl').value.trim();
 
       if (!name || !description || !price || price <= 0) {
@@ -8138,6 +8205,7 @@ require_once 'discord-invite.php';
             name: name,
             description: description,
             price: price,
+            quantity: quantity,
             image_url: imageUrl,
             created_by: currentAdmin.discord_id
           })
@@ -8152,6 +8220,7 @@ require_once 'discord-invite.php';
           document.getElementById('newItemName').value = '';
           document.getElementById('newItemDescription').value = '';
           document.getElementById('newItemPrice').value = '';
+          document.getElementById('newItemQuantity').value = '0';
           document.getElementById('newItemImageUrl').value = '';
           
           // Reload store items
@@ -9739,23 +9808,21 @@ async function authenticateDiscord() {
       addLog(`🎯 Loading missions status for user: ${username} (${userId})...`);
 
       try {
-        // Load missions status from multiple sources
-        const [cheeseData, tetrisData, snakeData, spaceInvadersData, discordRaceData] = await Promise.all([
-          fetch(API_BASE_URL + '/api/admin/get-user-cheese-stats.php?user_id=' + encodeURIComponent(userId)).then(r => r.json()),
-          fetch(API_BASE_URL + '/api/admin/get-user-tetris-stats.php?user_id=' + encodeURIComponent(userId)).then(r => r.json()),
-          fetch(API_BASE_URL + '/api/admin/get-user-snake-stats.php?user_id=' + encodeURIComponent(userId)).then(r => r.json()),
-          fetch(API_BASE_URL + '/api/admin/get-user-space-invaders-stats.php?user_id=' + encodeURIComponent(userId)).then(r => r.json()),
-          fetch(API_BASE_URL + '/api/admin/get-user-discord-race-stats.php?user_id=' + encodeURIComponent(userId)).then(r => r.json())
-        ]);
+        // Load missions status from the consolidated API
+        const response = await fetch(API_BASE_URL + '/api/user-game-missions.php?discord_id=' + encodeURIComponent(userId));
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const missionsData = await response.json();
+        
+        if (!missionsData.success) {
+          throw new Error(missionsData.error || 'Failed to load missions data');
+        }
 
         // Display the missions status
-        displayUserMissionsStatus(userId, username, {
-          cheese: cheeseData,
-          tetris: tetrisData,
-          snake: snakeData,
-          spaceInvaders: spaceInvadersData,
-          discordRace: discordRaceData
-        });
+        displayUserMissionsStatus(userId, username, missionsData);
 
         addLog(`✅ Loaded missions status for ${username}`);
       } catch (error) {
@@ -9773,6 +9840,10 @@ async function authenticateDiscord() {
         return;
       }
 
+      // Extract games data from the new API structure
+      const games = missionsData.games || {};
+      const overall = missionsData.overall || {};
+
       container.innerHTML = `
         <div class="bg-gray-800 p-4 rounded-lg mt-3">
           <h5 class="font-semibold text-green-400 mb-3">🎯 Missions Status for ${username}</h5>
@@ -9783,15 +9854,15 @@ async function authenticateDiscord() {
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-400">Total Clicks:</span>
-                <span class="text-white font-semibold">${missionsData.cheese?.success ? missionsData.cheese.statistics?.total_clicks || 0 : 'Error'}</span>
+                <span class="text-white font-semibold">${games.cheese_hunt?.stats?.total_clicks || 0}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Quest Clicks:</span>
-                <span class="text-green-400 font-semibold">${missionsData.cheese?.success ? missionsData.cheese.statistics?.quest_clicks || 0 : 'Error'}</span>
+                <span class="text-green-400 font-semibold">${games.cheese_hunt?.stats?.quest_clicks || 0}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Status:</span>
-                <span class="text-yellow-400 font-semibold">${missionsData.cheese?.success ? 'Active' : 'Inactive'}</span>
+                <span class="text-yellow-400 font-semibold">${games.cheese_hunt?.status === 'active' ? 'Active' : 'Inactive'}</span>
               </div>
             </div>
           </div>
@@ -9802,15 +9873,15 @@ async function authenticateDiscord() {
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-400">Games Played:</span>
-                <span class="text-white font-semibold">${missionsData.tetris?.success ? missionsData.tetris.statistics?.total_games || 0 : 'Error'}</span>
+                <span class="text-white font-semibold">${games.tetris?.stats?.total_games || 0}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Best Score:</span>
-                <span class="text-green-400 font-semibold">${missionsData.tetris?.success ? missionsData.tetris.statistics?.best_score || 0 : 'Error'}</span>
+                <span class="text-green-400 font-semibold">${games.tetris?.stats?.best_score || 0}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Status:</span>
-                <span class="text-yellow-400 font-semibold">${missionsData.tetris?.success ? 'Active' : 'Inactive'}</span>
+                <span class="text-yellow-400 font-semibold">${games.tetris?.status === 'active' ? 'Active' : 'Inactive'}</span>
               </div>
             </div>
           </div>
@@ -9821,15 +9892,15 @@ async function authenticateDiscord() {
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-400">Games Played:</span>
-                <span class="text-white font-semibold">${missionsData.snake?.success ? missionsData.snake.statistics?.total_games || 0 : 'Error'}</span>
+                <span class="text-white font-semibold">${games.snake?.stats?.total_games || 0}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Best Score:</span>
-                <span class="text-green-400 font-semibold">${missionsData.snake?.success ? missionsData.snake.statistics?.best_score || 0 : 'Error'}</span>
+                <span class="text-green-400 font-semibold">${games.snake?.stats?.best_score || 0}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Status:</span>
-                <span class="text-yellow-400 font-semibold">${missionsData.snake?.success ? 'Active' : 'Inactive'}</span>
+                <span class="text-yellow-400 font-semibold">${games.snake?.status === 'active' ? 'Active' : 'Inactive'}</span>
               </div>
             </div>
           </div>
@@ -9840,15 +9911,15 @@ async function authenticateDiscord() {
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-400">Games Played:</span>
-                <span class="text-white font-semibold">${missionsData.spaceInvaders?.success ? missionsData.spaceInvaders.statistics?.total_games || 0 : 'Error'}</span>
+                <span class="text-white font-semibold">${games.space_invaders?.stats?.total_games || 0}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Best Score:</span>
-                <span class="text-green-400 font-semibold">${missionsData.spaceInvaders?.success ? missionsData.spaceInvaders.statistics?.best_score || 0 : 'Error'}</span>
+                <span class="text-green-400 font-semibold">${games.space_invaders?.stats?.best_score || 0}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Status:</span>
-                <span class="text-yellow-400 font-semibold">${missionsData.spaceInvaders?.success ? 'Active' : 'Inactive'}</span>
+                <span class="text-yellow-400 font-semibold">${games.space_invaders?.status === 'active' ? 'Active' : 'Inactive'}</span>
               </div>
             </div>
           </div>
@@ -9859,15 +9930,15 @@ async function authenticateDiscord() {
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-400">Total Races:</span>
-                <span class="text-white font-semibold">${missionsData.discordRace?.success ? missionsData.discordRace.statistics?.total_races || 0 : 'Error'}</span>
+                <span class="text-white font-semibold">${games.discord_race?.stats?.total_races || 0}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Wins:</span>
-                <span class="text-green-400 font-semibold">${missionsData.discordRace?.success ? missionsData.discordRace.statistics?.wins || 0 : 'Error'}</span>
+                <span class="text-green-400 font-semibold">${games.discord_race?.stats?.wins || 0}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Status:</span>
-                <span class="text-yellow-400 font-semibold">${missionsData.discordRace?.success ? 'Active' : 'Inactive'}</span>
+                <span class="text-yellow-400 font-semibold">${games.discord_race?.status === 'active' ? 'Active' : 'Inactive'}</span>
               </div>
             </div>
           </div>
@@ -9877,18 +9948,16 @@ async function authenticateDiscord() {
             <h6 class="font-semibold text-white mb-2">📊 Overall Mission Progress</h6>
             <div class="text-sm text-gray-300">
               <div class="flex justify-between mb-1">
-                <span>Active Games:</span>
-                <span class="text-green-400 font-semibold">${
-                  [missionsData.cheese, missionsData.tetris, missionsData.snake, missionsData.spaceInvaders, missionsData.discordRace]
-                    .filter(game => game?.success).length
-                }/5</span>
+                <span>Total DSPOINC:</span>
+                <span class="text-green-400 font-semibold">${missionsData.total_dspoinc?.toLocaleString() || 0}</span>
+              </div>
+              <div class="flex justify-between mb-1">
+                <span>Games Played:</span>
+                <span class="text-blue-400 font-semibold">${overall.games_played || 0}/5</span>
               </div>
               <div class="flex justify-between">
                 <span>Mission Completion:</span>
-                <span class="text-yellow-400 font-semibold">${
-                  Math.round(([missionsData.cheese, missionsData.tetris, missionsData.snake, missionsData.spaceInvaders, missionsData.discordRace]
-                    .filter(game => game?.success).length / 5) * 100)
-                }%</span>
+                <span class="text-yellow-400 font-semibold">${Math.round((overall.games_played || 0) / 5 * 100)}%</span>
               </div>
             </div>
           </div>

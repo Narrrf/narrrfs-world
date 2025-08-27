@@ -990,8 +990,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       // Enhanced profile fetch - get basic profile + inventory + purchase history
       const [profileRes, enhancedProfileRes] = await Promise.all([
         fetch('https://narrrfs.world/api/user/profile.php', { 
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' }
+       credentials: 'include',
+       headers: { 'Accept': 'application/json' }
         }),
         fetch('https://narrrfs.world/api/user/enhanced-profile.php', { 
           credentials: 'include',
@@ -1002,30 +1002,30 @@ document.addEventListener("DOMContentLoaded", async function () {
       // Check profile response first
       if (!profileRes.ok) {
         if (profileRes.status === 401) {
-          // Not logged in - show login UI
-          setText('username', 'Guest#0000');
-          setText('welcome-name', 'Guest');
-          setText('email', 'Please log in');
-          setText('guilds', 'No guilds connected');
-          setText('traits', 'No traits available');
-          setText('user-roles', 'No roles');
-          setText('wallet-address', 'Wallet not linked');
-          hideElement('goldenCheeseGate');
-          hideElement('noCheeseJoke');
-          hideElement('bingoBanner');
-          hideElement('dspoincSection');
+        // Not logged in - show login UI
+        setText('username', 'Guest#0000');
+        setText('welcome-name', 'Guest');
+        setText('email', 'Please log in');
+        setText('guilds', 'No guilds connected');
+        setText('traits', 'No traits available');
+        setText('user-roles', 'No roles');
+        setText('wallet-address', 'Wallet not linked');
+        hideElement('goldenCheeseGate');
+        hideElement('noCheeseJoke');
+		hideElement('bingoBanner');
+        hideElement('dspoincSection');
 
-          // Make sure login link is visible and clickable
-          if (loginLink) {
-            loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
-            loginLink.style.display = 'block';
-          }
-          if (avatar) {
-            avatar.src = 'img/grumpy-cheese.png';
-            avatar.style.cursor = 'pointer';
-          }
-          return;
+        // Make sure login link is visible and clickable
+        if (loginLink) {
+          loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
+          loginLink.style.display = 'block';
         }
+        if (avatar) {
+          avatar.src = 'img/grumpy-cheese.png';
+          avatar.style.cursor = 'pointer';
+        }
+        return;
+      }
         throw new Error(`Profile API error: ${profileRes.status}`);
       }
 
@@ -2348,7 +2348,7 @@ function navigateToGame(url) {
     console.log('🏠 Navigating to internal page:', url);
     try {
       window.location.href = url;
-    } catch (error) {
+  } catch (error) {
       console.error('❌ Navigation error:', error);
       // Fallback: try to navigate anyway
       window.location.href = url;
@@ -2391,7 +2391,7 @@ function displayInventoryAndHistory(enhancedData) {
           <div class="text-right">
             <div class="text-white font-semibold">${item.total_value.toLocaleString()} $DSPOINC</div>
             <div class="text-gray-400 text-xs">${formatDateShort(item.acquired_at)}</div>
-          </div>
+        </div>
         </div>
       `).join('');
     } else {
@@ -2411,7 +2411,7 @@ function displayInventoryAndHistory(enhancedData) {
           <div class="flex items-center gap-2">
             <span class="text-green-300">${purchase.item_name}</span>
             <span class="text-gray-400 text-xs">x${purchase.quantity}</span>
-          </div>
+        </div>
           <div class="text-right">
             <div class="text-white font-semibold">${purchase.price_paid.toLocaleString()} $DSPOINC</div>
             <div class="text-gray-400 text-xs">${formatDateShort(purchase.purchased_at)}</div>
@@ -2423,8 +2423,8 @@ function displayInventoryAndHistory(enhancedData) {
         <div class="text-center text-gray-400 py-3">
           <div class="text-lg mb-2">🛒 No purchases yet</div>
           <div class="text-sm">Your purchase history will appear here!</div>
-        </div>
-      `;
+      </div>
+    `;
     }
 
     console.log('✅ Inventory and purchase history displayed successfully');
@@ -2440,7 +2440,7 @@ function displayInventoryAndHistory(enhancedData) {
         <div class="text-center text-red-400 py-3">
           <div class="text-lg mb-2">❌ Error loading inventory</div>
           <div class="text-sm">${error.message}</div>
-        </div>
+    </div>
       `;
     }
     
@@ -2449,8 +2449,8 @@ function displayInventoryAndHistory(enhancedData) {
         <div class="text-center text-red-400 py-3">
           <div class="text-lg mb-2">❌ Error loading purchases</div>
           <div class="text-sm">${error.message}</div>
-        </div>
-      `;
+    </div>
+  `;
     }
   }
 }
@@ -2466,42 +2466,42 @@ function getGameStats(gameKey, game) {
     let statsHTML = '';
 
     switch (gameKey) {
-      case 'tetris':
+    case 'tetris':
         statsHTML = `
           <div class="text-blue-300">Best Score: ${stats.best_score ? stats.best_score.toLocaleString() : 'N/A'}</div>
           <div class="text-green-300">Total Games: ${stats.total_games || 0}</div>
           <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
         `;
         break;
-      case 'snake':
+    case 'snake':
         statsHTML = `
           <div class="text-blue-300">Best Score: ${stats.best_score ? stats.best_score.toLocaleString() : 'N/A'}</div>
           <div class="text-green-300">Total Games: ${stats.total_games || 0}</div>
           <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
         `;
         break;
-      case 'space_invaders':
+    case 'space_invaders':
         statsHTML = `
           <div class="text-blue-300">Best Score: ${stats.best_score ? stats.best_score.toLocaleString() : 'N/A'}</div>
           <div class="text-green-300">Total Games: ${stats.total_games || 0}</div>
           <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
         `;
         break;
-      case 'cheese_hunt':
+    case 'cheese_hunt':
         statsHTML = `
           <div class="text-blue-300">Total Clicks: ${stats.total_clicks ? stats.total_clicks.toLocaleString() : '0'}</div>
           <div class="text-green-300">Quest Clicks: ${stats.quest_clicks || 0}</div>
           <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
         `;
         break;
-      case 'discord_race':
+    case 'discord_race':
         statsHTML = `
           <div class="text-blue-300">Total Races: ${stats.total_races || 0}</div>
           <div class="text-green-300">Wins: ${stats.wins || 0}</div>
           <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
         `;
         break;
-      default:
+    default:
         statsHTML = '<div class="text-gray-400">Unknown game type</div>';
     }
 
