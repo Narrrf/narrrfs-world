@@ -304,7 +304,7 @@ switch ($action) {
         
         try {
             // Get basic user info
-            $stmt = $db->prepare('SELECT username, avatar, member_since FROM tbl_users WHERE user_id = ?');
+            $stmt = $db->prepare('SELECT username, avatar, created_at FROM tbl_users WHERE discord_id = ?');
             $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
             $result = $stmt->execute();
             $user = $result->fetchArray(SQLITE3_ASSOC);
@@ -326,11 +326,11 @@ switch ($action) {
             
             // Get user's inventory with item details
             $stmt = $db->prepare('
-                SELECT ui.*, si.description, si.price, si.image_url
+                SELECT ui.*, si.item_name, si.description, si.price, si.image_url
                 FROM tbl_user_inventory ui 
-                JOIN tbl_store_items si ON ui.item_name = si.item_name 
+                JOIN tbl_store_items si ON ui.item_id = si.item_id 
                 WHERE ui.user_id = ? AND si.is_active = 1
-                ORDER BY ui.acquisition_date DESC
+                ORDER BY ui.acquired_at DESC
             ');
             $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
             $result = $stmt->execute();
@@ -346,17 +346,17 @@ switch ($action) {
                     'description' => $row['description'],
                     'price' => $row['price'],
                     'item_value' => $item_value,
-                    'acquisition_date' => $row['acquisition_date']
+                    'acquisition_date' => $row['acquired_at']
                 ];
             }
             
             // Get user's purchase history
             $stmt = $db->prepare('
-                SELECT ph.*, si.description, si.image_url
+                SELECT ph.*, si.item_name, si.description, si.image_url
                 FROM tbl_purchase_history ph
-                JOIN tbl_store_items si ON ph.item_name = si.item_name
+                JOIN tbl_store_items si ON ph.item_id = si.item_id
                 WHERE ph.user_id = ?
-                ORDER BY ph.purchase_date DESC
+                ORDER BY ph.purchased_at DESC
                 LIMIT 20
             ');
             $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
@@ -372,7 +372,7 @@ switch ($action) {
                     'description' => $row['description'],
                     'price_paid' => $row['price_paid'],
                     'quantity' => $row['quantity'],
-                    'purchase_date' => $row['purchase_date']
+                    'purchase_date' => $row['purchased_at']
                 ];
             }
             
