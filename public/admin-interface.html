@@ -1427,7 +1427,7 @@ require_once 'discord-invite.php';
         <button class="tab-btn px-4 py-2 rounded" data-tab="store">🏪 Store Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="quests">🏆 Quest System</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="games">🎮 Game Management</button>
-        <button class="tab-btn px-4 py-2 rounded" data-tab="games2">🚀 Game Management 2.0</button>
+
         <button class="tab-btn px-4 py-2 rounded" data-tab="bosses">👑 Boss Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="bossNotifications">🏆 Boss Notifications</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="discord">🔗 Discord Config</button>
@@ -2429,6 +2429,7 @@ require_once 'discord-invite.php';
             <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="switchGameTab('discord-race')">🏁 Discord Cheese Race</button>
             <button onclick="refreshAllGameData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded ml-2">🔄 Refresh All Games</button>
         <button onclick="debugAllGameTabs()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded ml-2">🔍 Debug All Game Tabs</button>
+        <button onclick="debugTabVisibility()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded ml-2">🔧 Debug Tab Visibility</button>
           </div>
 
 
@@ -3348,10 +3349,7 @@ require_once 'discord-invite.php';
       </div>
     </div>
 
-    <!-- Game Management 2.0 Tab -->
-    <div class="admin-card mb-6" id="games2Tab" style="display: none;">
-      <h2 class="text-xl font-semibold mb-4">🚀 Game Management 2.0 - Advanced Season Management</h2>
-      <p class="text-gray-300 mb-6">Comprehensive season management, game statistics, and advanced controls for all 5 games.</p>
+
       
       <!-- Debug Info -->
       <div class="mb-4 p-3 bg-yellow-900 bg-opacity-50 rounded-lg border border-yellow-700">
@@ -5056,17 +5054,6 @@ require_once 'discord-invite.php';
               
             addLog('🎮 Game management tab auto-loaded with all game data');
             }, 250); // Wait for tab animation to complete
-            
-          } else if (tabName === 'games2') {
-            // Game Management 2.0 - Comprehensive auto-load
-            console.log('🚀 Loading Game Management 2.0 data...');
-            loadGameManagement2Data();
-            loadSeasonOverview2();
-            loadGameStatsBySeason2();
-            loadTopPerformers2();
-            loadSeasonComparison2();
-            startLiveActivityFeed2();
-            addLog('🚀 Game management 2.0 tab auto-loaded');
             
           } else if (tabName === 'discord') {
             // Discord config - Auto-load with refresh
@@ -10971,6 +10958,10 @@ function updateGameTabContent(gameType, gameData) {
       allTabs.forEach(tab => {
         tab.classList.remove('active');
         tab.style.display = 'none';
+        tab.style.visibility = 'hidden';
+        tab.style.opacity = '0';
+        tab.style.position = 'absolute';
+        tab.style.left = '-9999px';
         console.log('Hidden tab:', tab.id);
       });
       
@@ -11004,12 +10995,41 @@ function updateGameTabContent(gameType, gameData) {
       if (selectedTab) {
         selectedTab.classList.add('active');
         selectedTab.style.display = 'block';
+        selectedTab.style.visibility = 'visible';
+        selectedTab.style.opacity = '1';
+        selectedTab.style.position = 'relative';
+        selectedTab.style.zIndex = '10';
+        selectedTab.style.left = 'auto';
         console.log('✅ Showing tab:', selectedTabId);
         console.log('🔍 Tab display style after setting:', selectedTab.style.display);
         console.log('🔍 Tab computed style:', window.getComputedStyle(selectedTab).display);
         
         // Force a reflow to ensure the tab is properly displayed
         selectedTab.offsetHeight;
+        
+        // Additional force display after a small delay
+        setTimeout(() => {
+          if (selectedTab.style.display !== 'block') {
+            console.log('🔄 Force correcting tab display after delay');
+            selectedTab.style.display = 'block';
+            selectedTab.style.visibility = 'visible';
+            selectedTab.style.opacity = '1';
+            selectedTab.style.position = 'relative';
+            selectedTab.style.left = 'auto';
+          }
+        }, 50);
+        
+        // 🔧 CRITICAL FIX: Force display multiple times to ensure it sticks
+        setTimeout(() => {
+          if (selectedTab.style.display !== 'block') {
+            console.log('🔄 Second force display attempt...');
+            selectedTab.style.display = 'block';
+            selectedTab.style.visibility = 'visible';
+            selectedTab.style.opacity = '1';
+            selectedTab.style.position = 'relative';
+            selectedTab.style.left = 'auto';
+          }
+        }, 200);
       } else {
         console.error('❌ Tab not found:', selectedTabId);
       }
@@ -11033,6 +11053,15 @@ function updateGameTabContent(gameType, gameData) {
       // Use setTimeout to ensure DOM is fully updated before loading data
       setTimeout(async () => {
         try {
+          // 🔧 CRITICAL FIX: Ensure tab is still visible before loading data
+          if (selectedTab && selectedTab.style.display !== 'block') {
+            console.log('🔄 Tab visibility lost, restoring display...');
+            selectedTab.style.display = 'block';
+            selectedTab.style.visibility = 'visible';
+            selectedTab.style.opacity = '1';
+            selectedTab.classList.add('active');
+          }
+          
           switch(tabName) {
             case 'overview':
               console.log('Loading overview data...');
@@ -11130,7 +11159,9 @@ function updateGameTabContent(gameType, gameData) {
               console.warn('⚠️ Tab not visible after data loading, forcing display...');
               selectedTab.style.display = 'block';
               selectedTab.style.visibility = 'visible';
+              selectedTab.style.opacity = '1';
               selectedTab.classList.remove('hidden');
+              selectedTab.classList.add('active');
               
               // If the tab still has no content, restore the preserved content
               if (selectedTab.innerHTML.trim() === '' && currentTabContent) {
@@ -11138,6 +11169,23 @@ function updateGameTabContent(gameType, gameData) {
                 selectedTab.innerHTML = currentTabContent;
               }
             }
+            
+            // 🔧 CRITICAL FIX: Set up periodic visibility check for this tab
+            const tabId = selectedTabId;
+            const visibilityCheckInterval = setInterval(() => {
+              const tab = document.getElementById(tabId);
+              if (tab && tab.classList.contains('active') && tab.style.display !== 'block') {
+                console.log('🔄 Periodic check: Tab visibility lost, restoring...', tabId);
+                tab.style.display = 'block';
+                tab.style.visibility = 'visible';
+                tab.style.opacity = '1';
+              }
+            }, 1000); // Check every second
+            
+            // Clear interval when switching to different tab
+            setTimeout(() => {
+              clearInterval(visibilityCheckInterval);
+            }, 5000); // Stop checking after 5 seconds
           }
         } catch (error) {
           console.error('❌ Error loading data for tab:', tabName, error);
@@ -17956,123 +18004,19 @@ donation,Community Grant,150.0000,2024-02-20`;
 
     // Store management functions removed - implemented above
 
-    // 🚀 GAME MANAGEMENT 2.0 FUNCTIONS - Advanced Season Management
-async function loadGameManagement2Data() {
-  console.log('🚀 Loading Game Management 2.0 data...');
-  try {
-    // Load current season status
-    const seasonResponse = await fetch(API_BASE_URL + '/api/admin/get-current-season-settings.php');
-    const seasonData = await seasonResponse.json();
-    
-    if (seasonData.success) {
-      updateSeasonDisplay2(seasonData.data);
-    }
-    
-    // Load game statistics
-    await loadGameStatsBySeason2();
-    
-    console.log('✅ Game Management 2.0 data loaded successfully');
-  } catch (error) {
-    console.error('❌ Error loading Game Management 2.0 data:', error);
-  }
-}
 
-async function loadSeasonOverview2() {
-  try {
-    const response = await fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=season_2');
-    const data = await response.json();
-    
-    if (data.success) {
-      updateSeasonOverview2(data);
-    }
-  } catch (error) {
-    console.error('❌ Error loading season overview:', error);
-  }
-}
 
-async function loadGameStatsBySeason2() {
-  try {
-    const season = document.getElementById('viewSeasonSelector2')?.value || 'season_2';
-    const response = await fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=' + season);
-    const data = await response.json();
-    
-    if (data.success) {
-      displayGameStats2(data.data, season);
-    }
-  } catch (error) {
-    console.error('❌ Error loading game stats by season:', error);
-  }
-}
 
-async function loadTopPerformers2() {
-  try {
-    const response = await fetch(API_BASE_URL + '/api/admin/get-top-users.php');
-    const data = await response.json();
-    
-    if (data.success) {
-      displayTopPerformers2(data.data);
-    }
-  } catch (error) {
-    console.error('❌ Error loading top performers:', error);
-  }
-}
 
-async function loadSeasonComparison2() {
-  try {
-    const [season1Response, season2Response] = await Promise.all([
-      fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=season_1'),
-      fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=season_2')
-    ]);
-    
-    const season1Data = await season1Response.json();
-    const season2Data = await season2Response.json();
-    
-    if (season1Data.success && season2Data.success) {
-      displaySeasonComparison2(season1Data.data, season2Data.data);
-    }
-  } catch (error) {
-    console.error('❌ Error loading season comparison:', error);
-  }
-}
 
-async function switchActiveSeason2() {
-  const newSeason = document.getElementById('seasonSwitchSelector2').value;
-  const adminId = 'admin'; // You can enhance this with actual admin ID
-  
-  try {
-    const response = await fetch(API_BASE_URL + '/api/admin/switch-active-season.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ new_season: newSeason, admin_id: adminId })
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      addLog(`✅ Successfully switched to ${newSeason}`);
-      loadGameManagement2Data(); // Refresh data
-    } else {
-      addLog(`❌ Failed to switch season: ${data.error}`);
-    }
-  } catch (error) {
-    console.error('❌ Error switching season:', error);
-    addLog(`❌ Error switching season: ${error.message}`);
-  }
-}
 
-async function loadSeasonData2() {
-  const season = document.getElementById('viewSeasonSelector2').value;
-  try {
-    const response = await fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=' + season);
-    const data = await response.json();
-    
-    if (data.success) {
-      displaySeasonData2(data.data, season);
-    }
-  } catch (error) {
-    console.error('❌ Error loading season data:', error);
-  }
-}
+
+
+
+
+
+
+
 
 function refreshSeasonData2() {
   loadSeasonData2();
@@ -18425,6 +18369,25 @@ function testGames2Tab() {
       } catch (error) {
         addLog(`❌ Game Management tab test failed: ${error.message}`);
       }
+    }
+    
+    // 🔧 CRITICAL FIX: Debug function to check tab visibility
+    function debugTabVisibility() {
+      console.log('🔍 Debugging tab visibility...');
+      const allTabs = document.querySelectorAll('.game-tab-content');
+      allTabs.forEach(tab => {
+        const computedStyle = window.getComputedStyle(tab);
+        console.log(`Tab ${tab.id}:`, {
+          display: tab.style.display,
+          computedDisplay: computedStyle.display,
+          visibility: tab.style.visibility,
+          opacity: tab.style.opacity,
+          position: tab.style.position,
+          left: tab.style.left,
+          hasActiveClass: tab.classList.contains('active'),
+          offsetHeight: tab.offsetHeight
+        });
+      });
     }
     
     // 🏆 ENTERPRISE SEASON MANAGEMENT FUNCTIONS
@@ -19993,6 +19956,20 @@ function testGames2Tab() {
       
       console.log('✅ Default enhanced stats values set');
     }
+    
+    // Critical CSS fix for game tab visibility
+    const style = document.createElement('style');
+    style.textContent = `
+      .game-tab-content.active {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 10 !important;
+      }
+    `;
+    document.head.appendChild(style);
+    console.log('✅ Critical CSS fix applied for game tab visibility');
   </script>
 
 </body>

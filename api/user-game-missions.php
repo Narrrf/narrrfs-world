@@ -195,16 +195,48 @@ try {
 
     // 4. CHEESE HUNT STATS (using discord_id from tbl_cheese_clicks)
     try {
-        $stmt = $db->prepare("
-            SELECT 
-                COUNT(*) as total_clicks,
-                COUNT(CASE WHEN quest_id IS NOT NULL THEN 1 END) as quest_clicks,
-                COUNT(DISTINCT egg_id) as unique_eggs,
-                MAX(timestamp) as last_click
-            FROM tbl_cheese_clicks 
-            WHERE user_wallet = ?
-        ");
-        $stmt->execute([$discordId]);
+        // First try to find the user's wallet address from their Discord ID
+        // We'll look in tbl_users or other tables that might have this mapping
+        $walletAddress = null;
+        
+        // Try to get wallet from tbl_users if there's a wallet field
+        try {
+            $walletStmt = $db->prepare("SELECT wallet FROM tbl_users WHERE discord_id = ?");
+            $walletStmt->execute([$discordId]);
+            $walletResult = $walletStmt->fetch(PDO::FETCH_ASSOC);
+            if ($walletResult && isset($walletResult['wallet'])) {
+                $walletAddress = $walletResult['wallet'];
+            }
+        } catch (Exception $e) {
+            // No wallet field in tbl_users, continue without it
+        }
+        
+        // If we have a wallet address, query cheese clicks with it
+        if ($walletAddress) {
+            $stmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_clicks,
+                    COUNT(CASE WHEN quest_id IS NOT NULL THEN 1 END) as quest_clicks,
+                    COUNT(DISTINCT egg_id) as unique_eggs,
+                    MAX(timestamp) as last_click
+                FROM tbl_cheese_clicks 
+                WHERE user_wallet = ?
+            ");
+            $stmt->execute([$walletAddress]);
+        } else {
+            // If no wallet, try to query with discord_id (in case the table was updated)
+            $stmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_clicks,
+                    COUNT(CASE WHEN quest_id IS NOT NULL THEN 1 END) as quest_clicks,
+                    COUNT(DISTINCT egg_id) as unique_eggs,
+                    MAX(timestamp) as last_click
+                FROM tbl_cheese_clicks 
+                WHERE discord_id = ?
+            ");
+            $stmt->execute([$discordId]);
+        }
+        
         $cheeseData = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($cheeseData) {
@@ -274,6 +306,20 @@ try {
 
     // Log the final response for debugging
     error_log("Final response for user $discordId: " . json_encode($response));
+    
+    // Additional debugging for Cheese Hunt
+    if (isset($response['cheese_hunt'])) {
+        error_log("Cheese Hunt debug - Total clicks: " . $response['cheese_hunt']['total_clicks'] . 
+                 ", Quest clicks: " . $response['cheese_hunt']['quest_clicks'] . 
+                 ", Unique eggs: " . $response['cheese_hunt']['unique_eggs']);
+    }
+    
+    // Additional debugging for Snake
+    if (isset($response['snake'])) {
+        error_log("Snake debug - Total games: " . $response['snake']['total_games'] . 
+                 ", Best score: " . $response['snake']['best_score'] . 
+                 ", Total score: " . $response['snake']['total_score']);
+    }
 
     // Return the response in the format expected by the frontend
     echo json_encode([
