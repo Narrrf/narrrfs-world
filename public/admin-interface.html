@@ -9338,11 +9338,11 @@ async function authenticateDiscord() {
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-400">Total Clicks:</span>
-                <span class="text-white font-semibold">${missionsData.cheese?.success ? missionsData.cheese.data?.total_clicks || 0 : 'Error'}</span>
+                <span class="text-white font-semibold">${missionsData.cheese?.success ? missionsData.cheese.statistics?.total_clicks || 0 : 'Error'}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">Last 24h:</span>
-                <span class="text-green-400 font-semibold">${missionsData.cheese?.success ? missionsData.cheese.data?.clicks_24h || 0 : 'Error'}</span>
+                <span class="text-gray-400">Quest Clicks:</span>
+                <span class="text-green-400 font-semibold">${missionsData.cheese?.success ? missionsData.cheese.statistics?.quest_clicks || 0 : 'Error'}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Status:</span>
@@ -9357,11 +9357,11 @@ async function authenticateDiscord() {
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-400">Games Played:</span>
-                <span class="text-white font-semibold">${missionsData.tetris?.success ? missionsData.tetris.data?.games_played || 0 : 'Error'}</span>
+                <span class="text-white font-semibold">${missionsData.tetris?.success ? missionsData.tetris.statistics?.total_games || 0 : 'Error'}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">High Score:</span>
-                <span class="text-green-400 font-semibold">${missionsData.tetris?.success ? missionsData.tetris.data?.high_score || 0 : 'Error'}</span>
+                <span class="text-gray-400">Best Score:</span>
+                <span class="text-green-400 font-semibold">${missionsData.tetris?.success ? missionsData.tetris.statistics?.best_score || 0 : 'Error'}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Status:</span>
@@ -9376,11 +9376,11 @@ async function authenticateDiscord() {
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-400">Games Played:</span>
-                <span class="text-white font-semibold">${missionsData.snake?.success ? missionsData.snake.data?.games_played || 0 : 'Error'}</span>
+                <span class="text-white font-semibold">${missionsData.snake?.success ? missionsData.snake.statistics?.total_games || 0 : 'Error'}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">High Score:</span>
-                <span class="text-green-400 font-semibold">${missionsData.snake?.success ? missionsData.snake.data?.high_score || 0 : 'Error'}</span>
+                <span class="text-gray-400">Best Score:</span>
+                <span class="text-green-400 font-semibold">${missionsData.snake?.success ? missionsData.snake.statistics?.best_score || 0 : 'Error'}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Status:</span>
@@ -9395,11 +9395,11 @@ async function authenticateDiscord() {
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-400">Games Played:</span>
-                <span class="text-white font-semibold">${missionsData.spaceInvaders?.success ? missionsData.spaceInvaders.data?.games_played || 0 : 'Error'}</span>
+                <span class="text-white font-semibold">${missionsData.spaceInvaders?.success ? missionsData.spaceInvaders.statistics?.total_games || 0 : 'Error'}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">High Score:</span>
-                <span class="text-green-400 font-semibold">${missionsData.spaceInvaders?.success ? missionsData.spaceInvaders.data?.high_score || 0 : 'Error'}</span>
+                <span class="text-gray-400">Best Score:</span>
+                <span class="text-green-400 font-semibold">${missionsData.spaceInvaders?.success ? missionsData.spaceInvaders.statistics?.best_score || 0 : 'Error'}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Status:</span>
@@ -9413,12 +9413,12 @@ async function authenticateDiscord() {
             <h6 class="font-semibold text-red-300 mb-2">🏁 Discord Race</h6>
             <div class="grid grid-cols-2 gap-2 text-sm">
               <div class="flex justify-between">
-                <span class="text-gray-400">Races Participated:</span>
-                <span class="text-white font-semibold">${missionsData.discordRace?.success ? missionsData.discordRace.data?.races_participated || 0 : 'Error'}</span>
+                <span class="text-gray-400">Total Races:</span>
+                <span class="text-white font-semibold">${missionsData.discordRace?.success ? missionsData.discordRace.statistics?.total_races || 0 : 'Error'}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">Best Finish:</span>
-                <span class="text-green-400 font-semibold">${missionsData.discordRace?.success ? missionsData.discordRace.data?.best_finish || 'N/A' : 'Error'}</span>
+                <span class="text-gray-400">Wins:</span>
+                <span class="text-green-400 font-semibold">${missionsData.discordRace?.success ? missionsData.discordRace.statistics?.wins || 0 : 'Error'}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-400">Status:</span>

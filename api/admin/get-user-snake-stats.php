@@ -89,7 +89,7 @@ try {
         MAX(timestamp) as last_game,
         MIN(timestamp) as first_game
         FROM tbl_tetris_scores 
-        WHERE discord_id = ? AND game = 'snake'");
+        WHERE user_id = ? AND game = 'snake'");
     $stmt->bindValue(1, $userId, SQLITE3_TEXT);
     $result = $stmt->execute();
     $snakeStats = $result->fetchArray(SQLITE3_ASSOC);
@@ -101,7 +101,7 @@ try {
         season,
         is_current_season
         FROM tbl_tetris_scores 
-        WHERE discord_id = ? AND game = 'snake'
+        WHERE user_id = ? AND game = 'snake'
         ORDER BY timestamp DESC
         LIMIT 10");
     $stmt->bindValue(1, $userId, SQLITE3_TEXT);
@@ -118,7 +118,7 @@ try {
         MAX(score) as best_score,
         AVG(score) as average_score
         FROM tbl_tetris_scores 
-        WHERE discord_id = ? AND game = 'snake'
+        WHERE user_id = ? AND game = 'snake'
         GROUP BY season
         ORDER BY season DESC");
     $stmt->bindValue(1, $userId, SQLITE3_TEXT);

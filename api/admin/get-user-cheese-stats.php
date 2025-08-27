@@ -66,14 +66,15 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     }
 }
 
-// Check if user_id is provided
-if (!isset($_GET['user_id']) && !isset($_POST['user_id'])) {
+// Check if user_id or user_wallet is provided (for compatibility)
+if (!isset($_GET['user_id']) && !isset($_POST['user_id']) && !isset($_GET['user_wallet']) && !isset($_POST['user_wallet'])) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'User ID is required']);
+    echo json_encode(['success' => false, 'error' => 'User ID or User Wallet is required']);
     exit;
 }
 
-$userId = $_GET['user_id'] ?? $_POST['user_id'];
+// Accept both user_id and user_wallet parameters for compatibility
+$userId = $_GET['user_id'] ?? $_POST['user_id'] ?? $_GET['user_wallet'] ?? $_POST['user_wallet'];
 
 try {
     // Use centralized database configuration
