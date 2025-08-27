@@ -11,17 +11,34 @@ header('X-XSS-Protection: 1; mode=block');
 
 // Handle GET requests for testing
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    echo json_encode([
-        'status' => 'API is working',
-        'method' => 'GET',
-        'timestamp' => date('Y-m-d H:i:s'),
-        'message' => 'Use POST method with user_id to get game missions'
-    ]);
-    exit;
-}
-
-try {
-    // Get POST data
+    // Get user_id from query parameters or try to get from session
+    $discordId = null;
+    
+    if (isset($_GET['user_id'])) {
+        $discordId = $_GET['user_id'];
+    } elseif (isset($_GET['discord_id'])) {
+        $discordId = $_GET['discord_id'];
+    } else {
+        // Try to get from session or cookies
+        session_start();
+        if (isset($_SESSION['discord_id'])) {
+            $discordId = $_SESSION['discord_id'];
+        } elseif (isset($_COOKIE['discord_id'])) {
+            $discordId = $_COOKIE['discord_id'];
+        }
+    }
+    
+    if (!$discordId) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'No user_id or discord_id provided. Use ?user_id=YOUR_DISCORD_ID or ?discord_id=YOUR_DISCORD_ID'
+        ]);
+        exit;
+    }
+    
+    // Continue with the existing logic using the discordId
+} else {
+    // Handle POST requests
     $rawInput = file_get_contents('php://input');
     error_log("Raw input received: " . $rawInput);
     
@@ -36,8 +53,11 @@ try {
     }
     
     $discordId = $input['user_id'];
-    error_log("Processing request for Discord ID: " . $discordId);
-    
+}
+
+error_log("Processing request for Discord ID: " . $discordId);
+
+try {
     // Connect to database using the correct path
     try {
         // Use environment-aware database path
@@ -52,38 +72,43 @@ try {
     } catch (Exception $e) {
         throw new Exception('Database connection failed: ' . $e->getMessage());
     }
-    
+
     // Initialize response data structure
     $response = [
         'tetris' => [
             'total_games' => 0,
             'best_score' => 0,
             'total_score' => 0,
-            'last_played' => null
+            'last_played' => null,
+            'dspoinc_earned' => 0
         ],
         'snake' => [
             'total_games' => 0,
             'best_score' => 0,
             'total_score' => 0,
-            'last_played' => null
+            'last_played' => null,
+            'dspoinc_earned' => 0
         ],
         'space_invaders' => [
             'total_games' => 0,
             'best_score' => 0,
             'total_score' => 0,
-            'last_played' => null
+            'last_played' => null,
+            'dspoinc_earned' => 0
         ],
         'cheese_hunt' => [
             'total_clicks' => 0,
             'quest_clicks' => 0,
             'unique_eggs' => 0,
-            'last_click' => null
+            'last_click' => null,
+            'dspoinc_earned' => 0
         ],
         'discord_race' => [
             'total_races' => 0,
             'wins' => 0,
             'podiums' => 0,
-            'best_position' => null
+            'best_position' => null,
+            'dspoinc_earned' => 0
         ],
         'overall' => [
             'total_dspoinc' => 0,
@@ -92,7 +117,7 @@ try {
             'level' => 'Beginner Cheese Hunter'
         ]
     ];
-    
+
     // 1. TETRIS STATS (using discord_id from tbl_tetris_scores)
     try {
         $stmt = $db->prepare("
@@ -102,7 +127,7 @@ try {
                 SUM(score) as total_score,
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
-            WHERE discord_id = ?
+            WHERE discord_id = ? AND game = 'tetris'
         ");
         $stmt->execute([$discordId]);
         $tetrisData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -112,12 +137,13 @@ try {
             $response['tetris']['best_score'] = (int)$tetrisData['best_score'];
             $response['tetris']['total_score'] = (int)$tetrisData['total_score'];
             $response['tetris']['last_played'] = $tetrisData['last_played'];
+            $response['tetris']['dspoinc_earned'] = (int)$tetrisData['total_score'] * 10; // DSPOINC conversion
         }
     } catch (Exception $e) {
         error_log("Tetris query error: " . $e->getMessage());
     }
-    
-    // 2. SNAKE STATS (using user_id from tbl_user_scores)
+
+    // 2. SNAKE STATS (using discord_id from tbl_tetris_scores)
     try {
         $stmt = $db->prepare("
             SELECT 
@@ -125,8 +151,8 @@ try {
                 MAX(score) as best_score,
                 SUM(score) as total_score,
                 MAX(timestamp) as last_played
-            FROM tbl_user_scores 
-            WHERE user_id = ? AND game = 'snake'
+            FROM tbl_tetris_scores 
+            WHERE discord_id = ? AND game = 'snake'
         ");
         $stmt->execute([$discordId]);
         $snakeData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -136,12 +162,13 @@ try {
             $response['snake']['best_score'] = (int)$snakeData['best_score'];
             $response['snake']['total_score'] = (int)$snakeData['total_score'];
             $response['snake']['last_played'] = $snakeData['last_played'];
+            $response['snake']['dspoinc_earned'] = (int)$snakeData['total_score'] * 10; // DSPOINC conversion
         }
     } catch (Exception $e) {
         error_log("Snake query error: " . $e->getMessage());
     }
-    
-    // 3. SPACE INVADERS STATS (using user_id from tbl_user_scores)
+
+    // 3. SPACE INVADERS STATS (using discord_id from tbl_tetris_scores)
     try {
         $stmt = $db->prepare("
             SELECT 
@@ -149,8 +176,8 @@ try {
                 MAX(score) as best_score,
                 SUM(score) as total_score,
                 MAX(timestamp) as last_played
-            FROM tbl_user_scores 
-            WHERE user_id = ? AND game = 'space_invaders'
+            FROM tbl_tetris_scores 
+            WHERE discord_id = ? AND game = 'space_invaders'
         ");
         $stmt->execute([$discordId]);
         $spaceData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -160,12 +187,13 @@ try {
             $response['space_invaders']['best_score'] = (int)$spaceData['best_score'];
             $response['space_invaders']['total_score'] = (int)$spaceData['total_score'];
             $response['space_invaders']['last_played'] = $spaceData['last_played'];
+            $response['space_invaders']['dspoinc_earned'] = (int)$tetrisData['total_score'] * 10; // DSPOINC conversion
         }
     } catch (Exception $e) {
         error_log("Space Invaders query error: " . $e->getMessage());
     }
-    
-    // 4. CHEESE HUNT STATS (using user_wallet from tbl_cheese_clicks)
+
+    // 4. CHEESE HUNT STATS (using discord_id from tbl_cheese_clicks)
     try {
         $stmt = $db->prepare("
             SELECT 
@@ -184,24 +212,14 @@ try {
             $response['cheese_hunt']['quest_clicks'] = (int)$cheeseData['quest_clicks'];
             $response['cheese_hunt']['unique_eggs'] = (int)$cheeseData['unique_eggs'];
             $response['cheese_hunt']['last_click'] = $cheeseData['last_click'];
+            $response['cheese_hunt']['dspoinc_earned'] = (int)$cheeseData['total_clicks'] * 10; // DSPOINC conversion
         }
     } catch (Exception $e) {
         error_log("Cheese Hunt query error: " . $e->getMessage());
     }
-    
+
     // 5. DISCORD CHEESE RACE STATS (using user_id from tbl_race_participants)
     try {
-        // Debug: Check what races exist for this user (check both user_id and discord_id)
-        $debugStmt = $db->prepare("
-            SELECT race_id, user_id, discord_id, username, position, cheese_count, joined_at 
-            FROM tbl_race_participants 
-            WHERE user_id = ? OR discord_id = ?
-        ");
-        $debugStmt->execute([$discordId, $discordId]);
-        $debugRaces = $debugStmt->fetchAll(PDO::FETCH_ASSOC);
-        error_log("Debug: Found " . count($debugRaces) . " races for user $discordId: " . json_encode($debugRaces));
-        
-        // Query using both user_id and discord_id to ensure we find the data
         $stmt = $db->prepare("
             SELECT 
                 COUNT(*) as total_races,
@@ -209,77 +227,31 @@ try {
                 COUNT(CASE WHEN position <= 3 THEN 1 END) as podiums,
                 MIN(position) as best_position
             FROM tbl_race_participants 
-            WHERE user_id = ? OR discord_id = ?
+            WHERE user_id = ?
         ");
-        $stmt->execute([$discordId, $discordId]);
+        $stmt->execute([$discordId]);
         $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        error_log("Debug: Race query result for user $discordId: " . json_encode($raceData));
         
         if ($raceData) {
             $response['discord_race']['total_races'] = (int)$raceData['total_races'];
             $response['discord_race']['wins'] = (int)$raceData['wins'];
             $response['discord_race']['podiums'] = (int)$raceData['podiums'];
             $response['discord_race']['best_position'] = $raceData['best_position'] ? (int)$raceData['best_position'] : null;
+            $response['discord_race']['dspoinc_earned'] = (int)$raceData['total_races'] * 100; // DSPOINC conversion
         }
     } catch (Exception $e) {
         error_log("Discord Race query error: " . $e->getMessage());
     }
-    
-    // 🚀 CRITICAL FIX: Calculate overall DSPOINC with correct conversion rates for each game
-    try {
-        $totalDspoinc = 0;
-        
-        // 1. TETRIS: 1000 traditional points = 1 DSPOINC (already correct)
-        if ($response['tetris']['total_score'] > 0) {
-            $tetrisDspoinc = floor($response['tetris']['total_score'] / 1000);
-            $totalDspoinc += $tetrisDspoinc;
-            error_log("Tetris: {$response['tetris']['total_score']} points = {$tetrisDspoinc} DSPOINC");
-        }
-        
-        // 2. SNAKE: 1000 traditional points = 1 DSPOINC (already correct)
-        if ($response['snake']['total_score'] > 0) {
-            $snakeDspoinc = floor($response['snake']['total_score'] / 1000);
-            $totalDspoinc += $snakeDspoinc;
-            error_log("Snake: {$response['snake']['total_score']} points = {$snakeDspoinc} DSPOINC");
-        }
-        
-        // 3. SPACE INVADERS: 50 traditional points = 1 DSPOINC (FIXED for balance)
-        if ($response['space_invaders']['total_score'] > 0) {
-            $spaceDspoinc = floor($response['space_invaders']['total_score'] / 50);
-            $totalDspoinc += $spaceDspoinc;
-            error_log("Space Invaders: {$response['space_invaders']['total_score']} points = {$spaceDspoinc} DSPOINC");
-        }
-        
-        // 4. CHEESE HUNT: No DSPOINC conversion (clicks only)
-        // 5. DISCORD RACE: No DSPOINC conversion (races only)
-        
-        $response['overall']['total_dspoinc'] = $totalDspoinc;
-        error_log("Total DSPOINC calculated: {$totalDspoinc}");
-        
-    } catch (Exception $e) {
-        error_log("DSPOINC calculation error: " . $e->getMessage());
-        $response['overall']['total_dspoinc'] = 0;
-    }
-    
-    // Quest stats (using user_id from tbl_quest_claims)
-    try {
-        $stmt = $db->prepare("
-            SELECT COUNT(*) as approved_quests
-            FROM tbl_quest_claims 
-            WHERE user_id = ? AND status = 'approved'
-        ");
-        $stmt->execute([$discordId]);
-        $questData = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($questData) {
-            $response['overall']['quests_approved'] = (int)$questData['approved_quests'];
-        }
-    } catch (Exception $e) {
-        error_log("Quest stats error: " . $e->getMessage());
-    }
-    
-    // Calculate games played count
+
+    // Calculate total DSPOINC from all games
+    $response['overall']['total_dspoinc'] = 
+        $response['tetris']['dspoinc_earned'] + 
+        $response['snake']['dspoinc_earned'] + 
+        $response['space_invaders']['dspoinc_earned'] + 
+        $response['cheese_hunt']['dspoinc_earned'] + 
+        $response['discord_race']['dspoinc_earned'];
+
+    // Count how many games the user has played
     $gamesPlayed = 0;
     if ($response['tetris']['total_games'] > 0) $gamesPlayed++;
     if ($response['snake']['total_games'] > 0) $gamesPlayed++;
@@ -288,7 +260,7 @@ try {
     if ($response['discord_race']['total_races'] > 0) $gamesPlayed++;
     
     $response['overall']['games_played'] = $gamesPlayed;
-    
+
     // Determine level based on total clicks
     if ($response['cheese_hunt']['total_clicks'] >= 100) {
         $response['overall']['level'] = 'Master Cheese Hunter';
@@ -299,10 +271,10 @@ try {
     } else {
         $response['overall']['level'] = 'Beginner Cheese Hunter';
     }
-    
+
     // Log the final response for debugging
     error_log("Final response for user $discordId: " . json_encode($response));
-    
+
     // Return the response in the format expected by the frontend
     echo json_encode([
         'success' => true,
@@ -321,58 +293,70 @@ try {
                 'name' => 'Tetris Scroll',
                 'icon' => '🧩',
                 'url' => '/profile.html#cheese-tetris',
-                'total_games' => $response['tetris']['total_games'],
-                'best_score' => $response['tetris']['best_score'],
-                'total_score' => $response['tetris']['total_score'],
-                'dspoinc_earned' => $response['tetris']['total_score'] > 0 ? floor($response['tetris']['total_score'] / 1000) : 0,
-                'last_played' => $response['tetris']['last_played'],
-                'status' => $response['tetris']['total_games'] > 0 ? 'active' : 'not_played'
+                'status' => $response['tetris']['total_games'] > 0 ? 'active' : 'not_played',
+                'stats' => [
+                    'total_games' => $response['tetris']['total_games'],
+                    'best_score' => $response['tetris']['best_score'],
+                    'total_score' => $response['tetris']['total_score'],
+                    'dspoinc_earned' => $response['tetris']['dspoinc_earned'],
+                    'last_played' => $response['tetris']['last_played']
+                ]
             ],
             'snake' => [
                 'name' => 'Snake Scroll',
                 'icon' => '🐍',
                 'url' => '/profile.html#cheese-snake',
-                'total_games' => $response['snake']['total_games'],
-                'best_score' => $response['snake']['best_score'],
-                'total_score' => $response['snake']['total_score'],
-                'dspoinc_earned' => $response['snake']['total_score'] > 0 ? floor($response['snake']['total_score'] / 1000) : 0,
-                'last_played' => $response['snake']['last_played'],
-                'status' => $response['snake']['total_games'] > 0 ? 'active' : 'not_played'
+                'status' => $response['snake']['total_games'] > 0 ? 'active' : 'not_played',
+                'stats' => [
+                    'total_games' => $response['snake']['total_games'],
+                    'best_score' => $response['snake']['best_score'],
+                    'total_score' => $response['snake']['total_score'],
+                    'dspoinc_earned' => $response['snake']['dspoinc_earned'],
+                    'last_played' => $response['snake']['last_played']
+                ]
             ],
             'space_invaders' => [
                 'name' => 'Space Cheese Invaders',
                 'icon' => '👾',
                 'url' => '/space-invaders-test.html',
-                'total_games' => $response['space_invaders']['total_games'],
-                'best_score' => $response['space_invaders']['best_score'],
-                'total_score' => $response['space_invaders']['total_score'],
-                'dspoinc_earned' => $response['space_invaders']['total_score'] > 0 ? floor($response['space_invaders']['total_score'] / 50) : 0,
-                'last_played' => $response['space_invaders']['last_played'],
-                'status' => $response['space_invaders']['total_games'] > 0 ? 'active' : 'not_played'
+                'status' => $response['space_invaders']['total_games'] > 0 ? 'active' : 'not_played',
+                'stats' => [
+                    'total_games' => $response['space_invaders']['total_games'],
+                    'best_score' => $response['space_invaders']['best_score'],
+                    'total_score' => $response['space_invaders']['total_score'],
+                    'dspoinc_earned' => $response['space_invaders']['dspoinc_earned'],
+                    'last_played' => $response['space_invaders']['last_played']
+                ]
             ],
             'cheese_hunt' => [
                 'name' => 'Cheese Hunt',
                 'icon' => '🧀',
                 'url' => '/',
-                'total_clicks' => $response['cheese_hunt']['total_clicks'],
-                'quest_clicks' => $response['cheese_hunt']['quest_clicks'],
-                'unique_eggs' => $response['cheese_hunt']['unique_eggs'],
-                'last_click' => $response['cheese_hunt']['last_click'],
-                'status' => $response['cheese_hunt']['total_clicks'] > 0 ? 'active' : 'not_played'
+                'status' => $response['cheese_hunt']['total_clicks'] > 0 ? 'active' : 'not_played',
+                'stats' => [
+                    'total_clicks' => $response['cheese_hunt']['total_clicks'],
+                    'quest_clicks' => $response['cheese_hunt']['quest_clicks'],
+                    'unique_eggs' => $response['cheese_hunt']['unique_eggs'],
+                    'dspoinc_earned' => $response['cheese_hunt']['dspoinc_earned'],
+                    'last_click' => $response['cheese_hunt']['last_click']
+                ]
             ],
             'discord_race' => [
                 'name' => 'Discord Cheese Race',
                 'icon' => '🏁',
                 'url' => 'https://discord.com/invite/qYYNGJrR43',
-                'total_races' => $response['discord_race']['total_races'],
-                'wins' => $response['discord_race']['wins'],
-                'podium_finishes' => $response['discord_race']['podiums'],
-                'best_position' => $response['discord_race']['best_position'] ? $response['discord_race']['best_position'] : 'N/A',
-                'status' => $response['discord_race']['total_races'] > 0 ? 'active' : 'not_played'
+                'status' => $response['discord_race']['total_races'] > 0 ? 'active' : 'not_played',
+                'stats' => [
+                    'total_races' => $response['discord_race']['total_races'],
+                    'wins' => $response['discord_race']['wins'],
+                    'podium_finishes' => $response['discord_race']['podiums'],
+                    'best_position' => $response['discord_race']['best_position'] ? $response['discord_race']['best_position'] : 'N/A',
+                    'dspoinc_earned' => $response['discord_race']['dspoinc_earned']
+                ]
             ]
         ]
     ]);
-    
+
 } catch (Exception $e) {
     error_log("User game missions API error: " . $e->getMessage());
     http_response_code(500);
