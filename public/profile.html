@@ -346,6 +346,15 @@ require_once 'discord-invite.php';
     <div id="missions-section" class="mt-6 bg-gradient-to-br from-green-900/30 to-blue-900/30 rounded-lg p-4 shadow-inner border border-green-500/30">
       <h2 class="font-semibold text-lg mb-4 text-green-300">🎮 Game Missions & Achievements</h2>
       
+      <!-- 🚀 Load Missions Button -->
+      <div class="mb-6 text-center">
+        <button onclick="loadGameMissions()" 
+                class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-purple-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-2 ring-purple-400/30">
+          🚀 Load My Missions Status
+        </button>
+        <p class="text-xs text-gray-400 mt-2 italic">Click to load your 5-game missions and achievements</p>
+      </div>
+      
       <!-- 🏆 Overall Progress -->
       <div class="mb-6">
         <h3 class="text-md font-semibold mb-3 text-yellow-300">🏆 Overall Progress</h3>
@@ -2443,6 +2452,63 @@ function displayInventoryAndHistory(enhancedData) {
   }
 }
 
+// Function to get game statistics for display
+function getGameStats(gameKey, game) {
+  try {
+    if (!game || !game.stats) {
+      return '<div class="text-gray-400">No data available</div>';
+    }
+
+    const stats = game.stats;
+    let statsHTML = '';
+
+    switch (gameKey) {
+      case 'tetris':
+        statsHTML = `
+          <div class="text-blue-300">Best Score: ${stats.best_score ? stats.best_score.toLocaleString() : 'N/A'}</div>
+          <div class="text-green-300">Total Games: ${stats.total_games || 0}</div>
+          <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
+        `;
+        break;
+      case 'snake':
+        statsHTML = `
+          <div class="text-blue-300">Best Score: ${stats.best_score ? stats.best_score.toLocaleString() : 'N/A'}</div>
+          <div class="text-green-300">Total Games: ${stats.total_games || 0}</div>
+          <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
+        `;
+        break;
+      case 'space_invaders':
+        statsHTML = `
+          <div class="text-blue-300">Best Score: ${stats.best_score ? stats.best_score.toLocaleString() : 'N/A'}</div>
+          <div class="text-green-300">Total Games: ${stats.total_games || 0}</div>
+          <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
+        `;
+        break;
+      case 'cheese_hunt':
+        statsHTML = `
+          <div class="text-blue-300">Total Clicks: ${stats.total_clicks ? stats.total_clicks.toLocaleString() : '0'}</div>
+          <div class="text-green-300">Quest Clicks: ${stats.quest_clicks || 0}</div>
+          <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
+        `;
+        break;
+      case 'discord_race':
+        statsHTML = `
+          <div class="text-blue-300">Total Races: ${stats.total_races || 0}</div>
+          <div class="text-green-300">Wins: ${stats.wins || 0}</div>
+          <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
+        `;
+        break;
+      default:
+        statsHTML = '<div class="text-gray-400">Unknown game type</div>';
+    }
+
+    return statsHTML;
+  } catch (error) {
+    console.error('Error in getGameStats:', error);
+    return '<div class="text-red-400">Error loading stats</div>';
+  }
+}
+
 // Function to display 5-game missions data
 function displayMissions(data) {
   try {
@@ -2497,6 +2563,55 @@ function displayMissions(data) {
   } catch (error) {
     console.error('❌ Error displaying missions:', error);
     displayMissionsError(error.message);
+  }
+}
+
+// Function to display missions error
+function displayMissionsError(errorMessage, suggestion = '') {
+  const missionsResults = document.getElementById('missionsResults');
+  if (missionsResults) {
+    missionsResults.innerHTML = `
+      <div class="text-center text-red-400 py-4">
+        <div class="text-lg mb-2">❌ Error loading missions</div>
+        <div class="text-sm mb-2">${errorMessage}</div>
+        ${suggestion ? `<div class="text-xs text-gray-400">${suggestion}</div>` : ''}
+      </div>
+    `;
+  }
+}
+
+// Function to navigate to game
+function navigateToGame(url) {
+  if (url && url !== '#') {
+    window.open(url, '_blank');
+  }
+}
+
+// Function to load game missions data
+async function loadGameMissions() {
+  try {
+    console.log('🎮 Loading game missions...');
+    
+    const response = await fetch('/api/user-game-missions.php', {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('🎮 Missions data loaded:', data);
+    
+    if (data.success && data.data) {
+      displayMissions(data.data);
+    } else {
+      throw new Error(data.error || 'Failed to load missions data');
+    }
+  } catch (error) {
+    console.error('❌ Error loading game missions:', error);
+    displayMissionsError(error.message, 'Try refreshing the page or check your connection.');
   }
 }
 
