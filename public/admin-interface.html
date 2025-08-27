@@ -7716,10 +7716,143 @@ require_once 'discord-invite.php';
       `).join('');
     }
 
-    // Edit store item (placeholder for future implementation)
-    function editStoreItem(itemId) {
-      addLog(`🔄 Edit store item functionality coming soon! Item ID: ${itemId}`);
-      // TODO: Implement edit store item modal/form
+    // Edit store item functionality
+    async function editStoreItem(itemId) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      try {
+        // Get current item data
+        const response = await fetch(API_BASE_URL + '/api/store/item-info.php?item_id=' + itemId);
+        const data = await response.json();
+        
+        if (!data.success) {
+          addLog(`❌ Failed to get item info: ${data.error}`);
+          return;
+        }
+
+        const item = data.item;
+        
+        // Show edit modal
+        showEditStoreItemModal(item);
+        
+      } catch (error) {
+        addLog(`❌ Edit store item error: ${error.message}`);
+      }
+    }
+
+    // Show edit store item modal
+    function showEditStoreItemModal(item) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-gray-800 p-6 rounded-lg w-96 max-w-full mx-4">
+          <h3 class="text-xl font-bold mb-4 text-white">Edit Store Item</h3>
+          
+          <form id="editStoreItemForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Item Name</label>
+              <input type="text" id="editItemName" value="${item.item_name}" 
+                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white" required>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Description</label>
+              <textarea id="editItemDescription" rows="3" 
+                        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white" required>${item.description}</textarea>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Price ($DSPOINC)</label>
+              <input type="number" id="editItemPrice" value="${item.price}" 
+                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white" required>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Image URL (optional)</label>
+              <input type="url" id="editItemImageUrl" value="${item.image_url || ''}" 
+                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Status</label>
+              <select id="editItemActive" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+                <option value="1" ${item.is_active == 1 ? 'selected' : ''}>Active</option>
+                <option value="0" ${item.is_active == 0 ? 'selected' : ''}>Inactive</option>
+              </select>
+            </div>
+            
+            <div class="flex gap-3 pt-4">
+              <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                Update Item
+              </button>
+              <button type="button" onclick="closeEditStoreItemModal()" 
+                      class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Handle form submission
+      document.getElementById('editStoreItemForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await updateStoreItem(item.item_id);
+      });
+    }
+
+    // Close edit store item modal
+    function closeEditStoreItemModal() {
+      const modal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-50');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    // Update store item
+    async function updateStoreItem(itemId) {
+      try {
+        const name = document.getElementById('editItemName').value.trim();
+        const description = document.getElementById('editItemDescription').value.trim();
+        const price = parseInt(document.getElementById('editItemPrice').value);
+        const imageUrl = document.getElementById('editItemImageUrl').value.trim();
+        const active = parseInt(document.getElementById('editItemActive').value);
+
+        if (!name || !description || isNaN(price) || price < 0) {
+          addLog('❌ Please fill in all required fields with valid values');
+          return;
+        }
+
+        const response = await fetch(API_BASE_URL + '/api/store/update-item.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            item_id: itemId,
+            item_name: name,
+            description: description,
+            price: price,
+            image_url: imageUrl,
+            is_active: active
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Store item updated successfully! Item ID: ${itemId}`);
+          closeEditStoreItemModal();
+          loadStoreItems(); // Refresh the store items list
+        } else {
+          addLog(`❌ Failed to update store item: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Update store item error: ${error.message}`);
+      }
     }
 
     // Delete store item
@@ -8018,11 +8151,7 @@ require_once 'discord-invite.php';
       `;
     }
 
-    // Edit store item (placeholder for future implementation)
-    function editStoreItem(itemId) {
-      addLog(`🔄 Edit store item functionality coming soon! Item ID: ${itemId}`);
-      // TODO: Implement edit store item modal/form
-    }
+    // Edit store item functionality is already implemented above
 
     // Delete store item functionality is already implemented above
 
