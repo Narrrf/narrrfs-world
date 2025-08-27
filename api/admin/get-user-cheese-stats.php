@@ -95,14 +95,11 @@ try {
 
     // Get user's quest participation
     $stmt = $db->prepare("SELECT 
-        q.quest_id,
-        q.description,
-        c.timestamp,
-        c.proof
-        FROM tbl_cheese_clicks c
-        JOIN tbl_quests q ON c.quest_id = q.quest_id
-        WHERE c.user_wallet = ?
-        ORDER BY c.timestamp DESC");
+        quest_id,
+        timestamp
+        FROM tbl_cheese_clicks 
+        WHERE user_wallet = ? AND quest_id IS NOT NULL
+        ORDER BY timestamp DESC");
     $stmt->bindValue(1, $userId, SQLITE3_TEXT);
     $result = $stmt->execute();
     $questParticipation = [];

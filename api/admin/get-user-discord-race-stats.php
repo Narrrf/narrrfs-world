@@ -92,7 +92,7 @@ try {
         SUM(dspoinc_earned) as total_dspoinc,
         MAX(joined_at) as last_race
         FROM tbl_race_participants 
-        WHERE user_id = ?");
+        WHERE discord_id = ?");
     $stmt->bindValue(1, $userId, SQLITE3_TEXT);
     $result = $stmt->execute();
     $raceStats = $result->fetchArray(SQLITE3_ASSOC);
@@ -109,7 +109,7 @@ try {
         cr.status
         FROM tbl_race_participants rp
         LEFT JOIN tbl_cheese_races cr ON rp.race_id = cr.race_id
-        WHERE rp.user_id = ?
+        WHERE rp.discord_id = ?
         ORDER BY rp.joined_at DESC
         LIMIT 10");
     $stmt->bindValue(1, $userId, SQLITE3_TEXT);
@@ -128,7 +128,7 @@ try {
         SUM(cheese_collected) as total_cheese,
         SUM(dspoinc_earned) as total_dspoinc
         FROM tbl_race_participants 
-        WHERE user_id = ?
+        WHERE discord_id = ?
         GROUP BY season
         ORDER BY season DESC");
     $stmt->bindValue(1, $userId, SQLITE3_TEXT);
