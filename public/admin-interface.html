@@ -1333,7 +1333,7 @@ require_once 'discord-invite.php';
         <p class="text-sm text-gray-600 mt-2">✅ Game stats are already visible! This unlocks database download/upload operations only</p>
       </div>
       
-              <div id="headerDatabaseOptions" style="display: none;">
+      <div id="headerDatabaseOptions" style="display: none;">
           <h3 class="text-lg font-semibold text-green-600 mb-3">✅ Database Download/Upload Access Unlocked</h3>
         <div class="flex flex-wrap justify-center gap-3">
           <button onclick="downloadDatabase()" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
@@ -1422,6 +1422,7 @@ require_once 'discord-invite.php';
       <div class="flex flex-wrap gap-2 mb-4">
         <button class="tab-btn active px-4 py-2 rounded" data-tab="dashboard">📊 Dashboard</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="users">👥 User Management</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="missionsStatus">🎯 Missions Status</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="points">💰 Point Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="store">🏪 Store Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="quests">🏆 Quest System</button>
@@ -1790,6 +1791,54 @@ require_once 'discord-invite.php';
         <!-- User Quest History Results -->
         <div id="userQuestHistory" class="space-y-4">
           <div class="text-gray-300">Enter a user ID or username to view their quest and cheese click history...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Missions Status Tab -->
+    <div class="admin-card mb-6" id="missionsStatusTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">🎯 Missions Status Overview</h2>
+      
+      <!-- User Search for Missions Status -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium mb-2">🔍 Search User for Missions Status:</label>
+        <div class="flex gap-2">
+          <input type="text" id="missionsStatusSearch" placeholder="Search by Discord ID or username..." 
+                 class="flex-1 px-3 py-2 rounded text-gray-800" 
+                 oninput="searchMissionsStatusInstant(this.value)">
+          <button onclick="searchMissionsStatus()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Search</button>
+        </div>
+      </div>
+
+      <!-- Missions Status Results -->
+      <div id="missionsStatusResults" class="space-y-4">
+        <div class="text-gray-300">Search for a user to see their missions status across all 5 games...</div>
+      </div>
+
+      <!-- Quick Missions Overview -->
+      <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">📊 Quick Missions Overview</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-green-900 bg-opacity-50 p-3 rounded-lg">
+            <h4 class="font-semibold text-green-300">🧀 Cheese Hunt</h4>
+            <div id="cheeseHuntOverview" class="text-sm text-gray-300">Loading...</div>
+          </div>
+          <div class="bg-blue-900 bg-opacity-50 p-3 rounded-lg">
+            <h4 class="font-semibold text-blue-300">🎮 Tetris</h4>
+            <div id="tetrisOverview" class="text-sm text-gray-300">Loading...</div>
+          </div>
+          <div class="bg-purple-900 bg-opacity-50 p-3 rounded-lg">
+            <h4 class="font-semibold text-purple-300">🐍 Snake</h4>
+            <div id="snakeOverview" class="text-sm text-gray-300">Loading...</div>
+          </div>
+          <div class="bg-yellow-900 bg-opacity-50 p-3 rounded-lg">
+            <h4 class="font-semibold text-yellow-300">👾 Space Invaders</h4>
+            <div id="spaceInvadersOverview" class="text-sm text-gray-300">Loading...</div>
+          </div>
+          <div class="bg-red-900 bg-opacity-50 p-3 rounded-lg">
+            <h4 class="font-semibold text-red-300">🏁 Discord Race</h4>
+            <div id="discordRaceOverview" class="text-sm text-gray-300">Loading...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -4196,7 +4245,7 @@ require_once 'discord-invite.php';
       console.log('🧪 Testing all tabs...');
       addLog('🧪 Testing all tabs...');
       
-      const tabNames = ['dashboard', 'users', 'points', 'store', 'quests', 'games', 'discord', 'holderVerification', 'cheeseGuide', 'communityFunds'];
+      const tabNames = ['dashboard', 'users', 'missionsStatus', 'points', 'store', 'quests', 'games', 'discord', 'holderVerification', 'cheeseGuide', 'communityFunds'];
       
       tabNames.forEach(tabName => {
         console.log(`🧪 Testing tab: ${tabName}`);
@@ -4735,6 +4784,11 @@ require_once 'discord-invite.php';
             loadRecentUserActivity();
             addLog('👥 User management tab auto-loaded');
             
+          } else if (tabName === 'missionsStatus') {
+            // Missions status - Auto-load overview data
+            loadMissionsStatusOverview();
+            addLog('🎯 Missions status tab auto-loaded');
+            
           } else if (tabName === 'points') {
             // Point management - Auto-load point statistics
             loadPointStatistics();
@@ -4767,27 +4821,52 @@ require_once 'discord-invite.php';
             
             // Wait for tab animation to complete before loading data
             setTimeout(() => {
-              loadGameOverview();
-              loadSeasonStats();
-              loadGameSettings();
-              loadCurrentSeasonSettings();
-              
-              // Load all game data with auto-refresh
-              loadTetrisData();
-              loadSnakeData();
-              loadSpaceInvadersData();
-              loadCheeseHuntData();
-              loadDiscordRaceData();
-              
-              // Switch to overview tab by default
-              setTimeout(() => {
-                switchGameTab('overview');
-              }, 100);
+            loadGameOverview();
+            loadSeasonStats();
+            loadGameSettings();
+            loadCurrentSeasonSettings();
+            
+            // Load all game data with auto-refresh
+            loadTetrisData();
+            loadSnakeData();
+            loadSpaceInvadersData();
+            loadCheeseHuntData();
+            loadDiscordRaceData();
+            
+            // Switch to overview tab by default
+            setTimeout(() => {
+              switchGameTab('overview');
+            }, 100);
               
               // Display any pending data that was loaded while tab was hidden
               displayPendingGameData();
               
-              addLog('🎮 Game management tab auto-loaded with all game data');
+              // 🔧 CRITICAL FIX: Force display of loaded data after tab switch
+              setTimeout(() => {
+                console.log('🔄 Force displaying loaded game data after tab switch...');
+                if (window.pendingTetrisData) {
+                  console.log('📊 Force displaying pending Tetris data...');
+                  displayTetrisData(window.pendingTetrisData);
+                  delete window.pendingTetrisData;
+                }
+                if (window.pendingSnakeData) {
+                  console.log('🐍 Force displaying pending Snake data...');
+                  displaySnakeData(window.pendingSnakeData);
+                  delete window.pendingSnakeData;
+                }
+                if (window.pendingSpaceInvadersData) {
+                  console.log('👾 Force displaying pending Space Invaders data...');
+                  displaySpaceInvadersData(window.pendingSpaceInvadersData);
+                  delete window.pendingSpaceInvadersData;
+                }
+                if (window.pendingDiscordRaceData) {
+                  console.log('🏁 Force displaying pending Discord Race data...');
+                  displayDiscordRaceData(window.pendingDiscordRaceData);
+                  delete window.pendingDiscordRaceData;
+                }
+              }, 300); // Wait for tab switch animation to complete
+              
+            addLog('🎮 Game management tab auto-loaded with all game data');
             }, 250); // Wait for tab animation to complete
             
           } else if (tabName === 'games2') {
@@ -4839,31 +4918,34 @@ require_once 'discord-invite.php';
     function displayPendingGameData() {
       console.log('🔄 Checking for pending game data to display...');
       
-      if (window.pendingTetrisData) {
-        console.log('📊 Displaying pending Tetris data...');
-        displayTetrisData(window.pendingTetrisData);
-        delete window.pendingTetrisData;
-      }
-      
-      if (window.pendingSnakeData) {
-        console.log('🐍 Displaying pending Snake data...');
-        displaySnakeData(window.pendingSnakeData);
-        delete window.pendingSnakeData;
-      }
-      
-      if (window.pendingSpaceInvadersData) {
-        console.log('👾 Displaying pending Space Invaders data...');
-        displaySpaceInvadersData(window.pendingSpaceInvadersData);
-        delete window.pendingSpaceInvadersData;
-      }
-      
-      if (window.pendingDiscordRaceData) {
-        console.log('🏁 Displaying pending Discord Race data...');
-        displayDiscordRaceData(window.pendingDiscordRaceData);
-        delete window.pendingDiscordRaceData;
-      }
-      
-      console.log('✅ Pending game data display completed');
+      // Add a small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        if (window.pendingTetrisData) {
+          console.log('📊 Displaying pending Tetris data...');
+          displayTetrisData(window.pendingTetrisData);
+          delete window.pendingTetrisData;
+        }
+        
+        if (window.pendingSnakeData) {
+          console.log('🐍 Displaying pending Snake data...');
+          displaySnakeData(window.pendingSnakeData);
+          delete window.pendingSnakeData;
+        }
+        
+        if (window.pendingSpaceInvadersData) {
+          console.log('👾 Displaying pending Space Invaders data...');
+          displaySpaceInvadersData(window.pendingSpaceInvadersData);
+          delete window.pendingSpaceInvadersData;
+        }
+        
+        if (window.pendingDiscordRaceData) {
+          console.log('🏁 Displaying pending Discord Race data...');
+          displayDiscordRaceData(window.pendingDiscordRaceData);
+          delete window.pendingDiscordRaceData;
+        }
+        
+        console.log('✅ Pending game data display completed');
+      }, 100); // Small delay to ensure DOM is ready
     }
 
     // Load overview game statistics for all 5 games in Overview Dashboard
@@ -6963,6 +7045,71 @@ require_once 'discord-invite.php';
       }, 300);
     }
 
+    // 🎯 NEW: Instant missions status search
+    function searchMissionsStatusInstant(searchTerm) {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      
+      if (searchTerm.length < 2) {
+        document.getElementById('missionsStatusResults').innerHTML = '<div class="text-gray-300">Enter at least 2 characters to search...</div>';
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'searchuser',
+              search: searchTerm
+            })
+          });
+
+          const data = await response.json();
+          
+          if (data.success) {
+            displayMissionsStatusResults(data.users);
+            addLog(`🎯 Found ${data.users.length} users for missions status matching "${searchTerm}"`);
+          } else {
+            addLog(`❌ Missions status search failed: ${data.error}`);
+          }
+        } catch (error) {
+          addLog(`❌ Missions status search error: ${error.message}`);
+        }
+      }, 300);
+    }
+
+    // 🎯 NEW: Missions status search
+    async function searchMissionsStatus() {
+      const searchTerm = document.getElementById('missionsStatusSearch').value.trim();
+      if (!searchTerm) {
+        addLog('❌ Please enter a search term for missions status');
+        return;
+      }
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/point-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'searchuser',
+            search: searchTerm
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          displayMissionsStatusResults(data.users);
+          addLog(`🎯 Found ${data.users.length} users for missions status matching "${searchTerm}"`);
+        } else {
+          addLog(`❌ Missions status search failed: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Missions status search error: ${error.message}`);
+      }
+    }
+
     // User search
     async function searchUsers() {
       const searchTerm = document.getElementById('userSearch').value.trim();
@@ -7017,6 +7164,37 @@ require_once 'discord-invite.php';
                     class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">
               View Adjustments
             </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 🎯 NEW: Display missions status results
+    function displayMissionsStatusResults(users) {
+      const container = document.getElementById('missionsStatusResults');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="text-gray-300">No users found</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(user => `
+        <div class="user-card">
+          <h4 class="font-semibold mb-2">${user.username || 'Unknown User'}</h4>
+          <p class="text-sm text-gray-300 mb-2">ID: ${user.user_id}</p>
+          <p class="text-sm text-yellow-400 mb-3">Balance: ${user.score?.toLocaleString() || 0} $DSPOINC</p>
+          <div class="flex gap-2 mb-3">
+            <button onclick="loadUserMissionsStatus('${user.user_id}', '${user.username || 'Unknown'}')" 
+                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex-1">
+              🎯 View Missions Status
+            </button>
+            <button onclick="loadUserQuestHistory('${user.user_id}', '${user.username || 'Unknown'}')" 
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">
+              🏆 View Quest History
+            </button>
+          </div>
+          <div id="missionsStatus_${user.user_id}" class="hidden">
+            <!-- Missions status will be loaded here -->
           </div>
         </div>
       `).join('');
@@ -7890,23 +8068,23 @@ require_once 'discord-invite.php';
     }
 
     // Add log entry
-function addLog(message) {
-  const log = document.getElementById('statusLog');
+    function addLog(message) {
+      const log = document.getElementById('statusLog');
   if (log) {
-    const timestamp = new Date().toLocaleTimeString();
-    log.innerHTML += `<div class="text-blue-400">[${timestamp}] ${message}</div>`;
-    log.scrollTop = log.scrollHeight;
+      const timestamp = new Date().toLocaleTimeString();
+      log.innerHTML += `<div class="text-blue-400">[${timestamp}] ${message}</div>`;
+      log.scrollTop = log.scrollHeight;
   } else {
     console.log(`[${new Date().toLocaleTimeString()}] ${message}`);
   }
-}
+    }
 
     // Check for existing Discord authentication on page load
 // ... existing code ...
 
 // 🔧 CRITICAL FIX: Proper Discord admin authentication
-async function checkDiscordAuth() {
-    try {
+    async function checkDiscordAuth() {
+      try {
         // Check if user is already authenticated via session
         const response = await fetch(API_BASE_URL + '/api/auth/check-session.php', {
             method: 'GET',
@@ -7918,7 +8096,7 @@ async function checkDiscordAuth() {
             
             if (data.success && data.user) {
                 // ✅ Discord user already authenticated via session
-                currentAdmin = {
+            currentAdmin = {
                     username: data.user.discord_name || 'Discord Admin',
                     discord_id: data.user.discord_id,
                     role: data.role || 'moderator',
@@ -7935,7 +8113,7 @@ async function checkDiscordAuth() {
                 // Show database unlock button for Discord admins
                 showDatabaseUnlockForDiscordAdmin();
                 
-                return true;
+            return true;
             }
         }
         
@@ -7973,7 +8151,7 @@ async function checkDiscordAuth() {
         
     } catch (error) {
         console.error('❌ Discord auth error:', error);
-        return false;
+      return false;
     }
 }
 
@@ -8046,7 +8224,7 @@ async function loadAllGameStatsForAuthenticatedUser() {
 
 // �� CRITICAL FIX: Hide database unlock modal from game tabs
 function hideDatabaseUnlockModal() {
-    const modal = document.getElementById('unlockModal');
+      const modal = document.getElementById('unlockModal');
     if (modal) {
         modal.classList.add('hidden');
         console.log('✅ Database unlock modal hidden from game tabs');
@@ -8056,12 +8234,12 @@ function hideDatabaseUnlockModal() {
 // 🔧 CRITICAL FIX: Prevent modal from showing in game tabs
 document.addEventListener('DOMContentLoaded', function() {
     // Hide modal if it appears in wrong place
-    const modal = document.getElementById('unlockModal');
+      const modal = document.getElementById('unlockModal');
     if (modal) {
         // Only show modal in header, never in game tabs
         const currentTab = getCurrentActiveTab();
         if (modal) {
-            modal.classList.add('hidden');
+      modal.classList.add('hidden');
         }
     }
     
@@ -8234,7 +8412,7 @@ async function authenticateDiscord() {
         addLog('❌ Database unlock error: ' + error.message);
       }
     }
-    
+
     // Validate database password
     async function validateDatabasePassword(password) {
       try {
@@ -9104,6 +9282,175 @@ async function authenticateDiscord() {
       } catch (error) {
         addLog(`❌ Quest history loading error: ${error.message}`);
       }
+    }
+
+    // 🎯 NEW: Load user missions status across all 5 games
+    async function loadUserMissionsStatus(userId, username) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog(`🎯 Loading missions status for user: ${username} (${userId})...`);
+
+      try {
+        // Load missions status from multiple sources
+        const [cheeseData, tetrisData, snakeData, spaceInvadersData, discordRaceData] = await Promise.all([
+          fetch(API_BASE_URL + '/api/admin/get-user-cheese-stats.php?user_id=' + encodeURIComponent(userId)).then(r => r.json()),
+          fetch(API_BASE_URL + '/api/admin/get-user-tetris-stats.php?user_id=' + encodeURIComponent(userId)).then(r => r.json()),
+          fetch(API_BASE_URL + '/api/admin/get-user-snake-stats.php?user_id=' + encodeURIComponent(userId)).then(r => r.json()),
+          fetch(API_BASE_URL + '/api/admin/get-user-space-invaders-stats.php?user_id=' + encodeURIComponent(userId)).then(r => r.json()),
+          fetch(API_BASE_URL + '/api/admin/get-user-discord-race-stats.php?user_id=' + encodeURIComponent(userId)).then(r => r.json())
+        ]);
+
+        // Display the missions status
+        displayUserMissionsStatus(userId, username, {
+          cheese: cheeseData,
+          tetris: tetrisData,
+          snake: snakeData,
+          spaceInvaders: spaceInvadersData,
+          discordRace: discordRaceData
+        });
+
+        addLog(`✅ Loaded missions status for ${username}`);
+      } catch (error) {
+        addLog(`❌ Missions status loading error: ${error.message}`);
+        console.error('Missions status loading error:', error);
+      }
+    }
+
+    // 🎯 NEW: Display user missions status
+    function displayUserMissionsStatus(userId, username, missionsData) {
+      const container = document.getElementById(`missionsStatus_${userId}`);
+      
+      if (!container) {
+        addLog('❌ Missions status container not found');
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="bg-gray-800 p-4 rounded-lg mt-3">
+          <h5 class="font-semibold text-green-400 mb-3">🎯 Missions Status for ${username}</h5>
+          
+          <!-- Cheese Hunt Status -->
+          <div class="mb-4 p-3 bg-green-900 bg-opacity-30 rounded">
+            <h6 class="font-semibold text-green-300 mb-2">🧀 Cheese Hunt</h6>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Total Clicks:</span>
+                <span class="text-white font-semibold">${missionsData.cheese?.success ? missionsData.cheese.data?.total_clicks || 0 : 'Error'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Last 24h:</span>
+                <span class="text-green-400 font-semibold">${missionsData.cheese?.success ? missionsData.cheese.data?.clicks_24h || 0 : 'Error'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Status:</span>
+                <span class="text-yellow-400 font-semibold">${missionsData.cheese?.success ? 'Active' : 'Inactive'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tetris Status -->
+          <div class="mb-4 p-3 bg-blue-900 bg-opacity-30 rounded">
+            <h6 class="font-semibold text-blue-300 mb-2">🎮 Tetris</h6>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Games Played:</span>
+                <span class="text-white font-semibold">${missionsData.tetris?.success ? missionsData.tetris.data?.games_played || 0 : 'Error'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">High Score:</span>
+                <span class="text-green-400 font-semibold">${missionsData.tetris?.success ? missionsData.tetris.data?.high_score || 0 : 'Error'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Status:</span>
+                <span class="text-yellow-400 font-semibold">${missionsData.tetris?.success ? 'Active' : 'Inactive'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Snake Status -->
+          <div class="mb-4 p-3 bg-purple-900 bg-opacity-30 rounded">
+            <h6 class="font-semibold text-purple-300 mb-2">🐍 Snake</h6>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Games Played:</span>
+                <span class="text-white font-semibold">${missionsData.snake?.success ? missionsData.snake.data?.games_played || 0 : 'Error'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">High Score:</span>
+                <span class="text-green-400 font-semibold">${missionsData.snake?.success ? missionsData.snake.data?.high_score || 0 : 'Error'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Status:</span>
+                <span class="text-yellow-400 font-semibold">${missionsData.snake?.success ? 'Active' : 'Inactive'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Space Invaders Status -->
+          <div class="mb-4 p-3 bg-yellow-900 bg-opacity-30 rounded">
+            <h6 class="font-semibold text-yellow-300 mb-2">👾 Space Invaders</h6>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Games Played:</span>
+                <span class="text-white font-semibold">${missionsData.spaceInvaders?.success ? missionsData.spaceInvaders.data?.games_played || 0 : 'Error'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">High Score:</span>
+                <span class="text-green-400 font-semibold">${missionsData.spaceInvaders?.success ? missionsData.spaceInvaders.data?.high_score || 0 : 'Error'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Status:</span>
+                <span class="text-yellow-400 font-semibold">${missionsData.spaceInvaders?.success ? 'Active' : 'Inactive'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Discord Race Status -->
+          <div class="mb-4 p-3 bg-red-900 bg-opacity-30 rounded">
+            <h6 class="font-semibold text-red-300 mb-2">🏁 Discord Race</h6>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Races Participated:</span>
+                <span class="text-white font-semibold">${missionsData.discordRace?.success ? missionsData.discordRace.data?.races_participated || 0 : 'Error'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Best Finish:</span>
+                <span class="text-green-400 font-semibold">${missionsData.discordRace?.success ? missionsData.discordRace.data?.best_finish || 'N/A' : 'Error'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Status:</span>
+                <span class="text-yellow-400 font-semibold">${missionsData.discordRace?.success ? 'Active' : 'Inactive'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overall Mission Progress -->
+          <div class="mt-4 p-3 bg-gray-700 rounded">
+            <h6 class="font-semibold text-white mb-2">📊 Overall Mission Progress</h6>
+            <div class="text-sm text-gray-300">
+              <div class="flex justify-between mb-1">
+                <span>Active Games:</span>
+                <span class="text-green-400 font-semibold">${
+                  [missionsData.cheese, missionsData.tetris, missionsData.snake, missionsData.spaceInvaders, missionsData.discordRace]
+                    .filter(game => game?.success).length
+                }/5</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Mission Completion:</span>
+                <span class="text-yellow-400 font-semibold">${
+                  Math.round(([missionsData.cheese, missionsData.tetris, missionsData.snake, missionsData.spaceInvaders, missionsData.discordRace]
+                    .filter(game => game?.success).length / 5) * 100)
+                }%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.classList.remove('hidden');
     }
 
     function displayUserQuestHistory(data) {
@@ -10095,10 +10442,28 @@ function updateGameTabContent(gameType, gameData) {
             case 'tetris':
               console.log('Loading Tetris data...');
               await loadTetrisData();
+              
+              // 🔧 CRITICAL FIX: Force display of any pending Tetris data
+              if (window.pendingTetrisData) {
+                console.log('📊 Force displaying pending Tetris data after tab switch...');
+                setTimeout(() => {
+                  displayTetrisData(window.pendingTetrisData);
+                  delete window.pendingTetrisData;
+                }, 100);
+              }
               break;
             case 'snake':
               console.log('Loading Snake data...');
               await loadSnakeData();
+              
+              // 🔧 CRITICAL FIX: Force display of any pending Snake data
+              if (window.pendingSnakeData) {
+                console.log('🐍 Force displaying pending Snake data after tab switch...');
+                setTimeout(() => {
+                  displaySnakeData(window.pendingSnakeData);
+                  delete window.pendingSnakeData;
+                }, 100);
+              }
               break;
             case 'space-invaders':
               console.log('👾 Loading Space Invaders data...');
@@ -10106,18 +10471,45 @@ function updateGameTabContent(gameType, gameData) {
               await loadSpaceInvadersData();
               await loadBossNotifications(); // Load boss notifications when tab is opened
               startBossNotificationChecking(); // Start real-time notification checking
+              
+              // 🔧 CRITICAL FIX: Force display of any pending Space Invaders data
+              if (window.pendingSpaceInvadersData) {
+                console.log('👾 Force displaying pending Space Invaders data after tab switch...');
+                setTimeout(() => {
+                  displaySpaceInvadersData(window.pendingSpaceInvadersData);
+                  delete window.pendingSpaceInvadersData;
+                }, 100);
+              }
               break;
             case 'cheese-hunt':
               console.log('🧀 Loading Cheese Hunt data...');
               addLog('🧀 Loading Cheese Hunt data...');
               // Don't call refreshCheeseHuntDisplay here - it clears content
               await loadCheeseHuntData();
+              
+              // 🔧 CRITICAL FIX: Force display of any pending Cheese Hunt data
+              if (window.pendingCheeseHuntData) {
+                console.log('🧀 Force displaying pending Cheese Hunt data after tab switch...');
+                setTimeout(() => {
+                  displayCheeseHuntData(window.pendingCheeseHuntData);
+                  delete window.pendingCheeseHuntData;
+                }, 100);
+              }
               break;
             case 'discord-race':
               console.log('🏁 Loading Discord Race data...');
               addLog('🏁 Loading Discord Race data...');
               // Don't call refreshDiscordRaceDisplay here - it clears content
               await loadDiscordRaceData();
+              
+              // 🔧 CRITICAL FIX: Force display of any pending Discord Race data
+              if (window.pendingDiscordRaceData) {
+                console.log('🏁 Force displaying pending Discord Race data after tab switch...');
+                setTimeout(() => {
+                  displayDiscordRaceData(window.pendingDiscordRaceData);
+                  delete window.pendingDiscordRaceData;
+                }, 100);
+              }
               break;
           }
           
@@ -10395,7 +10787,15 @@ function updateGameTabContent(gameType, gameData) {
           return;
         }
         
-        console.log('✅ Games tab is visible, proceeding with Tetris data display');
+        // Additional check: ensure the specific game tab content is visible
+        const tetrisTabContent = document.getElementById('tetrisTab');
+        if (!tetrisTabContent || tetrisTabContent.style.display === 'none') {
+          console.log('⚠️ Tetris tab content not visible, deferring Tetris data display');
+          window.pendingTetrisData = tetrisData;
+          return;
+        }
+        
+        console.log('✅ Games tab and Tetris tab are visible, proceeding with Tetris data display');
         
         // Helper function to format numbers nicely
         const formatNumber = (num) => {
@@ -10418,14 +10818,48 @@ function updateGameTabContent(gameType, gameData) {
         console.log('🔍 DEBUG: Looking for tetrisTotalScores element...');
         const tetrisTotalScoresEl = document.getElementById('tetrisTotalScores');
         console.log('🔍 DEBUG: tetrisTotalScores element found:', !!tetrisTotalScoresEl);
+        console.log('🔍 DEBUG: Element details:', tetrisTotalScoresEl ? {
+          id: tetrisTotalScoresEl.id,
+          tagName: tetrisTotalScoresEl.tagName,
+          className: tetrisTotalScoresEl.className,
+          textContent: tetrisTotalScoresEl.textContent,
+          style: tetrisTotalScoresEl.style.display
+        } : 'Element not found');
         
         if (tetrisTotalScoresEl) {
           const totalScores = tetrisData.season_data?.total_scores || 0;
           console.log('🔍 DEBUG: Setting tetrisTotalScores to:', totalScores);
           tetrisTotalScoresEl.textContent = formatNumber(totalScores);
           tetrisTotalScoresEl.className = totalScores > 0 ? 'text-white font-semibold' : 'text-gray-400';
-        } else {
-          console.error('❌ tetrisTotalScores element not found!');
+                  console.log('✅ Successfully updated tetrisTotalScores element');
+      } else {
+        console.error('❌ tetrisTotalScores element not found!');
+        console.log('🔍 DEBUG: Available elements with "tetris" in ID:');
+        const allElements = document.querySelectorAll('[id*="tetris"]');
+        allElements.forEach(el => console.log('  -', el.id, ':', el.tagName, ':', el.textContent));
+        
+        // 🔧 CRITICAL FIX: Try to find elements by partial match
+        console.log('🔍 DEBUG: Trying partial element search...');
+        const partialElements = document.querySelectorAll('[id*="tetris"], [class*="tetris"]');
+        partialElements.forEach(el => console.log('  - Partial match:', el.id || 'no-id', ':', el.tagName, ':', el.className));
+        
+        // 🔧 CRITICAL FIX: Try to create fallback display
+        console.log('🔧 CRITICAL: Attempting fallback display...');
+        const fallbackContainer = document.querySelector('.game-stats-grid') || document.querySelector('#tetrisTab');
+        if (fallbackContainer) {
+          console.log('✅ Found fallback container, creating debug display...');
+          const debugDiv = document.createElement('div');
+          debugDiv.className = 'bg-red-800 p-4 rounded mb-4 text-white';
+          debugDiv.innerHTML = `
+            <h4 class="font-bold mb-2">🔧 DEBUG: Tetris Data Loaded</h4>
+            <p>Total Scores: ${tetrisData.season_data?.total_scores || 'N/A'}</p>
+            <p>Unique Players: ${tetrisData.season_data?.unique_players || 'N/A'}</p>
+            <p>Max Score: ${tetrisData.season_data?.max_score || 'N/A'}</p>
+            <p>Data Structure: ${JSON.stringify(tetrisData, null, 2)}</p>
+          `;
+          fallbackContainer.appendChild(debugDiv);
+          console.log('✅ Fallback debug display created');
+        }
         }
         
         if (document.getElementById('tetrisUniquePlayers')) {
@@ -17684,6 +18118,73 @@ function testGames2Tab() {
       } catch (error) {
         console.error('❌ Error loading point statistics:', error);
         addLog(`❌ Error loading point statistics: ${error.message}`);
+      }
+    }
+
+    // 🎯 NEW: Auto-load missions status overview for missions status tab
+    async function loadMissionsStatusOverview() {
+      try {
+        addLog('🎯 Loading missions status overview...');
+        
+        // Load overview data for all 5 games
+        const [cheeseOverview, tetrisOverview, snakeOverview, spaceInvadersOverview, discordRaceOverview] = await Promise.all([
+          fetch(API_BASE_URL + '/api/admin/get-cheese-overview.php').then(r => r.json()).catch(() => ({ success: false, data: { total_users: 0, total_clicks: 0 } })),
+          fetch(API_BASE_URL + '/api/admin/get-tetris-overview.php').then(r => r.json()).catch(() => ({ success: false, data: { total_users: 0, total_games: 0 } })),
+          fetch(API_BASE_URL + '/api/admin/get-snake-overview.php').then(r => r.json()).catch(() => ({ success: false, data: { total_users: 0, total_games: 0 } })),
+          fetch(API_BASE_URL + '/api/admin/get-space-invaders-overview.php').then(r => r.json()).catch(() => ({ success: false, data: { total_users: 0, total_games: 0 } })),
+          fetch(API_BASE_URL + '/api/admin/get-discord-race-overview.php').then(r => r.json()).catch(() => ({ success: false, data: { total_users: 0, total_races: 0 } }))
+        ]);
+
+        // Update overview displays
+        updateMissionsOverview('cheeseHuntOverview', cheeseOverview, 'cheese');
+        updateMissionsOverview('tetrisOverview', tetrisOverview, 'tetris');
+        updateMissionsOverview('snakeOverview', snakeOverview, 'snake');
+        updateMissionsOverview('spaceInvadersOverview', spaceInvadersOverview, 'spaceInvaders');
+        updateMissionsOverview('discordRaceOverview', discordRaceOverview, 'discordRace');
+
+        addLog('✅ Missions status overview loaded');
+      } catch (error) {
+        console.error('❌ Error loading missions status overview:', error);
+        addLog(`❌ Error loading missions status overview: ${error.message}`);
+      }
+    }
+
+    // 🎯 NEW: Update missions overview display
+    function updateMissionsOverview(elementId, data, gameType) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+
+      if (data.success && data.data) {
+        switch(gameType) {
+          case 'cheese':
+            element.innerHTML = `
+              <div class="text-sm">
+                <div class="text-green-400 font-semibold">${data.data.total_users || 0} users</div>
+                <div class="text-gray-400">${data.data.total_clicks || 0} clicks</div>
+              </div>
+            `;
+            break;
+          case 'tetris':
+          case 'snake':
+          case 'spaceInvaders':
+            element.innerHTML = `
+              <div class="text-sm">
+                <div class="text-blue-400 font-semibold">${data.data.total_users || 0} users</div>
+                <div class="text-gray-400">${data.data.total_games || 0} games</div>
+              </div>
+            `;
+            break;
+          case 'discordRace':
+            element.innerHTML = `
+              <div class="text-sm">
+                <div class="text-red-400 font-semibold">${data.data.total_users || 0} users</div>
+                <div class="text-gray-400">${data.data.total_races || 0} races</div>
+              </div>
+            `;
+            break;
+        }
+      } else {
+        element.innerHTML = '<div class="text-sm text-gray-500">Error loading data</div>';
       }
     }
 

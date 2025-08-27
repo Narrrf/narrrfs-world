@@ -18,15 +18,63 @@ ini_set('log_errors', 1);
 // Get JSON input
 $input = json_decode(file_get_contents('php://input'), true);
 
-// Log the incoming request for debugging
-error_log("Cheese click request received: " . json_encode($input));
+// Enhanced logging for mobile debugging
+error_log("🧀 Cheese click request received: " . json_encode($input));
+error_log("🧀 Request headers: " . json_encode(getallheaders()));
+error_log("🧀 User agent: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'));
+error_log("🧀 Request method: " . $_SERVER['REQUEST_METHOD']);
+error_log("🧀 Content type: " . ($_SERVER['CONTENT_TYPE'] ?? 'Not set'));
+error_log("🧀 Remote address: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown'));
 
+// 🔧 CRITICAL FIX: Enhanced mobile compatibility and fallback handling
 if (!isset($input['user_wallet']) || !isset($input['egg_id'])) {
-    error_log("Missing required fields - user_wallet: " . (isset($input['user_wallet']) ? 'present' : 'missing') . 
+    error_log("❌ Missing required fields - user_wallet: " . (isset($input['user_wallet']) ? 'present' : 'missing') . 
               ", egg_id: " . (isset($input['egg_id']) ? 'present' : 'missing'));
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => '❌ Missing required fields', 'received' => $input]);
-    exit;
+    
+    // 🔧 MOBILE FIX: Try to get data from POST body if JSON parsing failed
+    if (empty($input)) {
+        error_log("🧀 JSON parsing failed, trying POST body fallback...");
+        $postData = $_POST;
+        error_log("🧀 POST data: " . json_encode($postData));
+        
+        if (isset($postData['user_wallet']) && isset($postData['egg_id'])) {
+            error_log("🧀 Using POST data fallback");
+            $input = $postData;
+        } else {
+            // 🔧 MOBILE FIX: Try to get data from raw input
+            $rawInput = file_get_contents('php://input');
+            error_log("🧀 Raw input: " . $rawInput);
+            
+            // Try to parse as form data
+            parse_str($rawInput, $formData);
+            error_log("🧀 Parsed form data: " . json_encode($formData));
+            
+            if (isset($formData['user_wallet']) && isset($formData['egg_id'])) {
+                error_log("🧀 Using form data fallback");
+                $input = $formData;
+            } else {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false, 
+                    'error' => '❌ Missing required fields', 
+                    'received' => $input,
+                    'post_data' => $postData,
+                    'raw_input' => $rawInput,
+                    'form_data' => $formData,
+                    'debug_info' => [
+                        'content_type' => $_SERVER['CONTENT_TYPE'] ?? 'Not set',
+                        'request_method' => $_SERVER['REQUEST_METHOD'],
+                        'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'
+                    ]
+                ]);
+                exit;
+            }
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => '❌ Missing required fields', 'received' => $input]);
+        exit;
+    }
 }
 
 $userWallet = trim($input['user_wallet']);
@@ -72,13 +120,39 @@ try {
         }
     }
 
-    // Insert cheese click record with proper column mapping
-    $stmt = $pdo->prepare("INSERT INTO tbl_cheese_clicks (user_wallet, egg_id, timestamp, quest_id)
-                           VALUES (?, ?, datetime(?, 'unixepoch'), ?)");
-    $result = $stmt->execute([$userWallet, $eggId, $timestamp, $quest_id]);
+    // 🔧 CRITICAL FIX: Enhanced mobile click tracking with retry mechanism
+    $maxRetries = 3;
+    $retryCount = 0;
+    $insertSuccess = false;
     
-    if (!$result) {
-        throw new Exception("Failed to insert cheese click record");
+    while ($retryCount < $maxRetries && !$insertSuccess) {
+        try {
+            // Insert cheese click record with proper column mapping
+            $stmt = $pdo->prepare("INSERT INTO tbl_cheese_clicks (user_wallet, egg_id, timestamp, quest_id)
+                                   VALUES (?, ?, datetime(?, 'unixepoch'), ?)");
+            $result = $stmt->execute([$userWallet, $eggId, $timestamp, $quest_id]);
+            
+            if ($result) {
+                $insertSuccess = true;
+                error_log("🧀 Cheese click inserted successfully on attempt " . ($retryCount + 1));
+            } else {
+                throw new Exception("Database insert failed on attempt " . ($retryCount + 1));
+            }
+        } catch (Exception $e) {
+            $retryCount++;
+            error_log("🧀 Insert attempt $retryCount failed: " . $e->getMessage());
+            
+            if ($retryCount >= $maxRetries) {
+                throw new Exception("Failed to insert cheese click record after $maxRetries attempts: " . $e->getMessage());
+            }
+            
+            // Wait a bit before retrying
+            usleep(100000); // 100ms delay
+        }
+    }
+    
+    if (!$insertSuccess) {
+        throw new Exception("Failed to insert cheese click record after all retry attempts");
     }
     
     $insertId = $pdo->lastInsertId();

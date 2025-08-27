@@ -770,11 +770,22 @@ require_once 'discord-invite.php';
 
       const egg = document.getElementById(id);
       if (egg) {
-        // Enhanced click handler with better tracking
-        egg.addEventListener('click', async (event) => {
+        // 🔧 CRITICAL FIX: Enhanced mobile touch event handling with multiple event types
+        const handleCheeseInteraction = async (event) => {
           // Prevent default link behavior to allow tracking to complete
           event.preventDefault();
           event.stopPropagation();
+          
+          console.log('🧀 Cheese egg interaction detected:', id);
+          console.log('🧀 Event type:', event.type);
+          console.log('🧀 Touch points:', event.touches ? event.touches.length : 'No touch');
+          console.log('🧀 Device info:', {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            maxTouchPoints: navigator.maxTouchPoints,
+            onLine: navigator.onLine,
+            cookieEnabled: navigator.cookieEnabled
+          });
           
           // Check if egg element still exists before accessing its style
           if (!egg) {
