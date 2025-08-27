@@ -2378,12 +2378,17 @@ async function loadGameMissions() {
 
     if (response.ok) {
       const data = await response.json();
+      console.log('🎮 API response received:', data);
+      
       if (data.success) {
+        console.log('✅ API call successful, calling displayGameMissions');
         displayGameMissions(data);
       } else {
+        console.error('❌ API returned error:', data.error);
         displayMissionsError(data.error, data.suggestion);
       }
     } else {
+      console.error('❌ HTTP error:', response.status, response.statusText);
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
   } catch (error) {
@@ -2397,10 +2402,19 @@ async function loadGameMissions() {
 }
 
 function displayGameMissions(data) {
+  console.log('🎮 displayGameMissions called with data:', data);
+  
   const resultsDiv = document.getElementById('missionsResults');
+  console.log('🎯 Found missionsResults div:', resultsDiv);
+  
+  if (!resultsDiv) {
+    console.error('❌ missionsResults div not found!');
+    return;
+  }
   
   // Show results section
   resultsDiv.classList.remove('hidden');
+  console.log('✅ missionsResults div is now visible');
   
   // Update overall stats with safe defaults
   try {
@@ -2725,51 +2739,7 @@ function displayMissions(data) {
   }
 }
 
-// Function to get formatted game statistics
-function getGameStats(gameKey, game) {
-  switch(gameKey) {
-    case 'tetris':
-      return `
-        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games || 0}</span></div>
-        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${(game.best_score || 0).toLocaleString()}</span></div>
-        <div>💎 Total Score: <span class="text-green-400 font-semibold">${(game.total_score || 0).toLocaleString()}</span></div>
-        <div>💰 DSPOINC Earned: <span class="text-purple-400 font-semibold">${game.dspoinc_earned || 0}</span></div>
-        <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
-      `;
-    case 'snake':
-      return `
-        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games || 0}</span></div>
-        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${(game.best_score || 0).toLocaleString()}</span></div>
-        <div>💎 Total Score: <span class="text-green-400 font-semibold">${game.total_score || 0}</span></div>
-        <div>💰 DSPOINC Earned: <span class="text-purple-400 font-semibold">${game.dspoinc_earned || 0}</span></div>
-        <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
-      `;
-    case 'space_invaders':
-      return `
-        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games || 0}</span></div>
-        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${(game.best_score || 0).toLocaleString()}</span></div>
-        <div>💎 Total Score: <span class="text-green-400 font-semibold">${game.total_score || 0}</span></div>
-        <div>💰 DSPOINC Earned: <span class="text-purple-400 font-semibold">${game.dspoinc_earned || 0}</span></div>
-        <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
-      `;
-    case 'cheese_hunt':
-      return `
-        <div>🧀 Total Clicks: <span class="text-white font-semibold">${game.total_clicks || 0}</span></div>
-        <div>🎯 Quest Clicks: <span class="text-orange-400 font-semibold">${game.quest_clicks || 0}</span></div>
-        <div>🥚 Unique Eggs: <span class="text-blue-400 font-semibold">${game.unique_eggs || 0}/3</span></div>
-        <div>📅 Last Click: <span class="text-gray-300">${game.last_click ? formatDateShort(game.last_click) : 'Never'}</span></div>
-      `;
-    case 'discord_race':
-      return `
-        <div>🏁 Total Races: <span class="text-white font-semibold">${game.total_races || 0}</span></div>
-        <div>🥇 Wins: <span class="text-yellow-400 font-semibold">${game.wins || 0}</span></div>
-        <div>🏆 Podiums: <span class="text-orange-400 font-semibold">${game.podium_finishes || 0}</span></div>
-        <div>📊 Best Position: <span class="text-green-400 font-semibold">#${game.best_position || 'N/A'}</span></div>
-      `;
-    default:
-      return '<div>No stats available</div>';
-  }
-}
+
 </script>
 
 <!-- 🔥 Profile Flask + Glow & Bubbles (Bottom Right Corner) -->
