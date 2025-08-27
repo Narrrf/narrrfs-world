@@ -1129,7 +1129,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Load 5-game missions data
     try {
-      const missionsRes = await fetch('https://narrrfs.world/api/user-game-missions.php', {
+      const missionsRes = await fetch('/api/user-game-missions.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.discord_id })
