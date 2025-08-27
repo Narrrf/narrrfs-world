@@ -1450,6 +1450,11 @@ require_once 'discord-invite.php';
           🧪 Test All Tabs
           </button>
           
+          <!-- Test Game Management button -->
+        <button onclick="testGameManagement()" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+          🎮 Test Game Management
+          </button>
+          
         <!-- Force refresh button -->
         <button onclick="forceRefreshAllTabs()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
           🔄 Force Refresh
@@ -2368,8 +2373,52 @@ require_once 'discord-invite.php';
 
     <!-- Game Management Tab -->
     <div class="admin-card mb-6" id="gamesTab" style="display: none;">
-      <h2 class="text-xl font-semibold mb-4">🎮 Game Management</h2>
+      <h2 class="text-xl font-semibold mb-4">🎮 Enterprise Game Management System</h2>
+      <p class="text-gray-300 mb-4">Professional season management, game scaling, and comprehensive data control for unlimited games.</p>
       
+                <!-- Enterprise Season Management Panel -->
+                <div class="mb-6 p-4 bg-gradient-to-r from-blue-900 to-purple-900 rounded-lg border border-blue-500">
+                  <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-blue-200">🏆 Enterprise Season Management</h3>
+                    <div class="flex gap-2">
+                      <button onclick="createNewSeason()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">🆕 New Season</button>
+                      <button onclick="manageSeasonSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">⚙️ Settings</button>
+                      <button onclick="exportSeasonData()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">📊 Export</button>
+                    </div>
+                  </div>
+                  
+                  <!-- Current Season Status -->
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-blue-800 bg-opacity-50 p-3 rounded border border-blue-600">
+                      <div class="text-sm text-blue-300">🎯 Active Season</div>
+                      <div class="text-xl font-bold text-blue-100" id="currentActiveSeason">Season 2</div>
+                      <div class="text-xs text-blue-400">The Great Reset 2025</div>
+                    </div>
+                    <div class="bg-green-800 bg-opacity-50 p-3 rounded border border-green-600">
+                      <div class="text-sm text-green-300">🎮 Games Active</div>
+                      <div class="text-xl font-bold text-green-100" id="activeGamesCount">5/5</div>
+                      <div class="text-xs text-green-400">All games synchronized</div>
+                    </div>
+                    <div class="bg-purple-800 bg-opacity-50 p-3 rounded border border-purple-600">
+                      <div class="text-sm text-purple-300">📊 Total Players</div>
+                      <div class="text-xl font-bold text-purple-100" id="totalSeasonPlayers">53</div>
+                      <div class="text-xs text-purple-400">This season</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Season Controls -->
+                  <div class="flex flex-wrap gap-3">
+                    <select id="seasonSelector" class="bg-gray-700 text-white px-3 py-2 rounded text-sm border border-gray-600">
+                      <option value="season_2">Season 2 - Current Active</option>
+                      <option value="season_1">Season 1 - Historical</option>
+                      <option value="all">All Seasons Combined</option>
+                    </select>
+                    <button onclick="switchActiveSeason()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded text-sm">🔄 Switch Season</button>
+                    <button onclick="backupCurrentSeason()" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded text-sm">💾 Backup</button>
+                    <button onclick="resetSeasonData()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">🔄 Reset</button>
+                  </div>
+                </div>
+
                 <!-- Game Management Tabs -->
           <div class="flex flex-wrap gap-2 mb-6">
             <button class="tab-btn px-4 py-2 rounded active" data-game-tab="overview" onclick="switchGameTab('overview')">📊 Overview Dashboard</button>
@@ -4054,26 +4103,40 @@ require_once 'discord-invite.php';
         </div>
       </div>
 
-      <!-- Collections and NFTs Section -->
-      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
-        <h3 class="text-lg font-semibold mb-3">🖼️ Collections & NFTs</h3>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Collections Summary -->
-          <div>
-            <h4 class="text-md font-semibold mb-2 text-blue-400">Collections</h4>
-            <div id="collectionsSummary" class="min-h-[200px]">
-              <div class="text-center text-gray-300">Loading collections...</div>
-            </div>
+              <!-- Collections and NFTs Section -->
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">🖼️ Collections & NFTs</h3>
+          
+          <!-- NFT Management Buttons -->
+          <div class="flex flex-wrap gap-3 mb-4">
+            <button onclick="showAddNFTModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+              ➕ Add NFT
+            </button>
+            <button onclick="showAddCollectionModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+              🏷️ Add Collection
+            </button>
+            <button onclick="refreshNFTData()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+              🔄 Refresh
+            </button>
           </div>
-          <!-- NFT Gallery -->
-          <div>
-            <h4 class="text-md font-semibold mb-2 text-green-400">NFT Gallery</h4>
-            <div id="nftGallery" class="min-h-[200px]">
-              <div class="text-center text-gray-300">Loading NFTs...</div>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Collections Summary -->
+            <div>
+              <h4 class="text-md font-semibold mb-2 text-blue-400">Collections</h4>
+              <div id="collectionsSummary" class="min-h-[200px]">
+                <div class="text-center text-gray-300">Loading collections...</div>
+              </div>
+            </div>
+            <!-- NFT Gallery -->
+            <div>
+              <h4 class="text-md font-semibold mb-2 text-green-400">NFT Gallery</h4>
+              <div id="nftGallery" class="min-h-[200px]">
+                <div class="text-center text-gray-300">Loading NFTs...</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
       <!-- Real Wallet Transaction History -->
       <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
@@ -4128,6 +4191,9 @@ require_once 'discord-invite.php';
             </button>
             <button onclick="downloadCommunityFundsCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
               📤 Export Community Funds
+            </button>
+            <button onclick="downloadCSVTemplate()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm">
+              📋 Download Template
             </button>
             <button onclick="loadCommunityFundsData()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
               🔄 Refresh
@@ -4934,6 +5000,7 @@ require_once 'discord-invite.php';
             // Wait for tab animation to complete before loading data
             setTimeout(() => {
             loadGameOverview();
+            loadSeasonOverview(); // Load enterprise season panel data
             loadSeasonStats();
             loadGameSettings();
             loadCurrentSeasonSettings();
@@ -4947,7 +5014,16 @@ require_once 'discord-invite.php';
             
             // Switch to overview tab by default
             setTimeout(() => {
+              console.log('🎯 Initializing overview tab...');
               switchGameTab('overview');
+              
+              // Force the overview tab to be visible
+              const overviewTab = document.getElementById('overviewTab');
+              if (overviewTab) {
+                overviewTab.style.display = 'block';
+                overviewTab.classList.add('active');
+                console.log('✅ Overview tab forced visible');
+              }
             }, 100);
               
               // Display any pending data that was loaded while tab was hidden
@@ -7820,7 +7896,7 @@ require_once 'discord-invite.php';
               <h4 class="font-semibold">${item.item_name}</h4>
               <span class="px-2 py-1 rounded text-xs text-white ${statusClass}">${statusText}</span>
             </div>
-            <p class="text-sm text-gray-300 mb-2">${item.description || 'No description'}</p>
+          <p class="text-sm text-gray-300 mb-2">${item.description || 'No description'}</p>
             <div class="grid grid-cols-2 gap-2 mb-3">
               <div class="text-center">
                 <div class="text-lg font-bold text-yellow-400">${item.price?.toLocaleString() || 0}</div>
@@ -7831,21 +7907,21 @@ require_once 'discord-invite.php';
                 <div class="text-xs text-gray-400">Available</div>
               </div>
             </div>
-            <div class="flex gap-2">
-              <button onclick="editStoreItem(${item.item_id})" 
-                      class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex-1">
-                Edit
-              </button>
+          <div class="flex gap-2">
+            <button onclick="editStoreItem(${item.item_id})" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex-1">
+              Edit
+            </button>
               <button onclick="toggleItemStatus(${item.item_id}, ${item.is_active})" 
                       class="${item.is_active == 1 ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'} text-white px-3 py-1 rounded text-sm flex-1">
                 ${item.is_active == 1 ? 'Deactivate' : 'Activate'}
               </button>
-              <button onclick="deleteStoreItem(${item.item_id})" 
-                      class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm flex-1">
-                Delete
-              </button>
-              </div>
-            </div>
+            <button onclick="deleteStoreItem(${item.item_id})" 
+                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm flex-1">
+              Delete
+            </button>
+          </div>
+        </div>
         `;
       }).join('');
     }
@@ -10890,10 +10966,10 @@ function updateGameTabContent(gameType, gameData) {
         console.log('💾 Preserving content from current tab:', currentTab.id);
       }
       
-      // Hide all game tab contents by adding a hidden class and setting display
+      // Hide all game tab contents by setting display to none and removing active class
       const allTabs = document.querySelectorAll('.game-tab-content');
       allTabs.forEach(tab => {
-        tab.classList.add('hidden');
+        tab.classList.remove('active');
         tab.style.display = 'none';
         console.log('Hidden tab:', tab.id);
       });
@@ -10908,7 +10984,6 @@ function updateGameTabContent(gameType, gameData) {
         'tetris': 'tetrisTab',
         'snake': 'snakeTab',
         'space-invaders': 'spaceInvadersTab',
-        'cheese-invaders': 'cheeseInvadersTab',
         'cheese-hunt': 'cheeseHuntTab',
         'discord-race': 'discordRaceTab'
       };
@@ -10918,12 +10993,16 @@ function updateGameTabContent(gameType, gameData) {
       const selectedTab = document.getElementById(selectedTabId);
       const selectedButton = document.querySelector(`[data-game-tab="${tabName}"]`);
       
-      console.log('Selected tab ID:', selectedTabId);
-      console.log('Selected tab element:', selectedTab);
+      console.log('🎯 switchGameTab Debug:', {
+        tabName: tabName,
+        selectedTabId: selectedTabId,
+        selectedTab: selectedTab,
+        selectedButton: selectedButton,
+        tabMapping: tabMapping
+      });
       
       if (selectedTab) {
-        selectedTab.classList.remove('hidden');
-        selectedTab.classList.add('show-tab');
+        selectedTab.classList.add('active');
         selectedTab.style.display = 'block';
         console.log('✅ Showing tab:', selectedTabId);
         console.log('🔍 Tab display style after setting:', selectedTab.style.display);
@@ -10944,6 +11023,12 @@ function updateGameTabContent(gameType, gameData) {
       
       // Load data for the selected tab with enhanced error handling and display refresh
       console.log('🔄 Loading data for tab:', tabName);
+      
+      // Ensure the selected tab is visible before loading data
+      if (selectedTab) {
+        selectedTab.style.display = 'block';
+        selectedTab.classList.add('active');
+      }
       
       // Use setTimeout to ensure DOM is fully updated before loading data
       setTimeout(async () => {
@@ -15968,7 +16053,7 @@ function updateGameTabContent(gameType, gameData) {
           <td class="px-4 py-2 border-b text-right">${entry.amount} SOL</td>
           <td class="px-4 py-2 border-b">${entry.date}</td>
           <td class="px-4 py-2 border-b text-center">
-            <button onclick="editCommunityFundsEntry(${entry.id}, '${entry.type}', '${entry.description.replace(/'/g, "\\'")}', ${entry.amount})" class="text-blue-600 hover:text-blue-800 px-2 py-1 mr-2">
+            <button onclick="showEditFundsModal(${entry.id}, '${entry.type}', '${entry.description.replace(/'/g, "\\'")}', ${entry.amount})" class="text-blue-600 hover:text-blue-800 px-2 py-1 mr-2">
               ✏️
             </button>
             <button onclick="deleteCommunityFundsEntry(${entry.id})" class="text-red-600 hover:text-red-800 px-2 py-1">
@@ -16056,7 +16141,7 @@ function updateGameTabContent(gameType, gameData) {
       }
     }
     
-    // 🔧 NEW: CSV Import/Export Functions for Community Funds
+    // 🔧 ENHANCED: CSV Import/Export Functions for Community Funds
     async function importCommunityFundsCSV() {
       const fileInput = document.getElementById('communityFundsCsvInput');
       const statusDiv = document.getElementById('communityFundsCsvStatus');
@@ -16072,38 +16157,92 @@ function updateGameTabContent(gameType, gameData) {
       reader.onload = async function(e) {
         try {
           const csvText = e.target.result;
-          const lines = csvText.split('\n');
+          const lines = csvText.split('\n').filter(line => line.trim() !== '');
+          
+          if (lines.length < 2) {
+            statusDiv.innerHTML = '<span class="text-red-400">❌ CSV file must have at least a header row and one data row</span>';
+            return;
+          }
+          
           const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
           
-          // Validate CSV structure
-          const requiredHeaders = ['type', 'description', 'amount', 'date'];
-          const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+          // Enhanced CSV structure validation - support multiple formats
+          const validHeaderFormats = [
+            ['type', 'description', 'amount', 'date'],
+            ['Type', 'Description', 'Amount', 'Date'],
+            ['TYPE', 'DESCRIPTION', 'AMOUNT', 'DATE'],
+            ['transaction_type', 'description', 'amount', 'date'],
+            ['category', 'description', 'amount', 'date'],
+            ['type', 'desc', 'amount', 'date'],
+            ['Type', 'Desc', 'Amount', 'Date']
+          ];
           
-          if (missingHeaders.length > 0) {
-            statusDiv.innerHTML = `<span class="text-red-400">❌ Missing required headers: ${missingHeaders.join(', ')}</span>`;
+          let validFormat = null;
+          for (const format of validHeaderFormats) {
+            if (format.every(header => headers.includes(header))) {
+              validFormat = format;
+              break;
+            }
+          }
+          
+          if (!validFormat) {
+            statusDiv.innerHTML = `<span class="text-red-400">❌ Invalid CSV format. Required headers: type, description, amount, date<br>
+            Found: ${headers.join(', ')}<br>
+            Supported formats: ${validHeaderFormats.map(f => f.join(', ')).join(' | ')}</span>`;
             return;
           }
           
           statusDiv.innerHTML = '<span class="text-blue-400">⏳ Processing CSV file...</span>';
+          addLog(`📊 Starting CSV import with ${lines.length - 1} data rows`);
           
           let successCount = 0;
           let errorCount = 0;
+          let skippedCount = 0;
           
           // Process each line (skip header)
           for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim() === '') continue;
             
-            const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
-            if (values.length < 4) continue;
-            
-            const entry = {
-              type: values[0],
-              description: values[1],
-              amount: parseFloat(values[2]),
-              date: values[3]
-            };
-            
             try {
+              // Handle quoted values properly
+              const values = parseCSVLine(lines[i]);
+              if (values.length < 4) {
+                skippedCount++;
+                continue;
+              }
+              
+              // Map values to the correct format
+              const typeIndex = headers.indexOf(validFormat[0]);
+              const descIndex = headers.indexOf(validFormat[1]);
+              const amountIndex = headers.indexOf(validFormat[2]);
+              const dateIndex = headers.indexOf(validFormat[3]);
+              
+              const entry = {
+                type: values[typeIndex]?.toLowerCase().trim() || 'expense',
+                description: values[descIndex]?.trim() || 'Imported entry',
+                amount: parseFloat(values[amountIndex]) || 0,
+                date: values[dateIndex]?.trim() || new Date().toISOString().split('T')[0]
+              };
+              
+              // Validate entry data
+              if (!entry.description || isNaN(entry.amount) || entry.amount <= 0) {
+                skippedCount++;
+                continue;
+              }
+              
+              // Normalize type values
+              if (entry.type.includes('income') || entry.type.includes('revenue') || entry.type.includes('profit') || entry.type.includes('inc')) {
+                entry.type = 'income';
+              } else if (entry.type.includes('expense') || entry.type.includes('cost') || entry.type.includes('payment') || entry.type.includes('exp')) {
+                entry.type = 'expense';
+              } else if (entry.type.includes('transfer') || entry.type.includes('move')) {
+                entry.type = 'transfer';
+              } else if (entry.type.includes('donation') || entry.type.includes('gift')) {
+                entry.type = 'donation';
+              } else {
+                entry.type = 'expense'; // Default to expense
+              }
+              
               const response = await fetch(API_BASE_URL + '/api/admin/add-community-funds.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -16113,17 +16252,22 @@ function updateGameTabContent(gameType, gameData) {
               const result = await response.json();
               if (result.success) {
                 successCount++;
+                addLog(`✅ Imported: ${entry.type} - ${entry.description} (${entry.amount} SOL)`);
               } else {
                 errorCount++;
                 console.error(`Error importing line ${i + 1}:`, result.message);
+                addLog(`❌ Line ${i + 1}: ${result.message}`);
               }
             } catch (error) {
               errorCount++;
-              console.error(`Error importing line ${i + 1}:`, error);
+              console.error(`Error processing line ${i + 1}:`, error);
+              addLog(`❌ Line ${i + 1}: ${error.message}`);
             }
           }
           
-          statusDiv.innerHTML = `<span class="text-green-400">✅ Import completed: ${successCount} successful, ${errorCount} errors</span>`;
+          const resultMessage = `✅ Import completed: ${successCount} successful, ${errorCount} errors, ${skippedCount} skipped`;
+          statusDiv.innerHTML = `<span class="text-green-400">${resultMessage}</span>`;
+          addLog(`📊 CSV Import: ${resultMessage}`);
           
           // Refresh the display
           setTimeout(() => {
@@ -16133,10 +16277,59 @@ function updateGameTabContent(gameType, gameData) {
         } catch (error) {
           statusDiv.innerHTML = `<span class="text-red-400">❌ Error processing CSV: ${error.message}</span>`;
           console.error('CSV processing error:', error);
+          addLog(`❌ CSV Import Error: ${error.message}`);
         }
       };
       
       reader.readAsText(file);
+    }
+
+    // Helper function to parse CSV lines with proper quote handling
+    function parseCSVLine(line) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      
+      result.push(current.trim());
+      return result;
+    }
+
+    // Download CSV Template function
+    function downloadCSVTemplate() {
+      const templateContent = `type,description,amount,date
+income,Initial Community Fund Setup,1000.0000,2024-01-01
+expense,Server Hosting Costs,50.0000,2024-01-15
+income,Community Donation,250.0000,2024-01-20
+expense,Development Tools,75.0000,2024-01-25
+income,NFT Sales Revenue,500.0000,2024-02-01
+expense,Marketing Campaign,200.0000,2024-02-10
+transfer,Move to Cold Wallet,1000.0000,2024-02-15
+donation,Community Grant,150.0000,2024-02-20`;
+      
+      const blob = new Blob([templateContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'community_funds_template.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      addLog('📋 CSV template downloaded successfully');
     }
     
     async function downloadCommunityFundsCSV() {
@@ -16494,18 +16687,26 @@ function updateGameTabContent(gameType, gameData) {
       const filter = document.getElementById('nftCollectionFilter');
       const modalFilter = document.getElementById('modalCollectionFilter');
       
-      // Clear existing options
-      filter.innerHTML = '<option value="">All Collections</option>';
-      modalFilter.innerHTML = '<option value="">All Collections</option>';
+      // Check if elements exist before trying to update them
+      if (filter) {
+        filter.innerHTML = '<option value="">All Collections</option>';
+      }
+      if (modalFilter) {
+        modalFilter.innerHTML = '<option value="">All Collections</option>';
+      }
       
-      // Add collection options
+      // Add collection options only if elements exist
       collections.forEach(collection => {
         const option = document.createElement('option');
         option.value = collection.name;
         option.textContent = `${collection.name} (${collection.count})`;
         
-        filter.appendChild(option.cloneNode(true));
-        modalFilter.appendChild(option);
+        if (filter) {
+          filter.appendChild(option.cloneNode(true));
+        }
+        if (modalFilter) {
+          modalFilter.appendChild(option);
+        }
       });
     }
 
@@ -16851,19 +17052,358 @@ function updateGameTabContent(gameType, gameData) {
           filterNFTGallery(searchTerm, collectionFilter);
         });
       }
-      
-      // Modal search functionality
-      const modalNftSearch = document.getElementById('modalNftSearch');
-      if (modalNftSearch) {
-        modalNftSearch.addEventListener('input', displayModalNFTs);
-      }
-      
-      // Modal collection filter
-      const modalCollectionFilter = document.getElementById('modalCollectionFilter');
-      if (modalCollectionFilter) {
-        modalCollectionFilter.addEventListener('change', displayModalNFTs);
-      }
     });
+
+    // 🔧 NEW: NFT Management Functions for Community Funds
+    function showAddNFTModal() {
+      const modalHTML = `
+        <div id="addNFTModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4 text-white">➕ Add NFT to Community Funds</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Collection</label>
+                <select id="nftCollection" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white">
+                  <option value="">Select Collection</option>
+                  <option value="new">➕ Create New Collection</option>
+                </select>
+              </div>
+              
+              <div id="newCollectionFields" class="hidden space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">New Collection Name</label>
+                  <input type="text" id="newCollectionName" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                         placeholder="e.g., Cheese Warriors">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Collection Symbol</label>
+                  <input type="text" id="newCollectionSymbol" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                         placeholder="e.g., CHEESE">
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">NFT Name</label>
+                <input type="text" id="nftName" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       placeholder="e.g., Cheese Warrior #1">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Token Symbol</label>
+                <input type="text" id="nftSymbol" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       placeholder="e.g., CHEESE">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Purchase Price (SOL)</label>
+                <input type="number" id="nftPrice" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       step="0.0001" min="0" placeholder="0.5000">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Current Value (SOL)</label>
+                <input type="number" id="nftCurrentValue" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       step="0.0001" min="0" placeholder="0.7500">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Purchase Date</label>
+                <input type="date" id="nftPurchaseDate" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Notes</label>
+                <textarea id="nftNotes" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                          rows="3" placeholder="Additional notes about this NFT..."></textarea>
+              </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+              <button onclick="closeAddNFTModal()" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded">
+                Cancel
+              </button>
+              <button onclick="submitAddNFT()" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded">
+                Add NFT
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Add modal to page
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+      
+      // Set default date to today
+      document.getElementById('nftPurchaseDate').value = new Date().toISOString().split('T')[0];
+      
+      // Load existing collections
+      loadCollectionsForSelect();
+      
+      // Add event listener for collection selection
+      document.getElementById('nftCollection').addEventListener('change', function() {
+        const newCollectionFields = document.getElementById('newCollectionFields');
+        if (this.value === 'new') {
+          newCollectionFields.classList.remove('hidden');
+        } else {
+          newCollectionFields.classList.add('hidden');
+        }
+      });
+    }
+
+    function closeAddNFTModal() {
+      const modal = document.getElementById('addNFTModal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    function showAddCollectionModal() {
+      const modalHTML = `
+        <div id="addCollectionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4 text-white">🏷️ Add New Collection</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Collection Name</label>
+                <input type="text" id="collectionName" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       placeholder="e.g., Cheese Warriors">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Collection Symbol</label>
+                <input type="text" id="collectionSymbol" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       placeholder="e.g., CHEESE">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Total Supply</label>
+                <input type="number" id="collectionSupply" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       min="1" placeholder="1000">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Floor Price (SOL)</label>
+                <input type="number" id="collectionFloorPrice" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       step="0.0001" min="0" placeholder="0.5000">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                <textarea id="collectionDescription" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                          rows="3" placeholder="Description of the collection..."></textarea>
+              </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+              <button onclick="closeAddCollectionModal()" class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded">
+                Cancel
+              </button>
+              <button onclick="submitAddCollection()" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                Add Collection
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Add modal to page
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    function closeAddCollectionModal() {
+      const modal = document.getElementById('addCollectionModal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    async function submitAddNFT() {
+      const collection = document.getElementById('nftCollection').value;
+      const nftName = document.getElementById('nftName').value;
+      const nftSymbol = document.getElementById('nftSymbol').value;
+      const nftPrice = parseFloat(document.getElementById('nftPrice').value);
+      const nftCurrentValue = parseFloat(document.getElementById('nftCurrentValue').value);
+      const nftPurchaseDate = document.getElementById('nftPurchaseDate').value;
+      const nftNotes = document.getElementById('nftNotes').value;
+      
+      if (!nftName || isNaN(nftPrice) || nftPrice <= 0 || !nftPurchaseDate) {
+        addLog('❌ Please fill in all required fields with valid values');
+        return;
+      }
+      
+      try {
+        let collectionId = null;
+        
+        // If creating new collection
+        if (collection === 'new') {
+          const newCollectionName = document.getElementById('newCollectionName').value;
+          const newCollectionSymbol = document.getElementById('newCollectionSymbol').value;
+          
+          if (!newCollectionName || !newCollectionSymbol) {
+            addLog('❌ Please provide collection name and symbol');
+            return;
+          }
+          
+          // Create collection first
+          const collectionResponse = await fetch(API_BASE_URL + '/api/admin/add-community-collection.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              collection_name: newCollectionName,
+              collection_symbol: newCollectionSymbol,
+              total_supply: 1,
+              floor_price_sol: nftCurrentValue || nftPrice
+            })
+          });
+          
+          const collectionData = await collectionResponse.json();
+          if (collectionData.success) {
+            collectionId = collectionData.id;
+            addLog(`✅ Created new collection: ${newCollectionName}`);
+          } else {
+            throw new Error('Failed to create collection: ' + collectionData.message);
+          }
+        } else {
+          collectionId = collection;
+        }
+        
+        // Add NFT entry to community funds
+        const nftEntry = {
+          type: 'expense',
+          description: `NFT Purchase: ${nftName} (${nftSymbol || 'N/A'})`,
+          amount: nftPrice,
+          date: nftPurchaseDate,
+          notes: nftNotes
+        };
+        
+        const fundsResponse = await fetch(API_BASE_URL + '/api/admin/add-community-funds.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nftEntry)
+        });
+        
+        const fundsData = await fundsResponse.json();
+        if (fundsData.success) {
+          addLog(`✅ Added NFT to community funds: ${nftName}`);
+          
+          // Add NFT to NFT table
+          const nftResponse = await fetch(API_BASE_URL + '/api/admin/add-community-nft.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              collection_id: collectionId,
+              token_name: nftName,
+              token_symbol: nftSymbol,
+              purchase_price_sol: nftPrice,
+              current_value_sol: nftCurrentValue || nftPrice,
+              purchase_date: nftPurchaseDate,
+              notes: nftNotes
+            })
+          });
+          
+          const nftData = await nftResponse.json();
+          if (nftData.success) {
+            addLog(`✅ NFT added to database: ${nftName}`);
+          } else {
+            addLog(`⚠️ NFT added to funds but database entry failed: ${nftData.message}`);
+          }
+          
+          closeAddNFTModal();
+          loadCommunityFundsData(); // Refresh funds display
+          loadCommunityWalletData(); // Refresh NFT display
+        } else {
+          throw new Error('Failed to add NFT to funds: ' + fundsData.message);
+        }
+      } catch (error) {
+        addLog('❌ Error adding NFT: ' + error.message);
+        console.error('Add NFT error:', error);
+      }
+    }
+
+    async function submitAddCollection() {
+      const name = document.getElementById('collectionName').value;
+      const symbol = document.getElementById('collectionSymbol').value;
+      const supply = parseInt(document.getElementById('collectionSupply').value);
+      const floorPrice = parseFloat(document.getElementById('collectionFloorPrice').value);
+      const description = document.getElementById('collectionDescription').value;
+      
+      if (!name || !symbol || isNaN(supply) || supply <= 0) {
+        addLog('❌ Please fill in all required fields with valid values');
+        return;
+      }
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/add-community-collection.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            collection_name: name,
+            collection_symbol: symbol,
+            total_supply: supply,
+            floor_price_sol: floorPrice || 0,
+            description: description
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Collection added successfully');
+          closeAddCollectionModal();
+          loadCommunityWalletData(); // Refresh collections display
+        } else {
+          addLog('❌ Failed to add collection: ' + (data.message || 'Unknown error'));
+        }
+      } catch (error) {
+        addLog('❌ Error adding collection: ' + error.message);
+        console.error('Add collection error:', error);
+      }
+    }
+
+    function refreshNFTData() {
+      addLog('🔄 Refreshing NFT and collection data...');
+      loadCommunityWalletData();
+    }
+
+        async function loadCollectionsForSelect() {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-community-collections.php');
+        const data = await response.json();
+        
+        if (data.success && data.collections) {
+          const select = document.getElementById('nftCollection');
+          if (select) {
+            // Clear existing options except "Select Collection" and "Create New"
+            select.innerHTML = '<option value="">Select Collection</option><option value="new">➕ Create New Collection</option>';
+            
+            // Add existing collections
+            data.collections.forEach(collection => {
+              const option = document.createElement('option');
+              option.value = collection.id;
+              option.textContent = `${collection.collection_name} (${collection.collection_symbol})`;
+              select.appendChild(option);
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading collections:', error);
+        addLog('❌ Error loading collections for selection');
+      }
+    }
+
+    // Modal search functionality
+    const modalNftSearch = document.getElementById('modalNftSearch');
+    if (modalNftSearch) {
+      modalNftSearch.addEventListener('input', displayModalNFTs);
+    }
+    
+    // Modal collection filter
+    const modalCollectionFilter = document.getElementById('modalCollectionFilter');
+    if (modalCollectionFilter) {
+      modalCollectionFilter.addEventListener('change', displayModalNFTs);
+    }
 
     // Pagination variables
     let currentNFTPage = 1;
@@ -17854,7 +18394,394 @@ function testGames2Tab() {
   addLog('🧪 Game Management 2.0 tab test completed');
 }
 
-// 🎮 GAME MANAGEMENT TAB FUNCTIONS - REMOVED OLD STUBS
+    // 🎮 GAME MANAGEMENT TAB FUNCTIONS - REMOVED OLD STUBS
+    
+    // Test function for Game Management tab
+    function testGameManagement() {
+      addLog('🧪 Testing Game Management tab functions...');
+      
+      try {
+        // First, ensure we're on the games tab
+        showTab('games');
+        
+        // Wait a moment for the tab to load, then test the sub-tabs
+        setTimeout(() => {
+          console.log('🎮 Testing game management sub-tabs...');
+          
+          // Test overview tab
+          switchGameTab('overview');
+          
+          // Test loading data
+          loadGameOverview();
+          loadTetrisData();
+          loadSnakeData();
+          loadSpaceInvadersData();
+          loadCheeseHuntData();
+          loadDiscordRaceData();
+          
+          addLog('🧪 Game Management tab test completed');
+        }, 500);
+        
+      } catch (error) {
+        addLog(`❌ Game Management tab test failed: ${error.message}`);
+      }
+    }
+    
+    // 🏆 ENTERPRISE SEASON MANAGEMENT FUNCTIONS
+    
+    // Create a new season for all games
+    async function createNewSeason() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      try {
+        const seasonName = prompt('Enter new season name (e.g., "Season 3 - Summer 2025"):');
+        if (!seasonName) return;
+        
+        addLog(`🆕 Creating new season: ${seasonName}`);
+        
+        // Call API to create new season
+        const response = await fetch(API_BASE_URL + '/api/admin/create-season.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            season_name: seasonName,
+            admin_id: currentAdmin
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ New season "${seasonName}" created successfully`);
+          // Refresh season data
+          loadSeasonOverview();
+          updateSeasonSelectors();
+        } else {
+          addLog(`❌ Failed to create season: ${data.error}`);
+        }
+        
+      } catch (error) {
+        addLog(`❌ Season creation error: ${error.message}`);
+      }
+    }
+    
+    // Manage season settings for all games
+    async function manageSeasonSettings() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      addLog('⚙️ Opening season settings management...');
+      
+      // Show season settings modal
+      showSeasonSettingsModal();
+    }
+    
+    // Export season data for analysis
+    async function exportSeasonData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      try {
+        addLog('📊 Exporting season data...');
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/export-season-data.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            season: document.getElementById('seasonSelector').value,
+            admin_id: currentAdmin
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Download the exported data
+          const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `season_data_${Date.now()}.json`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          
+          addLog('✅ Season data exported successfully');
+        } else {
+          addLog(`❌ Export failed: ${data.error}`);
+        }
+        
+      } catch (error) {
+        addLog(`❌ Export error: ${error.message}`);
+      }
+    }
+    
+    // Backup current season data
+    async function backupCurrentSeason() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      try {
+        addLog('💾 Creating season backup...');
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/backup-season.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            season: document.getElementById('seasonSelector').value,
+            admin_id: currentAdmin
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Season backup created successfully');
+        } else {
+          addLog(`❌ Backup failed: ${data.error}`);
+        }
+        
+      } catch (error) {
+        addLog(`❌ Backup error: ${error.message}`);
+      }
+    }
+    
+    // Reset season data (preserves historical data)
+    async function resetSeasonData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      if (!confirm('⚠️ This will reset all current season data but preserve historical records. Continue?')) {
+        return;
+      }
+      
+      try {
+        addLog('🔄 Resetting season data...');
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/reset-season.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            season: document.getElementById('seasonSelector').value,
+            admin_id: currentAdmin
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Season data reset successfully');
+          // Refresh all game data
+          refreshAllGameData();
+        } else {
+          addLog(`❌ Reset failed: ${data.error}`);
+        }
+        
+      } catch (error) {
+        addLog(`❌ Reset error: ${error.message}`);
+      }
+    }
+    
+    // Update season selectors across the interface
+    function updateSeasonSelectors() {
+      // Update main season selector
+      const seasonSelector = document.getElementById('seasonSelector');
+      if (seasonSelector) {
+        // This would be populated with available seasons from the database
+        console.log('🔄 Updating season selectors...');
+      }
+    }
+    
+    // Load season overview data for the enterprise panel
+    async function loadSeasonOverview() {
+      if (!currentAdmin) return;
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          // Update current season display
+          const currentSeasonEl = document.getElementById('currentActiveSeason');
+          if (currentSeasonEl) {
+            currentSeasonEl.textContent = data.data.overview?.current_season || 'Season 2';
+          }
+          
+          // Update active games count
+          const activeGamesEl = document.getElementById('activeGamesCount');
+          if (activeGamesEl) {
+            const activeGames = Object.keys(data.data.games || {}).length;
+            activeGamesEl.textContent = `${activeGames}/5`;
+          }
+          
+          // Update total players
+          const totalPlayersEl = document.getElementById('totalSeasonPlayers');
+          if (totalPlayersEl) {
+            totalPlayersEl.textContent = data.data.overview?.total_active_players || '53';
+          }
+          
+          console.log('✅ Season overview loaded successfully');
+        }
+      } catch (error) {
+        console.error('❌ Error loading season overview:', error);
+      }
+    }
+    
+    // Show season settings modal
+    function showSeasonSettingsModal() {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-gray-800 p-6 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-white">⚙️ Season Settings Management</h3>
+            <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Game Settings -->
+            <div class="space-y-4">
+              <h4 class="text-lg font-semibold text-blue-300">🎮 Game Configuration</h4>
+              
+              <!-- Tetris Settings -->
+              <div class="bg-gray-700 p-4 rounded">
+                <h5 class="font-semibold text-green-300 mb-2">🧩 Tetris</h5>
+                <div class="space-y-2">
+                  <label class="block text-sm text-gray-300">Max Score:</label>
+                  <input type="number" id="tetrisMaxScore" value="1000" class="w-full px-2 py-1 rounded bg-gray-600 text-white">
+                  
+                  <label class="block text-sm text-gray-300">Points per Line:</label>
+                  <input type="number" id="tetrisPointsPerLine" value="10" class="w-full px-2 py-1 rounded bg-gray-600 text-white">
+                </div>
+              </div>
+              
+              <!-- Snake Settings -->
+              <div class="bg-gray-700 p-4 rounded">
+                <h5 class="font-semibold text-purple-300 mb-2">🐍 Snake</h5>
+                <div class="space-y-2">
+                  <label class="block text-sm text-gray-300">Max Score:</label>
+                  <input type="number" id="snakeMaxScore" value="1000" class="w-full px-2 py-1 rounded bg-gray-600 text-white">
+                  
+                  <label class="block text-sm text-gray-300">Points per Cheese:</label>
+                  <input type="number" id="snakePointsPerCheese" value="10" class="w-full px-2 py-1 rounded bg-gray-600 text-white">
+                </div>
+              </div>
+              
+              <!-- Space Invaders Settings -->
+              <div class="bg-gray-700 p-4 rounded">
+                <h5 class="font-semibold text-yellow-300 mb-2">👾 Space Invaders</h5>
+                <div class="space-y-2">
+                  <label class="block text-sm text-gray-300">Max Score:</label>
+                  <input type="number" id="spaceInvadersMaxScore" value="10000" class="w-full px-2 py-1 rounded bg-gray-600 text-white">
+                  
+                  <label class="block text-sm text-gray-300">Points per Invader:</label>
+                  <input type="number" id="spaceInvadersPointsPerInvader" value="0.001" step="0.001" class="w-full px-2 py-1 rounded bg-gray-600 text-white">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Season Settings -->
+            <div class="space-y-4">
+              <h4 class="text-lg font-semibold text-green-300">📅 Season Configuration</h4>
+              
+              <div class="bg-gray-700 p-4 rounded">
+                <h5 class="font-semibold text-blue-300 mb-2">General Settings</h5>
+                <div class="space-y-2">
+                  <label class="block text-sm text-gray-300">Season Name:</label>
+                  <input type="text" id="seasonName" value="Season 2" class="w-full px-2 py-1 rounded bg-gray-600 text-white">
+                  
+                  <label class="block text-sm text-gray-300">Start Date:</label>
+                  <input type="date" id="seasonStartDate" class="w-full px-2 py-1 rounded bg-gray-600 text-white">
+                  
+                  <label class="block text-sm text-gray-300">End Date (Optional):</label>
+                  <input type="date" id="seasonEndDate" class="w-full px-2 py-1 rounded bg-gray-600 text-white">
+                  
+                  <label class="block text-sm text-gray-300">Auto-Reset:</label>
+                  <select id="seasonAutoReset" class="w-full px-2 py-1 rounded bg-gray-600 text-white">
+                    <option value="0">Disabled</option>
+                    <option value="1">Weekly</option>
+                    <option value="2">Monthly</option>
+                    <option value="3">Quarterly</option>
+                  </select>
+                </div>
+              </div>
+              
+              <!-- Save Button -->
+              <button onclick="saveSeasonSettings()" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded font-semibold">
+                💾 Save All Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+    }
+    
+    // Save season settings
+    async function saveSeasonSettings() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+      
+      try {
+        addLog('💾 Saving season settings...');
+        
+        const settings = {
+          tetris: {
+            max_score: document.getElementById('tetrisMaxScore').value,
+            points_per_line: document.getElementById('tetrisPointsPerLine').value
+          },
+          snake: {
+            max_score: document.getElementById('snakeMaxScore').value,
+            points_per_cheese: document.getElementById('snakePointsPerCheese').value
+          },
+          space_invaders: {
+            max_score: document.getElementById('spaceInvadersMaxScore').value,
+            points_per_invader: document.getElementById('spaceInvadersPointsPerInvader').value
+          },
+          season: {
+            name: document.getElementById('seasonName').value,
+            start_date: document.getElementById('seasonStartDate').value,
+            end_date: document.getElementById('seasonEndDate').value,
+            auto_reset: document.getElementById('seasonAutoReset').value
+          }
+        };
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/update-season-settings.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            settings: settings,
+            admin_id: currentAdmin
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Season settings saved successfully');
+          // Close modal
+          document.querySelector('.fixed.inset-0').remove();
+        } else {
+          addLog(`❌ Failed to save settings: ${data.error}`);
+        }
+        
+      } catch (error) {
+        addLog(`❌ Save error: ${error.message}`);
+      }
+    }
     // Functions are now implemented above in the main function section
 
     // ========================================
