@@ -51,19 +51,52 @@ try {
         exit;
     }
     
+    // Validate item price
+    if ($item['price'] <= 0) {
+        $db->exec('ROLLBACK');
+        echo json_encode([
+            'success' => false,
+            'error' => 'Invalid item price. Please contact an administrator.'
+        ]);
+        exit;
+    }
+    
     $total_cost = $item['price'] * $quantity;
     
-    // Check user's balance
+    // Ensure user exists in users table
+    $stmt = $db->prepare('SELECT discord_id FROM tbl_users WHERE discord_id = ?');
+    $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
+    $result = $stmt->execute();
+    $user_exists = $result->fetchArray(SQLITE3_ASSOC);
+    
+    if (!$user_exists) {
+        $db->exec('ROLLBACK');
+        echo json_encode([
+            'success' => false,
+            'error' => 'User not found in system. Please contact an administrator.'
+        ]);
+        exit;
+    }
+    
+    // Check user's balance and create record if doesn't exist
     $stmt = $db->prepare('SELECT score FROM tbl_user_scores WHERE user_id = ?');
     $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
     $result = $stmt->execute();
     $user_score = $result->fetchArray(SQLITE3_ASSOC);
     
-    if (!$user_score || $user_score['score'] < $total_cost) {
+    if (!$user_score) {
+        // Create user score record if it doesn't exist
+        $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, timestamp) VALUES (?, 0, datetime("now"))');
+        $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
+        $stmt->execute();
+        $user_score = ['score' => 0];
+    }
+    
+    if ($user_score['score'] < $total_cost) {
         $db->exec('ROLLBACK');
         echo json_encode([
             'success' => false,
-            'error' => 'Insufficient balance'
+            'error' => 'Insufficient balance. You have ' . $user_score['score'] . ' $DSPOINC, but need ' . $total_cost . ' $DSPOINC'
         ]);
         exit;
     }
@@ -72,6 +105,18 @@ try {
     $stmt = $db->prepare('UPDATE tbl_user_scores SET score = score - ? WHERE user_id = ?');
     $stmt->bindValue(1, $total_cost, SQLITE3_INTEGER);
     $stmt->bindValue(2, $user_id, SQLITE3_TEXT);
+    $stmt->execute();
+    
+    // Record the points deduction in score adjustments for audit trail
+    $stmt = $db->prepare('
+        INSERT INTO tbl_score_adjustments (user_id, admin_id, amount, action, reason, timestamp) 
+        VALUES (?, ?, ?, ?, ?, datetime("now"))
+    ');
+    $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
+    $stmt->bindValue(2, $user_id, SQLITE3_TEXT); // User is their own admin for purchases
+    $stmt->bindValue(3, -$total_cost, SQLITE3_INTEGER); // Negative amount for deduction
+    $stmt->bindValue(4, 'remove', SQLITE3_TEXT); // Action type
+    $stmt->bindValue(5, 'Store purchase: ' . $item['item_name'] . ' x' . $quantity, SQLITE3_TEXT);
     $stmt->execute();
     
     // Add item to user's inventory
@@ -97,6 +142,21 @@ try {
     $stmt->bindValue(4, $quantity, SQLITE3_INTEGER);
     $stmt->execute();
     
+    // Verify final balance for security
+    $stmt = $db->prepare('SELECT score FROM tbl_user_scores WHERE user_id = ?');
+    $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
+    $result = $stmt->execute();
+    $final_balance = $result->fetchArray(SQLITE3_ASSOC);
+    
+    if (!$final_balance || $final_balance['score'] < 0) {
+        $db->exec('ROLLBACK');
+        echo json_encode([
+            'success' => false,
+            'error' => 'Purchase verification failed. Please contact an administrator.'
+        ]);
+        exit;
+    }
+    
     // Commit transaction
     $db->exec('COMMIT');
     
@@ -108,7 +168,9 @@ try {
             'description' => $item['description']
         ],
         'quantity' => $quantity,
-        'total_price' => $total_cost
+        'total_price' => $total_cost,
+        'new_balance' => $final_balance['score'],
+        'balance_before' => $user_score['score']
     ]);
     
 } catch (Exception $e) {

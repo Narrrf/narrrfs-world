@@ -268,11 +268,110 @@ require_once 'discord-invite.php';
     <div class="mt-6 bg-gray-700 rounded-lg p-4 shadow-inner">
       <h2 class="font-semibold text-lg mb-2 text-yellow-300">📊 User Statistics</h2>
       <ul class="text-sm space-y-1">
-        <li>🎯 Score Adjustments: <strong id="stats-adjustments">Loading...</strong></li>
-        <li>🎮 Score Sources: <strong id="stats-sources">Loading...</strong></li>
-        <li>⭐ Active Roles: <strong id="stats-roles">Loading...</strong></li>
+        <li>💰 Total DSPOINC: <strong id="stats-adjustments">Loading...</strong></li>
+        <li>💸 Total Spent: <strong id="stats-sources">Loading...</strong></li>
+        <li>💎 Net Worth: <strong id="stats-roles">Loading...</strong></li>
         <li>📅 Member Since: <strong id="stats-member-since">Loading...</strong></li>
       </ul>
+    </div>
+
+    <!-- 🛍️ Inventory & Purchase History Section -->
+    <div id="inventory-history-section" class="mt-6 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-lg p-4 shadow-inner border border-purple-500/30">
+      <h2 class="font-semibold text-lg mb-4 text-purple-300">🛍️ Store Activity</h2>
+      
+      <!-- 📦 Inventory Summary -->
+      <div class="mb-6">
+        <h3 class="text-md font-semibold mb-3 text-blue-300">📦 Inventory Summary</h3>
+        <div id="inventory-summary" class="grid grid-cols-2 gap-3 text-sm">
+          <div class="bg-blue-900/20 p-2 rounded border border-blue-500/30">
+            <div class="text-blue-200">Total Items</div>
+            <div id="inventory-total" class="text-white font-semibold">Loading...</div>
+          </div>
+          <div class="bg-blue-900/20 p-2 rounded border border-blue-500/30">
+            <div class="text-blue-200">Unique Items</div>
+            <div id="inventory-unique" class="text-white font-semibold">Loading...</div>
+          </div>
+          <div class="bg-blue-900/20 p-2 rounded border border-blue-500/30">
+            <div class="text-blue-200">Total Value</div>
+            <div id="inventory-value" class="text-white font-semibold">Loading...</div>
+          </div>
+          <div class="bg-blue-900/20 p-2 rounded border border-blue-500/30">
+            <div class="text-blue-200">Recent Purchases</div>
+            <div id="inventory-recent" class="text-white font-semibold">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🛒 Purchase History Summary -->
+      <div class="mb-6">
+        <h3 class="text-md font-semibold mb-3 text-green-300">🛒 Purchase History</h3>
+        <div id="purchase-summary" class="grid grid-cols-2 gap-3 text-sm">
+          <div class="bg-green-900/20 p-2 rounded border border-green-500/30">
+            <div class="text-green-200">Total Purchases</div>
+            <div id="purchase-total" class="text-white font-semibold">Loading...</div>
+          </div>
+          <div class="bg-green-900/20 p-2 rounded border border-green-500/30">
+            <div class="text-green-200">Total Spent</div>
+            <div id="purchase-spent" class="text-white font-semibold">Loading...</div>
+          </div>
+          <div class="bg-green-900/20 p-2 rounded border border-green-500/30">
+            <div class="text-green-200">Average Purchase</div>
+            <div id="purchase-avg" class="text-white font-semibold">Loading...</div>
+          </div>
+          <div class="bg-green-900/20 p-2 rounded border border-green-500/30">
+            <div class="text-green-200">Largest Purchase</div>
+            <div id="purchase-largest" class="text-white font-semibold">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 📋 Detailed Inventory -->
+      <div class="mb-6">
+        <h3 class="text-md font-semibold mb-3 text-yellow-300">📋 Your Items</h3>
+        <div id="inventory-items" class="space-y-2 max-h-40 overflow-y-auto">
+          <div class="text-gray-400 text-sm text-center py-2">Loading inventory...</div>
+        </div>
+      </div>
+
+      <!-- 📜 Recent Purchases -->
+      <div>
+        <h3 class="text-md font-semibold mb-3 text-orange-300">📜 Recent Purchases</h3>
+        <div id="purchase-items" class="space-y-2 max-h-40 overflow-y-auto">
+          <div class="text-gray-400 text-sm text-center py-2">Loading purchases...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🎮 5-Game Missions Section -->
+    <div id="missions-section" class="mt-6 bg-gradient-to-br from-green-900/30 to-blue-900/30 rounded-lg p-4 shadow-inner border border-green-500/30">
+      <h2 class="font-semibold text-lg mb-4 text-green-300">🎮 Game Missions & Achievements</h2>
+      
+      <!-- 🏆 Overall Progress -->
+      <div class="mb-6">
+        <h3 class="text-md font-semibold mb-3 text-yellow-300">🏆 Overall Progress</h3>
+        <div id="questProgress" class="grid grid-cols-3 gap-3 text-sm">
+          <div class="bg-yellow-900/20 p-2 rounded border border-yellow-500/30 text-center">
+            <div class="text-yellow-200">Approved</div>
+            <div class="text-white font-semibold">0</div>
+          </div>
+          <div class="bg-yellow-900/20 p-2 rounded border border-yellow-500/30 text-center">
+            <div class="text-yellow-200">Pending</div>
+            <div class="text-white font-semibold">0</div>
+          </div>
+          <div class="bg-yellow-900/20 p-2 rounded border border-yellow-500/30 text-center">
+            <div class="text-yellow-200">Total Claims</div>
+            <div class="text-white font-semibold">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🎯 Game Stats Grid -->
+      <div>
+        <h3 class="text-md font-semibold mb-3 text-blue-300">🎯 Game Statistics</h3>
+        <div id="missionsResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Game stats will be populated by JavaScript -->
+        </div>
+      </div>
     </div>
 
     <!-- 🎯 Skills Section -->
@@ -934,43 +1033,55 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
     try {
-    // Unified fetch from profile.php
-     const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
-       credentials: 'include',
-       headers: { 'Accept': 'application/json' }
-     });
+      // Enhanced profile fetch - get basic profile + inventory + purchase history
+      const [profileRes, enhancedProfileRes] = await Promise.all([
+        fetch('https://narrrfs.world/api/user/profile.php', { 
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        }),
+        fetch('https://narrrfs.world/api/user/enhanced-profile.php', { 
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        })
+      ]);
 
-    if (!res.ok) {
-      if (res.status === 401) {
-        // Not logged in - show login UI
-        setText('username', 'Guest#0000');
-        setText('welcome-name', 'Guest');
-        setText('email', 'Please log in');
-        setText('guilds', 'No guilds connected');
-        setText('traits', 'No traits available');
-        setText('user-roles', 'No roles');
-        setText('wallet-address', 'Wallet not linked');
-        hideElement('goldenCheeseGate');
-        hideElement('noCheeseJoke');
-		hideElement('bingoBanner');
-        hideElement('dspoincSection');
+      // Check profile response first
+      if (!profileRes.ok) {
+        if (profileRes.status === 401) {
+          // Not logged in - show login UI
+          setText('username', 'Guest#0000');
+          setText('welcome-name', 'Guest');
+          setText('email', 'Please log in');
+          setText('guilds', 'No guilds connected');
+          setText('traits', 'No traits available');
+          setText('user-roles', 'No roles');
+          setText('wallet-address', 'Wallet not linked');
+          hideElement('goldenCheeseGate');
+          hideElement('noCheeseJoke');
+          hideElement('bingoBanner');
+          hideElement('dspoincSection');
 
-
-        // Make sure login link is visible and clickable
-        if (loginLink) {
-          loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
-          loginLink.style.display = 'block';
+          // Make sure login link is visible and clickable
+          if (loginLink) {
+            loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
+            loginLink.style.display = 'block';
+          }
+          if (avatar) {
+            avatar.src = 'img/grumpy-cheese.png';
+            avatar.style.cursor = 'pointer';
+          }
+          return;
         }
-        if (avatar) {
-          avatar.src = 'img/grumpy-cheese.png';
-          avatar.style.cursor = 'pointer';
-        }
-        return;
+        throw new Error(`Profile API error: ${profileRes.status}`);
       }
-      throw new Error(`API error: ${res.status}`);
+
+    // Check enhanced profile response
+    if (!enhancedProfileRes.ok) {
+      console.warn('Enhanced profile failed, using basic profile only');
     }
 
-    const user = await res.json();
+    const user = await profileRes.json();
+    const enhancedData = enhancedProfileRes.ok ? await enhancedProfileRes.json() : null;
     
     // Store Discord info for other features (optional)
     if (user.discord_id) {
@@ -1000,6 +1111,38 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (user.stats) {
       setText('user-dspoinc', user.stats.scoreAdjustments !== undefined ? user.stats.scoreAdjustments.toLocaleString() : '');
       setText('user-spoinc', user.stats.sources !== undefined ? user.stats.sources.toLocaleString() : '');
+    }
+
+    // Enhanced profile data - Inventory and Purchase History
+    if (enhancedData && enhancedData.success) {
+      // Display enhanced financial information
+      if (enhancedData.financial) {
+        setText('stats-member-since', user.member_since || 'Unknown');
+        setText('stats-adjustments', enhancedData.financial.total_dspoinc.toLocaleString());
+        setText('stats-sources', enhancedData.financial.total_spent.toLocaleString());
+        setText('stats-roles', enhancedData.financial.net_worth.toLocaleString());
+      }
+
+      // Display inventory and purchase history
+      displayInventoryAndHistory(enhancedData);
+    }
+
+    // Load 5-game missions data
+    try {
+      const missionsRes = await fetch('https://narrrfs.world/api/user-game-missions.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.discord_id })
+      });
+
+      if (missionsRes.ok) {
+        const missionsData = await missionsRes.json();
+        if (missionsData.success) {
+          displayMissions(missionsData);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load missions data:', error);
     }
 
     // Trophy pokal shelf — render immediately from roles
@@ -2426,6 +2569,206 @@ function displayMissionsError(errorMessage, suggestion = '') {
       ${suggestion ? `<br><br><span class="text-yellow-300 text-sm">💡 ${suggestion}</span>` : ''}
     </div>
   `;
+}
+
+// Function to display inventory and purchase history
+function displayInventoryAndHistory(enhancedData) {
+  try {
+    // Update inventory summary
+    if (enhancedData.inventory && enhancedData.inventory.summary) {
+      const summary = enhancedData.inventory.summary;
+      setText('inventory-total', summary.total_items.toLocaleString());
+      setText('inventory-unique', summary.unique_items.toLocaleString());
+      setText('inventory-value', summary.total_value.toLocaleString() + ' $DSPOINC');
+      setText('inventory-recent', summary.recent_purchases.toLocaleString());
+    }
+
+    // Update purchase summary
+    if (enhancedData.purchase_history && enhancedData.purchase_history.summary) {
+      const summary = enhancedData.purchase_history.summary;
+      setText('purchase-total', summary.total_purchases.toLocaleString());
+      setText('purchase-spent', summary.total_spent.toLocaleString() + ' $DSPOINC');
+      setText('purchase-avg', Math.round(summary.average_purchase_value).toLocaleString() + ' $DSPOINC');
+      setText('purchase-largest', summary.largest_purchase.toLocaleString() + ' $DSPOINC');
+    }
+
+    // Display inventory items
+    const inventoryContainer = document.getElementById('inventory-items');
+    if (enhancedData.inventory && enhancedData.inventory.items && enhancedData.inventory.items.length > 0) {
+      inventoryContainer.innerHTML = enhancedData.inventory.items.map(item => `
+        <div class="flex items-center justify-between p-2 bg-blue-900/20 rounded border border-blue-500/30">
+          <div class="flex items-center gap-2">
+            <span class="text-blue-300">${item.item_name}</span>
+            <span class="text-gray-400 text-xs">x${item.quantity}</span>
+          </div>
+          <div class="text-right">
+            <div class="text-white font-semibold">${item.total_value.toLocaleString()} $DSPOINC</div>
+            <div class="text-gray-400 text-xs">${formatDateShort(item.acquired_at)}</div>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      inventoryContainer.innerHTML = `
+        <div class="text-center text-gray-400 py-3">
+          <div class="text-lg mb-2">📦 No items yet</div>
+          <div class="text-sm">Visit the store to start building your collection!</div>
+        </div>
+      `;
+    }
+
+    // Display purchase history
+    const purchaseContainer = document.getElementById('purchase-items');
+    if (enhancedData.purchase_history && enhancedData.purchase_history.purchases && enhancedData.purchase_history.purchases.length > 0) {
+      purchaseContainer.innerHTML = enhancedData.purchase_history.purchases.map(purchase => `
+        <div class="flex items-center justify-between p-2 bg-green-900/20 rounded border border-green-500/30">
+          <div class="flex items-center gap-2">
+            <span class="text-green-300">${purchase.item_name}</span>
+            <span class="text-gray-400 text-xs">x${purchase.quantity}</span>
+          </div>
+          <div class="text-right">
+            <div class="text-white font-semibold">${purchase.price_paid.toLocaleString()} $DSPOINC</div>
+            <div class="text-gray-400 text-xs">${formatDateShort(purchase.purchased_at)}</div>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      purchaseContainer.innerHTML = `
+        <div class="text-center text-gray-400 py-3">
+          <div class="text-lg mb-2">🛒 No purchases yet</div>
+          <div class="text-sm">Your purchase history will appear here!</div>
+        </div>
+      `;
+    }
+
+    console.log('✅ Inventory and purchase history displayed successfully');
+  } catch (error) {
+    console.error('❌ Error displaying inventory and history:', error);
+    
+    // Show error messages in containers
+    const inventoryContainer = document.getElementById('inventory-items');
+    const purchaseContainer = document.getElementById('purchase-items');
+    
+    if (inventoryContainer) {
+      inventoryContainer.innerHTML = `
+        <div class="text-center text-red-400 py-3">
+          <div class="text-lg mb-2">❌ Error loading inventory</div>
+          <div class="text-sm">${error.message}</div>
+        </div>
+      `;
+    }
+    
+    if (purchaseContainer) {
+      purchaseContainer.innerHTML = `
+        <div class="text-center text-red-400 py-3">
+          <div class="text-lg mb-2">❌ Error loading purchases</div>
+          <div class="text-sm">${error.message}</div>
+        </div>
+      `;
+    }
+  }
+}
+
+// Function to display 5-game missions data
+function displayMissions(data) {
+  try {
+    console.log('🎮 Displaying missions data:', data);
+    
+    // Display quest progress
+    const questProgress = document.getElementById('questProgress');
+    if (questProgress && data.quest_stats) {
+      questProgress.innerHTML = `
+        <div class="bg-yellow-900/20 p-2 rounded border border-yellow-500/30 text-center">
+          <div class="text-yellow-200">Approved</div>
+          <div class="text-white font-semibold">${data.quest_stats.approved_claims || 0}</div>
+        </div>
+        <div class="bg-yellow-900/20 p-2 rounded border border-yellow-500/30 text-center">
+          <div class="text-yellow-200">Pending</div>
+          <div class="text-white font-semibold">${data.quest_stats.pending_claims || 0}</div>
+        </div>
+        <div class="bg-yellow-900/20 p-2 rounded border border-yellow-500/30 text-center">
+          <div class="text-yellow-200">Total Claims</div>
+          <div class="text-white font-semibold">${data.quest_stats.total_claims || 0}</div>
+        </div>
+      `;
+    }
+
+    // Display game statistics
+    const missionsResults = document.getElementById('missionsResults');
+    if (missionsResults && data.games) {
+      missionsResults.innerHTML = Object.entries(data.games).map(([gameKey, game]) => `
+        <div class="bg-gradient-to-br from-gray-800/50 to-gray-700/50 rounded-lg p-4 border border-gray-600/50">
+          <div class="text-center mb-3">
+            <div class="text-2xl mb-2">${game.icon}</div>
+            <div class="text-lg font-semibold text-white">${game.name}</div>
+            <div class="text-sm text-gray-300">${game.status === 'active' ? '✅ Active' : '❌ Not Played'}</div>
+          </div>
+          
+          <div class="text-xs text-left space-y-1">
+            ${getGameStats(gameKey, game)}
+          </div>
+          
+          <div class="mt-3 text-center">
+            <button class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded" 
+                    onclick="navigateToGame('${game.url}')"
+                    title="Navigate to: ${game.url}">
+              ${game.status === 'active' ? 'Play Again' : 'Start Playing'}
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    console.log('✅ Missions displayed successfully');
+  } catch (error) {
+    console.error('❌ Error displaying missions:', error);
+    displayMissionsError(error.message);
+  }
+}
+
+// Function to get formatted game statistics
+function getGameStats(gameKey, game) {
+  switch(gameKey) {
+    case 'tetris':
+      return `
+        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games || 0}</span></div>
+        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${(game.best_score || 0).toLocaleString()}</span></div>
+        <div>💎 Total Score: <span class="text-green-400 font-semibold">${(game.total_score || 0).toLocaleString()}</span></div>
+        <div>💰 DSPOINC Earned: <span class="text-purple-400 font-semibold">${game.dspoinc_earned || 0}</span></div>
+        <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
+      `;
+    case 'snake':
+      return `
+        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games || 0}</span></div>
+        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${(game.best_score || 0).toLocaleString()}</span></div>
+        <div>💎 Total Score: <span class="text-green-400 font-semibold">${game.total_score || 0}</span></div>
+        <div>💰 DSPOINC Earned: <span class="text-purple-400 font-semibold">${game.dspoinc_earned || 0}</span></div>
+        <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
+      `;
+    case 'space_invaders':
+      return `
+        <div>🎮 Games: <span class="text-white font-semibold">${game.total_games || 0}</span></div>
+        <div>🏆 Best Score: <span class="text-yellow-400 font-semibold">${(game.best_score || 0).toLocaleString()}</span></div>
+        <div>💎 Total Score: <span class="text-green-400 font-semibold">${game.total_score || 0}</span></div>
+        <div>💰 DSPOINC Earned: <span class="text-purple-400 font-semibold">${game.dspoinc_earned || 0}</span></div>
+        <div>📅 Last Played: <span class="text-gray-300">${game.last_played ? formatDateShort(game.last_played) : 'Never'}</span></div>
+      `;
+    case 'cheese_hunt':
+      return `
+        <div>🧀 Total Clicks: <span class="text-white font-semibold">${game.total_clicks || 0}</span></div>
+        <div>🎯 Quest Clicks: <span class="text-orange-400 font-semibold">${game.quest_clicks || 0}</span></div>
+        <div>🥚 Unique Eggs: <span class="text-blue-400 font-semibold">${game.unique_eggs || 0}/3</span></div>
+        <div>📅 Last Click: <span class="text-gray-300">${game.last_click ? formatDateShort(game.last_click) : 'Never'}</span></div>
+      `;
+    case 'discord_race':
+      return `
+        <div>🏁 Total Races: <span class="text-white font-semibold">${game.total_races || 0}</span></div>
+        <div>🥇 Wins: <span class="text-yellow-400 font-semibold">${game.wins || 0}</span></div>
+        <div>🏆 Podiums: <span class="text-orange-400 font-semibold">${game.podium_finishes || 0}</span></div>
+        <div>📊 Best Position: <span class="text-green-400 font-semibold">#${game.best_position || 'N/A'}</span></div>
+      `;
+    default:
+      return '<div>No stats available</div>';
+  }
 }
 </script>
 
