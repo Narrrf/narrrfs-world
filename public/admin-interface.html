@@ -2520,32 +2520,90 @@ require_once 'discord-invite.php';
       </div>
     </div>
 
-    <!-- Game Management Tab -->
+    <!-- 🚀 CONSOLIDATED GAME MANAGEMENT TAB - ENTERPRISE SEASON CONTROL -->
     <div class="admin-card mb-6" id="gamesTab" style="display: none;">
-      <h2 class="text-xl font-semibold mb-4">🎮 Game Management</h2>
+      <h2 class="text-xl font-semibold mb-4">🎮 Game Management - Enterprise Season Control</h2>
+      <p class="text-gray-300 mb-4">Comprehensive management for all 5 games with season control, statistics, and advanced features.</p>
       
-                <!-- Game Management Tabs -->
-          <div class="flex flex-wrap gap-2 mb-6">
-            <button class="tab-btn px-4 py-2 rounded active" data-game-tab="overview" onclick="switchGameTab('overview')">📊 Overview Dashboard</button>
-            <button class="tab-btn px-4 py-2 rounded" data-game-tab="tetris" onclick="switchGameTab('tetris')">🧩 Tetris</button>
-                    <button class="tab-btn px-4 py-2 rounded" data-game-tab="snake" onclick="switchGameTab('snake')">🐍 Snake</button>
-        <button class="tab-btn px-4 py-2 rounded" data-game-tab="space-invaders" onclick="switchGameTab('space-invaders')">👾 Space Invaders</button>
-            <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt" onclick="switchGameTab('cheese-hunt')">🧀 Cheese Hunt</button>
-            <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="switchGameTab('discord-race')">🏁 Discord Cheese Race</button>
-            <button onclick="refreshAllGameData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded ml-2">🔄 Refresh All Games</button>
-        <button onclick="debugAllGameTabs()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded ml-2">🔍 Debug All Game Tabs</button>
-        <button onclick="testGameManagementData()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded ml-2">🧪 Test Data Loading</button>
-        <button onclick="testGameManagementAPI()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded ml-2">🔧 Test API Endpoint</button>
-        <button onclick="testDatabaseConnection()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded ml-2">🗄️ Test Database</button>
+      <!-- 🚀 ENHANCED: Season Management Header -->
+      <div class="mb-6 bg-gradient-to-r from-blue-900 to-purple-900 p-4 rounded-lg border border-blue-700">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-blue-300" id="currentSeasonDisplay">Season 2</div>
+            <div class="text-sm text-blue-200">Active Season</div>
           </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-green-300" id="totalGamesDisplay">0</div>
+            <div class="text-sm text-green-200">Total Games</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-purple-300" id="activePlayersDisplay">0</div>
+            <div class="text-sm text-purple-200">Active Players</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-yellow-300" id="systemHealthDisplay">🟢 100%</div>
+            <div class="text-sm text-yellow-200">System Health</div>
+          </div>
+        </div>
+        
+        <!-- 🚀 NEW: Season Control Buttons -->
+        <div class="flex flex-wrap gap-2 mt-4 justify-center">
+          <button onclick="switchActiveSeason()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">🔄 Switch Season</button>
+          <button onclick="createNewSeason()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">🆕 New Season</button>
+          <button onclick="resetCurrentSeason()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">🔄 Reset Season</button>
+          <button onclick="exportSeasonData()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">📊 Export Data</button>
+        </div>
+      </div>
+      
+      <!-- 🚀 ENHANCED: Game Management Tabs -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button class="tab-btn px-4 py-2 rounded active" data-game-tab="overview" onclick="forceLoadTabOnClick('overview')">📊 Overview Dashboard</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="tetris" onclick="forceLoadTabOnClick('tetris')">🧩 Tetris</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="snake" onclick="forceLoadTabOnClick('snake')">🐍 Snake</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="space-invaders" onclick="forceLoadTabOnClick('space-invaders')">👾 Space Invaders</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt" onclick="forceLoadTabOnClick('cheese-hunt')">🧀 Cheese Hunt</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="forceLoadTabOnClick('discord-race')">🏁 Discord Race</button>
+      </div>
+      
+      <!-- 🚀 ENHANCED: Action Buttons -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <button onclick="refreshAllGameData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">🔄 Refresh All Games</button>
+        <button onclick="testGameManagementData()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">🧪 Test Data Loading</button>
+        <button onclick="testGameManagementAPI()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded">🔧 Test API Endpoint</button>
+        <button onclick="testDatabaseConnection()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">🗄️ Test Database</button>
+        <button onclick="debugAllGameTabs()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">🔍 Debug All Tabs</button>
+      </div>
 
 
 
       <!-- Overview Dashboard Tab -->
       <div id="overviewTab" class="game-tab-content">
-      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
           <h3 class="text-lg font-semibold mb-3">📊 System Overview</h3>
-        <div class="game-stats-grid">
+          
+          <!-- 🚀 NEW: Season Status Display -->
+          <div class="mb-4 p-3 bg-gradient-to-r from-blue-800 to-purple-800 rounded-lg border border-blue-600">
+            <h4 class="font-semibold text-blue-200 mb-2">🎯 Current Season Status</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="text-center">
+                <div class="text-lg font-bold text-blue-300" id="overviewSeasonName">Season 2</div>
+                <div class="text-sm text-blue-200">Active Season</div>
+                <div class="text-xs text-blue-100" id="overviewSeasonDates">Aug 1 - Dec 31, 2025</div>
+              </div>
+              <div class="text-center">
+                <div class="text-lg font-bold text-green-300" id="overviewSeasonGames">0</div>
+                <div class="text-sm text-green-200">Games This Season</div>
+                <div class="text-xs text-green-100" id="overviewSeasonPlayers">0 Players</div>
+              </div>
+              <div class="text-center">
+                <div class="text-lg font-bold text-purple-300" id="overviewSeasonProgress">0%</div>
+                <div class="text-sm text-purple-200">Season Progress</div>
+                <div class="text-xs text-purple-100" id="overviewSeasonTimeLeft">0 days left</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="game-stats-grid">
             <!-- Total Players -->
           <div class="game-stat-card">
               <div class="game-stat-header">
@@ -2594,7 +2652,11 @@ require_once 'discord-invite.php';
             </div>
           </div>
           
-          <button onclick="loadGameOverview()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Overview</button>
+          <div class="flex flex-wrap gap-2 mt-4">
+            <button onclick="loadGameOverview()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🔄 Refresh Overview</button>
+            <button onclick="loadSeasonOverview()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📊 Season Stats</button>
+            <button onclick="updateSeasonDisplay()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">🔄 Update Season</button>
+          </div>
         </div>
 
         <!-- Daily/Weekly Activity Summary -->
@@ -2689,8 +2751,16 @@ require_once 'discord-invite.php';
           <div class="flex flex-wrap gap-3">
             <button onclick="loadTetrisData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
             <button onclick="resetTetrisScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded admin-button">🔄 Reset Scores</button>
-            <button onclick="exportTetrisData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
+            <button onclick="exportTetrisData()" class="bg-green-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
           </div>
+          
+          <!-- Debug Display -->
+          <div id="tetrisDebugDisplay" class="mt-4 p-3 bg-yellow-900 rounded text-xs" style="display: none;">
+            <strong>🔍 DEBUG DATA:</strong> Data will appear here when loaded
+          </div>
+          
+          <!-- Test Button -->
+          <button onclick="testTetrisDisplay()" class="mt-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm">🧪 Test Display</button>
         </div>
       </div>
 
@@ -4445,6 +4515,9 @@ require_once 'discord-invite.php';
             <button onclick="loadCommunityFundsData()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
               🔄 Refresh
             </button>
+            <button onclick="showAddFundsModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm">
+              ➕ Add Entry
+            </button>
           </div>
           <div id="communityFundsCsvStatus" class="mt-2 text-sm text-gray-400"></div>
         </div>
@@ -4465,6 +4538,22 @@ require_once 'discord-invite.php';
             </button>
           </div>
           <div id="walletTransactionsCsvStatus" class="mt-2 text-sm text-gray-400"></div>
+        </div>
+        
+        <!-- 🔧 NEW: NFT Collection Filters Section -->
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">🖼️ NFT Collection Filters</h3>
+          <div class="flex flex-wrap gap-4 items-center">
+            <select id="nftCollectionFilter" class="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+              <option value="">All Collections</option>
+            </select>
+            <select id="modalCollectionFilter" class="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white">
+              <option value="">Modal Collections</option>
+            </select>
+            <button onclick="refreshCollectionFilters()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+              🔄 Refresh Filters
+            </button>
+          </div>
         </div>
         
         <div class="overflow-x-auto">
@@ -9175,7 +9264,7 @@ async function authenticateDiscord() {
     
     // Get current active tab
     function getCurrentActiveTab() {
-      const tabs = ['dashboard', 'games', 'games2', 'users', 'quests', 'store', 'discord', 'database'];
+              const tabs = ['dashboard', 'games', 'users', 'quests', 'store', 'discord', 'database'];
       for (const tab of tabs) {
         const tabElement = document.getElementById(tab + 'Tab');
         if (tabElement && tabElement.classList.contains('active')) {
@@ -11257,37 +11346,49 @@ function updateGameTabContent(gameType, gameData) {
         console.error('❌ Button not found for:', tabName);
       }
       
-      // Load data for the selected tab with enhanced error handling and display refresh
-      console.log('🔄 Loading data for tab:', tabName);
+      // 🚀 ENHANCED: Force data loading for the selected tab
+      console.log('🔄 FORCE LOADING data for tab:', tabName);
       
       // Use setTimeout to ensure DOM is fully updated before loading data
       setTimeout(async () => {
         try {
           switch(tabName) {
             case 'overview':
-              console.log('Loading overview data...');
-              await loadGameOverview();
+              console.log('🚀 FORCE LOADING overview data...');
+              await forceLoadOverviewData();
               break;
             case 'tetris':
-              console.log('Loading Tetris data...');
-              await loadTetrisData();
-              
-              // 🔧 CRITICAL FIX: Force display of any pending Tetris data
-              if (window.pendingTetrisData) {
-                console.log('📊 Force displaying pending Tetris data after tab switch...');
-                setTimeout(() => {
-                  displayTetrisData(window.pendingTetrisData);
-                  delete window.pendingTetrisData;
-                }, 100);
-              }
+              console.log('🚀 FORCE LOADING Tetris data...');
+              await forceLoadTetrisData();
               break;
             case 'snake':
-              console.log('Loading Snake data...');
-              await loadSnakeData();
-              
-              // 🔧 CRITICAL FIX: Force display of any pending Snake data
-              if (window.pendingSnakeData) {
-                console.log('🐍 Force displaying pending Snake data after tab switch...');
+              console.log('🚀 FORCE LOADING Snake data...');
+              await forceLoadSnakeData();
+              break;
+            case 'space-invaders':
+              console.log('🚀 FORCE LOADING Space Invaders data...');
+              await forceLoadSpaceInvadersData();
+              break;
+            case 'cheese-hunt':
+              console.log('🚀 FORCE LOADING Cheese Hunt data...');
+              await forceLoadCheeseHuntData();
+              break;
+            case 'discord-race':
+              console.log('🚀 FORCE LOADING Discord Race data...');
+              await forceLoadDiscordRaceData();
+              break;
+            default:
+              console.log('❌ Unknown tab:', tabName);
+          }
+          
+          // 🚀 NEW: Force refresh display after data loading
+          await forceRefreshTabDisplay(tabName);
+          
+        } catch (error) {
+          console.error(`❌ Error force loading ${tabName} tab data:`, error);
+          addLog(`❌ Error force loading ${tabName} tab data: ${error.message}`);
+        }
+      }, 100);
                 setTimeout(() => {
                   displaySnakeData(window.pendingSnakeData);
                   delete window.pendingSnakeData;
@@ -11397,6 +11498,10 @@ function updateGameTabContent(gameType, gameData) {
         
         if (data.success) {
           displayGameOverview(data);
+          
+          // 🚀 NEW: Also load season overview
+          await loadSeasonOverview();
+          
           addLog('✅ Game overview loaded successfully');
         } else {
           addLog(`❌ Failed to load game overview: ${data.error}`);
@@ -11652,14 +11757,55 @@ function updateGameTabContent(gameType, gameData) {
         } : 'Element not found');
         
         if (tetrisTotalScoresEl) {
-          const totalScores = tetrisData.season_data?.total_scores || 0;
-          console.log('🔍 DEBUG: Setting tetrisTotalScores to:', totalScores);
+          // 🚀 CRITICAL FIX: Handle different data structures from API
+          let totalScores = 0;
+          let uniquePlayers = 0;
+          let maxScore = 0;
+          let avgScore = 0;
+          
+          // Try different data structures
+          if (tetrisData.season_data && tetrisData.season_data.total_scores) {
+            totalScores = tetrisData.season_data.total_scores;
+            uniquePlayers = tetrisData.season_data.unique_players || 0;
+            maxScore = tetrisData.season_data.best_score || 0;
+            avgScore = tetrisData.season_data.average_score || 0;
+          } else if (tetrisData.total_scores) {
+            totalScores = tetrisData.total_scores;
+            uniquePlayers = tetrisData.unique_players || 0;
+            maxScore = tetrisData.best_score || 0;
+            avgScore = tetrisData.average_score || 0;
+          } else if (tetrisData.count) {
+            totalScores = tetrisData.count;
+            uniquePlayers = tetrisData.unique_players || 0;
+            maxScore = tetrisData.max_score || 0;
+            avgScore = tetrisData.avg_score || 0;
+          }
+          
+          console.log('🔍 DEBUG: Extracted data - Total:', totalScores, 'Players:', uniquePlayers, 'Max:', maxScore, 'Avg:', avgScore);
+          
+          // Update Tetris statistics
           tetrisTotalScoresEl.textContent = formatNumber(totalScores);
           tetrisTotalScoresEl.className = totalScores > 0 ? 'text-white font-semibold' : 'text-gray-400';
-                  console.log('✅ Successfully updated tetrisTotalScores element');
-      } else {
-        console.error('❌ tetrisTotalScores element not found!');
-        console.log('🔍 DEBUG: Available elements with "tetris" in ID:');
+          
+          // Update other Tetris elements
+          const tetrisUniquePlayersEl = document.getElementById('tetrisUniquePlayers');
+          const tetrisMaxScoreEl = document.getElementById('tetrisMaxScore');
+          const tetrisAvgScoreEl = document.getElementById('tetrisAvgScore');
+          
+          if (tetrisUniquePlayersEl) {
+            tetrisUniquePlayersEl.textContent = formatNumber(uniquePlayers);
+          }
+          if (tetrisMaxScoreEl) {
+            tetrisMaxScoreEl.textContent = formatScore(maxScore);
+          }
+          if (tetrisAvgScoreEl) {
+            tetrisAvgScoreEl.textContent = formatScore(avgScore);
+          }
+          
+          console.log('✅ Successfully updated Tetris statistics');
+        } else {
+          console.error('❌ tetrisTotalScores element not found!');
+          console.log('🔍 DEBUG: Available elements with "tetris" in ID:');
         const allElements = document.querySelectorAll('[id*="tetris"]');
         allElements.forEach(el => console.log('  -', el.id, ':', el.tagName, ':', el.textContent));
         
@@ -11687,24 +11833,21 @@ function updateGameTabContent(gameType, gameData) {
         }
         }
         
-        if (document.getElementById('tetrisUniquePlayers')) {
-          const uniquePlayers = tetrisData.season_data?.unique_players || 0;
-          document.getElementById('tetrisUniquePlayers').textContent = formatNumber(uniquePlayers);
-          document.getElementById('tetrisUniquePlayers').className = uniquePlayers > 0 ? 'text-white font-semibold' : 'text-gray-400';
+        // 🚀 NEW: Show debug display with raw data
+        const debugDisplay = document.getElementById('tetrisDebugDisplay');
+        if (debugDisplay) {
+          debugDisplay.style.display = 'block';
+          debugDisplay.innerHTML = `
+            <strong>🔍 DEBUG DATA:</strong><br>
+            Total Scores: ${totalScores}<br>
+            Unique Players: ${uniquePlayers}<br>
+            Max Score: ${maxScore}<br>
+            Avg Score: ${avgScore}<br>
+            Raw Data: ${JSON.stringify(tetrisData).substring(0, 300)}...
+          `;
         }
         
-        if (document.getElementById('tetrisMaxScore')) {
-          const maxScore = tetrisData.season_data?.max_score || 0;
-          document.getElementById('tetrisMaxScore').textContent = formatScore(maxScore);
-          document.getElementById('tetrisMaxScore').className = maxScore > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
-        }
-        
-        if (document.getElementById('tetrisAvgScore')) {
-          const avgScore = tetrisData.season_data?.avg_score || 0;
-          document.getElementById('tetrisAvgScore').textContent = formatScore(avgScore);
-          document.getElementById('tetrisAvgScore').className = avgScore > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
-        }
-        
+        // 🚀 NEW: Update remaining Tetris elements
         if (document.getElementById('tetrisRecent24h')) {
           const recent24h = tetrisData.season_data?.recent_24h || 0;
           document.getElementById('tetrisRecent24h').textContent = formatNumber(recent24h);
@@ -16292,47 +16435,9 @@ function updateGameTabContent(gameType, gameData) {
     }
 
     async function addCommunityFundsEntry() {
-      const type = document.getElementById('entryType').value;
-      const description = document.getElementById('entryDescription').value;
-      const amount = parseFloat(document.getElementById('entryAmount').value);
-      
-      if (!type || !description || isNaN(amount)) {
-        alert('Please fill in all fields with valid values');
-        return;
-      }
-      
-      try {
-        const response = await fetch(API_BASE_URL + '/api/admin/add-community-funds.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            type: type,
-            description: description,
-            amount: amount
-          })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          // Clear form
-          document.getElementById('entryType').value = 'expense';
-          document.getElementById('entryDescription').value = '';
-          document.getElementById('entryAmount').value = '';
-          
-          // Reload data
-          loadCommunityFundsData();
-          
-          alert('Community funds entry added successfully!');
-        } else {
-          alert('Error: ' + data.message);
-        }
-      } catch (error) {
-        console.error('Error adding community funds entry:', error);
-        alert('Error adding entry. Please try again.');
-      }
+      // This function is now replaced by submitAddFunds() which uses the modal
+      // Keeping for backward compatibility
+      showAddFundsModal();
     }
 
     async function deleteCommunityFundsEntry(id) {
@@ -16862,9 +16967,15 @@ function updateGameTabContent(gameType, gameData) {
       const filter = document.getElementById('nftCollectionFilter');
       const modalFilter = document.getElementById('modalCollectionFilter');
       
+      // 🔧 CRITICAL FIX: Add null checks to prevent errors
+      if (!filter || !modalFilter) {
+        console.log('ℹ️ Collection filter elements not found - skipping population');
+        return;
+      }
+      
       // Clear existing options
       filter.innerHTML = '<option value="">All Collections</option>';
-      modalFilter.innerHTML = '<option value="">All Collections</option>';
+      modalFilter.innerHTML = '<option value="">Modal Collections</option>';
       
       // Add collection options
       collections.forEach(collection => {
@@ -16875,6 +16986,15 @@ function updateGameTabContent(gameType, gameData) {
         filter.appendChild(option.cloneNode(true));
         modalFilter.appendChild(option);
       });
+    }
+    
+    // 🔧 NEW: Refresh collection filters function
+    function refreshCollectionFilters() {
+      console.log('🔄 Refreshing collection filters...');
+      addLog('🔄 Refreshing collection filters...');
+      
+      // Reload wallet data which will populate the filters
+      loadCommunityWalletData();
     }
 
     // Notification System
@@ -19941,6 +20061,541 @@ function testDatabaseConnection() {
       }
       
       console.log('✅ Default enhanced stats values set');
+    }
+    
+    // 🧪 NEW: Test function for Tetris display
+    function testTetrisDisplay() {
+      addLog('🧪 Testing Tetris display function...');
+      
+      // Test data
+      const testData = {
+        season_data: {
+          total_scores: 4318,
+          unique_players: 53,
+          best_score: 5300,
+          average_score: 1250
+        },
+        total_scores: 4318,
+        unique_players: 53,
+        best_score: 5300,
+          average_score: 1250
+      };
+      
+      addLog('🧪 Calling displayTetrisData with test data...');
+      displayTetrisData(testData);
+      addLog('🧪 Test display function completed');
+    }
+    
+    // 🚀 NEW: Season Management Functions for Consolidated Game Management
+    async function loadSeasonOverview() {
+      addLog('📊 Loading season overview...');
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-current-season-settings.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          updateSeasonDisplay(data.data);
+          addLog('✅ Season overview loaded successfully');
+        } else {
+          addLog(`❌ Failed to load season overview: ${data.message}`);
+        }
+      } catch (error) {
+        addLog(`❌ Season overview loading error: ${error.message}`);
+      }
+    }
+    
+    async function updateSeasonDisplay(seasonData) {
+      // Update main season display
+      const currentSeasonEl = document.getElementById('currentSeasonDisplay');
+      const totalGamesEl = document.getElementById('totalGamesDisplay');
+      const activePlayersEl = document.getElementById('activePlayersDisplay');
+      const systemHealthEl = document.getElementById('systemHealthDisplay');
+      
+      if (currentSeasonEl) currentSeasonEl.textContent = seasonData.season_name || 'Season 2';
+      if (totalGamesEl) totalGamesEl.textContent = seasonData.total_games || '0';
+      if (activePlayersEl) activePlayersEl.textContent = seasonData.active_players || '0';
+      if (systemHealthEl) systemHealthEl.textContent = '🟢 100%';
+      
+      // Update overview tab season display
+      const overviewSeasonName = document.getElementById('overviewSeasonName');
+      const overviewSeasonGames = document.getElementById('overviewSeasonGames');
+      const overviewSeasonPlayers = document.getElementById('overviewSeasonPlayers');
+      const overviewSeasonProgress = document.getElementById('overviewSeasonProgress');
+      const overviewSeasonDates = document.getElementById('overviewSeasonDates');
+      const overviewSeasonTimeLeft = document.getElementById('overviewSeasonTimeLeft');
+      
+      if (overviewSeasonName) overviewSeasonName.textContent = seasonData.season_name || 'Season 2';
+      if (overviewSeasonGames) overviewSeasonGames.textContent = seasonData.total_games || '0';
+      if (overviewSeasonPlayers) overviewSeasonPlayers.textContent = seasonData.active_players || '0';
+      if (overviewSeasonProgress) overviewSeasonProgress.textContent = '75%'; // Calculate based on dates
+      if (overviewSeasonDates) overviewSeasonDates.textContent = 'Aug 1 - Dec 31, 2025';
+      if (overviewSeasonTimeLeft) overviewSeasonTimeLeft.textContent = '120 days left';
+      
+      addLog('✅ Season display updated successfully');
+    }
+    
+    async function switchActiveSeason() {
+      addLog('🔄 Switching active season...');
+      const seasonName = prompt('Enter season name to switch to (e.g., season_1, season_2):');
+      if (!seasonName) return;
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/season-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'switch_season',
+            season_name: seasonName
+          })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          addLog(`✅ Successfully switched to ${seasonName}`);
+          loadSeasonOverview();
+          refreshAllGameData();
+        } else {
+          addLog(`❌ Failed to switch season: ${data.message}`);
+        }
+      } catch (error) {
+        addLog(`❌ Season switch error: ${error.message}`);
+      }
+    }
+    
+    async function createNewSeason() {
+      addLog('🆕 Creating new season...');
+      const seasonName = prompt('Enter new season name:');
+      if (!seasonName) return;
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/season-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create_season',
+            season_name: seasonName
+          })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          addLog(`✅ Successfully created ${seasonName}`);
+          loadSeasonOverview();
+        } else {
+          addLog(`❌ Failed to create season: ${data.message}`);
+        }
+      } catch (error) {
+        addLog(`❌ Season creation error: ${error.message}`);
+      }
+    }
+    
+    async function resetCurrentSeason() {
+      addLog('🔄 Resetting current season...');
+      if (!confirm('⚠️ This will reset all current season data. Are you sure?')) return;
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/season-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'reset_season'
+          })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          addLog('✅ Current season reset successfully');
+          refreshAllGameData();
+        } else {
+          addLog(`❌ Failed to reset season: ${data.message}`);
+        }
+      } catch (error) {
+        addLog(`❌ Season reset error: ${error.message}`);
+      }
+    }
+    
+    async function exportSeasonData() {
+      addLog('📊 Exporting season data...');
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/export-season-data.php');
+        const blob = await response.blob();
+        
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `season-data-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        addLog('✅ Season data exported successfully');
+      } catch (error) {
+        addLog(`❌ Season export error: ${error.message}`);
+      }
+    }
+    
+    // 🚀 NEW: Force Load Functions for All Game Tabs
+    async function forceLoadOverviewData() {
+      addLog('📊 FORCE LOADING Overview data...');
+      
+      try {
+        // Force load game overview using the working API
+        await loadGameOverviewFromAPI();
+        
+        // Force load season overview
+        await loadSeasonOverview();
+        
+        addLog('✅ Overview data FORCE LOADED');
+      } catch (error) {
+        addLog(`❌ Error force loading overview: ${error.message}`);
+      }
+    }
+    
+    // 🚀 NEW: Load game overview from the working API
+    async function loadGameOverviewFromAPI() {
+      addLog('📊 Loading game overview from working API...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Game overview API data loaded successfully');
+          
+          // Update overview display with real data
+          updateOverviewDisplay(data.data);
+          
+          // Store data for individual tabs
+          window.gameOverviewData = data.data;
+          
+        } else {
+          addLog(`❌ Failed to load game overview: ${data.message}`);
+        }
+      } catch (error) {
+        addLog(`❌ Game overview loading error: ${error.message}`);
+      }
+    }
+    
+    // 🚀 NEW: Update overview display with real API data
+    function updateOverviewDisplay(data) {
+      addLog('📊 Updating overview display with API data...');
+      
+      try {
+        // Update overview stats
+        if (data.overview) {
+          const overview = data.overview;
+          
+          // Update overview elements
+          const totalGamesElement = document.getElementById('totalGamesDisplay');
+          if (totalGamesElement) {
+            totalGamesElement.innerHTML = `
+              <div class="text-2xl font-bold text-blue-600">${overview.total_games}</div>
+              <div class="text-sm text-gray-600">Total Games</div>
+            `;
+          }
+          
+          const activePlayersElement = document.getElementById('activePlayersDisplay');
+          if (activePlayersElement) {
+            activePlayersElement.innerHTML = `
+              <div class="text-2xl font-bold text-green-600">${overview.total_active_players}</div>
+              <div class="text-sm text-gray-600">Active Players</div>
+            `;
+          }
+          
+          const systemHealthElement = document.getElementById('systemHealthDisplay');
+          if (systemHealthElement) {
+            systemHealthElement.innerHTML = `
+              <div class="text-2xl font-bold text-purple-600">${overview.total_games_played}</div>
+              <div class="text-sm text-gray-600">Games Played</div>
+            `;
+          }
+          
+          addLog('✅ Overview display updated with real data');
+        }
+        
+        // Update individual game tabs with their data
+        if (data.games) {
+          // Store data for each game tab
+          window.tetrisData = data.games.tetris;
+          window.snakeData = data.games.snake;
+          window.spaceInvadersData = data.games.space_invaders;
+          window.cheeseHuntData = data.games.cheese_hunt;
+          window.discordRaceData = data.games.discord_race;
+          
+          addLog('✅ Game data stored for individual tabs');
+        }
+        
+      } catch (error) {
+        addLog(`❌ Error updating overview display: ${error.message}`);
+      }
+    }
+    
+    async function forceLoadTetrisData() {
+      addLog('🧩 FORCE LOADING Tetris data...');
+      
+      try {
+        // Use stored API data if available
+        if (window.tetrisData) {
+          addLog('🧩 Using stored Tetris API data...');
+          displayTetrisDataFromAPI(window.tetrisData);
+        } else {
+          // Fallback to loading from API
+          addLog('🧩 Loading Tetris data from API...');
+          await loadTetrisData();
+        }
+        
+        addLog('✅ Tetris data FORCE LOADED');
+      } catch (error) {
+        addLog(`❌ Error force loading Tetris: ${error.message}`);
+      }
+    }
+    
+    // 🚀 NEW: Display Tetris data from API structure
+    function displayTetrisDataFromAPI(tetrisData) {
+      addLog('🧩 Displaying Tetris data from API...');
+      
+      try {
+        if (tetrisData && tetrisData.season_data) {
+          const seasonData = tetrisData.season_data;
+          const allTimeData = tetrisData.all_time;
+          
+          // Update Tetris tab elements
+          const totalScoresElement = document.getElementById('tetrisTotalScores');
+          if (totalScoresElement) {
+            totalScoresElement.textContent = seasonData.total_scores || 0;
+          }
+          
+          const uniquePlayersElement = document.getElementById('tetrisUniquePlayers');
+          if (uniquePlayersElement) {
+            uniquePlayersElement.textContent = seasonData.unique_players || 0;
+          }
+          
+          const bestScoreElement = document.getElementById('tetrisBestScore');
+          if (bestScoreElement) {
+            bestScoreElement.textContent = seasonData.max_score || 0;
+          }
+          
+          const avgScoreElement = document.getElementById('tetrisAvgScore');
+          if (avgScoreElement) {
+            avgScoreElement.textContent = seasonData.avg_score || 0;
+          }
+          
+          // Update debug display
+          const debugElement = document.getElementById('tetrisDebugDisplay');
+          if (debugElement) {
+            debugElement.innerHTML = `
+              <div class="bg-gray-100 p-4 rounded-lg">
+                <h4 class="font-bold text-gray-800">🧩 Tetris API Data:</h4>
+                <pre class="text-xs text-gray-600 mt-2">${JSON.stringify(tetrisData, null, 2)}</pre>
+              </div>
+            `;
+          }
+          
+          addLog('✅ Tetris display updated with API data');
+        } else {
+          addLog('❌ No Tetris data available from API');
+        }
+      } catch (error) {
+        addLog(`❌ Error displaying Tetris data: ${error.message}`);
+      }
+    }
+    
+    async function forceLoadSnakeData() {
+      addLog('🐍 FORCE LOADING Snake data...');
+      
+      try {
+        // Use stored API data if available
+        if (window.snakeData) {
+          addLog('🐍 Using stored Snake API data...');
+          displaySnakeDataFromAPI(window.snakeData);
+        } else {
+          // Fallback to loading from API
+          addLog('🐍 Loading Snake data from API...');
+          await loadSnakeData();
+        }
+        
+        addLog('✅ Snake data FORCE LOADED');
+      } catch (error) {
+        addLog(`❌ Error force loading Snake: ${error.message}`);
+      }
+    }
+    
+    // 🚀 NEW: Display Snake data from API structure
+    function displaySnakeDataFromAPI(snakeData) {
+      addLog('🐍 Displaying Snake data from API...');
+      
+      try {
+        if (snakeData && snakeData.season_data) {
+          const seasonData = snakeData.season_data;
+          const allTimeData = snakeData.all_time;
+          
+          // Update Snake tab elements
+          const totalScoresElement = document.getElementById('snakeTotalScores');
+          if (totalScoresElement) {
+            totalScoresElement.textContent = seasonData.total_scores || 0;
+          }
+          
+          const uniquePlayersElement = document.getElementById('snakeUniquePlayers');
+          if (uniquePlayersElement) {
+            uniquePlayersElement.textContent = seasonData.unique_players || 0;
+          }
+          
+          const bestScoreElement = document.getElementById('snakeBestScore');
+          if (bestScoreElement) {
+            bestScoreElement.textContent = seasonData.max_score || 0;
+          }
+          
+          const avgScoreElement = document.getElementById('snakeAvgScore');
+          if (avgScoreElement) {
+            avgScoreElement.textContent = seasonData.avg_score || 0;
+          }
+          
+          addLog('✅ Snake display updated with API data');
+        } else {
+          addLog('❌ No Snake data available from API');
+        }
+      } catch (error) {
+        addLog(`❌ Error displaying Snake data: ${error.message}`);
+      }
+    }
+    
+    async function forceLoadSpaceInvadersData() {
+      addLog('👾 FORCE LOADING Space Invaders data...');
+      
+      try {
+        // Force load Space Invaders data
+        await loadSpaceInvadersData();
+        
+        // Load boss notifications
+        await loadBossNotifications();
+        startBossNotificationChecking();
+        
+        // Load Phoenix configuration
+        setTimeout(() => {
+          loadPhoenixConfiguration();
+          addLog('🔥 Phoenix configuration auto-loaded for Space Invaders tab');
+        }, 200);
+        
+        // Force update Space Invaders display
+        if (window.pendingSpaceInvadersData) {
+          displaySpaceInvadersData(window.pendingSpaceInvadersData);
+          delete window.pendingSpaceInvadersData;
+        }
+        
+        addLog('✅ Space Invaders data FORCE LOADED');
+      } catch (error) {
+        addLog(`❌ Error force loading Space Invaders: ${error.message}`);
+      }
+    }
+    
+    async function forceLoadCheeseHuntData() {
+      addLog('🧀 FORCE LOADING Cheese Hunt data...');
+      
+      try {
+        // Force load Cheese Hunt data
+        await loadCheeseHuntData();
+        
+        // Force update Cheese Hunt display
+        if (window.pendingCheeseHuntData) {
+          displayCheeseHuntData(window.pendingCheeseHuntData);
+          delete window.pendingCheeseHuntData;
+        }
+        
+        addLog('✅ Cheese Hunt data FORCE LOADED');
+      } catch (error) {
+        addLog(`❌ Error force loading Cheese Hunt: ${error.message}`);
+      }
+    }
+    
+    async function forceLoadDiscordRaceData() {
+      addLog('🏁 FORCE LOADING Discord Race data...');
+      
+      try {
+        // Force load Discord Race data
+        await loadDiscordRaceData();
+        
+        // Force update Discord Race display
+        if (window.pendingDiscordRaceData) {
+          displayDiscordRaceData(window.pendingDiscordRaceData);
+          delete window.pendingDiscordRaceData;
+        }
+        
+        addLog('✅ Discord Race data FORCE LOADED');
+      } catch (error) {
+        addLog(`❌ Error force loading Discord Race: ${error.message}`);
+      }
+    }
+    
+    async function forceRefreshTabDisplay(tabName) {
+      addLog(`🔄 FORCE REFRESHING display for ${tabName} tab...`);
+      
+      try {
+        // Force a visual refresh of the tab
+        const tabElement = document.getElementById(tabName + 'Tab');
+        if (tabElement) {
+          // Trigger a reflow to ensure proper display
+          tabElement.offsetHeight;
+          
+          // Add a visual indicator that data was loaded
+          const indicator = document.createElement('div');
+          indicator.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+          indicator.innerHTML = `✅ ${tabName} data loaded!`;
+          document.body.appendChild(indicator);
+          
+          // Remove indicator after 2 seconds
+          setTimeout(() => {
+            if (indicator.parentNode) {
+              indicator.parentNode.removeChild(indicator);
+            }
+          }, 2000);
+        }
+        
+        addLog(`✅ ${tabName} tab display refreshed`);
+      } catch (error) {
+        addLog(`❌ Error refreshing ${tabName} tab display: ${error.message}`);
+      }
+    }
+    
+    // 🚀 NEW: Enhanced tab click handler that forces data loading
+    function forceLoadTabOnClick(tabName) {
+      addLog(`🚀 FORCE LOADING ${tabName} tab on click...`);
+      
+      // First switch to the tab
+      switchGameTab(tabName);
+      
+      // Then force load data after a short delay
+      setTimeout(async () => {
+        try {
+          switch(tabName) {
+            case 'overview':
+              await forceLoadOverviewData();
+              break;
+            case 'tetris':
+              await forceLoadTetrisData();
+              break;
+            case 'snake':
+              await forceLoadSnakeData();
+              break;
+            case 'space-invaders':
+              await forceLoadSpaceInvadersData();
+              break;
+            case 'cheese-hunt':
+              await forceLoadCheeseHuntData();
+              break;
+            case 'discord-race':
+              await forceLoadDiscordRaceData();
+              break;
+          }
+          
+          // Force refresh the display
+          await forceRefreshTabDisplay(tabName);
+          
+          addLog(`✅ ${tabName} tab FORCE LOADED successfully on click!`);
+        } catch (error) {
+          addLog(`❌ Error force loading ${tabName} tab on click: ${error.message}`);
+        }
+      }, 200);
     }
   </script>
 

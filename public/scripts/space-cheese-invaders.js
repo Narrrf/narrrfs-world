@@ -8107,7 +8107,132 @@ let reloadButtonInterval = null;
       console.log('🔍 === END STATE DEBUG ===');
     };
     
+    // 📱 DEBUG: Add mobile touch control debug function
+    window.debugTouchControl = () => {
+      console.log('📱 === TOUCH CONTROL STATE DEBUG ===');
+      console.log(`📱 Is Touching: ${isTouching}`);
+      console.log(`📱 Touch Start X: ${touchStartX}`);
+      console.log(`📱 Touch Start Y: ${touchStartY}`);
+      console.log(`🚀 Ship X: ${playerShip.x}`);
+      console.log(`🚀 Ship Y: ${playerShip.y}`);
+      console.log(`📏 Canvas: ${canvasWidth}x${canvasHeight}`);
+      console.log(`⏸️ Game Paused: ${isSpaceInvadersPaused}`);
+      console.log(`🔥 Is Overheated: ${isOverheated}`);
+      console.log(`🎯 Current Weapon: ${currentWeaponType}`);
+      console.log('📱 === END TOUCH DEBUG ===');
+    };
+    
     console.log('🔍 Debug function available: window.debugMouseControl()');
+    console.log('📱 Debug function available: window.debugTouchControl()');
+    
+    // 📱 NEW: Mobile control instructions overlay
+    function showMobileControlInstructions() {
+      const instructions = document.createElement('div');
+      instructions.id = 'mobile-control-instructions';
+      instructions.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        z-index: 10000;
+        max-width: 300px;
+        font-family: Arial, sans-serif;
+      `;
+      
+      instructions.innerHTML = `
+        <h3 style="margin: 0 0 15px 0; color: #f0c92c;">📱 Mobile Controls</h3>
+        <div style="margin-bottom: 15px;">
+          <strong>🚀 Ship Movement:</strong><br>
+          Touch and drag anywhere on the screen to move the ship
+        </div>
+        <div style="margin-bottom: 15px;">
+          <strong>🎯 Shooting:</strong><br>
+          Ship automatically shoots while moving
+        </div>
+        <div style="margin-bottom: 15px;">
+          <strong>⚡ Quick Actions:</strong><br>
+          Swipe up: Extra shot<br>
+          Swipe down: Bomb (if available)
+        </div>
+        <button onclick="this.parentElement.remove()" style="
+          background: #f0c92c;
+          color: black;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: bold;
+        ">Got it!</button>
+      `;
+      
+      document.body.appendChild(instructions);
+      
+      // Auto-hide after 10 seconds
+      setTimeout(() => {
+        if (instructions.parentElement) {
+          instructions.remove();
+        }
+      }, 10000);
+    }
+    
+    // 📱 NEW: Show mobile instructions on first touch
+    let mobileInstructionsShown = false;
+    function checkAndShowMobileInstructions() {
+      if (!mobileInstructionsShown && window.innerWidth <= 768) {
+        // Check if it's a mobile device
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+          setTimeout(() => {
+            showMobileControlInstructions();
+            mobileInstructionsShown = true;
+          }, 2000); // Show after 2 seconds
+        }
+      }
+    }
+    
+    // 📱 NEW: Call mobile instructions check when game starts
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAndShowMobileInstructions();
+    });
+    
+    // 📱 NEW: Mobile control status indicator
+    function updateMobileControlStatus() {
+      let statusIndicator = document.getElementById('mobile-control-status');
+      
+      if (!statusIndicator) {
+        statusIndicator = document.createElement('div');
+        statusIndicator.id = 'mobile-control-status';
+        statusIndicator.style.cssText = `
+          position: fixed;
+          top: 10px;
+          right: 10px;
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 8px 12px;
+          border-radius: 8px;
+          font-size: 12px;
+          z-index: 9999;
+          font-family: Arial, sans-serif;
+        `;
+        document.body.appendChild(statusIndicator);
+      }
+      
+      if (isTouching) {
+        statusIndicator.innerHTML = '📱 Touch Active';
+        statusIndicator.style.background = 'rgba(0, 255, 0, 0.8)';
+      } else {
+        statusIndicator.innerHTML = '📱 Touch Ready';
+        statusIndicator.style.background = 'rgba(0, 0, 0, 0.8)';
+      }
+    }
+    
+    // 📱 NEW: Update mobile control status in game loop
+    setInterval(updateMobileControlStatus, 100);
     
     // 🔥 NEW: Add heat system debug functions
     window.debugHeatSystem = () => {
@@ -8894,12 +9019,35 @@ window.emergencyCollisionCheck = function() {
 
   function handleTouchStart(e) {
     if (e.target.closest("#space-invaders-canvas")) {
-    e.preventDefault();
+      e.preventDefault();
       e.stopPropagation();
-    const touch = e.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
       isTouching = true;
+      
+      // 🚀 NEW: Immediate ship positioning on touch start
+      const canvas = document.getElementById('space-invaders-canvas');
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const touchX = touch.clientX - rect.left;
+        const touchY = touch.clientY - rect.top;
+        
+        // 🚀 CRITICAL FIX: Position ship immediately at touch location
+        const targetX = touchX - playerShip.width / 2;
+        const targetY = touchY - playerShip.height / 2;
+        
+        // Apply boundary constraints
+        const constrainedX = Math.max(0, Math.min(canvasWidth - playerShip.width, targetX));
+        const extendedBottomBoundary = canvasHeight + 20;
+        const constrainedY = Math.max(0, Math.min(extendedBottomBoundary, targetY));
+        
+        // 🚀 NEW: Instant ship positioning for immediate response
+        playerShip.x = constrainedX;
+        playerShip.y = constrainedY;
+        
+        console.log('📱 Touch start - Ship positioned at:', playerShip.x, playerShip.y);
+      }
       
       // Store touch start time for tap detection
       touchStartTime = Date.now();
@@ -8947,25 +9095,55 @@ window.emergencyCollisionCheck = function() {
       e.preventDefault();
       e.stopPropagation();
       const touch = e.touches[0];
+      
+      // 🚀 CRITICAL FIX: Direct ship positioning for mobile
+      const canvas = document.getElementById('space-invaders-canvas');
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const touchX = touch.clientX - rect.left;
+        const touchY = touch.clientY - rect.top;
+        
+        // 🚀 NEW: Direct ship positioning (like mouse controls)
+        // Convert touch position to ship center position
+        const targetX = touchX - playerShip.width / 2;
+        const targetY = touchY - playerShip.height / 2;
+        
+        // 🚀 ENHANCED: Smooth ship movement with boundary constraints
+        const oldX = playerShip.x;
+        const oldY = playerShip.y;
+        
+        // Apply boundary constraints
+        const constrainedX = Math.max(0, Math.min(canvasWidth - playerShip.width, targetX));
+        const extendedBottomBoundary = canvasHeight + 20; // Allow 20px beyond canvas bottom
+        const constrainedY = Math.max(0, Math.min(extendedBottomBoundary, targetY));
+        
+        // 🚀 NEW: Smooth movement with easing for better mobile experience
+        const easing = 0.6; // More responsive on mobile
+        playerShip.x += (constrainedX - playerShip.x) * easing;
+        playerShip.y += (constrainedY - playerShip.y) * easing;
+        
+        // 🔥 CRITICAL FIX: Auto-shoot when ship moves (if enabled) - NO HEAT BUILDUP
+        if (autoShootEnabled && (oldX !== playerShip.x || oldY !== playerShip.y)) {
+          const currentTime = Date.now();
+          
+          // Check if enough time has passed since last auto-shoot
+          if (currentTime - lastAutoShootTime >= autoShootFiringRate) {
+            // Check if we've moved to a new position (prevent multiple shots during continuous movement)
+            const currentPos = { x: Math.round(playerShip.x / 10), y: Math.round(playerShip.y / 10) };
+            if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
+              autoShoot(); // Use special auto-shoot function that doesn't add heat
+              lastMovementPosition = currentPos; // Update last position
+            }
+          }
+        }
+        
+        console.log('📱 Touch move - Ship position updated:', playerShip.x, playerShip.y);
+      }
+      
+      // 🚀 ENHANCED: Swipe gestures for additional actions
       const deltaX = touch.clientX - touchStartX;
       const deltaY = touch.clientY - touchStartY;
       
-      // 🆘 IMPROVED: More responsive touch controls
-      // Horizontal movement - reduced sensitivity for better control
-      if (Math.abs(deltaX) > 8) {
-        movePlayer(deltaX > 0 ? 'right' : 'left');
-        touchStartX = touch.clientX;
-        // Auto-shoot is handled in movePlayer function
-      }
-      
-      // Vertical movement - reduced sensitivity for better control
-      if (Math.abs(deltaY) > 8) {
-        movePlayer(deltaY > 0 ? 'down' : 'up');
-        touchStartY = touch.clientY;
-        // Auto-shoot is handled in movePlayer function
-      }
-      
-      // 🆘 IMPROVED: Better shooting detection (smart weapon handling)
       // Quick swipe up to shoot (like modern mobile games)
       if (deltaY < -15) {
         if (currentWeaponType === 'normal' && !isOverheated) {
@@ -8977,7 +9155,7 @@ window.emergencyCollisionCheck = function() {
         touchStartY = touch.clientY;
       }
       
-      // 🆘 NEW: Quick swipe down for special action (bomb only)
+      // Quick swipe down for special action (bomb only)
       if (deltaY > 25) {
         // Swipe down only works with bomb weapon and available ammo
         if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0 && !isOverheated) {
