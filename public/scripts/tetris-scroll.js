@@ -1,5 +1,23 @@
 // 🧀 Cheese Tetris Scroll v9.8 + PNG BLOCKS (all features from perfect backup, plus PNG support)
 
+// 🔧 MOBILE INITIALIZATION
+let isMobileDevice = false;
+
+// Detect mobile device
+if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+  isMobileDevice = true;
+  console.log('📱 Mobile device detected');
+  
+  // Add mobile-specific meta viewport if not present
+  if (!document.querySelector('meta[name="viewport"]')) {
+    const viewport = document.createElement('meta');
+    viewport.name = 'viewport';
+    viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    document.head.appendChild(viewport);
+    console.log('📱 Added mobile viewport meta tag');
+  }
+}
+
 // 🚫 Full page scroll prevention
 window.addEventListener("touchmove", function(e) {
   if (e.target.closest("#tetris-canvas")) {
@@ -44,6 +62,22 @@ function checkAndStartTetris() {
   if (!btn) {
     // auto-start fallback if no button present
     window.startTetrisGame();
+  } else {
+    // 🔧 MOBILE FIX: Ensure button is clickable on mobile
+    btn.style.touchAction = "manipulation";
+    btn.style.webkitTapHighlightColor = "transparent";
+    
+    // Add mobile-specific event listeners
+    if ('ontouchstart' in window) {
+      console.log('📱 Mobile device detected, adding touch event listeners');
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        console.log('📱 Mobile Tetris start button touched');
+        window.startTetrisGame();
+        btn.disabled = true;
+        btn.textContent = "🕹️ Playing...";
+      }, { passive: false });
+    }
   }
 }
 
@@ -55,6 +89,26 @@ Object.entries(pieceImageMap).forEach(([key, filename]) => {
     if (loadedCount === Object.keys(pieceImageMap).length) {
       allImagesLoaded = true;
       checkAndStartTetris(); // ✅ Ensure the game can start after loading
+      
+      // 🔧 MOBILE INITIALIZATION
+      if (isMobileDevice) {
+        console.log('📱 All Tetris images loaded, mobile initialization complete');
+        
+        // Ensure mobile-specific setup is complete
+        setTimeout(() => {
+          const canvas = document.getElementById('tetris-canvas');
+          const startBtn = document.getElementById('start-tetris-btn');
+          
+          if (canvas && startBtn) {
+            console.log('📱 Mobile Tetris elements ready');
+            
+            // Test mobile functionality
+            if (typeof window.testMobileTetris === 'function') {
+              window.testMobileTetris();
+            }
+          }
+        }, 500);
+      }
     }
   };
   blockImages[key] = img;
@@ -117,10 +171,32 @@ function initTouchControls(canvas, currentPiece, dropInterval) {
 }
 
 window.startTetrisGame = function () {
+  console.log('🎮 startTetrisGame called');
+  
   if (!allImagesLoaded) {
     console.warn("Assets still loading...");
     return;
   }
+  
+  // 🔧 MOBILE FIX: Ensure canvas is properly sized for mobile
+  const canvas = document.getElementById("tetris-canvas");
+  if (canvas) {
+    // Force canvas size for mobile compatibility
+    canvas.width = 200;
+    canvas.height = 400;
+    canvas.style.width = '200px';
+    canvas.style.height = '400px';
+    
+    // Mobile-specific canvas settings
+    if ('ontouchstart' in window) {
+      console.log('📱 Mobile canvas setup');
+      canvas.style.touchAction = 'none';
+      canvas.style.webkitUserSelect = 'none';
+      canvas.style.userSelect = 'none';
+    }
+  }
+  
+  console.log('🚀 Starting Tetris game...');
   startTetris(); // ← main game logic
 };
 
@@ -576,7 +652,7 @@ function unlockTetrisScroll() {
 // Listen anywhere on screen!
 document.addEventListener("touchstart", e => {
   // Don't handle touch events if game is paused or over
-  if (isTetrisPaused || !gameInterval) return;
+  if (isTetrisPaused) return;
   
   if (e.cancelable) e.preventDefault();
   lockTetrisScroll();
@@ -610,7 +686,7 @@ document.addEventListener("touchend", e => {
   clearInterval(touchDropInterval);
 
   // Don't process swipes if game is paused or over
-  if (isTetrisPaused || !gameInterval) {
+  if (isTetrisPaused) {
     unlockTetrisScroll();
     return;
   }
@@ -657,11 +733,63 @@ function cleanupTouchControls() {
   heldDown = false;
   unlockTetrisScroll();
 }
+
+// 🔧 MOBILE ERROR HANDLER
+window.addEventListener('error', function(e) {
+  if (isMobileDevice) {
+    console.error('📱 Mobile Tetris error:', e.error);
+    
+    // Try to recover the game
+    if (e.error && e.error.message && e.error.message.includes('tetris')) {
+      console.log('📱 Attempting to recover Tetris game...');
+      setTimeout(() => {
+        try {
+          if (typeof startTetris === 'function') {
+            startTetris();
+          }
+        } catch (recoveryError) {
+          console.error('📱 Recovery failed:', recoveryError);
+        }
+      }, 1000);
+    }
+  }
+});
+
+// 🔧 MOBILE TEST FUNCTION
+window.testMobileTetris = function() {
+  if (isMobileDevice) {
+    console.log('📱 Testing mobile Tetris functionality...');
+    console.log('📱 Canvas element:', document.getElementById('tetris-canvas'));
+    console.log('📱 Start button:', document.getElementById('start-tetris-btn'));
+    console.log('📱 startTetrisGame function:', typeof window.startTetrisGame);
+    console.log('📱 startTetris function:', typeof startTetris);
+    console.log('📱 All images loaded:', allImagesLoaded);
+    
+    // Test touch events
+    const canvas = document.getElementById('tetris-canvas');
+    if (canvas) {
+      console.log('📱 Canvas touch events:', canvas.ontouchstart, canvas.ontouchmove, canvas.ontouchend);
+    }
+  } else {
+    console.log('🖥️ Not a mobile device');
+  }
+};
       
       // ✅ Final game loop initialization
       draw();
       renderNextBlock(nextPiece);
       gameInterval = setInterval(drop, dropInterval);
+      
+      // 🔧 MOBILE FIX: Ensure touch controls are properly initialized
+      if (isMobileDevice) {
+        console.log('📱 Mobile Tetris game started successfully');
+        
+        // Force a redraw to ensure everything is visible
+        setTimeout(() => {
+          draw();
+          console.log('📱 Mobile Tetris redraw completed');
+        }, 100);
+      }
     }
 
 
