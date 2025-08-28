@@ -4635,6 +4635,9 @@ require_once 'discord-invite.php';
           // User is authenticated, show admin content
           console.log('✅ Discord auth successful, showing admin content');
           showAdminContent();
+          
+          // 🚀 CRITICAL FIX: Load dashboard data immediately after authentication
+          console.log('🚀 Loading dashboard data immediately after Discord auth...');
           loadDashboardData();
           
           // Force navigation panel to be visible as a fallback
@@ -6767,7 +6770,8 @@ require_once 'discord-invite.php';
         'totalUsers': data.total_users || data.totalUsers || '0',
         'totalScores': data.total_scores || data.totalScores || '0',
         'totalItems': data.total_items || data.totalItems || '0',
-        'activeQuests': data.active_quests || data.activeQuests || '0'
+        'activeQuests': data.active_quests || data.activeQuests || '0',
+        'bossNotifications': data.boss_notifications || data.bossNotifications || '0'
       };
       
       Object.entries(topMenuElements).forEach(([elementId, value]) => {
@@ -6778,7 +6782,8 @@ require_once 'discord-invite.php';
           if (element.textContent.includes('Loading...')) {
             element.textContent = value;
           }
-            } else {
+          console.log(`✅ Updated ${elementId}: ${value}`);
+        } else {
           console.warn(`⚠️ Top menu element not found: ${elementId}`);
         }
       });
@@ -8960,6 +8965,12 @@ require_once 'discord-invite.php';
             
             // Show database unlock button for Discord admins
             showDatabaseUnlockForDiscordAdmin();
+            
+            // 🚀 CRITICAL FIX: Load game stats immediately after Discord authentication
+            console.log('🚀 Loading game stats immediately after Discord localStorage auth...');
+            setTimeout(() => {
+                loadAllGameStatsForAuthenticatedUser();
+            }, 100);
             
             return true;
         }

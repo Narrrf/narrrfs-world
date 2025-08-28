@@ -1225,7 +1225,7 @@ let dropStartTime = 0; // NEW: Track when drop started
 let dropDuration = 1000; // NEW: 1 second drop duration
 let breakDuration = 60000; // NEW: 1 minute break duration
 let lastPlayerShootTime = 0; // NEW: Track last player shoot time for auto-shoot cooldown
-let autoShootCooldown = 300; // NEW: 300ms cooldown between auto-shots
+let autoShootCooldown = 150; // 🚀 FIX: Reduced from 300ms to 150ms for more responsive shooting
 let autoShootEnabled = false; // NEW: Auto-shoot toggle (disabled by default)
 
 // 🔥 CRITICAL FIX: Unified firing rate system for consistent heat buildup
@@ -1234,10 +1234,11 @@ let lastUnifiedShotTime = 0; // Track last shot time for unified system
 let isUnifiedShotReady = true; // Whether a shot can be fired
 
 // 🔥 CRITICAL FIX: Auto-shoot system with separate cooldown and no heat buildup
-let autoShootFiringRate = 200; // 200ms between auto-shoot shots (5 shots per second max)
+let autoShootFiringRate = 150; // 🚀 FIX: Reduced from 200ms to 150ms for more responsive shooting
 let lastAutoShootTime = 0; // Track last auto-shoot time
 let isAutoShootReady = true; // Whether auto-shoot can fire
 let lastMovementPosition = { x: 0, y: 0 }; // Track last position for movement detection
+// 🚀 FIX: Using existing autoShootCooldown variable for consistent cooldown
 
 // 🚀 NEW: Boss System Variables
 let boss = null;
@@ -1306,19 +1307,33 @@ let reloadButtonInterval = null;
 
   // 🚀 NEW: Weapon switching system
   function switchWeapon(weaponType) {
+    // 🚀 FIX: Better weapon switching with immediate feedback
     if (weaponAmmo[weaponType] > 0 || weaponType === 'normal') {
+      const previousWeapon = currentWeaponType;
       currentWeaponType = weaponType;
-      console.log(`🔫 Switched to ${weaponType} weapon`);
       
-      // Update weapon display
+      // 🚀 FIX: Immediate visual feedback
+      console.log(`🔫 Weapon switched from ${previousWeapon} to ${weaponType} weapon`);
+      
+      // 🚀 FIX: Update weapon display immediately
       updateWeaponDisplay();
       
-      // 🚀 NEW: Update reload button immediately when weapon changes
+      // 🚀 FIX: Update reload button immediately when weapon changes
       if (reloadButton) {
         updateReloadButton();
       }
+      
+      // 🚀 FIX: Update weapon panel if open
+      if (typeof updateWeaponAmmoDisplay === 'function') {
+        updateWeaponAmmoDisplay();
+      }
+      
+      // 🚀 FIX: Show weapon switch notification
+      showWeaponSwitchNotification(weaponType);
     } else {
       console.log(`❌ No ammo for ${weaponType} weapon`);
+      // 🚀 FIX: Show ammo warning
+      showAmmoWarning(weaponType);
     }
   }
 
@@ -1364,6 +1379,96 @@ let reloadButtonInterval = null;
   // 🚀 NEW: Get current player speed
   function getPlayerSpeed() {
     return speedBoostActive ? playerShip.speed * speedBoostMultiplier : playerShip.speed;
+  }
+  
+  // 🚀 NEW: Show weapon switch notification
+  function showWeaponSwitchNotification(weaponType) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #1e3a8a, #3730a3);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 15px;
+      font-size: 1.2em;
+      font-weight: bold;
+      z-index: 10000;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      animation: weaponSwitchFade 1s ease-in-out;
+    `;
+    
+    const weaponLabels = {
+      'normal': '🔫 NORMAL WEAPON',
+      'laser': '⚡ LASER WEAPON',
+      'bomb': '💣 BOMB WEAPON'
+    };
+    
+    notification.textContent = weaponLabels[weaponType] || '🔫 WEAPON SWITCHED';
+    
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes weaponSwitchFade {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(notification);
+    
+    // Remove notification after animation
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 1000);
+  }
+  
+  // 🚀 NEW: Show ammo warning
+  function showAmmoWarning(weaponType) {
+    const warning = document.createElement('div');
+    warning.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 1em;
+      font-weight: bold;
+      z-index: 10000;
+      box-shadow: 0 8px 25px rgba(220,38,38,0.4);
+      animation: ammoWarningShake 0.6s ease-in-out;
+    `;
+    
+    warning.textContent = `❌ NO AMMO FOR ${weaponType.toUpperCase()}`;
+    
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ammoWarningShake {
+        0%, 100% { transform: translate(-50%, -50%); }
+        25% { transform: translate(-52%, -50%); }
+        75% { transform: translate(-48%, -50%); }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(warning);
+    
+    // Remove warning after animation
+    setTimeout(() => {
+      if (warning.parentNode) {
+        warning.parentNode.removeChild(warning);
+      }
+    }, 800);
   }
 
   // 🚀 NEW: Update weapon display
@@ -6925,6 +7030,12 @@ let reloadButtonInterval = null;
   function autoShoot() {
     if (isSpaceInvadersPaused) return;
     
+    // 🚀 FIX: Check cooldown to prevent rapid firing
+    const currentTime = Date.now();
+    if (currentTime - lastAutoShootTime < autoShootCooldown) {
+      return; // Still in cooldown
+    }
+    
     console.log('🚀 Auto-shoot fired! (no heat added)');
     
     // 🎵 Play sound for auto-shoot
@@ -7123,11 +7234,23 @@ let reloadButtonInterval = null;
       
       // Check if enough time has passed since last auto-shoot
       if (currentTime - lastAutoShootTime >= autoShootFiringRate) {
-        // Check if we've moved to a new position (prevent multiple shots during continuous movement)
-        const currentPos = { x: Math.round(playerShip.x / 10), y: Math.round(playerShip.y / 10) };
-        if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
-          autoShoot(); // Use special auto-shoot function that doesn't add heat
-          lastMovementPosition = currentPos; // Update last position
+        // 🔥 FIX: Better movement detection to prevent blinking
+        const movementThreshold = 2; // Minimum movement to trigger auto-shoot
+        const deltaX = Math.abs(playerShip.x - oldX);
+        const deltaY = Math.abs(playerShip.y - oldY);
+        
+        if (deltaX > movementThreshold || deltaY > movementThreshold) {
+          // 🔥 FIX: Use more precise position tracking
+          const currentPos = { 
+            x: Math.round(playerShip.x / 5), // Smaller grid for more responsive shooting
+            y: Math.round(playerShip.y / 5) 
+          };
+          
+          if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
+            autoShoot(); // Use special auto-shoot function that doesn't add heat
+            lastMovementPosition = currentPos; // Update last position
+            console.log('🚀 Auto-shoot triggered by movement:', deltaX.toFixed(1), deltaY.toFixed(1));
+          }
         }
       }
     }
@@ -7190,11 +7313,23 @@ let reloadButtonInterval = null;
       
       // Check if enough time has passed since last auto-shoot
       if (currentTime - lastAutoShootTime >= autoShootFiringRate) {
-        // Check if we've moved to a new position (prevent multiple shots during continuous movement)
-        const currentPos = { x: Math.round(playerShip.x / 10), y: Math.round(playerShip.y / 10) };
-        if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
-          autoShoot(); // Use special auto-shoot function that doesn't add heat
-          lastMovementPosition = currentPos; // Update last position
+        // 🔥 FIX: Better movement detection to prevent blinking
+        const movementThreshold = 2; // Minimum movement to trigger auto-shoot
+        const deltaX = Math.abs(playerShip.x - oldX);
+        const deltaY = Math.abs(playerShip.y - oldY);
+        
+        if (deltaX > movementThreshold || deltaY > movementThreshold) {
+          // 🔥 FIX: Use more precise position tracking
+          const currentPos = { 
+            x: Math.round(playerShip.x / 5), // Smaller grid for more responsive shooting
+            y: Math.round(playerShip.y / 5) 
+          };
+          
+          if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
+            autoShoot(); // Use special auto-shoot function that doesn't add heat
+            lastMovementPosition = currentPos; // Update last position
+            console.log('🚀 Auto-shoot triggered by movement:', deltaX.toFixed(1), deltaY.toFixed(1));
+          }
         }
       }
     }
@@ -9128,11 +9263,23 @@ window.emergencyCollisionCheck = function() {
           
           // Check if enough time has passed since last auto-shoot
           if (currentTime - lastAutoShootTime >= autoShootFiringRate) {
-            // Check if we've moved to a new position (prevent multiple shots during continuous movement)
-            const currentPos = { x: Math.round(playerShip.x / 10), y: Math.round(playerShip.y / 10) };
-            if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
-              autoShoot(); // Use special auto-shoot function that doesn't add heat
-              lastMovementPosition = currentPos; // Update last position
+            // 🔥 FIX: Better movement detection to prevent blinking
+            const movementThreshold = 2; // Minimum movement to trigger auto-shoot
+            const deltaX = Math.abs(playerShip.x - oldX);
+            const deltaY = Math.abs(playerShip.y - oldY);
+            
+            if (deltaX > movementThreshold || deltaY > movementThreshold) {
+              // 🔥 FIX: Use more precise position tracking
+              const currentPos = { 
+                x: Math.round(playerShip.x / 5), // Smaller grid for more responsive shooting
+                y: Math.round(playerShip.y / 5) 
+              };
+              
+              if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
+                autoShoot(); // Use special auto-shoot function that doesn't add heat
+                lastMovementPosition = currentPos; // Update last position
+                console.log('🚀 Auto-shoot triggered by movement:', deltaX.toFixed(1), deltaY.toFixed(1));
+              }
             }
           }
         }
@@ -10054,8 +10201,11 @@ window.emergencyCollisionCheck = function() {
       
       weaponBtn.addEventListener('click', function() {
         if (typeof switchWeapon === 'function') {
+          // 🚀 FIX: Immediate weapon switching with visual feedback
+          const previousWeapon = currentWeaponType;
           switchWeapon(weapon.type);
-          // Update all weapon button colors and effects
+          
+          // 🚀 FIX: Instant visual update for better responsiveness
           weaponGrid.querySelectorAll('button').forEach((btn, i) => {
             const weaponData = weaponTypes[i];
             const isSelected = currentWeaponType === weaponData.type;
@@ -10066,14 +10216,18 @@ window.emergencyCollisionCheck = function() {
             btn.style.boxShadow = isSelected ? '0 0 20px rgba(251, 191, 36, 0.6)' : 'none';
             btn.style.transform = isSelected ? 'scale(1.05)' : 'scale(1)';
           });
-          // Update ammo display
+          
+          // 🚀 FIX: Update ammo display immediately
           updateWeaponAmmoDisplay();
+          
+          // 🚀 FIX: Show weapon switch confirmation
+          console.log(`🔫 Weapon switched from ${previousWeapon} to ${weapon.type}`);
+          
+          // 🚀 FIX: Longer delay for better user experience
+          setTimeout(() => {
+            toggleGamePanel();
+          }, 800); // Increased from 300ms to 800ms
         }
-        
-        // Close the game panel after weapon selection
-        setTimeout(() => {
-          toggleGamePanel();
-        }, 300);
       });
       
       weaponGrid.appendChild(weaponBtn);
