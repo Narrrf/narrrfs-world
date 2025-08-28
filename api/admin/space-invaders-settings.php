@@ -45,7 +45,20 @@ try {
             ['invader_shoot_speed_base', '300', 'Base shooting interval for invaders (ms)'],
             ['game_speed_base', '0.1', 'Base game speed multiplier'],
             ['dspoin_rewards_enabled', '0', 'Enable DSPOINC rewards for Space Invaders (0=off, 1=on)'],
-            ['dspoin_conversion_rate', '10000', 'Points needed for 1 DSPOINC (default: 10,000 points = 1 DSPOINC)']
+            ['dspoin_conversion_rate', '10000', 'Points needed for 1 DSPOINC (default: 10,000 points = 1 DSPOINC)'],
+            // 🔥 PHOENIX SWARM SETTINGS - NEW FEATURE!
+            ['phoenix_base_count', '3', 'Base number of Phoenix birds per wave'],
+            ['phoenix_max_per_wave', '8', 'Maximum Phoenix birds per wave'],
+            ['phoenix_wave_frequency', '3', 'Every Nth wave is a Phoenix wave'],
+            ['phoenix_base_health', '80', 'Base health for Phoenix birds'],
+            ['phoenix_mini_health', '25', 'Health for mini-Phoenix enemies'],
+            ['phoenix_difficulty_scaling', '1.1', 'Difficulty multiplier per wave'],
+            ['phoenix_egg_laying_rate', '15', 'Egg laying rate percentage (5-50)'],
+            ['phoenix_egg_hatch_time', '450', 'Frames until egg hatches'],
+            ['phoenix_egg_cooldown', '120', 'Egg laying cooldown in frames'],
+            ['phoenix_speed', '2.0', 'Phoenix movement speed'],
+            ['phoenix_formation_patterns', 'v,diamond,spiral', 'Available formation patterns'],
+            ['phoenix_wave_announcement', 'true', 'Enable wave announcement notifications']
         ];
         
         $stmt = $pdo->prepare("INSERT INTO tbl_space_invaders_settings (setting_key, setting_value, description) VALUES (?, ?, ?)");
@@ -105,6 +118,36 @@ try {
                 'success' => true,
                 'message' => 'Setting updated successfully'
             ]);
+            break;
+            
+        case 'PATCH':
+            // 🔥 NEW: Phoenix configuration specific endpoint
+            $input = json_decode(file_get_contents('php://input'), true);
+            
+            if (isset($input['action']) && $input['action'] === 'phoenix_config') {
+                // Get Phoenix-specific settings
+                $phoenixKeys = [
+                    'phoenix_base_count', 'phoenix_max_per_wave', 'phoenix_wave_frequency',
+                    'phoenix_base_health', 'phoenix_mini_health', 'phoenix_difficulty_scaling',
+                    'phoenix_egg_laying_rate', 'phoenix_egg_hatch_time', 'phoenix_egg_cooldown',
+                    'phoenix_speed', 'phoenix_formation_patterns', 'phoenix_wave_announcement'
+                ];
+                
+                $placeholders = str_repeat('?,', count($phoenixKeys) - 1) . '?';
+                $stmt = $pdo->prepare("SELECT setting_key, setting_value FROM tbl_space_invaders_settings WHERE setting_key IN ($placeholders)");
+                $stmt->execute($phoenixKeys);
+                $phoenixSettings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                echo json_encode([
+                    'success' => true,
+                    'data' => $phoenixSettings
+                ]);
+                break;
+            }
+            
+            // Fall through to default for unknown PATCH actions
+            http_response_code(400);
+            echo json_encode(['error' => 'Unknown PATCH action']);
             break;
             
         default:

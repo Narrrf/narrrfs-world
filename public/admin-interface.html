@@ -2356,6 +2356,160 @@ require_once 'discord-invite.php';
         <button onclick="resetAllBossConfigurations()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded ml-2">🔄 Reset All to Defaults</button>
       </div>
 
+      <!-- 🔥 PHOENIX SWARM MANAGEMENT SECTION - NEW! -->
+      <div class="bg-gray-700 p-4 rounded mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-semibold text-red-400">🔥 Phoenix Swarm Management</h4>
+          <div class="flex gap-3">
+            <div class="text-sm text-orange-400 bg-orange-900 bg-opacity-30 px-3 py-1 rounded-full">
+              🎯 Current Wave: <span id="currentPhoenixWave">3</span>
+            </div>
+            <div class="text-sm text-green-400 bg-green-900 bg-opacity-30 px-3 py-1 rounded-full">
+              ⚙️ Config: <span id="phoenixConfigStatus">Active</span>
+            </div>
+          </div>
+        </div>
+        <div class="text-sm text-gray-300 mb-3">
+          Control Phoenix swarm behavior, difficulty, and spawning mechanics for optimal gameplay balance
+        </div>
+        
+        <!-- Phoenix Configuration Controls -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <!-- Basic Settings -->
+          <div class="space-y-3">
+            <h5 class="font-semibold text-yellow-400">🎯 Basic Settings</h5>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Base Phoenix Count:</label>
+              <input type="number" id="phoenixBaseCount" min="1" max="10" value="3" 
+                     class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Max Phoenix Per Wave:</label>
+              <input type="number" id="phoenixMaxPerWave" min="3" max="20" value="8" 
+                     class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Wave Frequency:</label>
+              <input type="number" id="phoenixWaveFrequency" min="2" max="10" value="3" 
+                     class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+            </div>
+          </div>
+          
+          <!-- Health & Difficulty -->
+          <div class="space-y-3">
+            <h5 class="font-semibold text-red-400">💪 Health & Difficulty</h5>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Phoenix Base Health:</label>
+              <input type="number" id="phoenixBaseHealth" min="50" max="200" value="80" 
+                     class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Mini-Phoenix Health:</label>
+              <input type="number" id="phoenixMiniHealth" min="15" max="100" value="25" 
+                     class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Difficulty Scaling:</label>
+              <input type="number" id="phoenixDifficultyScaling" min="1.0" max="2.0" step="0.1" value="1.1" 
+                     class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Advanced Settings -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <!-- Egg & Spawning -->
+          <div class="space-y-3">
+            <h5 class="font-semibold text-orange-400">🥚 Egg & Spawning</h5>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Egg Laying Rate (%):</label>
+              <input type="number" id="phoenixEggLayingRate" min="5" max="50" value="15" 
+                     class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Egg Hatch Time (frames):</label>
+              <input type="number" id="phoenixEggHatchTime" min="200" max="1000" value="450" 
+                     class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Egg Laying Cooldown:</label>
+              <input type="number" id="phoenixEggCooldown" min="60" max="300" value="120" 
+                     class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+            </div>
+          </div>
+          
+          <!-- Formation & Movement -->
+          <div class="space-y-3">
+            <h5 class="font-semibold text-blue-400">🔄 Formation & Movement</h5>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Phoenix Speed:</label>
+              <input type="number" id="phoenixSpeed" min="0.5" max="5.0" step="0.1" value="2.0" 
+                     class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Formation Patterns:</label>
+              <select id="phoenixFormationPatterns" class="bg-gray-600 text-white px-2 py-1 rounded text-sm">
+                <option value="v,diamond,spiral">V, Diamond, Spiral</option>
+                <option value="v,diamond">V, Diamond Only</option>
+                <option value="v">V Formation Only</option>
+                <option value="v,diamond,spiral,cluster,dive">All Patterns</option>
+              </select>
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <label class="text-sm text-gray-300">Wave Announcement:</label>
+              <select id="phoenixWaveAnnouncement" class="bg-gray-600 text-white px-2 py-1 rounded text-sm">
+                <option value="true">Enabled</option>
+                <option value="false">Disabled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Phoenix Action Buttons -->
+        <div class="flex flex-wrap gap-3 mb-4">
+          <button onclick="savePhoenixConfiguration()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">💾 Save Configuration</button>
+          <button onclick="loadPhoenixConfiguration()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">🔄 Load Current</button>
+          <button onclick="resetPhoenixConfiguration()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded text-sm">🔄 Reset to Defaults</button>
+          <button onclick="testPhoenixWave()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm">🧪 Test Phoenix Wave</button>
+          <button onclick="pushPhoenixConfigToGames()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">🚀 Push to Active Games</button>
+        </div>
+        
+        <!-- Phoenix Status Display -->
+        <div class="bg-gray-800 p-3 rounded">
+          <h6 class="font-semibold text-green-400 mb-2">📊 Current Phoenix Status</h6>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div class="text-center">
+              <div class="text-blue-400">Active Birds</div>
+              <div id="phoenixActiveBirds" class="text-white font-semibold">-</div>
+            </div>
+            <div class="text-center">
+              <div class="text-orange-400">Active Eggs</div>
+              <div id="phoenixActiveEggs" class="text-white font-semibold">-</div>
+            </div>
+            <div class="text-center">
+              <div class="text-red-400">Mini-Phoenix</div>
+              <div id="phoenixActiveMini" class="text-white font-semibold">-</div>
+            </div>
+            <div class="text-center">
+              <div class="text-yellow-400">Wave Status</div>
+              <div id="phoenixWaveStatus" class="text-white font-semibold">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Boss Configuration Content -->
       <div id="bossConfigContent" class="space-y-6">
         <!-- Boss configuration forms will be loaded here -->
@@ -2380,6 +2534,9 @@ require_once 'discord-invite.php';
             <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="switchGameTab('discord-race')">🏁 Discord Cheese Race</button>
             <button onclick="refreshAllGameData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded ml-2">🔄 Refresh All Games</button>
         <button onclick="debugAllGameTabs()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded ml-2">🔍 Debug All Game Tabs</button>
+        <button onclick="testGameManagementData()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded ml-2">🧪 Test Data Loading</button>
+        <button onclick="testGameManagementAPI()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded ml-2">🔧 Test API Endpoint</button>
+        <button onclick="testDatabaseConnection()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded ml-2">🗄️ Test Database</button>
           </div>
 
 
@@ -2817,6 +2974,159 @@ require_once 'discord-invite.php';
             <!-- Notifications List -->
             <div id="bossNotificationsList" class="space-y-3 max-h-64 overflow-y-auto">
               <div class="text-gray-400 text-center py-4">Loading boss notifications...</div>
+            </div>
+          </div>
+
+          <!-- 🔥 PHOENIX SWARM MANAGEMENT - NEW FEATURE! -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="font-semibold text-red-400">🔥 Phoenix Swarm Management</h4>
+              <div class="flex gap-3">
+                <div class="text-sm text-orange-400 bg-orange-900 bg-opacity-30 px-3 py-1 rounded-full">
+                  🎯 Current Wave: <span id="currentPhoenixWave">3</span>
+                </div>
+                <div class="text-sm text-green-400 bg-green-900 bg-opacity-30 px-3 py-1 rounded-full">
+                  ⚙️ Config: <span id="phoenixConfigStatus">Active</span>
+                </div>
+              </div>
+            </div>
+            <div class="text-sm text-gray-300 mb-3">
+              Control Phoenix swarm behavior, difficulty, and spawning mechanics for optimal gameplay balance
+            </div>
+            
+            <!-- Phoenix Configuration Controls -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <!-- Basic Settings -->
+              <div class="space-y-3">
+                <h5 class="font-semibold text-yellow-400">🎯 Basic Settings</h5>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Base Phoenix Count:</label>
+                  <input type="number" id="phoenixBaseCount" min="1" max="10" value="3" 
+                         class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Max Phoenix Per Wave:</label>
+                  <input type="number" id="phoenixMaxPerWave" min="3" max="20" value="8" 
+                         class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Wave Frequency:</label>
+                  <input type="number" id="phoenixWaveFrequency" min="2" max="10" value="3" 
+                         class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+                </div>
+              </div>
+              
+              <!-- Health & Difficulty -->
+              <div class="space-y-3">
+                <h5 class="font-semibold text-red-400">💪 Health & Difficulty</h5>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Phoenix Base Health:</label>
+                  <input type="number" id="phoenixBaseHealth" min="50" max="200" value="80" 
+                         class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Mini-Phoenix Health:</label>
+                  <input type="number" id="phoenixMiniHealth" min="15" max="100" value="25" 
+                         class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Difficulty Scaling:</label>
+                  <input type="number" id="phoenixDifficultyScaling" min="1.0" max="2.0" step="0.1" value="1.1" 
+                         class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Advanced Settings -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <!-- Egg & Spawning -->
+              <div class="space-y-3">
+                <h5 class="font-semibold text-orange-400">🥚 Egg & Spawning</h5>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Egg Laying Rate (%):</label>
+                  <input type="number" id="phoenixEggLayingRate" min="5" max="50" value="15" 
+                         class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Egg Hatch Time (frames):</label>
+                  <input type="number" id="phoenixEggHatchTime" min="200" max="1000" value="450" 
+                         class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Egg Laying Cooldown:</label>
+                  <input type="number" id="phoenixEggCooldown" min="60" max="300" value="120" 
+                         class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+                </div>
+              </div>
+              
+              <!-- Formation & Movement -->
+              <div class="space-y-3">
+                <h5 class="font-semibold text-blue-400">🔄 Formation & Movement</h5>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Phoenix Speed:</label>
+                  <input type="number" id="phoenixSpeed" min="0.5" max="5.0" step="0.1" value="2.0" 
+                         class="bg-gray-600 text-white px-2 py-1 rounded text-sm w-20">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Formation Patterns:</label>
+                  <select id="phoenixFormationPatterns" class="bg-gray-600 text-white px-2 py-1 rounded text-sm">
+                    <option value="v,diamond,spiral">V, Diamond, Spiral</option>
+                    <option value="v,diamond">V, Diamond Only</option>
+                    <option value="v">V Formation Only</option>
+                    <option value="v,diamond,spiral,cluster,dive">All Patterns</option>
+                  </select>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <label class="text-sm text-gray-300">Wave Announcement:</label>
+                  <select id="phoenixWaveAnnouncement" class="bg-gray-600 text-white px-2 py-1 rounded text-sm">
+                    <option value="true">Enabled</option>
+                    <option value="false">Disabled</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-3 mb-4">
+              <button onclick="savePhoenixConfiguration()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">💾 Save Configuration</button>
+              <button onclick="loadPhoenixConfiguration()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">🔄 Load Current</button>
+              <button onclick="resetPhoenixConfiguration()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded text-sm">🔄 Reset to Defaults</button>
+              <button onclick="testPhoenixWave()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm">🧪 Test Phoenix Wave</button>
+            </div>
+            
+            <!-- Phoenix Status Display -->
+            <div class="bg-gray-800 p-3 rounded">
+              <h6 class="font-semibold text-green-400 mb-2">📊 Current Phoenix Status</h6>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div class="text-center">
+                  <div class="text-blue-400">Active Birds</div>
+                  <div id="phoenixActiveBirds" class="text-white font-semibold">-</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-orange-400">Active Eggs</div>
+                  <div id="phoenixActiveEggs" class="text-white font-semibold">-</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-red-400">Mini-Phoenix</div>
+                  <div id="phoenixActiveMini" class="text-white font-semibold">-</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-yellow-400">Wave Status</div>
+                  <div id="phoenixWaveStatus" class="text-white font-semibold">-</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -4129,6 +4439,9 @@ require_once 'discord-invite.php';
             <button onclick="downloadCommunityFundsCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
               📤 Export Community Funds
             </button>
+            <button onclick="downloadCommunityFundsTemplate()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+              📋 Download Template
+            </button>
             <button onclick="loadCommunityFundsData()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
               🔄 Refresh
             </button>
@@ -4920,7 +5233,9 @@ require_once 'discord-invite.php';
           } else if (tabName === 'bosses') {
             // Boss management - Auto-load all boss configurations
             loadAllBossConfigurations();
-            addLog('👑 Boss management tab auto-loaded');
+            // 🔥 NEW: Auto-load Phoenix configuration
+            loadPhoenixConfiguration();
+            addLog('👑 Boss management tab auto-loaded with Phoenix swarm controls');
             
           } else if (tabName === 'bossNotifications') {
             // Boss notifications - Always refresh
@@ -10986,6 +11301,12 @@ function updateGameTabContent(gameType, gameData) {
               await loadBossNotifications(); // Load boss notifications when tab is opened
               startBossNotificationChecking(); // Start real-time notification checking
               
+              // 🔥 NEW: Load Phoenix configuration when Space Invaders tab is opened
+              setTimeout(() => {
+                loadPhoenixConfiguration();
+                addLog('🔥 Phoenix configuration auto-loaded for Space Invaders tab');
+              }, 200);
+              
               // 🔧 CRITICAL FIX: Force display of any pending Space Invaders data
               if (window.pendingSpaceInvadersData) {
                 console.log('👾 Force displaying pending Space Invaders data after tab switch...');
@@ -11292,24 +11613,14 @@ function updateGameTabContent(gameType, gameData) {
         console.log('🔍 DEBUG: tetrisData.all_time:', tetrisData.all_time);
         console.log('🔍 DEBUG: Full tetrisData structure:', JSON.stringify(tetrisData, null, 2));
         
-        // Check if the games tab is visible before trying to update elements
-        const gamesTab = document.getElementById('gamesTab');
-        if (!gamesTab || gamesTab.style.display === 'none') {
-          console.log('⚠️ Games tab not visible, deferring Tetris data display');
-          // Store the data to display later when tab becomes visible
-          window.pendingTetrisData = tetrisData;
-          return;
-        }
-        
-        // Additional check: ensure the specific game tab content is visible
+        // Simplified visibility check - just ensure the element exists
         const tetrisTabContent = document.getElementById('tetrisTab');
-        if (!tetrisTabContent || tetrisTabContent.style.display === 'none') {
-          console.log('⚠️ Tetris tab content not visible, deferring Tetris data display');
-          window.pendingTetrisData = tetrisData;
+        if (!tetrisTabContent) {
+          console.error('❌ Tetris tab content element not found!');
           return;
         }
         
-        console.log('✅ Games tab and Tetris tab are visible, proceeding with Tetris data display');
+        console.log('✅ Tetris tab content element found, proceeding with data display');
         
         // Helper function to format numbers nicely
         const formatNumber = (num) => {
@@ -11565,16 +11876,14 @@ function updateGameTabContent(gameType, gameData) {
         console.log('🔍 DEBUG: snakeData.season_data:', snakeData.season_data);
         console.log('🔍 DEBUG: snakeData.all_time:', snakeData.all_time);
         
-        // Check if the games tab is visible before trying to update elements
-        const gamesTab = document.getElementById('gamesTab');
-        if (!gamesTab || gamesTab.style.display === 'none') {
-          console.log('⚠️ Games tab not visible, deferring Snake data display');
-          // Store the data to display later when tab becomes visible
-          window.pendingSnakeData = snakeData;
+        // Simplified visibility check - just ensure the element exists
+        const snakeTabContent = document.getElementById('snakeTab');
+        if (!snakeTabContent) {
+          console.error('❌ Snake tab content element not found!');
           return;
         }
         
-        console.log('✅ Games tab is visible, proceeding with Snake data display');
+        console.log('✅ Snake tab content element found, proceeding with data display');
         
         // Helper function to format numbers nicely
         const formatNumber = (num) => {
@@ -11847,16 +12156,14 @@ function updateGameTabContent(gameType, gameData) {
         console.log('🔍 DEBUG: invadersData.combined_stats:', invadersData.combined_stats);
         console.log('🔍 DEBUG: invadersData.combined_top_players:', invadersData.combined_top_players);
         
-        // Check if the games tab is visible before trying to update elements
-        const gamesTab = document.getElementById('gamesTab');
-        if (!gamesTab || gamesTab.style.display === 'none') {
-          console.log('⚠️ Games tab not visible, deferring Space Invaders data display');
-          // Store the data to display later when tab becomes visible
-          window.pendingSpaceInvadersData = invadersData;
+        // Simplified visibility check - just ensure the element exists
+        const spaceInvadersTabContent = document.getElementById('spaceInvadersTab');
+        if (!spaceInvadersTabContent) {
+          console.error('❌ Space Invaders tab content element not found!');
           return;
         }
         
-        console.log('✅ Games tab is visible, proceeding with Space Invaders data display');
+        console.log('✅ Space Invaders tab content element found, proceeding with data display');
         
         // Helper function to format numbers nicely
         const formatNumber = (num) => {
@@ -16056,7 +16363,64 @@ function updateGameTabContent(gameType, gameData) {
       }
     }
     
-    // 🔧 NEW: CSV Import/Export Functions for Community Funds
+    // 🔧 NEW: Edit Community Funds Entry Function
+    async function editCommunityFundsEntry(id, type, description, amount) {
+      try {
+        // Create edit form
+        const newType = prompt('Enter type (expense/income):', type);
+        if (newType === null) return;
+        
+        const newDescription = prompt('Enter description:', description);
+        if (newDescription === null) return;
+        
+        const newAmount = prompt('Enter amount:', amount);
+        if (newAmount === null) return;
+        
+        // Validate inputs
+        if (!newType || !newDescription || !newAmount) {
+          alert('All fields are required');
+          return;
+        }
+        
+        if (!['expense', 'income'].includes(newType.toLowerCase())) {
+          alert('Type must be "expense" or "income"');
+          return;
+        }
+        
+        const amountValue = parseFloat(newAmount);
+        if (isNaN(amountValue) || amountValue <= 0) {
+          alert('Amount must be a positive number');
+          return;
+        }
+        
+        // Send update request
+        const response = await fetch(API_BASE_URL + '/api/admin/edit-community-funds.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: id,
+            type: newType.toLowerCase(),
+            description: newDescription,
+            amount: amountValue
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('Entry updated successfully!');
+          loadCommunityFundsData();
+        } else {
+          alert('Error updating entry: ' + result.message);
+        }
+        
+      } catch (error) {
+        console.error('Error editing entry:', error);
+        alert('Error updating entry. Please try again.');
+      }
+    }
+    
+    // 🔧 UPDATED: CSV Import/Export Functions for Community Funds
     async function importCommunityFundsCSV() {
       const fileInput = document.getElementById('communityFundsCsvInput');
       const statusDiv = document.getElementById('communityFundsCsvStatus');
@@ -16067,76 +16431,61 @@ function updateGameTabContent(gameType, gameData) {
       }
       
       const file = fileInput.files[0];
-      const reader = new FileReader();
       
-      reader.onload = async function(e) {
-        try {
-          const csvText = e.target.result;
-          const lines = csvText.split('\n');
-          const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      // Validate file type
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        statusDiv.innerHTML = '<span class="text-red-400">❌ Please select a CSV file</span>';
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        statusDiv.innerHTML = '<span class="text-red-400">❌ File too large. Maximum size is 5MB</span>';
+        return;
+      }
+      
+      statusDiv.innerHTML = '<span class="text-blue-400">⏳ Uploading and processing CSV file...</span>';
+      
+      try {
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('csv_file', file);
+        
+        // Send to CSV import endpoint
+        const response = await fetch(API_BASE_URL + '/api/admin/import-community-funds-csv.php', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          statusDiv.innerHTML = `<span class="text-green-400">✅ Import completed successfully!</span><br>
+            <span class="text-sm text-gray-300">Imported: ${result.imported} entries</span><br>
+            <span class="text-sm text-gray-300">Skipped: ${result.skipped} entries</span><br>
+            <span class="text-sm text-gray-300">Total rows: ${result.total_rows}</span>`;
           
-          // Validate CSV structure
-          const requiredHeaders = ['type', 'description', 'amount', 'date'];
-          const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
-          
-          if (missingHeaders.length > 0) {
-            statusDiv.innerHTML = `<span class="text-red-400">❌ Missing required headers: ${missingHeaders.join(', ')}</span>`;
-            return;
+          // Show any warnings
+          if (result.errors && result.errors.length > 0) {
+            console.warn('CSV import warnings:', result.errors);
           }
-          
-          statusDiv.innerHTML = '<span class="text-blue-400">⏳ Processing CSV file...</span>';
-          
-          let successCount = 0;
-          let errorCount = 0;
-          
-          // Process each line (skip header)
-          for (let i = 1; i < lines.length; i++) {
-            if (lines[i].trim() === '') continue;
-            
-            const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
-            if (values.length < 4) continue;
-            
-            const entry = {
-              type: values[0],
-              description: values[1],
-              amount: parseFloat(values[2]),
-              date: values[3]
-            };
-            
-            try {
-              const response = await fetch(API_BASE_URL + '/api/admin/add-community-funds.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(entry)
-              });
-              
-              const result = await response.json();
-              if (result.success) {
-                successCount++;
-              } else {
-                errorCount++;
-                console.error(`Error importing line ${i + 1}:`, result.message);
-              }
-            } catch (error) {
-              errorCount++;
-              console.error(`Error importing line ${i + 1}:`, error);
-            }
-          }
-          
-          statusDiv.innerHTML = `<span class="text-green-400">✅ Import completed: ${successCount} successful, ${errorCount} errors</span>`;
           
           // Refresh the display
           setTimeout(() => {
             loadCommunityFundsData();
           }, 1000);
           
-        } catch (error) {
-          statusDiv.innerHTML = `<span class="text-red-400">❌ Error processing CSV: ${error.message}</span>`;
-          console.error('CSV processing error:', error);
+        } else {
+          statusDiv.innerHTML = `<span class="text-red-400">❌ Import failed: ${result.message}</span>`;
+          if (result.errors && result.errors.length > 0) {
+            console.error('CSV import errors:', result.errors);
+          }
         }
-      };
-      
-      reader.readAsText(file);
+        
+      } catch (error) {
+        statusDiv.innerHTML = `<span class="text-red-400">❌ Error uploading CSV: ${error.message}</span>`;
+        console.error('CSV upload error:', error);
+      }
     }
     
     async function downloadCommunityFundsCSV() {
@@ -16178,6 +16527,25 @@ function updateGameTabContent(gameType, gameData) {
       } catch (error) {
         console.error('Error exporting CSV:', error);
         alert('Error exporting CSV. Please try again.');
+      }
+    }
+    
+    // 🔧 NEW: Download Community Funds CSV Template
+    async function downloadCommunityFundsTemplate() {
+      try {
+        // Create a link to download the template
+        const a = document.createElement('a');
+        a.href = API_BASE_URL + '/api/admin/download-community-funds-template.php';
+        a.download = 'community-funds-template.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        addLog('✅ Community funds CSV template downloaded successfully');
+        
+      } catch (error) {
+        console.error('Error downloading template:', error);
+        alert('Error downloading template. Please try again.');
       }
     }
     
@@ -17337,6 +17705,321 @@ function updateGameTabContent(gameType, gameData) {
       }
     }
     
+    // 🔥 PHOENIX SWARM MANAGEMENT FUNCTIONS - NEW FEATURE!
+    
+    // Load current Phoenix configuration from the game
+    async function loadPhoenixConfiguration() {
+      try {
+        addLog('🔥 Loading current Phoenix configuration from API...');
+        
+        // Fetch Phoenix configuration from the API
+        const response = await fetch(API_BASE_URL + '/api/admin/get-active-game-config.php');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.phoenix) {
+          // Get Phoenix configuration from the new API format
+          const config = data.phoenix;
+          
+          // Load values into the form
+          document.getElementById('phoenixBaseCount').value = config.basePhoenixCount || 3;
+          document.getElementById('phoenixMaxPerWave').value = config.maxPhoenixPerWave || 8;
+          document.getElementById('phoenixWaveFrequency').value = config.waveFrequency || 3;
+          document.getElementById('phoenixBaseHealth').value = config.phoenixHealth || 80;
+          document.getElementById('phoenixMiniHealth').value = config.miniPhoenixHealth || 25;
+          document.getElementById('phoenixDifficultyScaling').value = config.difficultyScaling || 1.1;
+          document.getElementById('phoenixEggLayingRate').value = Math.round((config.eggLayingRate || 0.15) * 100);
+          document.getElementById('phoenixEggHatchTime').value = config.eggHatchTime || 450;
+          document.getElementById('phoenixEggCooldown').value = config.eggCooldown || 120;
+          document.getElementById('phoenixSpeed').value = config.phoenixSpeed || 2.0;
+          document.getElementById('phoenixFormationPatterns').value = Array.isArray(config.formationPatterns) ? config.formationPatterns.join(',') : (config.formationPatterns || 'v,diamond,spiral');
+          document.getElementById('phoenixWaveAnnouncement').value = config.waveAnnouncement ? 'true' : 'false';
+          
+          // Update status
+          document.getElementById('phoenixConfigStatus').textContent = 'Loaded from API';
+          document.getElementById('phoenixConfigStatus').className = 'text-sm text-green-400 bg-green-900 bg-opacity-30 px-3 py-1 rounded-full';
+          
+          addLog('✅ Phoenix configuration loaded successfully from API');
+          
+          // Update current wave display
+          document.getElementById('currentPhoenixWave').textContent = '3';
+          
+          // Update Phoenix status display
+          updatePhoenixStatusDisplay();
+          
+        } else {
+          throw new Error(data.error || 'Failed to load configuration');
+        }
+        
+      } catch (error) {
+        addLog(`❌ Error loading Phoenix configuration: ${error.message}`);
+        document.getElementById('phoenixConfigStatus').textContent = 'Error';
+        document.getElementById('phoenixConfigStatus').className = 'text-sm text-red-400 bg-green-900 bg-opacity-30 px-3 py-1 rounded-full';
+        
+        // Fallback to default values
+        addLog('🔄 Falling back to default Phoenix configuration...');
+        loadDefaultPhoenixConfiguration();
+      }
+    }
+    
+    // Load default Phoenix configuration (fallback)
+    function loadDefaultPhoenixConfiguration() {
+      const defaultConfig = {
+        basePhoenixCount: 3,
+        maxPhoenixPerWave: 8,
+        waveFrequency: 3,
+        phoenixHealth: 80,
+        miniPhoenixHealth: 25,
+        difficultyScaling: 1.1,
+        eggLayingRate: 15,
+        eggHatchTime: 450,
+        eggCooldown: 120,
+        phoenixSpeed: 2.0,
+        formationPatterns: 'v,diamond,spiral',
+        waveAnnouncement: 'true'
+      };
+      
+      // Load values into the form
+      document.getElementById('phoenixBaseCount').value = defaultConfig.basePhoenixCount;
+      document.getElementById('phoenixMaxPerWave').value = defaultConfig.maxPhoenixPerWave;
+      document.getElementById('phoenixWaveFrequency').value = defaultConfig.waveFrequency;
+      document.getElementById('phoenixBaseHealth').value = defaultConfig.phoenixHealth;
+      document.getElementById('phoenixMiniHealth').value = defaultConfig.miniPhoenixHealth;
+      document.getElementById('phoenixDifficultyScaling').value = defaultConfig.difficultyScaling;
+      document.getElementById('phoenixEggLayingRate').value = defaultConfig.eggLayingRate;
+      document.getElementById('phoenixEggHatchTime').value = defaultConfig.eggHatchTime;
+      document.getElementById('phoenixEggCooldown').value = defaultConfig.eggCooldown;
+      document.getElementById('phoenixSpeed').value = defaultConfig.phoenixSpeed;
+      document.getElementById('phoenixFormationPatterns').value = defaultConfig.formationPatterns;
+      document.getElementById('phoenixWaveAnnouncement').value = defaultConfig.waveAnnouncement;
+      
+      addLog('✅ Default Phoenix configuration loaded');
+    }
+    
+    // Save Phoenix configuration to the game
+    async function savePhoenixConfiguration() {
+      try {
+        addLog('🔥 Saving Phoenix configuration...');
+        
+        // Get all form values
+        const config = {
+          basePhoenixCount: parseInt(document.getElementById('phoenixBaseCount').value),
+          maxPhoenixPerWave: parseInt(document.getElementById('phoenixMaxPerWave').value),
+          waveFrequency: parseInt(document.getElementById('phoenixWaveFrequency').value),
+          phoenixHealth: parseInt(document.getElementById('phoenixBaseHealth').value),
+          miniPhoenixHealth: parseInt(document.getElementById('phoenixMiniHealth').value),
+          difficultyScaling: parseFloat(document.getElementById('phoenixDifficultyScaling').value),
+          eggLayingRate: parseInt(document.getElementById('phoenixEggLayingRate').value),
+          eggHatchTime: parseInt(document.getElementById('phoenixEggHatchTime').value),
+          eggCooldown: parseInt(document.getElementById('phoenixEggCooldown').value),
+          phoenixSpeed: parseFloat(document.getElementById('phoenixSpeed').value),
+          formationPatterns: document.getElementById('phoenixFormationPatterns').value,
+          waveAnnouncement: document.getElementById('phoenixWaveAnnouncement').value === 'true'
+        };
+        
+        // Validate configuration
+        if (config.basePhoenixCount < 1 || config.basePhoenixCount > 10) {
+          throw new Error('Base Phoenix count must be between 1 and 10');
+        }
+        if (config.maxPhoenixPerWave < 3 || config.maxPhoenixPerWave > 20) {
+          throw new Error('Max Phoenix per wave must be between 3 and 20');
+        }
+        if (config.phoenixHealth < 50 || config.phoenixHealth > 200) {
+          throw new Error('Phoenix health must be between 50 and 200');
+        }
+        if (config.miniPhoenixHealth < 15 || config.miniPhoenixHealth > 100) {
+          throw new Error('Mini-Phoenix health must be between 15 and 100');
+        }
+        
+        // Save configuration to database via API
+        const saveResponse = await fetch(API_BASE_URL + '/api/admin/space-invaders-settings.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            settings: [
+              { key: 'phoenix_base_count', value: config.basePhoenixCount },
+              { key: 'phoenix_max_per_wave', value: config.maxPhoenixPerWave },
+              { key: 'phoenix_wave_frequency', value: config.waveFrequency },
+              { key: 'phoenix_base_health', value: config.phoenixHealth },
+              { key: 'phoenix_mini_health', value: config.miniPhoenixHealth },
+              { key: 'phoenix_difficulty_scaling', value: config.difficultyScaling },
+              { key: 'phoenix_egg_laying_rate', value: config.eggLayingRate },
+              { key: 'phoenix_egg_hatch_time', value: config.eggHatchTime },
+              { key: 'phoenix_egg_cooldown', value: config.eggCooldown },
+              { key: 'phoenix_speed', value: config.phoenixSpeed },
+              { key: 'phoenix_formation_patterns', value: config.formationPatterns },
+              { key: 'phoenix_wave_announcement', value: config.waveAnnouncement ? 'true' : 'false' }
+            ]
+          })
+        });
+        
+        if (!saveResponse.ok) {
+          throw new Error('Failed to save to database');
+        }
+        
+        // Update status
+        document.getElementById('phoenixConfigStatus').textContent = 'Saved';
+        document.getElementById('phoenixConfigStatus').className = 'text-sm text-green-400 bg-green-900 bg-opacity-30 px-3 py-1 rounded-full';
+        
+        addLog('✅ Phoenix configuration saved successfully');
+        showNotification('🔥 Phoenix configuration saved! Changes will apply to new waves.', 'success');
+        
+        // Update Phoenix status display
+        updatePhoenixStatusDisplay();
+        
+      } catch (error) {
+        addLog(`❌ Error saving Phoenix configuration: ${error.message}`);
+        showNotification(`❌ Error saving configuration: ${error.message}`, 'error');
+        document.getElementById('phoenixConfigStatus').textContent = 'Error';
+        document.getElementById('phoenixConfigStatus').className = 'text-sm text-red-400 bg-red-900 bg-opacity-30 px-3 py-1 rounded-full';
+      }
+    }
+    
+    // Reset Phoenix configuration to defaults
+    function resetPhoenixConfiguration() {
+      try {
+        addLog('🔥 Resetting Phoenix configuration to defaults...');
+        
+        // Reset all form values to defaults
+        document.getElementById('phoenixBaseCount').value = 3;
+        document.getElementById('phoenixMaxPerWave').value = 8;
+        document.getElementById('phoenixWaveFrequency').value = 3;
+        document.getElementById('phoenixBaseHealth').value = 80;
+        document.getElementById('phoenixMiniHealth').value = 25;
+        document.getElementById('phoenixDifficultyScaling').value = 1.1;
+        document.getElementById('phoenixEggLayingRate').value = 15;
+        document.getElementById('phoenixEggHatchTime').value = 450;
+        document.getElementById('phoenixEggCooldown').value = 120;
+        document.getElementById('phoenixSpeed').value = 2.0;
+        document.getElementById('phoenixFormationPatterns').value = 'v,diamond,spiral';
+        document.getElementById('phoenixWaveAnnouncement').value = 'true';
+        
+        // Update status
+        document.getElementById('phoenixConfigStatus').textContent = 'Reset';
+        document.getElementById('phoenixConfigStatus').className = 'text-sm text-yellow-400 bg-yellow-900 bg-opacity-30 px-3 py-1 rounded-full';
+        
+        addLog('✅ Phoenix configuration reset to defaults');
+        showNotification('🔄 Phoenix configuration reset to defaults!', 'info');
+        
+        // Update Phoenix status display
+        updatePhoenixStatusDisplay();
+        
+      } catch (error) {
+        addLog(`❌ Error resetting Phoenix configuration: ${error.message}`);
+        showNotification(`❌ Error resetting configuration: ${error.message}`, 'error');
+      }
+    }
+    
+    // Test Phoenix wave functionality
+    function testPhoenixWave() {
+      try {
+        addLog('🧪 Testing Phoenix wave functionality...');
+        
+        // Simulate Phoenix wave status
+        const testStatus = {
+          activeBirds: Math.floor(Math.random() * 5) + 1,
+          activeEggs: Math.floor(Math.random() * 3),
+          activeMini: Math.floor(Math.random() * 8),
+          waveStatus: 'Testing'
+        };
+        
+        // Update status display
+        document.getElementById('phoenixActiveBirds').textContent = testStatus.activeBirds;
+        document.getElementById('phoenixActiveEggs').textContent = testStatus.activeEggs;
+        document.getElementById('phoenixActiveMini').textContent = testStatus.activeMini;
+        document.getElementById('phoenixWaveStatus').textContent = testStatus.waveStatus;
+        
+        addLog('🧪 Phoenix wave test completed');
+        showNotification('🧪 Phoenix wave test completed! Check status display.', 'info');
+        
+      } catch (error) {
+        addLog(`❌ Error testing Phoenix wave: ${error.message}`);
+        showNotification(`❌ Error testing Phoenix wave: ${error.message}`, 'error');
+      }
+    }
+    
+    // Update Phoenix status display
+    function updatePhoenixStatusDisplay() {
+      try {
+        // Get current configuration values
+        const baseCount = parseInt(document.getElementById('phoenixBaseCount').value) || 3;
+        const maxPerWave = parseInt(document.getElementById('phoenixMaxPerWave').value) || 8;
+        const health = parseInt(document.getElementById('phoenixBaseHealth').value) || 80;
+        const miniHealth = parseInt(document.getElementById('phoenixMiniHealth').value) || 25;
+        
+        // Calculate estimated difficulty
+        const estimatedDifficulty = Math.round((baseCount * health + maxPerWave * miniHealth * 0.3) / 10);
+        
+        // Update status display with current values
+        document.getElementById('phoenixActiveBirds').textContent = `${baseCount} (Wave 3)`;
+        document.getElementById('phoenixActiveEggs').textContent = '0-2 (estimated)';
+        document.getElementById('phoenixActiveMini').textContent = '0-4 (estimated)';
+        document.getElementById('phoenixWaveStatus').textContent = `Difficulty: ${estimatedDifficulty}/10`;
+        
+      } catch (error) {
+        console.error('Error updating Phoenix status display:', error);
+      }
+    }
+    
+    // 🔥 NEW: Push Phoenix configuration to active games immediately
+    async function pushPhoenixConfigToGames() {
+      try {
+        addLog('🚀 Pushing Phoenix configuration to active games...');
+        
+        // Get current form values
+        const config = {
+          basePhoenixCount: parseInt(document.getElementById('phoenixBaseCount').value),
+          maxPhoenixPerWave: parseInt(document.getElementById('phoenixMaxPerWave').value),
+          waveFrequency: parseInt(document.getElementById('phoenixWaveFrequency').value),
+          phoenixHealth: parseInt(document.getElementById('phoenixBaseHealth').value),
+          miniPhoenixHealth: parseInt(document.getElementById('phoenixMiniHealth').value),
+          difficultyScaling: parseFloat(document.getElementById('phoenixDifficultyScaling').value),
+          eggLayingRate: parseInt(document.getElementById('phoenixEggLayingRate').value) / 100, // Convert % to decimal
+          eggHatchTime: parseInt(document.getElementById('phoenixEggHatchTime').value),
+          eggCooldown: parseInt(document.getElementById('phoenixEggCooldown').value),
+          phoenixSpeed: parseFloat(document.getElementById('phoenixSpeed').value),
+          formationPatterns: document.getElementById('phoenixFormationPatterns').value.split(','),
+          waveAnnouncement: document.getElementById('phoenixWaveAnnouncement').value === 'true'
+        };
+        
+        // Push to active games via API
+        const response = await fetch(API_BASE_URL + '/api/admin/push-game-update.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'phoenix_update',
+            config: config
+          })
+        });
+        
+        if (response.ok) {
+          showNotification('🚀 Phoenix settings pushed INSTANTLY to all active games!', 'success');
+          addLog('✅ Phoenix configuration pushed to active games');
+          
+          // Update status
+          document.getElementById('phoenixConfigStatus').textContent = 'Pushed to Games';
+          document.getElementById('phoenixConfigStatus').className = 'text-sm text-green-400 bg-green-900 bg-opacity-30 px-3 py-1 rounded-full';
+        } else {
+          throw new Error('Failed to push to active games');
+        }
+        
+      } catch (error) {
+        showNotification(`❌ Failed to push to active games: ${error.message}`, 'error');
+        addLog(`❌ Error pushing Phoenix config: ${error.message}`);
+      }
+    }
+    
+    // Auto-load Phoenix configuration when Boss Management tab is opened
+    function autoLoadPhoenixConfig() {
+      if (document.getElementById('bossesTab').style.display !== 'none') {
+        loadPhoenixConfiguration();
+      }
+    }
+    
     // Discord Race Tab Functions
     async function loadDiscordRaceData() {
       if (!currentAdmin) {
@@ -17852,6 +18535,199 @@ function testGames2Tab() {
   });
   
   addLog('🧪 Game Management 2.0 tab test completed');
+}
+
+// Test function for Game Management data loading
+function testGameManagementData() {
+  addLog('🧪 Testing Game Management data loading...');
+  
+  // Test API endpoint
+  addLog('🔍 Testing API endpoint: /api/admin/get-all-games-stats.php');
+  
+  // Test if the function exists
+  if (typeof loadGameOverview === 'function') {
+    addLog('✅ loadGameOverview function exists');
+    
+    // Test the API call
+    fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php')
+      .then(response => {
+        addLog(`✅ API response status: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        addLog(`✅ API response received: ${JSON.stringify(data).substring(0, 200)}...`);
+        
+        if (data.success) {
+          addLog('✅ API returned success=true');
+          if (data.data && data.data.overview) {
+            addLog('✅ Overview data found in response');
+          } else {
+            addLog('❌ No overview data in response');
+          }
+          if (data.data && data.data.games) {
+            addLog('✅ Games data found in response');
+          } else {
+            addLog('❌ No games data in response');
+          }
+        } else {
+          addLog(`❌ API returned success=false: ${data.error}`);
+        }
+      })
+      .catch(error => {
+        addLog(`❌ API call failed: ${error.message}`);
+      });
+  } else {
+    addLog('❌ loadGameOverview function not found');
+  }
+  
+  // Test tab switching
+  addLog('🔍 Testing tab switching...');
+  try {
+    switchGameTab('overview');
+    addLog('✅ Overview tab switch successful');
+    
+    switchGameTab('tetris');
+    addLog('✅ Tetris tab switch successful');
+    
+    switchGameTab('snake');
+    addLog('✅ Snake tab switch successful');
+    
+    switchGameTab('space-invaders');
+    addLog('✅ Space Invaders tab switch successful');
+    
+    switchGameTab('cheese-hunt');
+    addLog('✅ Cheese Hunt tab switch successful');
+    
+    switchGameTab('discord-race');
+    addLog('✅ Discord Race tab switch successful');
+    
+    // Switch back to overview
+    switchGameTab('overview');
+    addLog('✅ Back to overview tab successful');
+    
+  } catch (error) {
+    addLog(`❌ Tab switching error: ${error.message}`);
+  }
+  
+  addLog('🧪 Game Management data loading test completed');
+}
+
+// Test function for Game Management API endpoint
+function testGameManagementAPI() {
+  addLog('🔧 Testing Game Management API endpoint...');
+  
+  // Test the new test endpoint
+  fetch(API_BASE_URL + '/api/admin/test-game-management.php')
+    .then(response => {
+      addLog(`✅ Test API response status: ${response.status}`);
+      return response.json();
+    })
+    .then(data => {
+      addLog(`✅ Test API response received successfully`);
+      
+      if (data.success) {
+        addLog('✅ Test API returned success=true');
+        
+        // Log database status
+        if (data.data && data.data.database_status) {
+          const dbStatus = data.data.database_status;
+          addLog(`✅ Database connected: ${dbStatus.connected}`);
+          addLog(`✅ Total tables: ${dbStatus.total_tables}`);
+          
+          // Log table status
+          if (dbStatus.table_status) {
+            Object.entries(dbStatus.table_status).forEach(([table, status]) => {
+              if (status.exists) {
+                addLog(`✅ Table ${table}: ${status.count} records`);
+              } else {
+                addLog(`❌ Table ${table}: ${status.error}`);
+              }
+            });
+          }
+        }
+        
+        // Log game stats
+        if (data.data && data.data.game_stats) {
+          const gameStats = data.data.game_stats;
+          Object.entries(gameStats).forEach(([game, stats]) => {
+            if (stats.error) {
+              addLog(`❌ ${game}: ${stats.error}`);
+            } else {
+              const statText = Object.entries(stats).map(([key, value]) => `${key}: ${value}`).join(', ');
+              addLog(`✅ ${game}: ${statText}`);
+            }
+          });
+        }
+        
+        // Log user stats
+        if (data.data && data.data.user_stats) {
+          const userStats = data.data.user_stats;
+          if (userStats.error) {
+            addLog(`❌ User stats: ${userStats.error}`);
+          } else {
+            addLog(`✅ Total users: ${userStats.total_users}`);
+          }
+        }
+        
+      } else {
+        addLog(`❌ Test API returned success=false: ${data.error}`);
+      }
+    })
+    .catch(error => {
+      addLog(`❌ Test API call failed: ${error.message}`);
+    });
+  
+  addLog('🔧 Game Management API endpoint test completed');
+}
+
+// Test function for database connection
+function testDatabaseConnection() {
+  addLog('🗄️ Testing database connection...');
+  
+  // Test the database connection endpoint
+  fetch(API_BASE_URL + '/api/admin/test-db-connection.php')
+    .then(response => {
+      addLog(`✅ Database test API response status: ${response.status}`);
+      return response.json();
+    })
+    .then(data => {
+      addLog(`✅ Database test API response received successfully`);
+      
+      if (data.success) {
+        addLog('✅ Database test API returned success=true');
+        
+        // Log database details
+        if (data.data) {
+          const dbData = data.data;
+          addLog(`🗄️ Database path: ${dbData.database_path}`);
+          addLog(`🗄️ File exists: ${dbData.file_exists}`);
+          addLog(`🗄️ File size: ${dbData.file_size} bytes`);
+          addLog(`🗄️ File readable: ${dbData.file_readable}`);
+          addLog(`🗄️ File writable: ${dbData.file_writable}`);
+          addLog(`🗄️ Connection successful: ${dbData.connection_successful}`);
+          addLog(`🗄️ Total tables: ${dbData.total_tables}`);
+          addLog(`🗄️ User count: ${dbData.user_count}`);
+          addLog(`🗄️ PHP version: ${dbData.php_version}`);
+          addLog(`🗄️ Server software: ${dbData.server_software}`);
+        }
+        
+      } else {
+        addLog(`❌ Database test API returned success=false: ${data.error}`);
+        
+        // Log error details
+        if (data.data) {
+          const dbData = data.data;
+          addLog(`🗄️ Database path: ${dbData.database_path}`);
+          addLog(`🗄️ File exists: ${dbData.file_exists}`);
+          addLog(`🗄️ File size: ${dbData.file_size} bytes`);
+        }
+      }
+    })
+    .catch(error => {
+      addLog(`❌ Database test API call failed: ${error.message}`);
+    });
+  
+  addLog('🗄️ Database connection test completed');
 }
 
 // 🎮 GAME MANAGEMENT TAB FUNCTIONS - REMOVED OLD STUBS

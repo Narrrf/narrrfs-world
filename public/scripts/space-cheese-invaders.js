@@ -88,13 +88,14 @@ let miniPhoenixes = [];
 let isPhoenixWave = false;
 let phoenixWaveConfig = {
   waveFrequency: 3,        // Every 3rd wave is Phoenix
-  basePhoenixCount: 5,     // Starting Phoenix count
-  difficultyScaling: 1.2,  // Difficulty multiplier per wave
-  eggLayingRate: 0.3,      // 30% chance to lay egg per update
-  formationPatterns: ['v', 'diamond', 'spiral', 'cluster', 'dive'],
-  maxPhoenixPerWave: 20,   // Maximum Phoenix birds per wave
-  eggHatchTime: 300,       // Frames until egg hatches
-  miniPhoenixHealth: 50    // Health of hatched mini-Phoenix
+  basePhoenixCount: 3,     // 🔥 BALANCED: Reduced from 5 to 3 for Wave 3
+  difficultyScaling: 1.1,  // 🔥 BALANCED: Reduced from 1.2 to 1.1 for Wave 3
+  eggLayingRate: 0.15,     // 🔥 BALANCED: Reduced from 0.3 to 0.15 (15% chance)
+  formationPatterns: ['v', 'diamond', 'spiral'], // 🔥 BALANCED: Removed complex patterns for Wave 3
+  maxPhoenixPerWave: 8,    // 🔥 BALANCED: Reduced from 20 to 8 for Wave 3
+  eggHatchTime: 450,       // 🔥 BALANCED: Increased from 300 to 450 (more time before hatching)
+  miniPhoenixHealth: 25,   // 🔥 BALANCED: Reduced from 50 to 25 for Wave 3
+  phoenixHealth: 80        // 🔥 NEW: Base Phoenix health for Wave 3
 };
 
 // 🔥 PHOENIX CONFIGURATION LOADING - NEW!
@@ -149,12 +150,23 @@ window.forcePhoenixWave = function() {
   miniPhoenixes = [];
   
   spawnPhoenixWave();
-  console.log('Phoenix wave spawned!');
+  console.log('🔥 Phoenix wave spawned!');
   console.log('🔥 Phoenix entities created:', {
     phoenixWaves: phoenixWaves.length,
     phoenixEggs: phoenixEggs.length,
     miniPhoenixes: miniPhoenixes.length
   });
+  
+  // 🔍 DEBUG: Log Phoenix entity details
+  if (phoenixWaves.length > 0) {
+    console.log('🔥 First Phoenix bird position:', phoenixWaves[0].x, phoenixWaves[0].y);
+  }
+  if (phoenixEggs.length > 0) {
+    console.log('🥚 First Phoenix egg position:', phoenixEggs[0].x, phoenixEggs[0].y);
+  }
+  if (miniPhoenixes.length > 0) {
+    console.log('🐤 First mini-Phoenix position:', miniPhoenixes[0].x, miniPhoenixes[0].y);
+  }
 };
 
 // 🧀 Load cheese-themed images
@@ -168,11 +180,13 @@ cheeseShipImg.onerror = (e) => {
   console.error('❌ Attempted path:', cheeseShipImg.src);
 };
 
-// 🔥 PHOENIX IMAGES - NEW!
+    // 🔥 PHOENIX IMAGES - NEW!
 const phoenixBirdImg = new Image();
-phoenixBirdImg.src = 'img/phoenix/phoenix-bird.png';
+phoenixBirdImg.src = 'img/space/phoenix-bird.png';
+console.log('🔥 Loading Phoenix bird image from:', phoenixBirdImg.src);
 phoenixBirdImg.onload = () => {
   console.log('✅ Phoenix bird image loaded successfully');
+  console.log('🔥 Image dimensions:', phoenixBirdImg.naturalWidth, 'x', phoenixBirdImg.naturalHeight);
 };
 phoenixBirdImg.onerror = (e) => {
   console.error('❌ Failed to load Phoenix bird image:', e);
@@ -181,9 +195,11 @@ phoenixBirdImg.onerror = (e) => {
 };
 
 const phoenixEggImg = new Image();
-phoenixEggImg.src = 'img/phoenix/phoenix-egg.png';
+phoenixEggImg.src = 'img/space/phoenix-egg.png';
+console.log('🥚 Loading Phoenix egg image from:', phoenixEggImg.src);
 phoenixEggImg.onload = () => {
   console.log('✅ Phoenix egg image loaded successfully');
+  console.log('🥚 Image dimensions:', phoenixEggImg.naturalWidth, 'x', phoenixEggImg.naturalHeight);
 };
 phoenixEggImg.onerror = (e) => {
   console.error('❌ Failed to load Phoenix egg image:', e);
@@ -192,9 +208,11 @@ phoenixEggImg.onerror = (e) => {
 };
 
 const miniPhoenixImg = new Image();
-miniPhoenixImg.src = 'img/phoenix/mini-phoenix.png';
+miniPhoenixImg.src = 'img/space/mini-phoenix.png';
+console.log('🐤 Loading Mini Phoenix image from:', miniPhoenixImg.src);
 miniPhoenixImg.onload = () => {
   console.log('✅ Mini Phoenix image loaded successfully');
+  console.log('🐤 Image dimensions:', miniPhoenixImg.naturalWidth, 'x', miniPhoenixImg.naturalHeight);
 };
 miniPhoenixImg.onerror = (e) => {
   console.error('❌ Failed to load Mini Phoenix image:', e);
@@ -233,7 +251,7 @@ class PhoenixBird {
     this.difficulty = difficulty;
     this.width = 60;  // 🔥 CRITICAL FIX: Add dimensions
     this.height = 60; // 🔥 CRITICAL FIX: Add dimensions
-    this.health = (phoenixWaveConfig.phoenixHealth || 100) * difficulty;
+    this.health = (phoenixWaveConfig.phoenixHealth || 80) * difficulty;
     this.maxHealth = this.health;
     this.speed = phoenixWaveConfig.phoenixSpeed || 2.0;
     this.eggLayingCooldown = 0;
@@ -340,7 +358,7 @@ class PhoenixBird {
     this.eggLayingCooldown--;
     if (this.eggLayingCooldown <= 0 && Math.random() < phoenixWaveConfig.eggLayingRate) {
       this.layEgg();
-      this.eggLayingCooldown = 60; // 1 second cooldown
+      this.eggLayingCooldown = 120; // 🔥 BALANCED: Increased from 60 to 120 (2 second cooldown)
     }
     
     return true;
@@ -387,6 +405,7 @@ class PhoenixBird {
     if (typeof phoenixBirdImg !== 'undefined' && phoenixBirdImg.complete && phoenixBirdImg.naturalWidth > 0) {
       // Draw Phoenix bird image
       ctx.drawImage(phoenixBirdImg, this.x, this.y, this.width, this.height);
+      console.log('🔥 Drawing Phoenix bird with image');
     } else {
       // 🔥 FALLBACK: Draw Phoenix bird as colored rectangle
       ctx.fillStyle = '#ff6b35'; // Phoenix orange
@@ -405,6 +424,7 @@ class PhoenixBird {
       ctx.fillStyle = '#ff8c42'; // Wing color
       ctx.fillRect(this.x - 10, this.y + 15, 15, 20);
       ctx.fillRect(this.x + this.width - 5, this.y + 15, 15, 20);
+      console.log('🔥 Drawing Phoenix bird with fallback rectangle');
     }
     
     // Draw health bar
@@ -432,6 +452,8 @@ class PhoenixEgg {
   constructor(x, y, parentPhoenix) {
     this.x = x;
     this.y = y;
+    this.width = 16;  // 🔥 CRITICAL FIX: Add width for collision detection
+    this.height = 16; // 🔥 CRITICAL FIX: Add height for collision detection
     this.parentPhoenix = parentPhoenix;
     this.hatchTimer = phoenixWaveConfig.eggHatchTime;
     this.isDestroyed = false;
@@ -482,30 +504,38 @@ class PhoenixEgg {
     ctx.save();
     ctx.translate(this.x, this.y);
     
-    // Egg color (orange/red)
-    ctx.fillStyle = '#ff8c42';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, size/2, size/3, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Egg pattern
-    ctx.fillStyle = '#ff4500';
-    ctx.fillRect(-size/4, -size/6, size/2, size/3);
-    
-    // Hatching animation (cracks)
-    if (this.hatchTimer < 60) { // Last second before hatching
-      ctx.strokeStyle = '#ff0000';
-      ctx.lineWidth = 2;
+    // 🔥 PHOENIX EGG DRAWING: Use image if available, fallback to ellipse
+    if (typeof phoenixEggImg !== 'undefined' && phoenixEggImg.complete && phoenixEggImg.naturalWidth > 0) {
+      // Draw Phoenix egg image
+      ctx.drawImage(phoenixEggImg, -size/2, -size/2, size, size);
+      console.log('🥚 Drawing Phoenix egg with image');
+    } else {
+      // 🔥 FALLBACK: Draw Phoenix egg as colored ellipse
+      ctx.fillStyle = '#ff8c42';
       ctx.beginPath();
-      ctx.moveTo(-size/3, -size/4);
-      ctx.lineTo(size/3, size/4);
-      ctx.stroke();
+      ctx.ellipse(0, 0, size/2, size/3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Egg pattern
+      ctx.fillStyle = '#ff4500';
+      ctx.fillRect(-size/4, -size/6, size/2, size/3);
+      
+      // Hatching animation (cracks)
+      if (this.hatchTimer < 60) { // Last second before hatching
+        ctx.strokeStyle = '#ff0000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-size/3, -size/4);
+        ctx.lineTo(size/3, size/4);
+        ctx.stroke();
+      }
+      
+      // Hatching timer indicator
+      const timePercentage = this.hatchTimer / phoenixWaveConfig.eggHatchTime;
+      ctx.fillStyle = `rgba(255, 0, 0, ${1 - timePercentage})`;
+      ctx.fillRect(-size/2, -size/2 - 6, size, 3);
+      console.log('🥚 Drawing Phoenix egg with fallback ellipse');
     }
-    
-    // Hatching timer indicator
-    const timePercentage = this.hatchTimer / phoenixWaveConfig.eggHatchTime;
-    ctx.fillStyle = `rgba(255, 0, 0, ${1 - timePercentage})`;
-    ctx.fillRect(-size/2, -size/2 - 6, size, 3);
     
     ctx.restore();
   }
@@ -516,6 +546,8 @@ class MiniPhoenix {
   constructor(x, y) {
     this.x = x;
     this.y = y;
+    this.width = 20;  // 🔥 CRITICAL FIX: Add width for collision detection
+    this.height = 20; // 🔥 CRITICAL FIX: Add height for collision detection
     this.health = phoenixWaveConfig.miniPhoenixHealth;
     this.maxHealth = this.health;
     this.speed = 1.5;
@@ -588,24 +620,31 @@ class MiniPhoenix {
       return;
     }
     
-    // Draw mini-Phoenix (smaller version)
+    // 🔥 MINI-PHOENIX DRAWING: Use image if available, fallback to rectangle
     const size = 20;
     ctx.save();
     ctx.translate(this.x, this.y);
     
-    // Mini-Phoenix color scheme
-    ctx.fillStyle = '#ff6347';
-    ctx.fillRect(-size/2, -size/2, size, size);
-    
-    // Mini-Phoenix details
-    ctx.fillStyle = '#ff4500';
-    ctx.fillRect(-size/2, -size/2, size, size/3);
-    
-    // Wings animation
-    ctx.fillStyle = '#ff8c42';
-    const wingOffset = Math.sin(this.animationFrame) * 3;
-    ctx.fillRect(-size/2 - wingOffset, -size/2, size/6, size);
-    ctx.fillRect(size/2 + wingOffset, -size/2, size/6, size);
+    if (typeof miniPhoenixImg !== 'undefined' && miniPhoenixImg.complete && miniPhoenixImg.naturalWidth > 0) {
+      // Draw mini-Phoenix image
+      ctx.drawImage(miniPhoenixImg, -size/2, -size/2, size, size);
+      console.log('🐤 Drawing mini-Phoenix with image');
+    } else {
+      // 🔥 FALLBACK: Draw mini-Phoenix as colored rectangle
+      ctx.fillStyle = '#ff6347';
+      ctx.fillRect(-size/2, -size/2, size, size);
+      
+      // Mini-Phoenix details
+      ctx.fillStyle = '#ff4500';
+      ctx.fillRect(-size/2, -size/2, size, size/3);
+      
+      // Wings animation
+      ctx.fillStyle = '#ff8c42';
+      const wingOffset = Math.sin(this.animationFrame) * 3;
+      ctx.fillRect(-size/2 - wingOffset, -size/2, size/6, size);
+      ctx.fillRect(size/2 + wingOffset, -size/2, size/6, size);
+      console.log('🐤 Drawing mini-Phoenix with fallback rectangle');
+    }
     
     // Health bar
     if (this.health < this.maxHealth) {
@@ -3560,6 +3599,10 @@ let reloadButtonInterval = null;
     let discordName = localStorage.getItem("discord_name");
     let wallet = localStorage.getItem("user_wallet");
     
+    // 🚀 NEW: Setup global mouse controls for shooting anywhere on screen
+    setupGlobalMouseControls();
+    setupHeatSystemDebug();
+    
     // 🛠️ Mock fallback if testing locally
     if (!discordId) {
       discordId = "1337";
@@ -3795,7 +3838,7 @@ let reloadButtonInterval = null;
           [3, 1], [4, 1], [5, 1], [6, 1],
           [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2],
           [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3],
-          [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4],
+          [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4], [9, 4],
           [3, 5], [4, 5], [5, 5], [6, 5]
         ];
         diamondPositions.forEach(([col, row]) => {
@@ -4480,13 +4523,27 @@ let reloadButtonInterval = null;
     
     // Calculate Phoenix count based on wave difficulty
     const baseCount = phoenixWaveConfig.basePhoenixCount;
-    const difficultyMultiplier = Math.pow(phoenixWaveConfig.difficultyScaling, Math.floor(waveNumber / 10));
+    // 🔥 BALANCED: For Wave 3, use simpler scaling
+    let difficultyMultiplier = 1.0;
+    if (waveNumber >= 6) difficultyMultiplier = 1.2;  // Wave 6+
+    if (waveNumber >= 9) difficultyMultiplier = 1.4;  // Wave 9+
+    if (waveNumber >= 12) difficultyMultiplier = 1.6; // Wave 12+
+    
     const phoenixCount = Math.min(
       Math.floor(baseCount * difficultyMultiplier),
       phoenixWaveConfig.maxPhoenixPerWave
     );
     
     console.log(`🔥 Spawning Phoenix wave: ${phoenixCount} Phoenix birds`);
+    
+    // 🔥 WAVE 3 BALANCING: Special adjustments for first Phoenix wave
+    if (waveNumber === 3) {
+      console.log('🔥 WAVE 3 BALANCING: Applying beginner-friendly Phoenix settings');
+      // Force simpler formation for first wave
+      formationPattern = 'v';
+      // Reduce egg laying rate even more for first wave
+      phoenixWaveConfig.eggLayingRate = 0.1; // 10% chance for Wave 3
+    }
     
     // Clear existing Phoenix entities
     phoenixWaves = [];
@@ -4495,11 +4552,17 @@ let reloadButtonInterval = null;
     
     // Choose formation pattern for this wave
     const availablePatterns = phoenixWaveConfig.formationPatterns;
-    const formationPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+    let formationPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+    
+    // 🔥 WAVE 3 BALANCING: Force V-formation for first Phoenix wave
+    if (waveNumber === 3) {
+      formationPattern = 'v';
+      console.log('🔥 WAVE 3: Forcing V-formation for beginner-friendly experience');
+    }
     
     // Spawn Phoenix birds in formation
     for (let i = 0; i < phoenixCount; i++) {
-      const difficulty = 1 + (i * 0.2); // Each Phoenix gets progressively harder
+      const difficulty = 1 + (i * 0.1); // 🔥 BALANCED: Reduced from 0.2 to 0.1 for Wave 3
       
       // Position Phoenix birds in formation
       let x, y;
@@ -4990,6 +5053,7 @@ let reloadButtonInterval = null;
     bullets.forEach((bullet, bulletIndex) => {
       let bulletHit = false;
       
+            // 🚀 FIXED: Check bullet collisions with regular invaders
       invaders.forEach(invader => {
         // Check if invader is alive and within extended bounds (including far outside screen)
         if (invader.alive && 
@@ -5060,93 +5124,95 @@ let reloadButtonInterval = null;
           }
         }
       });
-      
-                // 🚀 NEW: Check bullet collisions with Tetris blocks
-          tetrisDangerItems.forEach((tetrisItem, tetrisIndex) => {
-            if (tetrisItem.isDestroyed) return;
+
+      // 🚀 FIXED: Check bullet collisions with Phoenix entities (moved outside Tetris check)
+      if (isPhoenixWave) {
+        // Check Phoenix bird collisions
+        phoenixWaves.forEach(phoenix => {
+          if (!phoenix.isDead && checkCollision(bullet, phoenix)) {
+            let phoenixDamage = 1;
+            if (bullet.type === 'laser') phoenixDamage = 2;
+            if (bullet.type === 'bomb') phoenixDamage = 5;
             
-            if (checkCollision(bullet, tetrisItem)) {
-              // Calculate damage based on bullet type
-              let damage = 1;
-              if (bullet.type === 'laser') damage = 2;
-              if (bullet.type === 'bomb') damage = 5;
-              
-              // Apply damage to Tetris block
-              tetrisItem.health -= damage;
-              tetrisItem.destructionProgress = 1 - (tetrisItem.health / tetrisItem.maxHealth);
-              tetrisItem.lastHitTime = Date.now();
-              
-              // Create hit effect
-              explosions.push({
-                x: tetrisItem.x + tetrisItem.width / 2,
-                y: tetrisItem.y + tetrisItem.height / 2,
-                size: 15 + damage * 2,
-                timer: 15,
-                isTetrisHit: true,
-                tetrisType: tetrisItem.type
-              });
-              
-              // 🔥 PHOENIX INVADERS: Check bullet collisions with Phoenix entities
-              if (isPhoenixWave) {
-                // Check Phoenix bird collisions
-                phoenixWaves.forEach(phoenix => {
-                  if (!phoenix.isDead && checkCollision(bullet, phoenix)) {
-                    let phoenixDamage = 1;
-                    if (bullet.type === 'laser') phoenixDamage = 2;
-                    if (bullet.type === 'bomb') phoenixDamage = 5;
-                    
-                    phoenix.takeDamage(phoenixDamage);
-                    bulletHit = true;
-                    
-                    // Create Phoenix hit effect
-                    explosions.push({
-                      x: phoenix.x,
-                      y: phoenix.y,
-                      size: 20,
-                      timer: 15,
-                      isPhoenixHit: true
-                    });
-                  }
-                });
-                
-                // Check Phoenix egg collisions
-                phoenixEggs.forEach(egg => {
-                  if (!egg.isDestroyed && checkCollision(bullet, egg)) {
-                    egg.takeDamage(1);
-                    bulletHit = true;
-                    
-                    // Create egg destruction effect
-                    explosions.push({
-                      x: egg.x,
-                      y: egg.y,
-                      size: 15,
-                      timer: 10,
-                      isEggDestroyed: true
-                    });
-                  }
-                });
-                
-                // Check mini-Phoenix collisions
-                miniPhoenixes.forEach(mini => {
-                  if (!mini.isDead && checkCollision(bullet, mini)) {
-                    let miniDamage = 1;
-                    if (bullet.type === 'laser') miniDamage = 2;
-                    if (bullet.type === 'bomb') miniDamage = 5;
-                    
-                    mini.takeDamage(miniDamage);
-                    bulletHit = true;
-                    
-                    // Create mini-Phoenix hit effect
-                    explosions.push({
-                      x: mini.x,
-                      y: mini.y,
-                      size: 15,
-                      timer: 12,
-                      isMiniPhoenixHit: true
-                    });
-                  }
-                });
-              }
+            phoenix.takeDamage(phoenixDamage);
+            bulletHit = true;
+            
+            // Create Phoenix hit effect
+            explosions.push({
+              x: phoenix.x,
+              y: phoenix.y,
+              size: 20,
+              timer: 15,
+              isPhoenixHit: true
+            });
+          }
+        });
+        
+        // Check Phoenix egg collisions
+        phoenixEggs.forEach(egg => {
+          if (!egg.isDestroyed && checkCollision(bullet, egg)) {
+            console.log('🥚 Phoenix egg hit! Position:', egg.x, egg.y);
+            egg.takeDamage(1);
+            bulletHit = true;
+            
+            // Create egg destruction effect
+            explosions.push({
+              x: egg.x,
+              y: egg.y,
+              size: 15,
+              timer: 10,
+              isEggDestroyed: true
+            });
+          }
+        });
+        
+        // Check mini-Phoenix collisions
+        miniPhoenixes.forEach(mini => {
+          if (!mini.isDead && checkCollision(bullet, mini)) {
+            console.log('🎯 Mini-Phoenix hit! Position:', mini.x, mini.y, 'Health:', mini.health);
+            let miniDamage = 1;
+            if (bullet.type === 'laser') miniDamage = 2;
+            if (bullet.type === 'bomb') miniDamage = 5;
+            
+            mini.takeDamage(miniDamage);
+            bulletHit = true;
+            
+            // Create mini-Phoenix hit effect
+            explosions.push({
+              x: mini.x,
+              y: mini.y,
+              size: 15,
+              timer: 12,
+              isMiniPhoenixHit: true
+            });
+          }
+        });
+      }
+      
+      // 🚀 FIXED: Check bullet collisions with Tetris blocks (separate from Phoenix check)
+      tetrisDangerItems.forEach((tetrisItem, tetrisIndex) => {
+        if (tetrisItem.isDestroyed) return;
+        
+        if (checkCollision(bullet, tetrisItem)) {
+          // Calculate damage based on bullet type
+          let damage = 1;
+          if (bullet.type === 'laser') damage = 2;
+          if (bullet.type === 'bomb') damage = 5;
+          
+          // Apply damage to Tetris block
+          tetrisItem.health -= damage;
+          tetrisItem.destructionProgress = 1 - (tetrisItem.health / tetrisItem.maxHealth);
+          tetrisItem.lastHitTime = Date.now();
+          
+          // Create hit effect
+          explosions.push({
+            x: tetrisItem.x + tetrisItem.width / 2,
+            y: tetrisItem.y + tetrisItem.height / 2,
+            size: 15 + damage * 2,
+            timer: 15,
+            isTetrisHit: true,
+            tetrisType: tetrisItem.type
+          });
           
           // Check if Tetris block is destroyed
           if (tetrisItem.health <= 0) {
@@ -7886,6 +7952,9 @@ let reloadButtonInterval = null;
 
     console.log('🖱️ Setting up mouse controls for canvas:', canvas);
 
+    // 🚀 REMOVED: Global mouse click handling moved to setupGlobalMouseControls() function
+    // This prevents duplicate event listeners and keeps the code organized
+
     // Enable mouse control when mouse enters canvas
     canvas.addEventListener('mouseenter', () => {
       isMouseOverCanvas = true;
@@ -7987,101 +8056,15 @@ let reloadButtonInterval = null;
       }
     });
 
-        // 🚀 NEW: Rapid-fire mouse shooting system with OVERHEAT MECHANICS!
+    // 🚀 NEW: Rapid-fire mouse shooting system with OVERHEAT MECHANICS!
     let isMouseButtonDown = false;
     let mouseRapidFireInterval = null;
     
     // Make variables globally accessible for UI display
     window.isMouseButtonDown = isMouseButtonDown;
     
-    // Mouse button down - start rapid fire
-    canvas.addEventListener('mousedown', (e) => {
-      if (e.button === 0 && !isMouseButtonDown) { // Left mouse button
-        if (!isMouseControlEnabled || !isMouseOverCanvas || isSpaceInvadersPaused) return;
-        
-        // 🔥 CHECK FOR OVERHEATING
-        if (isOverheated) {
-          console.log('🔥 Weapon is overheated! Wait for cooldown...');
-          return; // Can't shoot when overheated
-        }
-        
-        isMouseButtonDown = true;
-        window.isMouseButtonDown = true; // Update global state
-        console.log('🖱️ Left mouse button pressed - starting rapid fire!');
-        
-        // Start rapid fire immediately
-        playerShoot();
-        
-        // 🔥 CRITICAL FIX: Use unified firing rate instead of separate interval
-        // This ensures consistent heat buildup across all control methods
-        mouseRapidFireInterval = setInterval(() => {
-          if (isMouseButtonDown && !isSpaceInvadersPaused && isMouseOverCanvas) {
-            // 🔥 CRITICAL FIX: Check for overheating in mouse rapid fire
-            if (isOverheated) {
-              console.log('🔥 Mouse rapid fire stopped - weapon overheated!');
-              // Stop rapid fire when overheated
-              clearInterval(mouseRapidFireInterval);
-              mouseRapidFireInterval = null;
-              isMouseButtonDown = false;
-              window.isMouseButtonDown = false;
-              return;
-            }
-            
-            // For special weapons, set the flag to allow shooting
-            if (currentWeaponType === 'laser' || currentWeaponType === 'bomb') {
-              window.isQuickShotCall = true;
-            }
-            
-            // 🚀 ENHANCED: Add rapid fire visual feedback
-            if (currentWeaponType === 'normal') {
-              // Create small screen shake effect for rapid fire
-              // Note: screenShake function not implemented yet
-            }
-            
-            // 🔥 CRITICAL FIX: Use unified firing rate check with mouse priority
-            const currentTime = Date.now();
-            if (currentTime - lastUnifiedShotTime >= unifiedFiringRate) {
-              playerShoot(); // This will handle heat addition and firing rate
-            } else {
-              // 🔥 CRITICAL FIX: Allow mouse to override firing rate slightly for responsiveness
-              const remainingDelay = unifiedFiringRate - (currentTime - lastUnifiedShotTime);
-              if (remainingDelay <= 15) { // Allow mouse to fire if delay is very small
-                playerShoot(); // Override for mouse responsiveness
-              }
-            }
-          }
-        }, unifiedFiringRate); // Use unified firing rate instead of weapon-specific rate
-      }
-    });
-    
-    // Mouse button up - stop rapid fire
-    canvas.addEventListener('mouseup', (e) => {
-      if (e.button === 0) { // Left mouse button
-        if (isMouseButtonDown) {
-          isMouseButtonDown = false;
-          window.isMouseButtonDown = false; // Update global state
-          console.log('🖱️ Left mouse button released - stopping rapid fire');
-          
-          // Clear rapid fire interval
-          if (mouseRapidFireInterval) {
-            clearInterval(mouseRapidFireInterval);
-            mouseRapidFireInterval = null;
-          }
-        }
-      } else if (e.button === 2) { // Right mouse button
-        e.preventDefault(); // Prevent context menu
-        if (!isMouseOverCanvas || isSpaceInvadersPaused) return;
-        
-        // Cycle through weapons on right-click
-        const weapons = ['normal', 'laser', 'bomb'];
-        const currentIndex = weapons.indexOf(currentWeaponType);
-        const nextIndex = (currentIndex + 1) % weapons.length;
-        const nextWeapon = weapons[nextIndex];
-        
-        switchWeapon(nextWeapon);
-        console.log(`🖱️ Right-click: Switched to ${nextWeapon} weapon`);
-      }
-    });
+    // 🚀 REMOVED: Canvas-specific mouse click handling (now handled globally above)
+    // The global event listeners above now handle all mouse clicking for shooting
     
     // Mouse leave canvas - stop rapid fire
     canvas.addEventListener('mouseleave', () => {
@@ -8103,7 +8086,7 @@ let reloadButtonInterval = null;
       e.preventDefault(); // Prevent context menu (Save image, etc.)
     });
 
-    console.log('✅ Mouse controls setup complete');
+    console.log('✅ Mouse controls setup complete with GLOBAL shooting support');
     
     // 🔍 DEBUG: Add global debug function for troubleshooting
     window.debugMouseControl = () => {
@@ -8148,13 +8131,201 @@ let reloadButtonInterval = null;
     };
     
     window.resetHeatSystem = () => {
+      console.log('🔄 Resetting heat system...');
       weaponHeat = 0;
       isOverheated = false;
       lastOverheatTime = 0;
-      console.log('🔥 Heat system manually reset!');
-      updateAlwaysVisibleHeatDisplay();
+      console.log('✅ Heat system reset complete');
     };
     
+    console.log('🔥 Heat system debug functions available:');
+    console.log('  window.debugHeatSystem() - Show heat system state');
+    console.log('  window.testHeatSystem() - Test heat addition');
+    console.log('  window.resetHeatSystem() - Reset heat manually');
+  } // End of setupMouseControls function
+
+  // 🚀 NEW: Global mouse click handling for shooting anywhere on screen
+  function setupGlobalMouseControls() {
+    console.log('🌍 Setting up global mouse controls for shooting anywhere on screen');
+    
+    // Global mouse button down - start rapid fire (works everywhere)
+    document.addEventListener('mousedown', (e) => {
+      if (e.button === 0 && !isMouseButtonDown) { // Left mouse button
+        if (!isMouseControlEnabled || isSpaceInvadersPaused) return;
+        
+        // 🔥 CHECK FOR OVERHEATING
+        if (isOverheated) {
+          console.log('🔥 Weapon is overheated! Wait for cooldown...');
+          return; // Can't shoot when overheated
+        }
+        
+        isMouseButtonDown = true;
+        window.isMouseButtonDown = true; // Update global state
+        console.log('🖱️ Left mouse button pressed - starting rapid fire! (Global)');
+        
+        // Start rapid fire immediately
+        playerShoot();
+        
+        // 🔥 CRITICAL FIX: Use unified firing rate instead of separate interval
+        // This ensures consistent heat buildup across all control methods
+        mouseRapidFireInterval = setInterval(() => {
+          if (isMouseButtonDown && !isSpaceInvadersPaused) {
+            // 🔥 CRITICAL FIX: Check for overheating in mouse rapid fire
+            if (isOverheated) {
+              console.log('🔥 Mouse rapid fire stopped - weapon overheated!');
+              // Stop rapid fire when overheated
+              clearInterval(mouseRapidFireInterval);
+              mouseRapidFireInterval = null;
+              isMouseButtonDown = false;
+              window.isMouseButtonDown = false;
+              return;
+            }
+            
+            // For special weapons, set the flag to allow shooting
+            if (currentWeaponType === 'laser' || currentWeaponType === 'bomb') {
+              window.isQuickShotCall = true;
+            }
+            
+            // 🔥 CRITICAL FIX: Use unified firing rate check with mouse priority
+            const currentTime = Date.now();
+            if (currentTime - lastUnifiedShotTime >= unifiedFiringRate) {
+              playerShoot(); // This will handle heat addition and firing rate
+            } else {
+              // 🔥 CRITICAL FIX: Allow mouse to override firing rate slightly for responsiveness
+              const remainingDelay = unifiedFiringRate - (currentTime - lastUnifiedShotTime);
+              if (remainingDelay <= 15) { // Allow mouse to fire if delay is very small
+                playerShoot(); // Override for mouse responsiveness
+              }
+            }
+          }
+        }, unifiedFiringRate); // Use unified firing rate instead of weapon-specific rate
+      }
+    });
+
+    // Global mouse button up - stop rapid fire (works everywhere)
+    document.addEventListener('mouseup', (e) => {
+      if (e.button === 0) { // Left mouse button
+        if (isMouseButtonDown) {
+          isMouseButtonDown = false;
+          window.isMouseButtonDown = false; // Update global state
+          console.log('🖱️ Left mouse button released - stopping rapid fire (Global)');
+          
+          // Clear rapid fire interval
+          if (mouseRapidFireInterval) {
+            clearInterval(mouseRapidFireInterval);
+            mouseRapidFireInterval = null;
+          }
+        }
+      } else if (e.button === 2) { // Right mouse button
+        e.preventDefault(); // Prevent context menu
+        if (isSpaceInvadersPaused) return;
+        
+        // Cycle through weapons on right-click (works everywhere)
+        const weapons = ['normal', 'laser', 'bomb'];
+        const currentIndex = weapons.indexOf(currentWeaponType);
+        const nextIndex = (currentIndex + 1) % weapons.length;
+        const nextWeapon = weapons[nextIndex];
+        
+        switchWeapon(nextWeapon);
+        console.log(`🖱️ Right-click: Switched to ${nextWeapon} weapon (Global)`);
+      }
+    });
+
+    // 🚀 NEW: Global context menu prevention for the entire game
+    document.addEventListener('contextmenu', (e) => {
+      if (!isSpaceInvadersPaused) {
+        e.preventDefault(); // Prevent Windows context menu (Save Picture As, etc.)
+        console.log('🚫 Context menu prevented - game is active');
+      }
+    });
+
+      console.log('✅ Global mouse controls setup complete - shooting works everywhere!');
+  
+  // 🔍 DEBUG: Add Phoenix image status check
+  window.debugPhoenixImages = () => {
+    console.log('🔍 === PHOENIX IMAGE STATUS DEBUG ===');
+    console.log('🔥 Phoenix Bird Image:', {
+      exists: typeof phoenixBirdImg !== 'undefined',
+      src: phoenixBirdImg?.src,
+      complete: phoenixBirdImg?.complete,
+      naturalWidth: phoenixBirdImg?.naturalWidth,
+      naturalHeight: phoenixBirdImg?.naturalHeight,
+      readyState: phoenixBirdImg?.readyState
+    });
+    console.log('🥚 Phoenix Egg Image:', {
+      exists: typeof phoenixEggImg !== 'undefined',
+      src: phoenixEggImg?.src,
+      complete: phoenixEggImg?.complete,
+      naturalWidth: phoenixEggImg?.naturalWidth,
+      naturalHeight: phoenixEggImg?.naturalHeight,
+      readyState: phoenixEggImg?.readyState
+    });
+    console.log('🐤 Mini Phoenix Image:', {
+      exists: typeof miniPhoenixImg !== 'undefined',
+      src: miniPhoenixImg?.src,
+      complete: miniPhoenixImg?.complete,
+      naturalWidth: miniPhoenixImg?.naturalWidth,
+      naturalHeight: miniPhoenixImg?.naturalHeight,
+      readyState: miniPhoenixImg?.readyState
+    });
+    console.log('🔍 === END PHOENIX IMAGE DEBUG ===');
+  };
+  
+  console.log('🔍 Phoenix image debug function available: window.debugPhoenixImages()');
+  
+  // 🔍 DEBUG: Add Phoenix entity status check
+  window.debugPhoenixEntities = () => {
+    console.log('🔍 === PHOENIX ENTITY STATUS DEBUG ===');
+    console.log('🔥 Phoenix Birds:', phoenixWaves.length, 'entities');
+    phoenixWaves.forEach((phoenix, index) => {
+      console.log(`  ${index}: Position (${phoenix.x}, ${phoenix.y}), Health: ${phoenix.health}/${phoenix.maxHealth}, Dead: ${phoenix.isDead}`);
+    });
+    console.log('🥚 Phoenix Eggs:', phoenixEggs.length, 'entities');
+    phoenixEggs.forEach((egg, index) => {
+      console.log(`  ${index}: Position (${egg.x}, ${egg.y}), Destroyed: ${egg.isDestroyed}, Hatch Timer: ${egg.hatchTimer}`);
+    });
+    console.log('🐤 Mini Phoenix:', miniPhoenixes.length, 'entities');
+    miniPhoenixes.forEach((mini, index) => {
+      console.log(`  ${index}: Position (${mini.x}, ${mini.y}), Health: ${mini.health}/${mini.maxHealth}, Dead: ${mini.isDead}`);
+    });
+    console.log('🔍 === END PHOENIX ENTITY DEBUG ===');
+  };
+  
+  console.log('🔍 Phoenix entity debug function available: window.debugPhoenixEntities()');
+  
+  // 🔍 DEBUG: Add collision detection test function
+  window.testPhoenixCollision = () => {
+    console.log('🔍 === PHOENIX COLLISION TEST ===');
+    
+    // Test with a sample bullet
+    const testBullet = { x: 100, y: 100, width: 4, height: 10 };
+    
+    if (miniPhoenixes.length > 0) {
+      const mini = miniPhoenixes[0];
+      console.log('🐤 Testing collision with mini-Phoenix:', {
+        bullet: { x: testBullet.x, y: testBullet.y, width: testBullet.width, height: testBullet.height },
+        mini: { x: mini.x, y: mini.y, width: mini.width, height: mini.height },
+        collision: checkCollision(testBullet, mini)
+      });
+    }
+    
+    if (phoenixEggs.length > 0) {
+      const egg = phoenixEggs[0];
+      console.log('🥚 Testing collision with Phoenix egg:', {
+        bullet: { x: testBullet.x, y: testBullet.y, width: testBullet.width, height: testBullet.height },
+        egg: { x: egg.x, y: egg.y, width: egg.width, height: egg.height },
+        collision: checkCollision(testBullet, egg)
+      });
+    }
+    
+    console.log('🔍 === END COLLISION TEST ===');
+  };
+  
+  console.log('🔍 Phoenix collision test function available: window.testPhoenixCollision()');
+}
+
+  // 🚀 NEW: Enhanced heat system debug functions
+  function setupHeatSystemDebug() {
     window.setUnifiedFiringRate = (rateMs) => {
       unifiedFiringRate = Math.max(50, Math.min(500, rateMs)); // Limit between 50ms and 500ms
       console.log(`⚡ Unified firing rate set to ${unifiedFiringRate}ms (${(1000/unifiedFiringRate).toFixed(1)} shots/sec)`);
@@ -8182,16 +8353,13 @@ let reloadButtonInterval = null;
       console.log('🔥 === END TEST ===');
     };
     
-    console.log('🔥 Heat debug functions available:');
+    console.log('🔥 Enhanced heat debug functions available:');
     console.log('  window.debugHeatSystem() - Show heat status');
     console.log('  window.testHeatSystem() - Test heat addition');
     console.log('  window.resetHeatSystem() - Reset heat manually');
     console.log('  window.setUnifiedFiringRate(rateMs) - Set firing rate (50-500ms)');
     console.log('  window.testFiringRate() - Test firing rate system');
     console.log('  window.testOverheatSystem() - Test overheat system');
-    console.log('  window.debugHeatSystem() - Show heat status');
-    console.log('  window.testHeatSystem() - Test heat addition');
-    console.log('  window.resetHeatSystem() - Reset heat manually');
   }
 
   // 🖱️ NEW: Notification function for mouse control feedback
