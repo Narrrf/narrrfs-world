@@ -353,7 +353,6 @@ require_once 'discord-invite.php';
           🚀 Load My Missions Status
         </button>
         <p class="text-xs text-gray-400 mt-2 italic">Click to load your 5-game missions and achievements</p>
-        <p class="text-xs text-blue-400 mt-1">💡 Make sure you're logged in with Discord to see your game stats!</p>
       </div>
       
       <!-- 🏆 Overall Progress -->
@@ -2615,7 +2614,7 @@ async function loadGameMissions() {
     }
     
     if (!discordId) {
-      throw new Error('Discord ID not found. Please log in with Discord first by clicking the "Login with Discord" button above.');
+      throw new Error('Discord ID not found. Please log in with Discord first.');
     }
     
     console.log('🎮 Loading missions for Discord ID:', discordId);
