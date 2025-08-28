@@ -60,15 +60,58 @@ error_log("Processing request for Discord ID: " . $discordId);
 try {
     // Connect to database using the correct path
     try {
-        // Use environment-aware database path
-        if (file_exists('/var/www/html/db/narrrf_world.sqlite')) {
-            // Production environment (Render)
-            $db = new PDO('sqlite:/var/www/html/db/narrrf_world.sqlite');
+        // Use environment-aware database path with Windows detection
+        $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+        
+        if ($isWindows) {
+            // Windows environment - prioritize local database
+            if (file_exists(__DIR__ . '/../db/narrrf_world.sqlite')) {
+                $db = new PDO('sqlite:' . __DIR__ . '/../db/narrrf_world.sqlite');
+                error_log("🏠 Connected to local database (Windows): " . __DIR__ . '/../db/narrrf_world.sqlite');
+            } else {
+                throw new Exception('Local database not found on Windows: ' . __DIR__ . '/../db/narrrf_world.sqlite');
+            }
         } else {
-            // Local environment (XAMPP)
-            $db = new PDO('sqlite:' . __DIR__ . '/../db/narrrf_world.sqlite');
+            // Linux/Unix environment - check production first
+            if (file_exists('/var/www/html/db/narrrf_world.sqlite')) {
+                $db = new PDO('sqlite:/var/www/html/db/narrrf_world.sqlite');
+                error_log("🌐 Connected to production database: /var/www/html/db/narrrf_world.sqlite");
+            } elseif (file_exists(__DIR__ . '/../db/narrrf_world.sqlite')) {
+                $db = new PDO('sqlite:' . __DIR__ . '/../db/narrrf_world.sqlite');
+                error_log("🏠 Connected to local database: " . __DIR__ . '/../db/narrrf_world.sqlite');
+            } else {
+                // Fallback: try to find the database
+                $possiblePaths = [
+                    __DIR__ . '/../db/narrrf_world.sqlite',
+                    __DIR__ . '/../../db/narrrf_world.sqlite',
+                    'db/narrrf_world.sqlite',
+                    '../db/narrrf_world.sqlite'
+                ];
+                
+                $dbPath = null;
+                foreach ($possiblePaths as $path) {
+                    if (file_exists($path)) {
+                        $dbPath = $path;
+                        break;
+                    }
+                }
+                
+                if ($dbPath) {
+                    $db = new PDO('sqlite:' . $dbPath);
+                    error_log("🔍 Connected to database via fallback path: " . $dbPath);
+                } else {
+                    throw new Exception('Database file not found. Tried paths: ' . implode(', ', $possiblePaths));
+                }
+            }
         }
+        
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        
+        // Test database connection with a simple query
+        $testStmt = $db->query("SELECT COUNT(*) as table_count FROM sqlite_master WHERE type='table'");
+        $testResult = $testStmt->fetch(PDO::FETCH_ASSOC);
+        error_log("✅ Database connection test: " . $testResult['table_count'] . " tables found");
+        
     } catch (Exception $e) {
         throw new Exception('Database connection failed: ' . $e->getMessage());
     }
@@ -163,6 +206,9 @@ try {
             $response['snake']['total_score'] = (int)$snakeData['total_score'];
             $response['snake']['last_played'] = $snakeData['last_played'];
             $response['snake']['dspoinc_earned'] = (int)$snakeData['total_score'] * 10; // DSPOINC conversion
+            error_log("✅ Snake stats found for user $discordId: " . $snakeData['total_games'] . " games, total score: " . $snakeData['total_score']);
+        } else {
+            error_log("❌ No snake stats found for user $discordId");
         }
     } catch (Exception $e) {
         error_log("Snake query error: " . $e->getMessage());
@@ -275,7 +321,7 @@ try {
             $response['cheese_hunt']['dspoinc_earned'] = 0;
         }
 
-    // 5. DISCORD CHEESE RACE STATS (using user_id from tbl_race_participants)
+    // 5. DISCORD CHEESE RACE STATS (using discord_id from tbl_race_participants)
     try {
         $stmt = $db->prepare("
             SELECT 
@@ -295,6 +341,9 @@ try {
             $response['discord_race']['podiums'] = (int)$raceData['podiums'];
             $response['discord_race']['best_position'] = $raceData['best_position'] ? (int)$raceData['best_position'] : null;
             $response['discord_race']['dspoinc_earned'] = (int)$raceData['total_races'] * 100; // DSPOINC conversion
+            error_log("✅ Discord Race stats found for user $discordId: " . $raceData['total_races'] . " races");
+        } else {
+            error_log("❌ No Discord Race stats found for user $discordId");
         }
     } catch (Exception $e) {
         error_log("Discord Race query error: " . $e->getMessage());
@@ -331,6 +380,16 @@ try {
 
     // Log the final response for debugging
     error_log("Final response for user $discordId: " . json_encode($response));
+    
+    // Summary log for all games
+    error_log("🎮 MISSION STATUS SUMMARY for user $discordId:");
+    error_log("  Tetris: " . $response['tetris']['total_games'] . " games, " . $response['tetris']['dspoinc_earned'] . " DSPOINC");
+    error_log("  Snake: " . $response['snake']['total_games'] . " games, " . $response['snake']['dspoinc_earned'] . " DSPOINC");
+    error_log("  Space Invaders: " . $response['space_invaders']['total_games'] . " games, " . $response['space_invaders']['dspoinc_earned'] . " DSPOINC");
+    error_log("  Cheese Hunt: " . $response['cheese_hunt']['total_clicks'] . " clicks, " . $response['cheese_hunt']['dspoinc_earned'] . " DSPOINC");
+    error_log("  Discord Race: " . $response['discord_race']['total_races'] . " races, " . $response['discord_race']['dspoinc_earned'] . " DSPOINC");
+    error_log("  Total Games Played: " . $response['overall']['games_played'] . "/5");
+    error_log("  Total DSPOINC: " . $response['overall']['total_dspoinc']);
     
     // Additional debugging for Cheese Hunt
     if (isset($response['cheese_hunt'])) {
