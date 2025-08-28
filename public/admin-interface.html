@@ -2572,12 +2572,14 @@ require_once 'discord-invite.php';
         <button onclick="testGameManagementAPI()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded">🔧 Test API Endpoint</button>
         <button onclick="testDatabaseConnection()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">🗄️ Test Database</button>
         <button onclick="debugAllGameTabs()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">🔍 Debug All Tabs</button>
+        <button onclick="debugTabVisibility()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">🧪 Debug Tab Visibility</button>
+        <button onclick="forceShowOverviewTab()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">👁️ Force Show Overview</button>
       </div>
 
 
 
       <!-- Overview Dashboard Tab -->
-      <div id="overviewTab" class="game-tab-content">
+      <div id="overviewTab" class="game-tab-content" style="display: block;">
         <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
           <h3 class="text-lg font-semibold mb-3">📊 System Overview</h3>
           
@@ -5401,10 +5403,23 @@ require_once 'discord-invite.php';
             loadCheeseHuntData();
             loadDiscordRaceData();
             
-            // Switch to overview tab by default
-            setTimeout(() => {
-              switchGameTab('overview');
-            }, 100);
+                    // Switch to overview tab by default
+        setTimeout(() => {
+          console.log('🔄 Switching to overview tab by default...');
+          switchGameTab('overview');
+          
+          // Force show the overview tab
+          setTimeout(() => {
+            const overviewTab = document.getElementById('overviewTab');
+            if (overviewTab) {
+              overviewTab.style.display = 'block';
+              overviewTab.style.visibility = 'visible';
+              overviewTab.style.opacity = '1';
+              overviewTab.classList.add('show-tab');
+              console.log('✅ Overview tab forced visible after switch');
+            }
+          }, 200);
+        }, 100);
               
               // Display any pending data that was loaded while tab was hidden
               displayPendingGameData();
@@ -11351,6 +11366,18 @@ function updateGameTabContent(gameType, gameData) {
       
       addLog('🔄 Loading game management data...');
       
+      // Show overview tab by default
+      setTimeout(() => {
+        const overviewTab = document.getElementById('overviewTab');
+        if (overviewTab) {
+          overviewTab.style.display = 'block';
+          overviewTab.style.visibility = 'visible';
+          overviewTab.style.opacity = '1';
+          overviewTab.classList.add('show-tab');
+          console.log('✅ Overview tab made visible by default');
+        }
+      }, 100);
+      
       // Load overview dashboard by default
       loadGameOverview();
       
@@ -11414,12 +11441,24 @@ function updateGameTabContent(gameType, gameData) {
         selectedTab.classList.remove('hidden');
         selectedTab.classList.add('show-tab');
         selectedTab.style.display = 'block';
+        selectedTab.style.visibility = 'visible';
+        selectedTab.style.opacity = '1';
         console.log('✅ Showing tab:', selectedTabId);
         console.log('🔍 Tab display style after setting:', selectedTab.style.display);
         console.log('🔍 Tab computed style:', window.getComputedStyle(selectedTab).display);
         
         // Force a reflow to ensure the tab is properly displayed
         selectedTab.offsetHeight;
+        
+        // Double-check the display is set correctly
+        setTimeout(() => {
+          if (selectedTab.style.display !== 'block') {
+            console.log('🚨 Tab display not set correctly, forcing...');
+            selectedTab.style.display = 'block !important';
+            selectedTab.style.visibility = 'visible !important';
+            selectedTab.style.opacity = '1 !important';
+          }
+        }, 50);
       } else {
         console.error('❌ Tab not found:', selectedTabId);
       }
@@ -11833,7 +11872,7 @@ function updateGameTabContent(gameType, gameData) {
           debugDisplay.innerHTML = `
             <strong>🔍 DEBUG DATA:</strong><br>
             Total Scores: ${totalScores}<br>
-            Unique Players: ${uniquePlayers}<br>
+            Unique Players: ${tetrisData.unique_players || 0}<br>
             Max Score: ${maxScore}<br>
             Avg Score: ${avgScore}<br>
             Raw Data: ${JSON.stringify(tetrisData).substring(0, 300)}...
@@ -18188,11 +18227,48 @@ function updateGameTabContent(gameType, gameData) {
       /* Ensure tabs are visible when explicitly shown */
       .game-tab-content.show-tab {
         display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       
       /* Override any conflicting display rules */
       .game-tab-content[style*="display: block"] {
         display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      /* Force visibility for active tabs */
+      .game-tab-content.show-tab,
+      .game-tab-content[style*="display: block"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+      }
+      
+      /* CRITICAL: Override any CSS that might hide game tab content */
+      #overviewTab,
+      #tetrisTab,
+      #snakeTab,
+      #spaceInvadersTab,
+      #cheeseHuntTab,
+      #discordRaceTab {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      
+      /* Ensure game tab content is always visible when parent is shown */
+      #gamesTab .game-tab-content {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
     `;
     document.head.appendChild(style);
@@ -20104,9 +20180,9 @@ function testDatabaseConnection() {
       const activePlayersEl = document.getElementById('activePlayersDisplay');
       const systemHealthEl = document.getElementById('systemHealthDisplay');
       
-      if (currentSeasonEl) currentSeasonEl.textContent = seasonData.season_name || 'Season 2';
-      if (totalGamesEl) totalGamesEl.textContent = seasonData.total_games || '0';
-      if (activePlayersEl) activePlayersEl.textContent = seasonData.active_players || '0';
+      if (currentSeasonEl) currentSeasonEl.textContent = seasonData?.season_name || 'Season 2';
+      if (totalGamesEl) totalGamesEl.textContent = seasonData?.total_games || '0';
+      if (activePlayersEl) activePlayersEl.textContent = seasonData?.active_players || '0';
       if (systemHealthEl) systemHealthEl.textContent = '🟢 100%';
       
       // Update overview tab season display
@@ -20117,9 +20193,9 @@ function testDatabaseConnection() {
       const overviewSeasonDates = document.getElementById('overviewSeasonDates');
       const overviewSeasonTimeLeft = document.getElementById('overviewSeasonTimeLeft');
       
-      if (overviewSeasonName) overviewSeasonName.textContent = seasonData.season_name || 'Season 2';
-      if (overviewSeasonGames) overviewSeasonGames.textContent = seasonData.total_games || '0';
-      if (overviewSeasonPlayers) overviewSeasonPlayers.textContent = seasonData.active_players || '0';
+      if (overviewSeasonName) overviewSeasonName.textContent = seasonData?.season_name || 'Season 2';
+      if (overviewSeasonGames) overviewSeasonGames.textContent = seasonData?.total_games || '0';
+      if (overviewSeasonPlayers) overviewSeasonPlayers.textContent = seasonData?.active_players || '0';
       if (overviewSeasonProgress) overviewSeasonProgress.textContent = '75%'; // Calculate based on dates
       if (overviewSeasonDates) overviewSeasonDates.textContent = 'Aug 1 - Dec 31, 2025';
       if (overviewSeasonTimeLeft) overviewSeasonTimeLeft.textContent = '120 days left';
@@ -20591,6 +20667,87 @@ function testDatabaseConnection() {
       }, 200);
     }
     
+    // 👁️ Force show overview tab function
+    function forceShowOverviewTab() {
+      console.log('👁️ Force showing overview tab...');
+      
+      const overviewTab = document.getElementById('overviewTab');
+      if (overviewTab) {
+        // Force all display properties
+        overviewTab.style.display = 'block';
+        overviewTab.style.visibility = 'visible';
+        overviewTab.style.opacity = '1';
+        overviewTab.style.position = 'relative';
+        overviewTab.style.zIndex = '1';
+        overviewTab.classList.add('show-tab');
+        
+        // Remove any conflicting classes
+        overviewTab.classList.remove('hidden');
+        
+        console.log('✅ Overview tab forced visible with all properties');
+        console.log('🔍 Tab display style:', overviewTab.style.display);
+        console.log('🔍 Tab computed style:', window.getComputedStyle(overviewTab).display);
+        
+        // Force a reflow
+        overviewTab.offsetHeight;
+        
+        addLog('👁️ Overview tab forced visible - check if content is now showing');
+        
+        // Check if content is loaded
+        const contentElements = overviewTab.querySelectorAll('[id*="totalActivePlayers"], [id*="totalGamesPlayed"], [id*="systemStatus"]');
+        console.log('🔍 Found', contentElements.length, 'content elements in overview tab');
+        
+        if (contentElements.length > 0) {
+          contentElements.forEach(el => {
+            console.log('📊 Content element:', el.id, 'Value:', el.textContent);
+          });
+        } else {
+          console.log('⚠️ No content elements found in overview tab');
+        }
+      } else {
+        console.error('❌ Overview tab not found!');
+        addLog('❌ Overview tab element not found in DOM');
+      }
+    }
+
+    // 🧪 DEBUG: Test tab visibility function
+    function debugTabVisibility() {
+      console.log('🧪 DEBUG: Testing tab visibility...');
+      
+      const allTabs = document.querySelectorAll('.game-tab-content');
+      console.log('🔍 Found', allTabs.length, 'game tab content elements:');
+      
+      allTabs.forEach((tab, index) => {
+        const computedStyle = window.getComputedStyle(tab);
+        console.log(`Tab ${index + 1}:`, {
+          id: tab.id,
+          display: tab.style.display,
+          computedDisplay: computedStyle.display,
+          visibility: tab.style.visibility,
+          computedVisibility: computedStyle.visibility,
+          opacity: tab.style.opacity,
+          computedOpacity: computedStyle.opacity,
+          classes: tab.className,
+          hidden: tab.hidden
+        });
+      });
+      
+      // Test tab switching
+      console.log('🧪 Testing tab switching...');
+      switchGameTab('overview');
+      
+      setTimeout(() => {
+        const overviewTab = document.getElementById('overviewTab');
+        if (overviewTab) {
+          console.log('🔍 Overview tab after switch:', {
+            display: overviewTab.style.display,
+            computedDisplay: window.getComputedStyle(overviewTab).display,
+            classes: overviewTab.className
+          });
+        }
+      }, 100);
+    }
+
     // 🚨 CRITICAL FIX: Emergency unlock function for testing
     function addEmergencyUnlockButton() {
       console.log('🚨 Adding emergency unlock button...');
