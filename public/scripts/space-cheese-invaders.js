@@ -54,6 +54,10 @@ const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost/
 console.log('🌍 Space Invaders Environment detected:', isProduction ? 'Production' : 'Local');
 console.log('🔗 Space Invaders API Base URL:', API_BASE_URL);
 
+// 📱 Mobile Detection for Control Priority
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+console.log('📱 Device type detected:', isMobileDevice ? 'Mobile' : 'Desktop');
+
 // 🚫 Full page scroll prevention (same as other games)
 window.addEventListener("touchmove", function(e) {
   if (e.target.closest("#space-invaders-canvas")) {
@@ -87,15 +91,16 @@ let phoenixEggs = [];
 let miniPhoenixes = [];
 let isPhoenixWave = false;
 let phoenixWaveConfig = {
-  waveFrequency: 3,        // Every 3rd wave is Phoenix
-  basePhoenixCount: 3,     // 🔥 BALANCED: Reduced from 5 to 3 for Wave 3
-  difficultyScaling: 1.1,  // 🔥 BALANCED: Reduced from 1.2 to 1.1 for Wave 3
-  eggLayingRate: 0.15,     // 🔥 BALANCED: Reduced from 0.3 to 0.15 (15% chance)
-  formationPatterns: ['v', 'diamond', 'spiral'], // 🔥 BALANCED: Removed complex patterns for Wave 3
-  maxPhoenixPerWave: 8,    // 🔥 BALANCED: Reduced from 20 to 8 for Wave 3
-  eggHatchTime: 450,       // 🔥 BALANCED: Increased from 300 to 450 (more time before hatching)
-  miniPhoenixHealth: 25,   // 🔥 BALANCED: Reduced from 50 to 25 for Wave 3
-  phoenixHealth: 80        // 🔥 NEW: Base Phoenix health for Wave 3
+  // 🎯 PROFESSIONAL GAME BALANCE: Strategic Phoenix wave placement
+  waveFrequency: 5,        // Every 5th wave (3, 8, 13, 18, 23...)
+  basePhoenixCount: 3,     // 🔥 BALANCED: 3 Phoenix for early waves
+  difficultyScaling: 1.05, // 🔥 BALANCED: Gentle scaling for smooth progression
+  eggLayingRate: 0.12,     // 🔥 BALANCED: 12% chance (reduced for balance)
+  formationPatterns: ['v', 'diamond', 'spiral'], // 🔥 BALANCED: Progressive pattern unlocking
+  maxPhoenixPerWave: 12,   // 🔥 BALANCED: Increased for late-game waves
+  eggHatchTime: 500,       // 🔥 BALANCED: 5 seconds before hatching
+  miniPhoenixHealth: 15,   // 🔥 BALANCED: 15 HP for mini-Phoenixes
+  phoenixHealth: 30        // 🔥 BALANCED: 30 HP base (scales with waves)
 };
 
 // 🔥 PHOENIX CONFIGURATION LOADING - NEW!
@@ -3708,6 +3713,12 @@ let reloadButtonInterval = null;
     setupGlobalMouseControls();
     setupHeatSystemDebug();
     
+    // 🚀 CRITICAL FIX: Automatically disable mouse controls on mobile devices
+    if (isMobileDevice) {
+      console.log('📱 Mobile device detected - disabling mouse controls for touch priority');
+      isMouseControlEnabled = false;
+    }
+    
     // 🛠️ Mock fallback if testing locally
     if (!discordId) {
       discordId = "1337";
@@ -4232,6 +4243,9 @@ let reloadButtonInterval = null;
   if (isPhoenixWave) {
     updatePhoenixEntities();
     
+    // 🔥 NEW: Check Phoenix-Player collisions during Phoenix waves
+    checkPhoenixPlayerCollisions();
+    
     // 🔥 EXCLUSIVE MODE: No regular invader updates during Phoenix waves
     return; // Skip all regular invader logic
   }
@@ -4265,6 +4279,9 @@ let reloadButtonInterval = null;
       // 🔥 PHOENIX INVADERS: Update Phoenix entities during attack
       if (isPhoenixWave) {
         updatePhoenixEntities();
+        
+        // 🔥 NEW: Check Phoenix-Player collisions during Phoenix waves
+        checkPhoenixPlayerCollisions();
         
         // 🔥 EXCLUSIVE MODE: No regular invader updates during Phoenix waves
         return; // Skip all regular invader logic
@@ -4626,13 +4643,74 @@ let reloadButtonInterval = null;
     // 🔥 PHOENIX WAVE ANNOUNCEMENT - NEW!
     showNotification('🔥 PHOENIX INVADERS WAVE! 🔥', 'phoenix');
     
-    // Calculate Phoenix count based on wave difficulty
+    // 🎯 PROFESSIONAL DIFFICULTY SCALING: Smooth progression to wave 1000+
     const baseCount = phoenixWaveConfig.basePhoenixCount;
-    // 🔥 BALANCED: For Wave 3, use simpler scaling
+    
+    // 🔥 BALANCED: Progressive difficulty scaling for professional game balance
     let difficultyMultiplier = 1.0;
-    if (waveNumber >= 6) difficultyMultiplier = 1.2;  // Wave 6+
-    if (waveNumber >= 9) difficultyMultiplier = 1.4;  // Wave 9+
-    if (waveNumber >= 12) difficultyMultiplier = 1.6; // Wave 12+
+    let phoenixHealth = phoenixWaveConfig.phoenixHealth;
+    let miniHealth = phoenixWaveConfig.miniPhoenixHealth;
+    
+    // 🎯 EARLY GAME (Waves 1-25): Gentle learning curve
+    if (waveNumber >= 8) difficultyMultiplier = 1.1;   // Wave 8+
+    if (waveNumber >= 13) difficultyMultiplier = 1.2;  // Wave 13+
+    if (waveNumber >= 18) difficultyMultiplier = 1.3;  // Wave 18+
+    if (waveNumber >= 23) difficultyMultiplier = 1.4;  // Wave 23+
+    
+    // 🎯 MID GAME (Waves 25-100): Steady challenge increase
+    if (waveNumber >= 28) difficultyMultiplier = 1.5;  // Wave 28+
+    if (waveNumber >= 33) difficultyMultiplier = 1.6;  // Wave 33+
+    if (waveNumber >= 38) difficultyMultiplier = 1.7;  // Wave 38+
+    if (waveNumber >= 43) difficultyMultiplier = 1.8;  // Wave 43+
+    if (waveNumber >= 48) difficultyMultiplier = 1.9;  // Wave 48+
+    if (waveNumber >= 53) difficultyMultiplier = 2.0;  // Wave 53+
+    if (waveNumber >= 58) difficultyMultiplier = 2.1;  // Wave 58+
+    if (waveNumber >= 63) difficultyMultiplier = 2.2;  // Wave 63+
+    if (waveNumber >= 68) difficultyMultiplier = 2.3;  // Wave 68+
+    if (waveNumber >= 73) difficultyMultiplier = 2.4;  // Wave 73+
+    if (waveNumber >= 78) difficultyMultiplier = 2.5;  // Wave 78+
+    if (waveNumber >= 83) difficultyMultiplier = 2.6;  // Wave 83+
+    if (waveNumber >= 88) difficultyMultiplier = 2.7;  // Wave 88+
+    if (waveNumber >= 93) difficultyMultiplier = 2.8;  // Wave 93+
+    if (waveNumber >= 98) difficultyMultiplier = 2.9;  // Wave 98+
+    
+    // 🎯 LATE GAME (Waves 100-500): Expert challenge
+    if (waveNumber >= 103) difficultyMultiplier = 3.0;  // Wave 103+
+    if (waveNumber >= 108) difficultyMultiplier = 3.2;  // Wave 108+
+    if (waveNumber >= 113) difficultyMultiplier = 3.4;  // Wave 113+
+    if (waveNumber >= 118) difficultyMultiplier = 3.6;  // Wave 118+
+    if (waveNumber >= 123) difficultyMultiplier = 3.8;  // Wave 123+
+    if (waveNumber >= 128) difficultyMultiplier = 4.0;  // Wave 128+
+    if (waveNumber >= 133) difficultyMultiplier = 4.2;  // Wave 133+
+    if (waveNumber >= 138) difficultyMultiplier = 4.4;  // Wave 138+
+    if (waveNumber >= 143) difficultyMultiplier = 4.6;  // Wave 143+
+    if (waveNumber >= 148) difficultyMultiplier = 4.8;  // Wave 148+
+    if (waveNumber >= 153) difficultyMultiplier = 5.0;  // Wave 153+
+    if (waveNumber >= 158) difficultyMultiplier = 5.2;  // Wave 158+
+    if (waveNumber >= 163) difficultyMultiplier = 5.4;  // Wave 163+
+    if (waveNumber >= 168) difficultyMultiplier = 5.6;  // Wave 168+
+    if (waveNumber >= 173) difficultyMultiplier = 5.8;  // Wave 173+
+    if (waveNumber >= 178) difficultyMultiplier = 6.0;  // Wave 178+
+    if (waveNumber >= 183) difficultyMultiplier = 6.2;  // Wave 183+
+    if (waveNumber >= 188) difficultyMultiplier = 6.4;  // Wave 188+
+    if (waveNumber >= 193) difficultyMultiplier = 6.6;  // Wave 193+
+    if (waveNumber >= 198) difficultyMultiplier = 6.8;  // Wave 198+
+    
+    // 🎯 ENDGAME (Waves 200-1000+): Legendary challenge
+    if (waveNumber >= 203) difficultyMultiplier = 7.0;  // Wave 203+
+    if (waveNumber >= 250) difficultyMultiplier = 8.0;  // Wave 250+
+    if (waveNumber >= 300) difficultyMultiplier = 9.0;  // Wave 300+
+    if (waveNumber >= 400) difficultyMultiplier = 10.0; // Wave 400+
+    if (waveNumber >= 500) difficultyMultiplier = 12.0; // Wave 500+
+    if (waveNumber >= 600) difficultyMultiplier = 14.0; // Wave 600+
+    if (waveNumber >= 700) difficultyMultiplier = 16.0; // Wave 700+
+    if (waveNumber >= 800) difficultyMultiplier = 18.0; // Wave 800+
+    if (waveNumber >= 900) difficultyMultiplier = 20.0; // Wave 900+
+    if (waveNumber >= 1000) difficultyMultiplier = 25.0; // Wave 1000+ (Legendary)
+    
+    // 🔥 HEALTH SCALING: Phoenix health increases with difficulty
+    phoenixHealth = Math.floor(phoenixWaveConfig.phoenixHealth * (1 + (difficultyMultiplier - 1) * 0.3));
+    miniHealth = Math.floor(phoenixWaveConfig.miniPhoenixHealth * (1 + (difficultyMultiplier - 1) * 0.2));
     
     const phoenixCount = Math.min(
       Math.floor(baseCount * difficultyMultiplier),
@@ -4665,12 +4743,12 @@ let reloadButtonInterval = null;
       console.log('🔥 WAVE 3: Forcing V-formation for beginner-friendly experience');
     }
     
-    // Spawn Phoenix birds in formation
-    for (let i = 0; i < phoenixCount; i++) {
-      const difficulty = 1 + (i * 0.1); // 🔥 BALANCED: Reduced from 0.2 to 0.1 for Wave 3
-      
-      // Position Phoenix birds in formation
-      let x, y;
+          // Spawn Phoenix birds in formation
+      for (let i = 0; i < phoenixCount; i++) {
+        const individualDifficulty = 1 + (i * 0.05); // 🔥 BALANCED: Gentle individual scaling
+        
+        // Position Phoenix birds in formation
+        let x, y;
       
       // 🔥 CRITICAL FIX: Get canvas dimensions safely
       const canvas = document.getElementById('space-invaders-canvas');
@@ -4735,8 +4813,12 @@ let reloadButtonInterval = null;
       
       console.log(`🔥 Phoenix ${i} positioned at: x=${Math.round(x)}, y=${Math.round(y)}`);
       
-      // Create Phoenix bird
-      const phoenix = new PhoenixBird(x, y, formationPattern, difficulty);
+      // Create Phoenix bird with calculated difficulty and scaled health
+      const phoenix = new PhoenixBird(x, y, formationPattern, individualDifficulty);
+      phoenix.health = Math.floor(phoenixHealth * individualDifficulty);
+      phoenix.maxHealth = phoenix.health;
+      phoenix.damage = Math.max(1, Math.floor(difficultyMultiplier * 0.5)); // Damage scales with difficulty
+      
       phoenixWaves.push(phoenix);
     }
     
@@ -7258,7 +7340,8 @@ let reloadButtonInterval = null;
 
   // 🖱️ GLOBAL MOUSE TRACKING: Handle mouse movement for ship positioning (works everywhere!)
   function updateMouseMovement() {
-    if (!isMouseControlEnabled || isSpaceInvadersPaused) {
+    // 🚀 CRITICAL FIX: Disable mouse controls when mobile touch is active OR on mobile devices
+    if (!isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isMobileDevice) {
       return;
     }
     
@@ -8787,14 +8870,214 @@ window.checkBossStatus = function() {
     console.log('Boss name:', boss.name);
     console.log('Boss health:', boss.health, '/', boss.maxHealth);
     console.log('Boss defeated:', bossDefeated);
-    console.log('Boss phase:', bossPhase);
-    console.log('Game phase:', gamePhase);
-    console.log('Wave number:', waveNumber);
-    console.log('Boss attack pattern:', boss.attackPattern || 'undefined');
-    console.log('Boss damage:', boss.bulletDamage);
-    console.log('Boss speed:', boss.bulletSpeed);
   }
-  return boss;
+};
+
+// 📱 CRITICAL TEST: Mobile control debugging
+window.testMobileControls = function() {
+  console.log('📱 MOBILE CONTROLS TEST...');
+  
+  // Check if mobile controls are enabled
+  console.log('📱 Mobile controls status:', {
+    isTouching: isTouching,
+    touchStartX: touchStartX,
+    touchStartY: touchStartY,
+    touchStartTime: touchStartTime
+  });
+  
+  // Check if canvas exists
+  const canvas = document.getElementById('space-invaders-canvas');
+  if (canvas) {
+    console.log('✅ Canvas found:', canvas.id);
+    console.log('📱 Canvas dimensions:', canvas.width, 'x', canvas.height);
+    console.log('📱 Canvas position:', canvas.getBoundingClientRect());
+  } else {
+    console.error('❌ Canvas not found!');
+  }
+  
+  // Check player ship position
+  if (playerShip) {
+    console.log('📱 Player ship position:', {
+      x: playerShip.x,
+      y: playerShip.y,
+      width: playerShip.width,
+      height: playerShip.height
+    });
+  } else {
+    console.error('❌ Player ship not found!');
+  }
+  
+  // Check if touch event listeners are active
+  console.log('📱 Touch event listeners status:', {
+    touchstart: document.addEventListener.toString().includes('touchstart'),
+    touchmove: document.addEventListener.toString().includes('touchmove'),
+    touchend: document.addEventListener.toString().includes('touchend')
+  });
+  
+  // Check control conflicts
+  console.log('🚨 CONTROL CONFLICT CHECK:');
+  console.log('   - isMobileDevice:', isMobileDevice);
+  console.log('   - isMouseControlEnabled:', isMouseControlEnabled);
+  console.log('   - isTouching:', isTouching);
+  console.log('   - Mouse controls disabled:', !isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isMobileDevice);
+  
+  // Force enable mobile controls
+  console.log('📱 Forcing mobile controls to enable...');
+  enableGlobalSpaceInvadersTouch();
+  
+  return 'Mobile controls test complete - check console for details';
+};
+
+// 🚀 CRITICAL FIX: Disable mouse controls completely on mobile
+window.disableMouseControlsOnMobile = function() {
+  if (isMobileDevice) {
+    console.log('🚨 DISABLING MOUSE CONTROLS ON MOBILE DEVICE');
+    isMouseControlEnabled = false;
+    console.log('✅ Mouse controls disabled for mobile');
+    return 'Mouse controls disabled on mobile';
+  } else {
+    console.log('🖱️ Desktop device - mouse controls remain enabled');
+    return 'Mouse controls remain enabled on desktop';
+  }
+};
+
+// 🔥 CRITICAL TEST: Phoenix collision system
+window.testPhoenixCollisionSystem = function() {
+  console.log('🔥 TESTING PHOENIX COLLISION SYSTEM...');
+  
+  if (!playerShip) {
+    console.error('❌ Player ship not found!');
+    return false;
+  }
+  
+  console.log('✅ Player ship found:', {
+    x: playerShip.x,
+    y: playerShip.y,
+    health: playerShip.health,
+    invincible: playerShip.invincible
+  });
+  
+  // Check if Phoenix entities exist
+  console.log('🔥 Phoenix entities status:', {
+    phoenixWaves: phoenixWaves ? phoenixWaves.length : 'undefined',
+    phoenixEggs: phoenixEggs ? phoenixEggs.length : 'undefined',
+    miniPhoenixes: miniPhoenixes ? miniPhoenixes.length : 'undefined'
+  });
+  
+  // Test collision detection function
+  if (typeof checkPhoenixPlayerCollisions === 'function') {
+    console.log('✅ checkPhoenixPlayerCollisions function exists');
+    
+    // Test collision with a dummy Phoenix entity
+    const testPhoenix = {
+      x: playerShip.x + 10,
+      y: playerShip.y + 10,
+      width: 30,
+      height: 30,
+      isDead: false,
+      damage: 1
+    };
+    
+    const collision = checkCollision(testPhoenix, playerShip);
+    console.log('🔥 Test collision result:', collision);
+    
+    if (collision) {
+      console.log('✅ Collision detection working!');
+    } else {
+      console.log('❌ Collision detection not working!');
+    }
+  } else {
+    console.error('❌ checkPhoenixPlayerCollisions function not found!');
+  }
+  
+  return 'Phoenix collision test complete';
+};
+
+// 🎯 PROFESSIONAL GAME BALANCE: Complete progression analysis
+window.analyzeGameBalance = function() {
+  console.log('🎯 PROFESSIONAL GAME BALANCE ANALYSIS');
+  console.log('=====================================');
+  
+  // Current wave analysis
+  console.log(`📊 Current Wave: ${waveNumber}`);
+  console.log(`🎮 Game Phase: ${gamePhase}`);
+  console.log(`🔥 Phoenix Wave: ${isPhoenixWave ? 'YES' : 'NO'}`);
+  
+  // Phoenix wave analysis
+  if (waveNumber % phoenixWaveConfig.waveFrequency === 0) {
+    console.log(`🔥 Next Phoenix Wave: Wave ${waveNumber + phoenixWaveConfig.waveFrequency}`);
+  } else {
+    const nextPhoenix = Math.ceil(waveNumber / phoenixWaveConfig.waveFrequency) * phoenixWaveConfig.waveFrequency;
+    console.log(`🔥 Next Phoenix Wave: Wave ${nextPhoenix} (in ${nextPhoenix - waveNumber} waves)`);
+  }
+  
+  // Boss wave analysis
+  const bossWaves = [10, 25, 75, 100];
+  const nextBoss = bossWaves.find(wave => wave > waveNumber);
+  if (nextBoss) {
+    console.log(`🏆 Next Boss Wave: Wave ${nextBoss} (in ${nextBoss - waveNumber} waves)`);
+  } else {
+    console.log(`🏆 All Boss Waves Completed! (Waves 10, 25, 75, 100)`);
+  }
+  
+  // Difficulty scaling analysis
+  let difficultyMultiplier = 1.0;
+  if (waveNumber >= 8) difficultyMultiplier = 1.1;
+  if (waveNumber >= 13) difficultyMultiplier = 1.2;
+  if (waveNumber >= 18) difficultyMultiplier = 1.3;
+  if (waveNumber >= 23) difficultyMultiplier = 1.4;
+  if (waveNumber >= 28) difficultyMultiplier = 1.5;
+  if (waveNumber >= 33) difficultyMultiplier = 1.6;
+  if (waveNumber >= 38) difficultyMultiplier = 1.7;
+  if (waveNumber >= 43) difficultyMultiplier = 1.8;
+  if (waveNumber >= 48) difficultyMultiplier = 1.9;
+  if (waveNumber >= 53) difficultyMultiplier = 2.0;
+  if (waveNumber >= 100) difficultyMultiplier = 3.0;
+  if (waveNumber >= 200) difficultyMultiplier = 7.0;
+  if (waveNumber >= 500) difficultyMultiplier = 12.0;
+  if (waveNumber >= 1000) difficultyMultiplier = 25.0;
+  
+  console.log(`⚖️ Current Difficulty Multiplier: ${difficultyMultiplier.toFixed(1)}x`);
+  
+  // Phoenix health scaling
+  const basePhoenixHealth = phoenixWaveConfig.phoenixHealth;
+  const scaledPhoenixHealth = Math.floor(basePhoenixHealth * (1 + (difficultyMultiplier - 1) * 0.3));
+  console.log(`🔥 Phoenix Health: ${basePhoenixHealth} → ${scaledPhoenixHealth} HP`);
+  
+  // Game progression stage
+  let gameStage = 'Early Game';
+  if (waveNumber >= 25) gameStage = 'Mid Game';
+  if (waveNumber >= 100) gameStage = 'Late Game';
+  if (waveNumber >= 500) gameStage = 'End Game';
+  if (waveNumber >= 1000) gameStage = 'Legendary';
+  
+  console.log(`🎯 Game Stage: ${gameStage} (Waves 1-25: Early, 25-100: Mid, 100-500: Late, 500-1000: End, 1000+: Legendary)`);
+  
+  // Balance recommendations
+  console.log(`💡 Balance Recommendations:`);
+  if (waveNumber < 10) {
+    console.log(`   - Focus on learning basic mechanics`);
+    console.log(`   - Phoenix waves every 5 waves (gentle introduction)`);
+    console.log(`   - Boss wave at Wave 10 (Cheese King)`);
+  } else if (waveNumber < 25) {
+    console.log(`   - Steady difficulty increase`);
+    console.log(`   - Phoenix waves becoming more challenging`);
+    console.log(`   - Prepare for Wave 25 boss (Cheese Emperor)`);
+  } else if (waveNumber < 75) {
+    console.log(`   - Expert challenge level`);
+    console.log(`   - Phoenix waves with complex formations`);
+    console.log(`   - Prepare for Wave 75 boss (Cheese God)`);
+  } else if (waveNumber < 100) {
+    console.log(`   - Master level challenge`);
+    console.log(`   - Phoenix waves with maximum difficulty`);
+    console.log(`   - Prepare for Wave 100 boss (Cheese Destroyer)`);
+  } else {
+    console.log(`   - Legendary challenge level`);
+    console.log(`   - Phoenix waves beyond normal difficulty`);
+    console.log(`   - Endless progression to Wave 1000+`);
+  }
+  
+  return 'Game balance analysis complete';
 };
 
 // 🧪 TESTING: Check boss bullets
@@ -9168,6 +9451,10 @@ window.emergencyCollisionCheck = function() {
         const touchX = touch.clientX - rect.left;
         const touchY = touch.clientY - rect.top;
         
+        // Store old position for comparison
+        const oldX = playerShip.x;
+        const oldY = playerShip.y;
+        
         // 🚀 CRITICAL FIX: Position ship immediately at touch location
         const targetX = touchX - playerShip.width / 2;
         const targetY = touchY - playerShip.height / 2;
@@ -9177,9 +9464,14 @@ window.emergencyCollisionCheck = function() {
         const extendedBottomBoundary = canvasHeight + 20;
         const constrainedY = Math.max(0, Math.min(extendedBottomBoundary, targetY));
         
-        // 🚀 NEW: Instant ship positioning for immediate response
+        // 🚀 CRITICAL FIX: Instant ship positioning for immediate response
         playerShip.x = constrainedX;
         playerShip.y = constrainedY;
+        
+        // 🚀 NEW: Force immediate visual update
+        if (playerShip.x !== oldX || playerShip.y !== oldY) {
+          console.log('📱 Ship moved instantly to:', playerShip.x, playerShip.y);
+        }
         
         console.log('📱 Touch start - Ship positioned at:', playerShip.x, playerShip.y);
       }
@@ -9252,10 +9544,10 @@ window.emergencyCollisionCheck = function() {
         const extendedBottomBoundary = canvasHeight + 20; // Allow 20px beyond canvas bottom
         const constrainedY = Math.max(0, Math.min(extendedBottomBoundary, targetY));
         
-        // 🚀 NEW: Smooth movement with easing for better mobile experience
-        const easing = 0.6; // More responsive on mobile
-        playerShip.x += (constrainedX - playerShip.x) * easing;
-        playerShip.y += (constrainedY - playerShip.y) * easing;
+        // 🚀 CRITICAL FIX: Direct positioning for mobile responsiveness
+        // Mobile players need instant, direct control - no easing!
+        playerShip.x = constrainedX;
+        playerShip.y = constrainedY;
         
         // 🔥 CRITICAL FIX: Auto-shoot when ship moves (if enabled) - NO HEAT BUILDUP
         if (autoShootEnabled && (oldX !== playerShip.x || oldY !== playerShip.y)) {
@@ -9348,9 +9640,14 @@ window.emergencyCollisionCheck = function() {
           console.log('⚡ Long press activated speed boost');
         }
       }
+      
+      // 🚀 CRITICAL FIX: Prevent mouse controls from interfering immediately after touch
+      // Add a small delay before re-enabling mouse controls
+      setTimeout(() => {
+        isTouching = false;
+        console.log('📱 Touch ended - mouse controls re-enabled');
+      }, 100); // 100ms delay to prevent conflicts
     }
-    
-    isTouching = false;
   }
 
   function lockSpaceInvadersScroll() {
@@ -10951,6 +11248,97 @@ window.emergencyCollisionCheck = function() {
         </button>
       </div>
     `;
+  }
+
+  // 🔥 CRITICAL FIX: Phoenix-Player collision detection
+  function checkPhoenixPlayerCollisions() {
+    if (!playerShip || playerShip.invincible) {
+      return; // Player is invincible or doesn't exist
+    }
+    
+    try {
+      // Check Phoenix bird collisions
+      if (phoenixWaves && Array.isArray(phoenixWaves)) {
+        phoenixWaves.forEach((phoenix, index) => {
+          if (phoenix && typeof phoenix === 'object' && !phoenix.isDead && checkCollision(phoenix, playerShip)) {
+            // Player hit by Phoenix bird!
+            const damage = (phoenix && typeof phoenix.damage === 'number') ? phoenix.damage : 1;
+            playerShip.health -= damage;
+            console.log(`🔥 Phoenix bird ${index} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
+            
+            // Create explosion effect
+            createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 30);
+            
+            // Screen shake effect
+            if (window.screenShake) {
+              window.screenShake(10, 200);
+            }
+            
+            // Sound effect
+            if (window.playSound) {
+              window.playSound('explosion');
+            }
+            
+            // Check if player is defeated
+            if (playerShip.health <= 0) {
+              onGameOver();
+            }
+          }
+        });
+      }
+      
+      // Check Phoenix egg collisions
+      if (phoenixEggs && Array.isArray(phoenixEggs)) {
+        phoenixEggs.forEach((egg, index) => {
+          if (egg && typeof egg === 'object' && !egg.isDead && checkCollision(egg, playerShip)) {
+            // Player hit by Phoenix egg!
+            const damage = 1; // Eggs do minimal damage
+            playerShip.health -= damage;
+            console.log(`🥚 Phoenix egg ${index} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
+            
+            // Create explosion effect
+            createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 25);
+            
+            // Screen shake effect
+            if (window.screenShake) {
+              window.screenShake(8, 150);
+            }
+            
+            // Check if player is defeated
+            if (playerShip.health <= 0) {
+              onGameOver();
+            }
+          }
+        });
+      }
+      
+      // Check mini-Phoenix collisions
+      if (miniPhoenixes && Array.isArray(miniPhoenixes)) {
+        miniPhoenixes.forEach((mini, index) => {
+          if (mini && typeof mini === 'object' && !mini.isDead && checkCollision(mini, playerShip)) {
+            // Player hit by mini-Phoenix!
+            const damage = 1; // Mini-Phoenixes do minimal damage
+            playerShip.health -= damage;
+            console.log(`🐤 Mini-Phoenix ${index} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
+            
+            // Create explosion effect
+            createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 20);
+            
+            // Screen shake effect
+            if (window.screenShake) {
+              window.screenShake(5, 100);
+            }
+            
+            // Check if player is defeated
+            if (playerShip.health <= 0) {
+              onGameOver();
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('🔥 Error in Phoenix collision detection:', error);
+    }
   }
 
   // 🚀 NEW: Spawn invaders when Tetris blocks are destroyed

@@ -9085,11 +9085,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('✅ Database unlock button forced visible');
             }
             
-            // 🔧 CRITICAL: Auto-load game stats for authenticated users
-            console.log('🚀 Auto-loading game stats for authenticated user...');
-            setTimeout(() => {
-                loadAllGameStatsForAuthenticatedUser();
-            }, 500);
+                    // 🔧 CRITICAL: Auto-load game stats for authenticated users
+        console.log('🚀 Auto-loading game stats for authenticated user...');
+        setTimeout(() => {
+            loadAllGameStatsForAuthenticatedUser();
+        }, 500);
+        
+        // 🚨 CRITICAL FIX: Add emergency unlock button for testing
+        addEmergencyUnlockButton();
         } else {
             console.log('❌ Discord authentication failed on page load');
         }
@@ -20607,6 +20610,57 @@ function testDatabaseConnection() {
           addLog(`❌ Error force loading ${tabName} tab on click: ${error.message}`);
         }
       }, 200);
+    }
+    
+    // 🚨 CRITICAL FIX: Emergency unlock function for testing
+    function addEmergencyUnlockButton() {
+      console.log('🚨 Adding emergency unlock button...');
+      
+      // Create emergency unlock button
+      const emergencyBtn = document.createElement('button');
+      emergencyBtn.textContent = '🚨 EMERGENCY UNLOCK (TESTING)';
+      emergencyBtn.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #dc2626;
+        color: white;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(220,38,38,0.4);
+      `;
+      
+      emergencyBtn.onclick = function() {
+        console.log('🚨 Emergency unlock activated!');
+        
+        // Force unlock all database features
+        window.databaseUnlocked = true;
+        
+        // Show all database features
+        const databaseElements = document.querySelectorAll('[id*="database"], [id*="Database"]');
+        databaseElements.forEach(el => {
+          if (el.style) {
+            el.style.display = 'block';
+          }
+        });
+        
+        // Force load all game data
+        setTimeout(() => {
+          loadAllGameStatsForAuthenticatedUser();
+          addLog('🚨 Emergency database unlock activated for testing');
+        }, 100);
+        
+        // Hide the emergency button
+        emergencyBtn.style.display = 'none';
+      };
+      
+      document.body.appendChild(emergencyBtn);
+      console.log('✅ Emergency unlock button added');
     }
   </script>
 
