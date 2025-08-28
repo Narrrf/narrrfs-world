@@ -1,4 +1,4 @@
-// 🧀 Space Cheese Invaders v3.1 - MOUSE CONTROL FIX - TIMESTAMP: ${Date.now()}
+// 🧀 Space Cheese Invaders v3.6 - PHOENIX CONFIGURATION LOADING FIX - TIMESTAMP: ${Date.now()}
 // Much slower invaders (1 second drop, 1 minute break) with Tetris block danger items
 // NEW: Auto-shoot feature - automatically fires when ship moves (toggle with 'T' key)
 // NEW: Laser shot type, Speed boost power-up, and Bomb weapon
@@ -10,6 +10,39 @@
 // - Enhanced mouse re-entry positioning logic
 // - Added safety checks for invalid mouse targets
 // - Improved bounds checking and movement smoothing
+// 
+// 🚀 SHIP POSITIONING FIXES (2025-01-28):
+// - Fixed ship starting position: moved from canvasHeight-60 to canvasHeight-120
+// - Added boundary constraints to mouse movement for proper ship positioning
+// - Ship can now reach bottom border and has better movement range
+// - Increased space between ship and invaders from 60px to 230px
+// 
+// 🚀 GLOBAL MOUSE TRACKING FIX (2025-01-28):
+// - Ship now follows mouse even when cursor leaves game container
+// - Full movement range available including bottom border
+// - Smooth control regardless of mouse position
+// - Visual feedback for global tracking mode (orange border)
+// - Perfect desktop gaming experience with unlimited mouse range
+// 
+// 🚀 EXTENDED BOTTOM BOUNDARY FIX (2025-01-28):
+// - Ship can now move 20px beyond canvas bottom boundary
+// - Extended movement range for better gameplay positioning
+// - Allows ship to reach green line marker for optimal positioning
+// - Enhanced vertical movement freedom for Phoenix-style gameplay
+// 
+// 🔥 PHOENIX INVADERS INTEGRATION (2025-01-28):
+// - NEW: Phoenix wave system every 3rd wave
+// - Phoenix birds with formation flying patterns (V, diamond, spiral, cluster, dive)
+// - Egg-laying mechanics that hatch into mini-Phoenix enemies
+// - Strategic gameplay: destroy eggs before they hatch
+// - Admin interface configuration through Boss Management tab
+// - Full collision detection and scoring system
+// 
+// 🔥 PHOENIX CONFIGURATION LOADING FIX (2025-01-28):
+// - FIXED: Game now loads Phoenix configuration from admin interface
+// - Phoenix waves spawn every 3rd wave (configurable in admin)
+// - Visual indicators show when Phoenix waves are active
+// - Debug functions available in browser console for testing
 
 // 🚀 PRODUCTION CONFIGURATION: Epic boss progression!
 // 🏆 Boss types: Wave 10=Cheese King, Wave 25=Cheese Emperor, Wave 75=Cheese God, Wave 100=Cheese Destroyer
@@ -47,6 +80,83 @@ let hasDoubleShotUpgrade = false; // Unlocked after defeating first boss (Cheese
 let hasTripleShotUpgrade = false; // Unlocked after defeating second boss (Cheese Emperor)
 let hasQuadShotUpgrade = false; // Unlocked after defeating third boss (Cheese God)
 
+// 🔥 PHOENIX INVADERS SYSTEM - NEW FEATURE!
+// Phoenix wave system that alternates with regular invader waves
+let phoenixWaves = [];
+let phoenixEggs = [];
+let miniPhoenixes = [];
+let isPhoenixWave = false;
+let phoenixWaveConfig = {
+  waveFrequency: 3,        // Every 3rd wave is Phoenix
+  basePhoenixCount: 5,     // Starting Phoenix count
+  difficultyScaling: 1.2,  // Difficulty multiplier per wave
+  eggLayingRate: 0.3,      // 30% chance to lay egg per update
+  formationPatterns: ['v', 'diamond', 'spiral', 'cluster', 'dive'],
+  maxPhoenixPerWave: 20,   // Maximum Phoenix birds per wave
+  eggHatchTime: 300,       // Frames until egg hatches
+  miniPhoenixHealth: 50    // Health of hatched mini-Phoenix
+};
+
+// 🔥 PHOENIX CONFIGURATION LOADING - NEW!
+// Load Phoenix configuration from admin interface when game starts
+async function loadPhoenixConfiguration() {
+  try {
+    console.log('🔥 Loading Phoenix configuration from admin interface...');
+    const response = await fetch(`${API_BASE_URL}/api/admin/phoenix-configuration.php`);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.data) {
+        console.log('✅ Phoenix configuration loaded:', data.data);
+        // Update the game's Phoenix configuration with admin settings
+        phoenixWaveConfig = {
+          ...phoenixWaveConfig,  // Keep defaults as fallback
+          ...data.data           // Override with admin settings
+        };
+        console.log('🔥 Phoenix configuration updated:', phoenixWaveConfig);
+      } else {
+        console.log('⚠️ No Phoenix configuration found, using defaults');
+      }
+    } else {
+      console.log('⚠️ Could not load Phoenix configuration, using defaults');
+    }
+  } catch (error) {
+    console.log('⚠️ Error loading Phoenix configuration:', error);
+    console.log('🔥 Using default Phoenix configuration');
+  }
+}
+
+// 🔥 PHOENIX DEBUG FUNCTIONS - NEW!
+// Add these to browser console to debug Phoenix system
+window.debugPhoenixSystem = function() {
+  console.log('🔥 PHOENIX SYSTEM DEBUG INFO:');
+  console.log('Phoenix waves array:', phoenixWaves);
+  console.log('Phoenix eggs array:', phoenixEggs);
+  console.log('Mini-Phoenix array:', miniPhoenixes);
+  console.log('Is Phoenix wave:', isPhoenixWave);
+  console.log('Phoenix config:', phoenixWaveConfig);
+  console.log('Current wave number:', waveNumber);
+  console.log('Wave frequency:', phoenixWaveConfig.waveFrequency);
+  console.log('Should be Phoenix wave:', waveNumber % phoenixWaveConfig.waveFrequency === 0);
+};
+
+window.forcePhoenixWave = function() {
+  console.log('🔥 FORCING PHOENIX WAVE...');
+  isPhoenixWave = true;
+  
+  // 🔥 CRITICAL FIX: Clear existing entities first
+  phoenixWaves = [];
+  phoenixEggs = [];
+  miniPhoenixes = [];
+  
+  spawnPhoenixWave();
+  console.log('Phoenix wave spawned!');
+  console.log('🔥 Phoenix entities created:', {
+    phoenixWaves: phoenixWaves.length,
+    phoenixEggs: phoenixEggs.length,
+    miniPhoenixes: miniPhoenixes.length
+  });
+};
+
 // 🧀 Load cheese-themed images
 const cheeseShipImg = new Image();
 cheeseShipImg.src = 'img/space/cheese-ship.png';
@@ -56,6 +166,40 @@ cheeseShipImg.onload = () => {
 cheeseShipImg.onerror = (e) => {
   console.error('❌ Failed to load cheese ship image:', e);
   console.error('❌ Attempted path:', cheeseShipImg.src);
+};
+
+// 🔥 PHOENIX IMAGES - NEW!
+const phoenixBirdImg = new Image();
+phoenixBirdImg.src = 'img/phoenix/phoenix-bird.png';
+phoenixBirdImg.onload = () => {
+  console.log('✅ Phoenix bird image loaded successfully');
+};
+phoenixBirdImg.onerror = (e) => {
+  console.error('❌ Failed to load Phoenix bird image:', e);
+  console.error('❌ Attempted path:', phoenixBirdImg.src);
+  console.log('🔥 Using fallback rectangle drawing for Phoenix birds');
+};
+
+const phoenixEggImg = new Image();
+phoenixEggImg.src = 'img/phoenix/phoenix-egg.png';
+phoenixEggImg.onload = () => {
+  console.log('✅ Phoenix egg image loaded successfully');
+};
+phoenixEggImg.onerror = (e) => {
+  console.error('❌ Failed to load Phoenix egg image:', e);
+  console.error('❌ Attempted path:', phoenixEggImg.src);
+  console.log('🔥 Using fallback rectangle drawing for Phoenix eggs');
+};
+
+const miniPhoenixImg = new Image();
+miniPhoenixImg.src = 'img/phoenix/mini-phoenix.png';
+miniPhoenixImg.onload = () => {
+  console.log('✅ Mini Phoenix image loaded successfully');
+};
+miniPhoenixImg.onerror = (e) => {
+  console.error('❌ Failed to load Mini Phoenix image:', e);
+  console.error('❌ Attempted path:', miniPhoenixImg.src);
+  console.log('🔥 Using fallback rectangle drawing for Mini Phoenix');
 };
 
 const cheeseInvaderImg = new Image();
@@ -78,6 +222,406 @@ cheeseInvader2Img.onerror = (e) => {
   console.error('❌ Failed to load cheese invader 2 image:', e);
   console.error('❌ Attempted path:', cheeseInvader2Img.src);
 };
+
+// 🔥 PHOENIX INVADERS CLASSES
+// Phoenix bird entity with formation flying and egg-laying mechanics
+class PhoenixBird {
+  constructor(x, y, formation, difficulty) {
+    this.x = x;
+    this.y = y;
+    this.formation = formation;
+    this.difficulty = difficulty;
+    this.width = 60;  // 🔥 CRITICAL FIX: Add dimensions
+    this.height = 60; // 🔥 CRITICAL FIX: Add dimensions
+    this.health = (phoenixWaveConfig.phoenixHealth || 100) * difficulty;
+    this.maxHealth = this.health;
+    this.speed = phoenixWaveConfig.phoenixSpeed || 2.0;
+    this.eggLayingCooldown = 0;
+    this.flightPattern = this.generateFlightPattern();
+    this.animationFrame = 0;
+    this.animationSpeed = 0.1;
+    this.isDead = false;
+    this.explosionTimer = 0;
+    
+    console.log(`🔥 PhoenixBird created at x=${x}, y=${y}, health=${this.health}`);
+  }
+  
+  generateFlightPattern() {
+    const patterns = {
+      'v': this.createVFormation.bind(this),
+      'diamond': this.createDiamondFormation.bind(this),
+      'spiral': this.createSpiralFormation.bind(this),
+      'cluster': this.createClusterFormation.bind(this),
+      'dive': this.createDiveFormation.bind(this)
+    };
+    
+    return patterns[this.formation] || patterns['v'];
+  }
+  
+  createVFormation() {
+    // V-formation flying pattern
+    const canvas = document.getElementById('space-invaders-canvas');
+    const centerX = canvas ? canvas.width / 2 : 200;
+    const centerY = 100;
+    const vAngle = Math.PI / 4; // 45 degrees
+    const vRadius = 150;
+    
+    this.targetX = centerX + Math.cos(vAngle) * vRadius;
+    this.targetY = centerY + Math.sin(vAngle) * vRadius;
+  }
+  
+  createDiamondFormation() {
+    // Diamond formation pattern
+    const centerX = canvasWidth / 2;
+    const centerY = 120;
+    const diamondSize = 120;
+    
+    this.targetX = centerX + (Math.random() - 0.5) * diamondSize;
+    this.targetY = centerY + (Math.random() - 0.5) * diamondSize;
+  }
+  
+  createSpiralFormation() {
+    // Spiral formation pattern
+    const canvas = document.getElementById('space-invaders-canvas');
+    const centerX = canvas ? canvas.width / 2 : 200;
+    const centerY = 100;
+    const time = Date.now() * 0.001;
+    const spiralRadius = 100 + Math.sin(time * 0.5) * 30;
+    const spiralAngle = time * 0.3;
+    
+    this.targetX = centerX + Math.cos(spiralAngle) * spiralRadius;
+    this.targetY = centerY + Math.sin(spiralAngle) * spiralRadius;
+  }
+  
+  createClusterFormation() {
+    // Random cluster formation
+    const canvas = document.getElementById('space-invaders-canvas');
+    const centerX = canvas ? canvas.width / 2 : 200;
+    const centerY = 100;
+    const clusterRadius = 80;
+    
+    this.targetX = centerX + (Math.random() - 0.5) * clusterRadius;
+    this.targetY = centerY + (Math.random() - 0.5) * clusterRadius;
+  }
+  
+  createDiveFormation() {
+    // Dive bombing pattern
+    this.targetX = playerShip.x + (Math.random() - 0.5) * 100;
+    this.targetY = playerShip.y - 50;
+  }
+  
+  update() {
+    if (this.isDead) {
+      this.explosionTimer++;
+      if (this.explosionTimer > 30) {
+        return false; // Remove from array
+      }
+      return true;
+    }
+    
+    // Update flight pattern
+    this.flightPattern();
+    
+    // Move towards target
+    const dx = this.targetX - this.x;
+    const dy = this.targetY - this.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance > 5) {
+      this.x += (dx / distance) * this.speed;
+      this.y += (dy / distance) * this.speed;
+    }
+    
+    // Update animation
+    this.animationFrame += this.animationSpeed;
+    if (this.animationFrame >= 4) this.animationFrame = 0;
+    
+    // Egg laying mechanics
+    this.eggLayingCooldown--;
+    if (this.eggLayingCooldown <= 0 && Math.random() < phoenixWaveConfig.eggLayingRate) {
+      this.layEgg();
+      this.eggLayingCooldown = 60; // 1 second cooldown
+    }
+    
+    return true;
+  }
+  
+  layEgg() {
+    const egg = new PhoenixEgg(this.x, this.y, this);
+    phoenixEggs.push(egg);
+    console.log('🥚 Phoenix laid egg at:', this.x, this.y);
+  }
+  
+  takeDamage(damage) {
+    this.health -= damage;
+    if (this.health <= 0) {
+      this.die();
+    }
+  }
+  
+  die() {
+    this.isDead = true;
+    this.explosionTimer = 0;
+    console.log('🔥 Phoenix destroyed!');
+    
+    // Add explosion effect
+    createExplosion(this.x, this.y, 40, 25);
+    
+    // Award points
+    spaceInvadersScore += 100 * this.difficulty;
+    spaceInvadersCount++;
+  }
+  
+  draw(ctx) {
+    if (this.isDead) {
+      // Draw explosion
+      const explosionSize = 20 + this.explosionTimer;
+      ctx.fillStyle = `rgba(255, ${255 - this.explosionTimer * 8}, 0, ${1 - this.explosionTimer / 30})`;
+      ctx.beginPath();
+      ctx.arc(this.x + this.width / 2, this.y + this.height / 2, explosionSize, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+    
+    // 🔥 PHOENIX DRAWING: Use image if available, fallback to rectangle
+    if (typeof phoenixBirdImg !== 'undefined' && phoenixBirdImg.complete && phoenixBirdImg.naturalWidth > 0) {
+      // Draw Phoenix bird image
+      ctx.drawImage(phoenixBirdImg, this.x, this.y, this.width, this.height);
+    } else {
+      // 🔥 FALLBACK: Draw Phoenix bird as colored rectangle
+      ctx.fillStyle = '#ff6b35'; // Phoenix orange
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+      
+      // Add Phoenix details
+      ctx.fillStyle = '#ff4500'; // Darker orange
+      ctx.fillRect(this.x + 5, this.y + 5, this.width - 10, this.height - 10);
+      
+      // Phoenix eyes
+      ctx.fillStyle = '#ffff00'; // Yellow eyes
+      ctx.fillRect(this.x + 15, this.y + 20, 8, 8);
+      ctx.fillRect(this.x + 37, this.y + 20, 8, 8);
+      
+      // Phoenix wings
+      ctx.fillStyle = '#ff8c42'; // Wing color
+      ctx.fillRect(this.x - 10, this.y + 15, 15, 20);
+      ctx.fillRect(this.x + this.width - 5, this.y + 15, 15, 20);
+    }
+    
+    // Draw health bar
+    if (this.health < this.maxHealth) {
+      const healthBarWidth = this.width;
+      const healthBarHeight = 4;
+      const healthPercentage = this.health / this.maxHealth;
+      
+      ctx.fillStyle = '#ff0000'; // Red background
+      ctx.fillRect(this.x, this.y - 10, healthBarWidth, healthBarHeight);
+      
+      ctx.fillStyle = '#00ff00'; // Green health
+      ctx.fillRect(this.x, this.y - 10, healthBarWidth * healthPercentage, healthBarHeight);
+    }
+    
+    // Debug: Show Phoenix position
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '10px Arial';
+    ctx.fillText(`P:${Math.round(this.x)},${Math.round(this.y)}`, this.x, this.y - 15);
+  }
+}
+
+// Phoenix egg entity that hatches into mini-Phoenix enemies
+class PhoenixEgg {
+  constructor(x, y, parentPhoenix) {
+    this.x = x;
+    this.y = y;
+    this.parentPhoenix = parentPhoenix;
+    this.hatchTimer = phoenixWaveConfig.eggHatchTime;
+    this.isDestroyed = false;
+    this.animationFrame = 0;
+    this.animationSpeed = 0.2;
+  }
+  
+  update() {
+    if (this.isDestroyed) return false;
+    
+    this.hatchTimer--;
+    this.animationFrame += this.animationSpeed;
+    if (this.animationFrame >= 4) this.animationFrame = 0;
+    
+    if (this.hatchTimer <= 0) {
+      this.hatch();
+      return false; // Remove from array
+    }
+    
+    return true;
+  }
+  
+  hatch() {
+    // Spawn mini-Phoenix enemy
+    const miniPhoenix = new MiniPhoenix(this.x, this.y);
+    miniPhoenixes.push(miniPhoenix);
+    console.log('🐣 Egg hatched into mini-Phoenix!');
+    
+    // Add hatching effect
+    createExplosion(this.x, this.y, 20, 15);
+  }
+  
+  takeDamage(damage) {
+    this.isDestroyed = true;
+    console.log('💥 Egg destroyed!');
+    
+    // Award bonus points for destroying egg
+    spaceInvadersScore += 50;
+    
+    // Add destruction effect
+    createExplosion(this.x, this.y, 15, 10);
+  }
+  
+  draw(ctx) {
+    if (this.isDestroyed) return;
+    
+    const size = 16;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    
+    // Egg color (orange/red)
+    ctx.fillStyle = '#ff8c42';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, size/2, size/3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Egg pattern
+    ctx.fillStyle = '#ff4500';
+    ctx.fillRect(-size/4, -size/6, size/2, size/3);
+    
+    // Hatching animation (cracks)
+    if (this.hatchTimer < 60) { // Last second before hatching
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-size/3, -size/4);
+      ctx.lineTo(size/3, size/4);
+      ctx.stroke();
+    }
+    
+    // Hatching timer indicator
+    const timePercentage = this.hatchTimer / phoenixWaveConfig.eggHatchTime;
+    ctx.fillStyle = `rgba(255, 0, 0, ${1 - timePercentage})`;
+    ctx.fillRect(-size/2, -size/2 - 6, size, 3);
+    
+    ctx.restore();
+  }
+}
+
+// Mini-Phoenix enemy spawned from eggs
+class MiniPhoenix {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.health = phoenixWaveConfig.miniPhoenixHealth;
+    this.maxHealth = this.health;
+    this.speed = 1.5;
+    this.targetX = playerShip.x;
+    this.targetY = playerShip.y;
+    this.animationFrame = 0;
+    this.animationSpeed = 0.3;
+    this.isDead = false;
+    this.explosionTimer = 0;
+  }
+  
+  update() {
+    if (this.isDead) {
+      this.explosionTimer++;
+      if (this.explosionTimer > 20) {
+        return false; // Remove from array
+      }
+      return true;
+    }
+    
+    // Move towards player
+    const dx = this.targetX - this.x;
+    const dy = this.targetY - this.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance > 10) {
+      this.x += (dx / distance) * this.speed;
+      this.y += (dy / distance) * this.speed;
+    }
+    
+    // Update target (player position)
+    this.targetX = playerShip.x;
+    this.targetY = playerShip.y;
+    
+    // Update animation
+    this.animationFrame += this.animationSpeed;
+    if (this.animationFrame >= 4) this.animationFrame = 0;
+    
+    return true;
+  }
+  
+  takeDamage(damage) {
+    this.health -= damage;
+    if (this.health <= 0) {
+      this.die();
+    }
+  }
+  
+  die() {
+    this.isDead = true;
+    this.explosionTimer = 0;
+    console.log('🔥 Mini-Phoenix destroyed!');
+    
+    // Add explosion effect
+    createExplosion(this.x, this.y, 25, 20);
+    
+    // Award points
+    spaceInvadersScore += 25;
+    spaceInvadersCount++;
+  }
+  
+  draw(ctx) {
+    if (this.isDead) {
+      // Draw explosion
+      const explosionSize = 15 + this.explosionTimer;
+      ctx.fillStyle = `rgba(255, ${255 - this.explosionTimer * 12}, 0, ${1 - this.explosionTimer / 20})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, explosionSize, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+    
+    // Draw mini-Phoenix (smaller version)
+    const size = 20;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    
+    // Mini-Phoenix color scheme
+    ctx.fillStyle = '#ff6347';
+    ctx.fillRect(-size/2, -size/2, size, size);
+    
+    // Mini-Phoenix details
+    ctx.fillStyle = '#ff4500';
+    ctx.fillRect(-size/2, -size/2, size, size/3);
+    
+    // Wings animation
+    ctx.fillStyle = '#ff8c42';
+    const wingOffset = Math.sin(this.animationFrame) * 3;
+    ctx.fillRect(-size/2 - wingOffset, -size/2, size/6, size);
+    ctx.fillRect(size/2 + wingOffset, -size/2, size/6, size);
+    
+    // Health bar
+    if (this.health < this.maxHealth) {
+      const healthBarWidth = size;
+      const healthBarHeight = 3;
+      const healthPercentage = this.health / this.maxHealth;
+      
+      ctx.fillStyle = '#ff0000';
+      ctx.fillRect(-size/2, -size/2 - 6, healthBarWidth, healthBarHeight);
+      ctx.fillStyle = '#00ff00';
+      ctx.fillRect(-size/2, -size/2 - 6, healthBarWidth * healthPercentage, healthBarHeight);
+    }
+    
+    ctx.restore();
+  }
+}
 
 const cheeseBulletImg = new Image();
 cheeseBulletImg.src = 'img/space/cheese-bullet.png';
@@ -3053,7 +3597,7 @@ let reloadButtonInterval = null;
     // Initialize player ship
     playerShip = {
       x: canvasWidth / 2,
-      y: canvasHeight - 60,
+      y: canvasHeight - 120, // 🚀 FIXED: Moved ship further down for better movement range
       width: 40,
       height: 30,
       speed: 5,
@@ -3392,16 +3936,23 @@ let reloadButtonInterval = null;
 
   function startGame() {
     resetGame();
-    spaceInvadersGameInterval = setInterval(gameLoop, 50); // FAST GAME LOOP (50ms instead of 100ms) - MUCH more responsive!
-    document.getElementById("start-space-invaders-btn").textContent = "🔄 Restart";
     
-    // Lock scroll only when game is actually running
-    lockSpaceInvadersScroll();
-    
-    // 🆘 NEW: Ensure mobile controls are always visible when game starts
-    setTimeout(() => {
-      ensureMobileControlsVisible();
-    }, 100);
+    // 🔥 PHOENIX CONFIGURATION LOADING - NEW!
+    // Load Phoenix settings from admin interface before starting game
+    loadPhoenixConfiguration().then(() => {
+      console.log('🔥 Phoenix configuration loaded, starting game...');
+      
+      spaceInvadersGameInterval = setInterval(gameLoop, 50); // FAST GAME LOOP (50ms instead of 100ms) - MUCH more responsive!
+      document.getElementById("start-space-invaders-btn").textContent = "🔄 Restart";
+      
+      // Lock scroll only when game is actually running
+      lockSpaceInvadersScroll();
+      
+      // 🆘 NEW: Ensure mobile controls are always visible when game starts
+      setTimeout(() => {
+        ensureMobileControlsVisible();
+      }, 100);
+    });
   }
 
   function resetGame() {
@@ -3529,6 +4080,14 @@ let reloadButtonInterval = null;
       checkPlayerHit();
       checkTetrisCollisions();
       
+        // 🔥 PHOENIX INVADERS: Update Phoenix entities during formation
+  if (isPhoenixWave) {
+    updatePhoenixEntities();
+    
+    // 🔥 EXCLUSIVE MODE: No regular invader updates during Phoenix waves
+    return; // Skip all regular invader logic
+  }
+      
       // 🚀 NEW: Check invader-player collisions
       checkInvaderPlayerCollisions();
       
@@ -3554,6 +4113,14 @@ let reloadButtonInterval = null;
       checkBulletCollisions();
       checkPlayerHit();
       checkTetrisCollisions();
+      
+      // 🔥 PHOENIX INVADERS: Update Phoenix entities during attack
+      if (isPhoenixWave) {
+        updatePhoenixEntities();
+        
+        // 🔥 EXCLUSIVE MODE: No regular invader updates during Phoenix waves
+        return; // Skip all regular invader logic
+      }
       
       // 🚀 NEW: Check invader-player collisions
       checkInvaderPlayerCollisions();
@@ -3856,6 +4423,20 @@ let reloadButtonInterval = null;
     // waveNumber is already incremented in updateGame, so don't increment here
     gameSpeed += 0.001; // TINY difficulty increase
     
+      // 🔥 PHOENIX INVADERS: Check if this should be a Phoenix wave
+  if (waveNumber % phoenixWaveConfig.waveFrequency === 0) {
+    console.log(`🔥 Wave ${waveNumber}: PHOENIX INVADERS WAVE!`);
+    
+    // 🔥 CLEAR SCREEN: Remove all other invaders during Phoenix waves
+    invaders = [];
+    invaderBullets = [];
+    tetrisDangerItems = [];
+    console.log('🔥 Screen cleared of regular invaders for Phoenix wave!');
+    
+    spawnPhoenixWave();
+    return;
+  }
+    
     // 🚀 NEW: Choose formation pattern based on wave difficulty
     let patterns = [
       'v_formation',    // V-shaped formation
@@ -3888,6 +4469,168 @@ let reloadButtonInterval = null;
     const pattern = patterns[Math.floor(Math.random() * patterns.length)];
     console.log(`🎯 Wave ${waveNumber}: Using formation pattern: ${pattern}`);
     createFormation(pattern);
+  }
+
+  // 🔥 PHOENIX INVADERS: Spawn Phoenix wave with formation flying
+  function spawnPhoenixWave() {
+    isPhoenixWave = true;
+    
+    // 🔥 PHOENIX WAVE ANNOUNCEMENT - NEW!
+    showNotification('🔥 PHOENIX INVADERS WAVE! 🔥', 'phoenix');
+    
+    // Calculate Phoenix count based on wave difficulty
+    const baseCount = phoenixWaveConfig.basePhoenixCount;
+    const difficultyMultiplier = Math.pow(phoenixWaveConfig.difficultyScaling, Math.floor(waveNumber / 10));
+    const phoenixCount = Math.min(
+      Math.floor(baseCount * difficultyMultiplier),
+      phoenixWaveConfig.maxPhoenixPerWave
+    );
+    
+    console.log(`🔥 Spawning Phoenix wave: ${phoenixCount} Phoenix birds`);
+    
+    // Clear existing Phoenix entities
+    phoenixWaves = [];
+    phoenixEggs = [];
+    miniPhoenixes = [];
+    
+    // Choose formation pattern for this wave
+    const availablePatterns = phoenixWaveConfig.formationPatterns;
+    const formationPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+    
+    // Spawn Phoenix birds in formation
+    for (let i = 0; i < phoenixCount; i++) {
+      const difficulty = 1 + (i * 0.2); // Each Phoenix gets progressively harder
+      
+      // Position Phoenix birds in formation
+      let x, y;
+      
+      // 🔥 CRITICAL FIX: Get canvas dimensions safely
+      const canvas = document.getElementById('space-invaders-canvas');
+      const currentCanvasWidth = canvas ? canvas.width : 400; // Fallback to 400
+      const currentCanvasHeight = canvas ? canvas.height : 600; // Fallback to 600
+      
+      console.log(`🔥 Canvas dimensions: ${currentCanvasWidth}x${currentCanvasHeight}`);
+      
+      switch (formationPattern) {
+        case 'v':
+          // V-formation
+          const vAngle = Math.PI / 4; // 45 degrees
+          const vRadius = 150;
+          const vOffset = (i - phoenixCount / 2) * 40;
+          x = currentCanvasWidth / 2 + Math.cos(vAngle) * vRadius + vOffset;
+          y = 100 + Math.sin(vAngle) * vRadius;
+          break;
+          
+        case 'diamond':
+          // Diamond formation
+          const diamondSize = 120;
+          const diamondAngle = (i / phoenixCount) * Math.PI * 2;
+          x = currentCanvasWidth / 2 + Math.cos(diamondAngle) * diamondSize;
+          y = 120 + Math.sin(diamondAngle) * diamondSize;
+          break;
+          
+        case 'spiral':
+          // Spiral formation
+          const spiralRadius = 80 + (i * 10);
+          const spiralAngle = (i / phoenixCount) * Math.PI * 4;
+          x = currentCanvasWidth / 2 + Math.cos(spiralAngle) * spiralRadius;
+          y = 100 + Math.sin(spiralAngle) * spiralRadius;
+          break;
+          
+        case 'cluster':
+          // Random cluster formation
+          x = currentCanvasWidth / 2 + (Math.random() - 0.5) * 200;
+          y = 100 + (Math.random() - 0.5) * 100;
+          break;
+          
+        case 'dive':
+          // Dive formation - spread across top
+          x = (currentCanvasWidth / phoenixCount) * i + 50;
+          y = 80;
+          break;
+          
+        default:
+          // Default V-formation
+          const defaultAngle = Math.PI / 4;
+          const defaultRadius = 150;
+          const defaultOffset = (i - phoenixCount / 2) * 40;
+          x = currentCanvasWidth / 2 + Math.cos(defaultAngle) * defaultRadius + defaultOffset;
+          y = 100 + Math.sin(defaultAngle) * defaultRadius;
+      }
+      
+      // 🔥 CRITICAL FIX: Validate coordinates
+      if (isNaN(x) || isNaN(y)) {
+        console.error(`🔥 INVALID COORDINATES for Phoenix ${i}: x=${x}, y=${y}`);
+        x = 200; // Fallback position
+        y = 100;
+      }
+      
+      console.log(`🔥 Phoenix ${i} positioned at: x=${Math.round(x)}, y=${Math.round(y)}`);
+      
+      // Create Phoenix bird
+      const phoenix = new PhoenixBird(x, y, formationPattern, difficulty);
+      phoenixWaves.push(phoenix);
+    }
+    
+    console.log(`🔥 Phoenix wave spawned with ${formationPattern} formation`);
+  }
+
+  // 🔥 PHOENIX INVADERS: Update all Phoenix entities
+  function updatePhoenixEntities() {
+    // Update Phoenix birds
+    phoenixWaves = phoenixWaves.filter(phoenix => phoenix.update());
+    
+    // Update Phoenix eggs
+    phoenixEggs = phoenixEggs.filter(egg => egg.update());
+    
+    // Update mini-Phoenix enemies
+    miniPhoenixes = miniPhoenixes.filter(mini => mini.update());
+    
+    // Check if Phoenix wave is complete
+    if (phoenixWaves.length === 0 && phoenixEggs.length === 0 && miniPhoenixes.length === 0) {
+      console.log('🔥 Phoenix wave completed! Returning to regular invaders...');
+      isPhoenixWave = false;
+      
+      // Check if next wave should be a boss wave
+      const nextWave = waveNumber + 1;
+      if (nextWave === 10 || nextWave === 25 || nextWave === 75 || nextWave === 100) {
+        console.log(`🏆 BOSS WAVE! Wave ${nextWave} will be an epic boss fight!`);
+        gamePhase = 'boss';
+        phaseTimer = 0;
+        waveNumber++;
+        spawnBoss();
+      } else {
+        gamePhase = 'formation';
+        phaseTimer = 0;
+        waveNumber++;
+        invaderDropPhase = false;
+        dropStartTime = Date.now();
+        spawnNewWave();
+      }
+    }
+  }
+
+  // 🔥 PHOENIX INVADERS: Draw all Phoenix entities
+  function drawPhoenixEntities() {
+    // Draw Phoenix birds
+    phoenixWaves.forEach(phoenix => phoenix.draw(ctx));
+    
+    // Draw Phoenix eggs
+    phoenixEggs.forEach(egg => egg.draw(ctx));
+    
+    // Draw mini-Phoenix enemies
+    miniPhoenixes.forEach(mini => mini.draw(ctx));
+    
+    // Draw Phoenix wave indicator
+    ctx.fillStyle = '#ff6b35';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔥 PHOENIX INVADERS WAVE', canvasWidth / 2, 30);
+    
+    // Draw Phoenix count
+    ctx.fillStyle = '#ff8c42';
+    ctx.font = '16px Arial';
+    ctx.fillText(`Phoenix: ${phoenixWaves.length} | Eggs: ${phoenixEggs.length} | Mini: ${miniPhoenixes.length}`, canvasWidth / 2, 55);
   }
 
   // 🧩 NEW: Spawn Tetris block danger items with bomb level restrictions
@@ -4318,30 +5061,92 @@ let reloadButtonInterval = null;
         }
       });
       
-      // 🚀 NEW: Check bullet collisions with Tetris blocks
-      tetrisDangerItems.forEach((tetrisItem, tetrisIndex) => {
-        if (tetrisItem.isDestroyed) return;
-        
-        if (checkCollision(bullet, tetrisItem)) {
-          // Calculate damage based on bullet type
-          let damage = 1;
-          if (bullet.type === 'laser') damage = 2;
-          if (bullet.type === 'bomb') damage = 5;
-          
-          // Apply damage to Tetris block
-          tetrisItem.health -= damage;
-          tetrisItem.destructionProgress = 1 - (tetrisItem.health / tetrisItem.maxHealth);
-          tetrisItem.lastHitTime = Date.now();
-          
-          // Create hit effect
-          explosions.push({
-            x: tetrisItem.x + tetrisItem.width / 2,
-            y: tetrisItem.y + tetrisItem.height / 2,
-            size: 15 + damage * 2,
-            timer: 15,
-            isTetrisHit: true,
-            tetrisType: tetrisItem.type
-          });
+                // 🚀 NEW: Check bullet collisions with Tetris blocks
+          tetrisDangerItems.forEach((tetrisItem, tetrisIndex) => {
+            if (tetrisItem.isDestroyed) return;
+            
+            if (checkCollision(bullet, tetrisItem)) {
+              // Calculate damage based on bullet type
+              let damage = 1;
+              if (bullet.type === 'laser') damage = 2;
+              if (bullet.type === 'bomb') damage = 5;
+              
+              // Apply damage to Tetris block
+              tetrisItem.health -= damage;
+              tetrisItem.destructionProgress = 1 - (tetrisItem.health / tetrisItem.maxHealth);
+              tetrisItem.lastHitTime = Date.now();
+              
+              // Create hit effect
+              explosions.push({
+                x: tetrisItem.x + tetrisItem.width / 2,
+                y: tetrisItem.y + tetrisItem.height / 2,
+                size: 15 + damage * 2,
+                timer: 15,
+                isTetrisHit: true,
+                tetrisType: tetrisItem.type
+              });
+              
+              // 🔥 PHOENIX INVADERS: Check bullet collisions with Phoenix entities
+              if (isPhoenixWave) {
+                // Check Phoenix bird collisions
+                phoenixWaves.forEach(phoenix => {
+                  if (!phoenix.isDead && checkCollision(bullet, phoenix)) {
+                    let phoenixDamage = 1;
+                    if (bullet.type === 'laser') phoenixDamage = 2;
+                    if (bullet.type === 'bomb') phoenixDamage = 5;
+                    
+                    phoenix.takeDamage(phoenixDamage);
+                    bulletHit = true;
+                    
+                    // Create Phoenix hit effect
+                    explosions.push({
+                      x: phoenix.x,
+                      y: phoenix.y,
+                      size: 20,
+                      timer: 15,
+                      isPhoenixHit: true
+                    });
+                  }
+                });
+                
+                // Check Phoenix egg collisions
+                phoenixEggs.forEach(egg => {
+                  if (!egg.isDestroyed && checkCollision(bullet, egg)) {
+                    egg.takeDamage(1);
+                    bulletHit = true;
+                    
+                    // Create egg destruction effect
+                    explosions.push({
+                      x: egg.x,
+                      y: egg.y,
+                      size: 15,
+                      timer: 10,
+                      isEggDestroyed: true
+                    });
+                  }
+                });
+                
+                // Check mini-Phoenix collisions
+                miniPhoenixes.forEach(mini => {
+                  if (!mini.isDead && checkCollision(bullet, mini)) {
+                    let miniDamage = 1;
+                    if (bullet.type === 'laser') miniDamage = 2;
+                    if (bullet.type === 'bomb') miniDamage = 5;
+                    
+                    mini.takeDamage(miniDamage);
+                    bulletHit = true;
+                    
+                    // Create mini-Phoenix hit effect
+                    explosions.push({
+                      x: mini.x,
+                      y: mini.y,
+                      size: 15,
+                      timer: 12,
+                      isMiniPhoenixHit: true
+                    });
+                  }
+                });
+              }
           
           // Check if Tetris block is destroyed
           if (tetrisItem.health <= 0) {
@@ -4685,6 +5490,11 @@ let reloadButtonInterval = null;
     drawTetrisDangerItems(); // NEW: Draw Tetris danger items
     drawExplosions();
     drawPowerUps(); // 🚀 NEW: Draw power-ups
+    
+    // 🔥 PHOENIX INVADERS: Draw Phoenix entities if in Phoenix wave
+    if (isPhoenixWave) {
+      drawPhoenixEntities();
+    }
     
     // 🚀 NEW: Draw boss if in boss phase
     if (gamePhase === 'boss' && boss && !bossDefeated) {
@@ -5596,6 +6406,12 @@ let reloadButtonInterval = null;
       }
     }
     
+    // 🔥 PHOENIX INVADERS: Show Phoenix wave indicator
+    if (isPhoenixWave) {
+      phaseColor = '#ff6b35'; // Orange for Phoenix waves
+      phaseText = `🔥W${waveNumber}`; // Phoenix wave indicator
+    }
+    
     // 🚀 NEW: Show phase info on the left
     ctx.fillStyle = phaseColor;
     ctx.fillText(phaseText, 10, 50);
@@ -6229,7 +7045,9 @@ let reloadButtonInterval = null;
         playerShip.y = Math.max(0, playerShip.y - moveAmount);
         break;
       case 'down':
-        playerShip.y = Math.min(canvasHeight - playerShip.height, playerShip.y + moveAmount);
+        // Allow ship to go down further - extended bottom boundary for better gameplay
+        const extendedBottomBoundary = canvasHeight + 20; // Allow 20px beyond canvas bottom
+        playerShip.y = Math.min(extendedBottomBoundary, playerShip.y + moveAmount);
         break;
     }
     
@@ -6249,38 +7067,68 @@ let reloadButtonInterval = null;
     }
   }
 
-  // 🖱️ SIMPLIFIED: Handle mouse movement for ship positioning
+  // 🖱️ GLOBAL MOUSE TRACKING: Handle mouse movement for ship positioning (works everywhere!)
   function updateMouseMovement() {
-    if (!isMouseControlEnabled || !isMouseOverCanvas || isSpaceInvadersPaused) {
+    if (!isMouseControlEnabled || isSpaceInvadersPaused) {
       return;
     }
     
-    // 🔥 CRITICAL FIX: Simple, direct mouse control - ship follows cursor
-    if (typeof mouseTargetX !== 'undefined' && typeof mouseTargetY !== 'undefined' && 
-        !isNaN(mouseTargetX) && !isNaN(mouseTargetY)) {
-      
-      const oldX = playerShip.x;
-      const oldY = playerShip.y;
-      
-      // 🚀 SIMPLIFIED: Direct movement with smooth easing
-      const easing = 0.4; // Responsive but smooth movement
-      
-      // Move ship directly toward mouse target
-      playerShip.x += (mouseTargetX - playerShip.x) * easing;
-      playerShip.y += (mouseTargetY - playerShip.y) * easing;
-      
-      // 🔥 CRITICAL FIX: Auto-shoot when ship moves (if enabled) - NO HEAT BUILDUP
-      if (autoShootEnabled && (oldX !== playerShip.x || oldY !== playerShip.y)) {
-        const currentTime = Date.now();
+    // 🚀 NEW: Global mouse tracking - ship follows mouse even outside container!
+    let targetX, targetY;
+    
+    if (isMouseOverCanvas && typeof mouseTargetX !== 'undefined' && typeof mouseTargetY !== 'undefined') {
+      // Mouse is over canvas - use canvas-relative coordinates
+      targetX = mouseTargetX;
+      targetY = mouseTargetY;
+    } else if (typeof window.mouseX !== 'undefined' && typeof window.mouseY !== 'undefined') {
+      // Mouse is outside canvas - convert global coordinates to canvas-relative
+      const canvas = document.getElementById('space-invaders-canvas');
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const globalX = window.mouseX - rect.left;
+        const globalY = window.mouseY - rect.top;
         
-        // Check if enough time has passed since last auto-shoot
-        if (currentTime - lastAutoShootTime >= autoShootFiringRate) {
-          // Check if we've moved to a new position (prevent multiple shots during continuous movement)
-          const currentPos = { x: Math.round(playerShip.x / 10), y: Math.round(playerShip.y / 10) };
-          if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
-            autoShoot(); // Use special auto-shoot function that doesn't add heat
-            lastMovementPosition = currentPos; // Update last position
-          }
+        // Convert to ship-relative coordinates
+        targetX = globalX - playerShip.width / 2;
+        targetY = globalY - playerShip.height / 2;
+      } else {
+        return; // Canvas not available
+      }
+    } else {
+      return; // No mouse position available
+    }
+    
+    if (isNaN(targetX) || isNaN(targetY)) {
+      return; // Invalid coordinates
+    }
+    
+    const oldX = playerShip.x;
+    const oldY = playerShip.y;
+    
+    // 🚀 ENHANCED: Direct movement with smooth easing
+    const easing = 0.4; // Responsive but smooth movement
+    
+    // Move ship directly toward target
+    playerShip.x += (targetX - playerShip.x) * easing;
+    playerShip.y += (targetY - playerShip.y) * easing;
+    
+    // 🚀 ENHANCED: Apply boundary constraints to ship movement with extended bottom range
+    playerShip.x = Math.max(0, Math.min(canvasWidth - playerShip.width, playerShip.x));
+    // Allow ship to go down further - extended bottom boundary for better gameplay
+    const extendedBottomBoundary = canvasHeight + 20; // Allow 20px beyond canvas bottom
+    playerShip.y = Math.max(0, Math.min(extendedBottomBoundary, playerShip.y));
+    
+    // 🔥 CRITICAL FIX: Auto-shoot when ship moves (if enabled) - NO HEAT BUILDUP
+    if (autoShootEnabled && (oldX !== playerShip.x || oldY !== playerShip.y)) {
+      const currentTime = Date.now();
+      
+      // Check if enough time has passed since last auto-shoot
+      if (currentTime - lastAutoShootTime >= autoShootFiringRate) {
+        // Check if we've moved to a new position (prevent multiple shots during continuous movement)
+        const currentPos = { x: Math.round(playerShip.x / 10), y: Math.round(playerShip.y / 10) };
+        if (currentPos.x !== lastMovementPosition.x || currentPos.y !== lastMovementPosition.y) {
+          autoShoot(); // Use special auto-shoot function that doesn't add heat
+          lastMovementPosition = currentPos; // Update last position
         }
       }
     }
@@ -7069,18 +7917,18 @@ let reloadButtonInterval = null;
       console.log('🔍 === END MOUSE ENTER DEBUG ===');
     });
 
-    // Disable mouse control when mouse leaves canvas
+    // 🚀 ENHANCED: Mouse left canvas but global tracking continues
     canvas.addEventListener('mouseleave', () => {
-      // 🔧 FIXED: Add delay before disabling mouse control to prevent flickering
+      // 🔧 FIXED: Add delay before updating state to prevent flickering
       setTimeout(() => {
         if (!canvas.matches(':hover')) { // Double-check mouse is really gone
           isMouseOverCanvas = false;
-          console.log('🖱️ Mouse left canvas - mouse control disabled');
+          console.log('🖱️ Mouse left canvas - switching to global tracking mode');
           console.log('🖱️ Mouse control state:', { isMouseControlEnabled, isMouseOverCanvas, isSpaceInvadersPaused });
           
-          // Visual feedback: Remove border when mouse control is inactive
-          canvas.style.border = '';
-          canvas.style.boxShadow = '';
+          // Visual feedback: Change border to indicate global tracking mode
+          canvas.style.border = '3px solid #f59e0b';
+          canvas.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.5)';
           
           // 🚀 NEW: Show default cursor when leaving canvas
           canvas.style.cursor = 'default';
@@ -7088,19 +7936,17 @@ let reloadButtonInterval = null;
           
           // 🚀 IMPROVED: Keep mouse target at current ship position for smoother re-entry
           // Don't reset - this prevents the 300px jump when re-entering
-          console.log('🔍 === MOUSE LEFT CANVAS ===');
-          console.log(`🖱️ Mouse left canvas - keeping target at ship position: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
+          console.log('🔍 === MOUSE LEFT CANVAS - GLOBAL TRACKING ACTIVE ===');
+          console.log(`🖱️ Mouse left canvas - global tracking continues`);
           console.log(`🚀 Ship current position: X=${playerShip.x.toFixed(1)}, Y=${playerShip.y.toFixed(1)}`);
-          console.log(`📍 Ship center position: X=${(mouseTargetX + playerShip.width / 2).toFixed(1)}, Y=${(mouseTargetY + playerShip.height / 2).toFixed(1)}`);
+          console.log(`📍 Ship can still move with global mouse tracking`);
           console.log(`🔄 Mouse movement flag: ${window.hasMouseMovedInCanvas}`);
           
-          // 🔧 CRITICAL FIX: Clear stored mouse positions to prevent invalid re-entry
-          // This prevents the "magnetic pull" toward invaders
-          window.lastCanvasMouseX = undefined;
-          window.lastCanvasMouseY = undefined;
-          console.log('🔍 === END MOUSE LEAVE DEBUG ===');
+          // 🔧 CRITICAL FIX: Keep global mouse tracking active
+          // This allows ship movement even when mouse is outside container
+          console.log('🔍 === END MOUSE LEAVE - GLOBAL TRACKING ENABLED ===');
         }
-      }, 100); // 100ms delay to prevent accidental disabling
+      }, 100); // 100ms delay to prevent accidental state change
     });
 
     // 🔥 SIMPLIFIED: Track mouse position for ship movement
@@ -7356,7 +8202,7 @@ let reloadButtonInterval = null;
       position: fixed;
       top: 20px;
       right: 20px;
-      background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+      background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'phoenix' ? '#ff6b35' : '#3b82f6'};
       color: white;
       padding: 12px 20px;
       border-radius: 8px;
