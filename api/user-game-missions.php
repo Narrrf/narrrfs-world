@@ -187,7 +187,7 @@ try {
             $response['space_invaders']['best_score'] = (int)$spaceData['best_score'];
             $response['space_invaders']['total_score'] = (int)$spaceData['total_score'];
             $response['space_invaders']['last_played'] = $spaceData['last_played'];
-            $response['space_invaders']['dspoinc_earned'] = (int)$spaceData['total_score'] * 10; // DSPOINC conversion - FIXED: was using tetrisData
+            $response['space_invaders']['dspoinc_earned'] = (int)($spaceData['total_score'] * 0.1); // DSPOINC conversion: 1 invader = 0.1 DSPOINC
         }
     } catch (Exception $e) {
         error_log("Space Invaders query error: " . $e->getMessage());

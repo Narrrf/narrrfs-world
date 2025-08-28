@@ -78,6 +78,7 @@ let spaceInvadersGameInterval;
 let isSpaceInvadersPaused = false;
 let spaceInvadersScore = 0;
 let spaceInvadersCount = 0; // NEW: Track actual invader count for DSPOINC calculation
+let hasScoreBeenSaved = false; // 🚫 NEW: Prevent duplicate score saves in same game session
 
 // 🚀 NEW: Progressive Multi-Shot Upgrades
 let hasDoubleShotUpgrade = false; // Unlocked after defeating first boss (Cheese King)
@@ -3768,6 +3769,7 @@ let reloadButtonInterval = null;
     // Initialize game state
     spaceInvadersScore = 0;
     spaceInvadersCount = 0; // NEW: Reset invader count
+    hasScoreBeenSaved = false; // 🚫 NEW: Reset score save flag for new game
     gameSpeed = 0.1;
     waveNumber = 1;
     gamePhase = 'formation';
@@ -4126,6 +4128,7 @@ let reloadButtonInterval = null;
     
     spaceInvadersScore = 0;
     spaceInvadersCount = 0; // NEW: Reset invader count
+    hasScoreBeenSaved = false; // 🚫 NEW: Reset score save flag for new game
     gameSpeed = 0.1; // ULTRA SLOW STARTING SPEED
     waveNumber = 1;
     gamePhase = 'formation';
@@ -9341,6 +9344,14 @@ window.emergencyCollisionCheck = function() {
   }
 
   function saveScore(traditionalScore) {
+    // 🚫 NEW: Prevent duplicate score saves in the same game session
+    if (hasScoreBeenSaved) {
+      console.log('🚫 Score already saved this session, skipping duplicate save');
+      return;
+    }
+    
+    hasScoreBeenSaved = true; // Mark as saved
+    
     const discordId = localStorage.getItem('discord_id');
     const discordName = localStorage.getItem('discord_name') || 'Unknown Player';
     const wallet = localStorage.getItem('user_wallet') || discordId;

@@ -7,30 +7,40 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization');
 require_once '../config/database.php';
 require_once '../auth/validate-token.php';
 
-// Validate admin token
-$token = getBearerToken();
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'No token provided']);
-    exit;
-}
+// Check for secret key bypass first (for quick uploads)
+$secretKey = 'MyUltraSecretKey123';
+if (isset($_GET['secret']) && $_GET['secret'] === $secretKey) {
+    // Secret key provided - skip authentication
+    $admin = ['username' => 'curl_upload', 'id' => 'curl'];
+} else {
+    // Validate admin token
+    $token = getBearerToken();
+    if (!$token) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'No token provided']);
+        exit;
+    }
 
-$admin = validateAdminToken($token);
-if (!$admin) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Invalid or expired token']);
-    exit;
+    $admin = validateAdminToken($token);
+    if (!$admin) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'Invalid or expired token']);
+        exit;
+    }
 }
 
 try {
-    // Check if file was uploaded
-    if (!isset($_FILES['database']) || $_FILES['database']['error'] !== UPLOAD_ERR_OK) {
+    // Check if file was uploaded (accept both 'database' and 'dbfile' field names)
+    $uploadedFile = null;
+    if (isset($_FILES['database']) && $_FILES['database']['error'] === UPLOAD_ERR_OK) {
+        $uploadedFile = $_FILES['database'];
+    } elseif (isset($_FILES['dbfile']) && $_FILES['dbfile']['error'] === UPLOAD_ERR_OK) {
+        $uploadedFile = $_FILES['dbfile'];
+    } else {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'No database file uploaded or upload error']);
         exit;
     }
-    
-    $uploadedFile = $_FILES['database'];
     
     // Validate file type
     $allowedTypes = ['application/octet-stream', 'application/x-sqlite3', 'application/vnd.sqlite3'];

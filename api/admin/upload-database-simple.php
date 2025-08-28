@@ -4,28 +4,16 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Simple database upload for curl commands
-$secretKey = 'MyUltraSecretKey123';
-
-// Check secret key
-if (!isset($_GET['secret']) || $_GET['secret'] !== $secretKey) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Invalid secret key']);
-    exit;
-}
-
+// Simple database upload without authentication for local development
 try {
-    // Check if file was uploaded (accept both 'dbfile' and 'database' field names)
-    $uploadedFile = null;
-    if (isset($_FILES['dbfile']) && $_FILES['dbfile']['error'] === UPLOAD_ERR_OK) {
-        $uploadedFile = $_FILES['dbfile'];
-    } elseif (isset($_FILES['database']) && $_FILES['database']['error'] === UPLOAD_ERR_OK) {
-        $uploadedFile = $_FILES['database'];
-    } else {
+    // Check if file was uploaded
+    if (!isset($_FILES['database']) || $_FILES['database']['error'] !== UPLOAD_ERR_OK) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'No database file uploaded or upload error']);
+        echo json_encode(['success' => false, 'error' => 'No database file uploaded or upload error: ' . $_FILES['database']['error']]);
         exit;
     }
+    
+    $uploadedFile = $_FILES['database'];
     
     // Validate file type - accept SQLite files
     $allowedExtensions = ['sqlite', 'db', 'sqlite3'];
@@ -100,7 +88,7 @@ try {
             // Success!
             echo json_encode([
                 'success' => true,
-                'message' => 'Database uploaded successfully via curl!',
+                'message' => 'Database uploaded successfully!',
                 'tables_count' => count($tables),
                 'tables' => $tables,
                 'backup_created' => $backupPath ? file_exists($backupPath) : false,
@@ -110,8 +98,7 @@ try {
                 'upload_info' => [
                     'original_name' => $uploadedFile['name'],
                     'uploaded_size' => $uploadedFile['size'],
-                    'mime_type' => $uploadedFile['type'],
-                    'method' => 'curl'
+                    'mime_type' => $uploadedFile['type']
                 ]
             ]);
             

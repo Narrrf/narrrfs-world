@@ -9885,11 +9885,20 @@ async function authenticateDiscord() {
       try {
         statusDiv.innerHTML = '<div class="text-blue-600">⏳ Uploading database...</div>';
         
-        const response = await fetch(API_BASE_URL + '/api/admin/upload-database.php', {
+        // Use simple upload script for local development, authenticated version for production
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const uploadUrl = isLocal ? 
+          API_BASE_URL + '/api/admin/upload-database-simple.php' : 
+          API_BASE_URL + '/api/admin/upload-database.php';
+        
+        const headers = {};
+        if (!isLocal && currentAdmin && currentAdmin.token) {
+          headers['Authorization'] = 'Bearer ' + currentAdmin.token;
+        }
+        
+        const response = await fetch(uploadUrl, {
           method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + (currentAdmin ? currentAdmin.token : '')
-          },
+          headers: headers,
           body: formData
         });
         
@@ -9899,10 +9908,18 @@ async function authenticateDiscord() {
           statusDiv.innerHTML = '<div class="text-green-600">✅ Database uploaded successfully</div>';
           addLog('✅ Database uploaded successfully');
           
-          // Hide modal after 2 seconds
+          // Show additional info if available
+          if (data.tables_count) {
+            addLog(`📊 Database contains ${data.tables_count} tables`);
+          }
+          if (data.backup_created) {
+            addLog('💾 Backup created before upload');
+          }
+          
+          // Hide modal after 3 seconds
           setTimeout(() => {
             hideUploadModal();
-          }, 2000);
+          }, 3000);
         } else {
           statusDiv.innerHTML = '<div class="text-red-600">❌ ' + (data.error || 'Upload failed') + '</div>';
           addLog('❌ Database upload failed: ' + (data.error || 'Upload failed'));
