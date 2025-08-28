@@ -76,6 +76,27 @@ try {
             if (file_exists('/var/www/html/db/narrrf_world.sqlite')) {
                 $db = new PDO('sqlite:/var/www/html/db/narrrf_world.sqlite');
                 error_log("🌐 Connected to production database: /var/www/html/db/narrrf_world.sqlite");
+                
+                // 🔍 PRODUCTION DEBUG: Check what's actually in the production database
+                try {
+                    $debugStmt = $db->query("SELECT COUNT(*) as table_count FROM sqlite_master WHERE type='table'");
+                    $debugResult = $debugStmt->fetch(PDO::FETCH_ASSOC);
+                    error_log("🔍 PRODUCTION DEBUG: Database has " . $debugResult['table_count'] . " tables");
+                    
+                    // Check if Snake data exists
+                    $snakeDebug = $db->query("SELECT COUNT(*) as count FROM tbl_tetris_scores WHERE game = 'snake'");
+                    $snakeCount = $snakeDebug->fetch(PDO::FETCH_ASSOC);
+                    error_log("🔍 PRODUCTION DEBUG: Snake games found: " . $snakeCount['count']);
+                    
+                    // Check if Space Invaders data exists
+                    $spaceDebug = $db->query("SELECT COUNT(*) as count FROM tbl_tetris_scores WHERE game = 'space_invaders'");
+                    $spaceCount = $spaceDebug->fetch(PDO::FETCH_ASSOC);
+                    error_log("🔍 PRODUCTION DEBUG: Space Invaders games found: " . $spaceCount['count']);
+                    
+                } catch (Exception $e) {
+                    error_log("🔍 PRODUCTION DEBUG ERROR: " . $e->getMessage());
+                }
+                
             } elseif (file_exists(__DIR__ . '/../db/narrrf_world.sqlite')) {
                 $db = new PDO('sqlite:' . __DIR__ . '/../db/narrrf_world.sqlite');
                 error_log("🏠 Connected to local database: " . __DIR__ . '/../db/narrrf_world.sqlite');
@@ -188,6 +209,7 @@ try {
 
     // 2. SNAKE STATS (using discord_id from tbl_tetris_scores)
     try {
+        error_log("🔍 SNAKE DEBUG: Querying for user $discordId");
         $stmt = $db->prepare("
             SELECT 
                 COUNT(*) as total_games,
@@ -209,6 +231,16 @@ try {
             error_log("✅ Snake stats found for user $discordId: " . $snakeData['total_games'] . " games, total score: " . $snakeData['total_score']);
         } else {
             error_log("❌ No snake stats found for user $discordId");
+            // 🔍 DEBUG: Check if any snake data exists at all
+            $debugStmt = $db->query("SELECT COUNT(*) as total FROM tbl_tetris_scores WHERE game = 'snake'");
+            $debugResult = $debugStmt->fetch(PDO::FETCH_ASSOC);
+            error_log("🔍 SNAKE DEBUG: Total snake games in database: " . $debugResult['total']);
+            
+            // Check if user exists in tetris_scores at all
+            $userDebug = $db->prepare("SELECT COUNT(*) as total FROM tbl_tetris_scores WHERE discord_id = ?");
+            $userDebug->execute([$discordId]);
+            $userResult = $userDebug->fetch(PDO::FETCH_ASSOC);
+            error_log("🔍 SNAKE DEBUG: Total games for user $discordId: " . $userResult['total']);
         }
     } catch (Exception $e) {
         error_log("Snake query error: " . $e->getMessage());
@@ -216,6 +248,7 @@ try {
 
     // 3. SPACE INVADERS STATS (using discord_id from tbl_tetris_scores)
     try {
+        error_log("🔍 SPACE INVADERS DEBUG: Querying for user $discordId");
         $stmt = $db->prepare("
             SELECT 
                 COUNT(*) as total_games,
@@ -234,6 +267,13 @@ try {
             $response['space_invaders']['total_score'] = (int)$spaceData['total_score'];
             $response['space_invaders']['last_played'] = $spaceData['last_played'];
             $response['space_invaders']['dspoinc_earned'] = (int)($spaceData['total_score'] * 0.1); // DSPOINC conversion: 1 invader = 0.1 DSPOINC
+            error_log("✅ Space Invaders stats found for user $discordId: " . $spaceData['total_games'] . " games, total score: " . $spaceData['total_score']);
+        } else {
+            error_log("❌ No Space Invaders stats found for user $discordId");
+            // 🔍 DEBUG: Check if any space invaders data exists at all
+            $debugStmt = $db->query("SELECT COUNT(*) as total FROM tbl_tetris_scores WHERE game = 'space_invaders'");
+            $debugResult = $debugStmt->fetch(PDO::FETCH_ASSOC);
+            error_log("🔍 SPACE INVADERS DEBUG: Total space invaders games in database: " . $debugResult['total']);
         }
     } catch (Exception $e) {
         error_log("Space Invaders query error: " . $e->getMessage());

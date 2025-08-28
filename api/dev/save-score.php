@@ -201,9 +201,21 @@ try {
             
             error_log("Tetris score inserted: $raw_score lines = " . round($dspoinc_score) . " DSPOINC for user $discord_id in season $currentSeason");
         } else {
-            // Snake and Space Invaders scores go to user_scores table
-            // (Tetris scores are also added to user_scores below for consistency)
-            error_log("Non-Tetris game score ($game) - will be saved to user_scores table");
+            // 🚀 CRITICAL FIX: Snake and Space Invaders scores ALSO go to tbl_tetris_scores for mission status
+            $stmt = $db->prepare("
+              INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game, season)
+              VALUES (:wallet, :score, :discord_id, :discord_name, :game, :season)
+            ");
+
+            $stmt->bindValue(':wallet', $wallet);
+            $stmt->bindValue(':score', $raw_score, PDO::PARAM_INT); // Use raw score for game display
+            $stmt->bindValue(':discord_id', $discord_id);
+            $stmt->bindValue(':discord_name', $discord_name);
+            $stmt->bindValue(':game', $game);
+            $stmt->bindValue(':season', $currentSeason);
+            $stmt->execute();
+            
+            error_log("$game score inserted to tbl_tetris_scores: $raw_score for user $discord_id in season $currentSeason");
         }
         
     } catch (Exception $e) {

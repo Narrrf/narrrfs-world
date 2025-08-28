@@ -79,6 +79,7 @@ let isSpaceInvadersPaused = false;
 let spaceInvadersScore = 0;
 let spaceInvadersCount = 0; // NEW: Track actual invader count for DSPOINC calculation
 let hasScoreBeenSaved = false; // 🚫 NEW: Prevent duplicate score saves in same game session
+let hasPlayerMovedMouse = false; // 🚀 NEW: Prevent ship jumping until player moves mouse
 
 // 🚀 NEW: Progressive Multi-Shot Upgrades
 let hasDoubleShotUpgrade = false; // Unlocked after defeating first boss (Cheese King)
@@ -3770,6 +3771,7 @@ let reloadButtonInterval = null;
     spaceInvadersScore = 0;
     spaceInvadersCount = 0; // NEW: Reset invader count
     hasScoreBeenSaved = false; // 🚫 NEW: Reset score save flag for new game
+    hasPlayerMovedMouse = false; // 🚀 NEW: Reset mouse movement flag for new game
     gameSpeed = 0.1;
     waveNumber = 1;
     gamePhase = 'formation';
@@ -3850,14 +3852,22 @@ let reloadButtonInterval = null;
     
     // 🖱️ NEW: Setup mouse controls for desktop
     setTimeout(() => {
-      // 🔧 CRITICAL FIX: Initialize mouse target to ship position
+      // 🚀 CRITICAL FIX: Initialize mouse target to ship position to prevent jumping
       mouseTargetX = playerShip.x;
       mouseTargetY = playerShip.y;
       console.log(`🖱️ Initial mouse target set to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
       
-      // 🔧 CRITICAL FIX: Initialize global mouse tracking variables
-      window.mouseX = 0;
-      window.mouseY = 0;
+      // 🚀 CRITICAL FIX: Initialize global mouse tracking variables to ship position
+      // This prevents the ship from jumping to (0,0) on game start
+      const canvas = document.getElementById('space-invaders-canvas');
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        // Set initial mouse position to ship position to prevent jumping
+        window.mouseX = rect.left + playerShip.x + playerShip.width / 2;
+        window.mouseY = rect.top + playerShip.y + playerShip.height / 2;
+        console.log(`🖱️ Initial global mouse position set to ship: X=${window.mouseX}, Y=${window.mouseY}`);
+      }
+      
       window.lastCanvasMouseX = undefined;
       window.lastCanvasMouseY = undefined;
       window.hasMouseMovedInCanvas = false;
@@ -3869,11 +3879,17 @@ let reloadButtonInterval = null;
       globalMouseListener = updateCustomCursorPosition;
       document.addEventListener('mousemove', globalMouseListener);
       
-      // 🔧 CRITICAL FIX: Add global mouse coordinate tracking for re-entry positioning
-      document.addEventListener('mousemove', (e) => {
-        window.mouseX = e.clientX;
-        window.mouseY = e.clientY;
-      });
+          // 🚀 CRITICAL FIX: Add global mouse coordinate tracking for re-entry positioning
+    document.addEventListener('mousemove', (e) => {
+      window.mouseX = e.clientX;
+      window.mouseY = e.clientY;
+      
+      // 🚀 CRITICAL FIX: Mark that player has moved mouse to enable ship movement
+      if (!hasPlayerMovedMouse) {
+        hasPlayerMovedMouse = true;
+        console.log('🖱️ Player moved mouse for first time - ship movement enabled');
+      }
+    });
       
       // Test mouse control variables
       console.log('🖱️ Mouse control test:', {
@@ -3881,7 +3897,9 @@ let reloadButtonInterval = null;
         isMouseOverCanvas,
         isSpaceInvadersPaused,
         mouseTargetX: mouseTargetX,
-        mouseTargetY: mouseTargetY
+        mouseTargetY: mouseTargetY,
+        globalMouseX: window.mouseX,
+        globalMouseY: window.mouseY
       });
     }, 300);
     
@@ -4161,6 +4179,7 @@ let reloadButtonInterval = null;
     lastUnifiedShotTime = 0; // Reset unified firing rate timer
     lastAutoShootTime = 0; // Reset auto-shoot timer
     lastMovementPosition = { x: 0, y: 0 }; // Reset movement position tracking
+    hasPlayerMovedMouse = false; // 🚀 NEW: Reset mouse movement flag for new game
     console.log('🔥 Heat system reset - weapon ready to fire!');
     
     // 🎯 NOTE: hasDoubleShotUpgrade is NOT reset - permanent upgrade after defeating first boss
@@ -4170,14 +4189,22 @@ let reloadButtonInterval = null;
     playerShip.invincible = false; // 🚀 NEW: Reset invincibility
     playerShip.invincibleTimer = 0; // 🚀 NEW: Reset invincibility timer
     
-      // 🔧 CRITICAL FIX: Initialize mouse targets to ship position to prevent 300px jumps
+      // 🚀 CRITICAL FIX: Initialize mouse targets to ship position to prevent jumping
       mouseTargetX = playerShip.x;
       mouseTargetY = playerShip.y;
       console.log(`🖱️ Mouse targets initialized to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
       
-      // 🔧 CRITICAL FIX: Initialize global mouse tracking variables
-      window.mouseX = 0;
-      window.mouseY = 0;
+      // 🚀 CRITICAL FIX: Initialize global mouse tracking variables to ship position
+      // This prevents the ship from jumping to (0,0) on game reset
+      const canvas = document.getElementById('space-invaders-canvas');
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        // Set initial mouse position to ship position to prevent jumping
+        window.mouseX = rect.left + playerShip.x + playerShip.width / 2;
+        window.mouseY = rect.top + playerShip.y + playerShip.height / 2;
+        console.log(`🖱️ Game reset: Global mouse position set to ship: X=${window.mouseX}, Y=${window.mouseY}`);
+      }
+      
       window.lastCanvasMouseX = undefined;
       window.lastCanvasMouseY = undefined;
       window.hasMouseMovedInCanvas = false;
@@ -6684,6 +6711,16 @@ let reloadButtonInterval = null;
     ctx.fillStyle = '#ffffff';
     ctx.fillText(weaponText, canvasWidth - weaponWidth - 10, 50);
     
+    // 🚀 NEW: Show mouse control status for desktop players
+    if (isMouseControlEnabled && !isMobileDevice) {
+      const mouseText = hasPlayerMovedMouse ? '🖱️ READY' : '🖱️ MOVE MOUSE';
+      const mouseColor = hasPlayerMovedMouse ? '#4ade80' : '#ffaa00';
+      ctx.fillStyle = mouseColor;
+      ctx.font = '12px Arial';
+      const mouseWidth = ctx.measureText(mouseText).width;
+      ctx.fillText(mouseText, (canvasWidth - mouseWidth) / 2, 70);
+    }
+    
     // 🎯 NEW: Show multi-shot upgrade status
     if (currentWeaponType === 'normal') {
       let upgradeText = '';
@@ -7348,6 +7385,11 @@ let reloadButtonInterval = null;
       return;
     }
     
+    // 🚀 CRITICAL FIX: Prevent ship movement until player has moved mouse for first time
+    if (!hasPlayerMovedMouse) {
+      return; // Ship stays at spawn position until player moves mouse
+    }
+    
     // 🚀 NEW: Global mouse tracking - ship follows mouse even outside container!
     let targetX, targetY;
     
@@ -7383,9 +7425,18 @@ let reloadButtonInterval = null;
     // 🚀 ENHANCED: Direct movement with smooth easing
     const easing = 0.4; // Responsive but smooth movement
     
-    // Move ship directly toward target
-    playerShip.x += (targetX - playerShip.x) * easing;
-    playerShip.y += (targetY - playerShip.y) * easing;
+    // 🚀 CRITICAL FIX: Prevent ship from jumping to invalid positions at game start
+    // Only move ship if the target position is reasonable (not at 0,0 or extreme positions)
+    const isReasonableTarget = targetX > 0 && targetY > 0 && 
+                               targetX < canvasWidth && targetY < canvasHeight &&
+                               (Math.abs(targetX - playerShip.x) < canvasWidth && 
+                                Math.abs(targetY - playerShip.y) < canvasHeight);
+    
+    if (isReasonableTarget) {
+      // Move ship directly toward target
+      playerShip.x += (targetX - playerShip.x) * easing;
+      playerShip.y += (targetY - playerShip.y) * easing;
+    }
     
     // 🚀 ENHANCED: Apply boundary constraints to ship movement with extended bottom range
     playerShip.x = Math.max(0, Math.min(canvasWidth - playerShip.width, playerShip.x));
