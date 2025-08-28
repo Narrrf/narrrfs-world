@@ -4599,6 +4599,14 @@ require_once 'discord-invite.php';
         console.log('⏰ Initialization timeout started');
         updateDisplay();
         
+        // 🚀 CRITICAL FIX: Check for OAuth return first
+        console.log('🔍 Checking for OAuth return status...');
+        const oauthReturn = checkOAuthReturnStatus();
+        if (oauthReturn) {
+          console.log('✅ OAuth return handled - admin interface unlocked');
+          return; // Skip normal flow
+        }
+        
         // Add event listener for quest type input
         const questTypeInput = document.getElementById('newQuestType');
         console.log('🧀 Setting up quest type input listener on:', questTypeInput);
@@ -4622,6 +4630,47 @@ require_once 'discord-invite.php';
         
         // Check for existing Discord authentication first
         console.log('🔐 Checking Discord authentication...');
+        
+        // 🚀 CRITICAL FIX: Check if returning from OAuth with admin authentication
+        const adminAuthenticated = localStorage.getItem('adminAuthenticated');
+        const adminAuthTime = localStorage.getItem('adminAuthTime');
+        
+        if (adminAuthenticated && adminAuthTime) {
+          console.log('🚀 Admin OAuth return detected!');
+          addLog('🚀 Returning from Discord OAuth - authenticating automatically...');
+          
+          // Clear the OAuth flags
+          localStorage.removeItem('adminAuthenticated');
+          localStorage.removeItem('adminAuthTime');
+          
+          // Force Discord authentication check
+          const discordAuthResult = await checkDiscordAuth();
+          console.log('🔐 Discord auth result after OAuth return:', discordAuthResult);
+          
+          if (discordAuthResult) {
+            console.log('✅ OAuth authentication successful!');
+            addLog('✅ Discord OAuth authentication successful!');
+            
+            // Show admin content immediately
+            showAdminContent();
+            loadDashboardData();
+            
+            // Force navigation panel to be visible
+            const navPanel = document.getElementById('navPanel');
+            if (navPanel) {
+              navPanel.style.display = 'block';
+              console.log('🔧 Navigation panel made visible after OAuth');
+            }
+            
+            // Start real-time updates
+            startDashboardBossStatsUpdating();
+            
+            addLog('🎉 Admin interface unlocked successfully!');
+            return; // Skip normal flow
+          }
+        }
+        
+        // Normal authentication flow
         const discordAuthResult = await checkDiscordAuth();
         console.log('🔐 Discord auth result:', discordAuthResult);
         
@@ -9145,6 +9194,10 @@ async function authenticateDiscord() {
     try {
         addLog('🔄 Starting Discord authentication...');
         
+        // 🚀 CRITICAL FIX: Set admin redirect flag before OAuth
+        localStorage.setItem('adminRedirect', 'true');
+        console.log('🚀 Set adminRedirect flag for OAuth return');
+        
         // Redirect to Discord OAuth
         const clientId = '1357927342265204858';
         const redirectUri = encodeURIComponent('https://narrrfs.world/api/auth/callback.php');
@@ -9153,6 +9206,7 @@ async function authenticateDiscord() {
         const authUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=${scope}`;
         
         addLog('🔗 Redirecting to Discord OAuth...');
+        addLog('🚀 Admin redirect flag set - will return to admin interface');
         window.location.href = authUrl;
         
     } catch (error) {
@@ -11403,98 +11457,6 @@ function updateGameTabContent(gameType, gameData) {
           addLog(`❌ Error force loading ${tabName} tab data: ${error.message}`);
         }
       }, 100);
-                setTimeout(() => {
-                  displaySnakeData(window.pendingSnakeData);
-                  delete window.pendingSnakeData;
-                }, 100);
-              }
-              break;
-            case 'space-invaders':
-              console.log('👾 Loading Space Invaders data...');
-              addLog('👾 Loading Space Invaders data...');
-              await loadSpaceInvadersData();
-              await loadBossNotifications(); // Load boss notifications when tab is opened
-              startBossNotificationChecking(); // Start real-time notification checking
-              
-              // 🔥 NEW: Load Phoenix configuration when Space Invaders tab is opened
-              setTimeout(() => {
-                loadPhoenixConfiguration();
-                addLog('🔥 Phoenix configuration auto-loaded for Space Invaders tab');
-              }, 200);
-              
-              // 🔧 CRITICAL FIX: Force display of any pending Space Invaders data
-              if (window.pendingSpaceInvadersData) {
-                console.log('👾 Force displaying pending Space Invaders data after tab switch...');
-                setTimeout(() => {
-                  displaySpaceInvadersData(window.pendingSpaceInvadersData);
-                  delete window.pendingSpaceInvadersData;
-                }, 100);
-              }
-              break;
-            case 'cheese-hunt':
-              console.log('🧀 Loading Cheese Hunt data...');
-              addLog('🧀 Loading Cheese Hunt data...');
-              // Don't call refreshCheeseHuntDisplay here - it clears content
-              await loadCheeseHuntData();
-              
-              // 🔧 CRITICAL FIX: Force display of any pending Cheese Hunt data
-              if (window.pendingCheeseHuntData) {
-                console.log('🧀 Force displaying pending Cheese Hunt data after tab switch...');
-                setTimeout(() => {
-                  displayCheeseHuntData(window.pendingCheeseHuntData);
-                  delete window.pendingCheeseHuntData;
-                }, 100);
-              }
-              break;
-            case 'discord-race':
-              console.log('🏁 Loading Discord Race data...');
-              addLog('🏁 Loading Discord Race data...');
-              // Don't call refreshDiscordRaceDisplay here - it clears content
-              await loadDiscordRaceData();
-              
-              // 🔧 CRITICAL FIX: Force display of any pending Discord Race data
-              if (window.pendingDiscordRaceData) {
-                console.log('🏁 Force displaying pending Discord Race data after tab switch...');
-                setTimeout(() => {
-                  displayDiscordRaceData(window.pendingDiscordRaceData);
-                  delete window.pendingDiscordRaceData;
-                }, 100);
-              }
-              break;
-          }
-          
-          // Additional verification that tab is visible after data loading
-          if (selectedTab) {
-            const computedStyle = window.getComputedStyle(selectedTab);
-            const isVisible = computedStyle.display !== 'none' && 
-                            computedStyle.visibility !== 'hidden' && 
-                            selectedTab.offsetHeight > 0;
-            
-            console.log('🔍 Tab visibility check after data loading:', {
-              display: computedStyle.display,
-              visibility: computedStyle.visibility,
-              height: selectedTab.offsetHeight,
-              isVisible: isVisible
-            });
-            
-            if (!isVisible) {
-              console.warn('⚠️ Tab not visible after data loading, forcing display...');
-              selectedTab.style.display = 'block';
-              selectedTab.style.visibility = 'visible';
-              selectedTab.classList.remove('hidden');
-              
-              // If the tab still has no content, restore the preserved content
-              if (selectedTab.innerHTML.trim() === '' && currentTabContent) {
-                console.log('🔄 Restoring preserved content to tab:', selectedTabId);
-                selectedTab.innerHTML = currentTabContent;
-              }
-            }
-          }
-        } catch (error) {
-          console.error('❌ Error loading data for tab:', tabName, error);
-          addLog(`❌ Error loading data for tab ${tabName}: ${error.message}`);
-        }
-      }, 100); // Small delay to ensure DOM updates
     }
 
     // Overview Dashboard Functions
@@ -20661,6 +20623,55 @@ function testDatabaseConnection() {
       
       document.body.appendChild(emergencyBtn);
       console.log('✅ Emergency unlock button added');
+    }
+    
+    // 🚀 NEW: Check OAuth return status and auto-unlock
+    function checkOAuthReturnStatus() {
+      const adminAuthenticated = localStorage.getItem('adminAuthenticated');
+      const adminAuthTime = localStorage.getItem('adminAuthTime');
+      const discordId = localStorage.getItem('discord_id');
+      const discordName = localStorage.getItem('discord_name');
+      
+      console.log('🔍 OAuth return status check:', {
+        adminAuthenticated,
+        adminAuthTime,
+        discordId,
+        discordName
+      });
+      
+      if (adminAuthenticated && adminAuthTime && discordId && discordName) {
+        console.log('🚀 OAuth return detected - auto-unlocking admin interface');
+        addLog('🚀 OAuth return detected - auto-unlocking admin interface');
+        
+        // Clear OAuth flags
+        localStorage.removeItem('adminAuthenticated');
+        localStorage.removeItem('adminAuthTime');
+        
+        // Set admin user
+        currentAdmin = {
+          username: discordName,
+          discord_id: discordId,
+          role: 'moderator',
+          auth_type: 'discord',
+          token: 'discord_auth_' + discordId,
+          has_database_access: true
+        };
+        
+        // Show admin content
+        showAdminContent();
+        loadDashboardData();
+        
+        // Show navigation panel
+        const navPanel = document.getElementById('navPanel');
+        if (navPanel) {
+          navPanel.style.display = 'block';
+        }
+        
+        addLog('🎉 Admin interface auto-unlocked from OAuth return!');
+        return true;
+      }
+      
+      return false;
     }
   </script>
 

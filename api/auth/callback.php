@@ -162,6 +162,12 @@ echo "<script>
   if (adminRedirect) {
     localStorage.removeItem('adminRedirect'); // Clear the flag
     console.log('🔄 Admin redirect detected, redirecting to admin interface');
+    console.log('✅ Discord authentication successful for admin interface');
+    
+    // Set additional admin authentication flags
+    localStorage.setItem('adminAuthenticated', 'true');
+    localStorage.setItem('adminAuthTime', Date.now().toString());
+    
     window.location.href = 'https://narrrfs.world/admin-interface.html';
   } else {
     console.log('🔄 No admin redirect, going to profile page');
