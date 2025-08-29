@@ -5403,10 +5403,10 @@ require_once 'discord-invite.php';
             loadCheeseHuntData();
             loadDiscordRaceData();
             
-                    // Switch to overview tab by default
-        setTimeout(() => {
+            // Switch to overview tab by default
+            setTimeout(() => {
           console.log('🔄 Switching to overview tab by default...');
-          switchGameTab('overview');
+              switchGameTab('overview');
           
           // Force show the overview tab
           setTimeout(() => {
@@ -5419,7 +5419,7 @@ require_once 'discord-invite.php';
               console.log('✅ Overview tab forced visible after switch');
             }
           }, 200);
-        }, 100);
+            }, 100);
               
               // Display any pending data that was loaded while tab was hidden
               displayPendingGameData();
@@ -20747,7 +20747,7 @@ function testDatabaseConnection() {
         }
       }, 100);
     }
-
+    
     // 🚨 CRITICAL FIX: Emergency unlock function for testing
     function addEmergencyUnlockButton() {
       console.log('🚨 Adding emergency unlock button...');

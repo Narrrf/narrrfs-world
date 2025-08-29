@@ -1504,99 +1504,79 @@ The next wave is close — don't miss the real Genesis scroll.
 </div>
 
   <!-- 🧬 Cheese Lab Multi-Stage Countdown Script - SYNCHRONIZED WITH GENSUKI -->
-  <!-- 🔧 Countdowns now use live timing to match Gensuki exactly -->
-  <!-- WL ends: 0d 13h 40m 11s from current time (matches Gensuki exactly) -->
-  <!-- WL is currently running, countdown until it ends -->
-  <!-- Public starts immediately when WL ends -->
-  <!-- Redemption starts: 28 days after WL ends -->
+  <!-- 🔧 Simple countdown using Gensuki live times exactly -->
+  <!-- WL ends in: 0d 13h 6m 27s -->
+  <!-- Public starts in: 0d 13h 6m 27s -->
+  <!-- Redemption starts in: 28d 13h 6m 27s -->
+  <!-- 🔧 This countdown is simple and reliable - no complex logic, just counts down! -->
   <script>
-            // 🔧 LIVE SYNCHRONIZED COUNTDOWN TIMES - Matches Gensuki Exactly
-            // Based on Gensuki showing: WL ends in 0d 13h 40m 11s
-            // WL is currently running, countdown until it ends
+            // 🔧 SIMPLE COUNTDOWN - Based on Gensuki live times
+            // WL ends in: 0d 13h 6m 27s
+            // Public starts in: 0d 13h 6m 27s  
+            // Redemption starts in: 28d 13h 6m 27s
+            
+            // Calculate target time: 13 hours 6 minutes 27 seconds from now
+            const TARGET_TIME_MS = (13 * 60 * 60 * 1000) + (6 * 60 * 1000) + (27 * 1000); // 13h 6m 27s in milliseconds
+            const TARGET_DATE = new Date(Date.now() + TARGET_TIME_MS);
             
             function updateCountdowns() {
                 try {
                     const now = new Date();
-                
-                // 🔧 LIVE COUNTDOWN TIMES - Synchronized with Gensuki
-                // Based on Gensuki showing: WL ends in 0d 13h 40m 11s
-                // WL is currently running, countdown until it ends
-                
-                // Calculate the target date based on current time + remaining time
-                // Gensuki shows: 0d 13h 40m 11s (13 hours 40 minutes 11 seconds)
-                const targetDate = new Date(now.getTime() + (13 * 60 * 60 * 1000) + (40 * 60 * 1000) + (11 * 1000)); // 13h 40m 11s from now
-                
-                // WL Stage - ENDS at the calculated target date (WL is currently running, countdown until it ends)
-                const wlEndDate = targetDate;
-                const wlEndDiff = wlEndDate - now;
-
-                // Public Stage - Starts immediately after WL ends
-                const publicStartDate = wlEndDate;
-                const publicDiff = publicStartDate - now;
-
-                // Redemption Stage - Starts 28 days after WL ends
-                const redemptionStartDate = new Date(wlEndDate.getTime() + (28 * 24 * 60 * 60 * 1000)); // 28 days after WL ends
-                const redemptionDiff = redemptionStartDate - now;
-         
-         // Update WL countdown - WL is currently running, countdown until it ends
-         const wlEl = document.getElementById("wl-countdown");
-         if (wlEl) {
-           if (wlEndDiff <= 0) {
-             wlEl.innerText = "✅ ENDED";
-           } else {
-             const wlDays = Math.floor(wlEndDiff / (1000 * 60 * 60 * 24));
-             const wlHours = Math.floor((wlEndDiff / (1000 * 60 * 60)) % 24);
-             const wlMins = Math.floor((wlEndDiff / (1000 * 60)) % 60);
-             const wlSecs = Math.floor((wlEndDiff / 1000) % 60);
-             wlEl.innerText = `WL ENDS IN: ${wlDays}d ${wlHours}h ${wlMins}m ${wlSecs}s`;
-           }
-         }
-  
-  // Update Redemption countdown
-  const redemptionEl = document.getElementById("redemption-countdown");
-  if (redemptionEl) {
-    if (redemptionDiff <= 0) {
-      redemptionEl.innerText = "✅ STARTED";
-    } else {
-      const redemptionDays = Math.floor(redemptionDiff / (1000 * 60 * 60 * 24));
-      const redemptionHours = Math.floor((redemptionDiff / (1000 * 60 * 60)) % 24);
-      const redemptionMins = Math.floor((redemptionDiff / (1000 * 60)) % 60);
-      const redemptionSecs = Math.floor((redemptionDiff / 1000) % 60);
-      redemptionEl.innerText = `${redemptionDays}d ${redemptionHours}h ${redemptionMins}m ${redemptionSecs}s`;
-    }
-  }
-  
-  // Update Public countdown
-  const publicEl = document.getElementById("public-countdown");
-  if (publicEl) {
-    if (publicDiff <= 0) {
-      publicEl.innerText = "✅ STARTED";
-    } else {
-      const publicDays = Math.floor(publicDiff / (1000 * 60 * 60 * 24));
-      const publicHours = Math.floor((publicDiff / (1000 * 60 * 60)) % 24);
-      const publicMins = Math.floor((publicDiff / (1000 * 60)) % 60);
-      const publicSecs = Math.floor((publicDiff / 1000) % 60);
-      publicEl.innerText = `${publicDays}d ${publicHours}h ${publicMins}m ${publicSecs}s`;
-    }
-  }
-  
-  // 🔧 DEBUG: Log countdown synchronization status
-  console.log('🔧 Countdown Synchronization Status:');
-  console.log('WL End Date:', wlEndDate.toISOString());
-  console.log('Redemption Start Date:', redemptionStartDate.toISOString());
-  console.log('Public Start Date:', publicStartDate.toISOString());
-  console.log('Current Time:', now.toISOString());
-  console.log('WL End Time Remaining:', Math.floor(wlEndDiff / (1000 * 60 * 60 * 24)), 'days,', Math.floor((wlEndDiff / (1000 * 60 * 60)) % 24), 'hours,', Math.floor((wlEndDiff / (1000 * 60)) % 60), 'minutes,', Math.floor((wlEndDiff / 1000) % 60), 'seconds');
-  console.log('Redemption Time Remaining:', Math.floor(redemptionDiff / (1000 * 60 * 60 * 24)), 'days,', Math.floor((redemptionDiff / (1000 * 60 * 60)) % 24), 'hours,', Math.floor((redemptionDiff / (1000 * 60)) % 60), 'minutes,', Math.floor((redemptionDiff / 1000) % 60), 'seconds');
-  console.log('Public Time Remaining:', Math.floor(publicDiff / (1000 * 60 * 60 * 24)), 'days,', Math.floor((publicDiff / (1000 * 60 * 60)) % 24), 'hours,', Math.floor((publicDiff / (1000 * 60)) % 60), 'minutes,', Math.floor((publicDiff / 1000) % 60), 'seconds');
+                    const timeLeft = TARGET_DATE - now;
+                    
+                    // If time is up, show ended
+                    if (timeLeft <= 0) {
+                        // WL has ended, show public and redemption
+                        const wlEl = document.getElementById("wl-countdown");
+                        const publicEl = document.getElementById("public-countdown");
+                        const redemptionEl = document.getElementById("redemption-countdown");
+                        
+                        if (wlEl) wlEl.innerText = "✅ WL ENDED";
+                        if (publicEl) publicEl.innerText = "✅ PUBLIC ACTIVE";
+                        if (redemptionEl) {
+                            // Redemption starts 28 days after WL ends
+                            const redemptionTime = new Date(TARGET_DATE.getTime() + (28 * 24 * 60 * 60 * 1000));
+                            const redemptionLeft = redemptionTime - now;
+                            
+                            if (redemptionLeft <= 0) {
+                                redemptionEl.innerText = "✅ REDEMPTION ACTIVE";
+                            } else {
+                                const days = Math.floor(redemptionLeft / (1000 * 60 * 60 * 24));
+                                const hours = Math.floor((redemptionLeft / (1000 * 60 * 60)) % 24);
+                                const mins = Math.floor((redemptionLeft / (1000 * 60)) % 60);
+                                const secs = Math.floor((redemptionLeft / 1000) % 60);
+                                redemptionEl.innerText = `Redemption starts in: ${days}d ${hours}h ${mins}m ${secs}s`;
+                            }
+                        }
+                        return;
+                    }
+                    
+                    // Calculate time components
+                    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+                    const mins = Math.floor((timeLeft / (1000 * 60)) % 60);
+                    const secs = Math.floor((timeLeft / 1000) % 60);
+                    
+                    // Update all countdowns with the same time (WL ends, Public starts, Redemption countdown)
+                    const wlEl = document.getElementById("wl-countdown");
+                    const publicEl = document.getElementById("public-countdown");
+                    const redemptionEl = document.getElementById("redemption-countdown");
+                    
+                    if (wlEl) wlEl.innerText = `WL ends in: ${days}d ${hours}h ${mins}m ${secs}s`;
+                    if (publicEl) publicEl.innerText = `Public starts in: ${days}d ${hours}h ${mins}m ${secs}s`;
+                    if (redemptionEl) redemptionEl.innerText = `Redemption starts in: ${days + 28}d ${hours}h ${mins}m ${secs}s`;
+                    
+                    // Debug log
+                    console.log(`🔧 Countdown: ${days}d ${hours}h ${mins}m ${secs}s remaining`);
+                    
                 } catch (error) {
                     console.error('❌ Error updating countdowns:', error);
                 }
-}
+            }
 
 // Initialize countdowns when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 Initializing synchronized countdowns...');
+    console.log('🔧 Initializing simple countdowns...');
     
     // Check if countdown elements exist
     const wlEl = document.getElementById("wl-countdown");
@@ -1617,7 +1597,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial update
     updateCountdowns();
     
-    // Start the countdown interval with error handling
+    // Start the countdown interval
     const countdownInterval = setInterval(() => {
         try {
             updateCountdowns();
@@ -1626,18 +1606,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
     console.log('🔧 Countdown interval started:', countdownInterval);
-    
-    // 🔧 Verify synchronization every 10 seconds
-    const syncInterval = setInterval(() => {
-        console.log('🔧 Countdown Sync Check:', new Date().toISOString());
-        if (wlEl && publicEl) {
-            console.log('WL Countdown:', wlEl.innerText);
-            console.log('Public Countdown:', publicEl.innerText);
-            console.log('Redemption Countdown:', redemptionEl ? redemptionEl.innerText : 'N/A');
-        }
-    }, 10000);
-    
-    console.log('🔧 Sync interval started:', syncInterval);
     
     // 🔧 Manual test function for debugging
     window.testCountdowns = function() {
@@ -1655,25 +1623,13 @@ document.addEventListener('DOMContentLoaded', function() {
         window.testCountdowns();
     }, 2000);
     
-    // 🔧 Fallback: Manual refresh every 5 seconds if interval fails
-    const fallbackInterval = setInterval(() => {
-        console.log('🔄 Fallback countdown update...');
-        try {
-            updateCountdowns();
-        } catch (error) {
-            console.error('❌ Error in fallback update:', error);
-        }
-    }, 5000);
-    
-    console.log('🔧 Fallback interval started:', fallbackInterval);
-    
     // 🔧 Global function to force refresh countdowns
     window.forceRefreshCountdowns = function() {
         console.log('🔄 Force refreshing countdowns...');
         updateCountdowns();
     };
 });
-</script>
+  </script>
 
 </section>
 
