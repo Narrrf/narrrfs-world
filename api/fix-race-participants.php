@@ -3,8 +3,8 @@
 header('Content-Type: text/plain');
 
 try {
-    // Connect to database
-    $db = new PDO('sqlite:../db/narrrf_world.sqlite');
+    // Connect to database - use absolute path for Render server
+    $db = new PDO('sqlite:/var/www/html/db/narrrf_world.sqlite');
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     echo "=== FIXING RACE PARTICIPANTS DATABASE ===\n\n";
