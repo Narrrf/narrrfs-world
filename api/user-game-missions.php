@@ -367,10 +367,11 @@ try {
             SELECT 
                 COUNT(*) as total_races,
                 COUNT(CASE WHEN position = 1 THEN 1 END) as wins,
-                COUNT(CASE WHEN position <= 3 THEN 1 END) as podiums,
-                MIN(position) as best_position
+                COUNT(CASE WHEN position <= 3 AND position != 999 THEN 1 END) as podiums,
+                MIN(CASE WHEN position != 999 THEN position END) as best_position,
+                SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
             FROM tbl_race_participants 
-            WHERE user_id = ?
+            WHERE user_id = ? AND status = 'completed'
         ");
         $stmt->execute([$discordId]);
         $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -380,8 +381,8 @@ try {
             $response['discord_race']['wins'] = (int)$raceData['wins'];
             $response['discord_race']['podiums'] = (int)$raceData['podiums'];
             $response['discord_race']['best_position'] = $raceData['best_position'] ? (int)$raceData['best_position'] : null;
-            $response['discord_race']['dspoinc_earned'] = (int)$raceData['total_races'] * 100; // DSPOINC conversion
-            error_log("✅ Discord Race stats found for user $discordId: " . $raceData['total_races'] . " races");
+            $response['discord_race']['dspoinc_earned'] = (int)$raceData['total_dspoinc_earned']; // Use actual DSPOINC earned
+            error_log("✅ Discord Race stats found for user $discordId: " . $raceData['total_races'] . " races, " . $raceData['total_dspoinc_earned'] . " DSPOINC");
         } else {
             error_log("❌ No Discord Race stats found for user $discordId");
         }
