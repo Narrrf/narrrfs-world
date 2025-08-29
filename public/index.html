@@ -1509,65 +1509,42 @@ The next wave is close — don't miss the real Genesis scroll.
   <!-- Public starts in: 0d 13h 6m 27s -->
   <!-- Redemption starts in: 28d 13h 6m 27s -->
   <!-- 🔧 This countdown is simple and reliable - no complex logic, just counts down! -->
+  <!-- 🔧 TEMPORARILY DISABLED FOR TODAY - Public is active -->
   <script>
-            // 🔧 SIMPLE COUNTDOWN - Based on Gensuki live times
+            // 🔧 TEMPORARILY DISABLED COUNTDOWN - Public is active today
             // WL ends in: 0d 13h 6m 27s
             // Public starts in: 0d 13h 6m 27s  
             // Redemption starts in: 28d 13h 6m 27s
             
-            // Calculate target time: 13 hours 6 minutes 27 seconds from now
-            const TARGET_TIME_MS = (13 * 60 * 60 * 1000) + (6 * 60 * 1000) + (27 * 1000); // 13h 6m 27s in milliseconds
-            const TARGET_DATE = new Date(Date.now() + TARGET_TIME_MS);
-            
+            // 🔧 TEMPORARY OVERRIDE: Show public as active
             function updateCountdowns() {
                 try {
-                    const now = new Date();
-                    const timeLeft = TARGET_DATE - now;
-                    
-                    // If time is up, show ended
-                    if (timeLeft <= 0) {
-                        // WL has ended, show public and redemption
-                        const wlEl = document.getElementById("wl-countdown");
-                        const publicEl = document.getElementById("public-countdown");
-                        const redemptionEl = document.getElementById("redemption-countdown");
-                        
-                        if (wlEl) wlEl.innerText = "✅ WL ENDED";
-                        if (publicEl) publicEl.innerText = "✅ PUBLIC ACTIVE";
-                        if (redemptionEl) {
-                            // Redemption starts 28 days after WL ends
-                            const redemptionTime = new Date(TARGET_DATE.getTime() + (28 * 24 * 60 * 60 * 1000));
-                            const redemptionLeft = redemptionTime - now;
-                            
-                            if (redemptionLeft <= 0) {
-                                redemptionEl.innerText = "✅ REDEMPTION ACTIVE";
-                            } else {
-                                const days = Math.floor(redemptionLeft / (1000 * 60 * 60 * 24));
-                                const hours = Math.floor((redemptionLeft / (1000 * 60 * 60)) % 24);
-                                const mins = Math.floor((redemptionLeft / (1000 * 60)) % 60);
-                                const secs = Math.floor((redemptionLeft / 1000) % 60);
-                                redemptionEl.innerText = `Redemption starts in: ${days}d ${hours}h ${mins}m ${secs}s`;
-                            }
-                        }
-                        return;
-                    }
-                    
-                    // Calculate time components
-                    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
-                    const mins = Math.floor((timeLeft / (1000 * 60)) % 60);
-                    const secs = Math.floor((timeLeft / 1000) % 60);
-                    
-                    // Update all countdowns with the same time (WL ends, Public starts, Redemption countdown)
+                    // 🔧 TEMPORARY: Public is active today
                     const wlEl = document.getElementById("wl-countdown");
                     const publicEl = document.getElementById("public-countdown");
                     const redemptionEl = document.getElementById("redemption-countdown");
                     
-                    if (wlEl) wlEl.innerText = `WL ends in: ${days}d ${hours}h ${mins}m ${secs}s`;
-                    if (publicEl) publicEl.innerText = `Public starts in: ${days}d ${hours}h ${mins}m ${secs}s`;
-                    if (redemptionEl) redemptionEl.innerText = `Redemption starts in: ${days + 28}d ${hours}h ${mins}m ${secs}s`;
+                    if (wlEl) wlEl.innerText = "✅ WL ENDED";
+                    if (publicEl) publicEl.innerText = "✅ PUBLIC ACTIVE";
+                    if (redemptionEl) {
+                        // Show redemption countdown (28 days from now)
+                        const now = new Date();
+                        const redemptionTime = new Date(now.getTime() + (28 * 24 * 60 * 60 * 1000));
+                        const redemptionLeft = redemptionTime - now;
+                        
+                        if (redemptionLeft <= 0) {
+                            redemptionEl.innerText = "✅ REDEMPTION ACTIVE";
+                        } else {
+                            const days = Math.floor(redemptionLeft / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((redemptionLeft / (1000 * 60 * 60)) % 24);
+                            const mins = Math.floor((redemptionLeft / (1000 * 60)) % 60);
+                            const secs = Math.floor((redemptionLeft / 1000) % 60);
+                            redemptionEl.innerText = `Redemption starts in: ${days}d ${hours}h ${mins}m ${secs}s`;
+                        }
+                    }
                     
                     // Debug log
-                    console.log(`🔧 Countdown: ${days}d ${hours}h ${mins}m ${secs}s remaining`);
+                    console.log(`🔧 TEMPORARY: Public is active, redemption countdown running`);
                     
                 } catch (error) {
                     console.error('❌ Error updating countdowns:', error);
