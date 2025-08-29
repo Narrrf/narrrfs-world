@@ -97,12 +97,12 @@ let phoenixWaveConfig = {
   waveFrequency: 5,        // Every 5th wave (3, 8, 13, 18, 23...)
   basePhoenixCount: 3,     // 🔥 BALANCED: 3 Phoenix for early waves
   difficultyScaling: 1.05, // 🔥 BALANCED: Gentle scaling for smooth progression
-  eggLayingRate: 0.12,     // 🔥 BALANCED: 12% chance (reduced for balance)
+  eggLayingRate: 0.18,     // 🔥 ENHANCED: Increased from 12% to 18% for more danger
   formationPatterns: ['v', 'diamond', 'spiral'], // 🔥 BALANCED: Progressive pattern unlocking
   maxPhoenixPerWave: 12,   // 🔥 BALANCED: Increased for late-game waves
-  eggHatchTime: 500,       // 🔥 BALANCED: 5 seconds before hatching
-  miniPhoenixHealth: 15,   // 🔥 BALANCED: 15 HP for mini-Phoenixes
-  phoenixHealth: 30        // 🔥 BALANCED: 30 HP base (scales with waves)
+  eggHatchTime: 400,       // 🔥 ENHANCED: Reduced from 500 to 400 (4 seconds) for faster hatching
+  miniPhoenixHealth: 25,   // 🔥 ENHANCED: Increased from 15 to 25 HP for tougher mini-Phoenixes
+  phoenixHealth: 45        // 🔥 ENHANCED: Increased from 30 to 45 HP base for more challenging Phoenix birds
 };
 
 // 🔥 PHOENIX CONFIGURATION LOADING - NEW!
@@ -260,15 +260,16 @@ class PhoenixBird {
     this.height = 60; // 🔥 CRITICAL FIX: Add dimensions
     this.health = (phoenixWaveConfig.phoenixHealth || 80) * difficulty;
     this.maxHealth = this.health;
-    this.speed = phoenixWaveConfig.phoenixSpeed || 2.0;
+    this.speed = (phoenixWaveConfig.phoenixSpeed || 2.0) * (1 + (difficulty - 1) * 0.2); // 🔥 ENHANCED: Speed scales with difficulty
     this.eggLayingCooldown = 0;
     this.flightPattern = this.generateFlightPattern();
     this.animationFrame = 0;
     this.animationSpeed = 0.1;
     this.isDead = false;
     this.explosionTimer = 0;
+    this.damage = Math.max(1, Math.floor(difficulty * 0.8)); // 🔥 ENHANCED: Phoenix birds now deal damage on collision
     
-    console.log(`🔥 PhoenixBird created at x=${x}, y=${y}, health=${this.health}`);
+    console.log(`🔥 PhoenixBird created at x=${x}, y=${y}, health=${this.health}, speed=${this.speed}, damage=${this.damage}`);
   }
   
   generateFlightPattern() {
@@ -319,20 +320,56 @@ class PhoenixBird {
   }
   
   createClusterFormation() {
-    // Random cluster formation
+    // 🔥 ENHANCED: More chaotic and dangerous cluster formation
     const canvas = document.getElementById('space-invaders-canvas');
     const centerX = canvas ? canvas.width / 2 : 200;
     const centerY = 100;
-    const clusterRadius = 80;
+    const clusterRadius = 120; // Increased radius for more spread
     
-    this.targetX = centerX + (Math.random() - 0.5) * clusterRadius;
-    this.targetY = centerY + (Math.random() - 0.5) * clusterRadius;
+    // 🔥 ENHANCED: Dynamic cluster movement
+    if (!this.clusterTimer) {
+      this.clusterTimer = 0;
+      this.clusterDirection = Math.random() * Math.PI * 2;
+    }
+    
+    this.clusterTimer++;
+    
+    // 🔥 ENHANCED: Cluster slowly moves and changes shape
+    const time = this.clusterTimer * 0.02;
+    const wobbleX = Math.sin(time + this.clusterDirection) * 20;
+    const wobbleY = Math.cos(time + this.clusterDirection) * 20;
+    
+    this.targetX = centerX + (Math.random() - 0.5) * clusterRadius + wobbleX;
+    this.targetY = centerY + (Math.random() - 0.5) * clusterRadius + wobbleY;
+    
+    // 🔥 ENHANCED: Cluster occasionally moves towards player
+    if (this.clusterTimer % 120 === 0) { // Every 2 seconds
+      this.targetX = playerShip.x + (Math.random() - 0.5) * 60;
+      this.targetY = playerShip.y - 30;
+    }
   }
   
   createDiveFormation() {
-    // Dive bombing pattern
-    this.targetX = playerShip.x + (Math.random() - 0.5) * 100;
-    this.targetY = playerShip.y - 50;
+    // 🔥 ENHANCED: More aggressive dive bombing pattern
+    const diveSpeed = 1.5;
+    this.targetX = playerShip.x + (Math.random() - 0.5) * 80;
+    this.targetY = playerShip.y + 20; // Dive deeper towards player
+    
+    // 🔥 ENHANCED: Add dive acceleration
+    if (!this.diveAcceleration) {
+      this.diveAcceleration = 0;
+      this.originalSpeed = this.speed;
+    }
+    
+    this.diveAcceleration += 0.1;
+    this.speed = this.originalSpeed + this.diveAcceleration;
+    
+    // 🔥 ENHANCED: Dive recovery when too close
+    if (this.y > playerShip.y + 100) {
+      this.targetY = 50; // Return to top
+      this.speed = this.originalSpeed;
+      this.diveAcceleration = 0;
+    }
   }
   
   update() {
@@ -557,13 +594,14 @@ class MiniPhoenix {
     this.height = 20; // 🔥 CRITICAL FIX: Add height for collision detection
     this.health = phoenixWaveConfig.miniPhoenixHealth;
     this.maxHealth = this.health;
-    this.speed = 1.5;
+    this.speed = 2.2; // 🔥 ENHANCED: Increased from 1.5 to 2.2 for faster mini-Phoenixes
     this.targetX = playerShip.x;
     this.targetY = playerShip.y;
     this.animationFrame = 0;
     this.animationSpeed = 0.3;
     this.isDead = false;
     this.explosionTimer = 0;
+    this.damage = 2; // 🔥 ENHANCED: Mini-Phoenixes now deal 2 damage on collision
   }
   
   update() {
@@ -824,33 +862,33 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
     cheeseEmperor: {
       name: 'Cheese Emperor',
       description: 'The second boss - balanced for double shot players',
-      baseHealth: 200, // Reduced from 300 - beatable with double shot
+      baseHealth: 180, // 🔥 BALANCED: Further reduced from 200 for better balance
       healthMultiplier: 1.0,
-      baseSpeed: 2.0, // Reduced from 2.8 - more manageable
+      baseSpeed: 1.8, // 🔥 BALANCED: Further reduced from 2.0 for easier dodging
       speedMultiplier: 1.0,
-      baseAttackCooldown: 800, // Increased from 600 - gives players time to react
+      baseAttackCooldown: 1000, // 🔥 BALANCED: Increased from 800 to 1000ms for more reaction time
       attackCooldownMultiplier: 1.0,
-      baseBulletSpeed: 3.0, // Reduced from 3.8 - easier to dodge
+      baseBulletSpeed: 2.8, // 🔥 BALANCED: Further reduced from 3.0 for easier dodging
       bulletSpeedMultiplier: 1.0,
-      baseBulletDamage: 2, // Reduced from 3 - less punishing
+      baseBulletDamage: 1, // 🔥 BALANCED: Further reduced from 2 for less punishing hits
       bulletDamageMultiplier: 1.0,
       size: 1.0,
       movementPatterns: ['sideways', 'hover'], // Removed circle for simplicity
-      attackPatterns: [0, 1, 2], // Reduced from 5 to 3 patterns
+      attackPatterns: [0, 1], // 🔥 BALANCED: Reduced from 3 to 2 patterns for less complexity
       abilities: {
         canTeleport: false,
         canShield: false,
-        canSummonMinions: true,
-        canUseLaser: true,
+        canSummonMinions: false, // 🔥 BALANCED: Disabled minion summoning for easier fight
+        canUseLaser: false, // 🔥 BALANCED: Disabled laser for simpler attack patterns
         canCreateExplosions: false
       },
-      specialAttackChance: 0.25, // Reduced from 0.4
-      rageModeThreshold: 0.4, // Increased from 0.35 - later rage mode
+      specialAttackChance: 0.15, // 🔥 BALANCED: Further reduced from 0.25 for less frequent specials
+      rageModeThreshold: 0.5, // 🔥 BALANCED: Increased from 0.4 for later rage mode
       rageModeMultipliers: {
-        speed: 1.8, // Reduced from 2.2
-        attackCooldown: 0.5, // Increased from 0.35
-        bulletSpeed: 1.5, // Reduced from 2.0
-        bulletDamage: 1.5 // Reduced from 1.8
+        speed: 1.5, // 🔥 BALANCED: Further reduced from 1.8 for manageable rage
+        attackCooldown: 0.6, // 🔥 BALANCED: Increased from 0.5 for slower rage attacks
+        bulletSpeed: 1.3, // 🔥 BALANCED: Further reduced from 1.5 for easier rage dodging
+        bulletDamage: 1.2 // 🔥 BALANCED: Further reduced from 1.5 for less punishing rage
       },
       colors: {
         primary: '#8b5cf6',
@@ -4670,8 +4708,16 @@ let reloadButtonInterval = null;
   function spawnPhoenixWave() {
     isPhoenixWave = true;
     
-    // 🔥 PHOENIX WAVE ANNOUNCEMENT - NEW!
-    showNotification('🔥 PHOENIX INVADERS WAVE! 🔥', 'phoenix');
+    // 🔥 PHOENIX WAVE ANNOUNCEMENT - ENHANCED!
+    if (waveNumber >= 18) {
+      showNotification('🔥🔥🔥 ENHANCED PHOENIX INVADERS WAVE! 🔥🔥🔥', 'phoenix');
+      showNotification('⚠️ WARNING: Phoenix birds now deal collision damage! ⚠️', 'warning');
+    } else if (waveNumber >= 33) {
+      showNotification('🔥🔥🔥🔥🔥 LEGENDARY PHOENIX INVADERS WAVE! 🔥🔥🔥🔥🔥', 'phoenix');
+      showNotification('🚨 DANGER: Maximum chaos and danger! 🚨', 'danger');
+    } else {
+      showNotification('🔥 PHOENIX INVADERS WAVE! 🔥', 'phoenix');
+    }
     
     // 🎯 PROFESSIONAL DIFFICULTY SCALING: Smooth progression to wave 1000+
     const baseCount = phoenixWaveConfig.basePhoenixCount;
@@ -4767,11 +4813,28 @@ let reloadButtonInterval = null;
     const availablePatterns = phoenixWaveConfig.formationPatterns;
     let formationPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
     
-    // 🔥 WAVE 3 BALANCING: Force V-formation for first Phoenix wave
-    if (waveNumber === 3) {
-      formationPattern = 'v';
-      console.log('🔥 WAVE 3: Forcing V-formation for beginner-friendly experience');
-    }
+          // 🔥 WAVE 3 BALANCING: Force V-formation for first Phoenix wave
+      if (waveNumber === 3) {
+        formationPattern = 'v';
+        console.log('🔥 WAVE 3: Forcing V-formation for beginner-friendly experience');
+      }
+      
+      // 🔥 ENHANCED: More dangerous formations for higher waves
+      if (waveNumber >= 18) {
+        // Add dive formation for more aggressive waves
+        if (Math.random() < 0.3) {
+          formationPattern = 'dive';
+          console.log('🔥 ENHANCED: Dive formation selected for aggressive wave!');
+        }
+      }
+      
+      if (waveNumber >= 33) {
+        // Add cluster formation for chaotic waves
+        if (Math.random() < 0.25) {
+          formationPattern = 'cluster';
+          console.log('🔥 ENHANCED: Cluster formation selected for chaotic wave!');
+        }
+      }
     
           // Spawn Phoenix birds in formation
       for (let i = 0; i < phoenixCount; i++) {
@@ -4866,28 +4929,57 @@ let reloadButtonInterval = null;
     // Update mini-Phoenix enemies
     miniPhoenixes = miniPhoenixes.filter(mini => mini.update());
     
-    // Check if Phoenix wave is complete
-    if (phoenixWaves.length === 0 && phoenixEggs.length === 0 && miniPhoenixes.length === 0) {
-      console.log('🔥 Phoenix wave completed! Returning to regular invaders...');
-      isPhoenixWave = false;
-      
-      // Check if next wave should be a boss wave
-      const nextWave = waveNumber + 1;
-      if (nextWave === 10 || nextWave === 25 || nextWave === 75 || nextWave === 100) {
-        console.log(`🏆 BOSS WAVE! Wave ${nextWave} will be an epic boss fight!`);
-        gamePhase = 'boss';
-        phaseTimer = 0;
-        waveNumber++;
-        spawnBoss();
-      } else {
-        gamePhase = 'formation';
-        phaseTimer = 0;
-        waveNumber++;
-        invaderDropPhase = false;
-        dropStartTime = Date.now();
-        spawnNewWave();
-      }
+      // Check if Phoenix wave is complete
+  if (phoenixWaves.length === 0 && phoenixEggs.length === 0 && miniPhoenixes.length === 0) {
+    console.log('🔥 Phoenix wave completed! Returning to regular invaders...');
+    isPhoenixWave = false;
+    
+    // Check if next wave should be a boss wave
+    const nextWave = waveNumber + 1;
+    if (nextWave === 10 || nextWave === 25 || nextWave === 75 || nextWave === 100) {
+      console.log(`🏆 BOSS WAVE! Wave ${nextWave} will be an epic boss fight!`);
+      gamePhase = 'boss';
+      phaseTimer = 0;
+      waveNumber++;
+      spawnBoss();
+    } else {
+      gamePhase = 'formation';
+      phaseTimer = 0;
+      waveNumber++;
+      invaderDropPhase = false;
+      dropStartTime = Date.now();
+      spawnNewWave();
     }
+  }
+  
+  // 🔥 ENHANCED: Check Phoenix collisions with player for damage
+  if (isPhoenixWave) {
+    // Check Phoenix bird collisions
+    phoenixWaves.forEach(phoenix => {
+      if (checkCollision(phoenix, playerShip)) {
+        console.log(`🔥 Phoenix collision! Player takes ${phoenix.damage} damage!`);
+        playerHealth -= phoenix.damage;
+        screenShake = 5;
+        createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 30, 20);
+        
+        // Phoenix takes damage too
+        phoenix.takeDamage(5);
+      }
+    });
+    
+    // Check mini-Phoenix collisions
+    miniPhoenixes.forEach(mini => {
+      if (checkCollision(mini, playerShip)) {
+        console.log(`🐤 Mini-Phoenix collision! Player takes ${mini.damage} damage!`);
+        playerHealth -= mini.damage;
+        screenShake = 3;
+        createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 20, 15);
+        
+        // Mini-Phoenix takes damage too
+        mini.takeDamage(3);
+      }
+    });
+  }
   }
 
   // 🔥 PHOENIX INVADERS: Draw all Phoenix entities
