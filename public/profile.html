@@ -2490,6 +2490,8 @@ function getGameStats(gameKey, game) {
         statsHTML = `
           <div class="text-blue-300">Total Races: ${stats.total_races || 0}</div>
           <div class="text-green-300">Wins: ${stats.wins || 0}</div>
+          <div class="text-purple-300">Podium Finishes: ${stats.podium_finishes || 0}</div>
+          <div class="text-yellow-300">Best Position: ${stats.best_position || 'N/A'}</div>
           <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
         `;
         break;
