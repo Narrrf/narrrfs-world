@@ -5,15 +5,49 @@ header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
 // Simple database upload without authentication for local development
+// This endpoint is designed for local testing and development use
+
 try {
     // Check if file was uploaded
     if (!isset($_FILES['database']) || $_FILES['database']['error'] !== UPLOAD_ERR_OK) {
+        $errorMsg = 'No database file uploaded';
+        if (isset($_FILES['database'])) {
+            switch ($_FILES['database']['error']) {
+                case UPLOAD_ERR_INI_SIZE:
+                    $errorMsg = 'File exceeds upload_max_filesize in php.ini';
+                    break;
+                case UPLOAD_ERR_FORM_SIZE:
+                    $errorMsg = 'File exceeds MAX_FILE_SIZE in HTML form';
+                    break;
+                case UPLOAD_ERR_PARTIAL:
+                    $errorMsg = 'File was only partially uploaded';
+                    break;
+                case UPLOAD_ERR_NO_FILE:
+                    $errorMsg = 'No file was uploaded';
+                    break;
+                case UPLOAD_ERR_NO_TMP_DIR:
+                    $errorMsg = 'Missing temporary folder';
+                    break;
+                case UPLOAD_ERR_CANT_WRITE:
+                    $errorMsg = 'Failed to write file to disk';
+                    break;
+                case UPLOAD_ERR_EXTENSION:
+                    $errorMsg = 'A PHP extension stopped the file upload';
+                    break;
+                default:
+                    $errorMsg = 'Unknown upload error: ' . $_FILES['database']['error'];
+            }
+        }
+        
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'No database file uploaded or upload error: ' . $_FILES['database']['error']]);
+        echo json_encode(['success' => false, 'error' => $errorMsg]);
         exit;
     }
     
     $uploadedFile = $_FILES['database'];
+    
+    // Log upload attempt for debugging
+    error_log("Database upload attempt: " . $uploadedFile['name'] . " (Size: " . $uploadedFile['size'] . " bytes)");
     
     // Validate file type - accept SQLite files
     $allowedExtensions = ['sqlite', 'db', 'sqlite3'];
@@ -33,8 +67,27 @@ try {
         exit;
     }
     
-    // Set target database path
-    $targetPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+    // Set target database path - use production path for live server
+    $isProduction = !(PHP_OS_FAMILY === 'Windows' || strpos($_SERVER['DOCUMENT_ROOT'] ?? '', 'xampp') !== false);
+    
+    error_log('Environment detection - PHP_OS_FAMILY: ' . PHP_OS_FAMILY);
+    error_log('Environment detection - DOCUMENT_ROOT: ' . ($_SERVER['DOCUMENT_ROOT'] ?? 'NOT SET'));
+    error_log('Environment detection - isProduction: ' . ($isProduction ? 'YES' : 'NO'));
+    
+    if ($isProduction) {
+        // Production - upload to both production and /data for persistence
+        $targetPath = '/var/www/html/db/narrrf_world.sqlite';
+        $dataPath = '/data/narrrf_world.sqlite';
+        $backupDir = '/data/backups';
+        error_log('Production paths - target: ' . $targetPath . ', data: ' . $dataPath . ', backup: ' . $backupDir);
+    } else {
+        // Local development
+        $targetPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+        $dataPath = null;
+        $backupDir = __DIR__ . '/../../db/backups';
+        error_log('Local paths - target: ' . $targetPath . ', backup: ' . $backupDir);
+    }
+    
     $targetDir = dirname($targetPath);
     
     // Ensure the db directory exists
@@ -45,7 +98,6 @@ try {
     // Create backup of current database if it exists
     $backupPath = null;
     if (file_exists($targetPath)) {
-        $backupDir = __DIR__ . '/../../db/backups';
         if (!is_dir($backupDir)) {
             mkdir($backupDir, 0755, true);
         }
@@ -85,15 +137,25 @@ try {
                 exit;
             }
             
-            // Success!
+            // Success! Now copy to /data for persistence if on production
+            $dataCopySuccess = false;
+            if ($isProduction && $dataPath) {
+                if (copy($targetPath, $dataPath)) {
+                    chmod($dataPath, 0644);
+                    $dataCopySuccess = true;
+                }
+            }
+            
             echo json_encode([
                 'success' => true,
-                'message' => 'Database uploaded successfully!',
+                'message' => $isProduction ? 'Database uploaded successfully to production and /data!' : 'Database uploaded successfully!',
                 'tables_count' => count($tables),
                 'tables' => $tables,
                 'backup_created' => $backupPath ? file_exists($backupPath) : false,
                 'backup_path' => $backupPath,
                 'target_path' => $targetPath,
+                'data_path' => $dataPath,
+                'data_copy_success' => $dataCopySuccess,
                 'file_size' => filesize($targetPath),
                 'upload_info' => [
                     'original_name' => $uploadedFile['name'],

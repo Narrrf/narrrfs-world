@@ -5,7 +5,10 @@ header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 require_once '../config/database.php';
-require_once '../auth/validate-token.php';
+require_once '../auth/verify-admin.php';
+
+// Start session for admin verification
+session_start();
 
 // Check for secret key bypass first (for quick uploads)
 $secretKey = 'MyUltraSecretKey123';
@@ -13,20 +16,13 @@ if (isset($_GET['secret']) && $_GET['secret'] === $secretKey) {
     // Secret key provided - skip authentication
     $admin = ['username' => 'curl_upload', 'id' => 'curl'];
 } else {
-    // Validate admin token
-    $token = getBearerToken();
-    if (!$token) {
+    // Validate admin using session-based Discord authentication
+    if (!isAdminOrMod()) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'No token provided']);
+        echo json_encode(['success' => false, 'error' => 'Admin access required']);
         exit;
     }
-
-    $admin = validateAdminToken($token);
-    if (!$admin) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Invalid or expired token']);
-        exit;
-    }
+    $admin = ['username' => $_SESSION['discord_name'] ?? 'admin', 'id' => $_SESSION['discord_id'] ?? 'unknown'];
 }
 
 try {
@@ -162,13 +158,4 @@ try {
     echo json_encode(['success' => false, 'error' => 'Database upload failed: ' . $e->getMessage()]);
 }
 
-function getBearerToken() {
-    $headers = getallheaders();
-    if (isset($headers['Authorization'])) {
-        if (preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches)) {
-            return $matches[1];
-        }
-    }
-    return null;
-}
 ?>

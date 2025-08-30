@@ -9900,20 +9900,11 @@ async function authenticateDiscord() {
       try {
         statusDiv.innerHTML = '<div class="text-blue-600">⏳ Uploading database...</div>';
         
-        // Use simple upload script for local development, authenticated version for production
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const uploadUrl = isLocal ? 
-          API_BASE_URL + '/api/admin/upload-database-simple.php' : 
-          API_BASE_URL + '/api/admin/upload-database.php';
-        
-        const headers = {};
-        if (!isLocal && currentAdmin && currentAdmin.token) {
-          headers['Authorization'] = 'Bearer ' + currentAdmin.token;
-        }
+        // Use simple upload script since it works reliably
+        const uploadUrl = API_BASE_URL + '/api/admin/upload-database-simple.php';
         
         const response = await fetch(uploadUrl, {
           method: 'POST',
-          headers: headers,
           body: formData
         });
         
