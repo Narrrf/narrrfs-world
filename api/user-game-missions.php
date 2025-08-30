@@ -387,7 +387,7 @@ try {
                 MIN(CASE WHEN status = 'completed' THEN position END) as best_position, -- Best position from completed races only
                 SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
             FROM tbl_race_participants 
-            WHERE user_id = ? -- No status filter - count ALL races!
+            WHERE discord_id = ? -- 🔧 CRITICAL FIX: Use discord_id field (not user_id)!
         ");
         $stmt->execute([$discordId]);
         $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -403,7 +403,7 @@ try {
             error_log("✅ Discord Race stats found for user $discordId: " . $raceData['total_races'] . " races (ALL races counted!), " . $raceData['total_dspoinc_earned'] . " DSPOINC");
             
             // 🔍 DEBUG: Show breakdown of race statuses
-            $statusBreakdown = $db->prepare("SELECT status, COUNT(*) as count FROM tbl_race_participants WHERE user_id = ? GROUP BY status");
+            $statusBreakdown = $db->prepare("SELECT status, COUNT(*) as count FROM tbl_race_participants WHERE discord_id = ? GROUP BY status");
             $statusBreakdown->execute([$discordId]);
             $statuses = $statusBreakdown->fetchAll(PDO::FETCH_ASSOC);
             error_log("🔍 DISCORD RACE DEBUG: Race status breakdown for user $discordId: " . json_encode($statuses));
@@ -416,7 +416,7 @@ try {
             error_log("🔍 DISCORD RACE DEBUG: Total completed races in database: " . $completedResult['total']);
             
             // Check if user exists in race_participants at all
-            $userRaceDebug = $db->prepare("SELECT COUNT(*) as total FROM tbl_race_participants WHERE user_id = ?");
+            $userRaceDebug = $db->prepare("SELECT COUNT(*) as total FROM tbl_race_participants WHERE discord_id = ?");
             $userRaceDebug->execute([$discordId]);
             $userRaceResult = $userRaceDebug->fetch(PDO::FETCH_ASSOC);
             error_log("🔍 DISCORD RACE DEBUG: Total race participations for user $discordId: " . $userRaceResult['total']);
