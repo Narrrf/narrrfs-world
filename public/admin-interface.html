@@ -13369,25 +13369,52 @@ function updateGameTabContent(gameType, gameData) {
         
         console.log('Updating race statistics with:', stats);
         
-        // Update main statistics
+        // Update main statistics with debugging
+        console.log('🔍 Updating race statistics with:', stats);
+        
         if (document.getElementById('raceTotalRaces')) {
-          document.getElementById('raceTotalRaces').textContent = stats.total_races || 0;
+          const element = document.getElementById('raceTotalRaces');
+          const value = stats.total_races || 0;
+          element.textContent = value;
+          console.log('✅ Set raceTotalRaces to:', value);
+        } else {
+          console.error('❌ Element raceTotalRaces not found!');
         }
         
         if (document.getElementById('raceTotalParticipants')) {
-          document.getElementById('raceTotalParticipants').textContent = stats.participants || 0;
+          const element = document.getElementById('raceTotalParticipants');
+          const value = stats.participants || 0;
+          element.textContent = value;
+          console.log('✅ Set raceTotalParticipants to:', value);
+        } else {
+          console.error('❌ Element raceTotalParticipants not found!');
         }
         
         if (document.getElementById('raceTotalWinners')) {
-          document.getElementById('raceTotalWinners').textContent = stats.winners || 0;
+          const element = document.getElementById('raceTotalWinners');
+          const value = stats.winners || 0;
+          element.textContent = value;
+          console.log('✅ Set raceTotalWinners to:', value);
+        } else {
+          console.error('❌ Element raceTotalWinners not found!');
         }
         
         if (document.getElementById('raceCompletedRaces')) {
-          document.getElementById('raceCompletedRaces').textContent = stats.finished_races || 0;
+          const element = document.getElementById('raceCompletedRaces');
+          const value = stats.finished_races || 0;
+          element.textContent = value;
+          console.log('✅ Set raceCompletedRaces to:', value);
+        } else {
+          console.error('❌ Element raceCompletedRaces not found!');
         }
         
         if (document.getElementById('raceActiveRaces')) {
-          document.getElementById('raceActiveRaces').textContent = stats.active_races || 0;
+          const element = document.getElementById('raceActiveRaces');
+          const value = stats.active_races || 0;
+          element.textContent = value;
+          console.log('✅ Set raceActiveRaces to:', value);
+        } else {
+          console.error('❌ Element raceActiveRaces not found!');
         }
         
         if (document.getElementById('raceSuccessRate')) {
