@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="file"] { padding: 10px; border: 2px solid #ddd; border-radius: 5px; width: 300px; }
+        button { padding: 10px 20px; background: #007cba; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #005a87; }
+        .status { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>Database Upload Test</h1>
+    <p>Test the database upload functionality</p>
+    
+    <div class="form-group">
+        <label for="dbFile">Select SQLite Database File:</label>
+        <input type="file" id="dbFile" accept=".sqlite,.db,.sqlite3">
+    </div>
+    
+    <button onclick="testUpload()">Test Upload</button>
+    
+    <div id="status" class="status" style="display: none;"></div>
+    
+    <script>
+        async function testUpload() {
+            const fileInput = document.getElementById('dbFile');
+            const statusDiv = document.getElementById('status');
+            
+            if (!fileInput.files[0]) {
+                showStatus('Please select a database file', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('database', fileInput.files[0]);
+            
+            try {
+                showStatus('⏳ Uploading database...', 'info');
+                
+                // Test both endpoints
+                const endpoints = [
+                    '/api/admin/upload-database-simple.php',
+                    '/api/admin/upload-database.php?secret=MyUltraSecretKey123'
+                ];
+                
+                for (let i = 0; i < endpoints.length; i++) {
+                    try {
+                        showStatus(`⏳ Testing endpoint ${i + 1}: ${endpoints[i]}`, 'info');
+                        
+                        const response = await fetch(endpoints[i], {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            showStatus(`✅ Upload successful via ${endpoints[i]}! Tables: ${data.tables_count}`, 'success');
+                            console.log('Upload response:', data);
+                            return;
+                        } else {
+                            showStatus(`❌ Endpoint ${i + 1} failed: ${data.error}`, 'error');
+                            console.log(`Endpoint ${i + 1} error:`, data);
+                        }
+                    } catch (error) {
+                        showStatus(`❌ Endpoint ${i + 1} error: ${error.message}`, 'error');
+                        console.log(`Endpoint ${i + 1} error:`, error);
+                    }
+                }
+                
+                showStatus('❌ All upload endpoints failed', 'error');
+                
+            } catch (error) {
+                showStatus('❌ Upload error: ' + error.message, 'error');
+                console.error('Upload error:', error);
+            }
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

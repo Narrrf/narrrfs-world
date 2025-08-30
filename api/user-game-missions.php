@@ -382,12 +382,13 @@ try {
         $stmt = $db->prepare("
             SELECT 
                 COUNT(*) as total_races,
-                COUNT(CASE WHEN status = 'completed' AND position < 50 THEN 1 END) as wins, -- Only count wins from completed races
-                COUNT(CASE WHEN status = 'completed' AND position < 100 THEN 1 END) as podiums, -- Only count podiums from completed races
-                MIN(CASE WHEN status = 'completed' THEN position END) as best_position, -- Best position from completed races only
+                COUNT(CASE WHEN finished_at IS NOT NULL THEN 1 END) as completed_races, -- Count races that have finished
+                COUNT(CASE WHEN position = 1 THEN 1 END) as wins, -- Count first place finishes
+                COUNT(CASE WHEN position <= 3 THEN 1 END) as podiums, -- Count podium finishes (top 3)
+                MIN(position) as best_position, -- Best position achieved
                 SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
             FROM tbl_race_participants 
-            WHERE discord_id = ? -- 🔧 CRITICAL FIX: Use discord_id field (not user_id)!
+            WHERE user_id = ? -- 🔧 CRITICAL FIX: Use user_id field (matches database schema)
         ");
         $stmt->execute([$discordId]);
         $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -403,20 +404,20 @@ try {
             error_log("✅ Discord Race stats found for user $discordId: " . $raceData['total_races'] . " races (ALL races counted!), " . $raceData['total_dspoinc_earned'] . " DSPOINC");
             
             // 🔍 DEBUG: Show breakdown of race statuses
-            $statusBreakdown = $db->prepare("SELECT status, COUNT(*) as count FROM tbl_race_participants WHERE discord_id = ? GROUP BY status");
+            $statusBreakdown = $db->prepare("SELECT status, COUNT(*) as count FROM tbl_race_participants WHERE user_id = ? GROUP BY status");
             $statusBreakdown->execute([$discordId]);
             $statuses = $statusBreakdown->fetchAll(PDO::FETCH_ASSOC);
             error_log("🔍 DISCORD RACE DEBUG: Race status breakdown for user $discordId: " . json_encode($statuses));
         } else {
             error_log("❌ No Discord Race stats found for user $discordId");
             
-            // 🔍 DEBUG: Check if any completed races exist at all
-            $completedDebug = $db->query("SELECT COUNT(*) as total FROM tbl_race_participants WHERE status = 'completed'");
-            $completedResult = $completedDebug->fetch(PDO::FETCH_ASSOC);
-            error_log("🔍 DISCORD RACE DEBUG: Total completed races in database: " . $completedResult['total']);
+            // 🔍 DEBUG: Check if any races exist at all
+            $totalDebug = $db->query("SELECT COUNT(*) as total FROM tbl_race_participants");
+            $totalResult = $totalDebug->fetch(PDO::FETCH_ASSOC);
+            error_log("🔍 DISCORD RACE DEBUG: Total race participations in database: " . $totalResult['total']);
             
             // Check if user exists in race_participants at all
-            $userRaceDebug = $db->prepare("SELECT COUNT(*) as total FROM tbl_race_participants WHERE discord_id = ?");
+            $userRaceDebug = $db->prepare("SELECT COUNT(*) as total FROM tbl_race_participants WHERE user_id = ?");
             $userRaceDebug->execute([$discordId]);
             $userRaceResult = $userRaceDebug->fetch(PDO::FETCH_ASSOC);
             error_log("🔍 DISCORD RACE DEBUG: Total race participations for user $discordId: " . $userRaceResult['total']);

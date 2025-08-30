@@ -2612,6 +2612,9 @@ async function loadGameMissions() {
     }
     
     console.log('🎮 Loading missions for Discord ID:', discordId);
+    console.log('🎮 Discord ID type:', typeof discordId);
+    console.log('🎮 Discord ID length:', discordId.length);
+    console.log('🎮 Discord ID value:', JSON.stringify(discordId));
     
     const response = await fetch(`/api/user-game-missions.php?discord_id=${discordId}`, {
       credentials: 'include',
@@ -2624,13 +2627,29 @@ async function loadGameMissions() {
 
     const data = await response.json();
     console.log('🎮 Missions data loaded:', data);
+    console.log('🎮 Data structure check:', {
+      success: data.success,
+      hasGames: !!data.games,
+      gamesCount: data.games ? Object.keys(data.games).length : 0,
+      gamesKeys: data.games ? Object.keys(data.games) : [],
+      sampleGame: data.games ? data.games.tetris : null
+    });
     
-    if (data.success && data.data) {
-      displayMissions(data.data);
+    if (data.success && data.games) {
+      // API returns data directly in data.games format
+      console.log('✅ Using data.games format:', data.games);
+      displayMissions(data);
     } else if (data.games) {
-      // Direct response format
+      // Fallback for direct response format
+      console.log('✅ Using direct games format:', data.games);
       displayMissions(data);
     } else {
+      console.error('❌ No games data found in response:', {
+        success: data.success,
+        hasGames: !!data.games,
+        responseKeys: Object.keys(data),
+        error: data.error
+      });
       throw new Error(data.error || 'Failed to load missions data');
     }
   } catch (error) {

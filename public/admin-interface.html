@@ -13346,6 +13346,10 @@ function updateGameTabContent(gameType, gameData) {
         console.log('🔍 DEBUG: displayDiscordRaceData called with:', raceData);
         console.log('🔍 DEBUG: raceData.race_data:', raceData.race_data);
         console.log('🔍 DEBUG: raceData.race_data?.race_overview:', raceData.race_data?.race_overview);
+        console.log('🔍 DEBUG: raceData.race_data?.top_racers:', raceData.race_data?.top_racers);
+        console.log('🔍 DEBUG: raceData.race_data?.recent_activity:', raceData.race_data?.recent_activity);
+        console.log('🔍 DEBUG: raceData.race_data?.total_races:', raceData.race_data?.total_races);
+        console.log('🔍 DEBUG: raceData.race_data?.total_participants:', raceData.race_data?.total_participants);
         
         // Check if the games tab is visible before trying to update elements
         const gamesTab = document.getElementById('gamesTab');
@@ -13363,18 +13367,14 @@ function updateGameTabContent(gameType, gameData) {
         console.log('🏁 Top racers available:', raceData.race_data?.top_racers);
         console.log('🏁 Recent activity available:', raceData.race_data?.recent_activity);
         
-        // Update Discord Race statistics from the new API structure
-        const stats = raceData.stats || {};
-        const performance = raceData.performance || {};
+        // Update Discord Race statistics from the correct API structure
+        const raceDataStats = raceData.race_data || {};
         
-        console.log('Updating race statistics with:', stats);
-        
-        // Update main statistics with debugging
-        console.log('🔍 Updating race statistics with:', stats);
+        console.log('🔍 Updating race statistics with race_data:', raceDataStats);
         
         if (document.getElementById('raceTotalRaces')) {
           const element = document.getElementById('raceTotalRaces');
-          const value = stats.total_races || 0;
+          const value = raceDataStats.total_races || 0;
           element.textContent = value;
           console.log('✅ Set raceTotalRaces to:', value);
         } else {
@@ -13383,7 +13383,7 @@ function updateGameTabContent(gameType, gameData) {
         
         if (document.getElementById('raceTotalParticipants')) {
           const element = document.getElementById('raceTotalParticipants');
-          const value = stats.participants || 0;
+          const value = raceDataStats.total_participants || 0;
           element.textContent = value;
           console.log('✅ Set raceTotalParticipants to:', value);
         } else {
@@ -13392,7 +13392,7 @@ function updateGameTabContent(gameType, gameData) {
         
         if (document.getElementById('raceTotalWinners')) {
           const element = document.getElementById('raceTotalWinners');
-          const value = stats.winners || 0;
+          const value = raceDataStats.total_prizes_awarded || 0;
           element.textContent = value;
           console.log('✅ Set raceTotalWinners to:', value);
         } else {
@@ -13400,8 +13400,8 @@ function updateGameTabContent(gameType, gameData) {
         }
         
         if (document.getElementById('raceCompletedRaces')) {
-          const element = document.getElementById('raceCompletedRaces');
-          const value = stats.finished_races || 0;
+          const element = document.getElementById('raceTotalRaces');
+          const value = raceDataStats.total_prizes_awarded || 0;
           element.textContent = value;
           console.log('✅ Set raceCompletedRaces to:', value);
         } else {
@@ -13410,39 +13410,52 @@ function updateGameTabContent(gameType, gameData) {
         
         if (document.getElementById('raceActiveRaces')) {
           const element = document.getElementById('raceActiveRaces');
-          const value = stats.active_races || 0;
+          const value = raceDataStats.recent_24h || 0;
           element.textContent = value;
           console.log('✅ Set raceActiveRaces to:', value);
         } else {
           console.error('❌ Element raceActiveRaces not found!');
         }
         
+        // Calculate success rate from available data
         if (document.getElementById('raceSuccessRate')) {
-          document.getElementById('raceSuccessRate').textContent = performance.success_rate || '0%';
+          const totalRaces = raceDataStats.total_races || 0;
+          const completedRaces = raceDataStats.total_prizes_awarded || 0;
+          const successRate = totalRaces > 0 ? Math.round((completedRaces / totalRaces) * 100) : 0;
+          document.getElementById('raceSuccessRate').textContent = successRate + '%';
+          console.log('✅ Set raceSuccessRate to:', successRate + '%');
         }
         
         if (document.getElementById('raceAvgParticipants')) {
-          document.getElementById('raceAvgParticipants').textContent = performance.avg_participants || 0;
+          const totalParticipants = raceDataStats.total_participants || 0;
+          const totalRaces = raceDataStats.total_races || 0;
+          const avgParticipants = totalRaces > 0 ? Math.round(totalParticipants / totalRaces) : 0;
+          document.getElementById('raceAvgParticipants').textContent = avgParticipants;
+          console.log('✅ Set raceAvgParticipants to:', avgParticipants);
         }
         
-        // Update performance metrics
+        // Update performance metrics with calculated values
         if (document.getElementById('racePeakParticipation')) {
-          document.getElementById('racePeakParticipation').textContent = performance.peak_participants || 'Coming Soon';
+          const recent24h = raceDataStats.recent_24h || 0;
+          const recent7d = raceDataStats.recent_7d || 0;
+          const peakValue = Math.max(recent24h, recent7d);
+          document.getElementById('racePeakParticipation').textContent = peakValue > 0 ? peakValue : 'Coming Soon';
+          console.log('✅ Set racePeakParticipation to:', peakValue > 0 ? peakValue : 'Coming Soon');
         }
         
         if (document.getElementById('raceTopWinner')) {
-          document.getElementById('raceTopWinner').textContent = performance.top_performance || 'Coming Soon';
+          const topRacers = raceDataStats.top_racers || [];
+          const topWinner = topRacers.length > 0 ? topRacers[0].username : 'Coming Soon';
+          document.getElementById('raceTopWinner').textContent = topWinner;
+          console.log('✅ Set raceTopWinner to:', topWinner);
         }
         
         // Update unique winners count
         if (document.getElementById('raceUniqueWinners')) {
-          document.getElementById('raceUniqueWinners').textContent = stats.winners || 0;
+          const value = raceDataStats.total_prizes_awarded || 0;
+          document.getElementById('raceUniqueWinners').textContent = value;
+          console.log('✅ Set raceUniqueWinners to:', value);
         }
-        
-        // Handle other elements that might not have data yet
-        if (document.getElementById('raceUniqueWinners')) document.getElementById('raceUniqueWinners').textContent = 'Coming Soon';
-        if (document.getElementById('raceTopWinner')) document.getElementById('raceTopWinner').textContent = 'Coming Soon';
-        if (document.getElementById('racePeakParticipation')) document.getElementById('racePeakParticipation').textContent = 'Coming Soon';
         
         // Update status and other elements
         if (document.getElementById('raceStatus')) {
@@ -13451,15 +13464,15 @@ function updateGameTabContent(gameType, gameData) {
 
         // Update top racers leaderboard
         const raceLeaderboard = document.getElementById('raceLeaderboard');
-        if (raceLeaderboard && raceData.top_racers) {
-          if (raceData.top_racers.length > 0) {
+        if (raceLeaderboard && raceData.race_data?.top_racers) {
+          if (raceData.race_data.top_racers.length > 0) {
             raceLeaderboard.innerHTML = `
               <div class="text-center mb-4">
-                <div class="text-3xl font-bold text-yellow-400">${raceData.top_racers.length}</div>
+                <div class="text-3xl font-bold text-yellow-400">${raceData.race_data.top_racers.length}</div>
                 <div class="text-sm text-gray-300">Top Racers</div>
               </div>
               <div class="space-y-3">
-                ${raceData.top_racers.map((racer, index) => `
+                ${raceData.race_data.top_racers.map((racer, index) => `
                   <div class="flex items-center justify-between p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
                     <div class="flex items-center gap-3">
                       <div class="w-8 h-8 bg-yellow-400 text-black rounded-full flex items-center justify-center font-bold text-sm">
@@ -13471,8 +13484,8 @@ function updateGameTabContent(gameType, gameData) {
                       </div>
                     </div>
                     <div class="text-right">
-                      <div class="text-green-400 font-semibold">${racer.avg_cheese} cheese</div>
-                      <div class="text-xs text-gray-300">${racer.races_participated} races, ${racer.wins} wins</div>
+                      <div class="text-green-400 font-semibold">${racer.total_cheese} cheese</div>
+                      <div class="text-xs text-gray-300">${racer.total_races} races, ${racer.first_place_finishes} wins</div>
                     </div>
                   </div>
                 `).join('')}
@@ -13485,14 +13498,14 @@ function updateGameTabContent(gameType, gameData) {
 
         // Update race overview table
         const raceOverviewTable = document.getElementById('raceOverviewTable');
-        if (raceOverviewTable && raceData.race_overview) {
-          console.log('Race overview data:', raceData.race_overview);
-          if (raceData.race_overview.length > 0) {
-            raceOverviewTable.innerHTML = raceData.race_overview.map((race, index) => {
+        if (raceOverviewTable && raceData.race_data?.race_overview) {
+          console.log('Race overview data:', raceData.race_data.race_overview);
+          if (raceData.race_data.race_overview.length > 0) {
+            raceOverviewTable.innerHTML = raceData.race_data.race_overview.map((race, index) => {
               console.log('Processing race:', race);
               return `
                 <tr class="border-b border-gray-600 hover:bg-gray-600 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
-                  <td class="p-2 text-xs font-mono text-blue-400">${race.race_id ? race.race_id.substring(0, 12) + '...' : 'N/A'}</td>
+                  <td class="p-2 text-xs font-mono text-blue-400">${race.id ? race.id.substring(0, 12) + '...' : 'N/A'}</td>
                   <td class="p-2 text-white font-semibold">${race.creator_name || 'Unknown'}</td>
                   <td class="p-2">
                     <span class="px-2 py-1 text-xs rounded-full ${
@@ -13512,8 +13525,8 @@ function updateGameTabContent(gameType, gameData) {
                   <td class="p-2 text-xs text-gray-300">${race.duration || 'N/A'}</td>
                   <td class="p-2 text-yellow-400 font-semibold">${race.dspoinc_reward || 0}</td>
                   <td class="p-2 text-xs">
-                    <div class="text-green-400">Max: ${race.max_cheese || 0}</div>
-                    <div class="text-blue-400">Avg: ${race.avg_cheese || 0}</div>
+                    <div class="text-green-400">Max: ${race.max_cheese_collected || 0}</div>
+                    <div class="text-blue-400">Avg: ${race.avg_cheese_collected || 0}</div>
                   </td>
                 </tr>
               `;
@@ -13676,6 +13689,20 @@ function updateGameTabContent(gameType, gameData) {
         } else {
           console.log('Leaderboard element not found:', leaderboard);
         }
+        
+        // Summary of what was processed
+        console.log('🏁 Discord Race Data Display Summary:');
+        console.log('✅ Statistics updated:', {
+          totalRaces: raceData.race_data?.total_races || 0,
+          totalParticipants: raceData.race_data?.total_participants || 0,
+          totalWinners: raceData.race_data?.total_prizes_awarded || 0,
+          completedRaces: raceData.race_data?.total_prizes_awarded || 0,
+          activeRaces: raceData.race_data?.recent_24h || 0
+        });
+        console.log('✅ Race overview rows:', raceData.race_data?.race_overview?.length || 0);
+        console.log('✅ Top racers count:', raceData.race_data?.top_racers?.length || 0);
+        console.log('✅ Recent activity events:', raceData.race_data?.recent_activity?.length || 0);
+        
       } catch (error) {
         console.error('Error displaying Discord Race data:', error);
         addLog(`❌ Error displaying Discord Race data: ${error.message}`);
