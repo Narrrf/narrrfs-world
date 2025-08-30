@@ -6,7 +6,7 @@
 let DISCORD_CONFIG = {
     // 🔧 ENVIRONMENT VARIABLE SUPPORT
     // Will be loaded from server-side PHP endpoint
-    inviteCode: 'qYYNGJrR43', // Fallback Discord invite code
+    inviteCode: 'PFFztgqwe2', // Fallback Discord invite code
     
     // Base Discord URL
     baseUrl: 'https://discord.gg/',
@@ -46,7 +46,7 @@ let DISCORD_CONFIG = {
                 
                 return true;
             } else {
-                console.warn('⚠️ Failed to load Discord config from server, using fallback');
+                console.warn('⚠️ Failed to load Discord config from server, using fallback: PFFztgqwe2');
                 return false;
             }
         } catch (error) {

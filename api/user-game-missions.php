@@ -515,7 +515,7 @@ try {
             'discord_race' => [
                 'name' => 'Discord Cheese Race',
                 'icon' => '🏁',
-                'url' => 'https://discord.com/invite/qYYNGJrR43',
+                'url' => 'https://discord.com/invite/PFFztgqwe2',
                 'status' => $response['discord_race']['total_races'] > 0 ? 'active' : 'not_played',
                 'stats' => [
                     'total_races' => $response['discord_race']['total_races'],
