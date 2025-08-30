@@ -2,41 +2,25 @@
 // 🔧 CRITICAL REPAIR: Discord Race Data Synchronization Script
 // This script fixes the missing participant records that cause incorrect race counts
 
-// CORS headers for browser access
+// CORS headers for web requests
+header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Methods: GET, POST');
+header('Access-Control-Allow-Headers: Content-Type');
 
-// Handle OPTIONS request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+// Check if running from command line
+$isCommandLine = php_sapi_name() === 'cli' || !isset($_SERVER['REQUEST_METHOD']);
 
-// Database connection
+// Function to get database connection
 function getSQLite3Connection() {
+    $dbPath = '/data/narrrf_world.sqlite';
+    if (!file_exists($dbPath)) {
+        $dbPath = 'db/narrrf_world.sqlite'; // Fallback for local development
+    }
+    
     try {
-        // Use the production database path
-        $dbPath = '/var/www/html/db/narrrf_world.sqlite';
-        
-        // Fallback to local path if production doesn't exist
-        if (!file_exists($dbPath)) {
-            $dbPath = __DIR__ . '/../db/narrrf_world.sqlite';
-        }
-        
-        if (!file_exists($dbPath)) {
-            throw new Exception("Database not found at: $dbPath");
-        }
-        
         $db = new SQLite3($dbPath);
         $db->enableExceptions(true);
-        
-        // Enable WAL mode for better concurrency
-        $db->exec('PRAGMA journal_mode=WAL;');
-        $db->exec('PRAGMA synchronous=NORMAL;');
-        $db->exec('PRAGMA foreign_keys=ON;');
-        
         return $db;
     } catch (Exception $e) {
         throw new Exception("Database connection failed: " . $e->getMessage());
@@ -47,7 +31,6 @@ function getSQLite3Connection() {
 function repairRaceData() {
     try {
         $db = getSQLite3Connection();
-        
         $results = [
             'success' => true,
             'races_found' => 0,
@@ -57,14 +40,12 @@ function repairRaceData() {
         ];
         
         // 🔍 Step 1: Get all races from tbl_cheese_races
-        $racesQuery = "
-            SELECT race_id, creator_id, creator_name, created_at, status
-            FROM tbl_cheese_races 
-            ORDER BY created_at DESC
-        ";
+        $racesQuery = "SELECT race_id, creator_id, creator_name, status, created_at FROM tbl_cheese_races ORDER BY created_at DESC";
+        $racesResult = $db->query($racesQuery);
         
-        $racesStmt = $db->prepare($racesQuery);
-        $racesResult = $racesStmt->execute();
+        if (!$racesResult) {
+            throw new Exception("Failed to query races: " . $db->lastErrorMsg());
+        }
         
         $races = [];
         while ($race = $racesResult->fetchArray(SQLITE3_ASSOC)) {
@@ -72,32 +53,50 @@ function repairRaceData() {
         }
         
         $results['races_found'] = count($races);
-        echo "📊 Found " . count($races) . " races in tbl_cheese_races\n";
+        echo "🔍 Found " . count($races) . " races in database\n";
         
         // 🔍 Step 2: Check existing participants
-        $existingParticipantsQuery = "SELECT DISTINCT race_id FROM tbl_race_participants";
-        $existingStmt = $db->prepare($existingParticipantsQuery);
-        $existingResult = $existingStmt->execute();
+        $participantsQuery = "SELECT race_id, COUNT(*) as count FROM tbl_race_participants GROUP BY race_id";
+        $participantsResult = $db->query($participantsQuery);
         
-        $existingRaceIds = [];
-        while ($existing = $existingResult->fetchArray(SQLITE3_ASSOC)) {
-            $existingRaceIds[] = $existing['race_id'];
+        if (!$participantsResult) {
+            throw new Exception("Failed to query participants: " . $db->lastErrorMsg());
         }
         
-        echo "📊 Found " . count($existingRaceIds) . " races with existing participants\n";
+        $existingParticipants = [];
+        while ($participant = $participantsResult->fetchArray(SQLITE3_ASSOC)) {
+            $existingParticipants[$participant['race_id']] = (int)$participant['count'];
+        }
+        
+        echo "🔍 Found participant records for " . count($existingParticipants) . " races\n";
         
         // 🔧 Step 3: Create missing participant records
         foreach ($races as $race) {
-            try {
-                $raceId = $race['race_id'];
-                
-                // Check if this race already has participants
-                if (in_array($raceId, $existingRaceIds)) {
-                    echo "✅ Race $raceId already has participants\n";
-                    continue;
-                }
-                
-                // 🔧 Create participant record for the race creator
+            $raceId = $race['race_id'];
+            $creatorId = $race['creator_id'];
+            $creatorName = $race['creator_name'];
+            
+            // Check if race creator already has a participant record
+            $checkQuery = "
+                SELECT COUNT(*) as count 
+                FROM tbl_race_participants 
+                WHERE race_id = ? AND user_id = ?
+            ";
+            $checkStmt = $db->prepare($checkQuery);
+            $checkStmt->bindValue(1, $raceId, SQLITE3_TEXT);
+            $checkStmt->bindValue(2, $creatorId, SQLITE3_TEXT);
+            $checkResult = $checkStmt->execute();
+            
+            if (!$checkResult) {
+                $results['errors'][] = "Failed to check participants for race $raceId: " . $db->lastErrorMsg();
+                continue;
+            }
+            
+            $checkRow = $checkResult->fetchArray(SQLITE3_ASSOC);
+            $participantExists = $checkRow['count'] > 0;
+            
+            if (!$participantExists) {
+                // Create participant record for race creator
                 $insertParticipantQuery = "
                     INSERT INTO tbl_race_participants (
                         race_id, user_id, username, joined_at, status, 
@@ -106,85 +105,74 @@ function repairRaceData() {
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ";
                 
-                $stmt = $db->prepare($insertParticipantQuery);
-                
-                // Set appropriate values based on race status
-                $status = ($race['status'] === 'completed' || $race['status'] === 'finished') ? 'completed' : 'joined';
-                $position = ($status === 'completed') ? 1 : 0; // Assume creator won if race is completed
-                $cheeseCount = ($status === 'completed') ? 5 : 0; // Default winning cheese count
-                $dspoincEarned = ($status === 'completed') ? 1000 : 0; // Default winning reward
+                $insertStmt = $db->prepare($insertParticipantQuery);
+                $now = date('Y-m-d H:i:s');
                 $season = 'season_2'; // Current season
                 
-                $stmt->bindValue(1, $raceId, SQLITE3_TEXT);
-                $stmt->bindValue(2, $race['creator_id'], SQLITE3_TEXT);
-                $stmt->bindValue(3, $race['creator_name'], SQLITE3_TEXT);
-                $stmt->bindValue(4, $race['created_at'], SQLITE3_TEXT);
-                $stmt->bindValue(5, $status, SQLITE3_TEXT);
-                $stmt->bindValue(6, $position, SQLITE3_INTEGER);
-                $stmt->bindValue(7, $cheeseCount, SQLITE3_INTEGER);
-                $stmt->bindValue(8, $dspoincEarned, SQLITE3_INTEGER);
-                $stmt->bindValue(9, $season, SQLITE3_TEXT);
-                $stmt->bindValue(10, $race['created_at'], SQLITE3_TEXT);
-                $stmt->bindValue(11, $race['created_at'], SQLITE3_TEXT);
-                $stmt->bindValue(12, $race['created_at'], SQLITE3_TEXT);
+                $insertStmt->bindValue(1, $raceId, SQLITE3_TEXT);
+                $insertStmt->bindValue(2, $creatorId, SQLITE3_TEXT);
+                $insertStmt->bindValue(3, $creatorName, SQLITE3_TEXT);
+                $insertStmt->bindValue(4, $now, SQLITE3_TEXT);
+                $insertStmt->bindValue(5, 'joined', SQLITE3_TEXT);
+                $insertStmt->bindValue(6, 0, SQLITE3_INTEGER);
+                $insertStmt->bindValue(7, 0, SQLITE3_INTEGER);
+                $insertStmt->bindValue(8, 0, SQLITE3_INTEGER);
+                $insertStmt->bindValue(9, $season, SQLITE3_TEXT);
+                $insertStmt->bindValue(10, $now, SQLITE3_TEXT);
+                $insertStmt->bindValue(11, $now, SQLITE3_TEXT);
+                $insertStmt->bindValue(12, $now, SQLITE3_TEXT);
                 
-                $result = $stmt->execute();
+                $insertResult = $insertStmt->execute();
                 
-                if ($result) {
+                if ($insertResult) {
                     $results['participants_created']++;
-                    echo "✅ Created participant record for race $raceId (creator: {$race['creator_name']})\n";
+                    echo "✅ Created participant record for $creatorName in race $raceId\n";
                 } else {
-                    $error = "Failed to create participant for race $raceId";
-                    $results['errors'][] = $error;
-                    echo "❌ $error\n";
+                    $results['errors'][] = "Failed to create participant record for race $raceId: " . $db->lastErrorMsg();
                 }
-                
-            } catch (Exception $e) {
-                $error = "Error processing race {$race['race_id']}: " . $e->getMessage();
-                $results['errors'][] = $error;
-                echo "❌ $error\n";
+            } else {
+                echo "ℹ️ Participant record already exists for $creatorName in race $raceId\n";
             }
         }
         
         // 🔍 Step 4: Verify the repair
-        $verifyQuery = "
-            SELECT 
-                (SELECT COUNT(*) FROM tbl_cheese_races) as total_races,
-                (SELECT COUNT(DISTINCT race_id) FROM tbl_race_participants) as races_with_participants,
-                (SELECT COUNT(*) FROM tbl_race_participants) as total_participants
-        ";
-        
-        $verifyStmt = $db->prepare($verifyQuery);
-        $verifyResult = $verifyStmt->execute();
-        $verification = $verifyResult->fetchArray(SQLITE3_ASSOC);
-        
-        $results['verification'] = $verification;
-        
-        echo "📊 VERIFICATION RESULTS:\n";
-        echo "   Total races: {$verification['total_races']}\n";
-        echo "   Races with participants: {$verification['races_with_participants']}\n";
-        echo "   Total participants: {$verification['total_participants']}\n";
-        
-        // 🔧 Step 5: Test the user profile query
-        $testUserId = '328601656659017732'; // narrrf's Discord ID
-        $testQuery = "
+        $verificationQuery = "
             SELECT COUNT(*) as total_races,
-                   COUNT(CASE WHEN status = 'completed' AND position < 50 THEN 1 END) as wins,
-                   COUNT(CASE WHEN status = 'completed' AND position < 100 THEN 1 END) as podiums,
-                   MIN(CASE WHEN status = 'completed' THEN position END) as best_position,
-                   SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
+                   COUNT(CASE WHEN status = 'finished' THEN 1 END) as finished_races,
+                   COUNT(CASE WHEN status = 'active' THEN 1 END) as active_races
+            FROM tbl_cheese_races
+        ";
+        $verificationResult = $db->query($verificationQuery);
+        
+        if ($verificationResult) {
+            $verificationRow = $verificationResult->fetchArray(SQLITE3_ASSOC);
+            echo "📊 Verification - Total races: " . $verificationRow['total_races'] . 
+                 ", Finished: " . $verificationRow['finished_races'] . 
+                 ", Active: " . $verificationRow['active_races'] . "\n";
+        }
+        
+        // 🔍 Step 5: Test the user profile query
+        $testQuery = "
+            SELECT 
+                COUNT(*) as total_races,
+                COUNT(CASE WHEN status = 'completed' AND position < 50 THEN 1 END) as wins,
+                COUNT(CASE WHEN status = 'completed' AND position < 100 THEN 1 END) as podiums,
+                MIN(CASE WHEN status = 'completed' THEN position END) as best_position,
+                SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
             FROM tbl_race_participants
-            WHERE user_id = ?
+            WHERE user_id = '328601656659017732'
         ";
         
-        $testStmt = $db->prepare($testQuery);
-        $testStmt->bindValue(1, $testUserId, SQLITE3_TEXT);
-        $testResult = $testStmt->execute();
-        $testData = $testResult->fetchArray(SQLITE3_ASSOC);
-        
-        $results['test_user_profile'] = $testData;
-        
-        echo "🧪 TEST USER PROFILE (narrrf): " . json_encode($testData) . "\n";
+        $testResult = $db->query($testQuery);
+        if ($testResult) {
+            $testRow = $testResult->fetchArray(SQLITE3_ASSOC);
+            echo "🧪 Test query for user 328601656659017732:\n";
+            echo "   Total races: " . $testRow['total_races'] . "\n";
+            echo "   Wins: " . $testRow['wins'] . "\n";
+            echo "   Podiums: " . $testRow['podiums'] . "\n"; // Corrected from podiums to podiums
+            echo "   Best position: " . ($testRow['best_position'] ?: 'N/A') . "\n";
+            echo "   Total DSPOINC: " . $testRow['total_dspoinc_earned'] . "\n";
+        }
         
         $db->close();
         return $results;
@@ -202,16 +190,45 @@ function repairRaceData() {
 }
 
 // Execute the repair
-if ($_SERVER['REQUEST_METHOD'] === 'GET' || $_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($isCommandLine) {
+    // Running from command line
+    echo "🔧 CRITICAL REPAIR: Discord Race Data Synchronization Script\n";
+    echo "========================================================\n\n";
+    
     $results = repairRaceData();
     
-    // Set appropriate HTTP status code
-    http_response_code($results['success'] ? 200 : 500);
+    if ($results['success']) {
+        echo "\n✅ Repair completed successfully!\n";
+        echo "🔍 Races found: " . $results['races_found'] . "\n";
+        echo "🔧 Participants created: " . $results['participants_created'] . "\n";
+        echo "📈 Participants updated: " . $results['participants_updated'] . "\n";
+        
+        if (!empty($results['errors'])) {
+            echo "⚠️ Errors encountered:\n";
+            foreach ($results['errors'] as $error) {
+                echo "   - $error\n";
+            }
+        }
+        
+        echo "\n🎯 Next steps:\n";
+        echo "1. Test your profile page to see updated race counts\n";
+        echo "2. Check mission status for correct race statistics\n";
+        echo "3. Verify admin interface shows consistent data\n";
+        
+    } else {
+        echo "\n❌ Repair failed: " . $results['error'] . "\n";
+        exit(1);
+    }
     
-    // Output results
-    echo json_encode($results, JSON_PRETTY_PRINT);
 } else {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
+    // Running from HTTP request
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' || $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $results = repairRaceData();
+        http_response_code($results['success'] ? 200 : 500);
+        echo json_encode($results, JSON_PRETTY_PRINT);
+    } else {
+        http_response_code(405);
+        echo json_encode(['error' => 'Method not allowed']);
+    }
 }
 ?>
