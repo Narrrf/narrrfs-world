@@ -1427,7 +1427,6 @@ require_once 'discord-invite.php';
         <button class="tab-btn px-4 py-2 rounded" data-tab="store">🏪 Store Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="quests">🏆 Quest System</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="games">🎮 Game Management</button>
-        <button class="tab-btn px-4 py-2 rounded" data-tab="games2">🚀 Game Management 2.0</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="bosses">👑 Boss Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="bossNotifications">🏆 Boss Notifications</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="discord">🔗 Discord Config</button>
@@ -2340,7 +2339,8 @@ require_once 'discord-invite.php';
         <div class="text-green-400">🔄 Admin interface initializing...</div>
       </div>
       <div class="text-xs text-gray-400 mt-2 text-center">💡 Activity log moved to top for better visibility - no more scrolling needed!</div>
-    </div>
+    <!-- </div> -->
+    <!-- END OF GAME MANAGEMENT 2.0 TAB - DISABLED -->
 
     <!-- Boss Management Tab -->
     <div class="admin-card mb-6" id="bossesTab" style="display: none;">
@@ -2550,6 +2550,7 @@ require_once 'discord-invite.php';
         <div class="flex flex-wrap gap-2 mt-4 justify-center">
           <button onclick="switchActiveSeason()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">🔄 Switch Season</button>
           <button onclick="createNewSeason()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">🆕 New Season</button>
+          <button onclick="createSeason3()" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm">🎯 Create Season 3</button>
           <button onclick="resetCurrentSeason()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">🔄 Reset Season</button>
           <button onclick="exportSeasonData()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">📊 Export Data</button>
         </div>
@@ -3681,8 +3682,8 @@ require_once 'discord-invite.php';
       </div>
     </div>
 
-    <!-- Game Management 2.0 Tab -->
-    <div class="admin-card mb-6" id="games2Tab" style="display: none;">
+    <!-- Game Management 2.0 Tab - DISABLED -->
+    <!-- <div class="admin-card mb-6" id="games2Tab" style="display: none;"> -->
       <h2 class="text-xl font-semibold mb-4">🚀 Game Management 2.0 - Advanced Season Management</h2>
       <p class="text-gray-300 mb-6">Comprehensive season management, game statistics, and advanced controls for all 5 games.</p>
       
@@ -4596,6 +4597,26 @@ require_once 'discord-invite.php';
     // Initialize the interface
     document.addEventListener('DOMContentLoaded', async function() {
       console.log('🚀 DOMContentLoaded event fired');
+      
+      // 🔧 CRITICAL FIX: Local development bypass
+      const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (isLocalDevelopment) {
+        console.log('🔓 Local development detected - bypassing authentication');
+        currentAdmin = {
+          username: 'Local Developer',
+          discord_id: 'local_dev',
+          role: 'admin',
+          auth_type: 'local',
+          token: 'local_dev_token',
+          has_database_access: true
+        };
+        
+        // Show admin content immediately for local development
+        showAdminContent();
+        loadDashboardData();
+        console.log('✅ Local development admin interface unlocked');
+        return; // Skip normal authentication flow
+      }
       
       setTimeout(async () => {
         console.log('⏰ Initialization timeout started');
@@ -11826,48 +11847,8 @@ function updateGameTabContent(gameType, gameData) {
           }
           
           console.log('✅ Successfully updated Tetris statistics');
-        } else {
+                } else {
           console.error('❌ tetrisTotalScores element not found!');
-          console.log('🔍 DEBUG: Available elements with "tetris" in ID:');
-        const allElements = document.querySelectorAll('[id*="tetris"]');
-        allElements.forEach(el => console.log('  -', el.id, ':', el.tagName, ':', el.textContent));
-        
-        // 🔧 CRITICAL FIX: Try to find elements by partial match
-        console.log('🔍 DEBUG: Trying partial element search...');
-        const partialElements = document.querySelectorAll('[id*="tetris"], [class*="tetris"]');
-        partialElements.forEach(el => console.log('  - Partial match:', el.id || 'no-id', ':', el.tagName, ':', el.className));
-        
-        // 🔧 CRITICAL FIX: Try to create fallback display
-        console.log('🔧 CRITICAL: Attempting fallback display...');
-        const fallbackContainer = document.querySelector('.game-stats-grid') || document.querySelector('#tetrisTab');
-        if (fallbackContainer) {
-          console.log('✅ Found fallback container, creating debug display...');
-          const debugDiv = document.createElement('div');
-          debugDiv.className = 'bg-red-800 p-4 rounded mb-4 text-white';
-          debugDiv.innerHTML = `
-            <h4 class="font-bold mb-2">🔧 DEBUG: Tetris Data Loaded</h4>
-            <p>Total Scores: ${tetrisData.season_data?.total_scores || 'N/A'}</p>
-            <p>Unique Players: ${tetrisData.season_data?.unique_players || 'N/A'}</p>
-            <p>Max Score: ${tetrisData.season_data?.max_score || 'N/A'}</p>
-            <p>Data Structure: ${JSON.stringify(tetrisData, null, 2)}</p>
-          `;
-          fallbackContainer.appendChild(debugDiv);
-          console.log('✅ Fallback debug display created');
-        }
-        }
-        
-        // 🚀 NEW: Show debug display with raw data
-        const debugDisplay = document.getElementById('tetrisDebugDisplay');
-        if (debugDisplay) {
-          debugDisplay.style.display = 'block';
-          debugDisplay.innerHTML = `
-            <strong>🔍 DEBUG DATA:</strong><br>
-            Total Scores: ${totalScores}<br>
-            Unique Players: ${tetrisData.unique_players || 0}<br>
-            Max Score: ${maxScore}<br>
-            Avg Score: ${avgScore}<br>
-            Raw Data: ${JSON.stringify(tetrisData).substring(0, 300)}...
-          `;
         }
         
         // 🚀 NEW: Update remaining Tetris elements
@@ -19982,7 +19963,7 @@ function testDatabaseConnection() {
         if (questClaimsData.success && questClaimsData.claims) {
           const totalDspoinc = questClaimsData.claims
             .filter(c => c.status === 'approved')
-            .reduce((sum, c) => sum + (parseInt(c.reward) || 0), 0);
+            .reduce((sum, c) => sum + (parseInt(c.quest_reward) || 0), 0);
           updateEnhancedStatsElement('totalDSPOINC', totalDspoinc.toLocaleString());
         }
         
@@ -19990,7 +19971,7 @@ function testDatabaseConnection() {
         if (questClaimsData.success && questClaimsData.claims) {
           const approvedClaims = questClaimsData.claims.filter(c => c.status === 'approved');
           const avgReward = approvedClaims.length > 0 ? 
-            Math.round(approvedClaims.reduce((sum, c) => sum + (parseInt(c.reward) || 0), 0) / approvedClaims.length) : 0;
+            Math.round(approvedClaims.reduce((sum, c) => sum + (parseInt(c.quest_reward) || 0), 0) / approvedClaims.length) : 0;
           updateEnhancedStatsElement('avgQuestReward', avgReward.toLocaleString());
         }
         
@@ -20115,15 +20096,15 @@ function testDatabaseConnection() {
         
         if (questClaimsData.success && questClaimsData.claims) {
           const claims = questClaimsData.claims;
-          const totalDspoinc = claims.reduce((sum, c) => sum + (parseInt(c.reward) || 0), 0);
+          const totalDspoinc = claims.reduce((sum, c) => sum + (parseInt(c.quest_reward) || 0), 0);
           const avgReward = claims.length > 0 ? Math.round(totalDspoinc / claims.length) : 0;
-          const topReward = Math.max(...claims.map(c => parseInt(c.reward) || 0), 0);
+          const topReward = Math.max(...claims.map(c => parseInt(c.quest_reward) || 0), 0);
           
           // Calculate wealth distribution tiers
           const wealthTiers = {
-            low: claims.filter(c => (parseInt(c.reward) || 0) < 100).length,
-            medium: claims.filter(c => (parseInt(c.reward) || 0) >= 100 && (parseInt(c.reward) || 0) < 500).length,
-            high: claims.filter(c => (parseInt(c.reward) || 0) >= 500).length
+            low: claims.filter(c => (parseInt(c.quest_reward) || 0) < 100).length,
+            medium: claims.filter(c => (parseInt(c.quest_reward) || 0) >= 100 && (parseInt(c.quest_reward) || 0) < 500).length,
+            high: claims.filter(c => (parseInt(c.quest_reward) || 0) >= 500).length
           };
           
           const wealthHTML = `
@@ -20345,6 +20326,37 @@ function testDatabaseConnection() {
         }
       } catch (error) {
         addLog(`❌ Season creation error: ${error.message}`);
+      }
+    }
+    
+    async function createSeason3() {
+      addLog('🎯 Creating Season 3 - The Ultimate Cheese Challenge...');
+      
+      if (!confirm('🎯 Create Season 3 - The Ultimate Cheese Challenge?\n\nThis will:\n✅ End Season 2\n✅ Create Season 3\n✅ Set Season 3 as active\n✅ Prepare for new challenges')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/season-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'start_new_season',
+            season_name: 'Season 3 - The Ultimate Cheese Challenge'
+          })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          addLog(`✅ Successfully created Season 3: ${data.message}`);
+          addLog('🎯 Season 3 is now active! Ready for new challenges!');
+          loadSeasonOverview();
+          refreshAllGameData();
+        } else {
+          addLog(`❌ Failed to create Season 3: ${data.message}`);
+        }
+      } catch (error) {
+        addLog(`❌ Season 3 creation error: ${error.message}`);
       }
     }
     

@@ -386,6 +386,35 @@ try {
         $cheese_hunt_stats['all_time']['unique_players'] = $cheese_hunt_stats['current_data']['unique_players'];
         $cheese_hunt_stats['all_time']['max_clicks'] = $cheese_hunt_stats['current_data']['max_clicks'];
         $cheese_hunt_stats['all_time']['avg_clicks'] = $cheese_hunt_stats['current_data']['avg_clicks'];
+        
+        // Get top players for Cheese Hunt
+        $top_players_query = "
+            SELECT 
+                user_wallet as user_id,
+                COUNT(*) as clicks,
+                COUNT(DISTINCT egg_id) as games,
+                MAX(timestamp) as last_click
+            FROM tbl_cheese_clicks 
+            GROUP BY user_wallet 
+            ORDER BY clicks DESC 
+            LIMIT 10
+        ";
+        
+        $top_players = safeQueryArray($pdo, 'tbl_cheese_clicks', $top_players_query);
+        
+        if (!empty($top_players)) {
+            $cheese_hunt_stats['top_players'] = array_map(function($player) {
+                return [
+                    'user_id' => $player['user_id'],
+                    'username' => $player['user_id'], // Using wallet as username for now
+                    'clicks' => (int)$player['clicks'],
+                    'games' => (int)$player['games'],
+                    'last_click' => $player['last_click']
+                ];
+            }, $top_players);
+        } else {
+            $cheese_hunt_stats['top_players'] = [];
+        }
     }
 
     $consolidated_stats['games']['cheese_hunt'] = $cheese_hunt_stats;

@@ -16,8 +16,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-// Database path - use production path for Render
-$dbPath = '/var/www/html/db/narrrf_world.sqlite';
+// 🔧 CRITICAL FIX: Local development bypass and database path
+$isLocalDevelopment = $_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['HTTP_HOST'] === '127.0.0.1';
+if ($isLocalDevelopment) {
+    // Use local database path
+    $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+} else {
+    // Use production database path
+    $dbPath = '/var/www/html/db/narrrf_world.sqlite';
+}
+
+// Ensure database file exists
 if (!file_exists($dbPath)) {
     $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 }
