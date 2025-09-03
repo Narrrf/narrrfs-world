@@ -4,6 +4,11 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
+
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
@@ -16,22 +21,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-// 🔧 CRITICAL FIX: Local development bypass and database path
-$isLocalDevelopment = $_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['HTTP_HOST'] === '127.0.0.1';
-if ($isLocalDevelopment) {
-    // Use local database path
-    $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
-} else {
-    // Use production database path
-    $dbPath = '/var/www/html/db/narrrf_world.sqlite';
-}
-
-// Ensure database file exists
-if (!file_exists($dbPath)) {
-    $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
-}
+// 🔒 SECURE AUTHENTICATION: Use centralized admin auth
+require_once __DIR__ . '/../config/admin-auth.php';
+checkAdminAuthentication();
 
 try {
+    // Use centralized database path function
+    $dbPath = getDatabasePath();
+    
+    // Connect to database with PDO
     $pdo = new PDO("sqlite:$dbPath");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 

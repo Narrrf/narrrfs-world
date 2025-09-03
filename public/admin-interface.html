@@ -11847,7 +11847,7 @@ function updateGameTabContent(gameType, gameData) {
           }
           
           console.log('✅ Successfully updated Tetris statistics');
-                } else {
+        } else {
           console.error('❌ tetrisTotalScores element not found!');
         }
         
@@ -13402,7 +13402,7 @@ function updateGameTabContent(gameType, gameData) {
         if (document.getElementById('raceSuccessRate')) {
           const totalRaces = raceDataStats.total_races || 0;
           const completedRaces = raceDataStats.total_prizes_awarded || 0;
-          const successRate = totalRaces > 0 ? Math.round((completedRaces / totalRaces) * 100) : 0;
+        const successRate = totalRaces > 0 ? Math.round((completedRaces / totalRaces) * 100) : 0;
           document.getElementById('raceSuccessRate').textContent = successRate + '%';
           console.log('✅ Set raceSuccessRate to:', successRate + '%');
         }
