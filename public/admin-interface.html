@@ -1,9 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php
-// Include Discord invite configuration
-require_once 'discord-invite.php';
-?>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -3872,8 +3868,8 @@ require_once 'discord-invite.php';
       <!-- Current Discord Settings -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
-          <p><strong>Current Invite Code:</strong> <span id="currentCode" class="font-mono bg-gray-800 px-2 py-1 rounded"><?php echo $discord_invite_code; ?></span></p>
-          <p><strong>Full Discord URL:</strong> <span id="currentUrl" class="font-mono bg-gray-800 px-2 py-1 rounded"><?php echo $discord_url; ?></span></p>
+          <p><strong>Current Invite Code:</strong> <span id="currentCode" class="font-mono bg-gray-800 px-2 py-1 rounded">PFFztgqwe2</span></p>
+          <p><strong>Full Discord URL:</strong> <span id="currentUrl" class="font-mono bg-gray-800 px-2 py-1 rounded">https://discord.gg/PFFztgqwe2</span></p>
         </div>
         <div>
           <p><strong>System Version:</strong> <span id="systemVersion" class="font-mono bg-gray-800 px-2 py-1 rounded">12.0</span></p>
@@ -3885,7 +3881,7 @@ require_once 'discord-invite.php';
       <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">🔄 Update Discord Settings</h3>
         <div class="flex gap-2">
-          <input type="text" id="newInviteCode" placeholder="Enter new invite code" class="flex-1 px-3 py-2 rounded text-gray-800" value="<?php echo $discord_invite_code; ?>">
+          <input type="text" id="newInviteCode" placeholder="Enter new invite code" class="flex-1 px-3 py-2 rounded text-gray-800" value="PFFztgqwe2">
           <button onclick="updateInviteCode()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Update</button>
         </div>
       </div>
@@ -5969,7 +5965,7 @@ require_once 'discord-invite.php';
           
           // Load boss notifications count
           loadBossNotificationCount();
-          } else {
+        } else {
           console.error('❌ Stats API returned error:', stats.error);
           addLog(`❌ Stats API error: ${stats.error || 'Unknown error'}`);
           
@@ -11360,6 +11356,7 @@ function updateGameTabContent(gameType, gameData) {
         displayTopPlayers('space_invaders', data.space_invaders_top_players);
 
         // Display recent activity
+        console.log('🔍 About to call displayRecentActivity with:', data.recent_activity);
         displayRecentActivity(data.recent_activity);
       } catch (error) {
         console.error('Error displaying game statistics:', error);
@@ -14567,6 +14564,7 @@ function updateGameTabContent(gameType, gameData) {
     }
 
     function displayRecentActivity(activity) {
+      console.log('🔍 displayRecentActivity called with:', activity);
       const container = document.getElementById('recentGameActivity');
       
       if (!container) {
@@ -14575,10 +14573,12 @@ function updateGameTabContent(gameType, gameData) {
       }
       
       if (!activity || activity.length === 0) {
+        console.log('❌ No activity data or empty array');
         container.innerHTML = '<div class="text-gray-400 text-sm">No recent activity</div>';
         return;
       }
 
+      console.log('✅ Processing activity data:', activity.length, 'items');
       container.innerHTML = activity.map(item => `
         <div class="bg-gray-700 p-2 rounded flex justify-between items-center">
           <div class="flex items-center">
@@ -14593,6 +14593,7 @@ function updateGameTabContent(gameType, gameData) {
           </div>
         </div>
       `).join('');
+      console.log('✅ Recent activity display updated');
     }
 
     function toggleResetOptions() {

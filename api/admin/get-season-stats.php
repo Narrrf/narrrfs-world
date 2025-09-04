@@ -103,6 +103,76 @@ try {
         $season_stats['space_invaders'] = $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    // Add Cheese Hunt statistics
+    if ($game_type === 'all' || $game_type === 'cheese_hunt') {
+        // First get the total clicks and unique players
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(*) as total_clicks,
+                COUNT(DISTINCT user_wallet) as unique_players
+            FROM tbl_cheese_clicks 
+            WHERE season = ?
+        ");
+        $stmt->execute([$target_season]);
+        $cheese_basic = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Get max clicks by a single user
+        $stmt = $pdo->prepare("
+            SELECT 
+                user_wallet,
+                COUNT(*) as user_clicks
+            FROM tbl_cheese_clicks 
+            WHERE season = ?
+            GROUP BY user_wallet
+            ORDER BY user_clicks DESC
+            LIMIT 1
+        ");
+        $stmt->execute([$target_season]);
+        $max_clicks_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $max_clicks = $max_clicks_result ? $max_clicks_result['user_clicks'] : 0;
+        
+        // Calculate average clicks per user
+        $avg_clicks = $cheese_basic['unique_players'] > 0 ? 
+            round($cheese_basic['total_clicks'] / $cheese_basic['unique_players'], 2) : 0;
+        
+        // Convert to match the expected structure
+        $season_stats['cheese_hunt'] = [
+            'total_clicks' => $cheese_basic['total_clicks'] ?? 0,
+            'unique_players' => $cheese_basic['unique_players'] ?? 0,
+            'max_clicks' => $max_clicks,
+            'avg_clicks' => $avg_clicks,
+            'top_performers' => $cheese_basic['unique_players'] ?? 0
+        ];
+    }
+
+    // Add Discord Race statistics
+    if ($game_type === 'all' || $game_type === 'discord_race') {
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(DISTINCT r.race_id) as total_races,
+                COUNT(DISTINCT rp.user_id) as total_participants,
+                COUNT(CASE WHEN rp.position = 1 THEN 1 END) as total_prizes_awarded,
+                COUNT(CASE WHEN rp.joined_at >= datetime('now', '-24 hours') THEN 1 END) as recent_24h,
+                COUNT(CASE WHEN rp.joined_at >= datetime('now', '-7 days') THEN 1 END) as recent_7d,
+                COUNT(DISTINCT rp.user_id) as top_performers
+            FROM tbl_cheese_races r
+            LEFT JOIN tbl_race_participants rp ON r.race_id = rp.race_id
+            WHERE rp.season = ? OR rp.season IS NULL
+        ");
+        $stmt->execute([$target_season]);
+        $race_data = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Convert to match the expected structure
+        $season_stats['discord_race'] = [
+            'total_races' => $race_data['total_races'] ?? 0,
+            'total_participants' => $race_data['total_participants'] ?? 0,
+            'total_prizes_awarded' => $race_data['total_prizes_awarded'] ?? 0,
+            'recent_24h' => $race_data['recent_24h'] ?? 0,
+            'recent_7d' => $race_data['recent_7d'] ?? 0,
+            'top_performers' => $race_data['top_performers'] ?? 0
+        ];
+    }
+
     // Get top performers for the season
     $top_performers = [];
     
