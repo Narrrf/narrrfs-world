@@ -29,10 +29,16 @@ try {
     echo json_encode([
         'success' => true,
         'data' => [
-            'stats' => $stats,
-            'top_racers' => $topRacers,
-            'race_overview' => $raceOverview,
-            'performance' => $performance
+            'race_data' => [
+                'stats' => $stats,
+                'top_racers' => $topRacers,
+                'race_overview' => $raceOverview,
+                'performance' => $performance,
+                'total_races' => $stats['total_races'],
+                'total_participants' => $stats['participants'],
+                'wins' => $stats['winners'],
+                'recent_activity' => $raceOverview
+            ]
         ]
     ]);
     
@@ -135,6 +141,7 @@ function getRaceOverview($pdo) {
             cr.duration,
             cr.dspoinc_reward,
             cr.role_reward,
+            cr.comment,
             cr.created_at,
             cr.started_at,
             cr.ended_at,
@@ -145,7 +152,7 @@ function getRaceOverview($pdo) {
         FROM tbl_cheese_races cr
         LEFT JOIN tbl_race_participants rp ON cr.race_id = rp.race_id
         GROUP BY cr.race_id, cr.creator_id, cr.creator_name, cr.status, cr.max_players, 
-                 cr.duration, cr.dspoinc_reward, cr.role_reward, cr.created_at, 
+                 cr.duration, cr.dspoinc_reward, cr.role_reward, cr.comment, cr.created_at, 
                  cr.started_at, cr.ended_at
         ORDER BY cr.created_at DESC
         LIMIT 50
@@ -174,6 +181,7 @@ function getRaceOverview($pdo) {
             'duration' => $duration,
             'dspoinc_reward' => (int)$row['dspoinc_reward'],
             'role_reward' => $row['role_reward'],
+            'comment' => $row['comment'],
             'created_at' => $formattedDate,
             'started_at' => $row['started_at'],
             'ended_at' => $row['ended_at'],

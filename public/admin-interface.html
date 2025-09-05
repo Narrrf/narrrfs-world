@@ -7451,35 +7451,7 @@
       }
     }
 
-    function loadQuests() {
-      console.log('🏆 Loading quests...');
-      addLog('🏆 Loading quests...');
-      
-      // Load quests from API
-      fetch(API_BASE_URL + '/api/admin/get-quests.php')
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            updateQuests(data.quests);
-          }
-        })
-        .catch(error => {
-          console.error('Error loading quests:', error);
-          addLog('❌ Error loading quests');
-        });
-    }
-
-    function updateQuests(quests) {
-      const container = document.getElementById('activeQuestsList');
-      if (container && quests) {
-        container.innerHTML = quests.map(quest => `
-          <div class="bg-gray-700 p-3 rounded border-l-4 border-green-500 mb-2">
-            <div class="font-semibold">${quest.description}</div>
-            <div class="text-sm text-gray-400">Reward: ${quest.reward} DSPOINC</div>
-          </div>
-        `).join('');
-      }
-    }
+    // REMOVED DUPLICATE loadQuests() function - using the enhanced version below
 
     function loadBossNotifications() {
       console.log('🏆 Loading boss notifications...');
@@ -14903,28 +14875,7 @@ function updateGameTabContent(gameType, gameData) {
       }
     }
 
-    function displayActiveQuests(quests) {
-      const container = document.getElementById('activeQuestsList');
-      
-      if (!quests || quests.length === 0) {
-        container.innerHTML = `<div class="text-gray-300">No active quests found.</div>`;
-        return;
-      }
-
-      container.innerHTML = quests.map(quest => `
-        <div class="bg-gray-700 p-4 rounded-lg">
-          <div class="flex justify-between items-start mb-2">
-            <h4 class="font-semibold text-white">${quest.title || `Quest #${quest.quest_id}`}</h4>
-            <span class="px-2 py-1 bg-green-600 text-white text-xs rounded">Active</span>
-          </div>
-          <p class="text-gray-300 text-sm mb-2">${quest.description}</p>
-          <div class="flex justify-between items-center">
-            <span class="text-yellow-400 font-semibold">${quest.reward} $DSPOINC</span>
-            ${quest.role_id ? `<span class="text-blue-400 text-sm">🎭 Role: ${quest.role_id}</span>` : ''}
-          </div>
-        </div>
-      `).join('');
-    }
+    // REMOVED DUPLICATE displayActiveQuests() function - using displayQuests() instead
 
     // Display recent quest claims
     function displayRecentQuestClaims(claims) {
@@ -14960,39 +14911,7 @@ function updateGameTabContent(gameType, gameData) {
       }).join('');
     }
 
-    // Display active quests by type
-    function displayActiveQuestsByType(questsByType) {
-      const container = document.getElementById('activeQuestsByType');
-      
-      if (questsByType.length === 0) {
-        container.innerHTML = '<div class="text-gray-400">No active quests found</div>';
-        return;
-      }
-
-      container.innerHTML = questsByType.map(quest => {
-        const questTypeEmoji = quest.type === 'cheese_hunt' ? '🧀' : 
-                              quest.type === 'tweet' ? '🐦' : 
-                              quest.type === 'tetris' ? '🟦' : 
-                              quest.type === 'snake' ? '🐍' : 
-                              quest.type === 'hytopia_game' ? '🎮' : 
-                              quest.type === 'invite' ? '👥' : 
-                              quest.type === 'Custom' ? '📝' : '🎯';
-        const questTypeName = quest.type === 'cheese_hunt' ? 'Cheese Hunt' : 
-                             quest.type === 'tweet' ? 'Twitter' : 
-                             quest.type === 'tetris' ? 'Tetris' : 
-                             quest.type === 'snake' ? 'Snake' : 
-                             quest.type === 'hytopia_game' ? 'Hytopia Game' : 
-                             quest.type === 'invite' ? 'Invite' : 
-                             quest.type === 'Custom' ? 'Custom' : quest.type;
-        
-        return `
-          <div class="flex justify-between items-center py-1">
-            <span class="text-purple-300">${questTypeEmoji} ${questTypeName}</span>
-            <span class="text-white font-semibold">${quest.count}</span>
-          </div>
-        `;
-      }).join('');
-    }
+    // REMOVED DUPLICATE displayActiveQuestsByType() function - using the first version
 
     // Display recent boss claims
     function displayRecentBossClaims(claims) {
@@ -17825,14 +17744,52 @@ function updateGameTabContent(gameType, gameData) {
       addLog('🧀 Loading Cheese Hunt data...');
 
       try {
-        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
-        const data = await response.json();
+        // Load both consolidated data and detailed Cheese Hunt stats
+        const [consolidatedResponse, cheeseStatsResponse] = await Promise.all([
+          fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php'),
+          fetch(API_BASE_URL + '/api/admin/get-cheese-stats.php')
+        ]);
         
-        if (data.success && data.data && data.data.games && data.data.games.cheese_hunt) {
-          displayCheeseData(data.data.games.cheese_hunt);
-          addLog('✅ Cheese Hunt data loaded successfully');
+        const consolidatedData = await consolidatedResponse.json();
+        const cheeseStatsData = await cheeseStatsResponse.json();
+        
+        if (consolidatedData.success && consolidatedData.data && consolidatedData.data.games && consolidatedData.data.games.cheese_hunt) {
+          // Merge the detailed stats with the consolidated data
+          const cheeseData = consolidatedData.data.games.cheese_hunt;
+          
+          // Add detailed stats from the dedicated Cheese Hunt API
+          if (cheeseStatsData.success && cheeseStatsData.stats) {
+            cheeseData.detailed_stats = cheeseStatsData.stats;
+            
+            // Calculate additional fields
+            cheeseData.current_data.recent_24h = cheeseStatsData.stats.recent_clicks_24h || 0;
+            cheeseData.current_data.avg_clicks = cheeseStatsData.stats.total_clicks > 0 && cheeseStatsData.stats.top_users.length > 0 
+              ? Math.round(cheeseStatsData.stats.total_clicks / cheeseStatsData.stats.top_users.length) 
+              : 0;
+            
+            // Add top players data
+            cheeseData.top_players = cheeseStatsData.stats.top_users.map((user, index) => ({
+              rank: index + 1,
+              username: user.username || 'Unknown',
+              clicks: user.click_count || 0,
+              wallet: user.user_wallet
+            }));
+            
+            // Add egg type data
+            cheeseData.egg_types = cheeseStatsData.stats.clicks_by_egg || [];
+            
+            // Add recent activity from daily clicks
+            cheeseData.recent_activity = cheeseStatsData.stats.daily_clicks.map(day => ({
+              description: `${day.daily_clicks} clicks on ${day.click_date}`,
+              timestamp: day.click_date,
+              clicks: day.daily_clicks
+            }));
+          }
+          
+          displayCheeseData(cheeseData);
+          addLog('✅ Cheese Hunt data loaded successfully with detailed stats');
         } else {
-          addLog(`❌ Failed to load Cheese Hunt data: ${data.error || 'No data available'}`);
+          addLog(`❌ Failed to load Cheese Hunt data: ${consolidatedData.error || 'No data available'}`);
         }
       } catch (error) {
         addLog(`❌ Cheese Hunt data loading error: ${error.message}`);
@@ -17852,7 +17809,7 @@ function updateGameTabContent(gameType, gameData) {
           return num.toLocaleString();
         };
 
-        // Update Cheese Hunt statistics
+        // Update Cheese Hunt statistics - Click Statistics
         if (document.getElementById('cheeseTotalClicks')) {
           const totalClicks = cheeseData.current_data?.total_clicks || 0;
           document.getElementById('cheeseTotalClicks').textContent = formatNumber(totalClicks);
@@ -17862,13 +17819,129 @@ function updateGameTabContent(gameType, gameData) {
         if (document.getElementById('cheeseUniquePlayers')) {
           const uniquePlayers = cheeseData.current_data?.unique_players || 0;
           document.getElementById('cheeseUniquePlayers').textContent = formatNumber(uniquePlayers);
-          document.getElementById('cheeseUniquePlayers').className = uniquePlayers > 0 ? 'text-white font-semibold' : 'text-gray-400';
+          document.getElementById('cheeseUniquePlayers').className = uniquePlayers > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
         }
         
+        if (document.getElementById('cheeseClicksToday')) {
+          const clicksToday = cheeseData.current_data?.recent_24h || 0;
+          document.getElementById('cheeseClicksToday').textContent = formatNumber(clicksToday);
+          document.getElementById('cheeseClicksToday').className = clicksToday > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
+        }
+
+        // Update Egg Data statistics
         if (document.getElementById('cheeseAvgClicks')) {
           const avgClicks = cheeseData.current_data?.avg_clicks || 0;
           document.getElementById('cheeseAvgClicks').textContent = formatNumber(avgClicks);
           document.getElementById('cheeseAvgClicks').className = avgClicks > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
+        }
+        
+        // Update egg type data from detailed stats
+        if (document.getElementById('cheeseRegularEggs')) {
+          const regularEggs = cheeseData.egg_types?.find(egg => egg.egg_id === 'regular')?.click_count || 0;
+          document.getElementById('cheeseRegularEggs').textContent = formatNumber(regularEggs);
+          document.getElementById('cheeseRegularEggs').className = regularEggs > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseGoldenEggs')) {
+          const goldenEggs = cheeseData.egg_types?.find(egg => egg.egg_id === 'golden')?.click_count || 0;
+          document.getElementById('cheeseGoldenEggs').textContent = formatNumber(goldenEggs);
+          document.getElementById('cheeseGoldenEggs').className = goldenEggs > 0 ? 'text-yellow-400 font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseRareEggs')) {
+          const rareEggs = cheeseData.egg_types?.find(egg => egg.egg_id === 'rare')?.click_count || 0;
+          document.getElementById('cheeseRareEggs').textContent = formatNumber(rareEggs);
+          document.getElementById('cheeseRareEggs').className = rareEggs > 0 ? 'text-purple-400 font-semibold' : 'text-gray-400';
+        }
+
+        // Update Recent Activity statistics
+        if (document.getElementById('cheeseRecent7d')) {
+          // Calculate 7-day total from daily clicks
+          const recent7d = cheeseData.recent_activity?.reduce((sum, day) => sum + (day.clicks || 0), 0) || 0;
+          document.getElementById('cheeseRecent7d').textContent = formatNumber(recent7d);
+          document.getElementById('cheeseRecent7d').className = recent7d > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseActiveHunters')) {
+          const activeHunters = cheeseData.top_players?.length || 0;
+          document.getElementById('cheeseActiveHunters').textContent = formatNumber(activeHunters);
+          document.getElementById('cheeseActiveHunters').className = activeHunters > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
+        }
+        
+        if (document.getElementById('cheeseCompletionRate')) {
+          // Calculate completion rate based on players with clicks vs total players
+          const totalPlayers = cheeseData.current_data?.unique_players || 0;
+          const activePlayers = cheeseData.top_players?.length || 0;
+          const completionRate = totalPlayers > 0 ? Math.round((activePlayers / totalPlayers) * 100) : 0;
+          document.getElementById('cheeseCompletionRate').textContent = formatNumber(completionRate) + '%';
+          document.getElementById('cheeseCompletionRate').className = completionRate > 0 ? 'text-purple-400 font-semibold' : 'text-gray-400';
+        }
+
+        // Update Game Settings
+        if (document.getElementById('cheeseStatus')) {
+          const status = cheeseData.status || 'active';
+          document.getElementById('cheeseStatus').textContent = status === 'active' ? '🟢 Active' : '🔴 Inactive';
+          document.getElementById('cheeseStatus').className = status === 'active' ? 'text-green-400 font-semibold' : 'text-red-400 font-semibold';
+        }
+        
+        if (document.getElementById('cheeseAchievements')) {
+          const achievements = cheeseData.current_data?.achievements || 0;
+          document.getElementById('cheeseAchievements').textContent = formatNumber(achievements);
+          document.getElementById('cheeseAchievements').className = achievements > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
+        }
+
+        // Update Top Players section
+        const topPlayersContainer = document.getElementById('cheeseHuntTopPlayers');
+        if (topPlayersContainer) {
+          if (cheeseData.top_players && cheeseData.top_players.length > 0) {
+            topPlayersContainer.innerHTML = cheeseData.top_players.map((player, index) => `
+              <div class="flex items-center justify-between p-2 bg-gray-700 rounded">
+                <div class="flex items-center space-x-2">
+                  <span class="text-yellow-400 font-bold">#${index + 1}</span>
+                  <span class="text-white">${player.username || 'Unknown'}</span>
+                </div>
+                <div class="text-green-400 font-semibold">${formatNumber(player.clicks || 0)}</div>
+              </div>
+            `).join('');
+          } else {
+            topPlayersContainer.innerHTML = '<div class="text-gray-400 text-center py-4">No top players data available</div>';
+          }
+        }
+
+        // Update Recent Activity section
+        const recentActivityContainer = document.getElementById('cheeseHuntRecentActivity');
+        if (recentActivityContainer) {
+          if (cheeseData.recent_activity && cheeseData.recent_activity.length > 0) {
+            recentActivityContainer.innerHTML = cheeseData.recent_activity.map(activity => `
+              <div class="flex items-center justify-between p-2 bg-gray-700 rounded">
+                <div class="text-white text-sm">${activity.description || 'Activity'}</div>
+                <div class="text-blue-400 text-xs">${activity.timestamp || 'Unknown time'}</div>
+              </div>
+            `).join('');
+          } else {
+            recentActivityContainer.innerHTML = '<div class="text-gray-400 text-center py-4">No recent activity</div>';
+          }
+        }
+
+        // Update Achievements section
+        const achievementsContainer = document.getElementById('cheeseHuntAchievements');
+        if (achievementsContainer) {
+          if (cheeseData.achievements && cheeseData.achievements.length > 0) {
+            achievementsContainer.innerHTML = cheeseData.achievements.map(achievement => `
+              <div class="flex items-center justify-between p-2 bg-gray-700 rounded">
+                <div class="text-green-400">${achievement.name || 'Achievement'}</div>
+                <div class="text-yellow-400 text-xs">${achievement.unlocked || '0'} unlocked</div>
+              </div>
+            `).join('');
+          } else {
+            achievementsContainer.innerHTML = `
+              <div class="text-gray-400 text-center py-4">
+                <div class="text-2xl mb-2">🧀</div>
+                <p class="text-sm">No achievements yet</p>
+                <p class="text-xs text-gray-500">Start hunting to unlock!</p>
+              </div>
+            `;
+          }
         }
 
         // Update leaderboard with grid system
