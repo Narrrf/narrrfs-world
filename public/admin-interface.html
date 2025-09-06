@@ -2285,7 +2285,7 @@
       </div>
       
       <!-- Quest Claims Management -->
-      <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mt-6">
+      <div id="questClaimsManagementSection" class="bg-gray-800 bg-opacity-50 p-4 rounded-lg mt-6">
         <h3 class="text-lg font-semibold mb-3">📋 Quest Claims Management</h3>
         <div class="mb-4">
           <button onclick="loadEnhancedQuestClaims()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mr-2">🔄 Refresh Claims</button>
@@ -2682,6 +2682,35 @@
             <button onclick="resetAllGameScores()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">🔄 Reset All Scores</button>
             <button onclick="exportGameData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📊 Export Data</button>
             <button onclick="backupGameData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">💾 Backup Data</button>
+          </div>
+        </div>
+
+        <!-- Season Statistics -->
+        <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-yellow-400 mb-3">🏆 Season Statistics & Legends</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">📅 Select Season:</label>
+              <select id="seasonSelector" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
+                <option value="season_2">Season 2 - The Great Reset (2025)</option>
+                <option value="season_1">Season 1 - Historical</option>
+                <option value="all">All Seasons Combined</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">🎮 Game Filter:</label>
+              <select id="gameFilter" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
+                <option value="all">All Games</option>
+                <option value="tetris">Tetris Only</option>
+                <option value="snake">Snake Only</option>
+                <option value="space_invaders">Space Invaders Only</option>
+                <option value="cheese_hunt">Cheese Hunt Only</option>
+                <option value="discord_race">Discord Race Only</option>
+              </select>
+            </div>
+          </div>
+          <div id="seasonStats" class="space-y-4">
+            <div class="text-gray-300">Loading season statistics...</div>
           </div>
         </div>
       </div>
@@ -3429,35 +3458,6 @@
         </div>
       </div>
 
-      <!-- Season Statistics -->
-      <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
-        <h4 class="font-semibold text-yellow-400 mb-3">🏆 Season Statistics & Legends</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-sm font-medium mb-2">📅 Select Season:</label>
-            <select id="seasonSelector" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
-              <option value="season_2">Season 2 - The Great Reset (2025)</option>
-              <option value="season_1">Season 1 - Historical</option>
-              <option value="all">All Seasons Combined</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">🎮 Game Filter:</label>
-            <select id="gameFilter" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
-              <option value="all">All Games</option>
-              <option value="tetris">Tetris Only</option>
-              <option value="snake">Snake Only</option>
-              <option value="space_invaders">Space Invaders Only</option>
-              <option value="cheese_hunt">Cheese Hunt Only</option>
-              <option value="discord_race">Discord Race Only</option>
-            </select>
-          </div>
-        </div>
-        <div id="seasonStats" class="space-y-4">
-          <div class="text-gray-300">Loading season statistics...</div>
-        </div>
-      </div>
-
       <!-- Recent Activity -->
       <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
         <h4 class="font-semibold text-purple-400 mb-3">📊 Recent Game Activity</h4>
@@ -3739,147 +3739,8 @@
           <p class="text-xs text-green-400 mt-2">✅ These settings will apply to all new game scores immediately.</p>
         </div>
       </div>
-      
-      <!-- Game Management 2.0 - Advanced Season Management -->
-    <div class="mb-8 bg-gradient-to-r from-purple-900 to-indigo-900 p-6 rounded-lg border border-purple-700">
-      <h3 class="text-lg font-semibold text-purple-300 mb-4">🚀 Game Management 2.0 - Advanced Season Management</h3>
-      <p class="text-sm text-gray-300 mb-4">Advanced season management with enhanced controls and analytics.</p>
 
-    <!-- ✅ CLEANUP: Removed entire Game Management 2.0 section content -->
-      <div class="mb-8 bg-gradient-to-r from-blue-900 to-purple-900 p-6 rounded-lg border border-blue-700">
-        <h3 class="text-lg font-semibold text-blue-300 mb-4">📊 Season Overview Dashboard</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="bg-blue-800 bg-opacity-50 p-4 rounded-lg border border-blue-600">
-            <div class="text-center">
-              <div class="text-3xl font-bold text-blue-300" id="currentSeasonDisplay2">Season 2</div>
-              <div class="text-sm text-blue-200">Current Active Season</div>
-            </div>
-          </div>
-          <div class="bg-green-800 bg-opacity-50 p-4 rounded-lg border border-green-600">
-            <div class="text-center">
-              <div class="text-3xl font-bold text-green-300" id="totalGamesDisplay2">0</div>
-              <div class="text-sm text-green-200">Total Games This Season</div>
-            </div>
-          </div>
-          <div class="bg-purple-800 bg-opacity-50 p-4 rounded-lg border border-purple-600">
-            <div class="text-center">
-              <div class="text-3xl font-bold text-purple-300" id="activePlayersDisplay2">0</div>
-              <div class="text-sm text-purple-200">Active Players</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Season Management Controls -->
-      <div class="mb-8 bg-gradient-to-r from-green-900 to-blue-900 p-6 rounded-lg border border-green-700">
-        <h3 class="text-lg font-semibold text-green-300 mb-4">🎮 Season Management Controls</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 class="font-semibold text-green-200 mb-3">🔄 Season Switching</h4>
-            <select id="seasonSwitchSelector2" class="w-full px-3 py-2 rounded text-gray-800 mb-3">
-              <option value="season_2">Season 2 - The Great Reset (2025)</option>
-              <option value="season_1">Season 1 - Historical</option>
-            </select>
-            <button onclick="switchActiveSeason2()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
-              🔄 Switch Active Season
-            </button>
-          </div>
-          <div>
-            <h4 class="font-semibold text-green-200 mb-3">📊 Season Data Viewing</h4>
-            <select id="viewSeasonSelector2" class="w-full px-3 py-2 rounded text-gray-800 mb-3" onchange="loadSeasonData2()">
-              <option value="season_2">Season 2 - Current Active</option>
-              <option value="season_1">Season 1 - Historical</option>
-              <option value="all">All Seasons Combined</option>
-            </select>
-            <button onclick="refreshSeasonData2()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
-              🔄 Refresh Data
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Game Statistics by Season -->
-      <div class="mb-8 bg-gradient-to-r from-yellow-900 to-orange-900 p-6 rounded-lg border border-yellow-700">
-        <h3 class="text-lg font-semibold text-yellow-300 mb-4">🎯 Game Statistics by Season</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="gameStatsGrid2">
-          <!-- Game stats will be loaded here -->
-        </div>
-      </div>
-
-      <!-- Season Performance Analytics -->
-      <div class="mb-8 bg-gradient-to-r from-purple-900 to-pink-900 p-6 rounded-lg border border-purple-700">
-        <h3 class="text-lg font-semibold text-purple-300 mb-4">📈 Season Performance Analytics</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 class="font-semibold text-purple-200 mb-3">🏆 Top Performers by Season</h4>
-            <div id="topPerformersDisplay2" class="space-y-2">
-              <!-- Top performers will be loaded here -->
-            </div>
-          </div>
-          <div>
-            <h4 class="font-semibold text-purple-200 mb-3">📊 Season Comparison</h4>
-            <div id="seasonComparisonDisplay2" class="space-y-2">
-              <!-- Season comparison will be loaded here -->
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Advanced Season Controls -->
-      <div class="mb-8 bg-gradient-to-r from-red-900 to-orange-900 p-6 rounded-lg border border-red-700">
-        <h3 class="text-lg font-semibold text-red-300 mb-4">⚙️ Advanced Season Controls</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 class="font-semibold text-red-200 mb-3">🆕 Create New Season</h4>
-            <input type="text" id="newSeasonName2" placeholder="e.g., Season 3 - Winter 2025" class="w-full px-3 py-2 rounded text-gray-800 mb-3">
-            <button onclick="createNewSeason2()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
-              🆕 Create Season
-            </button>
-          </div>
-          <div>
-            <h4 class="font-semibold text-red-200 mb-3">🗂️ Season Data Export</h4>
-            <select id="exportSeasonSelector2" class="w-full px-3 py-2 rounded text-gray-800 mb-3">
-              <option value="season_2">Season 2</option>
-              <option value="season_1">Season 1</option>
-              <option value="all">All Seasons</option>
-            </select>
-            <button onclick="exportSeasonData2()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded text-sm">
-              📥 Export Data
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Real-time Season Monitoring -->
-      <div class="bg-gradient-to-r from-indigo-900 to-blue-900 p-6 rounded-lg border border-indigo-700">
-        <h3 class="text-lg font-semibold text-indigo-300 mb-4">🔍 Real-time Season Monitoring</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 class="font-semibold text-indigo-200 mb-3">📱 Live Activity Feed</h4>
-            <div id="liveActivityFeed2" class="bg-black bg-opacity-50 p-3 rounded-lg border border-gray-600 max-h-48 overflow-y-auto">
-              <div class="text-gray-400 text-center py-4">
-                <div class="text-lg mb-2">🎮 Live Game Activity</div>
-                <div class="text-sm">Real-time updates from all 5 games</div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h4 class="font-semibold text-indigo-200 mb-3">⚡ Quick Actions</h4>
-            <div class="space-y-2">
-              <button onclick="refreshAllGameData2()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded text-sm">
-                🔄 Refresh All Data
-              </button>
-              <button onclick="resetSeasonStats2()" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded text-sm">
-                🔄 Reset Season Stats
-              </button>
-              <button onclick="backupSeasonData2()" class="w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm">
-                💾 Backup Season Data
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- Discord Config Tab -->
     <div class="admin-card mb-6" id="discordTab" style="display: none;">
@@ -5351,6 +5212,15 @@
         }
       });
       
+      // STEP 2.5: Explicitly hide Quest Claims Management section when switching away from quests tab
+      if (tabName !== 'quests') {
+        const questClaimsSection = document.getElementById('questClaimsManagementSection');
+        if (questClaimsSection) {
+          questClaimsSection.style.display = 'none';
+          console.log('🔒 Quest Claims Management section explicitly hidden');
+        }
+      }
+      
       // STEP 3: Show selected tab with smooth animation
       setTimeout(() => {
       const selectedTab = document.getElementById(tabName + 'Tab');
@@ -5358,6 +5228,15 @@
         selectedTab.style.display = 'block';
           selectedTab.style.opacity = '0';
           selectedTab.style.transform = 'translateY(10px)';
+          
+          // STEP 3.5: Explicitly show Quest Claims Management section when switching TO quests tab
+          if (tabName === 'quests') {
+            const questClaimsSection = document.getElementById('questClaimsManagementSection');
+            if (questClaimsSection) {
+              questClaimsSection.style.display = 'block';
+              console.log('🔓 Quest Claims Management section explicitly shown');
+            }
+          }
           
           // Trigger animation
           setTimeout(() => {

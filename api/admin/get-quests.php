@@ -5,8 +5,12 @@ header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
 try {
-    // Connect to database - Render production path
-    $db = new SQLite3('/var/www/html/db/narrrf_world.sqlite');
+    // Connect to database - Environment-aware path
+    $db_path = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false)
+        ? 'C:/xampp-server/htdocs/narrrfs-world/db/narrrf_world.sqlite'  // Local XAMPP absolute path
+        : '/var/www/html/db/narrrf_world.sqlite';                         // Render production
+    
+    $db = new SQLite3($db_path);
     $db->enableExceptions(true);
 
     // Get active quests
