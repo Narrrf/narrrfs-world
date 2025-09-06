@@ -160,9 +160,9 @@ function getRaceOverview($pdo) {
     
     $races = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        // Format dates
+        // Format dates - use ISO format for admin interface compatibility
         $createdAt = new DateTime($row['created_at']);
-        $formattedDate = $createdAt->format('d.m.Y H:i');
+        $formattedDate = $createdAt->format('Y-m-d\TH:i:s.v\Z');
         
         // Calculate duration if race has started and ended
         $duration = 'N/A';
@@ -173,6 +173,7 @@ function getRaceOverview($pdo) {
         }
         
         $races[] = [
+            'id' => $row['race_id'],  // Use 'id' for admin interface compatibility
             'race_id' => $row['race_id'],
             'creator_id' => $row['creator_id'],
             'creator_name' => $row['creator_name'],
@@ -186,8 +187,8 @@ function getRaceOverview($pdo) {
             'started_at' => $row['started_at'],
             'ended_at' => $row['ended_at'],
             'participant_count' => (int)$row['participant_count'],
-            'max_cheese' => (int)$row['max_cheese'],
-            'avg_cheese' => round((float)$row['avg_cheese'], 2),
+            'max_cheese_collected' => (int)$row['max_cheese'],
+            'avg_cheese_collected' => round((float)$row['avg_cheese'], 2),
             'total_dspoinc_earned' => (int)$row['total_dspoinc_earned']
         ];
     }
