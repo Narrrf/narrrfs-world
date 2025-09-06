@@ -4438,6 +4438,42 @@
         </div>
       </div>
 
+      <!-- NFT Collection Management Section -->
+      <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+        <h3 class="text-lg font-semibold mb-3">🎨 NFT Collection Management</h3>
+        <div class="flex flex-wrap gap-4 mb-4">
+          <button onclick="showAddCollectionModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            ➕ Add Collection
+          </button>
+          <button onclick="loadCollectionData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            🔄 Refresh Collections
+          </button>
+          <button onclick="exportCollectionsCSV()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
+            📤 Export Collections
+          </button>
+        </div>
+        
+        <!-- Collections Management Table -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-gray-700 bg-opacity-50 rounded-lg">
+            <thead class="sticky top-0 bg-gray-700">
+              <tr class="border-b border-gray-600">
+                <th class="px-4 py-2 text-left text-gray-300">COLLECTION</th>
+                <th class="px-4 py-2 text-left text-gray-300">DESCRIPTION</th>
+                <th class="px-4 py-2 text-left text-gray-300">PRICE (SOL)</th>
+                <th class="px-4 py-2 text-left text-gray-300">NFT COUNT</th>
+                <th class="px-4 py-2 text-left text-gray-300">TOTAL VALUE</th>
+                <th class="px-4 py-2 text-left text-gray-300">STATUS</th>
+                <th class="px-4 py-2 text-left text-gray-300">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody id="collectionsTableBody">
+              <tr><td colspan="7" class="text-center text-gray-400">Loading collections...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Real Wallet Transaction History -->
       <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">📊 Real Wallet Transaction History</h3>
@@ -7722,6 +7758,383 @@
       } catch (error) {
         console.error('Error displaying recent activity:', error);
         addLog(`❌ Error displaying recent activity: ${error.message}`);
+      }
+    }
+
+    // ========================================
+    // NFT COLLECTION MANAGEMENT FUNCTIONS
+    // ========================================
+
+    // Load collection data from API
+    async function loadCollectionData() {
+      console.log('🎨 Loading NFT collection data...');
+      addLog('🎨 Loading NFT collection data...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-nft-collections.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          updateCollectionsTable(data.collections);
+          addLog(`✅ Loaded ${data.collections.length} NFT collections`);
+        } else {
+          addLog(`❌ Failed to load collections: ${data.error}`);
+        }
+      } catch (error) {
+        console.error('Error loading collections:', error);
+        addLog(`❌ Error loading collections: ${error.message}`);
+      }
+    }
+
+    // Update collections table display
+    function updateCollectionsTable(collections) {
+      const tableBody = document.getElementById('collectionsTableBody');
+      if (!tableBody) return;
+      
+      if (!collections || collections.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-400">No collections found</td></tr>';
+        return;
+      }
+      
+      tableBody.innerHTML = collections.map(collection => {
+        const totalValue = (collection.nft_count || 0) * (collection.price_sol || 0);
+        const statusClass = collection.status === 'active' ? 'text-green-400' : 'text-red-400';
+        
+        return `
+          <tr class="border-b border-gray-600">
+            <td class="px-4 py-2">
+              <div class="font-semibold text-blue-400">${collection.name || 'Unknown'}</div>
+              <div class="text-xs text-gray-400">${collection.collection_id || 'N/A'}</div>
+            </td>
+            <td class="px-4 py-2 text-gray-300">${collection.description || 'No description'}</td>
+            <td class="px-4 py-2 text-yellow-400 font-semibold">${collection.price_sol || 0} SOL</td>
+            <td class="px-4 py-2 text-blue-400 font-semibold">${collection.nft_count || 0}</td>
+            <td class="px-4 py-2 text-green-400 font-semibold">${totalValue.toFixed(3)} SOL</td>
+            <td class="px-4 py-2">
+              <span class="${statusClass} font-semibold">${collection.status || 'Unknown'}</span>
+            </td>
+            <td class="px-4 py-2">
+              <div class="flex space-x-2">
+                <button onclick="editCollection(${collection.id})" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs">
+                  ✏️ Edit
+                </button>
+                <button onclick="deleteCollection(${collection.id})" 
+                        class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">
+                  🗑️ Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Show add collection modal
+    function showAddCollectionModal() {
+      const modalHTML = `
+        <div id="addCollectionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4 text-white">➕ Add NFT Collection</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Collection Name</label>
+                <input type="text" id="collectionName" 
+                       class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       placeholder="Enter collection name">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                <textarea id="collectionDescription" 
+                          class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white h-20" 
+                          placeholder="Enter collection description"></textarea>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Price per NFT (SOL)</label>
+                <input type="number" id="collectionPrice" step="0.001" min="0"
+                       class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       placeholder="0.000">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">NFT Count</label>
+                <input type="number" id="collectionCount" min="0"
+                       class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                       placeholder="0">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Status</label>
+                <select id="collectionStatus" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="sold">Sold</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 mt-6">
+              <button onclick="closeAddCollectionModal()" 
+                      class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded">
+                Cancel
+              </button>
+              <button onclick="saveNewCollection()" 
+                      class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded">
+                Save Collection
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // Close add collection modal
+    function closeAddCollectionModal() {
+      const modal = document.getElementById('addCollectionModal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    // Save new collection
+    async function saveNewCollection() {
+      try {
+        const name = document.getElementById('collectionName').value.trim();
+        const description = document.getElementById('collectionDescription').value.trim();
+        const price = parseFloat(document.getElementById('collectionPrice').value) || 0;
+        const count = parseInt(document.getElementById('collectionCount').value) || 0;
+        const status = document.getElementById('collectionStatus').value;
+        
+        if (!name) {
+          alert('Please enter a collection name');
+          return;
+        }
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/manage-nft-collection.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'add',
+            name: name,
+            description: description,
+            price_sol: price,
+            nft_count: count,
+            status: status
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Collection "${name}" added successfully`);
+          closeAddCollectionModal();
+          loadCollectionData(); // Refresh the table
+        } else {
+          alert(`Error adding collection: ${data.error}`);
+        }
+      } catch (error) {
+        console.error('Error saving collection:', error);
+        alert('Error saving collection. Please try again.');
+      }
+    }
+
+    // Edit collection
+    async function editCollection(collectionId) {
+      try {
+        // First, get the collection data
+        const response = await fetch(API_BASE_URL + `/api/admin/get-nft-collection.php?id=${collectionId}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+          alert(`Error loading collection: ${data.error}`);
+          return;
+        }
+        
+        const collection = data.collection;
+        
+        // Show edit modal with pre-filled data
+        const modalHTML = `
+          <div id="editCollectionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+              <h3 class="text-xl font-semibold mb-4 text-white">✏️ Edit NFT Collection</h3>
+              
+              <input type="hidden" id="editCollectionId" value="${collectionId}">
+              
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Collection Name</label>
+                  <input type="text" id="editCollectionName" 
+                         class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                         value="${collection.name || ''}">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                  <textarea id="editCollectionDescription" 
+                            class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white h-20">${collection.description || ''}</textarea>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Price per NFT (SOL)</label>
+                  <input type="number" id="editCollectionPrice" step="0.001" min="0"
+                         class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                         value="${collection.price_sol || 0}">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">NFT Count</label>
+                  <input type="number" id="editCollectionCount" min="0"
+                         class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" 
+                         value="${collection.nft_count || 0}">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">Status</label>
+                  <select id="editCollectionStatus" class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white">
+                    <option value="active" ${collection.status === 'active' ? 'selected' : ''}>Active</option>
+                    <option value="inactive" ${collection.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                    <option value="sold" ${collection.status === 'sold' ? 'selected' : ''}>Sold</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="closeEditCollectionModal()" 
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded">
+                  Cancel
+                </button>
+                <button onclick="saveEditedCollection()" 
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+      } catch (error) {
+        console.error('Error loading collection for edit:', error);
+        alert('Error loading collection. Please try again.');
+      }
+    }
+
+    // Close edit collection modal
+    function closeEditCollectionModal() {
+      const modal = document.getElementById('editCollectionModal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    // Save edited collection
+    async function saveEditedCollection() {
+      try {
+        const collectionId = document.getElementById('editCollectionId').value;
+        const name = document.getElementById('editCollectionName').value.trim();
+        const description = document.getElementById('editCollectionDescription').value.trim();
+        const price = parseFloat(document.getElementById('editCollectionPrice').value) || 0;
+        const count = parseInt(document.getElementById('editCollectionCount').value) || 0;
+        const status = document.getElementById('editCollectionStatus').value;
+        
+        if (!name) {
+          alert('Please enter a collection name');
+          return;
+        }
+        
+        const response = await fetch(API_BASE_URL + '/api/admin/manage-nft-collection.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'edit',
+            id: collectionId,
+            name: name,
+            description: description,
+            price_sol: price,
+            nft_count: count,
+            status: status
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Collection "${name}" updated successfully`);
+          closeEditCollectionModal();
+          loadCollectionData(); // Refresh the table
+        } else {
+          alert(`Error updating collection: ${data.error}`);
+        }
+      } catch (error) {
+        console.error('Error saving collection:', error);
+        alert('Error saving collection. Please try again.');
+      }
+    }
+
+    // Delete collection
+    async function deleteCollection(collectionId) {
+      if (!confirm('Are you sure you want to delete this collection? This action cannot be undone.')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/manage-nft-collection.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'delete',
+            id: collectionId
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Collection deleted successfully`);
+          loadCollectionData(); // Refresh the table
+        } else {
+          alert(`Error deleting collection: ${data.error}`);
+        }
+      } catch (error) {
+        console.error('Error deleting collection:', error);
+        alert('Error deleting collection. Please try again.');
+      }
+    }
+
+    // Export collections to CSV
+    async function exportCollectionsCSV() {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/export-nft-collections.php');
+        
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `nft-collections-${new Date().toISOString().split('T')[0]}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          
+          addLog('✅ Collections exported to CSV successfully');
+        } else {
+          alert('Error exporting collections to CSV');
+        }
+      } catch (error) {
+        console.error('Error exporting collections:', error);
+        alert('Error exporting collections. Please try again.');
       }
     }
 
