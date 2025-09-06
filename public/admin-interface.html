@@ -3749,21 +3749,43 @@
       <!-- Current Discord Settings -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
-          <p><strong>Current Invite Code:</strong> <span id="currentCode" class="font-mono bg-gray-800 px-2 py-1 rounded">PFFztgqwe2</span></p>
-          <p><strong>Full Discord URL:</strong> <span id="currentUrl" class="font-mono bg-gray-800 px-2 py-1 rounded">https://discord.gg/PFFztgqwe2</span></p>
+          <p><strong>Current Invite Code:</strong> <span id="currentCode" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+          <p><strong>Full Discord URL:</strong> <span id="currentUrl" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
         </div>
         <div>
           <p><strong>System Version:</strong> <span id="systemVersion" class="font-mono bg-gray-800 px-2 py-1 rounded">12.0</span></p>
-          <p><strong>Last Updated:</strong> <span id="lastUpdated" class="font-mono bg-gray-800 px-2 py-1 rounded">2025-06-25</span></p>
+          <p><strong>Last Updated:</strong> <span id="lastUpdated" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+        </div>
+      </div>
+      
+      <!-- Environment Status -->
+      <div class="bg-blue-900 bg-opacity-50 p-4 rounded-lg mb-6">
+        <h3 class="text-lg font-semibold mb-3">🌍 Environment Status</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p><strong>Environment Variable:</strong> <span id="envVariable" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+            <p><strong>Environment Set:</strong> <span id="envSet" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+          </div>
+          <div>
+            <p><strong>Bot Token Set:</strong> <span id="botTokenSet" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+            <p><strong>Guild ID:</strong> <span id="guildId" class="font-mono bg-gray-800 px-2 py-1 rounded">Loading...</span></p>
+          </div>
         </div>
       </div>
       
       <!-- Update Discord Settings -->
       <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">🔄 Update Discord Settings</h3>
-        <div class="flex gap-2">
-          <input type="text" id="newInviteCode" placeholder="Enter new invite code" class="flex-1 px-3 py-2 rounded text-gray-800" value="PFFztgqwe2">
-          <button onclick="updateInviteCode()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Update</button>
+        <div class="mb-4">
+          <p class="text-sm text-gray-400 mb-2">Enter the new Discord invite code (without the full URL):</p>
+          <div class="flex gap-2">
+            <input type="text" id="newInviteCode" placeholder="Enter new invite code (e.g., cVWbUgdARq)" class="flex-1 px-3 py-2 rounded text-gray-800" value="">
+            <button onclick="updateInviteCode()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Update</button>
+          </div>
+        </div>
+        <div class="text-sm text-gray-400">
+          <p><strong>Note:</strong> This will update the DISCORD_INVITE_CODE environment variable on the server.</p>
+          <p><strong>Current Environment:</strong> <span id="currentEnv" class="font-mono">Loading...</span></p>
         </div>
       </div>
     </div>
@@ -7382,29 +7404,6 @@
       }
     }
 
-    function loadDiscordConfigData() {
-      console.log('🔗 Loading Discord config...');
-      addLog('🔗 Loading Discord config...');
-      
-      // Load Discord configuration
-      fetch(API_BASE_URL + '/api/admin/get-discord-config.php')
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            updateDiscordConfig(data.config);
-          }
-        })
-        .catch(error => {
-          console.error('Error loading Discord config:', error);
-          addLog('❌ Error loading Discord config');
-        });
-    }
-
-    function updateDiscordConfig(config) {
-      // Update Discord configuration display
-      console.log('Discord config updated:', config);
-    }
-
     function loadCheeseGuideData() {
       console.log('🧀 Loading cheese guide...');
       addLog('🧀 Loading cheese guide...');
@@ -8814,6 +8813,8 @@
         return;
       }
 
+      addLog(`🔄 Updating Discord invite code to: ${newCode}`);
+
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/update-discord-invite.php', {
           method: 'POST',
@@ -8831,6 +8832,9 @@
           DISCORD_CONFIG.updateInviteCode(newCode);
           updateDisplay();
           addLog(`✅ ${data.message}`);
+          
+          // Refresh Discord configuration data
+          await loadDiscordConfigData();
           
           // Refresh all Discord links on the page
           DISCORD_CONFIG.updateAllLinks();
@@ -13043,33 +13047,40 @@ function updateGameTabContent(gameType, gameData) {
       addLog('🔄 Loading Discord configuration data...');
 
       try {
-        // Load Discord bot configuration and status
-        const response = await fetch(API_BASE_URL + '/api/admin/get-discord-activity.php');
+        // Load Discord configuration from the new API endpoint
+        const response = await fetch(API_BASE_URL + '/api/admin/get-discord-config.php');
         const data = await response.json();
         
         if (data.success) {
           addLog('✅ Discord configuration data loaded successfully');
           
-          // Update dynamic Discord data if available
-          const currentCodeElement = document.getElementById('currentCode');
-          const currentUrlElement = document.getElementById('currentUrl');
-          const lastUpdatedElement = document.getElementById('lastUpdated');
-          
-          if (currentCodeElement && data.invite_code) {
-            currentCodeElement.textContent = data.invite_code;
-          }
-          if (currentUrlElement && data.discord_url) {
-            currentUrlElement.textContent = data.discord_url;
-          }
-          if (lastUpdatedElement) {
-            lastUpdatedElement.textContent = new Date().toLocaleDateString();
-          }
+          // Update Discord configuration display
+          updateDiscordConfigDisplay(data.config, data.bot_status, data.debug);
         } else {
           addLog(`❌ Failed to load Discord config data: ${data.error}`);
         }
       } catch (error) {
         addLog(`❌ Discord config data loading error: ${error.message}`);
       }
+    }
+
+    function updateDiscordConfigDisplay(config, botStatus, debug) {
+      // Update main configuration
+      document.getElementById('currentCode').textContent = config.invite_code;
+      document.getElementById('currentUrl').textContent = config.discord_url;
+      document.getElementById('lastUpdated').textContent = config.last_updated;
+      
+      // Update environment status
+      document.getElementById('envVariable').textContent = config.environment_variable || 'Not set';
+      document.getElementById('envSet').textContent = config.environment_set ? 'Yes' : 'No';
+      document.getElementById('botTokenSet').textContent = botStatus.bot_token_set ? 'Yes' : 'No';
+      document.getElementById('guildId').textContent = botStatus.guild_id;
+      document.getElementById('currentEnv').textContent = debug.environment;
+      
+      // Update the input field with current invite code
+      document.getElementById('newInviteCode').value = config.invite_code;
+      
+      console.log('✅ Discord configuration display updated:', config);
     }
 
     // Cheese Guide Tab Functions

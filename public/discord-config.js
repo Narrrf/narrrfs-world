@@ -6,7 +6,7 @@
 let DISCORD_CONFIG = {
     // 🔧 ENVIRONMENT VARIABLE SUPPORT
     // Will be loaded from server-side PHP endpoint
-    inviteCode: 'PFFztgqwe2', // Fallback Discord invite code
+    inviteCode: 'cVWbUgdARq', // Fallback Discord invite code
     
     // Base Discord URL
     baseUrl: 'https://discord.gg/',
