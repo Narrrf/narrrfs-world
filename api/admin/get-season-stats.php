@@ -21,26 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-// 🔒 SECURE AUTHENTICATION: Use centralized admin auth with season stats exception
-require_once __DIR__ . '/../config/admin-auth.php';
-
-// ✅ FIX: Allow season stats access for all authenticated users
-// Season statistics are not sensitive data and should be accessible to all users
-try {
-    checkAdminAuthentication();
-} catch (Exception $e) {
-    // If admin auth fails, try basic user authentication
-    session_start();
-    if (!isset($_SESSION['discord_id']) && !isset($_COOKIE['discord_user_id'])) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Authentication required']);
-        exit;
-    }
-}
+// ✅ PUBLIC ACCESS: Season statistics are public data - no authentication required
+// Season statistics contain no sensitive information and should be accessible to all users
+// This allows the Season Statistics & Legends section to work on live environment
 
 try {
-    // Use centralized database path function
-    $dbPath = getDatabasePath();
+    // Determine database path based on environment
+    $isProduction = $_SERVER['HTTP_HOST'] === 'narrrfs.world';
+    $dbPath = $isProduction ? '/data/narrrf_world.sqlite' : __DIR__ . '/../../db/narrrf_world.sqlite';
     
     // Connect to database with PDO
     $pdo = new PDO("sqlite:$dbPath");
