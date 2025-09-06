@@ -9,8 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Database configuration
-$dbPath = '/data/narrrf_world.sqlite';
+// Database configuration - Environment aware
+$dbPath = (isset($_SERVER['HTTP_HOST']) && (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false))
+    ? __DIR__ . '/../../db/narrrf_world.sqlite'  // Local development
+    : (file_exists(__DIR__ . '/../../db/narrrf_world.sqlite') 
+        ? __DIR__ . '/../../db/narrrf_world.sqlite'  // Local fallback
+        : '/data/narrrf_world.sqlite');              // Render production
 
 try {
     // Connect to database
