@@ -37,7 +37,7 @@ try {
                 'total_races' => $stats['total_races'],
                 'total_participants' => $stats['participants'],
                 'wins' => $stats['winners'],
-                'recent_activity' => $raceOverview
+                'recent_activity' => getRecentActivity($pdo)
             ]
         ]
     ]);
@@ -159,10 +159,22 @@ function getRaceOverview($pdo) {
     ");
     
     $races = [];
+    $raceCount = 0;
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $raceCount++;
+        // Debug: Log first few races to see what's being processed
+        if ($raceCount <= 5) {
+            error_log("Processing race #$raceCount: " . $row['race_id'] . " - " . $row['created_at']);
+        }
         // Format dates - use ISO format for admin interface compatibility
-        $createdAt = new DateTime($row['created_at']);
-        $formattedDate = $createdAt->format('Y-m-d\TH:i:s.v\Z');
+        try {
+            $createdAt = new DateTime($row['created_at']);
+            $formattedDate = $createdAt->format('Y-m-d\TH:i:s.000\Z');
+        } catch (Exception $e) {
+            // Fallback: use the original date if DateTime parsing fails
+            error_log("DateTime parsing error for: " . $row['created_at'] . " - " . $e->getMessage());
+            $formattedDate = $row['created_at']; // Use original format
+        }
         
         // Calculate duration if race has started and ended
         $duration = 'N/A';
@@ -235,5 +247,66 @@ function getPerformanceMetrics($pdo) {
         'peak_participants' => 'Coming Soon',
         'top_performance' => 'Coming Soon'
     ];
+}
+
+/**
+ * Get recent race activity events
+ */
+function getRecentActivity($pdo) {
+    // Get recent race events from tbl_discord_events
+    $stmt = $pdo->query("
+        SELECT 
+            event_type,
+            user_name as username,
+            user_id,
+            description,
+            created_at,
+            timestamp
+        FROM tbl_discord_events 
+        WHERE event_type IN ('player_joined', 'race_started', 'race_finished')
+        ORDER BY created_at DESC, timestamp DESC
+        LIMIT 50
+    ");
+    
+    $activities = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $activities[] = [
+            'event_type' => $row['event_type'],
+            'username' => $row['username'] ?: 'Unknown Player',
+            'user_id' => $row['user_id'],
+            'description' => $row['description'] ?: 'No description',
+            'created_at' => $row['created_at'] ?: $row['timestamp'],
+            'race_id' => null // We'll need to extract this from description if needed
+        ];
+    }
+    
+    // If no events from tbl_discord_events, get recent race participants as activity
+    if (empty($activities)) {
+        $stmt = $pdo->query("
+            SELECT 
+                'player_joined' as event_type,
+                rp.username,
+                rp.user_id,
+                'Player joined race' as description,
+                rp.joined_at as created_at,
+                rp.race_id
+            FROM tbl_race_participants rp
+            ORDER BY rp.joined_at DESC
+            LIMIT 50
+        ");
+        
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $activities[] = [
+                'event_type' => $row['event_type'],
+                'username' => $row['username'] ?: 'Unknown Player',
+                'user_id' => $row['user_id'],
+                'description' => $row['description'],
+                'created_at' => $row['created_at'],
+                'race_id' => $row['race_id']
+            ];
+        }
+    }
+    
+    return $activities;
 }
 ?>

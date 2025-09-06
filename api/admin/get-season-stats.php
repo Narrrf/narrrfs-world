@@ -21,9 +21,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-// 🔒 SECURE AUTHENTICATION: Use centralized admin auth
+// 🔒 SECURE AUTHENTICATION: Use centralized admin auth with season stats exception
 require_once __DIR__ . '/../config/admin-auth.php';
-checkAdminAuthentication();
+
+// ✅ FIX: Allow season stats access for all authenticated users
+// Season statistics are not sensitive data and should be accessible to all users
+try {
+    checkAdminAuthentication();
+} catch (Exception $e) {
+    // If admin auth fails, try basic user authentication
+    session_start();
+    if (!isset($_SESSION['discord_id']) && !isset($_COOKIE['discord_user_id'])) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'Authentication required']);
+        exit;
+    }
+}
 
 try {
     // Use centralized database path function

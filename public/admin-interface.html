@@ -3495,7 +3495,7 @@
       <!-- Season Management & Control -->
       <div class="mt-6 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
         <h4 class="font-semibold text-yellow-400 mb-3">🎮 Season Management & Control</h4>
-        <p class="text-sm text-gray-300 mb-4">Manage active seasons, switch between seasons, and control which season is currently active for all 5 games.</p>
+        <p class="text-sm text-gray-300 mb-4">Manage active seasons, switch between seasons, and control season-based settings.</p>
         
         <!-- Current Season Status -->
         <div class="mb-6 p-4 bg-green-900 bg-opacity-30 rounded-lg border border-green-700">
@@ -3599,6 +3599,24 @@
             </div>
           </div>
           
+          <button onclick="loadCurrentSeasonSettings()" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">🔄 Refresh Settings</button>
+        </div>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-400">📊 Points Per Line (Tetris):</span>
+                <span class="text-white font-semibold" id="currentPointsPerLine">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">🧀 Points Per Cheese (Snake):</span>
+                <span class="text-white font-semibold" id="currentPointsPerCheese">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">👾 Points Per Invader (Space Invaders):</span>
+                <span class="text-white font-semibold" id="currentPointsPerInvader">-</span>
+              </div>
+            </div>
+          </div>
+          
           <!-- Scoring Ratio Display -->
           <div class="mt-4 p-3 bg-gray-600 rounded-lg">
             <h6 class="font-semibold text-yellow-400 mb-2">🎯 Current Scoring Ratios</h6>
@@ -3625,6 +3643,51 @@
         <div class="p-4 bg-gray-700 rounded-lg">
           <h5 class="font-semibold text-green-400 mb-3">🔄 Update Season Settings</h5>
           <p class="text-sm text-gray-300 mb-4">Configure scoring ratios and maximum scores for both games. Changes apply immediately to new game scores.</p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">🎯 Tetris Max Score:</label>
+              <input type="number" id="newTetrisMax" placeholder="10000" min="100" max="100000" class="w-full px-3 py-2 rounded text-gray-800">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">🐍 Snake Max Score:</label>
+              <input type="number" id="newSnakeMax" placeholder="10000" min="100" max="100000" class="w-full px-3 py-2 rounded text-gray-800">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">👾 Space Invaders Max Score:</label>
+              <input type="number" id="newSpaceInvadersMax" placeholder="10000" min="100" max="100000" class="w-full px-3 py-2 rounded text-gray-800">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">🧀 Points Per Cheese (Snake):</label>
+              <input type="number" id="newPointsPerCheese" placeholder="1" min="0.1" max="100" step="0.1" class="w-full px-3 py-2 rounded text-gray-800">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">📊 Points Per Line (Tetris):</label>
+              <input type="number" id="newPointsPerLine" placeholder="1" min="0.1" max="100" step="0.1" class="w-full px-3 py-2 rounded text-gray-800">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">👾 Points Per Invader (Space Invaders):</label>
+              <input type="number" id="newPointsPerInvader" placeholder="0.1" min="0.001" max="10" step="0.001" class="w-full px-3 py-2 rounded text-gray-800">
+            </div>
+          </div>
+          
+          <!-- Quick Ratio Presets -->
+          <div class="mb-4">
+            <h6 class="text-sm font-medium mb-2">⚡ Quick Ratio Presets:</h6>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setRatioPreset('1:1:0.1')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">1:1:0.1 (Exact Score)</button>
+              <button onclick="setRatioPreset('10:1:0.1')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">10:1:0.1 (10x Multiplier)</button>
+              <button onclick="setRatioPreset('5:1:0.1')" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm">5:1:0.1 (5x Multiplier)</button>
+              <button onclick="setRatioPreset('2:1:0.1')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">2:1:0.1 (2x Multiplier)</button>
+            </div>
+          </div>
+          
+          <button onclick="updateSeasonSettings()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold">
+            ✅ Update Season Settings
+          </button>
+          <p class="text-xs text-green-400 mt-2">✅ These settings will apply to all new game scores immediately.</p>
+        </div>
+      </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -3678,54 +3741,12 @@
       </div>
     </div>
 
-    <!-- Game Management 2.0 Tab - DISABLED -->
-    <!-- <div class="admin-card mb-6" id="games2Tab" style="display: none;"> -->
-      <h2 class="text-xl font-semibold mb-4">🚀 Game Management 2.0 - Advanced Season Management</h2>
-      <p class="text-gray-300 mb-6">Comprehensive season management, game statistics, and advanced controls for all 5 games.</p>
-      
-      <!-- Debug Info -->
-      <div class="mb-4 p-3 bg-yellow-900 bg-opacity-50 rounded-lg border border-yellow-700">
-        <h3 class="text-lg font-semibold text-yellow-300 mb-2">🔍 Debug Information</h3>
-        <p class="text-yellow-200 text-sm">Tab ID: games2Tab | Status: <span id="games2TabStatus">Loading...</span></p>
-        <p class="text-yellow-200 text-sm">Functions Status: <span id="games2FunctionsStatus">Checking...</span></p>
-        <button onclick="testGames2Tab()" class="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
-          🧪 Test Tab Functions
-        </button>
-      </div>
-      
-      <!-- Database Access Quick Button -->
-      <div class="mb-4 p-3 bg-blue-900 bg-opacity-50 rounded-lg border border-blue-700">
-        <h3 class="text-lg font-semibold text-blue-300 mb-2">🗄️ Database Access</h3>
-        <div class="text-center">
-          <!-- Database access unlock button - Games2 tab version -->
-          <div id="games2DatabaseUnlock">
-            <button onclick="showDatabaseUnlock()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
-              🔓 Unlock Database Access
-            </button>
-            <p class="text-sm text-blue-200 mt-2">Unlock database management features</p>
-          </div>
-          
-          <!-- Database options for games2 tab (password protected) -->
-          <div id="games2DatabaseOptions" style="display: none;">
-            <div class="grid grid-cols-2 gap-3 mt-3">
-              <button onclick="downloadDatabase()" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
-                📥 Download
-              </button>
-              <button onclick="showUploadModal()" class="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
-                📤 Upload
-              </button>
-              <button onclick="showDatabaseViewer()" class="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
-                👁️ Viewer
-              </button>
-              <button onclick="triggerBackup()" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
-                🗄️ Backup
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- Game Management 2.0 - Advanced Season Management -->
+    <div class="mb-8 bg-gradient-to-r from-purple-900 to-indigo-900 p-6 rounded-lg border border-purple-700">
+      <h3 class="text-lg font-semibold text-purple-300 mb-4">🚀 Game Management 2.0 - Advanced Season Management</h3>
+      <p class="text-sm text-gray-300 mb-4">Advanced season management with enhanced controls and analytics.</p>
 
-      <!-- Season Overview Dashboard -->
+    <!-- ✅ CLEANUP: Removed entire Game Management 2.0 section content -->
       <div class="mb-8 bg-gradient-to-r from-blue-900 to-purple-900 p-6 rounded-lg border border-blue-700">
         <h3 class="text-lg font-semibold text-blue-300 mb-4">📊 Season Overview Dashboard</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -13294,12 +13315,11 @@ function updateGameTabContent(gameType, gameData) {
     function displayDiscordRaceData(raceData) {
       try {
         console.log('🔍 DEBUG: displayDiscordRaceData called with:', raceData);
-        console.log('🔍 DEBUG: raceData.race_data:', raceData.race_data);
-        console.log('🔍 DEBUG: raceData.race_data?.race_overview:', raceData.race_data?.race_overview);
-        console.log('🔍 DEBUG: raceData.race_data?.top_racers:', raceData.race_data?.top_racers);
-        console.log('🔍 DEBUG: raceData.race_data?.recent_activity:', raceData.race_data?.recent_activity);
-        console.log('🔍 DEBUG: raceData.race_data?.total_races:', raceData.race_data?.total_races);
-        console.log('🔍 DEBUG: raceData.race_data?.total_participants:', raceData.race_data?.total_participants);
+        console.log('🔍 DEBUG: raceData.race_overview:', raceData.race_overview);
+        console.log('🔍 DEBUG: raceData.top_racers:', raceData.top_racers);
+        console.log('🔍 DEBUG: raceData.recent_activity:', raceData.recent_activity);
+        console.log('🔍 DEBUG: raceData.total_races:', raceData.total_races);
+        console.log('🔍 DEBUG: raceData.total_participants:', raceData.total_participants);
         
         // Check if the games tab is visible before trying to update elements
         const gamesTab = document.getElementById('gamesTab');
@@ -13312,13 +13332,13 @@ function updateGameTabContent(gameType, gameData) {
         
         console.log('✅ Games tab is visible, proceeding with Discord Race data display');
         console.log('🏁 Discord Race data structure:', JSON.stringify(raceData, null, 2));
-        console.log('🏁 Discord Race race_data:', raceData.race_data);
-        console.log('🏁 Race overview available:', raceData.race_data?.race_overview);
-        console.log('🏁 Top racers available:', raceData.race_data?.top_racers);
-        console.log('🏁 Recent activity available:', raceData.race_data?.recent_activity);
+        console.log('🏁 Race overview available:', raceData.race_overview);
+        console.log('🏁 Top racers available:', raceData.top_racers);
+        console.log('🏁 Recent activity available:', raceData.recent_activity);
         
         // Update Discord Race statistics from the correct API structure
-        const raceDataStats = raceData.race_data || {};
+        // raceData is already the race_data object from the API response
+        const raceDataStats = raceData || {};
         
         console.log('🔍 Updating race statistics with race_data:', raceDataStats);
         
@@ -13342,7 +13362,7 @@ function updateGameTabContent(gameType, gameData) {
         
         if (document.getElementById('raceTotalWinners')) {
           const element = document.getElementById('raceTotalWinners');
-          const value = raceDataStats.total_prizes_awarded || 0;
+          const value = raceDataStats.wins || 0;
           element.textContent = value;
           console.log('✅ Set raceTotalWinners to:', value);
         } else {
@@ -13350,8 +13370,8 @@ function updateGameTabContent(gameType, gameData) {
         }
         
         if (document.getElementById('raceCompletedRaces')) {
-          const element = document.getElementById('raceTotalRaces');
-          const value = raceDataStats.total_prizes_awarded || 0;
+          const element = document.getElementById('raceCompletedRaces');
+          const value = raceDataStats.stats?.finished || 0;
           element.textContent = value;
           console.log('✅ Set raceCompletedRaces to:', value);
         } else {
@@ -13360,7 +13380,7 @@ function updateGameTabContent(gameType, gameData) {
         
         if (document.getElementById('raceActiveRaces')) {
           const element = document.getElementById('raceActiveRaces');
-          const value = raceDataStats.recent_24h || 0;
+          const value = raceDataStats.stats?.active || 0;
           element.textContent = value;
           console.log('✅ Set raceActiveRaces to:', value);
         } else {
@@ -13370,8 +13390,8 @@ function updateGameTabContent(gameType, gameData) {
         // Calculate success rate from available data
         if (document.getElementById('raceSuccessRate')) {
           const totalRaces = raceDataStats.total_races || 0;
-          const completedRaces = raceDataStats.total_prizes_awarded || 0;
-        const successRate = totalRaces > 0 ? Math.round((completedRaces / totalRaces) * 100) : 0;
+          const completedRaces = raceDataStats.stats?.finished || 0;
+          const successRate = totalRaces > 0 ? Math.round((completedRaces / totalRaces) * 100) : 0;
           document.getElementById('raceSuccessRate').textContent = successRate + '%';
           console.log('✅ Set raceSuccessRate to:', successRate + '%');
         }
@@ -13448,10 +13468,10 @@ function updateGameTabContent(gameType, gameData) {
 
         // Update race overview table
         const raceOverviewTable = document.getElementById('raceOverviewTable');
-        if (raceOverviewTable && raceData.race_data?.race_overview) {
-          console.log('Race overview data:', raceData.race_data.race_overview);
-          if (raceData.race_data.race_overview.length > 0) {
-            raceOverviewTable.innerHTML = raceData.race_data.race_overview.map((race, index) => {
+        if (raceOverviewTable && raceData.race_overview) {
+          console.log('Race overview data:', raceData.race_overview);
+          if (raceData.race_overview.length > 0) {
+            raceOverviewTable.innerHTML = raceData.race_overview.map((race, index) => {
               console.log('Processing race:', race);
               return `
                 <tr class="border-b border-gray-600 hover:bg-gray-600 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
@@ -13506,12 +13526,12 @@ function updateGameTabContent(gameType, gameData) {
         // Update recent races list
         const recentRacesElement = document.getElementById('recentRaceActivity');
         if (recentRacesElement) {
-          console.log('Recent activity data:', raceData.race_data?.recent_activity);
-          if (raceData.race_data?.recent_activity && raceData.race_data.recent_activity.length > 0) {
+          console.log('Recent activity data:', raceData.recent_activity);
+          if (raceData.recent_activity && raceData.recent_activity.length > 0) {
             // Add summary at the top
-            const totalRaces = raceData.race_data.recent_activity.length;
-            const raceEvents = raceData.race_data.recent_activity.filter(activity => activity.event_type === 'race_started').length;
-            const playerJoins = raceData.race_data.recent_activity.filter(activity => activity.event_type === 'player_joined').length;
+            const totalRaces = raceData.recent_activity.length;
+            const raceEvents = raceData.recent_activity.filter(activity => activity.event_type === 'race_started').length;
+            const playerJoins = raceData.recent_activity.filter(activity => activity.event_type === 'player_joined').length;
             
             recentRacesElement.innerHTML = `
               <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
@@ -13530,7 +13550,7 @@ function updateGameTabContent(gameType, gameData) {
                   </div>
                 </div>
               </div>
-              ${raceData.race_data.recent_activity.map((activity, index) => {
+              ${raceData.recent_activity.map((activity, index) => {
                 console.log('Processing activity:', activity);
                 return `
                   <div class="history-item bg-gray-600 p-3 rounded-lg mb-3 border border-gray-500 hover:bg-gray-500 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
@@ -13562,8 +13582,8 @@ function updateGameTabContent(gameType, gameData) {
                 <p class="text-lg font-semibold mb-2">No Recent Activity</p>
                 <p class="text-sm">Start a new race to see activity here!</p>
                 <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
-                  <p class="text-sm text-gray-300">Total races: ${raceData.race_data?.total_races || 0}</p>
-                  <div class="text-xs text-gray-400">Total participants: ${raceData.race_data?.total_participants || 0}</div>
+                  <p class="text-sm text-gray-300">Total races: ${raceData.total_races || 0}</p>
+                  <div class="text-xs text-gray-400">Total participants: ${raceData.total_participants || 0}</div>
                 </div>
               </div>
             `;
@@ -13575,22 +13595,22 @@ function updateGameTabContent(gameType, gameData) {
         // Update leaderboard with enhanced styling
         const leaderboard = document.getElementById('raceLeaderboard');
         if (leaderboard) {
-          console.log('Leaderboard data:', raceData.race_data?.top_racers);
-          if (!raceData.race_data || !raceData.race_data.top_racers || raceData.race_data.top_racers.length === 0) {
+          console.log('Leaderboard data:', raceData.top_racers);
+          if (!raceData || !raceData.top_racers || raceData.top_racers.length === 0) {
             leaderboard.innerHTML = `
               <div class="text-gray-400 text-center py-8">
                 <div class="text-4xl mb-2">🏆</div>
                 <p class="text-lg font-semibold mb-2">Leaderboard Coming Soon</p>
                 <p class="text-sm">Race data will appear here as players compete</p>
                 <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
-                  <p class="text-sm text-gray-300">Recent races: ${raceData.race_data?.recent_activity?.length || 0}</p>
-                  <div class="text-xs text-gray-400">Total participants: ${raceData.race_data?.total_participants || 0}</div>
+                  <p class="text-sm text-gray-300">Recent races: ${raceData.total_races || 0}</p>
+                  <div class="text-xs text-gray-400">Total participants: ${raceData.total_participants || 0}</div>
                 </div>
               </div>
             `;
           } else {
             // Enhanced leaderboard with the new CSS classes
-            const topRacers = raceData.race_data.top_racers.slice(0, 10);
+            const topRacers = raceData.top_racers.slice(0, 10);
             console.log('Processing top racers:', topRacers);
             leaderboard.innerHTML = `
               <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
@@ -13600,11 +13620,11 @@ function updateGameTabContent(gameType, gameData) {
                     <div class="text-xs text-gray-300">Top Racers</div>
                   </div>
                   <div>
-                    <div class="text-2xl font-bold text-green-400">${raceData.race_data.total_races || 0}</div>
+                    <div class="text-2xl font-bold text-green-400">${raceData.total_races || 0}</div>
                     <div class="text-xs text-gray-300">Total Races</div>
                   </div>
                   <div>
-                    <div class="text-2xl font-bold text-yellow-400">${raceData.race_data.total_participants || 0}</div>
+                    <div class="text-2xl font-bold text-yellow-400">${raceData.total_participants || 0}</div>
                     <div class="text-xs text-gray-300">Participants</div>
                   </div>
                 </div>
@@ -13643,15 +13663,15 @@ function updateGameTabContent(gameType, gameData) {
         // Summary of what was processed
         console.log('🏁 Discord Race Data Display Summary:');
         console.log('✅ Statistics updated:', {
-          totalRaces: raceData.race_data?.total_races || 0,
-          totalParticipants: raceData.race_data?.total_participants || 0,
-          totalWinners: raceData.race_data?.total_prizes_awarded || 0,
-          completedRaces: raceData.race_data?.total_prizes_awarded || 0,
-          activeRaces: raceData.race_data?.recent_24h || 0
+          totalRaces: raceData.total_races || 0,
+          totalParticipants: raceData.total_participants || 0,
+          totalWinners: raceData.wins || 0,
+          completedRaces: raceData.stats?.finished || 0,
+          activeRaces: raceData.stats?.active || 0
         });
-        console.log('✅ Race overview rows:', raceData.race_data?.race_overview?.length || 0);
-        console.log('✅ Top racers count:', raceData.race_data?.top_racers?.length || 0);
-        console.log('✅ Recent activity events:', raceData.race_data?.recent_activity?.length || 0);
+        console.log('✅ Race overview rows:', raceData.race_overview?.length || 0);
+        console.log('✅ Top racers count:', raceData.top_racers?.length || 0);
+        console.log('✅ Recent activity events:', raceData.recent_activity?.length || 0);
         
       } catch (error) {
         console.error('Error displaying Discord Race data:', error);
@@ -14147,10 +14167,11 @@ function updateGameTabContent(gameType, gameData) {
 
     // Season Statistics Functions
     async function loadSeasonStats() {
-      if (!currentAdmin) {
-        addLog('❌ Please authenticate first');
-        return;
-      }
+      // ✅ FIX: Removed authentication check - season statistics are public data
+      // if (!currentAdmin) {
+      //   addLog('❌ Please authenticate first');
+      //   return;
+      // }
 
       const season = document.getElementById('seasonSelector').value;
       const gameType = document.getElementById('gameFilter').value;
@@ -18327,11 +18348,11 @@ function updateGameTabContent(gameType, gameData) {
       addLog('🏁 Loading Discord Race data...');
 
       try {
-        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const response = await fetch(API_BASE_URL + '/api/admin/get-discord-race-overview.php');
         const data = await response.json();
         
-        if (data.success && data.data && data.data.games && data.data.games.discord_race) {
-          displayDiscordRaceData(data.data.games.discord_race);
+        if (data.success && data.data && data.data.race_data) {
+          displayDiscordRaceData(data.data.race_data);
           addLog('✅ Discord Race data loaded successfully');
         } else {
           addLog(`❌ Failed to load Discord Race data: ${data.error || 'No data available'}`);
@@ -18433,7 +18454,7 @@ function updateGameTabContent(gameType, gameData) {
 
     // Store management functions removed - implemented above
 
-    // 🚀 GAME MANAGEMENT 2.0 FUNCTIONS - Advanced Season Management
+    // ✅ CLEANUP: Removed Game Management 2.0 functions - old/unused code
 async function loadGameManagement2Data() {
   console.log('🚀 Loading Game Management 2.0 data...');
   try {
