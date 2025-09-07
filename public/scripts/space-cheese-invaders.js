@@ -1,4 +1,4 @@
-// 🧀 Space Cheese Invaders v3.9.3 - SEASON 3 PHASE 2 INVADER REBALANCE - TIMESTAMP: ${Date.now()}
+// 🧀 Space Cheese Invaders v3.9.4 - SEASON 3 PHASE 2 ACHIEVEMENT DIFFICULTY REBALANCE - TIMESTAMP: ${Date.now()}
 // Much slower invaders (1 second drop, 1 minute break) with Tetris block danger items
 // NEW: Auto-shoot feature - automatically fires when ship moves (toggle with 'T' key)
 // NEW: Laser shot type, Speed boost power-up, and Bomb weapon
@@ -6531,83 +6531,83 @@ let reloadButtonInterval = null;
       createAchievementPopup('First Blood', 'Destroyed your first invader!', '🎯');
     }
     
-    // Kill Streak Achievements (REBALANCED)
-    if (killCombo >= 8 && !achievements.killStreak8) {
+    // Kill Streak Achievements (MUCH HARDER - Need perfect gameplay)
+    if (killCombo >= 15 && !achievements.killStreak8) {
       achievements.killStreak8 = true;
-      createAchievementPopup('Killing Spree', '8 kills in a row!', '🔥');
+      createAchievementPopup('Killing Spree', '15 kills in a row!', '🔥');
     }
     
-    if (killCombo >= 15 && !achievements.killStreak15) {
+    if (killCombo >= 30 && !achievements.killStreak15) {
       achievements.killStreak15 = true;
-      createAchievementPopup('Rampage', '15 kills in a row!', '⚡');
+      createAchievementPopup('Rampage', '30 kills in a row!', '⚡');
     }
     
-    if (killCombo >= 25 && !achievements.killStreak25) {
+    if (killCombo >= 50 && !achievements.killStreak25) {
       achievements.killStreak25 = true;
-      createAchievementPopup('Unstoppable', '25 kills in a row!', '💀');
+      createAchievementPopup('Unstoppable', '50 kills in a row!', '💀');
     }
     
-    // Score Achievements (REBALANCED FOR NEW SCORING)
-    if (spaceInvadersScore >= 1000 && !achievements.score2500) {
+    // Score Achievements (MUCH HARDER - End-game scores)
+    if (spaceInvadersScore >= 5000 && !achievements.score2500) {
       achievements.score2500 = true;
-      createAchievementPopup('Getting Started', 'Reached 1,000 points!', '⭐');
+      createAchievementPopup('Getting Started', 'Reached 5,000 points!', '⭐');
     }
     
-    if (spaceInvadersScore >= 3000 && !achievements.score7500) {
+    if (spaceInvadersScore >= 15000 && !achievements.score7500) {
       achievements.score7500 = true;
-      createAchievementPopup('Rising Star', 'Reached 3,000 points!', '🌟');
+      createAchievementPopup('Rising Star', 'Reached 15,000 points!', '🌟');
     }
     
-    if (spaceInvadersScore >= 6000 && !achievements.score15000) {
+    if (spaceInvadersScore >= 30000 && !achievements.score15000) {
       achievements.score15000 = true;
-      createAchievementPopup('Space Ace', 'Reached 6,000 points!', '🚀');
+      createAchievementPopup('Space Ace', 'Reached 30,000 points!', '🚀');
     }
     
-    if (spaceInvadersScore >= 12000 && !achievements.score30000) {
+    if (spaceInvadersScore >= 60000 && !achievements.score30000) {
       achievements.score30000 = true;
-      createAchievementPopup('Legend', 'Reached 12,000 points!', '👑');
+      createAchievementPopup('Legend', 'Reached 60,000 points!', '👑');
     }
     
-    // Perfect Wave Achievement
-    if (perfectWaves >= 1 && !achievements.perfectWave) {
+    // Perfect Wave Achievement (HARDER - Need 3 perfect waves)
+    if (perfectWaves >= 3 && !achievements.perfectWave) {
       achievements.perfectWave = true;
-      createAchievementPopup('Perfect Wave', 'Cleared a wave without taking damage!', '✨');
+      createAchievementPopup('Perfect Wave', 'Cleared 3 waves without taking damage!', '✨');
     }
     
-    // No Hit Run Achievement (REBALANCED - 60 seconds)
-    if (noHitTimer >= 3600 && !achievements.noHitRun60) { // 60 seconds at 60fps
+    // No Hit Run Achievement (MUCH HARDER - 5 minutes)
+    if (noHitTimer >= 18000 && !achievements.noHitRun60) { // 5 minutes at 60fps
       achievements.noHitRun60 = true;
-      createAchievementPopup('Untouchable', '60 seconds without taking damage!', '🛡️');
+      createAchievementPopup('Untouchable', '5 minutes without taking damage!', '🛡️');
     }
     
-    // Combo Master Achievement (REBALANCED - 3x multiplier max)
+    // Combo Master Achievement (HARDER - Need 3x multiplier consistently)
     if (comboMultiplier >= 3 && !achievements.comboMaster8) {
       achievements.comboMaster8 = true;
       createAchievementPopup('Combo Master', 'Achieved 3x score multiplier!', '💥');
     }
     
-    // Speed Demon Achievement (REBALANCED - 6k in 3 minutes)
+    // Speed Demon Achievement (MUCH HARDER - 30k in 5 minutes)
     const gameTime = Date.now() - gameStartTime;
-    if (spaceInvadersScore >= 6000 && gameTime < 180000 && !achievements.speedDemon20k) { // 3 minutes
+    if (spaceInvadersScore >= 30000 && gameTime < 300000 && !achievements.speedDemon20k) { // 5 minutes
       achievements.speedDemon20k = true;
-      createAchievementPopup('Speed Demon', 'Reached 6k points in under 3 minutes!', '⚡');
+      createAchievementPopup('Speed Demon', 'Reached 30k points in under 5 minutes!', '⚡');
     }
     
-    // Survivor Achievement (REBALANCED - 10 minutes)
-    if (gameTime >= 600000 && !achievements.survivor10min) { // 10 minutes
+    // Survivor Achievement (MUCH HARDER - 20 minutes)
+    if (gameTime >= 1200000 && !achievements.survivor10min) { // 20 minutes
       achievements.survivor10min = true;
-      createAchievementPopup('Ultimate Survivor', 'Survived for 10 minutes!', '🏆');
+      createAchievementPopup('Ultimate Survivor', 'Survived for 20 minutes!', '🏆');
     }
     
-    // Boss Kill Achievements (NEW)
-    if (bossesKilled >= 3 && !achievements.bossKiller3) {
+    // Boss Kill Achievements (HARDER - Need to reach later bosses)
+    if (bossesKilled >= 5 && !achievements.bossKiller3) {
       achievements.bossKiller3 = true;
-      createAchievementPopup('Boss Slayer', 'Defeated Boss 3!', '🗡️');
+      createAchievementPopup('Boss Slayer', 'Defeated Boss 5!', '🗡️');
     }
     
-    if (bossesKilled >= 4 && !achievements.bossKiller4) {
+    if (bossesKilled >= 8 && !achievements.bossKiller4) {
       achievements.bossKiller4 = true;
-      createAchievementPopup('Boss Destroyer', 'Defeated Boss 4 - Ultimate Achievement!', '💀');
+      createAchievementPopup('Boss Destroyer', 'Defeated Boss 8 - Ultimate Achievement!', '💀');
     }
   }
   

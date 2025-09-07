@@ -71,47 +71,47 @@ try {
         ],
         'killStreak8' => [
             'title' => 'Killing Spree',
-            'description' => '8 kills in a row!',
+            'description' => '15 kills in a row!',
             'icon' => '🔥'
         ],
         'killStreak15' => [
             'title' => 'Rampage',
-            'description' => '15 kills in a row!',
+            'description' => '30 kills in a row!',
             'icon' => '⚡'
         ],
         'killStreak25' => [
             'title' => 'Unstoppable',
-            'description' => '25 kills in a row!',
+            'description' => '50 kills in a row!',
             'icon' => '💀'
         ],
         'score2500' => [
             'title' => 'Getting Started',
-            'description' => 'Reached 1,000 points!',
+            'description' => 'Reached 5,000 points!',
             'icon' => '⭐'
         ],
         'score7500' => [
             'title' => 'Rising Star',
-            'description' => 'Reached 3,000 points!',
+            'description' => 'Reached 15,000 points!',
             'icon' => '🌟'
         ],
         'score15000' => [
             'title' => 'Space Ace',
-            'description' => 'Reached 6,000 points!',
+            'description' => 'Reached 30,000 points!',
             'icon' => '🚀'
         ],
         'score30000' => [
             'title' => 'Legend',
-            'description' => 'Reached 12,000 points!',
+            'description' => 'Reached 60,000 points!',
             'icon' => '👑'
         ],
         'perfectWave' => [
             'title' => 'Perfect Wave',
-            'description' => 'Cleared a wave without taking damage!',
+            'description' => 'Cleared 3 waves without taking damage!',
             'icon' => '✨'
         ],
         'noHitRun60' => [
             'title' => 'Untouchable',
-            'description' => '60 seconds without taking damage!',
+            'description' => '5 minutes without taking damage!',
             'icon' => '🛡️'
         ],
         'comboMaster8' => [
@@ -121,22 +121,22 @@ try {
         ],
         'speedDemon20k' => [
             'title' => 'Speed Demon',
-            'description' => 'Reached 6k points in under 3 minutes!',
+            'description' => 'Reached 30k points in under 5 minutes!',
             'icon' => '⚡'
         ],
         'survivor10min' => [
             'title' => 'Ultimate Survivor',
-            'description' => 'Survived for 10 minutes!',
+            'description' => 'Survived for 20 minutes!',
             'icon' => '🏆'
         ],
         'bossKiller3' => [
             'title' => 'Boss Slayer',
-            'description' => 'Defeated Boss 3!',
+            'description' => 'Defeated Boss 5!',
             'icon' => '🗡️'
         ],
         'bossKiller4' => [
             'title' => 'Boss Destroyer',
-            'description' => 'Defeated Boss 4 - Ultimate Achievement!',
+            'description' => 'Defeated Boss 8 - Ultimate Achievement!',
             'icon' => '💀'
         ]
     ];
