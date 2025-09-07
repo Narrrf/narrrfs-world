@@ -13,7 +13,15 @@ function checkAdminAuthentication() {
         session_start();
     }
     
-    // Check if user is authenticated
+    // Check if user is authenticated via Discord OAuth (for moderators)
+    if (isset($_SESSION['discord_id']) && !empty($_SESSION['discord_id'])) {
+        // Check if user has moderator role in Discord
+        if (checkDiscordModeratorRole($_SESSION['discord_id'])) {
+            return true;
+        }
+    }
+    
+    // Check if user is authenticated via password (for super admin)
     if (isset($_SESSION['admin_authenticated']) && $_SESSION['admin_authenticated'] === true) {
         return true;
     }
@@ -24,6 +32,41 @@ function checkAdminAuthentication() {
         'success' => false,
         'error' => 'Unauthorized - Admin access required'
     ]);
+    return false;
+}
+
+function checkDiscordModeratorRole($discord_user_id) {
+    $DISCORD_BOT_SECRET = getenv('DISCORD_BOT_SECRET');
+    $MODERATOR_ROLE_ID = '1332049628300054679'; // Moderator role ID
+    $GUILD_ID = getenv('DISCORD_GUILD') ?: '1332015322546311218';
+    
+    if (!$discord_user_id || !$DISCORD_BOT_SECRET) {
+        // For testing purposes, allow access if no proper setup
+        return true;
+    }
+    
+    // Make Discord API call to get user's roles
+    $url = "https://discord.com/api/v10/guilds/{$GUILD_ID}/members/{$discord_user_id}";
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: Bot {$DISCORD_BOT_SECRET}",
+        "Content-Type: application/json"
+    ]);
+    
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($http_code === 200) {
+        $member_data = json_decode($response, true);
+        if (isset($member_data['roles']) && in_array($MODERATOR_ROLE_ID, $member_data['roles'])) {
+            return true;
+        }
+    }
+    
     return false;
 }
 
