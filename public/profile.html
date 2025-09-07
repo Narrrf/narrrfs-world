@@ -2477,6 +2477,12 @@ function getGameStats(gameKey, game) {
           <div class="text-blue-300">Best Score: ${stats.best_score ? stats.best_score.toLocaleString() : 'N/A'}</div>
           <div class="text-green-300">Total Games: ${stats.total_games || 0}</div>
           <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
+          <div class="text-purple-300 mt-2">
+            <button onclick="loadSpaceInvadersAchievements('${gameKey}')" 
+                    class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded">
+              🏆 View Achievements
+            </button>
+          </div>
         `;
         break;
     case 'cheese_hunt':
@@ -2673,7 +2679,168 @@ function formatDateShort(dateString) {
   }
 }
 
+// 🏆 Space Invaders Achievements Functions
+async function loadSpaceInvadersAchievements(gameKey) {
+  try {
+    console.log('🏆 Loading Space Invaders achievements...');
+    
+    // Show modal and loading state
+    const modal = document.getElementById('achievementsModal');
+    const loading = document.getElementById('achievementsLoading');
+    const error = document.getElementById('achievementsError');
+    const grid = document.getElementById('achievementsGrid');
+    
+    modal.classList.remove('hidden');
+    loading.classList.remove('hidden');
+    error.classList.add('hidden');
+    grid.classList.add('hidden');
+    
+    // Get Discord ID
+    let discordId = localStorage.getItem('discord_id');
+    if (!discordId) {
+      const enhancedData = window.enhancedProfileData;
+      if (enhancedData && enhancedData.basic_info && enhancedData.basic_info.discord_id) {
+        discordId = enhancedData.basic_info.discord_id;
+      }
+    }
+    
+    if (!discordId) {
+      throw new Error('Discord ID not found. Please log in with Discord first.');
+    }
+    
+    // Fetch achievements
+    const response = await fetch(`/api/user/get-space-invaders-achievements.php?discord_id=${discordId}`, {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('🏆 Achievements data loaded:', data);
+    
+    if (data.success) {
+      displayAchievements(data);
+    } else {
+      throw new Error(data.error || 'Failed to load achievements');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error loading achievements:', error);
+    displayAchievementsError(error.message);
+  }
+}
+
+function displayAchievements(data) {
+  const loading = document.getElementById('achievementsLoading');
+  const error = document.getElementById('achievementsError');
+  const grid = document.getElementById('achievementsGrid');
+  const stats = data.stats;
+  
+  // Hide loading, show grid
+  loading.classList.add('hidden');
+  error.classList.add('hidden');
+  grid.classList.remove('hidden');
+  
+  // Update stats
+  document.getElementById('totalAchievements').textContent = stats.total_achievements;
+  document.getElementById('unlockedAchievements').textContent = stats.unlocked_achievements;
+  document.getElementById('lockedAchievements').textContent = stats.locked_achievements;
+  document.getElementById('completionPercentage').textContent = stats.completion_percentage + '%';
+  
+  // Display achievements
+  grid.innerHTML = data.achievements.map(achievement => `
+    <div class="bg-gradient-to-br ${achievement.unlocked ? 'from-yellow-900/30 to-yellow-700/30 border-yellow-500/50' : 'from-gray-800/30 to-gray-700/30 border-gray-600/50'} rounded-lg p-4 border ${achievement.unlocked ? '' : 'opacity-60'}">
+      <div class="text-center mb-3">
+        <div class="text-3xl mb-2 ${achievement.unlocked ? '' : 'grayscale'}">${achievement.icon}</div>
+        <div class="text-lg font-semibold ${achievement.unlocked ? 'text-yellow-300' : 'text-gray-400'}">${achievement.title}</div>
+        <div class="text-sm ${achievement.unlocked ? 'text-yellow-200' : 'text-gray-500'}">${achievement.description}</div>
+      </div>
+      
+      ${achievement.unlocked ? `
+        <div class="text-xs text-left space-y-1 mt-3">
+          <div class="text-green-300">✅ Unlocked: ${formatDateShort(achievement.unlocked_at)}</div>
+          ${achievement.game_score > 0 ? `<div class="text-blue-300">Score: ${achievement.game_score.toLocaleString()}</div>` : ''}
+          ${achievement.total_kills > 0 ? `<div class="text-purple-300">Kills: ${achievement.total_kills}</div>` : ''}
+          ${achievement.combo_multiplier > 0 ? `<div class="text-orange-300">Combo: ${achievement.combo_multiplier}x</div>` : ''}
+        </div>
+      ` : `
+        <div class="text-xs text-center mt-3 text-gray-500">
+          🔒 Locked
+        </div>
+      `}
+    </div>
+  `).join('');
+  
+  console.log('✅ Achievements displayed successfully');
+}
+
+function displayAchievementsError(errorMessage) {
+  const loading = document.getElementById('achievementsLoading');
+  const error = document.getElementById('achievementsError');
+  const grid = document.getElementById('achievementsGrid');
+  
+  loading.classList.add('hidden');
+  grid.classList.add('hidden');
+  error.classList.remove('hidden');
+  
+  document.getElementById('achievementsErrorMessage').textContent = errorMessage;
+}
+
+function closeAchievementsModal() {
+  const modal = document.getElementById('achievementsModal');
+  modal.classList.add('hidden');
+}
+
 </script>
+
+<!-- 🏆 Space Invaders Achievements Modal -->
+<div id="achievementsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+  <div class="bg-gray-900 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-yellow-300">🏆 Space Cheese Invaders Achievements</h2>
+      <button onclick="closeAchievementsModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+    </div>
+    
+    <!-- Achievement Stats -->
+    <div id="achievementStats" class="mb-6 grid grid-cols-4 gap-4">
+      <div class="bg-yellow-900/20 p-3 rounded border border-yellow-500/30 text-center">
+        <div class="text-yellow-200 text-sm">Total</div>
+        <div class="text-white font-semibold text-lg" id="totalAchievements">0</div>
+      </div>
+      <div class="bg-green-900/20 p-3 rounded border border-green-500/30 text-center">
+        <div class="text-green-200 text-sm">Unlocked</div>
+        <div class="text-white font-semibold text-lg" id="unlockedAchievements">0</div>
+      </div>
+      <div class="bg-red-900/20 p-3 rounded border border-red-500/30 text-center">
+        <div class="text-red-200 text-sm">Locked</div>
+        <div class="text-white font-semibold text-lg" id="lockedAchievements">0</div>
+      </div>
+      <div class="bg-purple-900/20 p-3 rounded border border-purple-500/30 text-center">
+        <div class="text-purple-200 text-sm">Progress</div>
+        <div class="text-white font-semibold text-lg" id="completionPercentage">0%</div>
+      </div>
+    </div>
+    
+    <!-- Achievements Grid -->
+    <div id="achievementsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Achievements will be loaded here -->
+    </div>
+    
+    <!-- Loading State -->
+    <div id="achievementsLoading" class="text-center py-8 hidden">
+      <div class="text-yellow-300">🏆 Loading achievements...</div>
+    </div>
+    
+    <!-- Error State -->
+    <div id="achievementsError" class="text-center py-8 hidden">
+      <div class="text-red-400">❌ Failed to load achievements</div>
+      <div class="text-gray-400 text-sm mt-2" id="achievementsErrorMessage"></div>
+    </div>
+  </div>
+</div>
 
 <!-- 🔥 Profile Flask + Glow & Bubbles (Bottom Right Corner) -->
 <div class="absolute bottom-8 right-8 z-[1] pointer-events-none opacity-20">

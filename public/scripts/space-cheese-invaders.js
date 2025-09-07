@@ -1,7 +1,25 @@
-// 🧀 Space Cheese Invaders v3.6 - PHOENIX CONFIGURATION LOADING FIX - TIMESTAMP: ${Date.now()}
+// 🧀 Space Cheese Invaders v3.9.3 - SEASON 3 PHASE 2 INVADER REBALANCE - TIMESTAMP: ${Date.now()}
 // Much slower invaders (1 second drop, 1 minute break) with Tetris block danger items
 // NEW: Auto-shoot feature - automatically fires when ship moves (toggle with 'T' key)
 // NEW: Laser shot type, Speed boost power-up, and Bomb weapon
+// 
+// 🏆 SEASON 3 PHASE 2 COMPLETE (2025-01-28):
+// - ACHIEVEMENT SYSTEM: In-game milestone tracking with animated pop-ups
+// - DYNAMIC SCORING: Performance-based rewards and bonus objectives
+// - SKILL TRACKING: Kill streaks, perfect waves, no-hit runs, and speed challenges
+// - ENGAGEMENT FEATURES: 14 different achievements to unlock
+// 
+// 🔧 CRITICAL BUG FIX (2025-01-28):
+// - FIXED SCREEN SHAKE: Screen shake now properly decays and doesn't get stuck
+// - IMPROVED CONTROL: Ship control is now smooth and responsive
+// - SAFETY MECHANISMS: Added caps and decay to prevent shake overflow
+// - BETTER BALANCE: Reduced shake intensity for better gameplay experience
+// 
+// 🌟 SEASON 3 FEATURES (2025-01-28):
+// - MOVING STARS: Dynamic starfield that creates "flying through space" effect
+// - Multiple star layers with different speeds for depth perception
+// - Parallax scrolling stars that move based on game speed
+// - Enhanced visual immersion for Season 3 launch
 // 
 // 🔧 CRITICAL FIXES APPLIED (2025-01-28):
 // - Fixed 300px ship jump when mouse re-enters canvas
@@ -1273,6 +1291,50 @@ let lastPlayerShootTime = 0; // NEW: Track last player shoot time for auto-shoot
 let autoShootCooldown = 150; // 🚀 FIX: Reduced from 300ms to 150ms for more responsive shooting
 let autoShootEnabled = false; // NEW: Auto-shoot toggle (disabled by default)
 
+// 🌟 SEASON 3: MOVING STARS SYSTEM
+let movingStars = []; // Array to store all moving stars
+let starLayers = 3; // Number of star layers for depth
+let starsPerLayer = 25; // Stars per layer
+let starSpeedMultiplier = 1; // Global star speed multiplier
+let starColors = ['#ffffff', '#cccccc', '#999999']; // Different colors for different layers
+let starSizes = [1, 2, 3]; // Different sizes for different layers
+
+// 🚀 SEASON 3 PHASE 1: VISUAL ENHANCEMENTS
+let killCombo = 0; // Current kill streak
+let comboMultiplier = 1; // Score multiplier based on combo
+let comboTimer = 0; // Timer for combo decay
+let comboDecayTime = 3000; // 3 seconds to maintain combo
+let scorePopups = []; // Array for animated score pop-ups
+let shootingStars = []; // Array for shooting stars
+let enhancedExplosions = []; // Array for enhanced explosion effects
+let lastKillTime = 0; // Track last kill time for combo system
+
+// 🏆 SEASON 3 PHASE 2: ACHIEVEMENT SYSTEM
+let achievements = {
+  firstKill: false,
+  killStreak8: false,        // Increased from 5
+  killStreak15: false,       // Increased from 10
+  killStreak25: false,       // Increased from 20
+  score2500: false,          // Increased from 1000
+  score7500: false,          // Increased from 5000
+  score15000: false,         // Increased from 10000
+  score30000: false,         // Increased from 25000
+  perfectWave: false,
+  noHitRun60: false,         // Increased from 30 seconds
+  bossKiller3: false,        // NEW - Boss 3
+  bossKiller4: false,        // NEW - Boss 4 (ultimate)
+  comboMaster8: false,       // Increased from 5x
+  speedDemon20k: false,       // Harder speed challenge
+  survivor10min: false       // Increased from 5 minutes
+};
+let achievementPopups = []; // Array for achievement pop-ups
+let gameStartTime = 0; // Track game start time
+let perfectWaves = 0; // Track perfect waves
+let totalKills = 0; // Track total kills
+let noHitTimer = 0; // Track time without taking damage
+let bossesKilled = 0; // Track bosses defeated
+let currentBossLevel = 0; // Track current boss level
+
 // 🔥 CRITICAL FIX: Unified firing rate system for consistent heat buildup
 let unifiedFiringRate = 60; // 60ms between ANY shots (16.7 shots/sec) - faster for better heat buildup!
 let lastUnifiedShotTime = 0; // Track last shot time for unified system
@@ -1665,8 +1727,8 @@ let reloadButtonInterval = null;
           console.log(`⚡ Added 2 speed boost ammo! Total: ${speedBoostAmmo}`);
         } else if (powerUp.type === 'collect') {
           // 🚀 NEW: Collect power-up gives bonus points and temporary effects
-                  spaceInvadersScore += 500; // Bonus points
-        spaceInvadersCount += 5; // Bonus invader count for DSPOINC (kept for legacy compatibility)
+          spaceInvadersScore += 100; // Reduced from 500 to 100
+          spaceInvadersCount += 1; // Reduced from 5 to 1
           
           // Temporary invincibility (1 second)
           playerShip.invincible = true;
@@ -1754,8 +1816,8 @@ let reloadButtonInterval = null;
       const currentScore = spaceInvadersScore || 0;
       const currentWave = waveNumber || 0;
       
-      // Calculate DSPOINC earned (10x multiplier like other games)
-      const dspoincEarned = currentScore * 10;
+      // Calculate DSPOINC earned (1x multiplier to match other games)
+      const dspoincEarned = Math.floor(currentScore / 10); // Reduced from 10x to 1/10x
       
       // Get Discord info for better identification
       const discordId = (typeof localStorage !== 'undefined') ? localStorage.getItem('discord_id') : null;
@@ -2038,7 +2100,7 @@ let reloadButtonInterval = null;
       bossBullets = [];
       bossExplosions = [];
       bossDefeated = false;
-              bossReward = waveNumber * 2; // 100 DSPOINC for wave 50, 200 for wave 100, etc. (REDUCED for balance)
+              bossReward = Math.floor(waveNumber * 0.5); // 25 DSPOINC for wave 50, 50 for wave 100, etc. (FURTHER REDUCED for balance)
       console.log(`✅ Boss phase variables set: phase=${bossPhase}, reward=${bossReward}`);
       
       // 🚀 CRITICAL DEBUG: Verify phase variables
@@ -2108,8 +2170,8 @@ let reloadButtonInterval = null;
         bossPhase = 'fighting';
         boss.y = 100;
         bossEntranceEffect = 0;
-        // 🚀 NEW: Screen shake on boss arrival
-        screenShake = 20;
+        // 🚀 NEW: Screen shake on boss arrival (REDUCED)
+        screenShake = 8; // Reduced from 20 to 8
         console.log('👑 Boss entrance complete - FIGHT BEGINS!');
       }
       
@@ -2141,7 +2203,7 @@ let reloadButtonInterval = null;
         boss.bulletSpeed *= rageMultipliers.bulletSpeed; // Much faster bullets
         boss.bulletDamage *= rageMultipliers.bulletDamage; // More damage
         console.log(`👑 ${boss.name} enters DEVASTATING RAGE MODE!`);
-        screenShake = 40;
+        screenShake = 20; // Reduced from 40 to 20
         
         // 🚀 NEW: Rage mode special effects
         for (let i = 0; i < 20; i++) {
@@ -3035,6 +3097,11 @@ let reloadButtonInterval = null;
           console.log(`👑 BOSS DEFEATED! ${boss.name} has been vanquished! Reward: ${bossReward} DSPOINC`);
           console.log(`🎉 Final boss stats: Wave ${waveNumber}, Type: ${boss.type}, Max Health: ${boss.maxHealth}`);
           
+          // 🏆 SEASON 3 PHASE 2: Track boss kills for achievements
+          bossesKilled++;
+          currentBossLevel = waveNumber; // Track which boss level was defeated
+          console.log(`🏆 Boss Kill #${bossesKilled} - ${boss.name} (Level ${waveNumber})`);
+          
           // 🚀 CRITICAL FIX: Immediately clear boss bullets to prevent game over
           bossBullets = [];
           console.log(`🧹 Boss bullets cleared immediately to prevent player death`);
@@ -3043,7 +3110,7 @@ let reloadButtonInterval = null;
         spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
         
         // 🚀 CRITICAL FIX: Also add to traditional score for consistency
-        spaceInvadersScore += bossReward * 5; // Convert invader count to traditional points (1 DSPOINC = 5 points) (REDUCED for balance)
+        spaceInvadersScore += bossReward * 2; // Convert invader count to traditional points (1 DSPOINC = 2 points) (FURTHER REDUCED for balance)
           
           // 🚀 NEW: Epic boss defeat effects (reduced intensity)
           bossDefeatEffect = 60; // Reduced from 100 to 60 frames
@@ -3855,6 +3922,25 @@ let reloadButtonInterval = null;
 
     console.log('✅ Game state initialized');
 
+    // 🌟 SEASON 3: Initialize moving stars system
+    initializeMovingStars();
+    console.log('🌟 Moving stars system initialized');
+
+    // 🚀 SEASON 3 PHASE 1: Initialize visual enhancements
+    killCombo = 0;
+    comboMultiplier = 1;
+    comboTimer = 0;
+    scorePopups = [];
+    shootingStars = [];
+    enhancedExplosions = [];
+    lastKillTime = 0;
+    console.log('🚀 Season 3 Phase 1 visual enhancements initialized');
+
+    // 🏆 SEASON 3 PHASE 2: Initialize achievement system
+    achievementPopups = [];
+    resetAchievementTracking();
+    console.log('🏆 Season 3 Phase 2 achievement system initialized');
+
     // Initialize invaders
     initializeInvaders();
     
@@ -3975,49 +4061,50 @@ let reloadButtonInterval = null;
       canvasHeight = canvasHeight || 600;
     }
     
+    // 🎯 SEASON 3 PHASE 2: Progressive difficulty based on wave number
+    const isEarlyWave = waveNumber <= 3;
+    const isMidWave = waveNumber <= 8;
+    const invaderCountMultiplier = isEarlyWave ? 0.4 : isMidWave ? 0.7 : 1.0;
+    
     switch (pattern) {
       case 'v_formation':
-        // 🚀 ULTRA DENSE: V-shaped formation - MUCH more invaders for action!
+        // 🎯 REBALANCED: V-shaped formation - fewer invaders for early waves
         const vPositions = [
-          [2, 0], [3, 0], [4, 0], [5, 0], [6, 0],
-          [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1],
-          [0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2],
-          [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3], [9, 3],
-          [0, 4], [1, 4], [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4], [9, 4]
+          [3, 0], [4, 0], [5, 0], [6, 0],
+          [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1],
+          [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2],
+          [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3]
         ];
         vPositions.forEach(([col, row]) => {
-          // 🚀 NEW: Spawn invaders at reasonable distance (canvasHeight - 350 instead of 50)
-          const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+          const spawnY = canvasHeight - 350 + (row * 35);
           invaders.push(createInvader(col * 45 + 30, spawnY, row, 'v_formation'));
         });
         break;
         
       case 'pyramid':
-        // 🚀 ULTRA DENSE: Pyramid formation - MUCH more invaders for action!
-        for (let row = 0; row < 6; row++) { // Increased from 4 to 6 rows
+        // 🎯 REBALANCED: Pyramid formation - fewer invaders for early waves
+        const pyramidRows = isEarlyWave ? 3 : isMidWave ? 4 : 5;
+        for (let row = 0; row < pyramidRows; row++) {
           const colsInRow = row + 1;
-          const startCol = 5 - row; // Adjusted for wider base
+          const startCol = 5 - row;
           for (let col = 0; col < colsInRow; col++) {
-            // 🚀 NEW: Spawn invaders at reasonable distance
-            const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+            const spawnY = canvasHeight - 350 + (row * 35);
             invaders.push(createInvader((startCol + col) * 45 + 30, spawnY, row, 'pyramid'));
           }
         }
         break;
         
       case 'diamond':
-        // 🚀 ULTRA DENSE: Diamond formation - MUCH more invaders for action!
+        // 🎯 REBALANCED: Diamond formation - fewer invaders for early waves
         const diamondPositions = [
           [4, 0], [5, 0],
           [3, 1], [4, 1], [5, 1], [6, 1],
           [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2],
-          [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3],
-          [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4], [9, 4],
-          [3, 5], [4, 5], [5, 5], [6, 5]
+          [3, 3], [4, 3], [5, 3], [6, 3],
+          [4, 4], [5, 4]
         ];
         diamondPositions.forEach(([col, row]) => {
-          // 🚀 NEW: Spawn invaders at reasonable distance
-          const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+          const spawnY = canvasHeight - 350 + (row * 35);
           invaders.push(createInvader(col * 45 + 30, spawnY, row, 'diamond'));
         });
         break;
@@ -4054,29 +4141,31 @@ let reloadButtonInterval = null;
         break;
         
       case 'random_cluster':
-        // 🚀 ULTRA DENSE: Random cluster - MUCH more invaders for action!
-        for (let i = 0; i < 25; i++) { // Increased from 12 to 25 invaders
-          const col = Math.floor(Math.random() * 10); // Increased from 8 to 10 columns
-          const row = Math.floor(Math.random() * 6); // Increased from 4 to 6 rows
-          // 🚀 NEW: Spawn invaders at reasonable distance
-          const spawnY = canvasHeight - 350 + (row * 35); // Reasonable distance spawn
+        // 🎯 REBALANCED: Random cluster - fewer invaders for early waves
+        const clusterCount = isEarlyWave ? 8 : isMidWave ? 15 : 25;
+        for (let i = 0; i < clusterCount; i++) {
+          const col = Math.floor(Math.random() * 10);
+          const row = Math.floor(Math.random() * 6);
+          const spawnY = canvasHeight - 350 + (row * 35);
           invaders.push(createInvader(col * 45 + 30, spawnY, row, 'random_cluster'));
         }
         break;
         
       case 'ultra_swarm':
-        // 🚀 ULTRA DENSE: Ultra dense swarm - MUCH more invaders for action!
-        for (let row = 0; row < 8; row++) { // Increased from 6 to 8 rows
-          for (let col = 0; col < 15; col++) { // Increased from 12 to 15 columns
-            // 🚀 NEW: Spawn invaders at reasonable distance
-            const spawnY = canvasHeight - 350 + (row * 30); // Reasonable distance spawn, tighter spacing
+        // 🎯 REBALANCED: Ultra dense swarm - fewer invaders for early waves
+        const swarmRows = isEarlyWave ? 4 : isMidWave ? 6 : 8;
+        const swarmCols = isEarlyWave ? 8 : isMidWave ? 12 : 15;
+        for (let row = 0; row < swarmRows; row++) {
+          for (let col = 0; col < swarmCols; col++) {
+            const spawnY = canvasHeight - 350 + (row * 30);
             invaders.push(createInvader(col * 35 + 20, spawnY, row, 'ultra_swarm'));
           }
         }
         // Add extra random invaders at reasonable distance
-        for (let i = 0; i < 25; i++) { // Increased from 15 to 25 extra invaders
+        const extraCount = isEarlyWave ? 5 : isMidWave ? 15 : 25;
+        for (let i = 0; i < extraCount; i++) {
           const x = Math.random() * (canvasWidth - 60);
-          const y = canvasHeight - 400 + Math.random() * 150; // Reasonable distance random spawns
+          const y = canvasHeight - 400 + Math.random() * 150;
           invaders.push(createInvader(x, y, Math.floor(Math.random() * 3), 'ultra_swarm_extra'));
         }
         break;
@@ -4274,6 +4363,29 @@ let reloadButtonInterval = null;
   }
 
   function gameLoop() {
+    // 🌟 SEASON 3: Always update moving stars, even when paused
+    updateMovingStars();
+    
+    // 🚀 SEASON 3 PHASE 1: Update visual enhancements
+    updateShootingStars();
+    updateScorePopups();
+    updateComboSystem();
+    updateEnhancedExplosions();
+    
+    // 🏆 SEASON 3 PHASE 2: Update achievement system
+    updateAchievementPopups();
+    updateAchievementTracking();
+    
+    // 🔧 CRITICAL FIX: Screen shake decay (must happen every frame)
+    if (screenShake > 0) {
+      screenShake = Math.max(0, screenShake - 0.8); // Faster decay for better control
+    }
+    
+    // 🚨 SAFETY: Prevent screen shake from getting stuck
+    if (screenShake > 20) {
+      screenShake = 15; // Cap maximum shake
+    }
+    
     if (isSpaceInvadersPaused) return;
     
     updateGame();
@@ -5395,9 +5507,21 @@ let reloadButtonInterval = null;
             if (invader.weakPointHealth <= 0) {
               // Weak point destroyed - kill invader
               invader.alive = false;
-              spaceInvadersScore += invader.points * 3; // Triple points for destroying weak point
               
-              // Create big explosion
+              // 🚀 SEASON 3 PHASE 1: Combo system integration for weak point
+              addKillCombo();
+              const weakPointScore = Math.floor(invader.points * 2 * comboMultiplier); // Reduced from 3x to 2x
+              spaceInvadersScore += weakPointScore;
+              spaceInvadersCount += 1;
+              
+              // 🏆 SEASON 3 PHASE 2: Achievement tracking
+              totalKills++;
+              
+              // 🚀 SEASON 3 PHASE 1: Enhanced explosion and score popup for weak point
+              createEnhancedExplosion(invader.x + invader.width / 2, invader.y + invader.height / 2, 35, 1.5);
+              createScorePopup(invader.x + invader.width / 2, invader.y + invader.height / 2, weakPointScore, comboMultiplier);
+              
+              // Create big explosion (keep for compatibility)
               explosions.push({
                 x: invader.x + invader.width / 2,
                 y: invader.y + invader.height / 2,
@@ -5409,10 +5533,21 @@ let reloadButtonInterval = null;
           } else {
             // Normal hit - kill invader
             invader.alive = false;
-            spaceInvadersScore += invader.points; // Keep game points for display
+            
+            // 🚀 SEASON 3 PHASE 1: Combo system integration
+            addKillCombo();
+            const finalScore = Math.floor(invader.points * comboMultiplier);
+            spaceInvadersScore += finalScore; // Apply combo multiplier
             spaceInvadersCount += 1; // NEW: Track invader count for DSPOINC
             
-            // Create normal explosion
+            // 🏆 SEASON 3 PHASE 2: Achievement tracking
+            totalKills++;
+            
+            // 🚀 SEASON 3 PHASE 1: Enhanced explosion and score popup
+            createEnhancedExplosion(invader.x + invader.width / 2, invader.y + invader.height / 2, 25, 1);
+            createScorePopup(invader.x + invader.width / 2, invader.y + invader.height / 2, finalScore, comboMultiplier);
+            
+            // Create normal explosion (keep for compatibility)
             explosions.push({
               x: invader.x + invader.width / 2,
               y: invader.y + invader.height / 2,
@@ -5558,17 +5693,17 @@ let reloadButtonInterval = null;
     });
   }
 
-  // 🎯 ULTRA DANGEROUS: Multiple invaders shoot simultaneously with targetable weak points
+  // 🎯 REBALANCED: Multiple invaders shoot with progressive difficulty
   function shootFromRandomInvader() {
     if (invaders.length === 0) return;
     
     const aliveInvaders = invaders.filter(invader => invader.alive);
     if (aliveInvaders.length === 0) return;
     
-    // EXTREMELY aggressive shooting - multiple invaders shoot at once!
-    const baseShootInterval = Math.max(10, 120 - (waveNumber - 1) * 20); // Much faster shooting
-    const shootIntervalVariation = Math.max(5, 80 - (waveNumber - 1) * 8); // Less variation, more consistent
-    const simultaneousShooters = Math.min(5, Math.floor(waveNumber / 2) + 2); // More invaders shoot at once
+    // 🎯 SEASON 3 PHASE 2: Progressive attack frequency based on wave
+    const baseShootInterval = Math.max(20, 200 - (waveNumber - 1) * 15); // Slower shooting
+    const shootIntervalVariation = Math.max(10, 100 - (waveNumber - 1) * 5); // More variation
+    const simultaneousShooters = Math.min(3, Math.floor(waveNumber / 3) + 1); // Fewer invaders shoot at once
     
     aliveInvaders.forEach(invader => {
       invader.shootTimer--;
@@ -5866,6 +6001,15 @@ let reloadButtonInterval = null;
     drawExplosions();
     drawPowerUps(); // 🚀 NEW: Draw power-ups
     
+    // 🚀 SEASON 3 PHASE 1: Draw visual enhancements
+    drawShootingStars();
+    drawEnhancedExplosions();
+    drawScorePopups();
+    drawComboDisplay();
+    
+    // 🏆 SEASON 3 PHASE 2: Draw achievement system
+    drawAchievementPopups();
+    
     // 🔥 PHOENIX INVADERS: Draw Phoenix entities if in Phoenix wave
     if (isPhoenixWave) {
       drawPhoenixEntities();
@@ -5893,13 +6037,601 @@ let reloadButtonInterval = null;
     }
   }
 
-  function drawStars() {
-    ctx.fillStyle = '#ffffff';
-    for (let i = 0; i < 50; i++) {
-      const x = (i * 37) % canvasWidth;
-      const y = (i * 73) % canvasHeight;
-      ctx.fillRect(x, y, 1, 1);
+  // 🌟 SEASON 3: MOVING STARS SYSTEM FUNCTIONS
+  
+  function initializeMovingStars() {
+    movingStars = [];
+    
+    // Create stars for each layer
+    for (let layer = 0; layer < starLayers; layer++) {
+      for (let i = 0; i < starsPerLayer; i++) {
+        const star = {
+          x: Math.random() * canvasWidth,
+          y: Math.random() * canvasHeight,
+          layer: layer,
+          speed: (layer + 1) * 0.5, // Different speeds for each layer
+          color: starColors[layer],
+          size: starSizes[layer],
+          twinkle: Math.random() * Math.PI * 2 // Random twinkle phase
+        };
+        movingStars.push(star);
+      }
     }
+    
+    console.log(`🌟 Initialized ${movingStars.length} moving stars across ${starLayers} layers`);
+  }
+  
+  function updateMovingStars() {
+    // Update star positions and create parallax effect
+    movingStars.forEach(star => {
+      // Move stars downward to create "flying through space" effect
+      star.y += star.speed * starSpeedMultiplier;
+      
+      // Reset star position when it goes off screen
+      if (star.y > canvasHeight) {
+        star.y = -star.size; // Start above screen
+        star.x = Math.random() * canvasWidth; // Random horizontal position
+      }
+      
+      // Add twinkling effect
+      star.twinkle += 0.1;
+    });
+    
+    // 🌟 SEASON 3: Dynamic star speed based on game intensity
+    adjustStarSpeedForGameplay();
+  }
+  
+  function adjustStarSpeedForGameplay() {
+    // Increase star speed during intense gameplay
+    if (boss && !bossDefeated) {
+      // Boss battle - faster stars for intensity
+      starSpeedMultiplier = 2.5;
+    } else if (invaders.length > 20) {
+      // Many invaders - medium speed
+      starSpeedMultiplier = 1.8;
+    } else if (gamePhase === 'formation') {
+      // Formation phase - normal speed
+      starSpeedMultiplier = 1.0;
+    } else {
+      // Default speed
+      starSpeedMultiplier = 1.2;
+    }
+  }
+  
+  function drawMovingStars() {
+    // Draw stars in layers (back to front)
+    for (let layer = 0; layer < starLayers; layer++) {
+      const layerStars = movingStars.filter(star => star.layer === layer);
+      
+      layerStars.forEach(star => {
+        // Calculate twinkling brightness
+        const twinkleBrightness = 0.5 + 0.5 * Math.sin(star.twinkle);
+        
+        // Set star color with twinkling effect
+        ctx.fillStyle = star.color;
+        ctx.globalAlpha = twinkleBrightness;
+        
+        // Draw star
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+        
+        // Add glow effect for larger stars
+        if (star.size > 1) {
+          ctx.globalAlpha = twinkleBrightness * 0.3;
+          ctx.fillRect(star.x - 1, star.y - 1, star.size + 2, star.size + 2);
+        }
+      });
+    }
+    
+    // Reset alpha
+    ctx.globalAlpha = 1;
+  }
+  
+  function drawStars() {
+    // 🌟 SEASON 3: Use moving stars instead of static stars
+    drawMovingStars();
+  }
+  
+  // 🚀 SEASON 3 PHASE 1: VISUAL ENHANCEMENT FUNCTIONS
+  
+  function createShootingStar() {
+    const shootingStar = {
+      x: -10,
+      y: Math.random() * canvasHeight,
+      speed: 8 + Math.random() * 4, // Fast speed
+      length: 20 + Math.random() * 30,
+      brightness: 0.8 + Math.random() * 0.2,
+      life: 60 + Math.random() * 40, // Duration
+      maxLife: 60 + Math.random() * 40
+    };
+    shootingStars.push(shootingStar);
+  }
+  
+  function updateShootingStars() {
+    // Add new shooting stars occasionally
+    if (Math.random() < 0.005) { // 0.5% chance per frame
+      createShootingStar();
+    }
+    
+    // Update existing shooting stars
+    shootingStars.forEach((star, index) => {
+      star.x += star.speed;
+      star.life--;
+      
+      // Remove stars that are off-screen or expired
+      if (star.x > canvasWidth + 50 || star.life <= 0) {
+        shootingStars.splice(index, 1);
+      }
+    });
+  }
+  
+  function drawShootingStars() {
+    shootingStars.forEach(star => {
+      const alpha = (star.life / star.maxLife) * star.brightness;
+      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(star.x, star.y);
+      ctx.lineTo(star.x - star.length, star.y);
+      ctx.stroke();
+      
+      // Add glow effect
+      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.3})`;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(star.x, star.y);
+      ctx.lineTo(star.x - star.length, star.y);
+      ctx.stroke();
+    });
+  }
+  
+  function createScorePopup(x, y, score, multiplier = 1) {
+    const popup = {
+      x: x,
+      y: y,
+      score: score,
+      multiplier: multiplier,
+      life: 60, // Duration in frames
+      maxLife: 60,
+      velocityY: -2, // Move upward
+      scale: 1,
+      color: multiplier > 1 ? '#ffff00' : '#ffffff' // Yellow for multipliers
+    };
+    scorePopups.push(popup);
+  }
+  
+  function updateScorePopups() {
+    scorePopups.forEach((popup, index) => {
+      popup.y += popup.velocityY;
+      popup.life--;
+      popup.scale = popup.life / popup.maxLife;
+      
+      // Remove expired popups
+      if (popup.life <= 0) {
+        scorePopups.splice(index, 1);
+      }
+    });
+  }
+  
+  function drawScorePopups() {
+    scorePopups.forEach(popup => {
+      const alpha = popup.life / popup.maxLife;
+      ctx.fillStyle = popup.color;
+      ctx.globalAlpha = alpha;
+      ctx.font = `${16 * popup.scale}px Arial`;
+      ctx.textAlign = 'center';
+      
+      const text = popup.multiplier > 1 ? 
+        `+${popup.score} x${popup.multiplier}` : 
+        `+${popup.score}`;
+      
+      ctx.fillText(text, popup.x, popup.y);
+      
+      // Add glow effect for multipliers
+      if (popup.multiplier > 1) {
+        ctx.strokeStyle = `rgba(255, 255, 0, ${alpha * 0.5})`;
+        ctx.lineWidth = 2;
+        ctx.strokeText(text, popup.x, popup.y);
+      }
+    });
+    
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'left';
+  }
+  
+  function addKillCombo() {
+    const currentTime = Date.now();
+    
+    // If kills are close together, increase combo
+    if (currentTime - lastKillTime < comboDecayTime) {
+      killCombo++;
+    } else {
+      killCombo = 1; // Reset combo if too much time passed
+    }
+    
+    lastKillTime = currentTime;
+    comboTimer = currentTime;
+    
+    // Calculate multiplier (max 3x for balance)
+    comboMultiplier = Math.min(1 + (killCombo * 0.1), 3);
+    
+    console.log(`🔥 Kill Combo: ${killCombo} (${comboMultiplier}x multiplier)`);
+  }
+  
+  function updateComboSystem() {
+    const currentTime = Date.now();
+    
+    // Decay combo if no kills for too long
+    if (currentTime - comboTimer > comboDecayTime) {
+      killCombo = 0;
+      comboMultiplier = 1;
+    }
+  }
+  
+  function drawComboDisplay() {
+    if (killCombo > 1) {
+      const alpha = Math.min(1, (Date.now() - comboTimer) / 1000); // Fade in
+      ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
+      ctx.font = 'bold 20px Arial';
+      ctx.textAlign = 'center';
+      
+      const comboText = `${killCombo} KILL COMBO!`;
+      const multiplierText = `${comboMultiplier.toFixed(1)}x MULTIPLIER`;
+      
+      // Draw combo text with glow
+      ctx.strokeStyle = `rgba(255, 255, 0, ${alpha * 0.5})`;
+      ctx.lineWidth = 3;
+      ctx.strokeText(comboText, canvasWidth / 2, 50);
+      ctx.fillText(comboText, canvasWidth / 2, 50);
+      
+      ctx.font = 'bold 16px Arial';
+      ctx.strokeText(multiplierText, canvasWidth / 2, 75);
+      ctx.fillText(multiplierText, canvasWidth / 2, 75);
+      
+      ctx.textAlign = 'left';
+    }
+  }
+  
+  function createEnhancedExplosion(x, y, size = 25, intensity = 1) {
+    // Enhanced screen shake based on explosion size (reduced intensity)
+    screenShake = Math.min(screenShake + (size * intensity * 0.2), 15);
+    
+    // Create enhanced explosion effect
+    const explosion = {
+      x: x,
+      y: y,
+      size: size,
+      intensity: intensity,
+      life: 30,
+      maxLife: 30,
+      particles: []
+    };
+    
+    // Create multiple particle layers
+    for (let i = 0; i < size * 2; i++) {
+      const particle = {
+        x: x + (Math.random() - 0.5) * size,
+        y: y + (Math.random() - 0.5) * size,
+        velocityX: (Math.random() - 0.5) * 8,
+        velocityY: (Math.random() - 0.5) * 8,
+        life: 20 + Math.random() * 20,
+        maxLife: 20 + Math.random() * 20,
+        color: ['#ff4444', '#ff8844', '#ffff44', '#44ff44'][Math.floor(Math.random() * 4)]
+      };
+      explosion.particles.push(particle);
+    }
+    
+    enhancedExplosions.push(explosion);
+    
+    // Create multiple smaller explosions for chain reaction
+    if (size > 15 && Math.random() < 0.3) {
+      setTimeout(() => {
+        createEnhancedExplosion(x + (Math.random() - 0.5) * 20, y + (Math.random() - 0.5) * 20, size * 0.6, intensity * 0.8);
+      }, 100 + Math.random() * 200);
+    }
+  }
+  
+  function updateEnhancedExplosions() {
+    enhancedExplosions.forEach((explosion, explosionIndex) => {
+      explosion.life--;
+      
+      // Update particles
+      explosion.particles.forEach((particle, particleIndex) => {
+        particle.x += particle.velocityX;
+        particle.y += particle.velocityY;
+        particle.velocityX *= 0.98; // Slow down
+        particle.velocityY *= 0.98;
+        particle.life--;
+        
+        // Remove dead particles
+        if (particle.life <= 0) {
+          explosion.particles.splice(particleIndex, 1);
+        }
+      });
+      
+      // Remove dead explosions
+      if (explosion.life <= 0) {
+        enhancedExplosions.splice(explosionIndex, 1);
+      }
+    });
+  }
+  
+  function drawEnhancedExplosions() {
+    enhancedExplosions.forEach(explosion => {
+      const alpha = explosion.life / explosion.maxLife;
+      
+      // Draw main explosion
+      ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(explosion.x, explosion.y, explosion.size * alpha, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw particles
+      explosion.particles.forEach(particle => {
+        const particleAlpha = particle.life / particle.maxLife;
+        ctx.fillStyle = particle.color.replace(')', `, ${particleAlpha})`).replace('rgb', 'rgba');
+        ctx.fillRect(particle.x, particle.y, 2, 2);
+      });
+    });
+  }
+  
+  // 🏆 SEASON 3 PHASE 2: ACHIEVEMENT SYSTEM FUNCTIONS
+  
+  function createAchievementPopup(title, description, icon = '🏆') {
+    const popup = {
+      title: title,
+      description: description,
+      icon: icon,
+      life: 180, // 3 seconds at 60fps
+      maxLife: 180,
+      scale: 0,
+      maxScale: 1,
+      y: canvasHeight / 2,
+      color: '#ffd700' // Gold color for achievements
+    };
+    achievementPopups.push(popup);
+    console.log(`🏆 Achievement Unlocked: ${title} - ${description}`);
+    
+    // 🏆 SEASON 3 PHASE 2: Save achievement to database
+    saveAchievementToDatabase(title, description, icon);
+  }
+  
+  // 🏆 SEASON 3 PHASE 2: Save achievement to database
+  async function saveAchievementToDatabase(title, description, icon) {
+    try {
+      // Get current player Discord ID
+      const discordId = getCurrentPlayerId();
+      if (!discordId) {
+        console.log('🏆 Achievement not saved: No Discord ID available');
+        return;
+      }
+      
+      // Map achievement title to key
+      const achievementKey = getAchievementKey(title);
+      if (!achievementKey) {
+        console.log('🏆 Achievement not saved: Unknown achievement title');
+        return;
+      }
+      
+      // Prepare achievement data
+      const achievementData = {
+        user_id: discordId,
+        achievement_key: achievementKey,
+        achievement_title: title,
+        achievement_description: description,
+        achievement_icon: icon,
+        game_score: spaceInvadersScore,
+        game_time: Date.now() - gameStartTime,
+        total_kills: totalKills,
+        combo_multiplier: comboMultiplier
+      };
+      
+      // Save to database
+      const response = await fetch('/api/user/save-space-invaders-achievement.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(achievementData)
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        console.log(`🏆 Achievement saved to database: ${title}`);
+      } else {
+        console.error('🏆 Failed to save achievement:', result.error);
+      }
+    } catch (error) {
+      console.error('🏆 Error saving achievement:', error);
+    }
+  }
+  
+  // 🏆 SEASON 3 PHASE 2: Map achievement title to key
+  function getAchievementKey(title) {
+    const keyMap = {
+      'First Blood': 'firstKill',
+      'Killing Spree': 'killStreak8',
+      'Rampage': 'killStreak15',
+      'Unstoppable': 'killStreak25',
+      'Getting Started': 'score2500',
+      'Rising Star': 'score7500',
+      'Space Ace': 'score15000',
+      'Legend': 'score30000',
+      'Perfect Wave': 'perfectWave',
+      'Untouchable': 'noHitRun60',
+      'Combo Master': 'comboMaster8',
+      'Speed Demon': 'speedDemon20k',
+      'Ultimate Survivor': 'survivor10min',
+      'Boss Slayer': 'bossKiller3',
+      'Boss Destroyer': 'bossKiller4'
+    };
+    return keyMap[title] || null;
+  }
+  
+  function updateAchievementPopups() {
+    achievementPopups.forEach((popup, index) => {
+      popup.life--;
+      
+      // Scale animation
+      if (popup.life > popup.maxLife - 30) {
+        // Growing phase
+        popup.scale = Math.min(1, (popup.maxLife - popup.life) / 30);
+      } else if (popup.life < 30) {
+        // Shrinking phase
+        popup.scale = popup.life / 30;
+      } else {
+        // Stable phase
+        popup.scale = 1;
+      }
+      
+      // Remove expired popups
+      if (popup.life <= 0) {
+        achievementPopups.splice(index, 1);
+      }
+    });
+  }
+  
+  function drawAchievementPopups() {
+    achievementPopups.forEach(popup => {
+      const alpha = popup.life / popup.maxLife;
+      const centerX = canvasWidth / 2;
+      
+      // Draw background
+      ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.8})`;
+      ctx.fillRect(centerX - 200, popup.y - 40, 400, 80);
+      
+      // Draw border
+      ctx.strokeStyle = `rgba(255, 215, 0, ${alpha})`;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(centerX - 200, popup.y - 40, 400, 80);
+      
+      // Draw icon
+      ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
+      ctx.font = `${32 * popup.scale}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.fillText(popup.icon, centerX - 150, popup.y + 10);
+      
+      // Draw title
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.font = `bold ${20 * popup.scale}px Arial`;
+      ctx.fillText(popup.title, centerX, popup.y - 10);
+      
+      // Draw description
+      ctx.font = `${14 * popup.scale}px Arial`;
+      ctx.fillStyle = `rgba(200, 200, 200, ${alpha})`;
+      ctx.fillText(popup.description, centerX, popup.y + 15);
+      
+      ctx.textAlign = 'left';
+    });
+  }
+  
+  function checkAchievements() {
+    // First Kill Achievement
+    if (totalKills >= 1 && !achievements.firstKill) {
+      achievements.firstKill = true;
+      createAchievementPopup('First Blood', 'Destroyed your first invader!', '🎯');
+    }
+    
+    // Kill Streak Achievements (REBALANCED)
+    if (killCombo >= 8 && !achievements.killStreak8) {
+      achievements.killStreak8 = true;
+      createAchievementPopup('Killing Spree', '8 kills in a row!', '🔥');
+    }
+    
+    if (killCombo >= 15 && !achievements.killStreak15) {
+      achievements.killStreak15 = true;
+      createAchievementPopup('Rampage', '15 kills in a row!', '⚡');
+    }
+    
+    if (killCombo >= 25 && !achievements.killStreak25) {
+      achievements.killStreak25 = true;
+      createAchievementPopup('Unstoppable', '25 kills in a row!', '💀');
+    }
+    
+    // Score Achievements (REBALANCED FOR NEW SCORING)
+    if (spaceInvadersScore >= 1000 && !achievements.score2500) {
+      achievements.score2500 = true;
+      createAchievementPopup('Getting Started', 'Reached 1,000 points!', '⭐');
+    }
+    
+    if (spaceInvadersScore >= 3000 && !achievements.score7500) {
+      achievements.score7500 = true;
+      createAchievementPopup('Rising Star', 'Reached 3,000 points!', '🌟');
+    }
+    
+    if (spaceInvadersScore >= 6000 && !achievements.score15000) {
+      achievements.score15000 = true;
+      createAchievementPopup('Space Ace', 'Reached 6,000 points!', '🚀');
+    }
+    
+    if (spaceInvadersScore >= 12000 && !achievements.score30000) {
+      achievements.score30000 = true;
+      createAchievementPopup('Legend', 'Reached 12,000 points!', '👑');
+    }
+    
+    // Perfect Wave Achievement
+    if (perfectWaves >= 1 && !achievements.perfectWave) {
+      achievements.perfectWave = true;
+      createAchievementPopup('Perfect Wave', 'Cleared a wave without taking damage!', '✨');
+    }
+    
+    // No Hit Run Achievement (REBALANCED - 60 seconds)
+    if (noHitTimer >= 3600 && !achievements.noHitRun60) { // 60 seconds at 60fps
+      achievements.noHitRun60 = true;
+      createAchievementPopup('Untouchable', '60 seconds without taking damage!', '🛡️');
+    }
+    
+    // Combo Master Achievement (REBALANCED - 3x multiplier max)
+    if (comboMultiplier >= 3 && !achievements.comboMaster8) {
+      achievements.comboMaster8 = true;
+      createAchievementPopup('Combo Master', 'Achieved 3x score multiplier!', '💥');
+    }
+    
+    // Speed Demon Achievement (REBALANCED - 6k in 3 minutes)
+    const gameTime = Date.now() - gameStartTime;
+    if (spaceInvadersScore >= 6000 && gameTime < 180000 && !achievements.speedDemon20k) { // 3 minutes
+      achievements.speedDemon20k = true;
+      createAchievementPopup('Speed Demon', 'Reached 6k points in under 3 minutes!', '⚡');
+    }
+    
+    // Survivor Achievement (REBALANCED - 10 minutes)
+    if (gameTime >= 600000 && !achievements.survivor10min) { // 10 minutes
+      achievements.survivor10min = true;
+      createAchievementPopup('Ultimate Survivor', 'Survived for 10 minutes!', '🏆');
+    }
+    
+    // Boss Kill Achievements (NEW)
+    if (bossesKilled >= 3 && !achievements.bossKiller3) {
+      achievements.bossKiller3 = true;
+      createAchievementPopup('Boss Slayer', 'Defeated Boss 3!', '🗡️');
+    }
+    
+    if (bossesKilled >= 4 && !achievements.bossKiller4) {
+      achievements.bossKiller4 = true;
+      createAchievementPopup('Boss Destroyer', 'Defeated Boss 4 - Ultimate Achievement!', '💀');
+    }
+  }
+  
+  function updateAchievementTracking() {
+    // Update no-hit timer
+    if (playerShip.health === playerShip.maxHealth) {
+      noHitTimer++;
+    } else {
+      noHitTimer = 0; // Reset if player takes damage
+    }
+    
+    // Check for achievements
+    checkAchievements();
+  }
+  
+  function resetAchievementTracking() {
+    // Reset tracking variables
+    gameStartTime = Date.now();
+    perfectWaves = 0;
+    totalKills = 0;
+    noHitTimer = 0;
+    
+    // Reset achievements (optional - keep for session)
+    // achievements = { ... }; // Uncomment to reset achievements each game
   }
 
   function drawPlayerShip() {
