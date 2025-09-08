@@ -362,7 +362,7 @@ require_once 'discord-invite.php';
             🏆 View Space Invaders Achievements
           </button>
           <p class="text-xs text-yellow-400 mt-2 italic">Click to view all 29 Space Invaders achievements</p>
-        </div>
+      </div>
       
       <!-- 🏆 Overall Progress -->
       <div class="mb-6">
@@ -425,61 +425,61 @@ require_once 'discord-invite.php';
         
         <!-- Achievements Grid -->
         <div id="achievementsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <!-- First Blood - Unlocked -->
-          <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 border-yellow-500/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+          <!-- First Blood - Locked by default -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
             <div class="flex items-start space-x-4">
               <div class="text-3xl flex-shrink-0">🎯</div>
               <div class="flex-1 min-w-0">
                 <h3 class="font-semibold text-white text-base mb-2">First Blood</h3>
                 <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed your first 100 invaders!</p>
                 <div class="flex items-center justify-between">
-                  <span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">✅ Unlocked 28.1.2024</span>
-                  <div class="text-green-400 text-lg">✓</div>
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
                 </div>
               </div>
             </div>
           </div>
           
-          <!-- Getting Started - Unlocked -->
-          <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 border-yellow-500/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+          <!-- Getting Started - Locked by default -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
             <div class="flex items-start space-x-4">
               <div class="text-3xl flex-shrink-0">⭐</div>
               <div class="flex-1 min-w-0">
                 <h3 class="font-semibold text-white text-base mb-2">Getting Started</h3>
                 <p class="text-sm text-gray-300 mb-3 leading-relaxed">Reached 30,000 points!</p>
                 <div class="flex items-center justify-between">
-                  <span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">✅ Unlocked 28.1.2024</span>
-                  <div class="text-green-400 text-lg">✓</div>
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
                 </div>
               </div>
             </div>
           </div>
           
-          <!-- Perfect Wave - Unlocked -->
-          <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 border-yellow-500/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+          <!-- Perfect Wave - Locked by default -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
             <div class="flex items-start space-x-4">
               <div class="text-3xl flex-shrink-0">✨</div>
               <div class="flex-1 min-w-0">
                 <h3 class="font-semibold text-white text-base mb-2">Perfect Wave</h3>
                 <p class="text-sm text-gray-300 mb-3 leading-relaxed">Cleared 5 waves without taking damage!</p>
                 <div class="flex items-center justify-between">
-                  <span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">✅ Unlocked 28.1.2024</span>
-                  <div class="text-green-400 text-lg">✓</div>
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
                 </div>
               </div>
             </div>
           </div>
           
-          <!-- Combo Master - Unlocked -->
-          <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 border-yellow-500/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+          <!-- Combo Master - Locked by default -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
             <div class="flex items-start space-x-4">
               <div class="text-3xl flex-shrink-0">💥</div>
               <div class="flex-1 min-w-0">
                 <h3 class="font-semibold text-white text-base mb-2">Combo Master</h3>
                 <p class="text-sm text-gray-300 mb-3 leading-relaxed">Achieved 4x score multiplier!</p>
                 <div class="flex items-center justify-between">
-                  <span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">✅ Unlocked 28.1.2024</span>
-                  <div class="text-green-400 text-lg">✓</div>
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
                 </div>
               </div>
             </div>
@@ -1467,10 +1467,10 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (!profileRes.ok) {
         if (profileRes.status === 401) {
         // Not logged in - show login UI
-        setText('username', 'Guest#0000');
-        setText('welcome-name', 'Guest');
-        setText('email', 'Please log in');
-        setText('guilds', 'No guilds connected');
+          setText('username', 'Guest#0000');
+          setText('welcome-name', 'Guest');
+          setText('email', 'Please log in');
+          setText('guilds', 'No guilds connected');
         setText('traits', 'No traits available');
         setText('user-roles', 'No roles');
         setText('wallet-address', 'Wallet not linked');
@@ -1676,16 +1676,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 <script src="scripts/tetris-scroll.js?v=9.9"></script>
 <script src="scripts/snake-scroll.js?v=1.1"></script>
         <script src="scripts/space-cheese-invaders.js?v=1.1" onerror="console.error('❌ Failed to load space-cheese-invaders.js')" onload="console.log('✅ space-cheese-invaders.js loaded successfully')"></script>
-        <script>
+<script>
           // Check if initSpaceInvaders is available immediately after script loads
           console.log('🔍 Checking initSpaceInvaders availability after script load...');
           console.log('🔍 window.initSpaceInvaders type:', typeof window.initSpaceInvaders);
           if (typeof window.initSpaceInvaders === 'function') {
             console.log('✅ initSpaceInvaders is available after script load');
           } else {
-            console.error('❌ initSpaceInvaders is NOT available after script load');
-          }
-        </script>
+        console.error('❌ initSpaceInvaders is NOT available after script load');
+  }
+</script>
 
 <!-- 🏆 Leaderboard Logic -->
 <script>
@@ -1805,11 +1805,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       spaceInvadersBtn.addEventListener("click", () => {
         console.log('🎮 Space Invaders button clicked');
         console.log('🔍 window.initSpaceInvaders exists:', typeof window.initSpaceInvaders);
-        if (window.initSpaceInvaders) {
-          console.log('🚀 Calling window.initSpaceInvaders()');
-          window.initSpaceInvaders();
-        } else {
-          console.error('❌ window.initSpaceInvaders is not available');
+          if (window.initSpaceInvaders) {
+            console.log('🚀 Calling window.initSpaceInvaders()');
+            window.initSpaceInvaders();
+          } else {
+            console.error('❌ window.initSpaceInvaders is not available');
         }
         spaceInvadersBtn.disabled = true;
         spaceInvadersBtn.textContent = "🕹️ Playing...";
@@ -3142,7 +3142,7 @@ function toggleSpaceInvadersAchievements() {
     console.log('🏆 Achievements shown');
     
     // Load achievements data
-    loadSpaceInvadersAchievements();
+      loadSpaceInvadersAchievements();
   } else {
     // Hide achievements
     achievementsSection.classList.add('hidden');
@@ -3190,7 +3190,7 @@ async function loadSpaceInvadersAchievements() {
     console.log('🔗 API response ok:', response.ok);
     
     if (response.ok) {
-      const data = await response.json();
+    const data = await response.json();
       console.log('🏆 Achievements loaded from API:', data);
       displayAchievements(data);
     } else {
@@ -3216,8 +3216,8 @@ function displayAchievements(data) {
   const achievements = data.achievements || [];
   const stats = data.stats || {};
   
-  console.log('🔓 Data structure check:', {
-    hasData: !!data,
+    console.log('🔓 Data structure check:', {
+      hasData: !!data,
     hasStats: !!stats,
     hasAchievements: !!achievements,
     statsKeys: Object.keys(stats),
@@ -3225,20 +3225,20 @@ function displayAchievements(data) {
   });
   
   // Find the main achievements section
-  const achievementsSection = document.getElementById('spaceInvadersAchievements');
-  if (!achievementsSection) {
-    console.error('❌ displayAchievements: spaceInvadersAchievements section not found!');
-    return;
-  }
-  
-  console.log('🔓 Found achievements section:', !!achievementsSection);
-  
+    const achievementsSection = document.getElementById('spaceInvadersAchievements');
+    if (!achievementsSection) {
+      console.error('❌ displayAchievements: spaceInvadersAchievements section not found!');
+      return;
+    }
+    
+    console.log('🔓 Found achievements section:', !!achievementsSection);
+    
   // Update statistics
-  const totalEl = achievementsSection.querySelector('#totalAchievements');
-  const unlockedEl = achievementsSection.querySelector('#unlockedAchievements');
-  const lockedEl = achievementsSection.querySelector('#lockedAchievements');
-  const progressEl = achievementsSection.querySelector('#completionPercentage');
-  
+    const totalEl = achievementsSection.querySelector('#totalAchievements');
+    const unlockedEl = achievementsSection.querySelector('#unlockedAchievements');
+    const lockedEl = achievementsSection.querySelector('#lockedAchievements');
+    const progressEl = achievementsSection.querySelector('#completionPercentage');
+    
   if (totalEl) totalEl.textContent = stats.total_achievements || 29;
   if (unlockedEl) unlockedEl.textContent = stats.unlocked_achievements || 0;
   if (lockedEl) lockedEl.textContent = stats.locked_achievements || 25;
