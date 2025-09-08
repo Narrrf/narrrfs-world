@@ -3214,8 +3214,15 @@ async function loadSpaceInvadersAchievements() {
       return;
     }
     
+    // 🌍 Environment-aware API endpoint (works both locally and in production)
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
+    
+    console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+    console.log(`🔗 Achievements API URL: ${apiBaseUrl}/api/user/get-space-invaders-achievements.php`);
+    
     // Load achievements from API
-    const response = await fetch(`${API_BASE_URL}/api/user/get-space-invaders-achievements.php`, {
+    const response = await fetch(`${apiBaseUrl}/api/user/get-space-invaders-achievements.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

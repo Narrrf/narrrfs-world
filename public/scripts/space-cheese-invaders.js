@@ -104,6 +104,35 @@ let phoenixesDestroyed = 0;
 let phoenixEggsDestroyed = 0;
 let miniPhoenixesDestroyed = 0;
 
+// 📱 MOBILE TOUCH CONTROLS
+let touchStartX = 0;
+let touchStartY = 0;
+let touchStartTime = 0;
+let isTouching = false;
+let holdShootInterval = null;
+let holdShootDelay = 150; // 150ms between shots for rapid fire
+
+// 🎮 GAME SPEED CONTROL - MOBILE FRIENDLY ADJUSTMENT
+let gameSpeedMultiplier = 0.9; // 10% slower for mobile players (0.9 = 90% speed)
+let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+// 🎮 SPEED CONTROL FUNCTIONS
+function getGameSpeed() {
+  return gameSpeedMultiplier;
+}
+
+function setGameSpeed(multiplier) {
+  gameSpeedMultiplier = Math.max(0.5, Math.min(1.5, multiplier)); // Clamp between 50% and 150%
+  console.log(`🎮 Game speed set to: ${Math.round(gameSpeedMultiplier * 100)}%`);
+}
+
+function toggleMobileSpeed() {
+  if (isMobileDevice) {
+    gameSpeedMultiplier = gameSpeedMultiplier === 0.9 ? 1.0 : 0.9;
+    console.log(`📱 Mobile speed ${gameSpeedMultiplier === 0.9 ? 'SLOWED' : 'NORMAL'}: ${Math.round(gameSpeedMultiplier * 100)}%`);
+  }
+}
+
 // 🚀 NEW: Progressive Multi-Shot Upgrades
 let hasDoubleShotUpgrade = false; // Unlocked after defeating first boss (Cheese King)
 let hasTripleShotUpgrade = false; // Unlocked after defeating second boss (Cheese Emperor)
@@ -2713,16 +2742,16 @@ let reloadButtonInterval = null;
       if (bullet.type === 'cheese_wheel' && bullet.rotation !== undefined) {
         // Spinning cheese wheels
         bullet.rotation += bullet.rotationSpeed;
-        bullet.y += bullet.speed;
+        bullet.y += bullet.speed * getGameSpeed(); // 🎮 Apply speed multiplier
       } else if (bullet.type === 'melted_cheese' && bullet.trail) {
         // Melted cheese with gravity effect
-        bullet.x += bullet.vx;
-        bullet.y += bullet.vy;
+        bullet.x += bullet.vx * getGameSpeed(); // 🎮 Apply speed multiplier
+        bullet.y += bullet.vy * getGameSpeed(); // 🎮 Apply speed multiplier
         bullet.vy += 0.1; // Gravity effect for melted cheese
       } else if (bullet.type === 'gouda_grenade' && bullet.explosive) {
         // Gouda grenades with timer
-        bullet.x += bullet.vx;
-        bullet.y += bullet.vy;
+        bullet.x += bullet.vx * getGameSpeed(); // 🎮 Apply speed multiplier
+        bullet.y += bullet.vy * getGameSpeed(); // 🎮 Apply speed multiplier
         bullet.timer--;
         if (bullet.timer <= 0) {
           // Create explosion
@@ -2778,12 +2807,12 @@ let reloadButtonInterval = null;
       } else {
         // Regular bullets with angle adjustment
         if (bullet.angle) {
-          bullet.x += Math.sin(bullet.angle) * bullet.speed;
-          bullet.y += Math.cos(bullet.angle) * bullet.speed;
+          bullet.x += Math.sin(bullet.angle) * bullet.speed * getGameSpeed(); // 🎮 Apply speed multiplier
+          bullet.y += Math.cos(bullet.angle) * bullet.speed * getGameSpeed(); // 🎮 Apply speed multiplier
         } else {
           // 🧪 DEBUG: Log bullet movement for default bullets
           const oldY = bullet.y;
-          bullet.y += bullet.speed;
+          bullet.y += bullet.speed * getGameSpeed(); // 🎮 Apply speed multiplier
           if (Date.now() % 3000 < 16 && bullet.type === 'test_bullet') { // Log test bullets
             console.log(`🧪 Moving bullet: ${oldY} -> ${bullet.y} (speed: ${bullet.speed})`);
           }
@@ -4996,9 +5025,9 @@ let reloadButtonInterval = null;
       
       // 🌀 ENHANCED: Much more aggressive spinning attack patterns
       if (invader.spinAttack && waveNumber >= 5) {
-        invader.spinAngle += 0.3; // Faster spin speed
-        invader.x += Math.cos(invader.spinAngle) * 0.8; // Larger movement
-        invader.y += Math.sin(invader.spinAngle) * 0.5;
+        invader.spinAngle += 0.3 * getGameSpeed(); // 🎮 Apply speed multiplier
+        invader.x += Math.cos(invader.spinAngle) * 0.8 * getGameSpeed(); // 🎮 Apply speed multiplier
+        invader.y += Math.sin(invader.spinAngle) * 0.5 * getGameSpeed(); // 🎮 Apply speed multiplier
         
         // PROGRESSIVE SHOOTING - Start VERY low, increase gradually
         const baseShootChance = 0.00005; // 🎯 EXTREMELY LOW: Reduced from 0.0001 to 0.00005
@@ -5246,7 +5275,7 @@ let reloadButtonInterval = null;
         
         // 🚀 NEW: Apply wall bounce speed boost
         if (invader.wallBounceBoost && invader.wallBounceTimer > 0) {
-          invader.y += 3; // Extra downward speed
+          invader.y += 3 * getGameSpeed(); // 🎮 Apply speed multiplier
           invader.wallBounceTimer--;
           if (invader.wallBounceTimer <= 0) {
             invader.wallBounceBoost = false;
@@ -5259,7 +5288,7 @@ let reloadButtonInterval = null;
           
           // 🚀 NEW: Extra aggressive behavior when close to player
           if (invader.y > canvasHeight - 200) {
-            invader.y += 1; // Moderate speed boost when close to player
+            invader.y += 1 * getGameSpeed(); // 🎮 Apply speed multiplier
           }
         }
       });
@@ -6011,7 +6040,7 @@ let reloadButtonInterval = null;
 
   function moveBullets() {
     bullets.forEach(bullet => {
-      bullet.y -= bullet.speed;
+      bullet.y -= bullet.speed * getGameSpeed(); // 🎮 Apply speed multiplier
     });
     // Allow bullets to travel much further to hit invaders outside screen bounds
     bullets = bullets.filter(bullet => bullet.y > -200); // Allow bullets to go 200px above screen
@@ -6079,18 +6108,18 @@ let reloadButtonInterval = null;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
         if (distance > 0) {
-          bullet.x += (dx / distance) * bullet.speed * 0.3;
-          bullet.y += bullet.speed;
+          bullet.x += (dx / distance) * bullet.speed * 0.3 * getGameSpeed(); // 🎮 Apply speed multiplier
+          bullet.y += bullet.speed * getGameSpeed(); // 🎮 Apply speed multiplier
         } else {
-          bullet.y += bullet.speed;
+          bullet.y += bullet.speed * getGameSpeed(); // 🎮 Apply speed multiplier
         }
       } else if (bullet.vx !== undefined && bullet.vy !== undefined) {
         // NEW: Handle new attack pattern bullets with vx/vy
-        bullet.x += bullet.vx;
-        bullet.y += bullet.vy;
+        bullet.x += bullet.vx * getGameSpeed(); // 🎮 Apply speed multiplier
+        bullet.y += bullet.vy * getGameSpeed(); // 🎮 Apply speed multiplier
       } else {
         // Normal bullets go straight down
-        bullet.y += bullet.speed || 2; // Default speed if not specified
+        bullet.y += (bullet.speed || 2) * getGameSpeed(); // 🎮 Apply speed multiplier
       }
     });
     invaderBullets = invaderBullets.filter(bullet => bullet.y < canvasHeight + 200); // Allow bullets to go 200px below screen
@@ -8253,6 +8282,12 @@ let reloadButtonInterval = null;
     let phaseText = '';
     let phaseColor = '#ffffff';
     
+    // 🎮 NEW: Speed indicator
+    if (gameSpeedMultiplier !== 1.0) {
+      ctx.fillStyle = '#ffaa00';
+      ctx.fillText(`🎮 Speed: ${Math.round(gameSpeedMultiplier * 100)}%`, 10, canvasHeight - 20);
+    }
+    
     if (gamePhase === 'formation') {
       phaseColor = '#4ade80'; // Green for formation
       phaseText = `🎯W${waveNumber}`; // Ultra compact
@@ -9095,6 +9130,15 @@ let reloadButtonInterval = null;
         window.toggleAutoShoot();
       }
       return;
+    }
+    
+    // Handle speed toggle (S key)
+    if (e.key === 's' || e.key === 'S') {
+      if (e.ctrlKey || e.metaKey) { // Ctrl+S or Cmd+S for speed toggle
+        e.preventDefault();
+        toggleMobileSpeed();
+        return;
+      }
     }
     
     // 🚀 NEW: Handle weapon switching
@@ -11089,13 +11133,6 @@ window.emergencyCollisionCheck = function() {
     document.removeEventListener('touchmove', handleTouchMove);
     document.removeEventListener('touchend', handleTouchEnd);
   }
-
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let touchStartTime = 0;
-  let isTouching = false;
-  let holdShootInterval = null;
-  let holdShootDelay = 150; // 150ms between shots for rapid fire
 
   function handleTouchStart(e) {
     if (e.target.closest("#space-invaders-canvas")) {
