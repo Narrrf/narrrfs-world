@@ -28,8 +28,15 @@ function getSQLite3Connection() {
 }
 
 try {
-    // Get Discord ID from query parameters
-    $discordId = $_GET['discord_id'] ?? '';
+    // Get Discord ID from POST data or query parameters
+    $discordId = '';
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $discordId = $input['user_id'] ?? $input['discord_id'] ?? '';
+    } else {
+        $discordId = $_GET['discord_id'] ?? $_GET['user_id'] ?? '';
+    }
     
     if (empty($discordId)) {
         throw new Exception('Discord ID is required');

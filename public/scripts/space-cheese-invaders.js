@@ -114,7 +114,7 @@ let holdShootDelay = 150; // 150ms between shots for rapid fire
 
 // 🎮 GAME SPEED CONTROL - MOBILE FRIENDLY ADJUSTMENT
 let gameSpeedMultiplier = 0.9; // 10% slower for mobile players (0.9 = 90% speed)
-let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+// Note: isMobileDevice is already declared above at line 76
 
 // 🎮 SPEED CONTROL FUNCTIONS
 function getGameSpeed() {
@@ -4391,6 +4391,9 @@ let reloadButtonInterval = null;
     
     console.log('✅ Space Invaders initialization complete');
   }
+
+  // 🚀 EXPOSE FUNCTION TO GLOBAL SCOPE
+  window.initSpaceInvaders = initSpaceInvaders;
 
   function initializeInvaders() {
     invaders = [];
