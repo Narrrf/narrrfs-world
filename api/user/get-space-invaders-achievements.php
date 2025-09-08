@@ -16,7 +16,7 @@ require_once '../auth/auth.php';
 function getSQLite3Connection() {
     $dbPath = $_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false 
         ? 'db/narrrf_world.sqlite' 
-        : '/data/narrrf_world.sqlite';
+        : '/var/www/html/db/narrrf_world.sqlite';
     
     if (!file_exists($dbPath)) {
         throw new Exception("Database file not found: $dbPath");
@@ -66,47 +66,47 @@ try {
     $allAchievements = [
         'firstKill' => [
             'title' => 'First Blood',
-            'description' => 'Destroyed your first invader!',
+            'description' => 'Destroyed your first 100 invaders!',
             'icon' => '🎯'
         ],
         'killStreak8' => [
             'title' => 'Killing Spree',
-            'description' => '15 kills in a row!',
+            'description' => '25 kills in a row!',
             'icon' => '🔥'
         ],
         'killStreak15' => [
             'title' => 'Rampage',
-            'description' => '30 kills in a row!',
+            'description' => '50 kills in a row!',
             'icon' => '⚡'
         ],
         'killStreak25' => [
             'title' => 'Unstoppable',
-            'description' => '50 kills in a row!',
+            'description' => '100 kills in a row!',
             'icon' => '💀'
         ],
         'score2500' => [
             'title' => 'Getting Started',
-            'description' => 'Reached 5,000 points!',
+            'description' => 'Reached 30,000 points!',
             'icon' => '⭐'
         ],
         'score7500' => [
             'title' => 'Rising Star',
-            'description' => 'Reached 15,000 points!',
+            'description' => 'Reached 75,000 points!',
             'icon' => '🌟'
         ],
         'score15000' => [
             'title' => 'Space Ace',
-            'description' => 'Reached 30,000 points!',
+            'description' => 'Reached 150,000 points!',
             'icon' => '🚀'
         ],
         'score30000' => [
             'title' => 'Legend',
-            'description' => 'Reached 60,000 points!',
+            'description' => 'Reached 300,000 points!',
             'icon' => '👑'
         ],
         'perfectWave' => [
             'title' => 'Perfect Wave',
-            'description' => 'Cleared 3 waves without taking damage!',
+            'description' => 'Cleared 5 waves without taking damage!',
             'icon' => '✨'
         ],
         'noHitRun60' => [
@@ -116,12 +116,12 @@ try {
         ],
         'comboMaster8' => [
             'title' => 'Combo Master',
-            'description' => 'Achieved 3x score multiplier!',
+            'description' => 'Achieved 4x score multiplier!',
             'icon' => '💥'
         ],
         'speedDemon20k' => [
             'title' => 'Speed Demon',
-            'description' => 'Reached 30k points in under 5 minutes!',
+            'description' => 'Reached 50k points in under 3 minutes!',
             'icon' => '⚡'
         ],
         'survivor10min' => [
@@ -129,15 +129,80 @@ try {
             'description' => 'Survived for 20 minutes!',
             'icon' => '🏆'
         ],
+        'bossKiller1' => [
+            'title' => 'Boss Hunter',
+            'description' => 'Defeated Boss 1 - First Victory!',
+            'icon' => '⚔️'
+        ],
+        'bossKiller2' => [
+            'title' => 'Boss Conqueror',
+            'description' => 'Defeated Boss 3 - Rising Power!',
+            'icon' => '🏹'
+        ],
         'bossKiller3' => [
             'title' => 'Boss Slayer',
-            'description' => 'Defeated Boss 5!',
+            'description' => 'Defeated Boss 5 - Master Warrior!',
             'icon' => '🗡️'
         ],
         'bossKiller4' => [
             'title' => 'Boss Destroyer',
             'description' => 'Defeated Boss 8 - Ultimate Achievement!',
             'icon' => '💀'
+        ],
+        'phoenixHunter' => [
+            'title' => 'Phoenix Hunter',
+            'description' => 'Destroyed 10 Phoenix birds!',
+            'icon' => '🔥'
+        ],
+        'phoenixSlayer' => [
+            'title' => 'Phoenix Slayer',
+            'description' => 'Destroyed 25 Phoenix birds!',
+            'icon' => '⚡'
+        ],
+        'phoenixDestroyer' => [
+            'title' => 'Phoenix Destroyer',
+            'description' => 'Destroyed 50 Phoenix birds!',
+            'icon' => '💥'
+        ],
+        'phoenixMaster' => [
+            'title' => 'Phoenix Master',
+            'description' => 'Destroyed 100 Phoenix birds - Ultimate Phoenix Hunter!',
+            'icon' => '👑'
+        ],
+        'eggHunter' => [
+            'title' => 'Egg Hunter',
+            'description' => 'Destroyed 50 Phoenix eggs!',
+            'icon' => '🥚'
+        ],
+        'eggSlayer' => [
+            'title' => 'Egg Slayer',
+            'description' => 'Destroyed 100 Phoenix eggs!',
+            'icon' => '💣'
+        ],
+        'eggDestroyer' => [
+            'title' => 'Egg Destroyer',
+            'description' => 'Destroyed 200 Phoenix eggs!',
+            'icon' => '💥'
+        ],
+        'eggMaster' => [
+            'title' => 'Egg Master',
+            'description' => 'Destroyed 500 Phoenix eggs - Ultimate Egg Hunter!',
+            'icon' => '👑'
+        ],
+        'miniPhoenixHunter' => [
+            'title' => 'Mini-Phoenix Hunter',
+            'description' => 'Destroyed 25 Mini-Phoenix!',
+            'icon' => '🐣'
+        ],
+        'miniPhoenixSlayer' => [
+            'title' => 'Mini-Phoenix Slayer',
+            'description' => 'Destroyed 75 Mini-Phoenix!',
+            'icon' => '⚡'
+        ],
+        'miniPhoenixMaster' => [
+            'title' => 'Mini-Phoenix Master',
+            'description' => 'Destroyed 150 Mini-Phoenix - Ultimate Mini-Hunter!',
+            'icon' => '👑'
         ]
     ];
     

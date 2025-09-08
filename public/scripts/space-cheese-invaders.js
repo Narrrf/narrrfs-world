@@ -99,6 +99,11 @@ let spaceInvadersCount = 0; // NEW: Track actual invader count for DSPOINC calcu
 let hasScoreBeenSaved = false; // 🚫 NEW: Prevent duplicate score saves in same game session
 let hasPlayerMovedMouse = false; // 🚀 NEW: Prevent ship jumping until player moves mouse
 
+// 🏆 PHOENIX ACHIEVEMENT TRACKING
+let phoenixesDestroyed = 0;
+let phoenixEggsDestroyed = 0;
+let miniPhoenixesDestroyed = 0;
+
 // 🚀 NEW: Progressive Multi-Shot Upgrades
 let hasDoubleShotUpgrade = false; // Unlocked after defeating first boss (Cheese King)
 let hasTripleShotUpgrade = false; // Unlocked after defeating second boss (Cheese Emperor)
@@ -450,6 +455,9 @@ class PhoenixBird {
     // Award points
     spaceInvadersScore += 100 * this.difficulty;
     spaceInvadersCount++;
+    
+    // Track Phoenix destruction for achievements
+    phoenixesDestroyed++;
   }
   
   draw(ctx) {
@@ -557,6 +565,9 @@ class PhoenixEgg {
     
     // Add destruction effect
     createExplosion(this.x, this.y, 15, 10);
+    
+    // Track Phoenix egg destruction for achievements
+    phoenixEggsDestroyed++;
   }
   
   draw(ctx) {
@@ -670,6 +681,9 @@ class MiniPhoenix {
     // Award points
     spaceInvadersScore += 25;
     spaceInvadersCount++;
+    
+    // Track Mini-Phoenix destruction for achievements
+    miniPhoenixesDestroyed++;
   }
   
   draw(ctx) {
@@ -1562,7 +1576,7 @@ let starSizes = [1, 2, 3]; // Different sizes for different layers
 let killCombo = 0; // Current kill streak
 let comboMultiplier = 1; // Score multiplier based on combo
 let comboTimer = 0; // Timer for combo decay
-let comboDecayTime = 3000; // 3 seconds to maintain combo
+let comboDecayTime = 2000; // 2 seconds to maintain combo - MUCH HARDER
 let scorePopups = []; // Array for animated score pop-ups
 let shootingStars = []; // Array for shooting stars
 let enhancedExplosions = []; // Array for enhanced explosion effects
@@ -4113,6 +4127,22 @@ let reloadButtonInterval = null;
     let discordName = localStorage.getItem("discord_name");
     let wallet = localStorage.getItem("user_wallet");
     
+    // 🔧 LOCAL DEVELOPMENT BYPASS - Simulate logged-in user for local testing
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalDevelopment && !discordId) {
+      console.log('🔓 Local development - simulating logged-in user');
+      discordId = "1337";
+      discordName = "Local Test User";
+      wallet = "local_test_wallet_1337";
+      
+      // Store in localStorage for consistency
+      localStorage.setItem("discord_id", discordId);
+      localStorage.setItem("discord_name", discordName);
+      localStorage.setItem("user_wallet", wallet);
+      
+      console.log('🔓 Local test user setup:', { discordId, discordName, wallet });
+    }
+    
     // 🚀 NEW: Setup global mouse controls for shooting anywhere on screen
     setupGlobalMouseControls();
     setupHeatSystemDebug();
@@ -4358,41 +4388,57 @@ let reloadButtonInterval = null;
       canvasHeight = canvasHeight || 600;
     }
     
-    // 🎯 SEASON 3 PHASE 2: MUCH LOWER invader counts for early waves
-    const isEarlyWave = waveNumber <= 8;  // Extended early wave range
-    const isMidWave = waveNumber <= 15;   // Extended mid wave range
-    const invaderCountMultiplier = isEarlyWave ? 0.1 : isMidWave ? 0.3 : 1.0; // MUCH LOWER: 10% for early, 30% for mid
+    // 🎯 SEASON 3 PHASE 3: BALANCED invader counts for early waves (1-15)
+    const isEarlyWave = waveNumber <= 5;   // Very early waves (1-5)
+    const isMidWave = waveNumber <= 15;    // Early-mid waves (6-15)
+    const isLateWave = waveNumber <= 25;   // Mid waves (16-25)
+    
+    // 🎯 BALANCED DIFFICULTY: Much more reasonable invader counts
+    let maxInvaders = 0;
+    if (isEarlyWave) {
+      maxInvaders = 8;  // Very manageable for waves 1-5
+    } else if (isMidWave) {
+      maxInvaders = 15; // Moderate challenge for waves 6-15
+    } else if (isLateWave) {
+      maxInvaders = 25; // Steady challenge for waves 16-25
+    } else {
+      maxInvaders = 40; // Full challenge for waves 26+
+    }
     
     switch (pattern) {
       case 'v_formation':
-        // 🎯 REBALANCED: V-shaped formation - fewer invaders for early waves
+        // 🎯 REBALANCED: V-shaped formation - limited invaders for early waves
         const vPositions = [
           [3, 0], [4, 0], [5, 0], [6, 0],
           [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1],
           [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2],
           [0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3]
         ];
-        vPositions.forEach(([col, row]) => {
+        // Limit invaders based on wave difficulty
+        const vLimited = vPositions.slice(0, maxInvaders);
+        vLimited.forEach(([col, row]) => {
           const spawnY = canvasHeight - 350 + (row * 35);
           invaders.push(createInvader(col * 45 + 30, spawnY, row, 'v_formation'));
         });
         break;
         
       case 'pyramid':
-        // 🎯 REBALANCED: Pyramid formation - fewer invaders for early waves
+        // 🎯 REBALANCED: Pyramid formation - limited invaders for early waves
+        let pyramidCount = 0;
         const pyramidRows = isEarlyWave ? 3 : isMidWave ? 4 : 5;
-        for (let row = 0; row < pyramidRows; row++) {
+        for (let row = 0; row < pyramidRows && pyramidCount < maxInvaders; row++) {
           const colsInRow = row + 1;
           const startCol = 5 - row;
-          for (let col = 0; col < colsInRow; col++) {
+          for (let col = 0; col < colsInRow && pyramidCount < maxInvaders; col++) {
             const spawnY = canvasHeight - 350 + (row * 35);
             invaders.push(createInvader((startCol + col) * 45 + 30, spawnY, row, 'pyramid'));
+            pyramidCount++;
           }
         }
         break;
         
       case 'diamond':
-        // 🎯 REBALANCED: Diamond formation - fewer invaders for early waves
+        // 🎯 REBALANCED: Diamond formation - limited invaders for early waves
         const diamondPositions = [
           [4, 0], [5, 0],
           [3, 1], [4, 1], [5, 1], [6, 1],
@@ -4400,7 +4446,9 @@ let reloadButtonInterval = null;
           [3, 3], [4, 3], [5, 3], [6, 3],
           [4, 4], [5, 4]
         ];
-        diamondPositions.forEach(([col, row]) => {
+        // Limit invaders based on wave difficulty
+        const diamondLimited = diamondPositions.slice(0, maxInvaders);
+        diamondLimited.forEach(([col, row]) => {
           const spawnY = canvasHeight - 350 + (row * 35);
           invaders.push(createInvader(col * 45 + 30, spawnY, row, 'diamond'));
         });
@@ -6830,8 +6878,8 @@ let reloadButtonInterval = null;
     lastKillTime = currentTime;
     comboTimer = currentTime;
     
-    // Calculate multiplier (max 3x for balance)
-    comboMultiplier = Math.min(1 + (killCombo * 0.1), 3);
+    // Calculate multiplier (max 4x for balance - MUCH HARDER)
+    comboMultiplier = Math.min(1 + (killCombo * 0.05), 4);
     
     console.log(`🔥 Kill Combo: ${killCombo} (${comboMultiplier}x multiplier)`);
   }
@@ -6967,6 +7015,21 @@ let reloadButtonInterval = null;
   // Load existing achievements at game start to prevent spam
   async function loadExistingAchievements() {
     try {
+      // 🔧 LOCAL DEVELOPMENT BYPASS - Use test achievements for local testing
+      const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (isLocalDevelopment) {
+        console.log('🔓 Local development - using test achievements');
+        
+        // Simulate some already unlocked achievements for testing (REAL ACHIEVEMENTS)
+        achievements.firstKill = true;
+        achievements.score2500 = true;
+        achievements.perfectWave = true;
+        achievements.comboMaster8 = true;
+        
+        console.log('🏆 Local test achievements loaded:', Object.keys(achievements).filter(key => achievements[key]));
+        return;
+      }
+      
       const discordId = localStorage.getItem('discord_id');
       if (!discordId) return;
       
@@ -7142,53 +7205,53 @@ let reloadButtonInterval = null;
   }
   
   function checkAchievements() {
-    // First Kill Achievement
-    if (totalKills >= 1 && !achievements.firstKill) {
+    // First Kill Achievement - MUCH HARDER: Need 100 kills total
+    if (totalKills >= 100 && !achievements.firstKill) {
       achievements.firstKill = true;
-      createAchievementPopup('First Blood', 'Destroyed your first invader!', '🎯');
+      createAchievementPopup('First Blood', 'Destroyed your first 100 invaders!', '🎯');
     }
     
     // Kill Streak Achievements (MUCH HARDER - Need perfect gameplay)
-    if (killCombo >= 15 && !achievements.killStreak8) {
+    if (killCombo >= 25 && !achievements.killStreak8) {
       achievements.killStreak8 = true;
-      createAchievementPopup('Killing Spree', '15 kills in a row!', '🔥');
+      createAchievementPopup('Killing Spree', '25 kills in a row!', '🔥');
     }
     
-    if (killCombo >= 30 && !achievements.killStreak15) {
+    if (killCombo >= 50 && !achievements.killStreak15) {
       achievements.killStreak15 = true;
-      createAchievementPopup('Rampage', '30 kills in a row!', '⚡');
+      createAchievementPopup('Rampage', '50 kills in a row!', '⚡');
     }
     
-    if (killCombo >= 50 && !achievements.killStreak25) {
+    if (killCombo >= 100 && !achievements.killStreak25) {
       achievements.killStreak25 = true;
-      createAchievementPopup('Unstoppable', '50 kills in a row!', '💀');
+      createAchievementPopup('Unstoppable', '100 kills in a row!', '💀');
     }
     
     // Score Achievements (MUCH HARDER - End-game scores)
-    if (spaceInvadersScore >= 5000 && !achievements.score2500) {
+    if (spaceInvadersScore >= 30000 && !achievements.score2500) {
       achievements.score2500 = true;
-      createAchievementPopup('Getting Started', 'Reached 5,000 points!', '⭐');
+      createAchievementPopup('Getting Started', 'Reached 30,000 points!', '⭐');
     }
     
-    if (spaceInvadersScore >= 15000 && !achievements.score7500) {
+    if (spaceInvadersScore >= 75000 && !achievements.score7500) {
       achievements.score7500 = true;
-      createAchievementPopup('Rising Star', 'Reached 15,000 points!', '🌟');
+      createAchievementPopup('Rising Star', 'Reached 75,000 points!', '🌟');
     }
     
-    if (spaceInvadersScore >= 30000 && !achievements.score15000) {
+    if (spaceInvadersScore >= 150000 && !achievements.score15000) {
       achievements.score15000 = true;
-      createAchievementPopup('Space Ace', 'Reached 30,000 points!', '🚀');
+      createAchievementPopup('Space Ace', 'Reached 150,000 points!', '🚀');
     }
     
-    if (spaceInvadersScore >= 60000 && !achievements.score30000) {
+    if (spaceInvadersScore >= 300000 && !achievements.score30000) {
       achievements.score30000 = true;
-      createAchievementPopup('Legend', 'Reached 60,000 points!', '👑');
+      createAchievementPopup('Legend', 'Reached 300,000 points!', '👑');
     }
     
-    // Perfect Wave Achievement (HARDER - Need 3 perfect waves)
-    if (perfectWaves >= 3 && !achievements.perfectWave) {
+    // Perfect Wave Achievement (HARDER - Need 5 perfect waves)
+    if (perfectWaves >= 5 && !achievements.perfectWave) {
       achievements.perfectWave = true;
-      createAchievementPopup('Perfect Wave', 'Cleared 3 waves without taking damage!', '✨');
+      createAchievementPopup('Perfect Wave', 'Cleared 5 waves without taking damage!', '✨');
     }
     
     // No Hit Run Achievement (MUCH HARDER - 5 minutes)
@@ -7197,17 +7260,17 @@ let reloadButtonInterval = null;
       createAchievementPopup('Untouchable', '5 minutes without taking damage!', '🛡️');
     }
     
-    // Combo Master Achievement (HARDER - Need 3x multiplier consistently)
-    if (comboMultiplier >= 3 && !achievements.comboMaster8) {
+    // Combo Master Achievement (MUCH HARDER - Need 4x multiplier consistently)
+    if (comboMultiplier >= 4 && !achievements.comboMaster8) {
       achievements.comboMaster8 = true;
-      createAchievementPopup('Combo Master', 'Achieved 3x score multiplier!', '💥');
+      createAchievementPopup('Combo Master', 'Achieved 4x score multiplier!', '💥');
     }
     
-    // Speed Demon Achievement (MUCH HARDER - 30k in 5 minutes)
+    // Speed Demon Achievement (MUCH HARDER - 50k in 3 minutes)
     const gameTime = Date.now() - gameStartTime;
-    if (spaceInvadersScore >= 30000 && gameTime < 300000 && !achievements.speedDemon20k) { // 5 minutes
+    if (spaceInvadersScore >= 50000 && gameTime < 180000 && !achievements.speedDemon20k) { // 3 minutes
       achievements.speedDemon20k = true;
-      createAchievementPopup('Speed Demon', 'Reached 30k points in under 5 minutes!', '⚡');
+      createAchievementPopup('Speed Demon', 'Reached 50k points in under 3 minutes!', '⚡');
     }
     
     // Survivor Achievement (MUCH HARDER - 20 minutes)
@@ -7216,15 +7279,83 @@ let reloadButtonInterval = null;
       createAchievementPopup('Ultimate Survivor', 'Survived for 20 minutes!', '🏆');
     }
     
-    // Boss Kill Achievements (HARDER - Need to reach later bosses)
+    // Boss Kill Achievements (BOSS DESTRUCTION TITLES - 4 Levels)
+    if (bossesKilled >= 1 && !achievements.bossKiller1) {
+      achievements.bossKiller1 = true;
+      createAchievementPopup('Boss Hunter', 'Defeated Boss 1 - First Victory!', '⚔️');
+    }
+    
+    if (bossesKilled >= 3 && !achievements.bossKiller2) {
+      achievements.bossKiller2 = true;
+      createAchievementPopup('Boss Conqueror', 'Defeated Boss 3 - Rising Power!', '🏹');
+    }
+    
     if (bossesKilled >= 5 && !achievements.bossKiller3) {
       achievements.bossKiller3 = true;
-      createAchievementPopup('Boss Slayer', 'Defeated Boss 5!', '🗡️');
+      createAchievementPopup('Boss Slayer', 'Defeated Boss 5 - Master Warrior!', '🗡️');
     }
     
     if (bossesKilled >= 8 && !achievements.bossKiller4) {
       achievements.bossKiller4 = true;
       createAchievementPopup('Boss Destroyer', 'Defeated Boss 8 - Ultimate Achievement!', '💀');
+    }
+    
+    // Phoenix Swarm Achievements (PHOENIX DESTRUCTION TITLES - 4 Levels)
+    if (phoenixesDestroyed >= 10 && !achievements.phoenixHunter) {
+      achievements.phoenixHunter = true;
+      createAchievementPopup('Phoenix Hunter', 'Destroyed 10 Phoenix birds!', '🔥');
+    }
+    
+    if (phoenixesDestroyed >= 25 && !achievements.phoenixSlayer) {
+      achievements.phoenixSlayer = true;
+      createAchievementPopup('Phoenix Slayer', 'Destroyed 25 Phoenix birds!', '⚡');
+    }
+    
+    if (phoenixesDestroyed >= 50 && !achievements.phoenixDestroyer) {
+      achievements.phoenixDestroyer = true;
+      createAchievementPopup('Phoenix Destroyer', 'Destroyed 50 Phoenix birds!', '💥');
+    }
+    
+    if (phoenixesDestroyed >= 100 && !achievements.phoenixMaster) {
+      achievements.phoenixMaster = true;
+      createAchievementPopup('Phoenix Master', 'Destroyed 100 Phoenix birds - Ultimate Phoenix Hunter!', '👑');
+    }
+    
+    // Phoenix Egg Achievements (EGG DESTRUCTION TITLES - 4 Levels)
+    if (phoenixEggsDestroyed >= 50 && !achievements.eggHunter) {
+      achievements.eggHunter = true;
+      createAchievementPopup('Egg Hunter', 'Destroyed 50 Phoenix eggs!', '🥚');
+    }
+    
+    if (phoenixEggsDestroyed >= 100 && !achievements.eggSlayer) {
+      achievements.eggSlayer = true;
+      createAchievementPopup('Egg Slayer', 'Destroyed 100 Phoenix eggs!', '💣');
+    }
+    
+    if (phoenixEggsDestroyed >= 200 && !achievements.eggDestroyer) {
+      achievements.eggDestroyer = true;
+      createAchievementPopup('Egg Destroyer', 'Destroyed 200 Phoenix eggs!', '💥');
+    }
+    
+    if (phoenixEggsDestroyed >= 500 && !achievements.eggMaster) {
+      achievements.eggMaster = true;
+      createAchievementPopup('Egg Master', 'Destroyed 500 Phoenix eggs - Ultimate Egg Hunter!', '👑');
+    }
+    
+    // Mini-Phoenix Achievements (MINI-PHOENIX DESTRUCTION TITLES - 3 Levels)
+    if (miniPhoenixesDestroyed >= 25 && !achievements.miniPhoenixHunter) {
+      achievements.miniPhoenixHunter = true;
+      createAchievementPopup('Mini-Phoenix Hunter', 'Destroyed 25 Mini-Phoenix!', '🐣');
+    }
+    
+    if (miniPhoenixesDestroyed >= 75 && !achievements.miniPhoenixSlayer) {
+      achievements.miniPhoenixSlayer = true;
+      createAchievementPopup('Mini-Phoenix Slayer', 'Destroyed 75 Mini-Phoenix!', '⚡');
+    }
+    
+    if (miniPhoenixesDestroyed >= 150 && !achievements.miniPhoenixMaster) {
+      achievements.miniPhoenixMaster = true;
+      createAchievementPopup('Mini-Phoenix Master', 'Destroyed 150 Mini-Phoenix - Ultimate Mini-Hunter!', '👑');
     }
   }
   
@@ -7246,6 +7377,11 @@ let reloadButtonInterval = null;
     perfectWaves = 0;
     totalKills = 0;
     noHitTimer = 0;
+    
+    // Reset Phoenix achievement tracking
+    phoenixesDestroyed = 0;
+    phoenixEggsDestroyed = 0;
+    miniPhoenixesDestroyed = 0;
     
     // Reset achievements (optional - keep for session)
     // achievements = { ... }; // Uncomment to reset achievements each game
@@ -10858,6 +10994,15 @@ window.emergencyCollisionCheck = function() {
     }
     
     hasScoreBeenSaved = true; // Mark as saved
+    
+    // 🔧 LOCAL DEVELOPMENT BYPASS - Simulate score saving for local testing
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalDevelopment) {
+      console.log('🔓 Local development - simulating score save');
+      console.log(`💾 Local test: Space Invaders score ${traditionalScore} invaders destroyed = ${Math.round((traditionalScore * 0.001) * 100) / 100} DSPOINC`);
+      console.log('✅ Local test score saved successfully (simulated)');
+      return;
+    }
     
     const discordId = localStorage.getItem('discord_id');
     const discordName = localStorage.getItem('discord_name') || 'Unknown Player';

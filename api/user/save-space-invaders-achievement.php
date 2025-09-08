@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 function getSQLite3Connection() {
     $dbPath = $_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false 
         ? 'db/narrrf_world.sqlite' 
-        : '/data/narrrf_world.sqlite';
+        : '/var/www/html/db/narrrf_world.sqlite';
     
     if (!file_exists($dbPath)) {
         throw new Exception("Database file not found: $dbPath");
