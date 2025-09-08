@@ -84,124 +84,6 @@ require_once 'discord-invite.php';
       color: #fcd34d;
     }
     
-    
-    /* Additional aggressive CSS to prevent any blinking */
-    .fixed.inset-0.bg-black.bg-opacity-50.z-50.flex.items-center.justify-center {
-      transition: none !important;
-      animation: none !important;
-      transform: none !important;
-    }
-    
-    /* Prevent any Tailwind CSS animations */
-    .bg-gray-900.rounded-lg.p-6.max-w-4xl.w-full.mx-4.max-h-\[80vh\].overflow-y-auto {
-      transition: none !important;
-      animation: none !important;
-      transform: none !important;
-    }
-    
-    /* ULTRA-AGGRESSIVE: Fix achievements section blinking/fading */
-    .space-cheese-invaders-achievements {
-      opacity: 1 !important;
-      visibility: visible !important;
-      transition: none !important;
-      animation: none !important;
-      transform: none !important;
-      filter: none !important;
-      backdrop-filter: none !important;
-      will-change: auto !important;
-      contain: none !important;
-    }
-    
-    /* Prevent any opacity changes on achievement elements */
-    .space-cheese-invaders-achievements * {
-      opacity: 1 !important;
-      visibility: visible !important;
-      transition: none !important;
-      animation: none !important;
-      transform: none !important;
-      filter: none !important;
-      backdrop-filter: none !important;
-      will-change: auto !important;
-      contain: none !important;
-    }
-    
-    /* Prevent any CSS animations from Tailwind or other frameworks */
-    .space-cheese-invaders-achievements,
-    .space-cheese-invaders-achievements *,
-    .space-cheese-invaders-achievements *::before,
-    .space-cheese-invaders-achievements *::after {
-      animation-duration: 0s !important;
-      animation-delay: 0s !important;
-      animation-iteration-count: 1 !important;
-      animation-fill-mode: none !important;
-      animation-play-state: paused !important;
-      transition-duration: 0s !important;
-      transition-delay: 0s !important;
-    }
-    
-    /* ULTRA-AGGRESSIVE: Fix achievements modal blinking/fading */
-    #achievementsModal {
-      opacity: 1 !important;
-      visibility: visible !important;
-      transition: none !important;
-      animation: none !important;
-      transform: none !important;
-      filter: none !important;
-      backdrop-filter: none !important;
-      will-change: auto !important;
-      contain: none !important;
-      background-color: rgba(0, 0, 0, 0.5) !important;
-    }
-    
-    /* Prevent any opacity changes on modal elements */
-    #achievementsModal * {
-      opacity: 1 !important;
-      visibility: visible !important;
-      transition: none !important;
-      animation: none !important;
-      transform: none !important;
-      filter: none !important;
-      backdrop-filter: none !important;
-      will-change: auto !important;
-      contain: none !important;
-    }
-    
-    /* Prevent any CSS animations from Tailwind or other frameworks on modal */
-    #achievementsModal,
-    #achievementsModal *,
-    #achievementsModal *::before,
-    #achievementsModal *::after {
-      animation-duration: 0s !important;
-      animation-delay: 0s !important;
-      animation-iteration-count: 1 !important;
-      animation-fill-mode: none !important;
-      animation-play-state: paused !important;
-      transition-duration: 0s !important;
-      transition-delay: 0s !important;
-    }
-    
-    /* Modal hidden state */
-    #achievementsModal.hidden {
-      display: none !important;
-      opacity: 0 !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
-    }
-    
-    /* Modal visible state */
-    #achievementsModal:not(.hidden) {
-      display: flex !important;
-      opacity: 1 !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
-    }
-    
-    /* Override any Tailwind transitions */
-    .fixed.inset-0.bg-black.bg-opacity-50.z-50.flex.items-center.justify-center {
-      transition: none !important;
-      animation: none !important;
-    }
-
     /* Essential animations for professional interface */
     @keyframes fade-in {
       from {
@@ -472,7 +354,15 @@ require_once 'discord-invite.php';
         </button>
         <p class="text-xs text-gray-400 mt-2 italic">Click to load your 5-game missions and achievements</p>
         <p class="text-xs text-blue-400 mt-1">💡 Make sure you're logged in with Discord to see your game stats!</p>
-      </div>
+        
+        <!-- 🏆 Space Invaders Achievements Button -->
+        <div class="mt-4">
+          <button onclick="toggleSpaceInvadersAchievements()" 
+                  class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-yellow-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-2 ring-yellow-400/30">
+            🏆 View Space Invaders Achievements
+          </button>
+          <p class="text-xs text-yellow-400 mt-2 italic">Click to view all 29 Space Invaders achievements</p>
+        </div>
       
       <!-- 🏆 Overall Progress -->
       <div class="mb-6">
@@ -502,8 +392,472 @@ require_once 'discord-invite.php';
       </div>
     </div>
 
-    <!-- 🎯 Skills Section -->
-    <div class="mt-6 bg-gray-700 rounded-lg p-4 shadow-inner">
+    <!-- 🏆 Space Invaders Achievements Section -->
+    <div id="spaceInvadersAchievements" class="mt-6 p-6 bg-gray-800 rounded-lg border border-gray-600 hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-yellow-300">🏆 Space Cheese Invaders Achievements</h3>
+        <button onclick="toggleSpaceInvadersAchievements()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors">
+          ✕ Close
+        </button>
+      </div>
+      
+      <!-- Achievements Content -->
+      <div id="achievementsContent">
+        <!-- Statistics Row -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="bg-yellow-900/20 p-4 rounded-lg border border-yellow-500/30 text-center">
+            <div class="text-yellow-200 text-sm mb-1">Total Achievements</div>
+            <div class="text-white font-bold text-xl" id="totalAchievements">29</div>
+          </div>
+          <div class="bg-green-900/20 p-4 rounded-lg border border-green-500/30 text-center">
+            <div class="text-green-200 text-sm mb-1">Unlocked</div>
+            <div class="text-white font-bold text-xl" id="unlockedAchievements">4</div>
+          </div>
+          <div class="bg-red-900/20 p-4 rounded-lg border border-red-500/30 text-center">
+            <div class="text-red-200 text-sm mb-1">Locked</div>
+            <div class="text-white font-bold text-xl" id="lockedAchievements">25</div>
+          </div>
+          <div class="bg-purple-900/20 p-4 rounded-lg border border-purple-500/30 text-center">
+            <div class="text-purple-200 text-sm mb-1">Progress</div>
+            <div class="text-white font-bold text-xl" id="completionPercentage">14%</div>
+          </div>
+        </div>
+        
+        <!-- Achievements Grid -->
+        <div id="achievementsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <!-- First Blood - Unlocked -->
+          <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 border-yellow-500/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🎯</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">First Blood</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed your first 100 invaders!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">✅ Unlocked 28.1.2024</span>
+                  <div class="text-green-400 text-lg">✓</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Getting Started - Unlocked -->
+          <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 border-yellow-500/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">⭐</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Getting Started</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Reached 30,000 points!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">✅ Unlocked 28.1.2024</span>
+                  <div class="text-green-400 text-lg">✓</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Perfect Wave - Unlocked -->
+          <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 border-yellow-500/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">✨</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Perfect Wave</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Cleared 5 waves without taking damage!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">✅ Unlocked 28.1.2024</span>
+                  <div class="text-green-400 text-lg">✓</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Combo Master - Unlocked -->
+          <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 border-yellow-500/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">💥</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Combo Master</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Achieved 4x score multiplier!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">✅ Unlocked 28.1.2024</span>
+                  <div class="text-green-400 text-lg">✓</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Killing Spree - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🔥</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Killing Spree</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">25 kills in a row!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Rising Star - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🌟</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Rising Star</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Reached 75,000 points!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Boss Hunter - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">⚔️</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Boss Hunter</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Defeated Boss 1 - First Victory!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Phoenix Hunter - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🔥</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Phoenix Hunter</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 10 Phoenix birds!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Egg Hunter - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🥚</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Egg Hunter</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 50 Phoenix eggs!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Boss Conqueror - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🏹</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Boss Conqueror</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Defeated Boss 3 - Rising Power!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Boss Slayer - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🗡️</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Boss Slayer</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Defeated Boss 5 - Master Warrior!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Speed Demon - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">⚡</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Speed Demon</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Reached 50k points in under 3 minutes!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Rampage - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">⚡</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Rampage</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">50 kills in a row!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Space Ace - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🚀</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Space Ace</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Reached 150,000 points!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Untouchable - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🛡️</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Untouchable</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">5 minutes without taking damage!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Ultimate Survivor - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🏆</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Ultimate Survivor</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Survived for 20 minutes!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Unstoppable - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">💀</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Unstoppable</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">100 kills in a row!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Legend - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">👑</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Legend</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Reached 300,000 points!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Boss Destroyer - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">💀</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Boss Destroyer</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Defeated Boss 8 - Ultimate Achievement!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Phoenix Slayer - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">⚡</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Phoenix Slayer</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 25 Phoenix birds!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Phoenix Destroyer - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">💥</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Phoenix Destroyer</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 50 Phoenix birds!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Phoenix Master - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">👑</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Phoenix Master</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 100 Phoenix birds - Ultimate Phoenix Hunter!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Egg Slayer - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">💣</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Egg Slayer</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 100 Phoenix eggs!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Egg Destroyer - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">💥</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Egg Destroyer</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 200 Phoenix eggs!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Egg Master - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">👑</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Egg Master</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 500 Phoenix eggs - Ultimate Egg Hunter!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mini-Phoenix Hunter - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">🐣</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Mini-Phoenix Hunter</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 25 Mini-Phoenix!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mini-Phoenix Slayer - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">⚡</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Mini-Phoenix Slayer</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 75 Mini-Phoenix!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mini-Phoenix Master - Locked -->
+          <div class="bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50 rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl flex-shrink-0">👑</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white text-base mb-2">Mini-Phoenix Master</h3>
+                <p class="text-sm text-gray-300 mb-3 leading-relaxed">Destroyed 150 Mini-Phoenix - Ultimate Mini-Hunter!</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>
+                  <div class="text-gray-600 text-lg">○</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="achievementsLoading" class="text-center py-8 hidden">
+          <div class="text-yellow-300 text-lg">🏆 Loading achievements...</div>
+        </div>
+        
+        <!-- Error State -->
+        <div id="achievementsError" class="text-center py-8 hidden">
+          <div class="text-red-300 text-lg">❌ Failed to load achievements</div>
+          <div class="text-gray-400 text-sm mt-2" id="achievementsErrorMessage"></div>
+        </div>
+      </div>
+    </div>
       <h2 class="font-semibold text-lg mb-2 text-yellow-300">🎯 Skills & Roles</h2>
       <div class="skills-list">
         <!-- Skills will be populated by JavaScript -->
@@ -752,7 +1106,6 @@ require_once 'discord-invite.php';
         </ul>
       </div>
     </div>
-    
   </div>
 </div>
 
@@ -1097,116 +1450,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     // We'll handle the admin redirect after user data is loaded
   }
 
-  // 🔧 LOCAL TESTING BYPASS - Detect environment and use appropriate API endpoints
-  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const API_BASE_URL = isLocalDevelopment ? '' : 'https://narrrfs.world';
-  
-  console.log(`🔧 Profile Environment: ${isLocalDevelopment ? 'LOCAL' : 'PRODUCTION'}`);
-  console.log(`🔧 API Base URL: ${API_BASE_URL || 'Current domain'}`);
-  console.log(`🔧 Hostname: ${window.location.hostname}`);
-  console.log(`🔧 Full URL: ${window.location.href}`);
-
-  // 🔧 LOCAL TESTING BYPASS - Simulate logged-in user for local development
-  if (isLocalDevelopment) {
-    console.log('🔓 Local development detected - simulating logged-in user for testing');
-    // Set up local test user data
-    window.localTestUser = {
-      username: 'Local Tester',
-      discord_id: 'local_tester_123',
-      avatar_url: 'https://cdn.discordapp.com/avatars/local_tester_123/test.png',
-      email: 'local@test.com',
-      guilds: ['Test Guild'],
-      traits: ['Local Developer', 'Test User'],
-      total_dspoinc: 5000,
-      total_spent: 1000,
-      net_worth: 4000,
-      member_since: '2024-01-01'
-    };
-    
-    // Set global flag to prevent any API calls
-    window.isLocalDevelopment = true;
-    
-    // 🔧 SMART LOCAL BYPASS - Allow specific API calls, block others
-    const originalFetch = window.fetch;
-    window.fetch = function(url, options) {
-      if (window.isLocalDevelopment) {
-        const urlString = url.toString();
-        
-        // Allow specific API calls that we need for local testing
-        const allowedAPIs = [
-          '/api/user-game-missions.php',
-          '/api/user/get-space-invaders-achievements.php',
-          '/api/user/profile.php',
-          '/api/user/details.php'
-        ];
-        
-        const isAllowed = allowedAPIs.some(allowedAPI => urlString.includes(allowedAPI));
-        
-        if (isAllowed) {
-          console.log('🔧 Local development - allowing API call to:', url);
-          return originalFetch.call(this, url, options);
-        } else {
-          console.log('🔧 Local development - blocking API call to:', url);
-          return Promise.resolve(new Response(JSON.stringify({
-            success: false,
-            error: 'Local development - API call blocked'
-          }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-          }));
-        }
-      }
-      return originalFetch(url, options);
-    };
-    
-    // 🔧 BYPASS API CALLS ENTIRELY FOR LOCAL DEVELOPMENT
-    console.log('🔓 Using local test user data - bypassing all API calls');
-    const user = window.localTestUser;
-    setText('username', user.username);
-    setText('welcome-name', user.username);
-    setText('email', user.email);
-    setText('guilds', user.guilds.join(', '));
-    setText('traits', user.traits.join(', '));
-    setText('total-dspoinc', user.total_dspoinc.toLocaleString());
-    setText('total-spent', user.total_spent.toLocaleString());
-    setText('net-worth', user.net_worth.toLocaleString());
-    setText('member-since', user.member_since);
-    
-    // Set avatar
-    if (avatar) {
-      avatar.src = user.avatar_url;
-      avatar.alt = user.username;
-    }
-    
-    // Hide login link and show user info
-    if (loginLink) {
-      loginLink.style.display = 'none';
-      // Also disable the href to prevent accidental clicks
-      loginLink.href = '#';
-      loginLink.onclick = function(e) {
-        e.preventDefault();
-        console.log('🔓 Local development - login disabled');
-        return false;
-      };
-    }
-    
-    // Load Space Invaders achievements for local test user
-    await loadSpaceInvadersAchievements(user.discord_id);
-    
-    // Add local development indicator
-    addLocalDevelopmentIndicator();
-    
-    return; // Exit early with local test data - NO API CALLS
-  }
-
     try {
       // Enhanced profile fetch - get basic profile + inventory + purchase history
       const [profileRes, enhancedProfileRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/user/profile.php`, { 
+        fetch('https://narrrfs.world/api/user/profile.php', { 
        credentials: 'include',
        headers: { 'Accept': 'application/json' }
         }),
-        fetch(`${API_BASE_URL}/api/user/enhanced-profile.php`, { 
+        fetch('https://narrrfs.world/api/user/enhanced-profile.php', { 
           credentials: 'include',
           headers: { 'Accept': 'application/json' }
         })
@@ -1215,40 +1466,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       // Check profile response first
       if (!profileRes.ok) {
         if (profileRes.status === 401) {
-        // Not logged in - show login UI or local test user
-        if (isLocalDevelopment && window.localTestUser) {
-          console.log('🔓 Using local test user data for development');
-          // Use local test user data
-          const user = window.localTestUser;
-          setText('username', user.username);
-          setText('welcome-name', user.username);
-          setText('email', user.email);
-          setText('guilds', user.guilds.join(', '));
-          setText('traits', user.traits.join(', '));
-          setText('total-dspoinc', user.total_dspoinc.toLocaleString());
-          setText('total-spent', user.total_spent.toLocaleString());
-          setText('net-worth', user.net_worth.toLocaleString());
-          setText('member-since', user.member_since);
-          
-          // Set avatar
-          if (avatar) {
-            avatar.src = user.avatar_url;
-            avatar.alt = user.username;
-          }
-          
-          // Hide login link and show user info
-          if (loginLink) loginLink.style.display = 'none';
-          
-          // Load Space Invaders achievements for local test user
-          await loadSpaceInvadersAchievements(user.discord_id);
-          
-          return; // Exit early with local test data
-        } else {
-          // Production mode - show guest UI
-          setText('username', 'Guest#0000');
-          setText('welcome-name', 'Guest');
-          setText('email', 'Please log in');
-          setText('guilds', 'No guilds connected');
+        // Not logged in - show login UI
+        setText('username', 'Guest#0000');
+        setText('welcome-name', 'Guest');
+        setText('email', 'Please log in');
+        setText('guilds', 'No guilds connected');
         setText('traits', 'No traits available');
         setText('user-roles', 'No roles');
         setText('wallet-address', 'Wallet not linked');
@@ -1328,7 +1550,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Load 5-game missions data
     try {
-      const missionsRes = await fetch(`${API_BASE_URL}/api/user-game-missions.php`, {
+      const missionsRes = await fetch('/api/user-game-missions.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.discord_id })
@@ -1421,7 +1643,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
       }, 5000);
     }
-    }
 
    } catch (err) {
      console.error('Profile fetch failed:', err);
@@ -1454,40 +1675,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 <!-- 🧠 Load Scroll Scripts -->
 <script src="scripts/tetris-scroll.js?v=9.9"></script>
 <script src="scripts/snake-scroll.js?v=1.1"></script>
-<script>
-  // 🔧 FIX: Wrap script loading in error handling to prevent modal blinking
-  try {
-    const script = document.createElement('script');
-    script.src = 'scripts/space-cheese-invaders.js?v=1.1';
-    script.onerror = function() {
-      console.error('❌ Failed to load space-cheese-invaders.js');
-      // Create fallback functions to prevent errors
-      window.initSpaceInvaders = function() {
-        console.log('🔧 Fallback initSpaceInvaders called - game script not loaded');
-        alert('🎮 Space Invaders game is currently unavailable. Please try again later.');
-      };
-    };
-    script.onload = function() {
-      console.log('✅ space-cheese-invaders.js loaded successfully');
-      // Check if initSpaceInvaders is available
-      if (typeof window.initSpaceInvaders !== 'function') {
-        console.error('❌ initSpaceInvaders is NOT available after script load');
-        window.initSpaceInvaders = function() {
-          console.log('🔧 Fallback initSpaceInvaders called - game script not loaded');
-          alert('🎮 Space Invaders game is currently unavailable. Please try again later.');
-        };
-      }
-    };
-    document.head.appendChild(script);
-  } catch (error) {
-    console.error('❌ Error loading space-cheese-invaders.js:', error);
-    // Create fallback functions to prevent errors
-    window.initSpaceInvaders = function() {
-      console.log('🔧 Fallback initSpaceInvaders called - game script not loaded');
-      alert('🎮 Space Invaders game is currently unavailable. Please try again later.');
-    };
-  }
-</script>
+        <script src="scripts/space-cheese-invaders.js?v=1.1" onerror="console.error('❌ Failed to load space-cheese-invaders.js')" onload="console.log('✅ space-cheese-invaders.js loaded successfully')"></script>
+        <script>
+          // Check if initSpaceInvaders is available immediately after script loads
+          console.log('🔍 Checking initSpaceInvaders availability after script load...');
+          console.log('🔍 window.initSpaceInvaders type:', typeof window.initSpaceInvaders);
+          if (typeof window.initSpaceInvaders === 'function') {
+            console.log('✅ initSpaceInvaders is available after script load');
+          } else {
+            console.error('❌ initSpaceInvaders is NOT available after script load');
+          }
+        </script>
 
 <!-- 🏆 Leaderboard Logic -->
 <script>
@@ -1607,19 +1805,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       spaceInvadersBtn.addEventListener("click", () => {
         console.log('🎮 Space Invaders button clicked');
         console.log('🔍 window.initSpaceInvaders exists:', typeof window.initSpaceInvaders);
-        try {
-          if (window.initSpaceInvaders) {
-            console.log('🚀 Calling window.initSpaceInvaders()');
-            window.initSpaceInvaders();
-          } else {
-            console.error('❌ window.initSpaceInvaders is not available');
-            // 🔧 FIX: Show user-friendly message instead of breaking
-            alert('🎮 Space Invaders game is currently unavailable. Please try again later.');
-          }
-        } catch (error) {
-          console.error('❌ Error calling initSpaceInvaders:', error);
-          // 🔧 FIX: Show user-friendly message instead of breaking
-          alert('🎮 Space Invaders game encountered an error. Please try again later.');
+        if (window.initSpaceInvaders) {
+          console.log('🚀 Calling window.initSpaceInvaders()');
+          window.initSpaceInvaders();
+        } else {
+          console.error('❌ window.initSpaceInvaders is not available');
         }
         spaceInvadersBtn.disabled = true;
         spaceInvadersBtn.textContent = "🕹️ Playing...";
@@ -1647,7 +1837,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 2. Fetch user profile data
   let user;
   try {
-    const res = await fetch(`${API_BASE_URL}/api/user/profile.php?user_id=${userId}`);
+    const res = await fetch(`/api/user/profile.php?user_id=${userId}`);
     user = await res.json();
     if (user.error) throw new Error(user.error);
   } catch (e) {
@@ -1757,7 +1947,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.error('pointsGraph canvas missing!');
     return;
   }
-  fetch(`${API_BASE_URL}/api/discord/score-history.php?user_id=${userId}`)
+  fetch(`/api/discord/score-history.php?user_id=${userId}`)
     .then(res => res.json())
     .then(json => {
       if (msgBox) msgBox.classList.add('hidden');
@@ -1834,7 +2024,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Fetch user profile and set balances
   if (userId) {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/user/profile.php?user_id=` + encodeURIComponent(userId));
+      const res = await fetch('/api/user/profile.php?user_id=' + encodeURIComponent(userId));
       user = await res.json();
 
       // Set DSPOINC balance
@@ -1847,7 +2037,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   // 🆘 ENHANCED: Also fetch DSPOINC balance from score-total API for better data
   if (userId) {
     try {
-      const balanceRes = await fetch(`${API_BASE_URL}/api/user/score-total.php`, { credentials: 'include' });
+      const balanceRes = await fetch('/api/user/score-total.php', { credentials: 'include' });
       if (balanceRes.ok) {
         const balanceData = await balanceRes.json();
         const dspoincBalance = balanceData.total_dspoinc || 0;
@@ -1866,7 +2056,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Fetch recent adjustments
 // Fetch recent adjustments
 if (user && user.discord_id) {
-  fetch(`${API_BASE_URL}/api/user/recent-adjustments.php`, { credentials: 'include' })
+  fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
     .then(res => res.json())
     .then(response => {
       const recentList = document.getElementById('recentAdjustments');
@@ -1907,7 +2097,7 @@ if (user && user.discord_id) {
   // 2. Load and display quests for this user
   if (userId) {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/user/quests.php?user_id=` + encodeURIComponent(userId));
+      const res = await fetch('/api/user/quests.php?user_id=' + encodeURIComponent(userId));
       const data = await res.json();
       const questList = document.getElementById('user-quests-list');
       if (!questList) return;
@@ -1970,7 +2160,7 @@ window.claimQuest = async function(questId, btn) {
   btn.innerText = "Claiming...";
   const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
   try {
-    const res = await fetch(`${API_BASE_URL}/api/user/claim-quest.php`, {
+    const res = await fetch('/api/user/claim-quest.php', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: `user_id=${encodeURIComponent(userId)}&quest_id=${encodeURIComponent(questId)}`
@@ -1992,24 +2182,6 @@ window.claimQuest = async function(questId, btn) {
 
 // 🎯 WL Role Button Logic
 async function checkWLRoleAndShowButton() {
-    // 🔧 LOCAL TESTING BYPASS - Skip Discord role checking in local development
-    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (isLocalDevelopment) {
-        console.log('🔓 Local development - bypassing WL role check');
-        const statusMessage = document.getElementById('wlStatusMessage');
-        const checkButton = document.getElementById('checkWLButton');
-        
-        if (statusMessage) {
-            statusMessage.innerHTML = '<div class="text-center text-green-400">✅ Local Development Mode - WL role check bypassed</div>';
-            statusMessage.classList.remove('hidden');
-        }
-        if (checkButton) {
-            checkButton.disabled = false;
-            checkButton.textContent = '✅ Local Mode';
-        }
-        return;
-    }
-    
     const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
     const statusMessage = document.getElementById('wlStatusMessage');
     const checkButton = document.getElementById('checkWLButton');
@@ -2043,7 +2215,7 @@ async function checkWLRoleAndShowButton() {
     try {
         // First, sync roles from Discord to ensure local database is up-to-date
         console.log('🔄 Syncing roles from Discord...');
-        const syncResponse = await fetch(`${API_BASE_URL}/api/auth/sync-role.php`);
+        const syncResponse = await fetch('/api/auth/sync-role.php');
         
         if (!syncResponse.ok) {
             console.warn('⚠️ Role sync failed, continuing with local check...');
@@ -2052,7 +2224,7 @@ async function checkWLRoleAndShowButton() {
         }
         
         // Now check roles from the local database (which should be up-to-date)
-        const roleRes = await fetch(`${API_BASE_URL}/api/user/roles.php`);
+        const roleRes = await fetch('/api/user/roles.php');
         const roleData = await roleRes.json();
         console.log('Role data received:', roleData);
         console.log('Available roles:', roleData.roles);
@@ -2187,7 +2359,7 @@ async function verifyNFTs() {
       try {
         console.log(`🔍 Checking ${collectionInfo.name} collection...`);
         
-        const response = await fetch(`${API_BASE_URL}/api/wallet/get-nfts.php?wallet=${connectedWalletAddress}&collection=${collectionAddress}`);
+        const response = await fetch(`/api/wallet/get-nfts.php?wallet=${connectedWalletAddress}&collection=${collectionAddress}`);
         
         if (!response.ok) {
           console.warn(`⚠️ HTTP error ${response.status} for ${collectionInfo.name}`);
@@ -2305,7 +2477,7 @@ async function verifyWithBackend(walletAddress, nfts) {
     
     // Verify each collection
     for (const [collectionRole, collectionNFTs] of Object.entries(nftsByCollection)) {
-      const response = await fetch(`${API_BASE_URL}/api/user/verify-nft-holder.php`, {
+      const response = await fetch('/api/user/verify-nft-holder.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2450,7 +2622,7 @@ async function checkTrackingStatus() {
   try {
     console.log('🔍 Checking tracking status for user:', discordId);
     
-    const response = await fetch(`${API_BASE_URL}/api/debug-user-tracking.php`, {
+    const response = await fetch('/api/debug-user-tracking.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: discordId })
@@ -2777,12 +2949,6 @@ function getGameStats(gameKey, game) {
           <div class="text-blue-300">Best Score: ${stats.best_score ? stats.best_score.toLocaleString() : 'N/A'}</div>
           <div class="text-green-300">Total Games: ${stats.total_games || 0}</div>
           <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
-          <div class="text-purple-300 mt-2">
-            <button onclick="toggleSpaceInvadersAchievements()" 
-                    class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded">
-              🏆 View Achievements
-            </button>
-          </div>
         `;
         break;
     case 'cheese_hunt':
@@ -2895,71 +3061,6 @@ async function loadGameMissions() {
   try {
     console.log('🎮 Loading game missions...');
     
-    // 🔧 LOCAL DEVELOPMENT BYPASS - Use test data
-    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (isLocalDevelopment) {
-      console.log('🔓 Local development - using test missions data');
-      
-      const testMissionsData = {
-        success: true,
-        games: {
-          tetris: {
-            total_games: 15,
-            best_score: 12500,
-            dspoinc_earned: 1250,
-            season_data: {
-              total_games: 15,
-              best_score: 12500,
-              dspoinc_earned: 1250
-            }
-          },
-          snake: {
-            total_games: 8,
-            best_score: 8500,
-            dspoinc_earned: 850,
-            season_data: {
-              total_games: 8,
-              best_score: 8500,
-              dspoinc_earned: 850
-            }
-          },
-          space_invaders: {
-            total_games: 12,
-            best_score: 15000,
-            dspoinc_earned: 1500,
-            season_data: {
-              total_games: 12,
-              best_score: 15000,
-              dspoinc_earned: 1500
-            }
-          },
-          cheese_hunt: {
-            total_clicks: 250,
-            quest_clicks: 45,
-            dspoinc_earned: 500,
-            current_data: {
-              total_clicks: 250,
-              quest_clicks: 45,
-              dspoinc_earned: 500
-            }
-          },
-          discord_race: {
-            total_races: 6,
-            wins: 2,
-            dspoinc_earned: 300,
-            race_data: {
-              total_races: 6,
-              wins: 2,
-              dspoinc_earned: 300
-            }
-          }
-        }
-      };
-      
-      displayGameMissions(testMissionsData);
-      return;
-    }
-    
     // Get the user's Discord ID from localStorage or the page
     let discordId = localStorage.getItem('discord_id');
     
@@ -2987,7 +3088,7 @@ async function loadGameMissions() {
     console.log('🎮 Discord ID length:', discordId.length);
     console.log('🎮 Discord ID value:', JSON.stringify(discordId));
     
-    const response = await fetch(`${API_BASE_URL}/api/user-game-missions.php?discord_id=${discordId}`, {
+    const response = await fetch(`/api/user-game-missions.php?discord_id=${discordId}`, {
       credentials: 'include',
       headers: { 'Accept': 'application/json' }
     });
@@ -3009,11 +3110,11 @@ async function loadGameMissions() {
     if (data.success && data.games) {
       // API returns data directly in data.games format
       console.log('✅ Using data.games format:', data.games);
-      displayGameMissions(data);
+      displayMissions(data);
     } else if (data.games) {
       // Fallback for direct response format
       console.log('✅ Using direct games format:', data.games);
-      displayGameMissions(data);
+      displayMissions(data);
     } else {
       console.error('❌ No games data found in response:', {
         success: data.success,
@@ -3025,8 +3126,212 @@ async function loadGameMissions() {
     }
   } catch (error) {
     console.error('❌ Error loading game missions:', error);
-    displayGameMissionsError(error.message, 'Try refreshing the page or check your connection.');
+    displayMissionsError(error.message, 'Try refreshing the page or check your connection.');
   }
+}
+
+// 🏆 Space Invaders Achievements Toggle Function
+function toggleSpaceInvadersAchievements() {
+  const achievementsSection = document.getElementById('spaceInvadersAchievements');
+  
+  console.log('🏆 Toggle clicked, current visibility:', !achievementsSection.classList.contains('hidden'));
+  
+  if (achievementsSection.classList.contains('hidden')) {
+    // Show achievements
+    achievementsSection.classList.remove('hidden');
+    console.log('🏆 Achievements shown');
+    
+    // Load achievements data
+    loadSpaceInvadersAchievements();
+  } else {
+    // Hide achievements
+    achievementsSection.classList.add('hidden');
+    console.log('🏆 Achievements hidden');
+  }
+}
+
+// 🏆 Load Space Invaders Achievements
+async function loadSpaceInvadersAchievements() {
+  try {
+    console.log('🏆 Loading Space Invaders achievements...');
+    
+    // Check if we're in local development
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    if (isLocalDevelopment) {
+      console.log('🔓 Local development - using test achievement data');
+      
+      // Use test data for local development
+      const testAchievements = {
+        success: true,
+        achievements: [
+          {
+            achievement_key: 'first_kill',
+            achievement_title: 'First Blood',
+            achievement_description: 'Destroyed your first 100 invaders!',
+            achievement_icon: '🎯',
+            unlocked_at: '2025-01-28 10:30:00'
+          },
+          {
+            achievement_key: 'score_2500',
+            achievement_title: 'Getting Started',
+            achievement_description: 'Reached 30,000 points!',
+            achievement_icon: '⭐',
+            unlocked_at: '2025-01-28 11:15:00'
+          },
+          {
+            achievement_key: 'perfect_wave',
+            achievement_title: 'Perfect Wave',
+            achievement_description: 'Cleared 5 waves without taking damage!',
+            achievement_icon: '✨',
+            unlocked_at: '2025-01-28 12:00:00'
+          },
+          {
+            achievement_key: 'combo_master_8',
+            achievement_title: 'Combo Master',
+            achievement_description: 'Achieved 4x score multiplier!',
+            achievement_icon: '💥',
+            unlocked_at: '2025-01-28 12:45:00'
+          }
+        ],
+        stats: {
+          total_achievements: 29,
+          unlocked_achievements: 4,
+          locked_achievements: 25,
+          completion_percentage: 14
+        }
+      };
+      
+      console.log('🔓 About to call displayAchievements with test data');
+      displayAchievements(testAchievements);
+      return;
+    }
+    
+    // Get Discord ID from localStorage
+    const discordId = localStorage.getItem('discord_id');
+    if (!discordId) {
+      console.log('🏆 No Discord ID found, cannot load achievements');
+      return;
+    }
+    
+    // Load achievements from API
+    const response = await fetch(`${API_BASE_URL}/api/user/get-space-invaders-achievements.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: discordId })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('🏆 Achievements loaded from API:', data);
+      displayAchievements(data);
+    } else {
+      console.error('🏆 Failed to load achievements:', response.statusText);
+    }
+    
+  } catch (error) {
+    console.error('🏆 Error loading achievements:', error);
+  }
+}
+
+// 🏆 Display Achievements
+function displayAchievements(data) {
+  console.log('🏆 displayAchievements called with data:', data);
+  
+  if (!data || !data.success) {
+    console.error('🏆 Invalid achievements data');
+    return;
+  }
+  
+  const achievements = data.achievements || [];
+  const stats = data.stats || {};
+  
+  console.log('🔓 Data structure check:', {
+    hasData: !!data,
+    hasStats: !!stats,
+    hasAchievements: !!achievements,
+    statsKeys: Object.keys(stats),
+    achievementsLength: achievements.length
+  });
+  
+  // Find the main achievements section
+  const achievementsSection = document.getElementById('spaceInvadersAchievements');
+  if (!achievementsSection) {
+    console.error('❌ displayAchievements: spaceInvadersAchievements section not found!');
+    return;
+  }
+  
+  console.log('🔓 Found achievements section:', !!achievementsSection);
+  
+  // Update statistics
+  const totalEl = achievementsSection.querySelector('#totalAchievements');
+  const unlockedEl = achievementsSection.querySelector('#unlockedAchievements');
+  const lockedEl = achievementsSection.querySelector('#lockedAchievements');
+  const progressEl = achievementsSection.querySelector('#completionPercentage');
+  
+  if (totalEl) totalEl.textContent = stats.total_achievements || 29;
+  if (unlockedEl) unlockedEl.textContent = stats.unlocked_achievements || 0;
+  if (lockedEl) lockedEl.textContent = stats.locked_achievements || 25;
+  if (progressEl) progressEl.textContent = (stats.completion_percentage || 0) + '%';
+  
+  console.log('🔓 Updated stats with:', {
+    total_achievements: stats.total_achievements || 29,
+    unlocked_achievements: stats.unlocked_achievements || 0,
+    locked_achievements: stats.locked_achievements || 25,
+    completion_percentage: stats.completion_percentage || 0
+  });
+  
+  // Update achievement cards based on unlocked status
+  const unlockedKeys = achievements.map(a => a.achievement_key);
+  
+  // Update each achievement card
+  const achievementCards = achievementsSection.querySelectorAll('.bg-gradient-to-br');
+  achievementCards.forEach(card => {
+    const titleElement = card.querySelector('h3');
+    if (titleElement) {
+      const title = titleElement.textContent.trim();
+      const achievementKey = getAchievementKeyFromTitle(title);
+      
+      if (achievementKey && unlockedKeys.includes(achievementKey)) {
+        // Mark as unlocked
+        card.className = card.className.replace('from-gray-800/30 to-gray-700/30 border-gray-600/50', 'from-yellow-900/30 to-yellow-700/30 border-yellow-500/50');
+        
+        const statusSpan = card.querySelector('.text-xs');
+        const statusIcon = card.querySelector('.text-lg');
+        
+        if (statusSpan) {
+          statusSpan.textContent = '✅ Unlocked ' + new Date().toLocaleDateString();
+          statusSpan.className = 'text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded';
+        }
+        
+        if (statusIcon) {
+          statusIcon.textContent = '✓';
+          statusIcon.className = 'text-green-400 text-lg';
+        }
+      }
+    }
+  });
+  
+  console.log('✅ Achievements displayed successfully');
+}
+
+// 🏆 Get achievement key from title (helper function)
+function getAchievementKeyFromTitle(title) {
+  const keyMap = {
+    'First Blood': 'first_kill',
+    'Getting Started': 'score_2500',
+    'Perfect Wave': 'perfect_wave',
+    'Combo Master': 'combo_master_8',
+    'Killing Spree': 'kill_streak_8',
+    'Rising Star': 'score_7500',
+    'Boss Hunter': 'boss_hunter_1',
+    'Phoenix Hunter': 'phoenix_hunter_10',
+    'Egg Hunter': 'egg_hunter_50'
+  };
+  
+  return keyMap[title] || null;
 }
 
 // Function to format date in short format
@@ -3044,780 +3349,7 @@ function formatDateShort(dateString) {
   }
 }
 
-// Function to display game missions data
-function displayGameMissions(data) {
-  console.log('🎮 Displaying game missions:', data);
-  
-  const missionsSection = document.getElementById('missions-section');
-  if (!missionsSection) {
-    console.error('❌ Missions section not found');
-    return;
-  }
-  
-  // Hide the load button
-  const loadButton = missionsSection.querySelector('button');
-  if (loadButton) {
-    loadButton.style.display = 'none';
-  }
-  
-  // Create missions display HTML
-  let missionsHTML = `
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold text-green-300 mb-3">🎯 Your Game Progress</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  `;
-  
-  // Display each game's data
-  const games = data.games || {};
-  const gameOrder = ['tetris', 'snake', 'space_invaders', 'cheese_hunt', 'discord_race'];
-  
-  gameOrder.forEach(gameKey => {
-    const gameData = games[gameKey];
-    if (!gameData) return;
-    
-    let gameHTML = '';
-    let gameTitle = '';
-    let gameIcon = '';
-    
-    switch (gameKey) {
-      case 'tetris':
-        gameTitle = 'Tetris';
-        gameIcon = '🧩';
-        gameHTML = `
-          <div class="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-lg p-4 border border-blue-500/30">
-            <div class="flex items-center mb-3">
-              <div class="text-2xl mr-2">${gameIcon}</div>
-              <h4 class="font-semibold text-blue-300">${gameTitle}</h4>
-            </div>
-            <div class="space-y-2 text-sm">
-              <div class="text-blue-200">Games Played: ${gameData.total_games || 0}</div>
-              <div class="text-blue-200">Best Score: ${gameData.best_score ? gameData.best_score.toLocaleString() : 'N/A'}</div>
-              <div class="text-yellow-300">DSPOINC: ${gameData.dspoinc_earned ? gameData.dspoinc_earned.toLocaleString() : '0'}</div>
-            </div>
-          </div>
-        `;
-        break;
-        
-      case 'snake':
-        gameTitle = 'Snake';
-        gameIcon = '🐍';
-        gameHTML = `
-          <div class="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-lg p-4 border border-green-500/30">
-            <div class="flex items-center mb-3">
-              <div class="text-2xl mr-2">${gameIcon}</div>
-              <h4 class="font-semibold text-green-300">${gameTitle}</h4>
-            </div>
-            <div class="space-y-2 text-sm">
-              <div class="text-green-200">Games Played: ${gameData.total_games || 0}</div>
-              <div class="text-green-200">Best Score: ${gameData.best_score ? gameData.best_score.toLocaleString() : 'N/A'}</div>
-              <div class="text-yellow-300">DSPOINC: ${gameData.dspoinc_earned ? gameData.dspoinc_earned.toLocaleString() : '0'}</div>
-            </div>
-          </div>
-        `;
-        break;
-        
-      case 'space_invaders':
-        gameTitle = 'Space Invaders';
-        gameIcon = '👾';
-        gameHTML = `
-          <div class="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-lg p-4 border border-purple-500/30">
-            <div class="flex items-center mb-3">
-              <div class="text-2xl mr-2">${gameIcon}</div>
-              <h4 class="font-semibold text-purple-300">${gameTitle}</h4>
-            </div>
-            <div class="space-y-2 text-sm">
-              <div class="text-purple-200">Games Played: ${gameData.total_games || 0}</div>
-              <div class="text-purple-200">Best Score: ${gameData.best_score ? gameData.best_score.toLocaleString() : 'N/A'}</div>
-              <div class="text-yellow-300">DSPOINC: ${gameData.dspoinc_earned ? gameData.dspoinc_earned.toLocaleString() : '0'}</div>
-            </div>
-            <div class="mt-3 pt-3 border-t border-purple-500/30">
-              <button onclick="toggleSpaceInvadersAchievements()" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm px-3 py-2 rounded transition-colors">
-                🏆 View Achievements
-              </button>
-            </div>
-          </div>
-        `;
-        break;
-        
-      case 'cheese_hunt':
-        gameTitle = 'Cheese Hunt';
-        gameIcon = '🧀';
-        gameHTML = `
-          <div class="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 rounded-lg p-4 border border-yellow-500/30">
-            <div class="flex items-center mb-3">
-              <div class="text-2xl mr-2">${gameIcon}</div>
-              <h4 class="font-semibold text-yellow-300">${gameTitle}</h4>
-            </div>
-            <div class="space-y-2 text-sm">
-              <div class="text-yellow-200">Total Clicks: ${gameData.total_clicks || 0}</div>
-              <div class="text-yellow-200">Quest Clicks: ${gameData.quest_clicks || 0}</div>
-              <div class="text-yellow-300">DSPOINC: ${gameData.dspoinc_earned ? gameData.dspoinc_earned.toLocaleString() : '0'}</div>
-            </div>
-          </div>
-        `;
-        break;
-        
-      case 'discord_race':
-        gameTitle = 'Discord Race';
-        gameIcon = '🏁';
-        gameHTML = `
-          <div class="bg-gradient-to-br from-red-900/30 to-pink-900/30 rounded-lg p-4 border border-red-500/30">
-            <div class="flex items-center mb-3">
-              <div class="text-2xl mr-2">${gameIcon}</div>
-              <h4 class="font-semibold text-red-300">${gameTitle}</h4>
-            </div>
-            <div class="space-y-2 text-sm">
-              <div class="text-red-200">Total Races: ${gameData.total_races || 0}</div>
-              <div class="text-red-200">Wins: ${gameData.wins || 0}</div>
-              <div class="text-yellow-300">DSPOINC: ${gameData.dspoinc_earned ? gameData.dspoinc_earned.toLocaleString() : '0'}</div>
-            </div>
-          </div>
-        `;
-        break;
-    }
-    
-    missionsHTML += gameHTML;
-  });
-  
-  missionsHTML += `
-      </div>
-    </div>
-    
-    <!-- 🏆 Space Invaders Achievements Section (Full Width) -->
-    <div id="spaceInvadersAchievements" class="mt-6 p-6 bg-gray-800 rounded-lg border border-gray-600 hidden">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-semibold text-yellow-300">🏆 Space Cheese Invaders Achievements</h3>
-        <button onclick="toggleSpaceInvadersAchievements()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors">
-          ✕ Close
-        </button>
-      </div>
-      
-      <!-- Achievements Content -->
-      <div id="achievementsContent">
-        <!-- Statistics Row -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div class="bg-yellow-900/20 p-4 rounded-lg border border-yellow-500/30 text-center">
-            <div class="text-yellow-200 text-sm mb-1">Total Achievements</div>
-            <div class="text-white font-bold text-xl" id="totalAchievements">0</div>
-          </div>
-          <div class="bg-green-900/20 p-4 rounded-lg border border-green-500/30 text-center">
-            <div class="text-green-200 text-sm mb-1">Unlocked</div>
-            <div class="text-white font-bold text-xl" id="unlockedAchievements">0</div>
-          </div>
-          <div class="bg-red-900/20 p-4 rounded-lg border border-red-500/30 text-center">
-            <div class="text-red-200 text-sm mb-1">Locked</div>
-            <div class="text-white font-bold text-xl" id="lockedAchievements">0</div>
-          </div>
-          <div class="bg-purple-900/20 p-4 rounded-lg border border-purple-500/30 text-center">
-            <div class="text-purple-200 text-sm mb-1">Progress</div>
-            <div class="text-white font-bold text-xl" id="completionPercentage">0%</div>
-          </div>
-        </div>
-        
-        <!-- Achievements Grid -->
-        <div id="achievementsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <!-- Achievements will be loaded here -->
-        </div>
-        
-        <!-- Loading State -->
-        <div id="achievementsLoading" class="text-center py-8">
-          <div class="text-yellow-300 text-lg">🏆 Loading achievements...</div>
-        </div>
-        
-        <!-- Error State -->
-        <div id="achievementsError" class="text-center py-8 hidden">
-          <div class="text-red-300 text-lg">❌ Failed to load achievements</div>
-          <div class="text-gray-400 text-sm mt-2" id="achievementsErrorMessage"></div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  // Add the missions display to the section
-  missionsSection.innerHTML = missionsHTML;
-  
-  console.log('✅ Game missions displayed successfully');
-}
-
-// Function to display missions error
-function displayGameMissionsError(errorMessage, suggestion = '') {
-  console.error('❌ Displaying missions error:', errorMessage);
-  
-  const missionsSection = document.getElementById('missions-section');
-  if (!missionsSection) {
-    console.error('❌ Missions section not found');
-    return;
-  }
-  
-  // Hide the load button
-  const loadButton = missionsSection.querySelector('button');
-  if (loadButton) {
-    loadButton.style.display = 'none';
-  }
-  
-  // Create error display HTML
-  const errorHTML = `
-    <div class="text-center py-8">
-      <div class="text-red-400 text-lg mb-2">❌ Error loading missions</div>
-      <div class="text-gray-300 text-sm mb-4">${errorMessage}</div>
-      ${suggestion ? `<div class="text-gray-400 text-xs">${suggestion}</div>` : ''}
-    </div>
-  `;
-  
-  // Add the error display to the section
-  missionsSection.innerHTML = errorHTML;
-}
-
-// 🔧 Local Development Indicator Function
-function addLocalDevelopmentIndicator() {
-  // Create local development banner
-  const banner = document.createElement('div');
-  banner.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
-    color: white;
-    text-align: center;
-    padding: 8px;
-    font-weight: bold;
-    font-size: 14px;
-    z-index: 9999;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  `;
-  banner.innerHTML = '🔧 LOCAL DEVELOPMENT MODE - Using Test Data';
-  document.body.insertBefore(banner, document.body.firstChild);
-  
-  // Adjust body margin to account for banner
-  document.body.style.marginTop = '40px';
-  
-  console.log('🔧 Local development indicator added');
-}
-
-// 🏆 CLEAN SOLUTION: Simple Space Invaders Achievements Functions
-let isLoadingAchievements = false;
-let achievementsVisible = false;
-
-// Simple toggle function - controls inline achievements section
-function toggleSpaceInvadersAchievements() {
-  const achievementsSection = document.getElementById('spaceInvadersAchievements');
-  
-  console.log('🏆 Toggle clicked, current visibility:', achievementsVisible);
-  console.log('🏆 Achievements section found:', !!achievementsSection);
-  
-  if (achievementsVisible) {
-    // Hide achievements
-    achievementsSection.classList.add('hidden');
-    achievementsVisible = false;
-    console.log('🏆 Achievements hidden');
-  } else {
-    // Show achievements
-    achievementsSection.classList.remove('hidden');
-    achievementsVisible = true;
-    console.log('🏆 Achievements shown');
-    
-    // Load achievements if not already loaded
-    if (!isLoadingAchievements) {
-      console.log('🏆 Loading achievements...');
-      loadSpaceInvadersAchievements();
-    }
-  }
-}
-
-async function loadSpaceInvadersAchievements(gameKey = 'space_invaders') {
-  // Prevent multiple simultaneous calls
-  if (isLoadingAchievements) {
-    console.log('🏆 Achievement loading already in progress, skipping...');
-    return;
-  }
-  
-  isLoadingAchievements = true;
-  
-  // 🔧 LOCAL TESTING BYPASS - Use local test data for development
-  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (isLocalDevelopment) {
-    console.log('🔓 Local development - using test achievement data');
-    console.log('🔓 About to call displayAchievements with test data');
-    try {
-      // Simulate API response with REAL achievement data (synchronized with game script)
-      const testAchievements = {
-        success: true,
-        achievements: [
-          {
-            key: "firstKill",
-            title: "First Blood",
-            description: "Destroyed your first 100 invaders!",
-            icon: "🎯",
-            unlocked: true,
-            unlocked_at: "2024-01-28T10:00:00Z"
-          },
-          {
-            key: "score2500",
-            title: "Getting Started",
-            description: "Reached 30,000 points!",
-            icon: "⭐",
-            unlocked: true,
-            unlocked_at: "2024-01-28T10:15:00Z"
-          },
-          {
-            key: "perfectWave",
-            title: "Perfect Wave",
-            description: "Cleared 5 waves without taking damage!",
-            icon: "✨",
-            unlocked: true,
-            unlocked_at: "2024-01-28T10:30:00Z"
-          },
-          {
-            key: "comboMaster8",
-            title: "Combo Master",
-            description: "Achieved 4x score multiplier!",
-            icon: "💥",
-            unlocked: true,
-            unlocked_at: "2024-01-28T10:45:00Z"
-          },
-          {
-            key: "killStreak8",
-            title: "Killing Spree",
-            description: "25 kills in a row!",
-            icon: "🔥",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "score7500",
-            title: "Rising Star",
-            description: "Reached 75,000 points!",
-            icon: "🌟",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "bossKiller1",
-            title: "Boss Hunter",
-            description: "Defeated Boss 1 - First Victory!",
-            icon: "⚔️",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "bossKiller2",
-            title: "Boss Conqueror",
-            description: "Defeated Boss 3 - Rising Power!",
-            icon: "🏹",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "bossKiller3",
-            title: "Boss Slayer",
-            description: "Defeated Boss 5 - Master Warrior!",
-            icon: "🗡️",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "speedDemon20k",
-            title: "Speed Demon",
-            description: "Reached 50k points in under 3 minutes!",
-            icon: "⚡",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "killStreak15",
-            title: "Rampage",
-            description: "50 kills in a row!",
-            icon: "⚡",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "score15000",
-            title: "Space Ace",
-            description: "Reached 150,000 points!",
-            icon: "🚀",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "noHitRun60",
-            title: "Untouchable",
-            description: "5 minutes without taking damage!",
-            icon: "🛡️",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "survivor10min",
-            title: "Ultimate Survivor",
-            description: "Survived for 20 minutes!",
-            icon: "🏆",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "killStreak25",
-            title: "Unstoppable",
-            description: "100 kills in a row!",
-            icon: "💀",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "score30000",
-            title: "Legend",
-            description: "Reached 300,000 points!",
-            icon: "👑",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "bossKiller4",
-            title: "Boss Destroyer",
-            description: "Defeated Boss 8 - Ultimate Achievement!",
-            icon: "💀",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "phoenixHunter",
-            title: "Phoenix Hunter",
-            description: "Destroyed 10 Phoenix birds!",
-            icon: "🔥",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "phoenixSlayer",
-            title: "Phoenix Slayer",
-            description: "Destroyed 25 Phoenix birds!",
-            icon: "⚡",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "phoenixDestroyer",
-            title: "Phoenix Destroyer",
-            description: "Destroyed 50 Phoenix birds!",
-            icon: "💥",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "phoenixMaster",
-            title: "Phoenix Master",
-            description: "Destroyed 100 Phoenix birds - Ultimate Phoenix Hunter!",
-            icon: "👑",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "eggHunter",
-            title: "Egg Hunter",
-            description: "Destroyed 50 Phoenix eggs!",
-            icon: "🥚",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "eggSlayer",
-            title: "Egg Slayer",
-            description: "Destroyed 100 Phoenix eggs!",
-            icon: "💣",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "eggDestroyer",
-            title: "Egg Destroyer",
-            description: "Destroyed 200 Phoenix eggs!",
-            icon: "💥",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "eggMaster",
-            title: "Egg Master",
-            description: "Destroyed 500 Phoenix eggs - Ultimate Egg Hunter!",
-            icon: "👑",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "miniPhoenixHunter",
-            title: "Mini-Phoenix Hunter",
-            description: "Destroyed 25 Mini-Phoenix!",
-            icon: "🐣",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "miniPhoenixSlayer",
-            title: "Mini-Phoenix Slayer",
-            description: "Destroyed 75 Mini-Phoenix!",
-            icon: "⚡",
-            unlocked: false,
-            unlocked_at: null
-          },
-          {
-            key: "miniPhoenixMaster",
-            title: "Mini-Phoenix Master",
-            description: "Destroyed 150 Mini-Phoenix - Ultimate Mini-Hunter!",
-            icon: "👑",
-            unlocked: false,
-            unlocked_at: null
-          }
-        ],
-        stats: {
-          total_achievements: 29,
-          unlocked_achievements: 4,
-          locked_achievements: 25,
-          completion_percentage: 14
-        }
-      };
-      
-      // Display achievements directly in the inline section
-      console.log('🔓 Calling displayAchievements with:', testAchievements);
-      displayAchievements(testAchievements);
-      console.log('🔓 displayAchievements call completed');
-      isLoadingAchievements = false;
-      return;
-    } catch (error) {
-      console.error('🔓 Local test achievement data error:', error);
-      console.error('🔓 Error details:', {
-        message: error.message,
-        stack: error.stack,
-        data: testAchievements
-      });
-      displayAchievementsError('Local test data error: ' + error.message);
-      isLoadingAchievements = false;
-      return;
-    }
-  }
-  
-  try {
-    console.log('🏆 Loading Space Invaders achievements...');
-    
-    // Show modal and loading state
-    const modal = document.getElementById('achievementsModal');
-    const loading = document.getElementById('achievementsLoading');
-    const error = document.getElementById('achievementsError');
-    const grid = document.getElementById('achievementsGrid');
-    
-    // Professional modal display - prevent blinking
-    modal.style.cssText = `
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      bottom: 0 !important;
-      background-color: rgba(0, 0, 0, 0.5) !important;
-      z-index: 50 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      opacity: 1 !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
-      transition: none !important;
-      animation: none !important;
-      transform: none !important;
-    `;
-    modal.classList.remove('hidden');
-    loading.classList.remove('hidden');
-    error.classList.add('hidden');
-    grid.classList.add('hidden');
-    
-    // Get Discord ID
-    let discordId = localStorage.getItem('discord_id');
-    if (!discordId) {
-      const enhancedData = window.enhancedProfileData;
-      if (enhancedData && enhancedData.basic_info && enhancedData.basic_info.discord_id) {
-        discordId = enhancedData.basic_info.discord_id;
-      }
-    }
-    
-    if (!discordId) {
-      throw new Error('Discord ID not found. Please log in with Discord first.');
-    }
-    
-    // Fetch achievements
-    const response = await fetch(`${API_BASE_URL}/api/user/get-space-invaders-achievements.php?discord_id=${discordId}`, {
-      credentials: 'include',
-      headers: { 'Accept': 'application/json' }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    console.log('🏆 Achievements data loaded:', data);
-    
-    if (data.success) {
-      displayAchievements(data);
-    } else {
-      throw new Error(data.error || 'Failed to load achievements');
-    }
-    
-  } catch (error) {
-    console.error('❌ Error loading achievements:', error);
-    displayAchievementsError(error.message);
-  } finally {
-    isLoadingAchievements = false;
-  }
-}
-
-function displayAchievements(data) {
-  console.log('🏆 displayAchievements called with data:', data);
-  
-  // 🔧 LOCAL TESTING BYPASS - Handle local test data structure
-  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (isLocalDevelopment) {
-    console.log('🔓 Local development - displaying test achievements');
-    console.log('🔓 Data structure check:', {
-      hasData: !!data,
-      hasStats: !!data.stats,
-      hasAchievements: !!data.achievements,
-      statsKeys: data.stats ? Object.keys(data.stats) : 'no stats',
-      achievementsLength: data.achievements ? data.achievements.length : 'no achievements'
-    });
-    
-    // Find the main achievements section first
-    const achievementsSection = document.getElementById('spaceInvadersAchievements');
-    if (!achievementsSection) {
-      console.error('❌ displayAchievements: spaceInvadersAchievements section not found!');
-      return;
-    }
-    
-    console.log('🔓 Found achievements section:', !!achievementsSection);
-    
-    // Use relative selectors within the achievements section
-    const loading = achievementsSection.querySelector('#achievementsLoading');
-    const error = achievementsSection.querySelector('#achievementsError');
-    const grid = achievementsSection.querySelector('#achievementsGrid');
-    
-    console.log('🔓 DOM elements for display (relative to section):', {
-      loading: !!loading,
-      error: !!error,
-      grid: !!grid
-    });
-    
-    // Hide loading, show grid
-    if (loading) loading.classList.add('hidden');
-    if (error) error.classList.add('hidden');
-    if (grid) grid.classList.remove('hidden');
-    
-    console.log('🔓 Loading hidden, grid shown');
-    
-    // Update stats with local test data
-    console.log('🔓 Updating stats with:', data.stats);
-    const totalEl = achievementsSection.querySelector('#totalAchievements');
-    const unlockedEl = achievementsSection.querySelector('#unlockedAchievements');
-    const lockedEl = achievementsSection.querySelector('#lockedAchievements');
-    const progressEl = achievementsSection.querySelector('#completionPercentage');
-    
-    console.log('🔓 DOM elements found (relative to section):', {
-      totalEl: !!totalEl,
-      unlockedEl: !!unlockedEl,
-      lockedEl: !!lockedEl,
-      progressEl: !!progressEl
-    });
-    
-    if (totalEl) totalEl.textContent = data.stats.total_achievements;
-    if (unlockedEl) unlockedEl.textContent = data.stats.unlocked_achievements;
-    if (lockedEl) lockedEl.textContent = data.stats.locked_achievements;
-    if (progressEl) progressEl.textContent = data.stats.completion_percentage + '%';
-    
-    // Display achievements in enhanced format for full-width layout
-    if (grid) {
-      grid.innerHTML = data.achievements.map(achievement => `
-        <div class="bg-gradient-to-br ${achievement.unlocked ? 'from-yellow-900/30 to-yellow-700/30 border-yellow-500/50' : 'from-gray-800/30 to-gray-700/30 border-gray-600/50'} rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
-          <div class="flex items-start space-x-4">
-            <div class="text-3xl flex-shrink-0">${achievement.icon}</div>
-            <div class="flex-1 min-w-0">
-              <h3 class="font-semibold text-white text-base mb-2">${achievement.title}</h3>
-              <p class="text-sm text-gray-300 mb-3 leading-relaxed">${achievement.description}</p>
-              <div class="flex items-center justify-between">
-                ${achievement.unlocked ? 
-                  `<span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">✅ Unlocked ${new Date(achievement.unlocked_at).toLocaleDateString()}</span>` : 
-                  '<span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>'
-                }
-                ${achievement.unlocked ? '<div class="text-green-400 text-lg">✓</div>' : '<div class="text-gray-600 text-lg">○</div>'}
-              </div>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-    
-    console.log('✅ Local achievements displayed successfully');
-    return;
-  }
-  
-  const loading = document.getElementById('achievementsLoading');
-  const error = document.getElementById('achievementsError');
-  const grid = document.getElementById('achievementsGrid');
-  const stats = data.stats;
-  
-  // Hide loading, show grid
-  loading.classList.add('hidden');
-  error.classList.add('hidden');
-  grid.classList.remove('hidden');
-  
-  // Update stats
-  document.getElementById('totalAchievements').textContent = stats.total_achievements;
-  document.getElementById('unlockedAchievements').textContent = stats.unlocked_achievements;
-  document.getElementById('lockedAchievements').textContent = stats.locked_achievements;
-  document.getElementById('completionPercentage').textContent = stats.completion_percentage + '%';
-  
-  // Display achievements in enhanced format for full-width layout
-  grid.innerHTML = data.achievements.map(achievement => `
-    <div class="bg-gradient-to-br ${achievement.unlocked ? 'from-yellow-900/30 to-yellow-700/30 border-yellow-500/50' : 'from-gray-800/30 to-gray-700/30 border-gray-600/50'} rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
-      <div class="flex items-start space-x-4">
-        <div class="text-3xl flex-shrink-0">${achievement.icon}</div>
-        <div class="flex-1 min-w-0">
-          <h3 class="font-semibold text-white text-base mb-2">${achievement.title}</h3>
-          <p class="text-sm text-gray-300 mb-3 leading-relaxed">${achievement.description}</p>
-          <div class="flex items-center justify-between">
-            ${achievement.unlocked ? 
-              `<span class="text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">✅ Unlocked ${formatDateShort(achievement.unlocked_at)}</span>` : 
-              '<span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>'
-            }
-            ${achievement.unlocked ? '<div class="text-green-400 text-lg">✓</div>' : '<div class="text-gray-600 text-lg">○</div>'}
-          </div>
-          ${achievement.unlocked && (achievement.game_score > 0 || achievement.total_kills > 0 || achievement.combo_multiplier > 0) ? `
-            <div class="mt-3 pt-3 border-t border-gray-600/30">
-              <div class="grid grid-cols-3 gap-2 text-xs">
-                ${achievement.game_score > 0 ? `<div class="text-blue-300 text-center">Score: ${achievement.game_score.toLocaleString()}</div>` : ''}
-                ${achievement.total_kills > 0 ? `<div class="text-purple-300 text-center">Kills: ${achievement.total_kills}</div>` : ''}
-                ${achievement.combo_multiplier > 0 ? `<div class="text-orange-300 text-center">Combo: ${achievement.combo_multiplier}x</div>` : ''}
-              </div>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-    </div>
-  `).join('');
-  
-  console.log('✅ Achievements displayed successfully');
-}
-
-function displayAchievementsError(errorMessage) {
-  const loading = document.getElementById('achievementsLoading');
-  const error = document.getElementById('achievementsError');
-  const grid = document.getElementById('achievementsGrid');
-  
-  loading.classList.add('hidden');
-  grid.classList.add('hidden');
-  error.classList.remove('hidden');
-  
-  document.getElementById('achievementsErrorMessage').textContent = errorMessage;
-}
-
 </script>
-
 
 <!-- 🔥 Profile Flask + Glow & Bubbles (Bottom Right Corner) -->
 <div class="absolute bottom-8 right-8 z-[1] pointer-events-none opacity-20">
@@ -3838,44 +3370,6 @@ function displayAchievementsError(errorMessage) {
                        onclick="window.location.href='<?php echo $discord_url; ?>'"
        style="cursor: pointer;" />
 </div>
-<!-- 🔧 FIX: Global error handler to prevent modal blinking from JavaScript errors -->
-<script>
-  // Protect the achievements modal from JavaScript errors
-  window.addEventListener('error', function(event) {
-    console.error('🚨 JavaScript error caught:', event.error);
-    // Don't let errors affect the modal display
-    const modal = document.getElementById('achievementsModal');
-    if (modal && !modal.classList.contains('hidden')) {
-      // Force modal to stay visible if it was open
-      modal.style.cssText = `
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        background-color: rgba(0, 0, 0, 0.5) !important;
-        z-index: 50 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-        transition: none !important;
-        animation: none !important;
-        transform: none !important;
-      `;
-    }
-  });
-  
-  // Prevent unhandled promise rejections from affecting the modal
-  window.addEventListener('unhandledrejection', function(event) {
-    console.error('🚨 Unhandled promise rejection:', event.reason);
-    // Don't let promise rejections affect the modal display
-    event.preventDefault();
-  });
-</script>
-
 </body>
 </html>
 

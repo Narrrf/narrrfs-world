@@ -117,3 +117,45 @@
     "discord_name": "Anonymous Mouse",
     "game": "space_invaders"
 }
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 140654,
+    "discord_id": "1337",
+    "discord_name": "Anonymous Mouse",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20252,
+    "discord_id": "1337",
+    "discord_name": "Anonymous Mouse",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 2850,
+    "discord_id": "1337",
+    "discord_name": "Anonymous Mouse",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 2242,
+    "discord_id": "1337",
+    "discord_name": "Anonymous Mouse",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 42071,
+    "discord_id": "1337",
+    "discord_name": "Anonymous Mouse",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 50298,
+    "discord_id": "1337",
+    "discord_name": "Anonymous Mouse",
+    "game": "space_invaders"
+}
