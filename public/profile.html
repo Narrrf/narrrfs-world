@@ -1328,7 +1328,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Load 5-game missions data
     try {
-      const missionsRes = await fetch('/api/user-game-missions.php', {
+      const missionsRes = await fetch(`${API_BASE_URL}/api/user-game-missions.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.discord_id })
@@ -1647,7 +1647,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 2. Fetch user profile data
   let user;
   try {
-    const res = await fetch(`/api/user/profile.php?user_id=${userId}`);
+    const res = await fetch(`${API_BASE_URL}/api/user/profile.php?user_id=${userId}`);
     user = await res.json();
     if (user.error) throw new Error(user.error);
   } catch (e) {
@@ -1757,7 +1757,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.error('pointsGraph canvas missing!');
     return;
   }
-  fetch(`/api/discord/score-history.php?user_id=${userId}`)
+  fetch(`${API_BASE_URL}/api/discord/score-history.php?user_id=${userId}`)
     .then(res => res.json())
     .then(json => {
       if (msgBox) msgBox.classList.add('hidden');
@@ -1834,7 +1834,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Fetch user profile and set balances
   if (userId) {
     try {
-      const res = await fetch('/api/user/profile.php?user_id=' + encodeURIComponent(userId));
+      const res = await fetch(`${API_BASE_URL}/api/user/profile.php?user_id=` + encodeURIComponent(userId));
       user = await res.json();
 
       // Set DSPOINC balance
@@ -1847,7 +1847,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   // 🆘 ENHANCED: Also fetch DSPOINC balance from score-total API for better data
   if (userId) {
     try {
-      const balanceRes = await fetch('/api/user/score-total.php', { credentials: 'include' });
+      const balanceRes = await fetch(`${API_BASE_URL}/api/user/score-total.php`, { credentials: 'include' });
       if (balanceRes.ok) {
         const balanceData = await balanceRes.json();
         const dspoincBalance = balanceData.total_dspoinc || 0;
@@ -1866,7 +1866,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Fetch recent adjustments
 // Fetch recent adjustments
 if (user && user.discord_id) {
-  fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
+  fetch(`${API_BASE_URL}/api/user/recent-adjustments.php`, { credentials: 'include' })
     .then(res => res.json())
     .then(response => {
       const recentList = document.getElementById('recentAdjustments');
@@ -1907,7 +1907,7 @@ if (user && user.discord_id) {
   // 2. Load and display quests for this user
   if (userId) {
     try {
-      const res = await fetch('/api/user/quests.php?user_id=' + encodeURIComponent(userId));
+      const res = await fetch(`${API_BASE_URL}/api/user/quests.php?user_id=` + encodeURIComponent(userId));
       const data = await res.json();
       const questList = document.getElementById('user-quests-list');
       if (!questList) return;
@@ -1970,7 +1970,7 @@ window.claimQuest = async function(questId, btn) {
   btn.innerText = "Claiming...";
   const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
   try {
-    const res = await fetch('/api/user/claim-quest.php', {
+    const res = await fetch(`${API_BASE_URL}/api/user/claim-quest.php`, {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: `user_id=${encodeURIComponent(userId)}&quest_id=${encodeURIComponent(questId)}`
@@ -2043,7 +2043,7 @@ async function checkWLRoleAndShowButton() {
     try {
         // First, sync roles from Discord to ensure local database is up-to-date
         console.log('🔄 Syncing roles from Discord...');
-        const syncResponse = await fetch('/api/auth/sync-role.php');
+        const syncResponse = await fetch(`${API_BASE_URL}/api/auth/sync-role.php`);
         
         if (!syncResponse.ok) {
             console.warn('⚠️ Role sync failed, continuing with local check...');
@@ -2052,7 +2052,7 @@ async function checkWLRoleAndShowButton() {
         }
         
         // Now check roles from the local database (which should be up-to-date)
-        const roleRes = await fetch('/api/user/roles.php');
+        const roleRes = await fetch(`${API_BASE_URL}/api/user/roles.php`);
         const roleData = await roleRes.json();
         console.log('Role data received:', roleData);
         console.log('Available roles:', roleData.roles);
@@ -2187,7 +2187,7 @@ async function verifyNFTs() {
       try {
         console.log(`🔍 Checking ${collectionInfo.name} collection...`);
         
-        const response = await fetch(`/api/wallet/get-nfts.php?wallet=${connectedWalletAddress}&collection=${collectionAddress}`);
+        const response = await fetch(`${API_BASE_URL}/api/wallet/get-nfts.php?wallet=${connectedWalletAddress}&collection=${collectionAddress}`);
         
         if (!response.ok) {
           console.warn(`⚠️ HTTP error ${response.status} for ${collectionInfo.name}`);
@@ -2305,7 +2305,7 @@ async function verifyWithBackend(walletAddress, nfts) {
     
     // Verify each collection
     for (const [collectionRole, collectionNFTs] of Object.entries(nftsByCollection)) {
-      const response = await fetch('/api/user/verify-nft-holder.php', {
+      const response = await fetch(`${API_BASE_URL}/api/user/verify-nft-holder.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2450,7 +2450,7 @@ async function checkTrackingStatus() {
   try {
     console.log('🔍 Checking tracking status for user:', discordId);
     
-    const response = await fetch('/api/debug-user-tracking.php', {
+    const response = await fetch(`${API_BASE_URL}/api/debug-user-tracking.php`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: discordId })
@@ -2987,7 +2987,7 @@ async function loadGameMissions() {
     console.log('🎮 Discord ID length:', discordId.length);
     console.log('🎮 Discord ID value:', JSON.stringify(discordId));
     
-    const response = await fetch(`/api/user-game-missions.php?discord_id=${discordId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/user-game-missions.php?discord_id=${discordId}`, {
       credentials: 'include',
       headers: { 'Accept': 'application/json' }
     });
@@ -3643,7 +3643,7 @@ async function loadSpaceInvadersAchievements(gameKey = 'space_invaders') {
     }
     
     // Fetch achievements
-    const response = await fetch(`/api/user/get-space-invaders-achievements.php?discord_id=${discordId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/user/get-space-invaders-achievements.php?discord_id=${discordId}`, {
       credentials: 'include',
       headers: { 'Accept': 'application/json' }
     });
