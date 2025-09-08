@@ -407,7 +407,7 @@ require_once 'discord-invite.php';
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div class="bg-yellow-900/20 p-4 rounded-lg border border-yellow-500/30 text-center">
             <div class="text-yellow-200 text-sm mb-1">Total Achievements</div>
-            <div class="text-white font-bold text-xl" id="totalAchievements">29</div>
+            <div class="text-white font-bold text-xl" id="totalAchievements">30</div>
           </div>
           <div class="bg-green-900/20 p-4 rounded-lg border border-green-500/30 text-center">
             <div class="text-green-200 text-sm mb-1">Unlocked</div>
@@ -1693,7 +1693,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     try {
       // 🌍 Environment-aware API endpoint (works both locally and in production)
       const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
-      const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
+      const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost';
       const leaderboardUrl = `${apiBaseUrl}/api/dev/get-leaderboard.php`;
       
       console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
@@ -3162,28 +3162,36 @@ async function loadSpaceInvadersAchievements() {
     // Get Discord ID from localStorage
     const discordId = localStorage.getItem('discord_id');
     console.log('🔍 Discord ID from localStorage:', discordId);
-    if (!discordId) {
+    
+    // 🌍 Local development override - use real Discord ID with achievements
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const testDiscordId = '328601656659017732'; // Real Discord ID with achievements
+    
+    const finalDiscordId = isLocalDevelopment && (!discordId || discordId === '1337') ? testDiscordId : discordId;
+    console.log('🔍 Final Discord ID (with local override):', finalDiscordId);
+    
+    if (!finalDiscordId) {
       console.log('🏆 No Discord ID found, cannot load achievements');
       return;
     }
     
     // 🌍 Environment-aware API endpoint (works both locally and in production)
     const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
-    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost';
     
     console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
     console.log(`🔗 Achievements API URL: ${apiBaseUrl}/api/user/get-space-invaders-achievements.php`);
     
     // Load achievements from API
     console.log('🔗 Making API call to:', `${apiBaseUrl}/api/user/get-space-invaders-achievements.php`);
-    console.log('🔗 Request body:', JSON.stringify({ user_id: discordId }));
+    console.log('🔗 Request body:', JSON.stringify({ user_id: finalDiscordId }));
     
     const response = await fetch(`${apiBaseUrl}/api/user/get-space-invaders-achievements.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ user_id: discordId })
+      body: JSON.stringify({ user_id: finalDiscordId })
     });
     
     console.log('🔗 API response status:', response.status);
@@ -3252,17 +3260,24 @@ function displayAchievements(data) {
   });
   
   // Update achievement cards based on unlocked status
-  const unlockedKeys = achievements.map(a => a.achievement_key);
+  const unlockedKeys = achievements.filter(a => a.unlocked).map(a => a.key);
+  console.log('🔓 Unlocked achievement keys from API:', unlockedKeys);
   
   // Update each achievement card
   const achievementCards = achievementsSection.querySelectorAll('.bg-gradient-to-br');
-  achievementCards.forEach(card => {
+  console.log('🔓 Found achievement cards:', achievementCards.length);
+  
+  achievementCards.forEach((card, index) => {
     const titleElement = card.querySelector('h3');
     if (titleElement) {
       const title = titleElement.textContent.trim();
       const achievementKey = getAchievementKeyFromTitle(title);
       
+      console.log(`🔓 Card ${index}: "${title}" -> Key: "${achievementKey}" -> Unlocked: ${unlockedKeys.includes(achievementKey)}`);
+      
       if (achievementKey && unlockedKeys.includes(achievementKey)) {
+        console.log(`✅ Marking "${title}" as unlocked`);
+        
         // Mark as unlocked
         card.className = card.className.replace('from-gray-800/30 to-gray-700/30 border-gray-600/50', 'from-yellow-900/30 to-yellow-700/30 border-yellow-500/50');
         
@@ -3278,6 +3293,8 @@ function displayAchievements(data) {
           statusIcon.textContent = '✓';
           statusIcon.className = 'text-green-400 text-lg';
         }
+      } else {
+        console.log(`🔒 Keeping "${title}" as locked (Key: ${achievementKey}, In unlocked: ${unlockedKeys.includes(achievementKey)})`);
       }
     }
   });
@@ -3288,15 +3305,37 @@ function displayAchievements(data) {
 // 🏆 Get achievement key from title (helper function)
 function getAchievementKeyFromTitle(title) {
   const keyMap = {
-    'First Blood': 'first_kill',
-    'Getting Started': 'score_2500',
-    'Perfect Wave': 'perfect_wave',
-    'Combo Master': 'combo_master_8',
-    'Killing Spree': 'kill_streak_8',
-    'Rising Star': 'score_7500',
-    'Boss Hunter': 'boss_hunter_1',
-    'Phoenix Hunter': 'phoenix_hunter_10',
-    'Egg Hunter': 'egg_hunter_50'
+    'First Blood': 'firstKill',
+    'Getting Started': 'score2500',
+    'Perfect Wave': 'perfectWave',
+    'Combo Master': 'comboMaster8',
+    'Killing Spree': 'killStreak8',
+    'Rising Star': 'score7500',
+    'Boss Hunter': 'bossHunter1',
+    'Phoenix Hunter': 'phoenixHunter10',
+    'Egg Hunter': 'eggHunter50',
+    'Rampage': 'killStreak15',
+    'Speed Demon': 'speedDemon20k',
+    'Untouchable': 'untouchable5waves',
+    'Ultimate Survivor': 'ultimateSurvivor10waves',
+    'Boss Conqueror': 'bossConqueror2',
+    'Boss Slayer': 'bossSlayer3',
+    'Boss Destroyer': 'bossDestroyer4',
+    'Phoenix Master': 'phoenixMaster25',
+    'Egg Master': 'eggMaster100',
+    'Mini-Phoenix Hunter': 'miniPhoenixHunter15',
+    'Phoenix Slayer': 'phoenixSlayer50',
+    'Egg Slayer': 'eggSlayer200',
+    'Mini-Phoenix Slayer': 'miniPhoenixSlayer50',
+    'Phoenix Destroyer': 'phoenixDestroyer100',
+    'Egg Destroyer': 'eggDestroyer500',
+    'Mini-Phoenix Destroyer': 'miniPhoenixDestroyer100',
+    'Phoenix Legend': 'phoenixLegend200',
+    'Egg Legend': 'eggLegend1000',
+    'Mini-Phoenix Legend': 'miniPhoenixLegend200',
+    'Mini-Phoenix Master': 'miniPhoenixMaster',
+    'Unstoppable': 'unstoppable50kills',
+    'Legend': 'legend100kills'
   };
   
   return keyMap[title] || null;

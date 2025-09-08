@@ -10,17 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once '../auth/auth.php';
+// User API - no admin authentication required
 
 // Get database connection
 function getSQLite3Connection() {
     $dbPath = $_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false 
-        ? 'db/narrrf_world.sqlite' 
+        ? '../../db/narrrf_world.sqlite' 
         : '/var/www/html/db/narrrf_world.sqlite';
-    
-    if (!file_exists($dbPath)) {
-        throw new Exception("Database file not found: $dbPath");
-    }
     
     $pdo = new PDO("sqlite:$dbPath");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
