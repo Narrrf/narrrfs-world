@@ -3155,60 +3155,13 @@ async function loadSpaceInvadersAchievements() {
   try {
     console.log('🏆 Loading Space Invaders achievements...');
     
-    // Check if we're in local development
-    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    
-    if (isLocalDevelopment) {
-      console.log('🔓 Local development - using test achievement data');
-      
-      // Use test data for local development
-      const testAchievements = {
-        success: true,
-        achievements: [
-          {
-            achievement_key: 'first_kill',
-            achievement_title: 'First Blood',
-            achievement_description: 'Destroyed your first 100 invaders!',
-            achievement_icon: '🎯',
-            unlocked_at: '2025-01-28 10:30:00'
-          },
-          {
-            achievement_key: 'score_2500',
-            achievement_title: 'Getting Started',
-            achievement_description: 'Reached 30,000 points!',
-            achievement_icon: '⭐',
-            unlocked_at: '2025-01-28 11:15:00'
-          },
-          {
-            achievement_key: 'perfect_wave',
-            achievement_title: 'Perfect Wave',
-            achievement_description: 'Cleared 5 waves without taking damage!',
-            achievement_icon: '✨',
-            unlocked_at: '2025-01-28 12:00:00'
-          },
-          {
-            achievement_key: 'combo_master_8',
-            achievement_title: 'Combo Master',
-            achievement_description: 'Achieved 4x score multiplier!',
-            achievement_icon: '💥',
-            unlocked_at: '2025-01-28 12:45:00'
-          }
-        ],
-        stats: {
-          total_achievements: 29,
-          unlocked_achievements: 4,
-          locked_achievements: 25,
-          completion_percentage: 14
-        }
-      };
-      
-      console.log('🔓 About to call displayAchievements with test data');
-      displayAchievements(testAchievements);
-      return;
-    }
+    // 🚨 CRITICAL FIX: Always load real data from database, never use test data
+    // The profile page should ALWAYS show real user achievements from tbl_space_invaders_achievements
+    console.log('🏆 Loading REAL user achievements from database...');
     
     // Get Discord ID from localStorage
     const discordId = localStorage.getItem('discord_id');
+    console.log('🔍 Discord ID from localStorage:', discordId);
     if (!discordId) {
       console.log('🏆 No Discord ID found, cannot load achievements');
       return;
@@ -3222,6 +3175,9 @@ async function loadSpaceInvadersAchievements() {
     console.log(`🔗 Achievements API URL: ${apiBaseUrl}/api/user/get-space-invaders-achievements.php`);
     
     // Load achievements from API
+    console.log('🔗 Making API call to:', `${apiBaseUrl}/api/user/get-space-invaders-achievements.php`);
+    console.log('🔗 Request body:', JSON.stringify({ user_id: discordId }));
+    
     const response = await fetch(`${apiBaseUrl}/api/user/get-space-invaders-achievements.php`, {
       method: 'POST',
       headers: {
@@ -3230,12 +3186,17 @@ async function loadSpaceInvadersAchievements() {
       body: JSON.stringify({ user_id: discordId })
     });
     
+    console.log('🔗 API response status:', response.status);
+    console.log('🔗 API response ok:', response.ok);
+    
     if (response.ok) {
       const data = await response.json();
       console.log('🏆 Achievements loaded from API:', data);
       displayAchievements(data);
     } else {
       console.error('🏆 Failed to load achievements:', response.statusText);
+      const errorText = await response.text();
+      console.error('🏆 Error response body:', errorText);
     }
     
   } catch (error) {
