@@ -84,6 +84,20 @@ require_once 'discord-invite.php';
       color: #fcd34d;
     }
     
+    /* Achievement Modal Fix - Prevent Blinking */
+    #achievementsModal {
+      transition: none !important;
+      animation: none !important;
+    }
+    
+    #achievementsModal.hidden {
+      display: none !important;
+    }
+    
+    #achievementsModal:not(.hidden) {
+      display: flex !important;
+    }
+
     /* Essential animations for professional interface */
     @keyframes fade-in {
       from {
@@ -2680,7 +2694,17 @@ function formatDateShort(dateString) {
 }
 
 // 🏆 Space Invaders Achievements Functions
+let isLoadingAchievements = false;
+
 async function loadSpaceInvadersAchievements(gameKey) {
+  // Prevent multiple simultaneous calls
+  if (isLoadingAchievements) {
+    console.log('🏆 Achievement loading already in progress, skipping...');
+    return;
+  }
+  
+  isLoadingAchievements = true;
+  
   try {
     console.log('🏆 Loading Space Invaders achievements...');
     
@@ -2691,13 +2715,6 @@ async function loadSpaceInvadersAchievements(gameKey) {
     const grid = document.getElementById('achievementsGrid');
     
     modal.classList.remove('hidden');
-    modal.style.opacity = '0';
-    modal.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-      modal.style.opacity = '1';
-      modal.style.transform = 'scale(1)';
-    }, 10);
-    
     loading.classList.remove('hidden');
     error.classList.add('hidden');
     grid.classList.add('hidden');
@@ -2737,6 +2754,8 @@ async function loadSpaceInvadersAchievements(gameKey) {
   } catch (error) {
     console.error('❌ Error loading achievements:', error);
     displayAchievementsError(error.message);
+  } finally {
+    isLoadingAchievements = false;
   }
 }
 
@@ -2798,21 +2817,18 @@ function displayAchievementsError(errorMessage) {
 
 function closeAchievementsModal() {
   const modal = document.getElementById('achievementsModal');
-  modal.style.opacity = '0';
-  modal.style.transform = 'scale(0.95)';
-  setTimeout(() => {
-    modal.classList.add('hidden');
-  }, 150);
+  modal.classList.add('hidden');
+  isLoadingAchievements = false; // Reset loading flag when closing
 }
 
 </script>
 
 <!-- 🏆 Space Invaders Achievements Modal -->
 <div id="achievementsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-  <div class="bg-gray-900 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto transform transition-all duration-300 ease-out">
+  <div class="bg-gray-900 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-2xl font-bold text-yellow-300">🏆 Space Cheese Invaders Achievements</h2>
-      <button onclick="closeAchievementsModal()" class="text-gray-400 hover:text-white text-2xl transition-colors duration-200">&times;</button>
+      <button onclick="closeAchievementsModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
     </div>
     
     <!-- Achievement Stats -->

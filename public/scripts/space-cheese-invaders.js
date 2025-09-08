@@ -1,4 +1,4 @@
-// 🧀 Space Cheese Invaders v3.9.4 - SEASON 3 PHASE 2 ACHIEVEMENT DIFFICULTY REBALANCE - TIMESTAMP: ${Date.now()}
+// 🧀 Space Cheese Invaders v3.9.19 - PHASE 3 AUDIO & SHIELD ENHANCEMENTS - TIMESTAMP: ${Date.now()}
 // Much slower invaders (1 second drop, 1 minute break) with Tetris block danger items
 // NEW: Auto-shoot feature - automatically fires when ship moves (toggle with 'T' key)
 // NEW: Laser shot type, Speed boost power-up, and Bomb weapon
@@ -1094,7 +1094,7 @@ powerUpImages.collect.onerror = () => console.warn('⚠️ Failed to load collec
 class CheeseSoundManager {
   constructor() {
     this.audioContext = null;
-    this.soundEnabled = false; // 🚫 Start with sound DISABLED by default
+    this.soundEnabled = true; // 🎵 Start with sound ENABLED by default
     this.masterVolume = 0.7;
     this.initAudioContext();
   }
@@ -1114,6 +1114,267 @@ class CheeseSoundManager {
     }
   }
 
+  // 🎵 NEW: Play weapon-specific sounds
+  playWeaponSound(weaponType) {
+    if (!this.soundEnabled) {
+      console.log('🔇 Sound disabled, skipping weapon sound');
+      return;
+    }
+    
+    console.log(`🎵 Playing weapon sound: ${weaponType}`);
+    
+    // Try to play file-based audio first
+    try {
+      const audio = new Audio(`sounds/invaders/weapons/${weaponType}.wav`);
+      audio.volume = this.masterVolume * 0.8;
+      audio.play().catch(e => {
+        console.log('File audio failed, trying programmatic audio:', e);
+        this.playProgrammaticWeaponSound(weaponType);
+      });
+    } catch (error) {
+      console.log('File audio failed, trying programmatic audio:', error);
+      this.playProgrammaticWeaponSound(weaponType);
+    }
+  }
+
+  // 🎵 FALLBACK: Generate weapon sounds programmatically
+  playProgrammaticWeaponSound(weaponType) {
+    if (!this.audioContext) {
+      console.log('No audio context available for programmatic sound');
+      return;
+    }
+
+    try {
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      // Different sounds for different weapons
+      switch(weaponType) {
+        case 'normal_shoot':
+          oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(200, this.audioContext.currentTime + 0.1);
+          break;
+        case 'laser':
+          oscillator.frequency.setValueAtTime(1200, this.audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(100, this.audioContext.currentTime + 0.2);
+          break;
+        case 'bomb':
+          oscillator.frequency.setValueAtTime(150, this.audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(50, this.audioContext.currentTime + 0.3);
+          break;
+        default:
+          oscillator.frequency.setValueAtTime(600, this.audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(300, this.audioContext.currentTime + 0.1);
+      }
+      
+      gainNode.gain.setValueAtTime(this.masterVolume * 0.3, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+      
+      oscillator.start(this.audioContext.currentTime);
+      oscillator.stop(this.audioContext.currentTime + 0.1);
+      
+      console.log(`🎵 Generated programmatic sound for: ${weaponType}`);
+    } catch (error) {
+      console.log('Programmatic sound generation failed:', error);
+    }
+  }
+
+  // 🎵 NEW: Play explosion sounds
+  playExplosionSound(explosionType = 'normal') {
+    if (!this.soundEnabled) {
+      console.log('🔇 Sound disabled, skipping explosion sound');
+      return;
+    }
+    
+    console.log(`💥 Playing explosion sound: ${explosionType}`);
+    this.playProgrammaticExplosionSound(explosionType);
+  }
+
+  // 🎵 FALLBACK: Generate explosion sounds programmatically
+  playProgrammaticExplosionSound(explosionType) {
+    if (!this.audioContext) {
+      console.log('No audio context available for explosion sound');
+      return;
+    }
+
+    try {
+      const oscillator1 = this.audioContext.createOscillator();
+      const oscillator2 = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      
+      oscillator1.connect(gainNode);
+      oscillator2.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      // Different explosion sounds
+      switch(explosionType) {
+        case 'invader':
+          // Quick pop explosion
+          oscillator1.frequency.setValueAtTime(400, this.audioContext.currentTime);
+          oscillator1.frequency.exponentialRampToValueAtTime(50, this.audioContext.currentTime + 0.15);
+          oscillator2.frequency.setValueAtTime(600, this.audioContext.currentTime);
+          oscillator2.frequency.exponentialRampToValueAtTime(100, this.audioContext.currentTime + 0.15);
+          break;
+        case 'boss':
+          // Deep boom explosion
+          oscillator1.frequency.setValueAtTime(200, this.audioContext.currentTime);
+          oscillator1.frequency.exponentialRampToValueAtTime(30, this.audioContext.currentTime + 0.4);
+          oscillator2.frequency.setValueAtTime(150, this.audioContext.currentTime);
+          oscillator2.frequency.exponentialRampToValueAtTime(20, this.audioContext.currentTime + 0.4);
+          break;
+        case 'powerup':
+          // Sparkly pickup sound
+          oscillator1.frequency.setValueAtTime(800, this.audioContext.currentTime);
+          oscillator1.frequency.exponentialRampToValueAtTime(1200, this.audioContext.currentTime + 0.1);
+          oscillator2.frequency.setValueAtTime(1000, this.audioContext.currentTime);
+          oscillator2.frequency.exponentialRampToValueAtTime(1500, this.audioContext.currentTime + 0.1);
+          break;
+        case 'shield':
+          // Shield activation sound
+          oscillator1.frequency.setValueAtTime(300, this.audioContext.currentTime);
+          oscillator1.frequency.exponentialRampToValueAtTime(600, this.audioContext.currentTime + 0.2);
+          oscillator2.frequency.setValueAtTime(400, this.audioContext.currentTime);
+          oscillator2.frequency.exponentialRampToValueAtTime(800, this.audioContext.currentTime + 0.2);
+          break;
+        default:
+          // Normal explosion
+          oscillator1.frequency.setValueAtTime(300, this.audioContext.currentTime);
+          oscillator1.frequency.exponentialRampToValueAtTime(80, this.audioContext.currentTime + 0.2);
+          oscillator2.frequency.setValueAtTime(450, this.audioContext.currentTime);
+          oscillator2.frequency.exponentialRampToValueAtTime(120, this.audioContext.currentTime + 0.2);
+      }
+      
+      gainNode.gain.setValueAtTime(this.masterVolume * 0.4, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+      
+      oscillator1.start(this.audioContext.currentTime);
+      oscillator2.start(this.audioContext.currentTime);
+      oscillator1.stop(this.audioContext.currentTime + 0.2);
+      oscillator2.stop(this.audioContext.currentTime + 0.2);
+      
+      console.log(`💥 Generated programmatic explosion sound for: ${explosionType}`);
+    } catch (error) {
+      console.log('Programmatic explosion sound generation failed:', error);
+    }
+  }
+
+  // 🎵 NEW: Play background music every 3 waves
+  playBackgroundMusic(waveNumber) {
+    if (!this.soundEnabled) {
+      console.log('🔇 Sound disabled, skipping background music');
+      return;
+    }
+    
+    console.log(`🎼 Playing background music for wave: ${waveNumber}`);
+    this.playProgrammaticBackgroundMusic(waveNumber);
+  }
+
+  // 🎵 FALLBACK: Generate background music programmatically
+  playProgrammaticBackgroundMusic(waveNumber) {
+    if (!this.audioContext) {
+      console.log('No audio context available for background music');
+      return;
+    }
+
+    try {
+      // Create a simple melody based on wave number
+      const notes = [
+        { freq: 523, time: 0 },    // C5
+        { freq: 659, time: 0.5 },  // E5
+        { freq: 784, time: 1.0 },  // G5
+        { freq: 1047, time: 1.5 }   // C6
+      ];
+      
+      notes.forEach(note => {
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(note.freq, this.audioContext.currentTime + note.time);
+        
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime + note.time);
+        gainNode.gain.linearRampToValueAtTime(this.masterVolume * 0.1, this.audioContext.currentTime + note.time + 0.1);
+        gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + note.time + 0.4);
+        
+        oscillator.start(this.audioContext.currentTime + note.time);
+        oscillator.stop(this.audioContext.currentTime + note.time + 0.4);
+      });
+      
+      console.log(`🎼 Generated programmatic background music for wave: ${waveNumber}`);
+    } catch (error) {
+      console.log('Programmatic background music generation failed:', error);
+    }
+  }
+
+  // 🎵 NEW: Play boss defeat voice
+  playBossDefeatVoice() {
+    if (!this.soundEnabled) {
+      console.log('🔇 Sound disabled, skipping boss defeat voice');
+      return;
+    }
+    
+    console.log('🎵 Playing boss defeat voice: LEVEL UP!');
+    
+    // Try to play file-based audio first
+    try {
+      const audio = new Audio('sounds/invaders/voice/LEVEL UP!.wav');
+      audio.volume = this.masterVolume * 0.9;
+      audio.play().catch(e => {
+        console.log('File audio failed, trying programmatic voice:', e);
+        this.playProgrammaticBossDefeatVoice();
+      });
+    } catch (error) {
+      console.log('File audio failed, trying programmatic voice:', error);
+      this.playProgrammaticBossDefeatVoice();
+    }
+  }
+
+  // 🎵 FALLBACK: Generate boss defeat voice programmatically
+  playProgrammaticBossDefeatVoice() {
+    if (!this.audioContext) {
+      console.log('No audio context available for programmatic voice');
+      return;
+    }
+
+    try {
+      // Create a celebratory sound sequence
+      const oscillator1 = this.audioContext.createOscillator();
+      const oscillator2 = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      
+      oscillator1.connect(gainNode);
+      oscillator2.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      // Two-tone celebratory sound
+      oscillator1.frequency.setValueAtTime(523, this.audioContext.currentTime); // C5
+      oscillator2.frequency.setValueAtTime(659, this.audioContext.currentTime); // E5
+      
+      oscillator1.frequency.setValueAtTime(659, this.audioContext.currentTime + 0.2); // E5
+      oscillator2.frequency.setValueAtTime(784, this.audioContext.currentTime + 0.2); // G5
+      
+      oscillator1.frequency.setValueAtTime(784, this.audioContext.currentTime + 0.4); // G5
+      oscillator2.frequency.setValueAtTime(1047, this.audioContext.currentTime + 0.4); // C6
+      
+      gainNode.gain.setValueAtTime(this.masterVolume * 0.4, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.6);
+      
+      oscillator1.start(this.audioContext.currentTime);
+      oscillator2.start(this.audioContext.currentTime);
+      oscillator1.stop(this.audioContext.currentTime + 0.6);
+      oscillator2.stop(this.audioContext.currentTime + 0.6);
+      
+      console.log('🎵 Generated programmatic boss defeat voice');
+    } catch (error) {
+      console.log('Programmatic voice generation failed:', error);
+    }
+  }
+
   // Create the iconic Star Wars laser sound with cheese twist
   playStarWarsLaser() {
     if (!this.soundEnabled || !this.audioContext) return;
@@ -1123,8 +1384,6 @@ class CheeseSoundManager {
       if (this.audioContext.state === 'suspended') {
         this.audioContext.resume();
       }
-
-      const now = this.audioContext.currentTime;
 
       // Create oscillator for the laser sound
       const oscillator = this.audioContext.createOscillator();
@@ -1637,19 +1896,22 @@ let reloadButtonInterval = null;
       const powerUpRoll = Math.random();
       let powerUpType, ammoType;
       
-      if (powerUpRoll < 0.25) {
-        // 25% chance: Speed boost power-up (green ⚡)
+      if (powerUpRoll < 0.20) {
+        // 20% chance: Speed boost power-up (green ⚡)
         powerUpType = 'speed';
-      } else if (powerUpRoll < 0.50) {
-        // 25% chance: Laser ammo (cyan 🔫)
+      } else if (powerUpRoll < 0.40) {
+        // 20% chance: Laser ammo (cyan 🔫)
         powerUpType = 'ammo';
         ammoType = 'laser';
-      } else if (powerUpRoll < 0.75) {
-        // 25% chance: Bomb ammo (magenta 💣)
+      } else if (powerUpRoll < 0.60) {
+        // 20% chance: Bomb ammo (magenta 💣)
         powerUpType = 'ammo';
         ammoType = 'bomb';
+      } else if (powerUpRoll < 0.80) {
+        // 20% chance: Shield power-up (blue 🛡️) - INCREASED!
+        powerUpType = 'shield';
       } else {
-        // 25% chance: Collect power-up (yellow ⭐)
+        // 20% chance: Collect power-up (yellow ⭐)
         powerUpType = 'collect';
       }
       
@@ -1678,6 +1940,21 @@ let reloadButtonInterval = null;
           height: 20,
           type: 'collect',
           color: '#ffff00',
+          speed: 2,
+          collected: false
+        };
+        
+        if (!window.powerUps) window.powerUps = [];
+        window.powerUps.push(powerUp);
+      } else if (powerUpType === 'shield') {
+        // 🛡️ NEW: Shield power-up (blue shield)
+        const powerUp = {
+          x: Math.random() * (canvasWidth - 20),
+          y: -20,
+          width: 20,
+          height: 20,
+          type: 'shield',
+          color: '#0088ff',
           speed: 2,
           collected: false
         };
@@ -1725,6 +2002,9 @@ let reloadButtonInterval = null;
           // 🚀 NEW: Add speed boost ammo instead of immediate activation
           speedBoostAmmo += 2; // Add 2 speed boost uses
           console.log(`⚡ Added 2 speed boost ammo! Total: ${speedBoostAmmo}`);
+          
+          // 🎵 NEW: Play power-up pickup sound
+          cheeseSoundManager.playExplosionSound('powerup');
         } else if (powerUp.type === 'collect') {
           // 🚀 NEW: Collect power-up gives bonus points and temporary effects
           spaceInvadersScore += 100; // Reduced from 500 to 100
@@ -1735,6 +2015,9 @@ let reloadButtonInterval = null;
           playerShip.invincibleTimer = 100; // 1 second at 100ms intervals
           
           console.log(`⭐ Collect power-up collected! +500 points, +5 invaders, temporary invincibility!`);
+          
+          // 🎵 NEW: Play power-up pickup sound
+          cheeseSoundManager.playExplosionSound('powerup');
         } else if (powerUp.type === 'ammo') {
           weaponAmmo[powerUp.ammoType] += 2; // Add 2 ammo
           console.log(`🔫 Added 2 ${powerUp.ammoType} ammo!`);
@@ -1744,6 +2027,17 @@ let reloadButtonInterval = null;
           if (reloadButton) {
             updateReloadButton();
           }
+          
+          // 🎵 NEW: Play power-up pickup sound
+          cheeseSoundManager.playExplosionSound('powerup');
+        } else if (powerUp.type === 'shield') {
+          // 🛡️ NEW: Shield power-up gives temporary invincibility
+          playerShip.invincible = true;
+          playerShip.invincibleTimer = 300; // 3 seconds of invincibility
+          console.log(`🛡️ Shield activated! 3 seconds of invincibility!`);
+          
+          // 🎵 NEW: Play shield activation sound
+          cheeseSoundManager.playExplosionSound('shield');
         }
       }
       
@@ -2100,7 +2394,7 @@ let reloadButtonInterval = null;
       bossBullets = [];
       bossExplosions = [];
       bossDefeated = false;
-              bossReward = Math.floor(waveNumber * 0.5); // 25 DSPOINC for wave 50, 50 for wave 100, etc. (FURTHER REDUCED for balance)
+              bossReward = Math.floor(waveNumber * 0.1); // MUCH LOWER: 1 DSPOINC for wave 10, 2 for wave 20, etc. (was 0.5)
       console.log(`✅ Boss phase variables set: phase=${bossPhase}, reward=${bossReward}`);
       
       // 🚀 CRITICAL DEBUG: Verify phase variables
@@ -3093,9 +3387,12 @@ let reloadButtonInterval = null;
         if (boss.health <= 0 && !bossDefeated) {
           bossDefeated = true;
           boss.health = 0; // Ensure it stays at 0
-          bossReward = Math.floor(bossReward * (1 + (waveNumber / 100))); // Bonus for higher waves
+          bossReward = Math.floor(bossReward * (1 + (waveNumber / 200))); // MUCH LOWER bonus for higher waves (was /100)
           console.log(`👑 BOSS DEFEATED! ${boss.name} has been vanquished! Reward: ${bossReward} DSPOINC`);
           console.log(`🎉 Final boss stats: Wave ${waveNumber}, Type: ${boss.type}, Max Health: ${boss.maxHealth}`);
+          
+          // 🎵 NEW: Play boss defeat voice
+          cheeseSoundManager.playBossDefeatVoice();
           
           // 🏆 SEASON 3 PHASE 2: Track boss kills for achievements
           bossesKilled++;
@@ -4061,10 +4358,10 @@ let reloadButtonInterval = null;
       canvasHeight = canvasHeight || 600;
     }
     
-    // 🎯 SEASON 3 PHASE 2: Progressive difficulty based on wave number
-    const isEarlyWave = waveNumber <= 3;
-    const isMidWave = waveNumber <= 8;
-    const invaderCountMultiplier = isEarlyWave ? 0.4 : isMidWave ? 0.7 : 1.0;
+    // 🎯 SEASON 3 PHASE 2: MUCH LOWER invader counts for early waves
+    const isEarlyWave = waveNumber <= 8;  // Extended early wave range
+    const isMidWave = waveNumber <= 15;   // Extended mid wave range
+    const invaderCountMultiplier = isEarlyWave ? 0.1 : isMidWave ? 0.3 : 1.0; // MUCH LOWER: 10% for early, 30% for mid
     
     switch (pattern) {
       case 'v_formation':
@@ -4243,6 +4540,9 @@ let reloadButtonInterval = null;
   function startGame() {
     resetGame();
     
+    // 🏆 Load existing achievements to prevent spam
+    loadExistingAchievements();
+    
     // 🔥 PHOENIX CONFIGURATION LOADING - NEW!
     // Load Phoenix settings from admin interface before starting game
     loadPhoenixConfiguration().then(() => {
@@ -4375,6 +4675,9 @@ let reloadButtonInterval = null;
     // 🏆 SEASON 3 PHASE 2: Update achievement system
     updateAchievementPopups();
     updateAchievementTracking();
+    
+    // 💥 NEW: Update explosion danger zones
+    updateExplosionDangerZones();
     
     // 🔧 CRITICAL FIX: Screen shake decay (must happen every frame)
     if (screenShake > 0) {
@@ -4638,20 +4941,172 @@ let reloadButtonInterval = null;
     }
   }
 
-  // 🎯 NEW: Formation phase movement - very slow and deliberate
+  // 🎯 NEW: Formation phase movement - very slow and deliberate with spinning attacks
   function moveInvadersFormation() {
     invaders.forEach(invader => {
       if (!invader.alive) return;
+      
+      // 🌀 ENHANCED: Much more aggressive spinning attack patterns
+      if (invader.spinAttack && waveNumber >= 5) {
+        invader.spinAngle += 0.3; // Faster spin speed
+        invader.x += Math.cos(invader.spinAngle) * 0.8; // Larger movement
+        invader.y += Math.sin(invader.spinAngle) * 0.5;
+        
+        // PROGRESSIVE SHOOTING - Start VERY low, increase gradually
+        const baseShootChance = 0.00005; // 🎯 EXTREMELY LOW: Reduced from 0.0001 to 0.00005
+        const waveBonus = Math.min(0.148, (waveNumber - 4) * 0.002); // 🎯 MUCH SLOWER INCREASE: Reduced from 0.004 to 0.002
+        const shootChance = baseShootChance + waveBonus;
+        
+        // COOLDOWN SYSTEM - Prevent all invaders shooting at once
+        const currentTime = Date.now();
+        if (currentTime - invader.lastAttackTime < 8000) return; // 🎯 MUCH LONGER COOLDOWN: Increased from 4000 to 8000ms
+        
+        if (Math.random() < shootChance) { // Progressive chance per frame
+          invader.lastAttackTime = currentTime; // Update last attack time
+          // Pattern 1: Direct shot at player - MUCH SLOWER SPEED
+          invaderBullets.push({
+            x: invader.x + invader.width / 2,
+            y: invader.y + invader.height,
+            vx: (playerShip.x - invader.x) * 0.01, // 🎯 SLOWER: Reduced from 0.03 to 0.01
+            vy: 1.5, // 🎯 SLOWER: Reduced from 4 to 1.5
+            width: 5,
+            height: 12,
+            color: '#ff6b6b'
+          });
+          
+          // Pattern 2: Spread shot (3 bullets) - ALWAYS fire
+          for (let i = -1; i <= 1; i++) {
+            invaderBullets.push({
+              x: invader.x + invader.width / 2,
+              y: invader.y + invader.height,
+              vx: i * 1, // 🎯 SLOWER: Reduced from 2 to 1
+              vy: 1.5, // 🎯 SLOWER: Reduced from 3 to 1.5
+              width: 4,
+              height: 10,
+              color: '#ffaa00'
+            });
+          }
+          
+          // Pattern 3: Spiral shot - ALWAYS fire
+          invaderBullets.push({
+            x: invader.x + invader.width / 2,
+            y: invader.y + invader.height,
+            vx: Math.cos(invader.spinAngle) * 1.5, // 🎯 SLOWER: Reduced from 3 to 1.5
+            vy: 1.5, // 🎯 SLOWER: Reduced from 3 to 1.5
+            width: 4,
+            height: 10,
+            color: '#ff00ff',
+            spiral: true,
+            spiralAngle: invader.spinAngle
+          });
+        }
+        return;
+      }
+      
+      // 🚀 NEW: Dive attack pattern - aggressive downward movement
+      if (invader.diveAttack && waveNumber >= 8) {
+        invader.y += 2; // Fast downward movement
+        invader.x += (playerShip.x - invader.x) * 0.01; // Track player
+        
+        // PROGRESSIVE SHOOTING - Start VERY low, increase gradually
+        const baseShootChance = 0.00002; // 🎯 EXTREMELY LOW: Reduced from 0.00005 to 0.00002
+        const waveBonus = Math.min(0.119, (waveNumber - 7) * 0.0015); // 🎯 MUCH SLOWER INCREASE: Reduced from 0.003 to 0.0015
+        const shootChance = baseShootChance + waveBonus;
+        
+        // COOLDOWN SYSTEM - Prevent all invaders shooting at once
+        const currentTime = Date.now();
+        if (currentTime - invader.lastAttackTime < 10000) return; // 🎯 MUCH LONGER COOLDOWN: Increased from 5000 to 10000ms
+        
+        if (Math.random() < shootChance) { // Progressive chance per frame
+          invader.lastAttackTime = currentTime; // Update last attack time
+          invaderBullets.push({
+            x: invader.x + invader.width / 2,
+            y: invader.y + invader.height,
+            vx: (playerShip.x - invader.x) * 0.01, // 🎯 SLOWER: Reduced from 0.02 to 0.01
+            vy: 2, // 🎯 SLOWER: Reduced from 5 to 2
+            width: 6,
+            height: 15,
+            color: '#ff0000'
+          });
+        }
+        return;
+      }
+      
+      // 💥 NEW: Kamikaze attack - direct collision attempt
+      if (invader.kamikazeAttack && waveNumber >= 12) {
+        const dx = playerShip.x - invader.x;
+        const dy = playerShip.y - invader.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 50) { // Only kamikaze if far enough
+          invader.x += dx * 0.02; // Direct movement toward player
+          invader.y += dy * 0.02;
+        }
+        
+        // PROGRESSIVE SHOOTING - Start VERY low, increase gradually
+        const baseShootChance = 0.000005; // 🎯 EXTREMELY LOW: Reduced from 0.00001 to 0.000005
+        const waveBonus = Math.min(0.1795, (waveNumber - 11) * 0.002); // 🎯 MUCH SLOWER INCREASE: Reduced from 0.004 to 0.002
+        const shootChance = baseShootChance + waveBonus;
+        
+        // COOLDOWN SYSTEM - Prevent all invaders shooting at once
+        const currentTime = Date.now();
+        if (currentTime - invader.lastAttackTime < 12000) return; // 🎯 MUCH LONGER COOLDOWN: Increased from 6000 to 12000ms
+        
+        if (Math.random() < shootChance) { // Progressive chance per frame
+          invader.lastAttackTime = currentTime; // Update last attack time
+          invaderBullets.push({
+            x: invader.x + invader.width / 2,
+            y: invader.y + invader.height,
+            vx: dx * 0.015, // 🎯 SLOWER: Reduced from 0.03 to 0.015
+            vy: dy * 0.015 + 1.5, // 🎯 SLOWER: Reduced from 0.03 + 3 to 0.015 + 1.5
+            width: 5,
+            height: 12,
+            color: '#ff6600'
+          });
+        }
+        return;
+      }
+      
+      // ⚡ NEW: Zigzag attack - unpredictable movement
+      if (invader.zigzagAttack && waveNumber >= 6) {
+        invader.attackTimer++;
+        const zigzagSpeed = 0.5 + Math.sin(invader.attackTimer * 0.1) * 0.3;
+        invader.x += zigzagSpeed;
+        invader.y += 0.5;
+        
+        // PROGRESSIVE SHOOTING - Start VERY low, increase gradually
+        const baseShootChance = 0.0001; // 🎯 EXTREMELY LOW: Reduced from 0.0002 to 0.0001
+        const waveBonus = Math.min(0.098, (waveNumber - 5) * 0.001); // 🎯 MUCH SLOWER INCREASE: Reduced from 0.002 to 0.001
+        const shootChance = baseShootChance + waveBonus;
+        
+        // COOLDOWN SYSTEM - Prevent all invaders shooting at once
+        const currentTime = Date.now();
+        if (currentTime - invader.lastAttackTime < 8000) return; // 🎯 MUCH LONGER COOLDOWN: Increased from 4000 to 8000ms
+        
+        if (Math.random() < shootChance) { // Progressive chance per frame
+          invader.lastAttackTime = currentTime; // Update last attack time
+          invaderBullets.push({
+            x: invader.x + invader.width / 2,
+            y: invader.y + invader.height,
+            vx: Math.sin(invader.attackTimer * 0.2) * 1.5, // 🎯 SLOWER: Reduced from 3 to 1.5
+            vy: 2, // 🎯 SLOWER: Reduced from 4 to 2
+            width: 4,
+            height: 10,
+            color: '#00ff00'
+          });
+        }
+        return;
+      }
       
       // Move very slowly to target position
       const targetX = invader.targetX || invader.x;
       const targetY = invader.targetY || invader.y;
       
       if (Math.abs(invader.x - targetX) > 1) {
-        invader.x += (targetX - invader.x) * 0.05; // Much faster movement (was 0.01)
+        invader.x += (targetX - invader.x) * 0.1; // MUCH FASTER movement (was 0.05)
       }
       if (Math.abs(invader.y - targetY) > 1) {
-        invader.y += (targetY - invader.y) * 0.05; // Much faster movement (was 0.01)
+        invader.y += (targetY - invader.y) * 0.1; // MUCH FASTER movement (was 0.05)
       }
     });
   }
@@ -4767,6 +5222,11 @@ let reloadButtonInterval = null;
   function spawnNewWave() {
     // waveNumber is already incremented in updateGame, so don't increment here
     gameSpeed += 0.001; // TINY difficulty increase
+    
+    // 🎼 NEW: Play background music every 3 waves
+    if (waveNumber % 3 === 0) {
+      cheeseSoundManager.playBackgroundMusic(waveNumber);
+    }
     
       // 🔥 PHOENIX INVADERS: Check if this should be a Phoenix wave
   if (waveNumber % phoenixWaveConfig.waveFrequency === 0) {
@@ -5079,18 +5539,8 @@ let reloadButtonInterval = null;
       }
     });
     
-    // Check mini-Phoenix collisions
-    miniPhoenixes.forEach(mini => {
-      if (checkCollision(mini, playerShip)) {
-        console.log(`🐤 Mini-Phoenix collision! Player takes ${mini.damage} damage!`);
-        playerHealth -= mini.damage;
-        screenShake = 3;
-        createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 20, 15);
-        
-        // Mini-Phoenix takes damage too
-        mini.takeDamage(3);
-      }
-    });
+    // 🎯 REMOVED: Old mini-Phoenix collision detection - now handled in checkPhoenixPlayerCollisions()
+    // This was causing mini-Phoenixes to get stuck because they weren't being removed properly
   }
   }
 
@@ -5211,15 +5661,119 @@ let reloadButtonInterval = null;
     }
   }
 
-  // 🧩 NEW: Move Tetris danger items
+  // 🧩 NEW: Move Tetris danger items with explosion danger zones
   function moveTetrisDangerItems() {
-    tetrisDangerItems.forEach(item => {
+    tetrisDangerItems.forEach((item, index) => {
       item.y += item.speed;
       item.rotation += 2; // Rotate as they fall
+      
+      // 💥 NEW: Create explosion danger zone when item hits ground near player
+      if (item.y >= canvasHeight - 100) { // Near bottom of screen
+        const playerDistance = Math.abs(item.x - playerShip.x);
+        if (playerDistance < 120) { // Within danger zone (reduced from 150)
+          // Create explosion danger zone
+          createExplosionDangerZone(item.x, canvasHeight - 50, item.type);
+          
+          // Remove the item
+          tetrisDangerItems.splice(index, 1);
+        }
+      }
     });
     
     // Remove items that go off screen
     tetrisDangerItems = tetrisDangerItems.filter(item => item.y < canvasHeight + 30);
+  }
+
+  // 💥 NEW: Create explosion danger zones near player
+  function createExplosionDangerZone(x, y, itemType) {
+    const explosionZone = {
+      x: x,
+      y: y,
+      radius: 60, // Danger zone radius (reduced from 80)
+      maxRadius: 100, // Maximum explosion radius (reduced from 120)
+      timer: 0,
+      maxTimer: 120, // 2 seconds at 60fps
+      active: true,
+      type: itemType,
+      damage: itemType === 'bomb' ? 2 : 1 // Bombs do more damage
+    };
+    
+    // Add to explosion zones array
+    if (!window.explosionDangerZones) {
+      window.explosionDangerZones = [];
+    }
+    window.explosionDangerZones.push(explosionZone);
+    
+    // Create visual explosion effect
+    createEnhancedExplosion(x, y, 60, 2);
+  }
+  
+  // 💥 NEW: Update explosion danger zones
+  function updateExplosionDangerZones() {
+    if (!window.explosionDangerZones) return;
+    
+    window.explosionDangerZones.forEach((zone, index) => {
+      zone.timer++;
+      zone.radius = zone.maxRadius * (zone.timer / zone.maxTimer);
+      
+      // Check if player is in danger zone
+      const dx = playerShip.x - zone.x;
+      const dy = playerShip.y - zone.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < zone.radius && zone.active) {
+        // Player takes damage
+        if (!playerShip.invincible || playerShip.invincibleTimer <= 0) {
+          playerShip.health -= zone.damage;
+          playerShip.invincible = true;
+          playerShip.invincibleTimer = 60; // 1 second invincibility
+          
+          // Create damage effect
+          createEnhancedExplosion(playerShip.x, playerShip.y, 30, 1);
+        }
+        zone.active = false; // Only damage once
+      }
+      
+      // Remove expired zones
+      if (zone.timer >= zone.maxTimer) {
+        window.explosionDangerZones.splice(index, 1);
+      }
+    });
+  }
+  
+  // 💥 NEW: Draw explosion danger zones
+  function drawExplosionDangerZones() {
+    if (!window.explosionDangerZones) return;
+    
+    window.explosionDangerZones.forEach(zone => {
+      const alpha = 1 - (zone.timer / zone.maxTimer);
+      const pulseIntensity = 0.5 + Math.sin(zone.timer * 0.3) * 0.5;
+      
+      // Draw danger zone
+      ctx.save();
+      ctx.globalAlpha = alpha * 0.3;
+      ctx.fillStyle = `rgba(255, 0, 0, ${pulseIntensity})`;
+      ctx.beginPath();
+      ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw warning ring
+      ctx.globalAlpha = alpha * 0.8;
+      ctx.strokeStyle = `rgba(255, 255, 0, ${pulseIntensity})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Draw warning text
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#ff0000';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('DANGER!', zone.x, zone.y - zone.radius - 10);
+      
+      ctx.restore();
+    });
   }
 
   // 🧩 NEW: Check Tetris item collisions with special bomb effects
@@ -5364,11 +5918,23 @@ let reloadButtonInterval = null;
     // 🚀 NEW: Random invader type selection (original vs new variant)
     const invaderType = Math.random() < 0.7 ? 'original' : 'variant'; // 70% original, 30% variant
     
+    // 🎯 NEW: Check if this invader will have attack patterns
+    const willHaveAttackPattern = waveNumber >= 5 && Math.random() < Math.min(0.4, (waveNumber - 4) * 0.1) ||
+                                 waveNumber >= 8 && Math.random() < Math.min(0.3, (waveNumber - 7) * 0.05) ||
+                                 waveNumber >= 12 && Math.random() < Math.min(0.2, (waveNumber - 11) * 0.03) ||
+                                 waveNumber >= 6 && Math.random() < Math.min(0.25, (waveNumber - 5) * 0.08);
+    
+    // 🎯 NEW: Position shooting invaders on top of container
+    let invaderY = y;
+    if (willHaveAttackPattern) {
+      invaderY = 50; // Spawn shooting invaders at top of screen
+    }
+    
     return {
       x: x,
-      y: y,
+      y: invaderY, // 🎯 NEW: Use adjusted Y position
       targetX: x, // For formation phase
-      targetY: y, // For formation phase
+      targetY: invaderY, // 🎯 NEW: Use adjusted Y position
       width: 30,
       height: 25,
       alive: true,
@@ -5381,9 +5947,17 @@ let reloadButtonInterval = null;
       weakPointType: Math.random() < 0.5 ? 'eye' : 'dna', // Eye or DNA weak point
       weakPointHealth: 2 + Math.floor(waveNumber / 3), // More health in later waves
       weakPointX: x + 15, // Center of invader
-      weakPointY: y + 12, // Upper part of invader
+      weakPointY: invaderY + 12, // 🎯 NEW: Use adjusted Y position
       weakPointSize: 6 + Math.floor(waveNumber / 4), // Bigger weak points in later waves
-      invaderType: invaderType // 🚀 NEW: Track which invader type this is
+      invaderType: invaderType, // 🚀 NEW: Track which invader type this is
+      spinAttack: waveNumber >= 5 && Math.random() < Math.min(0.4, (waveNumber - 4) * 0.1), // 🌀 PROGRESSIVE: Start at wave 5, increase gradually
+      spinAngle: Math.random() * Math.PI * 2, // 🌀 NEW: Random starting spin angle
+      diveAttack: waveNumber >= 8 && Math.random() < Math.min(0.3, (waveNumber - 7) * 0.05), // 🚀 PROGRESSIVE: Start at wave 8, increase gradually
+      kamikazeAttack: waveNumber >= 12 && Math.random() < Math.min(0.2, (waveNumber - 11) * 0.03), // 💥 PROGRESSIVE: Start at wave 12, increase gradually
+      zigzagAttack: waveNumber >= 6 && Math.random() < Math.min(0.25, (waveNumber - 5) * 0.08), // ⚡ PROGRESSIVE: Start at wave 6, increase gradually
+      attackTimer: 0, // 🎯 NEW: Attack pattern timer
+      lastAttackTime: 0, // 🎯 NEW: Last attack timestamp
+      isShootingInvader: willHaveAttackPattern // 🎯 NEW: Mark as shooting invader
     };
   }
 
@@ -5462,9 +6036,13 @@ let reloadButtonInterval = null;
         } else {
           bullet.y += bullet.speed;
         }
+      } else if (bullet.vx !== undefined && bullet.vy !== undefined) {
+        // NEW: Handle new attack pattern bullets with vx/vy
+        bullet.x += bullet.vx;
+        bullet.y += bullet.vy;
       } else {
         // Normal bullets go straight down
-        bullet.y += bullet.speed;
+        bullet.y += bullet.speed || 2; // Default speed if not specified
       }
     });
     invaderBullets = invaderBullets.filter(bullet => bullet.y < canvasHeight + 200); // Allow bullets to go 200px below screen
@@ -5998,6 +6576,7 @@ let reloadButtonInterval = null;
     drawBullets();
     drawInvaderBullets();
     drawTetrisDangerItems(); // NEW: Draw Tetris danger items
+    drawExplosionDangerZones(); // 💥 NEW: Draw explosion danger zones
     drawExplosions();
     drawPowerUps(); // 🚀 NEW: Draw power-ups
     
@@ -6125,7 +6704,7 @@ let reloadButtonInterval = null;
     // Reset alpha
     ctx.globalAlpha = 1;
   }
-  
+
   function drawStars() {
     // 🌟 SEASON 3: Use moving stars instead of static stars
     drawMovingStars();
@@ -6295,6 +6874,15 @@ let reloadButtonInterval = null;
     // Enhanced screen shake based on explosion size (reduced intensity)
     screenShake = Math.min(screenShake + (size * intensity * 0.2), 15);
     
+    // 🎵 NEW: Play explosion sound based on size
+    if (size > 50) {
+      cheeseSoundManager.playExplosionSound('boss');
+    } else if (size > 30) {
+      cheeseSoundManager.playExplosionSound('invader');
+    } else {
+      cheeseSoundManager.playExplosionSound('normal');
+    }
+    
     // Create enhanced explosion effect
     const explosion = {
       x: x,
@@ -6375,6 +6963,35 @@ let reloadButtonInterval = null;
   }
   
   // 🏆 SEASON 3 PHASE 2: ACHIEVEMENT SYSTEM FUNCTIONS
+  
+  // Load existing achievements at game start to prevent spam
+  async function loadExistingAchievements() {
+    try {
+      const discordId = localStorage.getItem('discord_id');
+      if (!discordId) return;
+      
+      const response = await fetch('/api/user/get-space-invaders-achievements.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: discordId })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.achievements) {
+          // Mark existing achievements as already unlocked
+          data.achievements.forEach(achievement => {
+            if (achievement.unlocked) {
+              achievements[achievement.key] = true;
+            }
+          });
+          console.log('🏆 Loaded existing achievements:', Object.keys(achievements).filter(key => achievements[key]));
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load existing achievements:', error);
+    }
+  }
   
   function createAchievementPopup(title, description, icon = '🏆') {
     const popup = {
@@ -7429,8 +8046,8 @@ let reloadButtonInterval = null;
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
       // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
-      // Based on screenshot: 2185 invaders = 21.85 DSPOINC, so 100 invaders = 1 DSPOINC
-      const dspoinEarned = Math.round((spaceInvadersScore * 0.01) * 100) / 100; // Round to 2 decimal places (100 invaders = 1 DSPOINC)
+      // FIXED: Much lower DSPOINC conversion - 1000 invaders = 1 DSPOINC (was 100 invaders = 1 DSPOINC)
+      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 invaders = 1 DSPOINC)
       
       // Add mouse control indicator
       const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
@@ -7629,14 +8246,24 @@ let reloadButtonInterval = null;
 
 
   function onGameOver() {
+    // 🚨 CRITICAL: Stop all game loops and timers
     clearInterval(spaceInvadersGameInterval);
+    spaceInvadersGameInterval = null;
+    
+    // 🚨 CRITICAL: Stop all game phases
+    gamePhase = 'gameOver';
+    gameRunning = false;
+    
+    // 🚨 CRITICAL: Stop all timers and intervals
+    if (typeof gameLoopTimer !== 'undefined') {
+      clearInterval(gameLoopTimer);
+    }
     
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
-    // Based on screenshot: 2185 invaders = 21.85 DSPOINC, so 100 invaders = 1 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersScore * 0.01) * 100) / 100; // Round to 2 decimal places (100 invaders = 1 DSPOINC)
+    // 🚀 FIXED: Use correct DSPOINC conversion (1000 invaders = 1 DSPOINC)
+    const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 invaders = 1 DSPOINC)
     
     if (gameOverModal && finalScoreText) {
       finalScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed)`;
@@ -7682,8 +8309,8 @@ let reloadButtonInterval = null;
     
     console.log(`🔫 playerShoot called with weapon: ${currentWeaponType}, isQuickShotCall: ${window.isQuickShotCall}`);
     
-    // 🎵 NEW: Play Star Wars laser sound for all weapon types!
-    cheeseSoundManager.playStarWarsLaser();
+    // 🎵 NEW: Play weapon-specific sound instead of generic laser
+    cheeseSoundManager.playWeaponSound(currentWeaponType);
     
     // 🚀 NEW: Enhanced shooting system with weapon types
     switch (currentWeaponType) {
@@ -7697,7 +8324,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 16,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'normal',
             damage: 1
           });
@@ -7706,7 +8333,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 16,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'normal',
             damage: 1
           });
@@ -7715,7 +8342,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 16,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'normal',
             damage: 1
           });
@@ -7724,7 +8351,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 16,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'normal',
             damage: 1
           });
@@ -7736,7 +8363,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 16,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'normal',
             damage: 1
           });
@@ -7745,7 +8372,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 16,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'normal',
             damage: 1
           });
@@ -7754,7 +8381,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 16,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'normal',
             damage: 1
           });
@@ -7766,7 +8393,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 16,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'normal',
             damage: 1
           });
@@ -7775,7 +8402,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 16,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'normal',
             damage: 1
           });
@@ -7786,7 +8413,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 16,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'normal',
             damage: 1
           });
@@ -8025,7 +8652,7 @@ let reloadButtonInterval = null;
             y: playerShip.y,
             width: 8,
             height: 8,
-            speed: 6,
+            speed: 10, // 🎯 FASTER: Increased from 6 to 10 for better responsiveness
             type: 'bomb'
           });
           weaponAmmo.bomb--;
@@ -10184,8 +10811,8 @@ window.emergencyCollisionCheck = function() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
       // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
-      // Based on screenshot: 2185 invaders = 21.85 DSPOINC, so 100 invaders = 1 DSPOINC
-      const dspoinEarned = Math.round((spaceInvadersScore * 0.01) * 100) / 100; // Round to 2 decimal places (100 invaders = 1 DSPOINC)
+      // FIXED: Much lower DSPOINC conversion - 1000 invaders = 1 DSPOINC (was 100 invaders = 1 DSPOINC)
+      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 invaders = 1 DSPOINC)
       
       // Add mouse control indicator
       const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
@@ -10196,14 +10823,19 @@ window.emergencyCollisionCheck = function() {
   }
 
   function onGameWin() {
+    // 🚨 CRITICAL: Stop all game loops and timers
     clearInterval(spaceInvadersGameInterval);
+    spaceInvadersGameInterval = null;
+    
+    // 🚨 CRITICAL: Stop all game phases
+    gamePhase = 'gameWin';
+    gameRunning = false;
     
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
-    // Based on screenshot: 2185 invaders = 21.85 DSPOINC, so 100 invaders = 1 DSPOINC
-    const dspoinEarned = Math.round((spaceInvadersScore * 0.01) * 100) / 100; // Round to 2 decimal places (100 invaders = 1 DSPOINC)
+    // 🚀 FIXED: Use correct DSPOINC conversion (1000 invaders = 1 DSPOINC)
+    const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 invaders = 1 DSPOINC)
     
     if (winModal && winScoreText) {
       winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed)`;
@@ -10236,9 +10868,8 @@ window.emergencyCollisionCheck = function() {
       return;
     }
 
-    // 🚀 CRITICAL FIX: Space Invaders now saves traditional score (like classic Space Invaders)
-    // Based on screenshot: 2185 invaders = 21.85 DSPOINC, so 100 invaders = 1 DSPOINC
-    const dspoincScore = Math.round((traditionalScore * 0.01) * 100) / 100; // Convert to DSPOINC (100 invaders = 1 DSPOINC)
+    // 🚀 FIXED: Use correct DSPOINC conversion (1000 invaders = 1 DSPOINC)
+    const dspoincScore = Math.round((traditionalScore * 0.001) * 100) / 100; // Convert to DSPOINC (1000 invaders = 1 DSPOINC)
 
     console.log(`💾 Saving Space Invaders score: ${traditionalScore} invaders destroyed = ${dspoincScore} DSPOINC`);
 
@@ -12152,6 +12783,10 @@ window.emergencyCollisionCheck = function() {
             playerShip.health -= damage;
             console.log(`🔥 Phoenix bird ${index} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
             
+            // 🎯 FIX: Remove the Phoenix bird after collision
+            phoenix.isDead = true;
+            phoenixWaves.splice(index, 1);
+            
             // Create explosion effect
             createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 30);
             
@@ -12182,6 +12817,10 @@ window.emergencyCollisionCheck = function() {
             playerShip.health -= damage;
             console.log(`🥚 Phoenix egg ${index} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
             
+            // 🎯 FIX: Remove the Phoenix egg after collision
+            egg.isDead = true;
+            phoenixEggs.splice(index, 1);
+            
             // Create explosion effect
             createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 25);
             
@@ -12206,6 +12845,10 @@ window.emergencyCollisionCheck = function() {
             const damage = 1; // Mini-Phoenixes do minimal damage
             playerShip.health -= damage;
             console.log(`🐤 Mini-Phoenix ${index} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
+            
+            // 🎯 FIX: Remove the mini-Phoenix after collision
+            mini.isDead = true;
+            miniPhoenixes.splice(index, 1);
             
             // Create explosion effect
             createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 20);
