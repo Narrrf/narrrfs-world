@@ -362,7 +362,16 @@ require_once 'discord-invite.php';
             🏆 View Space Invaders Achievements
           </button>
           <p class="text-xs text-yellow-400 mt-2 italic">Click to view all 29 Space Invaders achievements</p>
-      </div>
+        </div>
+        
+        <!-- 🧩 Tetris Achievements Button -->
+        <div class="mt-4">
+          <button onclick="toggleTetrisAchievements()" 
+                  class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-blue-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-2 ring-blue-400/30">
+            🧩 View Tetris Achievements
+          </button>
+          <p class="text-xs text-blue-400 mt-2 italic">Click to view all 29 Tetris achievements</p>
+        </div>
       
       <!-- 🏆 Overall Progress -->
       <div class="mb-6">
@@ -388,6 +397,47 @@ require_once 'discord-invite.php';
         <h3 class="text-md font-semibold mb-3 text-blue-300">🎯 Game Statistics</h3>
         <div id="missionsResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <!-- Game stats will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 🧩 Tetris Achievements Section -->
+    <div id="tetrisAchievements" class="mt-6 p-6 bg-gray-800 rounded-lg border border-gray-600 hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-blue-300">🧩 Tetris Achievements</h3>
+        <button onclick="toggleTetrisAchievements()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors">
+          ✕ Close
+        </button>
+      </div>
+      
+      <!-- Achievements Content -->
+      <div id="tetrisAchievementsContent">
+        <!-- Statistics Row -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="bg-blue-900/20 p-4 rounded-lg border border-blue-500/30 text-center">
+            <div class="text-blue-200 text-sm mb-1">Total Achievements</div>
+            <div class="text-white font-bold text-xl" id="tetrisTotalAchievements">29</div>
+          </div>
+          <div class="bg-green-900/20 p-4 rounded-lg border border-green-500/30 text-center">
+            <div class="text-green-200 text-sm mb-1">Unlocked</div>
+            <div class="text-white font-bold text-xl" id="tetrisUnlockedAchievements">0</div>
+          </div>
+          <div class="bg-red-900/20 p-4 rounded-lg border border-red-500/30 text-center">
+            <div class="text-red-200 text-sm mb-1">Locked</div>
+            <div class="text-white font-bold text-xl" id="tetrisLockedAchievements">29</div>
+          </div>
+          <div class="bg-purple-900/20 p-4 rounded-lg border border-purple-500/30 text-center">
+            <div class="text-purple-200 text-sm mb-1">Progress</div>
+            <div class="text-white font-bold text-xl" id="tetrisCompletionPercentage">0%</div>
+          </div>
+        </div>
+        
+        <!-- Achievements Grid -->
+        <div id="tetrisAchievementsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <!-- Achievements will be populated by JavaScript -->
+          <div class="flex items-center justify-center py-8">
+            <div class="text-gray-400">Loading Tetris achievements...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -3354,6 +3404,181 @@ function formatDateShort(dateString) {
     });
   } catch (error) {
     return 'Invalid Date';
+  }
+}
+
+// 🧩 Tetris Achievements Toggle Function
+function toggleTetrisAchievements() {
+  const achievementsSection = document.getElementById('tetrisAchievements');
+  
+  console.log('🧩 Toggle clicked, current visibility:', !achievementsSection.classList.contains('hidden'));
+  
+  if (achievementsSection.classList.contains('hidden')) {
+    // Show achievements
+    achievementsSection.classList.remove('hidden');
+    console.log('🧩 Tetris achievements shown');
+    
+    // Load achievements data
+    loadTetrisAchievements();
+  } else {
+    // Hide achievements
+    achievementsSection.classList.add('hidden');
+    console.log('🧩 Tetris achievements hidden');
+  }
+}
+
+// 🧩 Load Tetris Achievements
+async function loadTetrisAchievements() {
+  try {
+    console.log('🧩 Loading Tetris achievements...');
+    
+    // Get Discord ID from localStorage
+    const discordId = localStorage.getItem('discord_id');
+    console.log('🔍 Discord ID from localStorage:', discordId);
+    
+    // Local development override
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const testDiscordId = '328601656659017732'; // Real Discord ID with achievements
+    
+    const finalDiscordId = isLocalDevelopment && (!discordId || discordId === '1337') ? testDiscordId : discordId;
+    console.log('🔍 Final Discord ID (with local override):', finalDiscordId);
+    
+    if (!finalDiscordId) {
+      console.log('🧩 No Discord ID found, cannot load achievements');
+      return;
+    }
+    
+    // Environment-aware API endpoint
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    
+    console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+    console.log(`🔗 Tetris Achievements API URL: ${apiBaseUrl}/api/user/get-tetris-achievements.php`);
+    
+    // Load achievements from API
+    const response = await fetch(`${apiBaseUrl}/api/user/get-tetris-achievements.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: finalDiscordId })
+    });
+    
+    console.log('🔗 API response status:', response.status);
+    console.log('🔗 API response ok:', response.ok);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('🧩 Tetris achievements response:', data);
+
+    if (data.success && data.data) {
+      displayTetrisAchievements(data.data.achievements, data.data.statistics);
+    } else {
+      throw new Error(data.error || 'Failed to load Tetris achievements');
+    }
+
+  } catch (error) {
+    console.error('❌ Error loading Tetris achievements:', error);
+    displayTetrisAchievementsError(error.message);
+  }
+}
+
+// 🧩 Display Tetris Achievements
+function displayTetrisAchievements(achievements, stats) {
+  console.log('🧩 Displaying Tetris achievements:', {
+    achievementsCount: achievements.length,
+    statsKeys: Object.keys(stats),
+    achievements: achievements.slice(0, 3) // Show first 3 for debugging
+  });
+  
+  // Find the main achievements section
+  const achievementsSection = document.getElementById('tetrisAchievements');
+  if (!achievementsSection) {
+    console.error('❌ displayTetrisAchievements: tetrisAchievements section not found!');
+    return;
+  }
+  
+  // Update statistics
+  const totalEl = achievementsSection.querySelector('#tetrisTotalAchievements');
+  const unlockedEl = achievementsSection.querySelector('#tetrisUnlockedAchievements');
+  const lockedEl = achievementsSection.querySelector('#tetrisLockedAchievements');
+  const progressEl = achievementsSection.querySelector('#tetrisCompletionPercentage');
+  
+  if (totalEl) totalEl.textContent = stats.total || 29;
+  if (unlockedEl) unlockedEl.textContent = stats.unlocked || 0;
+  if (lockedEl) lockedEl.textContent = stats.locked || 29;
+  if (progressEl) progressEl.textContent = (stats.percentage || 0) + '%';
+  
+  // Update achievements grid
+  const gridEl = achievementsSection.querySelector('#tetrisAchievementsGrid');
+  if (!gridEl) {
+    console.error('❌ displayTetrisAchievements: tetrisAchievementsGrid not found!');
+    return;
+  }
+  
+  // Clear the grid
+  gridEl.innerHTML = '';
+  
+  // Populate achievements
+  achievements.forEach(achievement => {
+    const isUnlocked = achievement.unlocked;
+    const cardClass = isUnlocked 
+      ? 'bg-gradient-to-br from-blue-900/50 to-purple-900/50 border-blue-500/70'
+      : 'bg-gradient-to-br from-gray-800/30 to-gray-700/30 border-gray-600/50';
+    
+    const statusBadge = isUnlocked 
+      ? '<span class="text-xs text-green-300 bg-green-800/20 px-2 py-1 rounded">✅ Unlocked</span>'
+      : '<span class="text-xs text-gray-500 bg-gray-800/20 px-2 py-1 rounded">🔒 Locked</span>';
+    
+    const indicator = isUnlocked 
+      ? '<div class="text-green-400 text-lg">●</div>'
+      : '<div class="text-gray-600 text-lg">○</div>';
+    
+    const unlockedDate = isUnlocked && achievement.unlocked_at
+      ? `<div class="text-xs text-blue-300 mt-1">Unlocked: ${formatDateShort(achievement.unlocked_at)}</div>`
+      : '';
+    
+    const achievementCard = `
+      <div class="${cardClass} rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
+        <div class="flex items-start space-x-4">
+          <div class="text-3xl flex-shrink-0">${achievement.icon}</div>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-white text-base mb-2">${achievement.title}</h3>
+            <p class="text-sm text-gray-300 mb-3 leading-relaxed">${achievement.description}</p>
+            <div class="flex items-center justify-between">
+              ${statusBadge}
+              ${indicator}
+            </div>
+            ${unlockedDate}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    gridEl.innerHTML += achievementCard;
+  });
+  
+  console.log('🧩 Tetris achievements displayed successfully');
+}
+
+// 🧩 Display Tetris Achievements Error
+function displayTetrisAchievementsError(errorMessage) {
+  const gridEl = document.querySelector('#tetrisAchievementsGrid');
+  if (gridEl) {
+    gridEl.innerHTML = `
+      <div class="col-span-full flex items-center justify-center py-8">
+        <div class="text-center">
+          <div class="text-red-400 text-lg mb-2">❌ Error Loading Achievements</div>
+          <div class="text-gray-400 text-sm">${errorMessage}</div>
+          <button onclick="loadTetrisAchievements()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors">
+            🔄 Try Again
+          </button>
+        </div>
+      </div>
+    `;
   }
 }
 

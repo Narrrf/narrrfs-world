@@ -1739,10 +1739,21 @@ let reloadButtonInterval = null;
       
       // 🚀 FIX: Show weapon switch notification
       showWeaponSwitchNotification(weaponType);
+      
+      // 🚀 FIX: Update fast-shoot buttons immediately
+      if (typeof updateFastShootButtons === 'function') {
+        updateFastShootButtons();
+      }
     } else {
-      console.log(`❌ No ammo for ${weaponType} weapon`);
-      // 🚀 FIX: Show ammo warning
+      console.log(`❌ No ammo for ${weaponType} weapon - staying on ${currentWeaponType}`);
+      // 🚀 FIX: Show ammo warning but don't change weapon
       showAmmoWarning(weaponType);
+      
+      // 🚀 FIX: If we're trying to switch to an empty weapon, fall back to normal
+      if (weaponType !== 'normal') {
+        console.log(`🔄 Falling back to normal weapon since ${weaponType} is empty`);
+        switchWeapon('normal');
+      }
     }
   }
 
@@ -10264,13 +10275,22 @@ let reloadButtonInterval = null;
         if (isSpaceInvadersPaused) return;
         
         // Cycle through weapons on right-click (works everywhere)
-        const weapons = ['normal', 'laser', 'bomb'];
-        const currentIndex = weapons.indexOf(currentWeaponType);
-        const nextIndex = (currentIndex + 1) % weapons.length;
-        const nextWeapon = weapons[nextIndex];
+        // 🚀 FIX: Only cycle through weapons that have ammo or are normal weapon
+        const availableWeapons = ['normal']; // Normal weapon is always available
+        
+        if (weaponAmmo.laser > 0) {
+          availableWeapons.push('laser');
+        }
+        if (weaponAmmo.bomb > 0) {
+          availableWeapons.push('bomb');
+        }
+        
+        const currentIndex = availableWeapons.indexOf(currentWeaponType);
+        const nextIndex = (currentIndex + 1) % availableWeapons.length;
+        const nextWeapon = availableWeapons[nextIndex];
         
         switchWeapon(nextWeapon);
-        console.log(`🖱️ Right-click: Switched to ${nextWeapon} weapon (Global)`);
+        console.log(`🖱️ Right-click: Switched to ${nextWeapon} weapon (Global) - Available weapons: ${availableWeapons.join(', ')}`);
       }
     });
 
@@ -11513,32 +11533,32 @@ window.emergencyCollisionCheck = function() {
     reloadButton = document.createElement('button');
     reloadButton.id = 'reload-button';
     reloadButton.innerHTML = `
-      <div style="font-size: 1.2em; margin-bottom: 5px;">🚀</div>
-      <div style="font-size: 0.9em; margin-bottom: 3px;">QUICK SHOT</div>
-      <div style="font-size: 0.8em; color: #9ca3af;" id="reload-button-ammo">Loading...</div>
+      <div style="font-size: 0.8em; margin-bottom: 2px;">🚀</div>
+      <div style="font-size: 0.6em; margin-bottom: 1px;">QUICK SHOT</div>
+      <div style="font-size: 0.5em; color: #9ca3af;" id="reload-button-ammo">Loading...</div>
     `;
     
     reloadButton.style.cssText = `
       position: fixed;
-      bottom: 120px;
+      bottom: 80px;
       right: 25px;
-      width: 85px;
-      height: 85px;
+      width: 42px;
+      height: 42px;
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white;
-      border: 3px solid #dc2626;
+      border: 2px solid #dc2626;
       border-radius: 50%;
-      font-size: 1.1em;
+      font-size: 0.8em;
       font-weight: bold;
       cursor: pointer;
       z-index: 999;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(239, 68, 68, 0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 10px rgba(239, 68, 68, 0.3);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      line-height: 1.2;
+      line-height: 1.1;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       -khtml-user-select: none;
@@ -11552,12 +11572,12 @@ window.emergencyCollisionCheck = function() {
     // Add hover effects
     reloadButton.addEventListener('mouseenter', () => {
       reloadButton.style.transform = 'scale(1.15) rotate(8deg)';
-      reloadButton.style.boxShadow = '0 12px 35px rgba(0,0,0,0.6), 0 0 30px rgba(239, 68, 68, 0.5)';
+      reloadButton.style.boxShadow = '0 6px 18px rgba(0,0,0,0.6), 0 0 15px rgba(239, 68, 68, 0.5)';
     });
     
     reloadButton.addEventListener('mouseleave', () => {
       reloadButton.style.transform = 'scale(1) rotate(0deg)';
-      reloadButton.style.boxShadow = '0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(239, 68, 68, 0.3)';
+      reloadButton.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5), 0 0 10px rgba(239, 68, 68, 0.3)';
     });
     
     // Add click to handle both functions (shoot special weapon OR toggle auto-shoot)
@@ -11984,93 +12004,95 @@ window.emergencyCollisionCheck = function() {
     const laserBtn = document.createElement('button');
     laserBtn.id = 'fast-laser-btn';
     laserBtn.innerHTML = '⚡<br><span style="font-size: 0.7em;">LASER</span>';
-    laserBtn.style.cssText = `
-      width: 70px;
-      height: 70px;
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      color: white;
-      border: 3px solid #1d4ed8;
-      border-radius: 50%;
-      font-size: 1.2em;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      line-height: 1.2;
-      opacity: 0.3;
-      pointer-events: none;
-    `;
+         laserBtn.style.cssText = `
+           width: 35px;
+           height: 35px;
+           background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+           color: white;
+           border: 2px solid #1d4ed8;
+           border-radius: 50%;
+           font-size: 0.8em;
+           font-weight: bold;
+           cursor: pointer;
+           box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+           transition: all 0.3s ease;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           line-height: 1.1;
+           opacity: 0.3;
+           pointer-events: none;
+         `;
     
     // Bomb button
     const bombBtn = document.createElement('button');
     bombBtn.id = 'fast-bomb-btn';
     bombBtn.innerHTML = '💣<br><span style="font-size: 0.7em;">BOMB</span>';
-    bombBtn.style.cssText = `
-      width: 70px;
-      height: 70px;
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      color: white;
-      border: 3px solid #dc2626;
-      border-radius: 50%;
-      font-size: 1.2em;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      line-height: 1.2;
-      opacity: 0.3;
-      pointer-events: none;
-    `;
+         bombBtn.style.cssText = `
+           width: 35px;
+           height: 35px;
+           background: linear-gradient(135deg, #ef4444, #dc2626);
+           color: white;
+           border: 2px solid #dc2626;
+           border-radius: 50%;
+           font-size: 0.8em;
+           font-weight: bold;
+           cursor: pointer;
+           box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+           transition: all 0.3s ease;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           line-height: 1.1;
+           opacity: 0.3;
+           pointer-events: none;
+         `;
     
-    // Add event listeners
-    laserBtn.addEventListener('click', () => {
-      if (weaponAmmo.laser > 0) {
-        switchWeapon('laser');
-        playerShoot();
-        updateFastShootButtons();
-      }
-    });
+         // Add event listeners
+         laserBtn.addEventListener('click', () => {
+           if (weaponAmmo.laser > 0) {
+             switchWeapon('laser');
+             playerShoot();
+             switchWeapon('normal'); // Switch back to normal weapon after shooting
+             updateFastShootButtons();
+           }
+         });
+
+         bombBtn.addEventListener('click', () => {
+           if (weaponAmmo.bomb > 0) {
+             switchWeapon('bomb');
+             playerShoot();
+             switchWeapon('normal'); // Switch back to normal weapon after shooting
+             updateFastShootButtons();
+           }
+         });
     
-    bombBtn.addEventListener('click', () => {
-      if (weaponAmmo.bomb > 0) {
-        switchWeapon('bomb');
-        playerShoot();
-        updateFastShootButtons();
-      }
-    });
-    
-    // Add hover effects
-    laserBtn.addEventListener('mouseenter', () => {
-      if (weaponAmmo.laser > 0) {
-        laserBtn.style.transform = 'scale(1.1)';
-        laserBtn.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.6)';
-      }
-    });
-    
-    laserBtn.addEventListener('mouseleave', () => {
-      laserBtn.style.transform = 'scale(1)';
-      laserBtn.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.4)';
-    });
-    
-    bombBtn.addEventListener('mouseenter', () => {
-      if (weaponAmmo.bomb > 0) {
-        bombBtn.style.transform = 'scale(1.1)';
-        bombBtn.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.6)';
-      }
-    });
-    
-    bombBtn.addEventListener('mouseleave', () => {
-      bombBtn.style.transform = 'scale(1)';
-      bombBtn.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.4)';
-    });
+         // Add hover effects
+         laserBtn.addEventListener('mouseenter', () => {
+           if (weaponAmmo.laser > 0) {
+             laserBtn.style.transform = 'scale(1.1)';
+             laserBtn.style.boxShadow = '0 3px 10px rgba(59, 130, 246, 0.6)';
+           }
+         });
+
+         laserBtn.addEventListener('mouseleave', () => {
+           laserBtn.style.transform = 'scale(1)';
+           laserBtn.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.4)';
+         });
+
+         bombBtn.addEventListener('mouseenter', () => {
+           if (weaponAmmo.bomb > 0) {
+             bombBtn.style.transform = 'scale(1.1)';
+             bombBtn.style.boxShadow = '0 3px 10px rgba(239, 68, 68, 0.6)';
+           }
+         });
+
+         bombBtn.addEventListener('mouseleave', () => {
+           bombBtn.style.transform = 'scale(1)';
+           bombBtn.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.4)';
+         });
     
     // Add to container
     fastShootContainer.appendChild(laserBtn);
@@ -12157,23 +12179,23 @@ window.emergencyCollisionCheck = function() {
       position: fixed;
       bottom: 25px;
       right: 25px;
-      width: 85px;
-      height: 85px;
+      width: 42px;
+      height: 42px;
       background: linear-gradient(135deg, #fbbf24, #f59e0b);
       color: #1a1a1a;
-      border: 3px solid #f59e0b;
+      border: 2px solid #f59e0b;
       border-radius: 50%;
-      font-size: 1.3em;
+      font-size: 0.9em;
       font-weight: bold;
       cursor: pointer;
       z-index: 1000;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(251, 191, 36, 0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 10px rgba(251, 191, 36, 0.3);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      line-height: 1.2;
+      line-height: 1.1;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       -khtml-user-select: none;
@@ -12187,12 +12209,12 @@ window.emergencyCollisionCheck = function() {
     // Add hover effects
     gamePanelBtn.addEventListener('mouseenter', () => {
       gamePanelBtn.style.transform = 'scale(1.15) rotate(8deg)';
-      gamePanelBtn.style.boxShadow = '0 12px 35px rgba(0,0,0,0.6), 0 0 30px rgba(251, 191, 36, 0.5)';
+      gamePanelBtn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.6), 0 0 15px rgba(251, 191, 36, 0.5)';
     });
     
     gamePanelBtn.addEventListener('mouseleave', () => {
       gamePanelBtn.style.transform = 'scale(1) rotate(0deg)';
-      gamePanelBtn.style.boxShadow = '0 8px 25px rgba(0,0,0,0.5), 0 0 20px rgba(251, 191, 36, 0.3)';
+      gamePanelBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5), 0 0 10px rgba(251, 191, 36, 0.3)';
     });
     
     // Add click to open game panel
@@ -12275,19 +12297,19 @@ window.emergencyCollisionCheck = function() {
       position: absolute;
       top: 20px;
       right: 20px;
-      width: 35px;
-      height: 35px;
+      width: 17px;
+      height: 17px;
       background: #ef4444;
       color: white;
       border: none;
       border-radius: 50%;
-      font-size: 1.3em;
+      font-size: 0.8em;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
     `;
     closeBtn.addEventListener('click', function() {
       toggleGamePanel();
@@ -12296,12 +12318,12 @@ window.emergencyCollisionCheck = function() {
     // Add hover effects to close button
     closeBtn.addEventListener('mouseenter', function() {
       this.style.transform = 'scale(1.1)';
-      this.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.6)';
+      this.style.boxShadow = '0 3px 8px rgba(239, 68, 68, 0.6)';
     });
     
     closeBtn.addEventListener('mouseleave', function() {
       this.style.transform = 'scale(1)';
-      this.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+      this.style.boxShadow = '0 2px 6px rgba(239, 68, 68, 0.4)';
     });
     panelContent.appendChild(closeBtn);
     
