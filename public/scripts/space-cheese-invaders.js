@@ -2071,6 +2071,9 @@ let reloadButtonInterval = null;
             updateReloadButton();
           }
           
+          // 🚀 NEW: Update fast-shoot buttons when ammo is collected
+          updateFastShootButtons();
+          
           // 🎵 NEW: Play power-up pickup sound
           cheeseSoundManager.playExplosionSound('powerup');
         } else if (powerUp.type === 'shield') {
@@ -4266,6 +4269,9 @@ let reloadButtonInterval = null;
     speedBoostTimer = 0;
     speedBoostAmmo = 2; // 🚀 NEW: Limited speed boost ammo
     window.powerUps = []; // Initialize power-ups array
+    
+    // 🚀 NEW: Create fast-shoot weapon buttons
+    createFastShootButtons();
 
     // 🆘 NEW: Initialize help system
     helpOverlayVisible = false;
@@ -8620,6 +8626,9 @@ let reloadButtonInterval = null;
           weaponCooldowns.laser = 20; // 2 second cooldown
           updateWeaponDisplay();
           
+          // 🚀 NEW: Update fast-shoot buttons when laser is fired
+          updateFastShootButtons();
+          
           // 🚀 NEW: Create spectacular laser effect
           createSpectacularLaserEffect();
             
@@ -8699,6 +8708,9 @@ let reloadButtonInterval = null;
           weaponAmmo.bomb--;
           weaponCooldowns.bomb = 60; // 6 second cooldown
           updateWeaponDisplay();
+          
+          // 🚀 NEW: Update fast-shoot buttons when bomb is fired
+          updateFastShootButtons();
             
             // Reset the flag
             window.isQuickShotCall = false;
@@ -11941,6 +11953,174 @@ window.emergencyCollisionCheck = function() {
     }
     
     console.log(`📱 Mobile controls ${mobileControlsVisible ? 'shown' : 'hidden'}`);
+  }
+
+  // 🚀 NEW: Create fast-shoot weapon buttons
+  function createFastShootButtons() {
+    console.log('🔫 Creating fast-shoot weapon buttons...');
+    
+    // Check if buttons already exist
+    if (document.getElementById('fast-shoot-container')) {
+      console.log('✅ Fast-shoot buttons already exist, skipping creation');
+      return;
+    }
+    
+    // Create container for fast-shoot buttons
+    const fastShootContainer = document.createElement('div');
+    fastShootContainer.id = 'fast-shoot-container';
+    fastShootContainer.style.cssText = `
+      position: fixed;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: auto;
+    `;
+    
+    // Laser button
+    const laserBtn = document.createElement('button');
+    laserBtn.id = 'fast-laser-btn';
+    laserBtn.innerHTML = '⚡<br><span style="font-size: 0.7em;">LASER</span>';
+    laserBtn.style.cssText = `
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: 3px solid #1d4ed8;
+      border-radius: 50%;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.2;
+      opacity: 0.3;
+      pointer-events: none;
+    `;
+    
+    // Bomb button
+    const bombBtn = document.createElement('button');
+    bombBtn.id = 'fast-bomb-btn';
+    bombBtn.innerHTML = '💣<br><span style="font-size: 0.7em;">BOMB</span>';
+    bombBtn.style.cssText = `
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      border: 3px solid #dc2626;
+      border-radius: 50%;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.2;
+      opacity: 0.3;
+      pointer-events: none;
+    `;
+    
+    // Add event listeners
+    laserBtn.addEventListener('click', () => {
+      if (weaponAmmo.laser > 0) {
+        switchWeapon('laser');
+        playerShoot();
+        updateFastShootButtons();
+      }
+    });
+    
+    bombBtn.addEventListener('click', () => {
+      if (weaponAmmo.bomb > 0) {
+        switchWeapon('bomb');
+        playerShoot();
+        updateFastShootButtons();
+      }
+    });
+    
+    // Add hover effects
+    laserBtn.addEventListener('mouseenter', () => {
+      if (weaponAmmo.laser > 0) {
+        laserBtn.style.transform = 'scale(1.1)';
+        laserBtn.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.6)';
+      }
+    });
+    
+    laserBtn.addEventListener('mouseleave', () => {
+      laserBtn.style.transform = 'scale(1)';
+      laserBtn.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.4)';
+    });
+    
+    bombBtn.addEventListener('mouseenter', () => {
+      if (weaponAmmo.bomb > 0) {
+        bombBtn.style.transform = 'scale(1.1)';
+        bombBtn.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.6)';
+      }
+    });
+    
+    bombBtn.addEventListener('mouseleave', () => {
+      bombBtn.style.transform = 'scale(1)';
+      bombBtn.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.4)';
+    });
+    
+    // Add to container
+    fastShootContainer.appendChild(laserBtn);
+    fastShootContainer.appendChild(bombBtn);
+    
+    // Add to page
+    document.body.appendChild(fastShootContainer);
+    
+    console.log('✅ Fast-shoot weapon buttons created');
+    
+    // Initial update
+    updateFastShootButtons();
+  }
+
+  // 🚀 NEW: Update fast-shoot button states
+  function updateFastShootButtons() {
+    const laserBtn = document.getElementById('fast-laser-btn');
+    const bombBtn = document.getElementById('fast-bomb-btn');
+    
+    if (!laserBtn || !bombBtn) return;
+    
+    // Update laser button
+    if (weaponAmmo.laser > 0) {
+      laserBtn.style.opacity = '1';
+      laserBtn.style.pointerEvents = 'auto';
+      laserBtn.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+      laserBtn.style.borderColor = '#1d4ed8';
+    } else {
+      laserBtn.style.opacity = '0.3';
+      laserBtn.style.pointerEvents = 'none';
+      laserBtn.style.background = 'linear-gradient(135deg, #6b7280, #4b5563)';
+      laserBtn.style.borderColor = '#4b5563';
+    }
+    
+    // Update bomb button
+    if (weaponAmmo.bomb > 0) {
+      bombBtn.style.opacity = '1';
+      bombBtn.style.pointerEvents = 'auto';
+      bombBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+      bombBtn.style.borderColor = '#dc2626';
+    } else {
+      bombBtn.style.opacity = '0.3';
+      bombBtn.style.pointerEvents = 'none';
+      bombBtn.style.background = 'linear-gradient(135deg, #6b7280, #4b5563)';
+      bombBtn.style.borderColor = '#4b5563';
+    }
+    
+    // Add ammo count to buttons
+    laserBtn.innerHTML = `⚡<br><span style="font-size: 0.6em;">${weaponAmmo.laser}</span>`;
+    bombBtn.innerHTML = `💣<br><span style="font-size: 0.6em;">${weaponAmmo.bomb}</span>`;
   }
 
   // 🆘 NEW: Create enhanced mobile controls - IMPROVED FOR BETTER MOBILE UX
