@@ -8,22 +8,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-require_once '../config/database.php';
+// Get database connection
+function getSQLite3Connection() {
+    $dbPath = $_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false 
+        ? '../../db/narrrf_world.sqlite' 
+        : '/var/www/html/db/narrrf_world.sqlite';
+    
+    try {
+        $pdo = new PDO("sqlite:$dbPath");
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo;
+    } catch (PDOException $e) {
+        error_log("Database connection failed: " . $e->getMessage());
+        return null;
+    }
+}
 
 try {
     $pdo = getSQLite3Connection();
     
     // Get parameters from request
-    $user_id = $_POST['user_id'] ?? $_GET['user_id'] ?? null;
-    $achievement_key = $_POST['achievement_key'] ?? $_GET['achievement_key'] ?? null;
-    $game_score = $_POST['game_score'] ?? $_GET['game_score'] ?? 0;
-    $lines_cleared = $_POST['lines_cleared'] ?? $_GET['lines_cleared'] ?? 0;
-    $level_reached = $_POST['level_reached'] ?? $_GET['level_reached'] ?? 0;
-    $pieces_dropped = $_POST['pieces_dropped'] ?? $_GET['pieces_dropped'] ?? 0;
-    $tetris_clears = $_POST['tetris_clears'] ?? $_GET['tetris_clears'] ?? 0;
+    $user_id = null;
+    $achievement_key = null;
+    $game_score = 0;
+    $lines_cleared = 0;
+    $level_reached = 0;
+    $pieces_dropped = 0;
+    $tetris_clears = 0;
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $user_id = $input['user_id'] ?? $input['discord_id'] ?? null;
+        $achievement_key = $input['achievement_key'] ?? null;
+        $game_score = $input['game_score'] ?? 0;
+        $lines_cleared = $input['lines_cleared'] ?? 0;
+        $level_reached = $input['level_reached'] ?? 0;
+        $pieces_dropped = $input['pieces_dropped'] ?? 0;
+        $tetris_clears = $input['tetris_clears'] ?? 0;
+    } else {
+        $user_id = $_GET['user_id'] ?? $_GET['discord_id'] ?? null;
+        $achievement_key = $_GET['achievement_key'] ?? null;
+        $game_score = $_GET['game_score'] ?? 0;
+        $lines_cleared = $_GET['lines_cleared'] ?? 0;
+        $level_reached = $_GET['level_reached'] ?? 0;
+        $pieces_dropped = $_GET['pieces_dropped'] ?? 0;
+        $tetris_clears = $_GET['tetris_clears'] ?? 0;
+    }
     
     if (!$user_id || !$achievement_key) {
         throw new Exception('User ID and achievement key are required');
+    }
+    
+    // Validate Discord ID format (allow test users like "1337")
+    if (!preg_match('/^\d{4,19}$/', $user_id)) {
+        throw new Exception('Invalid Discord ID format');
     }
     
     // Check if achievement definition exists

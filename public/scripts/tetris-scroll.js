@@ -317,6 +317,9 @@ function drawBlock(x, y, val) {
       })
     );
     context.restore();
+    
+    // 🏆 Draw achievement popups on canvas (like Space Invaders)
+    drawAchievementPopups();
   }
 
   // --- Next block preview: PNG if available, else color ---
@@ -396,6 +399,11 @@ function collide(shape, row, col) {
             tetrisClears++;
             console.log('🏆 Tetris clear! Total tetris clears:', tetrisClears);
           }
+          
+          // 🏆 Check achievements immediately when lines are cleared (like Space Invaders)
+          const discordId = localStorage.getItem("discord_id") || "1337";
+          const currentLevel = Math.floor(linesClearedTotal / 20);
+          checkTetrisAchievements(discordId, score, linesClearedTotal, currentLevel, piecesDropped, tetrisClears);
           
       if (scoreDisplay) {
           scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
@@ -591,6 +599,14 @@ function rotatePiece() {
     }
 
     // 🏆 Check and unlock Tetris achievements
+    console.log('🏆 Game Over Stats:', {
+      discordId,
+      finalScore,
+      linesClearedTotal,
+      levelReached: Math.floor(linesClearedTotal / 20),
+      piecesDropped,
+      tetrisClears
+    });
     checkTetrisAchievements(discordId, finalScore, linesClearedTotal, Math.floor(linesClearedTotal / 20), piecesDropped, tetrisClears);
 
     // 💾 Save score to database
@@ -604,12 +620,9 @@ function rotatePiece() {
       
         console.log("⏎ Sending score payload:", payload);
       
-    // 🌍 Environment-aware API endpoint (works both locally and in production)
-    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
-    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
-    const apiUrl = `${apiBaseUrl}/api/dev/save-score.php`;
+    // 🌍 Environment-aware API endpoint (use relative path like Space Invaders)
+    const apiUrl = '/api/dev/save-score.php';
 
-    console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
     console.log(`🔗 API URL: ${apiUrl}`);
 
     fetch(apiUrl, {
@@ -625,8 +638,8 @@ function rotatePiece() {
             // ✅ Force leaderboard refresh after short delay
             setTimeout(() => {
               if (document.getElementById("leaderboard-list")) {
-            // 🌍 Environment-aware API endpoint for leaderboard
-            const leaderboardUrl = `${apiBaseUrl}/api/dev/get-leaderboard.php?t=${Date.now()}`;
+            // 🌍 Environment-aware API endpoint for leaderboard (use relative path)
+            const leaderboardUrl = `/api/dev/get-leaderboard.php?t=${Date.now()}`;
             console.log(`🔗 Leaderboard API URL: ${leaderboardUrl}`);
 
             fetch(leaderboardUrl)
@@ -805,7 +818,7 @@ window.testMobileTetris = function() {
       }
     }
 
-// 🏆 Tetris Achievement Checking Function
+// 🏆 Tetris Achievement Checking Function (Final Season 3 Version)
 function checkTetrisAchievements(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
   console.log('🏆 Checking Tetris achievements for user:', userId);
   console.log('🏆 Game stats:', { gameScore, linesCleared, levelReached, piecesDropped, tetrisClears });
@@ -848,19 +861,119 @@ function checkTetrisAchievements(userId, gameScore, linesCleared, levelReached, 
   // Check each achievement
   achievementChecks.forEach(achievement => {
     if (achievement.condition) {
-      unlockTetrisAchievement(userId, achievement.key, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
+      console.log(`🏆 Achievement condition met: ${achievement.key}`);
+      
+      // Check if achievement is already unlocked (Season 3 Final Version)
+      checkAndUnlockAchievement(userId, achievement.key, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
     }
+  });
+}
+
+// 🏆 Check if Achievement Already Unlocked (Season 3 Final Version)
+function checkAndUnlockAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
+  // First check if achievement is already unlocked
+  fetch('/api/user/get-tetris-achievements.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ user_id: userId }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success && data.achievements) {
+      // Check if this specific achievement is already unlocked
+      const alreadyUnlocked = data.achievements.some(achievement => 
+        achievement.achievement_key === achievementKey && achievement.unlocked_at
+      );
+      
+      if (alreadyUnlocked) {
+        console.log(`ℹ️ Achievement ${achievementKey} already unlocked - skipping popup`);
+        return; // Don't show popup for already unlocked achievements
+      }
+      
+      // Achievement not unlocked yet - unlock it and show popup
+      console.log(`🏆 Achievement ${achievementKey} not yet unlocked - unlocking now`);
+      
+      // Show achievement notification
+      const achievementTitles = {
+        'first_line': 'First Line',
+        'line_master': 'Line Master',
+        'tetris_pro': 'Tetris Pro',
+        'line_legend': 'Line Legend',
+        'speed_demon': 'Speed Demon',
+        'level_master': 'Level Master',
+        'high_roller': 'High Roller',
+        'score_hunter': 'Score Hunter',
+        'point_master': 'Point Master',
+        'tetris_king': 'Tetris King',
+        'piece_dropper': 'Piece Dropper',
+        'block_master': 'Block Master',
+        'tetris_clear': 'Tetris Clear',
+        'tetris_master': 'Tetris Master',
+        'tetris_god': 'Tetris God',
+        'combo_starter': 'Combo Starter',
+        'combo_master': 'Combo Master',
+        'combo_legend': 'Combo Legend',
+        'back_to_back': 'Back-to-Back',
+        'level_warrior': 'Level Warrior',
+        'level_champion': 'Level Champion',
+        'score_legend': 'Score Legend',
+        'score_god': 'Score God',
+        'line_destroyer': 'Line Destroyer',
+        'piece_legend': 'Piece Legend',
+        'tetris_legend': 'Tetris Legend'
+      };
+      
+      const title = achievementTitles[achievementKey] || achievementKey;
+      showAchievementNotification(achievementKey, title);
+      
+      // Unlock achievement in database
+      unlockTetrisAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
+    }
+  })
+  .catch(error => {
+    console.error('❌ Error checking achievement status:', error);
+    // Fallback: show popup anyway if we can't check status
+    const achievementTitles = {
+      'first_line': 'First Line',
+      'line_master': 'Line Master',
+      'tetris_pro': 'Tetris Pro',
+      'line_legend': 'Line Legend',
+      'speed_demon': 'Speed Demon',
+      'level_master': 'Level Master',
+      'high_roller': 'High Roller',
+      'score_hunter': 'Score Hunter',
+      'point_master': 'Point Master',
+      'tetris_king': 'Tetris King',
+      'piece_dropper': 'Piece Dropper',
+      'block_master': 'Block Master',
+      'tetris_clear': 'Tetris Clear',
+      'tetris_master': 'Tetris Master',
+      'tetris_god': 'Tetris God',
+      'combo_starter': 'Combo Starter',
+      'combo_master': 'Combo Master',
+      'combo_legend': 'Combo Legend',
+      'back_to_back': 'Back-to-Back',
+      'level_warrior': 'Level Warrior',
+      'level_champion': 'Level Champion',
+      'score_legend': 'Score Legend',
+      'score_god': 'Score God',
+      'line_destroyer': 'Line Destroyer',
+      'piece_legend': 'Piece Legend',
+      'tetris_legend': 'Tetris Legend'
+    };
+    
+    const title = achievementTitles[achievementKey] || achievementKey;
+    showAchievementNotification(achievementKey, title);
+    unlockTetrisAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
   });
 }
 
 // 🏆 Unlock Tetris Achievement Function
 function unlockTetrisAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
-  console.log('🏆 Unlocking Tetris achievement:', achievementKey, 'for user:', userId);
-  
-  // Environment-aware API endpoint
-  const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
-  const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
-  const apiUrl = `${apiBaseUrl}/api/dev/unlock-tetris-achievement.php`;
+  // Silent unlock - no console logging to avoid confusion
+  const apiUrl = '/api/dev/unlock-tetris-achievement.php';
   
   const payload = {
     user_id: userId,
@@ -882,74 +995,85 @@ function unlockTetrisAchievement(userId, achievementKey, gameScore, linesCleared
   .then(response => response.json())
   .then(data => {
     if (data.success) {
-      console.log('✅ Tetris achievement unlocked:', achievementKey);
-      // Show achievement notification
-      showAchievementNotification(achievementKey, data.achievement_title);
+      console.log(`✅ Tetris achievement unlocked and saved: ${achievementKey}`);
     } else {
-      console.log('ℹ️ Achievement already unlocked or error:', data.message);
+      console.log(`ℹ️ Achievement ${achievementKey} already unlocked in database`);
     }
+    // Don't log "already unlocked" messages to avoid console spam
+    // Visual notification already shown by checkTetrisAchievements
   })
   .catch(error => {
     console.error('❌ Failed to unlock Tetris achievement:', error);
   });
 }
 
-// 🎉 Show Achievement Notification
+// 🎉 Show Achievement Notification (Canvas-based like Space Invaders)
+let achievementPopups = [];
+
 function showAchievementNotification(achievementKey, achievementTitle) {
-  // Create notification element
-  const notification = document.createElement('div');
-  notification.className = 'achievement-notification';
-  notification.innerHTML = `
-    <div class="achievement-popup">
-      <div class="achievement-icon">🏆</div>
-      <div class="achievement-text">
-        <h3>Achievement Unlocked!</h3>
-        <p>${achievementTitle}</p>
-      </div>
-    </div>
-  `;
+  const canvas = document.getElementById("tetris-canvas");
+  if (!canvas) return;
   
-  // Add styles
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    z-index: 10000;
-    animation: slideIn 0.5s ease-out;
-    max-width: 300px;
-  `;
+  const popup = {
+    title: achievementTitle,
+    description: `Achievement Unlocked!`,
+    icon: '🏆',
+    life: 30, // 0.5 seconds at 60fps (much faster)
+    maxLife: 30,
+    scale: 1, // No scale animation - instant appearance
+    maxScale: 1,
+    y: canvas.height / 2,
+    color: '#ffd700' // Gold color for achievements
+  };
   
-  // Add animation styles
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+  achievementPopups.push(popup);
+  console.log(`🏆 Achievement Unlocked: ${achievementTitle}`);
+}
+
+// 🎨 Draw Achievement Popups on Canvas (like Space Invaders)
+function drawAchievementPopups() {
+  const canvas = document.getElementById("tetris-canvas");
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext("2d");
+  const centerX = canvas.width / 2;
+  
+  achievementPopups.forEach((popup, index) => {
+    popup.life--;
+    
+    // Remove expired popups
+    if (popup.life <= 0) {
+      achievementPopups.splice(index, 1);
+      return;
     }
-    @keyframes slideOut {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
-  `;
-  document.head.appendChild(style);
-  
-  // Add to page
-  document.body.appendChild(notification);
-  
-  // Remove after 3 seconds
-  setTimeout(() => {
-    notification.style.animation = 'slideOut 0.5s ease-in';
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    }, 500);
-  }, 3000);
+    
+    const alpha = popup.life / popup.maxLife;
+    
+    // Draw background (Tetris-optimized size)
+    ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.9})`;
+    ctx.fillRect(centerX - 150, popup.y - 30, 300, 60);
+    
+    // Draw border (thinner for Tetris)
+    ctx.strokeStyle = `rgba(255, 215, 0, ${alpha})`;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(centerX - 150, popup.y - 30, 300, 60);
+    
+    // Draw icon (Tetris-optimized size with proper positioning)
+    ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
+    ctx.font = `20px Arial`; // Slightly smaller to ensure it fits
+    ctx.textAlign = 'center';
+    ctx.fillText(popup.icon, centerX - 80, popup.y + 5); // Better positioning
+    
+    // Draw title (Tetris-optimized size)
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.font = `bold 18px Arial`;
+    ctx.fillText(popup.title, centerX, popup.y - 10);
+    
+    // Draw description (Tetris-optimized size)
+    ctx.fillStyle = `rgba(200, 200, 200, ${alpha})`;
+    ctx.font = `12px Arial`;
+    ctx.fillText(popup.description, centerX, popup.y + 12);
+  });
 }
 
 

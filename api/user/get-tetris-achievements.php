@@ -12,15 +12,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-try {
-    require_once '../config/database.php';
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Database config error: ' . $e->getMessage()
-    ]);
-    exit;
+// Get database connection
+function getSQLite3Connection() {
+    $dbPath = $_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false 
+        ? '../../db/narrrf_world.sqlite' 
+        : '/var/www/html/db/narrrf_world.sqlite';
+    
+    try {
+        $pdo = new PDO("sqlite:$dbPath");
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo;
+    } catch (PDOException $e) {
+        error_log("Database connection failed: " . $e->getMessage());
+        return null;
+    }
 }
 
 try {
@@ -31,10 +36,22 @@ try {
     }
     
     // Get user_id from request
-    $user_id = $_GET['user_id'] ?? $_POST['user_id'] ?? null;
+    $user_id = null;
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $user_id = $input['user_id'] ?? $input['discord_id'] ?? null;
+    } else {
+        $user_id = $_GET['user_id'] ?? $_GET['discord_id'] ?? null;
+    }
     
     if (!$user_id) {
         throw new Exception('User ID is required');
+    }
+    
+    // Validate Discord ID format (allow test users like "1337")
+    if (!preg_match('/^\d{4,19}$/', $user_id)) {
+        throw new Exception('Invalid Discord ID format');
     }
     
     // Check if table exists
@@ -122,7 +139,7 @@ try {
     
     // Calculate statistics
     $totalAchievements = count($achievements);
-    $unlockedCount = count($unlockedAchievements);
+    $unlockedCount = count($unlockedLookup); // Use deduplicated count
     $unlockedPercentage = $totalAchievements > 0 ? round(($unlockedCount / $totalAchievements) * 100, 1) : 0;
     
     echo json_encode([

@@ -3438,7 +3438,7 @@ async function loadTetrisAchievements() {
     
     // Local development override
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const testDiscordId = '328601656659017732'; // Real Discord ID with achievements
+    const testDiscordId = '1337'; // Use our test user with achievements
     
     const finalDiscordId = isLocalDevelopment && (!discordId || discordId === '1337') ? testDiscordId : discordId;
     console.log('🔍 Final Discord ID (with local override):', finalDiscordId);
@@ -3474,8 +3474,8 @@ async function loadTetrisAchievements() {
     const data = await response.json();
     console.log('🧩 Tetris achievements response:', data);
 
-    if (data.success && data.data) {
-      displayTetrisAchievements(data.data.achievements, data.data.statistics);
+    if (data.success && data.achievements) {
+      displayTetrisAchievements(data.achievements, data.statistics);
     } else {
       throw new Error(data.error || 'Failed to load Tetris achievements');
     }
