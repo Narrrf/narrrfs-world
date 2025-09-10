@@ -372,6 +372,15 @@ require_once 'discord-invite.php';
           </button>
           <p class="text-xs text-blue-400 mt-2 italic">Click to view all 29 Tetris achievements</p>
         </div>
+        
+        <!-- 🐍 Snake Achievements Button -->
+        <div class="mt-4">
+          <button onclick="toggleSnakeAchievements()" 
+                  class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-green-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-2 ring-green-400/30">
+            🐍 View Snake Achievements
+          </button>
+          <p class="text-xs text-green-400 mt-2 italic">Click to view all 29 Snake achievements</p>
+        </div>
       
       <!-- 🏆 Overall Progress -->
       <div class="mb-6">
@@ -391,15 +400,6 @@ require_once 'discord-invite.php';
           </div>
         </div>
       </div>
-
-      <!-- 🎯 Game Stats Grid -->
-      <div>
-        <h3 class="text-md font-semibold mb-3 text-blue-300">🎯 Game Statistics</h3>
-        <div id="missionsResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Game stats will be populated by JavaScript -->
-        </div>
-      </div>
-    </div>
 
     <!-- 🧩 Tetris Achievements Section -->
     <div id="tetrisAchievements" class="mt-6 p-6 bg-gray-800 rounded-lg border border-gray-600 hidden">
@@ -438,6 +438,49 @@ require_once 'discord-invite.php';
           <div class="flex items-center justify-center py-8">
             <div class="text-gray-400">Loading Tetris achievements...</div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🐍 Snake Achievements Section -->
+    <div id="snakeAchievements" class="mt-6 p-6 bg-gray-800 rounded-lg border border-gray-600 hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-green-300">🐍 Snake Achievements</h3>
+        <button onclick="toggleSnakeAchievements()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded transition-colors">
+          ✕ Close
+        </button>
+      </div>
+      
+      <!-- Statistics Row -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-blue-900/20 p-4 rounded-lg border border-blue-500/30 text-center">
+          <div class="text-blue-200 text-sm mb-1">Total Achievements</div>
+          <div class="text-white font-bold text-xl" id="snakeAchievementsTotal">29</div>
+        </div>
+        <div class="bg-green-900/20 p-4 rounded-lg border border-green-500/30 text-center">
+          <div class="text-green-200 text-sm mb-1">Unlocked</div>
+          <div class="text-white font-bold text-xl" id="snakeAchievementsUnlocked">0</div>
+        </div>
+        <div class="bg-red-900/20 p-4 rounded-lg border border-red-500/30 text-center">
+          <div class="text-red-200 text-sm mb-1">Locked</div>
+          <div class="text-white font-bold text-xl" id="snakeLockedAchievements">29</div>
+        </div>
+        <div class="bg-purple-900/20 p-4 rounded-lg border border-purple-500/30 text-center">
+          <div class="text-purple-200 text-sm mb-1">Progress</div>
+          <div class="text-white font-bold text-xl" id="snakeAchievementsPercentage">0%</div>
+        </div>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="w-full bg-gray-600 rounded-full h-2 mb-6">
+        <div id="snakeAchievementsProgress" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+      </div>
+      
+      <!-- Achievements Grid -->
+      <div id="snakeAchievementsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- Achievements will be populated by JavaScript -->
+        <div class="flex items-center justify-center py-8">
+          <div class="text-gray-400">Loading Snake achievements...</div>
         </div>
       </div>
     </div>
@@ -905,6 +948,15 @@ require_once 'discord-invite.php';
         <div id="achievementsError" class="text-center py-8 hidden">
           <div class="text-red-300 text-lg">❌ Failed to load achievements</div>
           <div class="text-gray-400 text-sm mt-2" id="achievementsErrorMessage"></div>
+        </div>
+      </div>
+    </div>
+
+      <!-- 🎯 Game Stats Grid -->
+      <div>
+        <h3 class="text-md font-semibold mb-3 text-blue-300">🎯 Game Statistics</h3>
+        <div id="missionsResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Game stats will be populated by JavaScript -->
         </div>
       </div>
     </div>
@@ -3544,10 +3596,10 @@ function displayTetrisAchievements(achievements, stats) {
     const achievementCard = `
       <div class="${cardClass} rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
         <div class="flex items-start space-x-4">
-          <div class="text-3xl flex-shrink-0">${achievement.icon}</div>
+          <div class="text-3xl flex-shrink-0">${achievement.achievement_icon}</div>
           <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-white text-base mb-2">${achievement.title}</h3>
-            <p class="text-sm text-gray-300 mb-3 leading-relaxed">${achievement.description}</p>
+            <h3 class="font-semibold text-white text-base mb-2">${achievement.achievement_title}</h3>
+            <p class="text-sm text-gray-300 mb-3 leading-relaxed">${achievement.achievement_description}</p>
             <div class="flex items-center justify-between">
               ${statusBadge}
               ${indicator}
@@ -3574,6 +3626,173 @@ function displayTetrisAchievementsError(errorMessage) {
           <div class="text-red-400 text-lg mb-2">❌ Error Loading Achievements</div>
           <div class="text-gray-400 text-sm">${errorMessage}</div>
           <button onclick="loadTetrisAchievements()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors">
+            🔄 Try Again
+          </button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// 🐍 Snake Achievements Toggle Function
+function toggleSnakeAchievements() {
+  const achievementsSection = document.getElementById('snakeAchievements');
+  
+  console.log('🐍 Toggle clicked, current visibility:', !achievementsSection.classList.contains('hidden'));
+  
+  if (achievementsSection.classList.contains('hidden')) {
+    achievementsSection.classList.remove('hidden');
+    console.log('🐍 Snake achievements shown');
+    loadSnakeAchievements();
+  } else {
+    achievementsSection.classList.add('hidden');
+    console.log('🐍 Snake achievements hidden');
+  }
+}
+
+// 🐍 Load Snake Achievements
+async function loadSnakeAchievements() {
+  try {
+    console.log('🐍 Loading Snake achievements...');
+    
+    // Get Discord ID from localStorage
+    const discordId = localStorage.getItem('discord_id');
+    console.log('🔍 Discord ID from localStorage:', discordId);
+    
+    // Local development override
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const testDiscordId = '1337'; // Use our test user with achievements
+    
+    const finalDiscordId = isLocalDevelopment && (!discordId || discordId === '1337') ? testDiscordId : discordId;
+    console.log('🔍 Final Discord ID (with local override):', finalDiscordId);
+    
+    if (!finalDiscordId) {
+      console.log('🐍 No Discord ID found, cannot load achievements');
+      return;
+    }
+    
+    // Environment-aware API endpoint
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    
+    console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+    console.log(`🔗 Snake Achievements API URL: ${apiBaseUrl}/api/user/get-snake-achievements.php`);
+    
+    // Load achievements from API
+    const response = await fetch(`${apiBaseUrl}/api/user/get-snake-achievements.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: finalDiscordId })
+    });
+    
+    console.log('🐍 API Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('🐍 API Response data:', data);
+    
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to load Snake achievements');
+    }
+    
+    // Display achievements
+    displaySnakeAchievements(data.achievements, data.statistics);
+    
+  } catch (error) {
+    console.error('❌ Error loading Snake achievements:', error);
+    displaySnakeAchievementsError(error.message);
+  }
+}
+
+// 🐍 Display Snake Achievements
+function displaySnakeAchievements(achievements, stats) {
+  console.log('🐍 Displaying Snake achievements:', {
+    achievementsCount: achievements.length,
+    statsKeys: Object.keys(stats),
+    achievements: achievements.slice(0, 3) // Show first 3 for debugging
+  });
+  
+  const achievementsSection = document.getElementById('snakeAchievements');
+  if (!achievementsSection) {
+    console.error('❌ displaySnakeAchievements: snakeAchievements section not found!');
+    return;
+  }
+  
+  // Update statistics
+  const unlockedEl = achievementsSection.querySelector('#snakeAchievementsUnlocked');
+  const totalEl = achievementsSection.querySelector('#snakeAchievementsTotal');
+  const lockedEl = achievementsSection.querySelector('#snakeLockedAchievements');
+  const progressEl = achievementsSection.querySelector('#snakeAchievementsProgress');
+  const percentageEl = achievementsSection.querySelector('#snakeAchievementsPercentage');
+  
+  const unlocked = stats.unlocked || 0;
+  const total = stats.total || 29;
+  const locked = total - unlocked;
+  const percentage = stats.percentage || 0;
+  
+  if (unlockedEl) unlockedEl.textContent = unlocked;
+  if (totalEl) totalEl.textContent = total;
+  if (lockedEl) lockedEl.textContent = locked;
+  if (progressEl) progressEl.style.width = percentage + '%';
+  if (percentageEl) percentageEl.textContent = percentage + '%';
+  
+  // Update achievements grid
+  const gridEl = achievementsSection.querySelector('#snakeAchievementsGrid');
+  if (!gridEl) {
+    console.error('❌ displaySnakeAchievements: snakeAchievementsGrid not found!');
+    return;
+  }
+  
+  // Clear loading message
+  gridEl.innerHTML = '';
+  
+  // Create achievement cards
+  achievements.forEach(achievement => {
+    const card = document.createElement('div');
+    card.className = `p-4 rounded-lg border-2 transition-all duration-300 ${
+      achievement.unlocked 
+        ? 'bg-green-900/30 border-green-500 text-green-100' 
+        : 'bg-gray-700/50 border-gray-600 text-gray-400'
+    }`;
+    
+    card.innerHTML = `
+      <div class="flex items-center space-x-3 mb-2">
+        <div class="text-2xl">${achievement.achievement_icon || '🏆'}</div>
+        <div class="flex-1">
+          <div class="font-semibold text-sm">${achievement.achievement_title}</div>
+          <div class="text-xs opacity-75">${achievement.achievement_description}</div>
+        </div>
+        <div class="text-lg">
+          ${achievement.unlocked ? '✅' : '🔒'}
+        </div>
+      </div>
+      ${achievement.unlocked && achievement.unlocked_at ? 
+        `<div class="text-xs text-green-300 mt-2">Unlocked: ${formatDateShort(achievement.unlocked_at)}</div>` : 
+        ''
+      }
+    `;
+    
+    gridEl.appendChild(card);
+  });
+  
+  console.log('🐍 Snake achievements displayed successfully');
+}
+
+// 🐍 Display Snake Achievements Error
+function displaySnakeAchievementsError(errorMessage) {
+  const gridEl = document.querySelector('#snakeAchievementsGrid');
+  if (gridEl) {
+    gridEl.innerHTML = `
+      <div class="col-span-full flex items-center justify-center py-8">
+        <div class="text-center">
+          <div class="text-red-400 text-lg mb-2">❌ Error Loading Achievements</div>
+          <div class="text-gray-400 text-sm">${errorMessage}</div>
+          <button onclick="loadSnakeAchievements()" class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors">
             🔄 Try Again
           </button>
         </div>

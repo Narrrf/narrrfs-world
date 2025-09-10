@@ -46,6 +46,14 @@ function initSnake() {
   let food = { x: 7, y: 7 };
   let score = 0;
   let isSnakePaused = false;
+  
+  // 🏆 Snake Achievement Tracking Variables
+  let applesEaten = 0;
+  let gamesPlayed = 0;
+  let longestSnake = 1;
+  let currentLevel = 1;
+  let gameStartTime = 0;
+  let perfectGame = true; // Track if player hits walls
 
   function startGameWithCountdown() {
     const countdownEl = document.getElementById("snake-countdown");
@@ -94,6 +102,18 @@ function initSnake() {
     checkMutationStatus();
     const btn = document.getElementById("pause-snake-btn");
     if (btn) btn.textContent = "⏸️ Pause";
+    
+    // 🏆 Reset achievement tracking variables
+    applesEaten = 0;
+    longestSnake = 1;
+    currentLevel = 1;
+    gameStartTime = Date.now();
+    perfectGame = true;
+    
+    // Clear achievement popups
+    if (window.snakeAchievementPopups) {
+      window.snakeAchievementPopups = [];
+    }
     
     // 🎯 Ensure scrolling is locked when game is reset and active
     if (gameInterval) {
@@ -229,6 +249,9 @@ function initSnake() {
       ctx.fillStyle = "#FFA500";
       ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
     }
+    
+    // 🏆 Draw achievement popups
+    drawAchievementPopups();
   } // ✅ End of draw()
 
   function moveSnake() {
@@ -242,7 +265,7 @@ function initSnake() {
       head.y < 0 || head.y >= tileCountY ||
       snake.some(seg => seg.x === head.x && seg.y === head.y)
     ) {
-      clearInterval(gameInterval);
+      // Call proper game over function (like Tetris)
       onGameOver();
       return;
     }
@@ -253,14 +276,273 @@ function initSnake() {
     const ate = head.x === food.x && head.y === food.y;
     if (ate) {
       score++;
+      applesEaten++;
+      longestSnake = Math.max(longestSnake, snake.length + 1);
       updateScore();
       placeFood();
       tryActivateMutation(score); // ✅ Now runs exactly on score increase
+      
+      // 🏆 Check Snake achievements immediately after eating
+      console.log('🍎 Apple eaten! Checking achievements...', { applesEaten, score, longestSnake });
+      checkSnakeAchievements();
     } else {
       snake.pop(); // ✅ Don't grow if no cheese
     }
 
     draw(); // 🖌️ Always render after logic
+  }
+
+  // 🐍 Game Over Function (moved inside initSnake scope)
+  function onGameOver() {
+    clearInterval(gameInterval);
+    gameInterval = null;
+    isSnakePaused = true;
+
+    // 🎯 Unlock scrolling when game over (like Tetris)
+    unlockSnakeScroll();
+
+    // 🐍 Capture the final score before any potential resets
+    const finalScore = score;
+    gamesPlayed++;
+    console.log("🐍 Game Over - Final Score:", finalScore);
+    
+    // 🏆 Check final achievements (games played, perfect game, etc.)
+    checkSnakeAchievements();
+
+    const modal = document.getElementById("snake-over-modal");
+    const finalScoreText = document.getElementById("snake-final-score-text");
+    const pauseBtn = document.getElementById("pause-snake-btn");
+
+    if (modal && finalScoreText) {
+      // ✅ Only update score content, no style changes — handled in HTML
+      finalScoreText.textContent = `You earned $${finalScore * 10} DSPOINC`;
+      console.log("🐍 Displaying score:", finalScore);
+
+      modal.classList.remove("hidden");
+      modal.style.display = "flex"; // fallback for older browsers
+    }
+
+    if (pauseBtn) {
+      pauseBtn.textContent = "⏸️ Pause";
+    }
+
+    // 🐍 Save the captured final score
+    saveScore(finalScore);
+  }
+
+  // 🏆 Snake Achievement Functions
+  function checkSnakeAchievements() {
+    console.log('🏆 Checking Snake achievements...', { applesEaten, score, longestSnake, currentLevel });
+    
+    // Check achievements based on current game state
+    const achievements = [
+      // Basic Achievements
+      { key: 'first_apple', condition: applesEaten >= 1 },
+      { key: 'apple_collector', condition: applesEaten >= 10 },
+      { key: 'snake_grower', condition: applesEaten >= 25 },
+      { key: 'apple_master', condition: applesEaten >= 50 },
+      { key: 'speed_demon', condition: currentLevel >= 5 },
+      { key: 'level_master', condition: currentLevel >= 10 },
+      { key: 'score_hunter', condition: score >= 1000 },
+      { key: 'point_master', condition: score >= 5000 },
+      { key: 'high_scorer', condition: score >= 10000 },
+      { key: 'snake_king', condition: score >= 25000 },
+      
+      // Advanced Achievements
+      { key: 'long_snake', condition: longestSnake >= 20 },
+      { key: 'giant_snake', condition: longestSnake >= 50 },
+      { key: 'mega_snake', condition: longestSnake >= 100 },
+      { key: 'survivor', condition: (Date.now() - gameStartTime) >= 120000 }, // 2 minutes
+      { key: 'endurance_master', condition: (Date.now() - gameStartTime) >= 300000 }, // 5 minutes
+      
+      // Expert Achievements
+      { key: 'level_warrior', condition: currentLevel >= 15 },
+      { key: 'level_champion', condition: currentLevel >= 20 },
+      { key: 'score_legend', condition: score >= 50000 },
+      { key: 'score_god', condition: score >= 100000 },
+      { key: 'apple_legend', condition: applesEaten >= 200 },
+      { key: 'snake_legend', condition: longestSnake >= 200 }
+    ];
+    
+    achievements.forEach(achievement => {
+      if (achievement.condition) {
+        console.log('🎯 Achievement condition met:', achievement.key, achievement.condition);
+        checkAndUnlockAchievement(achievement.key);
+      }
+    });
+  }
+  
+  function checkAndUnlockAchievement(achievementKey) {
+    console.log('🔍 checkAndUnlockAchievement called for:', achievementKey);
+    
+    // Get user's current achievements to check if already unlocked
+    const userId = localStorage.getItem('discord_id') || '1337';
+    console.log('👤 User ID:', userId);
+    
+    // Environment-aware API endpoint
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    console.log('🌍 API Base URL:', apiBaseUrl);
+    
+    fetch(`${apiBaseUrl}/api/user/get-snake-achievements.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('📡 API Response:', data);
+      if (data.success) {
+        const achievement = data.achievements.find(a => a.key === achievementKey);
+        console.log('🔍 Found achievement:', achievement);
+        if (achievement && !achievement.unlocked) {
+          console.log('✅ Achievement not unlocked, showing notification');
+          // Show notification and unlock achievement
+          showAchievementNotification(achievementKey, achievement.achievement_title, achievement.achievement_description, achievement.achievement_icon);
+          unlockSnakeAchievement(achievementKey);
+        } else if (achievement && achievement.unlocked) {
+          console.log('⚠️ Achievement already unlocked:', achievementKey);
+        } else {
+          console.log('❌ Achievement not found in API response:', achievementKey);
+        }
+      } else {
+        console.log('❌ API call failed:', data.error);
+      }
+    })
+    .catch(error => {
+      console.error('❌ API call failed:', error);
+      console.log('🔄 Using fallback notification for:', achievementKey);
+      // Fallback: show notification anyway
+      const achievementTitles = {
+        'first_apple': 'First Apple',
+        'apple_collector': 'Apple Collector',
+        'snake_grower': 'Snake Grower',
+        'apple_master': 'Apple Master',
+        'speed_demon': 'Speed Demon',
+        'level_master': 'Level Master',
+        'score_hunter': 'Score Hunter',
+        'point_master': 'Point Master',
+        'high_scorer': 'High Scorer',
+        'snake_king': 'Snake King',
+        'long_snake': 'Long Snake',
+        'giant_snake': 'Giant Snake',
+        'mega_snake': 'Mega Snake',
+        'survivor': 'Survivor',
+        'endurance_master': 'Endurance Master',
+        'level_warrior': 'Level Warrior',
+        'level_champion': 'Level Champion',
+        'score_legend': 'Score Legend',
+        'score_god': 'Score God',
+        'apple_legend': 'Apple Legend',
+        'snake_legend': 'Snake Legend'
+      };
+      
+      const title = achievementTitles[achievementKey] || achievementKey;
+      console.log('🎉 Showing fallback notification:', title);
+      showAchievementNotification(achievementKey, title, 'Achievement unlocked!', '🏆');
+      unlockSnakeAchievement(achievementKey);
+    });
+  }
+  
+  function showAchievementNotification(key, title, description, icon) {
+    console.log('🎉 showAchievementNotification called:', { key, title, description, icon });
+    
+    // Create achievement popup on canvas - Tetris-style centered
+    const popup = {
+      key: key,
+      title: title,
+      description: description || 'Achievement Unlocked!',
+      icon: icon || '🏆',
+      life: 30, // 0.5 seconds at 60fps (like Tetris)
+      maxLife: 30,
+      scale: 1, // No scale animation - instant appearance
+      maxScale: 1,
+      color: '#ffd700' // Gold color for achievements
+    };
+    
+    if (!window.snakeAchievementPopups) {
+      window.snakeAchievementPopups = [];
+    }
+    window.snakeAchievementPopups.push(popup);
+    console.log('📝 Popup added to array. Total popups:', window.snakeAchievementPopups.length);
+  }
+  
+  function drawAchievementPopups() {
+    if (!window.snakeAchievementPopups) return;
+    
+    window.snakeAchievementPopups.forEach((popup, index) => {
+      // Remove if expired
+      if (popup.life <= 0) {
+        window.snakeAchievementPopups.splice(index, 1);
+        return;
+      }
+      
+      const alpha = popup.life / 30; // 30 is maxLife
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      
+      // Save context state
+      ctx.save();
+      
+      // Draw background (Tetris-style centered)
+      ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.9})`;
+      ctx.fillRect(centerX - 150, centerY - 30, 300, 60);
+      
+      // Draw border (Tetris-style)
+      ctx.strokeStyle = `rgba(255, 215, 0, ${alpha})`;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(centerX - 150, centerY - 30, 300, 60);
+      
+      // Draw icon (Tetris-style centered)
+      ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
+      ctx.font = '20px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(popup.icon, centerX - 80, centerY + 5);
+      
+      // Draw title (Tetris-style centered)
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText(popup.title, centerX, centerY - 10);
+      
+      // Draw description (Tetris-style centered)
+      ctx.fillStyle = `rgba(200, 200, 200, ${alpha})`;
+      ctx.font = '12px Arial';
+      ctx.fillText(popup.description, centerX, centerY + 12);
+      
+      // Restore context state
+      ctx.restore();
+      
+      // Update life
+      popup.life--;
+    });
+  }
+  
+  function unlockSnakeAchievement(achievementKey) {
+    const userId = localStorage.getItem('discord_id') || '1337';
+    
+    // Environment-aware API endpoint
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    
+    fetch(`${apiBaseUrl}/api/dev/unlock-snake-achievement.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        user_id: userId, 
+        achievement_key: achievementKey 
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        console.log('🏆 Snake achievement unlocked:', achievementKey);
+      } else {
+        console.warn('Failed to unlock Snake achievement:', data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error unlocking Snake achievement:', error);
+    });
   }
 
   // --- Event Listeners (only add once!) ---
@@ -362,38 +644,6 @@ function startGame() {
   lockSnakeScroll(); // 🎯 Lock scrolling when game starts (like Tetris)
 }
 
-function onGameOver() {
-  clearInterval(gameInterval);
-  gameInterval = null;
-  isSnakePaused = true;
-
-  // 🎯 Unlock scrolling when game over (like Tetris)
-  unlockSnakeScroll();
-
-  // 🐍 Capture the final score before any potential resets
-  const finalScore = score;
-  console.log("🐍 Game Over - Final Score:", finalScore);
-
-  const modal = document.getElementById("snake-over-modal");
-  const finalScoreText = document.getElementById("snake-final-score-text");
-  const pauseBtn = document.getElementById("pause-snake-btn");
-
-  if (modal && finalScoreText) {
-    // ✅ Only update score content, no style changes — handled in HTML
-    finalScoreText.textContent = `You earned $${finalScore * 10} DSPOINC`;
-    console.log("🐍 Displaying score:", finalScore);
-
-    modal.classList.remove("hidden");
-    modal.style.display = "flex"; // fallback for older browsers
-  }
-
-  if (pauseBtn) {
-    pauseBtn.textContent = "⏸️ Pause";
-  }
-
-  // 🐍 Save the captured final score
-  saveScore(finalScore);
-}
 
 // 🐍 Snake Score Saving Function
 function saveScore(finalScore) {

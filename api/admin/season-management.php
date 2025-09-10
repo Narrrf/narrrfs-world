@@ -30,6 +30,10 @@ try {
             getSeasonLeaderboard($db);
             break;
             
+        case 'reset_season':
+            resetSeason($db);
+            break;
+            
         default:
             echo json_encode(['success' => false, 'error' => 'Invalid action']);
     }
@@ -224,5 +228,150 @@ function getSeasonLeaderboard($db) {
         'game' => $game,
         'season_id' => $season_id
     ]);
+}
+
+function resetSeason($db) {
+    try {
+        // Get current season info
+        $stmt = $db->prepare("SELECT MAX(CAST(SUBSTR(season, 8) AS INTEGER)) as max_season FROM tbl_tetris_scores WHERE season LIKE 'season_%'");
+        $stmt->execute();
+        $current_season_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $current_season = $current_season_result['max_season'] ?? 1;
+        $new_season = $current_season + 1;
+
+        // Mark top performers from current season before resetting
+        $top_performers = [];
+        
+        // Tetris top performers
+        $stmt = $db->prepare("
+            SELECT discord_id, discord_name, score, game 
+            FROM tbl_tetris_scores 
+            WHERE game = 'tetris' AND season = ? 
+            ORDER BY score DESC 
+            LIMIT 2
+        ");
+        $stmt->execute(["season_$current_season"]);
+        $top_performers['tetris'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Snake top performers
+        $stmt = $db->prepare("
+            SELECT discord_id, discord_name, score, game 
+            FROM tbl_tetris_scores 
+            WHERE game = 'snake' AND season = ? 
+            ORDER BY score DESC 
+            LIMIT 2
+        ");
+        $stmt->execute(["season_$current_season"]);
+        $top_performers['snake'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Update top performers in current season
+        foreach ($top_performers as $game => $performers) {
+            foreach ($performers as $performer) {
+                $stmt = $db->prepare("
+                    UPDATE tbl_tetris_scores 
+                    SET is_top_performer = 1 
+                    WHERE discord_id = ? AND game = ? AND season = ?
+                ");
+                $stmt->execute([$performer['discord_id'], $performer['game'], "season_$current_season"]);
+            }
+        }
+
+        // Set season end date for current season
+        $stmt = $db->prepare("
+            UPDATE tbl_tetris_scores 
+            SET season_end_date = CURRENT_TIMESTAMP 
+            WHERE season = ? AND season_end_date IS NULL
+        ");
+        $stmt->execute(["season_$current_season"]);
+
+        // Reset Tetris scores
+        $stmt = $db->prepare("
+            UPDATE tbl_tetris_scores 
+            SET season = ?, is_current_season = 0 
+            WHERE game = 'tetris' AND season = ? AND is_current_season = 1
+        ");
+        $stmt->execute(["season_${current_season}_historical", "season_$current_season"]);
+        
+        // Reset Snake scores
+        $stmt = $db->prepare("
+            UPDATE tbl_tetris_scores 
+            SET season = ?, is_current_season = 0 
+            WHERE game = 'snake' AND season = ? AND is_current_season = 1
+        ");
+        $stmt->execute(["season_${current_season}_historical", "season_$current_season"]);
+
+        // Reset Cheese Hunt clicks
+        $stmt = $db->prepare("
+            UPDATE tbl_cheese_clicks 
+            SET season = ?, is_current_season = 0 
+            WHERE season = ? AND is_current_season = 1
+        ");
+        $stmt->execute(["season_${current_season}_historical", "season_$current_season"]);
+
+        // Reset Discord Race participants
+        $stmt = $db->prepare("
+            UPDATE tbl_race_participants 
+            SET season = ?, is_current_season = 0 
+            WHERE season = ? AND is_current_season = 1
+        ");
+        $stmt->execute(["season_${current_season}_historical", "season_$current_season"]);
+
+        // Reset User Scores
+        $stmt = $db->prepare("
+            UPDATE tbl_user_scores 
+            SET season = ?, is_current_season = 0 
+            WHERE season = ? AND is_current_season = 1
+        ");
+        $stmt->execute(["season_${current_season}_historical", "season_$current_season"]);
+
+        // Get count of affected records
+        $affected_count = 0;
+        
+        // Count Tetris records
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_tetris_scores WHERE game = 'tetris' AND season = ?");
+        $stmt->execute(["season_${current_season}_historical"]);
+        $affected_count += $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        // Count Snake records
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_tetris_scores WHERE game = 'snake' AND season = ?");
+        $stmt->execute(["season_${current_season}_historical"]);
+        $affected_count += $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+        // Count Cheese Hunt records
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_cheese_clicks WHERE season = ?");
+        $stmt->execute(["season_${current_season}_historical"]);
+        $affected_count += $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+        // Count Discord Race records
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_race_participants WHERE season = ?");
+        $stmt->execute(["season_${current_season}_historical"]);
+        $affected_count += $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+        // Count User Scores records
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_user_scores WHERE season = ?");
+        $stmt->execute(["season_${current_season}_historical"]);
+        $affected_count += $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Successfully reset all game data for Season $new_season",
+            'details' => [
+                'current_season' => "season_$current_season",
+                'new_season' => "season_$new_season",
+                'records_affected' => $affected_count,
+                'top_performers' => $top_performers,
+                'historical_season' => "season_${current_season}_historical",
+                'games_reset' => ['tetris', 'snake', 'cheese_hunt', 'discord_race', 'user_scores']
+            ],
+            'reset_at' => date('Y-m-d H:i:s')
+        ]);
+
+    } catch (Exception $e) {
+        error_log("Reset season error: " . $e->getMessage());
+        echo json_encode([
+            'success' => false, 
+            'error' => 'Season reset failed: ' . $e->getMessage()
+        ]);
+    }
 }
 ?> 

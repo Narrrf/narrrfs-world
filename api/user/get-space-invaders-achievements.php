@@ -216,9 +216,9 @@ try {
     foreach ($achievements as $achievement) {
         $processedAchievements[] = [
             'key' => $achievement['achievement_key'],
-            'title' => $achievement['achievement_title'],
-            'description' => $achievement['achievement_description'],
-            'icon' => $achievement['achievement_icon'],
+            'achievement_title' => $achievement['achievement_title'],
+            'achievement_description' => $achievement['achievement_description'],
+            'achievement_icon' => $achievement['achievement_icon'],
             'unlocked_at' => $achievement['unlocked_at'],
             'game_score' => (int)$achievement['game_score'],
             'game_time' => (int)$achievement['game_time'],
@@ -234,9 +234,9 @@ try {
         if (!in_array($key, $unlockedKeys)) {
             $processedAchievements[] = [
                 'key' => $key,
-                'title' => $achievement['title'],
-                'description' => $achievement['description'],
-                'icon' => $achievement['icon'],
+                'achievement_title' => $achievement['title'],
+                'achievement_description' => $achievement['description'],
+                'achievement_icon' => $achievement['icon'],
                 'unlocked_at' => null,
                 'game_score' => 0,
                 'game_time' => 0,

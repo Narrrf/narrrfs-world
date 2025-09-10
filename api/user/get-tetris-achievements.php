@@ -121,9 +121,9 @@ try {
         
         $achievements[] = [
             'key' => $key,
-            'title' => $definition['achievement_title'],
-            'description' => $definition['achievement_description'],
-            'icon' => $definition['achievement_icon'],
+            'achievement_title' => $definition['achievement_title'],
+            'achievement_description' => $definition['achievement_description'],
+            'achievement_icon' => $definition['achievement_icon'],
             'unlocked' => $isUnlocked,
             'unlocked_at' => $isUnlocked ? $unlockedLookup[$key]['unlocked_at'] : null,
             'requirements' => [

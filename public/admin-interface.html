@@ -11218,6 +11218,12 @@ async function authenticateDiscord() {
                 <span class="text-yellow-400 font-semibold">${games.snake?.status === 'active' ? 'Active' : 'Inactive'}</span>
               </div>
             </div>
+            <div class="mt-2">
+              <button onclick="loadUserSnakeAchievements('${userId}', '${username}')" 
+                      class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs">
+                🏆 View Snake Achievements
+              </button>
+            </div>
           </div>
 
           <!-- Space Invaders Status -->
@@ -13696,13 +13702,11 @@ function updateGameTabContent(gameType, gameData) {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            action: 'adjust_points',
-            user_identifier: playerUsername,
-            points_change: parseInt(dspoincAmount),
+            action: 'addpoints',
+            user_id: playerId,
+            amount: parseInt(dspoincAmount),
             reason: `Boss Level Achievement Reward: ${rewardDescription}`,
-            admin_username: currentAdmin.username || 'Admin',
-            game_type: 'space_invaders',
-            additional_notes: playerMessage || `Congratulations on reaching boss level ${notification.boss_level}!`
+            admin_id: currentAdmin.username || 'Admin'
           })
         });
 
@@ -22704,6 +22708,97 @@ function testDatabaseConnection() {
             <span class="text-purple-400 font-semibold">${unlockedCount}/${totalCount} unlocked</span>
             <div class="w-full bg-gray-700 rounded-full h-2 mt-1">
               <div class="bg-purple-600 h-2 rounded-full" style="width: ${(unlockedCount / totalCount) * 100}%"></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
+            ${achievements.map(achievement => `
+              <div class="p-2 rounded ${achievement.unlocked ? 'bg-green-900 bg-opacity-50 border border-green-500' : 'bg-gray-800 bg-opacity-50 border border-gray-600'}">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">${achievement.achievement_icon || '🏆'}</span>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-semibold ${achievement.unlocked ? 'text-green-300' : 'text-gray-400'} truncate">
+                      ${achievement.achievement_title}
+                    </div>
+                    <div class="text-xs ${achievement.unlocked ? 'text-green-400' : 'text-gray-500'} truncate">
+                      ${achievement.achievement_description}
+                    </div>
+                    ${achievement.unlocked ? `
+                      <div class="text-xs text-green-500 mt-1">
+                        ✅ Unlocked ${achievement.unlocked_at ? new Date(achievement.unlocked_at).toLocaleDateString() : ''}
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // Add achievements to the container
+      container.innerHTML += achievementsHTML;
+    }
+
+    // 🐍 Load User Snake Achievements
+    async function loadUserSnakeAchievements(userId, username) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      try {
+        addLog(`🐍 Loading Snake achievements for ${username}...`);
+
+        const response = await fetch(API_BASE_URL + '/api/user/get-snake-achievements.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ user_id: userId })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const achievementsData = await response.json();
+
+        if (!achievementsData.success) {
+          throw new Error(achievementsData.error || 'Failed to load Snake achievements');
+        }
+
+        // Display the achievements
+        displayUserSnakeAchievements(userId, username, achievementsData);
+
+        addLog(`✅ Loaded Snake achievements for ${username}`);
+      } catch (error) {
+        addLog(`❌ Snake achievements loading error: ${error.message}`);
+        console.error('Snake achievements loading error:', error);
+      }
+    }
+
+    // 🐍 Display User Snake Achievements
+    function displayUserSnakeAchievements(userId, username, achievementsData) {
+      const container = document.getElementById(`missionsStatus_${userId}`);
+      
+      if (!container) {
+        addLog('❌ Missions status container not found');
+        return;
+      }
+
+      const achievements = achievementsData.achievements || [];
+      const unlockedCount = achievements.filter(a => a.unlocked).length;
+      const totalCount = achievements.length;
+
+      // Create achievements display HTML
+      const achievementsHTML = `
+        <div class="mt-4 p-4 bg-green-900 bg-opacity-30 rounded-lg">
+          <h6 class="font-semibold text-green-300 mb-3">🏆 Snake Achievements for ${username}</h6>
+          <div class="mb-3">
+            <span class="text-sm text-gray-400">Progress: </span>
+            <span class="text-green-400 font-semibold">${unlockedCount}/${totalCount} unlocked</span>
+            <div class="w-full bg-gray-700 rounded-full h-2 mt-1">
+              <div class="bg-green-600 h-2 rounded-full" style="width: ${(unlockedCount / totalCount) * 100}%"></div>
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto">
