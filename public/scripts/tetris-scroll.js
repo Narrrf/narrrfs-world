@@ -196,21 +196,28 @@ Object.entries(pieceImageMap).forEach(([key, filename]) => {
 
 // Improved touch controls for Tetris
 function initTouchControls(canvas, currentPiece, dropInterval) {
+  console.log('📱 Initializing Tetris touch controls for canvas:', canvas.id);
   let lastSwipeDirection = null;
   let lastSwipeTime = 0;
   const SWIPE_COOLDOWN = 100; // Minimum time between swipes
 
   canvas.addEventListener("touchstart", e => {
-    if (isTetrisPaused) return; // Prevent touch controls while paused
+    console.log('📱 Touch start detected on Tetris canvas');
+    if (isTetrisPaused) {
+      console.log('📱 Touch ignored - game is paused');
+      return; // Prevent touch controls while paused
+    }
     e.preventDefault();
     const touch = e.touches[0];
     touchStartX = touch.clientX;
     touchStartY = touch.clientY;
     touchStartTime = Date.now();
+    console.log('📱 Touch start position:', touchStartX, touchStartY);
 
     // Check for double tap (rotation)
     const currentTime = Date.now();
     if (currentTime - lastTapTime < DOUBLE_TAP_THRESHOLD) {
+      console.log('📱 Double tap detected - rotating piece');
       rotatePiece();
       e.preventDefault();
     }
@@ -218,21 +225,27 @@ function initTouchControls(canvas, currentPiece, dropInterval) {
   }, { passive: false });
 
   canvas.addEventListener("touchmove", e => {
-    if (isTetrisPaused) return; // Prevent touch controls while paused
+    if (isTetrisPaused) {
+      console.log('📱 Touch move ignored - game is paused');
+      return; // Prevent touch controls while paused
+    }
     e.preventDefault();
     const touch = e.touches[0];
     const deltaX = touch.clientX - touchStartX;
     const deltaY = touch.clientY - touchStartY;
     const touchTime = Date.now() - touchStartTime;
+    console.log('📱 Touch move delta:', deltaX, deltaY);
 
     // Horizontal movement
     if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
       if (deltaX > 0) {
+        console.log('📱 Swipe right detected');
         if (!collide(current.shape, current.row, current.col + 1)) {
           current.col++;
           draw();
         }
       } else {
+        console.log('📱 Swipe left detected');
         if (!collide(current.shape, current.row, current.col - 1)) {
           current.col--;
           draw();
@@ -242,6 +255,7 @@ function initTouchControls(canvas, currentPiece, dropInterval) {
 
     // Vertical movement (quick drop)
     if (deltaY > SWIPE_THRESHOLD) {
+      console.log('📱 Swipe down detected - quick drop');
       while (!collide(current.shape, current.row + 1, current.col)) {
         current.row++;
       }
@@ -725,13 +739,16 @@ function rotatePiece() {
     checkTetrisAchievements(discordId, finalScore, linesClearedTotal, Math.floor(linesClearedTotal / 20), piecesDropped, tetrisClears);
 
     // 💾 Save score to database
-        const payload = {
+    // 🔧 FIX: Send raw score (lines cleared) instead of DSPOINC score
+    // The API will convert raw score to DSPOINC using season settings
+    const rawScore = linesClearedTotal; // Send raw lines cleared, not DSPOINC
+    const payload = {
       wallet: wallet,
-      score: finalScore,
-          discord_id: discordId,
+      score: rawScore, // Send raw lines cleared
+      discord_id: discordId,
       discord_name: discordName,
       game: "tetris"
-        };
+    };
       
         console.log("⏎ Sending score payload:", payload);
       
@@ -1029,88 +1046,9 @@ function unlockTetrisScroll() {
     document.body.style.overflow = "";
 }
 
-// Listen anywhere on screen!
-document.addEventListener("touchstart", e => {
-  // Only handle touch events on the Tetris canvas
-  if (!e.target.closest("#tetris-canvas")) return;
-  
-  // Don't handle touch events if game is paused or over
-  if (isTetrisPaused) return;
-  
-  if (e.cancelable) e.preventDefault();
-  lockTetrisScroll();
-
-  const touch = e.touches[0];
-  touchStartX = touch.clientX;
-  touchStartY = touch.clientY;
-
-  heldDown = false;
-
-  // Clear any existing intervals first
-  clearTimeout(dropHoldTimeout);
-  clearInterval(touchDropInterval);
-
-  dropHoldTimeout = setTimeout(() => {
-    if (!isTetrisPaused && gameInterval) {
-      heldDown = true;
-      touchDropInterval = setInterval(() => {
-        if (!isTetrisPaused && gameInterval) {
-          drop();
-          draw();
-        }
-      }, 75);
-    }
-  }, 500);
-}, { passive: false });
-
-document.addEventListener("touchend", e => {
-  // Only handle touch events on the Tetris canvas
-  if (!e.target.closest("#tetris-canvas")) return;
-  
-  // Always clear timeouts/intervals on touch end
-  clearTimeout(dropHoldTimeout);
-  clearInterval(touchDropInterval);
-
-  // Don't process swipes if game is paused or over
-  if (isTetrisPaused) {
-    unlockTetrisScroll();
-    return;
-  }
-
-  if (heldDown) {
-    heldDown = false;
-    unlockTetrisScroll();
-    return;
-  }
-
-  const touch = e.changedTouches[0];
-  const deltaX = touch.clientX - touchStartX;
-  const deltaY = touch.clientY - touchStartY;
-
-  if (Math.abs(deltaX) > Math.abs(deltaY)) {
-    if (deltaX > sensitivity && !collide(current.shape, current.row, current.col + 1)) {
-      current.col++;
-      draw();
-    } else if (deltaX < -sensitivity && !collide(current.shape, current.row, current.col - 1)) {
-      current.col--;
-      draw();
-    }
-  } else {
-    if (deltaY < -sensitivity) {
-      rotatePiece(); // swipe up = rotate
-      draw();
-    }
-    // Optionally enable quick drop on swipe down:
-    // else if (deltaY > sensitivity) {
-    //   while (!collide(current.shape, current.row + 1, current.col)) {
-    //     current.row++;
-    //   }
-    //   draw();
-    // }
-  }
-
-  unlockTetrisScroll();
-}, { passive: false });
+// 🔧 MOBILE FIX: Removed conflicting global touch listeners
+// Touch controls are now handled only by the canvas-specific listeners in initTouchControls()
+// This prevents double event handling and touch control conflicts
 
 // 🔧 MOBILE ERROR HANDLER
 window.addEventListener('error', function(e) {
