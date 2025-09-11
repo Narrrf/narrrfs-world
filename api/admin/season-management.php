@@ -34,6 +34,10 @@ try {
             resetSeason($db);
             break;
             
+        case 'create_season_3':
+            createSeason3($db);
+            break;
+            
         default:
             echo json_encode(['success' => false, 'error' => 'Invalid action']);
     }
@@ -371,6 +375,198 @@ function resetSeason($db) {
         echo json_encode([
             'success' => false, 
             'error' => 'Season reset failed: ' . $e->getMessage()
+        ]);
+    }
+}
+
+function createSeason3($db) {
+    try {
+        // Get current season info for data preservation
+        $stmt = $db->prepare("SELECT season_id, season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY season_id DESC LIMIT 1");
+        $stmt->execute();
+        $currentSeason = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$currentSeason) {
+            throw new Exception("No active season found to preserve");
+        }
+        
+        $currentSeasonId = $currentSeason['season_id'];
+        $currentSeasonName = $currentSeason['season_name'];
+        
+        // Mark top performers from ALL 5 GAMES before creating Season 3
+        $top_performers = [];
+        
+        // 1. Tetris top performers (from tbl_tetris_scores)
+        $stmt = $db->prepare("
+            SELECT discord_id, discord_name, score, game 
+            FROM tbl_tetris_scores 
+            WHERE game = 'tetris' AND is_current_season = 1
+            ORDER BY score DESC 
+            LIMIT 3
+        ");
+        $stmt->execute();
+        $top_performers['tetris'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // 2. Snake top performers (from tbl_tetris_scores)
+        $stmt = $db->prepare("
+            SELECT discord_id, discord_name, score, game 
+            FROM tbl_tetris_scores 
+            WHERE game = 'snake' AND is_current_season = 1
+            ORDER BY score DESC 
+            LIMIT 3
+        ");
+        $stmt->execute();
+        $top_performers['snake'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // 3. Space Invaders top performers (from tbl_user_scores)
+        $stmt = $db->prepare("
+            SELECT user_id as discord_id, score, game 
+            FROM tbl_user_scores 
+            WHERE game = 'space_invaders' AND season = 'season_2'
+            ORDER BY score DESC 
+            LIMIT 3
+        ");
+        $stmt->execute();
+        $top_performers['space_invaders'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // 4. Discord Race top performers (from tbl_user_scores)
+        $stmt = $db->prepare("
+            SELECT user_id as discord_id, score, game 
+            FROM tbl_user_scores 
+            WHERE game = 'discord' AND season = 'season_2'
+            ORDER BY score DESC 
+            LIMIT 3
+        ");
+        $stmt->execute();
+        $top_performers['discord'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // 5. Cheese Race top performers (from tbl_user_scores)
+        $stmt = $db->prepare("
+            SELECT user_id as discord_id, score, game 
+            FROM tbl_user_scores 
+            WHERE game = 'cheese_race' AND season = 'season_2'
+            ORDER BY score DESC 
+            LIMIT 3
+        ");
+        $stmt->execute();
+        $top_performers['cheese_race'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Update top performers in current season for Tetris/Snake
+        foreach (['tetris', 'snake'] as $game) {
+            if (isset($top_performers[$game])) {
+                foreach ($top_performers[$game] as $performer) {
+                    $stmt = $db->prepare("
+                        UPDATE tbl_tetris_scores 
+                        SET is_top_performer = 1 
+                        WHERE discord_id = ? AND game = ? AND is_current_season = 1
+                    ");
+                    $stmt->execute([$performer['discord_id'], $performer['game']]);
+                }
+            }
+        }
+        
+        // Set season end date for current season
+        $stmt = $db->prepare("
+            UPDATE tbl_tetris_scores 
+            SET season_end_date = CURRENT_TIMESTAMP 
+            WHERE is_current_season = 1 AND season_end_date IS NULL
+        ");
+        $stmt->execute();
+        
+        $stmt = $db->prepare("
+            UPDATE tbl_cheese_clicks 
+            SET season_end_date = CURRENT_TIMESTAMP 
+            WHERE is_current_season = 1 AND season_end_date IS NULL
+        ");
+        $stmt->execute();
+        
+        $stmt = $db->prepare("
+            UPDATE tbl_race_participants 
+            SET season_end_date = CURRENT_TIMESTAMP 
+            WHERE is_current_season = 1 AND season_end_date IS NULL
+        ");
+        $stmt->execute();
+        
+        // End current season
+        $stmt = $db->prepare("UPDATE tbl_seasons SET is_active = 0, end_date = CURRENT_TIMESTAMP WHERE season_id = ?");
+        $stmt->execute([$currentSeasonId]);
+        
+        // Create Season 3
+        $seasonName = 'Season 3 - The Ultimate Cheese Challenge';
+        $stmt = $db->prepare("
+            INSERT INTO tbl_seasons (season_name, start_date, is_active) 
+            VALUES (?, CURRENT_TIMESTAMP, 1)
+        ");
+        $stmt->bindValue(1, $seasonName);
+        $stmt->execute();
+        
+        $season_id = $db->lastInsertId();
+        
+        // Update tbl_season_settings for leaderboard API compatibility
+        $stmt = $db->prepare("
+            INSERT INTO tbl_season_settings (season_name, tetris_max_score, snake_max_score, points_per_line, points_per_cheese, space_invaders_max_score, points_per_invader, created_at) 
+            VALUES ('season_3', 10000, 10000, 10, 10, 10000, 0.01, CURRENT_TIMESTAMP)
+        ");
+        $stmt->execute();
+        
+        // Count preserved data for ALL 5 GAMES
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_tetris_scores WHERE is_current_season = 0");
+        $stmt->execute();
+        $tetrisPreserved = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_cheese_clicks WHERE is_current_season = 0");
+        $stmt->execute();
+        $cheesePreserved = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_race_participants WHERE is_current_season = 0");
+        $stmt->execute();
+        $racePreserved = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        // Count user_scores for Space Invaders, Discord Race, and Cheese Race
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_user_scores WHERE game = 'space_invaders' AND season = 'season_2'");
+        $stmt->execute();
+        $spaceInvadersPreserved = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_user_scores WHERE game = 'discord' AND season = 'season_2'");
+        $stmt->execute();
+        $discordRacePreserved = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM tbl_user_scores WHERE game = 'cheese_race' AND season = 'season_2'");
+        $stmt->execute();
+        $cheeseRacePreserved = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        // Calculate total top performers marked
+        $totalTopPerformers = 0;
+        foreach ($top_performers as $game => $performers) {
+            $totalTopPerformers += count($performers);
+        }
+        
+        echo json_encode([
+            'success' => true, 
+            'message' => "Season 3 created successfully: $seasonName",
+            'season_id' => $season_id,
+            'season_name' => $seasonName,
+            'data_preserved' => [
+                'previous_season' => $currentSeasonName,
+                'all_5_games_preserved' => [
+                    'tetris_scores' => $tetrisPreserved,
+                    'snake_scores' => $tetrisPreserved, // Snake also in tbl_tetris_scores
+                    'space_invaders_scores' => $spaceInvadersPreserved,
+                    'discord_race_scores' => $discordRacePreserved,
+                    'cheese_race_scores' => $cheeseRacePreserved,
+                    'cheese_hunt_clicks' => $cheesePreserved,
+                    'race_participants' => $racePreserved
+                ],
+                'top_performers_marked' => $totalTopPerformers,
+                'total_records_preserved' => $tetrisPreserved + $cheesePreserved + $racePreserved + $spaceInvadersPreserved + $discordRacePreserved + $cheeseRacePreserved
+            ]
+        ]);
+        
+    } catch (Exception $e) {
+        error_log("Create Season 3 error: " . $e->getMessage());
+        echo json_encode([
+            'success' => false, 
+            'error' => 'Failed to create Season 3: ' . $e->getMessage()
         ]);
     }
 }
