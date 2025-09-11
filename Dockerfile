@@ -1,6 +1,6 @@
 FROM php:8.1-apache
 
-# Fix Apache FQDN warning
+# 2 Fix Apache FQDN warning
 RUN echo "ServerName narrrfs.world" >> /etc/apache2/apache2.conf
 
 # Enable mod_rewrite
