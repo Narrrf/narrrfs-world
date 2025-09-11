@@ -21376,10 +21376,8 @@ function testDatabaseConnection() {
       try {
         const response = await fetch(API_BASE_URL + '/api/admin/season-management.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'create_season_3'
-          })
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'action=create_season_3'
         });
         
         const data = await response.json();
