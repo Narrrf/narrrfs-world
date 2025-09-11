@@ -519,16 +519,24 @@ function collide(shape, row, col) {
       
 // 🔔 Defused popup UI logic
 function showBombDefusedPopup() {
-  const popup = document.getElementById("bomb-defused-popup");
-  if (!popup) return;
-
-  popup.classList.remove("hidden");
-  popup.classList.add("animate-pop");
-
+  // Create bomb defused notification dynamically
+  const notification = document.createElement('div');
+  notification.className = 'fixed top-4 right-4 bg-yellow-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in max-w-sm';
+  notification.innerHTML = `
+    <div class="flex items-center gap-2">
+      <span>💣</span>
+      <span>Bomb Defused! +10 DSPOINC</span>
+      <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white hover:text-gray-200 text-lg">×</button>
+    </div>
+  `;
+  document.body.appendChild(notification);
+  
+  // Auto-remove after 1 second (much faster to not block gameplay)
   setTimeout(() => {
-    popup.classList.add("hidden");
-    popup.classList.remove("animate-pop");
-  }, 2000);
+    if (notification.parentElement) {
+      notification.remove();
+    }
+  }, 1000);
 }
 
 // 🛑 Pause Logic — now mobile compatible

@@ -7275,8 +7275,8 @@ let reloadButtonInterval = null;
       title: title,
       description: description,
       icon: icon,
-      life: 180, // 3 seconds at 60fps
-      maxLife: 180,
+      life: 30, // 0.5 seconds at 60fps (much faster to not block gameplay)
+      maxLife: 30,
       scale: 0,
       maxScale: 1,
       y: canvasHeight / 2,
