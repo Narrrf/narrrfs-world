@@ -1652,7 +1652,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Load 5-game missions data
     try {
-      const missionsRes = await fetch('/api/user-game-missions.php', {
+      const missionsRes = await fetch('/api/user/user-game-missions.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.discord_id })
@@ -3190,7 +3190,7 @@ async function loadGameMissions() {
     console.log('🎮 Discord ID length:', discordId.length);
     console.log('🎮 Discord ID value:', JSON.stringify(discordId));
     
-    const response = await fetch(`/api/user-game-missions.php?discord_id=${discordId}`, {
+    const response = await fetch(`/api/user/user-game-missions.php?discord_id=${discordId}`, {
       credentials: 'include',
       headers: { 'Accept': 'application/json' }
     });
@@ -3730,10 +3730,18 @@ function displaySnakeAchievements(achievements, stats) {
   const progressEl = achievementsSection.querySelector('#snakeAchievementsProgress');
   const percentageEl = achievementsSection.querySelector('#snakeAchievementsPercentage');
   
-  const unlocked = stats.unlocked || 0;
-  const total = stats.total || 29;
-  const locked = total - unlocked;
-  const percentage = stats.percentage || 0;
+  const unlocked = stats.unlocked_achievements || stats.unlocked || 0;
+  const total = stats.total_achievements || stats.total || 29;
+  const locked = stats.locked_achievements || (total - unlocked);
+  const percentage = stats.completion_percentage || stats.percentage || 0;
+  
+  console.log('🐍 Snake Statistics Debug:', {
+    originalStats: stats,
+    unlocked: unlocked,
+    total: total,
+    locked: locked,
+    percentage: percentage
+  });
   
   if (unlockedEl) unlockedEl.textContent = unlocked;
   if (totalEl) totalEl.textContent = total;

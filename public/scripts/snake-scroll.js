@@ -6,6 +6,75 @@ window.addEventListener("keydown", function (e) {
   }
 }, { passive: false });
 
+// 🎵 SNAKE SOUND SYSTEM - Professional Web Audio API sounds
+class SnakeSoundManager {
+  constructor() {
+    this.audioContext = null;
+    this.sounds = {};
+    this.initAudio();
+  }
+
+  initAudio() {
+    try {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      console.log('🎵 Snake Sound System initialized');
+    } catch (error) {
+      console.warn('🎵 Audio not supported:', error);
+    }
+  }
+
+  // Generate professional sound effects using Web Audio API
+  playSound(type) {
+    if (!this.audioContext) return;
+
+    const oscillator = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+
+    // Professional sound design for Snake
+    switch (type) {
+      case 'eatApple':
+        // Satisfying apple eating sound - quick ascending chirp
+        oscillator.frequency.setValueAtTime(330, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(660, this.audioContext.currentTime + 0.1);
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.12);
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + 0.12);
+        break;
+
+      case 'scoreMilestone':
+        // Celebratory score milestone sound - ascending arpeggio
+        oscillator.frequency.setValueAtTime(392, this.audioContext.currentTime); // G4
+        oscillator.frequency.setValueAtTime(523, this.audioContext.currentTime + 0.05); // C5
+        oscillator.frequency.setValueAtTime(659, this.audioContext.currentTime + 0.1); // E5
+        oscillator.type = 'triangle';
+        gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + 0.2);
+        break;
+
+      case 'gameOver':
+        // Dramatic game over sound - descending tone with vibrato
+        oscillator.frequency.setValueAtTime(330, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(110, this.audioContext.currentTime + 0.4);
+        oscillator.type = 'sawtooth';
+        gainNode.gain.setValueAtTime(0.6, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.5);
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + 0.5);
+        break;
+    }
+  }
+}
+
+// Initialize Snake sound manager
+const snakeSounds = new SnakeSoundManager();
+
 // ✅ GENOME 10.5 FINAL FIXED — Mutation on Score 100 + No Duplication + Global Scope Fix
 
 let gameInterval; // ✅ Global scope
@@ -279,9 +348,19 @@ function initSnake() {
     // 🍽️ Check if snake eats cheese
     const ate = head.x === food.x && head.y === food.y;
     if (ate) {
+      // 🎵 Play apple eating sound
+      snakeSounds.playSound('eatApple');
+      
       score++;
       applesEaten++;
       longestSnake = Math.max(longestSnake, snake.length + 1);
+      
+      // 🎵 Check for score milestones (every 10 points)
+      if (score % 10 === 0) {
+        snakeSounds.playSound('scoreMilestone');
+        console.log(`🎵 Score milestone reached: ${score} points!`);
+      }
+      
       updateScore();
       placeFood();
       tryActivateMutation(score); // ✅ Now runs exactly on score increase
@@ -299,6 +378,9 @@ function initSnake() {
 
   // 🐍 Game Over Function (moved inside initSnake scope)
   function onGameOver() {
+    // 🎵 Play game over sound
+    snakeSounds.playSound('gameOver');
+    
     clearInterval(gameInterval);
     gameInterval = null;
     isSnakePaused = true;
@@ -396,7 +478,7 @@ function initSnake() {
     
     // Environment-aware API endpoint
     const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
-    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
     console.log('🌍 API Base URL:', apiBaseUrl);
     
     fetch(`${apiBaseUrl}/api/user/get-snake-achievements.php`, {
@@ -511,7 +593,7 @@ function initSnake() {
     
     // Environment-aware API endpoint
     const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
-    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
     
     fetch(`${apiBaseUrl}/api/dev/unlock-snake-achievement.php`, {
       method: 'POST',

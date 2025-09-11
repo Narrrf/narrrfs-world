@@ -32,6 +32,86 @@ window.addEventListener("keydown", function (e) {
   }
 }, { passive: false });
 
+// 🎵 TETRIS SOUND SYSTEM - Professional Web Audio API sounds
+class TetrisSoundManager {
+  constructor() {
+    this.audioContext = null;
+    this.sounds = {};
+    this.initAudio();
+  }
+
+  initAudio() {
+    try {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      console.log('🎵 Tetris Sound System initialized');
+    } catch (error) {
+      console.warn('🎵 Audio not supported:', error);
+    }
+  }
+
+  // Generate professional sound effects using Web Audio API
+  playSound(type) {
+    if (!this.audioContext) return;
+
+    const oscillator = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+
+    // Professional sound design
+    switch (type) {
+      case 'piecePlace':
+        // Soft landing sound - low frequency with quick decay
+        oscillator.frequency.setValueAtTime(220, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(110, this.audioContext.currentTime + 0.1);
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.15);
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + 0.15);
+        break;
+
+      case 'lineClear':
+        // Satisfying clear sound - ascending chord
+        oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(880, this.audioContext.currentTime + 0.2);
+        oscillator.type = 'triangle';
+        gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + 0.3);
+        break;
+
+      case 'levelUp':
+        // Triumphant level up sound - ascending scale
+        oscillator.frequency.setValueAtTime(523, this.audioContext.currentTime); // C5
+        oscillator.frequency.setValueAtTime(659, this.audioContext.currentTime + 0.1); // E5
+        oscillator.frequency.setValueAtTime(784, this.audioContext.currentTime + 0.2); // G5
+        oscillator.type = 'square';
+        gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.4);
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + 0.4);
+        break;
+
+      case 'gameOver':
+        // Dramatic game over sound - descending tone
+        oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(110, this.audioContext.currentTime + 0.5);
+        oscillator.type = 'sawtooth';
+        gainNode.gain.setValueAtTime(0.6, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.6);
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + 0.6);
+        break;
+    }
+  }
+}
+
+// Initialize Tetris sound manager
+const tetrisSounds = new TetrisSoundManager();
+
 // --- PNG Block Support simple only one template for all can be defined with new img/tetris ---
 let allImagesLoaded = false;
 let loadedCount = 0;
@@ -394,7 +474,19 @@ function collide(shape, row, col) {
         }
       
         if (lines > 0) {
+          // 🎵 Play line clear sound
+          tetrisSounds.playSound('lineClear');
+          
+          // 🎵 Check for level up (every 20 lines)
+          const oldLevel = Math.floor(linesClearedTotal / 20);
           linesClearedTotal += lines;
+          const newLevel = Math.floor(linesClearedTotal / 20);
+          
+          if (newLevel > oldLevel) {
+            tetrisSounds.playSound('levelUp');
+            console.log(`🎵 Level up! Now at level ${newLevel}`);
+          }
+          
           // Use database configuration for DSPOINC calculation
           score += lines * 1; // Season 3: 1 DSPOINC per line
           
@@ -528,6 +620,8 @@ function drop() {
     }
 
     merge();
+    // 🎵 Play piece placement sound
+    tetrisSounds.playSound('piecePlace');
     clearLines();
 
     current = {
@@ -586,6 +680,9 @@ function rotatePiece() {
 }
 
       function onTetrisGameOver(finalScore) {
+        // 🎵 Play game over sound
+        tetrisSounds.playSound('gameOver');
+        
         let wallet = localStorage.getItem("walletAddress");
         let discordId = localStorage.getItem("discord_id");
         let discordName = localStorage.getItem("discord_name");

@@ -99,6 +99,12 @@ let spaceInvadersCount = 0; // NEW: Track actual invader count for DSPOINC calcu
 let hasScoreBeenSaved = false; // 🚫 NEW: Prevent duplicate score saves in same game session
 let hasPlayerMovedMouse = false; // 🚀 NEW: Prevent ship jumping until player moves mouse
 
+// ❤️ LIVES SYSTEM - NEW FEATURE!
+let playerLives = 3; // Start with 3 lives
+let maxLives = 5; // Maximum lives cap
+let livesLost = 0; // Track total lives lost for achievements
+let lastLifeLostTime = 0; // Prevent rapid life loss
+
 // 🏆 PHOENIX ACHIEVEMENT TRACKING
 let phoenixesDestroyed = 0;
 let phoenixEggsDestroyed = 0;
@@ -1853,6 +1859,90 @@ let reloadButtonInterval = null;
     }, 1000);
   }
   
+  // ❤️ NEW: Show life gained notification
+  function showLifeNotification() {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 1.2em;
+      font-weight: bold;
+      z-index: 10000;
+      box-shadow: 0 8px 25px rgba(220,38,38,0.4);
+      animation: lifeGainedPulse 1.5s ease-in-out;
+    `;
+    
+    notification.textContent = `❤️ EXTRA LIFE! Lives: ${playerLives}/${maxLives}`;
+    
+    // Add animation keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes lifeGainedPulse {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+        50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(notification);
+    
+    // Remove notification after animation
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 1500);
+  }
+  
+  // ❤️ NEW: Show life lost notification
+  function showLifeLostNotification() {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 1.2em;
+      font-weight: bold;
+      z-index: 10000;
+      box-shadow: 0 8px 25px rgba(220,38,38,0.4);
+      animation: lifeLostShake 1s ease-in-out;
+    `;
+    
+    notification.textContent = `💔 LIFE LOST! Lives: ${playerLives}/${maxLives}`;
+    
+    // Add animation keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes lifeLostShake {
+        0%, 100% { transform: translate(-50%, -50%); }
+        25% { transform: translate(-52%, -50%); }
+        75% { transform: translate(-48%, -50%); }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(notification);
+    
+    // Remove notification after animation
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 1000);
+  }
+  
   // 🚀 NEW: Show ammo warning
   function showAmmoWarning(weaponType) {
     const warning = document.createElement('div');
@@ -1923,50 +2013,53 @@ let reloadButtonInterval = null;
   // 🚀 NEW: Spawn power-ups randomly
   function spawnPowerUp() {
     // Check if we already have too many power-ups on screen
-    if (window.powerUps && window.powerUps.length >= 4) {
-      return; // Don't spawn if we already have 4 or more (increased from 3)
+    if (window.powerUps && window.powerUps.length >= 3) {
+      return; // Don't spawn if we already have 3 or more (reduced for more frequent drops)
     }
     
-    // 🚀 ULTRA AGGRESSIVE: Much higher spawn rates for more action!
-    let spawnChance = 0.200; // Base rate for early waves (20% - MUCH higher!)
+    // 🚀 ULTRA GENEROUS DROP RATES: Much higher for better gameplay!
+    let spawnChance = 0.600; // Base rate for wave 1 (60% - MUCH higher!)
     
     // Progressive scaling that ACTUALLY helps in higher waves
-    if (waveNumber >= 2) spawnChance = 0.250;   // 25% for wave 2+
-    if (waveNumber >= 3) spawnChance = 0.300;   // 30% for wave 3+
-    if (waveNumber >= 5) spawnChance = 0.400;   // 40% for wave 5+
-    if (waveNumber >= 8) spawnChance = 0.500;   // 50% for wave 8+
-    if (waveNumber >= 10) spawnChance = 0.600;  // 60% for wave 10+
-    if (waveNumber >= 15) spawnChance = 0.700;  // 70% for wave 15+
-    if (waveNumber >= 20) spawnChance = 0.800;  // 80% for wave 20+
-    if (waveNumber >= 25) spawnChance = 0.850;  // 85% for wave 25+
-    if (waveNumber >= 30) spawnChance = 0.900;  // 90% for wave 30+
-    if (waveNumber >= 35) spawnChance = 0.950;  // 95% for wave 35+
-    if (waveNumber >= 50) spawnChance = 0.980;  // 98% for wave 50+ (boss waves)
-    if (waveNumber >= 75) spawnChance = 0.990;  // 99% for wave 75+ (ultra waves)
-    if (waveNumber >= 100) spawnChance = 0.995; // 99.5% for wave 100+ (legendary waves)
-    if (waveNumber >= 150) spawnChance = 0.999; // 99.9% for wave 150+ (mythical waves)
-    if (waveNumber >= 200) spawnChance = 0.999; // 99.9% for wave 200+ (god-tier waves)
+    if (waveNumber >= 2) spawnChance = 0.650;   // 65% for wave 2+
+    if (waveNumber >= 3) spawnChance = 0.700;   // 70% for wave 3+
+    if (waveNumber >= 5) spawnChance = 0.750;   // 75% for wave 5+
+    if (waveNumber >= 8) spawnChance = 0.800;   // 80% for wave 8+
+    if (waveNumber >= 10) spawnChance = 0.850;  // 85% for wave 10+
+    if (waveNumber >= 15) spawnChance = 0.900;  // 90% for wave 15+
+    if (waveNumber >= 20) spawnChance = 0.950;  // 95% for wave 20+
+    if (waveNumber >= 25) spawnChance = 0.980;  // 98% for wave 25+
+    if (waveNumber >= 30) spawnChance = 0.990;  // 99% for wave 30+
+    if (waveNumber >= 35) spawnChance = 0.995;  // 99.5% for wave 35+
+    if (waveNumber >= 50) spawnChance = 0.998;  // 99.8% for wave 50+ (boss waves)
+    if (waveNumber >= 75) spawnChance = 0.999;  // 99.9% for wave 75+ (ultra waves)
+    if (waveNumber >= 100) spawnChance = 0.9995; // 99.95% for wave 100+ (legendary waves)
+    if (waveNumber >= 150) spawnChance = 0.9998; // 99.98% for wave 150+ (mythical waves)
+    if (waveNumber >= 200) spawnChance = 0.9999; // 99.99% for wave 200+ (god-tier waves)
     
     if (Math.random() < spawnChance) {
       console.log(`🎁 SPAWNING POWER-UP: Wave ${waveNumber}, Chance: ${spawnChance.toFixed(2)}, Current power-ups: ${window.powerUps?.length || 0}`);
       
-      // 🚀 NEW: Better power-up distribution - ensure all types appear
+      // 🚀 BALANCED POWER-UP DISTRIBUTION: More lives and weapons!
       const powerUpRoll = Math.random();
       let powerUpType, ammoType;
       
       if (powerUpRoll < 0.20) {
-        // 20% chance: Speed boost power-up (green ⚡)
-        powerUpType = 'speed';
-      } else if (powerUpRoll < 0.40) {
-        // 20% chance: Laser ammo (cyan 🔫)
+        // 20% chance: Lives power-up (red ❤️) - INCREASED!
+        powerUpType = 'lives';
+      } else if (powerUpRoll < 0.35) {
+        // 15% chance: Laser ammo (cyan 🔫)
         powerUpType = 'ammo';
         ammoType = 'laser';
-      } else if (powerUpRoll < 0.60) {
-        // 20% chance: Bomb ammo (magenta 💣)
+      } else if (powerUpRoll < 0.50) {
+        // 15% chance: Bomb ammo (magenta 💣)
         powerUpType = 'ammo';
         ammoType = 'bomb';
+      } else if (powerUpRoll < 0.65) {
+        // 15% chance: Speed boost power-up (green ⚡)
+        powerUpType = 'speed';
       } else if (powerUpRoll < 0.80) {
-        // 20% chance: Shield power-up (blue 🛡️) - INCREASED!
+        // 15% chance: Shield power-up (blue 🛡️)
         powerUpType = 'shield';
       } else {
         // 20% chance: Collect power-up (yellow ⭐)
@@ -2013,6 +2106,21 @@ let reloadButtonInterval = null;
           height: 20,
           type: 'shield',
           color: '#0088ff',
+          speed: 2,
+          collected: false
+        };
+        
+        if (!window.powerUps) window.powerUps = [];
+        window.powerUps.push(powerUp);
+      } else if (powerUpType === 'lives') {
+        // ❤️ NEW: Lives power-up (red heart)
+        const powerUp = {
+          x: Math.random() * (canvasWidth - 20),
+          y: -20,
+          width: 20,
+          height: 20,
+          type: 'lives',
+          color: '#ff0000',
           speed: 2,
           collected: false
         };
@@ -2099,6 +2207,27 @@ let reloadButtonInterval = null;
           
           // 🎵 NEW: Play shield activation sound
           cheeseSoundManager.playExplosionSound('shield');
+        } else if (powerUp.type === 'lives') {
+          // ❤️ NEW: Lives power-up adds extra life
+          if (playerLives < maxLives) {
+            playerLives++;
+            console.log(`❤️ Extra life collected! Lives: ${playerLives}/${maxLives}`);
+            
+            // Show life gained notification
+            showLifeNotification();
+            
+            // 🎵 NEW: Play life pickup sound
+            cheeseSoundManager.playExplosionSound('powerup');
+            
+            // 🔧 FIX: Lives display updates automatically in canvas
+          } else {
+            console.log(`❤️ Lives at maximum (${maxLives}), converting to bonus points!`);
+            spaceInvadersScore += 500; // Bonus points when lives are maxed
+            spaceInvadersCount += 5; // Bonus invaders when lives are maxed
+            
+            // 🎵 NEW: Play bonus sound
+            cheeseSoundManager.playExplosionSound('powerup');
+          }
         }
       }
       
@@ -4717,6 +4846,11 @@ let reloadButtonInterval = null;
     playerShip.invincible = false; // 🚀 NEW: Reset invincibility
     playerShip.invincibleTimer = 0; // 🚀 NEW: Reset invincibility timer
     
+    // ❤️ NEW: Reset lives system
+    playerLives = 3; // Reset to starting lives
+    livesLost = 0; // Reset lives lost counter
+    lastLifeLostTime = 0; // Reset life loss cooldown
+    
       // 🚀 CRITICAL FIX: Initialize mouse targets to ship position to prevent jumping
       mouseTargetX = playerShip.x;
       mouseTargetY = playerShip.y;
@@ -4742,6 +4876,8 @@ let reloadButtonInterval = null;
     
     // 🚀 NEW: Update weapon display
     updateWeaponDisplay();
+    
+    // 🔧 FIX: Lives display updates automatically in canvas
     
     // 🆘 NEW: Display help information outside game canvas
     setTimeout(() => {
@@ -4876,6 +5012,9 @@ let reloadButtonInterval = null;
       
       // 🚀 NEW: Update power-ups
       updatePowerUps();
+      
+      // 🚀 NEW: Spawn power-ups during attack phase too!
+      spawnPowerUp();
       
       // NEW: Check for stuck or hidden invaders
       checkForStuckInvaders();
@@ -6617,6 +6756,27 @@ let reloadButtonInterval = null;
         // Damage player (invader collision is deadly!)
         playerShip.health--;
         
+        // ❤️ NEW: Lose a life when taking damage
+        const currentTime = Date.now();
+        if (currentTime - lastLifeLostTime > 1000) { // Prevent rapid life loss (1 second cooldown)
+          playerLives--;
+          livesLost++;
+          lastLifeLostTime = currentTime;
+          console.log(`❤️ Life lost! Lives remaining: ${playerLives}/${maxLives}`);
+          
+          // Show life lost notification
+          showLifeLostNotification();
+          
+          // 🔧 FIX: Lives display updates automatically in canvas
+          
+          // Check if game over due to no lives
+          if (playerLives <= 0) {
+            console.log('💀 No lives remaining! Game Over!');
+            onGameOver();
+            return;
+          }
+        }
+        
         // Kill the invading invader
         invader.alive = false;
         spaceInvadersScore += invader.points; // Keep game points for display
@@ -6704,6 +6864,7 @@ let reloadButtonInterval = null;
     
     drawScore();
     drawHealth();
+    // 🔧 FIX: Lives display now integrated into drawHealth()
     drawPhaseInfo(); // NEW: Show current phase info
     
     // 🚀 NEW: Draw boss wave announcement
@@ -8257,51 +8418,89 @@ let reloadButtonInterval = null;
     }
   }
 
-  // ❤️ NEW: Draw health display (compact layout)
+  // ❤️ NEW: Draw lives display
+  // ❤️ NEW: CLEAN & INTUITIVE UI DISPLAY
   function drawHealth() {
+    ctx.font = '16px Arial';
+    
+    // 🎮 PLAYER STATUS (Top-left, clear section)
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px Arial';
+    ctx.fillText('🎮 PLAYER STATUS', 10, 20);
+    
+    // ❤️ LIVES (Most important - prominent)
     ctx.fillStyle = '#ff0000';
     ctx.font = '16px Arial';
-    ctx.fillText(`❤${playerShip.health}`, 10, 30);
+    ctx.fillText(`❤️ Lives: ${playerLives}/${maxLives}`, 10, 40);
     
-    // 🚀 NEW: Compact ammo display in one line
-    let ammoText = '';
-    let ammoColor = '#ffffff';
+    // 🚀 WEAPONS & POWER-UPS (Below lives, organized)
+    ctx.font = '14px Arial';
+    let yPos = 60;
     
     if (weaponAmmo.bomb > 0) {
-      ammoText += `💣${weaponAmmo.bomb} `;
+      ctx.fillStyle = '#ff00ff';
+      ctx.fillText(`💣 Bombs: ${weaponAmmo.bomb}`, 10, yPos);
+      yPos += 18;
     }
     if (weaponAmmo.laser > 0) {
-      ammoText += `🔫${weaponAmmo.laser} `;
+      ctx.fillStyle = '#00ffff';
+      ctx.fillText(`🔫 Laser: ${weaponAmmo.laser}`, 10, yPos);
+      yPos += 18;
     }
     if (speedBoostAmmo > 0) {
-      ammoText += `⚡${speedBoostAmmo} `;
+      ctx.fillStyle = '#00ff00';
+      ctx.fillText(`⚡ Speed Boosts: ${speedBoostAmmo}`, 10, yPos);
+      yPos += 18;
     }
     
-    // Position ammo info to the right of health
-    if (ammoText) {
-      ctx.fillStyle = ammoColor;
-      ctx.fillText(ammoText, 80, 30);
-    }
+    // 🎯 GAME STATUS (Top-right, separate section)
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px Arial';
+    ctx.fillText('🎯 GAME STATUS', canvasWidth - 120, 20);
     
-    // 🚀 NEW: Speed boost timer (if active) - positioned on the right side
+    // 🚀 ACTIVE EFFECTS (Top-right, below status)
+    ctx.font = '14px Arial';
     if (speedBoostActive) {
       ctx.fillStyle = '#00ff00';
       const timeLeft = Math.ceil(speedBoostTimer / 10);
-      const timeText = `⚡${timeLeft}s`;
-      const timeWidth = ctx.measureText(timeText).width;
-      // Position on the right side with some margin
-      ctx.fillText(timeText, canvasWidth - timeWidth - 10, 30);
+      ctx.fillText(`⚡ BOOST: ${timeLeft}s`, canvasWidth - 120, 40);
     }
     
-    // 🚀 NEW: Weapon ready indicator for desktop players
+    // 🚀 WEAPON STATUS (Top-right, below effects)
     if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
       ctx.fillStyle = '#00ffff';
-      ctx.font = '12px Arial';
-      ctx.fillText('🔫 READY', canvasWidth - 80, 50);
+      ctx.fillText('🔫 LASER READY', canvasWidth - 120, 60);
     } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
       ctx.fillStyle = '#ff00ff';
-      ctx.font = '12px Arial';
-      ctx.fillText('💣 READY', canvasWidth - 80, 50);
+      ctx.fillText('💣 BOMB READY', canvasWidth - 120, 60);
+    }
+    
+    // 🎯 WAVE DISPLAY (Top-right, below weapon status)
+    let waveText = '';
+    let waveColor = '#ffffff';
+    
+    if (gamePhase === 'formation') {
+      waveColor = '#4ade80'; // Green for formation
+      waveText = `🎯 Wave ${waveNumber}`;
+    } else if (gamePhase === 'attack') {
+      if (invaderDropPhase) {
+        waveColor = '#ff6b6b'; // Red for drop phase
+        waveText = `🚀 Wave ${waveNumber}`;
+      } else {
+        waveColor = '#4ecdc4'; // Cyan for break phase
+        waveText = `⏸️ Wave ${waveNumber}`;
+      }
+    }
+    
+    // 🔥 PHOENIX INVADERS: Show Phoenix wave indicator
+    if (isPhoenixWave) {
+      waveColor = '#ff6b35'; // Orange for Phoenix waves
+      waveText = `🔥 Wave ${waveNumber}`; // Phoenix wave indicator
+    }
+    
+    if (waveText) {
+      ctx.fillStyle = waveColor;
+      ctx.fillText(waveText, canvasWidth - 120, 80);
     }
   }
 
@@ -8342,9 +8541,7 @@ let reloadButtonInterval = null;
       phaseText = `🔥W${waveNumber}`; // Phoenix wave indicator
     }
     
-    // 🚀 NEW: Show phase info on the left
-    ctx.fillStyle = phaseColor;
-    ctx.fillText(phaseText, 10, 50);
+    // 🚀 MOVED: Wave display now in Game Status section (top-right)
     
     // 🚀 NEW: Show auto-shoot status in the center
     const autoText = `AUTO: ${autoShootEnabled ? 'ON' : 'OFF'}`;
