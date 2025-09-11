@@ -40,12 +40,7 @@ try {
         exit;
     }
 
-    // 🎮 Get current active season
-    $seasonDetectStmt = $db->prepare("SELECT season_name FROM tbl_season_settings ORDER BY id DESC LIMIT 1");
-    $seasonDetectStmt->execute();
-    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'season_3';
-
-    // 🏆 Check if achievement is already unlocked
+    // 🏆 Check if achievement is already unlocked (achievements are lifetime, not season-specific)
     $checkStmt = $db->prepare("
         SELECT COUNT(*) as count 
         FROM tbl_snake_achievements 
@@ -63,15 +58,15 @@ try {
         exit;
     }
 
-    // 🏆 Unlock the achievement
+    // 🏆 Unlock the achievement (achievements are lifetime accomplishments)
     $unlockStmt = $db->prepare("
         INSERT OR REPLACE INTO tbl_snake_achievements 
-        (user_id, achievement_key, unlocked_at, season) 
-        VALUES (?, ?, CURRENT_TIMESTAMP, ?)
+        (user_id, achievement_key, unlocked_at) 
+        VALUES (?, ?, CURRENT_TIMESTAMP)
     ");
-    $unlockStmt->execute([$user_id, $achievement_key, $currentSeason]);
+    $unlockStmt->execute([$user_id, $achievement_key]);
 
-    error_log("🐍 Snake achievement unlocked: $achievement_key for user $user_id in season $currentSeason");
+    error_log("🐍 Snake achievement unlocked: $achievement_key for user $user_id");
 
     echo json_encode([
         'success' => true, 

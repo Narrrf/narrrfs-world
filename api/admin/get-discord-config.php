@@ -31,7 +31,7 @@ if (!checkAdminAuthentication()) {
 
 try {
     // Get Discord invite code from environment variable
-    $inviteCode = getenv('DISCORD_INVITE_CODE') ?: 'cVWbUgdARq';
+    $inviteCode = getenv('DISCORD_INVITE_CODE') ?: 'EA57GUagkn';
     
     // Get Discord bot status and configuration
     $discordConfig = [

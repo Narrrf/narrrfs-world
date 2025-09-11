@@ -10,7 +10,7 @@ header('Cache-Control: no-cache, must-revalidate');
 require_once 'discord.php';
 
 // Output the Discord configuration as JSON
-$inviteCode = getenv('DISCORD_INVITE_CODE') ?: 'cVWbUgdARq';
+$inviteCode = getenv('DISCORD_INVITE_CODE') ?: 'EA57GUagkn';
 
 // Debug information
 $debug = [

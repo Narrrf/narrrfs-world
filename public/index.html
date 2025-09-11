@@ -1115,9 +1115,9 @@ require_once 'discord-invite.php';
 </script>
 <!-- ✅ End Enhanced Cheese Engine v2.0 -->
 
-<!-- 🎯 Genesis 12.0 Live Banner - FIXED OVERLAY ISSUE -->
-<div class="fixed top-0 left-0 w-full bg-yellow-400 text-yellow-900 text-sm text-center py-2 px-4 font-semibold shadow-md z-40 animate-pulse genesis-banner">
-  🎯 Genesis 12.0 is live! → <a href="/profile.html" class="underline hover:text-pink-600">Login and find the cheese</a> 🎰
+<!-- 🎯 Season 3 Ready Banner - BINGO NIGHT SPECIAL -->
+<div class="fixed top-0 left-0 w-full bg-gradient-to-r from-purple-600 via-pink-600 to-yellow-400 text-white text-sm text-center py-2 px-4 font-semibold shadow-md z-40 animate-pulse genesis-banner">
+  🎲 BINGO NIGHT TONIGHT! 🧀 Season 3 is 99.5% READY → <a href="/profile.html" class="underline hover:text-yellow-200">Test Phase Active</a> → <a href="/Bingo.html" class="underline hover:text-yellow-200">Join Bingo!</a>
 </div>
 
 <!-- ⏫ Spacer to offset fixed banner height -->
@@ -1166,12 +1166,18 @@ require_once 'discord-invite.php';
   </div>
 </header>
 
-<!-- 🎮 Bingo CTA -->
-<div class="bg-black text-center py-3 z-30 relative">
+<!-- 🎮 Bingo CTA - BINGO NIGHT SPECIAL -->
+<div class="bg-gradient-to-r from-purple-800 to-pink-800 text-center py-4 z-30 relative">
+  <div class="mb-2">
+    <span class="text-yellow-300 text-sm font-bold animate-pulse">🎲 TONIGHT 8PM EST 🎲</span>
+  </div>
   <a href="/Bingo.html"
-     class="inline-block bg-yellow-400 hover:bg-yellow-500 text-black text-lg md:text-xl font-bold px-6 py-3 rounded-full shadow-lg animate-pulse transition">
-    🧀 Use Narrrf's Golden Bingo Vault Now!
+     class="inline-block bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 hover:from-yellow-500 hover:via-orange-500 hover:to-pink-500 text-black text-lg md:text-xl font-bold px-8 py-4 rounded-full shadow-2xl animate-bounce transition-all duration-300 transform hover:scale-105">
+    🧀 JOIN BINGO NIGHT × SECRET CHEESE! 🎁
   </a>
+  <div class="mt-2">
+    <span class="text-pink-200 text-xs">@GoldenBaboons × @waLILIberace × Genetic NFT #64 Giveaway</span>
+  </div>
 </div>
 
 <!-- 🎨 Hero Section: Game Zone + Bottle -->
@@ -1220,6 +1226,21 @@ require_once 'discord-invite.php';
   <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900 drop-shadow-lg">
     Narrrf's World – Genesis 12.0
   </h1>
+  
+  <!-- 🎲 BINGO NIGHT SPECIAL MESSAGE -->
+  <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 rounded-xl mb-4 shadow-lg animate-pulse">
+    <h2 class="text-xl font-bold mb-2">🎲 BINGO NIGHT × SECRET CHEESE EDITION 🧀</h2>
+    <p class="text-sm mb-2">Tonight 8PM EST with @GoldenBaboons & @waLILIberace</p>
+    <p class="text-xs">🎁 Secret Cheese Gift: Genetic NFT #64 Giveaway!</p>
+  </div>
+  
+  <!-- 🚀 SEASON 3 STATUS -->
+  <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white p-3 rounded-lg mb-4 shadow-lg">
+    <h3 class="text-lg font-bold mb-1">🚀 Season 3: The Ultimate Cheese Challenge</h3>
+    <p class="text-sm">✅ 99.5% READY - Testing Phase Active (Paused for Bingo Night)</p>
+    <p class="text-xs">🎮 All Achievement Systems Live • Mobile Controls Fixed • Activation in 24h</p>
+  </div>
+  
   <p class="text-base md:text-lg text-gray-800">
     Let's leave the matrix... and take over Web3. A cartoon-chaotic Web3 universe powered by NFTs, poker, and pure community.
   </p>
@@ -2152,7 +2173,11 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
     try {
-      const res = await fetch('https://narrrfs.world/api/user/roles.php');
+      // 🌍 Environment-aware API endpoint
+      const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+      const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+      
+      const res = await fetch(`${apiBaseUrl}/api/user/roles.php`);
       if (!res.ok) {
         console.warn("🔐 Role check skipped — user not authorized");
         return;
@@ -2399,13 +2424,13 @@ Built for Discord ID sync, wallet tracking, egg-click logic, and multi-layered D
       <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium">
         🐦 Twitter / X
       </a>
-                     <a href="https://discord.gg/UctHpCSVAN" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
+                     <a href="https://discord.gg/EA57GUagkn" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200 font-medium">
                  🎮 Join Discord
                </a>
       <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:text-green-800 transition-colors duration-200 font-medium">
         🃏 Poker ClubGG
       </a>
-                     <a href="https://discord.gg/UctHpCSVAN" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
+                     <a href="https://discord.gg/EA57GUagkn" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:text-purple-800 transition-colors duration-200 font-medium">
                  📧 Open a Ticket
                </a>
     </div>
@@ -3324,8 +3349,12 @@ function handleHDRDragEnd() {
     initializeCookieConsent();
     
     try {
+      // 🌍 Environment-aware API endpoint
+      const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+      const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+      
       // Check if user is logged in by trying to fetch profile
-      const res = await fetch('https://narrrfs.world/api/user/profile.php', { 
+      const res = await fetch(`${apiBaseUrl}/api/user/profile.php`, { 
         credentials: 'include',
         headers: { 'Accept': 'application/json' }
       });
