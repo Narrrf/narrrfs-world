@@ -2526,7 +2526,7 @@
       <div class="mb-6 bg-gradient-to-r from-blue-900 to-purple-900 p-4 rounded-lg border border-blue-700">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="text-center">
-            <div class="text-2xl font-bold text-blue-300" id="currentSeasonDisplay">Season 2</div>
+            <div class="text-2xl font-bold text-blue-300" id="currentSeasonDisplay">Season 3</div>
             <div class="text-sm text-blue-200">Active Season</div>
           </div>
           <div class="text-center">
@@ -2586,9 +2586,9 @@
             <h4 class="font-semibold text-blue-200 mb-2">🎯 Current Season Status</h4>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="text-center">
-                <div class="text-lg font-bold text-blue-300" id="overviewSeasonName">Season 2</div>
+                <div class="text-lg font-bold text-blue-300" id="overviewSeasonName">Season 3</div>
                 <div class="text-sm text-blue-200">Active Season</div>
-                <div class="text-xs text-blue-100" id="overviewSeasonDates">Aug 1 - Dec 31, 2025</div>
+                <div class="text-xs text-blue-100" id="overviewSeasonDates">Sep 11, 2025</div>
               </div>
               <div class="text-center">
                 <div class="text-lg font-bold text-green-300" id="overviewSeasonGames">0</div>
@@ -3505,7 +3505,7 @@
             <div>
               <div class="flex justify-between">
                 <span class="text-gray-400">🎯 Active Season:</span>
-                <span class="text-green-400 font-bold text-lg">Season 2 - The Great Reset (2025)</span>
+                <span class="text-green-400 font-bold text-lg">Season 3 - The Ultimate Cheese Challenge</span>
               </div>
               <div class="flex justify-between mt-2">
                 <span class="text-gray-400">📅 Start Date:</span>
@@ -21288,7 +21288,7 @@ function testDatabaseConnection() {
       const activePlayersEl = document.getElementById('activePlayersDisplay');
       const systemHealthEl = document.getElementById('systemHealthDisplay');
       
-      if (currentSeasonEl) currentSeasonEl.textContent = seasonData?.season_name || 'Season 2';
+      if (currentSeasonEl) currentSeasonEl.textContent = seasonData?.season_display_name || seasonData?.season_name || 'Season 3';
       if (totalGamesEl) totalGamesEl.textContent = seasonData?.total_games || '0';
       if (activePlayersEl) activePlayersEl.textContent = seasonData?.active_players || '0';
       if (systemHealthEl) systemHealthEl.textContent = '🟢 100%';
@@ -21301,12 +21301,12 @@ function testDatabaseConnection() {
       const overviewSeasonDates = document.getElementById('overviewSeasonDates');
       const overviewSeasonTimeLeft = document.getElementById('overviewSeasonTimeLeft');
       
-      if (overviewSeasonName) overviewSeasonName.textContent = seasonData?.season_name || 'Season 2';
+      if (overviewSeasonName) overviewSeasonName.textContent = seasonData?.season_display_name || seasonData?.season_name || 'Season 3';
       if (overviewSeasonGames) overviewSeasonGames.textContent = seasonData?.total_games || '0';
       if (overviewSeasonPlayers) overviewSeasonPlayers.textContent = seasonData?.active_players || '0';
-      if (overviewSeasonProgress) overviewSeasonProgress.textContent = '75%'; // Calculate based on dates
-      if (overviewSeasonDates) overviewSeasonDates.textContent = 'Aug 1 - Dec 31, 2025';
-      if (overviewSeasonTimeLeft) overviewSeasonTimeLeft.textContent = '120 days left';
+      if (overviewSeasonProgress) overviewSeasonProgress.textContent = '0%'; // Season 3 just started
+      if (overviewSeasonDates) overviewSeasonDates.textContent = seasonData?.start_date ? new Date(seasonData.start_date).toLocaleDateString() : 'Sep 11, 2025';
+      if (overviewSeasonTimeLeft) overviewSeasonTimeLeft.textContent = 'Season 3 Active';
       
       addLog('✅ Season display updated successfully');
     }
