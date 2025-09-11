@@ -21383,13 +21383,15 @@ function testDatabaseConnection() {
         });
         
         const data = await response.json();
+        console.log('Season 3 API Response:', data);
         if (data.success) {
           addLog(`✅ Successfully created Season 3: ${data.message}`);
           addLog('🎯 Season 3 is now active! Ready for new challenges!');
           loadSeasonOverview();
           refreshAllGameData();
         } else {
-          addLog(`❌ Failed to create Season 3: ${data.message}`);
+          const errorMsg = data.error || data.message || 'Unknown error';
+          addLog(`❌ Failed to create Season 3: ${errorMsg}`);
         }
       } catch (error) {
         addLog(`❌ Season 3 creation error: ${error.message}`);
