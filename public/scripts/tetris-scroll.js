@@ -1023,6 +1023,9 @@ function unlockTetrisScroll() {
 
 // Listen anywhere on screen!
 document.addEventListener("touchstart", e => {
+  // Only handle touch events on the Tetris canvas
+  if (!e.target.closest("#tetris-canvas")) return;
+  
   // Don't handle touch events if game is paused or over
   if (isTetrisPaused) return;
   
@@ -1053,6 +1056,9 @@ document.addEventListener("touchstart", e => {
 }, { passive: false });
 
 document.addEventListener("touchend", e => {
+  // Only handle touch events on the Tetris canvas
+  if (!e.target.closest("#tetris-canvas")) return;
+  
   // Always clear timeouts/intervals on touch end
   clearTimeout(dropHoldTimeout);
   clearInterval(touchDropInterval);
@@ -1144,9 +1150,12 @@ window.testMobileTetris = function() {
       renderNextBlock(nextPiece);
       gameInterval = setInterval(drop, dropInterval);
       
-      // 🔧 MOBILE FIX: Ensure touch controls are properly initialized
+      // 🔧 MOBILE FIX: Initialize touch controls properly
       if (isMobileDevice) {
         console.log('📱 Mobile Tetris game started successfully');
+        
+        // Initialize touch controls for the canvas
+        initTouchControls(canvas, current, dropInterval);
         
         // Force a redraw to ensure everything is visible
         setTimeout(() => {

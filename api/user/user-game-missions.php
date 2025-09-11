@@ -210,7 +210,7 @@ try {
             $response['tetris']['best_score'] = (int)$tetrisData['best_score'];
             $response['tetris']['total_score'] = (int)$tetrisData['total_score'];
             $response['tetris']['last_played'] = $tetrisData['last_played'];
-            $response['tetris']['dspoinc_earned'] = (int)$tetrisData['total_score'] * 10; // DSPOINC conversion
+            $response['tetris']['dspoinc_earned'] = (int)$tetrisData['total_score']; // Tetris now saves DSPOINC directly
         }
     } catch (Exception $e) {
         error_log("Tetris query error: " . $e->getMessage());
