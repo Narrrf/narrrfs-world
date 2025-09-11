@@ -200,7 +200,7 @@ try {
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
             WHERE discord_id = ? AND game = 'tetris'
-            AND (season = 'season_3' OR season IS NULL OR season = '')
+            AND (season = 'season_3' OR season IS NULL OR season = '' OR season LIKE '%season_3%' OR season = 'season_1' OR season = 'season_2')
         ");
         $stmt->execute([$discordId]);
         $tetrisData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -227,7 +227,7 @@ try {
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
             WHERE discord_id = ? AND game = 'snake'
-            AND (season = 'season_3' OR season IS NULL OR season = '')
+            AND (season = 'season_3' OR season IS NULL OR season = '' OR season LIKE '%season_3%' OR season = 'season_1' OR season = 'season_2')
         ");
         $stmt->execute([$discordId]);
         $snakeData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -267,7 +267,7 @@ try {
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
             WHERE discord_id = ? AND game = 'space_invaders'
-            AND (season = 'season_3' OR season IS NULL OR season = '')
+            AND (season = 'season_3' OR season IS NULL OR season = '' OR season LIKE '%season_3%' OR season = 'season_1' OR season = 'season_2')
         ");
         $stmt->execute([$discordId]);
         $spaceData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -301,7 +301,7 @@ try {
                     MAX(timestamp) as last_click
                 FROM tbl_cheese_clicks 
                 WHERE user_wallet = ?
-                AND (season = 'season_3' OR season IS NULL OR season = '')
+                AND (season = 'season_3' OR season IS NULL OR season = '' OR season LIKE '%season_3%' OR season = 'season_1' OR season = 'season_2')
             ");
             $cheeseStmt->execute([$discordId]);
             $cheeseData = $cheeseStmt->fetch(PDO::FETCH_ASSOC);
@@ -340,7 +340,7 @@ try {
                             MAX(timestamp) as last_click
                         FROM tbl_cheese_clicks 
                         WHERE user_wallet = ?
-                        AND (season = 'season_3' OR season IS NULL OR season = '')
+                        AND (season = 'season_3' OR season IS NULL OR season = '' OR season LIKE '%season_3%' OR season = 'season_1' OR season = 'season_2')
                     ");
                     $stmt->execute([$walletAddress]);
                     
@@ -402,7 +402,7 @@ try {
                 SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
             FROM tbl_race_participants 
             WHERE user_id = ? -- 🔧 CRITICAL FIX: Use user_id field (matches database schema)
-            AND (season = 'season_3' OR season IS NULL OR season = '')
+            AND (season = 'season_3' OR season IS NULL OR season = '' OR season LIKE '%season_3%' OR season = 'season_1' OR season = 'season_2')
         ");
         $stmt->execute([$discordId]);
         $raceData = $stmt->fetch(PDO::FETCH_ASSOC);

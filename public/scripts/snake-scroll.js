@@ -425,30 +425,30 @@ function initSnake() {
     const achievements = [
       // Basic Achievements
       { key: 'first_apple', condition: applesEaten >= 1 },
-      { key: 'apple_collector', condition: applesEaten >= 10 },
-      { key: 'snake_grower', condition: applesEaten >= 25 },
-      { key: 'apple_master', condition: applesEaten >= 50 },
+      { key: 'apple_collector', condition: applesEaten >= 5 },
+      { key: 'snake_grower', condition: applesEaten >= 10 },
+      { key: 'apple_master', condition: applesEaten >= 25 },
       { key: 'speed_demon', condition: currentLevel >= 5 },
       { key: 'level_master', condition: currentLevel >= 10 },
-      { key: 'score_hunter', condition: score >= 1000 },
-      { key: 'point_master', condition: score >= 5000 },
-      { key: 'high_scorer', condition: score >= 10000 },
-      { key: 'snake_king', condition: score >= 25000 },
+      { key: 'score_hunter', condition: score >= 100 },
+      { key: 'point_master', condition: score >= 250 },
+      { key: 'high_scorer', condition: score >= 500 },
+      { key: 'snake_king', condition: score >= 1000 },
       
       // Advanced Achievements
-      { key: 'long_snake', condition: longestSnake >= 20 },
-      { key: 'giant_snake', condition: longestSnake >= 50 },
-      { key: 'mega_snake', condition: longestSnake >= 100 },
+      { key: 'long_snake', condition: longestSnake >= 10 },
+      { key: 'giant_snake', condition: longestSnake >= 25 },
+      { key: 'mega_snake', condition: longestSnake >= 50 },
       { key: 'survivor', condition: (Date.now() - gameStartTime) >= 120000 }, // 2 minutes
       { key: 'endurance_master', condition: (Date.now() - gameStartTime) >= 300000 }, // 5 minutes
       
       // Expert Achievements
       { key: 'level_warrior', condition: currentLevel >= 15 },
       { key: 'level_champion', condition: currentLevel >= 20 },
-      { key: 'score_legend', condition: score >= 50000 },
-      { key: 'score_god', condition: score >= 100000 },
-      { key: 'apple_legend', condition: applesEaten >= 200 },
-      { key: 'snake_legend', condition: longestSnake >= 200 }
+      { key: 'score_legend', condition: score >= 2000 },
+      { key: 'score_god', condition: score >= 5000 },
+      { key: 'apple_legend', condition: applesEaten >= 100 },
+      { key: 'snake_legend', condition: longestSnake >= 100 }
     ];
     
     achievements.forEach(achievement => {

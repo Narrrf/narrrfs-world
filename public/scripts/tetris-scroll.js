@@ -317,6 +317,9 @@ function startTetris() {
   
   // 🏆 Achievement tracking to prevent duplicate checks
   let achievementsCheckedThisGame = new Set();
+  
+  // 🎉 Achievement popups array (Inside Game Scope)
+  let achievementPopups = [];
 
   const pieces = [
     [[1, 1, 1], [0, 1, 0]],     // T
@@ -460,7 +463,7 @@ function collide(shape, row, col) {
             // 🧠 Check for bomb BEFORE removing the row
             if (grid[y].includes(6)) {
               showBombDefusedPopup();
-          score += 50; // Bonus for defusing bomb
+          score += 10; // Bonus for defusing bomb (reduced for balance)
           if (scoreDisplay) {
             scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
           }
@@ -488,7 +491,7 @@ function collide(shape, row, col) {
           }
           
           // Use database configuration for DSPOINC calculation
-          score += lines * 1; // Season 3: 1 DSPOINC per line
+          score += lines * 2; // Season 3: 2 DSPOINC per line (balanced for ~5k max)
           
           // 🏆 Track Tetris clears (4 lines at once)
           if (lines === 4) {
@@ -771,6 +774,245 @@ let heldDown = false;
   let touchDropInterval;
   const sensitivity = 50;
 
+  // 🏆 Tetris Achievement Checking Function (Inside Game Scope)
+  function checkTetrisAchievements(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
+    console.log('🏆 Checking Tetris achievements for user:', userId);
+    console.log('🏆 Game stats:', { gameScore, linesCleared, levelReached, piecesDropped, tetrisClears });
+    
+    // Define achievement checks
+    const achievementChecks = [
+      // Basic Achievements
+      { key: 'first_line', condition: linesCleared >= 1 },
+      { key: 'line_master', condition: linesCleared >= 10 },
+      { key: 'tetris_pro', condition: linesCleared >= 50 },
+      { key: 'line_legend', condition: linesCleared >= 100 },
+      { key: 'speed_demon', condition: levelReached >= 5 },
+      { key: 'level_master', condition: levelReached >= 10 },
+      { key: 'high_roller', condition: gameScore >= 2000 },
+      { key: 'score_hunter', condition: gameScore >= 1000 },
+      { key: 'point_master', condition: gameScore >= 3000 },
+      { key: 'tetris_king', condition: gameScore >= 5000 },
+      
+      // Advanced Achievements
+      { key: 'piece_dropper', condition: piecesDropped >= 100 },
+      { key: 'block_master', condition: piecesDropped >= 500 },
+      { key: 'tetris_clear', condition: tetrisClears >= 1 },
+      { key: 'tetris_master', condition: tetrisClears >= 5 },
+      { key: 'tetris_god', condition: tetrisClears >= 10 },
+      { key: 'combo_starter', condition: linesCleared >= 2 },
+      { key: 'combo_master', condition: linesCleared >= 5 },
+      { key: 'combo_legend', condition: linesCleared >= 10 },
+      { key: 'back_to_back', condition: tetrisClears >= 2 },
+      
+      // Expert Achievements
+      { key: 'level_warrior', condition: levelReached >= 15 },
+      { key: 'level_champion', condition: levelReached >= 20 },
+      { key: 'score_legend', condition: gameScore >= 4000 },
+      { key: 'score_god', condition: gameScore >= 5000 },
+      { key: 'line_destroyer', condition: linesCleared >= 200 },
+      { key: 'piece_legend', condition: piecesDropped >= 1000 },
+      { key: 'tetris_legend', condition: tetrisClears >= 25 }
+    ];
+    
+    // Check each achievement
+    achievementChecks.forEach(achievement => {
+      if (achievement.condition) {
+        // 🏆 Check if we already checked this achievement this game
+        if (achievementsCheckedThisGame.has(achievement.key)) {
+          console.log(`ℹ️ Achievement ${achievement.key} already checked this game - skipping`);
+          return;
+        }
+        
+        console.log(`🏆 Achievement condition met: ${achievement.key}`);
+        
+        // Mark as checked this game
+        achievementsCheckedThisGame.add(achievement.key);
+        
+        // Check if achievement is already unlocked (Season 3 Final Version)
+        checkAndUnlockAchievement(userId, achievement.key, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
+      }
+    });
+  }
+
+  // 🏆 Check if Achievement Already Unlocked (Inside Game Scope)
+  function checkAndUnlockAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
+    // First check if achievement is already unlocked
+    fetch('/api/user/get-tetris-achievements.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: userId }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.achievements) {
+        // Check if this specific achievement is already unlocked
+        const alreadyUnlocked = data.achievements.some(achievement => 
+          achievement.achievement_key === achievementKey && achievement.unlocked_at
+        );
+        
+        if (alreadyUnlocked) {
+          console.log(`ℹ️ Achievement ${achievementKey} already unlocked - skipping popup`);
+          return; // Don't show popup for already unlocked achievements
+        }
+        
+        // Achievement not unlocked yet - unlock it and show popup
+        console.log(`🏆 Achievement ${achievementKey} not yet unlocked - unlocking now`);
+        
+        // Unlock the achievement
+        fetch('/api/dev/unlock-tetris-achievement.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            achievement_key: achievementKey,
+            game_score: gameScore,
+            lines_cleared: linesCleared,
+            level_reached: levelReached,
+            pieces_dropped: piecesDropped,
+            tetris_clears: tetrisClears
+          }),
+        })
+        .then(response => response.json())
+        .then(unlockData => {
+          if (unlockData.success) {
+            console.log(`🏆 Achievement ${achievementKey} unlocked successfully!`);
+            // Show achievement popup
+            showAchievementPopup(achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
+          } else {
+            console.error(`❌ Failed to unlock achievement ${achievementKey}:`, unlockData.error);
+          }
+        })
+        .catch(error => {
+          console.error(`❌ Error unlocking achievement ${achievementKey}:`, error);
+        });
+      } else {
+        console.error('❌ Failed to fetch achievements:', data.error);
+      }
+    })
+    .catch(error => {
+      console.error('❌ Error fetching achievements:', error);
+    });
+  }
+
+  // 🏆 Show Achievement Popup Function (Inside Game Scope)
+  function showAchievementPopup(achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
+    const achievementTitles = {
+      'first_line': 'First Line',
+      'line_master': 'Line Master',
+      'tetris_pro': 'Tetris Pro',
+      'line_legend': 'Line Legend',
+      'speed_demon': 'Speed Demon',
+      'level_master': 'Level Master',
+      'high_roller': 'High Roller',
+      'score_hunter': 'Score Hunter',
+      'point_master': 'Point Master',
+      'tetris_king': 'Tetris King',
+      'piece_dropper': 'Piece Dropper',
+      'block_master': 'Block Master',
+      'tetris_clear': 'Tetris Clear',
+      'tetris_master': 'Tetris Master',
+      'tetris_god': 'Tetris God',
+      'combo_starter': 'Combo Starter',
+      'combo_master': 'Combo Master',
+      'combo_legend': 'Combo Legend',
+      'back_to_back': 'Back-to-Back',
+      'level_warrior': 'Level Warrior',
+      'level_champion': 'Level Champion',
+      'score_legend': 'Score Legend',
+      'score_god': 'Score God',
+      'line_destroyer': 'Line Destroyer',
+      'piece_legend': 'Piece Legend',
+      'tetris_legend': 'Tetris Legend'
+    };
+    
+    const title = achievementTitles[achievementKey] || achievementKey;
+    showAchievementNotification(achievementKey, title);
+  }
+
+  // 🧹 Clean up touch controls (Inside Game Scope)
+  function cleanupTouchControls() {
+    clearTimeout(dropHoldTimeout);
+    clearTimeout(touchDropInterval);
+    heldDown = false;
+    unlockTetrisScroll();
+  }
+
+  // 🎉 Show Achievement Notification (Inside Game Scope)
+  function showAchievementNotification(achievementKey, achievementTitle) {
+    const canvas = document.getElementById("tetris-canvas");
+    if (!canvas) return;
+    
+    const popup = {
+      title: achievementTitle,
+      description: `Achievement Unlocked!`,
+      icon: '🏆',
+      life: 30, // 0.5 seconds at 60fps (much faster)
+      maxLife: 30,
+      scale: 1, // No scale animation - instant appearance
+      maxScale: 1,
+      y: canvas.height / 2,
+      color: '#ffd700' // Gold color for achievements
+    };
+    
+    achievementPopups.push(popup);
+    console.log(`🏆 Achievement Unlocked: ${achievementTitle}`);
+  }
+
+  // 🎨 Draw Achievement Popups on Canvas (Inside Game Scope)
+  function drawAchievementPopups() {
+    const canvas = document.getElementById("tetris-canvas");
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext("2d");
+    const centerX = canvas.width / 2;
+    
+    achievementPopups.forEach((popup, index) => {
+      popup.life--;
+      
+      // Remove expired popups
+      if (popup.life <= 0) {
+        achievementPopups.splice(index, 1);
+        return;
+      }
+      
+      const alpha = popup.life / popup.maxLife;
+      
+      // Draw background (Tetris-optimized size)
+      ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.9})`;
+      ctx.fillRect(centerX - 150, popup.y - 30, 300, 60);
+      
+      // Draw border (thinner for Tetris)
+      ctx.strokeStyle = `rgba(255, 215, 0, ${alpha})`;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(centerX - 150, popup.y - 30, 300, 60);
+      
+      // Draw icon (Tetris-optimized size with proper positioning)
+      ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
+      ctx.font = `20px Arial`; // Slightly smaller to ensure it fits
+      ctx.textAlign = 'center';
+      ctx.fillText(popup.icon, centerX - 80, popup.y + 5); // Better positioning
+      
+      // Draw title (Tetris-optimized size)
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.font = `bold 18px Arial`;
+      ctx.fillText(popup.title, centerX, popup.y - 10);
+      
+      // Draw description (Tetris-optimized size)
+      ctx.fillStyle = `rgba(200, 200, 200, ${alpha})`;
+      ctx.font = `12px Arial`;
+      ctx.fillText(popup.description, centerX, popup.y + 12);
+    });
+  }
+
+  // 🚀 Start the game loop immediately when game starts
+  gameInterval = setInterval(drop, dropInterval);
+  draw(); // Initial draw
+}
+
 function lockTetrisScroll() {
     document.body.style.overflow = "hidden";
 }
@@ -856,14 +1098,6 @@ document.addEventListener("touchend", e => {
   unlockTetrisScroll();
 }, { passive: false });
 
-// Clean up touch controls on game over
-function cleanupTouchControls() {
-  clearTimeout(dropHoldTimeout);
-  clearInterval(touchDropInterval);
-  heldDown = false;
-  unlockTetrisScroll();
-}
-
 // 🔧 MOBILE ERROR HANDLER
 window.addEventListener('error', function(e) {
   if (isMobileDevice) {
@@ -920,247 +1154,4 @@ window.testMobileTetris = function() {
           console.log('📱 Mobile Tetris redraw completed');
         }, 100);
       }
-    }
-
-// 🏆 Tetris Achievement Checking Function (Final Season 3 Version)
-function checkTetrisAchievements(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
-  console.log('🏆 Checking Tetris achievements for user:', userId);
-  console.log('🏆 Game stats:', { gameScore, linesCleared, levelReached, piecesDropped, tetrisClears });
-  
-  // Define achievement checks
-  const achievementChecks = [
-    // Basic Achievements
-    { key: 'first_line', condition: linesCleared >= 1 },
-    { key: 'line_master', condition: linesCleared >= 10 },
-    { key: 'tetris_pro', condition: linesCleared >= 50 },
-    { key: 'line_legend', condition: linesCleared >= 100 },
-    { key: 'speed_demon', condition: levelReached >= 5 },
-    { key: 'level_master', condition: levelReached >= 10 },
-    { key: 'high_roller', condition: gameScore >= 10000 },
-    { key: 'score_hunter', condition: gameScore >= 50000 },
-    { key: 'point_master', condition: gameScore >= 100000 },
-    { key: 'tetris_king', condition: gameScore >= 250000 },
-    
-    // Advanced Achievements
-    { key: 'piece_dropper', condition: piecesDropped >= 100 },
-    { key: 'block_master', condition: piecesDropped >= 500 },
-    { key: 'tetris_clear', condition: tetrisClears >= 1 },
-    { key: 'tetris_master', condition: tetrisClears >= 5 },
-    { key: 'tetris_god', condition: tetrisClears >= 10 },
-    { key: 'combo_starter', condition: linesCleared >= 2 },
-    { key: 'combo_master', condition: linesCleared >= 5 },
-    { key: 'combo_legend', condition: linesCleared >= 10 },
-    { key: 'back_to_back', condition: tetrisClears >= 2 },
-    
-    // Expert Achievements
-    { key: 'level_warrior', condition: levelReached >= 15 },
-    { key: 'level_champion', condition: levelReached >= 20 },
-    { key: 'score_legend', condition: gameScore >= 500000 },
-    { key: 'score_god', condition: gameScore >= 1000000 },
-    { key: 'line_destroyer', condition: linesCleared >= 200 },
-    { key: 'piece_legend', condition: piecesDropped >= 1000 },
-    { key: 'tetris_legend', condition: tetrisClears >= 25 }
-  ];
-  
-  // Check each achievement
-  achievementChecks.forEach(achievement => {
-    if (achievement.condition) {
-      // 🏆 Check if we already checked this achievement this game
-      if (achievementsCheckedThisGame.has(achievement.key)) {
-        console.log(`ℹ️ Achievement ${achievement.key} already checked this game - skipping`);
-        return;
-      }
-      
-      console.log(`🏆 Achievement condition met: ${achievement.key}`);
-      
-      // Mark as checked this game
-      achievementsCheckedThisGame.add(achievement.key);
-      
-      // Check if achievement is already unlocked (Season 3 Final Version)
-      checkAndUnlockAchievement(userId, achievement.key, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
-    }
-  });
-}
-
-// 🏆 Check if Achievement Already Unlocked (Season 3 Final Version)
-function checkAndUnlockAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
-  // First check if achievement is already unlocked
-  fetch('/api/user/get-tetris-achievements.php', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ user_id: userId }),
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success && data.achievements) {
-      // Check if this specific achievement is already unlocked
-      const alreadyUnlocked = data.achievements.some(achievement => 
-        achievement.achievement_key === achievementKey && achievement.unlocked_at
-      );
-      
-      if (alreadyUnlocked) {
-        console.log(`ℹ️ Achievement ${achievementKey} already unlocked - skipping popup`);
-        return; // Don't show popup for already unlocked achievements
-      }
-      
-      // Achievement not unlocked yet - unlock it and show popup
-      console.log(`🏆 Achievement ${achievementKey} not yet unlocked - unlocking now`);
-      
-      // Show achievement notification
-      const achievementTitles = {
-        'first_line': 'First Line',
-        'line_master': 'Line Master',
-        'tetris_pro': 'Tetris Pro',
-        'line_legend': 'Line Legend',
-        'speed_demon': 'Speed Demon',
-        'level_master': 'Level Master',
-        'high_roller': 'High Roller',
-        'score_hunter': 'Score Hunter',
-        'point_master': 'Point Master',
-        'tetris_king': 'Tetris King',
-        'piece_dropper': 'Piece Dropper',
-        'block_master': 'Block Master',
-        'tetris_clear': 'Tetris Clear',
-        'tetris_master': 'Tetris Master',
-        'tetris_god': 'Tetris God',
-        'combo_starter': 'Combo Starter',
-        'combo_master': 'Combo Master',
-        'combo_legend': 'Combo Legend',
-        'back_to_back': 'Back-to-Back',
-        'level_warrior': 'Level Warrior',
-        'level_champion': 'Level Champion',
-        'score_legend': 'Score Legend',
-        'score_god': 'Score God',
-        'line_destroyer': 'Line Destroyer',
-        'piece_legend': 'Piece Legend',
-        'tetris_legend': 'Tetris Legend'
-      };
-      
-      const title = achievementTitles[achievementKey] || achievementKey;
-      showAchievementNotification(achievementKey, title);
-      
-      // Unlock achievement in database
-      unlockTetrisAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
-    }
-  })
-  .catch(error => {
-    console.error('❌ Error checking achievement status:', error);
-    // 🚨 CRITICAL FIX: Don't show popup if we can't check status
-    // This prevents showing popups for already unlocked achievements
-    console.log(`⚠️ Cannot verify achievement ${achievementKey} status - skipping popup to prevent duplicates`);
-    return;
-  });
-}
-
-// 🏆 Unlock Tetris Achievement Function
-function unlockTetrisAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
-  // Silent unlock - no console logging to avoid confusion
-  const apiUrl = '/api/dev/unlock-tetris-achievement.php';
-  
-  const payload = {
-    user_id: userId,
-    achievement_key: achievementKey,
-    game_score: gameScore,
-    lines_cleared: linesCleared,
-    level_reached: levelReached,
-    pieces_dropped: piecesDropped,
-    tetris_clears: tetrisClears
-  };
-  
-  fetch(apiUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      console.log(`✅ Tetris achievement unlocked and saved: ${achievementKey}`);
-    } else {
-      console.log(`ℹ️ Achievement ${achievementKey} already unlocked in database`);
-    }
-    // Don't log "already unlocked" messages to avoid console spam
-    // Visual notification already shown by checkTetrisAchievements
-  })
-  .catch(error => {
-    console.error('❌ Failed to unlock Tetris achievement:', error);
-  });
-}
-
-// 🎉 Show Achievement Notification (Canvas-based like Space Invaders)
-let achievementPopups = [];
-
-function showAchievementNotification(achievementKey, achievementTitle) {
-  const canvas = document.getElementById("tetris-canvas");
-  if (!canvas) return;
-  
-  const popup = {
-    title: achievementTitle,
-    description: `Achievement Unlocked!`,
-    icon: '🏆',
-    life: 30, // 0.5 seconds at 60fps (much faster)
-    maxLife: 30,
-    scale: 1, // No scale animation - instant appearance
-    maxScale: 1,
-    y: canvas.height / 2,
-    color: '#ffd700' // Gold color for achievements
-  };
-  
-  achievementPopups.push(popup);
-  console.log(`🏆 Achievement Unlocked: ${achievementTitle}`);
-}
-
-// 🎨 Draw Achievement Popups on Canvas (like Space Invaders)
-function drawAchievementPopups() {
-  const canvas = document.getElementById("tetris-canvas");
-  if (!canvas) return;
-  
-  const ctx = canvas.getContext("2d");
-  const centerX = canvas.width / 2;
-  
-  achievementPopups.forEach((popup, index) => {
-    popup.life--;
-    
-    // Remove expired popups
-    if (popup.life <= 0) {
-      achievementPopups.splice(index, 1);
-      return;
-    }
-    
-    const alpha = popup.life / popup.maxLife;
-    
-    // Draw background (Tetris-optimized size)
-    ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.9})`;
-    ctx.fillRect(centerX - 150, popup.y - 30, 300, 60);
-    
-    // Draw border (thinner for Tetris)
-    ctx.strokeStyle = `rgba(255, 215, 0, ${alpha})`;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(centerX - 150, popup.y - 30, 300, 60);
-    
-    // Draw icon (Tetris-optimized size with proper positioning)
-    ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
-    ctx.font = `20px Arial`; // Slightly smaller to ensure it fits
-    ctx.textAlign = 'center';
-    ctx.fillText(popup.icon, centerX - 80, popup.y + 5); // Better positioning
-    
-    // Draw title (Tetris-optimized size)
-    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-    ctx.font = `bold 18px Arial`;
-    ctx.fillText(popup.title, centerX, popup.y - 10);
-    
-    // Draw description (Tetris-optimized size)
-    ctx.fillStyle = `rgba(200, 200, 200, ${alpha})`;
-    ctx.font = `12px Arial`;
-    ctx.fillText(popup.description, centerX, popup.y + 12);
-  });
-}
-
-
-
-
 
