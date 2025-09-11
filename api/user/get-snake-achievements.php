@@ -63,7 +63,7 @@ try {
         throw new Exception('No Snake achievements found in database');
     }
     
-    // Get user's unlocked achievements with achievement details
+    // Get user's unlocked achievements with achievement details (Season 3 compatible)
     $stmt = $pdo->prepare("
         SELECT 
             u.achievement_key, 
@@ -81,6 +81,7 @@ try {
         WHERE u.user_id = :user_id 
         AND u.user_id != 'ACHIEVEMENT_DEFINITIONS'
         AND d.user_id = 'ACHIEVEMENT_DEFINITIONS'
+        ORDER BY u.unlocked_at DESC
     ");
     $stmt->execute([':user_id' => $user_id]);
     $unlockedAchievements = $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -29,7 +29,8 @@ try {
     
     if (!$settings) {
         // Create default settings for current season if none exist
-        $db->exec("INSERT INTO tbl_season_settings (season_name, tetris_max_score, snake_max_score, space_invaders_max_score, points_per_line, points_per_cheese, points_per_invader) VALUES (?, 10000, 10000, 10000, 10, 10, 0.01)", [$currentSeason]);
+        $insertStmt = $db->prepare("INSERT INTO tbl_season_settings (season_name, tetris_max_score, snake_max_score, space_invaders_max_score, points_per_line, points_per_cheese, points_per_invader) VALUES (?, 10000, 10000, 10000, 10, 10, 0.01)");
+        $insertStmt->execute([$currentSeason]);
         
         $settings = [
             'season_name' => $currentSeason,

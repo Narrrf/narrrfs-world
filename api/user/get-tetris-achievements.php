@@ -96,11 +96,12 @@ try {
     $definitionsStmt->execute();
     $definitions = $definitionsStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get user's unlocked achievements
+    // Get user's unlocked achievements (Season 3 compatible)
     $unlockedQuery = "
         SELECT achievement_key, unlocked_at, game_score, lines_cleared, level_reached, pieces_dropped, tetris_clears
         FROM tbl_tetris_achievements 
         WHERE user_id = ? AND user_id != 'ACHIEVEMENT_DEFINITIONS'
+        ORDER BY unlocked_at DESC
     ";
     
     $unlockedStmt = $pdo->prepare($unlockedQuery);

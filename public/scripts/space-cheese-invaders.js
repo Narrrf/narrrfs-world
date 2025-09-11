@@ -1629,6 +1629,10 @@ let achievements = {
   speedDemon20k: false,       // Harder speed challenge
   survivor10min: false       // Increased from 5 minutes
 };
+
+// 🏆 Achievement state tracking to prevent duplicates
+let achievementsCheckedThisGame = new Set();
+
 let achievementPopups = []; // Array for achievement pop-ups
 let gameStartTime = 0; // Track game start time
 let perfectWaves = 0; // Track perfect waves
@@ -7254,98 +7258,106 @@ let reloadButtonInterval = null;
   }
   
   function checkAchievements() {
+    // 🏆 CRITICAL FIX: Only check achievements when conditions change
+    // This prevents checking the same achievement 60 times per second
+    
     // First Kill Achievement - MUCH HARDER: Need 100 kills total
-    if (totalKills >= 100 && !achievements.firstKill) {
+    if (totalKills >= 100 && !achievements.firstKill && !achievementsCheckedThisGame.has('firstKill')) {
       achievements.firstKill = true;
+      achievementsCheckedThisGame.add('firstKill');
       createAchievementPopup('First Blood', 'Destroyed your first 100 invaders!', '🎯');
     }
     
     // Kill Streak Achievements (MUCH HARDER - Need perfect gameplay)
-    if (killCombo >= 25 && !achievements.killStreak8) {
+    if (killCombo >= 25 && !achievements.killStreak8 && !achievementsCheckedThisGame.has('killStreak8')) {
       achievements.killStreak8 = true;
+      achievementsCheckedThisGame.add('killStreak8');
       createAchievementPopup('Killing Spree', '25 kills in a row!', '🔥');
     }
     
-    if (killCombo >= 50 && !achievements.killStreak15) {
+    if (killCombo >= 50 && !achievements.killStreak15 && !achievementsCheckedThisGame.has('killStreak15')) {
       achievements.killStreak15 = true;
+      achievementsCheckedThisGame.add('killStreak15');
       createAchievementPopup('Rampage', '50 kills in a row!', '⚡');
     }
     
-    if (killCombo >= 100 && !achievements.killStreak25) {
+    if (killCombo >= 100 && !achievements.killStreak25 && !achievementsCheckedThisGame.has('killStreak25')) {
       achievements.killStreak25 = true;
+      achievementsCheckedThisGame.add('killStreak25');
       createAchievementPopup('Unstoppable', '100 kills in a row!', '💀');
     }
     
     // Score Achievements (MUCH HARDER - End-game scores)
-    if (spaceInvadersScore >= 30000 && !achievements.score2500) {
+    if (spaceInvadersScore >= 30000 && !achievements.score2500 && !achievementsCheckedThisGame.has('score2500')) {
       achievements.score2500 = true;
+      achievementsCheckedThisGame.add('score2500');
       createAchievementPopup('Getting Started', 'Reached 30,000 points!', '⭐');
     }
     
-    if (spaceInvadersScore >= 75000 && !achievements.score7500) {
+    if (spaceInvadersScore >= 75000 && !achievements.score7500 && !achievementsCheckedThisGame.has('score7500')) {
       achievements.score7500 = true;
+      achievementsCheckedThisGame.add('score7500');
       createAchievementPopup('Rising Star', 'Reached 75,000 points!', '🌟');
     }
     
-    if (spaceInvadersScore >= 150000 && !achievements.score15000) {
+    if (spaceInvadersScore >= 150000 && !achievements.score15000 && !achievementsCheckedThisGame.has('score15000')) {
       achievements.score15000 = true;
+      achievementsCheckedThisGame.add('score15000');
       createAchievementPopup('Space Ace', 'Reached 150,000 points!', '🚀');
     }
     
-    if (spaceInvadersScore >= 300000 && !achievements.score30000) {
+    if (spaceInvadersScore >= 300000 && !achievements.score30000 && !achievementsCheckedThisGame.has('score30000')) {
       achievements.score30000 = true;
+      achievementsCheckedThisGame.add('score30000');
       createAchievementPopup('Legend', 'Reached 300,000 points!', '👑');
     }
     
     // Perfect Wave Achievement (HARDER - Need 5 perfect waves)
-    if (perfectWaves >= 5 && !achievements.perfectWave) {
+    if (perfectWaves >= 5 && !achievements.perfectWave && !achievementsCheckedThisGame.has('perfectWave')) {
       achievements.perfectWave = true;
+      achievementsCheckedThisGame.add('perfectWave');
       createAchievementPopup('Perfect Wave', 'Cleared 5 waves without taking damage!', '✨');
     }
     
     // No Hit Run Achievement (MUCH HARDER - 5 minutes)
-    if (noHitTimer >= 18000 && !achievements.noHitRun60) { // 5 minutes at 60fps
+    if (noHitTimer >= 18000 && !achievements.noHitRun60 && !achievementsCheckedThisGame.has('noHitRun60')) { // 5 minutes at 60fps
       achievements.noHitRun60 = true;
+      achievementsCheckedThisGame.add('noHitRun60');
       createAchievementPopup('Untouchable', '5 minutes without taking damage!', '🛡️');
     }
     
     // Combo Master Achievement (MUCH HARDER - Need 4x multiplier consistently)
-    if (comboMultiplier >= 4 && !achievements.comboMaster8) {
+    if (comboMultiplier >= 4 && !achievements.comboMaster8 && !achievementsCheckedThisGame.has('comboMaster8')) {
       achievements.comboMaster8 = true;
+      achievementsCheckedThisGame.add('comboMaster8');
       createAchievementPopup('Combo Master', 'Achieved 4x score multiplier!', '💥');
     }
     
     // Speed Demon Achievement (MUCH HARDER - 50k in 3 minutes)
     const gameTime = Date.now() - gameStartTime;
-    if (spaceInvadersScore >= 50000 && gameTime < 180000 && !achievements.speedDemon20k) { // 3 minutes
+    if (spaceInvadersScore >= 50000 && gameTime < 180000 && !achievements.speedDemon20k && !achievementsCheckedThisGame.has('speedDemon20k')) { // 3 minutes
       achievements.speedDemon20k = true;
+      achievementsCheckedThisGame.add('speedDemon20k');
       createAchievementPopup('Speed Demon', 'Reached 50k points in under 3 minutes!', '⚡');
     }
     
     // Survivor Achievement (MUCH HARDER - 20 minutes)
-    if (gameTime >= 1200000 && !achievements.survivor10min) { // 20 minutes
+    if (gameTime >= 1200000 && !achievements.survivor10min && !achievementsCheckedThisGame.has('survivor10min')) { // 20 minutes
       achievements.survivor10min = true;
+      achievementsCheckedThisGame.add('survivor10min');
       createAchievementPopup('Ultimate Survivor', 'Survived for 20 minutes!', '🏆');
     }
     
     // Boss Kill Achievements (BOSS DESTRUCTION TITLES - 4 Levels)
-    if (bossesKilled >= 1 && !achievements.bossKiller1) {
-      achievements.bossKiller1 = true;
-      createAchievementPopup('Boss Hunter', 'Defeated Boss 1 - First Victory!', '⚔️');
-    }
-    
-    if (bossesKilled >= 3 && !achievements.bossKiller2) {
-      achievements.bossKiller2 = true;
-      createAchievementPopup('Boss Conqueror', 'Defeated Boss 3 - Rising Power!', '🏹');
-    }
-    
-    if (bossesKilled >= 5 && !achievements.bossKiller3) {
+    if (bossesKilled >= 3 && !achievements.bossKiller3 && !achievementsCheckedThisGame.has('bossKiller3')) {
       achievements.bossKiller3 = true;
-      createAchievementPopup('Boss Slayer', 'Defeated Boss 5 - Master Warrior!', '🗡️');
+      achievementsCheckedThisGame.add('bossKiller3');
+      createAchievementPopup('Boss Slayer', 'Defeated Boss 3 - Master Warrior!', '🗡️');
     }
     
-    if (bossesKilled >= 8 && !achievements.bossKiller4) {
+    if (bossesKilled >= 8 && !achievements.bossKiller4 && !achievementsCheckedThisGame.has('bossKiller4')) {
       achievements.bossKiller4 = true;
+      achievementsCheckedThisGame.add('bossKiller4');
       createAchievementPopup('Boss Destroyer', 'Defeated Boss 8 - Ultimate Achievement!', '💀');
     }
     
@@ -7426,6 +7438,9 @@ let reloadButtonInterval = null;
     perfectWaves = 0;
     totalKills = 0;
     noHitTimer = 0;
+    
+    // 🏆 Reset achievement tracking for new game
+    achievementsCheckedThisGame.clear();
     
     // Reset Phoenix achievement tracking
     phoenixesDestroyed = 0;

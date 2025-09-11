@@ -2693,6 +2693,7 @@
             <div>
               <label class="block text-sm font-medium mb-2">📅 Select Season:</label>
               <select id="seasonSelector" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
+                <option value="season_3" selected>Season 3 - The Ultimate Cheese Challenge (2025)</option>
                 <option value="season_2">Season 2 - The Great Reset (2025)</option>
                 <option value="season_1">Season 1 - Historical</option>
                 <option value="all">All Seasons Combined</option>
@@ -3540,6 +3541,7 @@
             <div>
               <label class="block text-sm font-medium mb-2">🎯 Switch to Season:</label>
               <select id="seasonSwitchSelector" class="w-full px-3 py-2 rounded text-gray-800 mb-3">
+                <option value="season_3" selected>Season 3 - The Ultimate Cheese Challenge (2025)</option>
                 <option value="season_2">Season 2 - The Great Reset (2025)</option>
                 <option value="season_1">Season 1 - Historical</option>
               </select>
@@ -3550,7 +3552,8 @@
             <div>
               <label class="block text-sm font-medium mb-2">📊 View Season Data:</label>
               <select id="viewSeasonSelector" class="w-full px-3 py-2 rounded text-gray-800 mb-3" onchange="loadSeasonData()">
-                <option value="season_2">Season 2 - Current Active</option>
+                <option value="season_3" selected>Season 3 - Current Active</option>
+                <option value="season_2">Season 2 - Historical</option>
                 <option value="season_1">Season 1 - Historical</option>
                 <option value="all">All Seasons Combined</option>
               </select>
@@ -6060,7 +6063,7 @@
       }
 
       try {
-        const currentData = cheeseData.current_data || {};
+        const currentData = cheeseData.season_data || {};
         const allTimeData = cheeseData.all_time || {};
         
         statsElement.innerHTML = `
@@ -11114,7 +11117,7 @@ async function authenticateDiscord() {
 
       try {
         // Load missions status from the consolidated API
-        const response = await fetch(API_BASE_URL + '/api/user-game-missions.php?discord_id=' + encodeURIComponent(userId));
+        const response = await fetch(API_BASE_URL + '/api/user/user-game-missions.php?discord_id=' + encodeURIComponent(userId));
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -13939,7 +13942,7 @@ function updateGameTabContent(gameType, gameData) {
       try {
         console.log('🧀 Cheese Hunt data received:', cheeseData);
         console.log('🧀 Cheese Hunt data structure:', JSON.stringify(cheeseData, null, 2));
-        console.log('🧀 Cheese Hunt current_data:', cheeseData.current_data);
+        console.log('🧀 Cheese Hunt season_data:', cheeseData.season_data);
         console.log('🧀 Cheese Hunt top_players:', cheeseData.top_players);
         
         // Add log to admin interface
@@ -13948,22 +13951,22 @@ function updateGameTabContent(gameType, gameData) {
         // Update Cheese Hunt statistics from current_data
         console.log('Looking for cheeseTotalClicks element:', document.getElementById('cheeseTotalClicks'));
         if (document.getElementById('cheeseTotalClicks')) {
-          console.log('Setting cheeseTotalClicks to:', cheeseData.current_data?.total_clicks || '-');
-          document.getElementById('cheeseTotalClicks').textContent = cheeseData.current_data?.total_clicks || '-';
+          console.log('Setting cheeseTotalClicks to:', cheeseData.season_data?.total_clicks || '-');
+          document.getElementById('cheeseTotalClicks').textContent = cheeseData.season_data?.total_clicks || '-';
         } else {
           console.error('Element cheeseTotalClicks not found!');
         }
         
         if (document.getElementById('cheeseUniquePlayers')) {
-          console.log('Setting cheeseUniquePlayers to:', cheeseData.current_data?.unique_players || '-');
-          document.getElementById('cheeseUniquePlayers').textContent = cheeseData.current_data?.unique_players || '-';
+          console.log('Setting cheeseUniquePlayers to:', cheeseData.season_data?.unique_players || '-');
+          document.getElementById('cheeseUniquePlayers').textContent = cheeseData.season_data?.unique_players || '-';
         } else {
           console.error('Element cheeseUniquePlayers not found!');
         }
         
         if (document.getElementById('cheeseClicksToday')) {
-          console.log('Setting cheeseClicksToday to:', cheeseData.current_data?.recent_24h || '-');
-          document.getElementById('cheeseClicksToday').textContent = cheeseData.current_data?.recent_24h || '-';
+          console.log('Setting cheeseClicksToday to:', cheeseData.season_data?.recent_24h || '-');
+          document.getElementById('cheeseClicksToday').textContent = cheeseData.season_data?.recent_24h || '-';
         } else {
           console.error('Element cheeseClicksToday not found!');
         }
@@ -13973,13 +13976,13 @@ function updateGameTabContent(gameType, gameData) {
         if (document.getElementById('cheeseRareEggs')) document.getElementById('cheeseRareEggs').textContent = '-';
         if (document.getElementById('cheeseAchievements')) document.getElementById('cheeseAchievements').textContent = '-';
         if (document.getElementById('cheeseCompletionRate')) document.getElementById('cheeseCompletionRate').textContent = '-';
-        if (document.getElementById('cheeseActiveHunters')) document.getElementById('cheeseActiveHunters').textContent = cheeseData.current_data?.unique_players || '-';
+        if (document.getElementById('cheeseActiveHunters')) document.getElementById('cheeseActiveHunters').textContent = cheeseData.season_data?.unique_players || '-';
 
         // Update statistics cards with new structure
         console.log('🧀 Updating Cheese Hunt statistics cards...');
         
         if (document.getElementById('cheeseTotalClicks')) {
-          const totalClicks = cheeseData.current_data?.total_clicks || 0;
+          const totalClicks = cheeseData.season_data?.total_clicks || 0;
           document.getElementById('cheeseTotalClicks').textContent = formatNumber(totalClicks);
           console.log('🧀 Updated cheeseTotalClicks:', totalClicks);
         } else {
@@ -13987,18 +13990,18 @@ function updateGameTabContent(gameType, gameData) {
         }
         
         if (document.getElementById('cheeseUniquePlayers')) {
-          const uniquePlayers = cheeseData.current_data?.unique_players || 0;
+          const uniquePlayers = cheeseData.season_data?.unique_players || 0;
           document.getElementById('cheeseUniquePlayers').textContent = formatNumber(uniquePlayers);
         }
         
         if (document.getElementById('cheeseClicksToday')) {
-          const clicksToday = cheeseData.current_data?.recent_24h || 0;
+          const clicksToday = cheeseData.season_data?.recent_24h || 0;
           document.getElementById('cheeseClicksToday').textContent = formatNumber(clicksToday);
         }
         
         if (document.getElementById('cheeseAvgClicks')) {
-          const totalClicks = cheeseData.current_data?.total_clicks || 0;
-          const uniquePlayers = cheeseData.current_data?.unique_players || 0;
+          const totalClicks = cheeseData.season_data?.total_clicks || 0;
+          const uniquePlayers = cheeseData.season_data?.unique_players || 0;
           const avgClicks = uniquePlayers > 0 ? Math.round(totalClicks / uniquePlayers) : 0;
           document.getElementById('cheeseAvgClicks').textContent = formatNumber(avgClicks);
         }
@@ -14016,12 +14019,12 @@ function updateGameTabContent(gameType, gameData) {
         }
         
         if (document.getElementById('cheeseRecent24h')) {
-          const recent24h = cheeseData.current_data?.recent_24h || 0;
+          const recent24h = cheeseData.season_data?.recent_24h || 0;
           document.getElementById('cheeseRecent24h').textContent = formatNumber(recent24h);
         }
         
         if (document.getElementById('cheeseRecent7d')) {
-          const recent7d = cheeseData.current_data?.recent_7d || 0;
+          const recent7d = cheeseData.season_data?.recent_7d || 0;
           document.getElementById('cheeseRecent7d').textContent = formatNumber(recent7d);
         }
         
@@ -14074,13 +14077,13 @@ function updateGameTabContent(gameType, gameData) {
                 </div>
                 <div class="bg-gray-700 p-4 rounded-lg text-center">
                   <div class="text-3xl mb-2">📊</div>
-                  <div class="text-lg font-semibold text-white mb-2">Total Clicks: ${cheeseData.current_data?.total_clicks || 0}</div>
+                  <div class="text-lg font-semibold text-white mb-2">Total Clicks: ${cheeseData.season_data?.total_clicks || 0}</div>
                   <div class="text-sm text-gray-400">Status: ${cheeseData.status || 'Active'}</div>
                 </div>
                 <div class="bg-gray-700 p-4 rounded-lg text-center">
                   <div class="text-3xl mb-2">🎯</div>
-                  <div class="text-lg font-semibold text-white mb-2">Players: ${cheeseData.current_data?.unique_players || 0}</div>
-                  <div class="text-sm text-gray-400">Today: ${cheeseData.current_data?.recent_24h || 0}</div>
+                  <div class="text-lg font-semibold text-white mb-2">Players: ${cheeseData.season_data?.unique_players || 0}</div>
+                  <div class="text-sm text-gray-400">Today: ${cheeseData.season_data?.recent_24h || 0}</div>
                 </div>
               </div>
             `;
@@ -15209,8 +15212,9 @@ function updateGameTabContent(gameType, gameData) {
       // Update the current season status display
       const statusElement = document.querySelector('.bg-green-900 .text-green-400.font-bold');
       if (statusElement) {
-        statusElement.textContent = activeSeason === 'season_2' ? 
-          'Season 2 - The Great Reset (2025)' : 
+        statusElement.textContent = activeSeason === 'season_3' ? 
+          'Season 3 - The Ultimate Cheese Challenge (2025)' : 
+          activeSeason === 'season_2' ? 'Season 2 - The Great Reset (2025)' : 
           'Season 1 - Historical';
       }
 
@@ -18725,8 +18729,8 @@ function updateGameTabContent(gameType, gameData) {
             cheeseData.detailed_stats = cheeseStatsData.stats;
             
             // Calculate additional fields
-            cheeseData.current_data.recent_24h = cheeseStatsData.stats.recent_clicks_24h || 0;
-            cheeseData.current_data.avg_clicks = cheeseStatsData.stats.total_clicks > 0 && cheeseStatsData.stats.top_users.length > 0 
+            cheeseData.season_data.recent_24h = cheeseStatsData.stats.recent_clicks_24h || 0;
+            cheeseData.season_data.avg_clicks = cheeseStatsData.stats.total_clicks > 0 && cheeseStatsData.stats.top_users.length > 0 
               ? Math.round(cheeseStatsData.stats.total_clicks / cheeseStatsData.stats.top_users.length) 
               : 0;
             
@@ -18774,26 +18778,26 @@ function updateGameTabContent(gameType, gameData) {
 
         // Update Cheese Hunt statistics - Click Statistics
         if (document.getElementById('cheeseTotalClicks')) {
-          const totalClicks = cheeseData.current_data?.total_clicks || 0;
+          const totalClicks = cheeseData.season_data?.total_clicks || 0;
           document.getElementById('cheeseTotalClicks').textContent = formatNumber(totalClicks);
           document.getElementById('cheeseTotalClicks').className = totalClicks > 0 ? 'text-white font-semibold' : 'text-gray-400';
         }
         
         if (document.getElementById('cheeseUniquePlayers')) {
-          const uniquePlayers = cheeseData.current_data?.unique_players || 0;
+          const uniquePlayers = cheeseData.season_data?.unique_players || 0;
           document.getElementById('cheeseUniquePlayers').textContent = formatNumber(uniquePlayers);
           document.getElementById('cheeseUniquePlayers').className = uniquePlayers > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
         }
         
         if (document.getElementById('cheeseClicksToday')) {
-          const clicksToday = cheeseData.current_data?.recent_24h || 0;
+          const clicksToday = cheeseData.season_data?.recent_24h || 0;
           document.getElementById('cheeseClicksToday').textContent = formatNumber(clicksToday);
           document.getElementById('cheeseClicksToday').className = clicksToday > 0 ? 'text-green-400 font-semibold' : 'text-gray-400';
         }
 
         // Update Egg Data statistics
         if (document.getElementById('cheeseAvgClicks')) {
-          const avgClicks = cheeseData.current_data?.avg_clicks || 0;
+          const avgClicks = cheeseData.season_data?.avg_clicks || 0;
           document.getElementById('cheeseAvgClicks').textContent = formatNumber(avgClicks);
           document.getElementById('cheeseAvgClicks').className = avgClicks > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
         }
@@ -18833,7 +18837,7 @@ function updateGameTabContent(gameType, gameData) {
         
         if (document.getElementById('cheeseCompletionRate')) {
           // Calculate completion rate based on players with clicks vs total players
-          const totalPlayers = cheeseData.current_data?.unique_players || 0;
+          const totalPlayers = cheeseData.season_data?.unique_players || 0;
           const activePlayers = cheeseData.top_players?.length || 0;
           const completionRate = totalPlayers > 0 ? Math.round((activePlayers / totalPlayers) * 100) : 0;
           document.getElementById('cheeseCompletionRate').textContent = formatNumber(completionRate) + '%';
@@ -18848,7 +18852,7 @@ function updateGameTabContent(gameType, gameData) {
         }
         
         if (document.getElementById('cheeseAchievements')) {
-          const achievements = cheeseData.current_data?.achievements || 0;
+          const achievements = cheeseData.season_data?.achievements || 0;
           document.getElementById('cheeseAchievements').textContent = formatNumber(achievements);
           document.getElementById('cheeseAchievements').className = achievements > 0 ? 'text-blue-400 font-semibold' : 'text-gray-400';
         }
@@ -18945,8 +18949,8 @@ function updateGameTabContent(gameType, gameData) {
         dataSummary.innerHTML = `
           <div class="text-orange-200 text-sm">
             <strong>📊 Data Summary:</strong> 
-            ${cheeseData.current_data?.total_clicks || 0} total clicks from ${cheeseData.current_data?.unique_players || 0} players
-            ${cheeseData.current_data?.total_clicks > 0 ? '✅' : '❌ No data yet'}
+            ${cheeseData.season_data?.total_clicks || 0} total clicks from ${cheeseData.season_data?.unique_players || 0} players
+            ${cheeseData.season_data?.total_clicks > 0 ? '✅' : '❌ No data yet'}
           </div>
           <div class="text-orange-300 text-xs mt-2">
             <strong>🕒 Last Updated:</strong> ${new Date().toLocaleString()}
@@ -19419,7 +19423,7 @@ async function loadGameManagement2Data() {
 
 async function loadSeasonOverview2() {
   try {
-    const response = await fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=season_2');
+    const response = await fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=season_3');
     const data = await response.json();
     
     if (data.success) {
@@ -19432,7 +19436,7 @@ async function loadSeasonOverview2() {
 
 async function loadGameStatsBySeason2() {
   try {
-    const season = document.getElementById('viewSeasonSelector2')?.value || 'season_2';
+    const season = document.getElementById('viewSeasonSelector2')?.value || 'season_3';
     const response = await fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=' + season);
     const data = await response.json();
     
@@ -19461,7 +19465,7 @@ async function loadSeasonComparison2() {
   try {
     const [season1Response, season2Response] = await Promise.all([
       fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=season_1'),
-      fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=season_2')
+      fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=season_3')
     ]);
     
     const season1Data = await season1Response.json();
@@ -21313,7 +21317,7 @@ function testDatabaseConnection() {
     
     async function switchActiveSeason() {
       addLog('🔄 Switching active season...');
-      const seasonName = prompt('Enter season name to switch to (e.g., season_1, season_2):');
+      const seasonName = prompt('Enter season name to switch to (e.g., season_1, season_2, season_3):');
       if (!seasonName) return;
       
       try {

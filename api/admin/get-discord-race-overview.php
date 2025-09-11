@@ -53,32 +53,46 @@ try {
  * Get comprehensive race statistics
  */
 function getRaceStatistics($pdo) {
-    // Total races
-    $stmt = $pdo->query("SELECT COUNT(*) as total FROM tbl_cheese_races");
+    // Get current season for filtering (Season 3 started recently)
+    $season3StartDate = '2025-09-11'; // Season 3 start date
+    
+    // Total races (only from Season 3 onwards)
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM tbl_cheese_races WHERE created_at >= ?");
+    $stmt->execute([$season3StartDate]);
     $totalRaces = $stmt->fetch()['total'];
     
     // Active races
-    $stmt = $pdo->query("SELECT COUNT(*) as active FROM tbl_cheese_races WHERE status = 'active'");
+    $stmt = $pdo->prepare("SELECT COUNT(*) as active FROM tbl_cheese_races WHERE status = 'active' AND created_at >= ?");
+    $stmt->execute([$season3StartDate]);
     $activeRaces = $stmt->fetch()['active'];
     
     // Waiting races
-    $stmt = $pdo->query("SELECT COUNT(*) as waiting FROM tbl_cheese_races WHERE status = 'waiting'");
+    $stmt = $pdo->prepare("SELECT COUNT(*) as waiting FROM tbl_cheese_races WHERE status = 'waiting' AND created_at >= ?");
+    $stmt->execute([$season3StartDate]);
     $waitingRaces = $stmt->fetch()['waiting'];
     
     // Finished races
-    $stmt = $pdo->query("SELECT COUNT(*) as finished FROM tbl_cheese_races WHERE status = 'finished'");
+    $stmt = $pdo->prepare("SELECT COUNT(*) as finished FROM tbl_cheese_races WHERE status = 'finished' AND created_at >= ?");
+    $stmt->execute([$season3StartDate]);
     $finishedRaces = $stmt->fetch()['finished'];
     
-    // Total participants (unique users who have participated)
-    $stmt = $pdo->query("SELECT COUNT(DISTINCT user_id) as participants FROM tbl_race_participants");
+    // Total participants (unique users who have participated) - Season 3 only
+    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT rp.user_id) as participants FROM tbl_race_participants rp 
+                          JOIN tbl_cheese_races cr ON rp.race_id = cr.race_id 
+                          WHERE cr.created_at >= ?");
+    $stmt->execute([$season3StartDate]);
     $totalParticipants = $stmt->fetch()['participants'];
     
-    // Total wins (races where position = 1)
-    $stmt = $pdo->query("SELECT COUNT(*) as wins FROM tbl_race_participants WHERE position = 1");
+    // Total wins (races where position = 1) - Season 3 only
+    $stmt = $pdo->prepare("SELECT COUNT(*) as wins FROM tbl_race_participants rp 
+                          JOIN tbl_cheese_races cr ON rp.race_id = cr.race_id 
+                          WHERE rp.position = 1 AND cr.created_at >= ?");
+    $stmt->execute([$season3StartDate]);
     $totalWins = $stmt->fetch()['wins'];
     
-    // Recent races (last 24h)
-    $stmt = $pdo->query("SELECT COUNT(*) as recent FROM tbl_cheese_races WHERE created_at >= datetime('now', '-1 day')");
+    // Recent races (last 24h) - Season 3 only
+    $stmt = $pdo->prepare("SELECT COUNT(*) as recent FROM tbl_cheese_races WHERE created_at >= datetime('now', '-1 day') AND created_at >= ?");
+    $stmt->execute([$season3StartDate]);
     $recentRaces = $stmt->fetch()['recent'];
     
     return [
@@ -96,7 +110,9 @@ function getRaceStatistics($pdo) {
  * Get top racers with detailed stats
  */
 function getTopRacers($pdo) {
-    $stmt = $pdo->query("
+    $season3StartDate = '2025-09-11'; // Season 3 start date
+    
+    $stmt = $pdo->prepare("
         SELECT 
             rp.user_id,
             rp.username,
@@ -106,10 +122,13 @@ function getTopRacers($pdo) {
             MAX(rp.cheese_count) as best_cheese,
             SUM(rp.dspoinc_earned) as total_dspoinc
         FROM tbl_race_participants rp
+        JOIN tbl_cheese_races cr ON rp.race_id = cr.race_id
+        WHERE cr.created_at >= ?
         GROUP BY rp.user_id, rp.username
         ORDER BY wins DESC, avg_cheese DESC
         LIMIT 10
     ");
+    $stmt->execute([$season3StartDate]);
     
     $topRacers = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -131,7 +150,9 @@ function getTopRacers($pdo) {
  * Get detailed race overview with participant data
  */
 function getRaceOverview($pdo) {
-    $stmt = $pdo->query("
+    $season3StartDate = '2025-09-11'; // Season 3 start date
+    
+    $stmt = $pdo->prepare("
         SELECT 
             cr.race_id,
             cr.creator_id,
@@ -151,12 +172,14 @@ function getRaceOverview($pdo) {
             COALESCE(SUM(rp.dspoinc_earned), 0) as total_dspoinc_earned
         FROM tbl_cheese_races cr
         LEFT JOIN tbl_race_participants rp ON cr.race_id = rp.race_id
+        WHERE cr.created_at >= ?
         GROUP BY cr.race_id, cr.creator_id, cr.creator_name, cr.status, cr.max_players, 
                  cr.duration, cr.dspoinc_reward, cr.role_reward, cr.comment, cr.created_at, 
                  cr.started_at, cr.ended_at
         ORDER BY cr.created_at DESC
         LIMIT 50
     ");
+    $stmt->execute([$season3StartDate]);
     
     $races = [];
     $raceCount = 0;

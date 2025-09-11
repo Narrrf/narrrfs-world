@@ -48,6 +48,7 @@ function initSnake() {
   let isSnakePaused = false;
   
   // 🏆 Snake Achievement Tracking Variables
+  let achievementsCheckedThisGame = new Set();
   let applesEaten = 0;
   let gamesPlayed = 0;
   let longestSnake = 1;
@@ -97,6 +98,9 @@ function initSnake() {
     updateScore();
     isSnakePaused = false;
     window.brainUnlocked = false;
+    
+    // 🏆 Reset achievement tracking for new game
+    achievementsCheckedThisGame.clear();
     mutationActive = false;
     localStorage.removeItem("snake_mutation");
     checkMutationStatus();
@@ -282,7 +286,8 @@ function initSnake() {
       placeFood();
       tryActivateMutation(score); // ✅ Now runs exactly on score increase
       
-      // 🏆 Check Snake achievements immediately after eating
+      // 🏆 Check achievements immediately when eating apple
+      // This gives players instant feedback when they unlock achievements
       console.log('🍎 Apple eaten! Checking achievements...', { applesEaten, score, longestSnake });
       checkSnakeAchievements();
     } else {
@@ -366,7 +371,17 @@ function initSnake() {
     
     achievements.forEach(achievement => {
       if (achievement.condition) {
+        // 🏆 Check if we already checked this achievement this game
+        if (achievementsCheckedThisGame.has(achievement.key)) {
+          console.log(`ℹ️ Achievement ${achievement.key} already checked this game - skipping`);
+          return;
+        }
+        
         console.log('🎯 Achievement condition met:', achievement.key, achievement.condition);
+        
+        // Mark as checked this game
+        achievementsCheckedThisGame.add(achievement.key);
+        
         checkAndUnlockAchievement(achievement.key);
       }
     });
@@ -411,36 +426,10 @@ function initSnake() {
     })
     .catch(error => {
       console.error('❌ API call failed:', error);
-      console.log('🔄 Using fallback notification for:', achievementKey);
-      // Fallback: show notification anyway
-      const achievementTitles = {
-        'first_apple': 'First Apple',
-        'apple_collector': 'Apple Collector',
-        'snake_grower': 'Snake Grower',
-        'apple_master': 'Apple Master',
-        'speed_demon': 'Speed Demon',
-        'level_master': 'Level Master',
-        'score_hunter': 'Score Hunter',
-        'point_master': 'Point Master',
-        'high_scorer': 'High Scorer',
-        'snake_king': 'Snake King',
-        'long_snake': 'Long Snake',
-        'giant_snake': 'Giant Snake',
-        'mega_snake': 'Mega Snake',
-        'survivor': 'Survivor',
-        'endurance_master': 'Endurance Master',
-        'level_warrior': 'Level Warrior',
-        'level_champion': 'Level Champion',
-        'score_legend': 'Score Legend',
-        'score_god': 'Score God',
-        'apple_legend': 'Apple Legend',
-        'snake_legend': 'Snake Legend'
-      };
-      
-      const title = achievementTitles[achievementKey] || achievementKey;
-      console.log('🎉 Showing fallback notification:', title);
-      showAchievementNotification(achievementKey, title, 'Achievement unlocked!', '🏆');
-      unlockSnakeAchievement(achievementKey);
+      // 🚨 CRITICAL FIX: Don't show popup if we can't check status
+      // This prevents showing popups for already unlocked achievements
+      console.log(`⚠️ Cannot verify achievement ${achievementKey} status - skipping popup to prevent duplicates`);
+      return;
     });
   }
   

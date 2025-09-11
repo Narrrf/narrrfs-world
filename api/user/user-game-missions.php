@@ -65,11 +65,19 @@ try {
         
         if ($isWindows) {
             // Windows environment - prioritize local database
-            if (file_exists(__DIR__ . '/../db/narrrf_world.sqlite')) {
-                $db = new PDO('sqlite:' . __DIR__ . '/../db/narrrf_world.sqlite');
-                error_log("🏠 Connected to local database (Windows): " . __DIR__ . '/../db/narrrf_world.sqlite');
+            error_log("🔍 DEBUG: Current working directory: " . getcwd());
+            error_log("🔍 DEBUG: __DIR__: " . __DIR__);
+            error_log("🔍 DEBUG: Checking db/narrrf_world.sqlite: " . (file_exists('db/narrrf_world.sqlite') ? 'EXISTS' : 'NOT FOUND'));
+            error_log("🔍 DEBUG: Checking __DIR__/../../db/narrrf_world.sqlite: " . (file_exists(__DIR__ . '/../../db/narrrf_world.sqlite') ? 'EXISTS' : 'NOT FOUND'));
+            
+            if (file_exists(__DIR__ . '/../../db/narrrf_world.sqlite')) {
+                $db = new PDO('sqlite:' . __DIR__ . '/../../db/narrrf_world.sqlite');
+                error_log("🏠 Connected to local database (Windows): " . __DIR__ . '/../../db/narrrf_world.sqlite');
+            } elseif (file_exists('db/narrrf_world.sqlite')) {
+                $db = new PDO('sqlite:db/narrrf_world.sqlite');
+                error_log("🏠 Connected to local database (Windows): db/narrrf_world.sqlite");
             } else {
-                throw new Exception('Local database not found on Windows: ' . __DIR__ . '/../db/narrrf_world.sqlite');
+                throw new Exception('Local database not found on Windows: ' . __DIR__ . '/../../db/narrrf_world.sqlite');
             }
         } else {
             // Linux/Unix environment - check production first
@@ -97,15 +105,15 @@ try {
                     error_log("🔍 PRODUCTION DEBUG ERROR: " . $e->getMessage());
                 }
                 
-            } elseif (file_exists(__DIR__ . '/../db/narrrf_world.sqlite')) {
-                $db = new PDO('sqlite:' . __DIR__ . '/../db/narrrf_world.sqlite');
-                error_log("🏠 Connected to local database: " . __DIR__ . '/../db/narrrf_world.sqlite');
+            } elseif (file_exists('db/narrrf_world.sqlite')) {
+                $db = new PDO('sqlite:db/narrrf_world.sqlite');
+                error_log("🏠 Connected to local database: db/narrrf_world.sqlite");
             } else {
                 // Fallback: try to find the database
                 $possiblePaths = [
-                    __DIR__ . '/../db/narrrf_world.sqlite',
                     __DIR__ . '/../../db/narrrf_world.sqlite',
                     'db/narrrf_world.sqlite',
+                    __DIR__ . '/../db/narrrf_world.sqlite',
                     '../db/narrrf_world.sqlite'
                 ];
                 
@@ -192,6 +200,7 @@ try {
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
             WHERE discord_id = ? AND game = 'tetris'
+            AND (season = 'season_3' OR season IS NULL OR season = '')
         ");
         $stmt->execute([$discordId]);
         $tetrisData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -218,6 +227,7 @@ try {
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
             WHERE discord_id = ? AND game = 'snake'
+            AND (season = 'season_3' OR season IS NULL OR season = '')
         ");
         $stmt->execute([$discordId]);
         $snakeData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -257,6 +267,7 @@ try {
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
             WHERE discord_id = ? AND game = 'space_invaders'
+            AND (season = 'season_3' OR season IS NULL OR season = '')
         ");
         $stmt->execute([$discordId]);
         $spaceData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -290,6 +301,7 @@ try {
                     MAX(timestamp) as last_click
                 FROM tbl_cheese_clicks 
                 WHERE user_wallet = ?
+                AND (season = 'season_3' OR season IS NULL OR season = '')
             ");
             $cheeseStmt->execute([$discordId]);
             $cheeseData = $cheeseStmt->fetch(PDO::FETCH_ASSOC);
@@ -328,6 +340,7 @@ try {
                             MAX(timestamp) as last_click
                         FROM tbl_cheese_clicks 
                         WHERE user_wallet = ?
+                        AND (season = 'season_3' OR season IS NULL OR season = '')
                     ");
                     $stmt->execute([$walletAddress]);
                     
@@ -389,6 +402,7 @@ try {
                 SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
             FROM tbl_race_participants 
             WHERE user_id = ? -- 🔧 CRITICAL FIX: Use user_id field (matches database schema)
+            AND (season = 'season_3' OR season IS NULL OR season = '')
         ");
         $stmt->execute([$discordId]);
         $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
