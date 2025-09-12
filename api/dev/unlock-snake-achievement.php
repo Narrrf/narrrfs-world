@@ -71,8 +71,7 @@ try {
     echo json_encode([
         'success' => true, 
         'message' => 'Achievement unlocked successfully',
-        'achievement_key' => $achievement_key,
-        'season' => $currentSeason
+        'achievement_key' => $achievement_key
     ]);
 
 } catch (Exception $e) {

@@ -72,9 +72,9 @@ const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost/
 console.log('🌍 Space Invaders Environment detected:', isProduction ? 'Production' : 'Local');
 console.log('🔗 Space Invaders API Base URL:', API_BASE_URL);
 
-// 📱 Mobile Detection for Control Priority - Space Invaders specific naming
-const isSpaceInvadersMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-console.log('📱 Device type detected:', isSpaceInvadersMobileDevice ? 'Mobile' : 'Desktop');
+// 📱 Mobile Detection for Control Priority
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+console.log('📱 Device type detected:', isMobileDevice ? 'Mobile' : 'Desktop');
 
 // 🚫 Full page scroll prevention (same as other games)
 window.addEventListener("touchmove", function(e) {
@@ -99,12 +99,6 @@ let spaceInvadersCount = 0; // NEW: Track actual invader count for DSPOINC calcu
 let hasScoreBeenSaved = false; // 🚫 NEW: Prevent duplicate score saves in same game session
 let hasPlayerMovedMouse = false; // 🚀 NEW: Prevent ship jumping until player moves mouse
 
-// ❤️ LIVES SYSTEM - NEW FEATURE!
-let playerLives = 3; // Start with 3 lives
-let maxLives = 5; // Maximum lives cap
-let livesLost = 0; // Track total lives lost for achievements
-let lastLifeLostTime = 0; // Prevent rapid life loss
-
 // 🏆 PHOENIX ACHIEVEMENT TRACKING
 let phoenixesDestroyed = 0;
 let phoenixEggsDestroyed = 0;
@@ -120,7 +114,7 @@ let holdShootDelay = 150; // 150ms between shots for rapid fire
 
 // 🎮 GAME SPEED CONTROL - MOBILE FRIENDLY ADJUSTMENT
 let gameSpeedMultiplier = 0.9; // 10% slower for mobile players (0.9 = 90% speed)
-// Note: isSpaceInvadersMobileDevice is already declared above at line 76
+// Note: isMobileDevice is already declared above at line 76
 
 // 🎮 SPEED CONTROL FUNCTIONS
 function getGameSpeed() {
@@ -133,7 +127,7 @@ function setGameSpeed(multiplier) {
 }
 
 function toggleMobileSpeed() {
-  if (isSpaceInvadersMobileDevice) {
+  if (isMobileDevice) {
     gameSpeedMultiplier = gameSpeedMultiplier === 0.9 ? 1.0 : 0.9;
     console.log(`📱 Mobile speed ${gameSpeedMultiplier === 0.9 ? 'SLOWED' : 'NORMAL'}: ${Math.round(gameSpeedMultiplier * 100)}%`);
   }
@@ -1170,18 +1164,18 @@ class CheeseSoundManager {
       return;
     }
     
-    // Reduced logging to prevent console spam during rapid fire
+    console.log(`🎵 Playing weapon sound: ${weaponType}`);
     
-    // Try to play file-based audio first (silent fail for missing files)
+    // Try to play file-based audio first
     try {
       const audio = new Audio(`sounds/invaders/weapons/${weaponType}.wav`);
       audio.volume = this.masterVolume * 0.8;
       audio.play().catch(e => {
-        // Silent fallback to programmatic audio
+        console.log('File audio failed, trying programmatic audio:', e);
         this.playProgrammaticWeaponSound(weaponType);
       });
     } catch (error) {
-      // Silent fallback to programmatic audio
+      console.log('File audio failed, trying programmatic audio:', error);
       this.playProgrammaticWeaponSound(weaponType);
     }
   }
@@ -1225,7 +1219,7 @@ class CheeseSoundManager {
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.1);
       
-      // Silent programmatic sound generation (reduces console spam)
+      console.log(`🎵 Generated programmatic sound for: ${weaponType}`);
     } catch (error) {
       console.log('Programmatic sound generation failed:', error);
     }
@@ -1369,16 +1363,16 @@ class CheeseSoundManager {
     
     console.log('🎵 Playing boss defeat voice: LEVEL UP!');
     
-    // Try to play file-based audio first (silent fail for missing files)
+    // Try to play file-based audio first
     try {
       const audio = new Audio('sounds/invaders/voice/LEVEL UP!.wav');
       audio.volume = this.masterVolume * 0.9;
       audio.play().catch(e => {
-        // Silent fallback to programmatic voice
+        console.log('File audio failed, trying programmatic voice:', e);
         this.playProgrammaticBossDefeatVoice();
       });
     } catch (error) {
-      // Silent fallback to programmatic voice
+      console.log('File audio failed, trying programmatic voice:', error);
       this.playProgrammaticBossDefeatVoice();
     }
   }
@@ -1635,10 +1629,6 @@ let achievements = {
   speedDemon20k: false,       // Harder speed challenge
   survivor10min: false       // Increased from 5 minutes
 };
-
-// 🏆 Achievement state tracking to prevent duplicates
-let achievementsCheckedThisGame = new Set();
-
 let achievementPopups = []; // Array for achievement pop-ups
 let gameStartTime = 0; // Track game start time
 let perfectWaves = 0; // Track perfect waves
@@ -1859,90 +1849,6 @@ let reloadButtonInterval = null;
     }, 1000);
   }
   
-  // ❤️ NEW: Show life gained notification
-  function showLifeNotification() {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(135deg, #dc2626, #b91c1c);
-      color: white;
-      padding: 15px 25px;
-      border-radius: 10px;
-      font-size: 1.2em;
-      font-weight: bold;
-      z-index: 10000;
-      box-shadow: 0 8px 25px rgba(220,38,38,0.4);
-      animation: lifeGainedPulse 1.5s ease-in-out;
-    `;
-    
-    notification.textContent = `❤️ EXTRA LIFE! Lives: ${playerLives}/${maxLives}`;
-    
-    // Add animation keyframes
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes lifeGainedPulse {
-        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-        50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-        100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    document.body.appendChild(notification);
-    
-    // Remove notification after animation
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    }, 1500);
-  }
-  
-  // ❤️ NEW: Show life lost notification
-  function showLifeLostNotification() {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(135deg, #dc2626, #b91c1c);
-      color: white;
-      padding: 15px 25px;
-      border-radius: 10px;
-      font-size: 1.2em;
-      font-weight: bold;
-      z-index: 10000;
-      box-shadow: 0 8px 25px rgba(220,38,38,0.4);
-      animation: lifeLostShake 1s ease-in-out;
-    `;
-    
-    notification.textContent = `💔 LIFE LOST! Lives: ${playerLives}/${maxLives}`;
-    
-    // Add animation keyframes
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes lifeLostShake {
-        0%, 100% { transform: translate(-50%, -50%); }
-        25% { transform: translate(-52%, -50%); }
-        75% { transform: translate(-48%, -50%); }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    document.body.appendChild(notification);
-    
-    // Remove notification after animation
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    }, 1000);
-  }
-  
   // 🚀 NEW: Show ammo warning
   function showAmmoWarning(weaponType) {
     const warning = document.createElement('div');
@@ -2013,53 +1919,50 @@ let reloadButtonInterval = null;
   // 🚀 NEW: Spawn power-ups randomly
   function spawnPowerUp() {
     // Check if we already have too many power-ups on screen
-    if (window.powerUps && window.powerUps.length >= 3) {
-      return; // Don't spawn if we already have 3 or more (reduced for more frequent drops)
+    if (window.powerUps && window.powerUps.length >= 4) {
+      return; // Don't spawn if we already have 4 or more (increased from 3)
     }
     
-    // 🚀 ULTRA GENEROUS DROP RATES: Much higher for better gameplay!
-    let spawnChance = 0.600; // Base rate for wave 1 (60% - MUCH higher!)
+    // 🚀 ULTRA AGGRESSIVE: Much higher spawn rates for more action!
+    let spawnChance = 0.200; // Base rate for early waves (20% - MUCH higher!)
     
     // Progressive scaling that ACTUALLY helps in higher waves
-    if (waveNumber >= 2) spawnChance = 0.650;   // 65% for wave 2+
-    if (waveNumber >= 3) spawnChance = 0.700;   // 70% for wave 3+
-    if (waveNumber >= 5) spawnChance = 0.750;   // 75% for wave 5+
-    if (waveNumber >= 8) spawnChance = 0.800;   // 80% for wave 8+
-    if (waveNumber >= 10) spawnChance = 0.850;  // 85% for wave 10+
-    if (waveNumber >= 15) spawnChance = 0.900;  // 90% for wave 15+
-    if (waveNumber >= 20) spawnChance = 0.950;  // 95% for wave 20+
-    if (waveNumber >= 25) spawnChance = 0.980;  // 98% for wave 25+
-    if (waveNumber >= 30) spawnChance = 0.990;  // 99% for wave 30+
-    if (waveNumber >= 35) spawnChance = 0.995;  // 99.5% for wave 35+
-    if (waveNumber >= 50) spawnChance = 0.998;  // 99.8% for wave 50+ (boss waves)
-    if (waveNumber >= 75) spawnChance = 0.999;  // 99.9% for wave 75+ (ultra waves)
-    if (waveNumber >= 100) spawnChance = 0.9995; // 99.95% for wave 100+ (legendary waves)
-    if (waveNumber >= 150) spawnChance = 0.9998; // 99.98% for wave 150+ (mythical waves)
-    if (waveNumber >= 200) spawnChance = 0.9999; // 99.99% for wave 200+ (god-tier waves)
+    if (waveNumber >= 2) spawnChance = 0.250;   // 25% for wave 2+
+    if (waveNumber >= 3) spawnChance = 0.300;   // 30% for wave 3+
+    if (waveNumber >= 5) spawnChance = 0.400;   // 40% for wave 5+
+    if (waveNumber >= 8) spawnChance = 0.500;   // 50% for wave 8+
+    if (waveNumber >= 10) spawnChance = 0.600;  // 60% for wave 10+
+    if (waveNumber >= 15) spawnChance = 0.700;  // 70% for wave 15+
+    if (waveNumber >= 20) spawnChance = 0.800;  // 80% for wave 20+
+    if (waveNumber >= 25) spawnChance = 0.850;  // 85% for wave 25+
+    if (waveNumber >= 30) spawnChance = 0.900;  // 90% for wave 30+
+    if (waveNumber >= 35) spawnChance = 0.950;  // 95% for wave 35+
+    if (waveNumber >= 50) spawnChance = 0.980;  // 98% for wave 50+ (boss waves)
+    if (waveNumber >= 75) spawnChance = 0.990;  // 99% for wave 75+ (ultra waves)
+    if (waveNumber >= 100) spawnChance = 0.995; // 99.5% for wave 100+ (legendary waves)
+    if (waveNumber >= 150) spawnChance = 0.999; // 99.9% for wave 150+ (mythical waves)
+    if (waveNumber >= 200) spawnChance = 0.999; // 99.9% for wave 200+ (god-tier waves)
     
     if (Math.random() < spawnChance) {
       console.log(`🎁 SPAWNING POWER-UP: Wave ${waveNumber}, Chance: ${spawnChance.toFixed(2)}, Current power-ups: ${window.powerUps?.length || 0}`);
       
-      // 🚀 BALANCED POWER-UP DISTRIBUTION: More lives and weapons!
+      // 🚀 NEW: Better power-up distribution - ensure all types appear
       const powerUpRoll = Math.random();
       let powerUpType, ammoType;
       
       if (powerUpRoll < 0.20) {
-        // 20% chance: Lives power-up (red ❤️) - INCREASED!
-        powerUpType = 'lives';
-      } else if (powerUpRoll < 0.35) {
-        // 15% chance: Laser ammo (cyan 🔫)
+        // 20% chance: Speed boost power-up (green ⚡)
+        powerUpType = 'speed';
+      } else if (powerUpRoll < 0.40) {
+        // 20% chance: Laser ammo (cyan 🔫)
         powerUpType = 'ammo';
         ammoType = 'laser';
-      } else if (powerUpRoll < 0.50) {
-        // 15% chance: Bomb ammo (magenta 💣)
+      } else if (powerUpRoll < 0.60) {
+        // 20% chance: Bomb ammo (magenta 💣)
         powerUpType = 'ammo';
         ammoType = 'bomb';
-      } else if (powerUpRoll < 0.65) {
-        // 15% chance: Speed boost power-up (green ⚡)
-        powerUpType = 'speed';
       } else if (powerUpRoll < 0.80) {
-        // 15% chance: Shield power-up (blue 🛡️)
+        // 20% chance: Shield power-up (blue 🛡️) - INCREASED!
         powerUpType = 'shield';
       } else {
         // 20% chance: Collect power-up (yellow ⭐)
@@ -2106,21 +2009,6 @@ let reloadButtonInterval = null;
           height: 20,
           type: 'shield',
           color: '#0088ff',
-          speed: 2,
-          collected: false
-        };
-        
-        if (!window.powerUps) window.powerUps = [];
-        window.powerUps.push(powerUp);
-      } else if (powerUpType === 'lives') {
-        // ❤️ NEW: Lives power-up (red heart)
-        const powerUp = {
-          x: Math.random() * (canvasWidth - 20),
-          y: -20,
-          width: 20,
-          height: 20,
-          type: 'lives',
-          color: '#ff0000',
           speed: 2,
           collected: false
         };
@@ -2207,27 +2095,6 @@ let reloadButtonInterval = null;
           
           // 🎵 NEW: Play shield activation sound
           cheeseSoundManager.playExplosionSound('shield');
-        } else if (powerUp.type === 'lives') {
-          // ❤️ NEW: Lives power-up adds extra life
-          if (playerLives < maxLives) {
-            playerLives++;
-            console.log(`❤️ Extra life collected! Lives: ${playerLives}/${maxLives}`);
-            
-            // Show life gained notification
-            showLifeNotification();
-            
-            // 🎵 NEW: Play life pickup sound
-            cheeseSoundManager.playExplosionSound('powerup');
-            
-            // 🔧 FIX: Lives display updates automatically in canvas
-          } else {
-            console.log(`❤️ Lives at maximum (${maxLives}), converting to bonus points!`);
-            spaceInvadersScore += 500; // Bonus points when lives are maxed
-            spaceInvadersCount += 5; // Bonus invaders when lives are maxed
-            
-            // 🎵 NEW: Play bonus sound
-            cheeseSoundManager.playExplosionSound('powerup');
-          }
         }
       }
       
@@ -4324,7 +4191,7 @@ let reloadButtonInterval = null;
     setupHeatSystemDebug();
     
     // 🚀 CRITICAL FIX: Automatically disable mouse controls on mobile devices
-    if (isSpaceInvadersMobileDevice) {
+    if (isMobileDevice) {
       console.log('📱 Mobile device detected - disabling mouse controls for touch priority');
       isMouseControlEnabled = false;
     }
@@ -4846,11 +4713,6 @@ let reloadButtonInterval = null;
     playerShip.invincible = false; // 🚀 NEW: Reset invincibility
     playerShip.invincibleTimer = 0; // 🚀 NEW: Reset invincibility timer
     
-    // ❤️ NEW: Reset lives system
-    playerLives = 3; // Reset to starting lives
-    livesLost = 0; // Reset lives lost counter
-    lastLifeLostTime = 0; // Reset life loss cooldown
-    
       // 🚀 CRITICAL FIX: Initialize mouse targets to ship position to prevent jumping
       mouseTargetX = playerShip.x;
       mouseTargetY = playerShip.y;
@@ -4876,8 +4738,6 @@ let reloadButtonInterval = null;
     
     // 🚀 NEW: Update weapon display
     updateWeaponDisplay();
-    
-    // 🔧 FIX: Lives display updates automatically in canvas
     
     // 🆘 NEW: Display help information outside game canvas
     setTimeout(() => {
@@ -5012,9 +4872,6 @@ let reloadButtonInterval = null;
       
       // 🚀 NEW: Update power-ups
       updatePowerUps();
-      
-      // 🚀 NEW: Spawn power-ups during attack phase too!
-      spawnPowerUp();
       
       // NEW: Check for stuck or hidden invaders
       checkForStuckInvaders();
@@ -6756,27 +6613,6 @@ let reloadButtonInterval = null;
         // Damage player (invader collision is deadly!)
         playerShip.health--;
         
-        // ❤️ NEW: Lose a life when taking damage
-        const currentTime = Date.now();
-        if (currentTime - lastLifeLostTime > 1000) { // Prevent rapid life loss (1 second cooldown)
-          playerLives--;
-          livesLost++;
-          lastLifeLostTime = currentTime;
-          console.log(`❤️ Life lost! Lives remaining: ${playerLives}/${maxLives}`);
-          
-          // Show life lost notification
-          showLifeLostNotification();
-          
-          // 🔧 FIX: Lives display updates automatically in canvas
-          
-          // Check if game over due to no lives
-          if (playerLives <= 0) {
-            console.log('💀 No lives remaining! Game Over!');
-            onGameOver();
-            return;
-          }
-        }
-        
         // Kill the invading invader
         invader.alive = false;
         spaceInvadersScore += invader.points; // Keep game points for display
@@ -6864,7 +6700,6 @@ let reloadButtonInterval = null;
     
     drawScore();
     drawHealth();
-    // 🔧 FIX: Lives display now integrated into drawHealth()
     drawPhaseInfo(); // NEW: Show current phase info
     
     // 🚀 NEW: Draw boss wave announcement
@@ -7247,7 +7082,7 @@ let reloadButtonInterval = null;
       const discordId = localStorage.getItem('discord_id');
       if (!discordId) return;
       
-      const response = await fetch('/api/user/get-space-invaders-achievements.php', {
+      const response = await fetch(`${API_BASE_URL}/api/user/get-space-invaders-achievements.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: discordId })
@@ -7275,8 +7110,8 @@ let reloadButtonInterval = null;
       title: title,
       description: description,
       icon: icon,
-      life: 30, // 0.5 seconds at 60fps (much faster to not block gameplay)
-      maxLife: 30,
+      life: 180, // 3 seconds at 60fps
+      maxLife: 180,
       scale: 0,
       maxScale: 1,
       y: canvasHeight / 2,
@@ -7320,7 +7155,7 @@ let reloadButtonInterval = null;
       };
       
       // Save to database
-      const response = await fetch('/api/user/save-space-invaders-achievement.php', {
+      const response = await fetch(`${API_BASE_URL}/api/user/save-space-invaders-achievement.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -7419,106 +7254,98 @@ let reloadButtonInterval = null;
   }
   
   function checkAchievements() {
-    // 🏆 CRITICAL FIX: Only check achievements when conditions change
-    // This prevents checking the same achievement 60 times per second
-    
     // First Kill Achievement - MUCH HARDER: Need 100 kills total
-    if (totalKills >= 100 && !achievements.firstKill && !achievementsCheckedThisGame.has('firstKill')) {
+    if (totalKills >= 100 && !achievements.firstKill) {
       achievements.firstKill = true;
-      achievementsCheckedThisGame.add('firstKill');
       createAchievementPopup('First Blood', 'Destroyed your first 100 invaders!', '🎯');
     }
     
     // Kill Streak Achievements (MUCH HARDER - Need perfect gameplay)
-    if (killCombo >= 25 && !achievements.killStreak8 && !achievementsCheckedThisGame.has('killStreak8')) {
+    if (killCombo >= 25 && !achievements.killStreak8) {
       achievements.killStreak8 = true;
-      achievementsCheckedThisGame.add('killStreak8');
       createAchievementPopup('Killing Spree', '25 kills in a row!', '🔥');
     }
     
-    if (killCombo >= 50 && !achievements.killStreak15 && !achievementsCheckedThisGame.has('killStreak15')) {
+    if (killCombo >= 50 && !achievements.killStreak15) {
       achievements.killStreak15 = true;
-      achievementsCheckedThisGame.add('killStreak15');
       createAchievementPopup('Rampage', '50 kills in a row!', '⚡');
     }
     
-    if (killCombo >= 100 && !achievements.killStreak25 && !achievementsCheckedThisGame.has('killStreak25')) {
+    if (killCombo >= 100 && !achievements.killStreak25) {
       achievements.killStreak25 = true;
-      achievementsCheckedThisGame.add('killStreak25');
       createAchievementPopup('Unstoppable', '100 kills in a row!', '💀');
     }
     
     // Score Achievements (MUCH HARDER - End-game scores)
-    if (spaceInvadersScore >= 30000 && !achievements.score2500 && !achievementsCheckedThisGame.has('score2500')) {
+    if (spaceInvadersScore >= 30000 && !achievements.score2500) {
       achievements.score2500 = true;
-      achievementsCheckedThisGame.add('score2500');
       createAchievementPopup('Getting Started', 'Reached 30,000 points!', '⭐');
     }
     
-    if (spaceInvadersScore >= 75000 && !achievements.score7500 && !achievementsCheckedThisGame.has('score7500')) {
+    if (spaceInvadersScore >= 75000 && !achievements.score7500) {
       achievements.score7500 = true;
-      achievementsCheckedThisGame.add('score7500');
       createAchievementPopup('Rising Star', 'Reached 75,000 points!', '🌟');
     }
     
-    if (spaceInvadersScore >= 150000 && !achievements.score15000 && !achievementsCheckedThisGame.has('score15000')) {
+    if (spaceInvadersScore >= 150000 && !achievements.score15000) {
       achievements.score15000 = true;
-      achievementsCheckedThisGame.add('score15000');
       createAchievementPopup('Space Ace', 'Reached 150,000 points!', '🚀');
     }
     
-    if (spaceInvadersScore >= 300000 && !achievements.score30000 && !achievementsCheckedThisGame.has('score30000')) {
+    if (spaceInvadersScore >= 300000 && !achievements.score30000) {
       achievements.score30000 = true;
-      achievementsCheckedThisGame.add('score30000');
       createAchievementPopup('Legend', 'Reached 300,000 points!', '👑');
     }
     
     // Perfect Wave Achievement (HARDER - Need 5 perfect waves)
-    if (perfectWaves >= 5 && !achievements.perfectWave && !achievementsCheckedThisGame.has('perfectWave')) {
+    if (perfectWaves >= 5 && !achievements.perfectWave) {
       achievements.perfectWave = true;
-      achievementsCheckedThisGame.add('perfectWave');
       createAchievementPopup('Perfect Wave', 'Cleared 5 waves without taking damage!', '✨');
     }
     
     // No Hit Run Achievement (MUCH HARDER - 5 minutes)
-    if (noHitTimer >= 18000 && !achievements.noHitRun60 && !achievementsCheckedThisGame.has('noHitRun60')) { // 5 minutes at 60fps
+    if (noHitTimer >= 18000 && !achievements.noHitRun60) { // 5 minutes at 60fps
       achievements.noHitRun60 = true;
-      achievementsCheckedThisGame.add('noHitRun60');
       createAchievementPopup('Untouchable', '5 minutes without taking damage!', '🛡️');
     }
     
     // Combo Master Achievement (MUCH HARDER - Need 4x multiplier consistently)
-    if (comboMultiplier >= 4 && !achievements.comboMaster8 && !achievementsCheckedThisGame.has('comboMaster8')) {
+    if (comboMultiplier >= 4 && !achievements.comboMaster8) {
       achievements.comboMaster8 = true;
-      achievementsCheckedThisGame.add('comboMaster8');
       createAchievementPopup('Combo Master', 'Achieved 4x score multiplier!', '💥');
     }
     
     // Speed Demon Achievement (MUCH HARDER - 50k in 3 minutes)
     const gameTime = Date.now() - gameStartTime;
-    if (spaceInvadersScore >= 50000 && gameTime < 180000 && !achievements.speedDemon20k && !achievementsCheckedThisGame.has('speedDemon20k')) { // 3 minutes
+    if (spaceInvadersScore >= 50000 && gameTime < 180000 && !achievements.speedDemon20k) { // 3 minutes
       achievements.speedDemon20k = true;
-      achievementsCheckedThisGame.add('speedDemon20k');
       createAchievementPopup('Speed Demon', 'Reached 50k points in under 3 minutes!', '⚡');
     }
     
     // Survivor Achievement (MUCH HARDER - 20 minutes)
-    if (gameTime >= 1200000 && !achievements.survivor10min && !achievementsCheckedThisGame.has('survivor10min')) { // 20 minutes
+    if (gameTime >= 1200000 && !achievements.survivor10min) { // 20 minutes
       achievements.survivor10min = true;
-      achievementsCheckedThisGame.add('survivor10min');
       createAchievementPopup('Ultimate Survivor', 'Survived for 20 minutes!', '🏆');
     }
     
     // Boss Kill Achievements (BOSS DESTRUCTION TITLES - 4 Levels)
-    if (bossesKilled >= 3 && !achievements.bossKiller3 && !achievementsCheckedThisGame.has('bossKiller3')) {
-      achievements.bossKiller3 = true;
-      achievementsCheckedThisGame.add('bossKiller3');
-      createAchievementPopup('Boss Slayer', 'Defeated Boss 3 - Master Warrior!', '🗡️');
+    if (bossesKilled >= 1 && !achievements.bossKiller1) {
+      achievements.bossKiller1 = true;
+      createAchievementPopup('Boss Hunter', 'Defeated Boss 1 - First Victory!', '⚔️');
     }
     
-    if (bossesKilled >= 8 && !achievements.bossKiller4 && !achievementsCheckedThisGame.has('bossKiller4')) {
+    if (bossesKilled >= 3 && !achievements.bossKiller2) {
+      achievements.bossKiller2 = true;
+      createAchievementPopup('Boss Conqueror', 'Defeated Boss 3 - Rising Power!', '🏹');
+    }
+    
+    if (bossesKilled >= 5 && !achievements.bossKiller3) {
+      achievements.bossKiller3 = true;
+      createAchievementPopup('Boss Slayer', 'Defeated Boss 5 - Master Warrior!', '🗡️');
+    }
+    
+    if (bossesKilled >= 8 && !achievements.bossKiller4) {
       achievements.bossKiller4 = true;
-      achievementsCheckedThisGame.add('bossKiller4');
       createAchievementPopup('Boss Destroyer', 'Defeated Boss 8 - Ultimate Achievement!', '💀');
     }
     
@@ -7599,9 +7426,6 @@ let reloadButtonInterval = null;
     perfectWaves = 0;
     totalKills = 0;
     noHitTimer = 0;
-    
-    // 🏆 Reset achievement tracking for new game
-    achievementsCheckedThisGame.clear();
     
     // Reset Phoenix achievement tracking
     phoenixesDestroyed = 0;
@@ -8418,89 +8242,51 @@ let reloadButtonInterval = null;
     }
   }
 
-  // ❤️ NEW: Draw lives display
-  // ❤️ NEW: CLEAN & INTUITIVE UI DISPLAY
+  // ❤️ NEW: Draw health display (compact layout)
   function drawHealth() {
-    ctx.font = '16px Arial';
-    
-    // 🎮 PLAYER STATUS (Top-left, clear section)
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '14px Arial';
-    ctx.fillText('🎮 PLAYER STATUS', 10, 20);
-    
-    // ❤️ LIVES (Most important - prominent)
     ctx.fillStyle = '#ff0000';
     ctx.font = '16px Arial';
-    ctx.fillText(`❤️ Lives: ${playerLives}/${maxLives}`, 10, 40);
+    ctx.fillText(`❤${playerShip.health}`, 10, 30);
     
-    // 🚀 WEAPONS & POWER-UPS (Below lives, organized)
-    ctx.font = '14px Arial';
-    let yPos = 60;
+    // 🚀 NEW: Compact ammo display in one line
+    let ammoText = '';
+    let ammoColor = '#ffffff';
     
     if (weaponAmmo.bomb > 0) {
-      ctx.fillStyle = '#ff00ff';
-      ctx.fillText(`💣 Bombs: ${weaponAmmo.bomb}`, 10, yPos);
-      yPos += 18;
+      ammoText += `💣${weaponAmmo.bomb} `;
     }
     if (weaponAmmo.laser > 0) {
-      ctx.fillStyle = '#00ffff';
-      ctx.fillText(`🔫 Laser: ${weaponAmmo.laser}`, 10, yPos);
-      yPos += 18;
+      ammoText += `🔫${weaponAmmo.laser} `;
     }
     if (speedBoostAmmo > 0) {
-      ctx.fillStyle = '#00ff00';
-      ctx.fillText(`⚡ Speed Boosts: ${speedBoostAmmo}`, 10, yPos);
-      yPos += 18;
+      ammoText += `⚡${speedBoostAmmo} `;
     }
     
-    // 🎯 GAME STATUS (Top-right, separate section)
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '14px Arial';
-    ctx.fillText('🎯 GAME STATUS', canvasWidth - 120, 20);
+    // Position ammo info to the right of health
+    if (ammoText) {
+      ctx.fillStyle = ammoColor;
+      ctx.fillText(ammoText, 80, 30);
+    }
     
-    // 🚀 ACTIVE EFFECTS (Top-right, below status)
-    ctx.font = '14px Arial';
+    // 🚀 NEW: Speed boost timer (if active) - positioned on the right side
     if (speedBoostActive) {
       ctx.fillStyle = '#00ff00';
       const timeLeft = Math.ceil(speedBoostTimer / 10);
-      ctx.fillText(`⚡ BOOST: ${timeLeft}s`, canvasWidth - 120, 40);
+      const timeText = `⚡${timeLeft}s`;
+      const timeWidth = ctx.measureText(timeText).width;
+      // Position on the right side with some margin
+      ctx.fillText(timeText, canvasWidth - timeWidth - 10, 30);
     }
     
-    // 🚀 WEAPON STATUS (Top-right, below effects)
+    // 🚀 NEW: Weapon ready indicator for desktop players
     if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
       ctx.fillStyle = '#00ffff';
-      ctx.fillText('🔫 LASER READY', canvasWidth - 120, 60);
+      ctx.font = '12px Arial';
+      ctx.fillText('🔫 READY', canvasWidth - 80, 50);
     } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
       ctx.fillStyle = '#ff00ff';
-      ctx.fillText('💣 BOMB READY', canvasWidth - 120, 60);
-    }
-    
-    // 🎯 WAVE DISPLAY (Top-right, below weapon status)
-    let waveText = '';
-    let waveColor = '#ffffff';
-    
-    if (gamePhase === 'formation') {
-      waveColor = '#4ade80'; // Green for formation
-      waveText = `🎯 Wave ${waveNumber}`;
-    } else if (gamePhase === 'attack') {
-      if (invaderDropPhase) {
-        waveColor = '#ff6b6b'; // Red for drop phase
-        waveText = `🚀 Wave ${waveNumber}`;
-      } else {
-        waveColor = '#4ecdc4'; // Cyan for break phase
-        waveText = `⏸️ Wave ${waveNumber}`;
-      }
-    }
-    
-    // 🔥 PHOENIX INVADERS: Show Phoenix wave indicator
-    if (isPhoenixWave) {
-      waveColor = '#ff6b35'; // Orange for Phoenix waves
-      waveText = `🔥 Wave ${waveNumber}`; // Phoenix wave indicator
-    }
-    
-    if (waveText) {
-      ctx.fillStyle = waveColor;
-      ctx.fillText(waveText, canvasWidth - 120, 80);
+      ctx.font = '12px Arial';
+      ctx.fillText('💣 READY', canvasWidth - 80, 50);
     }
   }
 
@@ -8541,7 +8327,9 @@ let reloadButtonInterval = null;
       phaseText = `🔥W${waveNumber}`; // Phoenix wave indicator
     }
     
-    // 🚀 MOVED: Wave display now in Game Status section (top-right)
+    // 🚀 NEW: Show phase info on the left
+    ctx.fillStyle = phaseColor;
+    ctx.fillText(phaseText, 10, 50);
     
     // 🚀 NEW: Show auto-shoot status in the center
     const autoText = `AUTO: ${autoShootEnabled ? 'ON' : 'OFF'}`;
@@ -8556,7 +8344,7 @@ let reloadButtonInterval = null;
     ctx.fillText(weaponText, canvasWidth - weaponWidth - 10, 50);
     
     // 🚀 NEW: Show mouse control status for desktop players
-    if (isMouseControlEnabled && !isSpaceInvadersMobileDevice) {
+    if (isMouseControlEnabled && !isMobileDevice) {
       const mouseText = hasPlayerMovedMouse ? '🖱️ READY' : '🖱️ MOVE MOUSE';
       const mouseColor = hasPlayerMovedMouse ? '#4ade80' : '#ffaa00';
       ctx.fillStyle = mouseColor;
@@ -9241,7 +9029,7 @@ let reloadButtonInterval = null;
   // 🖱️ GLOBAL MOUSE TRACKING: Handle mouse movement for ship positioning (works everywhere!)
   function updateMouseMovement() {
     // 🚀 CRITICAL FIX: Disable mouse controls when mobile touch is active OR on mobile devices
-    if (!isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isSpaceInvadersMobileDevice) {
+    if (!isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isMobileDevice) {
       return;
     }
     
@@ -10716,28 +10504,22 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     // Wait a bit for all elements to be available
     setTimeout(() => {
-      // Only initialize on Space Invaders game page, not profile page
-      if (document.getElementById('space-invaders-canvas') && 
-          (window.location.pathname.includes('space-invaders') || 
-           window.location.pathname.includes('games-status-test'))) {
+      if (document.getElementById('space-invaders-canvas')) {
         console.log('🎮 Auto-initializing Space Invaders from DOMContentLoaded');
         initSpaceInvaders();
       } else {
-        console.log('ℹ️ Space Invaders canvas found but not on game page - skipping auto-initialization');
+        console.warn('⚠️ Canvas not found during auto-initialization');
       }
     }, 100);
   });
 } else {
   // DOM is already loaded
   setTimeout(() => {
-    // Only initialize on Space Invaders game page, not profile page
-    if (document.getElementById('space-invaders-canvas') && 
-        (window.location.pathname.includes('space-invaders') || 
-         window.location.pathname.includes('games-status-test'))) {
+    if (document.getElementById('space-invaders-canvas')) {
       console.log('🎮 Auto-initializing Space Invaders (DOM already loaded)');
       initSpaceInvaders();
     } else {
-      console.log('ℹ️ Space Invaders canvas found but not on game page - skipping auto-initialization');
+      console.warn('⚠️ Canvas not found during auto-initialization');
     }
   }, 100);
 }
@@ -10854,10 +10636,10 @@ window.testMobileControls = function() {
   
   // Check control conflicts
   console.log('🚨 CONTROL CONFLICT CHECK:');
-  console.log('   - isSpaceInvadersMobileDevice:', isSpaceInvadersMobileDevice);
+  console.log('   - isMobileDevice:', isMobileDevice);
   console.log('   - isMouseControlEnabled:', isMouseControlEnabled);
   console.log('   - isTouching:', isTouching);
-  console.log('   - Mouse controls disabled:', !isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isSpaceInvadersMobileDevice);
+  console.log('   - Mouse controls disabled:', !isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isMobileDevice);
   
   // Force enable mobile controls
   console.log('📱 Forcing mobile controls to enable...');
@@ -10868,7 +10650,7 @@ window.testMobileControls = function() {
 
 // 🚀 CRITICAL FIX: Disable mouse controls completely on mobile
 window.disableMouseControlsOnMobile = function() {
-  if (isSpaceInvadersMobileDevice) {
+  if (isMobileDevice) {
     console.log('🚨 DISABLING MOUSE CONTROLS ON MOBILE DEVICE');
     isMouseControlEnabled = false;
     console.log('✅ Mouse controls disabled for mobile');
@@ -11374,33 +11156,17 @@ window.emergencyCollisionCheck = function() {
     });
   }
 
-  // 🎮 Touch controls (canvas-specific to avoid conflicts with other games)
+  // 🎮 Touch controls (same as other games)
   function enableGlobalSpaceInvadersTouch() {
-    const canvas = document.getElementById('space-invaders-canvas');
-    if (canvas) {
-      // Store references to the actual functions for proper removal
-      canvas.spaceInvadersTouchStart = handleTouchStart;
-      canvas.spaceInvadersTouchMove = handleTouchMove;
-      canvas.spaceInvadersTouchEnd = handleTouchEnd;
-      
-      canvas.addEventListener('touchstart', canvas.spaceInvadersTouchStart, { passive: false });
-      canvas.addEventListener('touchmove', canvas.spaceInvadersTouchMove, { passive: false });
-      canvas.addEventListener('touchend', canvas.spaceInvadersTouchEnd, { passive: false });
-      console.log('📱 Space Invaders touch controls enabled on canvas only');
-    }
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: false });
   }
 
   function disableGlobalSpaceInvadersTouch() {
-    const canvas = document.getElementById('space-invaders-canvas');
-    if (canvas) {
-      // Use stored references to ensure we remove the correct listeners
-      if (canvas.spaceInvadersTouchStart) {
-        canvas.removeEventListener('touchstart', canvas.spaceInvadersTouchStart);
-        canvas.removeEventListener('touchmove', canvas.spaceInvadersTouchMove);
-        canvas.removeEventListener('touchend', canvas.spaceInvadersTouchEnd);
-        console.log('📱 Space Invaders touch controls disabled');
-      }
-    }
+    document.removeEventListener('touchstart', handleTouchStart);
+    document.removeEventListener('touchmove', handleTouchMove);
+    document.removeEventListener('touchend', handleTouchEnd);
   }
 
   function handleTouchStart(e) {
@@ -12402,20 +12168,8 @@ window.emergencyCollisionCheck = function() {
     
     console.log('✅ Mobile controls container ready, creating game panel...');
     
-    // Get the mobile controls container (either existing or newly created)
-    const mobileControls = document.getElementById('mobile-controls');
-    if (!mobileControls) {
-      console.error('❌ Mobile controls container still not found after creation attempt');
-      return;
-    }
-    
-    // Clear existing content safely
-    try {
-      mobileControls.innerHTML = '';
-    } catch (error) {
-      console.error('❌ Error clearing mobile controls:', error);
-      return;
-    }
+    // Clear existing content
+    mobileControls.innerHTML = '';
     
     // 🆘 NEW: Create floating game panel button (bottom right)
     const gamePanelBtn = document.createElement('button');

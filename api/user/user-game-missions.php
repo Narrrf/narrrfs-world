@@ -496,6 +496,96 @@ try {
                  ", Total score: " . $response['snake']['total_score']);
     }
 
+    // 🏆 SNAKE ACHIEVEMENTS - Add achievement data to Snake game stats
+    try {
+        $snakeAchievementStmt = $db->prepare("
+            SELECT 
+                COUNT(*) as total_achievements,
+                COUNT(CASE WHEN unlocked_at IS NOT NULL THEN 1 END) as unlocked_achievements
+            FROM tbl_snake_achievements 
+            WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'
+        ");
+        $snakeAchievementStmt->execute();
+        $snakeAchievementData = $snakeAchievementStmt->fetch(PDO::FETCH_ASSOC);
+        
+        $userSnakeAchievementStmt = $db->prepare("
+            SELECT COUNT(*) as unlocked_count
+            FROM tbl_snake_achievements 
+            WHERE user_id = ? AND unlocked_at IS NOT NULL
+        ");
+        $userSnakeAchievementStmt->execute([$discordId]);
+        $userSnakeAchievementData = $userSnakeAchievementStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($snakeAchievementData && $userSnakeAchievementData) {
+            $response['snake']['achievements'] = [
+                'total_available' => (int)$snakeAchievementData['total_achievements'],
+                'unlocked' => (int)$userSnakeAchievementData['unlocked_count'],
+                'completion_percentage' => $snakeAchievementData['total_achievements'] > 0 
+                    ? round(($userSnakeAchievementData['unlocked_count'] / $snakeAchievementData['total_achievements']) * 100, 1) 
+                    : 0
+            ];
+            error_log("✅ Snake achievements found for user $discordId: " . $userSnakeAchievementData['unlocked_count'] . "/" . $snakeAchievementData['total_achievements']);
+        } else {
+            $response['snake']['achievements'] = [
+                'total_available' => 0,
+                'unlocked' => 0,
+                'completion_percentage' => 0
+            ];
+            error_log("❌ No Snake achievements found for user $discordId");
+        }
+    } catch (Exception $e) {
+        error_log("Snake achievements query error: " . $e->getMessage());
+        $response['snake']['achievements'] = [
+            'total_available' => 0,
+            'unlocked' => 0,
+            'completion_percentage' => 0
+        ];
+    }
+
+    // 🏆 SPACE INVADERS ACHIEVEMENTS - Add achievement data to Space Invaders game stats
+    try {
+        // Space Invaders achievements don't have template definitions like Snake, so we count all unique achievement keys
+        $spaceAchievementStmt = $db->prepare("
+            SELECT COUNT(DISTINCT achievement_key) as total_achievements
+            FROM tbl_space_invaders_achievements
+        ");
+        $spaceAchievementStmt->execute();
+        $spaceAchievementData = $spaceAchievementStmt->fetch(PDO::FETCH_ASSOC);
+        
+        $userSpaceAchievementStmt = $db->prepare("
+            SELECT COUNT(*) as unlocked_count
+            FROM tbl_space_invaders_achievements 
+            WHERE user_id = ? AND unlocked_at IS NOT NULL
+        ");
+        $userSpaceAchievementStmt->execute([$discordId]);
+        $userSpaceAchievementData = $userSpaceAchievementStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($spaceAchievementData && $userSpaceAchievementData) {
+            $response['space_invaders']['achievements'] = [
+                'total_available' => (int)$spaceAchievementData['total_achievements'],
+                'unlocked' => (int)$userSpaceAchievementData['unlocked_count'],
+                'completion_percentage' => $spaceAchievementData['total_achievements'] > 0 
+                    ? round(($userSpaceAchievementData['unlocked_count'] / $spaceAchievementData['total_achievements']) * 100, 1) 
+                    : 0
+            ];
+            error_log("✅ Space Invaders achievements found for user $discordId: " . $userSpaceAchievementData['unlocked_count'] . "/" . $spaceAchievementData['total_achievements']);
+        } else {
+            $response['space_invaders']['achievements'] = [
+                'total_available' => 0,
+                'unlocked' => 0,
+                'completion_percentage' => 0
+            ];
+            error_log("❌ No Space Invaders achievements found for user $discordId");
+        }
+    } catch (Exception $e) {
+        error_log("Space Invaders achievements query error: " . $e->getMessage());
+        $response['space_invaders']['achievements'] = [
+            'total_available' => 0,
+            'unlocked' => 0,
+            'completion_percentage' => 0
+        ];
+    }
+
     // Return the response in the format expected by the frontend
     echo json_encode([
         'success' => true,
@@ -534,6 +624,11 @@ try {
                     'total_score' => $response['snake']['total_score'],
                     'dspoinc_earned' => $response['snake']['dspoinc_earned'],
                     'last_played' => $response['snake']['last_played']
+                ],
+                'achievements' => $response['snake']['achievements'] ?? [
+                    'total_available' => 0,
+                    'unlocked' => 0,
+                    'completion_percentage' => 0
                 ]
             ],
             'space_invaders' => [
@@ -547,6 +642,11 @@ try {
                     'total_score' => $response['space_invaders']['total_score'],
                     'dspoinc_earned' => $response['space_invaders']['dspoinc_earned'],
                     'last_played' => $response['space_invaders']['last_played']
+                ],
+                'achievements' => $response['space_invaders']['achievements'] ?? [
+                    'total_available' => 0,
+                    'unlocked' => 0,
+                    'completion_percentage' => 0
                 ]
             ],
             'cheese_hunt' => [

@@ -355,6 +355,13 @@ function initSnake() {
       applesEaten++;
       longestSnake = Math.max(longestSnake, snake.length + 1);
       
+      // 🏆 Update level based on apples eaten (like Tetris levels)
+      const newLevel = Math.floor(applesEaten / 5) + 1; // Level up every 5 apples
+      if (newLevel > currentLevel) {
+        currentLevel = newLevel;
+        console.log(`🏆 Level up! Now at level ${currentLevel}`);
+      }
+      
       // 🎵 Check for score milestones (every 10 points)
       if (score % 10 === 0) {
         snakeSounds.playSound('scoreMilestone');
@@ -367,7 +374,7 @@ function initSnake() {
       
       // 🏆 Check achievements immediately when eating apple
       // This gives players instant feedback when they unlock achievements
-      console.log('🍎 Apple eaten! Checking achievements...', { applesEaten, score, longestSnake });
+      console.log('🍎 Apple eaten! Checking achievements...', { applesEaten, score, longestSnake, currentLevel });
       checkSnakeAchievements();
     } else {
       snake.pop(); // ✅ Don't grow if no cheese
