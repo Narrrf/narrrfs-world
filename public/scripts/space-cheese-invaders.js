@@ -72,9 +72,9 @@ const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost/
 console.log('🌍 Space Invaders Environment detected:', isProduction ? 'Production' : 'Local');
 console.log('🔗 Space Invaders API Base URL:', API_BASE_URL);
 
-// 📱 Mobile Detection for Control Priority
-const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-console.log('📱 Device type detected:', isMobileDevice ? 'Mobile' : 'Desktop');
+// 📱 Mobile Detection for Control Priority - Space Invaders specific naming
+const isSpaceInvadersMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+console.log('📱 Device type detected:', isSpaceInvadersMobileDevice ? 'Mobile' : 'Desktop');
 
 // 🚫 Full page scroll prevention (same as other games)
 window.addEventListener("touchmove", function(e) {
@@ -120,7 +120,7 @@ let holdShootDelay = 150; // 150ms between shots for rapid fire
 
 // 🎮 GAME SPEED CONTROL - MOBILE FRIENDLY ADJUSTMENT
 let gameSpeedMultiplier = 0.9; // 10% slower for mobile players (0.9 = 90% speed)
-// Note: isMobileDevice is already declared above at line 76
+// Note: isSpaceInvadersMobileDevice is already declared above at line 76
 
 // 🎮 SPEED CONTROL FUNCTIONS
 function getGameSpeed() {
@@ -133,7 +133,7 @@ function setGameSpeed(multiplier) {
 }
 
 function toggleMobileSpeed() {
-  if (isMobileDevice) {
+  if (isSpaceInvadersMobileDevice) {
     gameSpeedMultiplier = gameSpeedMultiplier === 0.9 ? 1.0 : 0.9;
     console.log(`📱 Mobile speed ${gameSpeedMultiplier === 0.9 ? 'SLOWED' : 'NORMAL'}: ${Math.round(gameSpeedMultiplier * 100)}%`);
   }
@@ -1170,18 +1170,18 @@ class CheeseSoundManager {
       return;
     }
     
-    console.log(`🎵 Playing weapon sound: ${weaponType}`);
+    // Reduced logging to prevent console spam during rapid fire
     
-    // Try to play file-based audio first
+    // Try to play file-based audio first (silent fail for missing files)
     try {
       const audio = new Audio(`sounds/invaders/weapons/${weaponType}.wav`);
       audio.volume = this.masterVolume * 0.8;
       audio.play().catch(e => {
-        console.log('File audio failed, trying programmatic audio:', e);
+        // Silent fallback to programmatic audio
         this.playProgrammaticWeaponSound(weaponType);
       });
     } catch (error) {
-      console.log('File audio failed, trying programmatic audio:', error);
+      // Silent fallback to programmatic audio
       this.playProgrammaticWeaponSound(weaponType);
     }
   }
@@ -1225,7 +1225,7 @@ class CheeseSoundManager {
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.1);
       
-      console.log(`🎵 Generated programmatic sound for: ${weaponType}`);
+      // Silent programmatic sound generation (reduces console spam)
     } catch (error) {
       console.log('Programmatic sound generation failed:', error);
     }
@@ -1369,16 +1369,16 @@ class CheeseSoundManager {
     
     console.log('🎵 Playing boss defeat voice: LEVEL UP!');
     
-    // Try to play file-based audio first
+    // Try to play file-based audio first (silent fail for missing files)
     try {
       const audio = new Audio('sounds/invaders/voice/LEVEL UP!.wav');
       audio.volume = this.masterVolume * 0.9;
       audio.play().catch(e => {
-        console.log('File audio failed, trying programmatic voice:', e);
+        // Silent fallback to programmatic voice
         this.playProgrammaticBossDefeatVoice();
       });
     } catch (error) {
-      console.log('File audio failed, trying programmatic voice:', error);
+      // Silent fallback to programmatic voice
       this.playProgrammaticBossDefeatVoice();
     }
   }
@@ -4324,7 +4324,7 @@ let reloadButtonInterval = null;
     setupHeatSystemDebug();
     
     // 🚀 CRITICAL FIX: Automatically disable mouse controls on mobile devices
-    if (isMobileDevice) {
+    if (isSpaceInvadersMobileDevice) {
       console.log('📱 Mobile device detected - disabling mouse controls for touch priority');
       isMouseControlEnabled = false;
     }
@@ -8556,7 +8556,7 @@ let reloadButtonInterval = null;
     ctx.fillText(weaponText, canvasWidth - weaponWidth - 10, 50);
     
     // 🚀 NEW: Show mouse control status for desktop players
-    if (isMouseControlEnabled && !isMobileDevice) {
+    if (isMouseControlEnabled && !isSpaceInvadersMobileDevice) {
       const mouseText = hasPlayerMovedMouse ? '🖱️ READY' : '🖱️ MOVE MOUSE';
       const mouseColor = hasPlayerMovedMouse ? '#4ade80' : '#ffaa00';
       ctx.fillStyle = mouseColor;
@@ -9241,7 +9241,7 @@ let reloadButtonInterval = null;
   // 🖱️ GLOBAL MOUSE TRACKING: Handle mouse movement for ship positioning (works everywhere!)
   function updateMouseMovement() {
     // 🚀 CRITICAL FIX: Disable mouse controls when mobile touch is active OR on mobile devices
-    if (!isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isMobileDevice) {
+    if (!isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isSpaceInvadersMobileDevice) {
       return;
     }
     
@@ -10716,22 +10716,28 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     // Wait a bit for all elements to be available
     setTimeout(() => {
-      if (document.getElementById('space-invaders-canvas')) {
+      // Only initialize on Space Invaders game page, not profile page
+      if (document.getElementById('space-invaders-canvas') && 
+          (window.location.pathname.includes('space-invaders') || 
+           window.location.pathname.includes('games-status-test'))) {
         console.log('🎮 Auto-initializing Space Invaders from DOMContentLoaded');
         initSpaceInvaders();
       } else {
-        console.warn('⚠️ Canvas not found during auto-initialization');
+        console.log('ℹ️ Space Invaders canvas found but not on game page - skipping auto-initialization');
       }
     }, 100);
   });
 } else {
   // DOM is already loaded
   setTimeout(() => {
-    if (document.getElementById('space-invaders-canvas')) {
+    // Only initialize on Space Invaders game page, not profile page
+    if (document.getElementById('space-invaders-canvas') && 
+        (window.location.pathname.includes('space-invaders') || 
+         window.location.pathname.includes('games-status-test'))) {
       console.log('🎮 Auto-initializing Space Invaders (DOM already loaded)');
       initSpaceInvaders();
     } else {
-      console.warn('⚠️ Canvas not found during auto-initialization');
+      console.log('ℹ️ Space Invaders canvas found but not on game page - skipping auto-initialization');
     }
   }, 100);
 }
@@ -10848,10 +10854,10 @@ window.testMobileControls = function() {
   
   // Check control conflicts
   console.log('🚨 CONTROL CONFLICT CHECK:');
-  console.log('   - isMobileDevice:', isMobileDevice);
+  console.log('   - isSpaceInvadersMobileDevice:', isSpaceInvadersMobileDevice);
   console.log('   - isMouseControlEnabled:', isMouseControlEnabled);
   console.log('   - isTouching:', isTouching);
-  console.log('   - Mouse controls disabled:', !isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isMobileDevice);
+  console.log('   - Mouse controls disabled:', !isMouseControlEnabled || isSpaceInvadersPaused || isTouching || isSpaceInvadersMobileDevice);
   
   // Force enable mobile controls
   console.log('📱 Forcing mobile controls to enable...');
@@ -10862,7 +10868,7 @@ window.testMobileControls = function() {
 
 // 🚀 CRITICAL FIX: Disable mouse controls completely on mobile
 window.disableMouseControlsOnMobile = function() {
-  if (isMobileDevice) {
+  if (isSpaceInvadersMobileDevice) {
     console.log('🚨 DISABLING MOUSE CONTROLS ON MOBILE DEVICE');
     isMouseControlEnabled = false;
     console.log('✅ Mouse controls disabled for mobile');
@@ -11368,17 +11374,33 @@ window.emergencyCollisionCheck = function() {
     });
   }
 
-  // 🎮 Touch controls (same as other games)
+  // 🎮 Touch controls (canvas-specific to avoid conflicts with other games)
   function enableGlobalSpaceInvadersTouch() {
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd, { passive: false });
+    const canvas = document.getElementById('space-invaders-canvas');
+    if (canvas) {
+      // Store references to the actual functions for proper removal
+      canvas.spaceInvadersTouchStart = handleTouchStart;
+      canvas.spaceInvadersTouchMove = handleTouchMove;
+      canvas.spaceInvadersTouchEnd = handleTouchEnd;
+      
+      canvas.addEventListener('touchstart', canvas.spaceInvadersTouchStart, { passive: false });
+      canvas.addEventListener('touchmove', canvas.spaceInvadersTouchMove, { passive: false });
+      canvas.addEventListener('touchend', canvas.spaceInvadersTouchEnd, { passive: false });
+      console.log('📱 Space Invaders touch controls enabled on canvas only');
+    }
   }
 
   function disableGlobalSpaceInvadersTouch() {
-    document.removeEventListener('touchstart', handleTouchStart);
-    document.removeEventListener('touchmove', handleTouchMove);
-    document.removeEventListener('touchend', handleTouchEnd);
+    const canvas = document.getElementById('space-invaders-canvas');
+    if (canvas) {
+      // Use stored references to ensure we remove the correct listeners
+      if (canvas.spaceInvadersTouchStart) {
+        canvas.removeEventListener('touchstart', canvas.spaceInvadersTouchStart);
+        canvas.removeEventListener('touchmove', canvas.spaceInvadersTouchMove);
+        canvas.removeEventListener('touchend', canvas.spaceInvadersTouchEnd);
+        console.log('📱 Space Invaders touch controls disabled');
+      }
+    }
   }
 
   function handleTouchStart(e) {
@@ -12380,8 +12402,20 @@ window.emergencyCollisionCheck = function() {
     
     console.log('✅ Mobile controls container ready, creating game panel...');
     
-    // Clear existing content
-    mobileControls.innerHTML = '';
+    // Get the mobile controls container (either existing or newly created)
+    const mobileControls = document.getElementById('mobile-controls');
+    if (!mobileControls) {
+      console.error('❌ Mobile controls container still not found after creation attempt');
+      return;
+    }
+    
+    // Clear existing content safely
+    try {
+      mobileControls.innerHTML = '';
+    } catch (error) {
+      console.error('❌ Error clearing mobile controls:', error);
+      return;
+    }
     
     // 🆘 NEW: Create floating game panel button (bottom right)
     const gamePanelBtn = document.createElement('button');

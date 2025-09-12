@@ -33,6 +33,77 @@ require_once 'discord-invite.php';
       --border-color: #374151;
     }
     
+    /* 📱 Mobile Header Optimization */
+    @media (max-width: 768px) {
+      .mobile-header {
+        padding: 8px 12px !important;
+        min-height: 40px !important;
+      }
+      
+      .mobile-header h1 {
+        font-size: 14px !important;
+        line-height: 1.2 !important;
+        margin: 0 !important;
+      }
+      
+      .mobile-header .season-info {
+        font-size: 10px !important;
+        margin-top: 2px !important;
+        line-height: 1.1 !important;
+      }
+      
+      /* Hide navigation on mobile for games */
+      .mobile-hide-nav {
+        display: none !important;
+      }
+      
+      /* Compact game area */
+      .mobile-game-container {
+        margin-top: 0 !important;
+        padding-top: 8px !important;
+      }
+    }
+    
+    /* 📱 Very small screens - hide header completely */
+    @media (max-width: 480px) {
+      .mobile-header {
+        display: none !important;
+      }
+      
+      .mobile-game-container {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+      }
+    }
+    
+    /* 📱 Mobile Button Fixes */
+    .touch-manipulation {
+      touch-action: manipulation !important;
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+    }
+    
+    /* 📱 Game Over Modal Mobile Optimization */
+    @media (max-width: 768px) {
+      #snake-over-modal {
+        padding: 10px !important;
+      }
+      
+      #snake-over-modal .bg-yellow-100 {
+        padding: 20px 15px !important;
+        max-width: 90% !important;
+      }
+      
+      #snake-play-again-btn {
+        padding: 15px 25px !important;
+        font-size: 16px !important;
+        min-height: 50px !important;
+        touch-action: manipulation !important;
+      }
+    }
+    
     body {
       background: linear-gradient(135deg, var(--dark-bg) 0%, #1e1b4b 50%, #312e81 100%);
       color: #ffffff;
@@ -165,16 +236,16 @@ require_once 'discord-invite.php';
   </div>
 
 <!-- 🔰 Header with App Context -->
-<header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
+<header class="mobile-header bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <div>
       <h1 class="text-xl font-bold tracking-wide text-yellow-400">🧠 Narrrf's Lab – Phase 5 Portal</h1>
       <!-- 🚀 SEASON 3 TEST PHASE MESSAGE -->
-      <div class="text-xs text-green-400 animate-pulse mt-1">
+      <div class="season-info text-xs text-green-400 animate-pulse mt-1">
         🚀 Season 3 Test Phase Active (Paused for Bingo Night) • 99.5% Ready
       </div>
     </div>
-    <nav class="space-x-4 text-sm md:text-base flex items-center">
+    <nav class="mobile-hide-nav space-x-4 text-sm md:text-base flex items-center">
       <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
       <a href="mint.html" class="hover:text-yellow-400 transition-colors">Mint</a>
       <a href="whitepaper.html" class="hover:text-yellow-400 transition-colors">Whitepaper</a>
@@ -224,7 +295,7 @@ require_once 'discord-invite.php';
 
 
 <!-- 👤 User Profile Card -->
-<main class="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+<main class="mobile-game-container container mx-auto px-4 py-8 max-w-6xl relative z-10">
   <div class="finance-card rounded-2xl shadow-2xl p-8 w-full text-center border-2 border-purple-500/50 ring-4 ring-purple-500/20">
 
     <!-- 👋 Welcome Message -->
@@ -1286,7 +1357,7 @@ require_once 'discord-invite.php';
       <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
         <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
         <p id="snake-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-        <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+        <button id="snake-play-again-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg touch-manipulation">🔁 Play Again</button>
       </div>
     </div>
   </section>
@@ -1326,14 +1397,6 @@ require_once 'discord-invite.php';
 </section>
 
 <!-- 🧠 MODALS GAMEOVER-->
-<div id="snake-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
-  <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
-    <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
-    <p id="snake-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
-  </div>
-</div>
-
 <div id="game-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
   <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
     <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
@@ -1789,16 +1852,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 <!-- 🧠 Load Scroll Scripts -->
 <script src="scripts/tetris-scroll.js?v=9.9"></script>
 <script src="scripts/snake-scroll.js?v=1.1"></script>
-        <script src="scripts/space-cheese-invaders.js?v=1.1" onerror="console.error('❌ Failed to load space-cheese-invaders.js')" onload="console.log('✅ space-cheese-invaders.js loaded successfully')"></script>
+<!-- Space Invaders script removed from profile page - it has its own dedicated page -->
 <script>
-          // Check if initSpaceInvaders is available immediately after script loads
-          console.log('🔍 Checking initSpaceInvaders availability after script load...');
-          console.log('🔍 window.initSpaceInvaders type:', typeof window.initSpaceInvaders);
-          if (typeof window.initSpaceInvaders === 'function') {
-            console.log('✅ initSpaceInvaders is available after script load');
-          } else {
-        console.error('❌ initSpaceInvaders is NOT available after script load');
-  }
+  console.log('✅ Profile page scripts loaded - Tetris and Snake only');
 </script>
 
 <!-- 🏆 Leaderboard Logic -->
@@ -3842,6 +3898,7 @@ function displaySnakeAchievementsError(errorMessage) {
                        onclick="window.location.href='<?php echo $discord_url; ?>'"
        style="cursor: pointer;" />
 </div>
+
 </body>
 </html>
 

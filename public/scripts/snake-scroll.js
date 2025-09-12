@@ -80,12 +80,12 @@ const snakeSounds = new SnakeSoundManager();
 let gameInterval; // ✅ Global scope
 window.brainUnlocked = false; // ✅ Mutation flag, resets on game start
 
-// 🧬 Load images (global scope)
-const snakeHeadImg = new Image();
-snakeHeadImg.src = "img/snake/snake-head.png";
+// 🧬 Load images (global scope) - Snake-specific naming to avoid conflicts
+const snakeGameHeadImg = new Image();
+snakeGameHeadImg.src = "img/snake/snake-head.png";
 
-const snakeDnaImg = new Image();
-snakeDnaImg.src = "img/snake/snake-dna.png";
+const snakeGameDnaImg = new Image();
+snakeGameDnaImg.src = "img/snake/snake-dna.png";
 
 const cheeseImg = new Image();
 cheeseImg.src = "img/snake/cheese.png";
@@ -276,7 +276,7 @@ function initSnake() {
     // 🧬 Render Snake
     snake.forEach((segment, index) => {
       const isHead = index === 0;
-      const img = isHead ? snakeHeadImg : snakeDnaImg;
+      const img = isHead ? snakeGameHeadImg : snakeGameDnaImg;
       const next = snake[index + 1] || snake[index - 1] || segment;
       const dir = getDirection(segment, next);
 
@@ -407,6 +407,36 @@ function initSnake() {
 
       modal.classList.remove("hidden");
       modal.style.display = "flex"; // fallback for older browsers
+      
+      // 📱 MOBILE FIX: Add proper touch event handling for Play Again button
+      const playAgainBtn = document.getElementById("snake-play-again-btn");
+      if (playAgainBtn) {
+        // Remove any existing event listeners
+        playAgainBtn.replaceWith(playAgainBtn.cloneNode(true));
+        const newPlayAgainBtn = document.getElementById("snake-play-again-btn");
+        
+        // Add mobile-friendly event handlers
+        newPlayAgainBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🐍 Play Again button clicked - restarting Snake game');
+          window.location.reload();
+        });
+        
+        // Add touch event for mobile
+        newPlayAgainBtn.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🐍 Play Again button touched - restarting Snake game');
+          window.location.reload();
+        });
+        
+        // Ensure button is clickable on mobile
+        newPlayAgainBtn.style.touchAction = 'manipulation';
+        newPlayAgainBtn.style.webkitTapHighlightColor = 'transparent';
+        
+        console.log('🐍 Mobile Play Again button setup complete');
+      }
     }
 
     if (pauseBtn) {
@@ -416,8 +446,8 @@ function initSnake() {
     // 🐍 Save the captured final score
     saveScore(finalScore);
   }
-
-  // 🏆 Snake Achievement Functions
+  
+  // 🏆 Snake Achievement Functions - Make globally accessible
   function checkSnakeAchievements() {
     console.log('🏆 Checking Snake achievements...', { applesEaten, score, longestSnake, currentLevel });
     
@@ -469,6 +499,9 @@ function initSnake() {
     });
   }
   
+  // 🏆 Make Snake achievements globally accessible
+  window.checkSnakeAchievements = checkSnakeAchievements;
+  
   function checkAndUnlockAchievement(achievementKey) {
     console.log('🔍 checkAndUnlockAchievement called for:', achievementKey);
     
@@ -508,10 +541,31 @@ function initSnake() {
     })
     .catch(error => {
       console.error('❌ API call failed:', error);
-      // 🚨 CRITICAL FIX: Don't show popup if we can't check status
-      // This prevents showing popups for already unlocked achievements
-      console.log(`⚠️ Cannot verify achievement ${achievementKey} status - skipping popup to prevent duplicates`);
-      return;
+      // 🚨 FIX: Show popup anyway if API fails - better to show duplicate than miss achievement
+      console.log(`⚠️ API failed for ${achievementKey} - showing popup anyway to ensure user sees achievement`);
+      
+      // Show notification even if we can't verify status
+      const achievementTitles = {
+        'first_apple': 'First Apple!',
+        'apple_collector': 'Apple Collector!',
+        'snake_grower': 'Snake Grower!',
+        'long_snake': 'Long Snake!',
+        'speed_demon': 'Speed Demon!'
+      };
+      
+      const achievementDescriptions = {
+        'first_apple': 'You ate your first apple!',
+        'apple_collector': 'You collected 5 apples!',
+        'snake_grower': 'Your snake grew to 10 segments!',
+        'long_snake': 'Your snake reached 20 segments!',
+        'speed_demon': 'You reached level 3!'
+      };
+      
+      const title = achievementTitles[achievementKey] || 'Achievement Unlocked!';
+      const description = achievementDescriptions[achievementKey] || 'Great job!';
+      
+      showAchievementNotification(achievementKey, title, description, '🏆');
+      unlockSnakeAchievement(achievementKey);
     });
   }
   

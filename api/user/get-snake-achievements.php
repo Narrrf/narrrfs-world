@@ -1,4 +1,6 @@
 <?php
+// 🐍 Snake Achievement API - Season 3 Compatible
+
 // Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -18,12 +20,16 @@ function getSQLite3Connection() {
         ? '../../db/narrrf_world.sqlite' 
         : '/var/www/html/db/narrrf_world.sqlite';
     
+    if (!file_exists($dbPath)) {
+        return null;
+    }
+    
     try {
-        $pdo = new PDO("sqlite:$dbPath");
+        $pdo = new PDO('sqlite:' . $dbPath);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         return $pdo;
     } catch (PDOException $e) {
-        error_log("Database connection failed: " . $e->getMessage());
+        error_log("Database connection error: " . $e->getMessage());
         return null;
     }
 }
@@ -170,3 +176,4 @@ try {
         'message' => $e->getMessage()
     ]);
 }
+?>
