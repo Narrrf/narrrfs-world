@@ -134,11 +134,15 @@ try {
     $pointsPerUnit = 0;
     $unit = '';
     if ($game === 'tetris') {
-        $pointsPerUnit = $seasonSettings['points_per_line'] ?? 10;
+        // 🔧 FIX: Tetris frontend already calculates DSPOINC (lines * 2)
+        // Don't multiply again - use score as-is
+        $pointsPerUnit = 1; // No multiplication needed
         $unit = 'lines';
+        $dspoinc_score = $raw_score; // Use score directly (already DSPOINC)
     } elseif ($game === 'snake') {
-        $pointsPerUnit = $seasonSettings['points_per_cheese'] ?? 10;
+        $pointsPerUnit = $seasonSettings['points_per_cheese'] ?? 1;
         $unit = 'cheese';
+        $dspoinc_score = $raw_score * $pointsPerUnit;
     } elseif ($game === 'space_invaders') {
         // 🔍 DEBUG: Log the scoring calculation
         error_log("🔍 DEBUG Space Invaders - pointsPerUnit: " . $pointsPerUnit);
@@ -155,12 +159,12 @@ try {
             throw new Exception("Space Invaders scoring configuration missing from database");
         }
         $unit = 'invaders';
+        $dspoinc_score = $raw_score * $pointsPerUnit;
     } else {
         $pointsPerUnit = 10; // Default fallback
         $unit = 'units';
+        $dspoinc_score = $raw_score * $pointsPerUnit;
     }
-
-    $dspoinc_score = $raw_score * $pointsPerUnit; // Use season settings for scoring
 
     // 🛡️ Check maximum score limit (cheat prevention)
     $max_score = 0;
@@ -251,7 +255,7 @@ try {
         
         // Generate appropriate reason message based on game type
         if ($game === 'tetris') {
-            $reason = "$game game score: $raw_score lines = $dspoinc_score DSPOINC";
+            $reason = "$game game score: $dspoinc_score DSPOINC (frontend calculated)";
         } elseif ($game === 'snake') {
             $reason = "$game game score: $raw_score cheese = $dspoinc_score DSPOINC";
         } elseif ($game === 'space_invaders') {
@@ -277,7 +281,7 @@ try {
 
     // Generate appropriate message based on game type
     if ($game === 'tetris') {
-        $message = "Score saved for $game: $raw_score lines = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
+        $message = "Score saved for $game: " . round($dspoinc_score) . " DSPOINC (frontend calculated)";
     } elseif ($game === 'snake') {
         $message = "Score saved for $game: $raw_score cheese = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
     } elseif ($game === 'space_invaders') {

@@ -242,7 +242,7 @@ require_once 'discord-invite.php';
       <h1 class="text-xl font-bold tracking-wide text-yellow-400">🧠 Narrrf's Lab – Phase 5 Portal</h1>
       <!-- 🚀 SEASON 3 TEST PHASE MESSAGE -->
       <div class="season-info text-xs text-green-400 animate-pulse mt-1">
-        🚀 Season 3 Test Phase Active (Paused for Bingo Night) • 99.5% Ready
+        🚀 Season 3 Test Phase Active • 99.7% Complete • Final Testing Phase
       </div>
     </div>
     <nav class="mobile-hide-nav space-x-4 text-sm md:text-base flex items-center">
@@ -285,13 +285,6 @@ require_once 'discord-invite.php';
 <div class="h-4 md:h-6"></div>
 
 
-<!-- 🔔 PROFESSIONAL BINGO CHECKER BANNER -->
-<div id="bingoBanner" class="hidden mt-6 relative p-5 mb-6 rounded-lg shadow-2xl bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white text-center overflow-hidden border-4 border-yellow-300 ring-4 ring-yellow-200/50">
-  <div class="absolute inset-0 opacity-25 bg-[url('/img/cheese-texture.png')] bg-cover bg-center pointer-events-none"></div>
-  <a href="/Bingo.html" class="relative z-10 text-2xl sm:text-3xl font-extrabold tracking-wide drop-shadow hover:underline">
-    🎯 Try the New <span class="underline decoration-wavy decoration-white">Professional Bingo Checker</span> Now!
-  </a>
-</div>
 
 
 <!-- 👤 User Profile Card -->
@@ -1653,7 +1646,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         setText('wallet-address', 'Wallet not linked');
         hideElement('goldenCheeseGate');
         hideElement('noCheeseJoke');
-		hideElement('bingoBanner');
         hideElement('dspoincSection');
 
         // Make sure login link is visible and clickable
@@ -1754,11 +1746,6 @@ document.addEventListener("DOMContentLoaded", async function () {
        showElement('noCheeseJoke');
      }
  	
-     // ✅ Show Bingo banner if user is logged in
-     if (user.discord_id) {
-       showElement('bingoBanner');
-     }
-
      // ✅ Show DSPOINC section if user is logged in
      if (user.discord_id) {
        showElement('dspoincSection');
