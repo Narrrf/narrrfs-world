@@ -7082,13 +7082,15 @@ let reloadButtonInterval = null;
         if (data.success && data.achievements) {
           // Mark existing achievements as already unlocked
           data.achievements.forEach(achievement => {
-            console.log('🏆 Processing achievement:', achievement.key, 'unlocked_at:', achievement.unlocked_at);
-            if (achievement.unlocked_at) {
+            console.log('🏆 Processing achievement:', achievement.key, 'unlocked_at:', achievement.unlocked_at, 'unlocked:', achievement.unlocked);
+            // Check both unlocked_at and unlocked fields for safety
+            if (achievement.unlocked_at || achievement.unlocked) {
               achievements[achievement.key] = true;
               console.log('🏆 Marked as unlocked:', achievement.key);
             }
           });
           console.log('🏆 Loaded existing achievements:', Object.keys(achievements).filter(key => achievements[key]));
+          console.log('🏆 Full achievements object:', achievements);
         }
       }
     } catch (error) {
@@ -8546,6 +8548,12 @@ let reloadButtonInterval = null;
 
   function playerShoot() {
     if (isSpaceInvadersPaused) return;
+    
+    // 🚫 NEW: Prevent shooting during countdown or before game starts
+    if (!spaceInvadersGameInterval) {
+      console.log('🚫 Cannot shoot - game not started yet (countdown or not started)');
+      return;
+    }
     
     // 🔥 CRITICAL FIX: Check for overheating FIRST - before any shooting logic
     if (isOverheated) {
