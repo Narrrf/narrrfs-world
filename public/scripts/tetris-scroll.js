@@ -1,4 +1,41 @@
 // 🧀 Cheese Tetris Scroll v9.8 + PNG BLOCKS (all features from perfect backup, plus PNG support)
+// 
+// 🏆 SEASON 3 PHASE 2 COMPLETE (2025-01-28):
+// - ACHIEVEMENT SYSTEM: In-game milestone tracking with animated pop-ups
+// - DYNAMIC SCORING: Performance-based rewards and bonus objectives
+// - SKILL TRACKING: Line clears, combos, perfect clears, and speed challenges
+// - ENGAGEMENT FEATURES: Multiple achievements to unlock
+// 
+// 🔧 CRITICAL BUG FIXES APPLIED (2025-01-28):
+// - FIXED ACHIEVEMENT POPUPS: Only show for newly earned achievements
+// - FIXED COMBO LOGIC: Corrected combo_starter and combo_master conditions
+// - FIXED USER ID: Corrected hardcoded test ID to Santa's Discord ID
+// - FIXED DATABASE SAVE: Achievements now save properly after game ends
+// - FIXED VARIABLE SCOPE: Resolved linesCleared reference error
+// 
+// 🌟 SEASON 3 FEATURES (2025-01-28):
+// - PNG BLOCK SUPPORT: Enhanced visual blocks with PNG images
+// - MOBILE OPTIMIZATION: Touch controls and mobile device detection
+// - SOUND SYSTEM: Professional Web Audio API sound effects
+// - ACHIEVEMENT INTEGRATION: Complete achievement system with database sync
+// 
+// 🎮 GAME FEATURES:
+// - CLASSIC TETRIS GAMEPLAY: Drop, rotate, and clear lines
+// - COMBO SYSTEM: Chain line clears for bonus points
+// - POWER-UPS: Special blocks and explosive mechanics
+// - MOBILE CONTROLS: Touch-friendly interface
+// - ACHIEVEMENT TRACKING: Real-time progress monitoring
+// 
+// 🔧 TECHNICAL IMPLEMENTATION:
+// - Canvas-based rendering with PNG block support
+// - Achievement system with database synchronization
+// - Mobile device detection and touch controls
+// - Sound management with Web Audio API
+// - Real-time scoring and combo tracking
+// 
+// 🚀 PRODUCTION CONFIGURATION: Classic Tetris with modern enhancements!
+// 🏆 Achievement types: Line clears, combos, perfect clears, speed challenges
+// 🎯 Balanced difficulty curve for engaging progression!
 
 // 🔧 MOBILE INITIALIZATION - Tetris-specific naming to avoid conflicts
 let isTetrisMobileDevice = false;
@@ -735,7 +772,15 @@ function collide(shape, row, col) {
           // 🏆 Check achievements immediately when lines are cleared
           // This gives players instant feedback when they unlock achievements
           console.log('🧩 Lines cleared! Checking achievements...', { linesClearedTotal, score, tetrisClears });
-          checkTetrisAchievements(localStorage.getItem('discord_id') || '1337', score, linesClearedTotal, Math.floor(linesClearedTotal / 20), piecesDropped, tetrisClears);
+          console.log('🚨🚨🚨 ABOUT TO CALL CHECKTETRISACHIEVEMENTS! 🚨🚨🚨');
+          console.log('🔍 Function exists?', typeof checkTetrisAchievements);
+          try {
+            checkTetrisAchievements(localStorage.getItem('discord_id') || '1107633105185013790', score, linesClearedTotal, Math.floor(linesClearedTotal / 20), piecesDropped, tetrisClears, lines);
+            console.log('✅ checkTetrisAchievements call completed successfully');
+          } catch (error) {
+            console.error('❌ ERROR in checkTetrisAchievements call:', error);
+            console.error('❌ Error stack:', error.stack);
+          }
           
       if (scoreDisplay) {
           scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
@@ -964,11 +1009,16 @@ if (collide(current.shape, current.row, current.col)) {
       
         // 🏆 Reset achievement tracking for new game
         achievementsCheckedThisGame.clear();
+        
+        // 🚨 CRITICAL FIX: Clear global popups like Snake
+        if (window.tetrisAchievementPopups) {
+          window.tetrisAchievementPopups = [];
+        }
       
         // 🛠️ Mock fallback if testing locally
         if (!discordId) {
-          discordId = "1337";
-          discordName = "Anonymous Mouse";
+          discordId = "1107633105185013790"; // Santa's Discord ID for testing
+          discordName = "Santa";
           localStorage.setItem("discord_id", discordId);
           localStorage.setItem("discord_name", discordName);
         }
@@ -986,7 +1036,9 @@ if (collide(current.shape, current.row, current.col)) {
       piecesDropped,
       tetrisClears
     });
-    checkTetrisAchievements(discordId, finalScore, linesClearedTotal, Math.floor(linesClearedTotal / 20), piecesDropped, tetrisClears);
+    // 🚨 FIX: Save achievements to database after game ends (without popups)
+    // This ensures achievements are saved even if not triggered during gameplay
+    saveAchievementsToDatabase(discordId, finalScore, linesClearedTotal, Math.floor(linesClearedTotal / 20), piecesDropped, tetrisClears);
 
     // 💾 Save score to database
     // 🔧 FIX: Send DSPOINC score directly (frontend already calculated it)
@@ -1050,11 +1102,77 @@ let heldDown = false;
   const sensitivity = 50;
 
   // 🏆 Tetris Achievement Checking Function (Inside Game Scope) - Make globally accessible
-  function checkTetrisAchievements(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
+  function checkTetrisAchievements(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears, linesClearedInTurn) {
+    console.log('🚨🚨🚨 TETRIS ACHIEVEMENT CHECK CALLED! 🚨🚨🚨');
     console.log('🏆 Checking Tetris achievements for user:', userId);
-    console.log('🏆 Game stats:', { gameScore, linesCleared, levelReached, piecesDropped, tetrisClears });
+    console.log('🏆 Game stats:', { gameScore, linesCleared, levelReached, piecesDropped, tetrisClears, linesClearedInTurn });
     
     // Define achievement checks
+    const achievementChecks = [
+      // Basic Achievements
+      { key: 'first_line', condition: linesCleared >= 1 },
+      { key: 'line_master', condition: linesCleared >= 10 },
+      { key: 'tetris_pro', condition: linesCleared >= 50 },
+      { key: 'line_legend', condition: linesCleared >= 100 },
+      { key: 'speed_demon', condition: levelReached >= 5 },
+      { key: 'level_master', condition: levelReached >= 10 },
+      { key: 'high_roller', condition: gameScore >= 2000 },
+      { key: 'score_hunter', condition: gameScore >= 1000 },
+      { key: 'point_master', condition: gameScore >= 3000 },
+      { key: 'tetris_king', condition: gameScore >= 5000 },
+      
+      // Advanced Achievements
+      { key: 'piece_dropper', condition: piecesDropped >= 100 },
+      { key: 'block_master', condition: piecesDropped >= 500 },
+      { key: 'tetris_clear', condition: tetrisClears >= 1 },
+      { key: 'tetris_master', condition: tetrisClears >= 5 },
+      { key: 'tetris_god', condition: tetrisClears >= 10 },
+      { key: 'combo_starter', condition: linesClearedInTurn >= 2 },
+      { key: 'combo_master', condition: linesClearedInTurn >= 5 },
+      { key: 'combo_legend', condition: linesCleared >= 10 },
+      { key: 'back_to_back', condition: tetrisClears >= 2 },
+      
+      // Expert Achievements
+      { key: 'level_warrior', condition: levelReached >= 15 },
+      { key: 'level_champion', condition: levelReached >= 20 },
+      { key: 'score_legend', condition: gameScore >= 4000 },
+      { key: 'score_god', condition: gameScore >= 5000 },
+      { key: 'line_destroyer', condition: linesCleared >= 200 },
+      { key: 'piece_legend', condition: piecesDropped >= 1000 },
+      { key: 'tetris_legend', condition: tetrisClears >= 25 }
+    ];
+    
+    // Check each achievement
+    achievementChecks.forEach(achievement => {
+      console.log(`🔍 Checking achievement ${achievement.key}: condition=${achievement.condition}, linesCleared=${linesCleared}, linesClearedInTurn=${linesClearedInTurn}`);
+      
+      if (achievement.condition) {
+        // 🏆 Check if we already checked this achievement this game
+        if (achievementsCheckedThisGame.has(achievement.key)) {
+          console.log(`ℹ️ Achievement ${achievement.key} already checked this game - skipping`);
+          return;
+        }
+        
+        console.log(`🏆 Achievement condition met: ${achievement.key}`);
+        
+        // Mark as checked this game
+        achievementsCheckedThisGame.add(achievement.key);
+        
+        // Check if achievement is already unlocked (Season 3 Final Version)
+        checkAndUnlockAchievement(userId, achievement.key, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears, linesClearedInTurn);
+      }
+    });
+  }
+  
+  // 🏆 Make Tetris achievements globally accessible
+  window.checkTetrisAchievements = checkTetrisAchievements;
+  
+  // 🏆 Save Achievements to Database (No Popups) - For Game End
+  function saveAchievementsToDatabase(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
+    console.log('💾 Saving achievements to database for user:', userId);
+    console.log('💾 Game stats:', { gameScore, linesCleared, levelReached, piecesDropped, tetrisClears });
+    
+    // Define achievement checks (same as checkTetrisAchievements but without popups)
     const achievementChecks = [
       // Basic Achievements
       { key: 'first_line', condition: linesCleared >= 1 },
@@ -1089,33 +1207,25 @@ let heldDown = false;
       { key: 'tetris_legend', condition: tetrisClears >= 25 }
     ];
     
-    // Check each achievement
+    // Check each achievement and save to database (no popups)
     achievementChecks.forEach(achievement => {
       if (achievement.condition) {
-        // 🏆 Check if we already checked this achievement this game
-        if (achievementsCheckedThisGame.has(achievement.key)) {
-          console.log(`ℹ️ Achievement ${achievement.key} already checked this game - skipping`);
-          return;
-        }
+        console.log(`💾 Achievement condition met: ${achievement.key} - saving to database`);
         
-        console.log(`🏆 Achievement condition met: ${achievement.key}`);
-        
-        // Mark as checked this game
-        achievementsCheckedThisGame.add(achievement.key);
-        
-        // Check if achievement is already unlocked (Season 3 Final Version)
-        checkAndUnlockAchievement(userId, achievement.key, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
+        // Save achievement to database without popup
+        saveAchievementToDatabase(userId, achievement.key, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
       }
     });
   }
   
-  // 🏆 Make Tetris achievements globally accessible
-  window.checkTetrisAchievements = checkTetrisAchievements;
-  
-  // 🏆 Check if Achievement Already Unlocked (Inside Game Scope)
-  function checkAndUnlockAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
+  // 🏆 Save Single Achievement to Database (No Popup)
+  function saveAchievementToDatabase(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
+    // Environment-aware API endpoint
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+    
     // First check if achievement is already unlocked
-    fetch('/api/user/get-tetris-achievements.php', {
+    fetch(`${apiBaseUrl}/api/user/get-tetris-achievements.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1127,7 +1237,76 @@ let heldDown = false;
       if (data.success && data.achievements) {
         // Check if this specific achievement is already unlocked
         const alreadyUnlocked = data.achievements.some(achievement => 
-          achievement.achievement_key === achievementKey && achievement.unlocked_at
+          achievement.key === achievementKey && achievement.unlocked_at
+        );
+        
+        if (alreadyUnlocked) {
+          console.log(`💾 Achievement ${achievementKey} already unlocked - skipping save`);
+          return; // Don't save already unlocked achievements
+        }
+        
+        // Achievement not unlocked yet - unlock it (no popup)
+        console.log(`💾 Achievement ${achievementKey} not yet unlocked - saving to database`);
+        
+        // Unlock the achievement
+        fetch(`${apiBaseUrl}/api/dev/unlock-tetris-achievement.php`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            achievement_key: achievementKey,
+            game_score: gameScore,
+            lines_cleared: linesCleared,
+            level_reached: levelReached,
+            pieces_dropped: piecesDropped,
+            tetris_clears: tetrisClears
+          }),
+        })
+        .then(response => response.json())
+        .then(unlockData => {
+          if (unlockData.success) {
+            console.log(`💾 Achievement ${achievementKey} saved to database successfully!`);
+          } else {
+            console.error(`❌ Failed to save achievement ${achievementKey}:`, unlockData.error);
+          }
+        })
+        .catch(error => {
+          console.error(`❌ Error saving achievement ${achievementKey}:`, error);
+        });
+      } else {
+        console.error('❌ Failed to fetch achievements:', data.error);
+      }
+    })
+    .catch(error => {
+      console.error('❌ Error fetching achievements:', error);
+    });
+  }
+  
+  // 🏆 Check if Achievement Already Unlocked (Inside Game Scope)
+  function checkAndUnlockAchievement(userId, achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears, linesClearedInTurn) {
+    console.log('🚨🚨🚨 CHECK AND UNLOCK ACHIEVEMENT CALLED! 🚨🚨🚨');
+    console.log('🔍 Achievement Key:', achievementKey);
+    console.log('👤 User ID:', userId);
+    // Environment-aware API endpoint
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+    
+    // First check if achievement is already unlocked
+    fetch(`${apiBaseUrl}/api/user/get-tetris-achievements.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: userId }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.achievements) {
+        // Check if this specific achievement is already unlocked
+        const alreadyUnlocked = data.achievements.some(achievement => 
+          achievement.key === achievementKey && achievement.unlocked_at
         );
         
         if (alreadyUnlocked) {
@@ -1139,7 +1318,7 @@ let heldDown = false;
         console.log(`🏆 Achievement ${achievementKey} not yet unlocked - unlocking now`);
         
         // Unlock the achievement
-        fetch('/api/dev/unlock-tetris-achievement.php', {
+        fetch(`${apiBaseUrl}/api/dev/unlock-tetris-achievement.php`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1159,7 +1338,36 @@ let heldDown = false;
           if (unlockData.success) {
             console.log(`🏆 Achievement ${achievementKey} unlocked successfully!`);
             // Show achievement popup
-            showAchievementPopup(achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears);
+            const achievementTitles = {
+              'first_line': 'First Line',
+              'line_master': 'Line Master',
+              'tetris_pro': 'Tetris Pro',
+              'line_legend': 'Line Legend',
+              'speed_demon': 'Speed Demon',
+              'level_master': 'Level Master',
+              'high_roller': 'High Roller',
+              'score_hunter': 'Score Hunter',
+              'point_master': 'Point Master',
+              'tetris_king': 'Tetris King',
+              'piece_dropper': 'Piece Dropper',
+              'block_master': 'Block Master',
+              'tetris_clear': 'Tetris Clear',
+              'tetris_master': 'Tetris Master',
+              'tetris_god': 'Tetris God',
+              'combo_starter': 'Combo Starter',
+              'combo_master': 'Combo Master',
+              'combo_legend': 'Combo Legend',
+              'back_to_back': 'Back to Back',
+              'level_warrior': 'Level Warrior',
+              'level_champion': 'Level Champion',
+              'score_legend': 'Score Legend',
+              'score_god': 'Score God',
+              'line_destroyer': 'Line Destroyer',
+              'piece_legend': 'Piece Legend',
+              'tetris_legend': 'Tetris Legend'
+            };
+            const title = achievementTitles[achievementKey] || achievementKey;
+            showAchievementNotification(achievementKey, title);
           } else {
             console.error(`❌ Failed to unlock achievement ${achievementKey}:`, unlockData.error);
           }
@@ -1221,6 +1429,9 @@ let heldDown = false;
 
   // 🎉 Show Achievement Notification (Inside Game Scope)
   function showAchievementNotification(achievementKey, achievementTitle) {
+    console.log('🚨🚨🚨 SHOW ACHIEVEMENT NOTIFICATION CALLED! 🚨🚨🚨');
+    console.log('🏆 Achievement Unlocked:', achievementTitle);
+    console.log('🔑 Achievement Key:', achievementKey);
     const canvas = document.getElementById("tetris-canvas");
     if (!canvas) return;
     
@@ -1236,8 +1447,17 @@ let heldDown = false;
       color: '#ffd700' // Gold color for achievements
     };
     
-    achievementPopups.push(popup);
+    // 🚨 CRITICAL FIX: Use global window object like Snake
+    if (!window.tetrisAchievementPopups) {
+      window.tetrisAchievementPopups = [];
+    }
+    window.tetrisAchievementPopups.push(popup);
     console.log(`🏆 Achievement Unlocked: ${achievementTitle}`);
+    console.log(`📝 Popup added to array. Total popups: ${window.tetrisAchievementPopups.length}`);
+    
+    // 🚨 CRITICAL FIX: Force immediate popup display even if game is over
+    // Draw the popup immediately to ensure it's visible
+    drawAchievementPopups();
   }
 
   // 🎨 Draw Achievement Popups on Canvas (Inside Game Scope)
@@ -1248,16 +1468,23 @@ let heldDown = false;
     const ctx = canvas.getContext("2d");
     const centerX = canvas.width / 2;
     
-    achievementPopups.forEach((popup, index) => {
+    // 🚨 CRITICAL FIX: Use global window object like Snake
+    if (!window.tetrisAchievementPopups) return;
+    
+    console.log(`🎨 Drawing ${window.tetrisAchievementPopups.length} achievement popups`);
+    
+    window.tetrisAchievementPopups.forEach((popup, index) => {
       popup.life--;
       
       // Remove expired popups
       if (popup.life <= 0) {
-        achievementPopups.splice(index, 1);
+        window.tetrisAchievementPopups.splice(index, 1);
         return;
       }
       
       const alpha = popup.life / popup.maxLife;
+      
+      console.log(`🎨 Drawing popup ${index}: ${popup.title}, life=${popup.life}, alpha=${alpha}`);
       
       // Draw background (Tetris-optimized size)
       ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.9})`;

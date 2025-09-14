@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Get database connection
 function getSQLite3Connection() {
     $dbPath = $_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false 
-        ? 'db/narrrf_world.sqlite' 
+        ? '../../db/narrrf_world.sqlite' 
         : '/var/www/html/db/narrrf_world.sqlite';
     
     if (!file_exists($dbPath)) {
@@ -111,8 +111,8 @@ try {
         $insertStmt = $pdo->prepare("
             INSERT INTO tbl_space_invaders_achievements 
             (user_id, achievement_key, achievement_title, achievement_description, achievement_icon, 
-             game_score, game_time, total_kills, combo_multiplier)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+             unlocked_at, game_score, game_time, total_kills, combo_multiplier)
+            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?)
         ");
         
         $insertStmt->execute([

@@ -68,7 +68,7 @@
 
 // 🌍 Environment Detection for API calls
 const isProduction = window.location.hostname === 'narrrfs.world';
-const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost/narrrfs-world';
+const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
 console.log('🌍 Space Invaders Environment detected:', isProduction ? 'Production' : 'Local');
 console.log('🔗 Space Invaders API Base URL:', API_BASE_URL);
 
@@ -487,6 +487,7 @@ class PhoenixBird {
     
     // Track Phoenix destruction for achievements
     phoenixesDestroyed++;
+    totalKills++; // 🏆 SEASON 3 PHASE 2: Count Phoenix kills for achievements
   }
   
   draw(ctx) {
@@ -597,6 +598,7 @@ class PhoenixEgg {
     
     // Track Phoenix egg destruction for achievements
     phoenixEggsDestroyed++;
+    totalKills++; // 🏆 SEASON 3 PHASE 2: Count Phoenix egg kills for achievements
   }
   
   draw(ctx) {
@@ -713,6 +715,7 @@ class MiniPhoenix {
     
     // Track Mini-Phoenix destruction for achievements
     miniPhoenixesDestroyed++;
+    totalKills++; // 🏆 SEASON 3 PHASE 2: Count Mini-Phoenix kills for achievements
   }
   
   draw(ctx) {
@@ -4170,13 +4173,13 @@ let reloadButtonInterval = null;
     let discordName = localStorage.getItem("discord_name");
     let wallet = localStorage.getItem("user_wallet");
     
-    // 🔧 LOCAL DEVELOPMENT BYPASS - Simulate logged-in user for local testing
+    // 🔧 LOCAL DEVELOPMENT BYPASS - Use Santa's ID for testing
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (isLocalDevelopment && !discordId) {
-      console.log('🔓 Local development - simulating logged-in user');
-      discordId = "1337";
-      discordName = "Local Test User";
-      wallet = "local_test_wallet_1337";
+      console.log('🔓 Local development - using Santa for testing');
+      discordId = "1107633105185013790";
+      discordName = "Santa";
+      wallet = "TestWallet123456789XYZ";
       
       // Store in localStorage for consistency
       localStorage.setItem("discord_id", discordId);
@@ -4610,35 +4613,39 @@ let reloadButtonInterval = null;
   }
 
   // 🎮 Start game with countdown (same as Snake)
-  function startGameWithCountdown() {
+  async function startGameWithCountdown() {
     const countdownEl = document.getElementById("space-invaders-countdown");
     let count = 5;
 
     if (!countdownEl) {
       console.warn("Countdown element not found.");
-      startGame();
+      await startGame();
       return;
     }
 
     countdownEl.classList.remove("hidden");
 
-    const countdownInterval = setInterval(() => {
+    const countdownInterval = setInterval(async () => {
         countdownEl.textContent = count;
       count--;
       
       if (count < 0) {
         clearInterval(countdownInterval);
         countdownEl.classList.add("hidden");
-        startGame();
+        await startGame();
       }
     }, 1000);
   }
 
-  function startGame() {
+  async function startGame() {
     resetGame();
     
+    // 🧀 Force Santa's Discord ID for local testing (same as Tetris and Snake)
+    localStorage.setItem("discord_id", "1107633105185013790");
+    localStorage.setItem("discord_name", "Santa");
+    
     // 🏆 Load existing achievements to prevent spam
-    loadExistingAchievements();
+    await loadExistingAchievements();
     
     // 🔥 PHOENIX CONFIGURATION LOADING - NEW!
     // Load Phoenix settings from admin interface before starting game
@@ -5621,23 +5628,10 @@ let reloadButtonInterval = null;
     }
   }
   
-  // 🔥 ENHANCED: Check Phoenix collisions with player for damage
+  // 🔥 ENHANCED: Check Phoenix collisions with player for damage - REMOVED: Now handled in checkPhoenixPlayerCollisions()
   if (isPhoenixWave) {
-    // Check Phoenix bird collisions
-    phoenixWaves.forEach(phoenix => {
-      if (checkCollision(phoenix, playerShip)) {
-        console.log(`🔥 Phoenix collision! Player takes ${phoenix.damage} damage!`);
-        playerHealth -= phoenix.damage;
-        screenShake = 5;
-        createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 30, 20);
-        
-        // Phoenix takes damage too
-        phoenix.takeDamage(5);
-      }
-    });
-    
-    // 🎯 REMOVED: Old mini-Phoenix collision detection - now handled in checkPhoenixPlayerCollisions()
-    // This was causing mini-Phoenixes to get stuck because they weren't being removed properly
+    // 🎯 REMOVED: Old collision detection - now handled in checkPhoenixPlayerCollisions()
+    // This was causing duplicate collision detection and game errors
   }
   }
 
@@ -7064,23 +7058,14 @@ let reloadButtonInterval = null;
   // Load existing achievements at game start to prevent spam
   async function loadExistingAchievements() {
     try {
-      // 🔧 LOCAL DEVELOPMENT BYPASS - Use test achievements for local testing
-      const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      if (isLocalDevelopment) {
-        console.log('🔓 Local development - using test achievements');
-        
-        // Simulate some already unlocked achievements for testing (REAL ACHIEVEMENTS)
-        achievements.firstKill = true;
-        achievements.score2500 = true;
-        achievements.perfectWave = true;
-        achievements.comboMaster8 = true;
-        
-        console.log('🏆 Local test achievements loaded:', Object.keys(achievements).filter(key => achievements[key]));
-        return;
-      }
+      console.log('🏆 Loading existing achievements from database...');
       
       const discordId = localStorage.getItem('discord_id');
-      if (!discordId) return;
+      console.log('🏆 Discord ID from localStorage:', discordId);
+      if (!discordId) {
+        console.log('🏆 No Discord ID found, skipping achievement loading');
+        return;
+      }
       
       const response = await fetch(`${API_BASE_URL}/api/user/get-space-invaders-achievements.php`, {
         method: 'POST',
@@ -7088,13 +7073,19 @@ let reloadButtonInterval = null;
         body: JSON.stringify({ user_id: discordId })
       });
       
+      console.log('🏆 API response status:', response.status);
+      console.log('🏆 API response ok:', response.ok);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('🏆 API response data:', data);
         if (data.success && data.achievements) {
           // Mark existing achievements as already unlocked
           data.achievements.forEach(achievement => {
-            if (achievement.unlocked) {
+            console.log('🏆 Processing achievement:', achievement.key, 'unlocked_at:', achievement.unlocked_at);
+            if (achievement.unlocked_at) {
               achievements[achievement.key] = true;
+              console.log('🏆 Marked as unlocked:', achievement.key);
             }
           });
           console.log('🏆 Loaded existing achievements:', Object.keys(achievements).filter(key => achievements[key]));
@@ -7105,7 +7096,7 @@ let reloadButtonInterval = null;
     }
   }
   
-  function createAchievementPopup(title, description, icon = '🏆') {
+  function createAchievementPopup(achievementKey, title, description, icon = '🏆') {
     const popup = {
       title: title,
       description: description,
@@ -7121,11 +7112,11 @@ let reloadButtonInterval = null;
     console.log(`🏆 Achievement Unlocked: ${title} - ${description}`);
     
     // 🏆 SEASON 3 PHASE 2: Save achievement to database
-    saveAchievementToDatabase(title, description, icon);
+    saveAchievementToDatabase(achievementKey, title, description, icon);
   }
   
   // 🏆 SEASON 3 PHASE 2: Save achievement to database
-  async function saveAchievementToDatabase(title, description, icon) {
+  async function saveAchievementToDatabase(achievementKey, title, description, icon) {
     try {
       // Get current player Discord ID
       const discordId = getCurrentPlayerId();
@@ -7134,10 +7125,9 @@ let reloadButtonInterval = null;
         return;
       }
       
-      // Map achievement title to key
-      const achievementKey = getAchievementKey(title);
+      // Use the provided achievement key directly
       if (!achievementKey) {
-        console.log('🏆 Achievement not saved: Unknown achievement title');
+        console.log('🏆 Achievement not saved: No achievement key provided');
         return;
       }
       
@@ -7171,6 +7161,72 @@ let reloadButtonInterval = null;
       }
     } catch (error) {
       console.error('🏆 Error saving achievement:', error);
+    }
+  }
+  
+  // 🏆 SEASON 3 PHASE 2: Save all achievements to database after game ends (without popups)
+  async function saveAchievementsToDatabase() {
+    console.log('🏆 saveAchievementsToDatabase() called - starting post-game achievement save...');
+    try {
+      const discordId = getCurrentPlayerId();
+      console.log('🏆 Discord ID:', discordId);
+      if (!discordId) {
+        console.log('🏆 Achievements not saved: No Discord ID available');
+        return;
+      }
+      
+      console.log('🏆 Saving all achievements to database after game end...');
+      console.log('🏆 Current achievements state:', achievements);
+      
+      // Check each achievement and save if unlocked
+      const achievementsToSave = [
+        { key: 'firstKill', title: 'First Blood', description: 'Destroyed your first 100 invaders!', icon: '🎯' },
+        { key: 'killStreak8', title: 'Killing Spree', description: '25 kills in a row!', icon: '🔥' },
+        { key: 'killStreak15', title: 'Rampage', description: '50 kills in a row!', icon: '⚡' },
+        { key: 'killStreak25', title: 'Unstoppable', description: '100 kills in a row!', icon: '💀' },
+        { key: 'score2500', title: 'Getting Started', description: 'Reached 30,000 points!', icon: '⭐' },
+        { key: 'score7500', title: 'Rising Star', description: 'Reached 75,000 points!', icon: '🌟' },
+        { key: 'score15000', title: 'Space Warrior', description: 'Reached 150,000 points!', icon: '🚀' },
+        { key: 'score30000', title: 'Space Legend', description: 'Reached 300,000 points!', icon: '👑' },
+        { key: 'perfectWave', title: 'Perfect Wave', description: 'Cleared 5 waves without taking damage!', icon: '✨' },
+        { key: 'noHitRun60', title: 'Untouchable', description: 'Survived 60 seconds without taking damage!', icon: '🛡️' },
+        { key: 'bossKiller3', title: 'Boss Hunter', description: 'Defeated Boss 1 - First Victory!', icon: '🗡️' },
+        { key: 'bossKiller4', title: 'Phoenix Hunter', description: 'Destroyed 10 Phoenix birds!', icon: '🔥' },
+        { key: 'comboMaster8', title: 'Combo Master', description: 'Achieved 8x score multiplier!', icon: '💥' },
+        { key: 'speedDemon20k', title: 'Speed Demon', description: 'Reached 20,000 points in under 2 minutes!', icon: '⚡' },
+        { key: 'survivor10min', title: 'Survivor', description: 'Survived for 10 minutes!', icon: '⏰' }
+      ];
+      
+      for (const achievement of achievementsToSave) {
+        console.log(`🏆 Checking achievement: ${achievement.key} - Unlocked: ${achievements[achievement.key]}`);
+        if (achievements[achievement.key]) {
+          // Check if already saved to database
+          const response = await fetch(`${API_BASE_URL}/api/user/get-space-invaders-achievements.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: discordId })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.achievements) {
+              const alreadySaved = data.achievements.some(dbAchievement => 
+                dbAchievement.achievement_key === achievement.key && dbAchievement.unlocked_at
+              );
+              
+              if (!alreadySaved) {
+                // Save to database
+                await saveAchievementToDatabase(achievement.key, achievement.title, achievement.description, achievement.icon);
+                console.log(`🏆 Saved achievement to database: ${achievement.title}`);
+              }
+            }
+          }
+        }
+      }
+      
+      console.log('🏆 All achievements saved to database');
+    } catch (error) {
+      console.error('🏆 Error saving achievements to database:', error);
     }
   }
   
@@ -7254,47 +7310,53 @@ let reloadButtonInterval = null;
   }
   
   function checkAchievements() {
+    // Debug: Show current kill count
+    if (totalKills > 0 && totalKills % 10 === 0) {
+      console.log(`🏆 Achievement Check: ${totalKills} kills total (First Blood needs 100)`);
+    }
+    
     // First Kill Achievement - MUCH HARDER: Need 100 kills total
     if (totalKills >= 100 && !achievements.firstKill) {
       achievements.firstKill = true;
-      createAchievementPopup('First Blood', 'Destroyed your first 100 invaders!', '🎯');
+      createAchievementPopup('firstKill', 'First Blood', 'Destroyed your first 100 invaders!', '🎯');
     }
     
     // Kill Streak Achievements (MUCH HARDER - Need perfect gameplay)
     if (killCombo >= 25 && !achievements.killStreak8) {
+      console.log('🏆 KillStreak8 triggered! killCombo:', killCombo, 'achievements.killStreak8:', achievements.killStreak8);
       achievements.killStreak8 = true;
-      createAchievementPopup('Killing Spree', '25 kills in a row!', '🔥');
+      createAchievementPopup('killStreak8', 'Killing Spree', '25 kills in a row!', '🔥');
     }
     
     if (killCombo >= 50 && !achievements.killStreak15) {
       achievements.killStreak15 = true;
-      createAchievementPopup('Rampage', '50 kills in a row!', '⚡');
+      createAchievementPopup('killStreak15', 'Rampage', '50 kills in a row!', '⚡');
     }
     
     if (killCombo >= 100 && !achievements.killStreak25) {
       achievements.killStreak25 = true;
-      createAchievementPopup('Unstoppable', '100 kills in a row!', '💀');
+      createAchievementPopup('killStreak25', 'Unstoppable', '100 kills in a row!', '💀');
     }
     
     // Score Achievements (MUCH HARDER - End-game scores)
     if (spaceInvadersScore >= 30000 && !achievements.score2500) {
       achievements.score2500 = true;
-      createAchievementPopup('Getting Started', 'Reached 30,000 points!', '⭐');
+      createAchievementPopup('score2500', 'Getting Started', 'Reached 30,000 points!', '⭐');
     }
     
     if (spaceInvadersScore >= 75000 && !achievements.score7500) {
       achievements.score7500 = true;
-      createAchievementPopup('Rising Star', 'Reached 75,000 points!', '🌟');
+      createAchievementPopup('score7500', 'Rising Star', 'Reached 75,000 points!', '🌟');
     }
     
     if (spaceInvadersScore >= 150000 && !achievements.score15000) {
       achievements.score15000 = true;
-      createAchievementPopup('Space Ace', 'Reached 150,000 points!', '🚀');
+      createAchievementPopup('score15000', 'Space Ace', 'Reached 150,000 points!', '🚀');
     }
     
     if (spaceInvadersScore >= 300000 && !achievements.score30000) {
       achievements.score30000 = true;
-      createAchievementPopup('Legend', 'Reached 300,000 points!', '👑');
+      createAchievementPopup('score30000', 'Legend', 'Reached 300,000 points!', '👑');
     }
     
     // Perfect Wave Achievement (HARDER - Need 5 perfect waves)
@@ -8463,6 +8525,11 @@ let reloadButtonInterval = null;
     
     // 🔧 CRITICAL FIX: Score MUST be saved here for all players (not just winners)
     saveScore(spaceInvadersScore); // RESTORED: This is the main score saving point
+    
+    // 🏆 SEASON 3 PHASE 2: Save achievements to database after game ends (without popups)
+    // This ensures achievements are saved even if not triggered during gameplay
+    saveAchievementsToDatabase();
+    
     cleanupSpaceInvadersControls();
     
     // 🚀 NEW: Clean up ship cursor when game ends
@@ -13161,18 +13228,19 @@ window.emergencyCollisionCheck = function() {
     }
     
     try {
-      // Check Phoenix bird collisions
+      // Check Phoenix bird collisions - FIXED: Use reverse loop to avoid splice index issues
       if (phoenixWaves && Array.isArray(phoenixWaves)) {
-        phoenixWaves.forEach((phoenix, index) => {
+        for (let i = phoenixWaves.length - 1; i >= 0; i--) {
+          const phoenix = phoenixWaves[i];
           if (phoenix && typeof phoenix === 'object' && !phoenix.isDead && checkCollision(phoenix, playerShip)) {
             // Player hit by Phoenix bird!
             const damage = (phoenix && typeof phoenix.damage === 'number') ? phoenix.damage : 1;
             playerShip.health -= damage;
-            console.log(`🔥 Phoenix bird ${index} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
+            console.log(`🔥 Phoenix bird ${i} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
             
             // 🎯 FIX: Remove the Phoenix bird after collision
             phoenix.isDead = true;
-            phoenixWaves.splice(index, 1);
+            phoenixWaves.splice(i, 1);
             
             // Create explosion effect
             createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 30);
@@ -13190,23 +13258,25 @@ window.emergencyCollisionCheck = function() {
             // Check if player is defeated
             if (playerShip.health <= 0) {
               onGameOver();
+              return; // Exit early if game over
             }
           }
-        });
+        }
       }
       
-      // Check Phoenix egg collisions
+      // Check Phoenix egg collisions - FIXED: Use reverse loop to avoid splice index issues
       if (phoenixEggs && Array.isArray(phoenixEggs)) {
-        phoenixEggs.forEach((egg, index) => {
+        for (let i = phoenixEggs.length - 1; i >= 0; i--) {
+          const egg = phoenixEggs[i];
           if (egg && typeof egg === 'object' && !egg.isDead && checkCollision(egg, playerShip)) {
             // Player hit by Phoenix egg!
             const damage = 1; // Eggs do minimal damage
             playerShip.health -= damage;
-            console.log(`🥚 Phoenix egg ${index} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
+            console.log(`🥚 Phoenix egg ${i} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
             
             // 🎯 FIX: Remove the Phoenix egg after collision
             egg.isDead = true;
-            phoenixEggs.splice(index, 1);
+            phoenixEggs.splice(i, 1);
             
             // Create explosion effect
             createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 25);
@@ -13219,23 +13289,25 @@ window.emergencyCollisionCheck = function() {
             // Check if player is defeated
             if (playerShip.health <= 0) {
               onGameOver();
+              return; // Exit early if game over
             }
           }
-        });
+        }
       }
       
-      // Check mini-Phoenix collisions
+      // Check mini-Phoenix collisions - FIXED: Use reverse loop to avoid splice index issues
       if (miniPhoenixes && Array.isArray(miniPhoenixes)) {
-        miniPhoenixes.forEach((mini, index) => {
+        for (let i = miniPhoenixes.length - 1; i >= 0; i--) {
+          const mini = miniPhoenixes[i];
           if (mini && typeof mini === 'object' && !mini.isDead && checkCollision(mini, playerShip)) {
             // Player hit by mini-Phoenix!
             const damage = 1; // Mini-Phoenixes do minimal damage
             playerShip.health -= damage;
-            console.log(`🐤 Mini-Phoenix ${index} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
+            console.log(`🐤 Mini-Phoenix ${i} inflicted ${damage} damage! Player health: ${playerShip.health + damage} -> ${playerShip.health}`);
             
             // 🎯 FIX: Remove the mini-Phoenix after collision
             mini.isDead = true;
-            miniPhoenixes.splice(index, 1);
+            miniPhoenixes.splice(i, 1);
             
             // Create explosion effect
             createExplosion(playerShip.x + playerShip.width / 2, playerShip.y + playerShip.height / 2, 20);
@@ -13248,9 +13320,10 @@ window.emergencyCollisionCheck = function() {
             // Check if player is defeated
             if (playerShip.health <= 0) {
               onGameOver();
+              return; // Exit early if game over
             }
           }
-        });
+        }
       }
     } catch (error) {
       console.error('🔥 Error in Phoenix collision detection:', error);

@@ -327,10 +327,25 @@ require_once 'discord-invite.php';
     </div>
 
     <!-- 🧪 Traits + Wallet View -->
-    <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner">
+    <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner border-2 border-orange-300">
       <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
-      <p id="wallet-address">🔗 Linked wallet: <em class="text-sm">coming soon</em></p>
-      <p>🧬 Traits: <span id="traits">pending sync</span></p>
+      
+      <!-- 🚧 Coming Feature Banner -->
+      <div class="mb-3 bg-orange-200 border border-orange-400 rounded-lg p-2 text-center">
+        <span class="text-orange-800 font-semibold text-sm">🚧 Coming Feature - Under Development 🚧</span>
+      </div>
+      
+      <p id="wallet-address">🔗 Linked wallet: <em class="text-sm text-orange-600">coming soon</em></p>
+      <p>🧬 Traits: <span id="traits" class="text-orange-600">No traits - Coming Soon!</span></p>
+      
+      <!-- 📝 Feature Description -->
+      <div class="mt-3 text-xs text-gray-600 bg-yellow-50 rounded p-2 border border-yellow-200">
+        <strong>📋 Planned Features:</strong><br>
+        • Wallet integration for NFT management<br>
+        • Trait system for character customization<br>
+        • NFT metadata synchronization<br>
+        • Enhanced profile personalization
+      </div>
     </div>
 
     <!-- 📊 User Stats Section -->
@@ -347,6 +362,11 @@ require_once 'discord-invite.php';
     <!-- 🛍️ Inventory & Purchase History Section -->
     <div id="inventory-history-section" class="mt-6 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-lg p-4 shadow-inner border border-purple-500/30">
       <h2 class="font-semibold text-lg mb-4 text-purple-300">🛍️ Store Activity</h2>
+      
+      <!-- 🚧 Coming Feature Banner -->
+      <div class="mb-4 bg-purple-200 border border-purple-400 rounded-lg p-2 text-center">
+        <span class="text-purple-800 font-semibold text-sm">🚧 Store System - Under Development 🚧</span>
+      </div>
       
       <!-- 📦 Inventory Summary -->
       <div class="mb-6">
@@ -430,24 +450,36 @@ require_once 'discord-invite.php';
                   class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-yellow-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-2 ring-yellow-400/30">
             🏆 View Space Invaders Achievements
           </button>
+          <button onclick="loadSpaceInvadersAchievements()" 
+                  class="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border border-orange-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ml-2">
+            🔄 Refresh
+          </button>
           <p class="text-xs text-yellow-400 mt-2 italic">Click to view all 29 Space Invaders achievements</p>
         </div>
         
         <!-- 🧩 Tetris Achievements Button -->
         <div class="mt-4">
-          <button onclick="toggleTetrisAchievements()" 
-                  class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-blue-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-2 ring-blue-400/30">
-            🧩 View Tetris Achievements
-          </button>
+        <button onclick="toggleTetrisAchievements()" 
+                class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-blue-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-2 ring-blue-400/30">
+          🧩 View Tetris Achievements
+        </button>
+        <button onclick="loadTetrisAchievements()" 
+                class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border border-purple-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ml-2">
+          🔄 Refresh
+        </button>
           <p class="text-xs text-blue-400 mt-2 italic">Click to view all 29 Tetris achievements</p>
         </div>
         
         <!-- 🐍 Snake Achievements Button -->
         <div class="mt-4">
-          <button onclick="toggleSnakeAchievements()" 
-                  class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-green-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-2 ring-green-400/30">
-            🐍 View Snake Achievements
-          </button>
+        <button onclick="toggleSnakeAchievements()" 
+                class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-green-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-2 ring-green-400/30">
+          🐍 View Snake Achievements
+        </button>
+        <button onclick="loadSnakeAchievements()" 
+                class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border border-emerald-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ml-2">
+          🔄 Refresh
+        </button>
           <p class="text-xs text-green-400 mt-2 italic">Click to view all 29 Snake achievements</p>
         </div>
       
@@ -474,9 +506,14 @@ require_once 'discord-invite.php';
     <div id="tetrisAchievements" class="mt-6 p-6 bg-gray-800 rounded-lg border border-gray-600 hidden">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-semibold text-blue-300">🧩 Tetris Achievements</h3>
-        <button onclick="toggleTetrisAchievements()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors">
-          ✕ Close
-        </button>
+        <div class="flex space-x-2">
+          <button onclick="loadTetrisAchievements()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors text-sm">
+            🔄 Refresh
+          </button>
+          <button onclick="toggleTetrisAchievements()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors">
+            ✕ Close
+          </button>
+        </div>
       </div>
       
       <!-- Achievements Content -->
@@ -515,9 +552,14 @@ require_once 'discord-invite.php';
     <div id="snakeAchievements" class="mt-6 p-6 bg-gray-800 rounded-lg border border-gray-600 hidden">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-semibold text-green-300">🐍 Snake Achievements</h3>
-        <button onclick="toggleSnakeAchievements()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded transition-colors">
-          ✕ Close
-        </button>
+        <div class="flex space-x-2">
+          <button onclick="loadSnakeAchievements()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded transition-colors text-sm">
+            🔄 Refresh
+          </button>
+          <button onclick="toggleSnakeAchievements()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded transition-colors">
+            ✕ Close
+          </button>
+        </div>
       </div>
       
       <!-- Statistics Row -->
@@ -1422,6 +1464,24 @@ require_once 'discord-invite.php';
   </button>
 </div>
 
+<!-- 🧀 Season 3 Countdown Notification -->
+<div id="season3Countdown" class="max-w-6xl mx-auto bg-gradient-to-r from-yellow-400/20 via-orange-400/20 to-red-400/20 backdrop-blur-md text-yellow-200 py-4 px-6 rounded-2xl shadow-lg ring-2 ring-yellow-400/30 mt-6 relative z-10 border border-yellow-400/20">
+  <div class="flex items-center justify-center gap-3 mb-2">
+    <span class="text-2xl">🧀</span>
+    <h3 class="text-lg font-bold text-yellow-100">Season 3 Coming Soon!</h3>
+    <span class="text-2xl">🧀</span>
+  </div>
+  <div class="text-center">
+    <p class="text-sm text-yellow-200 mb-2">The leaderboard will be reset for Season 3 launch</p>
+    <div id="countdownTimer" class="text-lg font-mono font-bold text-yellow-100">
+      <span id="countdownDays">--</span> days, 
+      <span id="countdownHours">--</span> hours, 
+      <span id="countdownMinutes">--</span> minutes
+    </div>
+    <p class="text-xs text-yellow-300 mt-2 italic">Keep playing! Your achievements will be preserved 🏆</p>
+  </div>
+</div>
+
 <!-- 🏆 Leaderboard Section -->
 <section id="leaderboard" class="max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-yellow-400/50 mt-10 relative z-10 border border-yellow-400/30">
   <h3 class="text-center text-xl font-bold">🏆 Leaderboard</h3>
@@ -1739,10 +1799,36 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (user.roles) renderTrophyShelf(user.roles);
 
      // VIP/Golden Cheese logic check on top menu
-     if (user.roles && (user.roles.includes("VIP Holder") || user.roles.includes("VIP_pass"))) {
+     console.log('🔍 VIP Detection - User roles:', user.roles);
+     console.log('🔍 VIP Detection - User role IDs:', user.roleIds);
+     
+     // Check for various VIP role variations (name-based)
+     const hasVIPRoleName = user.roles && (
+       user.roles.includes("VIP Holder") || 
+       user.roles.includes("🎴 VIP Holder") ||
+       user.roles.includes("VIP_pass") ||
+       user.roles.includes("VIP") ||
+       user.roles.some(role => role.toLowerCase().includes('vip'))
+     );
+     
+     // Check for VIP role ID (1332016526848692345)
+     const hasVIPRoleId = user.roleIds && user.roleIds.includes('1332016526848692345');
+     
+     const hasVIPRole = hasVIPRoleName || hasVIPRoleId;
+     
+     console.log('🔍 VIP Detection - Has VIP role (name):', hasVIPRoleName);
+     console.log('🔍 VIP Detection - Has VIP role (ID):', hasVIPRoleId);
+     console.log('🔍 VIP Detection - Has VIP role (combined):', hasVIPRole);
+     
+     if (hasVIPRole) {
+       console.log('✅ VIP Access granted - showing VIP section');
        showElement('goldenCheeseGate'); // optional if defined elsewhere
        showElement('vipSection');       // ✅ Matches the DOM ID
+       hideElement('noCheeseJoke');    // Hide the "nacho cheese" message
      } else {
+       console.log('❌ No VIP role found - showing nacho cheese message');
+       hideElement('goldenCheeseGate');
+       hideElement('vipSection');
        showElement('noCheeseJoke');
      }
  	
@@ -1925,6 +2011,52 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // Load leaderboards when page loads
   loadCombinedLeaderboards();
+</script>
+
+<!-- 🧀 Season 3 Countdown Timer -->
+<script>
+  function updateCountdown() {
+    // Set Season 3 launch date (adjust as needed)
+    const season3Launch = new Date('2025-09-16T00:00:00Z'); // October 1, 2025
+    const now = new Date();
+    const timeLeft = season3Launch - now;
+    
+    if (timeLeft > 0) {
+      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+      
+      document.getElementById('countdownDays').textContent = days.toString().padStart(2, '0');
+      document.getElementById('countdownHours').textContent = hours.toString().padStart(2, '0');
+      document.getElementById('countdownMinutes').textContent = minutes.toString().padStart(2, '0');
+      
+      // Update countdown every minute
+      setTimeout(updateCountdown, 60000);
+    } else {
+      // Season 3 has launched - hide countdown and show launch message
+      const countdownElement = document.getElementById('season3Countdown');
+      if (countdownElement) {
+        countdownElement.innerHTML = `
+          <div class="flex items-center justify-center gap-3 mb-2">
+            <span class="text-2xl">🎉</span>
+            <h3 class="text-lg font-bold text-green-100">Season 3 is LIVE!</h3>
+            <span class="text-2xl">🎉</span>
+          </div>
+          <div class="text-center">
+            <p class="text-sm text-green-200">Welcome to Season 3! The leaderboard has been reset.</p>
+            <p class="text-xs text-green-300 mt-2 italic">Start fresh and climb the ranks! 🚀</p>
+          </div>
+        `;
+        countdownElement.className = countdownElement.className.replace('from-yellow-400/20 via-orange-400/20 to-red-400/20', 'from-green-400/20 via-emerald-400/20 to-teal-400/20');
+        countdownElement.className = countdownElement.className.replace('text-yellow-200', 'text-green-200');
+        countdownElement.className = countdownElement.className.replace('ring-yellow-400/30', 'ring-green-400/30');
+        countdownElement.className = countdownElement.className.replace('border-yellow-400/20', 'border-green-400/20');
+      }
+    }
+  }
+  
+  // Start countdown when page loads
+  updateCountdown();
 </script>
 
 
@@ -3322,7 +3454,7 @@ async function loadSpaceInvadersAchievements() {
     
     // 🌍 Local development override - use real Discord ID with achievements
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const testDiscordId = '328601656659017732'; // Real Discord ID with achievements
+    const testDiscordId = '1107633105185013790'; // Santa's Discord ID with achievements
     
     const finalDiscordId = isLocalDevelopment && (!discordId || discordId === '1337') ? testDiscordId : discordId;
     console.log('🔍 Final Discord ID (with local override):', finalDiscordId);
@@ -3545,7 +3677,7 @@ async function loadTetrisAchievements() {
     
     // Local development override
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const testDiscordId = '328601656659017732'; // Real Discord ID with achievements
+    const testDiscordId = '1107633105185013790'; // Santa's Discord ID with achievements
     
     const finalDiscordId = isLocalDevelopment && (!discordId || discordId === '1337') ? testDiscordId : discordId;
     console.log('🔍 Final Discord ID (with local override):', finalDiscordId);
@@ -3716,7 +3848,7 @@ async function loadSnakeAchievements() {
     
     // Local development override
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const testDiscordId = '328601656659017732'; // Real Discord ID with achievements
+    const testDiscordId = '1107633105185013790'; // Santa's Discord ID with achievements
     
     const finalDiscordId = isLocalDevelopment && (!discordId || discordId === '1337') ? testDiscordId : discordId;
     console.log('🔍 Final Discord ID (with local override):', finalDiscordId);
