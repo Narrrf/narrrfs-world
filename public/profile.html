@@ -283,7 +283,7 @@ require_once 'discord-invite.php';
     <div class="bg-gradient-to-r from-purple-400/90 via-purple-300 to-purple-400/90 border-2 border-purple-500 px-6 py-3 rounded-xl font-bold text-purple-900 shadow-lg mb-2 text-center">
       🎲 Bingo Vault Access
     </div>
-    <a href="/public/Bingo.html"
+    <a href="Bingo.html"
        class="block bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-purple-500 transition-all duration-300 transform hover:scale-105 text-center">
       🎯 Enter Bingo Vault
     </a>
@@ -294,7 +294,7 @@ require_once 'discord-invite.php';
     <div class="bg-gradient-to-r from-red-400/90 via-red-300 to-red-400/90 border-2 border-red-500 px-6 py-3 rounded-xl font-bold text-red-900 shadow-lg mb-2 text-center">
       🐛 Bug Report System
     </div>
-    <a href="/public/bug-report.html"
+    <a href="bug-report.html"
        class="block bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-red-500 transition-all duration-300 transform hover:scale-105 text-center">
       📝 Report Issue
     </a>
@@ -1755,10 +1755,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     const user = await profileRes.json();
     const enhancedData = enhancedProfileRes.ok ? await enhancedProfileRes.json() : null;
     
-    // Store Discord info for other features (optional)
+    // Store Discord info for other features (optional) - MOBILE OPTIMIZED
     if (user.discord_id) {
       localStorage.setItem("discord_id", user.discord_id);
       localStorage.setItem("discord_name", user.discord_name);
+      localStorage.setItem("auth_timestamp", Date.now()); // Track when auth was set
+      
+      // 🚀 MOBILE COMPATIBILITY: Also store in sessionStorage for better mobile persistence
+      sessionStorage.setItem("discord_id", user.discord_id);
+      sessionStorage.setItem("discord_name", user.discord_name);
     }
 
     // Username & avatar
@@ -2222,12 +2227,31 @@ document.addEventListener("DOMContentLoaded", async function () {
 <!-- Cheese Score Stats Fetcher -->
 <script>
 // Utility to get Discord ID (if session is available)
+// 🚀 MOBILE AUTHENTICATION HELPER - Enhanced for mobile compatibility
 async function getDiscordId() {
   // Try from global variable first
   if (window.userDiscordId) return window.userDiscordId;
 
-  // Fallback to localStorage
-  return localStorage.getItem('discord_id') || null;
+  // Try localStorage first
+  let discordId = localStorage.getItem('discord_id');
+  if (discordId) return discordId;
+  
+  // Fallback to sessionStorage for mobile compatibility
+  discordId = sessionStorage.getItem('discord_id');
+  if (discordId) return discordId;
+  
+  // Check if auth is expired (older than 24 hours)
+  const authTimestamp = localStorage.getItem('auth_timestamp');
+  if (authTimestamp && (Date.now() - parseInt(authTimestamp)) > 86400000) {
+    console.log('🔄 Auth expired, clearing storage');
+    localStorage.removeItem('discord_id');
+    localStorage.removeItem('discord_name');
+    localStorage.removeItem('auth_timestamp');
+    sessionStorage.removeItem('discord_id');
+    sessionStorage.removeItem('discord_name');
+  }
+  
+  return null;
 }
 
 // On page load after DOM is ready

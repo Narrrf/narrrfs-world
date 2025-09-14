@@ -1,4 +1,7 @@
 <?php
+// 🚀 EXTENDED SESSION LIFETIME FOR MOBILE COMPATIBILITY
+ini_set('session.gc_maxlifetime', 86400); // 24 hours
+ini_set('session.cookie_lifetime', 86400); // 24 hours
 session_start();
 
 // ✅ Load from Render environment with exact values from working OAuth URL
@@ -78,7 +81,7 @@ if (!isset($user['id'])) {
     die("❌ Fehler beim Abrufen der Benutzerinformationen. Bitte versuchen Sie es erneut.");
 }
 
-// 🧀 Save key user fields to session
+// 🧀 Save key user fields to session with extended lifetime
 $_SESSION['user'] = [
     'username' => $user['username'],
     'discriminator' => $user['discriminator'] ?? '0000',
@@ -87,6 +90,8 @@ $_SESSION['user'] = [
 ];
 $_SESSION['discord_id'] = $user['id'];
 $_SESSION['access_token'] = $accessToken;
+$_SESSION['token_expires_at'] = time() + 3600; // Discord tokens expire in 1 hour
+$_SESSION['refresh_token'] = $token['refresh_token'] ?? null; // Store refresh token if available
 
 error_log('Discord ID Fetched: ' . $_SESSION['discord_id']);
 

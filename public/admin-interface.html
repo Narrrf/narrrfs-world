@@ -7137,7 +7137,8 @@
           console.log('🐛 Bug API data received:', data);
           if (data.success) {
             const bugCount = data.bugs ? data.bugs.length : 0;
-            const pendingCount = data.bugs ? data.bugs.filter(bug => bug.status_id === 1 || bug.status_id === 2 || bug.status_id === 3 || bug.status_id === 4).length : 0;
+             // Show all bugs that are NOT resolved (exclude only "Resolved" status)
+             const pendingCount = data.bugs ? data.bugs.filter(bug => bug.status_id !== 5).length : 0;
             
             const bugElement = document.getElementById('bugNotifications');
             if (bugElement) {
@@ -7176,8 +7177,10 @@
             
             const questElement = document.getElementById('questClaimNotifications');
             if (questElement) {
-              questElement.textContent = claimCount > 0 ? `${claimCount} New` : claimCount;
-              questElement.parentElement.style.background = 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)';
+              questElement.textContent = claimCount > 0 ? `${claimCount} New` : '0';
+              questElement.parentElement.style.background = claimCount > 0 
+                ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' 
+                : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)';
               console.log(`🏆 Quest claim notifications updated: ${claimCount} pending`);
             } else {
               console.error('🏆 Quest notification element not found!');
@@ -7210,9 +7213,6 @@
             if (bossElement) {
               bossElement.textContent = pendingCount > 0 ? `${pendingCount} New` : pendingCount;
               bossElement.parentElement.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
-              console.log(`👑 Boss notifications: ${notificationCount} total, ${pendingCount} pending`);
-            } else {
-              console.error('👑 Boss notification element not found!');
             }
             
             console.log(`👑 Boss notifications: ${notificationCount} total, ${pendingCount} pending`);
@@ -18799,7 +18799,8 @@ function updateGameTabContent(gameType, gameData) {
       <div class="mb-4">
         <p class="text-sm text-gray-600 mb-3">Enter the internal password to access database operations:</p>
         <input type="password" id="databasePassword" placeholder="Enter database password..." 
-               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+               onkeypress="if(event.key==='Enter') unlockDatabase()">
       </div>
       
       <div id="unlockStatus" class="mb-4"></div>

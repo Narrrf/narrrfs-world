@@ -196,9 +196,16 @@ function initSnake() {
     clearInterval(gameInterval);
     resetGame();
     
-    // 🧀 Force Narrrf's Discord ID for testing
-    localStorage.setItem("discord_id", "328601656659017732");
-    localStorage.setItem("discord_name", "narrrf");
+    // 🛠️ Mock fallback if testing locally (same as Tetris)
+    let discordId = localStorage.getItem("discord_id");
+    let discordName = localStorage.getItem("discord_name");
+    
+    if (!discordId) {
+      discordId = "328601656659017732"; // Narrrf's Discord ID for testing
+      discordName = "narrrf";
+      localStorage.setItem("discord_id", discordId);
+      localStorage.setItem("discord_name", discordName);
+    }
     
     gameInterval = setInterval(moveSnake, 250); // slow start
     enableGlobalSnakeTouch(); // Enable touch controls when game starts
