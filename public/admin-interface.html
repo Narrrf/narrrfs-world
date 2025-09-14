@@ -1313,9 +1313,17 @@
         <h3 class="text-lg font-semibold">🏆 Active Quests</h3>
         <p class="text-2xl font-bold" id="activeQuests">Loading...</p>
       </div>
-      <div class="stats-card" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+      <div class="stats-card" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); cursor: pointer;" onclick="showTab('bossNotifications')" title="Click to view Boss Notifications">
         <h3 class="text-lg font-semibold">👑 Boss Notifications</h3>
         <p class="text-2xl font-bold" id="bossNotifications">Loading...</p>
+      </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); cursor: pointer;" onclick="showTab('bugTracker')" title="Click to view Bug Tracker">
+        <h3 class="text-lg font-semibold">🐛 Bug Tracker</h3>
+        <p class="text-2xl font-bold" id="bugNotifications">Loading...</p>
+      </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); cursor: pointer;" onclick="showTab('quests')" title="Click to view Quest Claims">
+        <h3 class="text-lg font-semibold">🏆 Quest Claims</h3>
+        <p class="text-2xl font-bold" id="questClaimNotifications">Loading...</p>
       </div>
 
     </div>
@@ -1450,6 +1458,11 @@
         <!-- Force refresh button -->
         <button onclick="forceRefreshAllTabs()" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
           🔄 Force Refresh
+          </button>
+          
+        <!-- Test notification buttons -->
+        <button onclick="testNotificationButtons()" class="inline-block bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 mr-4">
+          🔔 Test Notifications
           </button>
           
         <!-- Debug button to manually show navigation -->
@@ -4772,6 +4785,15 @@
         // Show admin content immediately for local development
         showAdminContent();
         loadDashboardData();
+        
+        // FORCE LOAD NOTIFICATIONS FOR LOCAL DEVELOPMENT
+        console.log('🔔 FORCE LOADING NOTIFICATIONS FOR LOCAL DEVELOPMENT...');
+        setTimeout(() => {
+          loadBugNotificationCount();
+          loadQuestClaimNotificationCount();
+          loadBossNotificationCount();
+        }, 200);
+        
         console.log('✅ Local development admin interface unlocked');
         return; // Skip normal authentication flow
       }
@@ -4835,6 +4857,14 @@
             // Show admin content immediately
             showAdminContent();
             loadDashboardData();
+            
+            // FORCE LOAD NOTIFICATIONS FOR DISCORD AUTH
+            console.log('🔔 FORCE LOADING NOTIFICATIONS FOR DISCORD AUTH...');
+            setTimeout(() => {
+              loadBugNotificationCount();
+              loadQuestClaimNotificationCount();
+              loadBossNotificationCount();
+            }, 300);
             
             // Force navigation panel to be visible
             const navPanel = document.getElementById('navPanel');
@@ -4955,6 +4985,15 @@
       
       // Show dashboard tab by default and load overview game stats
       showTab('dashboard');
+      
+      // FORCE LOAD NOTIFICATIONS IMMEDIATELY WHEN ADMIN CONTENT IS SHOWN
+      console.log('🔔 FORCE LOADING NOTIFICATIONS IN SHOWADMINCONTENT...');
+      setTimeout(() => {
+        loadBugNotificationCount();
+        loadQuestClaimNotificationCount();
+        loadBossNotificationCount();
+      }, 100);
+      
       // Load overview game statistics for the dashboard and preload all game data
       setTimeout(async () => {
         await loadOverviewGameStats();
@@ -6162,8 +6201,10 @@
           // Update detailed dashboard stats
           updateSystemStats(stats.data || stats);
           
-          // Load boss notifications count
+          // Load all notification counts
           loadBossNotificationCount();
+          loadBugNotificationCount();
+          loadQuestClaimNotificationCount();
         } else {
           console.error('❌ Stats API returned error:', stats.error);
           addLog(`❌ Stats API error: ${stats.error || 'Unknown error'}`);
@@ -6177,6 +6218,11 @@
           };
           updateTopMenuStats(fallbackData);
           updateSystemStats(fallbackData);
+          
+          // Load notification counts even on error
+          loadBossNotificationCount();
+          loadBugNotificationCount();
+          loadQuestClaimNotificationCount();
         }
 
         // Load cheese click statistics (only for authenticated users)
@@ -6814,6 +6860,12 @@
       // Update dashboard status to loading
       updateDashboardStatus('Loading dashboard data...');
       
+      // FORCE LOAD NOTIFICATIONS IMMEDIATELY
+      console.log('🔔 FORCE LOADING NOTIFICATIONS IN LOADDASHBOARDDATA...');
+      loadBugNotificationCount();
+      loadQuestClaimNotificationCount();
+      loadBossNotificationCount();
+      
       try {
         // Load basic stats (always visible)
         const statsResponse = await fetch(API_BASE_URL + '/api/admin/get-stats.php');
@@ -6968,6 +7020,13 @@
         }
         
         addLog('✅ Additional dashboard data loaded successfully');
+        
+        // Load notification counts for hero buttons
+        console.log('🔔 Loading notification counts in loadDashboardData...');
+        loadBugNotificationCount();
+        loadQuestClaimNotificationCount();
+        loadBossNotificationCount();
+        
       } catch (error) {
         console.error('❌ Error loading additional dashboard data:', error);
         addLog(`❌ Error loading additional dashboard data: ${error.message}`);
@@ -7040,6 +7099,145 @@
           // CRITICAL FIX: Update top menu stats with error values
           updateTopMenuStats(errorStats);
         });
+        
+        // Load notification counts
+        console.log('🔔 About to load notification counts...');
+        console.log('🔔 API_BASE_URL:', API_BASE_URL);
+        
+        // Load notification counts with a small delay to ensure DOM is ready
+        setTimeout(() => {
+          loadBugNotificationCount();
+          loadQuestClaimNotificationCount();
+          loadBossNotificationCount();
+        }, 1000);
+        
+        // Start auto-refresh for notification counts
+        startNotificationRefresh();
+    }
+
+    // Auto-refresh notification counts every 30 seconds
+    function startNotificationRefresh() {
+      setInterval(() => {
+        loadBugNotificationCount();
+        loadQuestClaimNotificationCount();
+        loadBossNotificationCount();
+      }, 30000); // 30 seconds
+    }
+
+    // Load bug notification count
+    function loadBugNotificationCount() {
+      console.log('🐛 Loading bug notification count...');
+      
+      fetch(API_BASE_URL + '/api/admin/get-bug-data.php')
+        .then(response => {
+          console.log('🐛 Bug API response status:', response.status);
+          return response.json();
+        })
+        .then(data => {
+          console.log('🐛 Bug API data received:', data);
+          if (data.success) {
+            const bugCount = data.bugs ? data.bugs.length : 0;
+            const pendingCount = data.bugs ? data.bugs.filter(bug => bug.status_id === 1 || bug.status_id === 2 || bug.status_id === 3 || bug.status_id === 4).length : 0;
+            
+            const bugElement = document.getElementById('bugNotifications');
+            if (bugElement) {
+              bugElement.textContent = pendingCount > 0 ? `${pendingCount} New` : pendingCount;
+              bugElement.parentElement.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+              console.log(`🐛 Bug notifications updated: ${bugCount} total, ${pendingCount} pending`);
+            } else {
+              console.error('🐛 Bug notification element not found!');
+            }
+          } else {
+            console.error('🐛 Bug API returned error:', data.error);
+          }
+        })
+        .catch(error => {
+          console.error('❌ Error loading bug notification count:', error);
+          const bugElement = document.getElementById('bugNotifications');
+          if (bugElement) {
+            bugElement.textContent = 'Error';
+          }
+        });
+    }
+
+    // Load quest claim notification count
+    function loadQuestClaimNotificationCount() {
+      console.log('🏆 Loading quest claim notification count...');
+      
+      fetch(API_BASE_URL + '/api/admin/get-quest-stats.php')
+        .then(response => {
+          console.log('🏆 Quest API response status:', response.status);
+          return response.json();
+        })
+        .then(data => {
+          console.log('🏆 Quest API data received:', data);
+          if (data.success) {
+            const claimCount = data.stats ? data.stats.pending_claims || 0 : 0;
+            
+            const questElement = document.getElementById('questClaimNotifications');
+            if (questElement) {
+              questElement.textContent = claimCount > 0 ? `${claimCount} New` : claimCount;
+              questElement.parentElement.style.background = 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)';
+              console.log(`🏆 Quest claim notifications updated: ${claimCount} pending`);
+            } else {
+              console.error('🏆 Quest notification element not found!');
+            }
+          } else {
+            console.error('🏆 Quest API returned error:', data.error);
+          }
+        })
+        .catch(error => {
+          console.error('❌ Error loading quest claim notification count:', error);
+          const questElement = document.getElementById('questClaimNotifications');
+          if (questElement) {
+            questElement.textContent = 'Error';
+          }
+        });
+    }
+
+    // Load boss notification count
+    function loadBossNotificationCount() {
+      console.log('👑 Loading boss notification count...');
+      
+      fetch(API_BASE_URL + '/api/admin/boss-level-notification.php')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const notificationCount = data.notifications ? data.notifications.length : 0;
+            const pendingCount = data.notifications ? data.notifications.filter(notif => notif.status === 'pending').length : 0;
+            
+            const bossElement = document.getElementById('bossNotifications');
+            if (bossElement) {
+              bossElement.textContent = pendingCount > 0 ? `${pendingCount} New` : pendingCount;
+              bossElement.parentElement.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+              console.log(`👑 Boss notifications: ${notificationCount} total, ${pendingCount} pending`);
+            } else {
+              console.error('👑 Boss notification element not found!');
+            }
+            
+            console.log(`👑 Boss notifications: ${notificationCount} total, ${pendingCount} pending`);
+          }
+        })
+        .catch(error => {
+          console.error('❌ Error loading boss notification count:', error);
+          const bossElement = document.getElementById('bossNotifications');
+          if (bossElement) {
+            bossElement.textContent = 'Error';
+          }
+        });
+    }
+
+    // Test notification buttons function
+    function testNotificationButtons() {
+      console.log('🔔 Testing notification buttons...');
+      addLog('🔔 Testing notification buttons...');
+      
+      // Force call all notification functions
+      loadBugNotificationCount();
+      loadQuestClaimNotificationCount();
+      loadBossNotificationCount();
+      
+      addLog('✅ Notification functions called - check console for details');
     }
 
     // Update top menu stats (the quick overview boxes)

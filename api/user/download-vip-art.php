@@ -18,11 +18,20 @@ if (!$stmt->fetch()) {
   exit("Sorry, only VIPs get this legendary cheese art.");
 }
 
-// Serve file securely
-$filename = '/var/www/html/private/vip_hd_art/original_vip_nft.png'; // Update path if needed
+// Serve file securely - Environment-aware path
+$isProduction = (strpos($_SERVER['HTTP_HOST'], 'narrrfs.world') !== false || strpos($_SERVER['HTTP_HOST'], 'render.com') !== false);
+$filename = $isProduction 
+  ? '/var/www/html/private/vip_hd_art/original_vip_nft.png'
+  : __DIR__ . '/../../private/vip_hd_art/original_vip_nft.png';
+
+// Debug information (remove in production)
+if (!$isProduction) {
+  error_log("VIP Download Debug - Host: " . $_SERVER['HTTP_HOST'] . ", Path: " . $filename . ", Exists: " . (file_exists($filename) ? 'YES' : 'NO'));
+}
+
 if (!file_exists($filename)) {
   http_response_code(404);
-  exit("File missing! Call Masterchiefe!");
+  exit("File missing! Call Masterchiefe! Path: " . $filename);
 }
 
 header('Content-Type: image/png');

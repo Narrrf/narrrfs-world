@@ -276,6 +276,31 @@ require_once 'discord-invite.php';
   </a>
 </div>
 
+<!-- Quick Action Buttons - Improved Styling -->
+<div id="quickActions" class="flex flex-col sm:flex-row gap-4 mb-8 mt-8 px-4">
+  <!-- Bingo Vault Button - Beautiful Banner Style -->
+  <div class="flex-1">
+    <div class="bg-gradient-to-r from-purple-400/90 via-purple-300 to-purple-400/90 border-2 border-purple-500 px-6 py-3 rounded-xl font-bold text-purple-900 shadow-lg mb-2 text-center">
+      🎲 Bingo Vault Access
+    </div>
+    <a href="/public/Bingo.html"
+       class="block bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-purple-500 transition-all duration-300 transform hover:scale-105 text-center">
+      🎯 Enter Bingo Vault
+    </a>
+  </div>
+  
+  <!-- Bug Report Button - Beautiful Banner Style -->
+  <div class="flex-1">
+    <div class="bg-gradient-to-r from-red-400/90 via-red-300 to-red-400/90 border-2 border-red-500 px-6 py-3 rounded-xl font-bold text-red-900 shadow-lg mb-2 text-center">
+      🐛 Bug Report System
+    </div>
+    <a href="/public/bug-report.html"
+       class="block bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-red-500 transition-all duration-300 transform hover:scale-105 text-center">
+      📝 Report Issue
+    </a>
+  </div>
+</div>
+
 <!-- 🧂 VIP Absence Fallback -->
 <div id="noCheeseJoke" class="hidden mt-4 text-sm italic text-gray-500">
   😅 ... no VIP pass? That's nacho cheese!
@@ -3999,6 +4024,7 @@ function displaySnakeAchievementsError(errorMessage) {
   }
 }
 
+
 </script>
 
 <!-- 🔥 Profile Flask + Glow & Bubbles (Bottom Right Corner) -->
@@ -4020,6 +4046,7 @@ function displaySnakeAchievementsError(errorMessage) {
                        onclick="window.location.href='<?php echo $discord_url; ?>'"
        style="cursor: pointer;" />
 </div>
+
 
 </body>
 </html>

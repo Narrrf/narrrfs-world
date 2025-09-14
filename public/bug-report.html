@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐛 Report a Bug - Narrrfs World</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="theme-color" content="#fcd34d">
+  <link rel="icon" href="favicon-phantom.png" type="image/png">
+  
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      min-height: 100vh;
+    }
+    
+    .bug-form-container {
+      background: rgba(31, 41, 55, 0.95);
+      backdrop-filter: blur(10px);
+      border: 2px solid #4b5563;
+    }
+    
+    .success-message {
+      background: linear-gradient(135deg, #059669, #047857);
+    }
+    
+    .error-message {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 shadow-lg">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="/public/profile.html" class="text-white hover:text-yellow-300 transition-colors">
+          ← Back to Profile
+        </a>
+        <h1 class="text-2xl font-bold">🐛 Report a Bug</h1>
+      </div>
+      <div class="text-sm text-purple-200">
+        Help us improve Narrrfs World!
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-6 py-8">
+    <!-- Status Messages -->
+    <div id="statusMessage" class="hidden mb-6 p-4 rounded-lg text-white text-center font-semibold"></div>
+    
+    <!-- Bug Report Form -->
+    <div class="bug-form-container rounded-xl p-8 shadow-2xl">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-white mb-2">Found a Bug?</h2>
+        <p class="text-gray-300">Help us fix it by providing detailed information about what happened.</p>
+      </div>
+      
+      <form id="bugReportForm" class="space-y-6">
+        <div>
+          <label for="bugTitle" class="block text-sm font-medium text-gray-300 mb-2">
+            Bug Title *
+          </label>
+          <input 
+            type="text" 
+            id="bugTitle" 
+            name="title"
+            required
+            class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+            placeholder="Brief description of the issue"
+          >
+        </div>
+        
+        <div>
+          <label for="bugDescription" class="block text-sm font-medium text-gray-300 mb-2">
+            Detailed Description *
+          </label>
+          <textarea 
+            id="bugDescription" 
+            name="description"
+            required
+            rows="6"
+            class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-vertical"
+            placeholder="Please describe:
+• What you were trying to do
+• What actually happened
+• Steps to reproduce the issue
+• Any error messages you saw
+• Browser and device information"
+          ></textarea>
+        </div>
+        
+        <div>
+          <label for="bugSeverity" class="block text-sm font-medium text-gray-300 mb-2">
+            Severity Level
+          </label>
+          <select 
+            id="bugSeverity" 
+            name="severity"
+            class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+          >
+            <option value="low">Low - Minor issue, doesn't affect gameplay</option>
+            <option value="medium" selected>Medium - Affects some functionality</option>
+            <option value="high">High - Major issue, affects gameplay</option>
+            <option value="critical">Critical - Game breaking, prevents play</option>
+          </select>
+        </div>
+        
+        <div class="flex gap-4 pt-4">
+          <button 
+            type="button" 
+            onclick="window.location.href='/public/profile.html'"
+            class="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit"
+            id="submitBtn"
+            class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Submit Bug Report
+          </button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Help Section -->
+    <div class="mt-8 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-xl p-6 border border-blue-500/30">
+      <h3 class="text-xl font-bold text-white mb-4">💡 Tips for Better Bug Reports</h3>
+      <div class="grid md:grid-cols-2 gap-4 text-gray-300">
+        <div>
+          <h4 class="font-semibold text-blue-300 mb-2">Be Specific</h4>
+          <p class="text-sm">Include exact steps to reproduce the issue. The more details, the faster we can fix it!</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-blue-300 mb-2">Include Context</h4>
+          <p class="text-sm">What game were you playing? What level? What device/browser?</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-blue-300 mb-2">Screenshots Help</h4>
+          <p class="text-sm">If possible, describe what you saw or any error messages.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-blue-300 mb-2">Check First</h4>
+          <p class="text-sm">Make sure you're using the latest version and try refreshing the page.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-12 py-6 text-center text-gray-400 text-sm">
+    <p>Thank you for helping improve Narrrfs World! 🧀</p>
+    <p class="mt-2">Your bug reports help us create a better gaming experience for everyone.</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('bugReportForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const statusMessage = document.getElementById('statusMessage');
+      
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Disable submit button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+        
+        // Get form data
+        const formData = new FormData(form);
+        const bugData = {
+          title: formData.get('title').trim(),
+          description: formData.get('description').trim(),
+          severity: formData.get('severity')
+        };
+        
+        // Validate required fields
+        if (!bugData.title || !bugData.description) {
+          showStatus('Please fill in both title and description.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Bug Report';
+          return;
+        }
+        
+        try {
+          const response = await fetch('/api/user/report-bug.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(bugData)
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            showStatus('✅ Bug report submitted successfully! Thank you for helping improve Narrrfs World! 🧀', 'success');
+            form.reset();
+            
+            // Redirect to profile after 3 seconds
+            setTimeout(() => {
+              window.location.href = '/public/profile.html';
+            }, 3000);
+          } else {
+            showStatus('❌ Error: ' + result.error, 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Bug Report';
+          }
+        } catch (error) {
+          console.error('Bug report error:', error);
+          showStatus('❌ Failed to submit bug report. Please try again.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Bug Report';
+        }
+      });
+      
+      function showStatus(message, type) {
+        statusMessage.textContent = message;
+        statusMessage.className = `mb-6 p-4 rounded-lg text-white text-center font-semibold ${type === 'success' ? 'success-message' : 'error-message'}`;
+        statusMessage.classList.remove('hidden');
+        
+        // Auto-hide error messages after 5 seconds
+        if (type === 'error') {
+          setTimeout(() => {
+            statusMessage.classList.add('hidden');
+          }, 5000);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
