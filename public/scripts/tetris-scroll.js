@@ -775,7 +775,7 @@ function collide(shape, row, col) {
           console.log('🚨🚨🚨 ABOUT TO CALL CHECKTETRISACHIEVEMENTS! 🚨🚨🚨');
           console.log('🔍 Function exists?', typeof checkTetrisAchievements);
           try {
-            checkTetrisAchievements(localStorage.getItem('discord_id') || '1107633105185013790', score, linesClearedTotal, Math.floor(linesClearedTotal / 20), piecesDropped, tetrisClears, lines);
+            checkTetrisAchievements(localStorage.getItem('discord_id') || '328601656659017732', score, linesClearedTotal, Math.floor(linesClearedTotal / 20), piecesDropped, tetrisClears, lines);
             console.log('✅ checkTetrisAchievements call completed successfully');
           } catch (error) {
             console.error('❌ ERROR in checkTetrisAchievements call:', error);
@@ -1017,8 +1017,8 @@ if (collide(current.shape, current.row, current.col)) {
       
         // 🛠️ Mock fallback if testing locally
         if (!discordId) {
-          discordId = "1107633105185013790"; // Santa's Discord ID for testing
-          discordName = "Santa";
+          discordId = "328601656659017732"; // Narrrf's Discord ID for testing
+          discordName = "narrrf";
           localStorage.setItem("discord_id", discordId);
           localStorage.setItem("discord_name", discordName);
         }

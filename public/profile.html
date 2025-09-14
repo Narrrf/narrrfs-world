@@ -467,7 +467,7 @@ require_once 'discord-invite.php';
                 class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border border-purple-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ml-2">
           🔄 Refresh
         </button>
-          <p class="text-xs text-blue-400 mt-2 italic">Click to view all 29 Tetris achievements</p>
+          <p class="text-xs text-blue-400 mt-2 italic">Click to view all 28 Tetris achievements</p>
         </div>
         
         <!-- 🐍 Snake Achievements Button -->
@@ -480,7 +480,7 @@ require_once 'discord-invite.php';
                 class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border border-emerald-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ml-2">
           🔄 Refresh
         </button>
-          <p class="text-xs text-green-400 mt-2 italic">Click to view all 29 Snake achievements</p>
+          <p class="text-xs text-green-400 mt-2 italic">Click to view all 28 Snake achievements</p>
         </div>
       
       <!-- 🏆 Overall Progress -->
@@ -3452,11 +3452,12 @@ async function loadSpaceInvadersAchievements() {
     const discordId = localStorage.getItem('discord_id');
     console.log('🔍 Discord ID from localStorage:', discordId);
     
-    // 🌍 Local development override - use real Discord ID with achievements
+    // 🌍 Local development override - ALWAYS use Narrrf's Discord ID for local testing
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const testDiscordId = '1107633105185013790'; // Santa's Discord ID with achievements
+    const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID with achievements
     
-    const finalDiscordId = isLocalDevelopment && (!discordId || discordId === '1337') ? testDiscordId : discordId;
+    // FORCE use Narrrf's ID for local development (ignore localStorage)
+    const finalDiscordId = isLocalDevelopment ? narrrfDiscordId : discordId;
     console.log('🔍 Final Discord ID (with local override):', finalDiscordId);
     
     if (!finalDiscordId) {
@@ -3536,7 +3537,7 @@ function displayAchievements(data) {
     const lockedEl = achievementsSection.querySelector('#lockedAchievements');
     const progressEl = achievementsSection.querySelector('#completionPercentage');
     
-  if (totalEl) totalEl.textContent = stats.total_achievements || 29;
+  if (totalEl) totalEl.textContent = stats.total_achievements || 28;
   if (unlockedEl) unlockedEl.textContent = stats.unlocked_achievements || 0;
   if (lockedEl) lockedEl.textContent = stats.locked_achievements || 25;
   if (progressEl) progressEl.textContent = (stats.completion_percentage || 0) + '%';
@@ -3675,11 +3676,12 @@ async function loadTetrisAchievements() {
     const discordId = localStorage.getItem('discord_id');
     console.log('🔍 Discord ID from localStorage:', discordId);
     
-    // Local development override
+    // Local development override - ALWAYS use Narrrf's Discord ID for local testing
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const testDiscordId = '1107633105185013790'; // Santa's Discord ID with achievements
+    const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID with achievements
     
-    const finalDiscordId = isLocalDevelopment && (!discordId || discordId === '1337') ? testDiscordId : discordId;
+    // FORCE use Narrrf's ID for local development (ignore localStorage)
+    const finalDiscordId = isLocalDevelopment ? narrrfDiscordId : discordId;
     console.log('🔍 Final Discord ID (with local override):', finalDiscordId);
     
     if (!finalDiscordId) {
@@ -3846,11 +3848,12 @@ async function loadSnakeAchievements() {
     const discordId = localStorage.getItem('discord_id');
     console.log('🔍 Discord ID from localStorage:', discordId);
     
-    // Local development override
+    // Local development override - ALWAYS use Narrrf's Discord ID for local testing
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const testDiscordId = '1107633105185013790'; // Santa's Discord ID with achievements
+    const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID with achievements
     
-    const finalDiscordId = isLocalDevelopment && (!discordId || discordId === '1337') ? testDiscordId : discordId;
+    // FORCE use Narrrf's ID for local development (ignore localStorage)
+    const finalDiscordId = isLocalDevelopment ? narrrfDiscordId : discordId;
     console.log('🔍 Final Discord ID (with local override):', finalDiscordId);
     
     if (!finalDiscordId) {
@@ -3918,7 +3921,7 @@ function displaySnakeAchievements(achievements, stats) {
   const percentageEl = achievementsSection.querySelector('#snakeAchievementsPercentage');
   
   const unlocked = stats.unlocked_achievements || stats.unlocked || 0;
-  const total = stats.total_achievements || stats.total || 29;
+  const total = stats.total_achievements || stats.total || 28;
   const locked = stats.locked_achievements || (total - unlocked);
   const percentage = stats.completion_percentage || stats.percentage || 0;
   

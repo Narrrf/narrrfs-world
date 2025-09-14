@@ -75,8 +75,8 @@ class SnakeSoundManager {
 
     // Professional sound design for Snake
     switch (type) {
-      case 'eatApple':
-        // Satisfying apple eating sound - quick ascending chirp
+      case 'eatCheese':
+        // Satisfying cheese eating sound - quick ascending chirp
         oscillator.frequency.setValueAtTime(330, this.audioContext.currentTime);
         oscillator.frequency.exponentialRampToValueAtTime(660, this.audioContext.currentTime + 0.1);
         oscillator.type = 'sine';
@@ -158,7 +158,7 @@ function initSnake() {
   
   // 🏆 Snake Achievement Tracking Variables
   let achievementsCheckedThisGame = new Set();
-  let applesEaten = 0;
+  let cheeseEaten = 0;
   let gamesPlayed = 0;
   let longestSnake = 1;
   let currentLevel = 1;
@@ -196,9 +196,9 @@ function initSnake() {
     clearInterval(gameInterval);
     resetGame();
     
-    // 🧀 Force Santa's Discord ID for testing
-    localStorage.setItem("discord_id", "1107633105185013790");
-    localStorage.setItem("discord_name", "Santa");
+    // 🧀 Force Narrrf's Discord ID for testing
+    localStorage.setItem("discord_id", "328601656659017732");
+    localStorage.setItem("discord_name", "narrrf");
     
     gameInterval = setInterval(moveSnake, 250); // slow start
     enableGlobalSnakeTouch(); // Enable touch controls when game starts
@@ -223,7 +223,7 @@ function initSnake() {
     if (btn) btn.textContent = "⏸️ Pause";
     
     // 🏆 Reset achievement tracking variables
-    applesEaten = 0;
+    cheeseEaten = 0;
     longestSnake = 1;
     currentLevel = 1;
     gameStartTime = Date.now();
@@ -395,14 +395,14 @@ function initSnake() {
     const ate = head.x === food.x && head.y === food.y;
     if (ate) {
       // 🎵 Play cheese eating sound
-      snakeSounds.playSound('eatApple');
+      snakeSounds.playSound('eatCheese');
       
       score++;
-      applesEaten++;
+      cheeseEaten++;
       longestSnake = Math.max(longestSnake, snake.length + 1);
       
       // 🏆 Update level based on cheese eaten (like Tetris levels)
-      const newLevel = Math.floor(applesEaten / 5) + 1; // Level up every 5 cheeses
+      const newLevel = Math.floor(cheeseEaten / 5) + 1; // Level up every 5 cheeses
       if (newLevel > currentLevel) {
         currentLevel = newLevel;
         console.log(`🏆 Level up! Now at level ${currentLevel}`);
@@ -420,7 +420,7 @@ function initSnake() {
       
       // 🏆 Check achievements immediately when eating cheese
       // This gives players instant feedback when they unlock achievements
-      console.log('🧀 Cheese eaten! Checking achievements...', { applesEaten, score, longestSnake, currentLevel });
+      console.log('🧀 Cheese eaten! Checking achievements...', { cheeseEaten, score, longestSnake, currentLevel });
       checkSnakeAchievements();
     } else {
       snake.pop(); // ✅ Don't grow if no cheese
@@ -502,15 +502,15 @@ function initSnake() {
   
   // 🏆 Snake Achievement Functions - Make globally accessible
   function checkSnakeAchievements() {
-    console.log('🏆 Checking Snake achievements...', { applesEaten, score, longestSnake, currentLevel });
+    console.log('🏆 Checking Snake achievements...', { cheeseEaten, score, longestSnake, currentLevel });
     
     // Check achievements based on current game state
     const achievements = [
       // Basic Achievements
-      { key: 'first_cheese', condition: applesEaten >= 1 },
-      { key: 'cheese_collector', condition: applesEaten >= 5 },
-      { key: 'cheese_hunter', condition: applesEaten >= 10 },
-      { key: 'cheese_master', condition: applesEaten >= 25 },
+      { key: 'first_cheese', condition: cheeseEaten >= 1 },
+      { key: 'cheese_collector', condition: cheeseEaten >= 5 },
+      { key: 'cheese_hunter', condition: cheeseEaten >= 10 },
+      { key: 'cheese_master', condition: cheeseEaten >= 25 },
       { key: 'speed_demon', condition: currentLevel >= 5 },
       { key: 'level_master', condition: currentLevel >= 10 },
       { key: 'score_hunter', condition: score >= 100 },
@@ -530,8 +530,18 @@ function initSnake() {
       { key: 'level_champion', condition: currentLevel >= 20 },
       { key: 'score_legend', condition: score >= 2000 },
       { key: 'score_god', condition: score >= 5000 },
-      { key: 'cheese_legend', condition: applesEaten >= 100 },
-      { key: 'snake_legend', condition: longestSnake >= 100 }
+      { key: 'cheese_legend', condition: cheeseEaten >= 100 },
+      { key: 'snake_legend', condition: longestSnake >= 100 },
+      
+      // Additional Achievements (from database)
+      { key: 'game_starter', condition: gamesPlayed >= 1 },
+      { key: 'game_player', condition: gamesPlayed >= 5 },
+      { key: 'game_master', condition: gamesPlayed >= 10 },
+      { key: 'game_legend', condition: gamesPlayed >= 25 },
+      { key: 'snake_champion', condition: score >= 2000 && longestSnake >= 50 },
+      { key: 'snake_ninja', condition: perfectGame && score >= 500 },
+      { key: 'perfectionist', condition: perfectGame && longestSnake >= 25 },
+      { key: 'ultimate_player', condition: score >= 5000 && longestSnake >= 100 && cheeseEaten >= 100 }
     ];
     
     achievements.forEach(achievement => {
@@ -561,7 +571,7 @@ function initSnake() {
     console.log('🔍 achievementsCheckedThisGame has:', Array.from(achievementsCheckedThisGame));
     
     // Get user's current achievements to check if already unlocked
-    const userId = localStorage.getItem('discord_id') || '1107633105185013790';
+    const userId = localStorage.getItem('discord_id') || '328601656659017732';
     console.log('👤 User ID:', userId);
     
     // Environment-aware API endpoint
@@ -679,7 +689,7 @@ function initSnake() {
   }
   
   function unlockSnakeAchievement(achievementKey) {
-    const userId = localStorage.getItem('discord_id') || '1107633105185013790';
+    const userId = localStorage.getItem('discord_id') || '328601656659017732';
     
     // Environment-aware API endpoint
     const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
@@ -807,8 +817,8 @@ function saveScore(finalScore) {
 
   // 🛠️ Mock fallback if testing locally
   if (!discordId) {
-    discordId = "1107633105185013790"; // Santa's Discord ID for testing
-    discordName = "Santa";
+    discordId = "328601656659017732"; // Narrrf's Discord ID for testing
+    discordName = "narrrf";
     localStorage.setItem("discord_id", discordId);
     localStorage.setItem("discord_name", discordName);
   }
@@ -820,8 +830,8 @@ function saveScore(finalScore) {
   }
 
   if (!discordId) {
-    discordId = "1107633105185013790"; // Santa's Discord ID for testing
-    discordName = "Santa";
+    discordId = "328601656659017732"; // Narrrf's Discord ID for testing
+    discordName = "narrrf";
     localStorage.setItem("discord_id", discordId);
     localStorage.setItem("discord_name", discordName);
   }

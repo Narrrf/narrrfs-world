@@ -4176,9 +4176,9 @@ let reloadButtonInterval = null;
     // 🔧 LOCAL DEVELOPMENT BYPASS - Use Santa's ID for testing
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (isLocalDevelopment && !discordId) {
-      console.log('🔓 Local development - using Santa for testing');
-      discordId = "1107633105185013790";
-      discordName = "Santa";
+      console.log('🔓 Local development - using Narrrf for testing');
+      discordId = "328601656659017732";
+      discordName = "narrrf";
       wallet = "TestWallet123456789XYZ";
       
       // Store in localStorage for consistency
@@ -4640,9 +4640,9 @@ let reloadButtonInterval = null;
   async function startGame() {
     resetGame();
     
-    // 🧀 Force Santa's Discord ID for local testing (same as Tetris and Snake)
-    localStorage.setItem("discord_id", "1107633105185013790");
-    localStorage.setItem("discord_name", "Santa");
+    // 🧀 Force Narrrf's Discord ID for local testing (same as Tetris and Snake)
+    localStorage.setItem("discord_id", "328601656659017732");
+    localStorage.setItem("discord_name", "narrrf");
     
     // 🏆 Load existing achievements to prevent spam
     await loadExistingAchievements();
