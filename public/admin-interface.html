@@ -2563,6 +2563,7 @@
           <button onclick="createNewSeason()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">🆕 New Season</button>
           <button onclick="createSeason3()" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm">🎯 Create Season 3</button>
           <button onclick="resetCurrentSeason()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">🔄 Reset Season</button>
+          <button onclick="resetSeason3()" class="bg-red-800 hover:bg-red-900 text-white px-3 py-1 rounded text-sm font-bold">🎯 RESET SEASON 3</button>
           <button onclick="exportSeasonData()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">📊 Export Data</button>
         </div>
       </div>
@@ -22028,6 +22029,142 @@ function testDatabaseConnection() {
         }
       } catch (error) {
         addLog(`❌ Season reset error: ${error.message}`);
+      }
+    }
+    
+    // 🚀 NEW: Season 3 Reset Function - Comprehensive Reset for Current Season
+    async function resetSeason3() {
+      addLog('🎯 Starting Season 3 Reset - Creating Season 4...');
+      
+      if (!confirm(`🎯 SEASON 3 RESET CONFIRMATION
+
+This will perform a COMPREHENSIVE Season 3 reset:
+
+✅ PRESERVE: All Season 3 data will be archived as historical
+✅ MARK: Top performers from Season 3 will be recognized
+✅ CREATE: Season 4 will be created and activated
+✅ RESET: All current season flags will be cleared
+✅ CLEAN: Fresh leaderboards for Season 4
+
+⚠️ This action cannot be undone!
+
+Continue with Season 3 Reset?`)) {
+        addLog('❌ Season 3 reset cancelled by user');
+        return;
+      }
+      
+      try {
+        // Show progress indicator
+        addLog('🔄 Processing Season 3 reset...');
+        const progressDiv = document.createElement('div');
+        progressDiv.id = 'season3ResetProgress';
+        progressDiv.innerHTML = `
+          <div class="bg-blue-900 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold text-blue-200 mb-2">🎯 Season 3 Reset Progress</h4>
+            <div class="space-y-2">
+              <div class="flex items-center">
+                <div class="w-4 h-4 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+                <span class="text-blue-200">Marking top performers...</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-4 h-4 bg-gray-500 rounded-full mr-2"></div>
+                <span class="text-gray-400">Preserving historical data...</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-4 h-4 bg-gray-500 rounded-full mr-2"></div>
+                <span class="text-gray-400">Creating Season 4...</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-4 h-4 bg-gray-500 rounded-full mr-2"></div>
+                <span class="text-gray-400">Resetting current season flags...</span>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Add progress to the log area
+        const logArea = document.getElementById('adminLog');
+        if (logArea) {
+          logArea.appendChild(progressDiv);
+        }
+        
+        // Call the Season 3 reset API
+        const response = await fetch(API_BASE_URL + '/api/admin/season-management.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'reset_season_3'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update progress
+          progressDiv.innerHTML = `
+            <div class="bg-green-900 p-4 rounded-lg mb-4">
+              <h4 class="font-semibold text-green-200 mb-2">✅ Season 3 Reset Complete!</h4>
+              <div class="space-y-2">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                  <span class="text-green-200">✅ Top performers marked: ${data.details?.top_performers_marked || 0}</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                  <span class="text-green-200">✅ Historical data preserved: ${data.details?.total_records_preserved || 0} records</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                  <span class="text-green-200">✅ Season 4 created: ${data.season_name || 'Season 4'}</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                  <span class="text-green-200">✅ Current season flags reset</span>
+                </div>
+              </div>
+              <div class="mt-3 text-sm text-green-300">
+                🎯 Season 3 Reset completed at ${new Date().toLocaleTimeString()}
+              </div>
+            </div>
+          `;
+          
+          addLog('✅ Season 3 reset completed successfully!');
+          addLog(`🎯 Season 4 created: ${data.season_name || 'Season 4'}`);
+          addLog(`📊 Records preserved: ${data.details?.total_records_preserved || 0}`);
+          addLog(`🏆 Top performers marked: ${data.details?.top_performers_marked || 0}`);
+          
+          // Refresh all game data
+          await refreshAllGameData();
+          
+          // Remove progress indicator after 5 seconds
+          setTimeout(() => {
+            if (progressDiv.parentNode) {
+              progressDiv.parentNode.removeChild(progressDiv);
+            }
+          }, 5000);
+          
+        } else {
+          // Show error
+          progressDiv.innerHTML = `
+            <div class="bg-red-900 p-4 rounded-lg mb-4">
+              <h4 class="font-semibold text-red-200 mb-2">❌ Season 3 Reset Failed</h4>
+              <div class="text-red-300">${data.error || 'Unknown error occurred'}</div>
+            </div>
+          `;
+          
+          addLog(`❌ Season 3 reset failed: ${data.error || 'Unknown error'}`);
+          
+          // Remove error indicator after 10 seconds
+          setTimeout(() => {
+            if (progressDiv.parentNode) {
+              progressDiv.parentNode.removeChild(progressDiv);
+            }
+          }, 10000);
+        }
+        
+      } catch (error) {
+        addLog(`❌ Season 3 reset error: ${error.message}`);
+        console.error('Season 3 reset error:', error);
       }
     }
     
