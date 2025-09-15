@@ -240,9 +240,9 @@ require_once 'discord-invite.php';
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <div>
       <h1 class="text-xl font-bold tracking-wide text-yellow-400">🧠 Narrrf's Lab – Phase 5 Portal</h1>
-      <!-- 🚀 SEASON 3 TEST PHASE MESSAGE -->
-      <div class="season-info text-xs text-green-400 animate-pulse mt-1">
-        🚀 Season 3 Test Phase Active • 99.7% Complete • Final Testing Phase
+      <!-- 🚀 SEASON 3 RESET COUNTDOWN MESSAGE -->
+      <div class="season-info text-xs text-yellow-400 animate-pulse mt-1">
+        🚀 Season 3 Reset Ready • 99.9% Complete • Final Hours Before New Season!
       </div>
     </div>
     <nav class="mobile-hide-nav space-x-4 text-sm md:text-base flex items-center">
@@ -373,15 +373,16 @@ require_once 'discord-invite.php';
       </div>
     </div>
 
-    <!-- 📊 User Stats Section -->
-    <div class="mt-6 bg-gray-700 rounded-lg p-4 shadow-inner">
-      <h2 class="font-semibold text-lg mb-2 text-yellow-300">📊 User Statistics</h2>
-      <ul class="text-sm space-y-1">
-        <li>💰 Total DSPOINC: <strong id="stats-adjustments">Loading...</strong></li>
-        <li>💸 Total Spent: <strong id="stats-sources">Loading...</strong></li>
-        <li>💎 Net Worth: <strong id="stats-roles">Loading...</strong></li>
-        <li>📅 Member Since: <strong id="stats-member-since">Loading...</strong></li>
-      </ul>
+    <!-- 🎯 SEASON 3 RESET COUNTDOWN BANNER -->
+    <div class="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white p-4 rounded-xl shadow-lg border-2 border-red-400 mb-6 text-center">
+      <div class="text-lg font-bold mb-2">🚀 SEASON 3 RESET COUNTDOWN</div>
+      <div class="text-sm mb-2">The Ultimate Cheese Challenge Begins Soon!</div>
+      <div id="countdown-timer" class="text-2xl font-bold text-yellow-200">
+        08:00:00
+      </div>
+      <div class="text-xs mt-2 text-yellow-100">
+        All achievements will be preserved • New season starts fresh!
+      </div>
     </div>
 
     <!-- 🛍️ Inventory & Purchase History Section -->
@@ -1499,9 +1500,9 @@ require_once 'discord-invite.php';
   <div class="text-center">
     <p class="text-sm text-yellow-200 mb-2">The leaderboard will be reset for Season 3 launch</p>
     <div id="countdownTimer" class="text-lg font-mono font-bold text-yellow-100">
-      <span id="countdownDays">--</span> days, 
-      <span id="countdownHours">--</span> hours, 
-      <span id="countdownMinutes">--</span> minutes
+      <span id="countdownDays">00</span> days, 
+      <span id="countdownHours">08</span> hours, 
+      <span id="countdownMinutes">00</span> minutes
     </div>
     <p class="text-xs text-yellow-300 mt-2 italic">Keep playing! Your achievements will be preserved 🏆</p>
   </div>
@@ -2043,51 +2044,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   loadCombinedLeaderboards();
 </script>
 
-<!-- 🧀 Season 3 Countdown Timer -->
-<script>
-  function updateCountdown() {
-    // Set Season 3 launch date (adjust as needed)
-    const season3Launch = new Date('2025-09-16T00:00:00Z'); // October 1, 2025
-    const now = new Date();
-    const timeLeft = season3Launch - now;
-    
-    if (timeLeft > 0) {
-      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      
-      document.getElementById('countdownDays').textContent = days.toString().padStart(2, '0');
-      document.getElementById('countdownHours').textContent = hours.toString().padStart(2, '0');
-      document.getElementById('countdownMinutes').textContent = minutes.toString().padStart(2, '0');
-      
-      // Update countdown every minute
-      setTimeout(updateCountdown, 60000);
-    } else {
-      // Season 3 has launched - hide countdown and show launch message
-      const countdownElement = document.getElementById('season3Countdown');
-      if (countdownElement) {
-        countdownElement.innerHTML = `
-          <div class="flex items-center justify-center gap-3 mb-2">
-            <span class="text-2xl">🎉</span>
-            <h3 class="text-lg font-bold text-green-100">Season 3 is LIVE!</h3>
-            <span class="text-2xl">🎉</span>
-          </div>
-          <div class="text-center">
-            <p class="text-sm text-green-200">Welcome to Season 3! The leaderboard has been reset.</p>
-            <p class="text-xs text-green-300 mt-2 italic">Start fresh and climb the ranks! 🚀</p>
-          </div>
-        `;
-        countdownElement.className = countdownElement.className.replace('from-yellow-400/20 via-orange-400/20 to-red-400/20', 'from-green-400/20 via-emerald-400/20 to-teal-400/20');
-        countdownElement.className = countdownElement.className.replace('text-yellow-200', 'text-green-200');
-        countdownElement.className = countdownElement.className.replace('ring-yellow-400/30', 'ring-green-400/30');
-        countdownElement.className = countdownElement.className.replace('border-yellow-400/20', 'border-green-400/20');
-      }
-    }
-  }
-  
-  // Start countdown when page loads
-  updateCountdown();
-</script>
 
 
 <!-- 🎮 Button Triggers and Init -->
@@ -2517,6 +2473,56 @@ window.claimQuest = async function(questId, btn) {
     btn.disabled = false;
   }
 };
+
+// 🎯 SEASON 3 RESET COUNTDOWN TIMER - FIXED TARGET TIME
+function updateCountdown() {
+  // FIXED TARGET TIME: September 16, 2025 at 04:10 AM (8 hours from push time)
+  const targetTime = new Date('2025-09-16T04:10:00').getTime();
+  
+  const timer = setInterval(() => {
+    const now = new Date().getTime();
+    const distance = targetTime - now;
+    
+    if (distance < 0) {
+      // Update both countdowns when time expires
+      const topTimer = document.getElementById('countdown-timer');
+      const daysEl = document.getElementById('countdownDays');
+      const hoursEl = document.getElementById('countdownHours');
+      const minutesEl = document.getElementById('countdownMinutes');
+      
+      if (topTimer) topTimer.innerHTML = "🚀 SEASON 3 RESET NOW!";
+      if (daysEl) daysEl.textContent = "00";
+      if (hoursEl) hoursEl.textContent = "00";
+      if (minutesEl) minutesEl.textContent = "00";
+      
+      clearInterval(timer);
+      return;
+    }
+    
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+    // Update top countdown (HH:MM:SS format)
+    const topTimer = document.getElementById('countdown-timer');
+    if (topTimer) {
+      topTimer.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Update leaderboard countdown (days, hours, minutes format)
+    const daysEl = document.getElementById('countdownDays');
+    const hoursEl = document.getElementById('countdownHours');
+    const minutesEl = document.getElementById('countdownMinutes');
+    
+    if (daysEl) daysEl.textContent = days.toString().padStart(2, '0');
+    if (hoursEl) hoursEl.textContent = hours.toString().padStart(2, '0');
+    if (minutesEl) minutesEl.textContent = minutes.toString().padStart(2, '0');
+  }, 1000);
+}
+
+// Start countdown when page loads
+document.addEventListener('DOMContentLoaded', updateCountdown);
 
 // 🎯 WL Role Button Logic
 async function checkWLRoleAndShowButton() {
