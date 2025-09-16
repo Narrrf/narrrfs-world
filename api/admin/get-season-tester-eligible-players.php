@@ -19,11 +19,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $headers = getallheaders();
 $authToken = $headers['Authorization'] ?? '';
 
+// Remove "Bearer " prefix if present
+if (strpos($authToken, 'Bearer ') === 0) {
+    $authToken = substr($authToken, 7);
+}
+
 // Check for Discord bot token (more reliable than ENV)
 $validTokens = [
     $_ENV['DISCORD_BOT_SECRET'] ?? '',
-    $_ENV['DISCORD_SECRET'] ?? '',
-    'DISCORD_BOT_SECRET_PLACEHOLDER' // Will be replaced with actual token
+    $_ENV['DISCORD_SECRET'] ?? ''
 ];
 
 if (empty($authToken) || !in_array($authToken, $validTokens)) {

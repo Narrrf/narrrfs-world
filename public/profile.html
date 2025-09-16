@@ -242,7 +242,7 @@ require_once 'discord-invite.php';
       <h1 class="text-xl font-bold tracking-wide text-yellow-400">🧠 Narrrf's Lab – Phase 5 Portal</h1>
       <!-- 🚀 SEASON 3 RESET COUNTDOWN MESSAGE -->
       <div class="season-info text-xs text-yellow-400 animate-pulse mt-1">
-        🚀 Season 3 Reset Ready • 99.9% Complete • Final Hours Before New Season!
+        🚀 Season 3 Reset In Progress • 4 Hours Remaining • Final Preparations!
       </div>
     </div>
     <nav class="mobile-hide-nav space-x-4 text-sm md:text-base flex items-center">
@@ -377,11 +377,12 @@ require_once 'discord-invite.php';
     <div class="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white p-4 rounded-xl shadow-lg border-2 border-red-400 mb-6 text-center">
       <div class="text-lg font-bold mb-2">🚀 SEASON 3 RESET COUNTDOWN</div>
       <div class="text-sm mb-2">The Ultimate Cheese Challenge Begins Soon!</div>
+      <div class="text-xs mb-2 text-yellow-100 italic">Sorry Extended Fam - Working hard to get everything perfect! 🧀</div>
       <div id="countdown-timer" class="text-2xl font-bold text-yellow-200">
         08:00:00
       </div>
       <div class="text-xs mt-2 text-yellow-100">
-        All achievements will be preserved • New season starts fresh!
+        Season Tester roles being granted • Final preparations in progress
       </div>
     </div>
 
@@ -1498,13 +1499,14 @@ require_once 'discord-invite.php';
     <span class="text-2xl">🧀</span>
   </div>
   <div class="text-center">
-    <p class="text-sm text-yellow-200 mb-2">The leaderboard will be reset for Season 3 launch</p>
+    <p class="text-sm text-yellow-200 mb-2">Season 3 reset in progress - 4 hours remaining</p>
+    <p class="text-xs text-yellow-300 mb-2 italic">Sorry Extended Fam - Working hard to get everything perfect! 🧀</p>
     <div id="countdownTimer" class="text-lg font-mono font-bold text-yellow-100">
       <span id="countdownDays">00</span> days, 
       <span id="countdownHours">08</span> hours, 
       <span id="countdownMinutes">00</span> minutes
     </div>
-    <p class="text-xs text-yellow-300 mt-2 italic">Keep playing! Your achievements will be preserved 🏆</p>
+    <p class="text-xs text-yellow-300 mt-2 italic">Season Tester roles being granted • Keep playing! Your achievements will be preserved 🏆</p>
   </div>
 </div>
 
@@ -2476,8 +2478,8 @@ window.claimQuest = async function(questId, btn) {
 
 // 🎯 SEASON 3 RESET COUNTDOWN TIMER - FIXED TARGET TIME
 function updateCountdown() {
-  // FIXED TARGET TIME: September 16, 2025 at 04:10 AM (8 hours from push time)
-  const targetTime = new Date('2025-09-16T04:10:00').getTime();
+  // FIXED TARGET TIME: September 16, 2025 at 08:10 AM (4 more hours for Season 3 reset work)
+  const targetTime = new Date('2025-09-16T08:10:00').getTime();
   
   const timer = setInterval(() => {
     const now = new Date().getTime();

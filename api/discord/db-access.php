@@ -26,8 +26,16 @@ function get_auth_token() {
 }
 
 $auth_token = get_auth_token();
-$valid_token = $_ENV['DISCORD_BOT_SECRET'] ?? getenv('DISCORD_BOT_SECRET');
-if ($auth_token !== $valid_token) {
+$valid_tokens = [
+    $_ENV['DISCORD_BOT_SECRET'] ?? getenv('DISCORD_BOT_SECRET'),
+    $_ENV['DISCORD_SECRET'] ?? getenv('DISCORD_SECRET')
+];
+
+// Debug logging
+error_log('[DB API DEBUG] Received token: ' . ($auth_token ? substr($auth_token, 0, 10) . '...' : 'NO TOKEN'));
+error_log('[DB API DEBUG] Valid tokens: ' . implode(', ', array_map(function($t) { return $t ? substr($t, 0, 10) . '...' : 'EMPTY'; }, $valid_tokens)));
+
+if (!in_array($auth_token, $valid_tokens)) {
     outputJson(['success' => false, 'error' => 'Unauthorized']);
 }
 
