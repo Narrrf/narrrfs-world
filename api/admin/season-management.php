@@ -6,7 +6,20 @@ $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 $db = new PDO('sqlite:' . $dbPath);
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$action = $_POST['action'] ?? $_GET['action'] ?? '';
+// Handle both form data and JSON input
+$action = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['action'])) {
+        $action = $_POST['action'];
+    } else {
+        // Handle JSON input
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
+        $action = $data['action'] ?? '';
+    }
+} else {
+    $action = $_GET['action'] ?? '';
+}
 
 try {
     switch ($action) {
@@ -627,11 +640,11 @@ function resetSeason3($db) {
         
         // 4. Cheese Hunt top performers (from tbl_cheese_clicks)
         $stmt = $db->prepare("
-            SELECT user_wallet as discord_id, total_clicks as score, 'cheese_hunt' as game 
+            SELECT user_wallet as discord_id, COUNT(*) as score, 'cheese_hunt' as game 
             FROM tbl_cheese_clicks 
             WHERE is_current_season = 1
             GROUP BY user_wallet
-            ORDER BY total_clicks DESC 
+            ORDER BY COUNT(*) DESC 
             LIMIT 3
         ");
         $stmt->execute();
