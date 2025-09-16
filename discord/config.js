@@ -5,8 +5,9 @@ module.exports = {
     clientId: process.env.DISCORD_CLIENT_ID || 'your-client-id',
     guildId: process.env.DISCORD_GUILD_ID || process.env.DISCORD_GUILD || '1332015322546311218', // supports both
 
-    // API configuration
-    apiUrl: process.env.API_URL || 'https://narrrfs.world',
+    // API configuration - detect local vs production
+    // Default to localhost for local development, production for deployed environments
+    apiUrl: process.env.API_URL || (process.platform === 'win32' ? 'http://localhost' : 'https://narrrfs.world'),
 
     // Command configuration
     commandsDir: './commands',

@@ -285,13 +285,17 @@ try {
             error_log("Search API: Input data: " . json_encode($input));
             error_log("Search API: Database path: " . __DIR__ . '/../config/database.php');
             
-            // Search by Discord ID or username - using same logic as bot
+            // Search by Discord ID or username - enhanced to include all users
             $stmt = $db->prepare('
-                SELECT us.user_id, SUM(us.score) as total_score, u.username, u.discord_id
-                FROM tbl_user_scores us
-                LEFT JOIN tbl_users u ON us.user_id = u.discord_id
-                WHERE us.user_id LIKE ? OR u.username LIKE ?
-                GROUP BY us.user_id
+                SELECT DISTINCT 
+                    COALESCE(us.user_id, u.discord_id) as user_id, 
+                    COALESCE(SUM(us.score), 0) as total_score, 
+                    u.username, 
+                    u.discord_id
+                FROM tbl_users u
+                LEFT JOIN tbl_user_scores us ON u.discord_id = us.user_id
+                WHERE u.discord_id LIKE ? OR u.username LIKE ?
+                GROUP BY u.discord_id, u.username
                 ORDER BY total_score DESC
                 LIMIT 10
             ');

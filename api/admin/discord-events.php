@@ -42,9 +42,10 @@ if ($auth_header && strpos($auth_header, 'Bearer ') === 0) {
     } else {
         if (DEBUG) {
             error_log("Bot token mismatch. Got: " . ($bot_token ? substr($bot_token, 0, 10) . "..." : "NULL"));
-            error_log("Environment check - DISCORD_BOT_SECRET: " . (getenv('DISCORD_BOT_SECRET') ? "SET" : "NOT SET"));
-            error_log("Environment check - DISCORD_SECRET: " . (getenv('DISCORD_SECRET') ? "SET" : "NOT SET"));
+            error_log("Environment check - DISCORD_BOT_SECRET: " . (getenv('DISCORD_BOT_SECRET') ? "SET (" . substr(getenv('DISCORD_BOT_SECRET'), 0, 10) . "...)" : "NOT SET"));
+            error_log("Environment check - DISCORD_SECRET: " . (getenv('DISCORD_SECRET') ? "SET (" . substr(getenv('DISCORD_SECRET'), 0, 10) . "...)" : "NOT SET"));
             error_log("Environment check - DISCORD_BOT_TOKEN: " . (getenv('DISCORD_BOT_TOKEN') ? "SET" : "NOT SET"));
+            error_log("Expected tokens array: " . json_encode($expected_tokens));
         }
     }
 }
