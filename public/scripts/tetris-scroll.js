@@ -186,15 +186,15 @@ const TETRIS_MOVE_THROTTLE = 100; // Reduced throttle for more responsive contro
 let tetrisIsHolding = false;
 let tetrisHoldInterval = null;
 let tetrisRotationTimer = null; // Timer for delayed rotation
-const TETRIS_HOLD_DELAY = 100; // Reduced delay before hold starts (ms) - was 200
-const TETRIS_HOLD_INTERVAL = 50; // Reduced interval between drops while holding (ms) - was 100
+const TETRIS_HOLD_DELAY = 50; // Reduced delay for more responsive hold-to-drop (ms) - was 100
+const TETRIS_HOLD_INTERVAL = 30; // Faster interval for more responsive hold-to-drop (ms) - was 50
 let tetrisHoldStartTime = 0;
 
 // 🎮 Hold-to-drop functions
 function startTetrisHold() {
   if (tetrisIsHolding) return; // Already holding
   
-  console.log('📱 Starting hold-to-drop');
+  console.log('📱 Starting hold-to-drop - delay:', TETRIS_HOLD_DELAY, 'ms, interval:', TETRIS_HOLD_INTERVAL, 'ms');
   tetrisIsHolding = true;
   tetrisHoldStartTime = Date.now();
   
@@ -334,8 +334,8 @@ function handleTouchStart(e) {
   console.log('📱 Touch start position:', tetrisTouchStartX, tetrisTouchStartY);
   console.log('📱 Touch state reset for new gesture');
 
-  // 🎮 Start hold-to-drop timer (will be cancelled if user moves finger)
-  console.log('📱 Touch start - starting hold timer');
+  // 🎮 Start hold-to-drop timer (will be cancelled if user moves finger significantly)
+  console.log('📱 Touch start - starting hold timer with delay:', TETRIS_HOLD_DELAY, 'ms');
   tetrisRotationTimer = setTimeout(() => {
     // Check if touch is still at the same position (no movement)
     const timeSinceStart = Date.now() - tetrisTouchStartTime;
@@ -362,9 +362,9 @@ function handleTouchMove(e) {
   const touchTime = Date.now() - tetrisTouchStartTime;
   const currentTime = Date.now();
   
-  // 🎮 Cancel hold-to-drop and rotation timer if user moves finger
-  if (tetrisIsHolding) {
-    console.log('📱 Finger moved - cancelling hold-to-drop');
+  // 🎮 Only cancel hold-to-drop if user moves finger significantly (not just small movements)
+  if (tetrisIsHolding && (Math.abs(deltaX) > 20 || Math.abs(deltaY) > 20)) {
+    console.log('📱 Significant finger movement detected - cancelling hold-to-drop');
     stopTetrisHold();
   }
   
