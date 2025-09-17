@@ -1,0 +1,733 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>🧀 Space Cheese Invaders - Professional Gaming</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    /* 🚀 NEW: Prevent mobile screenshot and selection issues */
+    * {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Allow text selection in specific areas if needed */
+    .allow-select {
+      -webkit-user-select: text;
+      -khtml-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+    
+    @keyframes pop {
+      0% { transform: scale(0.9); opacity: 0.3; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: pop 0.4s ease-out;
+    }
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    .animate-fade-in {
+      animation: fade-in 0.3s ease-out;
+    }
+    
+    /* 🆘 NEW: Mobile-friendly game panel styles */
+    @media (max-width: 768px) {
+      #game-panel-overlay {
+        padding: 10px;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      
+      #game-panel-overlay > div {
+        max-width: 95vw;
+        max-height: 95vh;
+        padding: 20px;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      
+      #game-panel-overlay button {
+        min-height: 60px;
+        font-size: 0.9em;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      
+      #game-panel-overlay h2 {
+        font-size: 1.3em;
+      }
+      
+      #game-panel-overlay h3 {
+        font-size: 1.1em;
+      }
+    }
+    
+    /* 🎮 Game panel button animations */
+    #game-panel-btn {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    
+    #game-panel-btn:hover {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    }
+    
+    #game-panel-btn:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+
+<body class="bg-[#2f3136] text-white font-sans min-h-screen">
+
+<!-- 🔰 Header -->
+<header class="w-full bg-gradient-to-r from-gray-900 to-gray-800 py-4 px-6 text-yellow-400 shadow-lg border-b border-yellow-400/30">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+      <div class="text-2xl">🧀</div>
+      <div>
+        <h1 class="text-xl font-bold tracking-wide">Space Cheese Invaders</h1>
+        <p class="text-xs text-gray-400">Professional Gaming Platform</p>
+      </div>
+    </div>
+    <nav class="space-x-4 text-sm md:text-base flex items-center">
+      <a href="profile.html" class="hover:text-pink-400 transition-colors duration-200">← Back to Profile</a>
+    </nav>
+  </div>
+</header>
+
+<!-- 🚀 SPACE INVADERS PANEL -->
+<section id="space-cheese-invaders" class="max-w-6xl w-full mx-auto px-4 mt-8 flex flex-col items-center justify-center">
+  <section class="relative bg-black text-yellow-300 py-6 px-6 rounded-3xl shadow-xl ring-4 ring-yellow-400/40 max-w-md w-full">
+    <div class="absolute top-4 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow animate-pulse z-10">
+      🚀 SPACE INVADERS
+    </div>
+
+    <h2 class="text-center text-2xl font-bold mb-3 text-yellow-100 drop-shadow">SPACE CHEESE INVADERS</h2>
+    
+    <!-- 🎮 Game Controls - Moved to top for better UX -->
+    <div class="text-center mb-4 space-y-2">
+      <button id="start-space-invaders-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
+      <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
+      <p class="text-xs text-gray-400">💡 Press 'P' to pause during gameplay</p>
+    </div>
+    
+    <div class="relative">
+      <canvas id="space-invaders-canvas" width="400" height="600" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg w-full max-w-md h-auto" style="max-height: 60vh;"></canvas>
+
+      <div id="space-invaders-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
+        5
+      </div>
+    </div>
+
+    <!-- 🎮 Mobile Controls -->
+    <div id="mobile-controls" class="block md:hidden mt-3 flex flex-col items-center space-y-2">
+      <!-- 🆘 NEW: Enhanced mobile controls with game panel -->
+      <div class="text-center p-3 bg-gray-800 rounded-lg border border-yellow-400">
+        <p class="text-yellow-300 font-bold mb-2">📱 MOBILE CONTROLS</p>
+        <p class="text-sm text-gray-300 mb-2">🎮 <strong>Swipe on canvas to move ship</strong></p>
+        <p class="text-sm text-gray-300 mb-2">👆 <strong>Tap on canvas to shoot</strong></p>
+        <p class="text-sm text-yellow-300 font-bold">🎮 Use GAME PANEL button (bottom right) for all controls!</p>
+      </div>
+    </div>
+
+    <p id="space-invaders-score" class="text-center mt-4 text-sm font-semibold text-yellow-200 animate-pulse">
+      💰 Space Invaders Score: $0 DSPOINC
+    </p>
+    
+    <!-- 🚀 NEW: Weapon Display -->
+    <p id="weapon-display" class="text-center mt-2 text-sm font-semibold text-cyan-300">
+      🔫 Weapon: NORMAL
+    </p>
+
+    <div class="text-xs italic text-center text-gray-500 mt-1 mb-2">
+      🎮 Controls: WASD/Arrows to move (up/down/left/right), Space to shoot, P to pause, T to toggle auto-shoot<br>
+      📱 Mobile: Swipe on canvas to move, tap to shoot, or use 🎮 GAME PANEL button for all controls<br>
+      🚀 NEW: Enhanced mobile controls with popup game panel - no need to pause!
+    </div>
+  </section>
+</section>
+
+<!-- 🎯 USER STATS SECTION -->
+<section id="user-stats-section" class="max-w-6xl w-full mx-auto px-4 mt-8 mb-8">
+  <div class="bg-gradient-to-r from-gray-800/90 to-gray-700/90 rounded-2xl border border-yellow-400/30 p-6 shadow-xl">
+    <div class="text-center mb-6">
+      <h3 class="text-2xl font-bold text-yellow-300 mb-2">🎮 Your Space Cheese Invaders Stats</h3>
+      <p class="text-gray-400 text-sm">Track your progress and achievements</p>
+    </div>
+    
+    <!-- User Stats Grid -->
+    <div id="user-stats-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Loading State -->
+      <div id="stats-loading" class="col-span-full text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
+        <p class="text-gray-400 mt-2">Loading your stats...</p>
+      </div>
+      
+      <!-- Game Stats -->
+      <div id="game-stats" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center">
+          📊 Game Statistics
+        </h4>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-400">Games Played:</span>
+            <span id="total-games" class="text-yellow-300 font-bold">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Best Score:</span>
+            <span id="best-score" class="text-yellow-300 font-bold">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Total Score:</span>
+            <span id="total-score" class="text-yellow-300 font-bold">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">DSPOINC Earned:</span>
+            <span id="dspoin-earned" class="text-green-400 font-bold">-</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Achievements -->
+      <div id="achievements" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center">
+          🏆 Achievements
+        </h4>
+        <div id="achievements-list" class="space-y-2 text-sm max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-yellow-400 scrollbar-track-gray-700">
+          <p class="text-gray-400">Loading achievements...</p>
+        </div>
+      </div>
+      
+      <!-- Recent Games -->
+      <div id="recent-games" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center">
+          🎯 Recent Games
+        </h4>
+        <div id="recent-games-list" class="space-y-2 text-sm">
+          <p class="text-gray-400">Loading recent games...</p>
+        </div>
+      </div>
+      
+      <!-- Leaderboard -->
+      <div id="leaderboard" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center">
+          🏆 Leaderboard
+        </h4>
+        <div id="leaderboard-content" class="space-y-2 text-sm">
+          <p class="text-gray-400">Loading leaderboard...</p>
+        </div>
+        <button id="refresh-leaderboard" class="mt-3 w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-lg transition-colors duration-200">
+          🔄 Refresh
+        </button>
+      </div>
+      
+      <!-- Store -->
+      <div id="store" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center">
+          🛒 Store
+          <span class="ml-2 text-xs text-orange-400">🚧</span>
+        </h4>
+        <div class="space-y-3 text-sm">
+          <div class="text-center">
+            <p class="text-gray-400 mb-3">Upgrade your Space Cheese Invaders experience!</p>
+            <div class="space-y-2 text-xs text-gray-300">
+              <p>🎨 Custom Backgrounds</p>
+              <p>🚀 Special Ships</p>
+              <p>💥 Unique Shots</p>
+              <p>✨ Power-ups</p>
+            </div>
+          </div>
+          <a href="profile.html#store" class="block w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-center font-bold px-4 py-2 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+            🛒 Visit Store
+          </a>
+          <p class="text-xs text-gray-500 text-center">Coming Soon!</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Login Prompt -->
+    <div id="login-prompt" class="hidden text-center py-8">
+      <div class="bg-gray-900/50 rounded-xl p-6 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3">🔐 Login Required</h4>
+        <p class="text-gray-400 mb-4">Sign in to view your Space Invaders stats and achievements</p>
+        <a href="profile.html" class="inline-block bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg transition-colors duration-200">
+          🚀 Go to Profile
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 🧠 MODALS GAMEOVER -->
+<div id="space-invaders-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+  <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
+    <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
+    <p id="space-invaders-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+  </div>
+</div>
+
+<div id="space-invaders-win-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
+  <div class="bg-green-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-green-400 max-w-xs w-full animate-fade-in">
+    <h2 class="text-3xl font-extrabold mb-3 text-green-900 drop-shadow">🏆 VICTORY!</h2>
+    <p id="space-invaders-win-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+    <button onclick="window.location.reload()" class="bg-green-400 hover:bg-green-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+  </div>
+</div>
+
+<!-- 🍩 Footer -->
+<footer class="text-center mt-16 mb-10">
+  <!-- Back to Top Link -->
+  <div class="mb-6">
+    <a href="#top" class="text-sm text-gray-500 hover:text-pink-500 transition-colors duration-200">
+      🔝 Back to Top
+    </a>
+  </div>
+  
+  <!-- 🧀 Narrrf's Cheese Universe Section -->
+  <div class="mb-8 p-6 bg-gradient-to-r from-gray-800/80 to-gray-700/80 rounded-xl border border-yellow-400/30">
+    <div class="text-lg font-bold text-yellow-300 mb-4">
+      🧀 Narrrf's Cheese Universe
+    </div>
+    <div class="text-sm text-gray-300 mb-6">
+      Where gaming meets cheese innovation
+    </div>
+    
+    <!-- Quick Links -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <a href="/index.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
+        🏠 Home
+      </a>
+      <a href="/whitepaper-pro.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
+        📜 Read the Whitepaper
+      </a>
+      <a href="/mint.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
+        🎨 Mint Your NFT
+      </a>
+      <a href="/profile.html" class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200 font-medium">
+        🎭 Get Roles
+      </a>
+    </div>
+    
+    <!-- Socials -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <a href="https://x.com/narrrf12345" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium">
+        🐦 Twitter / X
+      </a>
+      <a href="https://discord.gg/CvstbUQ5yX" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 transition-colors duration-200 font-medium">
+        🎮 Join Discord
+      </a>
+      <a href="https://www.clubgg.com/" target="_blank" rel="noopener noreferrer" class="text-green-400 hover:text-green-300 transition-colors duration-200 font-medium">
+        🃏 Poker ClubGG
+      </a>
+      <a href="https://discord.gg/CvstbUQ5yX" target="_blank" rel="noopener noreferrer" class="text-purple-400 hover:text-purple-300 transition-colors duration-200 font-medium">
+        📧 Open a Ticket
+      </a>
+    </div>
+    
+    <!-- Contact & Location -->
+    <div class="text-xs text-gray-400 mb-4">
+      🌍 Web3 Only – Austria Based
+    </div>
+  </div>
+  
+  <!-- Legal & Important Links - More Prominent -->
+  <div class="mb-6 p-4 bg-gradient-to-r from-gray-800/60 to-gray-700/60 rounded-lg border border-blue-400/30">
+    <div class="text-sm font-semibold text-blue-300 mb-3">
+      📋 Important Legal & Support Links
+    </div>
+    <div class="flex flex-wrap justify-center gap-6 text-sm">
+      <a href="/privacy-policy.html" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium px-3 py-2 bg-gray-700/70 rounded-lg border border-blue-400/50 hover:bg-gray-600 hover:shadow-md">
+        🍪 Privacy Policy
+      </a>
+      <a href="/faq.html" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium px-3 py-2 bg-gray-700/70 rounded-lg border border-blue-400/50 hover:bg-gray-600 hover:shadow-md">
+        ❓ FAQ
+      </a>
+      <a href="/profile.html" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 font-medium px-3 py-2 bg-gray-700/70 rounded-lg border border-blue-400/50 hover:bg-gray-600 hover:shadow-md">
+        👤 Profile
+      </a>
+    </div>
+  </div>
+  
+  <!-- Copyright & Branding -->
+  <div class="pt-6 border-t border-yellow-400/30 text-xs text-gray-400">
+    <div class="mb-2">
+      © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
+    </div>
+    <div class="text-gray-500">
+      🚀 Powered by the ultimate cheese gaming technology
+    </div>
+  </div>
+</footer>
+
+<!-- 🧀 Load Space Cheese Invaders Script -->
+<script src="scripts/space-cheese-invaders.js"></script>
+
+<!-- 🧪 Load Boss Test Helper Script -->
+<script src="scripts/boss-test-helper.js"></script>
+
+<!-- 🔄 Load Boss Reset Script -->
+<script src="scripts/reset-boss-spawning.js"></script>
+
+<!-- 🎮 Game Event Listeners -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🎮 Space Invaders Test Page Loaded');
+  
+  const startBtn = document.getElementById('start-space-invaders-btn');
+  const pauseBtn = document.getElementById('pause-space-invaders-btn');
+  
+  if (startBtn) {
+    console.log('✅ Start button found');
+    startBtn.addEventListener('click', function() {
+      console.log('🚀 Start button clicked');
+      if (window.initSpaceInvaders) {
+        console.log('✅ Calling initSpaceInvaders');
+        window.initSpaceInvaders();
+        // Start the game immediately after initialization
+        if (window.startGameWithCountdown) {
+          console.log('🚀 Starting game with countdown');
+          window.startGameWithCountdown();
+        } else {
+          console.log('🚀 Starting game directly');
+          window.startGame();
+        }
+        startBtn.disabled = true;
+        startBtn.textContent = '🎮 Playing...';
+      } else {
+        console.error('❌ initSpaceInvaders not available');
+      }
+    });
+  } else {
+    console.error('❌ Start button not found');
+  }
+  
+  if (pauseBtn) {
+    console.log('✅ Pause button found');
+    pauseBtn.addEventListener('click', function() {
+      console.log('⏸️ Pause button clicked');
+      // Pause functionality will be handled by the game script
+    });
+  } else {
+    console.error('❌ Pause button not found');
+  }
+  
+  // Listen for game end events
+  window.addEventListener('spaceInvadersGameEnd', function() {
+    console.log('🎮 Game ended, resetting start button');
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.textContent = '▶️ Start';
+    }
+  });
+});
+</script>
+
+<!-- 🎯 USER STATS JAVASCRIPT -->
+<script>
+// Global variables for user stats system
+let apiBaseUrl;
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🎯 User Stats System Loading...');
+  
+  // Use existing isProduction from space-cheese-invaders.js
+  // Environment detection
+  const isProduction = window.location.hostname === 'narrrfs.world';
+  apiBaseUrl = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+  
+  console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+  console.log(`🔗 API Base URL: ${apiBaseUrl}`);
+  
+  // Check if user is logged in
+  const discordId = localStorage.getItem('discord_id');
+  const discordName = localStorage.getItem('discord_name');
+  
+  // Local development bypass - use Narrrf's ID (has achievements) if no session
+  if (!discordId && !isProduction) {
+    console.log('🔧 Local development: Using Narrrf\'s Discord ID (has achievements)');
+    const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID with achievements
+    localStorage.setItem('discord_id', narrrfDiscordId);
+    localStorage.setItem('discord_name', 'Narrrf');
+    console.log(`✅ Test user loaded: Narrrf (${narrrfDiscordId})`);
+    loadUserStats(narrrfDiscordId);
+    return;
+  }
+  
+  if (!discordId) {
+    console.log('❌ No user session found - showing login prompt');
+    showLoginPrompt();
+    return;
+  }
+  
+  console.log(`✅ User logged in: ${discordName} (${discordId})`);
+  loadUserStats(discordId);
+});
+
+function showLoginPrompt() {
+  document.getElementById('stats-loading').classList.add('hidden');
+  document.getElementById('login-prompt').classList.remove('hidden');
+}
+
+async function loadUserStats(discordId) {
+  try {
+    console.log('📊 Loading user stats...');
+    
+    // Load game stats
+    await loadGameStats(discordId);
+    
+    // Load achievements
+    await loadAchievements(discordId);
+    
+    // Load leaderboard
+    await loadLeaderboard(discordId);
+    
+    // Hide loading and show stats
+    document.getElementById('stats-loading').classList.add('hidden');
+    document.getElementById('game-stats').classList.remove('hidden');
+    document.getElementById('achievements').classList.remove('hidden');
+    document.getElementById('leaderboard').classList.remove('hidden');
+    document.getElementById('store').classList.remove('hidden');
+    
+    console.log('✅ User stats loaded successfully');
+    
+  } catch (error) {
+    console.error('❌ Error loading user stats:', error);
+    showError('Failed to load stats. Please try again.');
+  }
+}
+
+async function loadGameStats(discordId) {
+  try {
+    console.log('📊 Loading game stats...');
+    
+    // Use user-game-missions.php for game statistics (total_games, best_score, etc.)
+    const response = await fetch(`${apiBaseUrl}/api/user/user-game-missions.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: discordId })
+    });
+    
+    const data = await response.json();
+    console.log('📊 Game stats API response:', data);
+    
+    if (data.success && data.games && data.games.space_invaders && data.games.space_invaders.stats) {
+      const stats = data.games.space_invaders.stats;
+      
+      document.getElementById('total-games').textContent = stats.total_games || '0';
+      document.getElementById('best-score').textContent = formatNumber(stats.best_score || 0);
+      document.getElementById('total-score').textContent = formatNumber(stats.total_score || 0);
+      document.getElementById('dspoin-earned').textContent = formatNumber(stats.dspoinc_earned || 0) + ' DSPOINC';
+      
+      console.log('✅ Game stats loaded:', stats);
+    } else {
+      console.log('⚠️ No game stats found');
+      document.getElementById('total-games').textContent = '0';
+      document.getElementById('best-score').textContent = '0';
+      document.getElementById('total-score').textContent = '0';
+      document.getElementById('dspoin-earned').textContent = '0 DSPOINC';
+    }
+    
+  } catch (error) {
+    console.error('❌ Error loading game stats:', error);
+    throw error;
+  }
+}
+
+async function loadAchievements(discordId) {
+  try {
+    console.log('🏆 Loading achievements...');
+    
+    const response = await fetch(`${apiBaseUrl}/api/user/get-space-invaders-achievements.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: discordId })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success && data.achievements) {
+      const achievementsList = document.getElementById('achievements-list');
+      achievementsList.innerHTML = '';
+      
+      if (data.achievements.length === 0) {
+        achievementsList.innerHTML = '<p class="text-gray-400">No achievements yet. Keep playing!</p>';
+        return;
+      }
+      
+      // Show first 5 achievements
+      const displayAchievements = data.achievements.slice(0, 5);
+      
+      displayAchievements.forEach(achievement => {
+        const achievementDiv = document.createElement('div');
+        achievementDiv.className = 'flex items-center justify-between p-2 bg-gray-800/50 rounded-lg';
+        
+        const icon = achievement.unlocked_at ? '🏆' : '🔒';
+        const textColor = achievement.unlocked_at ? 'text-yellow-300' : 'text-gray-500';
+        
+        achievementDiv.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="text-lg">${icon}</span>
+            <span class="${textColor} text-sm">${achievement.achievement_title}</span>
+          </div>
+          ${achievement.unlocked_at ? '<span class="text-xs text-green-400">✓</span>' : ''}
+        `;
+        
+        achievementsList.appendChild(achievementDiv);
+      });
+      
+      if (data.achievements.length > 5) {
+        const moreDiv = document.createElement('div');
+        moreDiv.className = 'text-center mt-2';
+        moreDiv.innerHTML = `<span class="text-xs text-gray-500">+${data.achievements.length - 5} more achievements</span>`;
+        achievementsList.appendChild(moreDiv);
+      }
+      
+      console.log('✅ Achievements loaded:', data.achievements.length);
+    } else {
+      console.log('⚠️ No achievements found');
+      document.getElementById('achievements-list').innerHTML = '<p class="text-gray-400">No achievements yet. Keep playing!</p>';
+    }
+    
+  } catch (error) {
+    console.error('❌ Error loading achievements:', error);
+    document.getElementById('achievements-list').innerHTML = '<p class="text-red-400">Failed to load achievements</p>';
+  }
+}
+
+async function loadLeaderboard(discordId) {
+  try {
+    console.log('🏆 Loading real leaderboard from existing API...');
+    
+    // Use the same API as profile page
+    const response = await fetch(`${apiBaseUrl}/api/dev/get-leaderboard.php`);
+    const data = await response.json();
+    const leaderboardContent = document.getElementById('leaderboard-content');
+    leaderboardContent.innerHTML = '';
+    
+    if (data.space_invaders && data.space_invaders.length > 0) {
+      // Show top 5 players from real data
+      data.space_invaders.slice(0, 5).forEach((player, index) => {
+        const isCurrentUser = player.discord_id === discordId;
+        const rankClass = isCurrentUser ? 'text-yellow-300 font-bold' : 'text-gray-300';
+        const bgClass = isCurrentUser ? 'bg-yellow-400/20' : '';
+        
+        const playerElement = document.createElement('div');
+        playerElement.className = `flex justify-between items-center p-2 rounded-lg ${bgClass}`;
+        playerElement.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-gray-400 w-6">${index + 1}.</span>
+            <span class="${rankClass} text-xs">${player.discord_name || 'Player'}</span>
+            ${isCurrentUser ? '<span class="text-xs text-yellow-400">(You)</span>' : ''}
+          </div>
+          <span class="text-xs text-yellow-300 font-bold">${player.score} DSPOINC</span>
+        `;
+        leaderboardContent.appendChild(playerElement);
+      });
+      
+      console.log('✅ Real leaderboard loaded:', data.space_invaders.length, 'players');
+    } else {
+      // Fallback message if no data
+      leaderboardContent.innerHTML = '<p class="text-gray-400">No Space Cheese Invaders scores yet</p>';
+    }
+    
+  } catch (error) {
+    console.error('❌ Error loading leaderboard:', error);
+    document.getElementById('leaderboard-content').innerHTML = '<p class="text-red-400">Failed to load leaderboard</p>';
+  }
+}
+
+// Add refresh button event listener
+document.addEventListener('DOMContentLoaded', function() {
+  const refreshButton = document.getElementById('refresh-leaderboard');
+  if (refreshButton) {
+    refreshButton.addEventListener('click', async function() {
+      const discordId = localStorage.getItem('discord_id');
+      if (discordId) {
+        refreshButton.textContent = '🔄 Refreshing...';
+        refreshButton.disabled = true;
+        await loadLeaderboard(discordId);
+        refreshButton.textContent = '🔄 Refresh';
+        refreshButton.disabled = false;
+      }
+    });
+  }
+});
+
+function formatNumber(num) {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  } else if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toString();
+}
+
+function showError(message) {
+  document.getElementById('stats-loading').classList.add('hidden');
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'col-span-full text-center py-8';
+  errorDiv.innerHTML = `
+    <div class="text-red-400 mb-2">❌ ${message}</div>
+    <button onclick="location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-lg transition-colors duration-200">
+      🔄 Retry
+    </button>
+  `;
+  document.getElementById('user-stats-content').appendChild(errorDiv);
+}
+</script>
+
+</body>
+</html>
+

@@ -1169,9 +1169,18 @@ class CheeseSoundManager {
     
     console.log(`🎵 Playing weapon sound: ${weaponType}`);
     
+    // Map weapon types to actual sound file names
+    const soundFileMap = {
+      'normal': 'normal_shoot',
+      'laser': 'laser',
+      'bomb': 'bomb'
+    };
+    
+    const soundFileName = soundFileMap[weaponType] || weaponType;
+    
     // Try to play file-based audio first
     try {
-      const audio = new Audio(`sounds/invaders/weapons/${weaponType}.wav`);
+      const audio = new Audio(`sounds/invaders/weapons/${soundFileName}.wav`);
       audio.volume = this.masterVolume * 0.8;
       audio.play().catch(e => {
         console.log('File audio failed, trying programmatic audio:', e);
@@ -1639,6 +1648,7 @@ let totalKills = 0; // Track total kills
 let noHitTimer = 0; // Track time without taking damage
 let bossesKilled = 0; // Track bosses defeated
 let currentBossLevel = 0; // Track current boss level
+let gameStarted = false; // Track if game has been started
 
 // 🔥 CRITICAL FIX: Unified firing rate system for consistent heat buildup
 let unifiedFiringRate = 60; // 60ms between ANY shots (16.7 shots/sec) - faster for better heat buildup!
@@ -1923,28 +1933,29 @@ let reloadButtonInterval = null;
   function spawnPowerUp() {
     // Check if we already have too many power-ups on screen
     if (window.powerUps && window.powerUps.length >= 4) {
+      console.log(`🎁 Power-up spawn blocked: ${window.powerUps.length} power-ups on screen (limit: 4)`);
       return; // Don't spawn if we already have 4 or more (increased from 3)
     }
     
-    // 🚀 ULTRA AGGRESSIVE: Much higher spawn rates for more action!
-    let spawnChance = 0.200; // Base rate for early waves (20% - MUCH higher!)
+    // 🎯 BALANCED: Ultra-low spawn rates for strategic gameplay
+    let spawnChance = 0.005; // Base rate for early waves (0.5% - ULTRA LOW!)
     
-    // Progressive scaling that ACTUALLY helps in higher waves
-    if (waveNumber >= 2) spawnChance = 0.250;   // 25% for wave 2+
-    if (waveNumber >= 3) spawnChance = 0.300;   // 30% for wave 3+
-    if (waveNumber >= 5) spawnChance = 0.400;   // 40% for wave 5+
-    if (waveNumber >= 8) spawnChance = 0.500;   // 50% for wave 8+
-    if (waveNumber >= 10) spawnChance = 0.600;  // 60% for wave 10+
-    if (waveNumber >= 15) spawnChance = 0.700;  // 70% for wave 15+
-    if (waveNumber >= 20) spawnChance = 0.800;  // 80% for wave 20+
-    if (waveNumber >= 25) spawnChance = 0.850;  // 85% for wave 25+
-    if (waveNumber >= 30) spawnChance = 0.900;  // 90% for wave 30+
-    if (waveNumber >= 35) spawnChance = 0.950;  // 95% for wave 35+
-    if (waveNumber >= 50) spawnChance = 0.980;  // 98% for wave 50+ (boss waves)
-    if (waveNumber >= 75) spawnChance = 0.990;  // 99% for wave 75+ (ultra waves)
-    if (waveNumber >= 100) spawnChance = 0.995; // 99.5% for wave 100+ (legendary waves)
-    if (waveNumber >= 150) spawnChance = 0.999; // 99.9% for wave 150+ (mythical waves)
-    if (waveNumber >= 200) spawnChance = 0.999; // 99.9% for wave 200+ (god-tier waves)
+    // Progressive scaling that provides gradual increase
+    if (waveNumber >= 2) spawnChance = 0.008;   // 0.8% for wave 2+
+    if (waveNumber >= 3) spawnChance = 0.01;   // 1% for wave 3+
+    if (waveNumber >= 5) spawnChance = 0.012;   // 1.2% for wave 5+
+    if (waveNumber >= 8) spawnChance = 0.015;   // 1.5% for wave 8+
+    if (waveNumber >= 10) spawnChance = 0.02;  // 2% for wave 10+
+    if (waveNumber >= 15) spawnChance = 0.025;   // 2.5% for wave 15+
+    if (waveNumber >= 20) spawnChance = 0.03;   // 3% for wave 20+
+    if (waveNumber >= 25) spawnChance = 0.04;   // 4% for wave 25+
+    if (waveNumber >= 30) spawnChance = 0.05;   // 5% for wave 30+
+    if (waveNumber >= 40) spawnChance = 0.06;   // 6% for wave 40+
+    if (waveNumber >= 50) spawnChance = 0.08;   // 8% for wave 50+
+    if (waveNumber >= 75) spawnChance = 0.10;   // 10% for wave 75+
+    if (waveNumber >= 100) spawnChance = 0.12;  // 12% for wave 100+
+    if (waveNumber >= 150) spawnChance = 0.15;  // 15% for wave 150+
+    if (waveNumber >= 200) spawnChance = 0.18;  // 18% for wave 200+ (ULTRA LOW!)
     
     if (Math.random() < spawnChance) {
       console.log(`🎁 SPAWNING POWER-UP: Wave ${waveNumber}, Chance: ${spawnChance.toFixed(2)}, Current power-ups: ${window.powerUps?.length || 0}`);
@@ -1953,50 +1964,52 @@ let reloadButtonInterval = null;
       const powerUpRoll = Math.random();
       let powerUpType, ammoType;
       
-      if (powerUpRoll < 0.20) {
-        // 20% chance: Speed boost power-up (green ⚡)
+      if (powerUpRoll < 0.18) {
+        // 18% chance: Speed boost power-up (green ⚡)
         powerUpType = 'speed';
-      } else if (powerUpRoll < 0.40) {
-        // 20% chance: Laser ammo (cyan 🔫)
+      } else if (powerUpRoll < 0.36) {
+        // 18% chance: Laser ammo (cyan 🔫)
         powerUpType = 'ammo';
         ammoType = 'laser';
-      } else if (powerUpRoll < 0.60) {
-        // 20% chance: Bomb ammo (magenta 💣)
+      } else if (powerUpRoll < 0.54) {
+        // 18% chance: Bomb ammo (magenta 💣)
         powerUpType = 'ammo';
         ammoType = 'bomb';
-      } else if (powerUpRoll < 0.80) {
-        // 20% chance: Shield power-up (blue 🛡️) - INCREASED!
+      } else if (powerUpRoll < 0.72) {
+        // 18% chance: Shield power-up (blue 🛡️)
         powerUpType = 'shield';
-      } else {
-        // 20% chance: Collect power-up (yellow ⭐)
+      } else if (powerUpRoll < 0.90) {
+        // 18% chance: Collect power-up (yellow ⭐)
         powerUpType = 'collect';
+      } else {
+        // 10% chance: Life power-up (red ❤️) - RARE!
+        powerUpType = 'life';
       }
       
       if (powerUpType === 'speed') {
-        // Speed boost power-up
+        // Speed boost power-up (green ⚡)
         const powerUp = {
           x: Math.random() * (canvasWidth - 20),
           y: -20,
           width: 20,
           height: 20,
           type: 'speed',
-          color: '#00ff00',
+          color: '#00ff00',        // Bright green for speed
           speed: 2,
           collected: false
         };
         
-        // Add to game objects (we'll need to create a powerUps array)
         if (!window.powerUps) window.powerUps = [];
         window.powerUps.push(powerUp);
       } else if (powerUpType === 'collect') {
-        // Collect power-up (bonus points/effects)
+        // Collect power-up (yellow ⭐) - Points/Bonus
         const powerUp = {
           x: Math.random() * (canvasWidth - 20),
           y: -20,
           width: 20,
           height: 20,
           type: 'collect',
-          color: '#ffff00',
+          color: '#ffaa00',        // Golden yellow for points
           speed: 2,
           collected: false
         };
@@ -2004,14 +2017,29 @@ let reloadButtonInterval = null;
         if (!window.powerUps) window.powerUps = [];
         window.powerUps.push(powerUp);
       } else if (powerUpType === 'shield') {
-        // 🛡️ NEW: Shield power-up (blue shield)
+        // Shield power-up (blue 🛡️)
         const powerUp = {
           x: Math.random() * (canvasWidth - 20),
           y: -20,
           width: 20,
           height: 20,
           type: 'shield',
-          color: '#0088ff',
+          color: '#0066ff',        // Bright blue for shield
+          speed: 2,
+          collected: false
+        };
+        
+        if (!window.powerUps) window.powerUps = [];
+        window.powerUps.push(powerUp);
+      } else if (powerUpType === 'life') {
+        // Life power-up (red ❤️) - RARE!
+        const powerUp = {
+          x: Math.random() * (canvasWidth - 20),
+          y: -20,
+          width: 20,
+          height: 20,
+          type: 'life',
+          color: '#ff4444',        // Bright red for life
           speed: 2,
           collected: false
         };
@@ -2019,7 +2047,7 @@ let reloadButtonInterval = null;
         if (!window.powerUps) window.powerUps = [];
         window.powerUps.push(powerUp);
       } else {
-        // Ammo power-up
+        // Ammo power-up (laser/bomb)
         const powerUp = {
           x: Math.random() * (canvasWidth - 20),
           y: -20,
@@ -2027,7 +2055,7 @@ let reloadButtonInterval = null;
           height: 20,
           type: 'ammo',
           ammoType: ammoType,
-          color: ammoType === 'laser' ? '#00ffff' : '#ff00ff',
+          color: ammoType === 'laser' ? '#00aaff' : '#ff6600', // Cyan for laser, orange for bomb
           speed: 2,
           collected: false
         };
@@ -2045,9 +2073,10 @@ let reloadButtonInterval = null;
   function updatePowerUps() {
     if (!window.powerUps) return;
     
+    // 🚀 CRITICAL FIX: Remove collected power-ups first to prevent array bloat
+    window.powerUps = window.powerUps.filter(powerUp => !powerUp.collected);
+    
     window.powerUps.forEach((powerUp, index) => {
-      if (powerUp.collected) return;
-      
       // Move power-up down
       powerUp.y += powerUp.speed;
       
@@ -2064,14 +2093,14 @@ let reloadButtonInterval = null;
           cheeseSoundManager.playExplosionSound('powerup');
         } else if (powerUp.type === 'collect') {
           // 🚀 NEW: Collect power-up gives bonus points and temporary effects
-          spaceInvadersScore += 100; // Reduced from 500 to 100
-          spaceInvadersCount += 1; // Reduced from 5 to 1
+          spaceInvadersScore += 100; // Bonus points
+          spaceInvadersCount += 1; // Bonus invaders killed
           
           // Temporary invincibility (1 second)
           playerShip.invincible = true;
           playerShip.invincibleTimer = 100; // 1 second at 100ms intervals
           
-          console.log(`⭐ Collect power-up collected! +500 points, +5 invaders, temporary invincibility!`);
+          console.log(`⭐ Collect power-up collected! +100 points, +1 invaders, temporary invincibility!`);
           
           // 🎵 NEW: Play power-up pickup sound
           cheeseSoundManager.playExplosionSound('powerup');
@@ -2098,14 +2127,28 @@ let reloadButtonInterval = null;
           
           // 🎵 NEW: Play shield activation sound
           cheeseSoundManager.playExplosionSound('shield');
+        } else if (powerUp.type === 'life') {
+          // ❤️ NEW: Life power-up gives extra life
+          playerShip.health += 1; // Add 1 life
+          console.log(`❤️ Life power-up collected! +1 life! Total lives: ${playerShip.health}`);
+          
+          // 🚀 NEW: Update UI displays
+          updateWeaponDisplay();
+          updateFastShootButtons();
+          
+          // 🎵 NEW: Play life pickup sound
+          cheeseSoundManager.playExplosionSound('powerup');
         }
       }
       
       // Remove if off screen
       if (powerUp.y > canvasHeight + 20) {
-        window.powerUps.splice(index, 1);
+        powerUp.collected = true; // Mark for removal instead of immediate splice
       }
     });
+    
+    // 🚀 CRITICAL FIX: Remove all collected and off-screen power-ups at the end
+    window.powerUps = window.powerUps.filter(powerUp => !powerUp.collected && powerUp.y <= canvasHeight + 20);
   }
 
   // 🚀 NEW: Draw power-ups with custom images
@@ -2150,6 +2193,10 @@ let reloadButtonInterval = null;
           ctx.fillText('🔫', powerUp.x + 4, powerUp.y + 15);
         } else if (powerUp.type === 'collect') {
           ctx.fillText('⭐', powerUp.x + 4, powerUp.y + 15);
+        } else if (powerUp.type === 'shield') {
+          ctx.fillText('🛡️', powerUp.x + 4, powerUp.y + 15);
+        } else if (powerUp.type === 'life') {
+          ctx.fillText('❤️', powerUp.x + 4, powerUp.y + 15);
         }
       }
     });
@@ -4639,6 +4686,7 @@ let reloadButtonInterval = null;
 
   async function startGame() {
     resetGame();
+    gameStarted = true; // Set game as started
     
     // 🛠️ Mock fallback if testing locally (same as Tetris)
     let discordId = localStorage.getItem("discord_id");
@@ -4678,6 +4726,9 @@ let reloadButtonInterval = null;
       clearInterval(spaceInvadersGameInterval);
       spaceInvadersGameInterval = null;
     }
+    
+    // Reset game started flag
+    gameStarted = false;
     
     // Unlock scroll when game is reset
     unlockSpaceInvadersScroll();
@@ -4962,27 +5013,27 @@ let reloadButtonInterval = null;
       lastTetrisSpawnTime = currentTime;
     }
     
-    // 🚀 ULTRA AGGRESSIVE: Spawn power-ups much more frequently!
+    // 🎯 BALANCED: Reasonable power-up spawning frequency
     spawnPowerUp();
     
-    // 🚀 BONUS: Extra power-up spawn chance for more action!
-    if (Math.random() < 0.05) { // 5% bonus chance every game loop
+    // 🎯 BONUS: Minimal extra power-up spawn chance for variety
+    if (Math.random() < 0.001) { // 0.1% bonus chance every game loop (was 0.2%)
       spawnPowerUp();
     }
     
-    // 🚀 WAVE BOOST: Higher waves get even more power-ups!
+    // 🎯 WAVE BOOST: Higher waves get slightly more power-ups
     if (waveNumber >= 10) {
-      if (Math.random() < 0.1) { // 10% extra chance for wave 10+
+      if (Math.random() < 0.002) { // 0.2% extra chance for wave 10+ (was 0.5%)
         spawnPowerUp();
       }
     }
     if (waveNumber >= 20) {
-      if (Math.random() < 0.15) { // 15% extra chance for wave 20+
+      if (Math.random() < 0.003) { // 0.3% extra chance for wave 20+ (was 0.8%)
         spawnPowerUp();
       }
     }
     if (waveNumber >= 30) {
-      if (Math.random() < 0.2) { // 20% extra chance for wave 30+
+      if (Math.random() < 0.005) { // 0.5% extra chance for wave 30+ (was 1%)
         spawnPowerUp();
       }
     }
@@ -7110,8 +7161,8 @@ let reloadButtonInterval = null;
       title: title,
       description: description,
       icon: icon,
-      life: 180, // 3 seconds at 60fps
-      maxLife: 180,
+      life: 30, // 0.5 seconds at 60fps (consistent with Tetris/Snake)
+      maxLife: 30,
       scale: 0,
       maxScale: 1,
       y: canvasHeight / 2,
@@ -9217,9 +9268,20 @@ let reloadButtonInterval = null;
     }
   }
 
-  // 🚀 NEW: Activate speed boost with key
-  function activateSpeedBoostByKey() {
-    activateSpeedBoost();
+  // 🛡️ NEW: Activate shield with key (gives invincibility)
+  function activateShieldByKey() {
+    if (speedBoostAmmo > 0) {
+      // 🛡️ SHIELD EFFECT: Give invincibility (like shield power-up)
+      playerShip.invincible = true;
+      playerShip.invincibleTimer = 300; // 3 seconds of invincibility
+      speedBoostAmmo--; // Use one shield ammo
+      console.log(`🛡️ Shield activated by keyboard! 3 seconds of invincibility! Shield ammo remaining: ${speedBoostAmmo}`);
+      
+      // 🎵 Play shield activation sound
+      cheeseSoundManager.playExplosionSound('shield');
+      
+      updateFastShootButtons();
+    }
   }
 
   // 🎮 Combined keyboard event listener for Space Invaders movement
@@ -9259,33 +9321,39 @@ let reloadButtonInterval = null;
     
     // 🚀 NEW: Handle direct special weapon firing
     if (e.key === 'l' || e.key === 'L') {
-      // Direct laser fire
-      if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
+      // Direct laser fire (like laser button)
+      if (weaponAmmo.laser > 0) {
         window.isQuickShotCall = true;
         console.log('🚀 L key: Direct laser fire!');
+        switchWeapon('laser');
         playerShoot();
+        switchWeapon('normal'); // Switch back to normal weapon after shooting
+        updateFastShootButtons();
       } else {
-        console.log('⚠️ L key: No laser ammo or wrong weapon selected');
+        console.log('⚠️ L key: No laser ammo available');
       }
       return;
     }
     
     if (e.key === 'b' || e.key === 'B') {
-      // Direct bomb fire
-      if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
+      // Direct bomb fire (like bomb button)
+      if (weaponAmmo.bomb > 0) {
         window.isQuickShotCall = true;
         console.log('🚀 B key: Direct bomb launch!');
+        switchWeapon('bomb');
         playerShoot();
+        switchWeapon('normal'); // Switch back to normal weapon after shooting
+        updateFastShootButtons();
       } else {
-        console.log('⚠️ B key: No bomb ammo or wrong weapon selected');
+        console.log('⚠️ B key: No bomb ammo available');
       }
       return;
     }
     
-    // 🚀 NEW: Handle speed boost activation
+    // 🛡️ NEW: Handle shield activation
     if (e.key === 's' || e.key === 'S') {
-      if (typeof window.activateSpeedBoostByKey === 'function') {
-        window.activateSpeedBoostByKey();
+      if (typeof window.activateShieldByKey === 'function') {
+        window.activateShieldByKey();
       }
       return;
     }
@@ -9467,7 +9535,7 @@ let reloadButtonInterval = null;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255, 0, 0, 0.3);
+      background: rgba(255, 0, 0, 0.1);
       z-index: 9998;
       pointer-events: none;
       animation: overheatFlash 0.5s ease-out;
@@ -10354,7 +10422,12 @@ let reloadButtonInterval = null;
         }
       } else if (e.button === 2) { // Right mouse button
         e.preventDefault(); // Prevent context menu
-        if (isSpaceInvadersPaused) return;
+        
+        // 🚀 FIX: Only allow weapon switching when game is running (not paused or not started)
+        if (isSpaceInvadersPaused || !gameStarted) {
+          console.log('🚫 Right-click weapon switching disabled - game not running');
+          return;
+        }
         
         // Cycle through weapons on right-click (works everywhere)
         // 🚀 FIX: Only cycle through weapons that have ammo or are normal weapon
@@ -10378,7 +10451,8 @@ let reloadButtonInterval = null;
 
     // 🚀 NEW: Global context menu prevention for the entire game
     document.addEventListener('contextmenu', (e) => {
-      if (!isSpaceInvadersPaused) {
+      // 🚀 FIX: Only prevent context menu when game is actually running
+      if (!isSpaceInvadersPaused && gameStarted) {
         e.preventDefault(); // Prevent Windows context menu (Save Picture As, etc.)
         console.log('🚫 Context menu prevented - game is active');
       }
@@ -10562,7 +10636,7 @@ let reloadButtonInterval = null;
   window.switchWeapon = switchWeapon;
   window.switchWeaponByKey = switchWeaponByKey;
   window.activateSpeedBoost = activateSpeedBoost;
-  window.activateSpeedBoostByKey = activateSpeedBoostByKey;
+  window.activateShieldByKey = activateShieldByKey;
 
   // 🆘 NEW: Make help system functions globally available
   window.toggleHelpOverlay = toggleHelpOverlay;
@@ -11450,10 +11524,18 @@ window.emergencyCollisionCheck = function() {
       
       // 🆘 NEW: Long press detection for special actions
       if (touchDuration > 500 && deltaX < 15 && deltaY < 15) {
-        // Long press could activate speed boost or special weapon
-        if (speedBoostAmmo > 0 && !speedBoostActive) {
-          activateSpeedBoost();
-          console.log('⚡ Long press activated speed boost');
+        // Long press activates shield (invincibility)
+        if (speedBoostAmmo > 0) {
+          // 🛡️ SHIELD EFFECT: Give invincibility (like shield power-up)
+          playerShip.invincible = true;
+          playerShip.invincibleTimer = 300; // 3 seconds of invincibility
+          speedBoostAmmo--; // Use one shield ammo
+          console.log(`🛡️ Long press activated shield! 3 seconds of invincibility! Shield ammo remaining: ${speedBoostAmmo}`);
+          
+          // 🎵 Play shield activation sound
+          cheeseSoundManager.playExplosionSound('shield');
+          
+          updateFastShootButtons();
         }
       }
       
@@ -12176,9 +12258,64 @@ window.emergencyCollisionCheck = function() {
            bombBtn.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.4)';
          });
     
+    // 🛡️ NEW: Shield activation button
+    const shieldBtn = document.createElement('button');
+    shieldBtn.id = 'fast-shield-btn';
+    shieldBtn.innerHTML = '🛡️<br><span style="font-size: 0.7em;">SHIELD</span>';
+    shieldBtn.style.cssText = `
+      width: 35px;
+      height: 35px;
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      color: white;
+      border: 2px solid #0891b2;
+      border-radius: 50%;
+      font-size: 0.8em;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(6, 182, 212, 0.4);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.1;
+      opacity: 0.3;
+      pointer-events: none;
+    `;
+    
+    // Add shield button event listener
+    shieldBtn.addEventListener('click', () => {
+      if (speedBoostAmmo > 0) {
+        // 🛡️ SHIELD EFFECT: Give invincibility (like shield power-up)
+        playerShip.invincible = true;
+        playerShip.invincibleTimer = 300; // 3 seconds of invincibility
+        speedBoostAmmo--; // Use one shield ammo
+        console.log(`🛡️ Shield activated! 3 seconds of invincibility! Shield ammo remaining: ${speedBoostAmmo}`);
+        
+        // 🎵 Play shield activation sound
+        cheeseSoundManager.playExplosionSound('shield');
+        
+        updateFastShootButtons();
+      }
+    });
+    
+    // Add hover effects for shield button
+    shieldBtn.addEventListener('mouseenter', () => {
+      if (speedBoostAmmo > 0) {
+        shieldBtn.style.transform = 'scale(1.1)';
+        shieldBtn.style.boxShadow = '0 3px 10px rgba(6, 182, 212, 0.6)';
+      }
+    });
+
+    shieldBtn.addEventListener('mouseleave', () => {
+      shieldBtn.style.transform = 'scale(1)';
+      shieldBtn.style.boxShadow = '0 2px 8px rgba(6, 182, 212, 0.4)';
+    });
+    
     // Add to container
     fastShootContainer.appendChild(laserBtn);
     fastShootContainer.appendChild(bombBtn);
+    fastShootContainer.appendChild(shieldBtn);
     
     // Add to page
     document.body.appendChild(fastShootContainer);
@@ -12193,8 +12330,9 @@ window.emergencyCollisionCheck = function() {
   function updateFastShootButtons() {
     const laserBtn = document.getElementById('fast-laser-btn');
     const bombBtn = document.getElementById('fast-bomb-btn');
+    const shieldBtn = document.getElementById('fast-shield-btn');
     
-    if (!laserBtn || !bombBtn) return;
+    if (!laserBtn || !bombBtn || !shieldBtn) return;
     
     // Update laser button
     if (weaponAmmo.laser > 0) {
@@ -12222,9 +12360,23 @@ window.emergencyCollisionCheck = function() {
       bombBtn.style.borderColor = '#4b5563';
     }
     
+    // 🛡️ NEW: Update shield button
+    if (speedBoostAmmo > 0) {
+      shieldBtn.style.opacity = '1';
+      shieldBtn.style.pointerEvents = 'auto';
+      shieldBtn.style.background = 'linear-gradient(135deg, #06b6d4, #0891b2)';
+      shieldBtn.style.borderColor = '#0891b2';
+    } else {
+      shieldBtn.style.opacity = '0.3';
+      shieldBtn.style.pointerEvents = 'none';
+      shieldBtn.style.background = 'linear-gradient(135deg, #6b7280, #4b5563)';
+      shieldBtn.style.borderColor = '#4b5563';
+    }
+    
     // Add ammo count to buttons
     laserBtn.innerHTML = `⚡<br><span style="font-size: 0.6em;">${weaponAmmo.laser}</span>`;
     bombBtn.innerHTML = `💣<br><span style="font-size: 0.6em;">${weaponAmmo.bomb}</span>`;
+    shieldBtn.innerHTML = `🛡️<br><span style="font-size: 0.6em;">${speedBoostAmmo}</span>`;
   }
 
   // 🆘 NEW: Create enhanced mobile controls - IMPROVED FOR BETTER MOBILE UX

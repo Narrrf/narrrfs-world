@@ -1425,7 +1425,7 @@ require_once 'discord-invite.php';
   </section>
 
   <!-- 🚀 SPACE INVADERS PANEL -->
-  <section id="space-cheese-invaders" class="flex-1 finance-card py-8 px-6 rounded-3xl ring-2 ring-blue-500/50 border border-blue-400/30 relative cursor-pointer hover:ring-blue-400/70 transition-all duration-300" onclick="window.location.href='space-invaders-test.html'">
+  <section id="space-cheese-invaders" class="flex-1 finance-card py-8 px-6 rounded-3xl ring-2 ring-blue-500/50 border border-blue-400/30 relative cursor-pointer hover:ring-blue-400/70 transition-all duration-300" onclick="window.location.href='space-cheese-invaders.html'">
     <div class="absolute top-4 left-4 bg-purple-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow z-10">
       🚀 SPACE INVADERS
     </div>
@@ -1437,17 +1437,18 @@ require_once 'discord-invite.php';
 
     <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">SPACE CHEESE INVADERS</h2>
     
+    <!-- 🎮 Game Controls - Moved to top for better UX -->
+    <div class="text-center mb-4 space-y-2 opacity-50">
+      <button id="start-space-invaders-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
+      <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded-xl shadow-md w-32">⏸️ Pause</button>
+    </div>
+    
     <div class="relative opacity-50">
       <canvas id="space-invaders-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
 
       <div id="space-invaders-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
         5
       </div>
-    </div>
-
-    <div class="text-center mt-4 space-y-2 opacity-50">
-      <button id="start-space-invaders-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
-      <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded-xl shadow-md w-32">⏸️ Pause</button>
     </div>
 
     <p id="space-invaders-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 opacity-50">
@@ -1521,7 +1522,7 @@ require_once 'discord-invite.php';
       <ul id="leaderboard-snake-list" class="text-center"></ul>
     </div>
     <div>
-      <h4 class="text-center text-md font-semibold">🚀 Space Invaders Top Scores</h4>
+      <h4 class="text-center text-md font-semibold">🚀 Space Cheese Invaders Top Scores</h4>
       <ul id="leaderboard-space-invaders-list" class="text-center"></ul>
     </div>
   </div>

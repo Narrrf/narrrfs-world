@@ -634,7 +634,7 @@ try {
             'space_invaders' => [
                 'name' => 'Space Cheese Invaders',
                 'icon' => '👾',
-                'url' => '/space-invaders-test.html',
+                'url' => '/space-cheese-invaders.html',
                 'status' => $response['space_invaders']['total_games'] > 0 ? 'active' : 'not_played',
                 'stats' => [
                     'total_games' => $response['space_invaders']['total_games'],
