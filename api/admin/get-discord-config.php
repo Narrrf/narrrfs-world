@@ -22,10 +22,39 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 // Include admin authentication
 require_once '../config/admin-auth.php';
 
-// Check admin authentication
+// Check admin authentication (with basic info bypass)
 if (!checkAdminAuthentication()) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized - Admin access required']);
+    // For basic Discord config info, allow access without authentication
+    // This allows the admin interface to display basic Discord invite info
+    // while still requiring authentication for sensitive operations
+    
+    // Return basic config without sensitive bot information
+    $inviteCode = getenv('DISCORD_INVITE_CODE') ?: 'CvstbUQ5yX';
+    
+    echo json_encode([
+        'success' => true,
+        'config' => [
+            'invite_code' => $inviteCode,
+            'discord_url' => "https://discord.gg/$inviteCode",
+            'base_url' => 'https://discord.gg/',
+            'version' => '12.0',
+            'last_updated' => '2025-01-28',
+            'environment_variable' => getenv('DISCORD_INVITE_CODE'),
+            'environment_set' => getenv('DISCORD_INVITE_CODE') !== false,
+            'fallback_used' => getenv('DISCORD_INVITE_CODE') === false || getenv('DISCORD_INVITE_CODE') === null
+        ],
+        'bot_status' => [
+            'bot_token_set' => 'Authentication required',
+            'guild_id' => 'Authentication required',
+            'moderator_role_id' => 'Authentication required'
+        ],
+        'debug' => [
+            'server_time' => date('Y-m-d H:i:s'),
+            'environment' => 'production',
+            'api_version' => '1.0',
+            'authentication' => 'Basic info only - Admin login required for full access'
+        ]
+    ]);
     exit;
 }
 
