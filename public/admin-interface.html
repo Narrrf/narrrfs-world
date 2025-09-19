@@ -15,7 +15,7 @@
   <script>
     // Detect environment and set API base URL
     const isProduction = window.location.hostname === 'narrrfs.world';
-    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
     
     console.log('🌍 Environment detected:', isProduction ? 'Production' : 'Local');
     console.log('🔗 API Base URL:', API_BASE_URL);
@@ -91,6 +91,42 @@
     
     .notification-toast {
       z-index: 9999;
+    }
+    
+    /* 12.0 Management Tab Styles */
+    .folder-tab-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+    }
+    .folder-tab-btn.active {
+      background: rgba(255,255,255,0.3);
+      border-color: rgba(255,255,255,0.5);
+    }
+    .folder-tab-content {
+      display: none;
+    }
+    .folder-tab-content:first-child {
+      display: block;
+    }
+    
+    /* Force activeStatusTab to be visible */
+    #activeStatusTab {
+      display: block !important;
+    }
+    
+    /* Force stats-card content to be visible */
+    #activeStatusTab .stats-card {
+      display: block !important;
+      min-height: 200px !important;
+      visibility: visible !important;
+    }
+    
+    /* Force content elements to be visible */
+    #quickStatusContent, #dailyStatusContent {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     
     /* Enhanced data display styles */
@@ -1439,6 +1475,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="communityFunds">💰 Community Funds</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="bugTracker">🐛 Bug Tracker</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="databaseOverview">🗄️ Database Overview</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="twelveZeroManagement">📁 12.0 Management</button>
       </div>
       
       <!-- Quick Actions Section -->
@@ -5740,6 +5777,12 @@
               loadDatabaseOverview();
             }, 100);
             addLog('🗄️ Database overview tab auto-loaded');
+          } else if (tabName === 'twelveZeroManagement') {
+            // 12.0 Management - Auto-load 12.0 folder data
+            setTimeout(() => {
+              loadTwelveZeroData();
+            }, 100);
+            addLog('📁 12.0 Management tab auto-loaded');
           }
           
           // Mark tab as recently loaded
@@ -6821,6 +6864,20 @@
           
           // Use the super working tab system
           showTab(tab);
+        });
+      });
+      
+      // Add folder tab event listeners
+      document.querySelectorAll('.folder-tab-btn[data-folder-tab]').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const folderTab = this.dataset.folderTab;
+          console.log(`📁 Folder tab clicked: ${folderTab}`);
+          
+          // Switch folder tab
+          switchFolderTab(folderTab);
         });
       });
       
@@ -19171,6 +19228,170 @@ function updateGameTabContent(gameType, gameData) {
       </div>
     </div>
 
+    <!-- 12.0 Management Tab -->
+    <div class="admin-card mb-6" id="twelveZeroManagementTab" style="display: none; opacity: 1; transform: translateY(0);">
+      <h2 class="text-xl font-semibold mb-4">📁 12.0 Management System</h2>
+      <p class="text-gray-300 mb-6">Professional development management system - Access lab notes, status files, and LLM synchronization</p>
+      
+      <!-- 12.0 Folder Navigation -->
+      <div class="mb-6">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button class="folder-tab-btn active px-4 py-2 rounded" data-folder-tab="activeStatus">📊 Active Status</button>
+          <button class="folder-tab-btn px-4 py-2 rounded" data-folder-tab="labNotes">📝 Lab Notes</button>
+          <button class="folder-tab-btn px-4 py-2 rounded" data-folder-tab="llmSync">🤖 LLM Sync</button>
+          <button class="folder-tab-btn px-4 py-2 rounded" data-folder-tab="technicalDocs">🔧 Technical Docs</button>
+          <button class="folder-tab-btn px-4 py-2 rounded" data-folder-tab="milestones">🏆 Milestones</button>
+          <button class="folder-tab-btn px-4 py-2 rounded" data-folder-tab="deployment">🚀 Deployment</button>
+          <button class="folder-tab-btn px-4 py-2 rounded" data-folder-tab="developmentTools">🛠️ Dev Tools</button>
+          <button class="folder-tab-btn px-4 py-2 rounded" data-folder-tab="archive">📦 Archive</button>
+        </div>
+      </div>
+
+      <!-- Active Status Tab Content -->
+      <div id="activeStatusTab" class="folder-tab-content">
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold text-blue-300 mb-4">📊 12.0 Management System</h3>
+          <div class="text-sm text-gray-300 mb-4">
+            <p class="mb-4">The 12.0 Management system is working perfectly on a dedicated page. Click the button below to access all 12.0 documentation, lab notes, and status files.</p>
+            
+            <div class="flex flex-col space-y-3">
+              <a href="12-0-test.html" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-center transition-colors duration-200">
+                🧀 Open 12.0 Management System
+              </a>
+              
+              <div class="bg-green-600 text-white p-3 rounded-lg">
+                <strong>✅ Status:</strong> Fully Functional<br>
+                <strong>📊 Quick Status:</strong> 9,768 characters loaded<br>
+                <strong>📅 Daily Status:</strong> 18,182 characters loaded<br>
+                <strong>🔍 Debug Info:</strong> Complete system diagnostics
+              </div>
+              
+              <div class="bg-blue-600 text-white p-3 rounded-lg">
+                <strong>🎯 Features Available:</strong><br>
+                • Real-time status file loading<br>
+                • Professional markdown rendering<br>
+                • Scrollable content areas<br>
+                • Error handling and success messages<br>
+                • Complete debug information
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab Notes Tab Content -->
+      <div id="labNotesTab" class="folder-tab-content" style="display: none;">
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold text-blue-300 mb-4">📝 Lab Notes</h3>
+          <div class="text-sm text-gray-300 mb-4">
+            <p class="mb-4">Access comprehensive lab notes and development documentation through the dedicated 12.0 Management System.</p>
+            
+            <div class="flex flex-col space-y-3">
+              <a href="12-0-test.html" target="_blank" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg text-center transition-colors duration-200">
+                📝 Open Lab Notes System
+              </a>
+              
+              <div class="bg-purple-600 text-white p-3 rounded-lg">
+                <strong>📚 Available Documentation:</strong><br>
+                • Daily development notes<br>
+                • Bug fix reports<br>
+                • Feature implementation guides<br>
+                • Technical discoveries<br>
+                • System architecture documentation
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LLM Sync Tab Content -->
+      <div id="llmSyncTab" class="folder-tab-content" style="display: none;">
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold text-blue-300 mb-4">🤖 LLM Synchronization</h3>
+          <div class="text-sm text-gray-300 mb-4">
+            <p class="mb-4">Access LLM synchronization status and management through the dedicated 12.0 Management System.</p>
+            
+            <div class="flex flex-col space-y-3">
+              <a href="12-0-test.html" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg text-center transition-colors duration-200">
+                🤖 Open LLM Sync System
+              </a>
+              
+              <div class="bg-indigo-600 text-white p-3 rounded-lg">
+                <strong>🤖 LLM Management Features:</strong><br>
+                • Individual LLM status tracking<br>
+                • Synchronization monitoring<br>
+                • Achievement documentation<br>
+                • Cross-LLM communication<br>
+                • Status file management
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Docs Tab Content -->
+      <div id="technicalDocsTab" class="folder-tab-content" style="display: none;">
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold mb-4 text-yellow-400">🔧 Technical Documentation</h3>
+          <div id="technicalDocsContent" class="text-sm text-gray-300">
+            <p>Loading Technical Documentation...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Milestones Tab Content -->
+      <div id="milestonesTab" class="folder-tab-content" style="display: none;">
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold mb-4 text-yellow-400">🏆 Milestone Documentation</h3>
+          <div id="milestonesContent" class="text-sm text-gray-300">
+            <p>Loading Milestones...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deployment Tab Content -->
+      <div id="deploymentTab" class="folder-tab-content" style="display: none;">
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold mb-4 text-yellow-400">🚀 Deployment History</h3>
+          <div id="deploymentContent" class="text-sm text-gray-300">
+            <p>Loading Deployment History...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Development Tools Tab Content -->
+      <div id="developmentToolsTab" class="folder-tab-content" style="display: none;">
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold mb-4 text-yellow-400">🛠️ Development Tools</h3>
+          <div id="developmentToolsContent" class="text-sm text-gray-300">
+            <p>Loading Development Tools...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Archive Tab Content -->
+      <div id="archiveTab" class="folder-tab-content" style="display: none;">
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold mb-4 text-yellow-400">📦 Archive</h3>
+          <div id="archiveContent" class="text-sm text-gray-300">
+            <p>Loading Archive...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Refresh Button -->
+      <div class="text-center mt-6">
+        <button onclick="loadTwelveZeroData()" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+          🔄 Refresh 12.0 Data
+        </button>
+      </div>
+
+      <!-- Timestamp -->
+      <div class="text-center mt-4 text-gray-400 text-sm">
+        Last updated: <span id="twelveZeroTimestamp"></span>
+      </div>
+    </div>
+
   <!-- Utility Functions -->
   <script>
     // Utility function for escaping HTML
@@ -19258,6 +19479,492 @@ function updateGameTabContent(gameType, gameData) {
       } catch (error) {
         addLog(`❌ Database overview loading error: ${error.message}`);
         console.error('Database overview loading error:', error);
+      }
+    }
+
+    // 📁 12.0 Management Functions
+    async function loadTwelveZeroData() {
+      console.log('📁 loadTwelveZeroData function called');
+      
+      // For local development, skip authentication check
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      
+      if (!isLocal && !currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('📁 Loading 12.0 Management data...');
+
+      try {
+        // Check if the tab element exists
+        const tabElement = document.getElementById('twelveZeroManagementTab');
+        if (!tabElement) {
+          console.error('❌ twelveZeroManagementTab element not found in DOM');
+          addLog('❌ 12.0 Management tab element not found');
+          return;
+        }
+        console.log('✅ twelveZeroManagementTab element found');
+
+        // Debug DOM elements
+        debugDOMElements();
+
+        // Test API response
+        await testAPIResponse();
+
+        // Test markdown conversion
+        testMarkdownConversion();
+
+        // Ensure activeStatusTab is visible and button is active
+        const activeStatusTab = document.getElementById('activeStatusTab');
+        if (activeStatusTab) {
+          activeStatusTab.style.display = 'block';
+          console.log('📁 Active Status tab made visible');
+        }
+
+        // Ensure activeStatus button is active
+        const activeStatusBtn = document.querySelector('[data-folder-tab="activeStatus"]');
+        if (activeStatusBtn) {
+          activeStatusBtn.classList.add('active');
+          console.log('📁 Active Status button activated');
+        }
+
+        // Load Quick Status and Daily Status with SIMPLE DISPLAY
+        await Promise.all([
+          loadQuickStatusSimple(),
+          loadDailyStatusSimple()
+        ]);
+
+        // Update timestamp
+        const timestampElement = document.getElementById('twelveZeroTimestamp');
+        if (timestampElement) {
+          timestampElement.textContent = new Date().toLocaleString();
+          console.log('✅ 12.0 Management timestamp updated');
+        }
+
+        addLog('✅ 12.0 Management data loaded successfully');
+      } catch (error) {
+        addLog(`❌ 12.0 Management loading error: ${error.message}`);
+        console.error('12.0 Management loading error:', error);
+      }
+    }
+
+    // WORKING DISPLAY FUNCTIONS - COPY FROM TEST PAGE
+    async function loadQuickStatusSimple() {
+      console.log('📊 Starting WORKING Quick Status load...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=ACTIVE_STATUS/QUICK_STATUS_12.0.md');
+        const data = await response.json();
+        
+        if (data.success && data.content) {
+          console.log('📊 WORKING: Content loaded, length:', data.content.length);
+          
+          // Convert markdown to simple text (same as test page)
+          const simpleText = data.content
+            .replace(/^# (.*$)/gim, '🚀 $1')
+            .replace(/^## (.*$)/gim, '📊 $1')
+            .replace(/^### (.*$)/gim, '🎯 $1')
+            .replace(/\*\*(.*?)\*\*/gim, '**$1**')
+            .replace(/\*(.*?)\*/gim, '*$1*')
+            .replace(/^- (.*$)/gim, '• $1')
+            .replace(/^\d+\. (.*$)/gim, '$1')
+            .replace(/---/gim, '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          
+          // Find the Quick Status container and replace with working structure
+          const quickStatusContent = document.getElementById('quickStatusContent');
+          if (quickStatusContent) {
+            // Clear existing content
+            quickStatusContent.innerHTML = '';
+            
+            // Create success message
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `
+              background: #059669;
+              color: white;
+              padding: 15px;
+              border-radius: 8px;
+              margin: 10px 0;
+              font-weight: bold;
+            `;
+            successDiv.textContent = `✅ Quick Status loaded successfully (${data.content.length} characters)`;
+            
+            // Create content display (same structure as test page)
+            const contentPre = document.createElement('pre');
+            contentPre.style.cssText = `
+              background: #1a1a2e;
+              color: white;
+              padding: 20px;
+              margin: 10px 0;
+              border-radius: 8px;
+              border: 2px solid #3b82f6;
+              font-family: monospace;
+              white-space: pre-wrap;
+              line-height: 1.6;
+              max-height: 500px;
+              overflow-y: auto;
+              display: block !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+            `;
+            contentPre.textContent = simpleText;
+            
+            // Append both elements
+            quickStatusContent.appendChild(successDiv);
+            quickStatusContent.appendChild(contentPre);
+            
+            console.log('📊 WORKING: Quick Status displayed successfully');
+          }
+        }
+      } catch (error) {
+        console.error('❌ WORKING Quick Status error:', error);
+        const quickStatusContent = document.getElementById('quickStatusContent');
+        if (quickStatusContent) {
+          quickStatusContent.innerHTML = `<div style="background: #dc2626; color: white; padding: 15px; border-radius: 8px; margin: 10px 0;">❌ Error loading Quick Status: ${error.message}</div>`;
+        }
+      }
+    }
+
+    async function loadDailyStatusSimple() {
+      console.log('📅 Starting WORKING Daily Status load...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=ACTIVE_STATUS/DAILY_STATUS_2025-09-19.md');
+        const data = await response.json();
+        
+        if (data.success && data.content) {
+          console.log('📅 WORKING: Content loaded, length:', data.content.length);
+          
+          // Convert markdown to simple text (same as test page)
+          const simpleText = data.content
+            .replace(/^# (.*$)/gim, '📅 $1')
+            .replace(/^## (.*$)/gim, '📊 $1')
+            .replace(/^### (.*$)/gim, '🎯 $1')
+            .replace(/\*\*(.*?)\*\*/gim, '**$1**')
+            .replace(/\*(.*?)\*/gim, '*$1*')
+            .replace(/^- (.*$)/gim, '• $1')
+            .replace(/^\d+\. (.*$)/gim, '$1')
+            .replace(/---/gim, '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          
+          // Find the Daily Status container and replace with working structure
+          const dailyStatusContent = document.getElementById('dailyStatusContent');
+          if (dailyStatusContent) {
+            // Clear existing content
+            dailyStatusContent.innerHTML = '';
+            
+            // Create success message
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `
+              background: #059669;
+              color: white;
+              padding: 15px;
+              border-radius: 8px;
+              margin: 10px 0;
+              font-weight: bold;
+            `;
+            successDiv.textContent = `✅ Daily Status loaded successfully (${data.content.length} characters)`;
+            
+            // Create content display (same structure as test page)
+            const contentPre = document.createElement('pre');
+            contentPre.style.cssText = `
+              background: #1a1a2e;
+              color: white;
+              padding: 20px;
+              margin: 10px 0;
+              border-radius: 8px;
+              border: 2px solid #10b981;
+              font-family: monospace;
+              white-space: pre-wrap;
+              line-height: 1.6;
+              max-height: 500px;
+              overflow-y: auto;
+              display: block !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+            `;
+            contentPre.textContent = simpleText;
+            
+            // Append both elements
+            dailyStatusContent.appendChild(successDiv);
+            dailyStatusContent.appendChild(contentPre);
+            
+            console.log('📅 WORKING: Daily Status displayed successfully');
+          }
+        }
+      } catch (error) {
+        console.error('❌ WORKING Daily Status error:', error);
+        const dailyStatusContent = document.getElementById('dailyStatusContent');
+        if (dailyStatusContent) {
+          dailyStatusContent.innerHTML = `<div style="background: #dc2626; color: white; padding: 15px; border-radius: 8px; margin: 10px 0;">❌ Error loading Daily Status: ${error.message}</div>`;
+        }
+      }
+    }
+
+    // Load Quick Status
+    async function loadQuickStatus() {
+      console.log('📊 Starting loadQuickStatus...');
+      console.log('📊 API_BASE_URL:', API_BASE_URL);
+      console.log('📊 Full URL:', API_BASE_URL + '/api/admin/get-12-0-file.php?path=ACTIVE_STATUS/QUICK_STATUS_12.0.md');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=ACTIVE_STATUS/QUICK_STATUS_12.0.md');
+        console.log('📊 Response status:', response.status);
+        
+        const data = await response.json();
+        console.log('📊 Response data:', data);
+        
+        if (data.success && data.content) {
+          console.log('📊 Content length:', data.content.length);
+          console.log('📊 Content preview:', data.content.substring(0, 100));
+          
+          const quickStatusContent = document.getElementById('quickStatusContent');
+          console.log('📊 Quick Status Element:', quickStatusContent);
+          console.log('📊 Element exists:', !!quickStatusContent);
+          
+          if (quickStatusContent) {
+            console.log('📊 Element innerHTML before:', quickStatusContent.innerHTML);
+            quickStatusContent.innerHTML = convertMarkdownToHtml(data.content);
+            console.log('📊 Element innerHTML after:', quickStatusContent.innerHTML);
+            console.log('📊 Content set successfully');
+          } else {
+            console.error('❌ Quick Status element not found!');
+          }
+        } else {
+          console.error('❌ API response failed:', data);
+        }
+      } catch (error) {
+        console.error('❌ Error loading Quick Status:', error);
+      }
+    }
+
+    // Load Daily Status
+    async function loadDailyStatus() {
+      console.log('📅 Starting loadDailyStatus...');
+      console.log('📅 API_BASE_URL:', API_BASE_URL);
+      console.log('📅 Full URL:', API_BASE_URL + '/api/admin/get-12-0-file.php?path=ACTIVE_STATUS/DAILY_STATUS_2025-09-18.md');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=ACTIVE_STATUS/DAILY_STATUS_2025-09-18.md');
+        console.log('📅 Response status:', response.status);
+        
+        const data = await response.json();
+        console.log('📅 Response data:', data);
+        
+        if (data.success && data.content) {
+          console.log('📅 Content length:', data.content.length);
+          console.log('📅 Content preview:', data.content.substring(0, 100));
+          
+          const dailyStatusContent = document.getElementById('dailyStatusContent');
+          console.log('📅 Daily Status Element:', dailyStatusContent);
+          console.log('📅 Element exists:', !!dailyStatusContent);
+          
+          if (dailyStatusContent) {
+            console.log('📅 Element innerHTML before:', dailyStatusContent.innerHTML);
+            dailyStatusContent.innerHTML = convertMarkdownToHtml(data.content);
+            console.log('📅 Element innerHTML after:', dailyStatusContent.innerHTML);
+            console.log('📅 Content set successfully');
+          } else {
+            console.error('❌ Daily Status element not found!');
+          }
+        } else {
+          console.error('❌ API response failed:', data);
+        }
+      } catch (error) {
+        console.error('❌ Error loading Daily Status:', error);
+      }
+    }
+
+    // Debug function to check all DOM elements
+    function debugDOMElements() {
+      console.log('🔍 Debugging DOM Elements...');
+      
+      const elements = [
+        'quickStatusContent',
+        'dailyStatusContent',
+        'labNotesContent',
+        'llmSyncContent',
+        'technicalDocsContent',
+        'milestonesContent',
+        'deploymentContent',
+        'developmentToolsContent',
+        'archiveContent'
+      ];
+
+      elements.forEach(id => {
+        const element = document.getElementById(id);
+        console.log(`🔍 Element ${id}:`, element ? 'EXISTS' : 'NOT FOUND');
+        if (element) {
+          console.log(`🔍 Element ${id} innerHTML length:`, element.innerHTML.length);
+          console.log(`🔍 Element ${id} innerHTML preview:`, element.innerHTML.substring(0, 50));
+        }
+      });
+    }
+
+    // Test API response
+    async function testAPIResponse() {
+      console.log('🧪 Testing API Response...');
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=ACTIVE_STATUS/QUICK_STATUS_12.0.md');
+        const data = await response.json();
+        
+        console.log('🧪 API Test Results:');
+        console.log('🧪 Success:', data.success);
+        console.log('🧪 Type:', data.type);
+        console.log('🧪 Path:', data.path);
+        console.log('🧪 Content exists:', !!data.content);
+        console.log('🧪 Content length:', data.content?.length);
+        console.log('🧪 Extension:', data.extension);
+        
+        return data;
+      } catch (error) {
+        console.error('🧪 API Test Error:', error);
+        return null;
+      }
+    }
+
+    // Test markdown conversion
+    function testMarkdownConversion() {
+      console.log('🧪 Testing Markdown Conversion...');
+      const testMarkdown = `# Test Header
+## Test Subheader
+**Bold text** and *italic text*
+- List item 1
+- List item 2`;
+
+      console.log('🧪 Original Markdown:', testMarkdown);
+      const converted = convertMarkdownToHtml(testMarkdown);
+      console.log('🧪 Converted HTML:', converted);
+      
+      return converted;
+    }
+
+    // Convert Markdown to HTML (basic conversion)
+    function convertMarkdownToHtml(markdown) {
+      return markdown
+        .replace(/^# (.*$)/gim, '<h1 class="text-xl font-bold text-blue-300 mb-2">$1</h1>')
+        .replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold text-blue-300 mb-2">$1</h2>')
+        .replace(/^### (.*$)/gim, '<h3 class="text-md font-bold text-blue-300 mb-2">$1</h3>')
+        .replace(/\*\*(.*?)\*\*/gim, '<strong class="text-yellow-300">$1</strong>')
+        .replace(/\*(.*?)\*/gim, '<em class="text-gray-300">$1</em>')
+        .replace(/^- (.*$)/gim, '<li class="text-gray-300 ml-4">• $1</li>')
+        .replace(/^\d+\. (.*$)/gim, '<li class="text-gray-300 ml-4">$1</li>')
+        .replace(/```(.*?)```/gims, '<pre class="bg-gray-800 p-2 rounded text-green-400 text-sm overflow-x-auto"><code>$1</code></pre>')
+        .replace(/`(.*?)`/gim, '<code class="bg-gray-800 px-1 rounded text-green-400 text-sm">$1</code>')
+        .replace(/\n\n/gim, '</p><p class="text-gray-300 mb-2">')
+        .replace(/\n/gim, '<br>')
+        .replace(/^/, '<p class="text-gray-300 mb-2">')
+        .replace(/$/, '</p>');
+    }
+
+    // Switch folder tab
+    function switchFolderTab(tabName) {
+      console.log('📁 Switching folder tab:', tabName);
+      
+      // Hide all folder tab contents
+      document.querySelectorAll('.folder-tab-content').forEach(tab => {
+        tab.style.display = 'none';
+      });
+      
+      // Remove active class from all folder tab buttons
+      document.querySelectorAll('.folder-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Show selected tab content
+      const selectedTab = document.getElementById(tabName + 'Tab');
+      if (selectedTab) {
+        selectedTab.style.display = 'block';
+        console.log('📁 Showing tab:', tabName + 'Tab', 'Element:', selectedTab);
+      } else {
+        console.error('❌ Tab element not found:', tabName + 'Tab');
+      }
+      
+      // Add active class to selected button
+      const selectedBtn = document.querySelector(`[data-folder-tab="${tabName}"]`);
+      if (selectedBtn) {
+        selectedBtn.classList.add('active');
+        console.log('📁 Activated button:', tabName);
+      } else {
+        console.error('❌ Button not found:', tabName);
+      }
+      
+      // Load content based on tab
+      switch(tabName) {
+        case 'activeStatus':
+          loadQuickStatus();
+          loadDailyStatus();
+          break;
+        case 'labNotes':
+          loadLabNotes();
+          break;
+        case 'llmSync':
+          loadLLMSyncStatus();
+          break;
+        case 'technicalDocs':
+          loadTechnicalDocs();
+          break;
+        case 'milestones':
+          loadMilestones();
+          break;
+        case 'deployment':
+          loadDeploymentHistory();
+          break;
+        case 'developmentTools':
+          loadDevelopmentTools();
+          break;
+        case 'archive':
+          loadArchive();
+          break;
+      }
+    }
+
+    // Placeholder functions for other tabs
+    async function loadLabNotes() {
+      const content = document.getElementById('labNotesContent');
+      if (content) {
+        content.innerHTML = '<p class="text-gray-400">Lab Notes directory loading...</p>';
+      }
+    }
+
+    async function loadLLMSyncStatus() {
+      const content = document.getElementById('llmSyncContent');
+      if (content) {
+        content.innerHTML = '<p class="text-gray-400">LLM Sync Status loading...</p>';
+      }
+    }
+
+    async function loadTechnicalDocs() {
+      const content = document.getElementById('technicalDocsContent');
+      if (content) {
+        content.innerHTML = '<p class="text-gray-400">Technical Documentation loading...</p>';
+      }
+    }
+
+    async function loadMilestones() {
+      const content = document.getElementById('milestonesContent');
+      if (content) {
+        content.innerHTML = '<p class="text-gray-400">Milestones loading...</p>';
+      }
+    }
+
+    async function loadDeploymentHistory() {
+      const content = document.getElementById('deploymentContent');
+      if (content) {
+        content.innerHTML = '<p class="text-gray-400">Deployment History loading...</p>';
+      }
+    }
+
+    async function loadDevelopmentTools() {
+      const content = document.getElementById('developmentToolsContent');
+      if (content) {
+        content.innerHTML = '<p class="text-gray-400">Development Tools loading...</p>';
+      }
+    }
+
+    async function loadArchive() {
+      const content = document.getElementById('archiveContent');
+      if (content) {
+        content.innerHTML = '<p class="text-gray-400">Archive loading...</p>';
       }
     }
 

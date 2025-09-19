@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧀 12.0 Management System - Complete Documentation</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px solid #3b82f6;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: #fbbf24;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            color: #e5e7eb;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+        
+        .nav-tab {
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 2px solid #6b7280;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .nav-tab:hover {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+        
+        .nav-tab.active {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border-color: #10b981;
+        }
+        
+        .content-section {
+            display: none;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 2px solid #3b82f6;
+            min-height: 600px;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .status-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #3b82f6;
+        }
+        
+        .daily-card {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border: 2px solid #10b981;
+        }
+        
+        .lab-notes-card {
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+            border: 2px solid #8b5cf6;
+        }
+        
+        .llm-sync-card {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            border: 2px solid #ef4444;
+        }
+        
+        .technical-card {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+            border: 2px solid #f97316;
+        }
+        
+        .milestones-card {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            border: 2px solid #06b6d4;
+        }
+        
+        .deployment-card {
+            background: linear-gradient(135deg, #be185d 0%, #9d174d 100%);
+            border: 2px solid #ec4899;
+        }
+        
+        .dev-tools-card {
+            background: linear-gradient(135deg, #65a30d 0%, #4d7c0f 100%);
+            border: 2px solid #84cc16;
+        }
+        
+        .archive-card {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            border: 2px solid #9ca3af;
+        }
+        
+        .content {
+            font-family: monospace;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #fbbf24;
+            font-size: 1.2em;
+        }
+        
+        .error {
+            background: #dc2626;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: #059669;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .file-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .file-item:hover {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .file-item::after {
+            content: "👆 Click to read";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #3b82f6;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .file-item:hover::after {
+            opacity: 1;
+        }
+        
+        .file-item h4 {
+            margin: 0 0 10px 0;
+            color: #fbbf24;
+        }
+        
+        .file-item p {
+            margin: 5px 0;
+            color: #e5e7eb;
+            font-size: 0.9em;
+        }
+        
+        .timestamp {
+            color: #9ca3af;
+            font-size: 0.8em;
+            text-align: right;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+            <div class="header">
+                <h1>🧀 12.0 Management System</h1>
+                <p>Complete Professional Development Documentation & Management</p>
+                <div style="margin-top: 15px;">
+                    <button onclick="testFileLoading()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; margin-right: 10px;">🧪 Test File Loading</button>
+                    <button onclick="console.log('API_BASE_URL:', API_BASE_URL); console.log('Environment:', isProduction ? 'Production' : 'Local');" style="padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 8px; cursor: pointer;">🔍 Debug Info</button>
+                </div>
+            </div>
+        
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="active-status">📊 Active Status</div>
+            <div class="nav-tab" data-tab="lab-notes">📝 Lab Notes</div>
+            <div class="nav-tab" data-tab="llm-sync">🤖 LLM Sync</div>
+            <div class="nav-tab" data-tab="technical-docs">🔧 Technical Docs</div>
+            <div class="nav-tab" data-tab="milestones">🏆 Milestones</div>
+            <div class="nav-tab" data-tab="deployment">🚀 Deployment</div>
+            <div class="nav-tab" data-tab="dev-tools">🛠️ Dev Tools</div>
+            <div class="nav-tab" data-tab="archive">📦 Archive</div>
+        </div>
+        
+        <!-- Active Status Section -->
+        <div id="active-status" class="content-section active">
+            <h2>📊 Active Status Files</h2>
+            
+            <div class="status-card">
+                <h3>🚀 Quick Status</h3>
+                <div id="quickStatusContent" class="content">
+                    <div class="loading">Loading Quick Status...</div>
+                </div>
+            </div>
+            
+            <div class="status-card daily-card">
+                <h3>📅 Daily Status - September 19, 2025</h3>
+                <div id="dailyStatusContent" class="content">
+                    <div class="loading">Loading Daily Status...</div>
+                </div>
+            </div>
+            
+            <div class="status-card">
+                <h3>📅 Daily Status - September 18, 2025</h3>
+                <div id="dailyStatus18Content" class="content">
+                    <div class="loading">Loading Daily Status 18...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lab Notes Section -->
+        <div id="lab-notes" class="content-section">
+            <h2>📝 Lab Notes - Development Documentation</h2>
+            
+            <div class="lab-notes-card">
+                <h3>📝 September 19, 2025 - Lab Notes</h3>
+                <div id="labNotes19Content" class="content">
+                    <div class="loading">Loading Lab Notes for September 19...</div>
+                </div>
+            </div>
+            
+            <div class="lab-notes-card">
+                <h3>📝 September 18, 2025 - Lab Notes</h3>
+                <div id="labNotes18Content" class="content">
+                    <div class="loading">Loading Lab Notes for September 18...</div>
+                </div>
+            </div>
+            
+            <div class="lab-notes-card">
+                <h3>📝 September 17, 2025 - Lab Notes</h3>
+                <div id="labNotes17Content" class="content">
+                    <div class="loading">Loading Lab Notes for September 17...</div>
+                </div>
+            </div>
+            
+            <!-- Direct Lab Note Files -->
+            <div class="lab-notes-card">
+                <h3>📝 Recent Lab Notes (Click to Read)</h3>
+                <div id="recentLabNotesContent" class="content">
+                    <div class="loading">Loading recent lab notes...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LLM Sync Section -->
+        <div id="llm-sync" class="content-section">
+            <h2>🤖 LLM Synchronization Status</h2>
+            
+            <div class="llm-sync-card">
+                <h3>🤖 LLM Sync Status Files</h3>
+                <div id="llmSyncContent" class="content">
+                    <div class="loading">Loading LLM Sync Status...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical Docs Section -->
+        <div id="technical-docs" class="content-section">
+            <h2>🔧 Technical Documentation</h2>
+            
+            <div class="technical-card">
+                <h3>🔧 Technical Documentation Files</h3>
+                <div id="technicalDocsContent" class="content">
+                    <div class="loading">Loading Technical Documentation...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Milestones Section -->
+        <div id="milestones" class="content-section">
+            <h2>🏆 Milestones & Achievements</h2>
+            
+            <div class="milestones-card">
+                <h3>🏆 Milestone Documentation</h3>
+                <div id="milestonesContent" class="content">
+                    <div class="loading">Loading Milestones...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Deployment Section -->
+        <div id="deployment" class="content-section">
+            <h2>🚀 Deployment History</h2>
+            
+            <div class="deployment-card">
+                <h3>🚀 Deployment Records</h3>
+                <div id="deploymentContent" class="content">
+                    <div class="loading">Loading Deployment History...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dev Tools Section -->
+        <div id="dev-tools" class="content-section">
+            <h2>🛠️ Development Tools</h2>
+            
+            <div class="dev-tools-card">
+                <h3>🛠️ Development Tools & Scripts</h3>
+                <div id="devToolsContent" class="content">
+                    <div class="loading">Loading Development Tools...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Archive Section -->
+        <div id="archive" class="content-section">
+            <h2>📦 Archive & Legacy Files</h2>
+            
+            <div class="archive-card">
+                <h3>📦 Archived Documentation</h3>
+                <div id="archiveContent" class="content">
+                    <div class="loading">Loading Archive...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timestamp">
+            Last Updated: <span id="lastUpdated"></span>
+        </div>
+    </div>
+
+    <script>
+        // Environment detection
+        const isProduction = window.location.hostname === 'narrrfs.world';
+        const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+        
+        console.log('🌍 Environment:', isProduction ? 'Production' : 'Local');
+        console.log('🔗 API Base URL:', API_BASE_URL);
+        
+        // Simple markdown to text conversion
+        function convertMarkdownToText(markdown) {
+            return markdown
+                .replace(/^# (.*$)/gim, '🚀 $1')
+                .replace(/^## (.*$)/gim, '📊 $1')
+                .replace(/^### (.*$)/gim, '🎯 $1')
+                .replace(/\*\*(.*?)\*\*/gim, '**$1**')
+                .replace(/\*(.*?)\*/gim, '*$1*')
+                .replace(/^- (.*$)/gim, '• $1')
+                .replace(/^\d+\. (.*$)/gim, '$1')
+                .replace(/---/gim, '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        }
+        
+        // Load content function
+        async function loadContent(elementId, filePath, successMessage) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            try {
+                const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=' + filePath);
+                const data = await response.json();
+                
+                if (data.success && data.content) {
+                    const simpleText = convertMarkdownToText(data.content);
+                    element.innerHTML = `<div class="success">✅ ${successMessage} (${data.content.length} characters)</div><pre>${simpleText}</pre>`;
+                } else {
+                    element.innerHTML = `<div class="error">❌ Failed to load ${successMessage}: ${data.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                element.innerHTML = `<div class="error">❌ Error loading ${successMessage}: ${error.message}</div>`;
+            }
+        }
+        
+        // Load directory listing
+        async function loadDirectory(elementId, directoryPath, title) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            try {
+                console.log('📁 Loading directory:', directoryPath);
+                const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=' + directoryPath);
+                const data = await response.json();
+                
+                if (data.success && data.files) {
+                    let html = `<div class="success">✅ ${title} loaded (${data.files.length} files)</div>`;
+                    html += '<div class="file-list">';
+                    
+                    data.files.forEach(file => {
+                        console.log('📁 Creating file item:', file.name, 'Path:', file.path, 'Type:', file.type);
+                        html += `
+                            <div class="file-item" data-file-path="${file.path}" data-file-name="${file.name}" data-file-type="${file.type}">
+                                <h4>${file.type === 'directory' ? '📁' : '📄'} ${file.name}</h4>
+                                <p><strong>Type:</strong> ${file.type}</p>
+                                <p><strong>Size:</strong> ${file.size}</p>
+                                <p><strong>Modified:</strong> ${file.modified}</p>
+                                <p><strong>Path:</strong> ${file.path}</p>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    element.innerHTML = html;
+                    console.log('📁 Directory HTML set for:', title);
+                    
+                    // Add click event listeners to file items
+                    const fileItems = element.querySelectorAll('.file-item');
+                    fileItems.forEach(item => {
+                        item.addEventListener('click', function() {
+                            const filePath = this.getAttribute('data-file-path');
+                            const fileName = this.getAttribute('data-file-name');
+                            const fileType = this.getAttribute('data-file-type');
+                            console.log('🖱️ File clicked:', fileName, 'Path:', filePath, 'Type:', fileType);
+                            loadFileContent(filePath, fileName, fileType);
+                        });
+                    });
+                    console.log('📁 Event listeners added to', fileItems.length, 'file items');
+                } else {
+                    element.innerHTML = `<div class="error">❌ Failed to load ${title}: ${data.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                console.error('❌ Error loading directory:', error);
+                element.innerHTML = `<div class="error">❌ Error loading ${title}: ${error.message}</div>`;
+            }
+        }
+        
+        // Load file content
+        async function loadFileContent(filePath, fileName, fileType = 'file') {
+            console.log('📄 Loading file:', fileName, 'Path:', filePath, 'Type:', fileType);
+            
+            // Check if this is a directory using the actual type from API
+            if (fileType === 'directory') {
+                console.log('📁 Detected directory, loading directory listing instead');
+                loadDirectoryContent(filePath, fileName);
+                return;
+            }
+            
+            const modal = document.createElement('div');
+            modal.id = 'fileModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                box-sizing: border-box;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: #1a1a2e;
+                border: 2px solid #3b82f6;
+                border-radius: 12px;
+                padding: 25px;
+                max-width: 95%;
+                max-height: 95%;
+                overflow-y: auto;
+                box-sizing: border-box;
+                position: relative;
+            `;
+            
+            // Add loading state
+            content.innerHTML = `
+                <h3 style="color: #fbbf24; margin-top: 0;">📄 ${fileName}</h3>
+                <div style="text-align: center; padding: 20px; color: #fbbf24;">Loading content...</div>
+                <button onclick="closeModal()" style="position: absolute; top: 15px; right: 15px; padding: 8px 15px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer;">✕ Close</button>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            try {
+                console.log('📄 Fetching:', API_BASE_URL + '/api/admin/get-12-0-file.php?path=' + filePath);
+                const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=' + filePath);
+                console.log('📄 Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('📄 Response data:', data);
+                
+                if (data.success && data.content) {
+                    console.log('📄 Content length:', data.content.length);
+                    const simpleText = convertMarkdownToText(data.content);
+                    
+                    content.innerHTML = `
+                        <h3 style="color: #fbbf24; margin-top: 0;">📄 ${fileName}</h3>
+                        <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; line-height: 1.6; max-height: 70vh; overflow-y: auto; border: 1px solid rgba(255, 255, 255, 0.1);">${simpleText}</div>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <button onclick="closeModal()" style="padding: 12px 25px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">✕ Close</button>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <h3 style="color: #fbbf24; margin-top: 0;">📄 ${fileName}</h3>
+                        <div style="background: #dc2626; color: white; padding: 15px; border-radius: 8px; margin: 10px 0;">❌ Failed to load ${fileName}: ${data.error || 'Unknown error'}</div>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <button onclick="closeModal()" style="padding: 12px 25px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">✕ Close</button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error loading file:', error);
+                content.innerHTML = `
+                    <h3 style="color: #fbbf24; margin-top: 0;">📄 ${fileName}</h3>
+                    <div style="background: #dc2626; color: white; padding: 15px; border-radius: 8px; margin: 10px 0;">❌ Error loading ${fileName}: ${error.message}</div>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <button onclick="closeModal()" style="padding: 12px 25px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">✕ Close</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Close modal function
+        function closeModal() {
+            console.log('🔒 Closing modal...');
+            const modal = document.getElementById('fileModal');
+            if (modal) {
+                modal.remove();
+                console.log('✅ Modal closed successfully');
+            } else {
+                console.log('⚠️ Modal not found, removing any remaining modals');
+                // Fallback: remove any modals that might be stuck
+                const modals = document.querySelectorAll('[style*="position: fixed"]');
+                modals.forEach(modal => {
+                    if (modal.style.zIndex === '1000') {
+                        modal.remove();
+                    }
+                });
+            }
+        }
+        
+        // Load directory content in modal
+        async function loadDirectoryContent(filePath, dirName) {
+            console.log('📁 Loading directory:', dirName, 'Path:', filePath);
+            
+            const modal = document.createElement('div');
+            modal.id = 'fileModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                box-sizing: border-box;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: #1a1a2e;
+                border: 2px solid #3b82f6;
+                border-radius: 12px;
+                padding: 25px;
+                max-width: 95%;
+                max-height: 95%;
+                overflow-y: auto;
+                box-sizing: border-box;
+                position: relative;
+            `;
+            
+            // Add loading state
+            content.innerHTML = `
+                <h3 style="color: #fbbf24; margin-top: 0;">📁 ${dirName}</h3>
+                <div style="text-align: center; padding: 20px; color: #fbbf24;">Loading directory...</div>
+                <button onclick="closeModal()" style="position: absolute; top: 15px; right: 15px; padding: 8px 15px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer;">✕ Close</button>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            try {
+                console.log('📁 Fetching directory:', API_BASE_URL + '/api/admin/get-12-0-file.php?path=' + filePath);
+                const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=' + filePath);
+                console.log('📁 Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('📁 Response data:', data);
+                
+                if (data.success && data.files) {
+                    console.log('📁 Directory files:', data.files.length);
+                    let html = `<h3 style="color: #fbbf24; margin-top: 0;">📁 ${dirName}</h3>`;
+                    html += `<div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 8px; margin: 10px 0; border: 1px solid rgba(255, 255, 255, 0.1);">`;
+                    html += `<div style="margin-bottom: 15px; color: #fbbf24; font-weight: bold;">📁 Directory Contents (${data.files.length} items)</div>`;
+                    html += '<div class="file-list">';
+                    
+                    data.files.forEach(file => {
+                        html += `
+                            <div class="file-item" onclick="loadFileContent('${file.path}', '${file.name}', '${file.type}')">
+                                <h4>${file.type === 'directory' ? '📁' : '📄'} ${file.name}</h4>
+                                <p><strong>Type:</strong> ${file.type}</p>
+                                <p><strong>Size:</strong> ${file.size}</p>
+                                <p><strong>Modified:</strong> ${file.modified}</p>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div></div>';
+                    html += `<div style="margin-top: 15px; text-align: center;">
+                        <button onclick="closeModal()" style="padding: 12px 25px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">✕ Close</button>
+                    </div>`;
+                    
+                    content.innerHTML = html;
+                    
+                    // Add click event listeners to file items in modal
+                    const fileItems = content.querySelectorAll('.file-item');
+                    fileItems.forEach(item => {
+                        item.addEventListener('click', function() {
+                            const onclickStr = this.onclick.toString();
+                            const matches = onclickStr.match(/loadFileContent\('([^']+)',\s*'([^']+)',\s*'([^']+)'\)/);
+                            if (matches) {
+                                const filePath = matches[1];
+                                const fileName = matches[2];
+                                const fileType = matches[3];
+                                console.log('🖱️ Modal file clicked:', fileName, 'Path:', filePath, 'Type:', fileType);
+                                loadFileContent(filePath, fileName, fileType);
+                            }
+                        });
+                    });
+                } else {
+                    content.innerHTML = `
+                        <h3 style="color: #fbbf24; margin-top: 0;">📁 ${dirName}</h3>
+                        <div style="background: #dc2626; color: white; padding: 15px; border-radius: 8px; margin: 10px 0;">❌ Failed to load directory ${dirName}: ${data.error || 'Unknown error'}</div>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <button onclick="closeModal()" style="padding: 12px 25px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">✕ Close</button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error loading directory:', error);
+                content.innerHTML = `
+                    <h3 style="color: #fbbf24; margin-top: 0;">📁 ${dirName}</h3>
+                    <div style="background: #dc2626; color: white; padding: 15px; border-radius: 8px; margin: 10px 0;">❌ Error loading directory ${dirName}: ${error.message}</div>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <button onclick="closeModal()" style="padding: 12px 25px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">✕ Close</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            const selectedSection = document.getElementById(tabName);
+            if (selectedSection) {
+                selectedSection.classList.add('active');
+            }
+            
+            // Add active class to selected tab
+            const selectedTab = document.querySelector(`[data-tab="${tabName}"]`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Load content for the selected tab
+            loadTabContent(tabName);
+        }
+        
+        // Test file loading function
+        function testFileLoading() {
+            console.log('🧪 Testing file loading...');
+            console.log('🧪 API_BASE_URL:', API_BASE_URL);
+            console.log('🧪 Testing with Quick Status file...');
+            loadFileContent('ACTIVE_STATUS/QUICK_STATUS_12.0.md', 'Quick Status Test');
+        }
+        
+        // Load specific lab notes
+        async function loadSpecificLabNotes() {
+            const element = document.getElementById('recentLabNotesContent');
+            if (!element) return;
+            
+            try {
+                // Load specific lab note files directly
+                const labNoteFiles = [
+                    {
+                        path: 'LAB_NOTES/2025/DAILY_NOTES/2025-09-19/12_0_MANAGEMENT_WORKAROUND_SOLUTION_2025-09-19.md',
+                        name: '12.0 Management Workaround Solution',
+                        description: 'Complete workaround solution implementation'
+                    },
+                    {
+                        path: 'LAB_NOTES/2025/DAILY_NOTES/2025-09-19/12_0_MANAGEMENT_PERSISTENT_DISPLAY_ISSUE_2025-09-19.md',
+                        name: '12.0 Management Persistent Issue',
+                        description: 'Comprehensive debugging session report'
+                    },
+                    {
+                        path: 'LAB_NOTES/2025/DAILY_NOTES/2025-09-18/12_0_MANAGEMENT_DATA_DISPLAY_ISSUE_2025-09-18.md',
+                        name: '12.0 Management Data Display Issue',
+                        description: 'Initial issue identification and analysis'
+                    }
+                ];
+                
+                let html = '<div class="success">✅ Recent Lab Notes loaded</div>';
+                html += '<div class="file-list">';
+                
+                for (const file of labNoteFiles) {
+                    html += `
+                        <div class="file-item" data-file-path="${file.path}" data-file-name="${file.name}">
+                            <h4>📄 ${file.name}</h4>
+                            <p><strong>Description:</strong> ${file.description}</p>
+                            <p><strong>Path:</strong> ${file.path}</p>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+                element.innerHTML = html;
+                
+                // Add click event listeners to file items
+                const fileItems = element.querySelectorAll('.file-item');
+                fileItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const filePath = this.getAttribute('data-file-path');
+                        const fileName = this.getAttribute('data-file-name');
+                        console.log('🖱️ Lab note clicked:', fileName, 'Path:', filePath);
+                        loadFileContent(filePath, fileName);
+                    });
+                });
+                console.log('📝 Event listeners added to', fileItems.length, 'lab note items');
+                
+            } catch (error) {
+                element.innerHTML = `<div class="error">❌ Error loading recent lab notes: ${error.message}</div>`;
+            }
+        }
+        
+        // Load content for specific tab
+        async function loadTabContent(tabName) {
+            switch(tabName) {
+                case 'active-status':
+                    await Promise.all([
+                        loadContent('quickStatusContent', 'ACTIVE_STATUS/QUICK_STATUS_12.0.md', 'Quick Status'),
+                        loadContent('dailyStatusContent', 'ACTIVE_STATUS/DAILY_STATUS_2025-09-19.md', 'Daily Status 19'),
+                        loadContent('dailyStatus18Content', 'ACTIVE_STATUS/DAILY_STATUS_2025-09-18.md', 'Daily Status 18')
+                    ]);
+                    break;
+                    
+                case 'lab-notes':
+                    await Promise.all([
+                        loadDirectory('labNotes19Content', 'LAB_NOTES/2025/DAILY_NOTES/2025-09-19', 'Lab Notes September 19'),
+                        loadDirectory('labNotes18Content', 'LAB_NOTES/2025/DAILY_NOTES/2025-09-18', 'Lab Notes September 18'),
+                        loadDirectory('labNotes17Content', 'LAB_NOTES/2025/DAILY_NOTES/2025-09-17', 'Lab Notes September 17'),
+                        loadSpecificLabNotes()
+                    ]);
+                    break;
+                    
+                case 'llm-sync':
+                    await loadDirectory('llmSyncContent', 'LLM_SYNC_SYSTEM', 'LLM Sync Status');
+                    break;
+                    
+                case 'technical-docs':
+                    await loadDirectory('technicalDocsContent', 'TECHNICAL_DOCUMENTATION', 'Technical Documentation');
+                    break;
+                    
+                case 'milestones':
+                    await loadDirectory('milestonesContent', 'MILESTONE_DOCUMENTATION', 'Milestones');
+                    break;
+                    
+                case 'deployment':
+                    await loadDirectory('deploymentContent', 'DEPLOYMENT_HISTORY', 'Deployment History');
+                    break;
+                    
+                case 'dev-tools':
+                    await loadDirectory('devToolsContent', 'DEVELOPMENT_TOOLS', 'Development Tools');
+                    break;
+                    
+                case 'archive':
+                    await loadDirectory('archiveContent', 'ARCHIVE', 'Archive');
+                    break;
+            }
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click listeners to tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+            
+            // Load initial content
+            loadTabContent('active-status');
+            
+            // Update timestamp
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+        });
+    </script>
+</body>
+</html>

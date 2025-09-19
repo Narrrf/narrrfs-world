@@ -1,0 +1,673 @@
+{
+  "season_tester_role_recipients": {
+    "role_id": "1417279348989497532",
+    "role_name": "Season Tester",
+    "grant_date": "2025-09-16",
+    "total_recipients": 59,
+    "success_rate": "80.8%",
+    "season": "Season 3 Recognition",
+    "criteria": "Players with contributions across all 5 games in Season 3",
+    "recipients": [
+      {
+        "discord_id": "1278739273914257449",
+        "username": "codeddc_",
+        "total_contributions": 4028,
+        "tetris_snake_space_games": 4026,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1224428436928594015",
+        "username": "lukeskypestalker",
+        "total_contributions": 519,
+        "tetris_snake_space_games": 516,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 3,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "328601656659017732",
+        "username": "narrrf",
+        "total_contributions": 410,
+        "tetris_snake_space_games": 284,
+        "cheese_hunt_clicks": 107,
+        "discord_races": 19,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1138915296959287468",
+        "username": "kuternigharald",
+        "total_contributions": 217,
+        "tetris_snake_space_games": 108,
+        "cheese_hunt_clicks": 104,
+        "discord_races": 5,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1107633105185013790",
+        "username": "santa3120",
+        "total_contributions": 189,
+        "tetris_snake_space_games": 44,
+        "cheese_hunt_clicks": 142,
+        "discord_races": 3,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1287900278649126973",
+        "username": "unknown",
+        "total_contributions": 189,
+        "tetris_snake_space_games": 9,
+        "cheese_hunt_clicks": 180,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1105784833000615966",
+        "username": "unknown",
+        "total_contributions": 154,
+        "tetris_snake_space_games": 152,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "760183609222758501",
+        "username": "unknown",
+        "total_contributions": 114,
+        "tetris_snake_space_games": 29,
+        "cheese_hunt_clicks": 85,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "987492370616561714",
+        "username": "unknown",
+        "total_contributions": 72,
+        "tetris_snake_space_games": 50,
+        "cheese_hunt_clicks": 13,
+        "discord_races": 9,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "946199839111266354",
+        "username": "unknown",
+        "total_contributions": 57,
+        "tetris_snake_space_games": 32,
+        "cheese_hunt_clicks": 19,
+        "discord_races": 6,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "841429450867474432",
+        "username": "unknown",
+        "total_contributions": 25,
+        "tetris_snake_space_games": 25,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1222200013489180743",
+        "username": "unknown",
+        "total_contributions": 20,
+        "tetris_snake_space_games": 15,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 5,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1220324061213622353",
+        "username": "unknown",
+        "total_contributions": 19,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 17,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "896779071164403822",
+        "username": "unknown",
+        "total_contributions": 18,
+        "tetris_snake_space_games": 8,
+        "cheese_hunt_clicks": 8,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1233440156128641065",
+        "username": "unknown",
+        "total_contributions": 17,
+        "tetris_snake_space_games": 6,
+        "cheese_hunt_clicks": 4,
+        "discord_races": 7,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "970328921893646390",
+        "username": "unknown",
+        "total_contributions": 17,
+        "tetris_snake_space_games": 17,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "919618776620748831",
+        "username": "unknown",
+        "total_contributions": 11,
+        "tetris_snake_space_games": 5,
+        "cheese_hunt_clicks": 6,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1337",
+        "username": "unknown",
+        "total_contributions": 7,
+        "tetris_snake_space_games": 7,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "817203029291040819",
+        "username": "unknown",
+        "total_contributions": 7,
+        "tetris_snake_space_games": 7,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "871944171081043989",
+        "username": "unknown",
+        "total_contributions": 7,
+        "tetris_snake_space_games": 5,
+        "cheese_hunt_clicks": 1,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "991087101925797889",
+        "username": "unknown",
+        "total_contributions": 7,
+        "tetris_snake_space_games": 7,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "776667871173541909",
+        "username": "unknown",
+        "total_contributions": 6,
+        "tetris_snake_space_games": 4,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "405758248407531521",
+        "username": "unknown",
+        "total_contributions": 6,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 6,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1208076026727501824",
+        "username": "unknown",
+        "total_contributions": 5,
+        "tetris_snake_space_games": 5,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1297224185885622293",
+        "username": "unknown",
+        "total_contributions": 5,
+        "tetris_snake_space_games": 5,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "894003364717789206",
+        "username": "unknown",
+        "total_contributions": 5,
+        "tetris_snake_space_games": 4,
+        "cheese_hunt_clicks": 1,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "970963000569790495",
+        "username": "unknown",
+        "total_contributions": 5,
+        "tetris_snake_space_games": 5,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "813992163377414156",
+        "username": "unknown",
+        "total_contributions": 5,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 5,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "468983200597934080",
+        "username": "unknown",
+        "total_contributions": 4,
+        "tetris_snake_space_games": 3,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "519526528506396693",
+        "username": "unknown",
+        "total_contributions": 4,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 3,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "448165791540445194",
+        "username": "unknown",
+        "total_contributions": 3,
+        "tetris_snake_space_games": 3,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "905647386297258015",
+        "username": "unknown",
+        "total_contributions": 3,
+        "tetris_snake_space_games": 3,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "976350486401810483",
+        "username": "unknown",
+        "total_contributions": 3,
+        "tetris_snake_space_games": 3,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "933055368924389377",
+        "username": "unknown",
+        "total_contributions": 3,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 3,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1095015786835345428",
+        "username": "unknown",
+        "total_contributions": 2,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1142375914957713480",
+        "username": "unknown",
+        "total_contributions": 2,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1260317833532014805",
+        "username": "unknown",
+        "total_contributions": 2,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1190122205485477898",
+        "username": "unknown",
+        "total_contributions": 2,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1202494597159456841",
+        "username": "unknown",
+        "total_contributions": 2,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1241824780639010919",
+        "username": "unknown",
+        "total_contributions": 2,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "794759440158294066",
+        "username": "unknown",
+        "total_contributions": 2,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "922049586162442270",
+        "username": "unknown",
+        "total_contributions": 2,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "973986241202753586",
+        "username": "unknown",
+        "total_contributions": 2,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 2,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1005906463740403752",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1263709535919673365",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1333530244665053277",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "458274243055058944",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "594674047930073111",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "625662297033146368",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "782242542095826946",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "808433759476383755",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "825023944032518225",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "919526807374553151",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 1,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 0,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1101738237036343337",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1136596961764573225",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1212650495974580295",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1215665502970581004",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1225681464449044481",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1226227679183765534",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "1380060117709361245",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "443414647907811339",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "850315742112514089",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "896934865507872778",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      },
+      {
+        "discord_id": "902990329446277150",
+        "username": "unknown",
+        "total_contributions": 1,
+        "tetris_snake_space_games": 0,
+        "cheese_hunt_clicks": 0,
+        "discord_races": 1,
+        "status": "successfully_granted"
+      }
+    ],
+    "failed_grants": [
+      {
+        "discord_id": "458274243055058944",
+        "reason": "Unknown member",
+        "status": "failed"
+      },
+      {
+        "discord_id": "594674047930073111",
+        "reason": "Unknown member",
+        "status": "failed"
+      },
+      {
+        "discord_id": "625662297033146368",
+        "reason": "Unknown member",
+        "status": "failed"
+      },
+      {
+        "discord_id": "782242542095826946",
+        "reason": "Unknown member",
+        "status": "failed"
+      }
+    ],
+    "skipped_players": [
+      {
+        "discord_id": "TestWallet123456789XYZ",
+        "reason": "Non-Discord ID (wallet address)",
+        "status": "skipped"
+      },
+      {
+        "discord_id": "De4NNJKEgQwBJG725rwjrxuBUjEDqhKmWbaCdugzomFq",
+        "reason": "Non-Discord ID (wallet address)",
+        "status": "skipped"
+      },
+      {
+        "discord_id": "CNS7zXY6CJRdf5vsbTRNak7GMZYJvx152CNefXo8xiFR",
+        "reason": "Non-Discord ID (wallet address)",
+        "status": "skipped"
+      },
+      {
+        "discord_id": "session_1754355445915_uw6riau7e",
+        "reason": "Non-Discord ID (session ID)",
+        "status": "skipped"
+      },
+      {
+        "discord_id": "317peVaeB3Wspi348SDNTQdY2Cbd4zyk3pcB1xJgZsZR",
+        "reason": "Non-Discord ID (wallet address)",
+        "status": "skipped"
+      },
+      {
+        "discord_id": "3xALCAWami4H4LpMVjxnbqKcaEZ8jqqUm7aG8jUtC9Wq",
+        "reason": "Non-Discord ID (wallet address)",
+        "status": "skipped"
+      },
+      {
+        "discord_id": "BjwCp5gXVpZ9zkB7jjuzwFWyyepoLkh9TBPeHnqL8AkU",
+        "reason": "Non-Discord ID (wallet address)",
+        "status": "skipped"
+      },
+      {
+        "discord_id": "session_1753816202207_r4pb620ph",
+        "reason": "Non-Discord ID (session ID)",
+        "status": "skipped"
+      },
+      {
+        "discord_id": "Buh7VgEUVxyKpXo1AXgnNRHBHDQeBoErkz31zZnPu6Y4",
+        "reason": "Non-Discord ID (wallet address)",
+        "status": "skipped"
+      },
+      {
+        "discord_id": "1337",
+        "reason": "Non-Discord ID (invalid format)",
+        "status": "skipped"
+      }
+    ],
+    "summary": {
+      "total_eligible_players": 73,
+      "successful_grants": 59,
+      "failed_grants": 4,
+      "skipped_players": 10,
+      "success_rate": "80.8%",
+      "top_contributor": "codeddc_ (4,028 contributions)",
+      "average_contributions": "58.7 per player",
+      "games_represented": "All 5 games (Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race)"
+    }
+  }
+}
