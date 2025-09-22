@@ -1474,6 +1474,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="cheeseGuide">🧀 Cheese Guide</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="communityFunds">💰 Community Funds</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="bugTracker">🐛 Bug Tracker</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="twitterMissions">🐦 Twitter Missions</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="databaseOverview">🗄️ Database Overview</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="twelveZeroManagement">📁 12.0 Management</button>
       </div>
@@ -5777,6 +5778,12 @@
               loadDatabaseOverview();
             }, 100);
             addLog('🗄️ Database overview tab auto-loaded');
+          } else if (tabName === 'twitterMissions') {
+            // Twitter Missions - Auto-load Twitter mission data
+            setTimeout(() => {
+              loadTwitterMissionsData();
+            }, 100);
+            addLog('🐦 Twitter Missions tab auto-loaded');
           } else if (tabName === 'twelveZeroManagement') {
             // 12.0 Management - Auto-load 12.0 folder data
             setTimeout(() => {
@@ -18961,6 +18968,133 @@ function updateGameTabContent(gameType, gameData) {
     </div>
   </div>
 
+    <!-- Twitter Missions Tab -->
+    <div class="admin-card mb-6" id="twitterMissionsTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">🐦 Twitter Missions Management</h2>
+      <p class="text-gray-300 mb-6">Complete Twitter mission management system - Create, monitor, and verify Twitter missions</p>
+      
+      <!-- Mission Overview Dashboard -->
+      <div id="twitterMissionDashboard" class="section mb-6">
+        <h3 class="text-lg font-semibold mb-4">📊 Mission Overview</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">Active Missions</h4>
+            <div id="activeMissionsCount" class="text-2xl font-bold">0</div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">Pending Verifications</h4>
+            <div id="pendingVerificationsCount" class="text-2xl font-bold text-yellow-400">0</div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">Total Participants</h4>
+            <div id="totalParticipantsCount" class="text-2xl font-bold text-blue-400">0</div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">Rewards Distributed</h4>
+            <div id="rewardsDistributedCount" class="text-2xl font-bold text-green-400">0</div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-3">Recent Activity</h4>
+            <div id="recentTwitterActivity" class="text-sm text-gray-300">
+              Loading recent activity...
+            </div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-3">Quick Actions</h4>
+            <div class="space-y-2">
+              <button onclick="refreshTwitterMissions()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                🔄 Refresh Data
+              </button>
+              <button onclick="showCreateMissionForm()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                ➕ Create New Mission
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Missions Section -->
+      <div id="activeMissionsSection" class="section mb-6">
+        <h3 class="text-lg font-semibold mb-4">🎯 Active Missions</h3>
+        <div id="activeMissionsList" class="space-y-4">
+          <div class="text-gray-400 text-center py-8">Loading active missions...</div>
+        </div>
+      </div>
+
+      <!-- Pending Verifications Section -->
+      <div id="pendingVerificationsSection" class="section mb-6">
+        <h3 class="text-lg font-semibold mb-4">⏳ Pending Verifications</h3>
+        <div id="pendingVerificationsList" class="space-y-4">
+          <div class="text-gray-400 text-center py-8">Loading pending verifications...</div>
+        </div>
+      </div>
+
+      <!-- Mission Management Section -->
+      <div id="missionManagementSection" class="section mb-6">
+        <h3 class="text-lg font-semibold mb-4">⚙️ Mission Management</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-3">Create New Mission</h4>
+            <form id="createMissionForm" class="space-y-3">
+              <div>
+                <label class="block text-xs text-gray-300 mb-1">Tweet URL</label>
+                <input type="url" id="tweetUrl" placeholder="https://twitter.com/username/status/1234567890" 
+                       class="w-full px-3 py-2 bg-gray-700 text-white rounded text-sm" required>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-300 mb-1">Mission Type</label>
+                <select id="missionType" class="w-full px-3 py-2 bg-gray-700 text-white rounded text-sm" required>
+                  <option value="like">Like Tweet</option>
+                  <option value="retweet">Retweet</option>
+                  <option value="comment">Comment</option>
+                  <option value="follow">Follow User</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-300 mb-1">Duration (hours)</label>
+                <input type="number" id="durationHours" min="1" max="168" value="24" 
+                       class="w-full px-3 py-2 bg-gray-700 text-white rounded text-sm" required>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-300 mb-1">Reward (DSPOINC)</label>
+                <input type="number" id="rewardDspoinc" min="100" max="10000" value="1000" 
+                       class="w-full px-3 py-2 bg-gray-700 text-white rounded text-sm" required>
+              </div>
+              <button type="submit" onclick="createMission(); return false;" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                ➕ Create Mission
+              </button>
+            </form>
+          </div>
+          
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-3">Mission Actions</h4>
+            <div class="space-y-2">
+              <button onclick="showEditMissionForm()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                ✏️ Edit Mission
+              </button>
+              <button onclick="showBulkActions()" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm">
+                📦 Bulk Actions
+              </button>
+              <button onclick="refreshTwitterMissions()" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+                🔄 Refresh All Data
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mission History Section -->
+      <div id="missionHistorySection" class="section mb-6">
+        <h3 class="text-lg font-semibold mb-4">📜 Mission History</h3>
+        <div id="missionHistoryList" class="space-y-4">
+          <div class="text-gray-400 text-center py-8">Loading mission history...</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Database Overview Tab -->
     <div class="admin-card mb-6" id="databaseOverviewTab" style="display: none; opacity: 1; transform: translateY(0);">
       <h2 class="text-xl font-semibold mb-4">🗄️ Database Overview & Sync Status</h2>
@@ -19481,6 +19615,411 @@ function updateGameTabContent(gameType, gameData) {
         console.error('Database overview loading error:', error);
       }
     }
+
+    // 🐦 Twitter Missions Functions
+    async function loadTwitterMissionsData() {
+      console.log('🐦 loadTwitterMissionsData function called');
+      
+      // For local development, skip authentication check
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      
+      if (!isLocal && !currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🐦 Loading Twitter Missions data...');
+
+      try {
+        // Load mission overview statistics
+        await loadTwitterMissionStats();
+        
+        // Load active missions
+        await loadActiveMissions();
+        
+        // Load pending verifications
+        await loadPendingVerifications();
+        
+        // Load mission history
+        await loadMissionHistory();
+        
+        addLog('✅ Twitter Missions data loaded successfully');
+        
+      } catch (error) {
+        addLog(`❌ Twitter Missions loading error: ${error.message}`);
+        console.error('Twitter Missions loading error:', error);
+      }
+    }
+
+    async function loadTwitterMissionStats() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/get-twitter-mission-stats.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ admin_id: currentAdmin || 'local_dev' })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('activeMissionsCount').textContent = data.stats.active_missions || 0;
+          document.getElementById('pendingVerificationsCount').textContent = data.stats.pending_verifications || 0;
+          document.getElementById('totalParticipantsCount').textContent = data.stats.total_participants || 0;
+          document.getElementById('rewardsDistributedCount').textContent = data.stats.rewards_distributed || 0;
+          
+          // Update recent activity
+          const recentActivity = data.stats.recent_activity || [];
+          const activityHtml = recentActivity.map(activity => 
+            `<div class="text-xs mb-1">${activity}</div>`
+          ).join('');
+          document.getElementById('recentTwitterActivity').innerHTML = activityHtml || 'No recent activity';
+        }
+      } catch (error) {
+        console.error('Error loading Twitter mission stats:', error);
+      }
+    }
+
+    async function loadActiveMissions() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/get-active-twitter-missions.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ admin_id: currentAdmin || 'local_dev' })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const missions = data.missions || [];
+          const missionsHtml = missions.map(mission => `
+            <div class="user-card">
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <h4 class="font-semibold text-yellow-400">${mission.mission_type.toUpperCase()} Mission</h4>
+                  <p class="text-sm text-gray-300">Created by: ${mission.creator_name}</p>
+                  <p class="text-sm text-gray-300">Reward: ${mission.reward_dspoinc} DSPOINC</p>
+                  <p class="text-sm text-gray-300">Duration: ${mission.duration_hours}h</p>
+                  <p class="text-sm text-gray-300">Participants: ${mission.total_participants} (${mission.verified_participants} verified)</p>
+                  <a href="${mission.tweet_url}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">View Tweet</a>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs text-gray-400 mb-2">ID: ${mission.mission_id}</div>
+                  <div class="text-xs text-gray-400 mb-2">Expires: ${new Date(mission.expires_at).toLocaleDateString()}</div>
+                  <div class="flex space-x-1">
+                    <button onclick="editMission('${mission.mission_id}')" 
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs">
+                      ✏️ Edit
+                    </button>
+                    <button onclick="deactivateMission('${mission.mission_id}')" 
+                            class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">
+                      ⏸️ Deactivate
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('');
+          
+          document.getElementById('activeMissionsList').innerHTML = missionsHtml || '<div class="text-gray-400 text-center py-8">No active missions</div>';
+        }
+      } catch (error) {
+        console.error('Error loading active missions:', error);
+      }
+    }
+
+    async function loadPendingVerifications() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/get-pending-twitter-verifications.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ admin_id: currentAdmin || 'local_dev' })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const verifications = data.verifications || [];
+          const verificationsHtml = verifications.map(verification => `
+            <div class="user-card">
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <h4 class="font-semibold text-yellow-400">${verification.username}</h4>
+                  <p class="text-sm text-gray-300">Mission: ${verification.mission_type.toUpperCase()}</p>
+                  <p class="text-sm text-gray-300">Reward: ${verification.reward_dspoinc} DSPOINC</p>
+                  <p class="text-sm text-gray-300">Joined: ${new Date(verification.joined_at).toLocaleString()}</p>
+                  <a href="${verification.tweet_url}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">View Tweet</a>
+                </div>
+                <div class="flex space-x-2">
+                  <button onclick="verifyTwitterMission('${verification.mission_id}', '${verification.user_id}', true)" 
+                          class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs">
+                    ✅ Approve
+                  </button>
+                  <button onclick="verifyTwitterMission('${verification.mission_id}', '${verification.user_id}', false)" 
+                          class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs">
+                    ❌ Deny
+                  </button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+          
+          document.getElementById('pendingVerificationsList').innerHTML = verificationsHtml || '<div class="text-gray-400 text-center py-8">No pending verifications</div>';
+        }
+      } catch (error) {
+        console.error('Error loading pending verifications:', error);
+      }
+    }
+
+    async function loadMissionHistory() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/get-twitter-mission-history.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ admin_id: currentAdmin || 'local_dev' })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const history = data.history || [];
+          const historyHtml = history.map(mission => `
+            <div class="user-card">
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <h4 class="font-semibold text-gray-400">${mission.mission_type.toUpperCase()} Mission</h4>
+                  <p class="text-sm text-gray-300">Created by: ${mission.creator_name}</p>
+                  <p class="text-sm text-gray-300">Status: ${mission.status}</p>
+                  <p class="text-sm text-gray-300">Participants: ${mission.total_participants}</p>
+                  <p class="text-sm text-gray-300">Created: ${new Date(mission.created_at).toLocaleString()}</p>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs text-gray-400">ID: ${mission.mission_id}</div>
+                </div>
+              </div>
+            </div>
+          `).join('');
+          
+          document.getElementById('missionHistoryList').innerHTML = historyHtml || '<div class="text-gray-400 text-center py-8">No mission history</div>';
+        }
+      } catch (error) {
+        console.error('Error loading mission history:', error);
+      }
+    }
+
+    async function verifyTwitterMission(missionId, userId, approved) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/verify-twitter-mission.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            admin_id: currentAdmin || 'local_dev',
+            mission_id: missionId,
+            user_id: userId,
+            approved: approved
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Twitter mission ${approved ? 'approved' : 'denied'} for user ${userId}`);
+          // Refresh the data
+          await loadPendingVerifications();
+          await loadTwitterMissionStats();
+        } else {
+          addLog(`❌ Error: ${data.message}`);
+        }
+      } catch (error) {
+        console.error('Error verifying Twitter mission:', error);
+        addLog(`❌ Verification error: ${error.message}`);
+      }
+    }
+
+    function refreshTwitterMissions() {
+      addLog('🔄 Refreshing Twitter Missions data...');
+      loadTwitterMissionsData();
+    }
+
+    // Mission Creation and Management Functions
+    async function createMission() {
+      console.log('🐦 createMission function called');
+      
+      try {
+        const tweetUrl = document.getElementById('tweetUrl').value;
+        const missionType = document.getElementById('missionType').value;
+        const durationHours = document.getElementById('durationHours').value;
+        const rewardDspoinc = document.getElementById('rewardDspoinc').value;
+        
+        console.log('Form values:', { tweetUrl, missionType, durationHours, rewardDspoinc });
+        
+        if (!tweetUrl || !missionType || !durationHours || !rewardDspoinc) {
+          addLog('❌ Please fill in all fields');
+          return;
+        }
+        
+        addLog('🔄 Creating mission...');
+        
+        const requestData = { 
+          admin_id: currentAdmin || 'local_dev',
+          tweet_url: tweetUrl,
+          mission_type: missionType,
+          duration_hours: parseInt(durationHours),
+          reward_dspoinc: parseInt(rewardDspoinc)
+        };
+        
+        console.log('Request data:', requestData);
+        console.log('API URL:', `${API_BASE_URL}/api/admin/create-twitter-mission.php`);
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/create-twitter-mission.php?t=${Date.now()}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestData)
+        });
+        
+        console.log('API response status:', response.status);
+        
+        // Get response text first to debug
+        const responseText = await response.text();
+        console.log('Raw response text:', responseText);
+        
+        // Try to parse as JSON
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError);
+          console.error('Response text that failed to parse:', responseText);
+          addLog(`❌ Invalid JSON response: ${responseText.substring(0, 100)}...`);
+          return;
+        }
+        
+        console.log('API response data:', data);
+        
+        if (data.success) {
+          addLog(`✅ Mission created successfully! ID: ${data.mission_id}`);
+          // Clear form
+          document.getElementById('createMissionForm').reset();
+          // Refresh data
+          await loadActiveMissions();
+          await loadTwitterMissionStats();
+        } else {
+          addLog(`❌ Error: ${data.error || data.message || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error creating mission:', error);
+        addLog(`❌ Creation error: ${error.message || 'Unknown error'}`);
+      }
+    }
+
+    async function editMission(missionId) {
+      // Get mission details first
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/get-twitter-mission-details.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            admin_id: currentAdmin || 'local_dev',
+            mission_id: missionId
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const mission = data.mission;
+          
+          // Show edit form (you could create a modal here)
+          const newReward = prompt(`Edit reward for ${mission.mission_type} mission (current: ${mission.reward_dspoinc} DSPOINC):`, mission.reward_dspoinc);
+          if (newReward !== null) {
+            await updateMission(missionId, { reward_dspoinc: parseInt(newReward) });
+          }
+        }
+      } catch (error) {
+        console.error('Error editing mission:', error);
+        addLog(`❌ Edit error: ${error.message}`);
+      }
+    }
+
+    async function updateMission(missionId, updates) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/update-twitter-mission.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            admin_id: currentAdmin || 'local_dev',
+            mission_id: missionId,
+            updates: updates
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Mission updated successfully!`);
+          await loadActiveMissions();
+          await loadTwitterMissionStats();
+        } else {
+          addLog(`❌ Error: ${data.message}`);
+        }
+      } catch (error) {
+        console.error('Error updating mission:', error);
+        addLog(`❌ Update error: ${error.message}`);
+      }
+    }
+
+    async function deactivateMission(missionId) {
+      if (!confirm('Are you sure you want to deactivate this mission?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/deactivate-twitter-mission.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            admin_id: currentAdmin || 'local_dev',
+            mission_id: missionId
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Mission deactivated successfully!`);
+          await loadActiveMissions();
+          await loadTwitterMissionStats();
+        } else {
+          addLog(`❌ Error: ${data.message}`);
+        }
+      } catch (error) {
+        console.error('Error deactivating mission:', error);
+        addLog(`❌ Deactivation error: ${error.message}`);
+      }
+    }
+
+    function showEditMissionForm() {
+      addLog('✏️ Edit Mission: Click the "Edit" button on any active mission');
+    }
+
+    function showBulkActions() {
+      addLog('📦 Bulk Actions: Select multiple missions for batch operations');
+    }
+
+    // Add form submission handler
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🐦 Setting up Twitter mission form handler');
+      const createForm = document.getElementById('createMissionForm');
+      if (createForm) {
+        console.log('🐦 Form found, adding event listener');
+        createForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          console.log('🐦 Form submitted, calling createMission');
+          createMission();
+        });
+      } else {
+        console.log('🐦 Form not found!');
+      }
+    });
 
     // 📁 12.0 Management Functions
     async function loadTwelveZeroData() {
