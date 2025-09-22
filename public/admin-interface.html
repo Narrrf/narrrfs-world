@@ -1361,6 +1361,11 @@
         <h3 class="text-lg font-semibold">🏆 Quest Claims</h3>
         <p class="text-2xl font-bold" id="questClaimNotifications">Loading...</p>
       </div>
+      <div class="stats-card" style="background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); cursor: pointer;" onclick="showTab('twitterMissions')" title="Click to view Twitter Claims">
+        <h3 class="text-lg font-semibold">🐦 Twitter Claims</h3>
+        <p class="text-2xl font-bold" id="twitterClaimNotifications">Loading...</p>
+        <button onclick="loadTwitterClaimNotificationCount(); return false;" class="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mt-1">Refresh</button>
+      </div>
 
     </div>
     
@@ -6256,6 +6261,10 @@
           loadBossNotificationCount();
           loadBugNotificationCount();
           loadQuestClaimNotificationCount();
+          // Add small delay for Twitter claims to ensure DOM is ready
+          setTimeout(() => {
+            loadTwitterClaimNotificationCount();
+          }, 500);
         } else {
           console.error('❌ Stats API returned error:', stats.error);
           addLog(`❌ Stats API error: ${stats.error || 'Unknown error'}`);
@@ -6274,6 +6283,10 @@
           loadBossNotificationCount();
           loadBugNotificationCount();
           loadQuestClaimNotificationCount();
+          // Add small delay for Twitter claims to ensure DOM is ready
+          setTimeout(() => {
+            loadTwitterClaimNotificationCount();
+          }, 500);
         }
 
         // Load cheese click statistics (only for authenticated users)
@@ -7259,6 +7272,52 @@
           const questElement = document.getElementById('questClaimNotifications');
           if (questElement) {
             questElement.textContent = 'Error';
+          }
+        });
+    }
+
+    // Load Twitter claims notification count
+    function loadTwitterClaimNotificationCount() {
+      console.log('🐦 Loading Twitter claims notification count...');
+      console.log('🐦 API URL:', API_BASE_URL + '/api/admin/get-twitter-claims-count.php');
+      
+      // Ensure DOM element exists
+      const twitterElement = document.getElementById('twitterClaimNotifications');
+      if (!twitterElement) {
+        console.error('🐦 Twitter notification element not found! Retrying in 1 second...');
+        setTimeout(loadTwitterClaimNotificationCount, 1000);
+        return;
+      }
+      
+      fetch(API_BASE_URL + '/api/admin/get-twitter-claims-count.php')
+        .then(response => {
+          console.log('🐦 Twitter Claims API response status:', response.status);
+          return response.json();
+        })
+        .then(data => {
+          console.log('🐦 Twitter Claims API data received:', data);
+          if (data.success) {
+            const claimCount = data.pending_count || 0;
+            
+            const twitterElement = document.getElementById('twitterClaimNotifications');
+            if (twitterElement) {
+              twitterElement.textContent = claimCount > 0 ? `${claimCount} Pending` : '0';
+              twitterElement.parentElement.style.background = claimCount > 0 
+                ? 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)' 
+                : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)';
+              console.log(`🐦 Twitter claims notifications updated: ${claimCount} pending`);
+            } else {
+              console.error('🐦 Twitter notification element not found!');
+            }
+          } else {
+            console.error('🐦 Twitter Claims API returned error:', data.error);
+          }
+        })
+        .catch(error => {
+          console.error('❌ Error loading Twitter claims notification count:', error);
+          const twitterElement = document.getElementById('twitterClaimNotifications');
+          if (twitterElement) {
+            twitterElement.textContent = 'Error';
           }
         });
     }
@@ -19047,10 +19106,13 @@ function updateGameTabContent(gameType, gameData) {
               <div>
                 <label class="block text-xs text-gray-300 mb-1">Mission Type</label>
                 <select id="missionType" class="w-full px-3 py-2 bg-gray-700 text-white rounded text-sm" required>
-                  <option value="like">Like Tweet</option>
-                  <option value="retweet">Retweet</option>
-                  <option value="comment">Comment</option>
-                  <option value="follow">Follow User</option>
+                  <option value="like">Like</option>
+                  <option value="retweet">RT</option>
+                  <option value="comment">Reply</option>
+                  <option value="like_retweet_comment">Like & RT & Comment</option>
+                  <option value="comment_like">Comment & Like</option>
+                  <option value="retweet_like">RT & Like</option>
+                  <option value="retweet_comment">RT & Comment</option>
                 </select>
               </div>
               <div>
@@ -19744,6 +19806,7 @@ function updateGameTabContent(gameType, gameData) {
               <div class="flex justify-between items-start">
                 <div class="flex-1">
                   <h4 class="font-semibold text-yellow-400">${verification.username}</h4>
+                  <p class="text-sm text-gray-300">🐦 Twitter: @${verification.twitter_username}</p>
                   <p class="text-sm text-gray-300">Mission: ${verification.mission_type.toUpperCase()}</p>
                   <p class="text-sm text-gray-300">Reward: ${verification.reward_dspoinc} DSPOINC</p>
                   <p class="text-sm text-gray-300">Joined: ${new Date(verification.joined_at).toLocaleString()}</p>

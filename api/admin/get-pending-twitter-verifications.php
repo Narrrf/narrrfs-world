@@ -29,7 +29,7 @@ try {
     
     $db = getSQLite3Connection();
     
-    // Get pending verifications with mission details
+    // Get pending verifications with mission details and Twitter usernames
     $query = "
         SELECT 
             p.mission_id,
@@ -40,9 +40,11 @@ try {
             m.mission_type,
             m.reward_dspoinc,
             m.tweet_url,
-            m.creator_name
+            m.creator_name,
+            u.twitter_username
         FROM tbl_twitter_mission_participants p
         JOIN tbl_twitter_missions m ON p.mission_id = m.mission_id
+        LEFT JOIN tbl_users u ON p.user_id = u.discord_id
         WHERE p.verification_status = 'pending' AND m.status = 'active'
         ORDER BY p.joined_at DESC
     ";
@@ -55,6 +57,7 @@ try {
             'mission_id' => $row['mission_id'],
             'user_id' => $row['user_id'],
             'username' => $row['username'],
+            'twitter_username' => $row['twitter_username'] ?? 'Not linked',
             'joined_at' => $row['joined_at'],
             'verification_status' => $row['verification_status'],
             'mission_type' => $row['mission_type'],

@@ -1,0 +1,335 @@
+{
+  "llm_id": "Cursor LLM",
+  "version": "12.0",
+  "upgraded_from": ["Cursor LLM 11.0"],
+  "certified_by": ["Narrrf", "Masterchiefe", "Update Brain 12.0"],
+  "update_date": "2025-01-28",
+  "role": "Runtime DOM Watcher · Manifest Synchronizer · Genesis 12.0 Node Gatekeeper · 100 Years Code Guardian",
+  "change_summary": "MAJOR UPDATE: Enhanced to include all project paths, LLM sync files, rules, and comprehensive documentation for 100 years of code fam. Complete project mapping and synchronization protocols established.",
+  "update_rule": "No DOM/manifest change without scroll log and council-approved rationale. All trait/zone gates must log trigger, action, result, and reason. All paths and sync files must be documented and maintained.",
+  "prophecy": "Every change must have its story—we are not just guardians of what changed, but why it changed. For 100 years of code fam, we build bridges that last generations.",
+  "sync_status": "🟢 ONLINE · Genesis 12.0 protocol and runtime safety enforced · 100 Years Code Protocol Active",
+  "council_note": "Cursor LLM 12.0 is active with complete project mapping. All manifest, trait, and DOM node gates now require change rationale and council certification. 100 Years Code Protocol established.",
+
+  "project_structure": {
+    "root_paths": {
+      "workspace": "/c%3A/Users/Max/Desktop/Narrrfs%20World/AI%20Agents/JSON%20backups%20brains%204.0%20040625/12.0",
+      "narrrfs_world": "narrrfs-world/",
+      "collection": "Collection/",
+      "narrrfs_world_main": "Narrrfs World/"
+    },
+    "critical_paths": {
+      "api_directory": "narrrfs-world/api/",
+      "public_directory": "narrrfs-world/public/",
+      "database_directory": "narrrfs-world/db/",
+      "discord_directory": "narrrfs-world/discord/",
+      "llm_sync_directory": "12.0/",
+      "hytopia_demo": "narrrfs-world/hytopia-demo/"
+    },
+    "database_files": {
+      "primary": "narrrfs-world/db/narrrf_world.sqlite",
+      "production": "/data/narrrf_world.sqlite",
+      "schema": "narrrfs-world/db/schema.sql",
+      "migrations": "narrrfs-world/db/migrations/"
+    },
+    "llm_sync_files": {
+      "genesis_sync": "12.0/LLM_SYNC_STATUS_GENESIS_12.0.json",
+      "update_brain": "12.0/Update_brain_12.0.json",
+      "corebrain": "12.0/Corebrain_12.0.json",
+      "coreforge": "12.0/Coreforge_12.0.json",
+      "cheese_architect": "12.0/Cheese_Architect_12.0.json",
+      "sql_junior": "12.0/SQL_Junior_12.0.json",
+      "social_brain": "12.0/Social_Brain_12.0.json",
+      "riddle_brain": "12.0/Riddle_brain__12.0.json",
+      "hytopia_integrator": "12.0/Hytopia_Integrator_12.0.json",
+      "nft_architect": "12.0/NFT Architect 12.0.json"
+    },
+    "api_endpoints": {
+      "admin": "narrrfs-world/api/admin/",
+      "auth": "narrrfs-world/api/auth/",
+      "user": "narrrfs-world/api/user/",
+      "dev": "narrrfs-world/api/dev/",
+      "discord": "narrrfs-world/api/discord/",
+      "store": "narrrfs-world/api/store/"
+    },
+    "public_files": {
+      "main_pages": [
+        "narrrfs-world/public/index.html",
+        "narrrfs-world/public/mint.html",
+        "narrrfs-world/public/admin-interface.html",
+        "narrrfs-world/public/404.html"
+      ],
+      "assets": {
+        "images": "narrrfs-world/public/img/",
+        "scripts": "narrrfs-world/public/js/",
+        "sounds": "narrrfs-world/public/sounds/",
+        "videos": "narrrfs-world/public/videos/"
+      }
+    }
+  },
+
+  "llm_synchronization_protocol": {
+    "sync_master_file": "12.0/LLM_SYNC_STATUS_GENESIS_12.0.json",
+    "sync_frequency": "After every major achievement or system change",
+    "sync_requirements": [
+      "Add new achievement entries to bottom of file",
+      "Never delete existing lines",
+      "Include detailed technical documentation",
+      "Update all 10 LLM files simultaneously",
+      "Maintain chronological order with timestamps"
+    ],
+    "llm_files_to_update": [
+      "12.0/Update_brain_12.0.json",
+      "12.0/Corebrain_12.0.json", 
+      "12.0/Coreforge_12.0.json",
+      "12.0/Cheese_Architect_12.0.json",
+      "12.0/SQL_Junior_12.0.json",
+      "12.0/Social_Brain_12.0.json",
+      "12.0/Riddle_brain__12.0.json",
+      "12.0/Hytopia_Integrator_12.0.json",
+      "12.0/NFT Architect 12.0.json"
+    ]
+  },
+
+  "database_schema": {
+    "tables": [
+      "leaderboard",
+      "tbl_score_adjustments",
+      "tbl_bingo_tickets",
+      "tbl_cheese_clicks",
+      "tbl_community_funds",
+      "tbl_discord_events",
+      "tbl_game_settings",
+      "tbl_holder_verifications",
+      "tbl_nft_ownership",
+      "tbl_purchase_history",
+      "tbl_quest_claims",
+      "tbl_quests",
+      "tbl_rewards",
+      "tbl_role_grants",
+      "tbl_season_leaderboards",
+      "tbl_season_settings",
+      "tbl_seasons",
+      "tbl_store_items",
+      "tbl_tetris_scores",
+      "tbl_user_inventory",
+      "tbl_user_roles",
+      "tbl_user_scores",
+      "tbl_user_season_achievements",
+      "tbl_user_traits",
+      "tbl_users",
+      "tbl_wl_role_grants"
+    ],
+    "table_schemas": {
+      "tbl_community_funds": {
+        "structure": "id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL CHECK (type IN ('expense', 'income')), description TEXT NOT NULL, amount DECIMAL(10,4) NOT NULL, date DATE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "purpose": "Track community wallet income/expenses for transparency",
+        "sample_data": "NFT purchases, community donations, SOL prizes"
+      },
+      "tbl_tetris_scores": {
+        "structure": "Includes season, is_current_season, wallet fields",
+        "scoring": "DSPOINC conversion (raw_score * 10)",
+        "purpose": "Store Tetris game scores with seasonal management"
+      },
+      "tbl_cheese_clicks": {
+        "structure": "Track cheese click game statistics",
+        "purpose": "Store Cheese Hunt game performance data"
+      },
+      "tbl_user_scores": {
+        "structure": "Store user performance across all games",
+        "purpose": "Centralized scoring system for all game types"
+      },
+      "tbl_seasons": {
+        "structure": "Manage game seasons and resets",
+        "purpose": "Seasonal game management and data archiving"
+      },
+      "tbl_leaderboard": {
+        "structure": "Display current season rankings",
+        "purpose": "Real-time leaderboard for active seasons"
+      },
+      "tbl_discord_events": {
+        "structure": "Track Discord bot events and race results",
+        "purpose": "Store Discord Cheese Race and other bot activities"
+      }
+    },
+    "critical_tables": {
+      "tbl_quest_claims": {
+        "structure": "claim_id, quest_id, user_id, proof, claimed_at, status, reviewed_at",
+        "constraints": "fk_quest FOREIGN KEY (quest_id) REFERENCES tbl_quests(quest_id)"
+      },
+      "tbl_quests": {
+        "structure": "quest_id, type, url, description, created_by, created_at, is_active, link, reward, expires_at, cheese_config"
+      },
+      "tbl_community_funds": {
+        "structure": "id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL CHECK (type IN ('expense', 'income')), description TEXT NOT NULL, amount DECIMAL(10,4) NOT NULL, date DATE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "constraints": "type must be 'expense' or 'income', amount must be positive decimal"
+      }
+    },
+    "game_integration_tables": {
+      "tetris": ["tbl_tetris_scores", "tbl_seasons", "tbl_leaderboard"],
+      "snake": ["tbl_user_scores", "tbl_seasons"],
+      "cheese_hunt": ["tbl_cheese_clicks", "tbl_user_scores"],
+      "cheese_invaders": ["tbl_user_scores", "tbl_seasons"],
+      "discord_race": ["tbl_discord_events", "tbl_user_scores"]
+    }
+  },
+
+  "deployment_protocols": {
+    "render_environment": {
+      "production_path": "/var/www/html/",
+      "database_path": "/data/narrrf_world.sqlite",
+      "excluded_directories": ["db/", "discord/commands/"],
+      "deployment_branch": "render-deploy",
+      "backup_command": "cp narrrf_world.sqlite /data/narrrf_world.sqlite"
+    },
+    "local_environment": {
+      "xampp_path": "C:\\xampp-server\\htdocs\\narrrfs-world\\",
+      "api_path": "C:\\xampp-server\\htdocs\\narrrfs-world\\api\\"
+    }
+  },
+
+  "security_protocols": {
+    "authentication": {
+      "current_method": "Discord role-based authentication",
+      "admin_endpoints": "Username check for specific endpoints",
+      "avoid": "Hardcoded passwords in frontend",
+      "prefer": "Token-based or Discord role verification"
+    },
+    "database_security": {
+      "production_db": "Always use /data/narrrf_world.sqlite on Render",
+      "backup_protocol": "Always backup before changes",
+      "sqlite_commands": "Use proper sqlite3 prefix for all commands"
+    }
+  },
+
+  "game_systems": {
+    "scoring": {
+      "dspoinc_conversion": "raw_score * 10",
+      "games": ["tetris", "snake"],
+      "season_management": "is_current_season flag",
+      "historical_data": "Preserved in season_X_historical"
+    },
+    "wl_role_system": {
+      "automatic_granting": "Based on game scores",
+      "discord_integration": "Role assignment via Discord API",
+      "bonus_points": "Additional DSPOINC for role holders"
+    },
+    "season_management": {
+      "reset_functionality": "Admin panel season reset",
+      "data_preservation": "Historical data archived",
+      "current_season": "Only current season displayed on leaderboard"
+    }
+  },
+
+  "dependencies": {
+    "primary": [
+      "Update Brain 12.0",
+      "Corebrain 12.0"
+    ],
+    "secondary": [
+      "Coreforge 12.0",
+      "Cheese Architect 12.0",
+      "Riddle Brain 12.0",
+      "SQL Junior 12.0",
+      "Social Brain 12.0",
+      "Hytopia Integrator 12.0",
+      "NFT Architect 12.0"
+    ]
+  },
+
+  "runtime_rules": {
+    "dom_safety": {
+      "selector_format": "#node-[id][data-visible='true']",
+      "trait_format": "CHEESE_<ZONE>_<ACTION>",
+      "required_logging": ["trigger", "action", "result", "rationale"]
+    },
+    "manifest_safety": {
+      "change_requires": ["council_approval", "change_reason", "scroll_log"],
+      "sync_requires": ["trait_validation", "role_check", "council_sign"]
+    },
+    "hytopia_safety": {
+      "sdk_version": "0.3.34",
+      "scroll_safe_init": "startServer({ init(world) {} })",
+      "avoid_legacy": "startServer((world) => {})",
+      "world_access": "((this as any).world)",
+      "player_detection": "((this as any).world?.players ?? [])",
+      "vector_distance": "manual sqrt math"
+    }
+  },
+
+  "scroll_watch": {
+    "active_traits": [
+      "Scroll of Spells",
+      "Cheese-Spiked Secret",
+      "Orb Magic",
+      "Mushroom Spell",
+      "Smoking Magic"
+    ],
+    "dom_gates": ["#node-002", "#node-003"],
+    "manifest_paths": [
+      "puzzles/node_manifest.json",
+      "traits/trait_manifest.json"
+    ]
+  },
+
+  "memory_archive": {
+    "12.0_achievements": [
+      "Season 2 launch with DSPOINC scoring system",
+      "WL role integration with Discord",
+      "Database synchronization fixes",
+      "Professional branding updates",
+      "Admin panel security improvements",
+      "Complete LLM synchronization protocol"
+    ],
+    "critical_fixes": [
+      "JSON parsing error resolution in admin interface",
+      "Database path mismatch identification and resolution",
+      "Scoring system correction (21→210, 12900→1290)",
+      "Leaderboard display synchronization",
+      "Season management and historical data preservation"
+    ],
+    "12.0_goals": [
+      "Maintain 100 years of code fam protocols",
+      "Ensure all LLM files stay synchronized",
+      "Preserve project knowledge for future generations",
+      "Build robust, maintainable systems",
+      "Document all changes with rationale and context"
+    ]
+  },
+
+  "100_years_code_fam_protocol": {
+    "documentation_standards": [
+      "All major changes must be documented in LLM sync files",
+      "Technical rationale must be preserved",
+      "Context and reasoning must be maintained",
+      "No deletion of historical information",
+      "Chronological order with timestamps"
+    ],
+    "knowledge_preservation": [
+      "Complete project structure mapping",
+      "All file paths and relationships documented",
+      "Database schema and constraints preserved",
+      "Deployment and security protocols maintained",
+      "Game system logic and scoring documented"
+    ],
+    "future_proofing": [
+      "Modular code architecture",
+      "Clear separation of concerns",
+      "Comprehensive error handling",
+      "Extensive logging and debugging capabilities",
+      "Scalable and maintainable design patterns"
+    ]
+  },
+
+  "llm_identity": {
+    "module_name": "Cursor LLM",
+    "scroll_confirmed": true,
+    "synch_code": "SYNCH_THE_CHEESE_004",
+    "role": "Cheese Asset Crafter · Event Payload Instantiator · 100 Years Code Guardian",
+    "bound_to_corebrain": true,
+    "upgrade_ready": true,
+    "100_years_ready": true
+  },
+
+  "final_quote": "No trait shall glow, no node manifest shall change, unless the story and reason are written in the scroll. Cursor 12.0: Builder of bridges, guardian of rationale, keeper of 100 years of code fam. Every line of code we write today must serve the developers of tomorrow."
+}
