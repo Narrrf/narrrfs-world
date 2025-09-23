@@ -599,6 +599,50 @@
                     return true;
                 }
                 
+                // 🚀 PRODUCTION BYPASS: Check if user has required roles from profile page
+                console.log('🌐 Production environment - checking for role-based bypass...');
+                const profileUserId = window.sessionDiscordId || localStorage.getItem('discord_id');
+                if (profileUserId) {
+                    console.log('👤 Found user ID from profile page:', profileUserId);
+                    
+                    // Try to get user roles from profile page data
+                    try {
+                        const profileResponse = await fetch(API_BASE_URL + '/api/user/get-user-profile.php', {
+                            method: 'GET',
+                            credentials: 'include'
+                        });
+                        
+                        if (profileResponse.ok) {
+                            const profileData = await profileResponse.json();
+                            console.log('📊 Profile data:', profileData);
+                            
+                            if (profileData.success && profileData.user) {
+                                // Check if user has required roles
+                                const userRoles = profileData.user.roles || [];
+                                const requiredRoles = ['Holder', 'VIP Holder', 'Moderator', 'Admin', 'DL Rumble Admins'];
+                                const hasRequiredRole = userRoles.some(role => requiredRoles.includes(role));
+                                
+                                if (hasRequiredRole) {
+                                    console.log('🔓 User has required role, bypassing authentication');
+                                    currentUser = {
+                                        discord_id: profileData.user.discord_id,
+                                        discord_name: profileData.user.discord_name,
+                                        avatar_url: profileData.user.avatar_url
+                                    };
+                                    userRoles = userRoles;
+                                    isAuthenticated = true;
+                                    showAuthenticatedContent();
+                                    return true;
+                                } else {
+                                    console.log('🚫 User does not have required role');
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.log('❌ Profile check failed:', error);
+                    }
+                }
+                
                 // Check if user is already authenticated using the same method as admin interface
                 console.log('🌐 Production environment - checking session...');
                 const response = await fetch(API_BASE_URL + '/api/auth/check-session.php', {
@@ -751,6 +795,7 @@
             document.getElementById('mainContent').style.display = 'block';
             
             const localIndicator = !isProduction ? '<p>🏠 <strong>Local Testing Mode</strong> - Authentication bypassed</p>' : '';
+            const productionBypassIndicator = isProduction && userRoles.length > 0 ? '<p>🔓 <strong>Production Bypass Mode</strong> - Role-based access granted</p>' : '';
             
             document.getElementById('userInfo').innerHTML = `
                 <div class="user-info">
@@ -758,6 +803,7 @@
                     <p>🎭 Roles: ${userRoles.join(', ')}</p>
                     <p>🔐 Access Level: ${getAccessLevel()}</p>
                     ${localIndicator}
+                    ${productionBypassIndicator}
                 </div>
             `;
         }

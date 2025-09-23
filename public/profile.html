@@ -3018,47 +3018,53 @@ function displayTrackingResults(data) {
   resultsDiv.classList.remove('hidden');
   
   // Display tracking status
-  const stats = data.click_statistics;
-  const validation = data.validation;
-  const userInfo = data.user_info;
+  const trackingData = data.data;
   
   statusContent.innerHTML = `
     <div class="grid grid-cols-2 gap-2 text-xs">
       <div>
         <span class="text-blue-300">👤 User Status:</span>
-        <span class="${validation.user_exists ? 'text-green-400' : 'text-red-400'} font-semibold">
-          ${validation.user_exists ? '✅ Found' : '❌ Not Found'}
+        <span class="${trackingData.user_exists ? 'text-green-400' : 'text-red-400'} font-semibold">
+          ${trackingData.user_exists ? '✅ Found' : '❌ Not Found'}
         </span>
       </div>
       <div>
         <span class="text-blue-300">🧀 Total Clicks:</span>
-        <span class="text-white font-semibold">${stats.total_clicks}</span>
+        <span class="text-white font-semibold">${trackingData.cheese_clicks.total}</span>
       </div>
       <div>
-        <span class="text-blue-300">🎯 Quest Clicks:</span>
-        <span class="text-white font-semibold">${stats.quest_clicks}</span>
+        <span class="text-blue-300">🎮 Games Played:</span>
+        <span class="text-white font-semibold">${trackingData.game_scores.length}</span>
       </div>
       <div>
-        <span class="text-blue-300">🥚 Unique Eggs:</span>
-        <span class="text-white font-semibold">${stats.unique_eggs_clicked}</span>
+        <span class="text-blue-300">🏁 Races:</span>
+        <span class="text-white font-semibold">${trackingData.race_participation.total_races}</span>
       </div>
       <div>
-        <span class="text-blue-300">🕒 First Click:</span>
-        <span class="text-white font-semibold">${stats.first_click ? formatDateShort(stats.first_click) : 'Never'}</span>
+        <span class="text-blue-300">🏆 Race Wins:</span>
+        <span class="text-white font-semibold">${trackingData.race_participation.wins}</span>
       </div>
       <div>
         <span class="text-blue-300">🔄 Last Click:</span>
-        <span class="text-white font-semibold">${stats.last_click ? formatDateShort(stats.last_click) : 'Never'}</span>
+        <span class="text-white font-semibold">${trackingData.cheese_clicks.last_click || 'Never'}</span>
+      </div>
+      <div>
+        <span class="text-blue-300">🎭 Roles:</span>
+        <span class="text-white font-semibold">${trackingData.user_roles.length}</span>
+      </div>
+      <div>
+        <span class="text-blue-300">📋 Quests:</span>
+        <span class="text-white font-semibold">${trackingData.quest_participation.total_quests}</span>
       </div>
     </div>
     
-    ${!validation.user_exists ? `
+    ${!trackingData.user_exists ? `
       <div class="mt-3 p-2 bg-red-800/30 rounded border border-red-500/50">
         <span class="text-red-300 text-xs">⚠️ User not found in database. Please run <code>/sync-users</code> in Discord.</span>
       </div>
     ` : ''}
     
-    ${validation.user_exists && stats.total_clicks == 0 ? `
+    ${trackingData.user_exists && trackingData.cheese_clicks.total == 0 ? `
       <div class="mt-3 p-2 bg-yellow-800/30 rounded border border-yellow-500/50">
         <span class="text-yellow-300 text-xs">⚠️ No clicks recorded. Try clicking cheese eggs on the main page.</span>
       </div>
@@ -3066,14 +3072,13 @@ function displayTrackingResults(data) {
   `;
   
   // Display recent clicks
-  if (data.recent_clicks && data.recent_clicks.length > 0) {
+  if (trackingData.recent_clicks && trackingData.recent_clicks.length > 0) {
     clicksContent.innerHTML = `
       <div class="space-y-1">
-        ${data.recent_clicks.slice(0, 5).map(click => `
+        ${trackingData.recent_clicks.slice(0, 5).map(click => `
           <div class="flex justify-between items-center py-1 px-2 bg-blue-900/20 rounded text-xs">
-            <span class="text-blue-300">${click.egg_id}</span>
-            <span class="text-gray-300">${formatDateShort(click.timestamp)}</span>
-            <span class="text-white font-semibold">${click.quest_id ? `Quest ${click.quest_id}` : 'General'}</span>
+            <span class="text-blue-300">🧀 ${click.clicks} clicks</span>
+            <span class="text-gray-300">${new Date(click.created_at).toLocaleString()}</span>
           </div>
         `).join('')}
       </div>

@@ -19155,6 +19155,45 @@ function updateGameTabContent(gameType, gameData) {
           <div class="text-gray-400 text-center py-8">Loading mission history...</div>
         </div>
       </div>
+
+      <!-- Twitter Mission Leaderboard Section -->
+      <div id="twitterLeaderboardSection" class="section mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">🏆 Twitter Mission Leaderboard</h3>
+          <div class="flex space-x-2">
+            <select id="leaderboardPeriod" class="px-3 py-1 bg-gray-700 text-white rounded text-sm">
+              <option value="all">All Time</option>
+              <option value="month">This Month</option>
+              <option value="last_month">Last Month</option>
+              <option value="year">This Year</option>
+            </select>
+            <button onclick="loadTwitterLeaderboard()" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">
+              🔄 Refresh
+            </button>
+          </div>
+        </div>
+        
+        <!-- Leaderboard Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">Total Users</h4>
+            <div id="leaderboardTotalUsers" class="text-xl font-bold text-blue-400">0</div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">Total Missions</h4>
+            <div id="leaderboardTotalMissions" class="text-xl font-bold text-green-400">0</div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">Total Rewards</h4>
+            <div id="leaderboardTotalRewards" class="text-xl font-bold text-yellow-400">0 DSPOINC</div>
+          </div>
+        </div>
+        
+        <!-- Leaderboard List -->
+        <div id="twitterLeaderboardList" class="space-y-3">
+          <div class="text-gray-400 text-center py-8">Loading leaderboard...</div>
+        </div>
+      </div>
     </div>
 
     <!-- Database Overview Tab -->
@@ -19705,6 +19744,15 @@ function updateGameTabContent(gameType, gameData) {
         // Load mission history
         await loadMissionHistory();
         
+        // Load Twitter leaderboard
+        await loadTwitterLeaderboard();
+        
+        // Add event listener for period selector
+        const periodSelector = document.getElementById('leaderboardPeriod');
+        if (periodSelector) {
+          periodSelector.addEventListener('change', loadTwitterLeaderboard);
+        }
+        
         addLog('✅ Twitter Missions data loaded successfully');
         
       } catch (error) {
@@ -19866,6 +19914,74 @@ function updateGameTabContent(gameType, gameData) {
         }
       } catch (error) {
         console.error('Error loading mission history:', error);
+      }
+    }
+
+    // 🏆 Twitter Mission Leaderboard Functions
+    async function loadTwitterLeaderboard() {
+      try {
+        const period = document.getElementById('leaderboardPeriod')?.value || 'all';
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/get-twitter-leaderboard.php?period=${period}&limit=50`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update statistics
+          document.getElementById('leaderboardTotalUsers').textContent = data.statistics.total_users || 0;
+          document.getElementById('leaderboardTotalMissions').textContent = data.statistics.total_missions || 0;
+          document.getElementById('leaderboardTotalRewards').textContent = (data.statistics.total_rewards_distributed || 0).toLocaleString() + ' DSPOINC';
+          
+          // Update leaderboard
+          const leaderboard = data.leaderboard || [];
+          const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+          
+          const leaderboardHtml = leaderboard.map((user, index) => {
+            const medal = medals[index] || `${index + 1}.`;
+            const firstMission = user.first_mission ? new Date(user.first_mission).toLocaleDateString() : 'N/A';
+            const lastMission = user.last_mission ? new Date(user.last_mission).toLocaleDateString() : 'N/A';
+            
+            return `
+              <div class="user-card">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center space-x-3">
+                    <span class="text-2xl">${medal}</span>
+                    <div>
+                      <h4 class="font-semibold text-white">${user.username}</h4>
+                      <p class="text-sm text-gray-300">${user.completed_missions} mission${user.completed_missions !== 1 ? 's' : ''} completed</p>
+                      <p class="text-sm text-gray-300">${user.total_rewards.toLocaleString()} DSPOINC earned</p>
+                    </div>
+                  </div>
+                  <div class="text-right text-sm text-gray-400">
+                    <div>First: ${firstMission}</div>
+                    <div>Last: ${lastMission}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+          
+          const periodInfo = data.period_info;
+          const periodDisplay = periodInfo ? ` (${periodInfo.display})` : '';
+          
+          document.getElementById('twitterLeaderboardList').innerHTML = leaderboardHtml || 
+            `<div class="text-gray-400 text-center py-8">No completed missions${periodDisplay} yet!</div>`;
+          
+          console.log(`🏆 Twitter leaderboard loaded: ${leaderboard.length} users`);
+          
+        } else {
+          console.error('Error loading Twitter leaderboard:', data.error);
+          document.getElementById('twitterLeaderboardList').innerHTML = 
+            '<div class="text-red-400 text-center py-8">Error loading leaderboard</div>';
+        }
+        
+      } catch (error) {
+        console.error('Error loading Twitter leaderboard:', error);
+        document.getElementById('twitterLeaderboardList').innerHTML = 
+          '<div class="text-red-400 text-center py-8">Error loading leaderboard</div>';
       }
     }
 
