@@ -225,6 +225,148 @@
             text-align: right;
             margin-top: 20px;
         }
+        
+        /* Authentication Panel Styles */
+        .auth-panel {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            border-radius: 12px;
+            padding: 40px;
+            margin: 20px 0;
+            border: 2px solid #3b82f6;
+            text-align: center;
+        }
+        
+        .auth-message h2 {
+            color: #fbbf24;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        
+        .auth-message p {
+            color: #e5e7eb;
+            margin: 15px 0;
+            font-size: 1.1em;
+        }
+        
+        .auth-message ul {
+            text-align: left;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        
+        .auth-message li {
+            color: #e5e7eb;
+            margin: 8px 0;
+            font-size: 1.1em;
+        }
+        
+        .auth-button {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .auth-button:hover {
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            transform: translateY(-2px);
+        }
+        
+        .user-info-panel {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #10b981;
+            text-align: center;
+        }
+        
+        .user-info h3 {
+            color: #fbbf24;
+            margin-bottom: 10px;
+        }
+        
+        .user-info p {
+            color: #e5e7eb;
+            margin: 5px 0;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #1f2937;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80%;
+            overflow: hidden;
+            border: 2px solid #3b82f6;
+        }
+        
+        .modal-header {
+            background: #3b82f6;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            color: white;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .modal-body pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #e5e7eb;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -233,10 +375,29 @@
                 <h1>🧀 12.0 Management System</h1>
                 <p>Complete Professional Development Documentation & Management</p>
                 <div style="margin-top: 15px;">
+                    <a href="profile.html" style="padding: 10px 20px; background: #f59e0b; color: white; border: none; border-radius: 8px; cursor: pointer; margin-right: 10px; text-decoration: none; display: inline-block;">🏠 Back to Lab</a>
                     <button onclick="testFileLoading()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; margin-right: 10px;">🧪 Test File Loading</button>
                     <button onclick="console.log('API_BASE_URL:', API_BASE_URL); console.log('Environment:', isProduction ? 'Production' : 'Local');" style="padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 8px; cursor: pointer;">🔍 Debug Info</button>
                 </div>
             </div>
+            
+            <!-- Authentication Panel -->
+            <div id="authPanel" class="auth-panel">
+                <div class="auth-message">
+                    <h2>🔐 12.0 Management System Access</h2>
+                    <p>This system is restricted to Holders, VIP Holders, Moderators, and Admins.</p>
+                    <p>Please authenticate with Discord to verify your role:</p>
+                    <button onclick="authenticateDiscord()" class="auth-button">
+                        🔗 Login with Discord
+                    </button>
+                </div>
+            </div>
+            
+            <!-- User Info Panel -->
+            <div id="userInfo" class="user-info-panel"></div>
+            
+            <!-- Main Content (hidden until authenticated) -->
+            <div id="mainContent" style="display: none;">
         
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
@@ -262,16 +423,23 @@
             </div>
             
             <div class="status-card daily-card">
-                <h3>📅 Daily Status - September 19, 2025</h3>
+                <h3 id="dailyStatusTitle">📅 Daily Status - Loading...</h3>
                 <div id="dailyStatusContent" class="content">
                     <div class="loading">Loading Daily Status...</div>
                 </div>
             </div>
             
             <div class="status-card">
-                <h3>📅 Daily Status - September 18, 2025</h3>
-                <div id="dailyStatus18Content" class="content">
-                    <div class="loading">Loading Daily Status 18...</div>
+                <h3 id="dailyStatus1Title">📅 Daily Status - Loading...</h3>
+                <div id="dailyStatus1Content" class="content">
+                    <div class="loading">Loading Daily Status...</div>
+                </div>
+            </div>
+            
+            <div class="status-card">
+                <h3 id="dailyStatus2Title">📅 Daily Status - Loading...</h3>
+                <div id="dailyStatus2Content" class="content">
+                    <div class="loading">Loading Daily Status...</div>
                 </div>
             </div>
         </div>
@@ -281,23 +449,23 @@
             <h2>📝 Lab Notes - Development Documentation</h2>
             
             <div class="lab-notes-card">
-                <h3>📝 September 19, 2025 - Lab Notes</h3>
-                <div id="labNotes19Content" class="content">
-                    <div class="loading">Loading Lab Notes for September 19...</div>
+                <h3 id="labNotes0Title">📝 Lab Notes - Loading...</h3>
+                <div id="labNotes0Content" class="content">
+                    <div class="loading">Loading Lab Notes...</div>
                 </div>
             </div>
             
             <div class="lab-notes-card">
-                <h3>📝 September 18, 2025 - Lab Notes</h3>
-                <div id="labNotes18Content" class="content">
-                    <div class="loading">Loading Lab Notes for September 18...</div>
+                <h3 id="labNotes1Title">📝 Lab Notes - Loading...</h3>
+                <div id="labNotes1Content" class="content">
+                    <div class="loading">Loading Lab Notes...</div>
                 </div>
             </div>
             
             <div class="lab-notes-card">
-                <h3>📝 September 17, 2025 - Lab Notes</h3>
-                <div id="labNotes17Content" class="content">
-                    <div class="loading">Loading Lab Notes for September 17...</div>
+                <h3 id="labNotes2Title">📝 Lab Notes - Loading...</h3>
+                <div id="labNotes2Content" class="content">
+                    <div class="loading">Loading Lab Notes...</div>
                 </div>
             </div>
             
@@ -386,6 +554,7 @@
             Last Updated: <span id="lastUpdated"></span>
         </div>
     </div>
+    </div>
 
     <script>
         // Environment detection
@@ -394,6 +563,176 @@
         
         console.log('🌍 Environment:', isProduction ? 'Production' : 'Local');
         console.log('🔗 API Base URL:', API_BASE_URL);
+        
+        // Authentication state
+        let currentUser = null;
+        let userRoles = [];
+        let isAuthenticated = false;
+        
+        // 🔐 Authentication Functions
+        async function checkAuthentication() {
+            try {
+                console.log('🔐 Checking authentication...');
+                
+                // Local bypass for testing
+                if (!isProduction) {
+                    console.log('🏠 Local environment detected - bypassing authentication');
+                    currentUser = {
+                        discord_id: 'local_test_user',
+                        discord_name: 'Local Test User',
+                        avatar_url: null
+                    };
+                    userRoles = ['Admin', 'Holder', 'VIP Holder', 'Moderator'];
+                    isAuthenticated = true;
+                    showAuthenticatedContent();
+                    return true;
+                }
+                
+                // Check if user is already authenticated via session
+                const response = await fetch(API_BASE_URL + '/api/auth/check-session.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.success && data.user) {
+                        console.log('✅ User authenticated:', data.user.discord_name);
+                        currentUser = data.user;
+                        userRoles = [data.role]; // Basic role from session
+                        
+                        // Get detailed user roles from database
+                        await getUserRoles(data.user.discord_id);
+                        
+                        // Check if user has required roles
+                        if (hasRequiredRole()) {
+                            isAuthenticated = true;
+                            showAuthenticatedContent();
+                            return true;
+                        } else {
+                            showUnauthorizedMessage();
+                            return false;
+                        }
+                    }
+                }
+                
+                // No valid session found
+                showLoginPrompt();
+                return false;
+                
+            } catch (error) {
+                console.error('❌ Authentication check failed:', error);
+                showLoginPrompt();
+                return false;
+            }
+        }
+        
+        async function getUserRoles(discordId) {
+            try {
+                const response = await fetch(API_BASE_URL + '/api/admin/get-user-roles.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: discordId })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.roles) {
+                        userRoles = data.roles;
+                        console.log('🎭 User roles loaded:', userRoles);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Failed to load user roles:', error);
+            }
+        }
+        
+        function hasRequiredRole() {
+            const requiredRoles = ['Holder', 'VIP Holder', 'Moderator', 'Admin', 'DL Rumble Admins'];
+            return userRoles.some(role => requiredRoles.includes(role));
+        }
+        
+        function showAuthenticatedContent() {
+            console.log('✅ Showing authenticated content');
+            document.getElementById('authPanel').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            
+            const localIndicator = !isProduction ? '<p>🏠 <strong>Local Testing Mode</strong> - Authentication bypassed</p>' : '';
+            
+            document.getElementById('userInfo').innerHTML = `
+                <div class="user-info">
+                    <h3>👤 Welcome, ${currentUser.discord_name}!</h3>
+                    <p>🎭 Roles: ${userRoles.join(', ')}</p>
+                    <p>🔐 Access Level: ${getAccessLevel()}</p>
+                    ${localIndicator}
+                </div>
+            `;
+        }
+        
+        function showUnauthorizedMessage() {
+            console.log('❌ User not authorized');
+            document.getElementById('authPanel').innerHTML = `
+                <div class="auth-message">
+                    <h2>🔒 Access Denied</h2>
+                    <p>You need one of the following roles to access the 12.0 Management System:</p>
+                    <ul>
+                        <li>🧀 Holder</li>
+                        <li>👑 VIP Holder</li>
+                        <li>🛡️ Moderator</li>
+                        <li>👑 Admin</li>
+                    </ul>
+                    <p>Your current roles: ${userRoles.length > 0 ? userRoles.join(', ') : 'None'}</p>
+                    <button onclick="authenticateDiscord()" class="auth-button">
+                        🔗 Login with Discord
+                    </button>
+                </div>
+            `;
+        }
+        
+        function showLoginPrompt() {
+            console.log('🔐 Showing login prompt');
+            document.getElementById('authPanel').innerHTML = `
+                <div class="auth-message">
+                    <h2>🔐 12.0 Management System Access</h2>
+                    <p>This system is restricted to Holders, VIP Holders, Moderators, and Admins.</p>
+                    <p>Please authenticate with Discord to verify your role:</p>
+                    <button onclick="authenticateDiscord()" class="auth-button">
+                        🔗 Login with Discord
+                    </button>
+                </div>
+            `;
+        }
+        
+        function getAccessLevel() {
+            if (userRoles.includes('Admin') || userRoles.includes('DL Rumble Admins')) return 'Admin';
+            if (userRoles.includes('Moderator')) return 'Moderator';
+            if (userRoles.includes('VIP Holder')) return 'VIP Holder';
+            if (userRoles.includes('Holder')) return 'Holder';
+            return 'None';
+        }
+        
+        async function authenticateDiscord() {
+            try {
+                console.log('🔄 Starting Discord authentication...');
+                
+                // Set redirect flag for return
+                localStorage.setItem('adminRedirect', 'true');
+                
+                // Redirect to Discord OAuth
+                const clientId = '1357927342265204858';
+                const redirectUri = encodeURIComponent('https://narrrfs.world/api/auth/callback.php');
+                const scope = encodeURIComponent('identify guilds');
+                
+                const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+                
+                window.location.href = authUrl;
+                
+            } catch (error) {
+                console.error('❌ Discord authentication failed:', error);
+                alert('Authentication failed. Please try again.');
+            }
+        }
         
         // Simple markdown to text conversion
         function convertMarkdownToText(markdown) {
@@ -408,23 +747,27 @@
                 .replace(/---/gim, '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         }
         
-        // Load content function
+        // Load content function using dynamic scanner
         async function loadContent(elementId, filePath, successMessage) {
             const element = document.getElementById(elementId);
             if (!element) return;
             
             try {
+                console.log(`📄 Loading content: ${filePath}`);
                 const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=' + filePath);
                 const data = await response.json();
                 
                 if (data.success && data.content) {
                     const simpleText = convertMarkdownToText(data.content);
                     element.innerHTML = `<div class="success">✅ ${successMessage} (${data.content.length} characters)</div><pre>${simpleText}</pre>`;
+                    console.log(`✅ Content loaded: ${successMessage}`);
                 } else {
                     element.innerHTML = `<div class="error">❌ Failed to load ${successMessage}: ${data.error || 'Unknown error'}</div>`;
+                    console.error(`❌ Failed to load ${successMessage}:`, data.error);
                 }
             } catch (error) {
                 element.innerHTML = `<div class="error">❌ Error loading ${successMessage}: ${error.message}</div>`;
+                console.error(`❌ Error loading ${successMessage}:`, error);
             }
         }
         
@@ -797,67 +1140,414 @@
             }
         }
         
-        // Load content for specific tab
+        // Load content for specific tab using dynamic scanner
         async function loadTabContent(tabName) {
-            switch(tabName) {
-                case 'active-status':
-                    await Promise.all([
-                        loadContent('quickStatusContent', 'ACTIVE_STATUS/QUICK_STATUS_12.0.md', 'Quick Status'),
-                        loadContent('dailyStatusContent', 'ACTIVE_STATUS/DAILY_STATUS_2025-09-19.md', 'Daily Status 19'),
-                        loadContent('dailyStatus18Content', 'ACTIVE_STATUS/DAILY_STATUS_2025-09-18.md', 'Daily Status 18')
-                    ]);
-                    break;
-                    
-                case 'lab-notes':
-                    await Promise.all([
-                        loadDirectory('labNotes19Content', 'LAB_NOTES/2025/DAILY_NOTES/2025-09-19', 'Lab Notes September 19'),
-                        loadDirectory('labNotes18Content', 'LAB_NOTES/2025/DAILY_NOTES/2025-09-18', 'Lab Notes September 18'),
-                        loadDirectory('labNotes17Content', 'LAB_NOTES/2025/DAILY_NOTES/2025-09-17', 'Lab Notes September 17'),
-                        loadSpecificLabNotes()
-                    ]);
-                    break;
-                    
-                case 'llm-sync':
-                    await loadDirectory('llmSyncContent', 'LLM_SYNC_SYSTEM', 'LLM Sync Status');
-                    break;
-                    
-                case 'technical-docs':
-                    await loadDirectory('technicalDocsContent', 'TECHNICAL_DOCUMENTATION', 'Technical Documentation');
-                    break;
-                    
-                case 'milestones':
-                    await loadDirectory('milestonesContent', 'MILESTONE_DOCUMENTATION', 'Milestones');
-                    break;
-                    
-                case 'deployment':
-                    await loadDirectory('deploymentContent', 'DEPLOYMENT_HISTORY', 'Deployment History');
-                    break;
-                    
-                case 'dev-tools':
-                    await loadDirectory('devToolsContent', 'DEVELOPMENT_TOOLS', 'Development Tools');
-                    break;
-                    
-                case 'archive':
-                    await loadDirectory('archiveContent', 'ARCHIVE', 'Archive');
-                    break;
+            console.log(`📁 Loading content for tab: ${tabName}`);
+            
+            try {
+                // First, scan all folders to get current structure
+                const scanResponse = await fetch(API_BASE_URL + '/api/admin/scan-12-0-folders.php');
+                const scanData = await scanResponse.json();
+                
+                if (!scanData.success) {
+                    console.error('❌ Failed to scan folders:', scanData.error);
+                    return;
+                }
+                
+                // Map tab names to scan result keys
+                const tabMapping = {
+                    'active-status': 'active_status',
+                    'lab-notes': 'lab_notes',
+                    'llm-sync': 'llm_sync',
+                    'technical-docs': 'technical_docs',
+                    'milestones': 'milestones',
+                    'deployment': 'deployment',
+                    'dev-tools': 'dev_tools',
+                    'archive': 'archive'
+                };
+                
+                const scanKey = tabMapping[tabName];
+                if (!scanKey || !scanData.scan_results[scanKey]) {
+                    console.error(`❌ Unknown tab: ${tabName}`);
+                    return;
+                }
+                
+                const categoryData = scanData.scan_results[scanKey];
+                
+                if (!categoryData.exists) {
+                    console.error(`❌ Folder not found: ${categoryData.folder_name}`);
+                    return;
+                }
+                
+                // Load content based on tab type
+                switch(tabName) {
+                    case 'active-status':
+                        await loadActiveStatusContent(categoryData.files);
+                        break;
+                        
+                    case 'lab-notes':
+                        await loadLabNotesContent(categoryData.files);
+                        break;
+                        
+                    case 'llm-sync':
+                        await loadLLMSyncContent(categoryData.files);
+                        break;
+                        
+                    case 'technical-docs':
+                        await loadTechnicalDocsContent(categoryData.files);
+                        break;
+                        
+                    case 'milestones':
+                        await loadMilestonesContent(categoryData.files);
+                        break;
+                        
+                    case 'deployment':
+                        await loadDeploymentContent(categoryData.files);
+                        break;
+                        
+                    case 'dev-tools':
+                        await loadDevToolsContent(categoryData.files);
+                        break;
+                        
+                    case 'archive':
+                        await loadArchiveContent(categoryData.files);
+                        break;
+                }
+                
+            } catch (error) {
+                console.error(`❌ Error loading ${tabName}:`, error);
             }
         }
         
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add click listeners to tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabName = this.getAttribute('data-tab');
-                    switchTab(tabName);
-                });
+        // Load Active Status content dynamically
+        async function loadActiveStatusContent(files) {
+            console.log('📊 Loading Active Status content...');
+            console.log('📊 Available files:', files.map(f => f.name));
+            
+            // Find Quick Status file
+            const quickStatusFile = files.find(f => f.name === 'QUICK_STATUS_12.0.md');
+            if (quickStatusFile) {
+                console.log('📊 Found Quick Status file:', quickStatusFile.path);
+                await loadContent('quickStatusContent', quickStatusFile.path, 'Quick Status');
+            } else {
+                console.log('❌ Quick Status file not found');
+            }
+            
+            // Find Daily Status files (today's files first, then most recent)
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+            console.log('📊 Looking for today\'s date:', today);
+            
+            const dailyStatusFiles = files
+                .filter(f => f.name.startsWith('DAILY_STATUS_') && f.name.endsWith('.md'))
+                .map(f => {
+                    // Extract date from filename
+                    const dateMatch = f.name.match(/DAILY_STATUS_(\d{4}-\d{2}-\d{2})\.md/);
+                    const fileDate = dateMatch ? dateMatch[1] : '0000-00-00';
+                    return { ...f, fileDate };
+                })
+                .sort((a, b) => {
+                    // Prioritize today's files
+                    const aIsToday = a.fileDate === today;
+                    const bIsToday = b.fileDate === today;
+                    
+                    if (aIsToday && !bIsToday) return -1;
+                    if (!aIsToday && bIsToday) return 1;
+                    
+                    // Then sort by date (newest first)
+                    return b.fileDate.localeCompare(a.fileDate);
+                })
+                .slice(0, 3); // Show last 3 days
+            
+            console.log('📊 Found Daily Status files:', dailyStatusFiles.map(f => f.name));
+            
+            for (let i = 0; i < dailyStatusFiles.length; i++) {
+                const file = dailyStatusFiles[i];
+                const elementId = i === 0 ? 'dailyStatusContent' : `dailyStatus${i}Content`;
+                const titleId = i === 0 ? 'dailyStatusTitle' : `dailyStatus${i}Title`;
+                
+                // Use the pre-extracted date
+                const date = file.fileDate;
+                
+                // Update title
+                const titleElement = document.getElementById(titleId);
+                if (titleElement) {
+                    titleElement.textContent = `📅 Daily Status - ${date}`;
+                }
+                
+                console.log(`📊 Loading Daily Status ${i + 1}:`, file.name, '->', elementId, 'Date:', date);
+                await loadContent(elementId, file.path, `Daily Status ${i + 1}`);
+            }
+        }
+        
+        // Load Lab Notes content dynamically
+        async function loadLabNotesContent(files) {
+            console.log('📝 Loading Lab Notes content...');
+            
+            // Group files by date
+            const filesByDate = {};
+            files.forEach(file => {
+                const dateMatch = file.path.match(/(\d{4}-\d{2}-\d{2})/);
+                if (dateMatch) {
+                    const date = dateMatch[1];
+                    if (!filesByDate[date]) filesByDate[date] = [];
+                    filesByDate[date].push(file);
+                }
             });
             
-            // Load initial content
-            loadTabContent('active-status');
+            // Get recent dates (today first, then last 7 days)
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+            const recentDates = Object.keys(filesByDate)
+                .sort((a, b) => {
+                    // Prioritize today's date
+                    if (a === today && b !== today) return -1;
+                    if (a !== today && b === today) return 1;
+                    
+                    // Then sort by date (newest first)
+                    return new Date(b) - new Date(a);
+                })
+                .slice(0, 7);
             
-            // Update timestamp
-            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+            for (let i = 0; i < recentDates.length; i++) {
+                const date = recentDates[i];
+                const dateFiles = filesByDate[date];
+                const elementId = `labNotes${i}Content`;
+                const titleId = `labNotes${i}Title`;
+                
+                // Update title
+                const titleElement = document.getElementById(titleId);
+                if (titleElement) {
+                    titleElement.textContent = `📝 Lab Notes - ${date}`;
+                }
+                
+                // Create a directory-like structure for display
+                const directoryData = {
+                    success: true,
+                    files: dateFiles.map(f => ({
+                        name: f.name,
+                        path: f.path,
+                        type: 'file',
+                        size: formatFileSize(f.size),
+                        modified: f.modified
+                    }))
+                };
+                
+                console.log(`📝 Loading Lab Notes ${i + 1}:`, date, '->', elementId, 'Files:', dateFiles.length);
+                displayDirectoryContent(elementId, directoryData, `Lab Notes ${date}`);
+            }
+        }
+        
+        // Load other content types dynamically
+        async function loadLLMSyncContent(files) {
+            console.log('🤖 Loading LLM Sync content...');
+            const directoryData = {
+                success: true,
+                files: files.map(f => ({
+                    name: f.name,
+                    path: f.path,
+                    type: 'file',
+                    size: formatFileSize(f.size),
+                    modified: f.modified
+                }))
+            };
+            displayDirectoryContent('llmSyncContent', directoryData, 'LLM Sync Status');
+        }
+        
+        async function loadTechnicalDocsContent(files) {
+            console.log('📚 Loading Technical Docs content...');
+            const directoryData = {
+                success: true,
+                files: files.map(f => ({
+                    name: f.name,
+                    path: f.path,
+                    type: 'file',
+                    size: formatFileSize(f.size),
+                    modified: f.modified
+                }))
+            };
+            displayDirectoryContent('technicalDocsContent', directoryData, 'Technical Documentation');
+        }
+        
+        async function loadMilestonesContent(files) {
+            console.log('🎯 Loading Milestones content...');
+            const directoryData = {
+                success: true,
+                files: files.map(f => ({
+                    name: f.name,
+                    path: f.path,
+                    type: 'file',
+                    size: formatFileSize(f.size),
+                    modified: f.modified
+                }))
+            };
+            displayDirectoryContent('milestonesContent', directoryData, 'Milestones');
+        }
+        
+        async function loadDeploymentContent(files) {
+            console.log('🚀 Loading Deployment content...');
+            const directoryData = {
+                success: true,
+                files: files.map(f => ({
+                    name: f.name,
+                    path: f.path,
+                    type: 'file',
+                    size: formatFileSize(f.size),
+                    modified: f.modified
+                }))
+            };
+            displayDirectoryContent('deploymentContent', directoryData, 'Deployment History');
+        }
+        
+        async function loadDevToolsContent(files) {
+            console.log('🛠️ Loading Dev Tools content...');
+            const directoryData = {
+                success: true,
+                files: files.map(f => ({
+                    name: f.name,
+                    path: f.path,
+                    type: 'file',
+                    size: formatFileSize(f.size),
+                    modified: f.modified
+                }))
+            };
+            displayDirectoryContent('devToolsContent', directoryData, 'Development Tools');
+        }
+        
+        async function loadArchiveContent(files) {
+            console.log('📦 Loading Archive content...');
+            const directoryData = {
+                success: true,
+                files: files.map(f => ({
+                    name: f.name,
+                    path: f.path,
+                    type: 'file',
+                    size: formatFileSize(f.size),
+                    modified: f.modified
+                }))
+            };
+            displayDirectoryContent('archiveContent', directoryData, 'Archive');
+        }
+        
+        // Helper function to format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Helper function to display directory content
+        function displayDirectoryContent(elementId, data, title) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            if (data.success && data.files) {
+                let html = `<div class="success">✅ ${title} loaded (${data.files.length} files)</div>`;
+                html += '<div class="file-list">';
+                
+                data.files.forEach(file => {
+                    html += `
+                        <div class="file-item" data-file-path="${file.path}" data-file-name="${file.name}" data-file-type="${file.type}">
+                            <h4>${file.type === 'directory' ? '📁' : '📄'} ${file.name}</h4>
+                            <p><strong>Type:</strong> ${file.type}</p>
+                            <p><strong>Size:</strong> ${file.size}</p>
+                            <p><strong>Modified:</strong> ${file.modified}</p>
+                            <p><strong>Path:</strong> ${file.path}</p>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                element.innerHTML = html;
+                
+                // Add click listeners to file items
+                element.querySelectorAll('.file-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const filePath = this.getAttribute('data-file-path');
+                        const fileName = this.getAttribute('data-file-name');
+                        showFileModal(filePath, fileName);
+                    });
+                });
+            } else {
+                element.innerHTML = `<div class="error">❌ Failed to load ${title}</div>`;
+            }
+        }
+        
+        // Show file content in modal
+        async function showFileModal(filePath, fileName) {
+            try {
+                console.log(`📄 Opening file modal: ${fileName}`);
+                
+                // Create modal
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>📄 ${fileName}</h3>
+                            <button class="modal-close" onclick="closeModal()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="modalFileContent">Loading...</div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // Load file content
+                const response = await fetch(API_BASE_URL + '/api/admin/get-12-0-file.php?path=' + filePath);
+                const data = await response.json();
+                
+                const contentDiv = document.getElementById('modalFileContent');
+                if (data.success && data.content) {
+                    const simpleText = convertMarkdownToText(data.content);
+                    contentDiv.innerHTML = `<pre>${simpleText}</pre>`;
+                } else {
+                    contentDiv.innerHTML = `<div class="error">❌ Failed to load file: ${data.error || 'Unknown error'}</div>`;
+                }
+                
+            } catch (error) {
+                console.error('❌ Error opening file modal:', error);
+                alert('Error loading file: ' + error.message);
+            }
+        }
+        
+        // Close modal
+        function closeModal() {
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal();
+            }
+        });
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication first
+            checkAuthentication().then(() => {
+                // Add click listeners to tabs
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        const tabName = this.getAttribute('data-tab');
+                        switchTab(tabName);
+                    });
+                });
+                
+                // Load initial content only if authenticated
+                if (isAuthenticated) {
+                    loadTabContent('active-status');
+                }
+                
+                // Update timestamp
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+            });
         });
     </script>
 </body>

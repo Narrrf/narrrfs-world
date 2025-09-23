@@ -351,6 +351,17 @@ require_once 'discord-invite.php';
       <div class="text-gray-400 text-sm">Season 3 launching soon - mint now to be ready!</div>
     </div>
 
+    <!-- 🧀 12.0 Management Button (for authorized users) -->
+    <div id="management-button-container" class="mt-4" style="display: none;">
+      <a href="12-0-test.html" 
+         target="_blank"
+         class="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg border-2 border-blue-500 transition-all duration-300 transform hover:scale-105">
+        🧀 12.0 Management System
+      </a>
+      <div class="mt-2 text-blue-400 font-semibold">📊 Project Updates & Status Files</div>
+      <div class="text-gray-400 text-sm">Access development documentation and project status</div>
+    </div>
+
     <!-- 🧪 Traits + Wallet View -->
     <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner border-2 border-orange-300">
       <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
@@ -1873,6 +1884,29 @@ document.addEventListener("DOMContentLoaded", async function () {
        hideElement('dspoincSection');
        hideElement('debugSection');
        hideElement('missionsSection');
+     }
+
+     // 🧀 Show 12.0 Management Button for authorized users
+     const hasManagementAccess = user.roles && (
+       user.roles.includes("Holder") || 
+       user.roles.includes("VIP Holder") || 
+       user.roles.includes("Moderator") || 
+       user.roles.includes("Admin") ||
+       user.roles.includes("DL Rumble Admins") ||
+       user.roles.some(role => role.toLowerCase().includes('holder')) ||
+       user.roles.some(role => role.toLowerCase().includes('moderator')) ||
+       user.roles.some(role => role.toLowerCase().includes('admin'))
+     );
+     
+     console.log('🔍 12.0 Management Access - User roles:', user.roles);
+     console.log('🔍 12.0 Management Access - Has access:', hasManagementAccess);
+     
+     if (hasManagementAccess) {
+       console.log('✅ 12.0 Management Access granted - showing button');
+       showElement('management-button-container');
+     } else {
+       console.log('❌ No 12.0 Management access - hiding button');
+       hideElement('management-button-container');
      }
 
     // 🔧 Show Admin Access Button for admins/moderators
