@@ -601,13 +601,13 @@
                 
                 // 🚀 PRODUCTION BYPASS: Check if user has required roles from profile page
                 console.log('🌐 Production environment - checking for role-based bypass...');
-                const profileUserId = window.sessionDiscordId || localStorage.getItem('discord_id');
+                const profileUserId = localStorage.getItem('discord_id') || sessionStorage.getItem('discord_id');
                 if (profileUserId) {
-                    console.log('👤 Found user ID from profile page:', profileUserId);
+                    console.log('👤 Found user ID from storage:', profileUserId);
                     
                     // Try to get user roles from profile page data
                     try {
-                        const profileResponse = await fetch(API_BASE_URL + '/api/user/get-user-profile.php', {
+                        const profileResponse = await fetch(API_BASE_URL + '/api/user/profile.php', {
                             method: 'GET',
                             credentials: 'include'
                         });
@@ -616,18 +616,18 @@
                             const profileData = await profileResponse.json();
                             console.log('📊 Profile data:', profileData);
                             
-                            if (profileData.success && profileData.user) {
+                            if (profileData.discord_id) {
                                 // Check if user has required roles
-                                const userRoles = profileData.user.roles || [];
-                                const requiredRoles = ['Holder', 'VIP Holder', 'Moderator', 'Admin', 'DL Rumble Admins'];
+                                const userRoles = profileData.roles || [];
+                                const requiredRoles = ['Holder', 'VIP Holder', 'Moderator', 'Admin'];
                                 const hasRequiredRole = userRoles.some(role => requiredRoles.includes(role));
                                 
                                 if (hasRequiredRole) {
                                     console.log('🔓 User has required role, bypassing authentication');
                                     currentUser = {
-                                        discord_id: profileData.user.discord_id,
-                                        discord_name: profileData.user.discord_name,
-                                        avatar_url: profileData.user.avatar_url
+                                        discord_id: profileData.discord_id,
+                                        discord_name: profileData.discord_name,
+                                        avatar_url: profileData.avatar_url
                                     };
                                     userRoles = userRoles;
                                     isAuthenticated = true;
@@ -739,7 +739,7 @@
                 console.log('🔄 Attempting fallback authentication...');
                 
                 // Try to get user profile directly
-                const response = await fetch(API_BASE_URL + '/api/user/get-user-profile.php', {
+                const response = await fetch(API_BASE_URL + '/api/user/profile.php', {
                     method: 'GET',
                     credentials: 'include'
                 });
@@ -748,31 +748,35 @@
                     const data = await response.json();
                     console.log('📊 Fallback profile data:', data);
                     
-                    if (data.success && data.user) {
-                        console.log('✅ Fallback authentication successful:', data.user.discord_name);
-                        currentUser = data.user;
-                        
-                        // Try to get roles from profile data
-                        if (data.user.roles && Array.isArray(data.user.roles)) {
-                            userRoles = data.user.roles;
-                            console.log('🎭 User roles from profile:', userRoles);
-                        } else {
-                            // Fallback to basic role
-                            userRoles = [data.user.role || 'user'];
-                        }
-                        
-                        // Check if user has required roles
-                        if (hasRequiredRole()) {
-                            console.log('🔓 Fallback: User has required role, showing authenticated content');
-                            isAuthenticated = true;
-                            showAuthenticatedContent();
-                            return true;
-                        } else {
-                            console.log('🚫 Fallback: User does not have required role');
-                            showUnauthorizedMessage();
-                            return false;
-                        }
+                if (data.discord_id) {
+                    console.log('✅ Fallback authentication successful:', data.discord_name);
+                    currentUser = {
+                        discord_id: data.discord_id,
+                        discord_name: data.discord_name,
+                        avatar_url: data.avatar_url
+                    };
+                    
+                    // Try to get roles from profile data
+                    if (data.roles && Array.isArray(data.roles)) {
+                        userRoles = data.roles;
+                        console.log('🎭 User roles from profile:', userRoles);
+                    } else {
+                        // Fallback to basic role
+                        userRoles = ['user'];
                     }
+                    
+                    // Check if user has required roles
+                    if (hasRequiredRole()) {
+                        console.log('🔓 Fallback: User has required role, showing authenticated content');
+                        isAuthenticated = true;
+                        showAuthenticatedContent();
+                        return true;
+                    } else {
+                        console.log('🚫 Fallback: User does not have required role');
+                        showUnauthorizedMessage();
+                        return false;
+                    }
+                }
                 }
                 
                 console.log('❌ Fallback authentication failed');
@@ -785,7 +789,7 @@
         }
         
         function hasRequiredRole() {
-            const requiredRoles = ['Holder', 'VIP Holder', 'Moderator', 'Admin', 'DL Rumble Admins'];
+            const requiredRoles = ['Holder', 'VIP Holder', 'Moderator', 'Admin'];
             return userRoles.some(role => requiredRoles.includes(role));
         }
         
