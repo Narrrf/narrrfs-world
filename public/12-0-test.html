@@ -569,6 +569,17 @@
         let userRoles = [];
         let isAuthenticated = false;
         
+        // 🛡️ Global Error Handler to prevent script interruption
+        window.addEventListener('error', function(event) {
+            console.warn('⚠️ JavaScript error caught (non-blocking):', event.error);
+            // Don't prevent default - let the error be logged but continue execution
+        });
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            console.warn('⚠️ Unhandled promise rejection caught (non-blocking):', event.reason);
+            // Don't prevent default - let the error be logged but continue execution
+        });
+        
         // 🔐 Authentication Functions
         async function checkAuthentication() {
             try {
@@ -589,34 +600,52 @@
                 }
                 
                 // Check if user is already authenticated using the same method as admin interface
+                console.log('🌐 Production environment - checking session...');
                 const response = await fetch(API_BASE_URL + '/api/auth/check-session.php', {
                     method: 'GET',
                     credentials: 'include'
                 });
                 
+                console.log('📡 Session check response:', response.status, response.statusText);
+                
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('📊 Session data:', data);
                     
                     if (data.success && data.user) {
                         console.log('✅ User authenticated:', data.user.discord_name);
                         currentUser = data.user;
                         
                         // Get user roles from database (like admin interface does)
+                        console.log('🎭 Getting user roles from database...');
                         await getUserRolesFromDatabase(data.user.discord_id);
                         
                         // Check if user has required roles
                         if (hasRequiredRole()) {
+                            console.log('🔓 User has required role, showing authenticated content');
                             isAuthenticated = true;
                             showAuthenticatedContent();
                             return true;
                         } else {
+                            console.log('🚫 User does not have required role');
                             showUnauthorizedMessage();
                             return false;
                         }
+                    } else {
+                        console.log('❌ No valid user data in session');
                     }
+                } else {
+                    console.log('❌ Session check failed:', response.status, response.statusText);
                 }
                 
-                // No valid session found
+                // No valid session found - try fallback authentication
+                console.log('🔐 No valid session found, trying fallback authentication...');
+                const fallbackSuccess = await tryFallbackAuthentication();
+                if (fallbackSuccess) {
+                    return true;
+                }
+                
+                console.log('🔐 Fallback authentication failed, showing login prompt');
                 showLoginPrompt();
                 return false;
                 
@@ -630,22 +659,84 @@
         // Get user roles from database (like admin interface does)
         async function getUserRolesFromDatabase(discordId) {
             try {
+                console.log('🎭 Fetching user roles from database for Discord ID:', discordId);
                 const response = await fetch(API_BASE_URL + '/api/user/roles.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                console.log('📡 Roles API response:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📊 Roles data:', data);
+                    
+                    if (data.success && data.roles) {
+                        userRoles = data.roles;
+                        console.log('🎭 User roles loaded from database:', userRoles);
+                    } else {
+                        console.log('❌ No roles data in response');
+                        userRoles = [currentUser.role || 'user'];
+                    }
+                } else {
+                    console.log('❌ Roles API failed:', response.status, response.statusText);
+                    userRoles = [currentUser.role || 'user'];
+                }
+            } catch (error) {
+                console.error('❌ Failed to load user roles from database:', error);
+                // Fallback to basic role from session
+                userRoles = [currentUser.role || 'user'];
+            }
+        }
+        
+        // 🔄 Fallback Authentication Method
+        async function tryFallbackAuthentication() {
+            try {
+                console.log('🔄 Attempting fallback authentication...');
+                
+                // Try to get user profile directly
+                const response = await fetch(API_BASE_URL + '/api/user/get-user-profile.php', {
                     method: 'GET',
                     credentials: 'include'
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.success && data.roles) {
-                        userRoles = data.roles;
-                        console.log('🎭 User roles loaded from database:', userRoles);
+                    console.log('📊 Fallback profile data:', data);
+                    
+                    if (data.success && data.user) {
+                        console.log('✅ Fallback authentication successful:', data.user.discord_name);
+                        currentUser = data.user;
+                        
+                        // Try to get roles from profile data
+                        if (data.user.roles && Array.isArray(data.user.roles)) {
+                            userRoles = data.user.roles;
+                            console.log('🎭 User roles from profile:', userRoles);
+                        } else {
+                            // Fallback to basic role
+                            userRoles = [data.user.role || 'user'];
+                        }
+                        
+                        // Check if user has required roles
+                        if (hasRequiredRole()) {
+                            console.log('🔓 Fallback: User has required role, showing authenticated content');
+                            isAuthenticated = true;
+                            showAuthenticatedContent();
+                            return true;
+                        } else {
+                            console.log('🚫 Fallback: User does not have required role');
+                            showUnauthorizedMessage();
+                            return false;
+                        }
                     }
                 }
+                
+                console.log('❌ Fallback authentication failed');
+                return false;
+                
             } catch (error) {
-                console.error('❌ Failed to load user roles from database:', error);
-                // Fallback to basic role from session
-                userRoles = [currentUser.role || 'user'];
+                console.error('❌ Fallback authentication error:', error);
+                return false;
             }
         }
         
