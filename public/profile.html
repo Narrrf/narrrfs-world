@@ -352,7 +352,7 @@ require_once 'discord-invite.php';
     </div>
 
     <!-- 🧀 12.0 Management Button (for authorized users) -->
-    <div id="management-button-container" class="mt-4" style="display: none;">
+    <div id="management-button-container" class="mt-4 hidden">
       <a href="12-0-test.html" 
          target="_blank"
          class="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg border-2 border-blue-500 transition-all duration-300 transform hover:scale-105">
@@ -1746,6 +1746,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         hideElement('noCheeseJoke');
         hideElement('dspoincSection');
 
+        // 🧀 Local bypass for 12.0 Management button - show it even when not logged in
+        const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (isLocalDevelopment) {
+          console.log('🏠 Local environment detected - showing 12.0 Management button for testing');
+          showElement('management-button-container');
+        }
+
         // Make sure login link is visible and clickable
         if (loginLink) {
           loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
@@ -1887,19 +1894,32 @@ document.addEventListener("DOMContentLoaded", async function () {
      }
 
      // 🧀 Show 12.0 Management Button for authorized users
-     const hasManagementAccess = user.roles && (
-       user.roles.includes("Holder") || 
-       user.roles.includes("VIP Holder") || 
-       user.roles.includes("Moderator") || 
-       user.roles.includes("Admin") ||
-       user.roles.includes("DL Rumble Admins") ||
-       user.roles.some(role => role.toLowerCase().includes('holder')) ||
-       user.roles.some(role => role.toLowerCase().includes('moderator')) ||
-       user.roles.some(role => role.toLowerCase().includes('admin'))
-     );
+     // Local bypass for testing - always show button in local environment
+     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+     
+     let hasManagementAccess = false;
+     
+     if (isLocalDevelopment) {
+       // Local bypass - always show button for testing
+       hasManagementAccess = true;
+       console.log('🏠 Local environment detected - bypassing role check for 12.0 Management button');
+     } else {
+       // Production - check actual roles
+       hasManagementAccess = user.roles && (
+         user.roles.includes("Holder") || 
+         user.roles.includes("VIP Holder") || 
+         user.roles.includes("Moderator") || 
+         user.roles.includes("Admin") ||
+         user.roles.includes("DL Rumble Admins") ||
+         user.roles.some(role => role.toLowerCase().includes('holder')) ||
+         user.roles.some(role => role.toLowerCase().includes('moderator')) ||
+         user.roles.some(role => role.toLowerCase().includes('admin'))
+       );
+     }
      
      console.log('🔍 12.0 Management Access - User roles:', user.roles);
      console.log('🔍 12.0 Management Access - Has access:', hasManagementAccess);
+     console.log('🔍 12.0 Management Access - Environment:', isLocalDevelopment ? 'Local' : 'Production');
      
      if (hasManagementAccess) {
        console.log('✅ 12.0 Management Access granted - showing button');

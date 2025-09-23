@@ -588,7 +588,7 @@
                     return true;
                 }
                 
-                // Check if user is already authenticated via session
+                // Check if user is already authenticated using the same method as admin interface
                 const response = await fetch(API_BASE_URL + '/api/auth/check-session.php', {
                     method: 'GET',
                     credentials: 'include'
@@ -600,10 +600,9 @@
                     if (data.success && data.user) {
                         console.log('✅ User authenticated:', data.user.discord_name);
                         currentUser = data.user;
-                        userRoles = [data.role]; // Basic role from session
                         
-                        // Get detailed user roles from database
-                        await getUserRoles(data.user.discord_id);
+                        // Get user roles from database (like admin interface does)
+                        await getUserRolesFromDatabase(data.user.discord_id);
                         
                         // Check if user has required roles
                         if (hasRequiredRole()) {
@@ -628,23 +627,25 @@
             }
         }
         
-        async function getUserRoles(discordId) {
+        // Get user roles from database (like admin interface does)
+        async function getUserRolesFromDatabase(discordId) {
             try {
-                const response = await fetch(API_BASE_URL + '/api/admin/get-user-roles.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: discordId })
+                const response = await fetch(API_BASE_URL + '/api/user/roles.php', {
+                    method: 'GET',
+                    credentials: 'include'
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success && data.roles) {
                         userRoles = data.roles;
-                        console.log('🎭 User roles loaded:', userRoles);
+                        console.log('🎭 User roles loaded from database:', userRoles);
                     }
                 }
             } catch (error) {
-                console.error('❌ Failed to load user roles:', error);
+                console.error('❌ Failed to load user roles from database:', error);
+                // Fallback to basic role from session
+                userRoles = [currentUser.role || 'user'];
             }
         }
         
@@ -716,15 +717,8 @@
             try {
                 console.log('🔄 Starting Discord authentication...');
                 
-                // Set redirect flag for return
-                localStorage.setItem('adminRedirect', 'true');
-                
-                // Redirect to Discord OAuth
-                const clientId = '1357927342265204858';
-                const redirectUri = encodeURIComponent('https://narrrfs.world/api/auth/callback.php');
-                const scope = encodeURIComponent('identify guilds');
-                
-                const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}`;
+                // Use the same OAuth flow as bingo.html
+                const authUrl = 'https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read';
                 
                 window.location.href = authUrl;
                 
@@ -1530,25 +1524,45 @@
         
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
-            // Check authentication first
-            checkAuthentication().then(() => {
-                // Add click listeners to tabs
-                document.querySelectorAll('.nav-tab').forEach(tab => {
-                    tab.addEventListener('click', function() {
-                        const tabName = this.getAttribute('data-tab');
-                        switchTab(tabName);
+            // Check if we're returning from OAuth callback
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('code') || urlParams.get('state')) {
+                console.log('🔄 Returning from OAuth callback, checking authentication...');
+                // Small delay to ensure session is set
+                setTimeout(() => {
+                    checkAuthentication().then(() => {
+                        if (isAuthenticated) {
+                            // Clear URL parameters
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        }
+                        setupEventListeners();
                     });
+                }, 1000);
+            } else {
+                // Normal authentication check
+                checkAuthentication().then(() => {
+                    setupEventListeners();
                 });
-                
-                // Load initial content only if authenticated
-                if (isAuthenticated) {
-                    loadTabContent('active-status');
-                }
-                
-                // Update timestamp
-                document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
-            });
+            }
         });
+        
+        function setupEventListeners() {
+            // Add click listeners to tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+            
+            // Load initial content only if authenticated
+            if (isAuthenticated) {
+                loadTabContent('active-status');
+            }
+            
+            // Update timestamp
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+        }
     </script>
 </body>
 </html>
