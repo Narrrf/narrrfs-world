@@ -68,26 +68,33 @@ try {
     $basePath = realpath(__DIR__ . '/../../12.0/');
     $fullPath = realpath($basePath . '/' . $requestedPath);
     
-    // Debug logging for local development
-    if ($isLocal) {
-        error_log("=== 12.0 File API Debug ===");
-        error_log("Requested path: " . $requestedPath);
-        error_log("Base path: " . $basePath);
-        error_log("Full path: " . $fullPath);
-        error_log("Base path normalized: " . str_replace('\\', '/', $basePath));
-        error_log("Full path normalized: " . str_replace('\\', '/', $fullPath));
-        error_log("Path exists: " . (file_exists($fullPath) ? 'YES' : 'NO'));
-        error_log("Is directory: " . (is_dir($fullPath) ? 'YES' : 'NO'));
-        error_log("strpos result: " . strpos(str_replace('\\', '/', $fullPath), str_replace('\\', '/', $basePath)));
-        error_log("==========================");
-    }
+    // Debug logging for both local and production
+    error_log("=== 12.0 File API Debug ===");
+    error_log("Requested path: " . $requestedPath);
+    error_log("Base path: " . $basePath);
+    error_log("Full path: " . $fullPath);
+    error_log("Base path normalized: " . str_replace('\\', '/', $basePath));
+    error_log("Full path normalized: " . str_replace('\\', '/', $fullPath));
+    error_log("Path exists: " . (file_exists($fullPath) ? 'YES' : 'NO'));
+    error_log("Is directory: " . (is_dir($fullPath) ? 'YES' : 'NO'));
+    error_log("strpos result: " . strpos(str_replace('\\', '/', $fullPath), str_replace('\\', '/', $basePath)));
+    error_log("==========================");
     
     // More robust path validation - normalize paths for comparison
     $basePathNormalized = str_replace('\\', '/', $basePath);
     $fullPathNormalized = str_replace('\\', '/', $fullPath);
     
-    if (!$fullPath || strpos($fullPathNormalized, $basePathNormalized) !== 0) {
-        throw new Exception('Invalid path - access denied. Requested: ' . $requestedPath);
+    // Enhanced path validation with better error reporting
+    if (!$basePath) {
+        throw new Exception('Base 12.0 directory not found at: ' . __DIR__ . '/../../12.0/');
+    }
+    
+    if (!$fullPath) {
+        throw new Exception('Requested path does not exist: ' . $requestedPath . ' (Base: ' . $basePath . ')');
+    }
+    
+    if (strpos($fullPathNormalized, $basePathNormalized) !== 0) {
+        throw new Exception('Invalid path - access denied. Requested: ' . $requestedPath . ' (Full: ' . $fullPathNormalized . ', Base: ' . $basePathNormalized . ')');
     }
     
     // Check if file/directory exists
