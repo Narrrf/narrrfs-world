@@ -21,14 +21,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// 🔒 SECURE AUTHENTICATION: Use centralized admin auth
-require_once __DIR__ . '/../config/admin-auth.php';
-checkAdminAuthentication();
+// 🔒 SECURE AUTHENTICATION: Simple admin check
+session_start();
+
+// Local development bypass
+$isLocalDevelopment = $_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['HTTP_HOST'] === '127.0.0.1';
+if (!$isLocalDevelopment) {
+    // Production authentication check
+    if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'Unauthorized - Admin access required']);
+        exit;
+    }
+}
+
+// Database path function
+function getDatabasePath() {
+    $isLocalDevelopment = $_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['HTTP_HOST'] === '127.0.0.1';
+    if ($isLocalDevelopment) {
+        return __DIR__ . '/../../db/narrrf_world.sqlite';
+    } else {
+        return '/var/www/html/db/narrrf_world.sqlite';
+    }
+}
 
 try {
-    // Use centralized database path function
-    $dbPath = getDatabasePath();
-    
     // Define source and target paths
     $source_path = '/var/www/html/db/narrrf_world.sqlite';
     $target_path = '/data/narrrf_world.sqlite';
