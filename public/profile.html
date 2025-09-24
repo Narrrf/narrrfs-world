@@ -1581,7 +1581,8 @@ const trophies = {
   "Kaleido Friends": { img: "img/trophy_kaleidofriends.png", label: "Kaleido Supporter" },
   "Weedery Friends": { img: "img/trophy_weederyfriends.png", label: "Weedery 🌿" },
   "Community Member": { img: "img/trophy_community.png", label: "Community Member" },
-  "Verifiziert": { img: "img/trophy_verified.png", label: "Verified" }
+  "Verifiziert": { img: "img/trophy_verified.png", label: "Verified" },
+  "Season Tester": { img: "img/trophy_season_tester.png", label: "🎮 Season Tester" }
 };
 
 function renderTrophyShelf(userRoles = []) {
@@ -1611,6 +1612,8 @@ function renderTrophyShelf(userRoles = []) {
           trophy = trophies['🎴 VIP Holder'];
         } else if (cleanRole === 'Cheese Hunter') {
           trophy = trophies['🧀 Cheese Hunter'];
+        } else if (cleanRole === 'Season Tester') {
+          trophy = trophies['Season Tester'];
         }
       }
     }
@@ -2974,7 +2977,7 @@ function displayInventoryAndHistory(enhancedData) {
       setText('inventory-recent', summary.recent_purchases.toLocaleString());
     }
 
-    // Update purchase summary
+    // Update purchase summarry
     if (enhancedData.purchase_history && enhancedData.purchase_history.summary) {
       const summary = enhancedData.purchase_history.summary;
       setText('purchase-total', summary.total_purchases.toLocaleString());

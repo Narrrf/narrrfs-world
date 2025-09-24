@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧀 12.0 Management System - Complete Documentation</title>
+    <title>🧀 Holder Overview System - Complete Documentation</title>
     <style>
         body {
             background: #1a1a2e;
@@ -67,6 +67,14 @@
         .nav-tab.active {
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
             border-color: #10b981;
+        }
+        
+        .tab-description {
+            font-size: 0.8em;
+            color: #d1d5db;
+            margin-top: 4px;
+            font-weight: normal;
+            opacity: 0.8;
         }
         
         .content-section {
@@ -372,7 +380,7 @@
 <body>
     <div class="container">
             <div class="header">
-                <h1>🧀 12.0 Management System</h1>
+                <h1>🧀 Holder Overview System</h1>
                 <p>Complete Professional Development Documentation & Management</p>
                 <div style="margin-top: 15px;">
                     <a href="profile.html" style="padding: 10px 20px; background: #f59e0b; color: white; border: none; border-radius: 8px; cursor: pointer; margin-right: 10px; text-decoration: none; display: inline-block;">🏠 Back to Lab</a>
@@ -384,7 +392,7 @@
             <!-- Authentication Panel -->
             <div id="authPanel" class="auth-panel">
                 <div class="auth-message">
-                    <h2>🔐 12.0 Management System Access</h2>
+                    <h2>🔐 Holder Overview System Access</h2>
                     <p>This system is restricted to Holders, VIP Holders, Moderators, and Admins.</p>
                     <p>Please authenticate with Discord to verify your role:</p>
                     <button onclick="authenticateDiscord()" class="auth-button">
@@ -401,14 +409,38 @@
         
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
-            <div class="nav-tab active" data-tab="active-status">📊 Active Status</div>
-            <div class="nav-tab" data-tab="lab-notes">📝 Lab Notes</div>
-            <div class="nav-tab" data-tab="llm-sync">🤖 LLM Sync</div>
-            <div class="nav-tab" data-tab="technical-docs">🔧 Technical Docs</div>
-            <div class="nav-tab" data-tab="milestones">🏆 Milestones</div>
-            <div class="nav-tab" data-tab="deployment">🚀 Deployment</div>
-            <div class="nav-tab" data-tab="dev-tools">🛠️ Dev Tools</div>
-            <div class="nav-tab" data-tab="archive">📦 Archive</div>
+            <div class="nav-tab active" data-tab="active-status">
+                <div>📊 Active Status</div>
+                <div class="tab-description">Current project status and daily updates</div>
+            </div>
+            <div class="nav-tab" data-tab="lab-notes">
+                <div>📝 Lab Notes</div>
+                <div class="tab-description">Development documentation and discoveries</div>
+            </div>
+            <div class="nav-tab" data-tab="llm-sync">
+                <div>🤖 LLM Sync</div>
+                <div class="tab-description">AI system synchronization files</div>
+            </div>
+            <div class="nav-tab" data-tab="technical-docs">
+                <div>🔧 Technical Docs</div>
+                <div class="tab-description">System documentation and guides</div>
+            </div>
+            <div class="nav-tab" data-tab="milestones">
+                <div>🏆 Milestones</div>
+                <div class="tab-description">Major achievements and completions</div>
+            </div>
+            <div class="nav-tab" data-tab="deployment">
+                <div>🚀 Deployment</div>
+                <div class="tab-description">Live deployment records and history</div>
+            </div>
+            <div class="nav-tab" data-tab="dev-tools">
+                <div>🛠️ Dev Tools</div>
+                <div class="tab-description">Scripts and development utilities</div>
+            </div>
+            <div class="nav-tab" data-tab="archive">
+                <div>📦 Archive</div>
+                <div class="tab-description">Historical files and completed work</div>
+            </div>
         </div>
         
         <!-- Active Status Section -->
@@ -801,10 +833,18 @@
             const localIndicator = !isProduction ? '<p>🏠 <strong>Local Testing Mode</strong> - Authentication bypassed</p>' : '';
             const productionBypassIndicator = isProduction && userRoles.length > 0 ? '<p>🔓 <strong>Production Bypass Mode</strong> - Role-based access granted</p>' : '';
             
+            // Filter roles to only show Holder and VIP Holder
+            const filteredRoles = userRoles.filter(role => 
+                role === 'Holder' || 
+                role === 'VIP Holder' || 
+                role === '🏆 Holder' || 
+                role === '🎴 VIP Holder'
+            );
+            
             document.getElementById('userInfo').innerHTML = `
                 <div class="user-info">
                     <h3>👤 Welcome, ${currentUser.discord_name}!</h3>
-                    <p>🎭 Roles: ${userRoles.join(', ')}</p>
+                    <p>🎭 Roles: ${filteredRoles.length > 0 ? filteredRoles.join(', ') : 'No Holder/VIP roles'}</p>
                     <p>🔐 Access Level: ${getAccessLevel()}</p>
                     ${localIndicator}
                     ${productionBypassIndicator}
@@ -817,7 +857,7 @@
             document.getElementById('authPanel').innerHTML = `
                 <div class="auth-message">
                     <h2>🔒 Access Denied</h2>
-                    <p>You need one of the following roles to access the 12.0 Management System:</p>
+                    <p>You need one of the following roles to access the Holder Overview System:</p>
                     <ul>
                         <li>🧀 Holder</li>
                         <li>👑 VIP Holder</li>
@@ -836,7 +876,7 @@
             console.log('🔐 Showing login prompt');
             document.getElementById('authPanel').innerHTML = `
                 <div class="auth-message">
-                    <h2>🔐 12.0 Management System Access</h2>
+                    <h2>🔐 Holder Overview System Access</h2>
                     <p>This system is restricted to Holders, VIP Holders, Moderators, and Admins.</p>
                     <p>Please authenticate with Discord to verify your role:</p>
                     <button onclick="authenticateDiscord()" class="auth-button">
