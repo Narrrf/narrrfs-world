@@ -373,13 +373,13 @@ require_once 'discord-invite.php';
   // Enhanced move function that works across the whole page with hunting mechanics
   function moveEgg(id) {
     try {
-      console.log(`🧀 moveEgg called for ${id}`);
+      // console.log(`🧀 moveEgg called for ${id}`);
       const egg = document.getElementById(id);
       if (!egg) {
-        console.warn(`🧀 Cheese egg ${id} not found in DOM`);
+        // console.warn(`🧀 Cheese egg ${id} not found in DOM`);
         return;
       }
-      console.log(`🧀 Cheese egg ${id} found, moving to new position`);
+      // console.log(`🧀 Cheese egg ${id} found, moving to new position`);
 
     // Anti-cheating: Add session-based randomization
     const sessionSeed = localStorage.getItem('cheese_session_seed') || Date.now();
@@ -1563,8 +1563,8 @@ The next wave is close — don't miss the real Genesis scroll.
                         }
                     }
                     
-                    // Debug log
-                    console.log(`🔧 Countdown updated: Redemption in ${redemptionEl ? redemptionEl.innerText : 'N/A'}`);
+                    // Debug log - disabled for cleaner console
+                    // console.log(`🔧 Countdown updated: Redemption in ${redemptionEl ? redemptionEl.innerText : 'N/A'}`);
                     
                 } catch (error) {
                     console.error('❌ Error updating countdowns:', error);
@@ -2019,42 +2019,59 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
 <section id="coming-up" class="bg-gradient-to-br from-yellow-50 to-pink-100 py-16 px-6 rounded-t-3xl shadow-inner">
   <div class="max-w-5xl mx-auto text-center">
             <h2 class="text-4xl md:text-5xl font-extrabold text-yellow-600 drop-shadow-sm mb-4">
-          🧠 Current Status & Community Events (September 2025)
+          🏆 Major Trophy Shelf Enhancements - September 24, 2025
         </h2>
         <p class="text-md md:text-lg text-gray-700 max-w-xl mx-auto mb-10">
-          Narrrfs World systems are stable and running smoothly. Community events and technical improvements continue to enhance the cheese experience.
+          🧀✨ We've just rolled out MASSIVE updates to the trophy shelf system! Check your profile to see all your earned pokals!
         </p>
 
-            <div class="bg-white border-l-4 border-pink-400 p-6 rounded-xl shadow mb-8 text-left max-w-xl mx-auto transition-transform duration-500 hover:scale-[1.01]">
-      <h3 class="text-lg font-semibold mb-2">🔥 Current Highlights – Genesis 12.0</h3>
+            <div class="bg-white border-l-4 border-yellow-500 p-6 rounded-xl shadow mb-8 text-left max-w-xl mx-auto transition-transform duration-500 hover:scale-[1.01]">
+      <h3 class="text-lg font-semibold mb-2 text-yellow-600">🏆 NEW TROPHIES ADDED</h3>
       <ul class="list-disc list-inside text-sm space-y-1 text-gray-800">
-        <li>🧀 <strong>Cheese Race System Live</strong> – Auto-race Discord bot with up to 25 players!</li>
-        <li>🏆 <strong>Mission Status Tracking</strong> – Race participation and DSPOINC rewards now sync to profile</li>
-        <li>🎮 <strong>Game Systems Active</strong> – Tetris, Snake, and quest systems running smoothly</li>
-        <li>🔧 <strong>Technical Improvements</strong> – Database optimizations and bug fixes completed</li>
-        <li>📊 <strong>Leaderboards Updated</strong> – Current season rankings and rewards tracking</li>
-        <li>🎯 <strong>Discord Integration</strong> – Seamless role management and community features</li>
+        <li>👑 <strong>Founder Trophy</strong> – For our OG community founders</li>
+        <li>🐦 <strong>Early Bird Trophy</strong> – For early supporters and believers</li>
+        <li>🧪 <strong>Season Tester Trophy</strong> – For our dedicated testing community</li>
+        <li>🏆 <strong>Monthly Tetris Legend</strong> – Dominated Tetris this month?</li>
+        <li>🐍 <strong>Monthly Snake Legend</strong> – Snake master supreme?</li>
+        <li>👾 <strong>Monthly Cheese Invaders Legend</strong> – Space invader champion?</li>
       </ul>
       <p class="mt-4 text-xs italic text-gray-500">
-        Systems stable. Cheese flowing. Community growing.
+        All 25 trophies now display correctly! JavaScript optimized, role sync improved.
+      </p>
+    </div>
+
+    <div class="bg-white border-l-4 border-purple-500 p-6 rounded-xl shadow mb-8 text-left max-w-xl mx-auto transition-transform duration-500 hover:scale-[1.01]">
+      <h3 class="text-lg font-semibold mb-2 text-purple-600">👑 VIP Holders & Holders - Exclusive Access</h3>
+      <ul class="list-disc list-inside text-sm space-y-1 text-gray-800">
+        <li>📜 <strong>12.0 Management System</strong> – Access actual development progress</li>
+        <li>🔍 <strong>Live development tracking</strong> – See real-time project status</li>
+        <li>📚 <strong>Technical documentation</strong> – Review lab notes and technical details</li>
+        <li>🎯 <strong>Exclusive testing access</strong> – Be the first to try new features</li>
+      </ul>
+      <p class="mt-4 text-xs italic text-gray-500">
+        Check your profile for the new button to access the 12.0 Management System!
       </p>
     </div>
 
     <div class="bg-white border-l-4 border-green-400 p-6 rounded-xl shadow mb-8">
-      <h2 class="text-xl font-semibold">📣 Season 3 – The Ultimate Cheese Challenge</h2>
+      <h2 class="text-xl font-semibold text-green-600">🧪 COMMUNITY TESTING - WE NEED YOU!</h2>
       <ul class="list-disc list-inside mt-2 text-sm">
-        <li>🚀 Fresh competition with reset leaderboards and new achievements</li>
-        <li>🎮 All achievement systems live across Tetris, Snake, and Space Invaders</li>
-        <li>📱 Mobile controls fixed and optimized for all devices</li>
+        <li>🏆 <strong>Test Your Trophy Shelf</strong> – Visit your profile and check all your earned pokals!</li>
+        <li>📱 <strong>Mobile Testing</strong> – Does the trophy shelf work on your phone?</li>
+        <li>🎮 <strong>Leaderboard Testing</strong> – Check how you rank in each game</li>
+        <li>👑 <strong>VIP/Holder Testing</strong> – Test your exclusive 12.0 Management System access</li>
       </ul>
+      <p class="mt-2 text-xs text-green-600 font-semibold">
+        🎯 Share screenshots of your trophy shelf in Discord! Let's see who has the most trophies!
+      </p>
     </div>
 
-    <div class="bg-white border-l-4 border-indigo-400 p-6 rounded-xl shadow mb-8">
-      <h2 class="text-xl font-semibold">🔧 Development & Maintenance</h2>
+    <div class="bg-white border-l-4 border-yellow-500 p-6 rounded-xl shadow mb-8">
+      <h2 class="text-xl font-semibold text-yellow-600">📣 September 25th – Golden Baboons Bingo Night</h2>
       <ul class="list-disc list-inside mt-2 text-sm">
-        <li>📅 Ongoing system improvements and bug fixes</li>
-        <li>🎨 UI/UX enhancements and mobile optimizations</li>
-        <li>🧠 Database performance tuning and monitoring</li>
+        <li>🎲 Join us for our monthly Bingo Night event with special prizes</li>
+        <li>🧬 Win exclusive rewards and cheese-powered lore</li>
+        <li>💥 Community fun and the return of the Golden Baboons!</li>
       </ul>
     </div>
 
@@ -2068,11 +2085,13 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
     </div>
 
     <div class="bg-white border-l-4 border-blue-400 p-6 rounded-xl shadow mb-8">
-      <h2 class="text-xl font-semibold">🎮 Games & Activities</h2>
+      <h2 class="text-xl font-semibold text-blue-600">🎮 Enhanced Games & Trophy System</h2>
       <ul class="list-disc list-inside mt-2 text-sm">
-        <li>🧩 Active quest system with new challenges</li>
-        <li>🏆 Tetris & Snake leaderboards – compete for top spots</li>
-        <li>🌟 Cheese hunting and Easter egg activities</li>
+        <li>🏆 <strong>25 Total Trophies</strong> – Community roles, special achievements, and monthly legends</li>
+        <li>🧩 <strong>Active Quest System</strong> – Complete challenges to earn DSPOINC and unlock achievements</li>
+        <li>🏆 <strong>Tetris & Snake Leaderboards</strong> – Compete for top spots and monthly legend status</li>
+        <li>👾 <strong>Space Invaders</strong> – New achievements and trophy system integration</li>
+        <li>🌟 <strong>Cheese Hunting</strong> – Easter egg activities with trophy rewards</li>
       </ul>
     </div>
 
