@@ -1582,17 +1582,91 @@ const trophies = {
   "Weedery Friends": { img: "img/trophy_weederyfriends.png", label: "Weedery 🌿" },
   "Community Member": { img: "img/trophy_community.png", label: "Community Member" },
   "Verifiziert": { img: "img/trophy_verified.png", label: "Verified" },
-  "Season Tester": { img: "img/trophy_season_tester.png", label: "🎮 Season Tester" }
+  "Founder": { img: "img/trophy_founder.png", label: "👑 Founder" },
+  "Early Bird": { img: "img/trophy_earlybird.png", label: "🐦 Early Bird" },
+  "Season Tester": { img: "img/trophy_season_tester.png", label: "🎮 Season Tester" },
+  "Monthly Tetris Legend": { img: "img/trophy_monthly_tetris_legend.png", label: "🏆 Monthly Tetris Legend" },
+  "Monthly Snake Legend": { img: "img/trophy_monthly_snake_legend.png", label: "🐍 Monthly Snake Legend" },
+  "Monthly Cheese Invaders Legend": { img: "img/trophy_monthly_cheese_invaders_legend.png", label: "👾 Monthly Cheese Invaders Legend" }
 };
 
+// 🏆 IMMEDIATE TEST - Test if this script block executes
+console.log('🔍 TROPHIES SCRIPT BLOCK - This script block is executing!');
+console.log('🔍 TROPHIES SCRIPT BLOCK - Trophies object defined:', typeof trophies !== 'undefined');
+console.log('🔍 TROPHIES SCRIPT BLOCK - Trophies count:', Object.keys(trophies).length);
+
+// 🏆 IMMEDIATE LOCAL TROPHY TEST - Test if we can render trophies directly
+// This runs immediately after trophies object is defined
+(function() {
+  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  console.log('🔍 TROPHIES DEFINED - Environment check:', isLocalDevelopment);
+  
+  if (isLocalDevelopment) {
+    console.log('🏠 TROPHIES DEFINED - Local environment detected - testing trophy shelf directly');
+    
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      console.log('🔍 TROPHIES DEFINED - DOM not ready, waiting for DOMContentLoaded');
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔍 TROPHIES DEFINED - DOM ready, running trophy test');
+        runTrophyTest();
+      });
+    } else {
+      console.log('🔍 TROPHIES DEFINED - DOM already ready, running trophy test immediately');
+      runTrophyTest();
+    }
+  }
+  
+  function runTrophyTest() {
+    const testRoles = [
+      "Alpha Caller", "Champion", "Community Member", "Crypto Corn Friends",
+      "Engage", "Kaleido Friends", "Moderator", "PokerOG", "Rabbit Friends",
+      "Rumble", "Server Booster", "Verifiziert", "Weedery Friends",
+      "🏆 VIP Holder", "🏆 Holder", "🧀 Cheese Hunter", "Founder", "Early Bird", "Season Tester",
+      "Monthly Tetris Legend", "Monthly Snake Legend", "Monthly Cheese Invaders Legend"
+    ];
+    console.log('🎯 TROPHIES DEFINED - Testing trophy shelf with roles:', testRoles);
+    
+    // Test if cheeseShelf element exists
+    const shelf = document.getElementById("cheeseShelf");
+    console.log('🔍 TROPHIES DEFINED - cheeseShelf element found:', shelf);
+    if (!shelf) {
+      console.log('❌ TROPHIES DEFINED - cheeseShelf element not found!');
+      return;
+    }
+    
+    // Test if trophies object exists
+    console.log('🔍 TROPHIES DEFINED - trophies object exists:', typeof trophies !== 'undefined');
+    if (typeof trophies === 'undefined') {
+      console.log('❌ TROPHIES DEFINED - trophies object not defined!');
+      return;
+    }
+    
+    console.log('✅ TROPHIES DEFINED - All checks passed, calling renderTrophyShelf');
+    try {
+      renderTrophyShelf(testRoles);
+      console.log('✅ TROPHIES DEFINED - renderTrophyShelf completed successfully');
+    } catch (error) {
+      console.error('❌ TROPHIES DEFINED - renderTrophyShelf failed with error:', error);
+    }
+  }
+})();
+
 function renderTrophyShelf(userRoles = []) {
+  console.log('🏆 renderTrophyShelf called with:', userRoles);
   const shelf = document.getElementById("cheeseShelf");
-  if (!shelf) return;
+  console.log('🏆 Trophy shelf element found:', shelf);
+  if (!shelf) {
+    console.log('❌ Trophy shelf element not found!');
+    return;
+  }
   shelf.innerHTML = "";
   const uniqueRoles = [...new Set(userRoles)];
   
   // Debug logging
   console.log('Rendering trophy shelf with roles:', uniqueRoles);
+  console.log('Available trophies:', Object.keys(trophies));
+  console.log('Number of roles to process:', uniqueRoles.length);
   
   uniqueRoles.forEach(role => {
     // Check for exact match first
@@ -1614,11 +1688,14 @@ function renderTrophyShelf(userRoles = []) {
           trophy = trophies['🧀 Cheese Hunter'];
         } else if (cleanRole === 'Season Tester') {
           trophy = trophies['Season Tester'];
+        } else if (cleanRole.toLowerCase().includes('season') && cleanRole.toLowerCase().includes('tester')) {
+          trophy = trophies['Season Tester'];
         }
       }
     }
     
     if (trophy) {
+      console.log('🎯 Creating trophy for role:', role, 'trophy:', trophy);
       const trophyEl = document.createElement("div");
       trophyEl.className = "flex flex-col items-center animate-pop transition-transform hover:scale-105";
       trophyEl.innerHTML = `
@@ -1626,11 +1703,12 @@ function renderTrophyShelf(userRoles = []) {
         <span class="text-sm text-yellow-100 font-semibold text-center">${trophy.label}</span>
       `;
       shelf.appendChild(trophyEl);
-      console.log('Added trophy for role:', role, '->', trophy.label);
-    } else {
-      console.log('No trophy found for role:', role);
+      console.log('✅ Added trophy for role:', role, '->', trophy.label, 'element:', trophyEl);
     }
   });
+  
+  console.log('🏆 Trophy shelf rendering complete. Total trophies added:', shelf.children.length);
+  console.log('🏆 Trophy shelf HTML:', shelf.innerHTML);
 }
 
 // Helper for safe text setting
@@ -1705,10 +1783,33 @@ document.addEventListener("DOMContentLoaded", async function () {
         hideElement('dspoincSection');
 
         // 🧀 Local bypass for 12.0 Management button - show it even when not logged in
-        const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        let isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        console.log('🔍 AUTH FAILURE SECTION - Environment check:', isLocalDevelopment);
         if (isLocalDevelopment) {
           console.log('🏠 Local environment detected - showing 12.0 Management button for testing');
           showElement('management-button-container');
+          
+          // 🏆 LOCAL TROPHY OVERRIDE - Create fake user object with all trophy roles
+          console.log('🏠 Local environment detected - creating fake user with ALL trophy roles for testing');
+          const fakeUser = {
+            discord_id: '328601656659017732',
+            discord_name: 'Test User',
+            roles: [
+              "Alpha Caller", "Champion", "Community Member", "Crypto Corn Friends",
+              "Engage", "Kaleido Friends", "Moderator", "PokerOG", "Rabbit Friends",
+              "Rumble", "Server Booster", "Verifiziert", "Weedery Friends",
+              "🏆 VIP Holder", "🏆 Holder", "🧀 Cheese Hunter", "Founder", "Early Bird", "Season Tester"
+            ]
+          };
+          console.log('🎯 Fake user created with ALL trophy roles:', fakeUser.roles);
+          
+          // Render trophy shelf with fake user roles
+          if (fakeUser.roles) {
+            console.log('✅ Rendering trophy shelf with fake user roles:', fakeUser.roles);
+            renderTrophyShelf(fakeUser.roles);
+          }
+        } else {
+          console.log('❌ Not localhost - no local override');
         }
 
         // Make sure login link is visible and clickable
@@ -1804,7 +1905,32 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     // Trophy pokal shelf — render immediately from roles
-    if (user.roles) renderTrophyShelf(user.roles);
+    // 🏠 LOCAL DEVELOPMENT: Give test user all trophy roles for testing
+    let isLocalDevelopment2 = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    console.log('🔍 Environment check - hostname:', window.location.hostname, 'isLocalDevelopment:', isLocalDevelopment2);
+    console.log('🔍 User object before override:', user);
+    console.log('🔍 User roles before override:', user.roles);
+    
+    if (isLocalDevelopment2) {
+      console.log('🏠 Local environment detected - giving test user ALL trophy roles for testing');
+      user.roles = [
+        "Alpha Caller", "Champion", "Community Member", "Crypto Corn Friends",
+        "Engage", "Kaleido Friends", "Moderator", "PokerOG", "Rabbit Friends",
+        "Rumble", "Server Booster", "Verifiziert", "Weedery Friends",
+        "🏆 VIP Holder", "🏆 Holder", "🧀 Cheese Hunter", "Founder", "Early Bird", "Season Tester",
+        "Monthly Tetris Legend", "Monthly Snake Legend", "Monthly Cheese Invaders Legend"
+      ];
+      console.log('🎯 Test user now has ALL trophy roles:', user.roles);
+      console.log('🎯 User object after override:', user);
+    }
+    
+    console.log('🔍 Final user roles before trophy shelf:', user.roles);
+    if (user.roles) {
+      console.log('✅ Rendering trophy shelf with roles:', user.roles);
+      renderTrophyShelf(user.roles);
+    } else {
+      console.log('❌ No user roles found - cannot render trophy shelf');
+    }
 
      // VIP/Golden Cheese logic check on top menu
      console.log('🔍 VIP Detection - User roles:', user.roles);
@@ -1853,11 +1979,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
      // 🧀 Show 12.0 Management Button for authorized users
      // Local bypass for testing - always show button in local environment
-     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+     let isLocalDevelopment3 = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
      
      let hasManagementAccess = false;
      
-     if (isLocalDevelopment) {
+     if (isLocalDevelopment3) {
        // Local bypass - always show button for testing
        hasManagementAccess = true;
        console.log('🏠 Local environment detected - bypassing role check for 12.0 Management button');
@@ -2118,6 +2244,44 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 <script>
 document.addEventListener("DOMContentLoaded", async function () {
+  // 🏆 IMMEDIATE LOCAL TROPHY TEST - Test if we can render trophies directly
+  let isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  console.log('🔍 PAGE LOAD - Environment check:', isLocalDevelopment);
+  
+  if (isLocalDevelopment) {
+    console.log('🏠 PAGE LOAD - Local environment detected - testing trophy shelf directly');
+    const testRoles = [
+      "Alpha Caller", "Champion", "Community Member", "Crypto Corn Friends",
+      "Engage", "Kaleido Friends", "Moderator", "PokerOG", "Rabbit Friends",
+      "Rumble", "Server Booster", "Verifiziert", "Weedery Friends",
+      "🏆 VIP Holder", "🏆 Holder", "🧀 Cheese Hunter", "Founder", "Early Bird", "Season Tester"
+    ];
+    console.log('🎯 PAGE LOAD - Testing trophy shelf with roles:', testRoles);
+    
+    // Test if cheeseShelf element exists
+    const shelf = document.getElementById("cheeseShelf");
+    console.log('🔍 PAGE LOAD - cheeseShelf element found:', shelf);
+    if (!shelf) {
+      console.log('❌ PAGE LOAD - cheeseShelf element not found!');
+      return;
+    }
+    
+    // Test if trophies object exists
+    console.log('🔍 PAGE LOAD - trophies object exists:', typeof trophies !== 'undefined');
+    if (typeof trophies === 'undefined') {
+      console.log('❌ PAGE LOAD - trophies object not defined!');
+      return;
+    }
+    
+    console.log('✅ PAGE LOAD - All checks passed, calling renderTrophyShelf');
+    try {
+      renderTrophyShelf(testRoles);
+      console.log('✅ PAGE LOAD - renderTrophyShelf completed successfully');
+    } catch (error) {
+      console.error('❌ PAGE LOAD - renderTrophyShelf failed with error:', error);
+    }
+  }
+
   // 1. Try to get Discord ID (session or local)
   const userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
   if (!userId) return; // Not logged in
@@ -3307,7 +3471,7 @@ async function loadSpaceInvadersAchievements() {
     console.log('🔍 Discord ID from localStorage:', discordId);
     
     // 🌍 Local development override - ALWAYS use Narrrf's Discord ID for local testing
-    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID with achievements
     
     // FORCE use Narrrf's ID for local development (ignore localStorage)
@@ -3531,7 +3695,7 @@ async function loadTetrisAchievements() {
     console.log('🔍 Discord ID from localStorage:', discordId);
     
     // Local development override - ALWAYS use Narrrf's Discord ID for local testing
-    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID with achievements
     
     // FORCE use Narrrf's ID for local development (ignore localStorage)
@@ -3703,7 +3867,7 @@ async function loadSnakeAchievements() {
     console.log('🔍 Discord ID from localStorage:', discordId);
     
     // Local development override - ALWAYS use Narrrf's Discord ID for local testing
-    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID with achievements
     
     // FORCE use Narrrf's ID for local development (ignore localStorage)
