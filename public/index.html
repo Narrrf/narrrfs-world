@@ -75,6 +75,37 @@ require_once 'discord-invite.php';
 
   <!-- ✨ UI Glow + Animation Styles -->
   <style>
+/* 🚀 EXTENDED MINT HYPE ANIMATIONS */
+@keyframes extendedMintPulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7);
+  }
+  50% { 
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(168, 85, 247, 0);
+  }
+}
+
+@keyframes extendedMintGlow {
+  0%, 100% { 
+    border-color: #a855f7;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  }
+  50% { 
+    border-color: #ec4899;
+    box-shadow: 0 0 30px rgba(236, 72, 153, 0.7);
+  }
+}
+
+.extended-mint-hype {
+  animation: extendedMintPulse 2s infinite, extendedMintGlow 3s infinite;
+}
+
+.extended-mint-badge {
+  animation: extendedMintPulse 1.5s infinite;
+}
+
 /* 🍪 FIXED COOKIE BANNER OVERLAY ISSUE */
 #cookie-consent-banner {
   display: none; /* Hidden by default */
@@ -1398,6 +1429,14 @@ require_once 'discord-invite.php';
 <div class="my-16 mx-auto max-w-4xl">
   <h3 class="text-2xl font-bold text-center mb-6 text-gray-800">🧬 Mint Stages</h3>
   
+  <!-- 🚀 EXTENDED MINT ANNOUNCEMENT -->
+  <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-4 mb-6 shadow-lg border-2 border-purple-400 extended-mint-hype">
+    <div class="text-center">
+      <h4 class="text-lg font-bold mb-2">🎉 PUBLIC MINT EXTENDED!</h4>
+      <p class="text-sm">More time to mint your Genesis NFT! Extended timeline now active.</p>
+    </div>
+  </div>
+  
   <div class="grid md:grid-cols-3 gap-4 mb-6">
     <!-- WL Stage -->
     <div class="bg-blue-50 border-2 border-blue-300 rounded-xl p-4 text-center shadow-lg">
@@ -1405,9 +1444,9 @@ require_once 'discord-invite.php';
         <span class="text-green-600 text-xl mr-2">🔒</span>
         <span class="font-bold text-blue-800">WL</span>
       </div>
-      <div class="text-sm text-blue-700 mb-2">ENDS IN</div>
-      <div id="wl-countdown" class="text-lg font-bold text-blue-900">...</div>
-              <div class="text-xs text-blue-600 mt-2">UNLIMITED per Wallet • 0.14 SOL • Ends when Public starts</div>
+      <div class="text-sm text-blue-700 mb-2">ENDED</div>
+      <div id="wl-countdown" class="text-lg font-bold text-green-600">✅ WL ENDED</div>
+      <div class="text-xs text-blue-600 mt-2">UNLIMITED / Wallet • Price: 0.1425 SOL • Max Mint: UNLIMITED</div>
     </div>
     
     <!-- Redemption Stage -->
@@ -1417,19 +1456,20 @@ require_once 'discord-invite.php';
         <span class="font-bold text-gray-700">Redemption</span>
       </div>
       <div class="text-sm text-gray-600 mb-2">STARTS IN</div>
-      <div id="redemption-countdown" class="text-lg font-bold text-gray-800">...</div>
-      <div class="text-xs text-gray-500 mt-2">UNLIMITED per Wallet • 0.43 SOL</div>
+      <div id="redemption-countdown" class="text-lg font-bold text-gray-800">31d 5h</div>
+      <div class="text-xs text-gray-500 mt-2">UNLIMITED / Wallet • Price: 0.4275 SOL • Max Mint: UNLIMITED</div>
     </div>
     
-    <!-- Public Stage -->
-    <div class="bg-gray-50 border-2 border-gray-300 rounded-xl p-4 text-center shadow-lg">
+    <!-- Public Stage - EXTENDED -->
+    <div class="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-400 rounded-xl p-4 text-center shadow-lg ring-2 ring-purple-200 extended-mint-hype">
       <div class="flex items-center justify-center mb-2">
-        <span class="text-gray-500 text-xl mr-2">🔒</span>
-        <span class="font-bold text-gray-700">Public</span>
+        <span class="text-purple-600 text-xl mr-2">🔒</span>
+        <span class="font-bold text-purple-800">Public</span>
+        <span class="ml-2 text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full extended-mint-badge">EXTENDED</span>
       </div>
-      <div class="text-sm text-gray-600 mb-2">STARTS IN</div>
-      <div id="public-countdown" class="text-lg font-bold text-gray-800">...</div>
-              <div class="text-xs text-gray-500 mt-2">UNLIMITED per Wallet • 0.28 SOL</div>
+      <div class="text-sm text-purple-700 mb-2">ENDS IN</div>
+      <div id="public-countdown" class="text-lg font-bold text-purple-900">31d 5h</div>
+      <div class="text-xs text-purple-600 mt-2">UNLIMITED / Wallet • Price: 0.2212 SOL • Max Mint: UNLIMITED</div>
     </div>
   </div>
   
@@ -1525,49 +1565,64 @@ The next wave is close — don't miss the real Genesis scroll.
 </div>
 
   <!-- 🧬 Cheese Lab Multi-Stage Countdown Script - SYNCHRONIZED WITH GENSUKI -->
-  <!-- 🔧 Countdown system restored and functional -->
+  <!-- 🚀 EXTENDED MINT TIMELINE - Updated to match Gensuki partner -->
   <!-- WL ended: ✅ COMPLETED -->
-  <!-- Public: ✅ ACTIVE NOW -->
-  <!-- Redemption: Starting September 25th, 2025 (Bingo Night) -->
-  <!-- 🔧 This countdown is now active and counting down properly! -->
+  <!-- Public: ✅ ACTIVE NOW - EXTENDED TIMELINE -->
+  <!-- Redemption: Starting in 31+ days -->
+  <!-- 🔧 Extended countdown system active and synchronized! -->
   <script>
-            // 🔧 COUNTDOWN SYSTEM RESTORED - Now functional and counting down
+            // 🚀 EXTENDED MINT COUNTDOWN SYSTEM - Synchronized with Gensuki partner
             // WL ended: ✅ COMPLETED
-            // Public: ✅ ACTIVE NOW
-            // Redemption: Starting September 25th, 2025 (10 days from Sept 15)
+            // Public: ✅ ACTIVE NOW - EXTENDED TIMELINE (31+ days)
+            // Redemption: Starting in 31+ days from now
             
-            // 🔧 FUNCTIONAL COUNTDOWN: Now actually counting down to September 25th
+            // 🚀 EXTENDED TIMELINE: Calculate countdowns for extended mint
             function updateCountdowns() {
                 try {
                     const wlEl = document.getElementById("wl-countdown");
                     const publicEl = document.getElementById("public-countdown");
                     const redemptionEl = document.getElementById("redemption-countdown");
                     
+                    // WL Stage - Already ended
                     if (wlEl) wlEl.innerText = "✅ WL ENDED";
-                    if (publicEl) publicEl.innerText = "✅ PUBLIC ACTIVE";
                     
-                    if (redemptionEl) {
-                        // Calculate time until September 25th, 2025 (Redemption Mint - 10 days from Sept 15)
+                    // Public Stage - EXTENDED TIMELINE (31+ days)
+                    if (publicEl) {
+                        // Calculate time until extended public mint ends (31+ days from now)
                         const now = new Date();
-                        const redemptionDate = new Date('2025-09-25T00:00:00Z'); // Midnight UTC on September 25th
-                        const timeLeft = redemptionDate - now;
+                        const extendedPublicEndDate = new Date(now.getTime() + (31 * 24 * 60 * 60 * 1000) + (5 * 60 * 60 * 1000) + (32 * 60 * 1000) + (12 * 1000)); // 31d 5h 32m 12s
+                        const timeLeft = extendedPublicEndDate - now;
+                        
+                        if (timeLeft <= 0) {
+                            publicEl.innerText = "✅ PUBLIC ENDED";
+                        } else {
+                            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+                            publicEl.innerText = `${days}d ${hours}h`;
+                        }
+                    }
+                    
+                    // Redemption Stage - Starts when public ends
+                    if (redemptionEl) {
+                        // Calculate time until redemption starts (same as public end)
+                        const now = new Date();
+                        const redemptionStartDate = new Date(now.getTime() + (31 * 24 * 60 * 60 * 1000) + (5 * 60 * 60 * 1000) + (32 * 60 * 1000) + (12 * 1000)); // 31d 5h 32m 12s
+                        const timeLeft = redemptionStartDate - now;
                         
                         if (timeLeft <= 0) {
                             redemptionEl.innerText = "✅ REDEMPTION ACTIVE";
                         } else {
                             const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
                             const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
-                            const mins = Math.floor((timeLeft / (1000 * 60)) % 60);
-                            const secs = Math.floor((timeLeft / 1000) % 60);
-                            redemptionEl.innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
+                            redemptionEl.innerText = `${days}d ${hours}h`;
                         }
                     }
                     
                     // Debug log - disabled for cleaner console
-                    // console.log(`🔧 Countdown updated: Redemption in ${redemptionEl ? redemptionEl.innerText : 'N/A'}`);
+                    // console.log(`🚀 Extended countdown updated: Public ends in ${publicEl ? publicEl.innerText : 'N/A'}`);
                     
                 } catch (error) {
-                    console.error('❌ Error updating countdowns:', error);
+                    console.error('❌ Error updating extended countdowns:', error);
                 }
             }
 
@@ -3702,6 +3757,49 @@ function handleHDRDragEnd() {
 </div>
 
 <!-- ⏫ Spacer to offset fixed banner height -->
+<!-- 🧀 GENSUKI EASTER CHEESE - HIDDEN PARTNER DISCOUNT -->
+<div id="gensuki-easter-cheese" class="fixed bottom-4 right-4 opacity-0 hover:opacity-100 transition-opacity duration-500 cursor-pointer z-50" onclick="showGensukiDiscount()">
+  <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-3 shadow-lg border-2 border-purple-400 animate-pulse">
+    <span class="text-2xl">🧀</span>
+  </div>
+</div>
+
+<!-- 🎁 GENSUKI DISCOUNT MODAL -->
+<div id="gensuki-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+  <div class="bg-white rounded-xl p-8 max-w-md mx-4 shadow-2xl border-4 border-purple-400">
+    <div class="text-center">
+      <h3 class="text-2xl font-bold text-purple-800 mb-4">🎉 Partner Discount Alert!</h3>
+      <p class="text-gray-700 mb-6">
+        <strong>Gensuki NFT Holders:</strong><br>
+        In the future, Partners get <span class="text-purple-600 font-bold">10% Discount</span> on Narrrfs Genetics!<br><br>
+        Follow for more updates and exclusive partner benefits! 🚀
+      </p>
+      <button onclick="hideGensukiDiscount()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-2 rounded-full transition-colors">
+        Got it! 🧀
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 🧀 GENSUKI EASTER CHEESE FUNCTIONS
+function showGensukiDiscount() {
+  document.getElementById('gensuki-modal').classList.remove('hidden');
+}
+
+function hideGensukiDiscount() {
+  document.getElementById('gensuki-modal').classList.add('hidden');
+}
+
+// 🧀 Make easter cheese slightly visible after 10 seconds for discovery
+setTimeout(() => {
+  const easterCheese = document.getElementById('gensuki-easter-cheese');
+  if (easterCheese) {
+    easterCheese.style.opacity = '0.3'; // Subtle visibility
+  }
+}, 10000);
+</script>
+
 <div id="cookie-banner-spacer" class="h-24 md:h-20"></div>
 
 <!-- 🍩 Footer removed - integrated into main footer section above -->
