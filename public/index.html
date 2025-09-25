@@ -1456,7 +1456,7 @@ require_once 'discord-invite.php';
         <span class="font-bold text-gray-700">Redemption</span>
       </div>
       <div class="text-sm text-gray-600 mb-2">STARTS IN</div>
-      <div id="redemption-countdown" class="text-lg font-bold text-gray-800">31d 5h</div>
+      <div id="redemption-countdown" class="text-lg font-bold text-gray-800">31d 3h 55m 0s</div>
       <div class="text-xs text-gray-500 mt-2">UNLIMITED / Wallet • Price: 0.4275 SOL • Max Mint: UNLIMITED</div>
     </div>
     
@@ -1468,7 +1468,7 @@ require_once 'discord-invite.php';
         <span class="ml-2 text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full extended-mint-badge">EXTENDED</span>
       </div>
       <div class="text-sm text-purple-700 mb-2">ENDS IN</div>
-      <div id="public-countdown" class="text-lg font-bold text-purple-900">31d 5h</div>
+      <div id="public-countdown" class="text-lg font-bold text-purple-900">31d 3h 55m 0s</div>
       <div class="text-xs text-purple-600 mt-2">UNLIMITED / Wallet • Price: 0.2212 SOL • Max Mint: UNLIMITED</div>
     </div>
   </div>
@@ -1576,7 +1576,7 @@ The next wave is close — don't miss the real Genesis scroll.
             // Public: ✅ ACTIVE NOW - EXTENDED TIMELINE (31+ days)
             // Redemption: Starting in 31+ days from now
             
-            // 🚀 EXTENDED TIMELINE: Calculate countdowns for extended mint
+            // 🚀 LIVE COUNTDOWN: Calculate countdowns to match Gensuki partner exactly
             function updateCountdowns() {
                 try {
                     const wlEl = document.getElementById("wl-countdown");
@@ -1586,43 +1586,45 @@ The next wave is close — don't miss the real Genesis scroll.
                     // WL Stage - Already ended
                     if (wlEl) wlEl.innerText = "✅ WL ENDED";
                     
-                    // Public Stage - EXTENDED TIMELINE (31+ days)
+                    // Set FIXED end date (31d 3h 55m from when this script was deployed)
+                    const fixedEndDate = new Date('2025-10-26T20:55:00'); // Fixed date: 31d 3h 55m from deployment
+                    const now = new Date();
+                    
+                    // Public Stage - Counts down to FIXED end date
                     if (publicEl) {
-                        // Calculate time until extended public mint ends (31+ days from now)
-                        const now = new Date();
-                        const extendedPublicEndDate = new Date(now.getTime() + (31 * 24 * 60 * 60 * 1000) + (5 * 60 * 60 * 1000) + (32 * 60 * 1000) + (12 * 1000)); // 31d 5h 32m 12s
-                        const timeLeft = extendedPublicEndDate - now;
+                        const timeLeft = fixedEndDate - now;
                         
                         if (timeLeft <= 0) {
                             publicEl.innerText = "✅ PUBLIC ENDED";
                         } else {
                             const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
                             const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
-                            publicEl.innerText = `${days}d ${hours}h`;
+                            const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+                            const seconds = Math.floor((timeLeft / 1000) % 60);
+                            publicEl.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
                         }
                     }
                     
-                    // Redemption Stage - Starts when public ends
+                    // Redemption Stage - Starts when public ends (same FIXED end date)
                     if (redemptionEl) {
-                        // Calculate time until redemption starts (same as public end)
-                        const now = new Date();
-                        const redemptionStartDate = new Date(now.getTime() + (31 * 24 * 60 * 60 * 1000) + (5 * 60 * 60 * 1000) + (32 * 60 * 1000) + (12 * 1000)); // 31d 5h 32m 12s
-                        const timeLeft = redemptionStartDate - now;
+                        const timeLeft = fixedEndDate - now;
                         
                         if (timeLeft <= 0) {
                             redemptionEl.innerText = "✅ REDEMPTION ACTIVE";
                         } else {
                             const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
                             const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
-                            redemptionEl.innerText = `${days}d ${hours}h`;
+                            const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+                            const seconds = Math.floor((timeLeft / 1000) % 60);
+                            redemptionEl.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
                         }
                     }
                     
-                    // Debug log - disabled for cleaner console
-                    // console.log(`🚀 Extended countdown updated: Public ends in ${publicEl ? publicEl.innerText : 'N/A'}`);
+                    // Debug log for testing
+                    console.log(`🚀 Live countdown updated: ${publicEl ? publicEl.innerText : 'N/A'}`);
                     
                 } catch (error) {
-                    console.error('❌ Error updating extended countdowns:', error);
+                    console.error('❌ Error updating live countdowns:', error);
                 }
             }
 
