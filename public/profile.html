@@ -2003,7 +2003,7 @@ document.addEventListener("DOMContentLoaded", async function () {
      
      console.log('🔍 12.0 Management Access - User roles:', user.roles);
      console.log('🔍 12.0 Management Access - Has access:', hasManagementAccess);
-     console.log('🔍 12.0 Management Access - Environment:', isLocalDevelopment ? 'Local' : 'Production');
+     console.log('🔍 12.0 Management Access - Environment:', isLocalDevelopment3 ? 'Local' : 'Production');
      
      if (hasManagementAccess) {
        console.log('✅ 12.0 Management Access granted - showing button');
@@ -4056,6 +4056,10 @@ async function checkSeasonTesterRole() {
         if (!discordId) {
             return; // User not logged in
         }
+        
+        // 🌍 Environment-aware API endpoint (works both locally and in production)
+        const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+        const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
         
         const response = await fetch(`${API_BASE_URL}/api/user/check-season-tester-role.php`, {
             method: 'POST',
