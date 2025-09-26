@@ -38,21 +38,21 @@ try {
     $season = $_GET['season'] ?? 'current';
     $game_type = $_GET['game_type'] ?? 'all';
 
-    // Get current season info
-    $stmt = $pdo->prepare("SELECT MAX(CAST(SUBSTR(season, 8) AS INTEGER)) as max_season FROM tbl_tetris_scores WHERE season LIKE 'season_%'");
+    // Get current season info - use the active season from tbl_seasons
+    $stmt = $pdo->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY season_id DESC LIMIT 1");
     $stmt->execute();
     $current_season_result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $current_season = $current_season_result['max_season'] ?? 1;
+    $current_season = $current_season_result['season_name'] ?? 'Season 3 - The Ultimate Cheese Challenge';
 
     // Determine which season to show
     if ($season === 'current') {
-        $target_season = "season_$current_season";
+        $target_season = $current_season;
     } else {
         $target_season = $season;
     }
 
     // Get all available seasons
-    $stmt = $pdo->prepare("SELECT DISTINCT season FROM tbl_tetris_scores WHERE season LIKE 'season_%' ORDER BY season");
+    $stmt = $pdo->prepare("SELECT DISTINCT season FROM tbl_tetris_scores ORDER BY season");
     $stmt->execute();
     $available_seasons = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
@@ -182,11 +182,12 @@ try {
             SELECT 
                 discord_id,
                 discord_name,
-                score,
-                timestamp,
-                is_top_performer
+                MAX(score) as score,
+                MIN(timestamp) as timestamp,
+                MAX(is_top_performer) as is_top_performer
             FROM tbl_tetris_scores 
             WHERE game = 'tetris' AND season = ? 
+            GROUP BY discord_id, discord_name
             ORDER BY score DESC 
             LIMIT 10
         ");
@@ -199,11 +200,12 @@ try {
             SELECT 
                 discord_id,
                 discord_name,
-                score,
-                timestamp,
-                is_top_performer
+                MAX(score) as score,
+                MIN(timestamp) as timestamp,
+                MAX(is_top_performer) as is_top_performer
             FROM tbl_tetris_scores 
             WHERE game = 'snake' AND season = ? 
+            GROUP BY discord_id, discord_name
             ORDER BY score DESC 
             LIMIT 10
         ");
@@ -216,11 +218,12 @@ try {
             SELECT 
                 discord_id,
                 discord_name,
-                score,
-                timestamp,
-                is_top_performer
+                MAX(score) as score,
+                MIN(timestamp) as timestamp,
+                MAX(is_top_performer) as is_top_performer
             FROM tbl_tetris_scores 
             WHERE game = 'space_invaders' AND season = ? 
+            GROUP BY discord_id, discord_name
             ORDER BY score DESC 
             LIMIT 10
         ");

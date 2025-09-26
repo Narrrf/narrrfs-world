@@ -235,32 +235,41 @@ function getRaceOverview($pdo) {
  * Get performance metrics
  */
 function getPerformanceMetrics($pdo) {
-    // Success rate (finished races / total races)
-    $stmt = $pdo->query("SELECT COUNT(*) as total FROM tbl_cheese_races");
+    $season3StartDate = '2025-09-11'; // Season 3 start date
+    
+    // Success rate (finished races / total races) - Season 3 only
+    $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM tbl_cheese_races WHERE created_at >= ?");
+    $stmt->execute([$season3StartDate]);
     $totalRaces = $stmt->fetch()['total'];
     
-    $stmt = $pdo->query("SELECT COUNT(*) as finished FROM tbl_cheese_races WHERE status = 'finished'");
+    $stmt = $pdo->prepare("SELECT COUNT(*) as finished FROM tbl_cheese_races WHERE status = 'finished' AND created_at >= ?");
+    $stmt->execute([$season3StartDate]);
     $finishedRaces = $stmt->fetch()['finished'];
     
     $successRate = $totalRaces > 0 ? round(($finishedRaces / $totalRaces) * 100, 1) : 0;
     
-    // Average participants per race
-    $stmt = $pdo->query("
+    // Average participants per race - Season 3 only
+    $stmt = $pdo->prepare("
         SELECT AVG(participant_count) as avg_participants
         FROM (
             SELECT COUNT(*) as participant_count
-            FROM tbl_race_participants
-            GROUP BY race_id
+            FROM tbl_race_participants rp
+            JOIN tbl_cheese_races cr ON rp.race_id = cr.race_id
+            WHERE cr.created_at >= ?
+            GROUP BY rp.race_id
         )
     ");
+    $stmt->execute([$season3StartDate]);
     $avgParticipants = $stmt->fetch()['avg_participants'];
     
-    // Average cheese collected per race
-    $stmt = $pdo->query("
-        SELECT AVG(cheese_count) as avg_cheese
-        FROM tbl_race_participants
-        WHERE cheese_count > 0
+    // Average cheese collected per race - Season 3 only
+    $stmt = $pdo->prepare("
+        SELECT AVG(rp.cheese_count) as avg_cheese
+        FROM tbl_race_participants rp
+        JOIN tbl_cheese_races cr ON rp.race_id = cr.race_id
+        WHERE cr.created_at >= ? AND rp.cheese_count > 0
     ");
+    $stmt->execute([$season3StartDate]);
     $avgCheese = $stmt->fetch()['avg_cheese'];
     
     return [

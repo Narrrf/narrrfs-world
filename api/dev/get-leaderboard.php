@@ -9,15 +9,16 @@ try {
     $db = new PDO('sqlite:' . $dbPath);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // 🔍 Get the most recent season from season_settings table
+    // 🔍 Get the active season from tbl_seasons table (same as admin interface)
     $seasonStmt = $db->prepare("
         SELECT season_name 
-        FROM tbl_season_settings 
-        ORDER BY id DESC 
+        FROM tbl_seasons 
+        WHERE is_active = 1 AND end_date IS NULL
+        ORDER BY start_date DESC 
         LIMIT 1
     ");
     $seasonStmt->execute();
-    $currentSeason = $seasonStmt->fetchColumn() ?: 'season_1'; // Fallback to season_1
+    $currentSeason = $seasonStmt->fetchColumn() ?: 'Season 3 - The Ultimate Cheese Challenge'; // Fallback to Season 3
     
     // Log the current season for debugging (but don't output to response)
     error_log("Current season detected: $currentSeason");
@@ -39,15 +40,18 @@ try {
     $tetrisStmt->execute();
     $tetrisLeaderboard = $tetrisStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get Snake leaderboard (from tbl_user_scores) - current season
+    // Tetris scores are already in DSPOINC (2 DSPOINC per line) - no conversion needed
+    
+    // Get Snake leaderboard (from tbl_tetris_scores) - current season
     $snakeStmt = $db->prepare("
         SELECT 
-            user_id as discord_id,
+            discord_id,
+            discord_name,
             MAX(score) as score,
             MIN(timestamp) as timestamp
-        FROM tbl_user_scores 
+        FROM tbl_tetris_scores 
         WHERE game = 'snake' AND season = ?
-        GROUP BY user_id
+        GROUP BY discord_id, discord_name
         ORDER BY score DESC, timestamp ASC
         LIMIT 10
     ");
@@ -55,15 +59,21 @@ try {
     $snakeStmt->execute();
     $snakeLeaderboard = $snakeStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get Space Invaders leaderboard (from tbl_user_scores) - current season
+    // Convert Snake scores to DSPOINC (multiply by 10)
+    foreach ($snakeLeaderboard as &$entry) {
+        $entry['score'] = $entry['score'] * 10;
+    }
+    
+    // Get Space Invaders leaderboard (from tbl_tetris_scores) - current season
     $spaceInvadersStmt = $db->prepare("
         SELECT 
-            user_id as discord_id,
+            discord_id,
+            discord_name,
             MAX(score) as score,
             MIN(timestamp) as timestamp
-        FROM tbl_user_scores 
+        FROM tbl_tetris_scores 
         WHERE game = 'space_invaders' AND season = ?
-        GROUP BY user_id
+        GROUP BY discord_id, discord_name
         ORDER BY score DESC, timestamp ASC
         LIMIT 10
     ");
@@ -71,43 +81,19 @@ try {
     $spaceInvadersStmt->execute();
     $spaceInvadersLeaderboard = $spaceInvadersStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // 🧀 Get Discord names for Snake and Space Invaders from tbl_users
-    $snakeLeaderboardWithNames = [];
-    foreach ($snakeLeaderboard as $entry) {
-        $nameStmt = $db->prepare("SELECT username FROM tbl_users WHERE discord_id = ?");
-        $nameStmt->bindValue(1, $entry['discord_id']);
-        $nameStmt->execute();
-        $user = $nameStmt->fetch(PDO::FETCH_ASSOC);
-        
-        $snakeLeaderboardWithNames[] = [
-            'discord_id' => $entry['discord_id'],
-            'discord_name' => $user ? $user['username'] : 'Unknown Player',
-            'score' => $entry['score'],
-            'timestamp' => $entry['timestamp']
-        ];
+    // Convert Space Invaders scores to DSPOINC (divide by 100)
+    foreach ($spaceInvadersLeaderboard as &$entry) {
+        $entry['score'] = round($entry['score'] / 100);
     }
     
-    $spaceInvadersLeaderboardWithNames = [];
-    foreach ($spaceInvadersLeaderboard as $entry) {
-        $nameStmt = $db->prepare("SELECT username FROM tbl_users WHERE discord_id = ?");
-        $nameStmt->bindValue(1, $entry['discord_id']);
-        $nameStmt->execute();
-        $user = $nameStmt->fetch(PDO::FETCH_ASSOC);
-        
-        $spaceInvadersLeaderboardWithNames[] = [
-            'discord_id' => $entry['discord_id'],
-            'discord_name' => $user ? $user['username'] : 'Unknown Player',
-            'score' => $entry['score'],
-            'timestamp' => $entry['timestamp']
-        ];
-    }
+    // Snake and Space Invaders now come with discord_name from tbl_tetris_scores
     
     echo json_encode([
         'success' => true,
         'current_season' => $currentSeason,
         'tetris' => $tetrisLeaderboard,
-        'snake' => $snakeLeaderboardWithNames,
-        'space_invaders' => $spaceInvadersLeaderboardWithNames
+        'snake' => $snakeLeaderboard,
+        'space_invaders' => $spaceInvadersLeaderboard
     ]);
     
 } catch (Exception $e) {

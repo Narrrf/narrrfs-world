@@ -2751,8 +2751,10 @@
             <div>
               <label class="block text-sm font-medium mb-2">📅 Select Season:</label>
               <select id="seasonSelector" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
-                <option value="season_3" selected>Season 3 - The Ultimate Cheese Challenge (2025)</option>
-                <option value="season_2">Season 2 - The Great Reset (2025)</option>
+                <option value="current" selected>Current Season</option>
+                <option value="season_3">Season 3 - The Ultimate Cheese Challenge</option>
+                <option value="season_4">Season 4 - The Ultimate Cheese Challenge</option>
+                <option value="season_2">Season 2 - The Great Reset</option>
                 <option value="season_1">Season 1 - Historical</option>
                 <option value="all">All Seasons Combined</option>
               </select>
@@ -3599,8 +3601,10 @@
             <div>
               <label class="block text-sm font-medium mb-2">🎯 Switch to Season:</label>
               <select id="seasonSwitchSelector" class="w-full px-3 py-2 rounded text-gray-800 mb-3">
-                <option value="season_3" selected>Season 3 - The Ultimate Cheese Challenge (2025)</option>
-                <option value="season_2">Season 2 - The Great Reset (2025)</option>
+                <option value="current" selected>Current Season</option>
+                <option value="season_3">Season 3 - The Ultimate Cheese Challenge</option>
+                <option value="season_4">Season 4 - The Ultimate Cheese Challenge</option>
+                <option value="season_2">Season 2 - The Great Reset</option>
                 <option value="season_1">Season 1 - Historical</option>
               </select>
               <button onclick="switchActiveSeason()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
@@ -3610,8 +3614,10 @@
             <div>
               <label class="block text-sm font-medium mb-2">📊 View Season Data:</label>
               <select id="viewSeasonSelector" class="w-full px-3 py-2 rounded text-gray-800 mb-3" onchange="loadSeasonData()">
-                <option value="season_3" selected>Season 3 - Current Active</option>
-                <option value="season_2">Season 2 - Historical</option>
+                <option value="current" selected>Current Season</option>
+                <option value="season_3">Season 3 - The Ultimate Cheese Challenge</option>
+                <option value="season_4">Season 4 - The Ultimate Cheese Challenge</option>
+                <option value="season_2">Season 2 - The Great Reset</option>
                 <option value="season_1">Season 1 - Historical</option>
                 <option value="all">All Seasons Combined</option>
               </select>
@@ -14597,8 +14603,14 @@ function updateGameTabContent(gameType, gameData) {
     }
 
     // Display Discord Race data
+    // Global variable to store current race data for modal access
+    let currentRaceData = null;
+
     function displayDiscordRaceData(raceData) {
       try {
+        // Store race data globally for modal access
+        currentRaceData = raceData;
+        
         console.log('🔍 DEBUG: displayDiscordRaceData called with:', raceData);
         console.log('🔍 DEBUG: raceData.race_overview:', raceData.race_overview);
         console.log('🔍 DEBUG: raceData.top_racers:', raceData.top_racers);
@@ -14656,7 +14668,7 @@ function updateGameTabContent(gameType, gameData) {
         
         if (document.getElementById('raceCompletedRaces')) {
           const element = document.getElementById('raceCompletedRaces');
-          const value = raceDataStats.stats?.finished || 0;
+          const value = raceDataStats.stats?.finished_races || 0;
           element.textContent = value;
           console.log('✅ Set raceCompletedRaces to:', value);
         } else {
@@ -14665,7 +14677,7 @@ function updateGameTabContent(gameType, gameData) {
         
         if (document.getElementById('raceActiveRaces')) {
           const element = document.getElementById('raceActiveRaces');
-          const value = raceDataStats.stats?.active || 0;
+          const value = raceDataStats.stats?.active_races || 0;
           element.textContent = value;
           console.log('✅ Set raceActiveRaces to:', value);
         } else {
@@ -14675,7 +14687,7 @@ function updateGameTabContent(gameType, gameData) {
         // Calculate success rate from available data
         if (document.getElementById('raceSuccessRate')) {
           const totalRaces = raceDataStats.total_races || 0;
-          const completedRaces = raceDataStats.stats?.finished || 0;
+          const completedRaces = raceDataStats.stats?.finished_races || 0;
           const successRate = totalRaces > 0 ? Math.round((completedRaces / totalRaces) * 100) : 0;
           document.getElementById('raceSuccessRate').textContent = successRate + '%';
           console.log('✅ Set raceSuccessRate to:', successRate + '%');
@@ -14719,31 +14731,43 @@ function updateGameTabContent(gameType, gameData) {
 
         // Update top racers leaderboard
         const raceLeaderboard = document.getElementById('raceLeaderboard');
-        if (raceLeaderboard && raceData.race_data?.top_racers) {
-          if (raceData.race_data.top_racers.length > 0) {
+        console.log('🔍 DEBUG: raceLeaderboard element:', raceLeaderboard);
+        console.log('🔍 DEBUG: raceData.top_racers:', raceData.top_racers);
+        
+        if (raceLeaderboard && raceData.top_racers) {
+          console.log('🔍 DEBUG: Processing top racers, count:', raceData.top_racers.length);
+          
+          if (raceData.top_racers.length > 0) {
+            // Debug: Log first racer data
+            console.log('🔍 DEBUG: First racer data:', raceData.top_racers[0]);
+            
             raceLeaderboard.innerHTML = `
               <div class="text-center mb-4">
-                <div class="text-3xl font-bold text-yellow-400">${raceData.race_data.top_racers.length}</div>
+                <div class="text-3xl font-bold text-yellow-400">${raceData.top_racers.length}</div>
                 <div class="text-sm text-gray-300">Top Racers</div>
               </div>
               <div class="space-y-3">
-                ${raceData.race_data.top_racers.map((racer, index) => `
-                  <div class="flex items-center justify-between p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
-                    <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 bg-yellow-400 text-black rounded-full flex items-center justify-center font-bold text-sm">
-                        ${index + 1}
+                ${raceData.top_racers.map((racer, index) => {
+                  console.log(`🔍 DEBUG: Processing racer ${index + 1}:`, racer);
+                  return `
+                    <div class="flex items-center justify-between p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-yellow-400 text-black rounded-full flex items-center justify-center font-bold text-sm">
+                          ${index + 1}
+                        </div>
+                        <div>
+                          <div class="font-semibold text-white">${racer.username}</div>
+                          <div class="text-xs text-gray-300">ID: ${racer.user_id}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div class="font-semibold text-white">${racer.username}</div>
-                        <div class="text-xs text-gray-300">ID: ${racer.user_id}</div>
+                      <div class="text-right">
+                        <div class="text-green-400 font-semibold">${racer.best_cheese || 0} cheese</div>
+                        <div class="text-xs text-gray-300">${racer.races_participated} races, ${racer.wins} wins</div>
+                        <div class="text-xs text-yellow-400">${racer.total_dspoinc || 0} DSPOINC</div>
                       </div>
                     </div>
-                    <div class="text-right">
-                      <div class="text-green-400 font-semibold">${racer.total_cheese} cheese</div>
-                      <div class="text-xs text-gray-300">${racer.total_races} races, ${racer.first_place_finishes} wins</div>
-                    </div>
-                  </div>
-                `).join('')}
+                  `;
+                }).join('')}
               </div>
             `;
           } else {
@@ -14835,30 +14859,51 @@ function updateGameTabContent(gameType, gameData) {
                   </div>
                 </div>
               </div>
-              ${raceData.recent_activity.map((activity, index) => {
-                console.log('Processing activity:', activity);
-                return `
-                  <div class="history-item bg-gray-600 p-3 rounded-lg mb-3 border border-gray-500 hover:bg-gray-500 transition-colors duration-200" style="animation-delay: ${index * 0.1}s">
-                    <div class="flex justify-between items-start mb-2">
-                      <div class="flex items-center space-x-2">
-                        <span class="text-lg">${activity.event_type === 'race_started' ? '🏁' : '👤'}</span>
-                        <span class="text-white font-semibold">${activity.username || 'Unknown'}</span>
-                        <span class="px-2 py-1 text-xs rounded-full ${
-                          activity.event_type === 'race_started' ? 'bg-blue-600 text-blue-100' : 
-                          'bg-green-600 text-green-100'
-                        }">${activity.event_type === 'race_started' ? 'Race Started' : 'Player Joined'}</span>
-                      </div>
-                      <div class="text-right">
-                        <div class="text-sm text-gray-300">${activity.created_at ? new Date(activity.created_at).toLocaleString() : 'No date'}</div>
-                        <div class="text-xs text-gray-400">Race: ${activity.race_id ? activity.race_id.substring(0, 8) + '...' : 'N/A'}</div>
+              ${(() => {
+                // Limit to 10 most recent activities for better UX
+                const recentActivities = raceData.recent_activity.slice(0, 10);
+                const totalActivities = raceData.recent_activity.length;
+                
+                return recentActivities.map((activity, index) => {
+                  console.log('Processing activity:', activity);
+                  const isRaceStarted = activity.event_type === 'race_started';
+                  const timeAgo = activity.created_at ? 
+                    new Date(activity.created_at).toLocaleString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) : 'Unknown';
+                  
+                  return `
+                    <div class="activity-item bg-gray-700 bg-opacity-60 p-2 rounded border-l-2 ${
+                      isRaceStarted ? 'border-blue-400' : 'border-green-400'
+                    } hover:bg-gray-600 transition-colors duration-200">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                          <span class="text-sm">${isRaceStarted ? '🏁' : '👤'}</span>
+                          <span class="text-white text-sm font-medium">${activity.username || 'Unknown'}</span>
+                          <span class="px-1.5 py-0.5 text-xs rounded ${
+                            isRaceStarted ? 'bg-blue-500 text-blue-100' : 'bg-green-500 text-green-100'
+                          }">
+                            ${isRaceStarted ? 'Started' : 'Joined'}
+                          </span>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                          ${timeAgo}
+                        </div>
                       </div>
                     </div>
-                    <div class="text-sm text-gray-300">
-                      <span class="text-blue-400">📅</span> ${activity.description || 'No description'}
-                    </div>
+                  `;
+                }).join('') + 
+                (totalActivities > 10 ? `
+                  <div class="text-center mt-3">
+                    <button onclick="showAllRaceActivities()" class="text-blue-400 hover:text-blue-300 text-sm underline">
+                      Show ${totalActivities - 10} more activities...
+                    </button>
                   </div>
-                `;
-              }).join('')}
+                ` : '');
+              })()}
             `;
           } else {
             recentRacesElement.innerHTML = `
@@ -14877,73 +14922,7 @@ function updateGameTabContent(gameType, gameData) {
           console.log('Recent activity element not found:', recentRacesElement);
         }
 
-        // Update leaderboard with enhanced styling
-        const leaderboard = document.getElementById('raceLeaderboard');
-        if (leaderboard) {
-          console.log('Leaderboard data:', raceData.top_racers);
-          if (!raceData || !raceData.top_racers || raceData.top_racers.length === 0) {
-            leaderboard.innerHTML = `
-              <div class="text-gray-400 text-center py-8">
-                <div class="text-4xl mb-2">🏆</div>
-                <p class="text-lg font-semibold mb-2">Leaderboard Coming Soon</p>
-                <p class="text-sm">Race data will appear here as players compete</p>
-                <div class="mt-4 p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
-                  <p class="text-sm text-gray-300">Recent races: ${raceData.total_races || 0}</p>
-                  <div class="text-xs text-gray-400">Total participants: ${raceData.total_participants || 0}</div>
-                </div>
-              </div>
-            `;
-          } else {
-            // Enhanced leaderboard with the new CSS classes
-            const topRacers = raceData.top_racers.slice(0, 10);
-            console.log('Processing top racers:', topRacers);
-            leaderboard.innerHTML = `
-              <div class="data-summary bg-gray-600 bg-opacity-50 p-3 rounded-lg mb-4 border border-gray-500">
-                <div class="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div class="text-2xl font-bold text-blue-400">${topRacers.length}</div>
-                    <div class="text-xs text-gray-300">Top Racers</div>
-                  </div>
-                  <div>
-                    <div class="text-2xl font-bold text-green-400">${raceData.total_races || 0}</div>
-                    <div class="text-xs text-gray-300">Total Races</div>
-                  </div>
-                  <div>
-                    <div class="text-2xl font-bold text-yellow-400">${raceData.total_participants || 0}</div>
-                    <div class="text-xs text-gray-300">Participants</div>
-                  </div>
-                </div>
-              </div>
-              ${topRacers.map((racer, index) => {
-                console.log('Processing racer:', racer);
-                return `
-                  <div class="leaderboard-item bg-gray-600 p-3 rounded-lg mb-2 border border-gray-500 hover:bg-gray-500 transition-all duration-200 transform hover:scale-105" style="animation-delay: ${index * 0.1}s">
-                    <div class="flex justify-between items-center">
-                      <div class="flex items-center space-x-3">
-                        <div class="leaderboard-rank w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                          index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'bg-gray-500 text-gray-200'
-                        }">
-                          ${index + 1}
-                        </div>
-                        <div class="leaderboard-info">
-                          <div class="leaderboard-name text-white font-semibold">${racer.username || 'Unknown Player'}</div>
-                          <div class="text-xs text-gray-400">${racer.user_id || 'No User ID'}</div>
-                        </div>
-                      </div>
-                      <div class="text-right">
-                        <div class="leaderboard-score text-lg font-bold text-green-400">${racer.total_cheese || 0} cheese</div>
-                        <div class="text-xs text-gray-400">${racer.total_races || 0} races</div>
-                        <div class="text-xs text-yellow-400">🏆 ${racer.first_place_finishes || 0} wins</div>
-                      </div>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            `;
-          }
-        } else {
-          console.log('Leaderboard element not found:', leaderboard);
-        }
+        // REMOVED: Duplicate leaderboard update section that was overwriting the correct one above
         
         // Summary of what was processed
         console.log('🏁 Discord Race Data Display Summary:');
@@ -14977,6 +14956,63 @@ function updateGameTabContent(gameType, gameData) {
       addLog('🔄 Refreshing race activity...');
       await loadDiscordRaceData();
       addLog('✅ Race activity refreshed');
+    }
+
+    // Show all race activities in a modal
+    function showAllRaceActivities() {
+      if (!currentRaceData || !currentRaceData.recent_activity) {
+        addLog('❌ No race activity data available');
+        return;
+      }
+      
+      const activities = currentRaceData.recent_activity;
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-gray-800 rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-white">📈 All Race Activities (${activities.length})</h3>
+            <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+          </div>
+          <div class="flex-1 overflow-y-auto space-y-2">
+            ${activities.map((activity, index) => {
+              const isRaceStarted = activity.event_type === 'race_started';
+              const timeAgo = activity.created_at ? 
+                new Date(activity.created_at).toLocaleString() : 'Unknown';
+              
+              return `
+                <div class="bg-gray-700 p-3 rounded border-l-2 ${
+                  isRaceStarted ? 'border-blue-400' : 'border-green-400'
+                }">
+                  <div class="flex justify-between items-start">
+                    <div class="flex items-center space-x-2">
+                      <span class="text-lg">${isRaceStarted ? '🏁' : '👤'}</span>
+                      <span class="text-white font-semibold">${activity.username || 'Unknown'}</span>
+                      <span class="px-2 py-1 text-xs rounded-full ${
+                        isRaceStarted ? 'bg-blue-600 text-blue-100' : 'bg-green-600 text-green-100'
+                      }">
+                        ${isRaceStarted ? 'Race Started' : 'Player Joined'}
+                      </span>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-sm text-gray-300">${timeAgo}</div>
+                      <div class="text-xs text-gray-400">Race: ${activity.race_id ? activity.race_id.substring(0, 8) + '...' : 'N/A'}</div>
+                    </div>
+                  </div>
+                  ${activity.description ? `
+                    <div class="text-sm text-gray-300 mt-2">
+                      <span class="text-blue-400">📅</span> ${activity.description}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      addLog(`📈 Showing all ${activities.length} race activities`);
     }
     
     async function refreshCheeseHuntDisplay() {
@@ -15611,7 +15647,14 @@ function updateGameTabContent(gameType, gameData) {
     }
 
     function displaySeasonStats(data) {
+      console.log('🔍 DEBUG: displaySeasonStats called with:', data);
+      console.log('🔍 DEBUG: data.season_stats:', data.season_stats);
+      
       const container = document.getElementById('seasonStats');
+      if (!container) {
+        console.error('❌ seasonStats container not found!');
+        return;
+      }
       
       let html = `
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -15777,6 +15820,9 @@ function updateGameTabContent(gameType, gameData) {
       }
 
       container.innerHTML = html;
+      
+      console.log('✅ Season statistics HTML generated and displayed');
+      addLog('✅ Season statistics displayed successfully');
     }
 
     function updateSeasonSelector(availableSeasons) {
@@ -23496,12 +23542,21 @@ function testDatabaseConnection() {
     async function loadSeasonOverview() {
       addLog('📊 Loading season overview...');
       try {
-        const response = await fetch(API_BASE_URL + '/api/admin/get-current-season-settings.php');
+        // Use the correct API that has game statistics
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
         const data = await response.json();
         
         if (data.success) {
-          updateSeasonDisplay(data.data);
-          addLog('✅ Season overview loaded successfully');
+          // Extract overview data and season info
+          const overviewData = {
+            season_display_name: data.data.overview.current_season,
+            total_games: data.data.overview.total_games,
+            active_players: data.data.overview.total_active_players,
+            total_games_played: data.data.overview.total_games_played
+          };
+          
+          updateSeasonDisplay(overviewData);
+          addLog('✅ Season overview loaded successfully with game statistics');
         } else {
           addLog(`❌ Failed to load season overview: ${data.message}`);
         }
