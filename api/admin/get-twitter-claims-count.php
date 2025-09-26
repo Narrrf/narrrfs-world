@@ -30,11 +30,12 @@ function getSQLite3Connection() {
 try {
     $db = getSQLite3Connection();
     
-    // Get count of pending Twitter mission verifications
+    // Get count of pending Twitter mission verifications (only active missions)
     $query = "
         SELECT COUNT(*) as pending_count
-        FROM tbl_twitter_mission_participants 
-        WHERE verification_status = 'pending'
+        FROM tbl_twitter_mission_participants p
+        JOIN tbl_twitter_missions m ON p.mission_id = m.mission_id
+        WHERE p.verification_status = 'pending' AND m.status = 'active'
     ";
     
     $stmt = $db->prepare($query);

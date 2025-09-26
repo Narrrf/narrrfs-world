@@ -820,6 +820,157 @@ When approaching token limits:
 
 ---
 
+## 🔗 **DISCORD INVITE UPDATE RULE - COMPREHENSIVE SYSTEM**
+
+### **🚨 CRITICAL RULE FOR DISCORD INVITE UPDATES:**
+
+**When user requests Discord invite update, follow this EXACT process:**
+
+### **📋 MANDATORY UPDATE CHECKLIST:**
+
+#### **1. SEARCH FOR ALL DISCORD INVITE REFERENCES:**
+```bash
+# Search for old invite code across entire project
+grep -r "CvstbUQ5yX" . --include="*.html" --include="*.js" --include="*.php" --include="*.md"
+```
+
+#### **2. UPDATE ALL FALLBACK FILES:**
+- **`public/discord-invite.php`** - Main fallback file
+- **`public/discord-config.js`** - JavaScript configuration
+- **`api/config/discord.php`** - API configuration
+- **`api/admin/get-discord-config.php`** - Admin API
+- **`api/config/get-discord-config.php`** - Config endpoint
+
+#### **3. UPDATE ALL PUBLIC PAGES:**
+- **`public/index.html`** - Main landing page
+- **`public/profile.html`** - User profile page
+- **`public/project-updates.html`** - Project updates
+- **`public/space-cheese-invaders.html`** - Space Invaders game
+- **`public/privacy-policy.html`** - Privacy policy
+- **`public/hytopia.html`** - Hytopia page
+- **`public/Bingo.html`** - Bingo game
+- **`public/whitepaper-pro.html`** - Whitepaper
+- **`public/experiment-x.html`** - Experiment X
+- **`public/404.html`** - Error page
+- **`public/mint.html`** - Mint page
+- **`public/faq.html`** - FAQ page
+- **`public/js/role-gate.js`** - Role gate script
+- **`public/README.md`** - Documentation
+
+#### **4. UPDATE PATTERN:**
+```javascript
+// OLD INVITE
+https://discord.gg/CvstbUQ5yX
+
+// NEW INVITE (replace with actual new invite)
+https://discord.gg/[NEW_INVITE_CODE]
+```
+
+#### **5. VERIFICATION COMMANDS:**
+```bash
+# Verify no old invite remains
+grep -r "CvstbUQ5yX" . --include="*.html" --include="*.js" --include="*.php" --include="*.md"
+
+# Should return NO results
+```
+
+#### **6. DEPLOYMENT PROCESS:**
+```bash
+git add .
+git commit -m "URGENT: Update Discord invite to [NEW_INVITE_CODE] for [EVENT_NAME]"
+git push
+```
+
+### **🚨 CRITICAL FALLBACK SYSTEMS TO UPDATE:**
+
+#### **PHP Fallback Files:**
+- **`public/discord-invite.php`** - Line 6: `$discord_invite_code = getenv('DISCORD_INVITE_CODE') ?: '[NEW_INVITE_CODE]';`
+- **`api/config/discord.php`** - Line 9: `define('DISCORD_INVITE_CODE', getenv('DISCORD_INVITE_CODE') ?: '[NEW_INVITE_CODE]');`
+- **`api/config/discord.php`** - Line 13: `$inviteCode = getenv('DISCORD_INVITE_CODE') ?: '[NEW_INVITE_CODE]';`
+- **`api/admin/get-discord-config.php`** - Lines 32, 63: `$inviteCode = getenv('DISCORD_INVITE_CODE') ?: '[NEW_INVITE_CODE]';`
+- **`api/config/get-discord-config.php`** - Line 13: `$inviteCode = getenv('DISCORD_INVITE_CODE') ?: '[NEW_INVITE_CODE]';`
+
+#### **JavaScript Fallback Files:**
+- **`public/discord-config.js`** - Line 9: `inviteCode: '[NEW_INVITE_CODE]', // Fallback Discord invite code`
+- **`public/discord-config.js`** - Line 49: `console.warn('⚠️ Failed to load Discord config from server, using fallback: [NEW_INVITE_CODE]');`
+- **`public/discord-config.js`** - Line 185: `if (!DISCORD_CONFIG.inviteCode || DISCORD_CONFIG.inviteCode === 'CvstbUQ5yX') {`
+
+### **🎯 SUCCESS CRITERIA:**
+
+#### **✅ COMPLETE UPDATE VERIFICATION:**
+- [ ] **All HTML files** updated with new invite
+- [ ] **All PHP fallback files** updated
+- [ ] **All JavaScript config files** updated
+- [ ] **No old invite code** remains in project
+- [ ] **Git commit** created with descriptive message
+- [ ] **Live deployment** completed
+- [ ] **Verification** - Old invite returns 404
+
+#### **🚨 COMMON MISTAKES TO AVOID:**
+- ❌ **Missing API fallback files** - Causes local pages to show old invite
+- ❌ **Incomplete JavaScript config** - Causes dynamic updates to fail
+- ❌ **Forgotten role-gate.js** - Causes role verification to use old invite
+- ❌ **Missing README.md** - Causes documentation to be outdated
+
+### **📝 UPDATE TEMPLATE:**
+
+#### **When User Requests Discord Invite Update:**
+```
+🚨 URGENT DISCORD INVITE UPDATE REQUESTED! 🚨
+
+📋 Process Starting:
+1. Searching for all Discord invite references
+2. Updating all fallback files
+3. Updating all public pages
+4. Verifying complete update
+5. Deploying to live
+
+🎯 New Invite: [NEW_INVITE_CODE]
+📅 Event: [EVENT_NAME]
+⏰ Deadline: [DEADLINE]
+```
+
+#### **Completion Confirmation:**
+```
+✅ DISCORD INVITE UPDATE COMPLETE!
+
+📊 Files Updated: [COUNT] files
+🔧 Fallback Systems: [COUNT] systems
+🚀 Deployment: [COMMIT_HASH]
+🎯 Verification: No old invite remains
+📝 Status: Ready for [EVENT_NAME]
+```
+
+### **🔄 AUTOMATION SCRIPT:**
+
+#### **PowerShell Script for Future Updates:**
+```powershell
+# DISCORD_INVITE_UPDATE_SCRIPT.ps1
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$NewInviteCode,
+    
+    [Parameter(Mandatory=$true)]
+    [string]$EventName
+)
+
+Write-Host "🚨 URGENT DISCORD INVITE UPDATE: $NewInviteCode for $EventName" -ForegroundColor Red
+
+# Update all files with new invite
+Get-ChildItem -Path "public" -Include "*.html","*.js" -Recurse | ForEach-Object {
+    (Get-Content $_.FullName) -replace "CvstbUQ5yX", $NewInviteCode | Set-Content $_.FullName
+}
+
+Get-ChildItem -Path "api" -Include "*.php" -Recurse | ForEach-Object {
+    (Get-Content $_.FullName) -replace "CvstbUQ5yX", $NewInviteCode | Set-Content $_.FullName
+}
+
+Write-Host "✅ All files updated with new invite: $NewInviteCode" -ForegroundColor Green
+Write-Host "🚀 Ready for deployment to $EventName" -ForegroundColor Yellow
+```
+
+---
+
 ## 🎯 **PERFECT 5-GAME SCORE RETRIEVAL SYSTEM V2.0**
 
 ### **CRITICAL RULE FOR ALL GAME SCORING:**

@@ -19196,6 +19196,26 @@ function updateGameTabContent(gameType, gameData) {
       </div>
     </div>
 
+    <!-- User Twitter Missions Modal -->
+    <div id="userTwitterMissionsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+      <div class="bg-gray-800 rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-semibold text-white" id="userTwitterMissionsTitle">User Twitter Missions</h3>
+          <button onclick="hideUserTwitterMissions()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+        
+        <!-- User Summary -->
+        <div id="userTwitterMissionsSummary" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <!-- Summary cards will be populated here -->
+        </div>
+        
+        <!-- Missions List -->
+        <div id="userTwitterMissionsList" class="space-y-3">
+          <!-- Mission items will be populated here -->
+        </div>
+      </div>
+    </div>
+
     <!-- Database Overview Tab -->
     <div class="admin-card mb-6" id="databaseOverviewTab" style="display: none; opacity: 1; transform: translateY(0);">
       <h2 class="text-xl font-semibold mb-4">🗄️ Database Overview & Sync Status</h2>
@@ -19937,20 +19957,28 @@ function updateGameTabContent(gameType, gameData) {
           
           // Update leaderboard
           const leaderboard = data.leaderboard || [];
+          console.log(`🐦 Leaderboard data:`, leaderboard);
+          console.log(`🐦 First user data:`, leaderboard[0]);
           const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
           
           const leaderboardHtml = leaderboard.map((user, index) => {
+            console.log(`🐦 Processing user ${index}:`, user);
             const medal = medals[index] || `${index + 1}.`;
             const firstMission = user.first_mission ? new Date(user.first_mission).toLocaleDateString() : 'N/A';
             const lastMission = user.last_mission ? new Date(user.last_mission).toLocaleDateString() : 'N/A';
             
-            return `
+            // Debug the generated HTML
+            const userHtml = `
               <div class="user-card">
                 <div class="flex justify-between items-center">
                   <div class="flex items-center space-x-3">
                     <span class="text-2xl">${medal}</span>
                     <div>
-                      <h4 class="font-semibold text-white">${user.username}</h4>
+                      <h4 class="font-semibold text-white mb-2">${user.username}</h4>
+                      <button onclick="showUserTwitterMissions('${user.user_id}', '${user.username}')" 
+                              class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                        🐦 View Twitter Missions
+                      </button>
                       <p class="text-sm text-gray-300">${user.completed_missions} mission${user.completed_missions !== 1 ? 's' : ''} completed</p>
                       <p class="text-sm text-gray-300">${user.total_rewards.toLocaleString()} DSPOINC earned</p>
                     </div>
@@ -19962,6 +19990,16 @@ function updateGameTabContent(gameType, gameData) {
                 </div>
               </div>
             `;
+            
+            // Debug the generated HTML for first user
+            if (index === 0) {
+              console.log(`🐦 Generated HTML for first user:`, userHtml);
+              console.log(`🐦 Username in HTML:`, user.username);
+              console.log(`🐦 User ID in HTML:`, user.user_id);
+              console.log(`🐦 Button onclick: showUserTwitterMissions('${user.user_id}', '${user.username}')`);
+            }
+            
+            return userHtml;
           }).join('');
           
           const periodInfo = data.period_info;
@@ -19969,6 +20007,18 @@ function updateGameTabContent(gameType, gameData) {
           
           document.getElementById('twitterLeaderboardList').innerHTML = leaderboardHtml || 
             `<div class="text-gray-400 text-center py-8">No completed missions${periodDisplay} yet!</div>`;
+          
+          // Debug: Check if buttons are properly created
+          setTimeout(() => {
+            const firstButton = document.querySelector('#twitterLeaderboardList button');
+            if (firstButton) {
+              console.log(`🐦 First button found:`, firstButton);
+              console.log(`🐦 Button onclick attribute:`, firstButton.getAttribute('onclick'));
+              console.log(`🐦 Button classes:`, firstButton.className);
+            } else {
+              console.log(`🐦 No buttons found in leaderboard`);
+            }
+          }, 100);
           
           console.log(`🏆 Twitter leaderboard loaded: ${leaderboard.length} users`);
           
@@ -19983,6 +20033,149 @@ function updateGameTabContent(gameType, gameData) {
         document.getElementById('twitterLeaderboardList').innerHTML = 
           '<div class="text-red-400 text-center py-8">Error loading leaderboard</div>';
       }
+    }
+
+    // 🐦 User Twitter Missions Modal Functions
+    async function showUserTwitterMissions(userId, username) {
+      try {
+        console.log(`🐦 Loading Twitter missions for user: ${username} (${userId})`);
+        console.log(`🐦 Function called with userId: ${userId}, username: ${username}`);
+        
+        // Show modal
+        const modal = document.getElementById('userTwitterMissionsModal');
+        console.log(`🐦 Modal element found:`, modal);
+        if (!modal) {
+          console.error('❌ Modal element not found!');
+          return;
+        }
+        modal.classList.remove('hidden');
+        console.log(`🐦 Modal shown successfully`);
+        
+        // Update title
+        document.getElementById('userTwitterMissionsTitle').textContent = `🐦 ${username}'s Twitter Missions`;
+        
+        // Show loading state
+        document.getElementById('userTwitterMissionsSummary').innerHTML = '<div class="col-span-full text-center text-gray-400">Loading...</div>';
+        document.getElementById('userTwitterMissionsList').innerHTML = '<div class="text-center text-gray-400">Loading missions...</div>';
+        
+        // Fetch user's Twitter missions
+        const response = await fetch(`${API_BASE_URL}/api/admin/get-user-twitter-missions.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            admin_id: currentAdmin || 'local_dev',
+            user_id: userId
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update summary
+          const summaryHtml = `
+            <div class="stats-card">
+              <h4 class="text-sm font-medium mb-2">Total Missions</h4>
+              <div class="text-xl font-bold text-blue-400">${data.summary.total_missions}</div>
+            </div>
+            <div class="stats-card">
+              <h4 class="text-sm font-medium mb-2">Completed</h4>
+              <div class="text-xl font-bold text-green-400">${data.summary.completed_missions}</div>
+            </div>
+            <div class="stats-card">
+              <h4 class="text-sm font-medium mb-2">Pending</h4>
+              <div class="text-xl font-bold text-yellow-400">${data.summary.pending_missions}</div>
+            </div>
+            <div class="stats-card">
+              <h4 class="text-sm font-medium mb-2">Denied</h4>
+              <div class="text-xl font-bold text-red-400">${data.summary.denied_missions}</div>
+            </div>
+            <div class="stats-card">
+              <h4 class="text-sm font-medium mb-2">Total Rewards</h4>
+              <div class="text-xl font-bold text-purple-400">${data.summary.total_rewards_earned.toLocaleString()} DSPOINC</div>
+            </div>
+          `;
+          document.getElementById('userTwitterMissionsSummary').innerHTML = summaryHtml;
+          
+          // Update missions list
+          if (data.missions && data.missions.length > 0) {
+            const missionsHtml = data.missions.map(mission => {
+              const statusColor = mission.verification_status === 'verified' ? 'text-green-400' : 
+                                 mission.verification_status === 'denied' ? 'text-red-400' : 'text-yellow-400';
+              const statusIcon = mission.verification_status === 'verified' ? '✅' : 
+                                mission.verification_status === 'denied' ? '❌' : '⏳';
+              
+              const joinedDate = new Date(mission.joined_at).toLocaleDateString();
+              const completedDate = mission.completed_at ? new Date(mission.completed_at).toLocaleDateString() : 'N/A';
+              
+              return `
+                <div class="user-card">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <span class="text-lg">${statusIcon}</span>
+                        <h4 class="font-semibold text-white">${mission.mission_details.mission_type} Mission</h4>
+                        <span class="px-2 py-1 rounded text-xs ${statusColor} bg-gray-700">
+                          ${mission.verification_status.toUpperCase()}
+                        </span>
+                      </div>
+                      
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
+                        <div>
+                          <p><strong>Mission ID:</strong> ${mission.mission_id}</p>
+                          <p><strong>Creator:</strong> ${mission.mission_details.creator_name}</p>
+                          <p><strong>Reward:</strong> ${mission.mission_details.reward_dspoinc.toLocaleString()} DSPOINC</p>
+                          <p><strong>Duration:</strong> ${mission.mission_details.duration_hours}h</p>
+                        </div>
+                        <div>
+                          <p><strong>Joined:</strong> ${joinedDate}</p>
+                          <p><strong>Completed:</strong> ${completedDate}</p>
+                          <p><strong>Attempts:</strong> ${mission.verification_attempts}</p>
+                          <p><strong>Reward Claimed:</strong> ${mission.reward_claimed ? 'Yes' : 'No'}</p>
+                        </div>
+                      </div>
+                      
+                      ${mission.mission_details.tweet_url ? `
+                        <div class="mt-2">
+                          <a href="${mission.mission_details.tweet_url}" target="_blank" 
+                             class="text-blue-400 hover:text-blue-300 text-sm">
+                            🔗 View Tweet
+                          </a>
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+            
+            document.getElementById('userTwitterMissionsList').innerHTML = missionsHtml;
+          } else {
+            document.getElementById('userTwitterMissionsList').innerHTML = 
+              '<div class="text-center text-gray-400 py-8">No Twitter missions found for this user.</div>';
+          }
+          
+          console.log(`✅ Loaded ${data.missions.length} Twitter missions for ${username}`);
+          
+        } else {
+          console.error('Error loading user Twitter missions:', data.error);
+          document.getElementById('userTwitterMissionsSummary').innerHTML = 
+            '<div class="col-span-full text-center text-red-400">Error loading data</div>';
+          document.getElementById('userTwitterMissionsList').innerHTML = 
+            '<div class="text-center text-red-400">Error loading missions</div>';
+        }
+        
+      } catch (error) {
+        console.error('Error in showUserTwitterMissions:', error);
+        document.getElementById('userTwitterMissionsSummary').innerHTML = 
+          '<div class="col-span-full text-center text-red-400">Error loading data</div>';
+        document.getElementById('userTwitterMissionsList').innerHTML = 
+          '<div class="text-center text-red-400">Error loading missions</div>';
+      }
+    }
+
+    function hideUserTwitterMissions() {
+      const modal = document.getElementById('userTwitterMissionsModal');
+      modal.classList.add('hidden');
     }
 
     async function verifyTwitterMission(missionId, userId, approved) {
