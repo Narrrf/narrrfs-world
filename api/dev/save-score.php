@@ -77,10 +77,10 @@ try {
     }
 
     // 🎮 Get current active season and settings
-    // 🔍 Automatically detect current season from season_settings table
-    $seasonDetectStmt = $db->prepare("SELECT season_name FROM tbl_season_settings ORDER BY id DESC LIMIT 1");
+    // 🔍 Automatically detect current season from tbl_seasons table (where is_active = 1)
+    $seasonDetectStmt = $db->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 AND end_date IS NULL ORDER BY start_date DESC LIMIT 1");
     $seasonDetectStmt->execute();
-    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'season_1'; // Fallback to season_1
+    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'Season 3 - The Ultimate Cheese Challenge'; // Fallback to Season 3
     
     error_log("🔍 Current season detected: $currentSeason");
 
@@ -110,7 +110,8 @@ try {
         error_log("No season settings found for season: $currentSeason - creating default settings");
         
         // Create default settings if none exist (1:1 ratio for tetris, 10:1 ratio for snake, 0.01 for space invaders)
-        $db->exec("INSERT INTO tbl_season_settings (season_name, tetris_max_score, snake_max_score, space_invaders_max_score, points_per_line, points_per_cheese, points_per_invader) VALUES ('season_1', 10000, 10000, 10000, 1, 10, 0.01)");
+        $createSettingsStmt = $db->prepare("INSERT INTO tbl_season_settings (season_name, tetris_max_score, snake_max_score, space_invaders_max_score, points_per_line, points_per_cheese, points_per_invader) VALUES (?, 10000, 10000, 10000, 1, 10, 0.01)");
+        $createSettingsStmt->execute([$currentSeason]);
         
         // Fetch the newly created settings
         $seasonStmt = $db->prepare("SELECT season_name, tetris_max_score, snake_max_score, points_per_line, points_per_cheese, space_invaders_max_score, points_per_invader FROM tbl_season_settings WHERE season_name = ?");

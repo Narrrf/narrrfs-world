@@ -211,6 +211,11 @@ try {
         ");
         $stmt->execute([$target_season]);
         $top_performers['snake'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Convert Snake scores to DSPOINC (multiply by 10)
+        foreach ($top_performers['snake'] as &$entry) {
+            $entry['score'] = $entry['score'] * 10;
+        }
     }
     
     if ($game_type === 'all' || $game_type === 'space_invaders') {
@@ -229,6 +234,11 @@ try {
         ");
         $stmt->execute([$target_season]);
         $top_performers['space_invaders'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Convert Space Invaders scores to DSPOINC (divide by 100)
+        foreach ($top_performers['space_invaders'] as &$entry) {
+            $entry['score'] = round($entry['score'] / 100);
+        }
     }
 
     // Get all-time top performers (marked as legends)
@@ -266,6 +276,11 @@ try {
         ");
         $stmt->execute();
         $all_time_legends['snake'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Convert Snake legend scores to DSPOINC (multiply by 10)
+        foreach ($all_time_legends['snake'] as &$entry) {
+            $entry['score'] = $entry['score'] * 10;
+        }
     }
     
     if ($game_type === 'all' || $game_type === 'space_invaders') {
@@ -283,6 +298,11 @@ try {
         ");
         $stmt->execute();
         $all_time_legends['space_invaders'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Convert Space Invaders legend scores to DSPOINC (divide by 100)
+        foreach ($all_time_legends['space_invaders'] as &$entry) {
+            $entry['score'] = round($entry['score'] / 100);
+        }
     }
 
     // Get season timeline

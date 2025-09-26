@@ -23,9 +23,14 @@ try {
     $pdo = new PDO("sqlite:$dbPath");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $stmt = $pdo->prepare("INSERT INTO tbl_cheese_clicks (user_wallet, egg_id, timestamp)
-                           VALUES (?, ?, CURRENT_TIMESTAMP)");
-    $stmt->execute([$discordId, $eggId]);
+    // Get current active season
+    $seasonStmt = $pdo->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 AND end_date IS NULL ORDER BY start_date DESC LIMIT 1");
+    $seasonStmt->execute();
+    $currentSeason = $seasonStmt->fetchColumn() ?: 'Season 3 - The Ultimate Cheese Challenge';
+
+    $stmt = $pdo->prepare("INSERT INTO tbl_cheese_clicks (user_wallet, egg_id, timestamp, season)
+                           VALUES (?, ?, CURRENT_TIMESTAMP, ?)");
+    $stmt->execute([$discordId, $eggId, $currentSeason]);
 
     echo json_encode(['success' => "🧀 Click on '$eggId' logged for user $discordId"]);
 } catch (Exception $e) {

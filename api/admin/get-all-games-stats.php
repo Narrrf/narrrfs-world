@@ -34,19 +34,14 @@ try {
     $seasonStmt = $db->query("SELECT season_name FROM tbl_seasons WHERE is_active = 1 LIMIT 1");
     $fullSeasonName = $seasonStmt->fetchColumn() ?: 'Season 3 - The Ultimate Cheese Challenge';
     
-    // Map full season name to short season name for database queries
-    $seasonMapping = [
-        'Season 1 - The Beginning' => 'season_1',
-        'Season 2 - The Great Reset (2025)' => 'season_2', 
-        'Season 3 - The Ultimate Cheese Challenge' => 'season_3'
-    ];
-    $currentSeason = $seasonMapping[$fullSeasonName] ?? 'season_3';
+    // Use the full season name directly (no mapping needed)
+    $currentSeason = $fullSeasonName;
 
     $response = [
         'success' => true,
         'data' => [
             'overview' => [
-                'total_games' => 5,
+                'total_games' => 0,
                 'current_season' => $fullSeasonName,
                 'last_updated' => date('Y-m-d H:i:s'),
                 'total_active_players' => 0,
@@ -282,6 +277,16 @@ try {
     } catch (Exception $e) {
         error_log("Discord Race stats error: " . $e->getMessage());
     }
+
+    // Calculate total games (count games that have data)
+    $totalGames = 0;
+    if (isset($response['data']['games']['tetris']['season_data']['total_scores']) && $response['data']['games']['tetris']['season_data']['total_scores'] > 0) $totalGames++;
+    if (isset($response['data']['games']['snake']['season_data']['total_scores']) && $response['data']['games']['snake']['season_data']['total_scores'] > 0) $totalGames++;
+    if (isset($response['data']['games']['space_invaders']['season_data']['total_scores']) && $response['data']['games']['space_invaders']['season_data']['total_scores'] > 0) $totalGames++;
+    if (isset($response['data']['games']['cheese_hunt']['season_data']['total_clicks']) && $response['data']['games']['cheese_hunt']['season_data']['total_clicks'] > 0) $totalGames++;
+    if (isset($response['data']['games']['discord_race']['season_data']['total_races']) && $response['data']['games']['discord_race']['season_data']['total_races'] > 0) $totalGames++;
+    
+    $response['data']['overview']['total_games'] = $totalGames;
 
     echo json_encode($response, JSON_PRETTY_PRINT);
 
