@@ -1,12 +1,12 @@
 ﻿// Discord Configuration - Token of Render System
 // This file manages Discord invite links dynamically across all pages
 // Environment Variable Support: DISCORD_INVITE_CODE
-// Fallback: 'CvstbUQ5yX' (current Discord invite code)
+// Fallback: 'dSJDkDhPKZ' (current Discord invite code)
 
 let DISCORD_CONFIG = {
     // 🔧 ENVIRONMENT VARIABLE SUPPORT
     // Will be loaded from server-side PHP endpoint
-    inviteCode: 'CvstbUQ5yX', // Fallback Discord invite code
+    inviteCode: 'dSJDkDhPKZ', // Fallback Discord invite code
     
     // Base Discord URL
     baseUrl: 'https://discord.gg/',
@@ -46,7 +46,7 @@ let DISCORD_CONFIG = {
                 
                 return true;
             } else {
-                console.warn('⚠️ Failed to load Discord config from server, using fallback: CvstbUQ5yX');
+                console.warn('⚠️ Failed to load Discord config from server, using fallback: dSJDkDhPKZ');
                 return false;
             }
         } catch (error) {

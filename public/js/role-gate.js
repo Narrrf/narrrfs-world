@@ -86,7 +86,7 @@ const ROLE_GATE_CONFIG = {
                         This page requires Admin or Moderator privileges.
                     </p>
                     <div class="space-y-3">
-                        <a href="https://discord.gg/CvstbUQ5yX" 
+                        <a href="https://discord.gg/dSJDkDhPKZ" 
                            class="block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition">
                             🔗 Join Discord & Get Roles
                         </a>
