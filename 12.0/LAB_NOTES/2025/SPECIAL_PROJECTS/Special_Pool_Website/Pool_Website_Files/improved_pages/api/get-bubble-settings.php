@@ -1,7 +1,7 @@
 <?php
 /**
- * Pool Website Admin - Get Settings
- * Retrieves saved settings from settings.json
+ * Pool Website - Get Bubble Effect Settings
+ * Returns the current bubble effect configuration
  * 
  * Created: September 29, 2025
  */
@@ -23,35 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Start session
-session_start();
-
-// Check if user is logged in
-if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
-    ob_clean();
-    http_response_code(401);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Unauthorized access'
-    ], JSON_UNESCAPED_UNICODE);
-    ob_end_flush();
-    exit();
-}
-
-// Only allow GET requests
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    ob_clean();
-    http_response_code(405);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Method not allowed'
-    ], JSON_UNESCAPED_UNICODE);
-    ob_end_flush();
-    exit();
-}
-
 try {
-    $settings_file = 'settings.json';
+    $settings_file = '../admin/settings.json';
     $settings = [];
     
     // Load settings if file exists
@@ -61,10 +34,6 @@ try {
     
     // Set default values if not present
     $default_settings = [
-        'email_address' => 'office@poolbauprofi.at',
-        'company_name' => 'Poolbauprofi.at',
-        'phone_number' => '+43 660 8669020',
-        'slider_speed' => 5,
         'bubble_effect' => 'off',
         'bubble_color' => 'blue',
         'bubble_opacity' => 'medium',
@@ -75,11 +44,7 @@ try {
             'anfragen' => true,
             'ueber_uns' => true,
             'kontakt' => true
-        ],
-        'smtp_port' => '587',
-        'smtp_encryption' => 'tls',
-        'from_email' => 'noreply@poolbauprofi.at',
-        'from_name' => 'Poolbauprofi.at'
+        ]
     ];
     
     // Merge with defaults
@@ -89,7 +54,12 @@ try {
     http_response_code(200);
     echo json_encode([
         'success' => true,
-        'settings' => $settings
+        'bubble_effect' => $settings['bubble_effect'],
+        'bubble_color' => $settings['bubble_color'],
+        'bubble_opacity' => $settings['bubble_opacity'],
+        'bubble_speed' => $settings['bubble_speed'],
+        'bubble_pages' => $settings['bubble_pages'],
+        'timestamp' => date('Y-m-d H:i:s')
     ], JSON_UNESCAPED_UNICODE);
     ob_end_flush();
 
@@ -98,7 +68,7 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Error loading settings: ' . $e->getMessage()
+        'message' => 'Error loading bubble settings: ' . $e->getMessage()
     ], JSON_UNESCAPED_UNICODE);
     ob_end_flush();
 }

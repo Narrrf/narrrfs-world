@@ -51,6 +51,28 @@
             background: rgba(255,255,255,0.3);
         }
 
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .view-website-btn {
+            background: rgba(0,102,204,0.8);
+            color: white;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+            font-size: 14px;
+        }
+
+        .view-website-btn:hover {
+            background: rgba(0,102,204,1);
+            color: white;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -370,7 +392,10 @@
     <div class="header">
         <div class="header-content">
             <h1>🏊‍♂️ Projekt Management</h1>
-            <a href="dashboard.html" class="back-btn">← Zurück zum Dashboard</a>
+            <div class="header-actions">
+                <a href="../referenzen.html" target="_blank" class="view-website-btn">🌐 Referenzen ansehen</a>
+                <a href="dashboard.html" class="back-btn">← Zurück zum Dashboard</a>
+            </div>
         </div>
     </div>
 
@@ -648,6 +673,7 @@
                 // Create FormData for file upload
                 const formData = new FormData();
                 formData.append('photos[]', file);
+                formData.append('upload_type', 'project');
                 
                 try {
                     const response = await fetch('upload-photos.php', {

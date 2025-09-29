@@ -118,6 +118,26 @@ try {
         updateSliderSpeed($input['slider_speed']);
     }
     
+    if (isset($input['bubble_effect'])) {
+        $current_settings['bubble_effect'] = $input['bubble_effect'];
+    }
+    
+    if (isset($input['bubble_color'])) {
+        $current_settings['bubble_color'] = $input['bubble_color'];
+    }
+    
+    if (isset($input['bubble_opacity'])) {
+        $current_settings['bubble_opacity'] = $input['bubble_opacity'];
+    }
+    
+    if (isset($input['bubble_speed'])) {
+        $current_settings['bubble_speed'] = $input['bubble_speed'];
+    }
+    
+    if (isset($input['bubble_pages'])) {
+        $current_settings['bubble_pages'] = $input['bubble_pages'];
+    }
+    
     // Save settings to file
     $current_settings['last_updated'] = date('Y-m-d H:i:s');
     $current_settings['updated_by'] = $_SESSION['admin_username'];

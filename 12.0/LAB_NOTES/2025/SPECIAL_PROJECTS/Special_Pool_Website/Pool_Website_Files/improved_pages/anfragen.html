@@ -772,6 +772,155 @@
                 }
             });
         });
+
+        // Load bubble effect settings and apply
+        async function loadBubbleEffect() {
+            try {
+                const response = await fetch('./api/get-bubble-settings.php');
+                const data = await response.json();
+                
+                if (data.success && data.bubble_effect !== 'off' && data.bubble_pages && data.bubble_pages.anfragen) {
+                    createBubbleEffect(data.bubble_effect, data.bubble_color, data.bubble_opacity, data.bubble_speed);
+                }
+            } catch (error) {
+                console.error('Error loading bubble settings:', error);
+            }
+        }
+
+        // Create bubble effect
+        function createBubbleEffect(intensity, color, opacity, speed) {
+            const bubbleContainer = document.createElement('div');
+            bubbleContainer.id = 'bubble-container';
+            bubbleContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 1;
+                overflow: hidden;
+            `;
+            
+            document.body.appendChild(bubbleContainer);
+            
+            // Bubble count based on intensity
+            const bubbleCounts = {
+                'subtle': 5,
+                'medium': 12,
+                'strong': 20,
+                'extreme': 35
+            };
+            
+            const count = bubbleCounts[intensity] || 5;
+            
+            // Color mapping with base opacity
+            const colorBase = {
+                'blue': '0, 102, 204',
+                'white': '255, 255, 255',
+                'lightblue': '173, 216, 230',
+                'cyan': '0, 255, 255',
+                'silver': '192, 192, 192',
+                'transparent': '255, 255, 255'
+            };
+            
+            // Opacity mapping
+            const opacityValues = {
+                'low': 0.05,
+                'medium': 0.15,
+                'high': 0.3,
+                'very-high': 0.5
+            };
+            
+            const baseOpacity = opacityValues[opacity] || 0.15;
+            
+            // Handle custom colors (hex values)
+            let bubbleColor;
+            if (color.startsWith('#')) {
+                // Convert hex to RGB
+                const hex = color.replace('#', '');
+                const r = parseInt(hex.substr(0, 2), 16);
+                const g = parseInt(hex.substr(2, 2), 16);
+                const b = parseInt(hex.substr(4, 2), 16);
+                bubbleColor = `rgba(${r}, ${g}, ${b}, ${baseOpacity})`;
+            } else {
+                const colorRGB = colorBase[color] || colorBase['blue'];
+                bubbleColor = `rgba(${colorRGB}, ${baseOpacity})`;
+            }
+            
+            // Speed mapping
+            const speedRanges = {
+                'slow': [15, 25],
+                'medium': [8, 20],
+                'fast': [5, 12],
+                'very-fast': [3, 8]
+            };
+            
+            const speedRange = speedRanges[speed] || speedRanges['medium'];
+            
+            // Create bubbles
+            for (let i = 0; i < count; i++) {
+                createBubble(bubbleContainer, bubbleColor, speedRange);
+            }
+        }
+
+        // Create individual bubble
+        function createBubble(container, color, speedRange) {
+            const bubble = document.createElement('div');
+            const animationDuration = speedRange[0] + Math.random() * (speedRange[1] - speedRange[0]);
+            const size = 15 + Math.random() * 50; // 15-65px bubbles
+            const opacity = 0.2 + Math.random() * 0.6; // 0.2-0.8 opacity variation
+            
+            bubble.style.cssText = `
+                position: absolute;
+                border-radius: 50%;
+                background: ${color};
+                animation: float ${animationDuration}s infinite linear;
+                left: ${Math.random() * 100}%;
+                width: ${size}px;
+                height: ${size}px;
+                opacity: ${opacity};
+                box-shadow: 0 0 10px rgba(255,255,255,0.1);
+            `;
+            
+            container.appendChild(bubble);
+            
+            // Remove bubble after animation and create new one
+            setTimeout(() => {
+                if (bubble.parentNode) {
+                    bubble.parentNode.removeChild(bubble);
+                    createBubble(container, color, speedRange);
+                }
+            }, animationDuration * 1000);
+        }
+
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0% {
+                    transform: translateY(100vh) translateX(0px);
+                }
+                25% {
+                    transform: translateY(75vh) translateX(${Math.random() * 50 - 25}px);
+                }
+                50% {
+                    transform: translateY(50vh) translateX(${Math.random() * 100 - 50}px);
+                }
+                75% {
+                    transform: translateY(25vh) translateX(${Math.random() * 50 - 25}px);
+                }
+                100% {
+                    transform: translateY(-100px) translateX(0px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Load bubble effect when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBubbleEffect();
+        });
         
     </script>
 </body>
