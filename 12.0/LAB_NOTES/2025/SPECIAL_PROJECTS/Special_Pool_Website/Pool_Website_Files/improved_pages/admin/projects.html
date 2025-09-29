@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pool Website Admin - Projekt Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .projects-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .project-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #0066cc;
+            margin-bottom: 5px;
+        }
+
+        .project-location {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .project-actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.3s ease;
+        }
+
+        .edit-btn {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .project-details {
+            margin-bottom: 15px;
+        }
+
+        .project-detail {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .project-detail strong {
+            color: #333;
+        }
+
+        .project-photos {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .project-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 2px solid #e1e1e1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e1e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .photo-upload-area {
+            border: 2px dashed #0066cc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        .photo-upload-area:hover {
+            background: #e9ecef;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .photo-item {
+            position: relative;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+        }
+
+        .photo-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 2% auto;
+                padding: 20px;
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🏊‍♂️ Projekt Management</h1>
+            <a href="dashboard.html" class="back-btn">← Zurück zum Dashboard</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alertMessage" class="alert"></div>
+
+        <div class="projects-header">
+            <h2>Pool-Projekte verwalten</h2>
+            <button class="btn btn-success" onclick="openProjectModal()">+ Neues Projekt</button>
+        </div>
+
+        <div class="projects-grid" id="projectsGrid">
+            <!-- Projects will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Neues Projekt erstellen</h2>
+                <span class="close" onclick="closeProjectModal()">&times;</span>
+            </div>
+
+            <form id="projectForm">
+                <input type="hidden" id="projectId" name="id">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="projectTitle">Projekt-Titel *</label>
+                        <input type="text" id="projectTitle" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectLocation">Ort *</label>
+                        <input type="text" id="projectLocation" name="location" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="projectType">Projekt-Typ *</label>
+                        <select id="projectType" name="project_type" required>
+                            <option value="">Bitte wählen...</option>
+                            <option value="Schwimmbad">Schwimmbad</option>
+                            <option value="Whirlpool">Whirlpool</option>
+                            <option value="Sauna">Sauna</option>
+                            <option value="Wellness-Bereich">Wellness-Bereich</option>
+                            <option value="Pool mit Überdachung">Pool mit Überdachung</option>
+                            <option value="Infinity Pool">Infinity Pool</option>
+                            <option value="Naturpool">Naturpool</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="completionDate">Fertigstellungsdatum</label>
+                        <input type="date" id="completionDate" name="completion_date">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="poolSize">Pool-Größe</label>
+                        <input type="text" id="poolSize" name="pool_size" placeholder="z.B. 8m x 4m">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="projectDescription">Projekt-Beschreibung *</label>
+                    <textarea id="projectDescription" name="description" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Besondere Merkmale</label>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <input type="checkbox" id="feature_heating" name="features" value="Beheizung">
+                            <label for="feature_heating">Beheizung</label>
+                        </div>
+                        <div class="feature-item">
+                            <input type="checkbox" id="feature_lighting" name="features" value="LED-Beleuchtung">
+                            <label for="feature_lighting">LED-Beleuchtung</label>
+                        </div>
+                        <div class="feature-item">
+                            <input type="checkbox" id="feature_waterfall" name="features" value="Wasserfall">
+                            <label for="feature_waterfall">Wasserfall</label>
+                        </div>
+                        <div class="feature-item">
+                            <input type="checkbox" id="feature_jacuzzi" name="features" value="Whirlpool-Bereich">
+                            <label for="feature_jacuzzi">Whirlpool-Bereich</label>
+                        </div>
+                        <div class="feature-item">
+                            <input type="checkbox" id="feature_cover" name="features" value="Automatische Abdeckung">
+                            <label for="feature_cover">Automatische Abdeckung</label>
+                        </div>
+                        <div class="feature-item">
+                            <input type="checkbox" id="feature_cleaning" name="features" value="Automatische Reinigung">
+                            <label for="feature_cleaning">Automatische Reinigung</label>
+                        </div>
+                        <div class="feature-item">
+                            <input type="checkbox" id="feature_saltwater" name="features" value="Salzwasser-System">
+                            <label for="feature_saltwater">Salzwasser-System</label>
+                        </div>
+                        <div class="feature-item">
+                            <input type="checkbox" id="feature_solar" name="features" value="Solarheizung">
+                            <label for="feature_solar">Solarheizung</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="specialFeatures">Weitere Besonderheiten</label>
+                    <textarea id="specialFeatures" name="special_features" rows="3" placeholder="Weitere besondere Merkmale oder Details..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Projekt-Fotos</label>
+                    <div class="photo-upload-area" onclick="document.getElementById('projectPhotos').click()">
+                        <div>📁 Klicken Sie hier oder ziehen Sie Fotos hierher</div>
+                        <div style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+                            Unterstützte Formate: JPG, PNG, GIF
+                        </div>
+                    </div>
+                    <input type="file" id="projectPhotos" multiple accept="image/*" style="display: none;" onchange="handlePhotoUpload(this.files)">
+                    <div class="photo-grid" id="projectPhotoGrid">
+                        <!-- Project photos will be displayed here -->
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; text-align: right;">
+                    <button type="button" class="btn btn-secondary" onclick="closeProjectModal()">Abbrechen</button>
+                    <button type="submit" class="btn" id="submitBtn">Projekt speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let projects = [];
+        let currentEditingProject = null;
+
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const response = await fetch('check-auth.php');
+                const result = await response.json();
+                
+                if (!result.success || !result.logged_in) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Load projects
+        async function loadProjects() {
+            try {
+                const response = await fetch('projects.php');
+                const result = await response.json();
+                
+                if (result.success) {
+                    projects = result.projects;
+                    displayProjects();
+                } else {
+                    showAlert('Fehler beim Laden der Projekte: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                showAlert('Fehler beim Laden der Projekte', 'error');
+            }
+        }
+
+        // Display projects
+        function displayProjects() {
+            const grid = document.getElementById('projectsGrid');
+            
+            if (projects.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">Keine Projekte vorhanden. Erstellen Sie Ihr erstes Projekt!</div>';
+                return;
+            }
+
+            grid.innerHTML = projects.map(project => `
+                <div class="project-card">
+                    <div class="project-header">
+                        <div>
+                            <div class="project-title">${project.title}</div>
+                            <div class="project-location">📍 ${project.location}</div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="edit-btn" onclick="editProject('${project.id}')">✏️</button>
+                            <button class="delete-btn" onclick="deleteProject('${project.id}')">🗑️</button>
+                        </div>
+                    </div>
+                    
+                    <div class="project-details">
+                        <div class="project-detail"><strong>Typ:</strong> ${project.project_type}</div>
+                        <div class="project-detail"><strong>Größe:</strong> ${project.pool_size || 'Nicht angegeben'}</div>
+                        <div class="project-detail"><strong>Fertigstellung:</strong> ${project.completion_date}</div>
+                        <div class="project-detail"><strong>Beschreibung:</strong> ${project.description.substring(0, 100)}${project.description.length > 100 ? '...' : ''}</div>
+                        ${project.features && project.features.length > 0 ? `
+                            <div class="project-detail"><strong>Features:</strong> ${project.features.join(', ')}</div>
+                        ` : ''}
+                    </div>
+                    
+                    ${project.photos && project.photos.length > 0 ? `
+                        <div class="project-photos">
+                            ${project.photos.slice(0, 4).map(photo => `
+                                <img src="../assets/${photo}" alt="Projekt Foto" class="project-photo">
+                            `).join('')}
+                            ${project.photos.length > 4 ? `<div class="project-photo" style="display: flex; align-items: center; justify-content: center; background: #f8f9fa; color: #666;">+${project.photos.length - 4}</div>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Open project modal
+        function openProjectModal(projectId = null) {
+            currentEditingProject = projectId;
+            const modal = document.getElementById('projectModal');
+            const title = document.getElementById('modalTitle');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (projectId) {
+                title.textContent = 'Projekt bearbeiten';
+                submitBtn.textContent = 'Änderungen speichern';
+                loadProjectData(projectId);
+            } else {
+                title.textContent = 'Neues Projekt erstellen';
+                submitBtn.textContent = 'Projekt speichern';
+                document.getElementById('projectForm').reset();
+                document.getElementById('projectPhotoGrid').innerHTML = '';
+                window.currentUploadedPhotos = [];
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        // Close project modal
+        function closeProjectModal() {
+            document.getElementById('projectModal').style.display = 'none';
+            currentEditingProject = null;
+        }
+
+        // Load project data for editing
+        function loadProjectData(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+
+            document.getElementById('projectId').value = project.id;
+            document.getElementById('projectTitle').value = project.title;
+            document.getElementById('projectLocation').value = project.location;
+            document.getElementById('projectType').value = project.project_type;
+            document.getElementById('projectDescription').value = project.description;
+            document.getElementById('completionDate').value = project.completion_date;
+            document.getElementById('poolSize').value = project.pool_size || '';
+            document.getElementById('specialFeatures').value = project.special_features || '';
+
+            // Load features
+            document.querySelectorAll('input[name="features"]').forEach(checkbox => {
+                checkbox.checked = project.features && project.features.includes(checkbox.value);
+            });
+
+            // Load photos
+            displayProjectPhotos(project.photos || []);
+        }
+
+        // Handle photo upload
+        async function handlePhotoUpload(files) {
+            const photoGrid = document.getElementById('projectPhotoGrid');
+            const uploadedPhotos = [];
+            
+            for (let file of files) {
+                // Create FormData for file upload
+                const formData = new FormData();
+                formData.append('photos[]', file);
+                
+                try {
+                    const response = await fetch('upload-photos.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success && result.uploaded_files.length > 0) {
+                        const uploadedFile = result.uploaded_files[0];
+                        uploadedPhotos.push(uploadedFile.new_name);
+                        
+                        // Display the photo
+                        const photoItem = document.createElement('div');
+                        photoItem.className = 'photo-item';
+                        photoItem.innerHTML = `
+                            <img src="../assets/${uploadedFile.new_name}" alt="Project Photo">
+                            <button class="photo-remove" onclick="removeProjectPhoto(this, '${uploadedFile.new_name}')">×</button>
+                        `;
+                        photoGrid.appendChild(photoItem);
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                }
+            }
+            
+            // Store uploaded photos for form submission
+            window.currentUploadedPhotos = uploadedPhotos;
+        }
+
+        // Display project photos
+        function displayProjectPhotos(photos) {
+            const photoGrid = document.getElementById('projectPhotoGrid');
+            photoGrid.innerHTML = '';
+            
+            photos.forEach(photo => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                photoItem.innerHTML = `
+                    <img src="../assets/${photo}" alt="Project Photo">
+                    <button class="photo-remove" onclick="removeProjectPhoto(this, '${photo}')">×</button>
+                `;
+                photoGrid.appendChild(photoItem);
+            });
+            
+            // Update current uploaded photos for editing
+            window.currentUploadedPhotos = photos;
+        }
+
+        // Remove project photo
+        function removeProjectPhoto(button, filename = null) {
+            if (filename && window.currentUploadedPhotos) {
+                // Remove from uploaded photos array
+                window.currentUploadedPhotos = window.currentUploadedPhotos.filter(photo => photo !== filename);
+            }
+            button.parentElement.remove();
+        }
+
+        // Edit project
+        function editProject(projectId) {
+            openProjectModal(projectId);
+        }
+
+        // Delete project
+        async function deleteProject(projectId) {
+            if (!confirm('Sind Sie sicher, dass Sie dieses Projekt löschen möchten?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('projects.php', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: projectId })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ Projekt erfolgreich gelöscht!');
+                    loadProjects();
+                } else {
+                    showAlert('❌ Fehler beim Löschen: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showAlert('❌ Fehler beim Löschen des Projekts', 'error');
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Handle form submission
+        document.getElementById('projectForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const projectData = {
+                title: formData.get('title'),
+                location: formData.get('location'),
+                project_type: formData.get('project_type'),
+                description: formData.get('description'),
+                completion_date: formData.get('completion_date'),
+                pool_size: formData.get('pool_size'),
+                special_features: formData.get('special_features'),
+                features: Array.from(document.querySelectorAll('input[name="features"]:checked')).map(cb => cb.value),
+                photos: window.currentUploadedPhotos || []
+            };
+
+            if (currentEditingProject) {
+                projectData.id = currentEditingProject;
+            }
+
+            try {
+                const method = currentEditingProject ? 'PUT' : 'POST';
+                const response = await fetch('projects.php', {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(projectData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert(`✅ Projekt ${currentEditingProject ? 'aktualisiert' : 'erstellt'}!`);
+                    closeProjectModal();
+                    loadProjects();
+                } else {
+                    showAlert('❌ Fehler beim Speichern: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                showAlert('❌ Fehler beim Speichern des Projekts', 'error');
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('projectModal');
+            if (event.target === modal) {
+                closeProjectModal();
+            }
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuth();
+            await loadProjects();
+        });
+    </script>
+</body>
+</html>

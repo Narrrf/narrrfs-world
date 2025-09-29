@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pool Website Admin - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+            color: white;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,102,204,0.2);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg,
+                rgba(255,255,255,0.1) 0%,
+                rgba(255,255,255,0.05) 25%,
+                rgba(255,255,255,0.1) 50%,
+                rgba(255,255,255,0.05) 75%,
+                rgba(255,255,255,0.1) 100%);
+            background-size: 60px 60px;
+            z-index: 1;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .welcome-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 5px solid #0066cc;
+        }
+        
+        .welcome-section h2 {
+            color: #0066cc;
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+        }
+        
+        .welcome-section p {
+            color: #666;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 30px;
+            margin-bottom: 30px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Professional grid positioning for balanced layout */
+        .dashboard-card:nth-child(1) { /* Website Overview */
+            grid-column: 1;
+            grid-row: 1;
+            min-width: 280px;
+            max-width: 320px;
+        }
+        
+        .dashboard-card:nth-child(2) { /* Pool Photos */
+            grid-column: 2;
+            grid-row: 1;
+            min-width: 320px;
+            max-width: 400px;
+        }
+        
+        .dashboard-card:nth-child(3) { /* Project Management */
+            grid-column: 3;
+            grid-row: 1;
+            min-width: 280px;
+            max-width: 320px;
+        }
+        
+        .dashboard-card:nth-child(4) { /* Email Settings */
+            grid-column: 1 / 3;
+            grid-row: 2;
+            min-height: 400px;
+        }
+        
+        .dashboard-card:nth-child(5) { /* Website Settings */
+            grid-column: 3;
+            grid-row: 2;
+            min-width: 280px;
+            max-width: 320px;
+            min-height: 400px;
+        }
+        
+        .dashboard-card:nth-child(6) { /* Recent Activity */
+            grid-column: 1;
+            grid-row: 3;
+            min-width: 280px;
+            max-width: 320px;
+        }
+        
+        .dashboard-card:nth-child(7) { /* Quick Actions */
+            grid-column: 2 / 4;
+            grid-row: 3;
+        }
+        
+        /* Responsive Design for Professional Layout */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: auto auto auto auto;
+            }
+            
+            .dashboard-card:nth-child(1) { /* Website Overview */
+                grid-column: 1;
+                grid-row: 1;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(2) { /* Pool Photos */
+                grid-column: 2;
+                grid-row: 1;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(3) { /* Project Management */
+                grid-column: 1 / 3;
+                grid-row: 2;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(4) { /* Email Settings */
+                grid-column: 1 / 3;
+                grid-row: 3;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(5) { /* Website Settings */
+                grid-column: 1;
+                grid-row: 4;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(6) { /* Recent Activity */
+                grid-column: 2;
+                grid-row: 4;
+                max-width: none;
+            }
+            
+            .dashboard-card:nth-child(7) { /* Quick Actions */
+                grid-column: 1 / 3;
+                grid-row: 5;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                gap: 20px;
+            }
+            
+            .dashboard-card:nth-child(n) {
+                grid-column: 1;
+                grid-row: auto;
+                max-width: none;
+                min-width: auto;
+                min-height: auto;
+            }
+            
+            .container {
+                padding: 20px 15px;
+            }
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0,102,204,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0066cc, #004499);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,102,204,0.15);
+            border-color: rgba(0,102,204,0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #0066cc;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0066cc;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #004499, #003366);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,102,204,0.4);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .photo-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .photo-actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .photo-actions button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .photo-actions button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .upload-area {
+            border: 2px dashed #0066cc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background: #e9ecef;
+        }
+
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #004499;
+        }
+
+        .settings-form {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-help {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .form-group h4 {
+            margin: 1.5rem 0 1rem 0;
+            color: #0066cc;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 0.5rem;
+        }
+        
+        .form-group h4:first-child {
+            margin-top: 0;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e1e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .admin-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🏊‍♂️ Pool Website Admin</h1>
+            <div class="admin-info">
+                <span>Angemeldet als: <strong id="adminUsername">pooladmin</strong></span>
+                <button class="logout-btn" onclick="logout()">Abmelden</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h2>🏊‍♂️ Willkommen im Poolbauprofi Admin-Bereich</h2>
+            <p>Verwalten Sie Ihre Website, Projekte und E-Mail-Einstellungen zentral an einem Ort</p>
+        </div>
+        
+        <div id="alertMessage" class="alert"></div>
+
+        <div class="dashboard-grid">
+            <!-- Website Overview -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Website Übersicht</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">5</span>
+                        <div class="stat-label">Seiten</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalEmails">0</span>
+                        <div class="stat-label">E-Mails</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalPhotos">0</span>
+                        <div class="stat-label">Fotos</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">100%</span>
+                        <div class="stat-label">Funktional</div>
+                    </div>
+                </div>
+                <a href="../index.html" class="btn" target="_blank">Website anzeigen</a>
+            </div>
+
+            <!-- Photo Management -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">📸</div>
+                    <div class="card-title">Pool-Fotos verwalten</div>
+                </div>
+                <p>Verwalten Sie Ihre Pool-Galerie und Slider-Bilder.</p>
+                <div class="upload-area" id="uploadArea">
+                    <div>📁 Klicken Sie hier oder ziehen Sie Fotos hierher</div>
+                    <div style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+                        Unterstützte Formate: JPG, PNG, GIF
+                    </div>
+                </div>
+                <input type="file" id="photoUpload" multiple accept="image/*" style="display: none;">
+                <div class="photo-grid" id="photoGrid">
+                    <!-- Photos will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Project Management -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🏊‍♂️</div>
+                    <div class="card-title">Projekt-Management</div>
+                </div>
+                <p>Verwalten Sie Ihre Pool-Projekte für die Referenzen-Seite.</p>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalProjects">0</span>
+                        <div class="stat-label">Projekte</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="recentProjects">0</span>
+                        <div class="stat-label">Diese Woche</div>
+                    </div>
+                </div>
+                <a href="projects.html" class="btn btn-success">Projekte verwalten</a>
+                <button class="btn" onclick="window.open('projects.html', '_blank')">Neues Projekt</button>
+            </div>
+
+            <!-- Email Settings -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">📧</div>
+                    <div class="card-title">E-Mail-Einstellungen</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number" id="todayEmails">0</span>
+                        <div class="stat-label">Heute</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="weekEmails">0</span>
+                        <div class="stat-label">Diese Woche</div>
+                    </div>
+                </div>
+                <div class="settings-form">
+                    <h4>📧 E-Mail-Empfang</h4>
+                    <div class="form-group">
+                        <label for="emailAddress">E-Mail-Adresse für Anfragen:</label>
+                        <input type="email" id="emailAddress" value="office@poolbauprofi.at">
+                        <small class="form-help">Hierhin werden alle Kontaktformulare gesendet</small>
+                    </div>
+                    
+                    <h4>🔧 SMTP-Konfiguration (für E-Mail-Versand)</h4>
+                    <div class="form-group">
+                        <label for="smtpHost">SMTP-Server:</label>
+                        <input type="text" id="smtpHost" placeholder="z.B. smtp.gmail.com oder mail.ihre-domain.com">
+                        <small class="form-help">Server-Adresse Ihres E-Mail-Anbieters</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="smtpPort">SMTP-Port:</label>
+                        <select id="smtpPort">
+                            <option value="587">587 (TLS/STARTTLS)</option>
+                            <option value="465">465 (SSL)</option>
+                            <option value="25">25 (Standard)</option>
+                            <option value="2525">2525 (Alternative)</option>
+                        </select>
+                        <small class="form-help">Port für sichere E-Mail-Übertragung</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="smtpUsername">SMTP-Benutzername:</label>
+                        <input type="text" id="smtpUsername" placeholder="Ihre E-Mail-Adresse">
+                        <small class="form-help">Meist Ihre E-Mail-Adresse</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="smtpPassword">SMTP-Passwort:</label>
+                        <input type="password" id="smtpPassword" placeholder="Ihr E-Mail-Passwort oder App-Passwort">
+                        <small class="form-help">Passwort oder App-spezifisches Passwort</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="smtpEncryption">Verschlüsselung:</label>
+                        <select id="smtpEncryption">
+                            <option value="tls">TLS (STARTTLS)</option>
+                            <option value="ssl">SSL</option>
+                            <option value="none">Keine Verschlüsselung</option>
+                        </select>
+                        <small class="form-help">Empfohlen: TLS für bessere Sicherheit</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fromEmail">Absender-E-Mail:</label>
+                        <input type="email" id="fromEmail" value="noreply@poolbauprofi.at">
+                        <small class="form-help">Von welcher Adresse E-Mails gesendet werden</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fromName">Absender-Name:</label>
+                        <input type="text" id="fromName" value="Poolbauprofi.at">
+                        <small class="form-help">Name der als Absender angezeigt wird</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button class="btn btn-info" onclick="testEmailConnection()">📧 E-Mail-Verbindung testen</button>
+                        <small class="form-help">Testet die SMTP-Konfiguration</small>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="saveEmailSettings()">💾 E-Mail-Einstellungen speichern</button>
+                </div>
+            </div>
+
+            <!-- Website Settings -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">⚙️</div>
+                    <div class="card-title">Website-Einstellungen</div>
+                </div>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="companyName">Firmenname:</label>
+                        <input type="text" id="companyName" value="Poolbauprofi.at">
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneNumber">Telefonnummer:</label>
+                        <input type="text" id="phoneNumber" value="+43 123 456 789">
+                    </div>
+                    <div class="form-group">
+                        <label for="sliderSpeed">Slider-Geschwindigkeit (Sekunden):</label>
+                        <select id="sliderSpeed">
+                            <option value="3">3 Sekunden</option>
+                            <option value="5" selected>5 Sekunden</option>
+                            <option value="7">7 Sekunden</option>
+                            <option value="10">10 Sekunden</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" onclick="saveWebsiteSettings()">Einstellungen speichern</button>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">Letzte Aktivitäten</div>
+                </div>
+                <div id="recentActivity">
+                    <!-- Recent activities will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon">🚀</div>
+                    <div class="card-title">Schnellaktionen</div>
+                </div>
+                <p>Schnelle Aktionen für Ihre Website-Verwaltung.</p>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="backupWebsite()">Website sichern</button>
+                    <button class="btn btn-warning" onclick="clearCache()">Cache leeren</button>
+                    <button class="btn" onclick="viewLogs()">Logs anzeigen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        async function checkAuth() {
+            try {
+                const response = await fetch('check-auth.php');
+                const result = await response.json();
+                
+                if (!result.success || !result.logged_in) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Store session info for client-side use
+                sessionStorage.setItem('admin_logged_in', 'true');
+                sessionStorage.setItem('admin_username', result.username || 'pooladmin');
+                
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                // Call logout API to clear server session
+                await fetch('logout.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (error) {
+                console.error('Logout API error:', error);
+            } finally {
+                // Clear client-side session data
+                sessionStorage.removeItem('admin_logged_in');
+                sessionStorage.removeItem('admin_username');
+                
+                // Redirect to login page
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load email statistics
+                const emailStats = await loadEmailStats();
+                document.getElementById('totalEmails').textContent = emailStats.total || '0';
+                document.getElementById('todayEmails').textContent = emailStats.today || '0';
+                document.getElementById('weekEmails').textContent = emailStats.week || '0';
+
+                // Load photo count
+                const photoCount = await loadPhotoCount();
+                document.getElementById('totalPhotos').textContent = photoCount || '0';
+
+                // Load project statistics
+                await loadProjectStats();
+
+                // Load recent activity
+                await loadRecentActivity();
+
+                // Load photos
+                await loadPhotos();
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load email statistics
+        async function loadEmailStats() {
+            try {
+                const response = await fetch('get-stats.php');
+                const data = await response.json();
+                return data.email_stats || { total: 0, today: 0, week: 0 };
+            } catch (error) {
+                console.error('Error loading email stats:', error);
+                return { total: 0, today: 0, week: 0 };
+            }
+        }
+
+        // Load photo count
+        async function loadPhotoCount() {
+            try {
+                const response = await fetch('get-photos.php');
+                const data = await response.json();
+                return data.count || 0;
+            } catch (error) {
+                console.error('Error loading photo count:', error);
+                return 0;
+            }
+        }
+
+        // Load project statistics
+        async function loadProjectStats() {
+            try {
+                const response = await fetch('projects.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const projects = data.projects || [];
+                    const totalProjects = projects.length;
+                    
+                    // Count recent projects (this week)
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    const recentProjects = projects.filter(project => 
+                        new Date(project.created_at) >= weekAgo
+                    ).length;
+                    
+                    document.getElementById('totalProjects').textContent = totalProjects;
+                    document.getElementById('recentProjects').textContent = recentProjects;
+                }
+            } catch (error) {
+                console.error('Error loading project stats:', error);
+                document.getElementById('totalProjects').textContent = '0';
+                document.getElementById('recentProjects').textContent = '0';
+            }
+        }
+
+        // Load recent activity
+        async function loadRecentActivity() {
+            try {
+                const response = await fetch('get-activity.php');
+                const data = await response.json();
+                const activityDiv = document.getElementById('recentActivity');
+                
+                if (data.activities && data.activities.length > 0) {
+                    activityDiv.innerHTML = data.activities.map(activity => 
+                        `<div style="padding: 10px; border-bottom: 1px solid #eee;">
+                            <strong>${activity.time}</strong><br>
+                            ${activity.message}
+                        </div>`
+                    ).join('');
+                } else {
+                    activityDiv.innerHTML = '<p style="color: #666;">Keine aktuellen Aktivitäten</p>';
+                }
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                document.getElementById('recentActivity').innerHTML = '<p style="color: #666;">Fehler beim Laden der Aktivitäten</p>';
+            }
+        }
+
+        // Load photos
+        async function loadPhotos() {
+            try {
+                const response = await fetch('get-photos.php');
+                const data = await response.json();
+                const photoGrid = document.getElementById('photoGrid');
+                
+                if (data.photos && data.photos.length > 0) {
+                    photoGrid.innerHTML = data.photos.map(photo => 
+                        `<div class="photo-item">
+                            <img src="../slider-photos/${photo.filename}" alt="${photo.name}">
+                            <div class="photo-actions">
+                                <span>${photo.name}</span>
+                                <button onclick="deletePhoto('${photo.filename}')">🗑️</button>
+                            </div>
+                        </div>`
+                    ).join('');
+                } else {
+                    photoGrid.innerHTML = '<p style="color: #666; grid-column: 1/-1; text-align: center; padding: 20px;">Keine Fotos vorhanden</p>';
+                }
+            } catch (error) {
+                console.error('Error loading photos:', error);
+            }
+        }
+
+        // Photo upload handling
+        document.getElementById('uploadArea').addEventListener('click', () => {
+            document.getElementById('photoUpload').click();
+        });
+
+        document.getElementById('uploadArea').addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        });
+
+        document.getElementById('uploadArea').addEventListener('dragleave', (e) => {
+            e.currentTarget.classList.remove('dragover');
+        });
+
+        document.getElementById('uploadArea').addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            uploadPhotos(files);
+        });
+
+        document.getElementById('photoUpload').addEventListener('change', (e) => {
+            uploadPhotos(e.target.files);
+        });
+
+        // Upload photos
+        async function uploadPhotos(files) {
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('photos[]', file);
+            }
+
+            try {
+                const response = await fetch('upload-photos.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ Fotos erfolgreich hochgeladen!');
+                    loadPhotos();
+                    loadPhotoCount(); // Update photo count
+                } else {
+                    showAlert('❌ Fehler beim Hochladen: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showAlert('❌ Fehler beim Hochladen der Fotos', 'error');
+            }
+        }
+
+        // Delete photo
+        async function deletePhoto(filename) {
+            if (!confirm('Möchten Sie dieses Foto wirklich löschen?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`delete-photo.php?filename=${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ Foto erfolgreich gelöscht!');
+                    loadPhotos();
+                    loadPhotoCount(); // Update photo count
+                } else {
+                    showAlert('❌ Fehler beim Löschen: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showAlert('❌ Fehler beim Löschen des Fotos', 'error');
+            }
+        }
+
+        // Save email settings
+        async function saveEmailSettings() {
+            const emailSettings = {
+                email_address: document.getElementById('emailAddress').value,
+                smtp_host: document.getElementById('smtpHost').value,
+                smtp_port: document.getElementById('smtpPort').value,
+                smtp_username: document.getElementById('smtpUsername').value,
+                smtp_password: document.getElementById('smtpPassword').value,
+                smtp_encryption: document.getElementById('smtpEncryption').value,
+                from_email: document.getElementById('fromEmail').value,
+                from_name: document.getElementById('fromName').value
+            };
+            
+            try {
+                const response = await fetch('save-settings.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(emailSettings)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ E-Mail-Einstellungen gespeichert!');
+                } else {
+                    showAlert('❌ Fehler beim Speichern', 'error');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                showAlert('❌ Fehler beim Speichern der Einstellungen', 'error');
+            }
+        }
+
+        // Test email connection
+        async function testEmailConnection() {
+            const emailSettings = {
+                smtp_host: document.getElementById('smtpHost').value,
+                smtp_port: document.getElementById('smtpPort').value,
+                smtp_username: document.getElementById('smtpUsername').value,
+                smtp_password: document.getElementById('smtpPassword').value,
+                smtp_encryption: document.getElementById('smtpEncryption').value,
+                from_email: document.getElementById('fromEmail').value,
+                from_name: document.getElementById('fromName').value
+            };
+            
+            // Validate required fields
+            if (!emailSettings.smtp_host || !emailSettings.smtp_username || !emailSettings.smtp_password) {
+                showAlert('❌ Bitte füllen Sie mindestens SMTP-Server, Benutzername und Passwort aus', 'error');
+                return;
+            }
+            
+            try {
+                showAlert('🔄 Teste E-Mail-Verbindung...', 'info');
+                
+                const response = await fetch('test-email-connection.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(emailSettings)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ E-Mail-Verbindung erfolgreich getestet! Test-E-Mail gesendet.', 'success');
+                } else {
+                    showAlert(`❌ E-Mail-Test fehlgeschlagen: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Test error:', error);
+                showAlert('❌ Fehler beim Testen der E-Mail-Verbindung', 'error');
+            }
+        }
+
+        // Save website settings
+        async function saveWebsiteSettings() {
+            const settings = {
+                company_name: document.getElementById('companyName').value,
+                phone_number: document.getElementById('phoneNumber').value,
+                slider_speed: document.getElementById('sliderSpeed').value
+            };
+
+            try {
+                const response = await fetch('save-settings.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('✅ Website-Einstellungen gespeichert!');
+                } else {
+                    showAlert('❌ Fehler beim Speichern', 'error');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                showAlert('❌ Fehler beim Speichern der Einstellungen', 'error');
+            }
+        }
+
+        // Quick actions
+        function backupWebsite() {
+            showAlert('🔄 Website-Backup wird erstellt...');
+            // In real implementation, trigger backup process
+        }
+
+        function clearCache() {
+            showAlert('🗑️ Cache wird geleert...');
+            // In real implementation, clear cache
+        }
+
+        function viewLogs() {
+            window.open('logs.html', '_blank');
+        }
+
+        function deletePhoto(filename) {
+            if (confirm('Sind Sie sicher, dass Sie dieses Foto löschen möchten?')) {
+                // In real implementation, delete photo
+                showAlert('🗑️ Foto wird gelöscht...');
+            }
+        }
+
+        // Load email settings
+        async function loadEmailSettings() {
+            try {
+                const response = await fetch('get-settings.php');
+                const result = await response.json();
+                
+                if (result.success && result.settings) {
+                    const settings = result.settings;
+                    
+                    // Load SMTP settings into form
+                    if (settings.smtp_host) document.getElementById('smtpHost').value = settings.smtp_host;
+                    if (settings.smtp_port) document.getElementById('smtpPort').value = settings.smtp_port;
+                    if (settings.smtp_username) document.getElementById('smtpUsername').value = settings.smtp_username;
+                    if (settings.smtp_password) document.getElementById('smtpPassword').value = settings.smtp_password;
+                    if (settings.smtp_encryption) document.getElementById('smtpEncryption').value = settings.smtp_encryption;
+                    if (settings.from_email) document.getElementById('fromEmail').value = settings.from_email;
+                    if (settings.from_name) document.getElementById('fromName').value = settings.from_name;
+                    if (settings.email_address) document.getElementById('emailAddress').value = settings.email_address;
+                }
+            } catch (error) {
+                console.log('Could not load email settings:', error);
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuth();
+            await loadDashboardData();
+            await loadEmailSettings();
+            
+            // Set admin username
+            const adminUser = sessionStorage.getItem('admin_username') || 'pooladmin';
+            document.getElementById('adminUsername').textContent = adminUser;
+        });
+    </script>
+</body>
+</html>
