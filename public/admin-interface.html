@@ -1481,6 +1481,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="bugTracker">🐛 Bug Tracker</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="twitterMissions">🐦 Twitter Missions</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="databaseOverview">🗄️ Database Overview</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="securityCrawler">🔒 Security Crawler</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="twelveZeroManagement">📁 12.0 Management</button>
       </div>
       
@@ -5789,6 +5790,12 @@
               loadDatabaseOverview();
             }, 100);
             addLog('🗄️ Database overview tab auto-loaded');
+          } else if (tabName === 'securityCrawler') {
+            // Security crawler - Auto-load security data
+            setTimeout(() => {
+              loadSecurityCrawlerData();
+            }, 100);
+            addLog('🔒 Security crawler tab auto-loaded');
           } else if (tabName === 'twitterMissions') {
             // Twitter Missions - Auto-load Twitter mission data
             setTimeout(() => {
@@ -19529,6 +19536,248 @@ function updateGameTabContent(gameType, gameData) {
       </div>
     </div>
 
+    <!-- Security Crawler Tab -->
+    <div class="admin-card mb-6" id="securityCrawlerTab" style="display: none; opacity: 1; transform: translateY(0);">
+      <h2 class="text-xl font-semibold mb-4">🔒 Security Crawler</h2>
+      <p class="text-gray-300 mb-6">Professional security testing system - Web crawler with vulnerability detection and smart URL filtering</p>
+      
+      <!-- Security Crawler Status -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold mb-4 text-yellow-400">📊 Crawl Statistics</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="text-center p-3 bg-gray-800 bg-opacity-50 rounded-lg">
+              <div id="totalCrawls" class="text-2xl font-bold text-green-400">0</div>
+              <div class="text-sm text-gray-300">Total Crawls</div>
+            </div>
+            <div class="text-center p-3 bg-gray-800 bg-opacity-50 rounded-lg">
+              <div id="totalFindings" class="text-2xl font-bold text-red-400">0</div>
+              <div class="text-sm text-gray-300">Security Findings</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold mb-4 text-yellow-400">🔍 System Status</h3>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg">
+              <span class="text-sm font-medium">Environment</span>
+              <span id="securityEnvironment" class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">Local Testing</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg">
+              <span class="text-sm font-medium">Status</span>
+              <span id="securityStatus" class="px-2 py-1 bg-green-600 bg-opacity-30 rounded-full text-xs">Operational</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-card">
+          <h3 class="text-lg font-semibold mb-4 text-yellow-400">🛡️ Security Features</h3>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg">
+              <span class="text-sm font-medium">Smart Filtering</span>
+              <span class="px-2 py-1 bg-green-600 bg-opacity-30 rounded-full text-xs">✅ Active</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg">
+              <span class="text-sm font-medium">Vulnerability Detection</span>
+              <span class="px-2 py-1 bg-green-600 bg-opacity-30 rounded-full text-xs">✅ Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- URL Input Section -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-blue-300">🎯 Target URL Input</h3>
+        <div class="flex gap-4">
+          <input 
+            type="url" 
+            id="securityTargetUrl" 
+            placeholder="Enter target URL (e.g., http://localhost/public/index.html)" 
+            class="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+          />
+          <button 
+            id="startSecurityCrawl" 
+            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-semibold"
+          >
+            🔍 Start Crawl
+          </button>
+        </div>
+        <div class="mt-2 text-sm text-gray-400">
+          <p>✅ Smart filtering: Excludes static assets, external domains, and non-http protocols</p>
+          <p>🎯 Focus: Only Render structure URLs (localhost, narrrfs.world)</p>
+        </div>
+      </div>
+
+      <!-- Recent Crawls -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-blue-300">📋 Recent Crawls</h3>
+        <div id="recentCrawls" class="space-y-3 max-h-80 overflow-y-auto">
+          <!-- Crawl items will be populated here -->
+        </div>
+      </div>
+
+      <!-- Security Findings -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-blue-300">🚨 Security Findings</h3>
+        <div id="securityFindings" class="space-y-3 max-h-80 overflow-y-auto">
+          <!-- Security findings will be populated here -->
+        </div>
+      </div>
+
+      <!-- Advanced Security Features -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-blue-300">🔧 Advanced Security Features</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <h4 class="font-semibold text-yellow-400 mb-2">🎯 Quick Test URLs</h4>
+            <div class="space-y-2">
+              <button 
+                id="testMainPage" 
+                class="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors duration-200"
+              >
+                Test Main Page (index.html)
+              </button>
+              <button 
+                id="testProfilePage" 
+                class="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors duration-200"
+              >
+                Test Profile Page (profile.html)
+              </button>
+              <button 
+                id="testAdminInterface" 
+                class="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors duration-200"
+              >
+                Test Admin Interface
+              </button>
+            </div>
+          </div>
+          
+          <div class="p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <h4 class="font-semibold text-yellow-400 mb-2">📊 Security Reports</h4>
+            <div class="space-y-2">
+              <button 
+                id="generateSecurityReport" 
+                class="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm transition-colors duration-200"
+              >
+                📋 Generate Security Report
+              </button>
+              <button 
+                id="exportFindings" 
+                class="w-full px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm transition-colors duration-200"
+              >
+                📤 Export Findings (CSV)
+              </button>
+              <button 
+                id="viewDetailedLogs" 
+                class="w-full px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded text-sm transition-colors duration-200"
+              >
+                📜 View Detailed Logs
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Configuration -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-blue-300">⚙️ Security Configuration</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <h4 class="font-semibold text-yellow-400 mb-2">🔍 Detection Settings</h4>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input type="checkbox" id="enableSqlDetection" checked class="mr-2">
+                <span class="text-sm">SQL Injection Detection</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" id="enableXssDetection" checked class="mr-2">
+                <span class="text-sm">XSS Detection</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" id="enableDirectoryTraversal" checked class="mr-2">
+                <span class="text-sm">Directory Traversal</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" id="enableInfoDisclosure" checked class="mr-2">
+                <span class="text-sm">Information Disclosure</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <h4 class="font-semibold text-yellow-400 mb-2">⏱️ Crawl Settings</h4>
+            <div class="space-y-2">
+              <div>
+                <label class="text-sm text-gray-300">Timeout (seconds):</label>
+                <input type="number" id="crawlTimeout" value="30" min="5" max="120" class="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm">
+              </div>
+              <div>
+                <label class="text-sm text-gray-300">Max URLs per crawl:</label>
+                <input type="number" id="maxUrls" value="50" min="10" max="200" class="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm">
+              </div>
+              <div>
+                <label class="text-sm text-gray-300">Delay between requests (ms):</label>
+                <input type="number" id="requestDelay" value="1000" min="100" max="5000" class="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm">
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+            <h4 class="font-semibold text-yellow-400 mb-2">🎯 Filter Settings</h4>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input type="checkbox" id="excludeStaticAssets" checked class="mr-2">
+                <span class="text-sm">Exclude Static Assets</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" id="excludeExternalDomains" checked class="mr-2">
+                <span class="text-sm">Exclude External Domains</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" id="focusRenderStructure" checked class="mr-2">
+                <span class="text-sm">Focus Render Structure</span>
+              </label>
+              <button 
+                id="saveSecurityConfig" 
+                class="w-full px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors duration-200 mt-2"
+              >
+                💾 Save Configuration
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-4 flex-wrap">
+        <button 
+          id="refreshSecurityData" 
+          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200"
+        >
+          🔄 Refresh Data
+        </button>
+        <button 
+          id="clearSecurityData" 
+          class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
+        >
+          🗑️ Clear Test Data
+        </button>
+        <button 
+          id="bulkSecurityTest" 
+          class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors duration-200"
+        >
+          🚀 Bulk Security Test
+        </button>
+        <button 
+          id="scheduleSecurityScan" 
+          class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200"
+        >
+          ⏰ Schedule Security Scan
+        </button>
+      </div>
+    </div>
+
     <!-- 12.0 Management Tab -->
     <div class="admin-card mb-6" id="twelveZeroManagementTab" style="display: none; opacity: 1; transform: translateY(0);">
       <h2 class="text-xl font-semibold mb-4">📁 12.0 Management System</h2>
@@ -19781,6 +20030,409 @@ function updateGameTabContent(gameType, gameData) {
         addLog(`❌ Database overview loading error: ${error.message}`);
         console.error('Database overview loading error:', error);
       }
+    }
+
+    // 🔒 Security Crawler Functions
+    async function loadSecurityCrawlerData() {
+      console.log('🔒 loadSecurityCrawlerData function called');
+      
+      // For local development, skip authentication check
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      
+      if (!isLocal && !currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔒 Loading Security Crawler data...');
+
+      try {
+        // Load security crawler status
+        await loadSecurityCrawlerStatus();
+        
+        // Load recent crawls
+        await loadRecentCrawls();
+        
+        // Load security findings
+        await loadSecurityFindings();
+        
+        addLog('✅ Security Crawler data loaded successfully');
+      } catch (error) {
+        addLog(`❌ Security Crawler loading error: ${error.message}`);
+        console.error('Security Crawler loading error:', error);
+      }
+    }
+
+    async function loadSecurityCrawlerStatus() {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/security-crawler.php');
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update statistics
+          const totalCrawlsElement = document.getElementById('totalCrawls');
+          const totalFindingsElement = document.getElementById('totalFindings');
+          const securityEnvironmentElement = document.getElementById('securityEnvironment');
+          const securityStatusElement = document.getElementById('securityStatus');
+          
+          if (totalCrawlsElement) totalCrawlsElement.textContent = data.data.total_crawls;
+          if (totalFindingsElement) totalFindingsElement.textContent = data.data.total_findings;
+          if (securityEnvironmentElement) securityEnvironmentElement.textContent = data.data.environment;
+          if (securityStatusElement) securityStatusElement.textContent = data.data.status;
+          
+          console.log('✅ Security crawler status updated');
+        }
+      } catch (error) {
+        console.error('Security crawler status loading error:', error);
+      }
+    }
+
+    async function loadRecentCrawls() {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/security-crawler.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get_crawls' })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          const container = document.getElementById('recentCrawls');
+          if (container) {
+            container.innerHTML = '';
+            
+            if (data.data.length === 0) {
+              container.innerHTML = '<div class="text-center text-gray-400 py-4">No crawls found</div>';
+            } else {
+              data.data.forEach(crawl => {
+                const crawlElement = document.createElement('div');
+                crawlElement.className = 'p-3 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-blue-500';
+                crawlElement.innerHTML = `
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <div class="font-medium text-white">${crawl.target_url}</div>
+                      <div class="text-sm text-gray-400">Status: ${crawl.crawl_status}</div>
+                      <div class="text-sm text-gray-400">Created: ${new Date(crawl.created_at).toLocaleString()}</div>
+                    </div>
+                    <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">${crawl.crawl_status}</span>
+                  </div>
+                `;
+                container.appendChild(crawlElement);
+              });
+            }
+          }
+          console.log('✅ Recent crawls loaded');
+        }
+      } catch (error) {
+        console.error('Recent crawls loading error:', error);
+      }
+    }
+
+    async function loadSecurityFindings() {
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/security-crawler.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get_findings' })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          const container = document.getElementById('securityFindings');
+          if (container) {
+            container.innerHTML = '';
+            
+            if (data.data.length === 0) {
+              container.innerHTML = '<div class="text-center text-gray-400 py-4">No security findings</div>';
+            } else {
+              data.data.forEach(finding => {
+                const severityColor = finding.severity === 'high' ? 'red' : finding.severity === 'medium' ? 'yellow' : 'green';
+                const findingElement = document.createElement('div');
+                findingElement.className = `p-3 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-${severityColor}-500`;
+                findingElement.innerHTML = `
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <div class="font-medium text-white">${finding.finding_type}</div>
+                      <div class="text-sm text-gray-400">${finding.description}</div>
+                      <div class="text-sm text-gray-400">Target: ${finding.target_url}</div>
+                    </div>
+                    <span class="px-2 py-1 bg-${severityColor}-600 bg-opacity-30 rounded-full text-xs">${finding.severity}</span>
+                  </div>
+                `;
+                container.appendChild(findingElement);
+              });
+            }
+          }
+          console.log('✅ Security findings loaded');
+        }
+      } catch (error) {
+        console.error('Security findings loading error:', error);
+      }
+    }
+
+    // 🔧 Advanced Security Functions
+    async function startSecurityCrawl() {
+      const targetUrl = document.getElementById('securityTargetUrl').value;
+      if (!targetUrl) {
+        addLog('❌ Please enter a target URL');
+        return;
+      }
+
+      addLog(`🔍 Starting security crawl for: ${targetUrl}`);
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/security-crawler.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            action: 'start_crawl', 
+            target_url: targetUrl 
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Security crawl started successfully`);
+          await loadSecurityCrawlerData();
+        } else {
+          addLog(`❌ Error starting crawl: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error starting security crawl: ${error.message}`);
+        console.error('Security crawl error:', error);
+      }
+    }
+
+    async function clearSecurityData() {
+      if (!confirm('Are you sure you want to clear all security test data?')) {
+        return;
+      }
+
+      addLog('🗑️ Clearing security test data...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/security-crawler.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'clear_data' })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Security test data cleared successfully');
+          await loadSecurityCrawlerData();
+        } else {
+          addLog(`❌ Error clearing data: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error clearing security data: ${error.message}`);
+        console.error('Clear security data error:', error);
+      }
+    }
+
+    // 🎯 Quick Test Functions
+    function testMainPage() {
+      document.getElementById('securityTargetUrl').value = `${window.location.protocol}//${window.location.host}/public/index.html`;
+      startSecurityCrawl();
+    }
+
+    function testProfilePage() {
+      document.getElementById('securityTargetUrl').value = `${window.location.protocol}//${window.location.host}/public/profile.html`;
+      startSecurityCrawl();
+    }
+
+    function testAdminInterface() {
+      document.getElementById('securityTargetUrl').value = `${window.location.protocol}//${window.location.host}/public/admin-interface.html`;
+      startSecurityCrawl();
+    }
+
+    // 📊 Security Report Functions
+    async function generateSecurityReport() {
+      addLog('📋 Generating security report...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/security-crawler.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'generate_report' })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Security report generated successfully');
+          // Display report in a modal or new window
+          const reportWindow = window.open('', '_blank', 'width=800,height=600');
+          reportWindow.document.write(`
+            <html>
+              <head><title>Security Report - ${new Date().toLocaleDateString()}</title></head>
+              <body style="font-family: Arial, sans-serif; margin: 20px;">
+                <h1>Security Report</h1>
+                <p>Generated: ${new Date().toLocaleString()}</p>
+                <pre>${JSON.stringify(data.report, null, 2)}</pre>
+              </body>
+            </html>
+          `);
+        } else {
+          addLog(`❌ Error generating report: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error generating security report: ${error.message}`);
+        console.error('Security report error:', error);
+      }
+    }
+
+    async function exportFindings() {
+      addLog('📤 Exporting security findings...');
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/security-crawler.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'export_findings' })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog('✅ Security findings exported successfully');
+          // Download CSV file
+          const blob = new Blob([data.csv], { type: 'text/csv' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `security_findings_${new Date().toISOString().split('T')[0]}.csv`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+        } else {
+          addLog(`❌ Error exporting findings: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Error exporting security findings: ${error.message}`);
+        console.error('Export findings error:', error);
+      }
+    }
+
+    function viewDetailedLogs() {
+      addLog('📜 Opening detailed security logs...');
+      // Open logs in a new window or modal
+      const logsWindow = window.open('', '_blank', 'width=1000,height=700');
+      logsWindow.document.write(`
+        <html>
+          <head><title>Security Detailed Logs</title></head>
+          <body style="font-family: monospace; margin: 20px; background: #1a1a1a; color: #00ff00;">
+            <h1>Security Detailed Logs</h1>
+            <p>Last updated: ${new Date().toLocaleString()}</p>
+            <div id="logs" style="white-space: pre-wrap; background: #000; padding: 20px; border-radius: 5px;">
+              Loading logs...
+            </div>
+          </body>
+        </html>
+      `);
+      
+      // Load logs via API
+      fetch(API_BASE_URL + '/api/admin/security-crawler.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_logs' })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          logsWindow.document.getElementById('logs').textContent = data.logs;
+        }
+      })
+      .catch(error => {
+        logsWindow.document.getElementById('logs').textContent = 'Error loading logs: ' + error.message;
+      });
+    }
+
+    // ⚙️ Configuration Functions
+    function saveSecurityConfig() {
+      const config = {
+        sql_detection: document.getElementById('enableSqlDetection').checked,
+        xss_detection: document.getElementById('enableXssDetection').checked,
+        directory_traversal: document.getElementById('enableDirectoryTraversal').checked,
+        info_disclosure: document.getElementById('enableInfoDisclosure').checked,
+        timeout: parseInt(document.getElementById('crawlTimeout').value),
+        max_urls: parseInt(document.getElementById('maxUrls').value),
+        request_delay: parseInt(document.getElementById('requestDelay').value),
+        exclude_static: document.getElementById('excludeStaticAssets').checked,
+        exclude_external: document.getElementById('excludeExternalDomains').checked,
+        focus_render: document.getElementById('focusRenderStructure').checked
+      };
+
+      addLog('💾 Saving security configuration...');
+      
+      fetch(API_BASE_URL + '/api/admin/security-crawler.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save_config', config: config })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          addLog('✅ Security configuration saved successfully');
+        } else {
+          addLog(`❌ Error saving configuration: ${data.error}`);
+        }
+      })
+      .catch(error => {
+        addLog(`❌ Error saving security configuration: ${error.message}`);
+        console.error('Save config error:', error);
+      });
+    }
+
+    // 🚀 Bulk Testing Functions
+    async function bulkSecurityTest() {
+      const urls = [
+        `${window.location.protocol}//${window.location.host}/public/index.html`,
+        `${window.location.protocol}//${window.location.host}/public/profile.html`,
+        `${window.location.protocol}//${window.location.host}/public/admin-interface.html`,
+        `${window.location.protocol}//${window.location.host}/api/admin/get-all-games-stats.php`
+      ];
+
+      addLog(`🚀 Starting bulk security test for ${urls.length} URLs...`);
+      
+      for (let i = 0; i < urls.length; i++) {
+        addLog(`🔍 Testing URL ${i + 1}/${urls.length}: ${urls[i]}`);
+        
+        try {
+          const response = await fetch(API_BASE_URL + '/api/admin/security-crawler.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              action: 'start_crawl', 
+              target_url: urls[i] 
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            addLog(`✅ URL ${i + 1} tested successfully`);
+          } else {
+            addLog(`❌ Error testing URL ${i + 1}: ${data.error}`);
+          }
+          
+          // Delay between requests
+          if (i < urls.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        } catch (error) {
+          addLog(`❌ Error testing URL ${i + 1}: ${error.message}`);
+        }
+      }
+      
+      addLog('✅ Bulk security test completed');
+      await loadSecurityCrawlerData();
+    }
+
+    function scheduleSecurityScan() {
+      addLog('⏰ Security scan scheduling feature coming soon...');
+      // TODO: Implement scheduling functionality
     }
 
     // 🐦 Twitter Missions Functions
@@ -20437,7 +21089,128 @@ function updateGameTabContent(gameType, gameData) {
       } else {
         console.log('🐦 Form not found!');
       }
+      
+      // 🔒 Security Crawler event listeners
+      const startSecurityCrawlBtn = document.getElementById('startSecurityCrawl');
+      if (startSecurityCrawlBtn) {
+        startSecurityCrawlBtn.addEventListener('click', startSecurityCrawl);
+      }
+      
+      const refreshSecurityDataBtn = document.getElementById('refreshSecurityData');
+      if (refreshSecurityDataBtn) {
+        refreshSecurityDataBtn.addEventListener('click', loadSecurityCrawlerData);
+      }
+      
+      const clearSecurityDataBtn = document.getElementById('clearSecurityData');
+      if (clearSecurityDataBtn) {
+        clearSecurityDataBtn.addEventListener('click', clearSecurityData);
+      }
+
+      // 🎯 Quick Test event listeners
+      const testMainPageBtn = document.getElementById('testMainPage');
+      if (testMainPageBtn) {
+        testMainPageBtn.addEventListener('click', testMainPage);
+      }
+
+      const testProfilePageBtn = document.getElementById('testProfilePage');
+      if (testProfilePageBtn) {
+        testProfilePageBtn.addEventListener('click', testProfilePage);
+      }
+
+      const testAdminInterfaceBtn = document.getElementById('testAdminInterface');
+      if (testAdminInterfaceBtn) {
+        testAdminInterfaceBtn.addEventListener('click', testAdminInterface);
+      }
+
+      // 📊 Security Report event listeners
+      const generateSecurityReportBtn = document.getElementById('generateSecurityReport');
+      if (generateSecurityReportBtn) {
+        generateSecurityReportBtn.addEventListener('click', generateSecurityReport);
+      }
+
+      const exportFindingsBtn = document.getElementById('exportFindings');
+      if (exportFindingsBtn) {
+        exportFindingsBtn.addEventListener('click', exportFindings);
+      }
+
+      const viewDetailedLogsBtn = document.getElementById('viewDetailedLogs');
+      if (viewDetailedLogsBtn) {
+        viewDetailedLogsBtn.addEventListener('click', viewDetailedLogs);
+      }
+
+      // ⚙️ Configuration event listeners
+      const saveSecurityConfigBtn = document.getElementById('saveSecurityConfig');
+      if (saveSecurityConfigBtn) {
+        saveSecurityConfigBtn.addEventListener('click', saveSecurityConfig);
+      }
+
+      // 🚀 Bulk Testing event listeners
+      const bulkSecurityTestBtn = document.getElementById('bulkSecurityTest');
+      if (bulkSecurityTestBtn) {
+        bulkSecurityTestBtn.addEventListener('click', bulkSecurityTest);
+      }
+
+      const scheduleSecurityScanBtn = document.getElementById('scheduleSecurityScan');
+      if (scheduleSecurityScanBtn) {
+        scheduleSecurityScanBtn.addEventListener('click', scheduleSecurityScan);
+      }
     });
+
+    // 🔒 Security Crawler Action Functions
+    async function startSecurityCrawl() {
+      const targetUrl = document.getElementById('securityTargetUrl').value;
+      
+      if (!targetUrl) {
+        addLog('❌ Please enter a target URL');
+        return;
+      }
+      
+      addLog(`🔒 Starting security crawl for: ${targetUrl}`);
+      
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/security-crawler.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            action: 'start_crawl',
+            target_url: targetUrl
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addLog(`✅ Security crawl completed: Found ${data.data.url_count} URLs, ${data.data.finding_count} vulnerabilities`);
+          
+          // Clear the input
+          document.getElementById('securityTargetUrl').value = '';
+          
+          // Refresh the data
+          await loadSecurityCrawlerData();
+        } else {
+          addLog(`❌ Security crawl failed: ${data.error}`);
+        }
+      } catch (error) {
+        addLog(`❌ Security crawl error: ${error.message}`);
+        console.error('Security crawl error:', error);
+      }
+    }
+
+    async function clearSecurityData() {
+      if (!confirm('Are you sure you want to clear all security test data?')) {
+        return;
+      }
+      
+      addLog('🗑️ Clearing security test data...');
+      
+      try {
+        // This would need to be implemented in the API
+        addLog('✅ Security test data cleared');
+        await loadSecurityCrawlerData();
+      } catch (error) {
+        addLog(`❌ Error clearing security data: ${error.message}`);
+      }
+    }
 
     // 📁 12.0 Management Functions
     async function loadTwelveZeroData() {

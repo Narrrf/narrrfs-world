@@ -26,7 +26,7 @@ fi
 # === MIGRATIONS ===
 echo "📦 Applying database migrations..."
 sqlite3 /var/www/html/db/narrrf_world.sqlite < /var/www/html/db/migrations/create_score_tables.sql
-sqlite3 /var/www/html/db/narrrf_world.sqlite < /var/www/html/db/migrations/create_nft_verification_tables.sql
+sqlite3 /var/www/html/db/narrrf_world.sqlite < /var/www/html/db/migrations/create_store_tables.sql
 
 # === DISCORD BOT MANUAL LAUNCH NOTICE ===
 echo ""

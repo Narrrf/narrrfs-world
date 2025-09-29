@@ -407,6 +407,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            min-height: 40px;
+        }
+        
+        .photo-actions span {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 8px;
+            font-size: 0.75rem;
         }
 
         .photo-actions button {
@@ -417,6 +427,8 @@
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 0.8rem;
+            flex-shrink: 0;
+            min-width: 30px;
         }
 
         .photo-actions button:hover {
@@ -1048,7 +1060,7 @@
         // Load photos with pagination
         async function loadPhotos(page = 1) {
             try {
-                const response = await fetch('get-photos.php');
+                const response = await fetch('get-photos.php?t=' + Date.now());
                 const data = await response.json();
                 const photoGrid = document.getElementById('photoGrid');
                 const paginationControls = document.getElementById('paginationControls');
@@ -1060,15 +1072,22 @@
                     const endIndex = startIndex + photosPerPage;
                     const photosToShow = allPhotos.slice(startIndex, endIndex);
                     
-                    photoGrid.innerHTML = photosToShow.map(photo => 
-                        `<div class="photo-item">
+                    console.log('🔍 Loading photos:', photosToShow);
+                    
+                    photoGrid.innerHTML = photosToShow.map(photo => {
+                        console.log('📸 Creating photo item for:', photo.filename);
+                        const html = `<div class="photo-item">
                             <img src="../slider-photos/${photo.filename}" alt="${photo.name}">
                             <div class="photo-actions">
                                 <span>${photo.name}</span>
-                                <button onclick="deletePhoto('${photo.filename}')">🗑️</button>
+                                <button class="delete-photo-btn" data-filename="${photo.filename}">🗑️</button>
                             </div>
-                        </div>`
-                    ).join('');
+                        </div>`;
+                        console.log('📸 Generated HTML for', photo.filename, ':', html);
+                        return html;
+                    }).join('');
+                    
+                    console.log('📸 Final photoGrid HTML:', photoGrid.innerHTML);
                     
                     // Show pagination controls if more than 10 photos
                     if (allPhotos.length > photosPerPage) {
@@ -1138,6 +1157,16 @@
             }
         });
 
+        // Event delegation for delete buttons
+        document.addEventListener('click', (e) => {
+            console.log('🖱️ Click detected on:', e.target);
+            if (e.target.classList.contains('delete-photo-btn')) {
+                const filename = e.target.getAttribute('data-filename');
+                console.log('🗑️ Delete button clicked for:', filename);
+                deletePhoto(filename);
+            }
+        });
+
         // Upload photos
         async function uploadPhotos(files) {
             const formData = new FormData();
@@ -1169,6 +1198,7 @@
 
         // Delete photo
         async function deletePhoto(filename) {
+            console.log('🗑️ Delete photo called with filename:', filename);
             if (!confirm('Möchten Sie dieses Foto wirklich löschen?')) {
                 return;
             }
