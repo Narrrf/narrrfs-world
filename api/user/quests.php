@@ -14,7 +14,7 @@ $db = new SQLite3(__DIR__ . '/../../db/narrrf_world.sqlite');
 // Prepare query to avoid SQL injection (bind user_id as param)
 $stmt = $db->prepare("
     SELECT q.quest_id, q.type, q.description, q.link, q.reward, q.expires_at, q.is_active,
-           qc.status AS claim_status, qc.claimed_at
+           qc.status AS claim_status, qc.claimed_at, qc.rejection_reason
     FROM tbl_quests q
     LEFT JOIN tbl_quest_claims qc ON qc.quest_id = q.quest_id AND qc.user_id = :user_id
     WHERE q.is_active = 1

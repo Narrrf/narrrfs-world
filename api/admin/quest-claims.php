@@ -241,12 +241,14 @@ function rejectQuestClaim($db) {
             return;
         }
         
-        // Update claim status
+        // Update claim status with rejection reason
         $stmt = $db->prepare("UPDATE tbl_quest_claims SET 
                                 status = 'rejected', 
-                                reviewed_at = datetime('now') 
+                                reviewed_at = datetime('now'),
+                                rejection_reason = ?
                               WHERE claim_id = ?");
-        $stmt->bindValue(1, $claim_id, SQLITE3_INTEGER);
+        $stmt->bindValue(1, $reason, SQLITE3_TEXT);
+        $stmt->bindValue(2, $claim_id, SQLITE3_INTEGER);
         $stmt->execute();
         
         echo json_encode([

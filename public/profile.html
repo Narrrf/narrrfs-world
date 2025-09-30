@@ -2607,6 +2607,11 @@ if (user && user.discord_id) {
                 : 'Not Claimed'
               }
             </span>
+            ${q.claim_status === "rejected" && q.rejection_reason ? 
+              `<div class="mt-1 text-xs text-red-300 bg-red-900/30 px-2 py-1 rounded">
+                <strong>Reason:</strong> ${q.rejection_reason}
+              </div>` : ''
+            }
             ${q.claimed_at ? `<span class="text-xs text-gray-300 text-right">Claimed at:<br>${q.claimed_at.replace('T', ' ').slice(0, 16)}</span>` : ''}
             ${
               q.is_active && !q.claim_status
