@@ -198,44 +198,119 @@ function extractUrls($html, $baseUrl) {
     return array_unique($urls);
 }
 
-// Security vulnerability detection
+// Enhanced security vulnerability detection with context awareness
 function detectVulnerabilities($html, $url) {
     $findings = [];
+    $lines = explode("\n", $html);
     
-    // SQL Injection patterns
-    if (preg_match('/SELECT.*FROM|INSERT.*INTO|UPDATE.*SET|DELETE.*FROM/i', $html)) {
-        $findings[] = [
-            'type' => 'sql_injection',
-            'severity' => 'high',
-            'description' => 'Potential SQL injection vulnerability detected in source code'
-        ];
-    }
+    // Safe patterns whitelist
+    $safePatterns = [
+        // CSS animations
+        '@keyframes',
+        'animation-keyframes',
+        'keyframe',
+        
+        // External scripts
+        '<script src=',
+        '<script type="text/javascript"',
+        
+        // HTML form elements
+        '<select',
+        '<option',
+        
+        // HTTP methods in JavaScript
+        'method: \'DELETE\'',
+        'method: "DELETE"',
+        'method: \'GET\'',
+        'method: "GET"',
+        'method: \'POST\'',
+        'method: "POST"',
+        
+        // Button click handlers
+        'onclick="this.',
+        'onclick="window.',
+        'onclick="dismiss',
+        'onclick="close',
+        
+        // Meta tags
+        'meta name="keywords"',
+        'meta name="description"',
+        
+        // Comments
+        '<!--',
+        '//',
+        '/*',
+    ];
     
-    // XSS patterns
-    if (preg_match('/<script[^>]*>|javascript:|onclick=|onload=|onerror=/i', $html)) {
-        $findings[] = [
-            'type' => 'xss',
-            'severity' => 'medium',
-            'description' => 'Potential XSS vulnerability detected in source code'
-        ];
-    }
-    
-    // Directory traversal patterns
-    if (preg_match('/\.\.\/|\.\.\\\\|\.\.%2f|\.\.%5c/i', $html)) {
-        $findings[] = [
-            'type' => 'directory_traversal',
-            'severity' => 'high',
-            'description' => 'Potential directory traversal vulnerability detected'
-        ];
-    }
-    
-    // Information disclosure
-    if (preg_match('/password|secret|key|token|api_key|private/i', $html)) {
-        $findings[] = [
-            'type' => 'information_disclosure',
-            'severity' => 'medium',
-            'description' => 'Potential sensitive information disclosure detected'
-        ];
+    foreach ($lines as $lineNum => $line) {
+        $lineNum++; // Start from 1
+        $line = trim($line);
+        
+        // Skip empty lines and comments
+        if (empty($line) || strpos($line, '<!--') === 0 || strpos($line, '//') === 0) {
+            continue;
+        }
+        
+        // Check if line contains safe patterns
+        $isSafe = false;
+        foreach ($safePatterns as $pattern) {
+            if (stripos($line, $pattern) !== false) {
+                $isSafe = true;
+                break;
+            }
+        }
+        
+        if ($isSafe) {
+            continue; // Skip safe patterns
+        }
+        
+        // Context-aware SQL injection detection
+        if (preg_match('/\$_(GET|POST|REQUEST|COOKIE)\[.*\].*(SELECT|INSERT|UPDATE|DELETE)/i', $line)) {
+            $findings[] = [
+                'type' => 'sql_injection',
+                'severity' => 'high',
+                'description' => 'Potential SQL injection vulnerability in user input handling',
+                'line_number' => $lineNum,
+                'code_snippet' => $line,
+                'context' => 'User input directly used in SQL query'
+            ];
+        }
+        
+        // Context-aware XSS detection
+        if (preg_match('/echo\s+\$_(GET|POST|REQUEST|COOKIE)\[.*\]|print\s+\$_(GET|POST|REQUEST|COOKIE)\[.*\]/i', $line)) {
+            $findings[] = [
+                'type' => 'xss',
+                'severity' => 'medium',
+                'description' => 'Potential XSS vulnerability - user input directly output',
+                'line_number' => $lineNum,
+                'code_snippet' => $line,
+                'context' => 'User input directly output without sanitization'
+            ];
+        }
+        
+        // Context-aware information disclosure
+        if (preg_match('/\$_(GET|POST|REQUEST|COOKIE)\[.*\].*(password|secret|key|token|api_key|private)/i', $line)) {
+            $findings[] = [
+                'type' => 'information_disclosure',
+                'severity' => 'medium',
+                'description' => 'Potential sensitive information in user input',
+                'line_number' => $lineNum,
+                'code_snippet' => $line,
+                'context' => 'Sensitive information handling in user input'
+            ];
+        }
+        
+        // Directory traversal detection
+        if (preg_match('/\$_(GET|POST|REQUEST|COOKIE)\[.*\].*(\.\.\/|\.\.\\\\|\.\.%2f|\.\.%5c)/i', $line)) {
+            $findings[] = [
+                'type' => 'directory_traversal',
+                'severity' => 'high',
+                'description' => 'Potential directory traversal vulnerability',
+                'line_number' => $lineNum,
+                'code_snippet' => $line,
+                'context' => 'User input used in file path operations'
+            ];
+        }
     }
     
     return $findings;
@@ -303,13 +378,16 @@ try {
                             // Insert security finding
                             $stmt = $db->prepare("
                                 INSERT INTO tbl_security_findings 
-                                (crawl_id, finding_type, severity, description, status, created_at, is_local_test) 
-                                VALUES (?, ?, ?, ?, 'open', CURRENT_TIMESTAMP, 1)
+                                (crawl_id, finding_type, severity, description, status, created_at, is_local_test, line_number, code_snippet, context) 
+                                VALUES (?, ?, ?, ?, 'open', CURRENT_TIMESTAMP, 1, ?, ?, ?)
                             ");
                             $stmt->bindValue(1, $crawlId, SQLITE3_INTEGER);
                             $stmt->bindValue(2, $finding['type'], SQLITE3_TEXT);
                             $stmt->bindValue(3, $finding['severity'], SQLITE3_TEXT);
                             $stmt->bindValue(4, $finding['description'], SQLITE3_TEXT);
+                            $stmt->bindValue(5, $finding['line_number'] ?? null, SQLITE3_INTEGER);
+                            $stmt->bindValue(6, $finding['code_snippet'] ?? null, SQLITE3_TEXT);
+                            $stmt->bindValue(7, $finding['context'] ?? null, SQLITE3_TEXT);
                             $stmt->execute();
                             
                             $findingId = $db->lastInsertRowID();
