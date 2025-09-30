@@ -71,8 +71,8 @@ function createBugReportFromSecurityFinding($db, $finding, $targetUrl, $crawlId,
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     
-    $stmt->bindValue(1, null); // No Discord message ID
-    $stmt->bindValue(2, null); // No Discord channel ID
+    $stmt->bindValue(1, 'security_crawler_' . time() . '_' . $crawlId . '_' . $findingId); // Unique Discord message ID
+    $stmt->bindValue(2, 'security_crawler'); // Discord channel ID
     $stmt->bindValue(3, 'security_crawler'); // System user ID
     $stmt->bindValue(4, 'Security Crawler System'); // System username
     $stmt->bindValue(5, $title, SQLITE3_TEXT);
