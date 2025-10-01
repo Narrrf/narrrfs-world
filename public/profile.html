@@ -4290,6 +4290,16 @@ function closeSeasonTesterPopup() {
 document.addEventListener('DOMContentLoaded', function() {
     // Wait a bit for the page to fully load
     setTimeout(checkSeasonTesterRole, 2000);
+    
+    // Display game control instructions
+    setTimeout(function() {
+        if (typeof displayTetrisHelpInfoOutside === 'function') {
+            displayTetrisHelpInfoOutside();
+        }
+        if (typeof displaySnakeHelpInfoOutside === 'function') {
+            displaySnakeHelpInfoOutside();
+        }
+    }, 1000);
 });
 </script>
 
