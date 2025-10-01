@@ -1321,38 +1321,45 @@ require_once 'discord-invite.php';
 <section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col lg:flex-row gap-8 items-start justify-center relative z-10">
  <!-- 🎮 TETRIS PANEL -->
   <section id="cheese-tetris" class="flex-1 relative finance-card py-8 px-6 rounded-3xl ring-2 ring-purple-500/50 border border-purple-400/30 mb-8 lg:mb-0 hover:ring-purple-400/70 transition-all duration-300">
-    <div class="text-center mb-4">
-      🎮 TETRIS
-    </div>
-    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">TETRIS SPOINC MODE</h2>
-    <canvas id="tetris-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
+          <div class="text-center mb-4">
+            🎮 TETRIS
+          </div>
+          <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">TETRIS SPOINC MODE</h2>
+          
+          <!-- 💰 Score Display - Moved to top for visibility during gameplay -->
+          <div class="text-center mb-4">
+            <p id="tetris-score" class="text-yellow-300 font-mono text-lg font-bold">💰 Tetris Score: $0 DSPOINC</p>
+            <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1">💣 Incoming Cheese Bomb!</p>
+          </div>
+          
+          <!-- 🎮 Game Controls -->
+          <div class="text-center mb-4 space-y-2">
+            <button id="start-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
+            <button id="pause-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">⏸️ Pause</button>
+          </div>
     
-    <!-- 🔮 Next Block Preview -->
-    <div class="text-center mt-4">
+    <!-- 🔮 Next Block Preview - Below controls -->
+    <div class="text-center mb-4">
       <p class="text-yellow-300 text-sm mb-2">Next Block:</p>
       <canvas id="next-canvas" width="80" height="80" class="bg-gray-900 rounded-md block mx-auto"></canvas>
     </div>
     
-    <div class="text-center mt-4 space-y-2">
-      <button id="start-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
-      <button id="pause-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">⏸️ Pause</button>
-      <p id="spoink-score" class="text-yellow-300 font-mono text-lg">💰 $DSPOINC earned: 0</p>
-      <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1">💣 Incoming Cheese Bomb!</p>
-    </div>
-    
-    <p id="tetris-score" class="text-center mt-6 text-sm font-semibold text-yellow-200">💰 Tetris Score: $0 DSPOINC</p>
-    
-    <!-- 🧠 Tetris Game Over Modal - Positioned within Tetris container -->
-    <div id="game-over-modal" class="hidden absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm rounded-3xl">
-      <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
-        <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
-        <p id="final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-        <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+    <div class="relative inline-block">
+      <canvas id="tetris-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
+      
+      <!-- 🧠 Tetris Game Over Modal - Positioned over canvas only -->
+      <div id="game-over-modal" class="hidden absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm rounded-lg" style="width: 200px; height: 400px; border: 4px solid #fbbf24; box-sizing: border-box; min-height: 400px;">
+        <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
+          <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
+          <p id="final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+          <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+        </div>
       </div>
     </div>
     
-    <!-- 💣 Bomb Defused Popup -->
-    <div id="bomb-defused-popup" class="absolute top-[420px] right-6 md:right-12 bg-yellow-300 text-black px-2 py-1 rounded-lg text-xs md:text-sm shadow-lg hidden z-50 scale-75">
+    
+    <!-- 💣 Bomb Defused Popup - Positioned relative to canvas -->
+    <div id="bomb-defused-popup" class="absolute top-4 right-4 bg-yellow-300 text-black px-2 py-1 rounded-lg text-xs md:text-sm shadow-lg hidden z-50 scale-75">
       💣 BOMB DEFUSED! +50 DSPOINC
     </div>
   </section>
@@ -1364,30 +1371,35 @@ require_once 'discord-invite.php';
     </div>
     <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">Cheese Snake</h2>
     
-    <div class="relative">
-      <canvas id="snake-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto rounded-lg shadow-lg"></canvas>
-      
-      <!-- 🚨 Snake Countdown Overlay -->
-      <div id="snake-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
-        <span id="countdown-number">3</span>
-      </div>
+    <!-- 💰 Score Display - Moved to top for visibility during gameplay -->
+    <div class="text-center mb-4">
+      <p id="snake-score" class="text-yellow-300 font-mono text-lg font-bold">💰 Snake Score: $0 DSPOINC</p>
     </div>
     
-    <div class="text-center mt-4 space-y-2">
+    <!-- 🎮 Game Controls -->
+    <div class="text-center mb-4 space-y-2">
       <button id="start-snake-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
       <button id="pause-snake-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded-xl shadow-md w-32">⏸️ Pause</button>
     </div>
     
-    <p id="snake-score" class="text-center mt-6 text-sm font-semibold text-yellow-200">💰 Snake Score: $0 DSPOINC</p>
-    
-    <!-- 🧠 Snake Game Over Modal - Positioned within Snake container -->
-    <div id="snake-over-modal" class="hidden absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm rounded-3xl">
-      <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
-        <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
-        <p id="snake-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-        <button id="snake-play-again-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg touch-manipulation">🔁 Play Again</button>
+    <div class="relative inline-block">
+      <canvas id="snake-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
+      
+      <!-- 🚨 Snake Countdown Overlay -->
+      <div id="snake-countdown" class="hidden absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 z-50 rounded-lg" style="width: 200px; height: 400px; border: 4px solid #fbbf24; box-sizing: border-box; min-height: 400px;">
+        <span id="countdown-number">3</span>
+      </div>
+      
+      <!-- 🧠 Snake Game Over Modal - Positioned over canvas only -->
+      <div id="snake-over-modal" class="hidden absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm rounded-lg" style="width: 200px; height: 400px; border: 4px solid #fbbf24; box-sizing: border-box; min-height: 400px;">
+        <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
+          <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
+          <p id="snake-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
+          <button id="snake-play-again-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg touch-manipulation">🔁 Play Again</button>
+        </div>
       </div>
     </div>
+    
   </section>
 
   <!-- 🚀 SPACE INVADERS PANEL -->
@@ -2198,6 +2210,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     console.log('🔍 Snake button:', snakeBtn);
     console.log('🔍 Space Invaders button:', spaceInvadersBtn);
     console.log('🔍 Space Invaders canvas:', spaceInvadersCanvas);
+
+    // 🆘 NEW: Display control instructions for all games on page load
+    setTimeout(() => {
+      if (typeof displayTetrisHelpInfoOutside === 'function') {
+        displayTetrisHelpInfoOutside();
+        console.log('✅ Tetris control instructions displayed');
+      }
+      if (typeof displaySnakeHelpInfoOutside === 'function') {
+        displaySnakeHelpInfoOutside();
+        console.log('✅ Snake control instructions displayed');
+      }
+    }, 500);
 
     if (tetrisBtn) {
       tetrisBtn.addEventListener("click", () => {
