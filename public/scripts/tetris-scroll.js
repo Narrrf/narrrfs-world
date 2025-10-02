@@ -37,79 +37,6 @@
 // 🏆 Achievement types: Line clears, combos, perfect clears, speed challenges
 // 🎯 Balanced difficulty curve for engaging progression!
 
-// 🆘 NEW: Display control instructions outside game canvas
-function displayTetrisHelpInfoOutside() {
-  // Find or create the help info container
-  let helpContainer = document.getElementById('tetris-help-info-container');
-  if (!helpContainer) {
-    helpContainer = document.createElement('div');
-    helpContainer.id = 'tetris-help-info-container';
-    helpContainer.style.cssText = `
-      background: #1a1a1a;
-      border: 2px solid #fbbf24;
-      border-radius: 10px;
-      padding: 20px;
-      margin: 20px auto;
-      max-width: 800px;
-      text-align: center;
-      font-family: Arial, sans-serif;
-      color: white;
-    `;
-    
-    // Insert after the game canvas
-    const gameContainer = document.getElementById('tetris-canvas');
-    if (gameContainer) {
-      gameContainer.parentNode.insertBefore(helpContainer, gameContainer.nextSibling);
-    }
-  }
-  
-  // Update help information
-  helpContainer.innerHTML = `
-    <h3 style="color: #fbbf24; margin-bottom: 15px; font-size: 1.3em;">🎮 TETRIS CONTROLS & HELP</h3>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: left;">
-      <div>
-        <h4 style="color: #4ade80; border-bottom: 1px solid #4ade80; padding-bottom: 5px;">🎯 MOVEMENT & ROTATION</h4>
-        <p><strong>Arrow Keys:</strong> ←=Left, →=Right, ↓=Soft Drop, ↑=Rotate</p>
-        <p><strong>WASD Keys:</strong> A=Left, D=Right, S=Soft Drop, W=Rotate</p>
-        <p><strong>Space Bar:</strong> Hard Drop (instant drop)</p>
-        <p><strong>Mobile:</strong> Swipe left/right to move, tap to rotate</p>
-      </div>
-      
-      <div>
-        <h4 style="color: #fbbf24; border-bottom: 1px solid #fbbf24; padding-bottom: 5px;">🎮 GAME CONTROLS</h4>
-        <p><strong>P Key:</strong> Pause/Resume game</p>
-        <p><strong>R Key:</strong> Restart game</p>
-        <p><strong>H Key:</strong> Hold piece (if available)</p>
-        <p><strong>Mobile:</strong> Use pause button and touch controls</p>
-      </div>
-      
-      <div>
-        <h4 style="color: #8b5cf6; border-bottom: 1px solid #8b5cf6; padding-bottom: 5px;">🏆 SCORING & ACHIEVEMENTS</h4>
-        <p><strong>Line Clears:</strong> 1 line = 2 DSPOINC, 2 lines = 4 DSPOINC</p>
-        <p><strong>Combo Bonus:</strong> Chain line clears for extra points</p>
-        <p><strong>Tetris:</strong> 4 lines at once = bonus points</p>
-        <p><strong>Achievements:</strong> Unlock special milestones</p>
-      </div>
-      
-      <div>
-        <h4 style="color: #ef4444; border-bottom: 1px solid #ef4444; padding-bottom: 5px;">💣 SPECIAL BLOCKS</h4>
-        <p><strong>Bomb Blocks:</strong> Clear lines containing bombs for bonus</p>
-        <p><strong>Explosive:</strong> Special blocks that clear surrounding area</p>
-        <p><strong>Power-ups:</strong> Various special effects and bonuses</p>
-        <p><strong>Strategy:</strong> Use special blocks strategically</p>
-      </div>
-    </div>
-    
-    <div style="margin-top: 20px; padding: 15px; background: rgba(251, 191, 36, 0.1); border-radius: 8px;">
-      <p style="color: #fbbf24; font-weight: bold; margin: 0;">
-        💡 TIP: Clear lines quickly to build combos and earn more DSPOINC! 
-        Use hard drop (space) for faster gameplay and better scores.
-      </p>
-    </div>
-  `;
-}
-
 // 🔧 MOBILE INITIALIZATION - Tetris-specific naming to avoid conflicts
 let isTetrisMobileDevice = false;
 
@@ -247,20 +174,20 @@ const pieceImageMap = {
 let tetrisTouchStartX = 0;
 let tetrisTouchStartY = 0;
 let tetrisTouchStartTime = 0;
-const TETRIS_SWIPE_THRESHOLD = 30; // Reduced for more sensitive control
-const TETRIS_SWIPE_TIME_THRESHOLD = 400; // Reduced for faster response
-const TETRIS_DOUBLE_TAP_THRESHOLD = 300; // Maximum time between taps for double tap
-const TETRIS_DOWN_SWIPE_THRESHOLD = 40; // Separate threshold for down swipes (more sensitive)
+const TETRIS_SWIPE_THRESHOLD = 20; // Reduced for more sensitive control
+const TETRIS_SWIPE_TIME_THRESHOLD = 300; // Reduced for faster response
+const TETRIS_DOUBLE_TAP_THRESHOLD = 250; // Maximum time between taps for double tap
+const TETRIS_DOWN_SWIPE_THRESHOLD = 25; // Separate threshold for down swipes (more sensitive)
 let tetrisLastTapTime = 0;
 let tetrisLastMoveTime = 0; // Throttle rapid movements
-const TETRIS_MOVE_THROTTLE = 100; // Reduced throttle for more responsive control
+const TETRIS_MOVE_THROTTLE = 50; // Reduced throttle for more responsive control
 
 // 🎮 Hold-to-drop functionality
 let tetrisIsHolding = false;
 let tetrisHoldInterval = null;
 let tetrisRotationTimer = null; // Timer for delayed rotation
-const TETRIS_HOLD_DELAY = 50; // Reduced delay for more responsive hold-to-drop (ms) - was 100
-const TETRIS_HOLD_INTERVAL = 30; // Faster interval for more responsive hold-to-drop (ms) - was 50
+const TETRIS_HOLD_DELAY = 25; // Reduced delay for more responsive hold-to-drop (ms) - was 100
+const TETRIS_HOLD_INTERVAL = 20; // Faster interval for more responsive hold-to-drop (ms) - was 50
 let tetrisHoldStartTime = 0;
 
 // 🎮 Hold-to-drop functions
@@ -597,12 +524,6 @@ window.startTetrisGame = function () {
   }
   
   console.log('🚀 Starting Tetris game...');
-  
-  // 🆘 NEW: Display control instructions outside game canvas
-  setTimeout(() => {
-    displayTetrisHelpInfoOutside();
-  }, 200);
-  
   startTetris(); // ← main game logic
 };
 
@@ -628,7 +549,7 @@ const nextCtx = nextCanvas?.getContext("2d");
 function startTetris() {
   const canvas = document.getElementById("tetris-canvas");
   const context = canvas.getContext("2d");
-  const scoreDisplay = document.getElementById("spoink-score");
+  const scoreDisplay = document.getElementById("tetris-score");
   if (!scoreDisplay) {
     console.log('⚠️ Score display element not found - creating fallback');
   }

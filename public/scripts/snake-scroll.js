@@ -39,77 +39,8 @@
 // 🎯 Balanced difficulty curve for engaging progression!
 
 // 🆘 NEW: Display control instructions outside game canvas
-function displaySnakeHelpInfoOutside() {
-  // Find or create the help info container
-  let helpContainer = document.getElementById('snake-help-info-container');
-  if (!helpContainer) {
-    helpContainer = document.createElement('div');
-    helpContainer.id = 'snake-help-info-container';
-    helpContainer.style.cssText = `
-      background: #1a1a1a;
-      border: 2px solid #fbbf24;
-      border-radius: 10px;
-      padding: 20px;
-      margin: 20px auto;
-      max-width: 800px;
-      text-align: center;
-      font-family: Arial, sans-serif;
-      color: white;
-    `;
-    
-    // Insert after the game canvas
-    const gameContainer = document.getElementById('snake-canvas');
-    if (gameContainer) {
-      gameContainer.parentNode.insertBefore(helpContainer, gameContainer.nextSibling);
-    }
-  }
-  
-  // Update help information
-  helpContainer.innerHTML = `
-    <h3 style="color: #fbbf24; margin-bottom: 15px; font-size: 1.3em;">🐍 SNAKE CONTROLS & HELP</h3>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: left;">
-      <div>
-        <h4 style="color: #4ade80; border-bottom: 1px solid #4ade80; padding-bottom: 5px;">🎯 MOVEMENT CONTROLS</h4>
-        <p><strong>Arrow Keys:</strong> ↑=Up, ↓=Down, ←=Left, →=Right</p>
-        <p><strong>WASD Keys:</strong> W=Up, S=Down, A=Left, D=Right</p>
-        <p><strong>Mobile:</strong> Swipe in direction to move</p>
-        <p><strong>Touch:</strong> Tap directional buttons below game</p>
-      </div>
-      
-      <div>
-        <h4 style="color: #fbbf24; border-bottom: 1px solid #fbbf24; padding-bottom: 5px;">🎮 GAME CONTROLS</h4>
-        <p><strong>Space Bar:</strong> Pause/Resume game</p>
-        <p><strong>R Key:</strong> Restart game</p>
-        <p><strong>P Key:</strong> Pause/Resume game</p>
-        <p><strong>Mobile:</strong> Use pause button and touch controls</p>
-      </div>
-      
-      <div>
-        <h4 style="color: #8b5cf6; border-bottom: 1px solid #8b5cf6; padding-bottom: 5px;">🏆 SCORING & ACHIEVEMENTS</h4>
-        <p><strong>Food Points:</strong> Each food = 10 DSPOINC</p>
-        <p><strong>Length Bonus:</strong> Longer snake = more points</p>
-        <p><strong>Speed Bonus:</strong> Faster gameplay = bonus points</p>
-        <p><strong>Achievements:</strong> Unlock special milestones</p>
-      </div>
-      
-      <div>
-        <h4 style="color: #ef4444; border-bottom: 1px solid #ef4444; padding-bottom: 5px;">🍎 SPECIAL FOOD</h4>
-        <p><strong>Golden Food:</strong> Extra points and special effects</p>
-        <p><strong>Speed Food:</strong> Increases game speed temporarily</p>
-        <p><strong>Bonus Food:</strong> Various special effects</p>
-        <p><strong>Strategy:</strong> Collect special food for advantages</p>
-      </div>
-    </div>
-    
-    <div style="margin-top: 20px; padding: 15px; background: rgba(251, 191, 36, 0.1); border-radius: 8px;">
-      <p style="color: #fbbf24; font-weight: bold; margin: 0;">
-        💡 TIP: Plan your moves ahead! Don't trap yourself in corners. 
-        Use the walls to your advantage and collect food strategically.
-      </p>
-    </div>
-  `;
-}
+// 🆘 REMOVED: displaySnakeHelpInfoOutside function to prevent duplicate instruction overlays
+// Using HTML instructions instead for cleaner, single-source implementation
 
 // 🚫 Full page scroll prevention
 window.addEventListener("keydown", function (e) {
@@ -269,10 +200,7 @@ function initSnake() {
     clearInterval(gameInterval);
     resetGame();
     
-    // 🆘 NEW: Display control instructions outside game canvas
-    setTimeout(() => {
-      displaySnakeHelpInfoOutside();
-    }, 200);
+    // 🆘 REMOVED: Display control instructions outside game canvas (using HTML instructions instead)
     
     // 🛠️ Mock fallback if testing locally (same as Tetris)
     let discordId = localStorage.getItem("discord_id");
@@ -285,7 +213,7 @@ function initSnake() {
       localStorage.setItem("discord_name", discordName);
     }
     
-    gameInterval = setInterval(moveSnake, 250); // slow start
+    gameInterval = setInterval(moveSnake, 400); // slower start for better device compatibility
     enableGlobalSnakeTouch(); // Enable touch controls when game starts
     lockSnakeScroll(); // 🎯 Lock scrolling when game starts (like Tetris)
   }
@@ -817,7 +745,7 @@ function initSnake() {
 let touchStartX = 0, touchStartY = 0;
 let isSnakeGameActive = false;
 let snakeScrollLocked = false;
-const SNAKE_SWIPE_THRESHOLD = 50; // Increased from 30 to 50 for better mobile control
+const SNAKE_SWIPE_THRESHOLD = 30; // Optimized for instant touch response
 
 function enableGlobalSnakeTouch() { 
   isSnakeGameActive = true; 
@@ -872,21 +800,23 @@ document.body.addEventListener("touchend", function(e) {
   const deltaX = touch.clientX - touchStartX;
   const deltaY = touch.clientY - touchStartY;
   
-  // Increased minimum swipe distance for better mobile control
+  // Optimized minimum swipe distance for instant response
   const minSwipeDistance = SNAKE_SWIPE_THRESHOLD;
   
   // Only process swipes if game is active and not paused
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    // Horizontal swipe detection - more responsive
     if (deltaX > minSwipeDistance && velocity.x === 0) {
-      velocity = { x: 1, y: 0 };
+      velocity = { x: 1, y: 0 }; // Right
     } else if (deltaX < -minSwipeDistance && velocity.x === 0) {
-      velocity = { x: -1, y: 0 };
+      velocity = { x: -1, y: 0 }; // Left
     }
   } else {
+    // Vertical swipe detection - more responsive
     if (deltaY > minSwipeDistance && velocity.y === 0) {
-      velocity = { x: 0, y: 1 };
+      velocity = { x: 0, y: 1 }; // Down
     } else if (deltaY < -minSwipeDistance && velocity.y === 0) {
-      velocity = { x: 0, y: -1 };
+      velocity = { x: 0, y: -1 }; // Up
     }
   }
 }, { passive: false });
@@ -1027,7 +957,7 @@ function saveScore(finalScore) {
         // Only restart if game is not over
         if (gameInterval) {
           clearInterval(gameInterval);
-          gameInterval = setInterval(moveSnake, 250);
+          gameInterval = setInterval(moveSnake, 400);
           // 🎯 Lock scrolling when resumed (like Tetris)
           lockSnakeScroll();
         }

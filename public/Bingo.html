@@ -8,7 +8,7 @@ require_once 'discord-invite.php';
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
-  <title>🎲 BINGO NIGHT × SECRET CHEESE EDITION | Narrrf's World</title>
+  <title>🐒 GOLDEN BABOONS BINGO NIGHT × SECRET CHEESE EDITION | Narrrf's World</title>
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- 🔗 Discord Token of Render System -->
@@ -109,6 +109,16 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
+<!-- 🏠 Local Development Indicator -->
+<div id="localDevIndicator" class="hidden fixed top-4 left-4 z-50">
+  <div class="bg-blue-900/90 backdrop-blur-md border border-blue-400/30 rounded-xl px-4 py-2 shadow-lg">
+    <div class="flex items-center gap-2">
+      <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+      <span class="text-blue-400 text-sm font-semibold">🏠 Local Testing Mode</span>
+    </div>
+  </div>
+</div>
+
 <!-- 🧪 Dark Theme Navbar -->
 <nav class="bg-black/90 backdrop-blur-md border-b border-yellow-400/30 shadow-xl py-4">
   <div class="max-w-5xl mx-auto flex justify-between px-4">
@@ -119,8 +129,8 @@ require_once 'discord-invite.php';
 
 <!-- 🧀 Dark Theme Header -->
 <header class="text-center p-8 rounded-xl shadow-2xl my-8 mx-4 bg-black/90 backdrop-blur-md border border-yellow-400/30">
-  <h1 class="text-5xl font-bold text-yellow-400 animate-pulse trophy-glow">🧀 Golden Bingo Vault</h1>
-  <p class="text-gray-300">Enter numbers, save tickets, and play freely!</p>
+  <h1 class="text-5xl font-bold text-yellow-400 animate-pulse trophy-glow">🐒 Golden Baboons Bingo Night 🧀</h1>
+  <p class="text-gray-300">Tickets auto-sort by hits! Watch for "1 AWAY FROM BINGO!" warnings!</p>
 </header>
 
 <!-- Main Bingo Section -->
@@ -138,6 +148,21 @@ require_once 'discord-invite.php';
   </section>
 
   <div id="ticketGrids"></div>
+
+  <!-- 🐒 Game Mode Selection for Golden Baboons Bingo -->
+  <section class="bg-black/90 backdrop-blur-md border border-yellow-400/30 p-4 rounded-xl shadow-2xl mb-4">
+    <label class="block mb-2 text-yellow-300 font-semibold">🎮 Game Mode:</label>
+    <div class="flex gap-4 mb-4">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="gameMode" value="normal" checked class="text-yellow-400 focus:ring-yellow-400">
+        <span class="text-white">🧀 Normal Bingo (Rows/Columns/Diagonals)</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="gameMode" value="corners" class="text-yellow-400 focus:ring-yellow-400">
+        <span class="text-white">🔲 4 Corners Only</span>
+      </label>
+    </div>
+  </section>
 
   <section class="bg-black/90 backdrop-blur-md border border-yellow-400/30 p-4 rounded-xl shadow-2xl mb-8">
     <label class="block mb-2 text-yellow-300 font-semibold">Enter Called Numbers (one at a time):</label>
@@ -178,6 +203,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   const loginSection = document.getElementById('loginSection');
   const labStatusBadge = document.getElementById('labStatusBadge');
   
+  // 🧀 Environment detection for local vs production
+  const isProduction = window.location.hostname === 'narrrfs.world';
+  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
   try {
     const res = await fetch('/api/load-bingo-tickets.php', { credentials: 'include' });
     if (res.ok) {
@@ -186,15 +215,101 @@ window.addEventListener('DOMContentLoaded', async () => {
       tickets = await res.json();   // <-- ADD THIS
       renderTickets();              // <-- AND THIS
     } else {
+      // 🔧 LOCAL DEVELOPMENT BYPASS - Use Narrrf's ID for testing if no session
+      if (isLocalDevelopment && res.status === 401) {
+        console.log('🏠 Local development detected - bypassing authentication for Bingo testing');
+        console.log('🔓 Using Narrrf\'s Discord ID for local Bingo testing');
+        
+        // Set test user data in localStorage
+        const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID
+        localStorage.setItem('discord_id', narrrfDiscordId);
+        localStorage.setItem('discord_name', 'Narrrf');
+        
+        // Hide login section and show lab status
+        if (loginSection) loginSection.style.display = 'none';
+        if (labStatusBadge) labStatusBadge.classList.remove('hidden');
+        
+        // Show local development indicator
+        const localDevIndicator = document.getElementById('localDevIndicator');
+        if (localDevIndicator) localDevIndicator.classList.remove('hidden');
+        
+        // Initialize empty tickets array for local testing
+        tickets = [];
+        
+        // 🔧 LOCAL DEVELOPMENT: Try to load existing tickets for Narrrf
+        try {
+          const loadResponse = await fetch('/api/load-bingo-tickets.php', { credentials: 'include' });
+          if (loadResponse.ok) {
+            const loadedTickets = await loadResponse.json();
+            tickets = loadedTickets;
+            console.log('🏠 Local development: Loaded existing tickets for Narrrf:', tickets.length);
+          }
+        } catch (loadError) {
+          console.log('🏠 Local development: Could not load existing tickets, starting with empty array');
+        }
+        
+        renderTickets();
+        
+        console.log('✅ Local Bingo test user setup complete:', { discordId: narrrfDiscordId, discordName: 'Narrrf' });
+        return;
+      }
+      
       if (loginSection) loginSection.style.display = 'block';
       if (labStatusBadge) labStatusBadge.classList.add('hidden'); // Hide badge when not logged in
       console.warn("Login check failed. Status:", res.status);
     }
   } catch (error) {
+    // 🔧 LOCAL DEVELOPMENT BYPASS - Handle network errors in local development
+    if (isLocalDevelopment) {
+      console.log('🏠 Local development detected - bypassing network error for Bingo testing');
+      console.log('🔓 Using Narrrf\'s Discord ID for local Bingo testing');
+      
+      // Set test user data in localStorage
+      const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID
+      localStorage.setItem('discord_id', narrrfDiscordId);
+      localStorage.setItem('discord_name', 'Narrrf');
+      
+      // Hide login section and show lab status
+      if (loginSection) loginSection.style.display = 'none';
+      if (labStatusBadge) labStatusBadge.classList.remove('hidden');
+      
+      // Show local development indicator
+      const localDevIndicator = document.getElementById('localDevIndicator');
+      if (localDevIndicator) localDevIndicator.classList.remove('hidden');
+      
+      // Initialize empty tickets array for local testing
+      tickets = [];
+      
+      // 🔧 LOCAL DEVELOPMENT: Try to load existing tickets for Narrrf
+      try {
+        const loadResponse = await fetch('/api/load-bingo-tickets.php', { credentials: 'include' });
+        if (loadResponse.ok) {
+          const loadedTickets = await loadResponse.json();
+          tickets = loadedTickets;
+          console.log('🏠 Local development: Loaded existing tickets for Narrrf:', tickets.length);
+        }
+      } catch (loadError) {
+        console.log('🏠 Local development: Could not load existing tickets, starting with empty array');
+      }
+      
+      renderTickets();
+      
+      console.log('✅ Local Bingo test user setup complete (network bypass):', { discordId: narrrfDiscordId, discordName: 'Narrrf' });
+      return;
+    }
+    
     if (loginSection) loginSection.style.display = 'block';
     if (labStatusBadge) labStatusBadge.classList.add('hidden'); // Hide badge on error
     console.log("Not logged in or error loading tickets:", error);
   }
+  
+  // 🐒 Add event listeners for game mode changes
+  const gameModeRadios = document.querySelectorAll('input[name="gameMode"]');
+  gameModeRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      renderTickets(); // Re-render when game mode changes
+    });
+  });
 });
 
 
@@ -280,6 +395,29 @@ for (let r = 0; r < 5; r++) {
   renderTickets();
   gridDiv.remove();
 
+  // 🧀 Environment detection for local vs production
+  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
+  if (isLocalDevelopment) {
+    // 🔧 LOCAL DEVELOPMENT: Actually save to database for testing
+    console.log('🏠 Local development: Saving ticket to database for testing');
+    console.log('🎫 Ticket to save:', ticketObj);
+    
+    fetch('/api/save-bingo-ticket.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ticket: ticketObj })
+    })
+    .then(res => res.text())
+    .then(msg => {
+      console.log('🏠 Local development: Ticket saved successfully:', msg);
+    })
+    .catch(err => {
+      console.error("🏠 Local development: Error saving ticket:", err);
+    });
+    return;
+  }
+  
   fetch('/api/save-bingo-ticket.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -295,14 +433,40 @@ function renderTickets() {
   const container = document.getElementById('ticketsContainer');
   container.innerHTML = '';
 
-  tickets.forEach((ticketObj, tIndex) => {
+  // 🐒 Sort tickets by hit count (most hits first) for Golden Baboons Bingo
+  const sortedTickets = [...tickets].map((ticketObj, originalIndex) => ({
+    ...ticketObj,
+    originalIndex,
+    hitCount: getTicketHitCount(ticketObj)
+  })).sort((a, b) => b.hitCount - a.hitCount);
+
+  sortedTickets.forEach((ticketData, displayIndex) => {
+    const ticketObj = ticketData;
+    const originalIndex = ticketData.originalIndex;
     const ticket = ticketObj.grid;
     const grid = document.createElement('div');
     grid.className = 'bg-black/90 backdrop-blur-md border border-yellow-400/30 p-3 md:p-4 rounded-2xl shadow-2xl relative my-2 mx-auto max-w-xs md:max-w-sm transition hover:scale-[1.015] duration-300';
 
     const title = document.createElement('div');
     title.className = 'font-bold mb-1 text-yellow-400';
-    title.textContent = `${ticketObj.name} (ID: ${ticketObj.id})`;
+    
+    // 🐒 Add hit count and "1 away" warning for Golden Baboons Bingo
+    const hitCount = ticketData.hitCount;
+    const isOneAway = isTicketOneAwayFromBingo(ticketObj);
+    
+    let titleText = `${ticketObj.name} (ID: ${ticketObj.id}) - ${hitCount} hits`;
+    if (isOneAway) {
+      titleText += ' 🚨 1 AWAY FROM BINGO!';
+    }
+    
+    title.textContent = titleText;
+    
+    // 🐒 Add special styling for tickets 1 away from bingo
+    if (isOneAway) {
+      grid.classList.add('border-red-400', 'ring-2', 'ring-red-400', 'ring-opacity-50');
+      title.classList.add('text-red-400', 'animate-pulse');
+    }
+    
     grid.appendChild(title);
 
     const header = document.createElement('div');
@@ -322,11 +486,25 @@ function renderTickets() {
       row.forEach((num, cIndex) => {
         const cell = document.createElement('div');
         cell.textContent = num === 'FREE' ? '★' : num;
-        cell.dataset.ticket = tIndex;
+        cell.dataset.ticket = displayIndex;
         cell.dataset.row = rIndex;
         cell.dataset.col = cIndex;
         cell.className = 'w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border border-yellow-400/30 m-0.5 rounded text-base md:text-lg bg-gray-800 text-white';
-        if (num === 'FREE') cell.classList.add('marked');
+        
+        // 🐒 Highlight corner cells in 4 corners mode
+        const isCorner = (rIndex === 0 && cIndex === 0) || // Top-left
+                        (rIndex === 0 && cIndex === 4) || // Top-right
+                        (rIndex === 4 && cIndex === 0) || // Bottom-left
+                        (rIndex === 4 && cIndex === 4);   // Bottom-right
+        
+        if (isCorner && getCurrentGameMode() === 'corners') {
+          cell.classList.add('ring-2', 'ring-blue-400', 'ring-opacity-50');
+        }
+        
+        // 🐒 Mark FREE space and called numbers for Golden Baboons Bingo
+        if (num === 'FREE' || calledNumbers.includes(num)) {
+          cell.classList.add('marked');
+        }
         rowDiv.appendChild(cell);
       });
 
@@ -341,14 +519,14 @@ function renderTickets() {
     const editBtn = document.createElement('button');
 editBtn.textContent = 'Edit Ticket';
 editBtn.className = 'mt-2 bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105 ml-2';
-editBtn.onclick = () => editTicket(tIndex);
+editBtn.onclick = () => editTicket(originalIndex); // Use original index for editing
 grid.appendChild(editBtn);
 
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete Ticket';
     deleteBtn.className = 'mt-2 bg-red-500 hover:bg-red-400 text-white font-bold px-4 py-2 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105';
-    deleteBtn.onclick = () => deleteTicket(tIndex);
+    deleteBtn.onclick = () => deleteTicket(originalIndex); // Use original index for deleting
     grid.appendChild(deleteBtn);
 
     container.appendChild(grid);
@@ -421,6 +599,34 @@ function deleteTicket(index) {
   if (!ticketObj || !ticketObj.id) return;
 
   if (confirm("Are you sure you want to delete this ticket?")) {
+    // 🧀 Environment detection for local vs production
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    if (isLocalDevelopment) {
+      // 🔧 LOCAL DEVELOPMENT: Actually delete from database for testing
+      console.log('🏠 Local development: Deleting ticket from database for testing');
+      console.log('🗑️ Ticket to delete:', ticketObj.id);
+      
+      fetch('/api/delete-bingo-ticket.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticket_id: ticketObj.id })
+      })
+      .then(res => res.json())
+      .then(response => {
+        console.log('🏠 Local development: Ticket deleted successfully:', response.message || 'Deleted');
+        tickets.splice(index, 1);
+        renderTickets();
+      })
+      .catch(err => {
+        console.error("🏠 Local development: Error deleting ticket:", err);
+        // Still remove from local array even if API fails
+        tickets.splice(index, 1);
+        renderTickets();
+      });
+      return;
+    }
+    
     fetch('/api/delete-bingo-ticket.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -438,6 +644,118 @@ function deleteTicket(index) {
 
 function generateID() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// 🐒 Golden Baboons Bingo Helper Functions
+function getCurrentGameMode() {
+  const selectedMode = document.querySelector('input[name="gameMode"]:checked');
+  return selectedMode ? selectedMode.value : 'normal';
+}
+
+function getTicketHitCount(ticketObj) {
+  const ticket = ticketObj.grid;
+  const gameMode = getCurrentGameMode();
+  
+  if (gameMode === 'corners') {
+    // For 4 corners mode, only count corner hits
+    let cornerHits = 0;
+    const corners = [
+      ticket[0][0], // Top-left
+      ticket[0][4], // Top-right
+      ticket[4][0], // Bottom-left
+      ticket[4][4]  // Bottom-right
+    ];
+    
+    corners.forEach(num => {
+      if (num === 'FREE' || calledNumbers.includes(num)) {
+        cornerHits++;
+      }
+    });
+    
+    return cornerHits;
+  } else {
+    // For normal mode, count all hits
+    let hitCount = 0;
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        const num = ticket[r][c];
+        if (num === 'FREE' || calledNumbers.includes(num)) {
+          hitCount++;
+        }
+      }
+    }
+    return hitCount;
+  }
+}
+
+function isTicketOneAwayFromBingo(ticketObj) {
+  const ticket = ticketObj.grid;
+  const gameMode = getCurrentGameMode();
+  
+  if (gameMode === 'corners') {
+    // For 4 corners mode, check if 3 corners are hit
+    const corners = [
+      ticket[0][0], // Top-left
+      ticket[0][4], // Top-right
+      ticket[4][0], // Bottom-left
+      ticket[4][4]  // Bottom-right
+    ];
+    
+    let cornerHits = 0;
+    corners.forEach(num => {
+      if (num === 'FREE' || calledNumbers.includes(num)) {
+        cornerHits++;
+      }
+    });
+    
+    return cornerHits === 3; // 1 away from 4 corners bingo
+  } else {
+    // For normal mode, check rows, columns, and diagonals
+    for (let r = 0; r < 5; r++) {
+      let rowHits = 0;
+      for (let c = 0; c < 5; c++) {
+        const num = ticket[r][c];
+        if (num === 'FREE' || calledNumbers.includes(num)) {
+          rowHits++;
+        }
+      }
+      if (rowHits === 4) return true; // 1 away from row bingo
+    }
+    
+    // Check columns
+    for (let c = 0; c < 5; c++) {
+      let colHits = 0;
+      for (let r = 0; r < 5; r++) {
+        const num = ticket[r][c];
+        if (num === 'FREE' || calledNumbers.includes(num)) {
+          colHits++;
+        }
+      }
+      if (colHits === 4) return true; // 1 away from column bingo
+    }
+    
+    // Check diagonal 1 (top-left to bottom-right)
+    let diag1Hits = 0;
+    for (let i = 0; i < 5; i++) {
+      const num = ticket[i][i];
+      if (num === 'FREE' || calledNumbers.includes(num)) {
+        diag1Hits++;
+      }
+    }
+    if (diag1Hits === 4) return true;
+    
+    // Check diagonal 2 (top-right to bottom-left)
+    let diag2Hits = 0;
+    for (let i = 0; i < 5; i++) {
+      const num = ticket[i][4 - i];
+      if (num === 'FREE' || calledNumbers.includes(num)) {
+        diag2Hits++;
+      }
+    }
+    if (diag2Hits === 4) return true;
+    
+    return false;
+  }
 }
 
 function showNotification(message) {
@@ -489,6 +807,8 @@ function renderCalledNumbers() {
     removeBtn.onclick = () => {
       calledNumbers.splice(idx, 1);
       renderCalledNumbers();
+      // 🐒 Re-render tickets to update visual markings for Golden Baboons Bingo
+      renderTickets();
     };
     chip.appendChild(removeBtn);
     calledNumbersList.appendChild(chip);
@@ -497,65 +817,73 @@ function renderCalledNumbers() {
 
 function markNumbers() {
   if (calledNumbers.length === 0) return alert('Please enter called numbers.');
-  tickets.forEach((ticketObj, tIndex) => {
+  
+  // 🐒 Check for bingo first, then re-render for Golden Baboons auto-sorting
+  tickets.forEach((ticketObj, ticketIndex) => {
     const ticket = ticketObj.grid;
-    let cells = document.querySelectorAll(`[data-ticket='${tIndex}']`);
-    cells.forEach(cell => {
-      if (cell.textContent === '★') return;
-      if (calledNumbers.includes(Number(cell.textContent))) {
-        cell.classList.add('marked');
-      }
-    });
-    if (checkBingo(ticket, tIndex, calledNumbers)) {
-      document.querySelectorAll(`#ticketsContainer > div:nth-child(${tIndex + 1}) .text-green-600`).forEach(el => el.classList.remove('hidden'));
+    if (checkBingo(ticket, ticketIndex, calledNumbers)) {
       showNotification(`🎉 BINGO! Ticket: ${ticketObj.name} (ID: ${ticketObj.id})`);
     }
   });
+  
+  // 🐒 Re-render tickets with updated sorting for Golden Baboons Bingo
+  renderTickets();
 }
 
 function clearCards() {
-  const cells = document.querySelectorAll('[data-ticket]');
-  cells.forEach(cell => {
-    if (cell.textContent !== '★') {
-      cell.classList.remove('marked');
-    }
-  });
-  document.querySelectorAll('.text-green-600').forEach(el => el.classList.add('hidden'));
   calledNumbers = [];
   renderCalledNumbers();
   calledNumberInput.value = '';
+  
+  // 🐒 Re-render tickets to clear all markings for Golden Baboons Bingo
+  renderTickets();
 }
 
-function checkBingo(ticket, tIndex, calledNumbers) {
-  const size = ticket.length;
-  let bingo = false;
+function checkBingo(ticket, ticketIndex, calledNumbers) {
+  const gameMode = getCurrentGameMode();
+  
+  if (gameMode === 'corners') {
+    // For 4 corners mode, check if all 4 corners are hit
+    const corners = [
+      ticket[0][0], // Top-left
+      ticket[0][4], // Top-right
+      ticket[4][0], // Bottom-left
+      ticket[4][4]  // Bottom-right
+    ];
+    
+    return corners.every(num => num === 'FREE' || calledNumbers.includes(num));
+  } else {
+    // For normal mode, check rows, columns, and diagonals
+    const size = ticket.length;
+    let bingo = false;
 
-  // Check rows
-  for (let r = 0; r < size; r++) {
-    if (ticket[r].every(num => num === 'FREE' || calledNumbers.includes(num))) {
+    // Check rows
+    for (let r = 0; r < size; r++) {
+      if (ticket[r].every(num => num === 'FREE' || calledNumbers.includes(num))) {
+        bingo = true;
+      }
+    }
+
+    // Check columns
+    for (let c = 0; c < ticket[0].length; c++) {
+      let col = ticket.map(row => row[c]);
+      if (col.every(num => num === 'FREE' || calledNumbers.includes(num))) {
+        bingo = true;
+      }
+    }
+
+    // Check diagonals
+    let diag1 = [], diag2 = [];
+    for (let i = 0; i < size; i++) {
+      diag1.push(ticket[i][i]);
+      diag2.push(ticket[i][size - i - 1]);
+    }
+    if (diag1.every(num => num === 'FREE' || calledNumbers.includes(num)) || diag2.every(num => num === 'FREE' || calledNumbers.includes(num))) {
       bingo = true;
     }
-  }
 
-  // Check columns
-  for (let c = 0; c < ticket[0].length; c++) {
-    let col = ticket.map(row => row[c]);
-    if (col.every(num => num === 'FREE' || calledNumbers.includes(num))) {
-      bingo = true;
-    }
+    return bingo;
   }
-
-  // Check diagonals
-  let diag1 = [], diag2 = [];
-  for (let i = 0; i < size; i++) {
-    diag1.push(ticket[i][i]);
-    diag2.push(ticket[i][size - i - 1]);
-  }
-  if (diag1.every(num => num === 'FREE' || calledNumbers.includes(num)) || diag2.every(num => num === 'FREE' || calledNumbers.includes(num))) {
-    bingo = true;
-  }
-
-  return bingo;
 }
 
 </script>
