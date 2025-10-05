@@ -309,13 +309,13 @@ require_once 'discord-invite.php';
   </div>
 </header>
 
-<!-- 🚀 SEASON 4 COUNTDOWN - COMING IN 24H -->
+<!-- 🚀 SEASON 4 COUNTDOWN - LIVE COUNTDOWN TIMER -->
 <div class="bg-gradient-to-r from-purple-800 via-pink-600 to-orange-600 text-white text-center py-4 z-30 relative animate-pulse mb-6">
   <div class="mb-2">
-    <span class="text-yellow-300 text-lg font-bold animate-bounce">🚀 SEASON 4 LAUNCHES IN 24H! 🚀</span>
+    <span class="text-yellow-300 text-lg font-bold animate-bounce">🚀 SEASON 4 LAUNCHES SOON! 🚀</span>
   </div>
   <div class="text-center">
-    <span class="text-white text-2xl font-bold">⏰ 24:00:00</span>
+    <span id="season4-countdown" class="text-white text-2xl font-bold">⏰ Loading...</span>
   </div>
   <div class="mt-2">
     <span class="text-yellow-200 text-sm">🎮 Role-Based Gameplay • Enhanced Features • Community Rewards</span>
@@ -324,6 +324,45 @@ require_once 'discord-invite.php';
     <span class="text-yellow-100 text-xs">Season 3 still active until launch • Get ready for the ultimate gaming experience!</span>
   </div>
 </div>
+
+<script>
+// 🚀 SEASON 4 LIVE COUNTDOWN TIMER
+function updateSeason4Countdown() {
+  // Season 4 launches tomorrow (October 6th, 2025) at 12:00 PM EST
+  const season4Launch = new Date('2025-10-06T12:00:00-05:00'); // EST timezone
+  const now = new Date();
+  
+  const timeLeft = season4Launch - now;
+  
+  if (timeLeft <= 0) {
+    document.getElementById('season4-countdown').innerHTML = '🎉 SEASON 4 IS LIVE! 🎉';
+    document.getElementById('season4-countdown').classList.add('text-green-400');
+    return;
+  }
+  
+  // Calculate time components
+  const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+  
+  // Format countdown display
+  const countdownText = `⏰ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  document.getElementById('season4-countdown').innerHTML = countdownText;
+  
+  // Change color based on time remaining
+  if (hours < 2) {
+    document.getElementById('season4-countdown').classList.add('text-red-400');
+    document.getElementById('season4-countdown').classList.remove('text-white');
+  } else if (hours < 6) {
+    document.getElementById('season4-countdown').classList.add('text-yellow-400');
+    document.getElementById('season4-countdown').classList.remove('text-white');
+  }
+}
+
+// Start countdown and update every second
+updateSeason4Countdown();
+setInterval(updateSeason4Countdown, 1000);
+</script>
 
 <!-- VIP Section: Grouped and spaced -->
 <div id="vipSection" class="flex flex-col items-center gap-3 mb-6 mt-4 hidden">
