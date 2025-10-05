@@ -15,7 +15,12 @@
    - **Purpose:** Unified professional system for all development
    - **Status:** ✅ **ACTIVE - SUPERSEDES ALL PREVIOUS RULES**
 
-2. **`02_PROFESSIONAL_ORGANIZATION_RULE.md`** - **WORK ORGANIZATION**
+2. **`08_CRITICAL_CODE_PRESERVATION_RULE.md`** - **🚨 CRITICAL CODE SAFETY**
+   - **Size:** 8,500 bytes
+   - **Purpose:** Prevent code deletion and modification issues that cause huge problems
+   - **Status:** ✅ **ACTIVE - HIGHEST PRIORITY RULE**
+
+3. **`02_PROFESSIONAL_ORGANIZATION_RULE.md`** - **WORK ORGANIZATION**
    - **Size:** 9,720 bytes
    - **Purpose:** Professional file organization and LLM synchronization
    - **Status:** ✅ **INTEGRATED INTO MASTER RULESET**
@@ -53,6 +58,7 @@
 
 ### **✅ THIS IS THE SINGLE SOURCE OF TRUTH:**
 - **`01_MASTER_RULESET.md`** - **SUPERSEDES ALL OTHER RULES**
+- **`08_CRITICAL_CODE_PRESERVATION_RULE.md`** - **🚨 CRITICAL - SUPERSEDES ALL OTHER RULES**
 - **All other rules are REFERENCE ONLY** - They are integrated into the Master Ruleset
 - **NEVER create conflicting rules** - Always update the Master Ruleset instead
 
@@ -77,7 +83,8 @@
 ├── 04_GAME_SCORING_SYSTEM_RULES.md      # Reference only (integrated)
 ├── 05_TOKEN_LIMIT_RULE.md               # Reference only (integrated)
 ├── 06_ADMIN_INTERFACE_RULE.md           # Reference only (integrated)
-└── 07_GAME_SCORE_RETRIEVAL_SYSTEM.md    # Reference only (integrated)
+├── 07_GAME_SCORE_RETRIEVAL_SYSTEM.md    # Reference only (integrated)
+└── 08_CRITICAL_CODE_PRESERVATION_RULE.md # 🚨 CRITICAL - NEVER DELETE WORKING CODE
 ```
 
 ---

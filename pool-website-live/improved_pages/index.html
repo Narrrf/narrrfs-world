@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poolbauprofi.at - Ihr Traumpool in Österreich | Professioneller Poolbau</title>
+    <meta name="description" content="Professioneller Poolbau in Österreich. Individuelle Poolprojekte mit Erfahrung, Präzision und Leidenschaft. Kostenlose Beratung!">
+    <meta name="keywords" content="Poolbau, Österreich, Swimmingpool, Pool, Garten, Ferienimmobilie, Poolbauprofi">
+    <meta name="author" content="Poolbauprofi.at">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Poolbauprofi.at - Ihr Traumpool in Österreich">
+    <meta property="og:description" content="Professioneller Poolbau mit Erfahrung, Präzision und Leidenschaft. Kostenlose Beratung!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://poolbauprofi.at">
+    
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=20250128">
+</head>
+<body>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: rgba(0, 102, 204, 0.7);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-image {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .logo-text h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .logo-text .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: -5px;
+        }
+        
+        .contact-header {
+            text-align: right;
+        }
+        
+        .contact-header .phone {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .contact-header .email {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* Navigation Styles */
+        .nav {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(233, 236, 239, 0.5);
+        }
+        
+        .nav-list {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .nav-list a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-list a:hover {
+            background: #0066cc;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .nav-list a.active {
+            background: #0066cc;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: transparent;
+            color: white;
+            text-align: center;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        /* Removed hero::before overlay - using full page background instead */
+        
+        .hero .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: #ff6b35;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+        }
+        
+        .cta-button:hover {
+            background: #e55a2b;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 2rem 0;
+            background: transparent;
+            margin: 2rem 0;
+        }
+        
+        /* Full transparency mode - make content more transparent */
+        .main-content.full-transparency {
+            background: transparent;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+        
+        .content-text {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .content-text h3 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .content-text p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #e0e0e0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .content-text h4 {
+            color: #ffffff;
+            font-size: 1.3rem;
+            margin: 2rem 0 1rem 0;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .services-list {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+        
+        .services-list li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+        
+        .services-list li:before {
+            content: "🏊‍♂️";
+            position: absolute;
+            left: 0;
+        }
+        
+        /* Services with Icons */
+        .services-with-icons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .service-item {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border-left: 4px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .service-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .service-text h5 {
+            color: #ffffff;
+            font-size: 1.2rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .service-text p {
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        /* Pool Image Section */
+        .pool-image-section {
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        .main-pool-image {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .main-pool-image:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Contact Section */
+        .contact-section {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .contact-section h3 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .contact-section p {
+            color: #e0e0e0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .contact-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .contact-item {
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            border-left: 4px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+        }
+        
+        .contact-item strong {
+            color: #ffffff;
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 0.5rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .contact-item a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .contact-item a:hover {
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        /* Contact Form */
+        .contact-form {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(0, 0, 0, 0.5);
+        }
+        
+        .contact-form h4 {
+            color: #ffffff;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            background: #0066cc;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .submit-btn:hover {
+            background: #004499;
+            transform: translateY(-2px);
+        }
+        
+        /* Slogan Section */
+        .slogan {
+            text-align: center;
+            padding: 3rem 0;
+            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+            color: white;
+            margin: 3rem 0;
+            border-radius: 15px;
+        }
+        
+        .slogan h3 {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+        
+        .slogan p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        /* Pool Showcase Slideshow */
+        .pool-showcase {
+            text-align: center;
+            margin: 3rem 0;
+        }
+        
+        .slideshow-container {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .slide {
+            display: none;
+            position: relative;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        .pool-image {
+            width: 100%;
+            height: 500px;
+            object-fit: contain;
+            object-position: center;
+            background-color: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .slide-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            padding: 2rem 1rem 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        /* Navigation arrows */
+        .prev, .next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,102,204,0.8);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .prev {
+            left: 1rem;
+        }
+        
+        .next {
+            right: 1rem;
+        }
+        
+        .prev:hover, .next:hover {
+            background: rgba(0,68,153,0.9);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        /* Slide indicators */
+        .slide-indicators {
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .dot {
+            height: 15px;
+            width: 15px;
+            margin: 0 5px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .dot.active, .dot:hover {
+            background-color: #0066cc;
+        }
+        
+        .image-caption {
+            font-size: 1.3rem;
+            color: #0066cc;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        
+        /* Footer */
+        .footer {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-section h4 {
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-section p {
+            margin: 0.5rem 0;
+            opacity: 0.8;
+        }
+        
+        .footer-section a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+        
+        .footer-section a:hover {
+            text-decoration: underline;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #555;
+            padding-top: 1rem;
+            opacity: 0.7;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .nav-list {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .hero h2 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .contact-info {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .logo-text h1 {
+                font-size: 2rem;
+            }
+            
+            .slideshow-container {
+                max-width: 100%;
+            }
+            
+            .pool-image {
+                height: 350px;
+            }
+            
+            .prev, .next {
+                padding: 0.8rem;
+                font-size: 1.2rem;
+            }
+            
+            .prev {
+                left: 0.5rem;
+            }
+            
+            .next {
+                right: 0.5rem;
+            }
+            
+            .service-item {
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            .hero {
+                padding: 2rem 0;
+            }
+            
+            .hero h2 {
+                font-size: 1.8rem;
+            }
+            
+            .content-text,
+            .contact-section {
+                padding: 1.5rem;
+            }
+            
+            .pool-image {
+                height: 250px;
+            }
+            
+            .service-text h5 {
+                font-size: 1.1rem;
+            }
+            
+            .service-text p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="../assets/logo.png" alt="Pool Bauprofi Logo" class="logo-image">
+                    <div class="logo-text">
+                        <h1>POOL</h1>
+                        <div class="subtitle">BAUPROFI.AT</div>
+                    </div>
+                </div>
+                <div class="contact-header">
+                    <div class="phone">📞 +43 660 8669020</div>
+                    <div class="email">✉️ office@poolbauprofi.at</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <ul class="nav-list">
+                <li><a href="index.html" class="active">Leistungen</a></li>
+                <li><a href="referenzen.html">Referenzen</a></li>
+                <li><a href="anfragen.html">Anfrage</a></li>
+                <li><a href="ueber-uns.html">Über uns</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h2>Willkommen beim Poolbauprofi in Österreich</h2>
+            <p>Ihr Traumpool - Perfekt geplant, meisterhaft gebaut!</p>
+            <a href="anfragen.html" class="cta-button">Kostenlose Beratung anfordern</a>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="content-grid">
+                <div class="content-text">
+                    <h3>Professioneller Poolbau mit Leidenschaft</h3>
+                    <p>Ich bin bereits voll für Sie im Einsatz und realisiere individuelle Poolprojekte mit Erfahrung, Präzision und Leidenschaft. Jeder Pool ist ein Unikat, das perfekt zu Ihren Wünschen und Ihrem Garten passt.</p>
+                    
+                    <p>Egal ob privater Traum-Pool im Garten, hochwertige Pools für Ferienimmobilien oder maßgeschneiderte Sonderlösungen - ich begleite Sie von der ersten Idee bis zur Fertigstellung und darüber hinaus.</p>
+                    
+                    <h4>Unsere Leistungen:</h4>
+                    <div class="services-with-icons">
+                        <div class="service-item">
+                            <div class="service-text">
+                                <h5>🏊‍♂️ Individuelle Poolplanung und -beratung</h5>
+                                <p>Maßgeschneiderte Planung nach Ihren Wünschen und den örtlichen Gegebenheiten</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="service-text">
+                                <h5>🔨 Kompletter Poolbau von A bis Z</h5>
+                                <p>Professionelle Umsetzung mit modernster Technik und hochwertigen Materialien</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="service-text">
+                                <h5>🔄 Poolrenovierung und -modernisierung</h5>
+                                <p>Modernisierung bestehender Anlagen und technische Upgrades</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="service-text">
+                                <h5>🛠️ Technische Ausstattung und Wartung</h5>
+                                <p>Regelmäßige Wartung und Pflege für dauerhaften Badespaß</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="service-text">
+                                <h5>🌿 Gartenplanung rund um den Pool</h5>
+                                <p>Komplette Gartenplanung für ein harmonisches Gesamtbild</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="service-text">
+                                <h5>🏖️ Ferienimmobilien-Pools</h5>
+                                <p>Spezialisierte Pool-Lösungen für Ferienhäuser und Ferienwohnungen</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <div class="contact-section">
+                    <h3>Kostenlose Beratung</h3>
+                    <p>Sie haben Fragen oder möchten eine unverbindliche Beratung? Kontaktieren Sie mich direkt!</p>
+                    
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <strong>Telefon</strong>
+                            <a href="tel:+436608669020">+43 660 8669020</a>
+                        </div>
+                        <div class="contact-item">
+                            <strong>E-Mail</strong>
+                            <a href="mailto:office@poolbauprofi.at">office@poolbauprofi.at</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-form">
+                        <h4>Schnelle Anfrage</h4>
+                        <form id="quickContactForm">
+                            <div class="form-group">
+                                <label for="name">Name *</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">E-Mail *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Telefon</label>
+                                <input type="tel" id="phone" name="phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Nachricht *</label>
+                                <textarea id="message" name="message" placeholder="Beschreiben Sie Ihr Poolprojekt..." required></textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">Anfrage senden</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pool Image Section -->
+            <div class="pool-image-section">
+                <img src="../assets/pool4.webp" alt="Pool 4 - Professioneller Poolbau" class="main-pool-image">
+            </div>
+            
+            <!-- Slogan Section -->
+            <div class="slogan">
+                <h3>Ihr Traumpool - Perfekt geplant, meisterhaft gebaut!</h3>
+                <p>Vertrauen Sie auf jahrelange Erfahrung und Leidenschaft für den perfekten Pool</p>
+            </div>
+            
+            <!-- Pool Showcase Slideshow -->
+            <div class="pool-showcase">
+                <h3 style="text-align: center; color: #0066cc; font-size: 2rem; margin-bottom: 2rem;">Unsere neuesten Poolprojekte</h3>
+                <div class="slideshow-container">
+                    <!-- Pool 1 - Turquoise Blue Pool (Completed) -->
+                    <div class="slide active">
+                        <img src="./slider-photos/pool1.png" alt="Pool 1 - Turquoise Blue Pool mit Überdachung" class="pool-image">
+                        <div class="slide-caption">Pool 1 - Turquoise Blue Pool mit Überdachung</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/pool2.png" alt="Pool 1 - Turquoise Blue Pool Ansicht 2" class="pool-image">
+                        <div class="slide-caption">Pool 1 - Turquoise Blue Pool Ansicht 2</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/pool3.png" alt="Pool 1 - Turquoise Blue Pool mit weißen Stufen" class="pool-image">
+                        <div class="slide-caption">Pool 1 - Turquoise Blue Pool mit weißen Stufen</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/pool4.png" alt="Pool 1 - Turquoise Blue Pool Ansicht 4" class="pool-image">
+                        <div class="slide-caption">Pool 1 - Turquoise Blue Pool Ansicht 4</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/pool5.png" alt="Pool 1 - Turquoise Blue Pool mit hellem Rand" class="pool-image">
+                        <div class="slide-caption">Pool 1 - Turquoise Blue Pool mit hellem Rand</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/pool6.png" alt="Pool 1 - Turquoise Blue Pool Ansicht 6" class="pool-image">
+                        <div class="slide-caption">Pool 1 - Turquoise Blue Pool Ansicht 6</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/pool7.png" alt="Pool 1 - Turquoise Blue Pool mit weißen Stufen 2" class="pool-image">
+                        <div class="slide-caption">Pool 1 - Turquoise Blue Pool mit weißen Stufen 2</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/pool8.png" alt="Pool 1 - Turquoise Blue Pool mit weißem Rand" class="pool-image">
+                        <div class="slide-caption">Pool 1 - Turquoise Blue Pool mit weißem Rand</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/pool9.png" alt="Pool 1 - Turquoise Blue Pool mit weißen Stufen 3" class="pool-image">
+                        <div class="slide-caption">Pool 1 - Turquoise Blue Pool mit weißen Stufen 3</div>
+                    </div>
+                    
+                    <!-- Pool 2 - Light Beige Pool (Under Construction) -->
+                    <div class="slide">
+                        <img src="./slider-photos/2nd-pool1.png" alt="Pool 2 - Beige Pool im Bau" class="pool-image">
+                        <div class="slide-caption">Pool 2 - Beige Pool im Bau</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/2nd-pool2.png" alt="Pool 2 - Beige Pool Ansicht 2" class="pool-image">
+                        <div class="slide-caption">Pool 2 - Beige Pool Ansicht 2</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/2nd-pool3.png" alt="Pool 2 - Beige Pool von oben" class="pool-image">
+                        <div class="slide-caption">Pool 2 - Beige Pool von oben</div>
+                    </div>
+                    
+                    <!-- Pool 3 - Dark Grey Pool (Under Construction) -->
+                    <div class="slide">
+                        <img src="./slider-photos/3rd-pool1.png" alt="Pool 3 - Dunkelgrauer Pool mit LED-Beleuchtung" class="pool-image">
+                        <div class="slide-caption">Pool 3 - Dunkelgrauer Pool mit LED-Beleuchtung</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/3rd-pool2.png" alt="Pool 3 - Dunkelgrauer Pool Eckenansicht" class="pool-image">
+                        <div class="slide-caption">Pool 3 - Dunkelgrauer Pool Eckenansicht</div>
+                    </div>
+                    <div class="slide">
+                        <img src="./slider-photos/3rd-pool3.png" alt="Pool 3 - Dunkelgrauer Pool mit integrierten Lichtern" class="pool-image">
+                        <div class="slide-caption">Pool 3 - Dunkelgrauer Pool mit integrierten Lichtern</div>
+                    </div>
+                    
+                    <!-- Navigation arrows -->
+                    <button class="prev" onclick="changeSlide(-1)">❮</button>
+                    <button class="next" onclick="changeSlide(1)">❯</button>
+                </div>
+                
+                <!-- Slide indicators -->
+                <div class="slide-indicators">
+                    <span class="dot active" onclick="currentSlide(1)"></span>
+                    <span class="dot" onclick="currentSlide(2)"></span>
+                    <span class="dot" onclick="currentSlide(3)"></span>
+                    <span class="dot" onclick="currentSlide(4)"></span>
+                    <span class="dot" onclick="currentSlide(5)"></span>
+                    <span class="dot" onclick="currentSlide(6)"></span>
+                    <span class="dot" onclick="currentSlide(7)"></span>
+                    <span class="dot" onclick="currentSlide(8)"></span>
+                    <span class="dot" onclick="currentSlide(9)"></span>
+                    <span class="dot" onclick="currentSlide(10)"></span>
+                    <span class="dot" onclick="currentSlide(11)"></span>
+                    <span class="dot" onclick="currentSlide(12)"></span>
+                    <span class="dot" onclick="currentSlide(13)"></span>
+                    <span class="dot" onclick="currentSlide(14)"></span>
+                    <span class="dot" onclick="currentSlide(15)"></span>
+                </div>
+                
+                <div class="image-caption">
+                    Träumen Sie vom eigenen Pool? Lassen Sie uns gemeinsam Ihren Traum verwirklichen!
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Poolbauprofi.at</h4>
+                    <p>Ihr Experte für maßgeschneiderte Pool-Lösungen in Österreich</p>
+                    <p>© 2025 Poolbauprofi.at</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Kontakt</h4>
+                    <p>E-Mail: office@poolbauprofi.at</p>
+                    <p>Telefon: +43 660 8669020</p>
+                    <p>Standort: Österreich</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Folgen Sie uns</h4>
+                    <p><a href="https://www.instagram.com/poolbauprofi.at/" target="_blank" rel="noopener noreferrer">📸 Instagram</a></p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>Professionelle Pool-Lösungen für Ihr Zuhause</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Contact form handling
+        document.getElementById('quickContactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('.submit-btn');
+            const originalText = submitBtn.textContent;
+            
+            // Show loading state
+            submitBtn.textContent = 'Wird gesendet...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Prepare data for API
+                const data = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    message: formData.get('message'),
+                    form_type: 'Schnelle Anfrage (Startseite)'
+                };
+                
+                // Send to email handler
+                const response = await fetch('api/send-email.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Success message
+                    alert('✅ ' + result.message);
+                    // Reset form
+                    this.reset();
+                } else {
+                    // Error message
+                    alert('❌ ' + result.message);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Es gab ein Problem beim Senden Ihrer Anfrage. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt unter office@poolbauprofi.at');
+            } finally {
+                // Reset button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Add animation to CTA button on scroll
+        window.addEventListener('scroll', function() {
+            const ctaButton = document.querySelector('.cta-button');
+            const scrollPosition = window.scrollY;
+            
+            if (scrollPosition > 100) {
+                ctaButton.style.transform = 'scale(1.05)';
+            } else {
+                ctaButton.style.transform = 'scale(1)';
+            }
+        });
+
+        // Slideshow functionality
+        let slideIndex = 1;
+        showSlides(slideIndex);
+
+        function changeSlide(n) {
+            showSlides(slideIndex += n);
+        }
+
+        function currentSlide(n) {
+            showSlides(slideIndex = n);
+        }
+
+        function showSlides(n) {
+            let slides = document.getElementsByClassName("slide");
+            let dots = document.getElementsByClassName("dot");
+            
+            if (n > slides.length) { slideIndex = 1; }
+            if (n < 1) { slideIndex = slides.length; }
+            
+            for (let i = 0; i < slides.length; i++) {
+                slides[i].classList.remove("active");
+            }
+            
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].classList.remove("active");
+            }
+            
+            slides[slideIndex - 1].classList.add("active");
+            dots[slideIndex - 1].classList.add("active");
+        }
+
+        // Auto-advance slideshow every 5 seconds
+        setInterval(function() { changeSlide(1); }, 5000);
+
+        // Load dynamic slider photos from admin uploads
+        async function loadDynamicSliderPhotos() {
+            try {
+                const response = await fetch('./api/get-slider-photos.php');
+                const data = await response.json();
+                
+                if (data.success && data.photos && data.photos.length > 0) {
+                    // Get the slideshow container
+                    const slideshowContainer = document.querySelector('.slideshow-container');
+                    const slideIndicators = document.querySelector('.slide-indicators');
+                    
+                    // Clear existing slides (keep the first few static ones as fallback)
+                    const existingSlides = slideshowContainer.querySelectorAll('.slide');
+                    const existingDots = slideIndicators.querySelectorAll('.dot');
+                    
+                    // Remove all but the first 3 static slides
+                    for (let i = 3; i < existingSlides.length; i++) {
+                        existingSlides[i].remove();
+                    }
+                    
+                    // Remove all but the first 3 indicator dots
+                    for (let i = 3; i < existingDots.length; i++) {
+                        existingDots[i].remove();
+                    }
+                    
+                    // Add dynamic slides from uploaded photos
+                    data.photos.slice(0, 10).forEach((photo, index) => {
+                        // Create new slide
+                        const slideDiv = document.createElement('div');
+                        slideDiv.className = 'slide';
+                        slideDiv.innerHTML = `
+                            <img src="slider-photos/${photo.filename}" alt="${photo.name}" class="pool-image">
+                            <div class="slide-caption">${photo.name}</div>
+                        `;
+                        
+                        // Insert before the navigation buttons
+                        const navButtons = slideshowContainer.querySelector('.prev');
+                        slideshowContainer.insertBefore(slideDiv, navButtons);
+                        
+                        // Create corresponding indicator dot
+                        const dot = document.createElement('span');
+                        dot.className = 'dot';
+                        dot.onclick = function() { currentSlide(index + 4); }; // +4 because we kept 3 static slides
+                        slideIndicators.appendChild(dot);
+                    });
+                    
+                    console.log(`✅ Loaded ${data.photos.length} dynamic photos for slider`);
+                }
+            } catch (error) {
+                console.error('Error loading dynamic slider photos:', error);
+            }
+        }
+
+        // Load bubble effect settings and apply
+        async function loadBubbleEffect() {
+            try {
+                const response = await fetch('./api/get-bubble-settings.php');
+                const data = await response.json();
+                
+                if (data.success && data.bubble_effect !== 'off' && data.bubble_pages && data.bubble_pages.index) {
+                    createBubbleEffect(data.bubble_effect, data.bubble_color, data.bubble_opacity, data.bubble_speed);
+                }
+            } catch (error) {
+                console.error('Error loading bubble settings:', error);
+            }
+        }
+
+        // Create bubble effect
+        function createBubbleEffect(intensity, color, opacity, speed) {
+            const bubbleContainer = document.createElement('div');
+            bubbleContainer.id = 'bubble-container';
+            bubbleContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 1;
+                overflow: hidden;
+            `;
+            
+            document.body.appendChild(bubbleContainer);
+            
+            // Bubble count based on intensity
+            const bubbleCounts = {
+                'subtle': 5,
+                'medium': 12,
+                'strong': 20,
+                'extreme': 35
+            };
+            
+            const count = bubbleCounts[intensity] || 5;
+            
+            // Color mapping with base opacity
+            const colorBase = {
+                'blue': '0, 102, 204',
+                'white': '255, 255, 255',
+                'lightblue': '173, 216, 230',
+                'cyan': '0, 255, 255',
+                'silver': '192, 192, 192',
+                'transparent': '255, 255, 255'
+            };
+            
+            // Opacity mapping
+            const opacityValues = {
+                'low': 0.05,
+                'medium': 0.15,
+                'high': 0.3,
+                'very-high': 0.5
+            };
+            
+            const baseOpacity = opacityValues[opacity] || 0.15;
+            
+            // Handle custom colors (hex values)
+            let bubbleColor;
+            if (color.startsWith('#')) {
+                // Convert hex to RGB
+                const hex = color.replace('#', '');
+                const r = parseInt(hex.substr(0, 2), 16);
+                const g = parseInt(hex.substr(2, 2), 16);
+                const b = parseInt(hex.substr(4, 2), 16);
+                bubbleColor = `rgba(${r}, ${g}, ${b}, ${baseOpacity})`;
+            } else {
+                const colorRGB = colorBase[color] || colorBase['blue'];
+                bubbleColor = `rgba(${colorRGB}, ${baseOpacity})`;
+            }
+            
+            // Speed mapping
+            const speedRanges = {
+                'slow': [15, 25],
+                'medium': [8, 20],
+                'fast': [5, 12],
+                'very-fast': [3, 8]
+            };
+            
+            const speedRange = speedRanges[speed] || speedRanges['medium'];
+            
+            // Create bubbles
+            for (let i = 0; i < count; i++) {
+                createBubble(bubbleContainer, bubbleColor, speedRange);
+            }
+        }
+
+        // Create individual bubble
+        function createBubble(container, color, speedRange) {
+            const bubble = document.createElement('div');
+            const animationDuration = speedRange[0] + Math.random() * (speedRange[1] - speedRange[0]);
+            const size = 15 + Math.random() * 50; // 15-65px bubbles
+            const opacity = 0.2 + Math.random() * 0.6; // 0.2-0.8 opacity variation
+            
+            bubble.style.cssText = `
+                position: absolute;
+                border-radius: 50%;
+                background: ${color};
+                animation: float ${animationDuration}s infinite linear;
+                left: ${Math.random() * 100}%;
+                width: ${size}px;
+                height: ${size}px;
+                opacity: ${opacity};
+                box-shadow: 0 0 10px rgba(255,255,255,0.1);
+            `;
+            
+            container.appendChild(bubble);
+            
+            // Remove bubble after animation and create new one
+            setTimeout(() => {
+                if (bubble.parentNode) {
+                    bubble.parentNode.removeChild(bubble);
+                    createBubble(container, color, speedRange);
+                }
+            }, animationDuration * 1000);
+        }
+
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0% {
+                    transform: translateY(100vh) translateX(0px);
+                }
+                25% {
+                    transform: translateY(75vh) translateX(${Math.random() * 50 - 25}px);
+                }
+                50% {
+                    transform: translateY(50vh) translateX(${Math.random() * 100 - 50}px);
+                }
+                75% {
+                    transform: translateY(25vh) translateX(${Math.random() * 50 - 25}px);
+                }
+                100% {
+                    transform: translateY(-100px) translateX(0px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Load full page background setting
+        async function loadPageBackground() {
+            try {
+                const response = await fetch('./api/get-bubble-settings.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const body = document.body;
+                    if (body) {
+                        // Get page-specific background (default to index background)
+                        let pageBackground = data.page_backgrounds?.index || data.hero_background || 'background1.png';
+                        
+                        // Determine the correct path for the background
+                        let backgroundPath;
+                        if (['background1.png', 'background2.png', 'background3.png', 'background4.png'].includes(pageBackground)) {
+                            backgroundPath = './assets/background/' + pageBackground;
+                        } else {
+                            backgroundPath = './slider-photos/' + pageBackground;
+                        }
+                        
+                        // Apply as full page background
+                        body.style.background = `url('${backgroundPath}')`;
+                        body.style.backgroundSize = 'cover';
+                        body.style.backgroundPosition = 'center';
+                        body.style.backgroundAttachment = 'fixed';
+                        body.style.backgroundRepeat = 'no-repeat';
+                        
+                        // Apply transparency setting
+                        const transparency = data.background_transparency || 'full';
+                        
+                        switch (transparency) {
+                            case 'full':
+                                // Full transparency - remove any overlay and make content transparent
+                                const existingOverlay = body.querySelector('.background-overlay');
+                                if (existingOverlay) {
+                                    existingOverlay.remove();
+                                }
+                                // Apply full transparency class to main content
+                                const mainContent = document.querySelector('.main-content');
+                                if (mainContent) {
+                                    mainContent.classList.add('full-transparency');
+                                }
+                                break;
+                            case 'hero-only':
+                                // Hero only - add blue overlay to hero section
+                                const hero = document.querySelector('.hero');
+                                if (hero) {
+                                    hero.style.background = `linear-gradient(rgba(0,102,204,0.85), rgba(0,68,153,0.85)), url('${backgroundPath}')`;
+                                    hero.style.backgroundSize = 'cover';
+                                    hero.style.backgroundPosition = 'center';
+                                }
+                                // Remove full transparency class
+                                const mainContentHero = document.querySelector('.main-content');
+                                if (mainContentHero) {
+                                    mainContentHero.classList.remove('full-transparency');
+                                }
+                                break;
+                            case 'subtle':
+                                // Subtle - add light overlay
+                                if (!body.querySelector('.background-overlay')) {
+                                    const overlay = document.createElement('div');
+                                    overlay.className = 'background-overlay';
+                                    overlay.style.cssText = `
+                                        position: fixed;
+                                        top: 0;
+                                        left: 0;
+                                        width: 100%;
+                                        height: 100%;
+                                        background: rgba(0, 0, 0, 0.1);
+                                        z-index: -1;
+                                        pointer-events: none;
+                                    `;
+                                    body.appendChild(overlay);
+                                }
+                                // Remove full transparency class
+                                const mainContentSubtle = document.querySelector('.main-content');
+                                if (mainContentSubtle) {
+                                    mainContentSubtle.classList.remove('full-transparency');
+                                }
+                                break;
+                            case 'complete':
+                                // Complete background - remove all overlays and make content completely opaque
+                                const existingOverlayComplete = body.querySelector('.background-overlay');
+                                if (existingOverlayComplete) {
+                                    existingOverlayComplete.remove();
+                                }
+                                const mainContentComplete = document.querySelector('.main-content');
+                                if (mainContentComplete) {
+                                    mainContentComplete.classList.remove('full-transparency');
+                                    mainContentComplete.style.background = 'rgba(26, 26, 26, 0.95)';
+                                    mainContentComplete.style.backdropFilter = 'blur(20px)';
+                                }
+                                // Make all content cards completely opaque
+                                const contentCards = document.querySelectorAll('.content-text, .contact-section, .service-item, .contact-item, .contact-form');
+                                contentCards.forEach(card => {
+                                    card.style.background = 'rgba(255, 255, 255, 0.95)';
+                                    card.style.backdropFilter = 'blur(10px)';
+                                    card.style.color = '#333';
+                                    card.querySelectorAll('h3, h4, h5, p, strong, label').forEach(text => {
+                                        text.style.color = '#333';
+                                        text.style.textShadow = 'none';
+                                    });
+                                });
+                                break;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Could not load page background setting:', error);
+            }
+        }
+
+        // Load dynamic photos and bubble effect when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDynamicSliderPhotos();
+            loadBubbleEffect();
+            loadPageBackground();
+        });
+    </script>
+</body>
+</html>

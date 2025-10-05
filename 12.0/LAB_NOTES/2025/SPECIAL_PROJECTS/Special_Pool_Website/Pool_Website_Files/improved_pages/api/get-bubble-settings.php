@@ -38,6 +38,15 @@ try {
         'bubble_color' => 'blue',
         'bubble_opacity' => 'medium',
         'bubble_speed' => 'medium',
+        'hero_background' => 'pool1.png',
+        'background_transparency' => 'full',
+        'page_backgrounds' => [
+            'index' => 'background1.png',
+            'referenzen' => 'background2.png',
+            'anfragen' => 'background3.png',
+            'ueber_uns' => 'background4.png',
+            'kontakt' => 'background1.png'
+        ],
         'bubble_pages' => [
             'index' => true,
             'referenzen' => true,
@@ -47,7 +56,7 @@ try {
         ]
     ];
     
-    // Merge with defaults
+    // Merge with defaults (settings override defaults)
     $settings = array_merge($default_settings, $settings);
     
     ob_clean();
@@ -58,8 +67,15 @@ try {
         'bubble_color' => $settings['bubble_color'],
         'bubble_opacity' => $settings['bubble_opacity'],
         'bubble_speed' => $settings['bubble_speed'],
+        'hero_background' => $settings['hero_background'],
+        'background_transparency' => $settings['background_transparency'],
+        'page_backgrounds' => $settings['page_backgrounds'],
         'bubble_pages' => $settings['bubble_pages'],
-        'timestamp' => date('Y-m-d H:i:s')
+        'timestamp' => date('Y-m-d H:i:s'),
+        'debug' => [
+            'settings_file_exists' => file_exists($settings_file),
+            'raw_settings' => $settings
+        ]
     ], JSON_UNESCAPED_UNICODE);
     ob_end_flush();
 

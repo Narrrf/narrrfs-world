@@ -6,432 +6,7 @@
     <title>Kontakt - Poolbauprofi.at</title>
     <meta name="description" content="Kontaktieren Sie Poolbauprofi.at für Ihre Pool-Anfrage. Professionelle Beratung und maßgeschneiderte Lösungen für Ihren Traumpool.">
     <meta name="keywords" content="Pool Kontakt, Pool Beratung, Poolbauprofi, Schwimmbad, Österreich">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .logo-image {
-            height: 60px;
-            width: auto;
-            object-fit: contain;
-        }
-        
-        .logo-text h1 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0;
-        }
-        
-        .logo-text .subtitle {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-top: -5px;
-        }
-        
-        .contact-header {
-            text-align: right;
-        }
-        
-        .contact-header .phone {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .contact-header .email {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        /* Navigation */
-        .nav {
-            background: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .nav-list {
-            display: flex;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            justify-content: center;
-            gap: 2rem;
-        }
-        
-        .nav-list a {
-            color: #333;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-list a:hover {
-            background: #0066cc;
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        .nav-list a.active {
-            background: #0066cc;
-            color: white;
-            font-weight: bold;
-        }
-        
-        
-        .nav-list {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-        
-        
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(rgba(0,102,204,0.85), rgba(0,68,153,0.85)), url('./slider-photos/pool1.png');
-            background-size: cover;
-            background-position: center;
-            color: white;
-            text-align: center;
-            padding: 4rem 0;
-            margin-bottom: 3rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, 
-                rgba(0,102,204,0.1) 0%, 
-                rgba(0,68,153,0.1) 25%, 
-                rgba(0,102,204,0.1) 50%, 
-                rgba(0,68,153,0.1) 75%, 
-                rgba(0,102,204,0.1) 100%);
-            background-size: 60px 60px;
-            z-index: 1;
-        }
-        
-        .hero .container {
-            position: relative;
-            z-index: 2;
-        }
-        
-        .hero h2 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        
-        .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        /* Main Content */
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            margin-bottom: 3rem;
-        }
-        
-        /* Contact Information */
-        .contact-info {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        .contact-info h3 {
-            color: #0066cc;
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-        
-        .contact-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 10px;
-            transition: transform 0.3s ease;
-        }
-        
-        .contact-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .contact-icon {
-            font-size: 1.5rem;
-            color: #0066cc;
-            margin-right: 1rem;
-            width: 30px;
-            text-align: center;
-        }
-        
-        .contact-details h4 {
-            color: #333;
-            margin-bottom: 0.3rem;
-        }
-        
-        .contact-details p {
-            color: #666;
-            margin: 0;
-        }
-        
-        /* Contact Form */
-        .contact-form {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        .contact-form h3 {
-            color: #0066cc;
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 1rem;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #0066cc;
-            box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
-        }
-        
-        .form-group textarea {
-            height: 120px;
-            resize: vertical;
-        }
-        
-        .submit-btn {
-            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
-            color: white;
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-        
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,102,204,0.3);
-        }
-        
-        /* Inspirational Section */
-        .inspirational-section {
-            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
-            color: white;
-            padding: 3rem;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .inspirational-section h3 {
-            font-size: 2.2rem;
-            margin-bottom: 1rem;
-        }
-        
-        .inspirational-section p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            line-height: 1.8;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        /* Response Time */
-        .response-time {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 3rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .response-time h4 {
-            color: #0066cc;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .response-time p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-        
-        /* Footer */
-        .footer {
-            background: #333;
-            color: white;
-            text-align: center;
-            padding: 2rem 0;
-            margin-top: 3rem;
-        }
-        
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .footer-section h4 {
-            color: #ffd700;
-            margin-bottom: 1rem;
-        }
-        
-        .footer-section p {
-            margin: 0.5rem 0;
-            opacity: 0.8;
-        }
-        
-        .footer-section a {
-            color: #ffd700;
-            text-decoration: none;
-        }
-        
-        .footer-section a:hover {
-            text-decoration: underline;
-        }
-        
-        .footer-bottom {
-            border-top: 1px solid #555;
-            padding-top: 1rem;
-            opacity: 0.7;
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
-            }
-            
-            .nav-list {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            
-            .hero h2 {
-                font-size: 2rem;
-            }
-            
-            .hero p {
-                font-size: 1.1rem;
-            }
-            
-            .main-content {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-            
-            .logo-text h1 {
-                font-size: 2rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .container {
-                padding: 0 15px;
-            }
-            
-            .hero {
-                padding: 2rem 0;
-            }
-            
-            .hero h2 {
-                font-size: 1.8rem;
-            }
-            
-            .contact-info,
-            .contact-form {
-                padding: 1.5rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=20250128-34">
 </head>
 <body>
     <!-- Header -->
@@ -439,15 +14,15 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <img src="../assets/logo.png" alt="Pool Bauprofi Logo" class="logo-image">
+                    <img src="./assets/logo.png" alt="Pool Bauprofi Logo" class="logo-image">
                     <div class="logo-text">
                         <h1>POOL</h1>
                         <div class="subtitle">BAUPROFI.AT</div>
                     </div>
                 </div>
                 <div class="contact-header">
-                    <div class="phone">📞 +43 660 8669020</div>
-                    <div class="email">✉️ office@poolbauprofi.at</div>
+                    <a href="tel:+436608669020" class="phone">📞 +43 660 8669020</a>
+                    <a href="mailto:office@poolbauprofi.at" class="email">✉️ office@poolbauprofi.at</a>
                 </div>
             </div>
         </div>
@@ -461,6 +36,7 @@
                 <li><a href="referenzen.html">Referenzen</a></li>
                 <li><a href="anfragen.html">Anfrage</a></li>
                 <li><a href="ueber-uns.html">Über uns</a></li>
+                <li><a href="kontakt.html" class="active">Kontakt</a></li>
             </ul>
         </div>
     </nav>
@@ -469,86 +45,70 @@
     <section class="hero">
         <div class="container">
             <h2>Kontakt</h2>
-            <p>Lassen Sie uns gemeinsam Ihren Traumpool verwirklichen. Kontaktieren Sie uns für eine kostenlose Beratung!</p>
+            <p>Kontaktieren Sie uns direkt für eine unverbindliche Beratung zu Ihrem Traumpool</p>
         </div>
     </section>
 
     <!-- Main Content -->
-    <div class="container">
-        <div class="main-content">
-            <!-- Contact Information -->
-            <div class="contact-info">
-                <h3>Kontakt Informationen</h3>
-                
-                <div class="contact-item">
-                    <div class="contact-icon">📞</div>
-                    <div class="contact-details">
-                        <h4>Telefon</h4>
-                        <p>+43 660 8669020</p>
+    <main class="main-content">
+        <div class="container">
+            <!-- Contact Grid -->
+            <div class="content-grid">
+                <!-- Contact Information -->
+                <div class="contact-section">
+                    <h3>Kontakt Informationen</h3>
+                    <p>Kontaktieren Sie uns direkt für eine unverbindliche Beratung:</p>
+                    
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <strong>Telefon</strong>
+                            <a href="tel:+436608669020">+43 660 8669020</a>
+                        </div>
+                        <div class="contact-item">
+                            <strong>E-Mail</strong>
+                            <a href="mailto:office@poolbauprofi.at">office@poolbauprofi.at</a>
+                        </div>
+                        <div class="contact-item">
+                            <strong>Standort</strong>
+                            <span>Österreich</span>
+                        </div>
+                        <div class="contact-item">
+                            <strong>Beratungszeiten</strong>
+                            <span>Mo-Fr: 8:00-18:00 Uhr</span>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="contact-item">
-                    <div class="contact-icon">📧</div>
-                    <div class="contact-details">
-                        <h4>E-Mail</h4>
-                        <p>office@poolbauprofi.at</p>
-                    </div>
-                </div>
-                
-                <div class="contact-item">
-                    <div class="contact-icon">📍</div>
-                    <div class="contact-details">
-                        <h4>Standort</h4>
-                        <p>Österreich</p>
-                    </div>
-                </div>
-                
-                <div class="contact-item">
-                    <div class="contact-icon">⏰</div>
-                    <div class="contact-details">
-                        <h4>Beratungszeiten</h4>
-                        <p>Mo-Fr: 8:00-18:00 Uhr</p>
-                    </div>
+
+                <!-- Contact Form -->
+                <div class="contact-form">
+                    <h3>Kontaktformular</h3>
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label for="name">Name *</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">E-Mail *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Telefon</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Nachricht *</label>
+                            <textarea id="message" name="message" rows="5" required placeholder="Beschreiben Sie Ihr Pool-Projekt..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Nachricht senden</button>
+                    </form>
                 </div>
             </div>
-
-            <!-- Contact Form -->
-            <div class="contact-form">
-                <h3>Kontaktiere uns</h3>
-                <form id="contactForm">
-                    <div class="form-group">
-                        <label for="name">Name *</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email">E-Mail (erforderlich) *</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="message">Nachricht *</label>
-                        <textarea id="message" name="message" placeholder="Beschreiben Sie Ihr Pool-Projekt..." required></textarea>
-                    </div>
-                    
-                    <button type="submit" class="submit-btn">Senden</button>
-                </form>
-            </div>
         </div>
-
-        <!-- Inspirational Section -->
-        <div class="inspirational-section">
-            <h3>Willkommen in einer Welt voller Möglichkeiten</h3>
-            <p>Der Weg zu Ihrem Traum-Pool ist so faszinierend wie das erste Eintauchen ins erfrischende Wasser. Jeder Moment bietet die Chance, Ihren Außenbereich in eine luxuriöse Wohlfühloase zu verwandeln. Die einzige Grenze ist Ihre Fantasie.</p>
-        </div>
-
-        <!-- Response Time -->
-        <div class="response-time">
-            <h4>⚡ Schnelle Antwort</h4>
-            <p>Wir antworten auf Ihre Anfrage innerhalb von 24 Stunden. Bei dringenden Anfragen erreichen Sie uns auch telefonisch.</p>
-        </div>
-    </div>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
@@ -562,92 +122,52 @@
                 
                 <div class="footer-section">
                     <h4>Kontakt</h4>
-                    <p>E-Mail: office@poolbauprofi.at</p>
-                    <p>Telefon: +43 660 8669020</p>
+                    <p>E-Mail: <a href="mailto:office@poolbauprofi.at">office@poolbauprofi.at</a></p>
+                    <p>Telefon: <a href="tel:+436608669020">+43 660 8669020</a></p>
                     <p>Standort: Österreich</p>
                 </div>
                 
                 <div class="footer-section">
                     <h4>Folgen Sie uns</h4>
-                    <p><a href="https://www.instagram.com/poolbauprofi.at/" target="_blank" rel="noopener noreferrer">📸 Instagram</a></p>
+                    <p><a href="#" target="_blank">📸 Instagram</a></p>
+                    <p>Professionelle Pool-Lösungen für Ihr Zuhause</p>
                 </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>Professionelle Pool-Lösungen für Ihr Zuhause</p>
             </div>
         </div>
     </footer>
 
-    <script>
-        // Form validation and submission
-        document.getElementById('contactForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Get form data
-            const formData = new FormData(this);
-            const submitBtn = this.querySelector('.submit-btn');
-            const originalText = submitBtn.textContent;
-            
-            // Show loading state
-            submitBtn.textContent = 'Wird gesendet...';
-            submitBtn.disabled = true;
-            
-            try {
-                // Prepare data for API
-                const data = {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    message: formData.get('message'),
-                    form_type: 'Kontakt Formular'
-                };
-                
-                // Send to email handler
-                const response = await fetch('api/send-email.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Success message
-                    alert('✅ ' + result.message);
-                    // Reset form
-                    this.reset();
-                } else {
-                    // Error message
-                    alert('❌ ' + result.message);
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                alert('❌ Es gab ein Problem beim Senden Ihrer Nachricht. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt unter office@poolbauprofi.at');
-            } finally {
-                // Reset button state
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }
-        });
-        
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+    <!-- Bubble Effect Container -->
+    <div id="bubbleContainer"></div>
 
-        // Load bubble effect settings and apply
+    <script>
+        // Load page background
+        async function loadPageBackground() {
+            try {
+                const response = await fetch('./api/get-bubble-settings.php');
+                const data = await response.json();
+                
+                if (data.success && data.page_backgrounds && data.page_backgrounds.kontakt) {
+                    const backgroundImage = data.page_backgrounds.kontakt;
+                    document.body.style.backgroundImage = `url('./assets/background/${backgroundImage}')`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                    document.body.style.backgroundAttachment = 'fixed';
+                }
+                
+                // Apply transparency settings
+                if (data.background_transparency === 'full') {
+                    document.body.classList.add('full-transparency');
+                    document.querySelector('.main-content').classList.add('full-transparency');
+                } else if (data.background_transparency === 'complete') {
+                    // Complete transparency - content areas are opaque, background fully visible
+                    document.body.classList.add('complete-transparency');
+                }
+            } catch (error) {
+                console.log('Could not load page background:', error);
+            }
+        }
+
+        // Load bubble effect
         async function loadBubbleEffect() {
             try {
                 const response = await fetch('./api/get-bubble-settings.php');
@@ -672,7 +192,7 @@
                 width: 100%;
                 height: 100%;
                 pointer-events: none;
-                z-index: 1;
+                z-index: 10;
                 overflow: hidden;
             `;
             
@@ -692,18 +212,18 @@
             const colorBase = {
                 'blue': '0, 102, 204',
                 'white': '255, 255, 255',
-                'lightblue': '173, 216, 230',
-                'cyan': '0, 255, 255',
-                'silver': '192, 192, 192',
-                'transparent': '255, 255, 255'
+                'gold': '255, 215, 0',
+                'green': '0, 128, 0',
+                'purple': '128, 0, 128'
             };
             
             // Opacity mapping
             const opacityValues = {
-                'low': 0.05,
+                'very-low': 0.05,
+                'low': 0.1,
                 'medium': 0.15,
-                'high': 0.3,
-                'very-high': 0.5
+                'high': 0.25,
+                'very-high': 0.35
             };
             
             const baseOpacity = opacityValues[opacity] || 0.15;
@@ -725,9 +245,9 @@
             // Speed mapping
             const speedRanges = {
                 'slow': [15, 25],
-                'medium': [8, 20],
-                'fast': [5, 12],
-                'very-fast': [3, 8]
+                'medium': [10, 15],
+                'fast': [6, 10],
+                'very-fast': [3, 6]
             };
             
             const speedRange = speedRanges[speed] || speedRanges['medium'];
@@ -749,10 +269,11 @@
                 position: absolute;
                 border-radius: 50%;
                 background: ${color};
-                animation: float ${animationDuration}s infinite linear;
-                left: ${Math.random() * 100}%;
                 width: ${size}px;
                 height: ${size}px;
+                left: ${Math.random() * 100}%;
+                bottom: -100px;
+                animation: bubbleFloat ${animationDuration}s infinite linear;
                 opacity: ${opacity};
                 box-shadow: 0 0 10px rgba(255,255,255,0.1);
             `;
@@ -768,34 +289,41 @@
             }, animationDuration * 1000);
         }
 
-        // Add CSS animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes float {
-                0% {
-                    transform: translateY(100vh) translateX(0px);
+        // Contact form handling
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('./api/send-email.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Ihre Nachricht wurde erfolgreich gesendet! Wir melden uns bald bei Ihnen.');
+                    this.reset();
+                } else {
+                    alert('❌ Es gab ein Problem beim Senden Ihrer Nachricht. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt.');
                 }
-                25% {
-                    transform: translateY(75vh) translateX(${Math.random() * 50 - 25}px);
-                }
-                50% {
-                    transform: translateY(50vh) translateX(${Math.random() * 100 - 50}px);
-                }
-                75% {
-                    transform: translateY(25vh) translateX(${Math.random() * 50 - 25}px);
-                }
-                100% {
-                    transform: translateY(-100px) translateX(0px);
-                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Es gab ein Problem beim Senden Ihrer Nachricht. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt.');
             }
-        `;
-        document.head.appendChild(style);
+        });
 
         // Load bubble effect when page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadBubbleEffect();
+            loadPageBackground();
         });
-        
     </script>
 </body>
 </html>

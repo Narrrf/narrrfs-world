@@ -118,6 +118,27 @@ try {
         updateSliderSpeed($input['slider_speed']);
     }
     
+    if (isset($input['hero_background'])) {
+        $current_settings['hero_background'] = $input['hero_background'];
+        
+        // Update page background in index.html
+        updatePageBackground($input['hero_background']);
+    }
+    
+    if (isset($input['background_transparency'])) {
+        $current_settings['background_transparency'] = $input['background_transparency'];
+        
+        // Update background transparency in index.html
+        updateBackgroundTransparency($input['background_transparency']);
+    }
+    
+    if (isset($input['page_backgrounds'])) {
+        $current_settings['page_backgrounds'] = $input['page_backgrounds'];
+        
+        // Update backgrounds for all pages
+        updateAllPageBackgrounds($input['page_backgrounds']);
+    }
+    
     if (isset($input['bubble_effect'])) {
         $current_settings['bubble_effect'] = $input['bubble_effect'];
     }
@@ -198,6 +219,148 @@ function updateSliderSpeed($speed) {
         );
         
         file_put_contents($index_file, $content);
+    }
+}
+
+function updatePageBackground($background) {
+    $index_file = '../index.html';
+    
+    if (file_exists($index_file)) {
+        $content = file_get_contents($index_file);
+        
+        // Determine the correct path for the background
+        if (in_array($background, ['background1.png', 'background2.png', 'background3.png', 'background4.png'])) {
+            $background_path = './assets/background/' . $background;
+        } else {
+            // Default to slider-photos for other images
+            $background_path = './slider-photos/' . $background;
+        }
+        
+        // Update the loadPageBackground function to use the new background
+        $content = preg_replace(
+            '/backgroundPath = \'[^\']*\';/',
+            'backgroundPath = \'' . $background_path . '\';',
+            $content
+        );
+        
+        file_put_contents($index_file, $content);
+    }
+}
+
+function updateBackgroundTransparency($transparency) {
+    $index_file = '../index.html';
+    
+    if (file_exists($index_file)) {
+        $content = file_get_contents($index_file);
+        
+        // Update the loadPageBackground function to apply transparency settings
+        $transparency_js = '';
+        switch ($transparency) {
+            case 'full':
+                $transparency_js = '// Full transparency - remove overlay
+                        const existingOverlay = body.querySelector(\'.background-overlay\');
+                        if (existingOverlay) {
+                            existingOverlay.remove();
+                        }';
+                break;
+            case 'hero-only':
+                $transparency_js = '// Hero only - add blue overlay to hero
+                        const hero = document.querySelector(\'.hero\');
+                        if (hero) {
+                            hero.style.background = `linear-gradient(rgba(0,102,204,0.85), rgba(0,68,153,0.85)), url(\'${backgroundPath}\')`;
+                            hero.style.backgroundSize = \'cover\';
+                            hero.style.backgroundPosition = \'center\';
+                        }';
+                break;
+                    case 'subtle':
+                        $transparency_js = '// Subtle - add light overlay
+                                if (!body.querySelector(\'.background-overlay\')) {
+                                    const overlay = document.createElement(\'div\');
+                                    overlay.className = \'background-overlay\';
+                                    overlay.style.cssText = `
+                                        position: fixed;
+                                        top: 0;
+                                        left: 0;
+                                        width: 100%;
+                                        height: 100%;
+                                        background: rgba(0, 0, 0, 0.1);
+                                        z-index: -1;
+                                        pointer-events: none;
+                                    `;
+                                    body.appendChild(overlay);
+                                }';
+                        break;
+                    case 'complete':
+                        $transparency_js = '// Complete background - remove all overlays and make content completely opaque
+                                const existingOverlay = body.querySelector(\'.background-overlay\');
+                                if (existingOverlay) {
+                                    existingOverlay.remove();
+                                }
+                                const mainContent = document.querySelector(\'.main-content\');
+                                if (mainContent) {
+                                    mainContent.classList.remove(\'full-transparency\');
+                                    mainContent.style.background = \'rgba(26, 26, 26, 0.95)\';
+                                    mainContent.style.backdropFilter = \'blur(20px)\';
+                                }
+                                // Make all content cards completely opaque
+                                const contentCards = document.querySelectorAll(\'.content-text, .contact-section, .service-item, .contact-item, .contact-form\');
+                                contentCards.forEach(card => {
+                                    card.style.background = \'rgba(255, 255, 255, 0.95)\';
+                                    card.style.backdropFilter = \'blur(10px)\';
+                                    card.style.color = \'#333\';
+                                    card.querySelectorAll(\'h3, h4, h5, p, strong, label\').forEach(text => {
+                                        text.style.color = \'#333\';
+                                        text.style.textShadow = \'none\';
+                                    });
+                                });';
+                        break;
+        }
+        
+        // Replace the transparency logic in the loadPageBackground function
+        $content = preg_replace(
+            '/\/\/ Add overlay for text readability if needed[\s\S]*?\}\);/',
+            $transparency_js,
+            $content
+        );
+        
+        file_put_contents($index_file, $content);
+    }
+}
+
+function updateAllPageBackgrounds($page_backgrounds) {
+    $pages = [
+        'index' => '../index.html',
+        'referenzen' => '../referenzen.html',
+        'anfragen' => '../anfragen.html',
+        'ueber_uns' => '../ueber-uns.html',
+        'kontakt' => '../kontakt.html'
+    ];
+    
+    foreach ($page_backgrounds as $page => $background) {
+        if (isset($pages[$page])) {
+            $file_path = $pages[$page];
+            if (file_exists($file_path)) {
+                $content = file_get_contents($file_path);
+                
+                // Determine the correct path for the background
+                if (in_array($background, ['background1.png', 'background2.png', 'background3.png', 'background4.png'])) {
+                    $background_path = './assets/background/' . $background;
+                } elseif (strpos($background, 'custom_') === 0) {
+                    $background_path = './assets/custom-backgrounds/' . $background;
+                } else {
+                    $background_path = './slider-photos/' . $background;
+                }
+                
+                // Update the loadPageBackground function to use the new background
+                $content = preg_replace(
+                    '/backgroundPath = \'[^\']*\';/',
+                    'backgroundPath = \'' . $background_path . '\';',
+                    $content
+                );
+                
+                file_put_contents($file_path, $content);
+            }
+        }
     }
 }
 ?>

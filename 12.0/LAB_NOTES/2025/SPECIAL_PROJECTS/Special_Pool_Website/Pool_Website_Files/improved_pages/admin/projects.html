@@ -700,8 +700,12 @@
                 }
             }
             
-            // Store uploaded photos for form submission
-            window.currentUploadedPhotos = uploadedPhotos;
+            // ADD uploaded photos to existing ones (don't replace)
+            if (window.currentUploadedPhotos && Array.isArray(window.currentUploadedPhotos)) {
+                window.currentUploadedPhotos = [...window.currentUploadedPhotos, ...uploadedPhotos];
+            } else {
+                window.currentUploadedPhotos = uploadedPhotos;
+            }
         }
 
         // Display project photos

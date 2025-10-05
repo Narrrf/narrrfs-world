@@ -65,6 +65,15 @@ try {
         'company_name' => 'Poolbauprofi.at',
         'phone_number' => '+43 660 8669020',
         'slider_speed' => 5,
+        'hero_background' => 'pool1.png',
+        'background_transparency' => 'full',
+        'page_backgrounds' => [
+            'index' => 'background1.png',
+            'referenzen' => 'background2.png',
+            'anfragen' => 'background3.png',
+            'ueber_uns' => 'background4.png',
+            'kontakt' => 'background1.png'
+        ],
         'bubble_effect' => 'off',
         'bubble_color' => 'blue',
         'bubble_opacity' => 'medium',
@@ -84,6 +93,14 @@ try {
     
     // Merge with defaults
     $settings = array_merge($default_settings, $settings);
+    
+    // Load custom backgrounds for dropdown options
+    $custom_backgrounds = [];
+    $custom_backgrounds_file = 'custom-backgrounds.json';
+    if (file_exists($custom_backgrounds_file)) {
+        $custom_backgrounds = json_decode(file_get_contents($custom_backgrounds_file), true) ?: [];
+    }
+    $settings['custom_backgrounds'] = $custom_backgrounds;
     
     ob_clean();
     http_response_code(200);

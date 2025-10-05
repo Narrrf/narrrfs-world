@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referenzen - Poolbauprofi.at | Unsere Poolprojekte in Österreich</title>
+    <meta name="description" content="Entdecken Sie unsere erfolgreichen Poolprojekte in Österreich. Moderne Familienpools, Luxuspools mit Naturstein und mehr. 5-Sterne-Bewertungen!">
+    <meta name="keywords" content="Pool Referenzen, Poolprojekte, Österreich, Familienpool, Luxuspool, Naturstein, LED-Beleuchtung">
+    <meta name="author" content="Poolbauprofi.at">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Referenzen - Poolbauprofi.at | Unsere Poolprojekte">
+    <meta property="og:description" content="Entdecken Sie unsere erfolgreichen Poolprojekte in Österreich. Moderne Familienpools, Luxuspools mit Naturstein und mehr.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://poolbauprofi.at/referenzen.html">
+    
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=20250128">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="../assets/logo.png" alt="Pool Bauprofi Logo" class="logo-image">
+                    <div class="logo-text">
+                        <h1>POOL</h1>
+                        <div class="subtitle">BAUPROFI.AT</div>
+                    </div>
+                </div>
+                <div class="contact-header">
+                    <a href="tel:+436608669020" class="phone">📞 +43 660 8669020</a>
+                    <a href="mailto:office@poolbauprofi.at" class="email">✉️ office@poolbauprofi.at</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <ul class="nav-list">
+                <li><a href="index.html">Leistungen</a></li>
+                <li><a href="referenzen.html" class="active">Referenzen</a></li>
+                <li><a href="anfragen.html">Anfrage</a></li>
+                <li><a href="ueber-uns.html">Über uns</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Unsere Referenzen</h1>
+                <p class="hero-subtitle">Entdecken Sie unsere erfolgreichen Poolprojekte in ganz Österreich</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="content-text">
+                <h3>Erfolgreiche Poolprojekte mit 5-Sterne-Bewertungen</h3>
+                <p>Jeder Pool ist einzigartig und wird individuell nach den Wünschen unserer Kunden geplant und gebaut. Hier sehen Sie einige unserer erfolgreichsten Projekte, die unsere Expertise und Leidenschaft für perfekten Poolbau widerspiegeln.</p>
+            </div>
+            
+            <div id="projectsContainer" class="loading">
+                Lade Projekte...
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Poolbauprofi.at - Ihr Spezialist für Poolbau in Österreich</p>
+        </div>
+    </footer>
+
+    <script>
+        // Load page background
+        async function loadPageBackground() {
+            try {
+                const response = await fetch('./api/get-bubble-settings.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const body = document.body;
+                    if (body) {
+                        // Get page-specific background (default to referenzen background)
+                        let pageBackground = data.page_backgrounds?.referenzen || data.hero_background || 'background2.png';
+                        
+                        // Determine the correct path for the background
+                        let backgroundPath;
+                        if (['background1.png', 'background2.png', 'background3.png', 'background4.png'].includes(pageBackground)) {
+                            backgroundPath = './assets/background/' + pageBackground;
+                        } else {
+                            backgroundPath = './slider-photos/' + pageBackground;
+                        }
+                        
+                        // Apply as full page background
+                        body.style.background = `url('${backgroundPath}')`;
+                        body.style.backgroundSize = 'cover';
+                        body.style.backgroundPosition = 'center';
+                        body.style.backgroundAttachment = 'fixed';
+                        body.style.backgroundRepeat = 'no-repeat';
+                        
+                        // Apply transparency setting
+                        const transparency = data.background_transparency || 'full';
+                        switch (transparency) {
+                            case 'full':
+                                // Full transparency - remove any overlay and make content transparent
+                                const existingOverlay = body.querySelector('.background-overlay');
+                                if (existingOverlay) {
+                                    existingOverlay.remove();
+                                }
+                                // Apply full transparency class to main content
+                                const mainContent = document.querySelector('.main-content');
+                                if (mainContent) {
+                                    mainContent.classList.add('full-transparency');
+                                }
+                                break;
+                            case 'hero-only':
+                                // Hero only - add blue overlay to hero section
+                                const hero = document.querySelector('.hero');
+                                if (hero) {
+                                    hero.style.background = `linear-gradient(rgba(0,102,204,0.85), rgba(0,68,153,0.85)), url('${backgroundPath}')`;
+                                    hero.style.backgroundSize = 'cover';
+                                    hero.style.backgroundPosition = 'center';
+                                }
+                                // Remove full transparency class
+                                const mainContentHero = document.querySelector('.main-content');
+                                if (mainContentHero) {
+                                    mainContentHero.classList.remove('full-transparency');
+                                }
+                                break;
+                            case 'subtle':
+                                // Subtle - add light overlay
+                                if (!body.querySelector('.background-overlay')) {
+                                    const overlay = document.createElement('div');
+                                    overlay.className = 'background-overlay';
+                                    overlay.style.cssText = `
+                                        position: fixed;
+                                        top: 0;
+                                        left: 0;
+                                        width: 100%;
+                                        height: 100%;
+                                        background: rgba(0, 0, 0, 0.1);
+                                        z-index: -1;
+                                        pointer-events: none;
+                                    `;
+                                    body.appendChild(overlay);
+                                }
+                                // Remove full transparency class
+                                const mainContentSubtle = document.querySelector('.main-content');
+                                if (mainContentSubtle) {
+                                    mainContentSubtle.classList.remove('full-transparency');
+                                }
+                                break;
+                            case 'complete':
+                                // Complete background - remove all overlays and make content completely opaque
+                                const existingOverlayComplete = body.querySelector('.background-overlay');
+                                if (existingOverlayComplete) {
+                                    existingOverlayComplete.remove();
+                                }
+                                const mainContentComplete = document.querySelector('.main-content');
+                                if (mainContentComplete) {
+                                    mainContentComplete.classList.remove('full-transparency');
+                                    mainContentComplete.style.background = 'rgba(26, 26, 26, 0.95)';
+                                    mainContentComplete.style.backdropFilter = 'blur(20px)';
+                                }
+                                // Make all content cards completely opaque
+                                const contentCards = document.querySelectorAll('.content-text, .contact-section, .service-item, .contact-item, .contact-form');
+                                contentCards.forEach(card => {
+                                    card.style.background = 'rgba(255, 255, 255, 0.95)';
+                                    card.style.backdropFilter = 'blur(10px)';
+                                    card.style.color = '#333';
+                                    card.querySelectorAll('h3, h4, h5, p, strong, label').forEach(text => {
+                                        text.style.color = '#333';
+                                        text.style.textShadow = 'none';
+                                    });
+                                });
+                                break;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Could not load page background setting:', error);
+            }
+        }
+
+        // Load projects from admin or fallback
+        async function loadProjects() {
+            const container = document.getElementById('projectsContainer');
+            
+            try {
+                // Try to load admin projects first
+                const response = await fetch('./api/get-projects.php');
+                const data = await response.json();
+                
+                if (data.success && data.projects && data.projects.length > 0) {
+                    // Use admin projects
+                    displayProjects(data.projects, container);
+                } else {
+                    // Use fallback projects
+                    displayFallbackProjects(container);
+                }
+            } catch (error) {
+                console.log('Could not load admin projects, using fallback:', error);
+                // Use fallback projects
+                displayFallbackProjects(container);
+            }
+        }
+
+        // Display admin projects
+        function displayProjects(projects, container) {
+            container.innerHTML = `
+                <div class="projects-grid">
+                    ${projects.map(project => `
+                        <div class="project-card">
+                            <img src="./assets/${project.photos[0] || 'pool1.webp'}" alt="${project.title}" class="project-image">
+                            <div class="project-content">
+                                <h3 class="project-title">${project.title}</h3>
+                                <p class="project-description">${project.description}</p>
+                                <div class="project-rating">
+                                    <span class="stars">★★★★★</span>
+                                    <span class="rating-text">5.0 von 5 Sternen</span>
+                                </div>
+                                <div class="project-features">
+                                    ${project.features.map(feature => `<span class="feature-tag">${feature}</span>`).join('')}
+                                </div>
+                                <a href="anfragen.html" class="project-button">Jetzt anfragen</a>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Display fallback projects
+        function displayFallbackProjects(container) {
+            const fallbackProjects = [
+                {
+                    title: "Moderner Familienpool",
+                    description: "Ein wunderschöner Familienpool mit modernem Design, perfekt für entspannte Nachmittage im Garten.",
+                    image: "pool1.webp",
+                    features: ["LED-Beleuchtung", "Heizung", "Solarabdeckung"]
+                },
+                {
+                    title: "Luxuspool mit Naturstein",
+                    description: "Ein eleganter Luxuspool mit Natursteinverkleidung und integrierter Whirlpool-Funktion.",
+                    image: "pool2.webp", 
+                    features: ["Naturstein", "Whirlpool", "Automatik-System"]
+                },
+                {
+                    title: "Kompakter Stadtrandpool",
+                    description: "Ein platzsparender Pool, ideal für kleinere Gärten in Stadtrandlage mit moderner Technik.",
+                    image: "pool3.webp",
+                    features: ["Kompakt", "Modern", "Energieeffizient"]
+                },
+                {
+                    title: "Infinity-Pool mit Blick",
+                    description: "Ein spektakulärer Infinity-Pool mit atemberaubendem Blick über die österreichische Landschaft.",
+                    image: "pool4.webp",
+                    features: ["Infinity-Design", "Panoramablick", "Luxus-Ausstattung"]
+                },
+                {
+                    title: "Wellness-Oase",
+                    description: "Eine komplette Wellness-Oase mit Pool, Whirlpool und Sauna für das ultimative Entspannungserlebnis.",
+                    image: "pool5.webp",
+                    features: ["Wellness", "Sauna", "Entspannung"]
+                }
+            ];
+
+            container.innerHTML = `
+                <div class="projects-grid">
+                    ${fallbackProjects.map(project => `
+                        <div class="project-card">
+                            <img src="./assets/${project.image}" alt="${project.title}" class="project-image">
+                            <div class="project-content">
+                                <h3 class="project-title">${project.title}</h3>
+                                <p class="project-description">${project.description}</p>
+                                <div class="project-rating">
+                                    <span class="stars">★★★★★</span>
+                                    <span class="rating-text">5.0 von 5 Sternen</span>
+                                </div>
+                                <div class="project-features">
+                                    ${project.features.map(feature => `<span class="feature-tag">${feature}</span>`).join('')}
+                                </div>
+                                <a href="anfragen.html" class="project-button">Jetzt anfragen</a>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Load bubble effect
+        async function loadBubbleEffect() {
+            try {
+                const response = await fetch('./api/get-bubble-settings.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Check if bubble effect is enabled for this page
+                    if (data.bubble_pages && data.bubble_pages.referenzen) {
+                        createBubbleEffect(data);
+                    }
+                }
+            } catch (error) {
+                console.log('Could not load bubble settings:', error);
+            }
+        }
+
+        // Create bubble effect
+        function createBubbleEffect(settings) {
+            const container = document.createElement('div');
+            container.className = 'bubble-container';
+            document.body.appendChild(container);
+
+            const bubbleCount = parseInt(settings.bubble_intensity) || 20;
+            const bubbleColor = settings.bubble_color || '#0066cc';
+            const bubbleOpacity = parseFloat(settings.bubble_opacity) || 0.3;
+            const bubbleSpeed = parseInt(settings.bubble_speed) || 15;
+
+            for (let i = 0; i < bubbleCount; i++) {
+                setTimeout(() => {
+                    createBubble(container, bubbleColor, bubbleOpacity, bubbleSpeed);
+                }, i * 200);
+            }
+        }
+
+        function createBubble(container, color, opacity, speed) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            
+            const size = Math.random() * 60 + 20;
+            const startX = Math.random() * 100;
+            
+            bubble.style.left = startX + '%';
+            bubble.style.width = size + 'px';
+            bubble.style.height = size + 'px';
+            bubble.style.backgroundColor = color;
+            bubble.style.opacity = opacity;
+            bubble.style.animationDuration = speed + 's';
+            bubble.style.animationDelay = Math.random() * 2 + 's';
+            
+            container.appendChild(bubble);
+            
+            setTimeout(() => {
+                if (bubble.parentNode) {
+                    bubble.parentNode.removeChild(bubble);
+                }
+            }, speed * 1000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPageBackground();
+            loadProjects();
+            loadBubbleEffect();
+        });
+    </script>
+</body>
+</html>

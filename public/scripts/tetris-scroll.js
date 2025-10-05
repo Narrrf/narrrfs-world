@@ -546,10 +546,148 @@ let activeExplosive = null; // track position and countdown
 const nextCanvas = document.getElementById("next-canvas");
 const nextCtx = nextCanvas?.getContext("2d");
 
+// 🧀 CHEESE PARTICLE SYSTEM - Season 4 Enhancement
+class CheeseParticleSystem {
+  constructor() {
+    this.particles = [];
+    this.maxParticles = 20; // Reduced from 50 to 20 for better performance
+  }
+
+  // Create cheese particles when lines are cleared
+  createCheeseParticles(clearedLines, canvasWidth, canvasHeight) {
+    const particleCount = Math.min(clearedLines * 4, this.maxParticles); // Reduced from 8 to 4 particles per line
+    
+    for (let i = 0; i < particleCount; i++) {
+      const particle = {
+        x: Math.random() * canvasWidth,
+        y: canvasHeight - (clearedLines * 20) + Math.random() * (clearedLines * 20),
+        vx: (Math.random() - 0.5) * 6, // Faster horizontal velocity
+        vy: -Math.random() * 8 - 4, // Faster upward velocity
+        life: 30, // Shorter life (30 frames instead of 60)
+        maxLife: 30,
+        size: Math.random() * 3 + 2, // Slightly smaller particles
+        color: this.getRandomCheeseColor(),
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.3 // Faster rotation
+      };
+      
+      this.particles.push(particle);
+    }
+    
+    // Particles created successfully
+  }
+
+  // Get random cheese-themed colors
+  getRandomCheeseColor() {
+    const cheeseColors = [
+      '#FFD700', // Golden yellow
+      '#FFA500', // Cheddar orange
+      '#F5DEB3', // Mozzarella white
+      '#87CEEB', // Blue cheese blue
+      '#FFE4B5', // Cream cheese
+      '#DAA520'  // Goldenrod
+    ];
+    return cheeseColors[Math.floor(Math.random() * cheeseColors.length)];
+  }
+
+  // Update all particles
+  update() {
+    // Early exit if no particles
+    if (this.particles.length === 0) return;
+    
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const particle = this.particles[i];
+      
+      // Update position
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      
+      // Update rotation
+      particle.rotation += particle.rotationSpeed;
+      
+      // Apply gravity
+      particle.vy += 0.15; // Slightly stronger gravity for faster movement
+      
+      // Reduce life
+      particle.life--;
+      
+      // Remove dead particles
+      if (particle.life <= 0) {
+        this.particles.splice(i, 1);
+      }
+    }
+  }
+
+  // Draw all particles
+  draw(ctx) {
+    this.particles.forEach(particle => {
+      const alpha = particle.life / particle.maxLife;
+      
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = particle.color;
+      ctx.translate(particle.x, particle.y);
+      ctx.rotate(particle.rotation);
+      
+      // Draw cheese particle as a small square with rounded corners
+      ctx.beginPath();
+      const x = -particle.size/2;
+      const y = -particle.size/2;
+      const width = particle.size;
+      const height = particle.size;
+      const radius = 2;
+      
+      // Draw rounded rectangle manually for browser compatibility
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Add cheese sparkle effect (reduced frequency for performance)
+      if (Math.random() > 0.85) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(particle.size/3, -particle.size/3, particle.size/4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      ctx.restore();
+    });
+  }
+
+  // Clear all particles (for game reset)
+  clear() {
+    this.particles = [];
+  }
+}
+
+// Initialize cheese particle system
+const cheeseParticles = new CheeseParticleSystem();
+
+// 🧀 TEST FUNCTION - Can be called from console to test particles
+window.testCheeseParticles = function() {
+  const canvas = document.getElementById("tetris-canvas");
+  if (canvas) {
+    cheeseParticles.createCheeseParticles(1, canvas.width, canvas.height);
+    console.log('🧀 Test particles created:', cheeseParticles.particles.length);
+  }
+};
+
 function startTetris() {
   const canvas = document.getElementById("tetris-canvas");
   const context = canvas.getContext("2d");
   const scoreDisplay = document.getElementById("tetris-score");
+  
+  // 🧀 Clear cheese particles when starting new game
+  cheeseParticles.clear();
+  
   if (!scoreDisplay) {
     console.log('⚠️ Score display element not found - creating fallback');
   }
@@ -654,6 +792,10 @@ function drawBlock(x, y, val) {
     );
     context.restore();
     
+    // 🧀 Update and draw cheese particles
+    cheeseParticles.update();
+    cheeseParticles.draw(context);
+    
     // 🏆 Draw achievement popups on canvas (like Space Invaders)
     drawAchievementPopups();
   }
@@ -749,6 +891,12 @@ function collide(shape, row, col) {
         if (lines > 0) {
           // 🎵 Play line clear sound
           tetrisSounds.playSound('lineClear');
+          
+          // 🧀 Create cheese particles for line clear effect
+          const canvas = document.getElementById("tetris-canvas");
+          if (canvas) {
+            cheeseParticles.createCheeseParticles(lines, canvas.width, canvas.height);
+          }
           
           // 🎵 Check for level up (every 20 lines)
           const oldLevel = Math.floor(linesClearedTotal / 20);
@@ -1002,6 +1150,9 @@ if (collide(current.shape, current.row, current.col)) {
         
         // 🎵 Play game over sound
         tetrisSounds.playSound('gameOver');
+        
+        // 🧀 Clear cheese particles on game over
+        cheeseParticles.clear();
         
         let wallet = localStorage.getItem("walletAddress");
         let discordId = localStorage.getItem("discord_id");
