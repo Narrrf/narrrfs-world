@@ -1,2 +1,4 @@
 # Admin Activity Log
 # This file tracks admin actions for debugging and audit purposes
+2025-10-06 00:51:57 - Failed admin login attempt from IP: ::1 (Username: pooladmin)
+2025-10-06 00:52:03 - Admin login successful from IP: ::1

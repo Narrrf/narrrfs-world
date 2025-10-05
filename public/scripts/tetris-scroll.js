@@ -43,6 +43,27 @@ let isTetrisMobileDevice = false;
 // 🛑 Pause Logic — Global variable for touch controls
 let isTetrisPaused = false;
 
+// 🏆 ROLE-BASED GAMEPLAY SYSTEM - Season 4 Feature
+let userRoles = [];
+let roleMultipliers = {
+  'VIP Holder': 2.0,
+  'Holder': 1.5,
+  'Season Tester': 1.3,
+  'Early Bird': 1.2,
+  'Champion': 1.4,
+  'Cheese Hunter': 1.1
+};
+
+// 🎨 Role-based visual themes
+let roleThemes = {
+  'VIP Holder': 'golden',
+  'Holder': 'silver', 
+  'Cheese Hunter': 'cheese',
+  'Season Tester': 'rainbow',
+  'Early Bird': 'blue',
+  'Champion': 'red'
+};
+
 // Detect mobile device
 if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
   isTetrisMobileDevice = true;
@@ -58,6 +79,74 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
   }
 } else {
   console.log('🖥️ Desktop device detected - touch controls still enabled');
+}
+
+// 🏆 ROLE DETECTION SYSTEM - Fetch user Discord roles
+async function fetchUserRoles() {
+  try {
+    const isProduction = window.location.hostname === 'narrrfs.world';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    
+    const response = await fetch(`${API_BASE_URL}/api/user/roles.php`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      userRoles = data.roles || [];
+      console.log('🏆 User roles loaded:', userRoles);
+      
+      // Apply role-based theme on load
+      applyRoleTheme();
+      
+      return userRoles;
+    } else {
+      console.log('🏆 No roles found or not logged in');
+      return [];
+    }
+  } catch (error) {
+    console.log('🏆 Error fetching roles:', error);
+    return [];
+  }
+}
+
+// 🎨 Apply role-based visual theme
+function applyRoleTheme() {
+  const primaryRole = getUserPrimaryRole();
+  const theme = roleThemes[primaryRole] || 'default';
+  
+  console.log(`🎨 Applying ${theme} theme for role: ${primaryRole}`);
+  
+  // Add theme class to canvas or game container
+  const canvas = document.getElementById('tetris-canvas');
+  if (canvas) {
+    // Remove existing theme classes
+    canvas.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    // Add new theme class
+    if (theme !== 'default') {
+      canvas.classList.add(theme);
+    }
+  }
+}
+
+// 🏆 Get user's primary role (highest priority role)
+function getUserPrimaryRole() {
+  const priorityOrder = ['VIP Holder', 'Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter'];
+  
+  for (const role of priorityOrder) {
+    if (userRoles.includes(role)) {
+      return role;
+    }
+  }
+  
+  return null;
+}
+
+// ⚡ Calculate role-based score multiplier
+function getRoleScoreMultiplier() {
+  const primaryRole = getUserPrimaryRole();
+  return roleMultipliers[primaryRole] || 1.0;
 }
 
 // 🚫 Full page scroll prevention
@@ -553,9 +642,21 @@ class CheeseParticleSystem {
     this.maxParticles = 20; // Reduced from 50 to 20 for better performance
   }
 
-  // Create cheese particles when lines are cleared
+  // Create cheese particles when lines are cleared with role-based enhancement
   createCheeseParticles(clearedLines, canvasWidth, canvasHeight) {
-    const particleCount = Math.min(clearedLines * 4, this.maxParticles); // Reduced from 8 to 4 particles per line
+    let baseParticleCount = clearedLines * 4; // Base particles per line
+    
+    // Role-based particle enhancement
+    const primaryRole = getUserPrimaryRole();
+    if (primaryRole === 'VIP Holder') {
+      baseParticleCount *= 2; // Double particles for VIP
+    } else if (primaryRole === 'Holder' || primaryRole === 'Champion') {
+      baseParticleCount = Math.floor(baseParticleCount * 1.5); // 1.5x particles for Holder/Champion
+    } else if (primaryRole === 'Cheese Hunter') {
+      baseParticleCount = Math.floor(baseParticleCount * 1.3); // Extra particles for Cheese Hunter
+    }
+    
+    const particleCount = Math.min(baseParticleCount, this.maxParticles);
     
     for (let i = 0; i < particleCount; i++) {
       const particle = {
@@ -577,8 +678,68 @@ class CheeseParticleSystem {
     // Particles created successfully
   }
 
-  // Get random cheese-themed colors
+  // Get random cheese-themed colors with role-based enhancement
   getRandomCheeseColor() {
+    const primaryRole = getUserPrimaryRole();
+    
+    // Role-based color themes
+    if (primaryRole === 'VIP Holder') {
+      const vipColors = [
+        '#FFD700', // Golden yellow
+        '#FFA500', // Cheddar orange
+        '#FFE55C', // Bright gold
+        '#FFB347', // Golden peach
+        '#DAA520'  // Goldenrod
+      ];
+      return vipColors[Math.floor(Math.random() * vipColors.length)];
+    } else if (primaryRole === 'Holder') {
+      const holderColors = [
+        '#C0C0C0', // Silver
+        '#D3D3D3', // Light gray
+        '#A8A8A8', // Dark gray
+        '#E6E6FA', // Lavender
+        '#F5F5F5'  // White smoke
+      ];
+      return holderColors[Math.floor(Math.random() * holderColors.length)];
+    } else if (primaryRole === 'Cheese Hunter') {
+      const cheeseHunterColors = [
+        '#FFA500', // Cheddar orange
+        '#FF8C00', // Dark orange
+        '#FF7F50', // Coral
+        '#FF6347', // Tomato
+        '#FF4500'  // Orange red
+      ];
+      return cheeseHunterColors[Math.floor(Math.random() * cheeseHunterColors.length)];
+    } else if (primaryRole === 'Season Tester') {
+      const seasonTesterColors = [
+        '#8A2BE2', // Blue violet
+        '#9932CC', // Dark orchid
+        '#8B008B', // Dark magenta
+        '#4B0082', // Indigo
+        '#9400D3'  // Violet
+      ];
+      return seasonTesterColors[Math.floor(Math.random() * seasonTesterColors.length)];
+    } else if (primaryRole === 'Champion') {
+      const championColors = [
+        '#FF4500', // Orange red
+        '#FF6347', // Tomato
+        '#FF0000', // Red
+        '#DC143C', // Crimson
+        '#B22222'  // Fire brick
+      ];
+      return championColors[Math.floor(Math.random() * championColors.length)];
+    } else if (primaryRole === 'Early Bird') {
+      const earlyBirdColors = [
+        '#00BFFF', // Deep sky blue
+        '#1E90FF', // Dodger blue
+        '#87CEEB', // Sky blue
+        '#87CEFA', // Light sky blue
+        '#ADD8E6'  // Light blue
+      ];
+      return earlyBirdColors[Math.floor(Math.random() * earlyBirdColors.length)];
+    }
+    
+    // Default cheese colors for users without special roles
     const cheeseColors = [
       '#FFD700', // Golden yellow
       '#FFA500', // Cheddar orange
@@ -680,10 +841,29 @@ window.testCheeseParticles = function() {
   }
 };
 
+// 🏆 TEST FUNCTION - Test role-based features
+window.testRoleFeatures = function() {
+  console.log('🏆 Testing role-based features...');
+  console.log('Current roles:', userRoles);
+  console.log('Primary role:', getUserPrimaryRole());
+  console.log('Score multiplier:', getRoleScoreMultiplier());
+  console.log('Theme applied:', document.getElementById('tetris-canvas')?.className);
+  
+  // Test particle creation with role colors
+  const canvas = document.getElementById("tetris-canvas");
+  if (canvas) {
+    cheeseParticles.createCheeseParticles(2, canvas.width, canvas.height);
+    console.log('🏆 Role-based test particles created:', cheeseParticles.particles.length);
+  }
+};
+
 function startTetris() {
   const canvas = document.getElementById("tetris-canvas");
   const context = canvas.getContext("2d");
   const scoreDisplay = document.getElementById("tetris-score");
+  
+  // 🏆 Fetch user roles for role-based gameplay
+  fetchUserRoles();
   
   // 🧀 Clear cheese particles when starting new game
   cheeseParticles.clear();
@@ -875,7 +1055,16 @@ function collide(shape, row, col) {
             // 🧠 Check for bomb BEFORE removing the row
             if (grid[y].includes(6)) {
               showBombDefusedPopup();
-          score += 10; // Bonus for defusing bomb (reduced for balance)
+          // Role-based bomb defusing bonus
+          const baseBombScore = 10; // Bonus for defusing bomb (reduced for balance)
+          const roleMultiplier = getRoleScoreMultiplier();
+          const roleBombBonus = Math.floor(baseBombScore * (roleMultiplier - 1));
+          score += baseBombScore + roleBombBonus;
+          
+          // 🏆 Log role-based bomb scoring
+          if (roleMultiplier > 1.0) {
+            console.log(`🏆 Bomb defuse role bonus: ${roleMultiplier}x (+${roleBombBonus} bonus)`);
+          }
           if (scoreDisplay) {
             scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
           }
@@ -908,8 +1097,16 @@ function collide(shape, row, col) {
             console.log(`🎵 Level up! Now at level ${newLevel}`);
           }
           
-          // Use database configuration for DSPOINC calculation
-          score += lines * 2; // Season 3: 2 DSPOINC per line (balanced for ~5k max)
+          // Use database configuration for DSPOINC calculation with role-based multipliers
+          const baseScore = lines * 2; // Season 3: 2 DSPOINC per line (balanced for ~5k max)
+          const roleMultiplier = getRoleScoreMultiplier();
+          const roleBonus = Math.floor(baseScore * (roleMultiplier - 1)); // Calculate bonus points
+          score += baseScore + roleBonus;
+          
+          // 🏆 Log role-based scoring
+          if (roleMultiplier > 1.0) {
+            console.log(`🏆 Role multiplier applied: ${roleMultiplier}x (${roleBonus} bonus points)`);
+          }
           
           // 🏆 Track Tetris clears (4 lines at once)
           if (lines === 4) {

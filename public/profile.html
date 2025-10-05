@@ -205,6 +205,51 @@ require_once 'discord-invite.php';
       animation: pop 0.4s ease-out;
     }
 
+    /* 🏆 ROLE-BASED TETRIS THEMES - Season 4 Feature */
+    #tetris-canvas.golden {
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      border: 2px solid #FFD700;
+    }
+    
+    #tetris-canvas.silver {
+      box-shadow: 0 0 20px rgba(192, 192, 192, 0.5);
+      border: 2px solid #C0C0C0;
+    }
+    
+    #tetris-canvas.cheese {
+      box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
+      border: 2px solid #FFA500;
+    }
+    
+    #tetris-canvas.rainbow {
+      box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+      border: 2px solid #8A2BE2;
+      animation: rainbow-glow 2s ease-in-out infinite alternate;
+    }
+    
+    #tetris-canvas.royal {
+      box-shadow: 0 0 20px rgba(255, 20, 147, 0.5);
+      border: 2px solid #FF1493;
+    }
+    
+    #tetris-canvas.blue {
+      box-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+      border: 2px solid #00BFFF;
+    }
+    
+    #tetris-canvas.red {
+      box-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
+      border: 2px solid #FF4500;
+    }
+    
+    @keyframes rainbow-glow {
+      0% { box-shadow: 0 0 20px rgba(138, 43, 226, 0.5); }
+      25% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
+      50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.5); }
+      75% { box-shadow: 0 0 20px rgba(0, 0, 255, 0.5); }
+      100% { box-shadow: 0 0 20px rgba(138, 43, 226, 0.5); }
+    }
+
   </style>
 </head>
 
