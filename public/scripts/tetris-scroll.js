@@ -47,18 +47,24 @@ let isTetrisPaused = false;
 let userRoles = [];
 let roleMultipliers = {
   'VIP Holder': 2.0,
+  '🎴 VIP Holder': 2.0,
   'Holder': 1.5,
+  '🏆 Holder': 1.5,
   'Season Tester': 1.3,
   'Early Bird': 1.2,
   'Champion': 1.4,
-  'Cheese Hunter': 1.1
+  'Cheese Hunter': 1.1,
+  '🧀 Cheese Hunter': 1.1
 };
 
 // 🎨 Role-based visual themes
 let roleThemes = {
   'VIP Holder': 'golden',
-  'Holder': 'silver', 
+  '🎴 VIP Holder': 'golden',
+  'Holder': 'silver',
+  '🏆 Holder': 'silver', 
   'Cheese Hunter': 'cheese',
+  '🧀 Cheese Hunter': 'cheese',
   'Season Tester': 'rainbow',
   'Early Bird': 'blue',
   'Champion': 'red'
@@ -149,7 +155,14 @@ function applyRoleTheme() {
 
 // 🏆 Get user's primary role (highest priority role)
 function getUserPrimaryRole() {
-  const priorityOrder = ['VIP Holder', 'Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter'];
+  const priorityOrder = [
+    'VIP Holder', '🎴 VIP Holder',
+    'Holder', '🏆 Holder', 
+    'Champion', 
+    'Season Tester', 
+    'Early Bird', 
+    'Cheese Hunter', '🧀 Cheese Hunter'
+  ];
   
   for (const role of priorityOrder) {
     if (userRoles.includes(role)) {
@@ -685,11 +698,11 @@ class CheeseParticleSystem {
     
     // Role-based particle enhancement
     const primaryRole = getUserPrimaryRole();
-    if (primaryRole === 'VIP Holder') {
+    if (primaryRole === 'VIP Holder' || primaryRole === '🎴 VIP Holder') {
       baseParticleCount *= 2; // Double particles for VIP
-    } else if (primaryRole === 'Holder' || primaryRole === 'Champion') {
+    } else if (primaryRole === 'Holder' || primaryRole === '🏆 Holder' || primaryRole === 'Champion') {
       baseParticleCount = Math.floor(baseParticleCount * 1.5); // 1.5x particles for Holder/Champion
-    } else if (primaryRole === 'Cheese Hunter') {
+    } else if (primaryRole === 'Cheese Hunter' || primaryRole === '🧀 Cheese Hunter') {
       baseParticleCount = Math.floor(baseParticleCount * 1.3); // Extra particles for Cheese Hunter
     }
     
@@ -720,7 +733,7 @@ class CheeseParticleSystem {
     const primaryRole = getUserPrimaryRole();
     
     // Role-based color themes
-    if (primaryRole === 'VIP Holder') {
+    if (primaryRole === 'VIP Holder' || primaryRole === '🎴 VIP Holder') {
       const vipColors = [
         '#FFD700', // Golden yellow
         '#FFA500', // Cheddar orange
@@ -729,7 +742,7 @@ class CheeseParticleSystem {
         '#DAA520'  // Goldenrod
       ];
       return vipColors[Math.floor(Math.random() * vipColors.length)];
-    } else if (primaryRole === 'Holder') {
+    } else if (primaryRole === 'Holder' || primaryRole === '🏆 Holder') {
       const holderColors = [
         '#C0C0C0', // Silver
         '#D3D3D3', // Light gray
@@ -738,7 +751,7 @@ class CheeseParticleSystem {
         '#F5F5F5'  // White smoke
       ];
       return holderColors[Math.floor(Math.random() * holderColors.length)];
-    } else if (primaryRole === 'Cheese Hunter') {
+    } else if (primaryRole === 'Cheese Hunter' || primaryRole === '🧀 Cheese Hunter') {
       const cheeseHunterColors = [
         '#FFA500', // Cheddar orange
         '#FF8C00', // Dark orange

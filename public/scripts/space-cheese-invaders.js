@@ -158,18 +158,24 @@ let hasPlayerMovedMouse = false; // 🚀 NEW: Prevent ship jumping until player 
 let spaceInvadersUserRoles = [];
 let spaceInvadersRoleMultipliers = {
   'VIP Holder': 2.0,
+  '🎴 VIP Holder': 2.0,
   'Holder': 1.5,
+  '🏆 Holder': 1.5,
   'Season Tester': 1.3,
   'Early Bird': 1.2,
   'Champion': 1.4,
-  'Cheese Hunter': 1.1
+  'Cheese Hunter': 1.1,
+  '🧀 Cheese Hunter': 1.1
 };
 
 // 🎨 Role-based visual themes
 let spaceInvadersRoleThemes = {
   'VIP Holder': 'golden',
-  'Holder': 'silver', 
+  '🎴 VIP Holder': 'golden',
+  'Holder': 'silver',
+  '🏆 Holder': 'silver', 
   'Cheese Hunter': 'cheese',
+  '🧀 Cheese Hunter': 'cheese',
   'Season Tester': 'rainbow',
   'Early Bird': 'blue',
   'Champion': 'red'
@@ -246,7 +252,14 @@ function applySpaceInvadersRoleTheme() {
 
 // 🏆 Get user's primary role (highest priority role)
 function getSpaceInvadersPrimaryRole() {
-  const priorityOrder = ['VIP Holder', 'Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter'];
+  const priorityOrder = [
+    'VIP Holder', '🎴 VIP Holder',
+    'Holder', '🏆 Holder', 
+    'Champion', 
+    'Season Tester', 
+    'Early Bird', 
+    'Cheese Hunter', '🧀 Cheese Hunter'
+  ];
   
   for (const role of priorityOrder) {
     if (spaceInvadersUserRoles.includes(role)) {

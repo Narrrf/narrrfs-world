@@ -439,3 +439,17 @@
     "discord_name": "narrrf",
     "game": "snake"
 }
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 2,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "snake"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 43,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}

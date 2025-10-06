@@ -163,18 +163,24 @@ let mutationActive = false;
 let snakeUserRoles = [];
 let snakeRoleMultipliers = {
   'VIP Holder': 2.0,
+  '🎴 VIP Holder': 2.0,
   'Holder': 1.5,
+  '🏆 Holder': 1.5,
   'Season Tester': 1.3,
   'Early Bird': 1.2,
   'Champion': 1.4,
-  'Cheese Hunter': 1.1
+  'Cheese Hunter': 1.1,
+  '🧀 Cheese Hunter': 1.1
 };
 
 // 🎨 Role-based visual themes
 let snakeRoleThemes = {
   'VIP Holder': 'golden',
-  'Holder': 'silver', 
+  '🎴 VIP Holder': 'golden',
+  'Holder': 'silver',
+  '🏆 Holder': 'silver', 
   'Cheese Hunter': 'cheese',
+  '🧀 Cheese Hunter': 'cheese',
   'Season Tester': 'rainbow',
   'Early Bird': 'blue',
   'Champion': 'red'
@@ -183,11 +189,14 @@ let snakeRoleThemes = {
 // 🧀 Role-based colors for snake and food
 let snakeRoleColors = {
   'VIP Holder': { snake: '#FFD700', food: '#FFA500', trail: '#FFD700' },
+  '🎴 VIP Holder': { snake: '#FFD700', food: '#FFA500', trail: '#FFD700' },
   'Holder': { snake: '#C0C0C0', food: '#E6E6FA', trail: '#C0C0C0' },
+  '🏆 Holder': { snake: '#C0C0C0', food: '#E6E6FA', trail: '#C0C0C0' },
   'Champion': { snake: '#FF4500', food: '#FF6347', trail: '#FF4500' },
   'Season Tester': { snake: '#8A2BE2', food: '#DA70D6', trail: '#8A2BE2' },
   'Early Bird': { snake: '#00BFFF', food: '#87CEEB', trail: '#00BFFF' },
-  'Cheese Hunter': { snake: '#FFA500', food: '#FFD700', trail: '#FFA500' }
+  'Cheese Hunter': { snake: '#FFA500', food: '#FFD700', trail: '#FFA500' },
+  '🧀 Cheese Hunter': { snake: '#FFA500', food: '#FFD700', trail: '#FFA500' }
 };
 
 // 🏆 ROLE DETECTION SYSTEM - Fetch user Discord roles (Global)
@@ -258,7 +267,14 @@ function applySnakeRoleTheme() {
 
 // 🏆 Get user's primary role (Global)
 function getSnakePrimaryRole() {
-  const priorityOrder = ['VIP Holder', 'Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter'];
+  const priorityOrder = [
+    'VIP Holder', '🎴 VIP Holder',
+    'Holder', '🏆 Holder', 
+    'Champion', 
+    'Season Tester', 
+    'Early Bird', 
+    'Cheese Hunter', '🧀 Cheese Hunter'
+  ];
   
   for (const role of priorityOrder) {
     if (snakeUserRoles.includes(role)) {
