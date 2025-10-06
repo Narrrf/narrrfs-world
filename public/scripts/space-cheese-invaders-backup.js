@@ -1,4 +1,30 @@
 // 🧀 Space Cheese Invaders v3.9.19 - PHASE 3 AUDIO & SHIELD ENHANCEMENTS - TIMESTAMP: ${Date.now()}
+
+// 🚫 REMOVE ANY EXISTING HELP OVERLAYS (browser cache fix)
+function removeHelpOverlays() {
+  console.log('🚫 Removing any existing help overlays...');
+  
+  // Remove any elements with help overlay content
+  const helpOverlays = document.querySelectorAll('[style*="position: fixed"], [style*="z-index: 9999"], .help-overlay, #help-overlay');
+  helpOverlays.forEach(overlay => {
+    if (overlay.innerHTML.includes('SPACE CHEESE INVADERS') || 
+        overlay.innerHTML.includes('DETAILED HELP OVERLAY') ||
+        overlay.innerHTML.includes('MOBILE CONTROLS')) {
+      console.log('🚫 Removing help overlay:', overlay);
+      overlay.remove();
+    }
+  });
+  
+  // Also remove any dynamically created help content
+  const helpContainers = document.querySelectorAll('#help-info-container, .help-info-container');
+  helpContainers.forEach(container => {
+    console.log('🚫 Removing help info container:', container);
+    container.remove();
+  });
+}
+
+// Call immediately to remove any cached overlays
+removeHelpOverlays();
 // Much slower invaders (1 second drop, 1 minute break) with Tetris block danger items
 // NEW: Auto-shoot feature - automatically fires when ship moves (toggle with 'T' key)
 // NEW: Laser shot type, Speed boost power-up, and Bomb weapon
@@ -217,8 +243,8 @@ function updateSpaceInvadersScoreDisplay() {
   if (topScoreDisplay && roleMultiplierDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
     const primaryRole = getSpaceInvadersPrimaryRole();
-    const baseDSPOINC = spaceInvadersCount * 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
-    const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+    const baseDSPOINC = spaceInvadersScore * 0.001; // Original score-based system (1000 points = 1 DSPOINC)
+    const roleBonusDSPOINC = Math.round(baseDSPOINC * (roleMultiplier - 1) * 1000) / 1000; // Round to 3 decimal places
     const totalDSPOINC = baseDSPOINC + roleBonusDSPOINC;
     
     // Debug logging
@@ -243,8 +269,8 @@ function updateSpaceInvadersScoreDisplay() {
   const scoreDisplay = document.getElementById('space-invaders-score');
   if (scoreDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = spaceInvadersCount * 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
-    const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+    const baseDSPOINC = spaceInvadersScore * 0.001; // Original score-based system (1000 points = 1 DSPOINC)
+    const roleBonusDSPOINC = Math.round(baseDSPOINC * (roleMultiplier - 1) * 1000) / 1000; // Round to 3 decimal places
     const totalDSPOINC = baseDSPOINC + roleBonusDSPOINC;
     
     if (roleMultiplier > 1.0) {
@@ -677,7 +703,7 @@ class PhoenixBird {
     createExplosion(this.x, this.y, 40, 25);
     
     // Award points with role-based multipliers (1/5 of original scoring)
-    const baseScore = 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
+    const baseScore = 0.001; // Original score-based system (1000 points = 1 DSPOINC)
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
     const totalScore = Math.floor(baseScore * roleMultiplier);
     spaceInvadersScore += totalScore;
@@ -4877,6 +4903,9 @@ let reloadButtonInterval = null;
 
   // 🎮 Start game with countdown (same as Snake)
   async function startGameWithCountdown() {
+    // 🚫 Remove any help overlays before starting game
+    removeHelpOverlays();
+    
     const countdownEl = document.getElementById("space-invaders-countdown");
     let count = 5;
 
@@ -6453,7 +6482,7 @@ let reloadButtonInterval = null;
               
               // 🚀 SEASON 3 PHASE 1: Combo system integration for weak point with role multipliers
               addKillCombo();
-              const baseScore = 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
+              const baseScore = 0.001; // Original score-based system (1000 points = 1 DSPOINC)
               const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
               const totalScore = Math.floor(baseScore * roleMultiplier);
               spaceInvadersScore += totalScore;
@@ -6490,7 +6519,7 @@ let reloadButtonInterval = null;
             
             // 🚀 SEASON 3 PHASE 1: Combo system integration
             addKillCombo();
-            const baseScore = 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
+            const baseScore = 0.001; // Original score-based system (1000 points = 1 DSPOINC)
             const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
             const totalScore = Math.floor(baseScore * roleMultiplier);
             spaceInvadersScore += totalScore;
@@ -8827,15 +8856,15 @@ let reloadButtonInterval = null;
     
     // 🏆 ROLE-BASED SCORING: Use role multipliers for final score display
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = spaceInvadersCount * 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
-    const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+    const baseDSPOINC = spaceInvadersScore * 0.001; // Original score-based system (1000 points = 1 DSPOINC)
+    const roleBonusDSPOINC = Math.round(baseDSPOINC * (roleMultiplier - 1) * 1000) / 1000; // Round to 3 decimal places
     const totalDSPOINC = baseDSPOINC + roleBonusDSPOINC;
     
     if (gameOverModal && finalScoreText) {
       if (roleMultiplier > 1.0) {
-        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${roleMultiplier}x Role Bonus!) (${spaceInvadersCount} invaders destroyed)`;
+        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${roleMultiplier}x Role Bonus!) (${spaceInvadersScore.toLocaleString()} points, ${spaceInvadersCount} invaders destroyed)`;
       } else {
-        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${spaceInvadersCount} invaders destroyed)`;
+        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${spaceInvadersScore.toLocaleString()} points, ${spaceInvadersCount} invaders destroyed)`;
       }
       gameOverModal.classList.remove("hidden");
     }
@@ -12432,9 +12461,10 @@ window.emergencyCollisionCheck = function() {
     shieldBtn.innerHTML = `🛡️<br><span style="font-size: 0.6em;">${speedBoostAmmo}</span>`;
   }
 
-  // 🆘 NEW: Create enhanced mobile controls - IMPROVED FOR BETTER MOBILE UX
+  // 🆘 DISABLED: Create enhanced mobile controls - IMPROVED FOR BETTER MOBILE UX - causes help overlay
   function createEnhancedMobileControls() {
-    console.log('🎮 Creating enhanced mobile controls...');
+    console.log('🎮 Enhanced mobile controls disabled - prevents help overlay');
+    return;
     
     // 🆘 IMPROVED: Check if controls already exist to prevent duplicates
     if (document.getElementById('game-panel-btn')) {

@@ -1,0 +1,284 @@
+# 🚀 RESET SEASON PROTOCOL RULE - PROFESSIONAL OPERATIONS
+
+**STATUS:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**  
+**CREATED:** October 6, 2025  
+**PURPOSE:** Standardized season reset protocol for all future seasons  
+**PRIORITY:** 🚨 **CRITICAL - PRODUCTION OPERATIONS**  
+
+---
+
+## 🎯 **RULE OVERVIEW**
+
+### **CORE PRINCIPLE:**
+**Every season reset must follow this exact protocol to ensure zero data loss, complete system integrity, and professional operations.**
+
+### **RULE SCOPE:**
+- **Database Operations** - Season activation and data management
+- **Code Deployment** - Git workflow and production deployment
+- **Data Preservation** - Critical data protection protocols
+- **Verification Procedures** - Comprehensive validation steps
+- **Documentation Requirements** - Complete audit trail
+- **Emergency Procedures** - Rollback and recovery protocols
+
+---
+
+## 📋 **MANDATORY PRE-RESET CHECKLIST**
+
+### **✅ PRE-RESET VERIFICATION (MANDATORY):**
+```bash
+# 1. Verify current season status
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is_active = 1;"
+
+# 2. Count existing data for verification
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_scores;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_cheese_clicks;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_race_participants;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_achievements;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_snake_achievements;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_space_invaders_achievements;"
+
+# 3. Document pre-reset state
+echo "Pre-reset data counts documented: $(date)" >> /data/season_reset_log.txt
+```
+
+### **✅ DATABASE BACKUP (CRITICAL):**
+```bash
+# ALWAYS backup before any reset operation
+cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world_backup_$(date +%Y%m%d_%H%M%S).sqlite
+echo "Database backup created: $(date)" >> /data/season_reset_log.txt
+```
+
+---
+
+## 🚨 **RESET EXECUTION PROTOCOL**
+
+### **✅ STEP 1: DATABASE RESET COMMANDS**
+```bash
+# Execute reset commands in exact order
+sqlite3 /var/www/html/db/narrrf_world.sqlite "
+-- Reset 3 main games only
+DELETE FROM tbl_tetris_scores WHERE game IN ('tetris', 'snake', 'space_invaders');
+DELETE FROM tbl_user_season_achievements WHERE game IN ('tetris', 'snake', 'space_invaders');
+
+-- Deactivate current season
+UPDATE tbl_seasons SET is_active = 0 WHERE is_active = 1;
+
+-- Create new season (adjust name and duration as needed)
+INSERT INTO tbl_seasons (season_name, start_date, end_date, is_active) 
+VALUES ('Season X', datetime('now'), datetime('now', '+30 days'), 1);
+"
+
+echo "Database reset completed: $(date)" >> /data/season_reset_log.txt
+```
+
+### **✅ STEP 2: COPY DATABASE TO /DATA**
+```bash
+# Critical for next deployment
+cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world.sqlite
+echo "Database copied to /data: $(date)" >> /data/season_reset_log.txt
+```
+
+---
+
+## 🔍 **POST-RESET VERIFICATION PROTOCOL**
+
+### **✅ MANDATORY VERIFICATION STEPS:**
+```bash
+# 1. Verify new season is active
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is_active = 1;"
+
+# 2. Verify 3 main games are reset (should show 0)
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_scores;"
+
+# 3. Verify preserved data (should match pre-reset counts)
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_cheese_clicks;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_race_participants;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_achievements;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_snake_achievements;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_space_invaders_achievements;"
+
+# 4. Document verification results
+echo "Post-reset verification completed: $(date)" >> /data/season_reset_log.txt
+```
+
+### **✅ VERIFICATION CRITERIA:**
+- **New Season Active:** Must show new season with `is_active = 1`
+- **3 Main Games Reset:** `tbl_tetris_scores` count must be 0
+- **Data Preserved:** All other counts must match pre-reset values
+- **No Data Loss:** Zero tolerance for data loss
+
+---
+
+## 🚀 **CODE DEPLOYMENT PROTOCOL**
+
+### **✅ GIT WORKFLOW (MANDATORY):**
+```bash
+# 1. Stage all changes
+git add .
+
+# 2. Commit with descriptive message
+git commit -m "Season X Launch: [List all changes and fixes]
+
+- [Feature 1 description]
+- [Feature 2 description]
+- [Bug fix 1 description]
+- [Bug fix 2 description]
+- Database reset completed for Season X
+- Ready for live Season X launch"
+
+# 3. Push to render-deploy branch
+git push origin render-deploy
+
+# 4. Document deployment
+echo "Code deployed to production: $(date)" >> /data/season_reset_log.txt
+```
+
+---
+
+## 📊 **DATA PRESERVATION RULES**
+
+### **✅ ALWAYS RESET (3 Main Games):**
+- **`tbl_tetris_scores`** - Tetris, Snake, Space Invaders scores
+- **`tbl_user_season_achievements`** - Season achievements for 3 main games
+
+### **🚨 NEVER RESET (Critical Data):**
+- **`tbl_cheese_clicks`** - Cheese Hunt data (PRESERVE ALWAYS)
+- **`tbl_race_participants`** - Discord Race data (PRESERVE ALWAYS)
+- **`tbl_tetris_achievements`** - Individual Tetris achievements (PRESERVE ALWAYS)
+- **`tbl_snake_achievements`** - Individual Snake achievements (PRESERVE ALWAYS)
+- **`tbl_space_invaders_achievements`** - Individual Space Invaders achievements (PRESERVE ALWAYS)
+
+### **⚠️ SPECIAL CASES:**
+- **`tbl_season_leaderboards`** - No `game` column, regenerates automatically
+- **User Profiles** - Never reset user account data
+- **Store Items** - Never reset store inventory or purchases
+- **Wallet Data** - Never reset NFT ownership or wallet balances
+
+---
+
+## 🚨 **EMERGENCY PROCEDURES**
+
+### **✅ ROLLBACK PROTOCOL:**
+```bash
+# If reset fails or causes issues
+cp /data/narrrf_world_backup_$(date +%Y%m%d_%H%M%S).sqlite /var/www/html/db/narrrf_world.sqlite
+echo "Emergency rollback executed: $(date)" >> /data/season_reset_log.txt
+```
+
+### **✅ RECOVERY VERIFICATION:**
+```bash
+# Verify rollback success
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is_active = 1;"
+# Should show previous season as active
+```
+
+---
+
+## 📝 **DOCUMENTATION REQUIREMENTS**
+
+### **✅ MANDATORY DOCUMENTATION:**
+1. **Pre-Reset State** - Document all data counts
+2. **Reset Commands** - Record exact commands executed
+3. **Verification Results** - Document all verification steps
+4. **Deployment Log** - Record git commit and push details
+5. **Issue Log** - Document any problems or deviations
+6. **Lab Note** - Create comprehensive lab note in `12.0/LAB_NOTES/`
+
+### **✅ LAB NOTE TEMPLATE:**
+```markdown
+# 🚀 SEASON X RESET - [DATE]
+
+## Pre-Reset State:
+- Current Season: [Season Name]
+- Data Counts: [Document all counts]
+
+## Reset Execution:
+- Commands: [List exact commands]
+- Results: [Document outcomes]
+
+## Verification:
+- New Season: [Confirm active]
+- Data Reset: [Confirm 3 main games reset]
+- Data Preserved: [Confirm preserved data]
+
+## Deployment:
+- Commit: [Git commit hash]
+- Status: [Success/Failure]
+
+## Issues:
+- Problems: [List any issues]
+- Solutions: [Document resolutions]
+```
+
+---
+
+## 🎯 **SUCCESS METRICS**
+
+### **✅ TECHNICAL SUCCESS CRITERIA:**
+- **Zero Data Loss** - All critical data preserved
+- **Clean Reset** - 3 main games completely cleared
+- **Season Activation** - New season successfully activated
+- **Code Deployment** - All changes deployed successfully
+- **System Integrity** - No broken functionality
+
+### **✅ OPERATIONAL SUCCESS CRITERIA:**
+- **Professional Process** - All steps followed exactly
+- **Complete Documentation** - Full audit trail created
+- **Team Communication** - All stakeholders informed
+- **Risk Mitigation** - Backup and verification completed
+- **Future Readiness** - System ready for new season
+
+---
+
+## 🚨 **CRITICAL RULES TO NEVER VIOLATE**
+
+### **❌ NEVER DO:**
+- **Reset without backup** - Always backup database first
+- **Reset preserved data** - Never touch Cheese Hunt, Discord Race, or achievements
+- **Skip verification** - Always verify before and after reset
+- **Deploy without testing** - Always test locally first
+- **Skip documentation** - Always create complete audit trail
+
+### **✅ ALWAYS DO:**
+- **Follow exact protocol** - No deviations from this rule
+- **Document everything** - Complete record of all operations
+- **Verify at each step** - Check results before proceeding
+- **Communicate status** - Keep team informed of progress
+- **Plan for rollback** - Always have recovery plan ready
+
+---
+
+## 🔄 **RULE EVOLUTION**
+
+### **📋 RULE UPDATES:**
+- **Version 1.0** - Initial rule based on Season 4 reset (October 6, 2025)
+- **Future Updates** - Rule will be updated based on new learnings and requirements
+- **Version Control** - All updates must be documented with rationale
+
+### **📚 LESSONS LEARNED INTEGRATION:**
+- **Database Structure Changes** - Update commands if table structure changes
+- **New Game Integration** - Extend reset commands for new games
+- **Process Improvements** - Incorporate efficiency improvements
+- **Error Prevention** - Add safeguards for common mistakes
+
+---
+
+## 🧀 **FINAL MANDATE**
+
+### **THIS RULE IS NON-NEGOTIABLE:**
+- **Every season reset** MUST follow this exact protocol
+- **No exceptions** without documented rationale and approval
+- **Complete compliance** required for all team members
+- **Professional standards** maintained at all times
+
+### **THE ULTIMATE GOAL:**
+**Ensure every season reset is executed with surgical precision, zero data loss, complete system integrity, and professional documentation for decades of reliable operations.**
+
+---
+
+**RULE CREATED:** October 6, 2025  
+**STATUS:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**  
+**PURPOSE:** Professional Season Reset Operations  
+**SCOPE:** All future season resets, all team members, all environments  
+
+**🚀 THIS RULE ENSURES DECADES OF RELIABLE SEASON OPERATIONS! 🚀**

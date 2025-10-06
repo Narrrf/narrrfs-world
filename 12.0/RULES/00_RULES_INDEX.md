@@ -20,34 +20,39 @@
    - **Purpose:** Prevent code deletion and modification issues that cause huge problems
    - **Status:** ✅ **ACTIVE - HIGHEST PRIORITY RULE**
 
-3. **`02_PROFESSIONAL_ORGANIZATION_RULE.md`** - **WORK ORGANIZATION**
+3. **`09_RESET_SEASON_PROTOCOL_RULE.md`** - **🚀 SEASON RESET OPERATIONS**
+   - **Size:** 12,000 bytes
+   - **Purpose:** Professional season reset protocol for all future seasons
+   - **Status:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**
+
+4. **`02_PROFESSIONAL_ORGANIZATION_RULE.md`** - **WORK ORGANIZATION**
    - **Size:** 9,720 bytes
    - **Purpose:** Professional file organization and LLM synchronization
    - **Status:** ✅ **INTEGRATED INTO MASTER RULESET**
 
 ### **🔧 TECHNICAL RULES (CRITICAL FOR DEVELOPMENT):**
 
-3. **`03_LOCALHOST_URL_RULE.md`** - **API URL PATTERNS**
+5. **`03_LOCALHOST_URL_RULE.md`** - **API URL PATTERNS**
    - **Purpose:** Correct localhost URL patterns for local development
    - **Critical:** Prevents 404 errors in API calls
    - **Status:** ✅ **INTEGRATED INTO MASTER RULESET**
 
-4. **`04_GAME_SCORING_SYSTEM_RULES.md`** - **GAME DATA MAPPING**
+6. **`04_GAME_SCORING_SYSTEM_RULES.md`** - **GAME DATA MAPPING**
    - **Purpose:** Correct field mappings for all 5 games
    - **Critical:** Prevents data synchronization issues
    - **Status:** ✅ **CLEANED AND VERIFIED**
 
-5. **`05_TOKEN_LIMIT_RULE.md`** - **SESSION MANAGEMENT**
+7. **`05_TOKEN_LIMIT_RULE.md`** - **SESSION MANAGEMENT**
    - **Purpose:** Token limit management and work continuity
    - **Critical:** Prevents lost work across sessions
    - **Status:** ✅ **CLEANED AND UPDATED**
 
-6. **`06_ADMIN_INTERFACE_RULE.md`** - **ADMIN SYSTEM ARCHITECTURE**
+8. **`06_ADMIN_INTERFACE_RULE.md`** - **ADMIN SYSTEM ARCHITECTURE**
    - **Purpose:** Enterprise admin interface design principles
    - **Critical:** Scalable game management system
    - **Status:** ✅ **UPDATED WITH DATABASE OVERVIEW TAB**
 
-7. **`07_GAME_SCORE_RETRIEVAL_SYSTEM.md`** - **SCORE SYSTEM ARCHITECTURE**
+9. **`07_GAME_SCORE_RETRIEVAL_SYSTEM.md`** - **SCORE SYSTEM ARCHITECTURE**
    - **Purpose:** Dual table strategy and field mapping accuracy
    - **Critical:** Mission status and admin interface synchronization
    - **Status:** ✅ **CORRECTED FIELD MAPPINGS**
