@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Cheese Invaders - Narrrfs World</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .game-canvas {
+            border: 2px solid #fbbf24;
+            border-radius: 10px;
+            background: #000;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+        
+        .role-golden { border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+        .role-silver { border-color: #e5e7eb; box-shadow: 0 0 20px rgba(229, 231, 235, 0.5); }
+        .role-cheese { border-color: #f97316; box-shadow: 0 0 20px rgba(249, 115, 22, 0.5); }
+        .role-rainbow { border-color: #8b5cf6; box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+        .role-blue { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        .role-red { border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+    </style>
+</head>
+<body class="text-white min-h-screen">
+    <!-- Header -->
+    <header class="text-center py-8">
+        <h1 class="text-4xl font-bold text-yellow-400 mb-2">SPACE INVADERS</h1>
+        <h2 class="text-2xl font-bold text-yellow-300">SPACE CHEESE INVADERS</h2>
+    </header>
+
+    <!-- Game Container -->
+    <div class="container mx-auto px-4 max-w-4xl">
+        <!-- Top Score Display -->
+        <div class="text-center mb-4">
+            <p id="space-invaders-top-score" class="text-yellow-300 font-mono text-lg font-bold">💰 Score: $0 DSPOINC</p>
+            <p id="space-invaders-role-multiplier" class="text-cyan-300 font-bold text-sm">Role Bonus: 1.0x</p>
+        </div>
+
+        <!-- Game Controls -->
+        <div class="flex justify-center gap-4 mb-4">
+            <button id="start-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-2 rounded-lg transition-colors">
+                ▶️ Start
+            </button>
+            <button id="pause-space-invaders-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-2 rounded-lg transition-colors">
+                ⏸️ Pause
+            </button>
+        </div>
+        
+        <p class="text-center text-sm text-gray-400 mb-4">Press 'P' to pause during gameplay</p>
+
+        <!-- Game Canvas -->
+        <div class="flex justify-center mb-4">
+            <canvas id="space-invaders-canvas" class="game-canvas" width="800" height="600"></canvas>
+        </div>
+
+        <!-- Game Stats -->
+        <div class="text-center mb-4">
+            <p id="space-invaders-wave" class="text-lg font-bold">Wave: 1</p>
+            <p id="space-invaders-lives" class="text-lg font-bold">Lives: 3</p>
+            <p id="space-invaders-weapon" class="text-lg font-bold">Weapon: Normal</p>
+        </div>
+
+        <!-- Unified Game Controls & Features -->
+        <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border: 2px solid #fbbf24; border-radius: 15px; padding: 25px; margin: 20px auto; max-width: 900px; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <h3 style="color: #fbbf24; font-size: 1.4em; font-weight: bold; margin-bottom: 20px; text-align: center; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">🎮 SPACE INVADERS CONTROLS & HELP</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; text-align: left;">
+                <!-- MOVEMENT & SHOOTING -->
+                <div>
+                    <h4 style="color: #3b82f6; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; border-bottom: 2px solid #3b82f6; padding-bottom: 5px;">🎯 MOVEMENT & SHOOTING</h4>
+                    <div style="font-size: 0.9em; line-height: 1.6;">
+                        <p><strong>WASD Keys:</strong> W=Up, A=Left, S=Down, D=Right</p>
+                        <p><strong>Arrow Keys:</strong> ↑=Up, ←=Left, ↓=Down, →=Right</p>
+                        <p><strong>Space Bar:</strong> Shoot lasers</p>
+                        <p><strong>Mobile:</strong> Swipe canvas to move, tap to shoot</p>
+                    </div>
+                </div>
+                
+                <!-- WEAPON SYSTEM -->
+                <div>
+                    <h4 style="color: #fbbf24; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; border-bottom: 2px solid #fbbf24; padding-bottom: 5px;">🔫 WEAPON SYSTEM</h4>
+                    <div style="font-size: 0.9em; line-height: 1.6;">
+                        <p><strong>1 Key:</strong> Normal Cheese Bullets (Unlimited)</p>
+                        <p><strong>2 Key:</strong> Laser Beam (5 ammo, pierces enemies)</p>
+                        <p><strong>3 Key:</strong> Bomb (3 ammo, clears screen)</p>
+                        <p><strong>Mobile:</strong> Use weapon buttons below game</p>
+                    </div>
+                </div>
+                
+                <!-- GAME CONTROLS -->
+                <div>
+                    <h4 style="color: #10b981; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; border-bottom: 2px solid #10b981; padding-bottom: 5px;">🎮 GAME CONTROLS</h4>
+                    <div style="font-size: 0.9em; line-height: 1.6;">
+                        <p><strong>⏸️ Pause Button:</strong> Pause/Resume game</p>
+                        <p><strong>▶️ Start Button:</strong> Start new game</p>
+                        <p><strong>T Key:</strong> Toggle Auto-shoot</p>
+                        <p><strong>Mobile:</strong> Use pause button and touch controls</p>
+                    </div>
+                </div>
+                
+                <!-- SCORING & SPECIALS -->
+                <div>
+                    <h4 style="color: #8b5cf6; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; border-bottom: 2px solid #8b5cf6; padding-bottom: 5px;">💰 SCORING & SPECIALS</h4>
+                    <div style="font-size: 0.9em; line-height: 1.6;">
+                        <p><strong>Invader Kill:</strong> 0.0002 DSPOINC per kill</p>
+                        <p><strong>💣 Boss Defeat:</strong> Wave bonus + special rewards</p>
+                        <p><strong>⚡ Power-ups:</strong> Speed boost, ammo refills</p>
+                        <p><strong>Combo System:</strong> Bonus points for streaks</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ROLE-BASED THEMES & BONUSES -->
+            <div style="margin-top: 25px; padding: 20px; background: rgba(251, 191, 36, 0.1); border-radius: 10px; border: 2px solid #fbbf24;">
+                <h4 style="color: #fbbf24; font-weight: bold; font-size: 1.1em; margin-bottom: 15px; text-align: center; border-bottom: 2px solid #fbbf24; padding-bottom: 8px;">🏆 ROLE-BASED THEMES & BONUSES</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; font-size: 0.9em;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 20px; height: 20px; border-radius: 50%; background: #fbbf24; border: 2px solid #f59e0b;"></div>
+                        <span><strong>Golden Frame:</strong> VIP Holder (2.0x scoring, golden theme)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 20px; height: 20px; border-radius: 50%; background: #e5e7eb; border: 2px solid #9ca3af;"></div>
+                        <span><strong>Silver Frame:</strong> NFT Holder (1.5x scoring, silver theme)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 20px; height: 20px; border-radius: 50%; background: #ef4444; border: 2px solid #dc2626;"></div>
+                        <span><strong>Red Frame:</strong> Champion (1.4x scoring, enhanced effects)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 20px; height: 20px; border-radius: 50%; background: #f97316; border: 2px solid #ea580c;"></div>
+                        <span><strong>Orange Frame:</strong> Cheese Hunter (1.1x scoring, orange theme)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 20px; height: 20px; border-radius: 50%; background: #3b82f6; border: 2px solid #2563eb;"></div>
+                        <span><strong>Blue Frame:</strong> Early Bird (1.2x scoring, blue theme)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 20px; height: 20px; border-radius: 50%; background: #8b5cf6; border: 2px solid #7c3aed;"></div>
+                        <span><strong>Purple Frame:</strong> Season Tester (1.3x scoring, animated glow)</span>
+                    </div>
+                </div>
+                <p style="text-align: center; font-weight: bold; color: #fbbf24; margin-top: 15px; font-size: 0.9em;">Your Discord roles determine your theme and bonuses!</p>
+            </div>
+            
+            <!-- ACHIEVEMENTS -->
+            <div style="margin-top: 20px; padding: 15px; background: rgba(236, 72, 153, 0.1); border-radius: 10px; border: 2px solid #ec4899;">
+                <h4 style="color: #ec4899; font-weight: bold; font-size: 1.1em; margin-bottom: 10px; border-bottom: 2px solid #ec4899; padding-bottom: 5px;">🏆 ACHIEVEMENTS</h4>
+                <div style="font-size: 0.9em; line-height: 1.6;">
+                    <p><strong>Unlock achievements</strong> by reaching milestones</p>
+                    <p><strong>Progress tracked automatically</strong> during gameplay</p>
+                    <p><strong>View your progress</strong> in profile achievements section</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Your Space Cheese Invaders Stats -->
+        <div class="bg-gray-800 rounded-lg p-6 mt-8">
+            <h3 class="text-xl font-bold text-yellow-400 mb-4 text-center">Your Space Cheese Invaders Stats</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div class="bg-gray-700 rounded-lg p-4">
+                    <p class="text-sm text-gray-400">Games Played</p>
+                    <p id="space-invaders-games-played" class="text-2xl font-bold text-blue-400">0</p>
+                </div>
+                <div class="bg-gray-700 rounded-lg p-4">
+                    <p class="text-sm text-gray-400">Best Score</p>
+                    <p id="space-invaders-best-score" class="text-2xl font-bold text-green-400">0</p>
+                </div>
+                <div class="bg-gray-700 rounded-lg p-4">
+                    <p class="text-sm text-gray-400">Total DSPOINC</p>
+                    <p id="space-invaders-total-dspoinc" class="text-2xl font-bold text-yellow-400">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Script -->
+    <script src="scripts/space-cheese-invaders-clean.js"></script>
+</body>
+</html>

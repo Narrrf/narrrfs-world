@@ -112,6 +112,28 @@ class SnakeSoundManager {
         oscillator.start();
         oscillator.stop(this.audioContext.currentTime + 0.5);
         break;
+
+            case 'cheeseTeleport':
+              // Mystical teleportation sound - quick ascending/descending whoosh
+              oscillator.frequency.setValueAtTime(200, this.audioContext.currentTime);
+              oscillator.frequency.exponentialRampToValueAtTime(800, this.audioContext.currentTime + 0.1);
+              oscillator.frequency.exponentialRampToValueAtTime(150, this.audioContext.currentTime + 0.2);
+              oscillator.type = 'sine';
+              gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+              gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.25);
+              oscillator.start();
+              oscillator.stop(this.audioContext.currentTime + 0.25);
+              break;
+            case 'madMode':
+              // Epic mad mode activation sound - powerful ascending sweep
+              oscillator.frequency.setValueAtTime(100, this.audioContext.currentTime);
+              oscillator.frequency.exponentialRampToValueAtTime(1200, this.audioContext.currentTime + 0.5);
+              oscillator.type = 'sawtooth';
+              gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+              gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.6);
+              oscillator.start();
+              oscillator.stop(this.audioContext.currentTime + 0.6);
+              break;
     }
   }
 }
@@ -137,9 +159,153 @@ cheeseImg.src = "img/snake/cheese.png";
 // 🧠 Mutation flag (false by default)
 let mutationActive = false;
 
-// ✅ DOM-ready game boot
+// 🏆 ROLE-BASED GAMEPLAY SYSTEM - Season 4 Feature (Global Scope)
+let snakeUserRoles = [];
+let snakeRoleMultipliers = {
+  'VIP Holder': 2.0,
+  'Holder': 1.5,
+  'Season Tester': 1.3,
+  'Early Bird': 1.2,
+  'Champion': 1.4,
+  'Cheese Hunter': 1.1
+};
+
+// 🎨 Role-based visual themes
+let snakeRoleThemes = {
+  'VIP Holder': 'golden',
+  'Holder': 'silver', 
+  'Cheese Hunter': 'cheese',
+  'Season Tester': 'rainbow',
+  'Early Bird': 'blue',
+  'Champion': 'red'
+};
+
+// 🧀 Role-based colors for snake and food
+let snakeRoleColors = {
+  'VIP Holder': { snake: '#FFD700', food: '#FFA500', trail: '#FFD700' },
+  'Holder': { snake: '#C0C0C0', food: '#E6E6FA', trail: '#C0C0C0' },
+  'Champion': { snake: '#FF4500', food: '#FF6347', trail: '#FF4500' },
+  'Season Tester': { snake: '#8A2BE2', food: '#DA70D6', trail: '#8A2BE2' },
+  'Early Bird': { snake: '#00BFFF', food: '#87CEEB', trail: '#00BFFF' },
+  'Cheese Hunter': { snake: '#FFA500', food: '#FFD700', trail: '#FFA500' }
+};
+
+// 🏆 ROLE DETECTION SYSTEM - Fetch user Discord roles (Global)
+async function fetchSnakeUserRoles() {
+  try {
+    // 🌍 Local development bypass - use Narrrf's roles for testing
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    if (isLocalDevelopment) {
+      console.log('🏠 Local environment detected - using Narrrf\'s roles for Snake testing');
+      snakeUserRoles = [
+        "VIP Holder", "Holder", "Champion", "Season Tester", "Early Bird", "Cheese Hunter",
+        "Alpha Caller", "Community Member", "Moderator", "PokerOG", "Rumble"
+      ];
+      console.log('🏆 Local test roles loaded for Snake:', snakeUserRoles);
+      
+      // Apply role-based theme on load
+      applySnakeRoleTheme();
+      
+      return snakeUserRoles;
+    }
+    
+    const isProduction = window.location.hostname === 'narrrfs.world';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    
+    const response = await fetch(`${API_BASE_URL}/api/user/roles.php`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      snakeUserRoles = data.roles || [];
+      console.log('🏆 User roles loaded from API for Snake:', snakeUserRoles);
+      
+      // Apply role-based theme on load
+      applySnakeRoleTheme();
+      
+      return snakeUserRoles;
+    } else {
+      console.log('🏆 No roles found or not logged in for Snake');
+      return [];
+    }
+  } catch (error) {
+    console.log('🏆 Error fetching roles for Snake:', error);
+    return [];
+  }
+}
+
+// 🎨 Apply role-based visual theme to Snake canvas (Global)
+function applySnakeRoleTheme() {
+  const primaryRole = getSnakePrimaryRole();
+  const theme = snakeRoleThemes[primaryRole] || 'default';
+  
+  console.log(`🎨 Applying ${theme} theme for Snake role: ${primaryRole}`);
+  
+  // Add theme class to canvas
+  const canvas = document.getElementById('snake-canvas');
+  if (canvas) {
+    // Remove existing theme classes
+    canvas.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'royal', 'blue', 'red');
+    // Add new theme class
+    if (theme !== 'default') {
+      canvas.classList.add(theme);
+    }
+  }
+}
+
+// 🏆 Get user's primary role (Global)
+function getSnakePrimaryRole() {
+  const priorityOrder = ['VIP Holder', 'Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter'];
+  
+  for (const role of priorityOrder) {
+    if (snakeUserRoles.includes(role)) {
+      return role;
+    }
+  }
+  
+  return null;
+}
+
+// ⚡ Calculate role-based score multiplier (Global)
+function getSnakeRoleScoreMultiplier() {
+  const primaryRole = getSnakePrimaryRole();
+  return snakeRoleMultipliers[primaryRole] || 1.0;
+}
+
+// 🎨 Get role-based colors for snake and food (Global)
+function getSnakeRoleColors() {
+  const primaryRole = getSnakePrimaryRole();
+  return snakeRoleColors[primaryRole] || { snake: '#00FF00', food: '#FFD700', trail: '#00FF00' };
+}
+
+// 🏆 GLOBAL TEST FUNCTION - Test Snake role-based features
+window.testSnakeRoleFeatures = function() {
+  console.log('🏆 Testing Snake role-based features...');
+  console.log('Current roles:', snakeUserRoles);
+  console.log('Primary role:', getSnakePrimaryRole());
+  console.log('Score multiplier:', getSnakeRoleScoreMultiplier());
+  console.log('Role colors:', getSnakeRoleColors());
+  
+  const canvas = document.getElementById('snake-canvas');
+  console.log('Theme applied:', canvas?.className);
+  
+  // Test role detection
+  fetchSnakeUserRoles().then(() => {
+    console.log('🏆 Snake role detection test completed');
+  });
+};
+
+  // ✅ DOM-ready game boot
 window.addEventListener("DOMContentLoaded", () => {
   initSnake(); // ✅ Runs only after DOM is ready
+  
+  // 🏆 Initialize role detection for Snake on page load
+  setTimeout(() => {
+    fetchSnakeUserRoles();
+  }, 1000);
 });
 
 function initSnake() {
@@ -159,6 +325,33 @@ function initSnake() {
   let food = { x: 7, y: 7 };
   let score = 0;
   let isSnakePaused = false;
+  
+  // 🧀 CHEESE TELEPORTATION SYSTEM
+  let cheeseTeleportTimer = 0;
+  let cheeseTeleportChance = 0.001; // 0.1% chance per frame (very rare)
+  let lastCheesePosition = null;
+  let firstTeleportDone = false; // Track if first teleport already happened
+  
+  // 🧪 LOCAL TESTING MODE - FORCE TELEPORTATION
+  const isLocalTesting = window.location.hostname === 'localhost';
+  const forceTeleportInterval = 3; // Force teleport every 1.2 seconds (3 frames at 400ms intervals = 1.2s)
+  const guaranteedTeleportFrames = 25; // Guaranteed teleport in first 10 seconds (25 frames at 400ms = 10s)
+  const testingTeleportInterval = 75; // Test teleport every 30 seconds (75 frames at 400ms = 30s)
+  
+  // 🧀 PRODUCTION TELEPORTATION SETTINGS
+  let productionTeleportChance = 0.0005; // 0.05% chance per frame (very rare)
+  let teleportCooldown = 0; // Cooldown between teleports
+  
+  // 🔥 MAD MODE SYSTEM
+  let madModeActive = false;
+  let madModeTimer = 0;
+  let madModeDuration = 150; // 60 seconds at 400ms intervals
+  let originalGameSpeed = 400;
+  let madModeSpeed = 200; // 2x faster
+
+  // 🏆 ROLE-BASED GAMEPLAY SYSTEM - Using Global Functions
+
+  // 🏆 ROLE DETECTION SYSTEM - Using Global Functions
   
   // 🏆 Snake Achievement Tracking Variables
   let achievementsCheckedThisGame = new Set();
@@ -197,8 +390,22 @@ function initSnake() {
   }
 
   function startGame() {
-    clearInterval(gameInterval);
+    console.log('🚀 startGame() called - Starting Snake game!');
+    
+    // 🚨 PROTECTION: Prevent multiple game starts - if game is already running, just return
+    if (gameInterval) {
+      console.log('⚠️ Game already running, ignoring duplicate startGame call');
+      return; // Exit early, don't restart the game
+    }
+    
+    // 🚨 RESET FIRST TELEPORT FLAG ONLY ON ACTUAL GAME START
+    firstTeleportDone = false;
+    console.log('🔄 First teleport flag reset for new game');
+    
     resetGame();
+    
+    // 🏆 Fetch user roles for role-based gameplay
+    fetchSnakeUserRoles();
     
     // 🆘 REMOVED: Display control instructions outside game canvas (using HTML instructions instead)
     
@@ -213,7 +420,9 @@ function initSnake() {
       localStorage.setItem("discord_name", discordName);
     }
     
+    console.log('🎮 Setting up gameInterval - moveSnake will be called every 400ms');
     gameInterval = setInterval(moveSnake, 400); // slower start for better device compatibility
+    console.log('🎮 gameInterval set:', gameInterval);
     enableGlobalSnakeTouch(); // Enable touch controls when game starts
     lockSnakeScroll(); // 🎯 Lock scrolling when game starts (like Tetris)
   }
@@ -226,6 +435,17 @@ function initSnake() {
     updateScore();
     isSnakePaused = false;
     window.brainUnlocked = false;
+    
+    // 🧀 Reset cheese teleportation system
+    cheeseTeleportTimer = 0;
+    cheeseTeleportChance = 0.001; // Reset to base chance
+    lastCheesePosition = null;
+    teleportCooldown = 0;
+    // 🚨 DON'T reset firstTeleportDone here - only reset when actually starting new game
+    
+    // 🔥 Reset mad mode system
+    madModeActive = false;
+    madModeTimer = 0;
     
     // 🏆 Reset achievement tracking for new game
     achievementsCheckedThisGame.clear();
@@ -254,15 +474,159 @@ function initSnake() {
   }
 
   function placeFood() {
+    // 🧀 Store previous cheese position for teleportation effect
+    lastCheesePosition = food ? { x: food.x, y: food.y } : null;
+    
+    // 🧀 Place cheese in new random location
     food = {
       x: Math.floor(Math.random() * tileCountX),
       y: Math.floor(Math.random() * tileCountY)
     };
+    
+    // 🧀 Ensure cheese doesn't spawn on snake
+    while (snake.some(segment => segment.x === food.x && segment.y === food.y)) {
+      food = {
+        x: Math.floor(Math.random() * tileCountX),
+        y: Math.floor(Math.random() * tileCountY)
+      };
+    }
+  }
+
+  // 🧀 CHEESE TELEPORTATION FUNCTION
+  function teleportCheese() {
+    if (!food) return;
+    
+    const currentLevel = Math.floor(cheeseEaten / 5) + 1;
+    const mode = isLocalTesting ? '🧪 TESTING' : '🧀 NORMAL';
+    const gameTime = (cheeseTeleportTimer * 0.4).toFixed(1);
+    
+    console.log(`${mode} Cheese teleporting! Level: ${currentLevel}, Game Time: ${gameTime}s`);
+    
+    // 🧀 Store old position for visual effect
+    const oldPosition = { x: food.x, y: food.y };
+    
+    // 🧀 Teleport cheese to new location
+    placeFood();
+    
+    // 🧀 Play teleportation sound effect
+    if (typeof snakeSounds !== 'undefined' && snakeSounds.playSound) {
+      snakeSounds.playSound('cheeseTeleport');
+    }
+    
+    // 🧪 VISUAL FEEDBACK: Flash the screen briefly to show teleportation
+    if (isLocalTesting) {
+      document.body.style.backgroundColor = '#ffeb3b'; // Yellow flash
+      setTimeout(() => {
+        document.body.style.backgroundColor = '';
+      }, 100);
+    }
+    
+    console.log(`${mode} Cheese teleported from (${oldPosition.x}, ${oldPosition.y}) to (${food.x}, ${food.y}) at ${gameTime}s`);
+  }
+
+  // 🔥 MAD MODE FUNCTIONS
+  function activateMadMode() {
+    console.log('🔥 MAD MODE ACTIVATED! Snake is glowing and faster!');
+    madModeActive = true;
+    madModeTimer = 0;
+    
+    // 🔥 Speed up the game
+    clearInterval(gameInterval);
+    gameInterval = setInterval(moveSnake, madModeSpeed); // 2x faster
+    
+    // 🔥 Visual effects - make snake glow
+    document.body.classList.add('mad-mode');
+    
+    // 🔥 Sound effect
+    if (typeof snakeSounds !== 'undefined' && snakeSounds.playSound) {
+      snakeSounds.playSound('madMode');
+    }
+    
+    // 🔥 Show mad mode notification
+    showMadModeNotification();
+  }
+
+  function deactivateMadMode() {
+    console.log('🔥 MAD MODE DEACTIVATED! Snake returns to normal speed.');
+    madModeActive = false;
+    madModeTimer = 0;
+    
+    // 🔥 Return to normal speed
+    clearInterval(gameInterval);
+    gameInterval = setInterval(moveSnake, originalGameSpeed);
+    
+    // 🔥 Remove visual effects
+    document.body.classList.remove('mad-mode');
+    
+    // 🔥 Show end notification
+    showMadModeEndNotification();
+  }
+
+  function showMadModeNotification() {
+    const notification = document.createElement('div');
+    notification.id = 'mad-mode-notification';
+    notification.innerHTML = `
+      <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                  background: linear-gradient(45deg, #ff6b6b, #ffa500, #ff6b6b); 
+                  color: white; padding: 20px; border-radius: 15px; font-weight: bold; 
+                  font-size: 24px; z-index: 10000; text-align: center; box-shadow: 0 0 30px #ff6b6b;
+                  animation: madModePulse 0.5s ease-in-out infinite alternate;">
+        🔥 MAD MODE! 🔥<br>
+        <span style="font-size: 16px;">Snake is glowing and faster!</span>
+      </div>
+      <style>
+        @keyframes madModePulse {
+          0% { transform: translate(-50%, -50%) scale(1); }
+          100% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+        .mad-mode {
+          filter: hue-rotate(180deg) brightness(1.2);
+        }
+      </style>
+    `;
+    document.body.appendChild(notification);
+    
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 3000);
+  }
+
+  function showMadModeEndNotification() {
+    const notification = document.createElement('div');
+    notification.id = 'mad-mode-end-notification';
+    notification.innerHTML = `
+      <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                  background: linear-gradient(45deg, #4ecdc4, #44a08d); 
+                  color: white; padding: 15px; border-radius: 10px; font-weight: bold; 
+                  font-size: 18px; z-index: 10000; text-align: center;">
+        Mad Mode Ended<br>
+        <span style="font-size: 14px;">Back to normal speed</span>
+      </div>
+    `;
+    document.body.appendChild(notification);
+    
+    // Remove notification after 2 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 2000);
   }
 
   function updateScore() {
     if (scoreDisplay) {
-      scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC`;
+      const roleMultiplier = getSnakeRoleScoreMultiplier();
+      
+      if (roleMultiplier > 1.0) {
+        // Show DSPOINC score (score * 10) with role bonus indicator
+        const dspoincScore = score * 10;
+        scoreDisplay.textContent = `💰 Snake Score: $${dspoincScore} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+      } else {
+        scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC`;
+      }
     }
   }
 
@@ -312,14 +676,15 @@ function initSnake() {
 
     checkMutationStatus();
 
-    // 🔁 Trail glow
+    // 🔁 Trail glow - Role-based colors
+    const roleColors = getSnakeRoleColors();
     for (let i = 0; i < snake.length; i++) {
       const segment = snake[i];
       const t = i / snake.length;
       const fade = 0.25 * (1 - t);
       ctx.save();
       ctx.globalAlpha = fade;
-      ctx.fillStyle = "#39FF14";
+      ctx.fillStyle = roleColors.trail;
       ctx.beginPath();
       ctx.arc(
         segment.x * gridSize + gridSize / 2,
@@ -366,7 +731,8 @@ function initSnake() {
         ctx.drawImage(img, -gridSize / 2, -gridSize / 2, gridSize, gridSize);
         ctx.restore();
       } else {
-        ctx.fillStyle = isHead ? "#FFD700" : "#39FF14";
+        // Role-based snake colors
+        ctx.fillStyle = isHead ? roleColors.snake : roleColors.snake;
         ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
       }
 
@@ -374,11 +740,11 @@ function initSnake() {
       ctx.filter = "none";
     });
 
-    // 🧀 Draw cheese
+    // 🧀 Draw cheese - Role-based colors
     if (cheeseImg.complete) {
       ctx.drawImage(cheeseImg, food.x * gridSize, food.y * gridSize, gridSize, gridSize);
     } else {
-      ctx.fillStyle = "#FFA500";
+      ctx.fillStyle = roleColors.food;
       ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
     }
     
@@ -388,6 +754,74 @@ function initSnake() {
 
   function moveSnake() {
     if (isSnakePaused) return;
+
+    // 🧪 DEBUG: Log every moveSnake call (disabled for production)
+    // console.log('🐍 moveSnake() called - Timer:', cheeseTeleportTimer);
+
+    // 🧀 CHEESE TELEPORTATION SYSTEM - Check if cheese should teleport
+    cheeseTeleportTimer++;
+    
+    // 🔥 MAD MODE SYSTEM - Update mad mode timer
+    if (madModeActive) {
+      madModeTimer++;
+      if (madModeTimer >= madModeDuration) {
+        deactivateMadMode();
+      }
+    }
+    
+    // 🧪 DEBUG: Log teleportation timer every few frames
+    if (cheeseTeleportTimer % 2 === 0) {
+      console.log(`🧪 Teleport Timer: ${cheeseTeleportTimer}, First Done: ${firstTeleportDone}, Local Testing: ${isLocalTesting}`);
+    }
+    
+    // 🧪 LOCAL TESTING MODE - GUARANTEED TELEPORTATION IN FIRST 10 SECONDS
+    if (isLocalTesting) {
+      // 🧪 GUARANTEED TELEPORT: First teleport in first 10 seconds (100% chance) - ONLY ONCE
+      if (cheeseTeleportTimer === 3 && !firstTeleportDone) {
+        console.log('🧪 GUARANTEED TELEPORT: First teleportation in first 10 seconds!');
+        teleportCheese();
+        firstTeleportDone = true; // Mark first teleport as done
+        console.log('✅ First teleport flag set to TRUE');
+      }
+      // 🧪 REGULAR FORCED TELEPORTS: Every 30 seconds after first teleport (for testing)
+      else if (cheeseTeleportTimer >= testingTeleportInterval && cheeseTeleportTimer > 3 && firstTeleportDone) {
+        console.log('🧪 LOCAL TESTING: Regular forced teleportation every 30 seconds!');
+        teleportCheese();
+        cheeseTeleportTimer = 25; // Reset to 10 seconds to wait for next teleport
+      }
+    } else {
+      // 🧀 PRODUCTION MODE - Normal teleportation logic
+      // 🧀 Increase teleportation chance based on level (every 5 cheeses = 1 level)
+      const currentLevel = Math.floor(cheeseEaten / 5) + 1;
+      const dynamicTeleportChance = cheeseTeleportChance * (1 + (currentLevel * 0.2)); // 20% increase per level
+      
+      // 🧀 PRODUCTION MODE - REALISTIC TELEPORTATION LOGIC
+      teleportCooldown = Math.max(0, teleportCooldown - 1);
+      
+      if (teleportCooldown === 0) {
+        // 🧀 One guaranteed teleport in first 10 seconds (like testing mode) - ONLY ONCE
+        if (cheeseTeleportTimer === 25 && !firstTeleportDone) { // 10 seconds at 400ms intervals
+          console.log('🧀 GUARANTEED TELEPORT: First teleportation in first 10 seconds!');
+          teleportCheese();
+          firstTeleportDone = true; // Mark first teleport as done
+          teleportCooldown = 300; // 2 minutes cooldown (300 frames at 400ms)
+        }
+        // 🧀 Very rare teleports after that - decreases as snake grows
+        else if (cheeseTeleportTimer > 25) {
+          const snakeLength = snake.length;
+          
+          // 🧀 Teleportation becomes rarer as snake gets longer (more challenging)
+          const lengthPenalty = Math.max(0.1, 1 - (snakeLength * 0.02)); // 2% penalty per segment
+          const dynamicChance = productionTeleportChance * lengthPenalty;
+          
+          if (Math.random() < dynamicChance) {
+            console.log(`🧀 RARE TELEPORT: Level ${currentLevel}, Snake Length: ${snakeLength}, Chance: ${(dynamicChance * 100).toFixed(4)}%`);
+            teleportCheese();
+            teleportCooldown = 600; // 4 minutes cooldown (600 frames at 400ms)
+          }
+        }
+      }
+    }
 
     const head = { x: snake[0].x + velocity.x, y: snake[0].y + velocity.y };
 
@@ -410,7 +844,18 @@ function initSnake() {
       // 🎵 Play cheese eating sound
       snakeSounds.playSound('eatCheese');
       
-      score++;
+      // Role-based scoring with multipliers
+      const roleMultiplier = getSnakeRoleScoreMultiplier();
+      const baseScore = 1;
+      const totalScore = Math.floor(baseScore * roleMultiplier);
+      score += totalScore;
+      
+      // 🏆 Log role-based scoring
+      if (roleMultiplier > 1.0) {
+        const bonusPoints = totalScore - baseScore;
+        console.log(`🏆 Snake role multiplier applied: ${roleMultiplier}x (${bonusPoints} bonus points)`);
+      }
+      
       cheeseEaten++;
       longestSnake = Math.max(longestSnake, snake.length + 1);
       
@@ -430,6 +875,11 @@ function initSnake() {
       updateScore();
       placeFood();
       tryActivateMutation(score); // ✅ Now runs exactly on score increase
+      
+      // 🔥 MAD MODE SYSTEM - Random chance to activate mad mode
+      if (!madModeActive && Math.random() < 0.05) { // 5% chance when eating cheese
+        activateMadMode();
+      }
       
       // 🏆 Check achievements immediately when eating cheese
       // This gives players instant feedback when they unlock achievements
@@ -468,8 +918,9 @@ function initSnake() {
 
     if (modal && finalScoreText) {
       // ✅ Only update score content, no style changes — handled in HTML
-      finalScoreText.textContent = `You earned $${finalScore * 10} DSPOINC`;
-      console.log("🐍 Displaying score:", finalScore);
+      const dspoincScore = finalScore * 10; // Convert raw score to DSPOINC
+      finalScoreText.textContent = `You earned $${dspoincScore} DSPOINC`;
+      console.log("🐍 Displaying score:", finalScore, "DSPOINC:", dspoincScore);
 
       modal.classList.remove("hidden");
       modal.style.display = "flex"; // fallback for older browsers
@@ -980,6 +1431,21 @@ function saveScore(finalScore) {
 
   // Expose start for external use
   window.startSnakeGame = startGameWithCountdown;
+
+  // 🏆 TEST FUNCTION - Test role-based features
+  window.testSnakeRoleFeatures = function() {
+    console.log('🏆 Testing Snake role-based features...');
+    console.log('Current roles:', snakeUserRoles);
+    console.log('Primary role:', getSnakePrimaryRole());
+    console.log('Score multiplier:', getSnakeRoleScoreMultiplier());
+    console.log('Role colors:', getSnakeRoleColors());
+    console.log('Theme applied:', canvas?.className);
+    
+    // Test role detection
+    fetchSnakeUserRoles().then(() => {
+      console.log('🏆 Snake role detection test completed');
+    });
+  };
 
   // 👁️ Watch DOM visibility and re-init if hidden
   const observer = new IntersectionObserver((entries) => {

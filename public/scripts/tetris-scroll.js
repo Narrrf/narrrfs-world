@@ -84,6 +84,23 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
 // 🏆 ROLE DETECTION SYSTEM - Fetch user Discord roles
 async function fetchUserRoles() {
   try {
+    // 🌍 Local development bypass - use Narrrf's roles for testing
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    if (isLocalDevelopment) {
+      console.log('🏠 Local environment detected - using Narrrf\'s roles for testing');
+      userRoles = [
+        "VIP Holder", "Holder", "Champion", "Season Tester", "Early Bird", "Cheese Hunter",
+        "Alpha Caller", "Community Member", "Moderator", "PokerOG", "Rumble"
+      ];
+      console.log('🏆 Local test roles loaded:', userRoles);
+      
+      // Apply role-based theme on load
+      applyRoleTheme();
+      
+      return userRoles;
+    }
+    
     const isProduction = window.location.hostname === 'narrrfs.world';
     const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
     
@@ -95,7 +112,7 @@ async function fetchUserRoles() {
     if (response.ok) {
       const data = await response.json();
       userRoles = data.roles || [];
-      console.log('🏆 User roles loaded:', userRoles);
+      console.log('🏆 User roles loaded from API:', userRoles);
       
       // Apply role-based theme on load
       applyRoleTheme();
@@ -147,6 +164,26 @@ function getUserPrimaryRole() {
 function getRoleScoreMultiplier() {
   const primaryRole = getUserPrimaryRole();
   return roleMultipliers[primaryRole] || 1.0;
+}
+
+// 🏆 Global score display element and score variable
+let tetrisScoreDisplay = null;
+let score = 0;
+
+// 🏆 Update Tetris score display with role bonus
+function updateTetrisScoreDisplay() {
+  if (tetrisScoreDisplay) {
+    const roleMultiplier = getRoleScoreMultiplier();
+    
+    if (roleMultiplier > 1.0) {
+      tetrisScoreDisplay.textContent = `💰 Tetris Score: $${score} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+    } else {
+      tetrisScoreDisplay.textContent = `💰 Tetris Score: $${score} DSPOINC`;
+    }
+    console.log(`🏆 Score display updated: ${score} DSPOINC (${roleMultiplier}x multiplier)`);
+  } else {
+    console.log('⚠️ Tetris score display element not found');
+  }
 }
 
 // 🚫 Full page scroll prevention
@@ -832,6 +869,37 @@ class CheeseParticleSystem {
 // Initialize cheese particle system
 const cheeseParticles = new CheeseParticleSystem();
 
+// 🎆 BOMB DEFUSAL SPARKLES EFFECT - Season 4 Enhancement
+function createBombDefusalSparkles() {
+  // Create golden sparkles for bomb defusal
+  const canvas = document.getElementById("tetris-canvas");
+  if (!canvas) return;
+  
+  const sparkleCount = 8;
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  
+  for (let i = 0; i < sparkleCount; i++) {
+    const sparkle = {
+      x: centerX + (Math.random() - 0.5) * 100,
+      y: centerY + (Math.random() - 0.5) * 100,
+      vx: (Math.random() - 0.5) * 8,
+      vy: (Math.random() - 0.5) * 8,
+      life: 60,
+      maxLife: 60,
+      size: Math.random() * 4 + 2,
+      color: '#FFD700', // Golden color for bomb defusal
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.2
+    };
+    
+    // Add sparkle to cheese particle system temporarily
+    cheeseParticles.particles.push(sparkle);
+  }
+  
+  console.log(`🎆 Bomb defusal sparkles created: ${sparkleCount} golden sparkles at center (${centerX}, ${centerY})`);
+}
+
 // 🧀 TEST FUNCTION - Can be called from console to test particles
 window.testCheeseParticles = function() {
   const canvas = document.getElementById("tetris-canvas");
@@ -860,7 +928,7 @@ window.testRoleFeatures = function() {
 function startTetris() {
   const canvas = document.getElementById("tetris-canvas");
   const context = canvas.getContext("2d");
-  const scoreDisplay = document.getElementById("tetris-score");
+  tetrisScoreDisplay = document.getElementById("tetris-score");
   
   // 🏆 Fetch user roles for role-based gameplay
   fetchUserRoles();
@@ -868,7 +936,7 @@ function startTetris() {
   // 🧀 Clear cheese particles when starting new game
   cheeseParticles.clear();
   
-  if (!scoreDisplay) {
+  if (!tetrisScoreDisplay) {
     console.log('⚠️ Score display element not found - creating fallback');
   }
 
@@ -876,7 +944,8 @@ function startTetris() {
   const gridHeight = 20;
   const blockSize = 20;
 
-  let score = 0;
+  // Reset global score for new game
+  score = 0;
   let linesClearedTotal = 0;
   let piecesDropped = 0;
   let tetrisClears = 0;
@@ -1050,24 +1119,47 @@ function collide(shape, row, col) {
       
       function clearLines() {
         let lines = 0;
+        let bombDefusedLines = 0; // Track bomb-defused lines separately
         for (let y = gridHeight - 1; y >= 0; y--) {
           if (grid[y].every(v => v !== 0)) {
             // 🧠 Check for bomb BEFORE removing the row
             if (grid[y].includes(6)) {
+              console.log(`💣 Bomb detected at line ${y} - BOMB DEFUSED!`);
+              console.log(`💣 Line ${y} before clearing:`, grid[y]);
+              
+              // 🚨 BOMB DEFUSED: Clear the entire line (bomb is disarmed, not exploded)
+              console.log(`💣 Bomb defused line ${y} - clearing entire line (bomb disarmed)`);
+              grid.splice(y, 1);
+              grid.unshift(Array(gridWidth).fill(0));
+              lines++;
+              
+              console.log(`💣 Line ${y} after clearing - new line added at top`);
+              console.log(`💣 Lines cleared so far: ${lines}`);
+              
+              // 🎆 Add sparkles effect for bomb defusal
+              createBombDefusalSparkles();
+              
               showBombDefusedPopup();
-          // Role-based bomb defusing bonus
-          const baseBombScore = 10; // Bonus for defusing bomb (reduced for balance)
-          const roleMultiplier = getRoleScoreMultiplier();
-          const roleBombBonus = Math.floor(baseBombScore * (roleMultiplier - 1));
-          score += baseBombScore + roleBombBonus;
-          
-          // 🏆 Log role-based bomb scoring
-          if (roleMultiplier > 1.0) {
-            console.log(`🏆 Bomb defuse role bonus: ${roleMultiplier}x (+${roleBombBonus} bonus)`);
-          }
-          if (scoreDisplay) {
-            scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
-          }
+              
+              // 🚨 FIX: Bomb defusal gets special scoring (NOT regular line clearing bonus)
+              // Bomb defusal = 10 DSPOINC + role bonus (no double counting)
+              const baseBombScore = 10; // Bonus for defusing bomb (reduced for balance)
+              const roleMultiplier = getRoleScoreMultiplier();
+              const roleBombBonus = Math.floor(baseBombScore * (roleMultiplier - 1));
+              score += baseBombScore + roleBombBonus;
+              
+              // 🏆 Log role-based bomb scoring
+              if (roleMultiplier > 1.0) {
+                console.log(`🏆 Bomb defuse role bonus: ${roleMultiplier}x (+${roleBombBonus} bonus)`);
+              }
+              console.log(`💣 Bomb defusal total score: ${baseBombScore} + ${roleBombBonus} = ${baseBombScore + roleBombBonus} DSPOINC`);
+              
+              // 🏆 Update score display with role bonus
+              updateTetrisScoreDisplay();
+              
+              bombDefusedLines++; // Track bomb-defused lines
+              y++; // Re-check same row index
+              continue;
             }
       
             grid.splice(y, 1);
@@ -1077,19 +1169,19 @@ function collide(shape, row, col) {
           }
         }
       
-        if (lines > 0) {
+        if (lines > 0 || bombDefusedLines > 0) {
           // 🎵 Play line clear sound
           tetrisSounds.playSound('lineClear');
           
           // 🧀 Create cheese particles for line clear effect
           const canvas = document.getElementById("tetris-canvas");
           if (canvas) {
-            cheeseParticles.createCheeseParticles(lines, canvas.width, canvas.height);
+            cheeseParticles.createCheeseParticles(lines + bombDefusedLines, canvas.width, canvas.height);
           }
           
           // 🎵 Check for level up (every 20 lines)
           const oldLevel = Math.floor(linesClearedTotal / 20);
-          linesClearedTotal += lines;
+          linesClearedTotal += lines + bombDefusedLines; // Count both types of lines
           const newLevel = Math.floor(linesClearedTotal / 20);
           
           if (newLevel > oldLevel) {
@@ -1097,16 +1189,25 @@ function collide(shape, row, col) {
             console.log(`🎵 Level up! Now at level ${newLevel}`);
           }
           
-          // Use database configuration for DSPOINC calculation with role-based multipliers
-          const baseScore = lines * 2; // Season 3: 2 DSPOINC per line (balanced for ~5k max)
-          const roleMultiplier = getRoleScoreMultiplier();
-          const roleBonus = Math.floor(baseScore * (roleMultiplier - 1)); // Calculate bonus points
-          score += baseScore + roleBonus;
-          
-          // 🏆 Log role-based scoring
-          if (roleMultiplier > 1.0) {
-            console.log(`🏆 Role multiplier applied: ${roleMultiplier}x (${roleBonus} bonus points)`);
+          // 🚨 FIX: Only apply regular line clearing scoring to non-bomb lines
+          if (lines > 0) {
+            // Use database configuration for DSPOINC calculation with role-based multipliers
+            const baseScore = lines * 2; // Season 3: 2 DSPOINC per line (balanced for ~5k max)
+            const roleMultiplier = getRoleScoreMultiplier();
+            const roleBonus = Math.floor(baseScore * (roleMultiplier - 1)); // Calculate bonus points
+            score += baseScore + roleBonus;
+            
+            console.log(`📊 Regular line clearing: ${lines} lines = ${baseScore} DSPOINC + ${roleBonus} role bonus = ${baseScore + roleBonus} total`);
+            
+            // 🏆 Log role-based scoring
+            if (roleMultiplier > 1.0) {
+              console.log(`🏆 Role multiplier applied: ${roleMultiplier}x (${roleBonus} bonus points)`);
+            }
           }
+          
+          // 🚨 Log total scoring breakdown
+          console.log(`📊 SCORING BREAKDOWN: Regular lines: ${lines}, Bomb-defused lines: ${bombDefusedLines}`);
+          console.log(`📊 Current total score: ${score} DSPOINC`);
           
           // 🏆 Track Tetris clears (4 lines at once)
           if (lines === 4) {
@@ -1127,9 +1228,8 @@ function collide(shape, row, col) {
             console.error('❌ Error stack:', error.stack);
           }
           
-      if (scoreDisplay) {
-          scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
-      }
+      // 🏆 Update score display with role bonus
+      updateTetrisScoreDisplay();
       
           // ⏩ Speed up every 20 lines
           if (linesClearedTotal % 20 === 0) {

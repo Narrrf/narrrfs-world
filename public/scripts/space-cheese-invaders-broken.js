@@ -1,6 +1,6 @@
 // 🧀 Space Cheese Invaders v3.9.19 - PHASE 3 AUDIO & SHIELD ENHANCEMENTS - TIMESTAMP: ${Date.now()}
 
-// 🚫 AGGRESSIVE OVERLAY REMOVAL SYSTEM - PREVENTS HELP OVERLAY
+// 🚫 REMOVE ANY EXISTING HELP OVERLAYS (browser cache fix)
 function removeHelpOverlays() {
   console.log('🚫 Removing any existing help overlays...');
   
@@ -21,39 +21,10 @@ function removeHelpOverlays() {
     console.log('🚫 Removing help info container:', container);
     container.remove();
   });
-  
-  // 🚫 AGGRESSIVE OVERLAY REMOVAL - Remove any semi-transparent overlays
-  const allDivs = document.querySelectorAll('div');
-  allDivs.forEach(div => {
-    const style = window.getComputedStyle(div);
-    const hasOverlayStyle = (
-      style.position === 'fixed' || 
-      style.position === 'absolute' ||
-      style.zIndex === '9999' ||
-      style.backgroundColor.includes('rgba') ||
-      style.backgroundColor.includes('transparent')
-    );
-    
-    if (hasOverlayStyle && (
-      div.innerHTML.includes('MOBILE CONTROLS') ||
-      div.innerHTML.includes('Swipe left') ||
-      div.innerHTML.includes('Tap to shoot') ||
-      div.innerHTML.includes('HOLD to shoot')
-    )) {
-      console.log('🚫 Removing aggressive overlay:', div);
-      div.remove();
-    }
-  });
 }
 
 // Call immediately to remove any cached overlays
 removeHelpOverlays();
-
-// 🚫 PERIODIC OVERLAY REMOVAL - Run every 2 seconds to catch any overlays that get created
-setInterval(() => {
-  removeHelpOverlays();
-}, 2000);
-
 // Much slower invaders (1 second drop, 1 minute break) with Tetris block danger items
 // NEW: Auto-shoot feature - automatically fires when ship moves (toggle with 'T' key)
 // NEW: Laser shot type, Speed boost power-up, and Bomb weapon
@@ -272,8 +243,8 @@ function updateSpaceInvadersScoreDisplay() {
   if (topScoreDisplay && roleMultiplierDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
     const primaryRole = getSpaceInvadersPrimaryRole();
-    const baseDSPOINC = spaceInvadersScore * 0.001; // BALANCED: 1000 points = 1 DSPOINC (matches other games)
-    const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+    const baseDSPOINC = spaceInvadersScore * 0.001; // Original score-based system (1000 points = 1 DSPOINC)
+    const roleBonusDSPOINC = Math.round(baseDSPOINC * (roleMultiplier - 1) * 1000) / 1000; // Round to 3 decimal places
     const totalDSPOINC = baseDSPOINC + roleBonusDSPOINC;
     
     // Debug logging
@@ -298,8 +269,8 @@ function updateSpaceInvadersScoreDisplay() {
   const scoreDisplay = document.getElementById('space-invaders-score');
   if (scoreDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = spaceInvadersScore * 0.001; // BALANCED: 1000 points = 1 DSPOINC (matches other games)
-    const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+    const baseDSPOINC = spaceInvadersScore * 0.001; // Original score-based system (1000 points = 1 DSPOINC)
+    const roleBonusDSPOINC = Math.round(baseDSPOINC * (roleMultiplier - 1) * 1000) / 1000; // Round to 3 decimal places
     const totalDSPOINC = baseDSPOINC + roleBonusDSPOINC;
     
     if (roleMultiplier > 1.0) {
@@ -388,7 +359,7 @@ let hasDoubleShotUpgrade = false; // Unlocked after defeating first boss (Cheese
 let hasTripleShotUpgrade = false; // Unlocked after defeating second boss (Cheese Emperor)
 let hasQuadShotUpgrade = false; // Unlocked after defeating third boss (Cheese God)
 
-// 🔥 PHOENIX INVADERS SYSTEM - NEW FEATURE!
+// 🔥 PHOENIX INVADERS SYSTEM - ENHANCED FOR SEASON 4!
 // Phoenix wave system that alternates with regular invader waves
 let phoenixWaves = [];
 let phoenixEggs = [];
@@ -400,11 +371,54 @@ let phoenixWaveConfig = {
   basePhoenixCount: 3,     // 🔥 BALANCED: 3 Phoenix for early waves
   difficultyScaling: 1.05, // 🔥 BALANCED: Gentle scaling for smooth progression
   eggLayingRate: 0.18,     // 🔥 ENHANCED: Increased from 12% to 18% for more danger
-  formationPatterns: ['v', 'diamond', 'spiral'], // 🔥 BALANCED: Progressive pattern unlocking
+  formationPatterns: ['v', 'diamond', 'spiral', 'cluster', 'dive'], // 🔥 ENHANCED: More formation patterns
   maxPhoenixPerWave: 12,   // 🔥 BALANCED: Increased for late-game waves
   eggHatchTime: 400,       // 🔥 ENHANCED: Reduced from 500 to 400 (4 seconds) for faster hatching
   miniPhoenixHealth: 25,   // 🔥 ENHANCED: Increased from 15 to 25 HP for tougher mini-Phoenixes
-  phoenixHealth: 45        // 🔥 ENHANCED: Increased from 30 to 45 HP base for more challenging Phoenix birds
+  phoenixHealth: 45,       // 🔥 ENHANCED: Increased from 30 to 45 HP base for more challenging Phoenix birds
+  
+  // 🔥 NEW SEASON 4 ENHANCEMENTS:
+  phoenixSpecialAttacks: true,    // Enable special Phoenix attacks
+  phoenixFireBreath: true,        // Phoenix fire breath attacks
+  phoenixDiveBomb: true,          // Phoenix dive bombing attacks
+  phoenixLightningStrike: true,   // Phoenix lightning attacks
+  phoenixSummonStorm: true,       // Phoenix storm summoning
+  phoenixResurrection: true,      // Phoenix resurrection mechanics
+  phoenixChainLightning: true,    // Chain lightning between Phoenixes
+  phoenixMeteorShower: true       // Phoenix meteor shower attacks
+};
+
+// 🔥 NEW SEASON 4: ENHANCED INVADER ATTACK SYSTEM
+let enhancedInvaderAttacks = {
+  // Advanced attack patterns
+  spiralAttack: true,           // Spiral bullet patterns
+  waveAttack: true,             // Wave-like bullet patterns
+  clusterBomb: true,            // Cluster bomb attacks
+  homingMissiles: true,         // Homing missile attacks
+  laserBeams: true,             // Laser beam attacks
+  energyBlasts: true,           // Energy blast attacks
+  shieldGenerators: true,       // Invaders with shields
+  teleportingInvaders: true,    // Teleporting invaders
+  kamikazeBombers: true,        // Kamikaze bomber attacks
+  sniperInvaders: true,         // Long-range sniper invaders
+  
+  // High-value targets
+  goldenInvaders: true,         // Golden invaders worth massive points
+  bossMinions: true,            // Mini-boss invaders
+  eliteSquadrons: true,         // Elite invader squadrons
+  megaInvaders: true            // Mega-sized invaders
+};
+
+// 🔥 NEW SEASON 4: HIGH-VALUE SCORING SYSTEM
+let highValueTargets = {
+  goldenInvaderMultiplier: 10,  // 10x points for golden invaders
+  bossMinionMultiplier: 5,      // 5x points for boss minions
+  eliteSquadronMultiplier: 3,   // 3x points for elite squadrons
+  megaInvaderMultiplier: 8,     // 8x points for mega invaders
+  perfectKillBonus: 2,          // 2x bonus for perfect kills (no damage)
+  chainKillBonus: 1.5,          // 1.5x bonus for chain kills
+  weakPointBonus: 3,            // 3x bonus for hitting weak points
+  criticalHitBonus: 2.5         // 2.5x bonus for critical hits
 };
 
 // 🔥 PHOENIX CONFIGURATION LOADING - NEW!
@@ -550,7 +564,7 @@ cheeseInvader2Img.onerror = (e) => {
   console.error('❌ Attempted path:', cheeseInvader2Img.src);
 };
 
-// 🔥 PHOENIX INVADERS CLASSES
+// 🔥 PHOENIX INVADERS CLASSES - ENHANCED FOR SEASON 4!
 // Phoenix bird entity with formation flying and egg-laying mechanics
 class PhoenixBird {
   constructor(x, y, formation, difficulty) {
@@ -571,7 +585,28 @@ class PhoenixBird {
     this.explosionTimer = 0;
     this.damage = Math.max(1, Math.floor(difficulty * 0.8)); // 🔥 ENHANCED: Phoenix birds now deal damage on collision
     
-    console.log(`🔥 PhoenixBird created at x=${x}, y=${y}, health=${this.health}, speed=${this.speed}, damage=${this.damage}`);
+    // 🔥 NEW SEASON 4: SPECIAL ATTACK SYSTEM
+    this.specialAttackCooldown = 0;
+    this.fireBreathCooldown = 0;
+    this.lightningCooldown = 0;
+    this.diveBombCooldown = 0;
+    this.stormCooldown = 0;
+    this.resurrectionCooldown = 0;
+    this.chainLightningTarget = null;
+    this.meteorCooldown = 0;
+    this.attackPattern = Math.floor(Math.random() * 4); // 0-3 different attack patterns
+    this.attackTimer = 0;
+    this.isResurrecting = false;
+    this.resurrectionTimer = 0;
+    this.hasResurrected = false;
+    
+    // 🔥 NEW SEASON 4: VISUAL EFFECTS
+    this.flameEffect = 0;
+    this.lightningEffect = 0;
+    this.stormEffect = 0;
+    this.meteorTrails = [];
+    
+    console.log(`🔥 PhoenixBird created at x=${x}, y=${y}, health=${this.health}, speed=${this.speed}, damage=${this.damage}, attackPattern=${this.attackPattern}`);
   }
   
   generateFlightPattern() {
@@ -707,6 +742,12 @@ class PhoenixBird {
       this.eggLayingCooldown = 120; // 🔥 BALANCED: Increased from 60 to 120 (2 second cooldown)
     }
     
+    // 🔥 NEW SEASON 4: SPECIAL ATTACK SYSTEM
+    this.executeSpecialAttacks();
+    
+    // 🔥 NEW SEASON 4: UPDATE VISUAL EFFECTS
+    this.updateVisualEffects();
+    
     return true;
   }
   
@@ -714,6 +755,254 @@ class PhoenixBird {
     const egg = new PhoenixEgg(this.x, this.y, this);
     phoenixEggs.push(egg);
     console.log('🥚 Phoenix laid egg at:', this.x, this.y);
+  }
+  
+  // 🔥 NEW SEASON 4: SPECIAL ATTACK EXECUTION
+  executeSpecialAttacks() {
+    this.attackTimer++;
+    this.specialAttackCooldown = Math.max(0, this.specialAttackCooldown - 1);
+    
+    // Only execute special attacks if enabled and cooldowns are ready
+    if (!phoenixWaveConfig.phoenixSpecialAttacks) return;
+    
+    // Fire Breath Attack (Pattern 0)
+    if (this.attackPattern === 0 && this.fireBreathCooldown <= 0 && Math.random() < 0.02) {
+      this.fireBreathAttack();
+      this.fireBreathCooldown = 300; // 3 second cooldown
+    }
+    
+    // Lightning Strike Attack (Pattern 1)
+    if (this.attackPattern === 1 && this.lightningCooldown <= 0 && Math.random() < 0.015) {
+      this.lightningStrikeAttack();
+      this.lightningCooldown = 400; // 4 second cooldown
+    }
+    
+    // Dive Bomb Attack (Pattern 2)
+    if (this.attackPattern === 2 && this.diveBombCooldown <= 0 && Math.random() < 0.025) {
+      this.diveBombAttack();
+      this.diveBombCooldown = 500; // 5 second cooldown
+    }
+    
+    // Meteor Shower Attack (Pattern 3)
+    if (this.attackPattern === 3 && this.meteorCooldown <= 0 && Math.random() < 0.01) {
+      this.meteorShowerAttack();
+      this.meteorCooldown = 600; // 6 second cooldown
+    }
+    
+    // Chain Lightning between Phoenixes
+    if (phoenixWaveConfig.phoenixChainLightning && this.lightningCooldown <= 0 && Math.random() < 0.008) {
+      this.chainLightningAttack();
+      this.lightningCooldown = 800; // 8 second cooldown
+    }
+    
+    // Storm Summoning (rare)
+    if (phoenixWaveConfig.phoenixSummonStorm && this.stormCooldown <= 0 && Math.random() < 0.005) {
+      this.summonStormAttack();
+      this.stormCooldown = 1000; // 10 second cooldown
+    }
+  }
+  
+  // 🔥 NEW SEASON 4: FIRE BREATH ATTACK
+  fireBreathAttack() {
+    console.log('🔥 Phoenix Fire Breath Attack!');
+    this.flameEffect = 60; // 1 second flame effect
+    
+    // Create fire breath bullets
+    for (let i = 0; i < 5; i++) {
+      invaderBullets.push({
+        x: this.x + this.width / 2,
+        y: this.y + this.height,
+        vx: (Math.random() - 0.5) * 3,
+        vy: 4 + Math.random() * 2,
+        width: 8,
+        height: 12,
+        color: '#FF4500',
+        type: 'fireBreath',
+        damage: 2,
+        lifetime: 120,
+        flameEffect: 30
+      });
+    }
+    
+    // Screen shake effect
+    screenShake = Math.max(screenShake, 8);
+  }
+  
+  // 🔥 NEW SEASON 4: LIGHTNING STRIKE ATTACK
+  lightningStrikeAttack() {
+    console.log('⚡ Phoenix Lightning Strike Attack!');
+    this.lightningEffect = 40; // Lightning visual effect
+    
+    // Create lightning bolt targeting player
+    const targetX = ship.x + ship.width / 2;
+    const targetY = ship.y + ship.height / 2;
+    
+    invaderBullets.push({
+      x: this.x + this.width / 2,
+      y: this.y + this.height,
+      targetX: targetX,
+      targetY: targetY,
+      vx: (targetX - this.x) * 0.02,
+      vy: (targetY - this.y) * 0.02,
+      width: 6,
+      height: 20,
+      color: '#00FFFF',
+      type: 'lightning',
+      damage: 3,
+      lifetime: 100,
+      homing: true,
+      lightningEffect: 50
+    });
+    
+    // Screen shake effect
+    screenShake = Math.max(screenShake, 10);
+  }
+  
+  // 🔥 NEW SEASON 4: DIVE BOMB ATTACK
+  diveBombAttack() {
+    console.log('💥 Phoenix Dive Bomb Attack!');
+    
+    // Rapid downward movement
+    this.y += 5;
+    
+    // Create explosive bullets on impact
+    if (this.y > canvasHeight - 100) {
+      for (let i = 0; i < 8; i++) {
+        invaderBullets.push({
+          x: this.x + this.width / 2,
+          y: this.y + this.height,
+          vx: Math.cos(i * Math.PI / 4) * 4,
+          vy: Math.sin(i * Math.PI / 4) * 4,
+          width: 10,
+          height: 10,
+          color: '#FF0000',
+          type: 'explosive',
+          damage: 4,
+          lifetime: 80,
+          explosionRadius: 50
+        });
+      }
+      
+      // Massive screen shake
+      screenShake = Math.max(screenShake, 15);
+      
+      // Return to normal position
+      this.y -= 5;
+    }
+  }
+  
+  // 🔥 NEW SEASON 4: METEOR SHOWER ATTACK
+  meteorShowerAttack() {
+    console.log('☄️ Phoenix Meteor Shower Attack!');
+    
+    // Create multiple meteors from above
+    for (let i = 0; i < 6; i++) {
+      const meteorX = Math.random() * canvasWidth;
+      invaderBullets.push({
+        x: meteorX,
+        y: -20,
+        vx: (Math.random() - 0.5) * 2,
+        vy: 6 + Math.random() * 3,
+        width: 15,
+        height: 20,
+        color: '#8B4513',
+        type: 'meteor',
+        damage: 5,
+        lifetime: 200,
+        meteorTrail: 40,
+        impactRadius: 80
+      });
+    }
+    
+    // Screen shake effect
+    screenShake = Math.max(screenShake, 12);
+  }
+  
+  // 🔥 NEW SEASON 4: CHAIN LIGHTNING ATTACK
+  chainLightningAttack() {
+    console.log('⚡ Phoenix Chain Lightning Attack!');
+    
+    // Find nearest Phoenix for chain lightning
+    let nearestPhoenix = null;
+    let minDistance = Infinity;
+    
+    for (let phoenix of phoenixWaves) {
+      if (phoenix !== this && !phoenix.isDead) {
+        const distance = Math.sqrt((phoenix.x - this.x) ** 2 + (phoenix.y - this.y) ** 2);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestPhoenix = phoenix;
+        }
+      }
+    }
+    
+    if (nearestPhoenix) {
+      // Create chain lightning effect
+      this.chainLightningTarget = nearestPhoenix;
+      nearestPhoenix.lightningEffect = 60;
+      this.lightningEffect = 60;
+      
+      // Damage both Phoenixes slightly but increase their attack power
+      this.health -= 5;
+      nearestPhoenix.health -= 5;
+      
+      // Increase attack speed for both
+      this.attackTimer = Math.max(0, this.attackTimer - 30);
+      nearestPhoenix.attackTimer = Math.max(0, nearestPhoenix.attackTimer - 30);
+      
+      console.log('⚡ Chain lightning established between Phoenixes!');
+    }
+  }
+  
+  // 🔥 NEW SEASON 4: STORM SUMMONING ATTACK
+  summonStormAttack() {
+    console.log('🌪️ Phoenix Storm Summoning Attack!');
+    this.stormEffect = 120; // 2 second storm effect
+    
+    // Create storm clouds with lightning
+    for (let i = 0; i < 4; i++) {
+      invaderBullets.push({
+        x: Math.random() * canvasWidth,
+        y: Math.random() * canvasHeight * 0.3,
+        vx: (Math.random() - 0.5) * 1,
+        vy: 0.5 + Math.random() * 0.5,
+        width: 40,
+        height: 30,
+        color: '#4B0082',
+        type: 'stormCloud',
+        damage: 1,
+        lifetime: 300,
+        stormLightning: 60,
+        stormRadius: 100
+      });
+    }
+    
+    // Screen shake effect
+    screenShake = Math.max(screenShake, 6);
+  }
+  
+  // 🔥 NEW SEASON 4: UPDATE VISUAL EFFECTS
+  updateVisualEffects() {
+    // Update flame effect
+    if (this.flameEffect > 0) {
+      this.flameEffect--;
+    }
+    
+    // Update lightning effect
+    if (this.lightningEffect > 0) {
+      this.lightningEffect--;
+    }
+    
+    // Update storm effect
+    if (this.stormEffect > 0) {
+      this.stormEffect--;
+    }
+    
+    // Update meteor trails
+    this.meteorTrails = this.meteorTrails.filter(trail => {
+      trail.lifetime--;
+      return trail.lifetime > 0;
+    });
   }
   
   takeDamage(damage) {
@@ -731,11 +1020,10 @@ class PhoenixBird {
     // Add explosion effect
     createExplosion(this.x, this.y, 40, 25);
     
-    // 🎯 BALANCED SCORING: Regular invaders = 10 points (1 DSPOINC per 100 invaders)
-    const baseScore = 10; // 10 points per invader
+    // Award points with role-based multipliers (1/5 of original scoring)
+    const baseScore = 0.001; // Original score-based system (1000 points = 1 DSPOINC)
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const comboBonus = comboMultiplier || 1;
-    const totalScore = Math.round(baseScore * roleMultiplier * comboBonus);
+    const totalScore = Math.floor(baseScore * roleMultiplier);
     spaceInvadersScore += totalScore;
     spaceInvadersCount++;
     
@@ -853,11 +1141,10 @@ class PhoenixEgg {
     this.isDestroyed = true;
     console.log('💥 Egg destroyed!');
     
-    // 🎯 BALANCED SCORING: Phoenix eggs = 25 points (higher value, harder to hit)
-    const eggBaseScore = 25; // 25 points per egg
+    // Award bonus points for destroying egg (1/5 of original)
+    const eggBaseScore = 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const comboBonus = comboMultiplier || 1;
-    const totalEggScore = Math.round(eggBaseScore * roleMultiplier * comboBonus);
+    const totalEggScore = Math.floor(eggBaseScore * roleMultiplier);
     spaceInvadersScore += totalEggScore;
     
     // Update score display with role bonus
@@ -979,13 +1266,9 @@ class MiniPhoenix {
     // Add explosion effect
     createExplosion(this.x, this.y, 25, 20);
     
-        // 🎯 BALANCED SCORING: Mini Phoenix = 50 points (highest value, most dangerous)
-        const miniPhoenixScore = 50;
-        const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-        const comboBonus = comboMultiplier || 1;
-        const totalScore = Math.round(miniPhoenixScore * roleMultiplier * comboBonus);
-        spaceInvadersScore += totalScore;
-        spaceInvadersCount++;
+    // Award points
+    spaceInvadersScore += 25;
+    spaceInvadersCount++;
     
     // Track Mini-Phoenix destruction for achievements
     miniPhoenixesDestroyed++;
@@ -3787,12 +4070,8 @@ let reloadButtonInterval = null;
                   // Add reward to score
         spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
         
-        // 🎯 BALANCED SCORING: Boss rewards = 500-2000 points (based on wave difficulty)
-        const bossBaseScore = 500 + (waveNumber * 100); // 500 for wave 1, 600 for wave 2, etc.
-        const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-        const comboBonus = comboMultiplier || 1;
-        const totalBossScore = Math.round(bossBaseScore * roleMultiplier * comboBonus);
-        spaceInvadersScore += totalBossScore;
+        // 🚀 CRITICAL FIX: Also add to traditional score for consistency
+        spaceInvadersScore += bossReward * 0.4; // 1/5 of original: Convert invader count to traditional points (1 DSPOINC = 0.4 points)
           
           // 🚀 NEW: Epic boss defeat effects (reduced intensity)
           bossDefeatEffect = 60; // Reduced from 100 to 60 frames
@@ -4942,6 +5221,9 @@ let reloadButtonInterval = null;
 
   // 🎮 Start game with countdown (same as Snake)
   async function startGameWithCountdown() {
+    // 🚫 Remove any help overlays before starting game
+    removeHelpOverlays();
+    
     const countdownEl = document.getElementById("space-invaders-countdown");
     let count = 5;
 
@@ -6354,6 +6636,24 @@ let reloadButtonInterval = null;
                                  waveNumber >= 12 && Math.random() < Math.min(0.2, (waveNumber - 11) * 0.03) ||
                                  waveNumber >= 6 && Math.random() < Math.min(0.25, (waveNumber - 5) * 0.08);
     
+    // 🔥 NEW SEASON 4: HIGH-VALUE TARGET DETECTION
+    const isGoldenInvader = enhancedInvaderAttacks.goldenInvaders && Math.random() < 0.05; // 5% chance
+    const isBossMinion = enhancedInvaderAttacks.bossMinions && waveNumber >= 10 && Math.random() < 0.03; // 3% chance after wave 10
+    const isEliteSquadron = enhancedInvaderAttacks.eliteSquadrons && waveNumber >= 15 && Math.random() < 0.02; // 2% chance after wave 15
+    const isMegaInvader = enhancedInvaderAttacks.megaInvaders && waveNumber >= 20 && Math.random() < 0.01; // 1% chance after wave 20
+    
+    // 🔥 NEW SEASON 4: ENHANCED ATTACK PATTERN DETECTION
+    const hasSpiralAttack = enhancedInvaderAttacks.spiralAttack && Math.random() < 0.1;
+    const hasWaveAttack = enhancedInvaderAttacks.waveAttack && Math.random() < 0.08;
+    const hasClusterBomb = enhancedInvaderAttacks.clusterBomb && Math.random() < 0.06;
+    const hasHomingMissiles = enhancedInvaderAttacks.homingMissiles && Math.random() < 0.05;
+    const hasLaserBeams = enhancedInvaderAttacks.laserBeams && Math.random() < 0.04;
+    const hasEnergyBlasts = enhancedInvaderAttacks.energyBlasts && Math.random() < 0.03;
+    const hasShield = enhancedInvaderAttacks.shieldGenerators && Math.random() < 0.07;
+    const canTeleport = enhancedInvaderAttacks.teleportingInvaders && Math.random() < 0.04;
+    const isKamikaze = enhancedInvaderAttacks.kamikazeBombers && Math.random() < 0.06;
+    const isSniper = enhancedInvaderAttacks.sniperInvaders && Math.random() < 0.05;
+    
     // 🎯 NEW: Position shooting invaders on top of container
     let invaderY = y;
     if (willHaveAttackPattern) {
@@ -6387,7 +6687,45 @@ let reloadButtonInterval = null;
       zigzagAttack: waveNumber >= 6 && Math.random() < Math.min(0.25, (waveNumber - 5) * 0.08), // ⚡ PROGRESSIVE: Start at wave 6, increase gradually
       attackTimer: 0, // 🎯 NEW: Attack pattern timer
       lastAttackTime: 0, // 🎯 NEW: Last attack timestamp
-      isShootingInvader: willHaveAttackPattern // 🎯 NEW: Mark as shooting invader
+      isShootingInvader: willHaveAttackPattern, // 🎯 NEW: Mark as shooting invader
+      
+      // 🔥 NEW SEASON 4: HIGH-VALUE TARGET PROPERTIES
+      isGoldenInvader: isGoldenInvader,
+      isBossMinion: isBossMinion,
+      isEliteSquadron: isEliteSquadron,
+      isMegaInvader: isMegaInvader,
+      
+      // 🔥 NEW SEASON 4: ENHANCED ATTACK PATTERN PROPERTIES
+      hasSpiralAttack: hasSpiralAttack,
+      hasWaveAttack: hasWaveAttack,
+      hasClusterBomb: hasClusterBomb,
+      hasHomingMissiles: hasHomingMissiles,
+      hasLaserBeams: hasLaserBeams,
+      hasEnergyBlasts: hasEnergyBlasts,
+      hasShield: hasShield,
+      canTeleport: canTeleport,
+      isKamikaze: isKamikaze,
+      isSniper: isSniper,
+      
+      // 🔥 NEW SEASON 4: VISUAL EFFECTS
+      shieldHealth: hasShield ? 3 : 0,
+      teleportCooldown: 0,
+      laserCooldown: 0,
+      energyCooldown: 0,
+      spiralAngle: 0,
+      wavePhase: 0,
+      clusterTimer: 0,
+      sniperTimer: 0,
+      goldenGlow: 0,
+      eliteAura: 0,
+      megaSize: isMegaInvader ? 1.5 : 1.0,
+      bossMinionHealth: isBossMinion ? 3 : 1,
+      
+      // 🔥 NEW SEASON 4: SCORING MULTIPLIERS
+      scoreMultiplier: isGoldenInvader ? highValueTargets.goldenInvaderMultiplier :
+                      isBossMinion ? highValueTargets.bossMinionMultiplier :
+                      isEliteSquadron ? highValueTargets.eliteSquadronMultiplier :
+                      isMegaInvader ? highValueTargets.megaInvaderMultiplier : 1
     };
   }
 
@@ -6518,11 +6856,9 @@ let reloadButtonInterval = null;
               
               // 🚀 SEASON 3 PHASE 1: Combo system integration for weak point with role multipliers
               addKillCombo();
-              // 🎯 BALANCED SCORING: Weak point hit = 20 points (double regular invader)
-              const baseScore = 20;
+              const baseScore = 0.001; // Original score-based system (1000 points = 1 DSPOINC)
               const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-              const comboBonus = comboMultiplier || 1;
-              const totalScore = Math.round(baseScore * roleMultiplier * comboBonus);
+              const totalScore = Math.floor(baseScore * roleMultiplier);
               spaceInvadersScore += totalScore;
               spaceInvadersCount += 1;
               
@@ -6557,11 +6893,9 @@ let reloadButtonInterval = null;
             
             // 🚀 SEASON 3 PHASE 1: Combo system integration
             addKillCombo();
-            // 🎯 BALANCED SCORING: Regular invader kill = 10 points
-            const baseScore = 10;
+            const baseScore = 0.001; // Original score-based system (1000 points = 1 DSPOINC)
             const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-            const comboBonus = comboMultiplier || 1;
-            const totalScore = Math.round(baseScore * roleMultiplier * comboBonus);
+            const totalScore = Math.floor(baseScore * roleMultiplier);
             spaceInvadersScore += totalScore;
             spaceInvadersCount += 1;
             
@@ -6952,11 +7286,9 @@ let reloadButtonInterval = null;
           console.log('🛡️ Player invincible - invader collision blocked!');
           // Kill the invading invader without damaging player
           invader.alive = false;
-          // 🎯 BALANCED SCORING: Invader collision = 10 points (same as regular kill)
-          const baseScore = 10;
+          const baseScore = 1; // 1 DSPOINC per kill (5:1 ratio)
           const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-          const comboBonus = comboMultiplier || 1;
-          const totalScore = Math.round(baseScore * roleMultiplier * comboBonus);
+          const totalScore = Math.floor(baseScore * roleMultiplier);
           spaceInvadersScore += totalScore;
           spaceInvadersCount += 1;
           
@@ -6982,11 +7314,9 @@ let reloadButtonInterval = null;
         
         // Kill the invading invader
         invader.alive = false;
-        // 🎯 BALANCED SCORING: Normal invader collision = 10 points
-        const baseScore = 10;
+        const baseScore = 1; // 1 DSPOINC per kill (5:1 ratio)
         const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-        const comboBonus = comboMultiplier || 1;
-        const totalScore = Math.round(baseScore * roleMultiplier * comboBonus);
+        const totalScore = Math.floor(baseScore * roleMultiplier);
         spaceInvadersScore += totalScore;
         spaceInvadersCount += 1;
         
@@ -8676,8 +9006,8 @@ let reloadButtonInterval = null;
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
       // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
-      // BALANCED: DSPOINC conversion - 1000 points = 1 DSPOINC (matches other games)
-      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 points = 1 DSPOINC)
+      // FIXED: Much lower DSPOINC conversion - 1000 invaders = 1 DSPOINC (was 100 invaders = 1 DSPOINC)
+      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 invaders = 1 DSPOINC)
       
       // Add mouse control indicator
       const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
@@ -8900,21 +9230,21 @@ let reloadButtonInterval = null;
     
     // 🏆 ROLE-BASED SCORING: Use role multipliers for final score display
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = spaceInvadersScore * 0.001; // BALANCED: 1000 points = 1 DSPOINC (matches other games)
-    const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+    const baseDSPOINC = spaceInvadersScore * 0.001; // Original score-based system (1000 points = 1 DSPOINC)
+    const roleBonusDSPOINC = Math.round(baseDSPOINC * (roleMultiplier - 1) * 1000) / 1000; // Round to 3 decimal places
     const totalDSPOINC = baseDSPOINC + roleBonusDSPOINC;
     
     if (gameOverModal && finalScoreText) {
       if (roleMultiplier > 1.0) {
-        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${roleMultiplier}x Role Bonus!) (${spaceInvadersCount} invaders destroyed)`;
+        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${roleMultiplier}x Role Bonus!) (${spaceInvadersScore.toLocaleString()} points, ${spaceInvadersCount} invaders destroyed)`;
       } else {
-        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${spaceInvadersCount} invaders destroyed)`;
+        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${spaceInvadersScore.toLocaleString()} points, ${spaceInvadersCount} invaders destroyed)`;
       }
       gameOverModal.classList.remove("hidden");
     }
     
     // 🔧 CRITICAL FIX: Score MUST be saved here for all players (not just winners)
-    saveScore(spaceInvadersCount); // 🚀 FIX: Send invader count, not point score
+    saveScore(spaceInvadersScore); // RESTORED: This is the main score saving point
     
     // 🏆 SEASON 3 PHASE 2: Save achievements to database after game ends (without popups)
     // This ensures achievements are saved even if not triggered during gameplay
@@ -9158,11 +9488,9 @@ let reloadButtonInterval = null;
             if (invader.alive) {
               invader.alive = false;
                 invadersKilled++;
-              // 🎯 BALANCED SCORING: Bomb explosion = 10 points per invader killed
-              const baseScore = invadersKilled * 10;
+              const baseScore = invadersKilled; // 1 DSPOINC per kill (5:1 ratio)
               const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-              const comboBonus = comboMultiplier || 1;
-              const totalScore = Math.round(baseScore * roleMultiplier * comboBonus);
+              const totalScore = Math.floor(baseScore * roleMultiplier);
               spaceInvadersScore += totalScore;
               spaceInvadersCount += invadersKilled;
               
@@ -9209,11 +9537,9 @@ let reloadButtonInterval = null;
               if (invader.alive) {
                 invader.alive = false;
                 invadersKilled++;
-                // 🎯 BALANCED SCORING: Cluster bomb = 10 points per invader killed
-                const baseScore = invadersKilled * 10;
+                const baseScore = invadersKilled; // 1 DSPOINC per kill (5:1 ratio)
                 const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-                const comboBonus = comboMultiplier || 1;
-                const totalScore = Math.round(baseScore * roleMultiplier * comboBonus);
+                const totalScore = Math.floor(baseScore * roleMultiplier);
                 spaceInvadersScore += totalScore;
                 spaceInvadersCount += invadersKilled;
                 
@@ -11473,8 +11799,8 @@ window.emergencyCollisionCheck = function() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
       // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
-      // BALANCED: DSPOINC conversion - 1000 points = 1 DSPOINC (matches other games)
-      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 points = 1 DSPOINC)
+      // FIXED: Much lower DSPOINC conversion - 1000 invaders = 1 DSPOINC (was 100 invaders = 1 DSPOINC)
+      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 invaders = 1 DSPOINC)
       
       // Add mouse control indicator
       const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
@@ -11496,7 +11822,7 @@ window.emergencyCollisionCheck = function() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // 🚀 BALANCED: Use correct DSPOINC conversion (1000 points = 1 DSPOINC)
+    // 🚀 FIXED: Use correct DSPOINC conversion (1000 invaders = 1 DSPOINC)
     const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 invaders = 1 DSPOINC)
     
     if (winModal && winScoreText) {
@@ -11505,14 +11831,14 @@ window.emergencyCollisionCheck = function() {
     }
     
     // Save score to database
-    saveScore(spaceInvadersCount); // 🚀 FIX: Send invader count, not point score
+    saveScore(spaceInvadersScore); // 🚀 CRITICAL FIX: Save traditional score instead of invader count
     cleanupSpaceInvadersControls();
 
     // Dispatch game end event for UI reset
     window.dispatchEvent(new Event('spaceInvadersGameEnd'));
   }
 
-  function saveScore(invaderCount) {
+  function saveScore(traditionalScore) {
     // 🚫 NEW: Prevent duplicate score saves in the same game session
     if (hasScoreBeenSaved) {
       console.log('🚫 Score already saved this session, skipping duplicate save');
@@ -11521,12 +11847,11 @@ window.emergencyCollisionCheck = function() {
     
     hasScoreBeenSaved = true; // Mark as saved
     
-    // 🔧 LOCAL DEVELOPMENT BYPASS - DISABLED FOR SEASON 4 TESTING
-    // Temporarily disabled to test actual score saving functionality
+    // 🔧 LOCAL DEVELOPMENT BYPASS - Simulate score saving for local testing
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (false && isLocalDevelopment) { // 🚨 DISABLED: Allow local score saving for Season 4 testing
+    if (isLocalDevelopment) {
       console.log('🔓 Local development - simulating score save');
-      console.log(`💾 Local test: Space Invaders score ${invaderCount} invaders destroyed = ${Math.round((invaderCount * 0.01) * 100) / 100} DSPOINC`);
+      console.log(`💾 Local test: Space Invaders score ${traditionalScore} invaders destroyed = ${Math.round((traditionalScore * 0.001) * 100) / 100} DSPOINC`);
       console.log('✅ Local test score saved successfully (simulated)');
       return;
     }
@@ -11540,10 +11865,10 @@ window.emergencyCollisionCheck = function() {
       return;
     }
 
-    // 🚀 BALANCED: Use correct DSPOINC conversion (100 invaders = 1 DSPOINC)
-    const dspoincScore = Math.round((invaderCount * 0.01) * 100) / 100; // Convert to DSPOINC (100 invaders = 1 DSPOINC)
+    // 🚀 FIXED: Use correct DSPOINC conversion (1000 invaders = 1 DSPOINC)
+    const dspoincScore = Math.round((traditionalScore * 0.001) * 100) / 100; // Convert to DSPOINC (1000 invaders = 1 DSPOINC)
 
-    console.log(`💾 Saving Space Invaders score: ${invaderCount} invaders destroyed = ${dspoincScore} DSPOINC`);
+    console.log(`💾 Saving Space Invaders score: ${traditionalScore} invaders destroyed = ${dspoincScore} DSPOINC`);
 
     // 🌍 Environment-aware API endpoint (works both locally and in production)
     const apiUrl = `${API_BASE_URL}/api/dev/save-score.php`;
@@ -11562,7 +11887,7 @@ window.emergencyCollisionCheck = function() {
       },
       body: JSON.stringify({
         wallet: wallet,
-        score: invaderCount, // 🚀 FIX: Send raw invader count (API will convert to DSPOINC)
+        score: traditionalScore, // 🚀 CRITICAL FIX: Raw traditional score (like classic Space Invaders)
         discord_id: discordId,
         discord_name: discordName,
         game: 'space_invaders'
@@ -11582,12 +11907,12 @@ window.emergencyCollisionCheck = function() {
     .then(data => {
       console.log(`📨 Server response:`, data);
       if (data.success) {
-        console.log(`✅ Space Invaders score saved successfully: ${invaderCount} invaders destroyed = ${dspoincScore} DSPOINC`);
+        console.log(`✅ Space Invaders score saved successfully: ${traditionalScore} invaders destroyed = ${dspoincScore} DSPOINC`);
         console.log(`🎯 Score ID: ${data.score_id || 'N/A'}`);
         console.log(`📊 Database confirmation: ${data.message || 'Score recorded'}`);
       } else {
         if (data.local_test) {
-          console.log(`🔄 Local testing detected - score would be saved in production: ${invaderCount} invaders destroyed = ${dspoincScore} DSPOINC`);
+          console.log(`🔄 Local testing detected - score would be saved in production: ${traditionalScore} invaders destroyed = ${dspoincScore} DSPOINC`);
         } else {
           console.error('❌ Failed to save Space Invaders score:', data.error || 'Unknown error');
           console.error('❌ Error details:', data);
@@ -12510,9 +12835,10 @@ window.emergencyCollisionCheck = function() {
     shieldBtn.innerHTML = `🛡️<br><span style="font-size: 0.6em;">${speedBoostAmmo}</span>`;
   }
 
-  // 🆘 NEW: Create enhanced mobile controls - IMPROVED FOR BETTER MOBILE UX
+  // 🆘 DISABLED: Create enhanced mobile controls - IMPROVED FOR BETTER MOBILE UX - causes help overlay
   function createEnhancedMobileControls() {
-    console.log('🎮 Creating enhanced mobile controls...');
+    console.log('🎮 Enhanced mobile controls disabled - prevents help overlay');
+    return;
     
     // 🆘 IMPROVED: Check if controls already exist to prevent duplicates
     if (document.getElementById('game-panel-btn')) {
