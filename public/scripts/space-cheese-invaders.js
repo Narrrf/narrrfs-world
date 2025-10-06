@@ -584,6 +584,11 @@ class PhoenixBird {
     this.explosionTimer = 0;
     this.damage = Math.max(1, Math.floor(difficulty * 0.8)); // 🔥 ENHANCED: Phoenix birds now deal damage on collision
     
+    // 🔥 NEW: Phoenix shooting system
+    this.shootCooldown = 0;
+    this.shootRate = 0; // Will be set based on wave number
+    this.bulletsPerShot = 1; // Will be set based on wave number
+    
     console.log(`🔥 PhoenixBird created at x=${x}, y=${y}, health=${this.health}, speed=${this.speed}, damage=${this.damage}`);
   }
   
@@ -720,6 +725,13 @@ class PhoenixBird {
       this.eggLayingCooldown = 120; // 🔥 BALANCED: Increased from 60 to 120 (2 second cooldown)
     }
     
+    // 🔥 NEW: Phoenix shooting mechanics
+    this.shootCooldown--;
+    if (this.shootCooldown <= 0 && this.shootRate > 0) {
+      this.shoot();
+      this.shootCooldown = this.shootRate;
+    }
+    
     return true;
   }
   
@@ -727,6 +739,47 @@ class PhoenixBird {
     const egg = new PhoenixEgg(this.x, this.y, this);
     phoenixEggs.push(egg);
     console.log('🥚 Phoenix laid egg at:', this.x, this.y);
+  }
+  
+  // 🔥 NEW: Phoenix shooting method
+  shoot() {
+    if (this.isDead) return;
+    
+    // Calculate direction towards player
+    const dx = playerShip.x - this.x;
+    const dy = playerShip.y - this.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance > 0) {
+      // Normalize direction
+      const dirX = dx / distance;
+      const dirY = dy / distance;
+      
+      // Shoot multiple bullets based on wave progression
+      for (let i = 0; i < this.bulletsPerShot; i++) {
+        // Add slight spread for multiple bullets
+        const spreadAngle = (i - (this.bulletsPerShot - 1) / 2) * 0.2;
+        const bulletDirX = dirX * Math.cos(spreadAngle) - dirY * Math.sin(spreadAngle);
+        const bulletDirY = dirX * Math.sin(spreadAngle) + dirY * Math.cos(spreadAngle);
+        
+        // Create Phoenix bullet
+        const bullet = {
+          x: this.x + this.width / 2,
+          y: this.y + this.height / 2,
+          vx: bulletDirX * 3, // Phoenix bullets are faster than regular invader bullets
+          vy: bulletDirY * 3,
+          width: 8,
+          height: 12,
+          type: 'phoenix',
+          damage: 1,
+          color: '#ff6b35' // Orange-red Phoenix bullet color
+        };
+        
+        invaderBullets.push(bullet);
+      }
+      
+      console.log(`🔥 Phoenix shot ${this.bulletsPerShot} bullet(s) at player!`);
+    }
   }
   
   takeDamage(damage) {
@@ -5940,6 +5993,25 @@ let reloadButtonInterval = null;
       phoenix.maxHealth = phoenix.health;
       phoenix.damage = Math.max(1, Math.floor(difficultyMultiplier * 0.5)); // Damage scales with difficulty
       
+      // 🔥 NEW: Progressive Phoenix shooting difficulty based on wave number
+      const currentWave = waveNumber;
+      if (currentWave >= 6) { // After 2nd boss (wave 6+)
+        // Wave 6-9: 3 shots per burst
+        phoenix.bulletsPerShot = 3;
+        phoenix.shootRate = 90; // Shoot every 90 frames (3.6 seconds at 25fps)
+        console.log(`🔥 Phoenix wave ${currentWave}: 3-shot burst mode activated!`);
+      } else if (currentWave >= 3) { // After 1st boss (wave 3-5)
+        // Wave 3-5: 2 shots per burst
+        phoenix.bulletsPerShot = 2;
+        phoenix.shootRate = 120; // Shoot every 120 frames (4.8 seconds at 25fps)
+        console.log(`🔥 Phoenix wave ${currentWave}: 2-shot burst mode activated!`);
+      } else {
+        // Wave 1-2: 1 shot only
+        phoenix.bulletsPerShot = 1;
+        phoenix.shootRate = 150; // Shoot every 150 frames (6 seconds at 25fps)
+        console.log(`🔥 Phoenix wave ${currentWave}: Single-shot mode activated!`);
+      }
+      
       phoenixWaves.push(phoenix);
     }
     
@@ -8148,7 +8220,24 @@ let reloadButtonInterval = null;
 
   function drawInvaderBullets() {
     invaderBullets.forEach(bullet => {
-      if (bullet.type === 'targeting') {
+      if (bullet.type === 'phoenix') {
+        // 🔥 Phoenix bullets - orange-red with fire effect
+        ctx.fillStyle = '#ff6b35'; // Orange-red
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        
+        // Phoenix fire glow effect
+        ctx.fillStyle = 'rgba(255, 107, 53, 0.5)';
+        ctx.fillRect(bullet.x - 2, bullet.y - 2, bullet.width + 4, bullet.height + 4);
+        
+        // Fire trail effect
+        ctx.fillStyle = 'rgba(255, 107, 53, 0.3)';
+        ctx.fillRect(bullet.x, bullet.y - 8, bullet.width, 8);
+        
+        // Additional fire sparkles
+        ctx.fillStyle = '#ffa500';
+        ctx.fillRect(bullet.x + 1, bullet.y - 4, 2, 2);
+        ctx.fillRect(bullet.x + bullet.width - 3, bullet.y - 6, 2, 2);
+      } else if (bullet.type === 'targeting') {
         // Targeting bullets - purple with trail effect
         ctx.fillStyle = '#8b5cf6'; // Purple
       ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);

@@ -355,7 +355,7 @@ function initSnake() {
   const testingTeleportInterval = 75; // Test teleport every 30 seconds (75 frames at 400ms = 30s)
   
   // 🧀 PRODUCTION TELEPORTATION SETTINGS
-  let productionTeleportChance = 0.0005; // 0.05% chance per frame (very rare)
+  let productionTeleportChance = 0.002; // 0.2% chance per frame (more balanced)
   let teleportCooldown = 0; // Cooldown between teleports
   
   // 🔥 MAD MODE SYSTEM
@@ -820,20 +820,20 @@ function initSnake() {
           console.log('🧀 GUARANTEED TELEPORT: First teleportation in first 10 seconds!');
           teleportCheese();
           firstTeleportDone = true; // Mark first teleport as done
-          teleportCooldown = 300; // 2 minutes cooldown (300 frames at 400ms)
+          teleportCooldown = 150; // 1 minute cooldown (150 frames at 400ms)
         }
         // 🧀 Very rare teleports after that - decreases as snake grows
         else if (cheeseTeleportTimer > 25) {
           const snakeLength = snake.length;
           
-          // 🧀 Teleportation becomes rarer as snake gets longer (more challenging)
-          const lengthPenalty = Math.max(0.1, 1 - (snakeLength * 0.02)); // 2% penalty per segment
+          // 🧀 Teleportation becomes slightly rarer as snake gets longer (more challenging)
+          const lengthPenalty = Math.max(0.3, 1 - (snakeLength * 0.01)); // 1% penalty per segment, min 30%
           const dynamicChance = productionTeleportChance * lengthPenalty;
           
           if (Math.random() < dynamicChance) {
             console.log(`🧀 RARE TELEPORT: Level ${currentLevel}, Snake Length: ${snakeLength}, Chance: ${(dynamicChance * 100).toFixed(4)}%`);
             teleportCheese();
-            teleportCooldown = 600; // 4 minutes cooldown (600 frames at 400ms)
+            teleportCooldown = 225; // 1.5 minutes cooldown (225 frames at 400ms)
           }
         }
       }
@@ -892,9 +892,14 @@ function initSnake() {
       placeFood();
       tryActivateMutation(score); // ✅ Now runs exactly on score increase
       
-      // 🔥 MAD MODE SYSTEM - Random chance to activate mad mode
-      if (!madModeActive && Math.random() < 0.05) { // 5% chance when eating cheese
-        activateMadMode();
+      // 🔥 MAD MODE SYSTEM - Balanced activation based on score milestones
+      if (!madModeActive && score > 0) {
+        // MAD MODE triggers at score milestones with increasing chance
+        const madModeChance = Math.min(0.15, 0.05 + (score * 0.01)); // 5% base + 1% per cheese, max 15%
+        if (Math.random() < madModeChance) {
+          console.log(`🔥 MAD MODE TRIGGER: Score ${score}, Chance ${(madModeChance * 100).toFixed(1)}%`);
+          activateMadMode();
+        }
       }
       
       // 🏆 Check achievements immediately when eating cheese
