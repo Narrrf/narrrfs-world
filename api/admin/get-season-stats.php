@@ -42,17 +42,20 @@ try {
     $stmt = $pdo->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY season_id DESC LIMIT 1");
     $stmt->execute();
     $current_season_result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $current_season = $current_season_result['season_name'] ?? 'Season 3 - The Ultimate Cheese Challenge';
+    $current_season = $current_season_result['season_name'] ?? 'Season 4 - The Ultimate Cheese Challenge';
 
     // Determine which season to show
     if ($season === 'current') {
-        $target_season = $current_season;
+        $target_season = $current_season; // This will be "Season 4"
     } else {
         $target_season = $season;
     }
+    
+    // Debug logging
+    error_log("Season API Debug: season=$season, current_season=$current_season, target_season=$target_season");
 
-    // Get all available seasons
-    $stmt = $pdo->prepare("SELECT DISTINCT season FROM tbl_tetris_scores ORDER BY season");
+    // Get all available seasons from tbl_seasons (not just seasons with scores)
+    $stmt = $pdo->prepare("SELECT season_name FROM tbl_seasons ORDER BY season_id DESC");
     $stmt->execute();
     $available_seasons = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
@@ -106,29 +109,27 @@ try {
 
     // Add Cheese Hunt statistics
     if ($game_type === 'all' || $game_type === 'cheese_hunt') {
-        // First get the total clicks and unique players
+        // Cheese Hunt shows ALL-TIME data (preserved across seasons)
         $stmt = $pdo->prepare("
             SELECT 
                 COUNT(*) as total_clicks,
                 COUNT(DISTINCT user_wallet) as unique_players
-            FROM tbl_cheese_clicks 
-            WHERE season = ?
+            FROM tbl_cheese_clicks
         ");
-        $stmt->execute([$target_season]);
+        $stmt->execute();
         $cheese_basic = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Get max clicks by a single user
+        // Get max clicks by a single user (ALL-TIME data)
         $stmt = $pdo->prepare("
             SELECT 
                 user_wallet,
                 COUNT(*) as user_clicks
             FROM tbl_cheese_clicks 
-            WHERE season = ?
             GROUP BY user_wallet
             ORDER BY user_clicks DESC
             LIMIT 1
         ");
-        $stmt->execute([$target_season]);
+        $stmt->execute();
         $max_clicks_result = $stmt->fetch(PDO::FETCH_ASSOC);
         $max_clicks = $max_clicks_result ? $max_clicks_result['user_clicks'] : 0;
         
@@ -148,6 +149,7 @@ try {
 
     // Add Discord Race statistics
     if ($game_type === 'all' || $game_type === 'discord_race') {
+        // Discord Race shows ALL-TIME data (preserved across seasons)
         $stmt = $pdo->prepare("
             SELECT 
                 COUNT(DISTINCT r.race_id) as total_races,
@@ -158,9 +160,8 @@ try {
                 COUNT(DISTINCT rp.user_id) as top_performers
             FROM tbl_cheese_races r
             LEFT JOIN tbl_race_participants rp ON r.race_id = rp.race_id
-            WHERE rp.season = ? OR rp.season IS NULL
         ");
-        $stmt->execute([$target_season]);
+        $stmt->execute();
         $race_data = $stmt->fetch(PDO::FETCH_ASSOC);
         
         // Convert to match the expected structure

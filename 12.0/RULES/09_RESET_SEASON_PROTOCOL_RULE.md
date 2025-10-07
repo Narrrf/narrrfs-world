@@ -56,7 +56,7 @@ echo "Database backup created: $(date)" >> /data/season_reset_log.txt
 ```bash
 # Execute reset commands in exact order
 sqlite3 /var/www/html/db/narrrf_world.sqlite "
--- Reset 3 main games only
+-- Reset 3 main games only (CRITICAL: Must delete ALL old data)
 DELETE FROM tbl_tetris_scores WHERE game IN ('tetris', 'snake', 'space_invaders');
 DELETE FROM tbl_user_season_achievements WHERE game IN ('tetris', 'snake', 'space_invaders');
 
@@ -67,6 +67,12 @@ UPDATE tbl_seasons SET is_active = 0 WHERE is_active = 1;
 INSERT INTO tbl_seasons (season_name, start_date, end_date, is_active) 
 VALUES ('Season X', datetime('now'), datetime('now', '+30 days'), 1);
 "
+
+# CRITICAL VERIFICATION: Ensure old data is completely deleted
+echo "Verifying reset completion..." >> /data/season_reset_log.txt
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) as tetris_count FROM tbl_tetris_scores WHERE game = 'tetris';" >> /data/season_reset_log.txt
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) as snake_count FROM tbl_tetris_scores WHERE game = 'snake';" >> /data/season_reset_log.txt
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) as space_invaders_count FROM tbl_tetris_scores WHERE game = 'space_invaders';" >> /data/season_reset_log.txt
 
 echo "Database reset completed: $(date)" >> /data/season_reset_log.txt
 ```
@@ -103,9 +109,37 @@ echo "Post-reset verification completed: $(date)" >> /data/season_reset_log.txt
 
 ### **✅ VERIFICATION CRITERIA:**
 - **New Season Active:** Must show new season with `is_active = 1`
-- **3 Main Games Reset:** `tbl_tetris_scores` count must be 0
+- **3 Main Games Reset:** `tbl_tetris_scores` count must be 0 for ALL three games
 - **Data Preserved:** All other counts must match pre-reset values
 - **No Data Loss:** Zero tolerance for data loss
+
+### **🚨 CRITICAL VERIFICATION STEPS:**
+```bash
+# MUST verify ALL three games are completely reset
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_scores WHERE game = 'tetris';" # Must be 0
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_scores WHERE game = 'snake';" # Must be 0
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_scores WHERE game = 'space_invaders';" # Must be 0
+```
+
+### **⚠️ COMMON RESET FAILURES:**
+- **Incomplete DELETE:** Old season data still exists after reset
+- **Season Name Mismatch:** API expects different season name format
+- **Partial Reset:** Only some games reset, others retain old data
+- **API Filtering Issues:** Admin interface shows mixed season data
+
+### **🔧 POST-RESET API FIXES REQUIRED:**
+```bash
+# 1. Update API hardcoded fallbacks to new season
+# Files: api/admin/get-all-games-stats.php, api/admin/get-season-stats.php
+# Change: 'Season X-1' → 'Season X' in fallback values
+
+# 2. Verify admin interface season dropdown
+# File: public/admin-interface.html
+# Ensure: New season appears in dropdown options
+
+# 3. Test admin interface data display
+# Verify: 3 main games show 0 scores, preserved games show all-time data
+```
 
 ---
 

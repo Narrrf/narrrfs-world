@@ -32,7 +32,7 @@ try {
 
     // Get current active season
     $seasonStmt = $db->query("SELECT season_name FROM tbl_seasons WHERE is_active = 1 LIMIT 1");
-    $fullSeasonName = $seasonStmt->fetchColumn() ?: 'Season 3 - The Ultimate Cheese Challenge';
+    $fullSeasonName = $seasonStmt->fetchColumn() ?: 'Season 4 - The Ultimate Cheese Challenge';
     
     // Use the full season name directly (no mapping needed)
     $currentSeason = $fullSeasonName;

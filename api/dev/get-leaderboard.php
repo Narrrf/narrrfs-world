@@ -13,12 +13,12 @@ try {
     $seasonStmt = $db->prepare("
         SELECT season_name 
         FROM tbl_seasons 
-        WHERE is_active = 1 AND end_date IS NULL
+        WHERE is_active = 1
         ORDER BY start_date DESC 
         LIMIT 1
     ");
     $seasonStmt->execute();
-    $currentSeason = $seasonStmt->fetchColumn() ?: 'Season 3 - The Ultimate Cheese Challenge'; // Fallback to Season 3
+    $currentSeason = $seasonStmt->fetchColumn() ?: 'Season 4'; // Fallback to Season 4
     
     // Log the current season for debugging (but don't output to response)
     error_log("Current season detected: $currentSeason");

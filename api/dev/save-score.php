@@ -78,9 +78,9 @@ try {
 
     // 🎮 Get current active season and settings
     // 🔍 Automatically detect current season from tbl_seasons table (where is_active = 1)
-    $seasonDetectStmt = $db->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 AND end_date IS NULL ORDER BY start_date DESC LIMIT 1");
+    $seasonDetectStmt = $db->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY start_date DESC LIMIT 1");
     $seasonDetectStmt->execute();
-    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'Season 3 - The Ultimate Cheese Challenge'; // Fallback to Season 3
+    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'Season 4'; // Fallback to Season 4
     
     error_log("🔍 Current season detected: $currentSeason");
 

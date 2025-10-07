@@ -2584,7 +2584,7 @@
       <div class="mb-6 bg-gradient-to-r from-blue-900 to-purple-900 p-4 rounded-lg border border-blue-700">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="text-center">
-            <div class="text-2xl font-bold text-blue-300" id="currentSeasonDisplay">Season 3</div>
+                <div class="text-2xl font-bold text-blue-300" id="currentSeasonDisplay">Season 4</div>
             <div class="text-sm text-blue-200">Active Season</div>
           </div>
           <div class="text-center">
@@ -2645,9 +2645,9 @@
             <h4 class="font-semibold text-blue-200 mb-2">🎯 Current Season Status</h4>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="text-center">
-                <div class="text-lg font-bold text-blue-300" id="overviewSeasonName">Season 3</div>
+                <div class="text-lg font-bold text-blue-300" id="overviewSeasonName">Season 4</div>
                 <div class="text-sm text-blue-200">Active Season</div>
-                <div class="text-xs text-blue-100" id="overviewSeasonDates">Sep 11, 2025</div>
+                <div class="text-xs text-blue-100" id="overviewSeasonDates">Oct 6, 2025</div>
               </div>
               <div class="text-center">
                 <div class="text-lg font-bold text-green-300" id="overviewSeasonGames">0</div>
@@ -2753,7 +2753,7 @@
               <label class="block text-sm font-medium mb-2">📅 Select Season:</label>
               <select id="seasonSelector" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
                 <option value="current" selected>Current Season</option>
-                <option value="season_3">Season 3 - The Ultimate Cheese Challenge</option>
+                <option value="season_3">Season 3 - The Ultimate Cheese Challenge (Historical)</option>
                 <option value="season_4">Season 4 - The Ultimate Cheese Challenge</option>
                 <option value="season_2">Season 2 - The Great Reset</option>
                 <option value="season_1">Season 1 - Historical</option>
@@ -3567,11 +3567,11 @@
             <div>
               <div class="flex justify-between">
                 <span class="text-gray-400">🎯 Active Season:</span>
-                <span class="text-green-400 font-bold text-lg">Season 3 - The Ultimate Cheese Challenge</span>
+                <span class="text-green-400 font-bold text-lg">Season 4 - The Ultimate Cheese Challenge</span>
               </div>
               <div class="flex justify-between mt-2">
                 <span class="text-gray-400">📅 Start Date:</span>
-                <span class="text-white">2025-08-05</span>
+                <span class="text-white">2025-10-06</span>
               </div>
               <div class="flex justify-between mt-2">
                 <span class="text-gray-400">🎮 Games Using Season 2:</span>
@@ -3603,7 +3603,7 @@
               <label class="block text-sm font-medium mb-2">🎯 Switch to Season:</label>
               <select id="seasonSwitchSelector" class="w-full px-3 py-2 rounded text-gray-800 mb-3">
                 <option value="current" selected>Current Season</option>
-                <option value="season_3">Season 3 - The Ultimate Cheese Challenge</option>
+                <option value="season_3">Season 3 - The Ultimate Cheese Challenge (Historical)</option>
                 <option value="season_4">Season 4 - The Ultimate Cheese Challenge</option>
                 <option value="season_2">Season 2 - The Great Reset</option>
                 <option value="season_1">Season 1 - Historical</option>
@@ -3616,7 +3616,7 @@
               <label class="block text-sm font-medium mb-2">📊 View Season Data:</label>
               <select id="viewSeasonSelector" class="w-full px-3 py-2 rounded text-gray-800 mb-3" onchange="loadSeasonData()">
                 <option value="current" selected>Current Season</option>
-                <option value="season_3">Season 3 - The Ultimate Cheese Challenge</option>
+                <option value="season_3">Season 3 - The Ultimate Cheese Challenge (Historical)</option>
                 <option value="season_4">Season 4 - The Ultimate Cheese Challenge</option>
                 <option value="season_2">Season 2 - The Great Reset</option>
                 <option value="season_1">Season 1 - Historical</option>
@@ -5680,6 +5680,14 @@
           } else if (tabName === 'games') {
             // Game Management - Load all data after tab animation completes
             console.log('🎮 Loading Game Management data...');
+            
+            // Fix white space issue - scroll to top of tab content
+            setTimeout(() => {
+              const gamesTab = document.getElementById('gamesTab');
+              if (gamesTab) {
+                gamesTab.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 100);
             
             // Wait for tab animation to complete before loading data
             setTimeout(() => {
@@ -22467,7 +22475,7 @@ async function loadGameManagement2Data() {
 
 async function loadSeasonOverview2() {
   try {
-    const response = await fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=season_3');
+    const response = await fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=season_4');
     const data = await response.json();
     
     if (data.success) {
@@ -22480,7 +22488,7 @@ async function loadSeasonOverview2() {
 
 async function loadGameStatsBySeason2() {
   try {
-    const season = document.getElementById('viewSeasonSelector2')?.value || 'season_3';
+    const season = document.getElementById('viewSeasonSelector2')?.value || 'season_4';
     const response = await fetch(API_BASE_URL + '/api/admin/get-season-data.php?season=' + season);
     const data = await response.json();
     
@@ -24345,7 +24353,7 @@ function testDatabaseConnection() {
       const activePlayersEl = document.getElementById('activePlayersDisplay');
       const systemHealthEl = document.getElementById('systemHealthDisplay');
       
-      if (currentSeasonEl) currentSeasonEl.textContent = seasonData?.season_display_name || seasonData?.season_name || 'Season 3';
+      if (currentSeasonEl) currentSeasonEl.textContent = seasonData?.season_display_name || seasonData?.season_name || 'Season 4';
       if (totalGamesEl) totalGamesEl.textContent = seasonData?.total_games || '0';
       if (activePlayersEl) activePlayersEl.textContent = seasonData?.active_players || '0';
       if (systemHealthEl) systemHealthEl.textContent = '🟢 100%';
@@ -24358,12 +24366,12 @@ function testDatabaseConnection() {
       const overviewSeasonDates = document.getElementById('overviewSeasonDates');
       const overviewSeasonTimeLeft = document.getElementById('overviewSeasonTimeLeft');
       
-      if (overviewSeasonName) overviewSeasonName.textContent = seasonData?.season_display_name || seasonData?.season_name || 'Season 3';
+      if (overviewSeasonName) overviewSeasonName.textContent = seasonData?.season_display_name || seasonData?.season_name || 'Season 4';
       if (overviewSeasonGames) overviewSeasonGames.textContent = seasonData?.total_games || '0';
       if (overviewSeasonPlayers) overviewSeasonPlayers.textContent = seasonData?.active_players || '0';
-      if (overviewSeasonProgress) overviewSeasonProgress.textContent = '0%'; // Season 3 just started
-      if (overviewSeasonDates) overviewSeasonDates.textContent = seasonData?.start_date ? new Date(seasonData.start_date).toLocaleDateString() : 'Sep 11, 2025';
-      if (overviewSeasonTimeLeft) overviewSeasonTimeLeft.textContent = 'Season 3 Active';
+      if (overviewSeasonProgress) overviewSeasonProgress.textContent = '0%'; // Season 4 just started
+      if (overviewSeasonDates) overviewSeasonDates.textContent = seasonData?.start_date ? new Date(seasonData.start_date).toLocaleDateString() : 'Oct 6, 2025';
+      if (overviewSeasonTimeLeft) overviewSeasonTimeLeft.textContent = 'Season 4 Active';
       
       addLog('✅ Season display updated successfully');
     }
