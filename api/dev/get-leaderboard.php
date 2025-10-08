@@ -81,10 +81,10 @@ try {
     $spaceInvadersStmt->execute();
     $spaceInvadersLeaderboard = $spaceInvadersStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Convert Space Invaders scores to DSPOINC (divide by 100)
-    foreach ($spaceInvadersLeaderboard as &$entry) {
-        $entry['score'] = round($entry['score'] / 100);
-    }
+        // Space Invaders scores are already in DSPOINC format (no conversion needed)
+        foreach ($spaceInvadersLeaderboard as &$entry) {
+            $entry['score'] = round($entry['score']); // Just round to integer
+        }
     
     // Snake and Space Invaders now come with discord_name from tbl_tetris_scores
     

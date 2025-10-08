@@ -145,22 +145,11 @@ try {
         $unit = 'cheese';
         $dspoinc_score = $raw_score * $pointsPerUnit;
     } elseif ($game === 'space_invaders') {
-        // 🔍 DEBUG: Log the scoring calculation
-        error_log("🔍 DEBUG Space Invaders - pointsPerUnit: " . $pointsPerUnit);
-        error_log("🔍 DEBUG Space Invaders - raw_score: " . $raw_score);
-        error_log("🔍 DEBUG Space Invaders - calculation: " . $raw_score . " * " . $pointsPerUnit . " = " . ($raw_score * $pointsPerUnit));
-        
-        // 🧀 Explicit Space Invaders scoring - ensure correct value
-        if (isset($seasonSettings['points_per_invader']) && is_numeric($seasonSettings['points_per_invader'])) {
-            $pointsPerUnit = floatval($seasonSettings['points_per_invader']);
-            error_log("🔍 DEBUG Space Invaders - Using database value: " . $pointsPerUnit);
-        } else {
-            error_log("🔍 DEBUG Space Invaders - ERROR: points_per_invader not found in database!");
-            error_log("🔍 DEBUG Space Invaders - Available keys: " . implode(', ', array_keys($seasonSettings)));
-            throw new Exception("Space Invaders scoring configuration missing from database");
-        }
-        $unit = 'invaders';
-        $dspoinc_score = $raw_score * $pointsPerUnit;
+        // 🔧 FIX: Space Invaders frontend now calculates DSPOINC (like Tetris)
+        // Don't multiply again - use score as-is (already includes role bonus)
+        $pointsPerUnit = 1; // No multiplication needed
+        $unit = 'dspoinc';
+        $dspoinc_score = $raw_score; // Use score directly (already DSPOINC with role bonus)
     } else {
         $pointsPerUnit = 10; // Default fallback
         $unit = 'units';
