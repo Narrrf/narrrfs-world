@@ -163,10 +163,6 @@ let spaceInvadersCount = 0; // NEW: Track actual invader count for DSPOINC calcu
 let hasScoreBeenSaved = false; // 🚫 NEW: Prevent duplicate score saves in same game session
 let hasPlayerMovedMouse = false; // 🚀 NEW: Prevent ship jumping until player moves mouse
 
-// 🐛 BUG #118 FIX: Continuous keyboard movement system
-let pressedKeys = new Set(); // Track which keys are currently pressed
-let continuousMovementEnabled = true; // Enable continuous movement on key hold
-
 // 🏆 ROLE-BASED GAMEPLAY SYSTEM - Season 4 Feature
 let spaceInvadersUserRoles = [];
 let spaceInvadersRoleMultipliers = {
@@ -4570,7 +4566,7 @@ let reloadButtonInterval = null;
       y: canvasHeight - 120, // 🚀 FIXED: Moved ship further down for better movement range
       width: 40,
       height: 30,
-      speed: 8, // 🐛 BUG #118 FIX: Balanced speed - 8px optimal for 400px canvas (5→15→25→8 testing)
+      speed: 5,
       health: 3,
       invincible: false, // 🚀 NEW: Invincibility state
       invincibleTimer: 0 // 🚀 NEW: Invincibility timer
@@ -4943,25 +4939,6 @@ let reloadButtonInterval = null;
       });
   }
 
-  // 🎮 Restart game function (called by Play Again button)
-  function restartGame() {
-    console.log('🔄 Restart button clicked - restarting game');
-    
-    // Hide any open modals
-    const gameOverModal = document.getElementById("space-invaders-over-modal");
-    const winModal = document.getElementById("space-invaders-win-modal");
-    
-    if (gameOverModal) {
-      gameOverModal.classList.add("hidden");
-    }
-    if (winModal) {
-      winModal.classList.add("hidden");
-    }
-    
-    // Start new game with countdown
-    startGameWithCountdown();
-  }
-
   // 🎮 Start game with countdown (same as Snake)
   async function startGameWithCountdown() {
     const countdownEl = document.getElementById("space-invaders-countdown");
@@ -5170,9 +5147,6 @@ let reloadButtonInterval = null;
     
     // 🚀 NEW: Update player invincibility
     updatePlayerInvincibility();
-    
-    // 🐛 BUG #118 FIX: Apply continuous keyboard movement every frame
-    applyContinuousKeyboardMovement();
     
     // 🖱️ NEW: Update mouse movement for ship positioning
     updateMouseMovement();
@@ -9468,38 +9442,6 @@ let reloadButtonInterval = null;
     });
   }
 
-  // 🐛 BUG #118 FIX: Continuous keyboard movement - allows hold-to-move + shoot simultaneously
-  function applyContinuousKeyboardMovement() {
-    if (!continuousMovementEnabled || isSpaceInvadersPaused || !playerShip) return;
-    
-    // Check each direction and move if key is held
-    if (pressedKeys.has('arrowleft') || pressedKeys.has('a')) {
-      const oldX = playerShip.x;
-      playerShip.x = Math.max(0, playerShip.x - getPlayerSpeed());
-      // Don't call movePlayer to avoid double auto-shoot triggering
-    }
-    
-    if (pressedKeys.has('arrowright') || pressedKeys.has('d')) {
-      const oldX = playerShip.x;
-      playerShip.x = Math.min(canvasWidth - playerShip.width, playerShip.x + getPlayerSpeed());
-    }
-    
-    if (pressedKeys.has('arrowup') || pressedKeys.has('w')) {
-      const oldY = playerShip.y;
-      playerShip.y = Math.max(0, playerShip.y - getPlayerSpeed());
-    }
-    
-    if (pressedKeys.has('arrowdown')) {
-      // Allow ship to go down further - extended bottom boundary
-      const extendedBottomBoundary = canvasHeight + 20;
-      const oldY = playerShip.y;
-      playerShip.y = Math.min(extendedBottomBoundary, playerShip.y + getPlayerSpeed());
-    }
-    
-    // Note: Auto-shoot is handled in the original movePlayer function calls from keydown
-    // This continuous movement supplements the discrete keydown events
-  }
-
   function movePlayer(direction) {
     if (isSpaceInvadersPaused) return;
     
@@ -9678,11 +9620,8 @@ let reloadButtonInterval = null;
     }
   }
 
-  // 🐛 BUG #118 FIX: Track key presses for continuous movement
+  // 🎮 Combined keyboard event listener for Space Invaders movement
   document.addEventListener('keydown', (e) => {
-    // Add key to pressed keys set for continuous movement
-    pressedKeys.add(e.key.toLowerCase());
-    
     // Handle pause first
     if (e.key === 'p' || e.key === 'P') {
       if (typeof window.togglePause === 'function') {
@@ -9840,12 +9779,6 @@ let reloadButtonInterval = null;
         }
         break;
     }
-  });
-
-  // 🐛 BUG #118 FIX: Track key releases for continuous movement
-  document.addEventListener('keyup', (e) => {
-    // Remove key from pressed keys set
-    pressedKeys.delete(e.key.toLowerCase());
   });
 
   // 🖱️ NEW: Mouse control variables (GLOBAL SCOPE for proper access)

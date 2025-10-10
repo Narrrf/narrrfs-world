@@ -163,10 +163,6 @@ let spaceInvadersCount = 0; // NEW: Track actual invader count for DSPOINC calcu
 let hasScoreBeenSaved = false; // 🚫 NEW: Prevent duplicate score saves in same game session
 let hasPlayerMovedMouse = false; // 🚀 NEW: Prevent ship jumping until player moves mouse
 
-// 🐛 BUG #118 FIX: Continuous keyboard movement system
-let pressedKeys = new Set(); // Track which keys are currently pressed
-let continuousMovementEnabled = true; // Enable continuous movement on key hold
-
 // 🏆 ROLE-BASED GAMEPLAY SYSTEM - Season 4 Feature
 let spaceInvadersUserRoles = [];
 let spaceInvadersRoleMultipliers = {
@@ -285,9 +281,9 @@ function updateSpaceInvadersScoreDisplay() {
   if (topScoreDisplay && roleMultiplierDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
     const primaryRole = getSpaceInvadersPrimaryRole();
-    const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (same as drawScore and onGameOver)
+    const baseDSPOINC = spaceInvadersCount * 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
-    const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
+    const totalDSPOINC = baseDSPOINC + roleBonusDSPOINC;
     
     // Debug logging
     console.log(`🏆 Space Invaders score display update: Role=${primaryRole}, Multiplier=${roleMultiplier}x, Score=${totalDSPOINC} DSPOINC`);
@@ -4570,7 +4566,7 @@ let reloadButtonInterval = null;
       y: canvasHeight - 120, // 🚀 FIXED: Moved ship further down for better movement range
       width: 40,
       height: 30,
-      speed: 8, // 🐛 BUG #118 FIX: Balanced speed - 8px optimal for 400px canvas (5→15→25→8 testing)
+      speed: 5,
       health: 3,
       invincible: false, // 🚀 NEW: Invincibility state
       invincibleTimer: 0 // 🚀 NEW: Invincibility timer
@@ -4943,25 +4939,6 @@ let reloadButtonInterval = null;
       });
   }
 
-  // 🎮 Restart game function (called by Play Again button)
-  function restartGame() {
-    console.log('🔄 Restart button clicked - restarting game');
-    
-    // Hide any open modals
-    const gameOverModal = document.getElementById("space-invaders-over-modal");
-    const winModal = document.getElementById("space-invaders-win-modal");
-    
-    if (gameOverModal) {
-      gameOverModal.classList.add("hidden");
-    }
-    if (winModal) {
-      winModal.classList.add("hidden");
-    }
-    
-    // Start new game with countdown
-    startGameWithCountdown();
-  }
-
   // 🎮 Start game with countdown (same as Snake)
   async function startGameWithCountdown() {
     const countdownEl = document.getElementById("space-invaders-countdown");
@@ -5170,9 +5147,6 @@ let reloadButtonInterval = null;
     
     // 🚀 NEW: Update player invincibility
     updatePlayerInvincibility();
-    
-    // 🐛 BUG #118 FIX: Apply continuous keyboard movement every frame
-    applyContinuousKeyboardMovement();
     
     // 🖱️ NEW: Update mouse movement for ship positioning
     updateMouseMovement();
@@ -8693,15 +8667,12 @@ let reloadButtonInterval = null;
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
       // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
-      // FIXED: Correct DSPOINC conversion - 1 invader = 4 DSPOINC (49 invaders = ~200 DSPOINC)
-      const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-      const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base
-      const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
-      const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
+      // FIXED: Much lower DSPOINC conversion - 1000 invaders = 1 DSPOINC (was 100 invaders = 1 DSPOINC)
+      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 invaders = 1 DSPOINC)
       
       // Add mouse control indicator
       const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
-      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders destroyed (${totalDSPOINC} DSPOINC) ${mouseIndicator}`;
+      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC) ${mouseIndicator}`;
     } else {
       console.warn('⚠️ Score display element not found');
     }
@@ -8920,9 +8891,9 @@ let reloadButtonInterval = null;
     
     // 🏆 ROLE-BASED SCORING: Use role multipliers for final score display
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (same as drawScore)
+    const baseDSPOINC = spaceInvadersCount * 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
-    const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
+    const totalDSPOINC = baseDSPOINC + roleBonusDSPOINC;
     
     if (gameOverModal && finalScoreText) {
       if (roleMultiplier > 1.0) {
@@ -9468,38 +9439,6 @@ let reloadButtonInterval = null;
     });
   }
 
-  // 🐛 BUG #118 FIX: Continuous keyboard movement - allows hold-to-move + shoot simultaneously
-  function applyContinuousKeyboardMovement() {
-    if (!continuousMovementEnabled || isSpaceInvadersPaused || !playerShip) return;
-    
-    // Check each direction and move if key is held
-    if (pressedKeys.has('arrowleft') || pressedKeys.has('a')) {
-      const oldX = playerShip.x;
-      playerShip.x = Math.max(0, playerShip.x - getPlayerSpeed());
-      // Don't call movePlayer to avoid double auto-shoot triggering
-    }
-    
-    if (pressedKeys.has('arrowright') || pressedKeys.has('d')) {
-      const oldX = playerShip.x;
-      playerShip.x = Math.min(canvasWidth - playerShip.width, playerShip.x + getPlayerSpeed());
-    }
-    
-    if (pressedKeys.has('arrowup') || pressedKeys.has('w')) {
-      const oldY = playerShip.y;
-      playerShip.y = Math.max(0, playerShip.y - getPlayerSpeed());
-    }
-    
-    if (pressedKeys.has('arrowdown')) {
-      // Allow ship to go down further - extended bottom boundary
-      const extendedBottomBoundary = canvasHeight + 20;
-      const oldY = playerShip.y;
-      playerShip.y = Math.min(extendedBottomBoundary, playerShip.y + getPlayerSpeed());
-    }
-    
-    // Note: Auto-shoot is handled in the original movePlayer function calls from keydown
-    // This continuous movement supplements the discrete keydown events
-  }
-
   function movePlayer(direction) {
     if (isSpaceInvadersPaused) return;
     
@@ -9678,11 +9617,8 @@ let reloadButtonInterval = null;
     }
   }
 
-  // 🐛 BUG #118 FIX: Track key presses for continuous movement
+  // 🎮 Combined keyboard event listener for Space Invaders movement
   document.addEventListener('keydown', (e) => {
-    // Add key to pressed keys set for continuous movement
-    pressedKeys.add(e.key.toLowerCase());
-    
     // Handle pause first
     if (e.key === 'p' || e.key === 'P') {
       if (typeof window.togglePause === 'function') {
@@ -9840,12 +9776,6 @@ let reloadButtonInterval = null;
         }
         break;
     }
-  });
-
-  // 🐛 BUG #118 FIX: Track key releases for continuous movement
-  document.addEventListener('keyup', (e) => {
-    // Remove key from pressed keys set
-    pressedKeys.delete(e.key.toLowerCase());
   });
 
   // 🖱️ NEW: Mouse control variables (GLOBAL SCOPE for proper access)
@@ -11578,16 +11508,13 @@ window.emergencyCollisionCheck = function() {
     
     hasScoreBeenSaved = true; // Mark as saved
     
-    // 🔧 ENABLED: Real database saving for both local and production
+    // 🔧 LOCAL DEVELOPMENT BYPASS - Simulate score saving for local testing
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (isLocalDevelopment) {
-      console.log('🔓 Local development - saving to real database');
-      const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-      const baseDSPOINC = traditionalScore * 0.1;
-      const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
-      const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
-      console.log(`💾 Local save: Space Invaders score ${traditionalScore} invaders destroyed = ${totalDSPOINC} DSPOINC (${roleMultiplier}x role bonus)`);
-      // Continue to actual API call below (no return here)
+      console.log('🔓 Local development - simulating score save');
+      console.log(`💾 Local test: Space Invaders score ${traditionalScore} invaders destroyed = ${Math.round((traditionalScore * 0.001) * 100) / 100} DSPOINC`);
+      console.log('✅ Local test score saved successfully (simulated)');
+      return;
     }
     
     const discordId = localStorage.getItem('discord_id');
@@ -11599,11 +11526,8 @@ window.emergencyCollisionCheck = function() {
       return;
     }
 
-    // 🚀 FIXED: Use correct DSPOINC conversion (1 invader = 0.1 DSPOINC, same as drawScore and onGameOver)
-    const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = traditionalScore * 0.1; // 1 invader = 0.1 DSPOINC base
-    const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
-    const dspoincScore = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Convert to DSPOINC with role bonus
+    // 🚀 FIXED: Use correct DSPOINC conversion (1000 invaders = 1 DSPOINC)
+    const dspoincScore = Math.round((traditionalScore * 0.001) * 100) / 100; // Convert to DSPOINC (1000 invaders = 1 DSPOINC)
 
     console.log(`💾 Saving Space Invaders score: ${traditionalScore} invaders destroyed = ${dspoincScore} DSPOINC`);
 

@@ -4943,25 +4943,6 @@ let reloadButtonInterval = null;
       });
   }
 
-  // 🎮 Restart game function (called by Play Again button)
-  function restartGame() {
-    console.log('🔄 Restart button clicked - restarting game');
-    
-    // Hide any open modals
-    const gameOverModal = document.getElementById("space-invaders-over-modal");
-    const winModal = document.getElementById("space-invaders-win-modal");
-    
-    if (gameOverModal) {
-      gameOverModal.classList.add("hidden");
-    }
-    if (winModal) {
-      winModal.classList.add("hidden");
-    }
-    
-    // Start new game with countdown
-    startGameWithCountdown();
-  }
-
   // 🎮 Start game with countdown (same as Snake)
   async function startGameWithCountdown() {
     const countdownEl = document.getElementById("space-invaders-countdown");
