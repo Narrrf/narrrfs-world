@@ -40,6 +40,17 @@
 
 // 🏆 ROLE-BASED GAMEPLAY SYSTEM - Season 4 Feature
 let snakeUserRoles = [];
+let snakeRoleMultipliers = {
+  'VIP Holder': 2.0,
+  '🎴 VIP Holder': 2.0,
+  'Holder': 1.5,
+  '🏆 Holder': 1.5,
+  'Season Tester': 1.3,
+  'Early Bird': 1.2,
+  'Champion': 1.4,
+  'Cheese Hunter': 1.1,
+  '🧀 Cheese Hunter': 1.1
+};
 let snakeRoleThemes = {
   'VIP Holder': 'golden',
   '🎴 VIP Holder': 'golden',
@@ -67,13 +78,17 @@ function applySnakeRoleTheme() {
   let primaryRole = null;
   for (const role of priorityOrder) {
     if (snakeUserRoles.includes(role)) {
-      primaryRole = role;
+      // Return clean role name for consistent theming and multipliers
+      primaryRole = role.replace(/^[🎴🏆🧀]\s*/, '');
       break;
     }
   }
   
   const theme = snakeRoleThemes[primaryRole] || 'default';
   console.log(`🎨 Snake theme: ${theme} for role: ${primaryRole}`);
+  
+  // Update score display with role multiplier
+  updateSnakeScoreDisplay();
   
   // Apply theme to canvas
   const canvas = document.getElementById('snake-canvas');
@@ -97,6 +112,75 @@ function applySnakeRoleTheme() {
     console.log(`🎨 Snake controls theme applied: ${theme}`);
   }
 }
+
+// 🏆 Get user's primary role (highest priority role)
+function getSnakePrimaryRole() {
+  const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
+  
+  for (const role of priorityOrder) {
+    if (snakeUserRoles.includes(role)) {
+      // Return clean role name for consistent theming and multipliers
+      return role.replace(/^[🎴🏆🧀]\s*/, '');
+    }
+  }
+  
+  return null;
+}
+
+// ⚡ Calculate role-based score multiplier
+function getSnakeRoleScoreMultiplier() {
+  const primaryRole = getSnakePrimaryRole();
+  return snakeRoleMultipliers[primaryRole] || 1.0;
+}
+
+// 🏆 Update Snake score display with role bonus
+function updateSnakeScoreDisplay() {
+  const scoreDisplay = document.getElementById('snake-score');
+  if (scoreDisplay) {
+    const roleMultiplier = getSnakeRoleScoreMultiplier();
+    const primaryRole = getSnakePrimaryRole();
+    
+    if (roleMultiplier > 1.0) {
+      scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+    } else {
+      scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC`;
+    }
+    
+    console.log(`🏆 Snake score display update: Role=${primaryRole}, Multiplier=${roleMultiplier}x, Score=${score * 10} DSPOINC`);
+  }
+}
+
+// 🏆 GLOBAL TEST FUNCTION - Test Snake role-based features
+window.testSnakeRoleFeatures = function() {
+  console.log('🏆 Testing Snake role-based features...');
+  console.log('Current roles:', snakeUserRoles);
+  console.log('Primary role:', getSnakePrimaryRole());
+  console.log('Score multiplier:', getSnakeRoleScoreMultiplier());
+  console.log('Expected theme:', snakeRoleThemes[getSnakePrimaryRole()]);
+  
+  // Test emoji role matching
+  console.log('🧪 Testing emoji role matching...');
+  const testRoles = ['🎴 VIP Holder', '🏆 Holder', '🧀 Cheese Hunter'];
+  testRoles.forEach(role => {
+    const cleanRole = role.replace(/^[🎴🏆🧀]\s*/, '');
+    console.log(`Role: ${role} -> Clean: ${cleanRole} -> Multiplier: ${snakeRoleMultipliers[cleanRole]}`);
+  });
+  
+  // Test priority order matching
+  console.log('🎯 Testing priority order...');
+  const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
+  priorityOrder.forEach(role => {
+    const hasRole = snakeUserRoles.includes(role);
+    const cleanRole = role.replace(/^[🎴🏆🧀]\s*/, '');
+    console.log(`${hasRole ? '✅' : '❌'} ${role} -> Clean: ${cleanRole} -> Multiplier: ${snakeRoleMultipliers[cleanRole]}`);
+  });
+  
+  const canvas = document.getElementById('snake-canvas');
+  console.log('Canvas element:', canvas);
+  console.log('Canvas classes:', canvas?.className);
+  console.log('Current score:', score);
+  console.log('Current DSPOINC:', score * 10);
+};
 
 // 🚫 Full page scroll prevention
 window.addEventListener("keydown", function (e) {
@@ -316,7 +400,13 @@ function initSnake() {
 
   function updateScore() {
     if (scoreDisplay) {
-      scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC`;
+      const roleMultiplier = getSnakeRoleScoreMultiplier();
+      
+      if (roleMultiplier > 1.0) {
+        scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+      } else {
+        scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC`;
+      }
     }
   }
 
@@ -464,7 +554,18 @@ function initSnake() {
       // 🎵 Play cheese eating sound
       snakeSounds.playSound('eatCheese');
       
-      score++;
+      // 🏆 Apply role-based scoring
+      const roleMultiplier = getSnakeRoleScoreMultiplier();
+      const baseScore = 1;
+      const totalScore = Math.floor(baseScore * roleMultiplier);
+      score += totalScore;
+      
+      // 🏆 Log role-based scoring
+      if (roleMultiplier > 1.0) {
+        const bonusPoints = totalScore - baseScore;
+        console.log(`🏆 Snake role multiplier applied: ${roleMultiplier}x (${bonusPoints} bonus points)`);
+      }
+      
       cheeseEaten++;
       longestSnake = Math.max(longestSnake, snake.length + 1);
       
@@ -521,9 +622,14 @@ function initSnake() {
     const pauseBtn = document.getElementById("pause-snake-btn");
 
     if (modal && finalScoreText) {
-      // ✅ Only update score content, no style changes — handled in HTML
-      finalScoreText.textContent = `You earned $${finalScore * 10} DSPOINC`;
-      console.log("🐍 Displaying score:", finalScore);
+      // ✅ Show role multiplier in final score display
+      const roleMultiplier = getSnakeRoleScoreMultiplier();
+      if (roleMultiplier > 1.0) {
+        finalScoreText.textContent = `You earned $${finalScore * 10} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+      } else {
+        finalScoreText.textContent = `You earned $${finalScore * 10} DSPOINC`;
+      }
+      console.log("🐍 Displaying score:", finalScore, "with role multiplier:", roleMultiplier);
 
       modal.classList.remove("hidden");
       modal.style.display = "flex"; // fallback for older browsers

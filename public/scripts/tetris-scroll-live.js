@@ -45,6 +45,17 @@ let isTetrisPaused = false;
 
 // 🏆 ROLE-BASED GAMEPLAY SYSTEM - Season 4 Feature
 let userRoles = [];
+let roleMultipliers = {
+  'VIP Holder': 2.0,
+  '🎴 VIP Holder': 2.0,
+  'Holder': 1.5,
+  '🏆 Holder': 1.5,
+  'Season Tester': 1.3,
+  'Early Bird': 1.2,
+  'Champion': 1.4,
+  'Cheese Hunter': 1.1,
+  '🧀 Cheese Hunter': 1.1
+};
 let roleThemes = {
   'VIP Holder': 'golden',
   '🎴 VIP Holder': 'golden',
@@ -89,13 +100,17 @@ function applyRoleTheme() {
   let primaryRole = null;
   for (const role of priorityOrder) {
     if (userRoles.includes(role)) {
-      primaryRole = role;
+      // Return clean role name for consistent theming and multipliers
+      primaryRole = role.replace(/^[🎴🏆🧀]\s*/, '');
       break;
     }
   }
   
   const theme = roleThemes[primaryRole] || 'default';
   console.log(`🎨 Tetris theme: ${theme} for role: ${primaryRole}`);
+  
+  // Update score display with role multiplier
+  updateTetrisScoreDisplay();
   
   // Apply theme to canvas
   const canvas = document.getElementById('tetris-canvas');
@@ -119,6 +134,75 @@ function applyRoleTheme() {
     console.log(`🎨 Tetris controls theme applied: ${theme}`);
   }
 }
+
+// 🏆 Get user's primary role (highest priority role)
+function getUserPrimaryRole() {
+  const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
+  
+  for (const role of priorityOrder) {
+    if (userRoles.includes(role)) {
+      // Return clean role name for consistent theming and multipliers
+      return role.replace(/^[🎴🏆🧀]\s*/, '');
+    }
+  }
+  
+  return null;
+}
+
+// ⚡ Calculate role-based score multiplier
+function getRoleScoreMultiplier() {
+  const primaryRole = getUserPrimaryRole();
+  return roleMultipliers[primaryRole] || 1.0;
+}
+
+// 🏆 Update Tetris score display with role bonus
+function updateTetrisScoreDisplay() {
+  const scoreDisplay = document.getElementById('tetris-score');
+  if (scoreDisplay) {
+    const roleMultiplier = getRoleScoreMultiplier();
+    const primaryRole = getUserPrimaryRole();
+    
+    if (roleMultiplier > 1.0) {
+      scoreDisplay.textContent = `💰 Tetris Score: $${score} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+    } else {
+      scoreDisplay.textContent = `💰 Tetris Score: $${score} DSPOINC`;
+    }
+    
+    console.log(`🏆 Tetris score display update: Role=${primaryRole}, Multiplier=${roleMultiplier}x, Score=${score} DSPOINC`);
+  }
+}
+
+// 🏆 GLOBAL TEST FUNCTION - Test Tetris role-based features
+window.testTetrisRoleFeatures = function() {
+  console.log('🏆 Testing Tetris role-based features...');
+  console.log('Current roles:', userRoles);
+  console.log('Primary role:', getUserPrimaryRole());
+  console.log('Score multiplier:', getRoleScoreMultiplier());
+  console.log('Expected theme:', roleThemes[getUserPrimaryRole()]);
+  
+  // Test emoji role matching
+  console.log('🧪 Testing emoji role matching...');
+  const testRoles = ['🎴 VIP Holder', '🏆 Holder', '🧀 Cheese Hunter'];
+  testRoles.forEach(role => {
+    const cleanRole = role.replace(/^[🎴🏆🧀]\s*/, '');
+    console.log(`Role: ${role} -> Clean: ${cleanRole} -> Multiplier: ${roleMultipliers[cleanRole]}`);
+  });
+  
+  // Test priority order matching
+  console.log('🎯 Testing priority order...');
+  const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
+  priorityOrder.forEach(role => {
+    const hasRole = userRoles.includes(role);
+    const cleanRole = role.replace(/^[🎴🏆🧀]\s*/, '');
+    console.log(`${hasRole ? '✅' : '❌'} ${role} -> Clean: ${cleanRole} -> Multiplier: ${roleMultipliers[cleanRole]}`);
+  });
+  
+  const canvas = document.getElementById('tetris-canvas');
+  console.log('Canvas element:', canvas);
+  console.log('Canvas classes:', canvas?.className);
+  console.log('Current score:', score);
+  console.log('Current DSPOINC:', score);
+};
 
 // 🚫 Full page scroll prevention
 window.addEventListener("touchmove", function(e) {
@@ -820,8 +904,18 @@ function collide(shape, row, col) {
             console.log(`🎵 Level up! Now at level ${newLevel}`);
           }
           
-          // Use database configuration for DSPOINC calculation
-          score += lines * 2; // Season 3: 2 DSPOINC per line (balanced for ~5k max)
+          // 🏆 Apply role-based scoring
+          const baseScore = lines * 2; // Season 3: 2 DSPOINC per line (balanced for ~5k max)
+          const roleMultiplier = getRoleScoreMultiplier();
+          const roleBonus = Math.floor(baseScore * (roleMultiplier - 1)); // Calculate bonus points
+          score += baseScore + roleBonus;
+          
+          console.log(`📊 Line clearing: ${lines} lines = ${baseScore} DSPOINC + ${roleBonus} role bonus = ${baseScore + roleBonus} total`);
+          
+          // 🏆 Log role-based scoring
+          if (roleMultiplier > 1.0) {
+            console.log(`🏆 Role multiplier applied: ${roleMultiplier}x (${roleBonus} bonus points)`);
+          }
           
           // 🏆 Track Tetris clears (4 lines at once)
           if (lines === 4) {
@@ -1027,7 +1121,14 @@ if (collide(current.shape, current.row, current.col)) {
       }
     }
     try {
-      finalScoreText.textContent = `You earned $${score} DSPOINC`;
+      // ✅ Show role multiplier in final score display
+      const roleMultiplier = getRoleScoreMultiplier();
+      if (roleMultiplier > 1.0) {
+        finalScoreText.textContent = `You earned $${score} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+      } else {
+        finalScoreText.textContent = `You earned $${score} DSPOINC`;
+      }
+      console.log("🧀 Displaying score:", score, "with role multiplier:", roleMultiplier);
     } catch (error) {
       console.log('⚠️ Could not update final score text:', error);
     }

@@ -171,18 +171,24 @@ let continuousMovementEnabled = true; // Enable continuous movement on key hold
 let spaceInvadersUserRoles = [];
 let spaceInvadersRoleMultipliers = {
   'VIP Holder': 2.0,
+  '🎴 VIP Holder': 2.0,
   'Holder': 1.5,
+  '🏆 Holder': 1.5,
   'Season Tester': 1.3,
   'Early Bird': 1.2,
   'Champion': 1.4,
-  'Cheese Hunter': 1.1
+  'Cheese Hunter': 1.1,
+  '🧀 Cheese Hunter': 1.1
 };
 
 // 🎨 Role-based visual themes
 let spaceInvadersRoleThemes = {
   'VIP Holder': 'golden',
-  'Holder': 'silver', 
+  '🎴 VIP Holder': 'golden',
+  'Holder': 'silver',
+  '🏆 Holder': 'silver', 
   'Cheese Hunter': 'cheese',
+  '🧀 Cheese Hunter': 'cheese',
   'Season Tester': 'rainbow',
   'Early Bird': 'blue',
   'Champion': 'red'
@@ -282,11 +288,20 @@ function applySpaceInvadersRoleTheme() {
 
 // 🏆 Get user's primary role (highest priority role)
 function getSpaceInvadersPrimaryRole() {
-  const priorityOrder = ['VIP Holder', 'Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter'];
+  // 🎯 EMOJI-AWARE PRIORITY SYSTEM (matches Tetris & Snake)
+  const priorityOrder = [
+    'VIP Holder', '🎴 VIP Holder',
+    'Holder', '🏆 Holder', 
+    'Champion', 
+    'Season Tester', 
+    'Early Bird', 
+    'Cheese Hunter', '🧀 Cheese Hunter'
+  ];
   
   for (const role of priorityOrder) {
     if (spaceInvadersUserRoles.includes(role)) {
-      return role;
+      // Return clean role name for consistent theming and multipliers
+      return role.replace(/^[🎴🏆🧀]\s*/, '');
     }
   }
   
@@ -334,9 +349,9 @@ function updateSpaceInvadersScoreDisplay() {
   const scoreDisplay = document.getElementById('space-invaders-score');
   if (scoreDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = spaceInvadersCount * 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
+    const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (CONSISTENT)
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
-    const totalDSPOINC = baseDSPOINC + roleBonusDSPOINC;
+    const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
     
     if (roleMultiplier > 1.0) {
       scoreDisplay.textContent = `💰 Space Invaders Score: $${totalDSPOINC} DSPOINC (${roleMultiplier}x Role Bonus!)`;
@@ -352,6 +367,24 @@ window.testSpaceInvadersRoleFeatures = function() {
   console.log('Current roles:', spaceInvadersUserRoles);
   console.log('Primary role:', getSpaceInvadersPrimaryRole());
   console.log('Score multiplier:', getSpaceInvadersRoleScoreMultiplier());
+  console.log('Expected theme:', spaceInvadersRoleThemes[getSpaceInvadersPrimaryRole()]);
+  
+  // Test emoji role matching
+  console.log('🧪 Testing emoji role matching...');
+  const testRoles = ['🎴 VIP Holder', '🏆 Holder', '🧀 Cheese Hunter'];
+  testRoles.forEach(role => {
+    const cleanRole = role.replace(/^[🎴🏆🧀]\s*/, '');
+    console.log(`Role: ${role} -> Clean: ${cleanRole} -> Multiplier: ${spaceInvadersRoleMultipliers[cleanRole]}`);
+  });
+  
+  // Test priority order matching
+  console.log('🎯 Testing priority order...');
+  const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
+  priorityOrder.forEach(role => {
+    const hasRole = spaceInvadersUserRoles.includes(role);
+    const cleanRole = role.replace(/^[🎴🏆🧀]\s*/, '');
+    console.log(`${hasRole ? '✅' : '❌'} ${role} -> Clean: ${cleanRole} -> Multiplier: ${spaceInvadersRoleMultipliers[cleanRole]}`);
+  });
   
   const canvas = document.getElementById('space-invaders-canvas');
   console.log('Canvas element:', canvas);
@@ -11583,13 +11616,19 @@ window.emergencyCollisionCheck = function() {
   function updateScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
-      // FIXED: Much lower DSPOINC conversion - 1000 invaders = 1 DSPOINC (was 100 invaders = 1 DSPOINC)
-      const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 invaders = 1 DSPOINC)
+      // 🚀 CRITICAL FIX: Use CONSISTENT DSPOINC calculation (same as saveScore and onGameOver)
+      const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
+      const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (CONSISTENT)
+      const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+      const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
       
       // Add mouse control indicator
       const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
-      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders destroyed (${dspoinEarned} DSPOINC) ${mouseIndicator}`;
+      if (roleMultiplier > 1.0) {
+        scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders destroyed (${totalDSPOINC} DSPOINC, ${roleMultiplier}x role bonus!) ${mouseIndicator}`;
+      } else {
+        scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders destroyed (${totalDSPOINC} DSPOINC) ${mouseIndicator}`;
+      }
     } else {
       console.warn('⚠️ Score display element not found');
     }
@@ -11607,11 +11646,18 @@ window.emergencyCollisionCheck = function() {
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
-    // 🚀 FIXED: Use correct DSPOINC conversion (1000 invaders = 1 DSPOINC)
-    const dspoinEarned = Math.round((spaceInvadersScore * 0.001) * 100) / 100; // Round to 2 decimal places (1000 invaders = 1 DSPOINC)
+    // 🚀 CRITICAL FIX: Use CONSISTENT DSPOINC calculation (same as saveScore and onGameOver)
+    const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
+    const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (CONSISTENT)
+    const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+    const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
     
     if (winModal && winScoreText) {
-      winScoreText.textContent = `You earned ${dspoinEarned} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed)`;
+      if (roleMultiplier > 1.0) {
+        winScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed, ${roleMultiplier}x role bonus!)`;
+      } else {
+        winScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${spaceInvadersScore.toLocaleString()} invaders destroyed)`;
+      }
       winModal.classList.remove("hidden");
     }
     
