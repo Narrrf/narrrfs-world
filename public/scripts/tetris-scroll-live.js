@@ -43,6 +43,20 @@ let isTetrisMobileDevice = false;
 // 🛑 Pause Logic — Global variable for touch controls
 let isTetrisPaused = false;
 
+// 🏆 ROLE-BASED GAMEPLAY SYSTEM - Season 4 Feature
+let userRoles = [];
+let roleThemes = {
+  'VIP Holder': 'golden',
+  '🎴 VIP Holder': 'golden',
+  'Holder': 'silver',
+  '🏆 Holder': 'silver', 
+  'Cheese Hunter': 'cheese',
+  '🧀 Cheese Hunter': 'cheese',
+  'Season Tester': 'rainbow',
+  'Early Bird': 'blue',
+  'Champion': 'red'
+};
+
 // Detect mobile device
 if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
   isTetrisMobileDevice = true;
@@ -58,6 +72,52 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
   }
 } else {
   console.log('🖥️ Desktop device detected - touch controls still enabled');
+}
+
+// 🎨 Role-based theme application for Tetris
+function applyRoleTheme() {
+  // Get user roles from localStorage or default test roles
+  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (isLocalDevelopment) {
+    userRoles = [
+      "VIP Holder", "Holder", "Champion", "Season Tester", "Early Bird", "Cheese Hunter"
+    ];
+  }
+  
+  // Determine primary role
+  const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
+  let primaryRole = null;
+  for (const role of priorityOrder) {
+    if (userRoles.includes(role)) {
+      primaryRole = role;
+      break;
+    }
+  }
+  
+  const theme = roleThemes[primaryRole] || 'default';
+  console.log(`🎨 Tetris theme: ${theme} for role: ${primaryRole}`);
+  
+  // Apply theme to canvas
+  const canvas = document.getElementById('tetris-canvas');
+  if (canvas) {
+    canvas.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    if (theme !== 'default') {
+      canvas.classList.add(theme);
+    }
+  }
+  
+  // Apply theme to controls section
+  const controlsSection = document.getElementById('tetris-controls-section');
+  const controlsTitle = document.getElementById('tetris-controls-title');
+  if (controlsSection && controlsTitle) {
+    controlsSection.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    controlsTitle.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    if (theme !== 'default') {
+      controlsSection.classList.add(theme);
+      controlsTitle.classList.add(theme);
+    }
+    console.log(`🎨 Tetris controls theme applied: ${theme}`);
+  }
 }
 
 // 🚫 Full page scroll prevention
@@ -1657,3 +1717,9 @@ window.forceTetrisTouch = function() {
     console.log('🚨 Emergency touch controls applied');
   }
 };
+
+// 🎨 Apply role theme on page load
+setTimeout(() => {
+  applyRoleTheme();
+  console.log('🎨 Tetris role theme applied on load');
+}, 500);

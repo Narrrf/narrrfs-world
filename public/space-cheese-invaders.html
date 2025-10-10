@@ -167,6 +167,49 @@
     #game-panel-btn:active {
       transform: scale(0.95);
     }
+    
+    /* 🎨 Role-based canvas border themes */
+    #space-invaders-canvas.golden {
+      border-color: #FFD700 !important; /* Gold border for VIP Holder */
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4) !important;
+    }
+    
+    #space-invaders-canvas.silver {
+      border-color: #C0C0C0 !important; /* Silver border for Holder */
+      box-shadow: 0 0 20px rgba(192, 192, 192, 0.6), 0 0 40px rgba(192, 192, 192, 0.4) !important;
+    }
+    
+    #space-invaders-canvas.cheese {
+      border-color: #FFA500 !important; /* Orange border for Cheese Hunter */
+      box-shadow: 0 0 20px rgba(255, 165, 0, 0.6), 0 0 40px rgba(255, 165, 0, 0.4) !important;
+    }
+    
+    #space-invaders-canvas.rainbow {
+      border-color: #FF00FF !important; /* Purple border for Season Tester */
+      box-shadow: 0 0 20px rgba(255, 0, 255, 0.6), 0 0 40px rgba(255, 0, 255, 0.4) !important;
+      animation: rainbow-border 3s linear infinite;
+    }
+    
+    #space-invaders-canvas.blue {
+      border-color: #00BFFF !important; /* Blue border for Early Bird */
+      box-shadow: 0 0 20px rgba(0, 191, 255, 0.6), 0 0 40px rgba(0, 191, 255, 0.4) !important;
+    }
+    
+    #space-invaders-canvas.red {
+      border-color: #FF0000 !important; /* Red border for Champion */
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 0 40px rgba(255, 0, 0, 0.4) !important;
+    }
+    
+    /* Rainbow border animation for Season Tester */
+    @keyframes rainbow-border {
+      0% { border-color: #FF0000; box-shadow: 0 0 20px rgba(255, 0, 0, 0.6); }
+      16% { border-color: #FF7F00; box-shadow: 0 0 20px rgba(255, 127, 0, 0.6); }
+      33% { border-color: #FFFF00; box-shadow: 0 0 20px rgba(255, 255, 0, 0.6); }
+      50% { border-color: #00FF00; box-shadow: 0 0 20px rgba(0, 255, 0, 0.6); }
+      66% { border-color: #0000FF; box-shadow: 0 0 20px rgba(0, 0, 255, 0.6); }
+      83% { border-color: #4B0082; box-shadow: 0 0 20px rgba(75, 0, 130, 0.6); }
+      100% { border-color: #9400D3; box-shadow: 0 0 20px rgba(148, 0, 211, 0.6); }
+    }
   </style>
 </head>
 
@@ -236,8 +279,8 @@
     </div>
 
     <!-- 🎮 SPACE INVADERS CONTROLS & HELP -->
-    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border: 2px solid #fbbf24; border-radius: 15px; padding: 25px; margin: 20px auto; max-width: 900px; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-      <h3 style="color: #fbbf24; font-size: 1.4em; font-weight: bold; margin-bottom: 20px; text-align: center; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">🎮 SPACE INVADERS CONTROLS & HELP</h3>
+    <div id="space-invaders-controls-section" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border: 2px solid #fbbf24; border-radius: 15px; padding: 25px; margin: 20px auto; max-width: 900px; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+      <h3 id="space-invaders-controls-title" style="color: #fbbf24; font-size: 1.4em; font-weight: bold; margin-bottom: 20px; text-align: center; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">🎮 SPACE INVADERS CONTROLS & HELP</h3>
       
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; text-align: left;">
         <!-- MOVEMENT & SHOOTING -->
@@ -290,28 +333,28 @@
         <h4 style="color: #fbbf24; font-weight: bold; font-size: 1.1em; margin-bottom: 15px; text-align: center; border-bottom: 2px solid #fbbf24; padding-bottom: 8px;">🏆 ROLE-BASED THEMES & BONUSES</h4>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; font-size: 0.9em;">
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: #fbbf24; border: 2px solid #f59e0b;"></div>
-            <span><strong>Golden Frame:</strong> VIP Holder (2.0x scoring, golden theme)</span>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #FFD700; border: 2px solid #DAA520; box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);"></div>
+            <span><strong style="color: #FFD700;">Golden Frame:</strong> VIP Holder (2.0x scoring, golden theme)</span>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: #e5e7eb; border: 2px solid #9ca3af;"></div>
-            <span><strong>Silver Frame:</strong> NFT Holder (1.5x scoring, silver theme)</span>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #C0C0C0; border: 2px solid #A8A8A8; box-shadow: 0 0 10px rgba(192, 192, 192, 0.6);"></div>
+            <span><strong style="color: #C0C0C0;">Silver Frame:</strong> NFT Holder (1.5x scoring, silver theme)</span>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: #ef4444; border: 2px solid #dc2626;"></div>
-            <span><strong>Red Frame:</strong> Champion (1.4x scoring, enhanced effects)</span>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #FF0000; border: 2px solid #CC0000; box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);"></div>
+            <span><strong style="color: #FF0000;">Red Frame:</strong> Champion (1.4x scoring, enhanced effects)</span>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: #f97316; border: 2px solid #ea580c;"></div>
-            <span><strong>Orange Frame:</strong> Cheese Hunter (1.1x scoring, orange theme)</span>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #FFA500; border: 2px solid #FF8C00; box-shadow: 0 0 10px rgba(255, 165, 0, 0.6);"></div>
+            <span><strong style="color: #FFA500;">Orange Frame:</strong> Cheese Hunter (1.1x scoring, orange theme)</span>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: #3b82f6; border: 2px solid #2563eb;"></div>
-            <span><strong>Blue Frame:</strong> Early Bird (1.2x scoring, blue theme)</span>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #00BFFF; border: 2px solid #0099CC; box-shadow: 0 0 10px rgba(0, 191, 255, 0.6);"></div>
+            <span><strong style="color: #00BFFF;">Blue Frame:</strong> Early Bird (1.2x scoring, blue theme)</span>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; background: #8b5cf6; border: 2px solid #7c3aed;"></div>
-            <span><strong>Purple Frame:</strong> Season Tester (1.3x scoring, animated glow)</span>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #8A2BE2; border: 2px solid #7B1FA2; box-shadow: 0 0 10px rgba(138, 43, 226, 0.6);"></div>
+            <span><strong style="color: #8A2BE2;">Rainbow Frame:</strong> Season Tester (1.3x scoring, animated rainbow)</span>
           </div>
         </div>
         <p style="text-align: center; font-weight: bold; color: #fbbf24; margin-top: 15px; font-size: 0.9em;">Your Discord roles determine your theme and bonuses!</p>
@@ -446,7 +489,7 @@
   <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
     <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
     <p id="space-invaders-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-    <button onclick="restartGame()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+     <button onclick="restartGame()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
   </div>
 </div>
 
@@ -454,7 +497,7 @@
   <div class="bg-green-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-green-400 max-w-xs w-full animate-fade-in">
     <h2 class="text-3xl font-extrabold mb-3 text-green-900 drop-shadow">🏆 VICTORY!</h2>
     <p id="space-invaders-win-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-    <button onclick="restartGame()" class="bg-green-400 hover:bg-green-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+     <button onclick="restartGame()" class="bg-green-400 hover:bg-green-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
   </div>
 </div>
 
@@ -544,7 +587,7 @@
 </footer>
 
 <!-- 🧀 Load Space Cheese Invaders Script -->
-    <script src="scripts/space-cheese-invaders.js?v=3.9.49&restartfix=1736391000"></script>
+    <script src="scripts/space-cheese-invaders.js?v=3.9.52&role_controls_fix=1736397000"></script>
 
 <!-- 🧪 Load Boss Test Helper Script -->
 <script src="scripts/boss-test-helper.js"></script>

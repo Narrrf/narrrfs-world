@@ -38,6 +38,66 @@
 // 🏆 Achievement types: Length milestones, speed challenges, perfect runs
 // 🎯 Balanced difficulty curve for engaging progression!
 
+// 🏆 ROLE-BASED GAMEPLAY SYSTEM - Season 4 Feature
+let snakeUserRoles = [];
+let snakeRoleThemes = {
+  'VIP Holder': 'golden',
+  '🎴 VIP Holder': 'golden',
+  'Holder': 'silver',
+  '🏆 Holder': 'silver', 
+  'Cheese Hunter': 'cheese',
+  '🧀 Cheese Hunter': 'cheese',
+  'Season Tester': 'rainbow',
+  'Early Bird': 'blue',
+  'Champion': 'red'
+};
+
+// 🎨 Role-based theme application for Snake
+function applySnakeRoleTheme() {
+  // Get user roles from localStorage or default test roles
+  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (isLocalDevelopment) {
+    snakeUserRoles = [
+      "VIP Holder", "Holder", "Champion", "Season Tester", "Early Bird", "Cheese Hunter"
+    ];
+  }
+  
+  // Determine primary role
+  const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
+  let primaryRole = null;
+  for (const role of priorityOrder) {
+    if (snakeUserRoles.includes(role)) {
+      primaryRole = role;
+      break;
+    }
+  }
+  
+  const theme = snakeRoleThemes[primaryRole] || 'default';
+  console.log(`🎨 Snake theme: ${theme} for role: ${primaryRole}`);
+  
+  // Apply theme to canvas
+  const canvas = document.getElementById('snake-canvas');
+  if (canvas) {
+    canvas.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    if (theme !== 'default') {
+      canvas.classList.add(theme);
+    }
+  }
+  
+  // Apply theme to controls section
+  const controlsSection = document.getElementById('snake-controls-section');
+  const controlsTitle = document.getElementById('snake-controls-title');
+  if (controlsSection && controlsTitle) {
+    controlsSection.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    controlsTitle.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    if (theme !== 'default') {
+      controlsSection.classList.add(theme);
+      controlsTitle.classList.add(theme);
+    }
+    console.log(`🎨 Snake controls theme applied: ${theme}`);
+  }
+}
+
 // 🚫 Full page scroll prevention
 window.addEventListener("keydown", function (e) {
   const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "a", "s", "d", "w"];
@@ -1051,6 +1111,12 @@ function maybePlaceBomb() {
     console.log("💣 Bomb block placed (placeholder)");
   }
 }
+
+// 🎨 Apply role theme on page load
+setTimeout(() => {
+  applySnakeRoleTheme();
+  console.log('🎨 Snake role theme applied on load');
+}, 500);
 
 // 🏆 WL Role Notification Function
 function showWLNotification(wlData) {

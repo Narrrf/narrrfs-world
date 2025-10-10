@@ -151,6 +151,21 @@ function applyRoleTheme() {
       canvas.classList.add(theme);
     }
   }
+  
+  // 🎨 NEW: Apply theme to controls section
+  const controlsSection = document.getElementById('tetris-controls-section');
+  const controlsTitle = document.getElementById('tetris-controls-title');
+  if (controlsSection && controlsTitle) {
+    // Remove existing theme classes
+    controlsSection.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    controlsTitle.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    // Add new theme class
+    if (theme !== 'default') {
+      controlsSection.classList.add(theme);
+      controlsTitle.classList.add(theme);
+    }
+    console.log(`🎨 Tetris controls section theme applied: ${theme}`);
+  }
 }
 
 // 🏆 Get user's primary role (highest priority role)

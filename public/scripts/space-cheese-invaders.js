@@ -255,6 +255,29 @@ function applySpaceInvadersRoleTheme() {
       canvas.classList.add(theme);
     }
   }
+  
+  // 🎨 NEW: Apply theme to controls section (for standalone Space Invaders page)
+  const controlsSection = document.getElementById('space-invaders-controls-section');
+  const controlsTitle = document.getElementById('space-invaders-controls-title');
+  if (controlsSection && controlsTitle) {
+    // Apply role-based border and title colors dynamically
+    const roleColors = {
+      'golden': '#FFD700',
+      'silver': '#C0C0C0',
+      'cheese': '#FFA500',
+      'rainbow': '#8A2BE2',
+      'blue': '#00BFFF',
+      'red': '#FF4500'
+    };
+    
+    const color = roleColors[theme];
+    if (color) {
+      controlsSection.style.borderColor = color;
+      controlsTitle.style.color = color;
+      controlsTitle.style.borderBottomColor = color;
+      console.log(`🎨 Space Invaders controls section theme applied: ${theme} (${color})`);
+    }
+  }
 }
 
 // 🏆 Get user's primary role (highest priority role)
@@ -4740,11 +4763,58 @@ let reloadButtonInterval = null;
     // 🔥 NEW: Create always-visible heat display
     createAlwaysVisibleHeatDisplay();
     
+    // 🐛 BUG #118 FIX: Add keyboard event listeners for continuous movement
+    document.addEventListener('keydown', (e) => {
+      // Add key to pressed keys set for continuous movement
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'A', 'd', 'D', 'w', 'W'].includes(e.key)) {
+        pressedKeys.add(e.key.toLowerCase());
+      }
+    });
+    
+    document.addEventListener('keyup', (e) => {
+      // Remove key from pressed keys set
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'A', 'd', 'D', 'w', 'W'].includes(e.key)) {
+        pressedKeys.delete(e.key.toLowerCase());
+      }
+    });
+    
+    // 🐛 BUG #117 FIX: Add global mouse tracking for full-screen control
+    document.addEventListener('mousemove', (e) => {
+      // Update global mouse coordinates for full-screen tracking
+      window.mouseX = e.clientX;
+      window.mouseY = e.clientY;
+      
+      // Mark that mouse has moved for the first time
+      if (!hasPlayerMovedMouse) {
+        hasPlayerMovedMouse = true;
+        console.log('🖱️ Player moved mouse for first time - enabling ship movement');
+      }
+    });
+    
     console.log('✅ Space Invaders initialization complete');
   }
 
   // 🚀 EXPOSE FUNCTION TO GLOBAL SCOPE
   window.initSpaceInvaders = initSpaceInvaders;
+
+  // 🎮 Restart game function (called by Play Again button)
+  function restartGame() {
+    console.log('🔄 Restart button clicked - restarting game');
+    
+    // Hide any open modals
+    const gameOverModal = document.getElementById("space-invaders-over-modal");
+    const winModal = document.getElementById("space-invaders-win-modal");
+    
+    if (gameOverModal) {
+      gameOverModal.classList.add("hidden");
+    }
+    if (winModal) {
+      winModal.classList.add("hidden");
+    }
+    
+    // Start new game with countdown
+    startGameWithCountdown();
+  }
 
   function initializeInvaders() {
     invaders = [];
@@ -4941,25 +5011,6 @@ let reloadButtonInterval = null;
         localStorage.setItem('space_invaders_dspoin_enabled', '0'); // OFF by default
         localStorage.setItem('space_invaders_conversion_rate', '10000');
       });
-  }
-
-  // 🎮 Restart game function (called by Play Again button)
-  function restartGame() {
-    console.log('🔄 Restart button clicked - restarting game');
-    
-    // Hide any open modals
-    const gameOverModal = document.getElementById("space-invaders-over-modal");
-    const winModal = document.getElementById("space-invaders-win-modal");
-    
-    if (gameOverModal) {
-      gameOverModal.classList.add("hidden");
-    }
-    if (winModal) {
-      winModal.classList.add("hidden");
-    }
-    
-    // Start new game with countdown
-    startGameWithCountdown();
   }
 
   // 🎮 Start game with countdown (same as Snake)
@@ -9565,15 +9616,12 @@ let reloadButtonInterval = null;
       return; // Ship stays at spawn position until player moves mouse
     }
     
-    // 🚀 NEW: Global mouse tracking - ship follows mouse even outside container!
+    // 🐛 BUG #117 FIX: TRUE FULL-SCREEN MOUSE CONTROL
+    // ALWAYS use global mouse coordinates (works both inside AND outside canvas!)
     let targetX, targetY;
     
-    if (isMouseOverCanvas && typeof mouseTargetX !== 'undefined' && typeof mouseTargetY !== 'undefined') {
-      // Mouse is over canvas - use canvas-relative coordinates
-      targetX = mouseTargetX;
-      targetY = mouseTargetY;
-    } else if (typeof window.mouseX !== 'undefined' && typeof window.mouseY !== 'undefined') {
-      // Mouse is outside canvas - convert global coordinates to canvas-relative
+    if (typeof window.mouseX !== 'undefined' && typeof window.mouseY !== 'undefined') {
+      // Always use global coordinates for true full-screen control
       const canvas = document.getElementById('space-invaders-canvas');
       if (canvas) {
         const rect = canvas.getBoundingClientRect();
@@ -9583,6 +9631,17 @@ let reloadButtonInterval = null;
         // Convert to ship-relative coordinates
         targetX = globalX - playerShip.width / 2;
         targetY = globalY - playerShip.height / 2;
+        
+        // 🐛 DEBUG: Log mouse tracking outside canvas
+        if (!isMouseOverCanvas) {
+          console.log('🖱️ Global mouse tracking - Outside canvas:', {
+            windowMouse: { x: window.mouseX, y: window.mouseY },
+            canvasRect: { left: rect.left, top: rect.top },
+            globalCoords: { x: globalX, y: globalY },
+            targetCoords: { x: targetX, y: targetY },
+            isMouseOverCanvas: isMouseOverCanvas
+          });
+        }
       } else {
         return; // Canvas not available
       }
@@ -9600,18 +9659,13 @@ let reloadButtonInterval = null;
     // 🚀 ENHANCED: Direct movement with smooth easing
     const easing = 0.4; // Responsive but smooth movement
     
-    // 🚀 CRITICAL FIX: Prevent ship from jumping to invalid positions at game start
-    // Only move ship if the target position is reasonable (not at 0,0 or extreme positions)
-    const isReasonableTarget = targetX > 0 && targetY > 0 && 
-                               targetX < canvasWidth && targetY < canvasHeight &&
-                               (Math.abs(targetX - playerShip.x) < canvasWidth && 
-                                Math.abs(targetY - playerShip.y) < canvasHeight);
+    // 🐛 BUG #117 FIX: Remove canvas boundary restriction
+    // Ship position will be constrained by boundary checks below
+    // But ACCEPTS mouse position from ANYWHERE on page!
     
-    if (isReasonableTarget) {
-      // Move ship directly toward target
-      playerShip.x += (targetX - playerShip.x) * easing;
-      playerShip.y += (targetY - playerShip.y) * easing;
-    }
+    // Move ship directly toward target (no position validation!)
+    playerShip.x += (targetX - playerShip.x) * easing;
+    playerShip.y += (targetY - playerShip.y) * easing;
     
     // 🚀 ENHANCED: Apply boundary constraints to ship movement with extended bottom range
     playerShip.x = Math.max(0, Math.min(canvasWidth - playerShip.width, playerShip.x));
@@ -9678,11 +9732,8 @@ let reloadButtonInterval = null;
     }
   }
 
-  // 🐛 BUG #118 FIX: Track key presses for continuous movement
+  // 🎮 Combined keyboard event listener for Space Invaders movement
   document.addEventListener('keydown', (e) => {
-    // Add key to pressed keys set for continuous movement
-    pressedKeys.add(e.key.toLowerCase());
-    
     // Handle pause first
     if (e.key === 'p' || e.key === 'P') {
       if (typeof window.togglePause === 'function') {
@@ -9840,12 +9891,6 @@ let reloadButtonInterval = null;
         }
         break;
     }
-  });
-
-  // 🐛 BUG #118 FIX: Track key releases for continuous movement
-  document.addEventListener('keyup', (e) => {
-    // Remove key from pressed keys set
-    pressedKeys.delete(e.key.toLowerCase());
   });
 
   // 🖱️ NEW: Mouse control variables (GLOBAL SCOPE for proper access)
@@ -10391,13 +10436,16 @@ let reloadButtonInterval = null;
     
     document.body.appendChild(customCursor);
     
+    // 🐛 BUG #117 FIX: Hide default cursor globally for full-screen control
+    document.body.style.cursor = 'none';
+    
     // 🚀 CRITICAL: Set up global mouse listener for cursor tracking
     globalMouseListener = (e) => {
       updateCustomCursorPosition(e);
     };
     document.addEventListener('mousemove', globalMouseListener);
     
-    console.log('🚀 Ship cursor created and visible');
+    console.log('🚀 Ship cursor created and visible globally');
   }
   
   function hideCustomCursor() {
@@ -10406,6 +10454,9 @@ let reloadButtonInterval = null;
       customCursor = null;
       console.log('🚀 Ship cursor hidden');
     }
+    
+    // 🐛 BUG #117 FIX: Restore default cursor globally
+    document.body.style.cursor = '';
   }
   
   function cleanupCustomCursor() {
@@ -10415,6 +10466,9 @@ let reloadButtonInterval = null;
       globalMouseListener = null;
       console.log('🚀 Ship cursor cleanup completed');
     }
+    
+    // 🐛 BUG #117 FIX: Restore default cursor on cleanup
+    document.body.style.cursor = '';
   }
   
   function updateCustomCursorPosition(e) {
