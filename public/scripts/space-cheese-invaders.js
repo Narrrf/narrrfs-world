@@ -401,6 +401,121 @@ window.testSpaceInvadersRoleFeatures = function() {
   });
 };
 
+// 🧪 GLOBAL TEST FUNCTION - Test game reset functionality
+window.testSpaceInvadersGameReset = function() {
+  console.log('🧪 Testing Space Invaders game reset functionality...');
+  console.log('Current game state:');
+  console.log('- gameStarted:', gameStarted);
+  console.log('- gameRunning:', gameRunning);
+  console.log('- gamePhase:', gamePhase);
+  console.log('- waveNumber:', waveNumber);
+  console.log('- spaceInvadersScore:', spaceInvadersScore);
+  console.log('- spaceInvadersCount:', spaceInvadersCount);
+  console.log('- playerShip.health:', playerShip.health);
+  console.log('- playerShip.x:', playerShip.x);
+  console.log('- boss:', boss);
+  console.log('- bossDefeated:', bossDefeated);
+  console.log('- bossPhase:', bossPhase);
+  console.log('- totalKills:', totalKills);
+  console.log('- bossesKilled:', bossesKilled);
+  console.log('- killCombo:', killCombo);
+  console.log('- comboMultiplier:', comboMultiplier);
+  console.log('- currentWeaponType:', currentWeaponType);
+  console.log('- weaponAmmo:', weaponAmmo);
+  console.log('- powerUps length:', window.powerUps ? window.powerUps.length : 0);
+  console.log('- invaders length:', invaders.length);
+  console.log('- bullets length:', bullets.length);
+  console.log('- explosions length:', explosions.length);
+  console.log('- phoenixEggs length:', phoenixEggs.length);
+  console.log('- miniPhoenixes length:', miniPhoenixes.length);
+  console.log('- isPhoenixWave:', isPhoenixWave);
+  
+  console.log('🧪 Game reset test complete!');
+};
+
+// 🧪 GLOBAL TEST FUNCTION - Test DSPOINC calculation
+window.testSpaceInvadersDSPOINC = function() {
+  console.log('🧪 Testing Space Invaders DSPOINC calculation...');
+  console.log('Current values:');
+  console.log('- spaceInvadersScore:', spaceInvadersScore);
+  console.log('- spaceInvadersCount:', spaceInvadersCount);
+  console.log('- Role multiplier:', getSpaceInvadersRoleScoreMultiplier());
+  
+  // Test the DSPOINC calculation
+  const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
+  const baseDSPOINC = spaceInvadersScore * 0.1;
+  const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+  const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
+  
+  console.log('DSPOINC calculation:');
+  console.log('- baseDSPOINC:', baseDSPOINC);
+  console.log('- roleBonusDSPOINC:', roleBonusDSPOINC);
+  console.log('- totalDSPOINC:', totalDSPOINC);
+  
+  // Test with different scenarios
+  console.log('🧪 Testing scenarios:');
+  
+  // Scenario 1: 71 invaders with 0.0002 base score each
+  const scenario1Score = 71 * 0.0002;
+  const scenario1BaseDSPOINC = scenario1Score * 0.1;
+  const scenario1RoleBonus = Math.floor(scenario1BaseDSPOINC * (roleMultiplier - 1));
+  const scenario1Total = Math.round((scenario1BaseDSPOINC + scenario1RoleBonus) * 100) / 100;
+  console.log(`Scenario 1 (71 × 0.0002): score=${scenario1Score}, baseDSPOINC=${scenario1BaseDSPOINC}, total=${scenario1Total}`);
+  
+  // Scenario 2: 71 invaders with 1 base score each
+  const scenario2Score = 71 * 1;
+  const scenario2BaseDSPOINC = scenario2Score * 0.1;
+  const scenario2RoleBonus = Math.floor(scenario2BaseDSPOINC * (roleMultiplier - 1));
+  const scenario2Total = Math.round((scenario2BaseDSPOINC + scenario2RoleBonus) * 100) / 100;
+  console.log(`Scenario 2 (71 × 1): score=${scenario2Score}, baseDSPOINC=${scenario2BaseDSPOINC}, total=${scenario2Total}`);
+  
+  console.log('🧪 DSPOINC calculation test complete!');
+};
+
+// 🧪 GLOBAL TEST FUNCTION - Test score display synchronization
+window.testSpaceInvadersScoreSync = function() {
+  console.log('🧪 Testing Space Invaders score display synchronization...');
+  console.log('Current values:');
+  console.log('- spaceInvadersScore:', spaceInvadersScore);
+  console.log('- spaceInvadersCount:', spaceInvadersCount);
+  console.log('- Role multiplier:', getSpaceInvadersRoleScoreMultiplier());
+  
+  // Test the score display calculation
+  const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
+  const baseDSPOINC = spaceInvadersScore * 0.1; // Use spaceInvadersScore (same as saveScore)
+  const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+  const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
+  
+  console.log('Score display calculation:');
+  console.log('- baseDSPOINC:', baseDSPOINC);
+  console.log('- roleBonusDSPOINC:', roleBonusDSPOINC);
+  console.log('- totalDSPOINC:', totalDSPOINC);
+  
+  // Test the actual display text
+  const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
+  let displayText;
+  if (roleMultiplier > 1.0) {
+    displayText = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} points (${totalDSPOINC} DSPOINC, ${roleMultiplier}x Bonus!) ${mouseIndicator}`;
+  } else {
+    displayText = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} points (${totalDSPOINC} DSPOINC) ${mouseIndicator}`;
+  }
+  
+  console.log('Display text that should show:');
+  console.log(displayText);
+  
+  // Check if the actual display element shows the same
+  const scoreDisplay = document.getElementById("space-invaders-score");
+  if (scoreDisplay) {
+    console.log('Actual display element text:');
+    console.log(scoreDisplay.textContent);
+    console.log('Match:', scoreDisplay.textContent === displayText ? '✅ YES' : '❌ NO');
+  } else {
+    console.log('❌ Score display element not found');
+  }
+  
+  console.log('🧪 Score display synchronization test complete!');
+};
+
 // 🏆 QUICK TEST - Check if golden theme is visible
 window.checkGoldenTheme = function() {
   const canvas = document.getElementById('space-invaders-canvas');
@@ -816,6 +931,9 @@ class PhoenixBird {
     // Update score display with role bonus
     updateSpaceInvadersScoreDisplay();
     
+    // 🚀 CRITICAL FIX: Force immediate score display update for smooth feedback
+    drawScore();
+    
     // Track Phoenix destruction for achievements
     phoenixesDestroyed++;
     totalKills++; // 🏆 SEASON 3 PHASE 2: Count Phoenix kills for achievements
@@ -929,6 +1047,9 @@ class PhoenixEgg {
     
     // Update score display with role bonus
     updateSpaceInvadersScoreDisplay();
+    
+    // 🚀 CRITICAL FIX: Force immediate score display update for smooth feedback
+    drawScore();
     
     // Add destruction effect
     createExplosion(this.x, this.y, 15, 10);
@@ -1986,6 +2107,7 @@ let noHitTimer = 0; // Track time without taking damage
 let bossesKilled = 0; // Track bosses defeated
 let currentBossLevel = 0; // Track current boss level
 let gameStarted = false; // Track if game has been started
+let gameRunning = false; // Track if game is currently running
 
 // 🔥 CRITICAL FIX: Unified firing rate system for consistent heat buildup
 let unifiedFiringRate = 60; // 60ms between ANY shots (16.7 shots/sec) - faster for better heat buildup!
@@ -4834,6 +4956,17 @@ let reloadButtonInterval = null;
   function restartGame() {
     console.log('🔄 Restart button clicked - restarting game');
     
+    // 🚨 CRITICAL FIX: Clear all entities immediately when restart is clicked
+    invaders = []; // Clear regular invaders
+    bullets = [];
+    explosions = [];
+    tetrisDangerItems = [];
+    // 🔥 CRITICAL FIX: Clear Phoenix entities
+    phoenixEggs = [];
+    miniPhoenixes = [];
+    isPhoenixWave = false;
+    console.log('🧹 Restart: All entities cleared before new game starts (including Phoenix entities)');
+    
     // Hide any open modals
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const winModal = document.getElementById("space-invaders-win-modal");
@@ -5074,6 +5207,7 @@ let reloadButtonInterval = null;
   async function startGame() {
     resetGame();
     gameStarted = true; // Set game as started
+    gameRunning = true; // Set game as running
     
     // 🛠️ Mock fallback if testing locally (same as Tetris)
     let discordId = localStorage.getItem("discord_id");
@@ -5116,6 +5250,7 @@ let reloadButtonInterval = null;
     
     // Reset game started flag
     gameStarted = false;
+    gameRunning = false; // Reset game running flag
     
     // Unlock scroll when game is reset
     unlockSpaceInvadersScroll();
@@ -5134,6 +5269,10 @@ let reloadButtonInterval = null;
     invaderBullets = [];
     tetrisDangerItems = [];
     explosions = [];
+    // 🔥 CRITICAL FIX: Clear Phoenix entities in resetGame
+    phoenixEggs = [];
+    miniPhoenixes = [];
+    isPhoenixWave = false;
     invaderDirection = 1;
     invaderDropTimer = 0;
     lastSpawnTime = Date.now();
@@ -5157,6 +5296,43 @@ let reloadButtonInterval = null;
     lastMovementPosition = { x: 0, y: 0 }; // Reset movement position tracking
     hasPlayerMovedMouse = false; // 🚀 NEW: Reset mouse movement flag for new game
     console.log('🔥 Heat system reset - weapon ready to fire!');
+    
+    // 🚀 CRITICAL FIX: Reset boss system variables
+    boss = null;
+    bossHealth = 0;
+    bossMaxHealth = 0;
+    bossPhase = 'idle';
+    bossAttackTimer = 0;
+    bossAttackPattern = 0;
+    bossBullets = [];
+    bossExplosions = [];
+    bossDefeated = false;
+    bossReward = 0;
+    bossDirection = 1;
+    screenShake = 0;
+    bossParticles = [];
+    bossGlowEffect = 0;
+    bossEntranceEffect = 0;
+    bossDefeatEffect = 0;
+    console.log('👑 Boss system reset - ready for new game!');
+    
+    // 🏆 CRITICAL FIX: Reset achievement tracking variables
+    totalKills = 0;
+    bossesKilled = 0;
+    currentBossLevel = 0;
+    perfectWaves = 0;
+    noHitTimer = 0;
+    gameStartTime = Date.now();
+    console.log('🏆 Achievement tracking reset - ready for new game!');
+    
+    // 🚀 CRITICAL FIX: Reset combo and visual effect variables
+    killCombo = 0;
+    comboMultiplier = 1;
+    comboTimer = 0;
+    scorePopups = [];
+    shootingStars = [];
+    achievementPopups = [];
+    console.log('🚀 Combo and visual effects reset - ready for new game!');
     
     // 🎯 NOTE: hasDoubleShotUpgrade is NOT reset - permanent upgrade after defeating first boss
     
@@ -5263,6 +5439,11 @@ let reloadButtonInterval = null;
     
     // 🔥 NEW: Update weapon heat system
     updateHeat();
+    
+    // 🚨 CRITICAL FIX: Stop game updates when game is over or won
+    if (gamePhase === 'gameOver' || gamePhase === 'gameWin') {
+      return; // Stop all game updates when game ends
+    }
     
     if (gamePhase === 'formation') {
       // Formation phase - much shorter and you can shoot!
@@ -6642,6 +6823,9 @@ let reloadButtonInterval = null;
               // Update score display with role bonus
               updateSpaceInvadersScoreDisplay();
               
+              // 🚀 CRITICAL FIX: Force immediate score display update for smooth feedback
+              drawScore();
+              
               // 🏆 SEASON 3 PHASE 2: Achievement tracking
               totalKills++;
               
@@ -6678,6 +6862,9 @@ let reloadButtonInterval = null;
             
             // Update score display with role bonus
             updateSpaceInvadersScoreDisplay();
+            
+            // 🚀 CRITICAL FIX: Force immediate score display update for smooth feedback
+            drawScore();
             
             // 🏆 SEASON 3 PHASE 2: Achievement tracking
             totalKills++;
@@ -7066,6 +7253,9 @@ let reloadButtonInterval = null;
           // Update score display with role bonus
           updateSpaceInvadersScoreDisplay();
           
+          // 🚀 CRITICAL FIX: Force immediate score display update for smooth feedback
+          drawScore();
+          
           // Create explosion effect at collision point
           explosions.push({
             x: invader.x + invader.width / 2,
@@ -7093,6 +7283,9 @@ let reloadButtonInterval = null;
         
         // Update score display with role bonus
         updateSpaceInvadersScoreDisplay();
+        
+        // 🚀 CRITICAL FIX: Force immediate score display update for smooth feedback
+        drawScore();
         
         // Create explosion effect at collision point
         explosions.push({
@@ -7131,6 +7324,17 @@ let reloadButtonInterval = null;
   function draw() {
     if (!ctx || typeof canvasWidth === 'undefined' || typeof canvasHeight === 'undefined') {
       return; // Don't draw if context or canvas dimensions are not available
+    }
+    
+    // 🚨 CRITICAL FIX: Don't draw game entities when game is over or won
+    if (gamePhase === 'gameOver' || gamePhase === 'gameWin') {
+      // Only draw background and UI elements, not game entities
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      drawStars();
+      drawScore();
+      drawHealth();
+      drawPhaseInfo();
+      return; // Stop drawing game entities
     }
     
     // 🚀 NEW: Apply screen shake effect
@@ -8776,16 +8980,21 @@ let reloadButtonInterval = null;
   function drawScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // 🚀 CRITICAL FIX: Space Invaders scoring: Use SAME calculation as saveScore for consistency
-      // FIXED: Correct DSPOINC conversion - 1 invader = 4 DSPOINC (49 invaders = ~200 DSPOINC)
+      // 🚀 CRITICAL FIX: Use same DSPOINC calculation as saveScore for consistency
       const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-      const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base
+      const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (same as saveScore)
       const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
       const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
       
       // Add mouse control indicator
       const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
-      scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} invaders destroyed (${totalDSPOINC} DSPOINC) ${mouseIndicator}`;
+      
+      // Show role bonus if applicable
+      if (roleMultiplier > 1.0) {
+        scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} points (${totalDSPOINC} DSPOINC, ${roleMultiplier}x Bonus!) ${mouseIndicator}`;
+      } else {
+        scoreDisplay.textContent = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} points (${totalDSPOINC} DSPOINC) ${mouseIndicator}`;
+      }
     } else {
       console.warn('⚠️ Score display element not found');
     }
@@ -8993,6 +9202,17 @@ let reloadButtonInterval = null;
     // 🚨 CRITICAL: Stop all game phases
     gamePhase = 'gameOver';
     gameRunning = false;
+    
+    // 🚨 CRITICAL FIX: Clear all game entities immediately
+    invaders = []; // Clear regular invaders
+    bullets = [];
+    explosions = [];
+    tetrisDangerItems = [];
+    // 🔥 CRITICAL FIX: Clear Phoenix entities
+    phoenixEggs = [];
+    miniPhoenixes = [];
+    isPhoenixWave = false;
+    console.log('🧹 Game over: All entities cleared (invaders, Phoenix entities, bullets, explosions)');
     
     // 🚨 CRITICAL: Stop all timers and intervals
     if (typeof gameLoopTimer !== 'undefined') {
@@ -9271,6 +9491,9 @@ let reloadButtonInterval = null;
               // Update score display with role bonus
               updateSpaceInvadersScoreDisplay();
               
+              // 🚀 CRITICAL FIX: Force immediate score display update for smooth feedback
+              drawScore();
+              
               // Create explosion for each killed invader
               explosions.push({
                 x: invader.x + invader.width / 2,
@@ -9319,6 +9542,9 @@ let reloadButtonInterval = null;
                 
                 // Update score display with role bonus
                 updateSpaceInvadersScoreDisplay();
+                
+                // 🚀 CRITICAL FIX: Force immediate score display update for smooth feedback
+                drawScore();
                 
                 // Create explosion for each killed invader
                 explosions.push({
@@ -11643,6 +11869,17 @@ window.emergencyCollisionCheck = function() {
     gamePhase = 'gameWin';
     gameRunning = false;
     
+    // 🚨 CRITICAL FIX: Clear all game entities immediately
+    invaders = []; // Clear regular invaders
+    bullets = [];
+    explosions = [];
+    tetrisDangerItems = [];
+    // 🔥 CRITICAL FIX: Clear Phoenix entities
+    phoenixEggs = [];
+    miniPhoenixes = [];
+    isPhoenixWave = false;
+    console.log('🧹 Game win: All entities cleared (invaders, Phoenix entities, bullets, explosions)');
+    
     const winModal = document.getElementById("space-invaders-win-modal");
     const winScoreText = document.getElementById("space-invaders-win-score-text");
     
@@ -13692,3 +13929,81 @@ window.emergencyCollisionCheck = function() {
       invaders.push(newInvader);
     }
   }
+
+// 🧪 COMPREHENSIVE SCORE SYNCHRONIZATION TEST
+window.testAllScoreDisplays = function() {
+  console.log('🧪 Testing ALL Space Invaders score displays for synchronization...');
+  console.log('=== CURRENT GAME STATE ===');
+  console.log('- spaceInvadersScore (traditional):', spaceInvadersScore);
+  console.log('- spaceInvadersCount (actual invaders):', spaceInvadersCount);
+  console.log('- Role multiplier:', getSpaceInvadersRoleScoreMultiplier());
+  
+  // Calculate expected DSPOINC using spaceInvadersScore (same as saveScore)
+  const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
+  const baseDSPOINC = spaceInvadersScore * 0.1; // Use spaceInvadersScore (same as saveScore)
+  const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
+  const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
+  
+  console.log('=== EXPECTED VALUES ===');
+  console.log('- Base DSPOINC:', baseDSPOINC);
+  console.log('- Role Bonus DSPOINC:', roleBonusDSPOINC);
+  console.log('- Total DSPOINC:', totalDSPOINC);
+  
+  // Test all display elements
+  console.log('=== DISPLAY ELEMENT TESTS ===');
+  
+  // 1. Top score display
+  const topScoreDisplay = document.getElementById('space-invaders-top-score');
+  if (topScoreDisplay) {
+    const expectedTop = `💰 Score: $${totalDSPOINC} DSPOINC`;
+    console.log('Top Score Display:');
+    console.log('- Expected:', expectedTop);
+    console.log('- Actual:', topScoreDisplay.textContent);
+    console.log('- Match:', topScoreDisplay.textContent === expectedTop ? '✅ YES' : '❌ NO');
+  } else {
+    console.log('❌ Top score display element not found');
+  }
+  
+  // 2. Role multiplier display
+  const roleMultiplierDisplay = document.getElementById('space-invaders-role-multiplier');
+  if (roleMultiplierDisplay) {
+    const expectedRole = roleMultiplier > 1.0 ? `Role Bonus: ${roleMultiplier}x` : 'Role Bonus: 1.0x';
+    console.log('Role Multiplier Display:');
+    console.log('- Expected:', expectedRole);
+    console.log('- Actual:', roleMultiplierDisplay.textContent);
+    console.log('- Match:', roleMultiplierDisplay.textContent === expectedRole ? '✅ YES' : '❌ NO');
+  } else {
+    console.log('❌ Role multiplier display element not found');
+  }
+  
+  // 3. Bottom score display
+  const scoreDisplay = document.getElementById('space-invaders-score');
+  if (scoreDisplay) {
+    const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
+    let expectedBottom;
+    if (roleMultiplier > 1.0) {
+      expectedBottom = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} points (${totalDSPOINC} DSPOINC, ${roleMultiplier}x Bonus!) ${mouseIndicator}`;
+    } else {
+      expectedBottom = `💰 Space Invaders Score: ${spaceInvadersScore.toLocaleString()} points (${totalDSPOINC} DSPOINC) ${mouseIndicator}`;
+    }
+    console.log('Bottom Score Display:');
+    console.log('- Expected:', expectedBottom);
+    console.log('- Actual:', scoreDisplay.textContent);
+    console.log('- Match:', scoreDisplay.textContent === expectedBottom ? '✅ YES' : '❌ NO');
+  } else {
+    console.log('❌ Bottom score display element not found');
+  }
+  
+  console.log('=== SYNCHRONIZATION SUMMARY ===');
+  const allMatches = [
+    topScoreDisplay && topScoreDisplay.textContent.includes(`${totalDSPOINC}`),
+    roleMultiplierDisplay && (roleMultiplierDisplay.textContent.includes(`${roleMultiplier}x`) || (roleMultiplier === 1.0 && roleMultiplierDisplay.textContent.includes('1.0x'))),
+    scoreDisplay && scoreDisplay.textContent.includes(`${spaceInvadersScore.toLocaleString()}`) && scoreDisplay.textContent.includes(`${totalDSPOINC}`)
+  ];
+  
+  const matchCount = allMatches.filter(Boolean).length;
+  console.log(`Synchronization Status: ${matchCount}/3 displays synchronized`);
+  console.log(matchCount === 3 ? '🎉 ALL DISPLAYS SYNCHRONIZED!' : '⚠️ Some displays need fixing');
+  
+  console.log('🧪 Comprehensive score synchronization test complete!');
+};
