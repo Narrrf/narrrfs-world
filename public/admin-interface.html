@@ -4767,6 +4767,9 @@
           <table class="w-full text-sm text-left text-gray-300">
             <thead class="text-xs text-gray-400 uppercase bg-gray-800">
               <tr>
+                <th class="px-4 py-3">
+                  <input type="checkbox" id="selectAllBugs" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                </th>
                 <th class="px-4 py-3">ID</th>
                 <th class="px-4 py-3">Title</th>
                 <th class="px-4 py-3">Category</th>
@@ -25226,7 +25229,13 @@ Continue with Season 3 Reset?`)) {
       async loadData() {
         try {
           console.log('🔄 Loading bug data...');
-          const response = await fetch(`${API_BASE_URL}/api/admin/get-bug-data.php`);
+          // 🔄 CRITICAL FIX: Add cache-busting to prevent stale data
+          const response = await fetch(`${API_BASE_URL}/api/admin/get-bug-data.php?t=${Date.now()}`, {
+            cache: 'no-cache',
+            headers: {
+              'Cache-Control': 'no-cache'
+            }
+          });
           const data = await response.json();
           
           if (data.success) {
@@ -25374,6 +25383,14 @@ Continue with Season 3 Reset?`)) {
           return;
         }
 
+        // 🔍 DEBUG: Log first few bugs to verify sorting
+        console.log('🔍 First 5 bugs in renderBugList:', filteredBugs.slice(0, 5).map(bug => ({
+          id: bug.bug_id,
+          title: bug.title.substring(0, 30) + '...',
+          status_id: bug.status_id,
+          updated_at: bug.updated_at
+        })));
+
         tableBody.innerHTML = filteredBugs.map(bug => this.renderBugRow(bug)).join('');
       }
 
@@ -25384,6 +25401,9 @@ Continue with Season 3 Reset?`)) {
 
         return `
           <tr data-bug-id="${bug.bug_id}" class="hover:bg-gray-700">
+            <td class="px-4 py-3">
+              <input type="checkbox" class="bug-checkbox w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500" value="${bug.bug_id}">
+            </td>
             <td class="px-4 py-3">#${bug.bug_id}</td>
             <td class="px-4 py-3">
               <div class="font-medium">${bug.title}</div>
@@ -25606,6 +25626,23 @@ Continue with Season 3 Reset?`)) {
             this.loadData();
           });
         }
+
+        // ✅ Bulk action event listeners
+        const selectAllCheckbox = document.getElementById('selectAllBugs');
+        const bulkStatusBtn = document.getElementById('bulkStatusBtn');
+
+        if (selectAllCheckbox) {
+          selectAllCheckbox.addEventListener('change', (e) => {
+            const checkboxes = document.querySelectorAll('.bug-checkbox');
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
+          });
+        }
+
+        if (bulkStatusBtn) {
+          bulkStatusBtn.addEventListener('click', () => {
+            this.showBulkStatusModal();
+          });
+        }
       }
 
       async editBug(bugId) {
@@ -25759,10 +25796,15 @@ Continue with Season 3 Reset?`)) {
           
           if (data.success) {
             addLog(`✅ Bug #${bugId} updated successfully`);
-            // Reload data and refresh view
+            // 🔄 CRITICAL FIX: Reload data and refresh both details and list
+            console.log('🔄 Reloading bug data after save...');
             await this.loadData();
+            console.log(`✅ Reloaded ${this.bugs.length} bugs after save`);
             await this.loadBugDetails(bugId);
             this.renderBugInfo(this.bugs.find(b => b.bug_id === bugId));
+            // Also refresh the bug list in case user goes back
+            this.renderBugList();
+            addLog('🔄 Bug list refreshed after save');
           } else {
             console.error('❌ Error updating bug:', data.error);
             addLog(`❌ Error updating bug: ${data.error}`);
@@ -25798,8 +25840,11 @@ Continue with Season 3 Reset?`)) {
           if (data.success) {
             addLog(`✅ Comment added to bug #${bugId}`);
             document.getElementById('newComment').value = '';
-            // Reload bug details to show new comment
+            // 🔄 CRITICAL FIX: Reload data and refresh both details and list
+            await this.loadData();
             await this.loadBugDetails(bugId);
+            this.renderBugList();
+            addLog('🔄 Bug list refreshed after comment');
           } else {
             console.error('❌ Error adding comment:', data.error);
             addLog(`❌ Error adding comment: ${data.error}`);
@@ -25848,9 +25893,122 @@ Continue with Season 3 Reset?`)) {
         this.loadBugDetails(bugId);
       }
 
-      backToBugList() {
+      async backToBugList() {
         document.getElementById('bugDetails').classList.add('hidden');
         document.getElementById('bugList').classList.remove('hidden');
+        
+        // 🔄 CRITICAL FIX: Refresh bug list to show updated data
+        console.log('🔄 Loading fresh bug data before rendering list...');
+        await this.loadData();
+        console.log(`✅ Loaded ${this.bugs.length} bugs, rendering list...`);
+        this.renderBugList();
+        addLog('🔄 Bug list refreshed after returning from details');
+      }
+
+      // 📦 Bulk Status Change Modal
+      showBulkStatusModal() {
+        const selectedBugs = this.getSelectedBugs();
+        
+        if (selectedBugs.length === 0) {
+          alert('Please select at least one bug to change status');
+          return;
+        }
+
+        // Create modal HTML
+        const modalHTML = `
+          <div id="bulkStatusModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target === this) this.remove()">
+            <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 class="text-xl font-semibold mb-4">🔄 Bulk Status Change</h3>
+              <p class="text-gray-300 mb-4">Change status for ${selectedBugs.length} selected bug(s)</p>
+              
+              <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">New Status:</label>
+                <select id="bulkStatusSelect" class="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600">
+                  ${this.statuses.map(status => `
+                    <option value="${status.status_id}">${status.icon} ${status.status_name}</option>
+                  `).join('')}
+                </select>
+              </div>
+
+              <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Reason (Optional):</label>
+                <textarea id="bulkStatusReason" rows="3" placeholder="Reason for status change..." 
+                          class="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600"></textarea>
+              </div>
+
+              <div class="flex gap-2 justify-end">
+                <button onclick="document.getElementById('bulkStatusModal').remove()" 
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded">
+                  Cancel
+                </button>
+                <button onclick="bugTracker.applyBulkStatusChange()" 
+                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded">
+                  Apply Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Append modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+      }
+
+      getSelectedBugs() {
+        const checkboxes = document.querySelectorAll('.bug-checkbox:checked');
+        return Array.from(checkboxes).map(cb => parseInt(cb.value));
+      }
+
+      async applyBulkStatusChange() {
+        const selectedBugs = this.getSelectedBugs();
+        const newStatusId = document.getElementById('bulkStatusSelect').value;
+        const reason = document.getElementById('bulkStatusReason').value;
+
+        if (selectedBugs.length === 0) {
+          alert('No bugs selected');
+          return;
+        }
+
+        try {
+          addLog(`🔄 Applying bulk status change to ${selectedBugs.length} bugs...`);
+
+          const response = await fetch(`${API_BASE_URL}/api/admin/bulk-update-bug-status.php`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              bug_ids: selectedBugs,
+              status_id: newStatusId,
+              reason: reason
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            addLog(`✅ Successfully updated ${data.updated_count} bug(s)`);
+            
+            // Close modal
+            document.getElementById('bulkStatusModal').remove();
+            
+            // Uncheck all checkboxes
+            document.getElementById('selectAllBugs').checked = false;
+            
+            // Reload and refresh list
+            await this.loadData();
+            this.renderBugList();
+            this.renderDashboard();
+          } else {
+            console.error('❌ Error in bulk update:', data.error);
+            addLog(`❌ Error: ${data.error}`);
+            alert(`Error: ${data.error}`);
+          }
+        } catch (error) {
+          console.error('❌ Error applying bulk status change:', error);
+          addLog(`❌ Error: ${error.message}`);
+          alert(`Error: ${error.message}`);
+        }
       }
     }
 

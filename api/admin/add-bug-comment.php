@@ -40,6 +40,12 @@ try {
     if ($result) {
         $commentId = $db->lastInsertRowID();
         
+        // 🔄 CRITICAL FIX: Update bug's updated_at timestamp when comment is added
+        $updateQuery = "UPDATE tbl_bug_reports SET updated_at = CURRENT_TIMESTAMP WHERE bug_id = ?";
+        $updateStmt = $db->prepare($updateQuery);
+        $updateStmt->bindValue(1, $input['bug_id']);
+        $updateStmt->execute();
+        
         echo json_encode([
             'success' => true,
             'comment_id' => $commentId,
