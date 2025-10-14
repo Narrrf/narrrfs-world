@@ -353,7 +353,7 @@ function updateSpaceInvadersScoreDisplay() {
   if (topScoreDisplay && roleMultiplierDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
     const primaryRoleID = getSpaceInvadersPrimaryRoleID();
-    const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (same as drawScore and onGameOver)
+    const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4)
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
     const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
     
@@ -379,7 +379,7 @@ function updateSpaceInvadersScoreDisplay() {
   const scoreDisplay = document.getElementById('space-invaders-score');
   if (scoreDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (CONSISTENT)
+    const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4)
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
     const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
     
@@ -473,7 +473,7 @@ window.testSpaceInvadersDSPOINC = function() {
   
   // Test the DSPOINC calculation
   const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-  const baseDSPOINC = spaceInvadersScore * 0.1;
+  const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4)
   const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
   const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
   
@@ -487,14 +487,14 @@ window.testSpaceInvadersDSPOINC = function() {
   
   // Scenario 1: 71 invaders with 0.0002 base score each
   const scenario1Score = 71 * 0.0002;
-  const scenario1BaseDSPOINC = scenario1Score * 0.1;
+  const scenario1BaseDSPOINC = scenario1Score * 1.0; // Balanced system
   const scenario1RoleBonus = Math.floor(scenario1BaseDSPOINC * (roleMultiplier - 1));
   const scenario1Total = Math.round((scenario1BaseDSPOINC + scenario1RoleBonus) * 100) / 100;
   console.log(`Scenario 1 (71 × 0.0002): score=${scenario1Score}, baseDSPOINC=${scenario1BaseDSPOINC}, total=${scenario1Total}`);
   
   // Scenario 2: 71 invaders with 1 base score each
   const scenario2Score = 71 * 1;
-  const scenario2BaseDSPOINC = scenario2Score * 0.1;
+  const scenario2BaseDSPOINC = scenario2Score * 1.0; // Balanced system
   const scenario2RoleBonus = Math.floor(scenario2BaseDSPOINC * (roleMultiplier - 1));
   const scenario2Total = Math.round((scenario2BaseDSPOINC + scenario2RoleBonus) * 100) / 100;
   console.log(`Scenario 2 (71 × 1): score=${scenario2Score}, baseDSPOINC=${scenario2BaseDSPOINC}, total=${scenario2Total}`);
@@ -512,7 +512,7 @@ window.testSpaceInvadersScoreSync = function() {
   
   // Test the score display calculation
   const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-  const baseDSPOINC = spaceInvadersScore * 0.1; // Use spaceInvadersScore (same as saveScore)
+  const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4) // Use spaceInvadersScore (same as saveScore)
   const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
   const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
   
@@ -946,7 +946,7 @@ class PhoenixBird {
     createExplosion(this.x, this.y, 40, 25);
     
     // Award points with role-based multipliers (1/5 of original scoring)
-    const baseScore = 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
+    const baseScore = 1; // 🚀 BALANCED FIX: Use 1 as base score for balanced scoring (10k max at Boss 4)
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
     const totalScore = Math.floor(baseScore * roleMultiplier);
     spaceInvadersScore += totalScore;
@@ -1198,7 +1198,7 @@ class MiniPhoenix {
     createExplosion(this.x, this.y, 25, 20);
     
     // Award points
-    spaceInvadersScore += 25;
+    spaceInvadersScore += 1; // Balanced: 1 point per Mini-Phoenix
     spaceInvadersCount++;
     
     // Track Mini-Phoenix destruction for achievements
@@ -2582,7 +2582,7 @@ let reloadButtonInterval = null;
           cheeseSoundManager.playExplosionSound('powerup');
         } else if (powerUp.type === 'collect') {
           // 🚀 NEW: Collect power-up gives bonus points and temporary effects
-          spaceInvadersScore += 100; // Bonus points
+          spaceInvadersScore += 5; // Balanced: 5 points per power-up
           spaceInvadersCount += 1; // Bonus invaders killed
           
           // Temporary invincibility (1 second)
@@ -4002,8 +4002,8 @@ let reloadButtonInterval = null;
                   // Add reward to score
         spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
         
-        // 🚀 CRITICAL FIX: Also add to traditional score for consistency
-        spaceInvadersScore += bossReward * 0.4; // 1/5 of original: Convert invader count to traditional points (1 DSPOINC = 0.4 points)
+        // 🚀 BALANCED FIX: Also add to traditional score for consistency
+        spaceInvadersScore += bossReward * 0.1; // Balanced: Convert invader count to traditional points (1 DSPOINC = 0.1 points)
           
           // 🚀 NEW: Epic boss defeat effects (reduced intensity)
           bossDefeatEffect = 60; // Reduced from 100 to 60 frames
@@ -6822,7 +6822,7 @@ let reloadButtonInterval = null;
           if (hitWeakPoint) {
             // Hit weak point - extra damage
             invader.weakPointHealth--;
-            spaceInvadersScore += invader.points * 2; // Double points for weak point hit
+            spaceInvadersScore += 1; // Balanced: 1 point per weak point hit
             
             // Create special weak point explosion
             explosions.push({
@@ -6840,7 +6840,7 @@ let reloadButtonInterval = null;
               
               // 🚀 SEASON 3 PHASE 1: Combo system integration for weak point with role multipliers
               addKillCombo();
-              const baseScore = 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
+              const baseScore = 1; // 🚀 BALANCED FIX: Use 1 as base score for balanced scoring (10k max at Boss 4)
               const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
               const totalScore = Math.floor(baseScore * roleMultiplier);
               spaceInvadersScore += totalScore;
@@ -6880,7 +6880,7 @@ let reloadButtonInterval = null;
             
             // 🚀 SEASON 3 PHASE 1: Combo system integration
             addKillCombo();
-            const baseScore = 0.0002; // 1/5 of original (5000 invaders = 1 DSPOINC)
+            const baseScore = 1; // 🚀 BALANCED FIX: Use 1 as base score for balanced scoring (10k max at Boss 4)
             const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
             const totalScore = Math.floor(baseScore * roleMultiplier);
             spaceInvadersScore += totalScore;
@@ -9014,7 +9014,7 @@ let reloadButtonInterval = null;
     if (scoreDisplay) {
       // 🚀 CRITICAL FIX: Use same DSPOINC calculation as saveScore for consistency
       const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-      const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (same as saveScore)
+      const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4)
       const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
       const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
       
@@ -9235,6 +9235,10 @@ let reloadButtonInterval = null;
     gamePhase = 'gameOver';
     gameRunning = false;
     
+    // 🚀 CRITICAL FIX: Store the final score IMMEDIATELY before any modifications
+    const finalSpaceInvadersScore = spaceInvadersScore;
+    const finalSpaceInvadersCount = spaceInvadersCount;
+    
     // 🚨 CRITICAL FIX: Clear all game entities immediately
     invaders = []; // Clear regular invaders
     bullets = [];
@@ -9256,21 +9260,31 @@ let reloadButtonInterval = null;
     
     // 🏆 ROLE-BASED SCORING: Use role multipliers for final score display
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (same as drawScore)
+    const baseDSPOINC = finalSpaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED system - same as drawScore)
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
     const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
     
+    // 🔍 DEBUG: Log scoring details for game over screen
+    console.log('🎮 GAME OVER SCREEN CALCULATION:');
+    console.log('- finalSpaceInvadersScore (stored):', finalSpaceInvadersScore);
+    console.log('- finalSpaceInvadersCount (stored):', finalSpaceInvadersCount);
+    console.log('- roleMultiplier:', roleMultiplier);
+    console.log('- baseDSPOINC:', baseDSPOINC);
+    console.log('- roleBonusDSPOINC:', roleBonusDSPOINC);
+    console.log('- totalDSPOINC (display):', totalDSPOINC);
+    
     if (gameOverModal && finalScoreText) {
       if (roleMultiplier > 1.0) {
-        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${roleMultiplier}x Role Bonus!) (${spaceInvadersCount} invaders destroyed)`;
+        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${roleMultiplier}x Role Bonus!) (${finalSpaceInvadersCount} invaders destroyed)`;
       } else {
-        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${spaceInvadersCount} invaders destroyed)`;
+        finalScoreText.textContent = `You earned ${totalDSPOINC} DSPOINC! (${finalSpaceInvadersCount} invaders destroyed)`;
       }
       gameOverModal.classList.remove("hidden");
     }
     
     // 🔧 CRITICAL FIX: Score MUST be saved here for all players (not just winners)
-    saveScore(spaceInvadersScore); // RESTORED: This is the main score saving point
+    console.log('💾 About to save score with finalSpaceInvadersScore:', finalSpaceInvadersScore);
+    saveScore(finalSpaceInvadersScore); // RESTORED: This is the main score saving point
     
     // 🏆 SEASON 3 PHASE 2: Save achievements to database after game ends (without popups)
     // This ensures achievements are saved even if not triggered during gameplay
@@ -9514,7 +9528,7 @@ let reloadButtonInterval = null;
             if (invader.alive) {
               invader.alive = false;
                 invadersKilled++;
-              const baseScore = invadersKilled; // 1 DSPOINC per kill (5:1 ratio)
+              const baseScore = 1; // 1 DSPOINC per kill (5:1 ratio)
               const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
               const totalScore = Math.floor(baseScore * roleMultiplier);
               spaceInvadersScore += totalScore;
@@ -9566,7 +9580,7 @@ let reloadButtonInterval = null;
               if (invader.alive) {
                 invader.alive = false;
                 invadersKilled++;
-                const baseScore = invadersKilled; // 1 DSPOINC per kill (5:1 ratio)
+                const baseScore = 1; // 1 DSPOINC per kill (5:1 ratio)
                 const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
                 const totalScore = Math.floor(baseScore * roleMultiplier);
                 spaceInvadersScore += totalScore;
@@ -11880,7 +11894,7 @@ window.emergencyCollisionCheck = function() {
     if (scoreDisplay) {
       // 🚀 CRITICAL FIX: Use CONSISTENT DSPOINC calculation (same as saveScore and onGameOver)
       const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-      const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (CONSISTENT)
+      const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4)
       const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
       const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
       
@@ -11921,7 +11935,7 @@ window.emergencyCollisionCheck = function() {
     
     // 🚀 CRITICAL FIX: Use CONSISTENT DSPOINC calculation (same as saveScore and onGameOver)
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (CONSISTENT)
+    const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4)
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
     const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
     
@@ -11951,12 +11965,18 @@ window.emergencyCollisionCheck = function() {
     
     hasScoreBeenSaved = true; // Mark as saved
     
+    // 🔍 DEBUG: Log what score is being saved
+    console.log('💾 SAVE SCORE FUNCTION CALLED:');
+    console.log('- traditionalScore parameter:', traditionalScore);
+    console.log('- spaceInvadersScore global:', spaceInvadersScore);
+    console.log('- spaceInvadersCount global:', spaceInvadersCount);
+    
     // 🔧 ENABLED: Real database saving for both local and production
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (isLocalDevelopment) {
       console.log('🔓 Local development - saving to real database');
       const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-      const baseDSPOINC = traditionalScore * 0.1;
+      const baseDSPOINC = traditionalScore * 1.0; // Balanced: 1 point = 1 DSPOINC
       const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
       const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
       console.log(`💾 Local save: Space Invaders score ${traditionalScore} invaders destroyed = ${totalDSPOINC} DSPOINC (${roleMultiplier}x role bonus)`);
@@ -11972,11 +11992,19 @@ window.emergencyCollisionCheck = function() {
       return;
     }
 
-    // 🚀 FIXED: Use correct DSPOINC conversion (1 invader = 0.1 DSPOINC, same as drawScore and onGameOver)
+    // 🚀 BALANCED: Use correct DSPOINC conversion (1 point = 1 DSPOINC, same as drawScore and onGameOver)
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = traditionalScore * 0.1; // 1 invader = 0.1 DSPOINC base
+    const baseDSPOINC = traditionalScore * 1.0; // 1 point = 1 DSPOINC base (balanced system)
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
     const dspoincScore = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Convert to DSPOINC with role bonus
+
+    // 🔍 DEBUG: Log scoring calculation details
+    console.log('💾 SAVE SCORE CALCULATION:');
+    console.log('- traditionalScore:', traditionalScore);
+    console.log('- roleMultiplier:', roleMultiplier);
+    console.log('- baseDSPOINC:', baseDSPOINC);
+    console.log('- roleBonusDSPOINC:', roleBonusDSPOINC);
+    console.log('- dspoincScore (saved):', dspoincScore);
 
     console.log(`💾 Saving Space Invaders score: ${traditionalScore} invaders destroyed = ${dspoincScore} DSPOINC`);
 
@@ -11997,7 +12025,7 @@ window.emergencyCollisionCheck = function() {
       },
       body: JSON.stringify({
         wallet: wallet,
-        score: traditionalScore, // 🚀 CRITICAL FIX: Raw traditional score (like classic Space Invaders)
+        score: dspoincScore, // 🚀 BALANCED FIX: Send DSPOINC score (same as Tetris and Snake)
         discord_id: discordId,
         discord_name: discordName,
         game: 'space_invaders'
@@ -12292,16 +12320,10 @@ window.emergencyCollisionCheck = function() {
       window.spaceInvadersScrollPosition = window.pageYOffset;
     }
     
-    // Scroll to the game container to ensure it's visible
-    const gameContainer = document.getElementById('space-cheese-invaders');
-    if (gameContainer) {
-      const rect = gameContainer.getBoundingClientRect();
-      const offset = rect.top + window.pageYOffset - 20; // 20px offset from top
-      window.scrollTo(0, offset);
-    } else {
-      // Fallback to stored position
-      window.scrollTo(0, window.spaceInvadersScrollPosition);
-    }
+    // 🚫 MOBILE FIX: Don't scroll the page - prevents bottom cutoff on mobile
+    // Users reported game container moves up and cuts off bottom play area
+    // Keeping the scroll position as-is allows full game area visibility
+    // (Removed automatic scrollTo that was causing mobile viewport issues)
   }
 
   function unlockSpaceInvadersScroll() {
@@ -12315,9 +12337,9 @@ window.emergencyCollisionCheck = function() {
     document.documentElement.style.overflow = '';
     document.documentElement.style.touchAction = '';
     
-    // Restore scroll position if it was stored
+    // 🚫 MOBILE FIX: Don't restore scroll position - prevents viewport jumping
+    // Keep the page at its current position for better mobile experience
     if (window.spaceInvadersScrollPosition !== undefined) {
-      window.scrollTo(0, window.spaceInvadersScrollPosition);
       delete window.spaceInvadersScrollPosition;
     }
   }
@@ -13960,7 +13982,7 @@ window.emergencyCollisionCheck = function() {
       // Make these invaders more dangerous
       newInvader.movePattern = Math.random() < 0.7 ? 'dive' : 'zigzag';
       newInvader.speed = 1.5 + Math.random() * 1.0; // Faster movement
-      newInvader.points = 25 + Math.floor(Math.random() * 15); // More points
+      newInvader.points = 1 + Math.floor(Math.random() * 1); // Balanced points (1-2)
       
       invaders.push(newInvader);
     }
@@ -13976,7 +13998,7 @@ window.testAllScoreDisplays = function() {
   
   // Calculate expected DSPOINC using spaceInvadersScore (same as saveScore)
   const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-  const baseDSPOINC = spaceInvadersScore * 0.1; // Use spaceInvadersScore (same as saveScore)
+  const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4) // Use spaceInvadersScore (same as saveScore)
   const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
   const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
   

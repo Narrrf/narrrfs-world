@@ -199,12 +199,12 @@ function updateSnakeScoreDisplay() {
     const primaryRoleID = getSnakePrimaryRoleID();
     
     if (roleMultiplier > 1.0) {
-      scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+      scoreDisplay.textContent = `💰 Snake Score: $${score} DSPOINC (${roleMultiplier}x Role Bonus!)`;
     } else {
-      scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC`;
+      scoreDisplay.textContent = `💰 Snake Score: $${score} DSPOINC`;
     }
     
-    console.log(`🏆 Snake score display update: Role ID=${primaryRoleID}, Multiplier=${roleMultiplier}x, Score=${score * 10} DSPOINC`);
+    console.log(`🏆 Snake score display update: Role ID=${primaryRoleID}, Multiplier=${roleMultiplier}x, Score=${score} DSPOINC`);
   }
 }
 
@@ -237,7 +237,7 @@ window.testSnakeRoleFeatures = function() {
   console.log('Canvas element:', canvas);
   console.log('Canvas classes:', canvas?.className);
   console.log('Current score:', score);
-  console.log('Current DSPOINC:', score * 10);
+  console.log('Current DSPOINC:', score);
 };
 
 // 🚫 Full page scroll prevention
@@ -466,9 +466,9 @@ function initSnake() {
       const roleMultiplier = getSnakeRoleScoreMultiplier();
       
       if (roleMultiplier > 1.0) {
-        scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+        scoreDisplay.textContent = `💰 Snake Score: $${score} DSPOINC (${roleMultiplier}x Role Bonus!)`;
       } else {
-        scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC`;
+        scoreDisplay.textContent = `💰 Snake Score: $${score} DSPOINC`;
       }
     }
   }
@@ -619,14 +619,14 @@ function initSnake() {
       
       // 🏆 Apply role-based scoring
       const roleMultiplier = getSnakeRoleScoreMultiplier();
-      const baseScore = 1;
+      const baseScore = 10; // 🚀 CRITICAL FIX: Use 10 as base score to prevent Math.floor truncation
       const totalScore = Math.floor(baseScore * roleMultiplier);
       score += totalScore;
       
       // 🏆 Log role-based scoring
       if (roleMultiplier > 1.0) {
         const bonusPoints = totalScore - baseScore;
-        console.log(`🏆 Snake role multiplier applied: ${roleMultiplier}x (${bonusPoints} bonus points)`);
+        console.log(`🏆 Snake role multiplier applied: ${roleMultiplier}x (${bonusPoints} bonus points, total: ${totalScore})`);
       }
       
       cheeseEaten++;
@@ -688,9 +688,9 @@ function initSnake() {
       // ✅ Show role multiplier in final score display
       const roleMultiplier = getSnakeRoleScoreMultiplier();
       if (roleMultiplier > 1.0) {
-        finalScoreText.textContent = `You earned $${finalScore * 10} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+        finalScoreText.textContent = `You earned $${finalScore} DSPOINC (${roleMultiplier}x Role Bonus!)`;
       } else {
-        finalScoreText.textContent = `You earned $${finalScore * 10} DSPOINC`;
+        finalScoreText.textContent = `You earned $${finalScore} DSPOINC`;
       }
       console.log("🐍 Displaying score:", finalScore, "with role multiplier:", roleMultiplier);
 
