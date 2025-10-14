@@ -167,19 +167,28 @@ let hasPlayerMovedMouse = false; // 🚀 NEW: Prevent ship jumping until player 
 let pressedKeys = new Set(); // Track which keys are currently pressed
 let continuousMovementEnabled = true; // Enable continuous movement on key hold
 
-// 🏆 ROLE-BASED GAMEPLAY SYSTEM - Season 4 Feature
-let spaceInvadersUserRoles = [];
-let spaceInvadersRoleMultipliers = {
-  'VIP Holder': 2.0,
-  '🎴 VIP Holder': 2.0,
-  'Holder': 1.5,
-  '🏆 Holder': 1.5,
-  'Season Tester': 1.3,
-  'Early Bird': 1.2,
-  'Champion': 1.4,
-  'Cheese Hunter': 1.1,
-  '🧀 Cheese Hunter': 1.1
+// 🏆 ROLE ID-BASED GAMEPLAY SYSTEM - Season 4 Feature
+let spaceInvadersUserRoleIDs = [];
+let spaceInvadersRoleMultipliersByID = {
+  '1332016526848692345': 2.0,  // 🎴 VIP Holder
+  '1402668301414563971': 1.5,  // 🏆 Holder
+  '1332017420591697972': 1.4,  // Champion
+  '1417279348989497532': 1.3,  // Season Tester
+  '1332017614108758148': 1.2,  // Early Bird
+  '1399651053682692208': 1.1,  // 🧀 Cheese Hunter
+  '1332108350518857842': 1.3   // WL
 };
+
+// Priority order (highest multiplier first)
+const spaceInvadersRolePriorityByID = [
+  '1332016526848692345',  // 🎴 VIP Holder (2.0x) - HIGHEST
+  '1402668301414563971',  // 🏆 Holder (1.5x)
+  '1332017420591697972',  // Champion (1.4x)
+  '1332108350518857842',  // WL (1.3x)
+  '1417279348989497532',  // Season Tester (1.3x)
+  '1332017614108758148',  // Early Bird (1.2x)
+  '1399651053682692208'   // 🧀 Cheese Hunter (1.1x) - LOWEST
+];
 
 // 🎨 Role-based visual themes
 let spaceInvadersRoleThemes = {
@@ -194,19 +203,23 @@ let spaceInvadersRoleThemes = {
   'Champion': 'red'
 };
 
-// 🏆 ROLE DETECTION SYSTEM - Fetch user Discord roles
-async function fetchSpaceInvadersUserRoles() {
+// 🏆 ROLE ID DETECTION SYSTEM - Fetch user Discord role IDs
+async function fetchSpaceInvadersUserRoleIDs() {
   try {
-    // 🌍 Local development bypass - use Narrrf's roles for testing
+    // 🌍 Local development bypass - use test role IDs
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     
     if (isLocalDevelopment) {
-      console.log('🏠 Local environment detected - using Narrrf\'s roles for Space Invaders testing');
-      spaceInvadersUserRoles = [
-        "VIP Holder", "Holder", "Champion", "Season Tester", "Early Bird", "Cheese Hunter",
-        "Alpha Caller", "Community Member", "Moderator", "PokerOG", "Rumble"
+      console.log('🏠 Local environment detected - using test role IDs for Space Invaders');
+      spaceInvadersUserRoleIDs = [
+        "1332016526848692345",  // 🎴 VIP Holder
+        "1402668301414563971",  // 🏆 Holder
+        "1332017420591697972",  // Champion
+        "1417279348989497532",  // Season Tester
+        "1332017614108758148",  // Early Bird
+        "1399651053682692208"   // 🧀 Cheese Hunter
       ];
-      console.log('🏆 Local test roles loaded for Space Invaders:', spaceInvadersUserRoles);
+      console.log('🏆 Local test role IDs loaded for Space Invaders:', spaceInvadersUserRoleIDs);
       
       // Apply role-based theme on load
       applySpaceInvadersRoleTheme();
@@ -214,18 +227,22 @@ async function fetchSpaceInvadersUserRoles() {
       // Update score display to show role multiplier
       updateSpaceInvadersScoreDisplay();
       
-      return spaceInvadersUserRoles;
+      return spaceInvadersUserRoleIDs;
     }
     
-    const response = await fetch(`${API_BASE_URL}/api/user/roles.php`, {
+    const isProduction = window.location.hostname === 'narrrfs.world';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    
+    // Fetch role IDs from Discord API via sync-role.php
+    const response = await fetch(`${API_BASE_URL}/api/auth/sync-role.php`, {
       method: 'GET',
       credentials: 'include'
     });
     
     if (response.ok) {
       const data = await response.json();
-      spaceInvadersUserRoles = data.roles || [];
-      console.log('🏆 User roles loaded from API for Space Invaders:', spaceInvadersUserRoles);
+      spaceInvadersUserRoleIDs = data.role_ids || [];
+      console.log('🏆 Space Invaders user role IDs loaded from Discord API:', spaceInvadersUserRoleIDs);
       
       // Apply role-based theme on load
       applySpaceInvadersRoleTheme();
@@ -233,7 +250,7 @@ async function fetchSpaceInvadersUserRoles() {
       // Update score display to show role multiplier
       updateSpaceInvadersScoreDisplay();
       
-      return spaceInvadersUserRoles;
+      return spaceInvadersUserRoleIDs;
     } else {
       console.log('🏆 No roles found or not logged in for Space Invaders');
       return [];
@@ -244,12 +261,28 @@ async function fetchSpaceInvadersUserRoles() {
   }
 }
 
-// 🎨 Apply role-based visual theme to Space Invaders canvas
+// 🎨 Apply role-based visual theme to Space Invaders canvas using role IDs
 function applySpaceInvadersRoleTheme() {
-  const primaryRole = getSpaceInvadersPrimaryRole();
-  const theme = spaceInvadersRoleThemes[primaryRole] || 'default';
+  const primaryRoleID = getSpaceInvadersPrimaryRoleID();
+  let theme = 'default';
   
-  console.log(`🎨 Applying ${theme} theme for Space Invaders role: ${primaryRole}`);
+  if (primaryRoleID) {
+    // Map role IDs to themes
+    const roleIDToTheme = {
+      '1332016526848692345': 'golden',    // 🎴 VIP Holder
+      '1402668301414563971': 'silver',    // 🏆 Holder
+      '1332017420591697972': 'red',       // Champion
+      '1417279348989497532': 'rainbow',   // Season Tester
+      '1332017614108758148': 'blue',      // Early Bird
+      '1399651053682692208': 'cheese',    // 🧀 Cheese Hunter
+      '1332108350518857842': 'blue'       // WL (blue theme)
+    };
+    
+    theme = roleIDToTheme[primaryRoleID] || 'default';
+    console.log(`🎨 Applying ${theme} theme for Space Invaders role ID: ${primaryRoleID}`);
+  } else {
+    console.log('🎨 No premium role found for Space Invaders - using default theme');
+  }
   
   // Add theme class to canvas
   const canvas = document.getElementById('space-invaders-canvas');
@@ -286,32 +319,29 @@ function applySpaceInvadersRoleTheme() {
   }
 }
 
-// 🏆 Get user's primary role (highest priority role)
-function getSpaceInvadersPrimaryRole() {
-  // 🎯 EMOJI-AWARE PRIORITY SYSTEM (matches Tetris & Snake)
-  const priorityOrder = [
-    'VIP Holder', '🎴 VIP Holder',
-    'Holder', '🏆 Holder', 
-    'Champion', 
-    'Season Tester', 
-    'Early Bird', 
-    'Cheese Hunter', '🧀 Cheese Hunter'
-  ];
-  
-  for (const role of priorityOrder) {
-    if (spaceInvadersUserRoles.includes(role)) {
-      // Return clean role name for consistent theming and multipliers
-      return role.replace(/^[🎴🏆🧀]\s*/, '');
+// 🏆 Get user's primary role ID (highest priority role)
+function getSpaceInvadersPrimaryRoleID() {
+  // Check roles in priority order (highest multiplier first)
+  for (const roleID of spaceInvadersRolePriorityByID) {
+    if (spaceInvadersUserRoleIDs.includes(roleID)) {
+      return roleID;
     }
   }
   
-  return null;
+  return null; // No premium role found
 }
 
-// ⚡ Calculate role-based score multiplier
+// ⚡ Calculate role-based score multiplier using role IDs
 function getSpaceInvadersRoleScoreMultiplier() {
-  const primaryRole = getSpaceInvadersPrimaryRole();
-  return spaceInvadersRoleMultipliers[primaryRole] || 1.0;
+  const primaryRoleID = getSpaceInvadersPrimaryRoleID();
+  if (primaryRoleID) {
+    const multiplier = spaceInvadersRoleMultipliersByID[primaryRoleID] || 1.0;
+    console.log(`🏆 Space Invaders role multiplier applied: ${multiplier}x for role ID ${primaryRoleID}`);
+    return multiplier;
+  }
+  
+  console.log('🏆 No premium role found for Space Invaders - using 1.0x multiplier');
+  return 1.0;
 }
 
 // 🏆 Update Space Invaders score display with role bonus
@@ -322,13 +352,13 @@ function updateSpaceInvadersScoreDisplay() {
   
   if (topScoreDisplay && roleMultiplierDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const primaryRole = getSpaceInvadersPrimaryRole();
+    const primaryRoleID = getSpaceInvadersPrimaryRoleID();
     const baseDSPOINC = spaceInvadersScore * 0.1; // 1 invader = 0.1 DSPOINC base (same as drawScore and onGameOver)
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
     const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
     
     // Debug logging
-    console.log(`🏆 Space Invaders score display update: Role=${primaryRole}, Multiplier=${roleMultiplier}x, Score=${totalDSPOINC} DSPOINC`);
+    console.log(`🏆 Space Invaders score display update: Role ID=${primaryRoleID}, Multiplier=${roleMultiplier}x, Score=${totalDSPOINC} DSPOINC`);
     
     // Update top score display
     topScoreDisplay.textContent = `💰 Score: $${totalDSPOINC} DSPOINC`;
@@ -4656,11 +4686,13 @@ let reloadButtonInterval = null;
     ctx.textAlign = 'left';
   }
 
-  function initSpaceInvaders() {
+  async function initSpaceInvaders() {
     console.log('🚀 Initializing Space Invaders...');
     
-    // 🏆 Initialize role detection for Space Invaders
-    fetchSpaceInvadersUserRoles();
+    // 🏆 Initialize role detection for Space Invaders (CRITICAL: await this!)
+    console.log('🏆 Fetching user role IDs before Space Invaders initialization...');
+    await fetchSpaceInvadersUserRoleIDs();
+    console.log('🏆 Space Invaders role IDs loaded:', spaceInvadersUserRoleIDs);
     
     // Get canvas and context
     const canvas = document.getElementById('space-invaders-canvas');
@@ -11323,7 +11355,9 @@ if (document.readyState === 'loading') {
     setTimeout(() => {
       if (document.getElementById('space-invaders-canvas')) {
         console.log('🎮 Auto-initializing Space Invaders from DOMContentLoaded');
-        initSpaceInvaders();
+        initSpaceInvaders().catch(error => {
+          console.error('❌ Error initializing Space Invaders:', error);
+        });
       } else {
         console.warn('⚠️ Canvas not found during auto-initialization');
       }
@@ -11334,7 +11368,9 @@ if (document.readyState === 'loading') {
   setTimeout(() => {
     if (document.getElementById('space-invaders-canvas')) {
       console.log('🎮 Auto-initializing Space Invaders (DOM already loaded)');
-      initSpaceInvaders();
+      initSpaceInvaders().catch(error => {
+        console.error('❌ Error initializing Space Invaders:', error);
+      });
     } else {
       console.warn('⚠️ Canvas not found during auto-initialization');
     }

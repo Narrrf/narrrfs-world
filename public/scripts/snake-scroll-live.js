@@ -38,19 +38,28 @@
 // 🏆 Achievement types: Length milestones, speed challenges, perfect runs
 // 🎯 Balanced difficulty curve for engaging progression!
 
-// 🏆 ROLE-BASED GAMEPLAY SYSTEM - Season 4 Feature
-let snakeUserRoles = [];
-let snakeRoleMultipliers = {
-  'VIP Holder': 2.0,
-  '🎴 VIP Holder': 2.0,
-  'Holder': 1.5,
-  '🏆 Holder': 1.5,
-  'Season Tester': 1.3,
-  'Early Bird': 1.2,
-  'Champion': 1.4,
-  'Cheese Hunter': 1.1,
-  '🧀 Cheese Hunter': 1.1
+// 🏆 ROLE ID-BASED GAMEPLAY SYSTEM - Season 4 Feature
+let snakeUserRoleIDs = [];
+let snakeRoleMultipliersByID = {
+  '1332016526848692345': 2.0,  // 🎴 VIP Holder
+  '1402668301414563971': 1.5,  // 🏆 Holder
+  '1332017420591697972': 1.4,  // Champion
+  '1417279348989497532': 1.3,  // Season Tester
+  '1332017614108758148': 1.2,  // Early Bird
+  '1399651053682692208': 1.1,  // 🧀 Cheese Hunter
+  '1332108350518857842': 1.3   // WL
 };
+
+// Priority order (highest multiplier first)
+const snakeRolePriorityByID = [
+  '1332016526848692345',  // 🎴 VIP Holder (2.0x) - HIGHEST
+  '1402668301414563971',  // 🏆 Holder (1.5x)
+  '1332017420591697972',  // Champion (1.4x)
+  '1332108350518857842',  // WL (1.3x)
+  '1417279348989497532',  // Season Tester (1.3x)
+  '1332017614108758148',  // Early Bird (1.2x)
+  '1399651053682692208'   // 🧀 Cheese Hunter (1.1x) - LOWEST
+];
 let snakeRoleThemes = {
   'VIP Holder': 'golden',
   '🎴 VIP Holder': 'golden',
@@ -64,28 +73,72 @@ let snakeRoleThemes = {
 };
 
 // 🎨 Role-based theme application for Snake
-function applySnakeRoleTheme() {
-  // Get user roles from localStorage or default test roles
-  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (isLocalDevelopment) {
-    snakeUserRoles = [
-      "VIP Holder", "Holder", "Champion", "Season Tester", "Early Bird", "Cheese Hunter"
-    ];
-  }
-  
-  // Determine primary role
-  const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
-  let primaryRole = null;
-  for (const role of priorityOrder) {
-    if (snakeUserRoles.includes(role)) {
-      // Return clean role name for consistent theming and multipliers
-      primaryRole = role.replace(/^[🎴🏆🧀]\s*/, '');
-      break;
+// 🏆 Fetch user role IDs for Snake game
+async function fetchSnakeUserRoleIDs() {
+  try {
+    // 🌍 Local development bypass - use test role IDs
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    if (isLocalDevelopment) {
+      console.log('🏠 Local environment detected - using test role IDs for Snake');
+      snakeUserRoleIDs = [
+        "1332016526848692345",  // 🎴 VIP Holder
+        "1402668301414563971",  // 🏆 Holder
+        "1332017420591697972",  // Champion
+        "1417279348989497532",  // Season Tester
+        "1332017614108758148",  // Early Bird
+        "1399651053682692208"   // 🧀 Cheese Hunter
+      ];
+      console.log('🏆 Local test role IDs loaded for Snake:', snakeUserRoleIDs);
+      return snakeUserRoleIDs;
     }
+    
+    const isProduction = window.location.hostname === 'narrrfs.world';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    
+    // Fetch role IDs from Discord API via sync-role.php
+    const response = await fetch(`${API_BASE_URL}/api/auth/sync-role.php`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      snakeUserRoleIDs = data.role_ids || [];
+      console.log('🏆 Snake user role IDs loaded from Discord API:', snakeUserRoleIDs);
+      return snakeUserRoleIDs;
+    } else {
+      console.log('🏆 No role IDs found for Snake or not logged in');
+      return [];
+    }
+  } catch (error) {
+    console.log('🏆 Error fetching Snake roles:', error);
+    return [];
   }
+}
+
+function applySnakeRoleTheme() {
+  // Get primary role ID
+  const primaryRoleID = getSnakePrimaryRoleID();
+  let theme = 'default';
   
-  const theme = snakeRoleThemes[primaryRole] || 'default';
-  console.log(`🎨 Snake theme: ${theme} for role: ${primaryRole}`);
+  if (primaryRoleID) {
+    // Map role IDs to themes
+    const roleIDToTheme = {
+      '1332016526848692345': 'golden',    // 🎴 VIP Holder
+      '1402668301414563971': 'silver',    // 🏆 Holder
+      '1332017420591697972': 'red',       // Champion
+      '1417279348989497532': 'rainbow',   // Season Tester
+      '1332017614108758148': 'blue',      // Early Bird
+      '1399651053682692208': 'cheese',    // 🧀 Cheese Hunter
+      '1332108350518857842': 'blue'       // WL (blue theme)
+    };
+    
+    theme = roleIDToTheme[primaryRoleID] || 'default';
+    console.log(`🎨 Snake theme: ${theme} for role ID: ${primaryRoleID}`);
+  } else {
+    console.log('🎨 No premium role found for Snake - using default theme');
+  }
   
   // Update score display with role multiplier
   updateSnakeScoreDisplay();
@@ -113,24 +166,29 @@ function applySnakeRoleTheme() {
   }
 }
 
-// 🏆 Get user's primary role (highest priority role)
-function getSnakePrimaryRole() {
-  const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
-  
-  for (const role of priorityOrder) {
-    if (snakeUserRoles.includes(role)) {
-      // Return clean role name for consistent theming and multipliers
-      return role.replace(/^[🎴🏆🧀]\s*/, '');
+// 🏆 Get user's primary role ID (highest priority role)
+function getSnakePrimaryRoleID() {
+  // Check roles in priority order (highest multiplier first)
+  for (const roleID of snakeRolePriorityByID) {
+    if (snakeUserRoleIDs.includes(roleID)) {
+      return roleID;
     }
   }
   
-  return null;
+  return null; // No premium role found
 }
 
-// ⚡ Calculate role-based score multiplier
+// ⚡ Calculate role-based score multiplier using role IDs
 function getSnakeRoleScoreMultiplier() {
-  const primaryRole = getSnakePrimaryRole();
-  return snakeRoleMultipliers[primaryRole] || 1.0;
+  const primaryRoleID = getSnakePrimaryRoleID();
+  if (primaryRoleID) {
+    const multiplier = snakeRoleMultipliersByID[primaryRoleID] || 1.0;
+    console.log(`🏆 Snake role multiplier applied: ${multiplier}x for role ID ${primaryRoleID}`);
+    return multiplier;
+  }
+  
+  console.log('🏆 No premium role found for Snake - using 1.0x multiplier');
+  return 1.0;
 }
 
 // 🏆 Update Snake score display with role bonus
@@ -138,7 +196,7 @@ function updateSnakeScoreDisplay() {
   const scoreDisplay = document.getElementById('snake-score');
   if (scoreDisplay) {
     const roleMultiplier = getSnakeRoleScoreMultiplier();
-    const primaryRole = getSnakePrimaryRole();
+    const primaryRoleID = getSnakePrimaryRoleID();
     
     if (roleMultiplier > 1.0) {
       scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC (${roleMultiplier}x Role Bonus!)`;
@@ -146,7 +204,7 @@ function updateSnakeScoreDisplay() {
       scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC`;
     }
     
-    console.log(`🏆 Snake score display update: Role=${primaryRole}, Multiplier=${roleMultiplier}x, Score=${score * 10} DSPOINC`);
+    console.log(`🏆 Snake score display update: Role ID=${primaryRoleID}, Multiplier=${roleMultiplier}x, Score=${score * 10} DSPOINC`);
   }
 }
 
@@ -309,7 +367,12 @@ function initSnake() {
   let gameStartTime = 0;
   let perfectGame = true; // Track if player hits walls
 
-  function startGameWithCountdown() {
+  async function startGameWithCountdown() {
+    // 🏆 Fetch user role IDs for Snake game (CRITICAL: await this!)
+    console.log('🏆 Fetching user role IDs before Snake game start...');
+    await fetchSnakeUserRoleIDs();
+    console.log('🏆 Snake role IDs loaded:', snakeUserRoleIDs);
+    
     const countdownEl = document.getElementById("snake-countdown");
     let count = 5;
 
