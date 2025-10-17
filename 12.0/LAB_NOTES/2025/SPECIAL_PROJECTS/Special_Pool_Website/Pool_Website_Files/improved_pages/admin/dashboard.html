@@ -921,6 +921,15 @@
                                     <option value="background4.png">🌊 Hintergrund 4</option>
                                 </select>
                             </div>
+                            <div class="page-bg-item">
+                                <label for="impressumBackground">📄 Impressum:</label>
+                                <select id="impressumBackground">
+                                    <option value="background2.png">🌇 Hintergrund 2</option>
+                                    <option value="background1.png">🌅 Hintergrund 1</option>
+                                    <option value="background3.png">🏞️ Hintergrund 3</option>
+                                    <option value="background4.png">🌊 Hintergrund 4</option>
+                                </select>
+                            </div>
                         </div>
                         <small class="form-help">Individuelle Hintergrundbilder für jede Seite</small>
                     </div>
@@ -1007,6 +1016,10 @@
                             <label class="bubble-page-item">
                                 <input type="checkbox" id="bubbleKontakt" checked>
                                 <span>📞 Kontakt</span>
+                            </label>
+                            <label class="bubble-page-item">
+                                <input type="checkbox" id="bubbleImpressum" checked>
+                                <span>📄 Impressum</span>
                             </label>
                         </div>
                         <small class="form-help">Wählen Sie auf welchen Seiten Blasen angezeigt werden</small>
@@ -1752,7 +1765,8 @@
                     referenzen: document.getElementById('referenzenBackground').value,
                     anfragen: document.getElementById('anfragenBackground').value,
                     ueber_uns: document.getElementById('ueberUnsBackground').value,
-                    kontakt: document.getElementById('kontaktBackground').value
+                    kontakt: document.getElementById('kontaktBackground').value,
+                    impressum: document.getElementById('impressumBackground').value
                 },
                 bubble_effect: document.getElementById('bubbleEffect').value,
                 bubble_enabled: document.getElementById('bubbleEffect').value !== 'off',
@@ -1765,7 +1779,8 @@
                     referenzen: document.getElementById('bubbleReferenzen').checked,
                     anfragen: document.getElementById('bubbleAnfragen').checked,
                     ueber_uns: document.getElementById('bubbleUeberUns').checked,
-                    kontakt: document.getElementById('bubbleKontakt').checked
+                    kontakt: document.getElementById('bubbleKontakt').checked,
+                    impressum: document.getElementById('bubbleImpressum').checked
                 }
             };
 
@@ -1850,6 +1865,7 @@
                         if (settings.page_backgrounds.anfragen) document.getElementById('anfragenBackground').value = settings.page_backgrounds.anfragen;
                         if (settings.page_backgrounds.ueber_uns) document.getElementById('ueberUnsBackground').value = settings.page_backgrounds.ueber_uns;
                         if (settings.page_backgrounds.kontakt) document.getElementById('kontaktBackground').value = settings.page_backgrounds.kontakt;
+                        if (settings.page_backgrounds.impressum) document.getElementById('impressumBackground').value = settings.page_backgrounds.impressum;
                     }
                     if (settings.bubble_effect) document.getElementById('bubbleEffect').value = settings.bubble_effect;
                     if (settings.bubble_opacity) document.getElementById('bubbleOpacity').value = settings.bubble_opacity;
@@ -1873,6 +1889,7 @@
                         if (settings.bubble_pages.anfragen !== undefined) document.getElementById('bubbleAnfragen').checked = settings.bubble_pages.anfragen;
                         if (settings.bubble_pages.ueber_uns !== undefined) document.getElementById('bubbleUeberUns').checked = settings.bubble_pages.ueber_uns;
                         if (settings.bubble_pages.kontakt !== undefined) document.getElementById('bubbleKontakt').checked = settings.bubble_pages.kontakt;
+                        if (settings.bubble_pages.impressum !== undefined) document.getElementById('bubbleImpressum').checked = settings.bubble_pages.impressum;
                     }
                 }
             } catch (error) {

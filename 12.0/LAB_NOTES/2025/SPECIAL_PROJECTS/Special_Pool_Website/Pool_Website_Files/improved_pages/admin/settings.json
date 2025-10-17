@@ -4,7 +4,7 @@
     "slider_speed": 5,
     "bubble_effect": "medium",
     "bubble_color": "#12d9d6",
-    "last_updated": "2025-10-05 22:20:17",
+    "last_updated": "2025-10-17 04:10:29",
     "updated_by": "pooladmin",
     "bubble_opacity": "low",
     "bubble_speed": "slow",
@@ -13,7 +13,8 @@
         "referenzen": true,
         "anfragen": true,
         "ueber_uns": true,
-        "kontakt": true
+        "kontakt": true,
+        "impressum": true
     },
     "hero_background": "background2.png",
     "background_transparency": "full",
@@ -22,6 +23,7 @@
         "referenzen": "background2.png",
         "anfragen": "background2.png",
         "ueber_uns": "background2.png",
-        "kontakt": "background2.png"
+        "kontakt": "background2.png",
+        "impressum": "background2.png"
     }
 }

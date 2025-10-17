@@ -12,6 +12,10 @@ body {
     line-height: 1.6;
     color: #333;
     background-color: transparent;
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .container {
@@ -21,20 +25,21 @@ body {
     background: transparent;
 }
 
-/* Header Styles - Balanced Design */
+/* Header Styles - Transparent Design */
 .header {
-    background: rgba(0, 102, 204, 0.7);
+    background: transparent;
     color: white;
     padding: 1rem 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    backdrop-filter: blur(15px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 100;
 }
 
 .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
 }
 
 .logo {
@@ -64,12 +69,14 @@ body {
     font-size: 1.8rem;
     font-weight: bold;
     margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .logo-text .subtitle {
     font-size: 0.9rem;
     opacity: 0.9;
     margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .contact-header {
@@ -88,6 +95,7 @@ body {
     color: white;
     opacity: 0.9;
     text-decoration: none;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .contact-header .phone:hover,
@@ -96,13 +104,28 @@ body {
     text-decoration: none;
 }
 
-/* Navigation Styles - Balanced Design */
+/* Inline Navigation Styles - Transparent Design */
+.nav-inline {
+    background: transparent;
+    position: relative;
+    z-index: 100;
+}
+
+.nav-inline .nav-list {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+}
+
+/* Legacy Navigation Styles - Keep for backward compatibility */
 .nav {
-    background: rgba(255, 255, 255, 0.9);
+    background: transparent;
     padding: 1rem 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(233, 236, 239, 0.5);
+    position: relative;
+    z-index: 100;
 }
 
 .nav-list {
@@ -114,20 +137,21 @@ body {
 
 .nav-list a {
     text-decoration: none;
-    color: #333;
+    color: white;
     font-weight: 500;
     padding: 0.5rem 1rem;
     border-radius: 20px;
     transition: all 0.3s ease;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .nav-list a:hover {
-    background: rgba(0, 102, 204, 0.1);
-    color: #0066cc;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .nav-list a.active {
-    background: #0066cc;
+    background: rgba(255, 255, 255, 0.3);
     color: white;
 }
 
@@ -182,13 +206,14 @@ body {
     display: inline-block;
     background: linear-gradient(135deg, #ff6600 0%, #e55a2b 100%);
     color: white;
-    padding: 1rem 2rem;
+    padding: 1.3rem 2.8rem;
     text-decoration: none;
     border-radius: 25px;
     font-weight: bold;
     font-size: 1.1rem;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .cta-button:hover {
@@ -219,15 +244,15 @@ body {
     margin-bottom: 3rem;
 }
 
-/* Content Cards - Balanced Design */
+/* Content Cards - No Shadow Boxes */
 .content-text,
 .contact-section {
-    background: rgba(0, 0, 0, 0.6);
+    background: transparent;
     padding: 2rem;
-    border-radius: 15px;
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: 0;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
     margin-bottom: 3rem;
 }
 
@@ -245,13 +270,13 @@ body {
     color: #ffffff;
     font-size: 1.8rem;
     margin-bottom: 1rem;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .content-text p,
 .contact-section p {
     color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .content-text ul,
@@ -259,13 +284,13 @@ body {
 .contact-section ul,
 .contact-section ol {
     color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .content-text li,
 .contact-section li {
     color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
     margin-bottom: 0.5rem;
 }
 
@@ -274,10 +299,10 @@ body {
     font-size: 1.3rem;
     margin: 2rem 0 1rem 0;
     font-weight: 600;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
-/* Service Items - Balanced Design */
+/* Service Items - No Shadow Boxes */
 .services-with-icons {
     display: grid;
     grid-template-columns: 1fr;
@@ -287,17 +312,17 @@ body {
 
 .service-item {
     padding: 1.5rem;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 15px;
-    border-left: 4px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(15px);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: transparent;
+    border-radius: 0;
+    border-left: none;
+    backdrop-filter: none;
+    transition: none;
 }
 
 .service-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    background: rgba(0, 0, 0, 0.7);
+    transform: none;
+    box-shadow: none;
+    background: transparent;
 }
 
 .service-text h5 {
@@ -316,7 +341,7 @@ body {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
-/* Contact Items - Balanced Design */
+/* Contact Items - No Shadow Boxes */
 .contact-info {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -326,10 +351,10 @@ body {
 
 .contact-item {
     padding: 1.5rem;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 10px;
-    border-left: 4px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(15px);
+    background: transparent;
+    border-radius: 0;
+    border-left: none;
+    backdrop-filter: none;
 }
 
 .contact-item strong {
@@ -353,14 +378,14 @@ body {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
-/* Contact Form - Balanced Design */
+/* Contact Form - No Shadow Boxes */
 .contact-form {
-    background: rgba(0, 0, 0, 0.6);
+    background: transparent;
     padding: 2rem;
-    border-radius: 15px;
+    border-radius: 0;
     margin-top: 2rem;
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: none;
+    border: none;
 }
 
 .contact-form h4 {
@@ -384,28 +409,44 @@ body {
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
     width: 100%;
     padding: 1rem;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 10px;
     font-size: 1rem;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.7);
     color: #ffffff;
     backdrop-filter: blur(10px);
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
 }
 
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
     outline: none;
-    border-color: rgba(255, 255, 255, 0.6);
-    background: rgba(0, 0, 0, 0.5);
+    border-color: #ffd700;
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+}
+
+/* Select dropdown styling */
+.form-group select {
+    cursor: pointer;
+}
+
+.form-group select option {
+    background: rgba(0, 0, 0, 0.9);
+    color: #ffffff;
+    padding: 0.5rem;
 }
 
 .form-group textarea {
@@ -426,16 +467,16 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* Slogan Section */
+/* Slogan Section - No Shadow Boxes */
 .slogan {
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
+    border-radius: 0;
     padding: 2rem;
     margin: 3rem 0;
     text-align: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: none;
 }
 
 .slogan h3 {
@@ -539,6 +580,73 @@ body {
     margin-top: 3rem;
     backdrop-filter: blur(15px);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Impressum Section */
+.impressum-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.impressum-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.impressum-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.impressum-content {
+    display: none;
+    text-align: left;
+    margin-top: 1rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.impressum-content h4 {
+    color: #ffd700;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.impressum-content h5 {
+    color: #ffd700;
+    margin: 1.5rem 0 0.5rem 0;
+    font-size: 1rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.impressum-content p {
+    color: #e0e0e0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 0.8rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.impressum-content a {
+    color: #ffd700;
+    text-decoration: none;
+}
+
+.impressum-content a:hover {
+    text-decoration: underline;
 }
 
 .footer-content {
@@ -720,16 +828,16 @@ body {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
-/* Stats Section - Transparent Design */
+/* Stats Section - No Shadow Boxes */
 .stats-section {
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
     color: white;
     padding: 3rem 0;
     margin: 3rem 0;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .stats-grid {
@@ -977,6 +1085,7 @@ body {
         align-items: center;
     }
     
+    .nav-inline .nav-list,
     .nav-list {
         flex-wrap: wrap;
         gap: 1rem;
@@ -1154,3 +1263,410 @@ body {
         height: 50px;
     }
 }
+
+/* Impressum Page Styling */
+.impressum-content-full {
+    background: transparent;
+    padding: 2rem;
+    border-radius: 0;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+    margin-bottom: 3rem;
+    color: white;
+    line-height: 1.6;
+}
+
+.impressum-content-full h3 {
+    color: #ffd700;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    margin-top: 2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    border-bottom: 2px solid #ffd700;
+    padding-bottom: 0.5rem;
+}
+
+.impressum-content-full h4 {
+    color: #ffd700;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.impressum-content-full p {
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.impressum-content-full a {
+    color: #ffd700;
+    text-decoration: none;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.impressum-content-full a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.impressum-content-full strong {
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.impressum-content-full em {
+    color: #cccccc;
+    font-style: italic;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+/* Impressum Section Styling (for footer toggle) */
+.impressum-section {
+    margin-top: 2rem;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 2rem;
+}
+
+.impressum-toggle {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    border: 2px solid #ffd700;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.impressum-toggle:hover {
+    background: rgba(255, 215, 0, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+.impressum-content {
+    display: none;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 2rem;
+    margin-top: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    max-height: 400px;
+    overflow-y: auto;
+    text-align: left;
+    color: white;
+    line-height: 1.6;
+}
+
+.impressum-content h4 {
+    color: #ffd700;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.impressum-content h5 {
+    color: #ffd700;
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+    margin-top: 1.2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.impressum-content p {
+    margin-bottom: 0.8rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.impressum-content a {
+    color: #ffd700;
+    text-decoration: none;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.impressum-content a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.impressum-content strong {
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+/* Scrollbar styling for impressum content */
+.impressum-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.impressum-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.impressum-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 215, 0, 0.6);
+    border-radius: 4px;
+}
+
+.impressum-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 215, 0, 0.8);
+}
+
+/* Privacy Notice Banner */
+.privacy-notice {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 15px;
+    border: 2px solid #ffd700;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    max-width: 600px;
+    width: 90%;
+    z-index: 1000;
+    display: none;
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        bottom: -100px;
+        opacity: 0;
+    }
+    to {
+        bottom: 20px;
+        opacity: 1;
+    }
+}
+
+.privacy-notice.show {
+    display: block;
+}
+
+.privacy-notice-content {
+    text-align: center;
+}
+
+.privacy-notice-content h4 {
+    color: #ffd700;
+    margin-bottom: 0.8rem;
+    font-size: 1.2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.privacy-notice-content p {
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.privacy-notice-content a {
+    color: #ffd700;
+    text-decoration: none;
+}
+
+.privacy-notice-content a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.privacy-notice-button {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #000;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+}
+
+.privacy-notice-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 215, 0, 0.6);
+}
+
+/* Responsive privacy notice */
+@media (max-width: 768px) {
+    .privacy-notice {
+        padding: 1rem 1.5rem;
+        bottom: 10px;
+        width: 95%;
+    }
+    
+    .privacy-notice-content h4 {
+        font-size: 1.1rem;
+    }
+    
+    .privacy-notice-content p {
+        font-size: 0.9rem;
+    }
+    
+    .privacy-notice-button {
+        padding: 0.7rem 1.5rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* CTA Button in Forms */
+.contact-form .cta-button,
+form .cta-button {
+    width: 100%;
+    text-align: center;
+    display: inline-block;
+    box-sizing: border-box;
+}
+
+/* Ensure button elements with cta-button class look identical to links */
+button.cta-button {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+    background: transparent;
+    padding: 3rem 0;
+    margin: 3rem 0;
+}
+
+.testimonials-section h3 {
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.testimonial-item {
+    background: transparent;
+    padding: 2rem;
+    border-radius: 0;
+    border-left: 4px solid #ffd700;
+    backdrop-filter: none;
+}
+
+.testimonial-stars {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.testimonial-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    font-style: italic;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.testimonial-author {
+    font-weight: bold;
+    color: #ffd700;
+    text-align: right;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+@media (max-width: 768px) {
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .testimonial-item {
+        padding: 1.5rem;
+    }
+    
+    .testimonial-text {
+        font-size: 1rem;
+    }
+}
+
+/* Trust Grid */
+.trust-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.trust-item {
+    background: transparent;
+    padding: 1.5rem;
+    border-radius: 0;
+    border-left: 4px solid #ffd700;
+    backdrop-filter: none;
+}
+
+.trust-item h5 {
+    color: #ffd700;
+    font-size: 1.1rem;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+@media (max-width: 768px) {
+    .trust-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .trust-item {
+        padding: 1rem;
+    }
+    
+    .trust-item h5 {
+        font-size: 1rem;
+    }
+}
+
+/* Blockquote Styling */
+blockquote {
+    text-align: center;
+    font-size: 1.3rem;
+    font-style: italic;
+    color: #ffd700;
+    margin: 2rem 0;
+    padding: 2rem;
+    border-left: 4px solid #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+@media (max-width: 768px) {
+    blockquote {
+        font-size: 1.1rem;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+}
+
+/* CSS Version: v=20250128-54 */

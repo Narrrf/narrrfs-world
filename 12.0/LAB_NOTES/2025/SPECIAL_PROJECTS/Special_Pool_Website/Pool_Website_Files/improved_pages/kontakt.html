@@ -6,10 +6,10 @@
     <title>Kontakt - Poolbauprofi.at</title>
     <meta name="description" content="Kontaktieren Sie Poolbauprofi.at für Ihre Pool-Anfrage. Professionelle Beratung und maßgeschneiderte Lösungen für Ihren Traumpool.">
     <meta name="keywords" content="Pool Kontakt, Pool Beratung, Poolbauprofi, Schwimmbad, Österreich">
-    <link rel="stylesheet" href="./assets/shared-styles.css?v=20250128-34">
+    <link rel="stylesheet" href="./assets/shared-styles.css?v=20250128-43">
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header with Inline Navigation -->
     <header class="header">
         <div class="container">
             <div class="header-content">
@@ -20,6 +20,18 @@
                         <div class="subtitle">BAUPROFI.AT</div>
                     </div>
                 </div>
+                
+                <!-- Inline Navigation -->
+                <nav class="nav-inline">
+                    <ul class="nav-list">
+                        <li><a href="index.html">Leistungen</a></li>
+                        <li><a href="referenzen.html">Referenzen</a></li>
+                        <li><a href="anfragen.html">Anfrage</a></li>
+                        <li><a href="ueber-uns.html">Über uns</a></li>
+                        <li><a href="kontakt.html" class="active">Kontakt</a></li>
+                    </ul>
+                </nav>
+                
                 <div class="contact-header">
                     <a href="tel:+436608669020" class="phone">📞 +43 660 8669020</a>
                     <a href="mailto:office@poolbauprofi.at" class="email">✉️ office@poolbauprofi.at</a>
@@ -27,19 +39,6 @@
             </div>
         </div>
     </header>
-
-    <!-- Navigation -->
-    <nav class="nav">
-        <div class="container">
-            <ul class="nav-list">
-                <li><a href="index.html">Leistungen</a></li>
-                <li><a href="referenzen.html">Referenzen</a></li>
-                <li><a href="anfragen.html">Anfrage</a></li>
-                <li><a href="ueber-uns.html">Über uns</a></li>
-                <li><a href="kontakt.html" class="active">Kontakt</a></li>
-            </ul>
-        </div>
-    </nav>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -152,7 +151,14 @@
                     document.body.style.backgroundSize = 'cover';
                     document.body.style.backgroundPosition = 'center';
                     document.body.style.backgroundAttachment = 'fixed';
+                    document.body.style.backgroundRepeat = 'no-repeat';
                 }
+                
+                // Ensure header and navigation are transparent
+                const header = document.querySelector('.header');
+                const nav = document.querySelector('.nav');
+                if (header) header.style.background = 'transparent';
+                if (nav) nav.style.background = 'transparent';
                 
                 // Apply transparency settings
                 if (data.background_transparency === 'full') {
