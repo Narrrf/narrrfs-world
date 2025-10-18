@@ -39,6 +39,8 @@ return [
     "1360170093186646129" => "Narrrf's World Login",
     "1399651053682692208" => "🧀 Cheese Hunter",
     "1417279348989497532" => "Season Tester",
+  // New tester collab role
+  "1428901285754830858" => "Game Tester",
     "1389734119675527238" => "Monthly Tetris Legend",
     "1389734241214009485" => "Monthly Snake Legend",
     "1411748100199940188" => "Monthly Cheese Invaders Legend"

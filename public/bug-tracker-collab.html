@@ -122,6 +122,8 @@
         return true;
       }
 
+      // Ensure roles are up-to-date in DB (new roles like Game Tester)
+      try { await fetch(API_BASE + '/api/auth/sync-role.php', { credentials: 'include' }); } catch (_) {}
       const res = await fetch(API_BASE + '/api/user/profile.php', { credentials: 'include' });
       if (!res.ok) throw new Error('No session');
       const data = await res.json();
