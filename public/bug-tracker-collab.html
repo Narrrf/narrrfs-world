@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bug Tracker – Collaboration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0b1220; color: #e5e7eb; }
+    .card { background: #0f172a; border: 1px solid #334155; border-radius: 10px; }
+    .th { background: #0b1220; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="bg-gradient-to-r from-rose-600 to-orange-500 text-white shadow">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="font-extrabold">🐞 Bug Tracker – Collaboration</div>
+      <a href="/public/profile.html" class="text-sm underline">← Back to Profile</a>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Gate -->
+    <div id="gate" class="card p-4 mb-4">
+      <div class="flex items-center gap-2 text-yellow-300"><span>🔐</span><span>Checking Discord session…</span></div>
+      <div class="text-xs text-slate-400 mt-2">This page is restricted to Admins, Moderators, Owners/Founders, and Game Testers.</div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls" class="card p-4 mb-4 hidden">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <input id="search" type="text" placeholder="Search title/desc" class="bg-slate-800 border border-slate-600 rounded px-3 py-2 w-72" />
+          <select id="statusFilter" class="bg-slate-800 border border-slate-600 rounded px-3 py-2">
+            <option value="">All statuses</option>
+          </select>
+          <button id="refreshBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2 rounded-lg">Refresh</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="bulkStatus" class="bg-slate-800 border border-slate-600 rounded px-3 py-2">
+            <option value="">Change status…</option>
+          </select>
+          <button id="applyBulk" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-2 rounded-lg">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div id="bugsCard" class="card hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="th text-left">
+            <tr>
+              <th class="p-3"><input type="checkbox" id="selectAll"/></th>
+              <th class="p-3">ID</th>
+              <th class="p-3">Title</th>
+              <th class="p-3">Category</th>
+              <th class="p-3">Priority</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Assigned</th>
+              <th class="p-3">Updated</th>
+              <th class="p-3 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bugsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Drawer -->
+    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-slate-900/95 border-t border-slate-700 hidden">
+      <div class="max-w-6xl mx-auto p-4">
+        <div class="flex items-center justify-between">
+          <div class="font-bold" id="drawerTitle">Bug #</div>
+          <button id="drawerClose" class="text-slate-300 hover:text-white">✕ Close</button>
+        </div>
+        <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Left: details -->
+          <div class="md:col-span-2">
+            <div id="bugDetails" class="bg-slate-800/60 border border-slate-700 rounded p-3 text-sm"></div>
+          </div>
+          <!-- Right: quick actions -->
+          <div>
+            <textarea id="commentText" class="w-full bg-slate-800 border border-slate-700 rounded p-3" rows="4" placeholder="Add a tester note/comment…"></textarea>
+            <div class="mt-2 flex items-center gap-2">
+              <button id="addComment" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-lg">Add Comment</button>
+              <select id="singleStatus" class="bg-slate-800 border border-slate-700 rounded px-3 py-2"></select>
+              <button id="updateSingle" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-2 rounded-lg">Update Status</button>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-slate-300 mb-1">Comments</div>
+            <div id="commentsList" class="bg-slate-800/60 border border-slate-700 rounded p-3 text-sm max-h-56 overflow-auto"></div>
+          </div>
+          <div>
+            <div class="text-slate-300 mb-1">Timeline</div>
+            <div id="timelineList" class="bg-slate-800/60 border border-slate-700 rounded p-3 text-sm max-h-56 overflow-auto"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+  const isProduction = window.location.hostname === 'narrrfs.world';
+  const API_BASE = isProduction ? 'https://narrrfs.world' : '';
+  const ALLOWED_ROLE_NAMES = ['admin','administrator','moderator','mod','owner','founder','game tester'];
+  let BUGS = [], STATUSES = [], CURRENT_BUG_ID = null;
+
+  function qs(key){ return new URLSearchParams(location.search).get(key); }
+
+  async function gate() {
+    try {
+      // Local/test bypass
+      const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if (isLocal || qs('bypass') === '1') {
+        document.getElementById('gate').classList.add('hidden');
+        document.getElementById('controls').classList.remove('hidden');
+        document.getElementById('bugsCard').classList.remove('hidden');
+        return true;
+      }
+
+      const res = await fetch(API_BASE + '/api/user/profile.php', { credentials: 'include' });
+      if (!res.ok) throw new Error('No session');
+      const data = await res.json();
+      const roles = Array.isArray(data.roles) ? data.roles.map(r => String(r).toLowerCase()) : [];
+      const roleIds = Array.isArray(data.role_ids) ? data.role_ids.map(String)
+                    : Array.isArray(data.roleIds) ? data.roleIds.map(String) : [];
+      const allowedByName = roles.some(r => ALLOWED_ROLE_NAMES.some(a => r.includes(a)));
+      const allowedById = roleIds.includes('1428901285754830858'); // Game Tester role ID
+      const allowed = allowedByName || allowedById;
+      if (!allowed) throw new Error('Forbidden');
+      document.getElementById('gate').classList.add('hidden');
+      document.getElementById('controls').classList.remove('hidden');
+      document.getElementById('bugsCard').classList.remove('hidden');
+      return true;
+    } catch (e) {
+      const g = document.getElementById('gate');
+      if (g) {
+        g.innerHTML = '<div class="text-red-400">❌ Access denied. You need Moderator/Admin/Owner/Founder/Game Tester role.</div>';
+      }
+      return false;
+    }
+  }
+
+  async function loadData() {
+    const res = await fetch(API_BASE + '/api/admin/get-bug-data.php', { credentials: 'include' });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to load');
+    BUGS = data.bugs || [];
+    STATUSES = data.statuses || [];
+    const statusFilter = document.getElementById('statusFilter');
+    const bulkStatus = document.getElementById('bulkStatus');
+    const singleStatus = document.getElementById('singleStatus');
+    [statusFilter, bulkStatus, singleStatus].forEach(sel => {
+      sel.innerHTML = sel === statusFilter ? '<option value="">All statuses</option>' : '<option value="">Change status…</option>';
+      STATUSES.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.status_id;
+        opt.textContent = s.status_name;
+        sel.appendChild(opt);
+      });
+    });
+    renderTable();
+  }
+
+  function escapeHtml(s){ return String(s||'').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+  function statusName(id){ const s = STATUSES.find(x => String(x.status_id) === String(id)); return s ? s.status_name : id; }
+
+  async function loadBugDetails(bugId){
+    const res = await fetch(API_BASE + '/api/admin/get-bug-details.php?id=' + encodeURIComponent(bugId), { credentials:'include' });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Details failed');
+    const d = data.bug || {}; const comments = data.comments||[]; const timeline = data.timeline||[];
+    const detailsBox = document.getElementById('bugDetails');
+    if (detailsBox) detailsBox.innerHTML = `
+      <div class="mb-2"><span class="text-slate-400">Title:</span> <b>${escapeHtml(d.title||'')}</b></div>
+      <div class="mb-2"><span class="text-slate-400">Status:</span> ${escapeHtml(statusName(d.status_id))} &nbsp; <span class="text-slate-400">Priority:</span> ${escapeHtml(d.priority_label||d.priority_id||'-')}</div>
+      <div class="mb-2"><span class="text-slate-400">Assigned:</span> ${escapeHtml(d.assigned_to||'-')}</div>
+      <div class="mb-2"><span class="text-slate-400">Updated:</span> ${escapeHtml((d.updated_at||'').replace('T',' '))}</div>
+      <div class="mt-3 whitespace-pre-wrap">${escapeHtml(d.description||'')}</div>`;
+    const commentsBox = document.getElementById('commentsList');
+    if (commentsBox) commentsBox.innerHTML = comments.length ? comments.map(c => `
+      <div class="border-b border-slate-700 py-2"><div class="text-slate-300 text-xs">${escapeHtml((c.created_at||'').replace('T',' '))} — ${escapeHtml(c.author||'Tester')}</div><div>${escapeHtml(c.comment_text||'')}</div></div>`).join('') : '<div class="text-slate-500">No comments yet.</div>';
+    const timelineBox = document.getElementById('timelineList');
+    if (timelineBox) timelineBox.innerHTML = timeline.length ? timeline.map(t => `
+      <div class="border-b border-slate-700 py-2"><div class="text-slate-300 text-xs">${escapeHtml((t.changed_at||'').replace('T',' '))}</div><div>${escapeHtml(t.old_status_name||'?')} → ${escapeHtml(t.new_status_name||'?')}</div><div class="text-xs text-slate-400">${escapeHtml(t.change_reason||'')}</div></div>`).join('') : '<div class="text-slate-500">No history yet.</div>';
+  }
+
+  function renderTable() {
+    const body = document.getElementById('bugsBody');
+    const q = (document.getElementById('search').value || '').toLowerCase();
+    const statusId = document.getElementById('statusFilter').value;
+    body.innerHTML = '';
+    const rows = BUGS.filter(b => {
+      const hit = (b.title||'').toLowerCase().includes(q) || (b.description||'').toLowerCase().includes(q);
+      const statusOk = !statusId || String(b.status_id) === String(statusId);
+      return hit && statusOk;
+    });
+    rows.forEach(b => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-800/60';
+      tr.innerHTML = `
+        <td class="p-3 align-top"><input type="checkbox" class="rowChk" data-id="${b.bug_id}"></td>
+        <td class="p-3 align-top text-slate-300">${b.bug_id}</td>
+        <td class="p-3 align-top">
+          <div class="font-semibold">${escapeHtml(b.title||'')}</div>
+          <div class="text-slate-300 text-xs mt-1 max-w-xl">${escapeHtml((b.description||'').slice(0,240))}</div>
+        </td>
+        <td class="p-3 align-top">${escapeHtml(b.category_name||'-')}</td>
+        <td class="p-3 align-top">${escapeHtml(b.priority_label||b.priority_id||'-')}</td>
+        <td class="p-3 align-top">${statusName(b.status_id)}</td>
+        <td class="p-3 align-top">${escapeHtml(b.assigned_to||'-')}</td>
+        <td class="p-3 align-top">${escapeHtml((b.updated_at||'').replace('T',' '))}</td>
+        <td class="p-3 align-top text-center">
+          <button class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded text-xs" data-act="open" data-id="${b.bug_id}">Open</button>
+        </td>`;
+      body.appendChild(tr);
+    });
+  }
+
+  async function bulkUpdate(ids, statusId, reason){
+    const res = await fetch(API_BASE + '/api/admin/bulk-update-bug-status.php', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ bug_ids: ids, status_id: Number(statusId), reason: reason || 'Updated by collaboration page' })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Bulk update failed');
+  }
+
+  async function addComment(bugId, text){
+    const res = await fetch(API_BASE + '/api/admin/add-bug-comment.php', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ bug_id: bugId, comment_text: text, comment_type: 'tester_comment' })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Add comment failed');
+  }
+
+  // DOM wiring
+  document.addEventListener('DOMContentLoaded', async () => {
+    const ok = await gate();
+    if (!ok) return;
+    await loadData();
+
+    const on = (id, evt, cb) => { const el = document.getElementById(id); if (el) el.addEventListener(evt, cb); };
+    on('refreshBtn','click', loadData);
+    on('statusFilter','change', renderTable);
+    on('search','input', renderTable);
+    on('selectAll','change', (e)=>{ document.querySelectorAll('.rowChk').forEach(chk => { chk.checked = e.target.checked; }); });
+    on('applyBulk','click', async ()=>{
+      const ids = Array.from(document.querySelectorAll('.rowChk')).filter(c=>c.checked).map(c=>Number(c.dataset.id));
+      const statusId = document.getElementById('bulkStatus').value;
+      if (!ids.length || !statusId) return;
+      await bulkUpdate(ids, statusId, 'Bulk by testers');
+      await loadData();
+    });
+
+    const bugsBody = document.getElementById('bugsBody');
+    if (bugsBody) bugsBody.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-act="open"]');
+      if (!btn) return;
+      CURRENT_BUG_ID = Number(btn.dataset.id);
+      document.getElementById('drawerTitle').textContent = `Bug #${CURRENT_BUG_ID}`;
+      document.getElementById('drawer').classList.remove('hidden');
+      await loadBugDetails(CURRENT_BUG_ID);
+    });
+    on('drawerClose','click', ()=>{
+      document.getElementById('drawer').classList.add('hidden');
+      document.getElementById('commentText').value = '';
+    });
+    on('addComment','click', async ()=>{
+      const text = document.getElementById('commentText').value.trim();
+      if (!CURRENT_BUG_ID || !text) return;
+      await addComment(CURRENT_BUG_ID, text);
+      document.getElementById('commentText').value='';
+    });
+    on('updateSingle','click', async ()=>{
+      const statusId = document.getElementById('singleStatus').value;
+      if (!CURRENT_BUG_ID || !statusId) return;
+      await bulkUpdate([CURRENT_BUG_ID], statusId, 'Tester update');
+      await loadData();
+    });
+  });
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🐛 Bug Tracker – Collaboration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="theme-color" content="#ef4444">
+  <style>
+    body { background: #0f172a; color: #fff; }
+    .card { background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); border-radius: 12px; }
+    .btn { @apply font-bold px-3 py-2 rounded-lg transition; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="bg-gradient-to-r from-rose-600 to-orange-600 py-4 shadow-lg border-b border-rose-400/40">
+    <div class="max-w-6xl mx-auto px-4 flex items-center justify-between">
+      <h1 class="text-xl font-extrabold">🐛 Bug Tracker – Collaboration</h1>
+      <nav class="text-sm space-x-4">
+        <a href="/profile.html" class="hover:text-yellow-300">← Back to Profile</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Dashboard Metrics -->
+    <section id="metrics" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 hidden">
+      <div class="card p-4">
+        <div class="text-slate-300 text-xs">Live Bug Count</div>
+        <div id="mTotal" class="text-3xl font-extrabold text-emerald-400">-</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-slate-300 text-xs">Critical / High</div>
+        <div id="mCritical" class="text-3xl font-extrabold text-rose-400">-</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-slate-300 text-xs">In Progress</div>
+        <div id="mInProgress" class="text-3xl font-extrabold text-amber-400">-</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-slate-300 text-xs">Received Today</div>
+        <div id="mToday" class="text-3xl font-extrabold text-cyan-400">-</div>
+      </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section id="recentActivity" class="card p-4 mb-6 hidden">
+      <div class="flex items-center justify-between mb-2">
+        <div class="font-bold">Recent Activity</div>
+        <button id="exportCsv" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded text-xs">Export CSV</button>
+      </div>
+      <div id="recentBody" class="space-y-2 text-sm"></div>
+    </section>
+    <!-- Access Gate -->
+    <div id="gate" class="card p-6 mb-6">
+      <div id="gate-status" class="text-yellow-300">🔐 Checking Discord session…</div>
+      <div id="gate-actions" class="mt-3 hidden">
+        <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
+           class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-lg">Login with Discord</a>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls" class="card p-4 mb-4 hidden">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <input id="search" type="text" placeholder="Search title/desc" class="bg-slate-800 border border-slate-600 rounded px-3 py-2 w-72" />
+          <select id="statusFilter" class="bg-slate-800 border border-slate-600 rounded px-3 py-2">
+            <option value="">All statuses</option>
+          </select>
+          <select id="priorityFilter" class="bg-slate-800 border border-slate-600 rounded px-3 py-2">
+            <option value="">All priorities</option>
+          </select>
+          <select id="assigneeFilter" class="bg-slate-800 border border-slate-600 rounded px-3 py-2">
+            <option value="">All assignees</option>
+          </select>
+          <button id="refreshBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2 rounded-lg">Refresh</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="bulkStatus" class="bg-slate-800 border border-slate-600 rounded px-3 py-2">
+            <option value="">Bulk change status…</option>
+          </select>
+          <button id="applyBulk" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-2 rounded-lg">Apply</button>
+          <input id="bulkAssignee" type="text" placeholder="Assign user (bulk)" class="bg-slate-800 border border-slate-600 rounded px-3 py-2" />
+          <button id="applyAssign" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-lg">Assign</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bugs Table -->
+    <div id="bugsCard" class="card p-0 overflow-hidden hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-800 text-slate-200">
+            <tr>
+              <th class="p-3"><input type="checkbox" id="selectAll"></th>
+              <th class="p-3 text-left">ID</th>
+              <th class="p-3 text-left">Title</th>
+              <th class="p-3 text-left">Category</th>
+              <th class="p-3 text-left">Priority</th>
+              <th class="p-3 text-left">Status</th>
+              <th class="p-3 text-left">Assigned</th>
+              <th class="p-3 text-left">Updated</th>
+              <th class="p-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bugsBody" class="divide-y divide-slate-800"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Drawer for comments -->
+    <div id="drawer" class="fixed bottom-0 left-0 right-0 bg-slate-900/95 border-t border-slate-700 hidden">
+      <div class="max-w-6xl mx-auto p-4">
+        <div class="flex items-center justify-between">
+          <div class="font-bold" id="drawerTitle">Bug #</div>
+          <button id="drawerClose" class="text-slate-300 hover:text-white">✕ Close</button>
+        </div>
+        <div class="mt-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input id="dTitle" class="bg-slate-800 border border-slate-700 rounded p-2" placeholder="Title" />
+            <input id="dAssignee" class="bg-slate-800 border border-slate-700 rounded p-2" placeholder="Assigned to" />
+            <select id="dCategory" class="bg-slate-800 border border-slate-700 rounded p-2"></select>
+            <select id="dPriority" class="bg-slate-800 border border-slate-700 rounded p-2"></select>
+            <select id="singleStatus" class="bg-slate-800 border border-slate-700 rounded p-2"></select>
+          </div>
+          <textarea id="dDescription" class="w-full bg-slate-800 border border-slate-700 rounded p-3 mt-3" rows="4" placeholder="Description"></textarea>
+          <textarea id="dResolution" class="w-full bg-slate-800 border border-slate-700 rounded p-3 mt-2" rows="2" placeholder="Resolution notes (optional)"></textarea>
+          <div class="mt-3 flex items-center gap-2">
+            <button id="saveBug" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2 rounded-lg">Save Changes</button>
+            <textarea id="commentText" class="flex-1 bg-slate-800 border border-slate-700 rounded p-2" rows="2" placeholder="Add a tester note/comment…"></textarea>
+            <button id="addComment" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-2 rounded-lg">Add Comment</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+  const API_BASE = '';
+  const ALLOWED_ROLE_NAMES = ['Admin','Administrator','Moderator','Mod','Owner','Founder','Game Tester'];
+  let BUGS = [], STATUSES = [], PRIORITIES = [], CATEGORIES = [], TEAM = [], CURRENT_BUG_ID = null;
+
+  async function gate() {
+    try {
+      // Local/dev bypass for testing before deploy
+      const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      const urlBypass = new URLSearchParams(location.search).get('bypass') === '1';
+      if (isLocal || urlBypass) {
+        document.getElementById('gate').classList.add('hidden');
+        document.getElementById('controls').classList.remove('hidden');
+        document.getElementById('bugsCard').classList.remove('hidden');
+        return true;
+      }
+
+      const res = await fetch(API_BASE + '/api/user/profile.php', { credentials: 'include' });
+      if (!res.ok) throw new Error('No session');
+      const data = await res.json();
+      const roles = Array.isArray(data.roles) ? data.roles : [];
+      const allowed = roles.some(r => ALLOWED_ROLE_NAMES.some(a => r.toLowerCase().includes(a.toLowerCase())));
+      if (!allowed) {
+        document.getElementById('gate-status').innerHTML = '🚫 Access denied. This page is for Game Testers and Moderators.';
+        document.getElementById('gate-actions').classList.remove('hidden');
+        return false;
+      }
+      document.getElementById('gate').classList.add('hidden');
+      document.getElementById('controls').classList.remove('hidden');
+      document.getElementById('bugsCard').classList.remove('hidden');
+      document.getElementById('metrics').classList.remove('hidden');
+      document.getElementById('recentActivity').classList.remove('hidden');
+      return true;
+    } catch (e) {
+      document.getElementById('gate-status').innerHTML = '🔐 Not logged in. Please login with Discord.';
+      document.getElementById('gate-actions').classList.remove('hidden');
+      return false;
+    }
+  }
+
+  async function loadData() {
+    const res = await fetch(API_BASE + '/api/admin/get-bug-data.php');
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to load');
+    BUGS = data.bugs || [];
+    STATUSES = data.statuses || [];
+    PRIORITIES = data.priorities || [];
+    CATEGORIES = data.categories || [];
+    TEAM = data.teamMembers || [];
+    // Fill status selects
+    const statusFilter = document.getElementById('statusFilter');
+    const bulkStatus = document.getElementById('bulkStatus');
+    const singleStatus = document.getElementById('singleStatus');
+    [statusFilter, bulkStatus, singleStatus].forEach(sel => {
+      sel.innerHTML = sel === statusFilter ? '<option value="">All statuses</option>' : '<option value="">Change status…</option>';
+      STATUSES.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.status_id;
+        opt.textContent = s.status_name;
+        sel.appendChild(opt);
+      });
+    });
+    // Fill priority & category filters
+    const priorityFilter = document.getElementById('priorityFilter');
+    const dPriority = document.getElementById('dPriority');
+    priorityFilter.innerHTML = '<option value="">All priorities</option>';
+    dPriority.innerHTML = '';
+    PRIORITIES.forEach(p => {
+      const label = p.priority_label || p.priority_name || `P${p.priority_id||p.priority_level}`;
+      const o1 = document.createElement('option'); o1.value = p.priority_id || p.priority_level; o1.textContent = label; priorityFilter.appendChild(o1);
+      const o2 = document.createElement('option'); o2.value = p.priority_id || p.priority_level; o2.textContent = label; dPriority.appendChild(o2);
+    });
+    const assigneeFilter = document.getElementById('assigneeFilter');
+    assigneeFilter.innerHTML = '<option value="">All assignees</option>';
+    TEAM.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; assigneeFilter.appendChild(o); });
+    const dCategory = document.getElementById('dCategory');
+    dCategory.innerHTML = '';
+    CATEGORIES.forEach(c => { const o = document.createElement('option'); o.value = c.category_id; o.textContent = c.category_name; dCategory.appendChild(o); });
+    // Metrics & recent
+    computeMetrics();
+    renderRecent();
+    renderTable();
+  }
+
+  function renderTable() {
+    const body = document.getElementById('bugsBody');
+    const q = (document.getElementById('search').value || '').toLowerCase();
+    const statusId = document.getElementById('statusFilter').value;
+    const prId = document.getElementById('priorityFilter').value;
+    const asg = document.getElementById('assigneeFilter').value;
+    body.innerHTML = '';
+    const rows = BUGS.filter(b => {
+      const hit = (b.title||'').toLowerCase().includes(q) || (b.description||'').toLowerCase().includes(q);
+      const statusOk = !statusId || String(b.status_id) === String(statusId);
+      const prOk = !prId || String(b.priority_id||b.priority_level) === String(prId);
+      const asgOk = !asg || String(b.assigned_to||'').toLowerCase() === asg.toLowerCase();
+      return hit && statusOk && prOk && asgOk;
+    });
+    rows.forEach(b => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-800/60';
+      tr.innerHTML = `
+        <td class="p-3 align-top"><input type="checkbox" class="rowChk" data-id="${b.bug_id}"></td>
+        <td class="p-3 align-top text-slate-300">${b.bug_id}</td>
+        <td class="p-3 align-top">
+          <div class="font-semibold">${escapeHtml(b.title||'')}</div>
+          <div class="text-slate-300 text-xs mt-1 max-w-xl">${escapeHtml((b.description||'').slice(0,240))}</div>
+        </td>
+        <td class="p-3 align-top">${categoryName(b.category_id)}</td>
+        <td class="p-3 align-top">${priorityName(b.priority_id||b.priority_level)}</td>
+        <td class="p-3 align-top">${statusName(b.status_id)}</td>
+        <td class="p-3 align-top">${b.assigned_to||'-'}</td>
+        <td class="p-3 align-top">${formatDate(b.updated_at)}</td>
+        <td class="p-3 align-top text-center">
+          <button class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded text-xs" data-act="open" data-id="${b.bug_id}">Open</button>
+        </td>`;
+      body.appendChild(tr);
+    });
+  }
+
+  function statusName(id){
+    const s = STATUSES.find(x => String(x.status_id) === String(id));
+    return s ? s.status_name : id;
+  }
+  function priorityName(id){
+    const p = PRIORITIES.find(x => String(x.priority_id||x.priority_level) === String(id));
+    return p ? (p.priority_label||p.priority_name||`P${id}`) : id;
+  }
+  function categoryName(id){
+    const c = CATEGORIES.find(x => String(x.category_id) === String(id));
+    return c ? c.category_name : '-';
+  }
+  function formatDate(ts){
+    if (!ts) return '';
+    return String(ts).replace('T',' ').slice(0,19);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+  }
+
+  async function bulkUpdate(ids, statusId, reason){
+    const res = await fetch(API_BASE + '/api/admin/bulk-update-bug-status.php', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ bug_ids: ids, status_id: Number(statusId), reason: reason || 'Tester update' })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Bulk update failed');
+  }
+
+  async function addComment(bugId, text){
+    const res = await fetch(API_BASE + '/api/admin/add-bug-comment.php', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ bug_id: bugId, comment_text: text, comment_type: 'tester_comment' })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Add comment failed');
+  }
+
+  async function saveBugChanges(){
+    if (!CURRENT_BUG_ID) return;
+    const payload = {
+      bug_id: CURRENT_BUG_ID,
+      title: document.getElementById('dTitle').value || '',
+      description: document.getElementById('dDescription').value || '',
+      category_id: Number(document.getElementById('dCategory').value||0) || null,
+      priority_id: Number(document.getElementById('dPriority').value||0) || null,
+      status_id: Number(document.getElementById('singleStatus').value||0) || null,
+      assigned_to: document.getElementById('dAssignee').value || null,
+      resolution_notes: document.getElementById('dResolution').value || null
+    };
+    const res = await fetch(API_BASE + '/api/admin/update-bug-report.php', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Save failed');
+  }
+
+  function computeMetrics(){
+    const today = new Date().toISOString().slice(0,10);
+    const total = BUGS.length;
+    const critical = BUGS.filter(b => Number(b.priority_id||b.priority_level) >= 3).length; // assume 3=High
+    const inProgIds = STATUSES.filter(s => /progress|active/i.test(s.status_name||'')).map(s=>String(s.status_id));
+    const inProg = BUGS.filter(b => inProgIds.includes(String(b.status_id))).length;
+    const receivedToday = BUGS.filter(b => String(b.created_at||'').slice(0,10) === today).length;
+    document.getElementById('mTotal').textContent = total;
+    document.getElementById('mCritical').textContent = critical;
+    document.getElementById('mInProgress').textContent = inProg;
+    document.getElementById('mToday').textContent = receivedToday;
+  }
+
+  function renderRecent(){
+    const cont = document.getElementById('recentBody');
+    cont.innerHTML = '';
+    const recent = [...BUGS].sort((a,b)=>String(b.updated_at||'').localeCompare(String(a.updated_at||''))).slice(0,5);
+    recent.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'bg-slate-800 border border-slate-700 rounded p-2';
+      div.innerHTML = `<div class="text-xs text-slate-400">#${b.bug_id} • ${formatDate(b.updated_at)} • ${statusName(b.status_id)}</div>
+                       <div class="font-semibold">${escapeHtml(b.title||'')}</div>`;
+      cont.appendChild(div);
+    });
+  }
+
+  function exportCSV(){
+    const headers = ['bug_id','title','category','priority','status','assigned_to','created_at','updated_at'];
+    const lines = [headers.join(',')];
+    BUGS.forEach(b => {
+      const row = [
+        b.bug_id,
+        '"'+String(b.title||'').replace(/"/g,'""')+'"',
+        '"'+categoryName(b.category_id)+'"',
+        '"'+priorityName(b.priority_id||b.priority_level)+'"',
+        '"'+statusName(b.status_id)+'"',
+        '"'+(b.assigned_to||'')+'"',
+        '"'+(b.created_at||'')+'"',
+        '"'+(b.updated_at||'')+'"'
+      ];
+      lines.push(row.join(','));
+    });
+    const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'bugs.csv'; a.click(); URL.revokeObjectURL(url);
+  }
+
+  // Events
+  document.getElementById('refreshBtn').addEventListener('click', loadData);
+  document.getElementById('search').addEventListener('input', renderTable);
+  document.addEventListener('DOMContentLoaded', () => {
+    const on = (id, evt, cb) => { const el = document.getElementById(id); if (el) el.addEventListener(evt, cb); };
+    on('statusFilter','change', renderTable);
+    on('priorityFilter','change', renderTable);
+    on('assigneeFilter','change', renderTable);
+    on('selectAll','change', (e)=>{
+      document.querySelectorAll('.rowChk').forEach(chk => { chk.checked = e.target.checked; });
+    });
+    on('applyBulk','click', async ()=>{
+      const ids = Array.from(document.querySelectorAll('.rowChk')).filter(c=>c.checked).map(c=>Number(c.dataset.id));
+      const statusId = (document.getElementById('bulkStatus')||{}).value;
+      if (!ids.length || !statusId) return;
+      await bulkUpdate(ids, statusId, 'Bulk by testers');
+      await loadData();
+    });
+    on('applyAssign','click', async ()=>{
+      const ids = Array.from(document.querySelectorAll('.rowChk')).filter(c=>c.checked).map(c=>Number(c.dataset.id));
+      const who = (document.getElementById('bulkAssignee')||{value:''}).value.trim();
+      if (!ids.length || !who) return;
+      for (const id of ids) {
+        const bug = BUGS.find(b=>Number(b.bug_id)===id) || {};
+        const payload = {
+          bug_id:id,
+          title: bug.title||'',
+          description: bug.description||'',
+          category_id: bug.category_id||null,
+          priority_id: bug.priority_id||bug.priority_level||null,
+          status_id: bug.status_id||null,
+          assigned_to: who,
+          resolution_notes: bug.resolution_notes||null
+        };
+        await fetch(API_BASE + '/api/admin/update-bug-report.php', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+      }
+      await loadData();
+    });
+    const bugsBody = document.getElementById('bugsBody');
+    if (bugsBody) bugsBody.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-act="open"]');
+      if (!btn) return;
+      CURRENT_BUG_ID = Number(btn.dataset.id);
+      const titleEl = document.getElementById('drawerTitle'); if (titleEl) titleEl.textContent = `Bug #${CURRENT_BUG_ID}`;
+      const bug = BUGS.find(b=>Number(b.bug_id)===CURRENT_BUG_ID) || {};
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+      set('dTitle', bug.title||'');
+      set('dAssignee', bug.assigned_to||'');
+      set('dDescription', bug.description||'');
+      set('dResolution', bug.resolution_notes||'');
+      set('dCategory', String(bug.category_id||''));
+      set('dPriority', String(bug.priority_id||bug.priority_level||''));
+      set('singleStatus', String(bug.status_id||''));
+      const drawer = document.getElementById('drawer'); if (drawer) drawer.classList.remove('hidden');
+    });
+    on('drawerClose','click', ()=>{
+      const drawer = document.getElementById('drawer'); if (drawer) drawer.classList.add('hidden');
+      const ct = document.getElementById('commentText'); if (ct) ct.value = '';
+    });
+    on('addComment','click', async ()=>{
+      const ct = document.getElementById('commentText');
+      const text = ct ? ct.value.trim() : '';
+      if (!CURRENT_BUG_ID || !text) return;
+      await addComment(CURRENT_BUG_ID, text);
+      if (ct) ct.value='';
+    });
+    on('updateSingle','click', async ()=>{
+      const ss = document.getElementById('singleStatus');
+      const statusId = ss ? ss.value : '';
+      if (!CURRENT_BUG_ID || !statusId) return;
+      await bulkUpdate([CURRENT_BUG_ID], statusId, 'Tester update');
+      await loadData();
+    });
+    on('saveBug','click', async ()=>{ await saveBugChanges(); await loadData(); });
+    on('exportCsv','click', exportCSV);
+  });
+
+  (async () => { if (await gate()) { await loadData(); } })();
+  </script>
+</body>
+</html>
+
+
+
