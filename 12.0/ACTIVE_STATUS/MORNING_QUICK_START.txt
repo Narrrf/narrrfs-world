@@ -1,0 +1,30 @@
+🎁 MORNING GIVEAWAY REROLL - SUPER QUICK REFERENCE 🎁
+═══════════════════════════════════════════════════════
+
+📋 5 STEPS - 6 MINUTES TOTAL:
+
+1️⃣ DEPLOY (2 min):
+   cd C:\xampp-server\htdocs\narrrfs-world\discord
+   node deploy-commands.js
+
+2️⃣ START BOT (30 sec):
+   node index.js
+   (Keep window open!)
+
+3️⃣ ANNOUNCE IN DISCORD (1 min):
+   /announce-giveaway-reroll giveaway_id:giveaway_1760718779741_pd8ef4j8h
+
+4️⃣ WAIT (30-60 sec):
+   Let participants see the announcement
+
+5️⃣ RAFFLE IN DISCORD (30 sec):
+   /recover-giveaways
+
+✅ DONE! Winner announced automatically!
+
+═══════════════════════════════════════════════════════
+
+FULL DETAILS: 12.0/ACTIVE_STATUS/TOMORROW_GIVEAWAY_RESTART_PLAN.md
+
+═══════════════════════════════════════════════════════
+

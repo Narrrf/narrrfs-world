@@ -2990,7 +2990,7 @@ let reloadButtonInterval = null;
       bossBullets = [];
       bossExplosions = [];
       bossDefeated = false;
-              bossReward = Math.floor(waveNumber * 0.02); // 1/5 of original: 0.2 DSPOINC for wave 10, 0.4 for wave 20, etc.
+              bossReward = Math.max(1, Math.floor(waveNumber * 0.02)); // 🚨 FIX: Ensure minimum reward of 1 DSPOINC to prevent negative scores
       console.log(`✅ Boss phase variables set: phase=${bossPhase}, reward=${bossReward}`);
       
       // 🚀 CRITICAL DEBUG: Verify phase variables
@@ -3983,7 +3983,7 @@ let reloadButtonInterval = null;
         if (boss.health <= 0 && !bossDefeated) {
           bossDefeated = true;
           boss.health = 0; // Ensure it stays at 0
-          bossReward = Math.floor(bossReward * (1 + (waveNumber / 1000))); // 1/5 of original: much lower bonus for higher waves
+          bossReward = Math.max(1, Math.floor(bossReward * (1 + (waveNumber / 1000)))); // 🚨 FIX: Ensure minimum reward of 1 DSPOINC to prevent negative scores
           console.log(`👑 BOSS DEFEATED! ${boss.name} has been vanquished! Reward: ${bossReward} DSPOINC`);
           console.log(`🎉 Final boss stats: Wave ${waveNumber}, Type: ${boss.type}, Max Health: ${boss.maxHealth}`);
           
@@ -5013,6 +5013,50 @@ let reloadButtonInterval = null;
     // Start new game with countdown
     startGameWithCountdown();
   }
+
+  // 🏁 End game function (called by End Game button)
+  function endSpaceInvadersGame() {
+    console.log('🏁 End Game button clicked - ending Space Invaders');
+    
+    // Stop all game loops and timers
+    clearInterval(spaceInvadersGameInterval);
+    spaceInvadersGameInterval = null;
+    
+    // Set game state to ended
+    gamePhase = 'ended';
+    gameRunning = false;
+    
+    // Hide any open modals
+    const gameOverModal = document.getElementById("space-invaders-over-modal");
+    const winModal = document.getElementById("space-invaders-win-modal");
+    
+    if (gameOverModal) {
+      gameOverModal.classList.add("hidden");
+    }
+    if (winModal) {
+      winModal.classList.add("hidden");
+    }
+    
+    // Clean up controls
+    cleanupSpaceInvadersControls();
+    
+    // Clean up ship cursor
+    cleanupCustomCursor();
+    
+    // Ensure mobile controls are visible
+    setTimeout(() => {
+      ensureMobileControlsVisible();
+    }, 100);
+    
+    // Dispatch game end event for UI reset
+    window.dispatchEvent(new Event('spaceInvadersGameEnd'));
+    
+    console.log('✅ Space Invaders game ended cleanly');
+  }
+
+  // 🚀 EXPOSE FUNCTIONS TO GLOBAL SCOPE
+  window.restartGame = restartGame;
+  window.endSpaceInvadersGame = endSpaceInvadersGame;
 
   function initializeInvaders() {
     invaders = [];
@@ -9283,8 +9327,13 @@ let reloadButtonInterval = null;
     }
     
     // 🔧 CRITICAL FIX: Score MUST be saved here for all players (not just winners)
-    console.log('💾 About to save score with finalSpaceInvadersScore:', finalSpaceInvadersScore);
-    saveScore(finalSpaceInvadersScore); // RESTORED: This is the main score saving point
+    // 🚨 CRITICAL SAFETY CHECK: Ensure score is never negative (Bug #159 fix)
+    const safeScore = Math.max(0, finalSpaceInvadersScore);
+    if (finalSpaceInvadersScore < 0) {
+      console.warn(`⚠️ NEGATIVE SCORE PREVENTED: ${finalSpaceInvadersScore} converted to 0`);
+    }
+    console.log('💾 About to save score with finalSpaceInvadersScore:', safeScore);
+    saveScore(safeScore); // RESTORED: This is the main score saving point
     
     // 🏆 SEASON 3 PHASE 2: Save achievements to database after game ends (without popups)
     // This ensures achievements are saved even if not triggered during gameplay
