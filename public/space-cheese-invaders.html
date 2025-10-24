@@ -489,7 +489,10 @@
   <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
     <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
     <p id="space-invaders-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-     <button onclick="restartGame()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+    <div class="flex gap-3 justify-center">
+      <button onclick="restartGame()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg transition-colors">🔁 Play Again</button>
+      <button onclick="endSpaceInvadersGame()" class="bg-gray-500 hover:bg-gray-400 text-white font-bold px-4 py-2 rounded-xl shadow-lg transition-colors">🏁 End Game</button>
+    </div>
   </div>
 </div>
 
@@ -497,7 +500,10 @@
   <div class="bg-green-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-green-400 max-w-xs w-full animate-fade-in">
     <h2 class="text-3xl font-extrabold mb-3 text-green-900 drop-shadow">🏆 VICTORY!</h2>
     <p id="space-invaders-win-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-     <button onclick="restartGame()" class="bg-green-400 hover:bg-green-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+    <div class="flex gap-3 justify-center">
+      <button onclick="restartGame()" class="bg-green-400 hover:bg-green-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg transition-colors">🔁 Play Again</button>
+      <button onclick="endSpaceInvadersGame()" class="bg-gray-500 hover:bg-gray-400 text-white font-bold px-4 py-2 rounded-xl shadow-lg transition-colors">🏁 End Game</button>
+    </div>
   </div>
 </div>
 

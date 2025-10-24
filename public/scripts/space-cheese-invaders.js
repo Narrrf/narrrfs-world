@@ -9970,6 +9970,13 @@ let reloadButtonInterval = null;
       return; // Ship stays at spawn position until player moves mouse
     }
     
+    // 🔥 CRITICAL FIX: Disable mouse control when keyboard keys are pressed
+    // This allows seamless switching between mouse and keyboard controls
+    if (pressedKeys.size > 0) {
+      // Player is using keyboard - don't interfere with mouse positioning
+      return;
+    }
+    
     // 🐛 BUG #117 FIX: TRUE FULL-SCREEN MOUSE CONTROL
     // ALWAYS use global mouse coordinates (works both inside AND outside canvas!)
     let targetX, targetY;
