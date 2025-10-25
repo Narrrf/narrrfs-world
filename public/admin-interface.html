@@ -20250,7 +20250,7 @@ function updateGameTabContent(gameType, gameData) {
     }
 
     function testProfilePage() {
-      document.getElementById('securityTargetUrl').value = `${window.location.protocol}//${window.location.host}/public/profile.html`;
+      document.getElementById('securityTargetUrl').value = `${window.location.protocol}//${window.location.host}/profile.html`;
       startSecurityCrawl();
     }
 
@@ -20400,7 +20400,7 @@ function updateGameTabContent(gameType, gameData) {
     async function bulkSecurityTest() {
       const urls = [
         `${window.location.protocol}//${window.location.host}/public/index.html`,
-        `${window.location.protocol}//${window.location.host}/public/profile.html`,
+        `${window.location.protocol}//${window.location.host}/profile.html`,
         `${window.location.protocol}//${window.location.host}/public/admin-interface.html`,
         `${window.location.protocol}//${window.location.host}/api/admin/get-all-games-stats.php`
       ];

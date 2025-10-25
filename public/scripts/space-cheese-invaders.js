@@ -4999,6 +4999,12 @@ let reloadButtonInterval = null;
     isPhoenixWave = false;
     console.log('🧹 Restart: All entities cleared before new game starts (including Phoenix entities)');
     
+    // 🚨 BUG #165 FIX: Reset multi-shot upgrades to prevent starting with double/triple/quad shot
+    hasDoubleShotUpgrade = false;
+    hasTripleShotUpgrade = false;
+    hasQuadShotUpgrade = false;
+    console.log('🎯 Multi-shot upgrades reset - starting fresh with single shot');
+    
     // Hide any open modals
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const winModal = document.getElementById("space-invaders-win-modal");
@@ -5018,23 +5024,65 @@ let reloadButtonInterval = null;
   function endSpaceInvadersGame() {
     console.log('🏁 End Game button clicked - ending Space Invaders');
     
-    // Stop all game loops and timers
-    clearInterval(spaceInvadersGameInterval);
-    spaceInvadersGameInterval = null;
+    // 🚨 CRITICAL: Force stop all game loops and timers
+    if (spaceInvadersGameInterval) {
+      clearInterval(spaceInvadersGameInterval);
+      spaceInvadersGameInterval = null;
+      console.log('⏹️ Game interval stopped');
+    }
     
-    // Set game state to ended
+    // 🚨 CRITICAL: Set game state to ended IMMEDIATELY
     gamePhase = 'ended';
     gameRunning = false;
+    isGameOver = true; // Force game over state
+    console.log('🛑 Game state: ENDED');
     
-    // Hide any open modals
+    // 🚀 Get canvas element once at the beginning
+    const gameCanvas = document.getElementById('space-invaders-canvas');
+    
+    // 🚀 CRITICAL: Hide modals FIRST to prevent confusion
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const winModal = document.getElementById("space-invaders-win-modal");
     
     if (gameOverModal) {
       gameOverModal.classList.add("hidden");
+      console.log('✅ Game over modal hidden');
     }
     if (winModal) {
       winModal.classList.add("hidden");
+      console.log('✅ Win modal hidden');
+    }
+    
+    // 🚀 CRITICAL: Clear the canvas completely
+    if (gameCanvas) {
+      const ctx = gameCanvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+        // Fill with black background to ensure clean state
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+        console.log('🎨 Canvas cleared and blacked out');
+      }
+    }
+    
+    // 🚀 CRITICAL: Reset all game entities
+    invaders = [];
+    bullets = [];
+    enemyBullets = [];
+    powerUps = [];
+    particles = [];
+    explosions = [];
+    console.log('🔄 Game entities reset');
+    
+    // 🚀 CRITICAL: Reset ship position and state
+    if (typeof ship !== 'undefined' && ship && gameCanvas) {
+      ship.x = gameCanvas.width / 2;
+      ship.y = gameCanvas.height - 60;
+      ship.width = 50;
+      ship.height = 50;
+      ship.speed = 5;
+      ship.health = 100;
+      console.log('🚀 Ship reset to initial state');
     }
     
     // Clean up controls
@@ -5042,6 +5090,18 @@ let reloadButtonInterval = null;
     
     // Clean up ship cursor
     cleanupCustomCursor();
+    
+    // 🚀 CRITICAL: Reset pressed keys to prevent stuck controls
+    pressedKeys.clear();
+    console.log('⌨️ Keyboard state reset');
+    
+    // 🚀 CRITICAL: Clear any remaining timeouts/intervals
+    // This ensures no stray game logic is still running
+    for (let i = 1; i < 99999; i++) {
+      window.clearTimeout(i);
+      window.clearInterval(i);
+    }
+    console.log('🧹 All timeouts/intervals cleared');
     
     // Ensure mobile controls are visible
     setTimeout(() => {
@@ -5051,7 +5111,7 @@ let reloadButtonInterval = null;
     // Dispatch game end event for UI reset
     window.dispatchEvent(new Event('spaceInvadersGameEnd'));
     
-    console.log('✅ Space Invaders game ended cleanly');
+    console.log('✅ Space Invaders game ended cleanly - ALL SYSTEMS STOPPED');
   }
 
   // 🚀 EXPOSE FUNCTIONS TO GLOBAL SCOPE
