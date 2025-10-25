@@ -1338,9 +1338,53 @@ document.addEventListener('DOMContentLoaded', async function() {
       </div>
     </div>
 
-      <!-- 🎯 Game Stats Grid -->
+      <!-- 🏆 ALL-TIME STATISTICS OVERVIEW -->
+      <div class="mb-8">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-md font-semibold text-yellow-300 flex items-center gap-2">
+            <span>🏆</span>
+            <span>All-Time Statistics Overview</span>
+            <span class="text-xs text-gray-400 font-normal">(Across All Seasons)</span>
+          </h3>
+          <button onclick="loadAllTimeStats()" 
+                  class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border border-yellow-500 transition-all duration-300 transform hover:scale-105 cursor-pointer text-sm">
+            🔄 Refresh Stats
+          </button>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div id="allTimeOverview" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <!-- Will be populated by JavaScript -->
+          <div class="bg-gradient-to-br from-purple-900/30 to-purple-700/30 rounded-lg p-4 border border-purple-500/30 text-center">
+            <div class="text-purple-300 text-xs mb-1">Total Games</div>
+            <div class="text-white font-bold text-2xl">-</div>
+          </div>
+          <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 rounded-lg p-4 border border-yellow-500/30 text-center">
+            <div class="text-yellow-300 text-xs mb-1">DSPOINC Earned</div>
+            <div class="text-white font-bold text-2xl">-</div>
+          </div>
+          <div class="bg-gradient-to-br from-green-900/30 to-green-700/30 rounded-lg p-4 border border-green-500/30 text-center">
+            <div class="text-green-300 text-xs mb-1">Achievements</div>
+            <div class="text-white font-bold text-2xl">-</div>
+          </div>
+          <div class="bg-gradient-to-br from-blue-900/30 to-blue-700/30 rounded-lg p-4 border border-blue-500/30 text-center">
+            <div class="text-blue-300 text-xs mb-1">Games Played</div>
+            <div class="text-white font-bold text-xl" id="allTimeGamesCount">0/5</div>
+          </div>
+        </div>
+        
+        <!-- Detailed Game Breakdown -->
+        <div id="allTimeGameBreakdown" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Will be populated by JavaScript -->
+        </div>
+      </div>
+
+    <!-- 🎯 Game Stats Grid -->
       <div>
-        <h3 class="text-md font-semibold mb-3 text-blue-300">🎯 Game Statistics</h3>
+        <h3 class="text-md font-semibold mb-3 text-blue-300 flex items-center gap-2">
+          <span>🎯</span>
+          <span>Current Season Statistics</span>
+        </h3>
         <div id="missionsResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <!-- Game stats will be populated by JavaScript -->
         </div>
@@ -2139,6 +2183,30 @@ document.addEventListener("DOMContentLoaded", async function () {
           console.log('🏠 Local environment detected - showing 12.0 Management button for testing');
           showElement('management-button-container');
           
+          // 🏆 LOAD ALL-TIME STATS FOR TEST USER IN LOCAL DEV
+          console.log('🏆 LOCAL DEV - Loading all-time stats for test user (328601656659017732)');
+          setTimeout(async () => {
+            try {
+              const testResponse = await fetch('/api/user/all-time-stats.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: '328601656659017732' })
+              });
+              
+              console.log('🏆 LOCAL DEV - Test API response status:', testResponse.status);
+              
+              if (testResponse.ok) {
+                const testData = await testResponse.json();
+                console.log('🏆 LOCAL DEV - Test all-time stats loaded:', testData);
+                if (testData.success && testData.all_time_stats) {
+                  displayAllTimeStats(testData.all_time_stats);
+                }
+              }
+            } catch (testError) {
+              console.error('🏆 LOCAL DEV - Error loading test all-time stats:', testError);
+            }
+          }, 1000);
+          
           // 🏆 LOCAL TROPHY OVERRIDE - Create fake user object with all trophy roles
           console.log('🏠 Local environment detected - creating fake user with ALL trophy roles for testing');
           const fakeUser = {
@@ -2252,6 +2320,26 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
     } catch (error) {
       console.warn('Failed to load missions data:', error);
+    }
+    
+    // Load all-time statistics automatically on page load
+    try {
+      console.log('🏆 Auto-loading all-time stats for user:', user.discord_id);
+      const allTimeRes = await fetch(`${apiBaseUrl}/api/user/all-time-stats.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.discord_id })
+      });
+      
+      if (allTimeRes.ok) {
+        const allTimeData = await allTimeRes.json();
+        console.log('🏆 All-time stats loaded on page load:', allTimeData);
+        if (allTimeData.success && allTimeData.all_time_stats) {
+          displayAllTimeStats(allTimeData.all_time_stats);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load all-time stats on page load:', error);
     }
 
     // Trophy pokal shelf — render immediately from roles
@@ -3730,10 +3818,272 @@ function navigateToGame(url) {
   }
 }
 
+// 🏆 Function to load all-time statistics
+async function loadAllTimeStats() {
+  try {
+    console.log('🏆 Loading all-time statistics...');
+    
+    // Get the user's Discord ID
+    let discordId = localStorage.getItem('discord_id');
+    
+    if (!discordId) {
+      console.log('🏆 No Discord ID found, cannot load all-time stats');
+      displayAllTimeStatsError('Please log in with Discord to view all-time stats');
+      return;
+    }
+    
+    console.log('🏆 Loading all-time stats for Discord ID:', discordId);
+    
+    // Show loading state
+    const overviewEl = document.getElementById('allTimeOverview');
+    if (overviewEl) {
+      overviewEl.innerHTML = `
+        <div class="col-span-full text-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400 mx-auto mb-2"></div>
+          <div class="text-yellow-300">Loading all-time stats...</div>
+        </div>
+      `;
+    }
+    
+    // Environment-aware API endpoint
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+    
+    console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+    console.log(`🔗 All-Time Stats API URL: ${apiBaseUrl}/api/user/all-time-stats.php`);
+    
+    const response = await fetch(`${apiBaseUrl}/api/user/all-time-stats.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: discordId })
+    });
+    
+    console.log('🔗 API Response status:', response.status);
+    console.log('🔗 API Response ok:', response.ok);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('🔗 API Error response:', errorText);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('🏆 All-time stats loaded:', data);
+    
+    if (data.success && data.all_time_stats) {
+      displayAllTimeStats(data.all_time_stats);
+    } else {
+      throw new Error(data.error || 'Failed to load all-time stats');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error loading all-time stats:', error);
+    displayAllTimeStatsError(error.message);
+  }
+}
+
+// 🏆 Function to display all-time statistics
+function displayAllTimeStats(stats) {
+  try {
+    console.log('🏆 Displaying all-time stats:', stats);
+    
+    // Update overview summary cards
+    const overviewEl = document.getElementById('allTimeOverview');
+    if (overviewEl) {
+      const gamesPlayed = Object.values(stats.games).filter(game => {
+        if (game.total_games) return game.total_games > 0;
+        if (game.total_clicks) return game.total_clicks > 0;
+        if (game.total_races) return game.total_races > 0;
+        return false;
+      }).length;
+      
+      overviewEl.innerHTML = `
+        <div class="bg-gradient-to-br from-purple-900/30 to-purple-700/30 rounded-lg p-4 border border-purple-500/30 text-center">
+          <div class="text-purple-300 text-xs mb-1">Total Activities</div>
+          <div class="text-white font-bold text-2xl">${stats.total_games_played.toLocaleString()}</div>
+          <div class="text-purple-200 text-xs mt-1">All games combined</div>
+        </div>
+        <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 rounded-lg p-4 border border-yellow-500/30 text-center">
+          <div class="text-yellow-300 text-xs mb-1">DSPOINC Earned</div>
+          <div class="text-white font-bold text-2xl">${stats.total_dspoinc_earned.toLocaleString()}</div>
+          <div class="text-yellow-200 text-xs mt-1">Across all seasons</div>
+        </div>
+        <div class="bg-gradient-to-br from-green-900/30 to-green-700/30 rounded-lg p-4 border border-green-500/30 text-center">
+          <div class="text-green-300 text-xs mb-1">Achievements</div>
+          <div class="text-white font-bold text-2xl">${stats.total_achievements || 0}</div>
+          <div class="text-green-200 text-xs mt-1">Unlocked forever</div>
+        </div>
+        <div class="bg-gradient-to-br from-blue-900/30 to-blue-700/30 rounded-lg p-4 border border-blue-500/30 text-center">
+          <div class="text-blue-300 text-xs mb-1">Games Played</div>
+          <div class="text-white font-bold text-xl">${gamesPlayed}/5</div>
+          <div class="text-blue-200 text-xs mt-1">Unique games</div>
+        </div>
+      `;
+    }
+    
+    // Update detailed game breakdown
+    const breakdownEl = document.getElementById('allTimeGameBreakdown');
+    if (breakdownEl) {
+      let cardsHTML = '';
+      
+      // Tetris
+      const tetris = stats.games.tetris;
+      cardsHTML += `
+        <div class="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-lg p-3 border border-blue-500/30">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-2xl">${tetris.icon}</span>
+            <span class="text-white font-semibold">${tetris.name}</span>
+          </div>
+          <div class="text-xs space-y-1">
+            <div class="flex justify-between">
+              <span class="text-gray-400">Games Played:</span>
+              <span class="text-white font-semibold">${tetris.total_games.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Best Score:</span>
+              <span class="text-blue-300">${tetris.best_score.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Avg Score:</span>
+              <span class="text-purple-300">${tetris.avg_score.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Snake
+      const snake = stats.games.snake;
+      cardsHTML += `
+        <div class="bg-gradient-to-br from-green-900/20 to-emerald-900/20 rounded-lg p-3 border border-green-500/30">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-2xl">${snake.icon}</span>
+            <span class="text-white font-semibold">${snake.name}</span>
+          </div>
+          <div class="text-xs space-y-1">
+            <div class="flex justify-between">
+              <span class="text-gray-400">Games Played:</span>
+              <span class="text-white font-semibold">${snake.total_games.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Best Score:</span>
+              <span class="text-green-300">${snake.best_score.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Avg Score:</span>
+              <span class="text-emerald-300">${snake.avg_score.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Space Invaders
+      const space = stats.games.space_invaders;
+      cardsHTML += `
+        <div class="bg-gradient-to-br from-orange-900/20 to-red-900/20 rounded-lg p-3 border border-orange-500/30">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-2xl">${space.icon}</span>
+            <span class="text-white font-semibold">${space.name}</span>
+          </div>
+          <div class="text-xs space-y-1">
+            <div class="flex justify-between">
+              <span class="text-gray-400">Games Played:</span>
+              <span class="text-white font-semibold">${space.total_games.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Best Score:</span>
+              <span class="text-orange-300">${space.best_score.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Avg Score:</span>
+              <span class="text-red-300">${space.avg_score.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Cheese Hunt
+      const cheese = stats.games.cheese_hunt;
+      cardsHTML += `
+        <div class="bg-gradient-to-br from-yellow-900/20 to-amber-900/20 rounded-lg p-3 border border-yellow-500/30">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-2xl">${cheese.icon}</span>
+            <span class="text-white font-semibold">${cheese.name}</span>
+          </div>
+          <div class="text-xs space-y-1">
+            <div class="flex justify-between">
+              <span class="text-gray-400">Total Clicks:</span>
+              <span class="text-white font-semibold">${cheese.total_clicks.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Quest Clicks:</span>
+              <span class="text-yellow-300">${cheese.total_quest_clicks.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Days Played:</span>
+              <span class="text-amber-300">${cheese.days_played}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Discord Race
+      const race = stats.games.discord_race;
+      cardsHTML += `
+        <div class="bg-gradient-to-br from-pink-900/20 to-purple-900/20 rounded-lg p-3 border border-pink-500/30">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-2xl">${race.icon}</span>
+            <span class="text-white font-semibold">${race.name}</span>
+          </div>
+          <div class="text-xs space-y-1">
+            <div class="flex justify-between">
+              <span class="text-gray-400">Total Races:</span>
+              <span class="text-white font-semibold">${race.total_races.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Wins:</span>
+              <span class="text-pink-300">${race.total_wins} (${race.total_races > 0 ? Math.round((race.total_wins/race.total_races)*100) : 0}%)</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Best Position:</span>
+              <span class="text-purple-300">#${race.best_position || 'N/A'}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      breakdownEl.innerHTML = cardsHTML;
+    }
+    
+    console.log('✅ All-time stats displayed successfully');
+    
+  } catch (error) {
+    console.error('❌ Error displaying all-time stats:', error);
+    displayAllTimeStatsError(error.message);
+  }
+}
+
+// 🏆 Function to display all-time stats error
+function displayAllTimeStatsError(errorMessage) {
+  const overviewEl = document.getElementById('allTimeOverview');
+  if (overviewEl) {
+    overviewEl.innerHTML = `
+      <div class="col-span-full text-center text-red-400 py-4">
+        <div class="text-lg mb-2">❌ Error loading all-time stats</div>
+        <div class="text-sm">${errorMessage}</div>
+      </div>
+    `;
+  }
+}
+
 // Function to load game missions data
 async function loadGameMissions() {
   try {
     console.log('🎮 Loading game missions...');
+    
+    // Also load all-time stats
+    loadAllTimeStats();
     
     // Get the user's Discord ID from localStorage or the page
     let discordId = localStorage.getItem('discord_id');
