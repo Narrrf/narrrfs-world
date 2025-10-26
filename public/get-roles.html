@@ -213,13 +213,20 @@ require_once 'discord-invite.php';
 
       <!-- Trophy Grid -->
       <div class="trophy-shelf rounded-3xl p-8 mb-12">
-        <!-- 🚧 Role Bonus Configuration Notice -->
-        <div class="bg-yellow-900/30 border border-yellow-500/50 rounded-xl p-4 mb-8 text-center">
-          <h3 class="text-lg font-bold text-yellow-300 mb-2">🚧 Role Bonus System - Under Cheese-struction</h3>
-          <p class="text-yellow-100 text-sm">
-            Role bonuses and DSPOINC rewards are currently being configured. Each role will soon have specific bonus amounts 
-            and special privileges. Check back soon for the complete bonus system!
+        <!-- ✅ Role Bonus System LIVE -->
+        <div class="bg-green-900/30 border border-green-500/50 rounded-xl p-4 mb-8 text-center">
+          <h3 class="text-lg font-bold text-green-300 mb-2">✅ Role Bonus System - LIVE & ACTIVE</h3>
+          <p class="text-green-100 text-sm mb-3">
+            All gaming roles now have active multiplier bonuses across Tetris, Snake, and Space Invaders!
           </p>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-green-200">
+            <div>🎴 VIP Holder: <strong>2.0x</strong></div>
+            <div>🏆 Holder: <strong>1.5x</strong></div>
+            <div>🥇 Champion: <strong>1.4x</strong></div>
+            <div>🎮 Season Tester: <strong>1.3x</strong></div>
+            <div>🐦 Early Bird: <strong>1.2x</strong></div>
+            <div>🧀 Cheese Hunter: <strong>1.1x</strong></div>
+          </div>
         </div>
         
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
@@ -239,11 +246,11 @@ require_once 'discord-invite.php';
           <!-- Champion Trophy -->
           <div class="role-card rounded-2xl p-6 text-center trophy-glow">
             <img src="img/trophy_champion.png" alt="Champion" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Champion</h3>
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">🥇 Champion</h3>
             <p class="text-sm text-gray-300 mb-3">Tournament winner</p>
             <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              TOC Entry<br>
+              ✅ <strong>1.4x Gaming Bonus</strong><br>
+              🔴 Red Theme<br>
               Elite Raffles
             </div>
           </div>
@@ -371,36 +378,60 @@ require_once 'discord-invite.php';
           <!-- VIP Holder Trophy -->
           <div class="role-card rounded-2xl p-6 text-center trophy-glow">
             <img src="img/trophy_VIP.png" alt="VIP Holder" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">VIP Holder</h3>
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">🎴 VIP Holder</h3>
             <p class="text-sm text-gray-300 mb-3">Elite status with exclusive access</p>
             <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              VIP Raffles<br>
-              Early Drops
+              ✅ <strong>2.0x Gaming Bonus</strong><br>
+              🟡 Golden Theme<br>
+              VIP Raffles & Events
             </div>
           </div>
 
           <!-- Holder Trophy -->
           <div class="role-card rounded-2xl p-6 text-center trophy-glow">
             <img src="img/trophy_holder.png" alt="Holder" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Holder</h3>
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">🏆 Holder</h3>
             <p class="text-sm text-gray-300 mb-3">Core community member</p>
             <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Community Access<br>
-              Basic Rewards
+              ✅ <strong>1.5x Gaming Bonus</strong><br>
+              ⚪ Silver Theme<br>
+              Community Access
             </div>
           </div>
 
           <!-- Cheese Hunter Trophy -->
           <div class="role-card rounded-2xl p-6 text-center trophy-glow">
             <img src="img/trophy_cheese_hunter.png" alt="Cheese Hunter" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
-            <h3 class="text-lg font-bold text-yellow-400 mb-2">Cheese Hunter</h3>
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">🧀 Cheese Hunter</h3>
             <p class="text-sm text-gray-300 mb-3">Game achievement unlocked</p>
             <div class="text-xs text-yellow-300 font-mono">
-              🚧 Under Cheese-struction<br>
-              Game Rewards<br>
-              Special Events
+              ✅ <strong>1.1x Gaming Bonus</strong><br>
+              🟠 Orange Theme<br>
+              Game Rewards
+            </div>
+          </div>
+
+          <!-- Season Tester Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_season_tester.png" alt="Season Tester" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">🎮 Season Tester</h3>
+            <p class="text-sm text-gray-300 mb-3">Active season contributor</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              ✅ <strong>1.3x Gaming Bonus</strong><br>
+              🟢 Green Theme<br>
+              Testing Access
+            </div>
+          </div>
+
+          <!-- Early Bird Trophy -->
+          <div class="role-card rounded-2xl p-6 text-center trophy-glow">
+            <img src="img/trophy_earlybird.png" alt="Early Bird" class="w-20 h-20 mx-auto mb-4 drop-shadow-2xl" />
+            <h3 class="text-lg font-bold text-yellow-400 mb-2">🐦 Early Bird</h3>
+            <p class="text-sm text-gray-300 mb-3">Early supporter</p>
+            <div class="text-xs text-yellow-300 font-mono">
+              ✅ <strong>1.2x Gaming Bonus</strong><br>
+              🔵 Blue Theme<br>
+              Early Access
             </div>
           </div>
 
@@ -453,21 +484,25 @@ require_once 'discord-invite.php';
         <h3 class="text-2xl font-bold text-yellow-400 mb-6 text-center">🎯 Role Benefits Overview</h3>
         <div class="grid md:grid-cols-2 gap-8">
           <div>
-            <h4 class="text-lg font-semibold text-yellow-300 mb-4">🎮 Gaming Advantages</h4>
+            <h4 class="text-lg font-semibold text-yellow-300 mb-4">🎮 Gaming Advantages (LIVE NOW!)</h4>
             <ul class="space-y-2 text-gray-300">
-              <li>• <strong>Wheel Bonuses:</strong> Extra spins on weekly reward wheels</li>
-              <li>• <strong>VIP Access:</strong> Exclusive tournaments and events</li>
-              <li>• <strong>Early Drops:</strong> First access to new releases</li>
-              <li>• <strong>Special Rewards:</strong> Role-specific bonuses and perks</li>
+              <li>• <strong>Score Multipliers:</strong> Up to 2.0x bonus on all games (VIP Holder)</li>
+              <li>• <strong>Themed Frames:</strong> Unique visual themes (Gold, Silver, Red, etc.)</li>
+              <li>• <strong>3 Games Active:</strong> Tetris, Snake, Space Invaders</li>
+              <li>• <strong>Achievement System:</strong> Track progress across all games</li>
+              <li>• <strong>Discord Races:</strong> DSPOINC rewards for race winners</li>
+              <li>• <strong>Cheese Hunt:</strong> Click-based missions with rewards</li>
             </ul>
   </div>
           <div>
             <h4 class="text-lg font-semibold text-yellow-300 mb-4">🌟 Community Perks</h4>
             <ul class="space-y-2 text-gray-300">
               <li>• <strong>Discord Roles:</strong> Real Discord permissions and access</li>
-              <li>• <strong>Alpha Channels:</strong> Exclusive information and signals</li>
-              <li>• <strong>VIP Raffles:</strong> Higher chances in community giveaways</li>
-              <li>• <strong>Direct Access:</strong> Connect with team and community leaders</li>
+              <li>• <strong>NFT Verification:</strong> Automatic role grant for holders</li>
+              <li>• <strong>Giveaway System:</strong> Participate in epic cheese giveaways</li>
+              <li>• <strong>Season System:</strong> Historical stats preservation</li>
+              <li>• <strong>Profile Page:</strong> Complete gaming history tracking</li>
+              <li>• <strong>All-Time Stats:</strong> View total progress across all seasons</li>
             </ul>
   </div>
   </div>
@@ -493,29 +528,30 @@ require_once 'discord-invite.php';
         <!-- Tetris Achievements -->
         <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-blue-900/50 to-indigo-900/50 border-2 border-blue-500/50">
           <div class="text-5xl mb-4">🧩</div>
-          <h3 class="text-xl font-bold text-blue-400 mb-4">Tetris Master</h3>
+          <h3 class="text-xl font-bold text-blue-400 mb-4">Tetris DSPOINC</h3>
           <div class="space-y-3 text-sm">
             <div class="bg-blue-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-blue-300 mb-2">🎯 Mission Goals</h4>
+              <h4 class="font-semibold text-blue-300 mb-2">✅ Active Features</h4>
               <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• Score 1000+ points → Cheese Hunter Role</li>
-                <li>• Clear 10+ lines → Alpha Caller Access</li>
-                <li>• Perfect Game → VIP Holder Status</li>
-                <li>• Level 15+ → Champion Role</li>
+                <li>• <strong>2 DSPOINC per line</strong> cleared (base rate)</li>
+                <li>• <strong>10 DSPOINC bonus</strong> for bomb defusal</li>
+                <li>• <strong>Role multipliers:</strong> 1.1x - 2.0x bonus</li>
+                <li>• <strong>29 Achievements</strong> to unlock</li>
+                <li>• <strong>Themed frames:</strong> Gold, Silver, Red, Green, Blue, Orange</li>
               </ul>
             </div>
             <div class="bg-blue-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-blue-300 mb-2">🏆 Valid Rewards</h4>
+              <h4 class="font-semibold text-blue-300 mb-2">🏆 Real Benefits</h4>
               <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• Real DSPOINC points earned</li>
-                <li>• Achievement tracking in profile</li>
-                <li>• Mission status integration</li>
-                <li>• Working achievement system</li>
+                <li>• ✅ Earn real $DSPOINC points</li>
+                <li>• ✅ Track 29 achievements in profile</li>
+                <li>• ✅ All-time stats across seasons</li>
+                <li>• ✅ Role-based visual themes</li>
               </ul>
             </div>
             <div class="mt-4">
               <a href="profile.html" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
-                🎮 Play Tetris & Track Progress
+                🎮 Play Tetris Now
               </a>
             </div>
           </div>
@@ -524,29 +560,30 @@ require_once 'discord-invite.php';
         <!-- Snake Achievements -->
         <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-green-900/50 to-emerald-900/50 border-2 border-green-500/50">
           <div class="text-5xl mb-4">🐍</div>
-          <h3 class="text-xl font-bold text-green-400 mb-4">Snake Legend</h3>
+          <h3 class="text-xl font-bold text-green-400 mb-4">Snake DSPOINC</h3>
           <div class="space-y-3 text-sm">
             <div class="bg-green-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-green-300 mb-2">🎯 Mission Goals</h4>
+              <h4 class="font-semibold text-green-300 mb-2">✅ Active Features</h4>
               <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• Eat 25+ apples → Community Member</li>
-                <li>• Reach Level 10 → Engager Role</li>
-                <li>• Survive 5+ minutes → Verified Status</li>
-                <li>• Perfect Game → Server Booster</li>
+                <li>• <strong>10 DSPOINC per cheese</strong> (base rate)</li>
+                <li>• <strong>Role multipliers:</strong> 1.1x - 2.0x bonus</li>
+                <li>• <strong>28 Achievements</strong> to unlock</li>
+                <li>• <strong>Themed snakes:</strong> Gold, Silver, Red, Green, Blue, Orange</li>
+                <li>• <strong>Cheese teleportation</strong> mechanic active</li>
               </ul>
             </div>
             <div class="bg-green-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-green-300 mb-2">🏆 Valid Rewards</h4>
+              <h4 class="font-semibold text-green-300 mb-2">🏆 Real Benefits</h4>
               <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• Real DSPOINC points earned</li>
-                <li>• Achievement tracking in profile</li>
-                <li>• Mission status integration</li>
-                <li>• Working achievement system</li>
+                <li>• ✅ Earn real $DSPOINC points</li>
+                <li>• ✅ Track 28 achievements in profile</li>
+                <li>• ✅ All-time stats across seasons</li>
+                <li>• ✅ Role-based visual themes</li>
               </ul>
             </div>
             <div class="mt-4">
               <a href="profile.html" class="inline-block bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
-                🎮 Play Snake & Track Progress
+                🎮 Play Snake Now
               </a>
             </div>
           </div>
@@ -555,29 +592,30 @@ require_once 'discord-invite.php';
         <!-- Space Invaders Achievements -->
         <div class="role-card rounded-2xl p-6 text-center bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-2 border-purple-500/50">
           <div class="text-5xl mb-4">👾</div>
-          <h3 class="text-xl font-bold text-purple-400 mb-4">Space Commander</h3>
+          <h3 class="text-xl font-bold text-purple-400 mb-4">Space Cheese Invaders</h3>
           <div class="space-y-3 text-sm">
             <div class="bg-purple-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-purple-300 mb-2">🎯 Mission Goals</h4>
+              <h4 class="font-semibold text-purple-300 mb-2">✅ Active Features</h4>
               <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• Defeat 100+ invaders → Holder Role</li>
-                <li>• Beat Boss Level 5 → Poker OG</li>
-                <li>• Perfect Wave → Rumble Champ</li>
-                <li>• Score 10K+ → VIP Holder</li>
+                <li>• <strong>1 DSPOINC per invader</strong> (base rate)</li>
+                <li>• <strong>Role multipliers:</strong> 1.1x - 2.0x bonus</li>
+                <li>• <strong>30 Achievements</strong> to unlock</li>
+                <li>• <strong>Boss battles</strong> with power-ups</li>
+                <li>• <strong>Themed frames:</strong> Gold, Silver, Red, Green, Blue, Orange</li>
               </ul>
             </div>
             <div class="bg-purple-900/30 rounded-lg p-3">
-              <h4 class="font-semibold text-purple-300 mb-2">🏆 Valid Rewards</h4>
+              <h4 class="font-semibold text-purple-300 mb-2">🏆 Real Benefits</h4>
               <ul class="text-gray-300 space-y-1 text-xs">
-                <li>• Real DSPOINC points earned</li>
-                <li>• Achievement tracking in profile</li>
-                <li>• Mission status integration</li>
-                <li>• Working achievement system</li>
+                <li>• ✅ Earn real $DSPOINC points</li>
+                <li>• ✅ Track 30 achievements in profile</li>
+                <li>• ✅ All-time stats across seasons</li>
+                <li>• ✅ Role-based visual themes</li>
               </ul>
             </div>
             <div class="mt-4">
-              <a href="profile.html" class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
-                🎮 Play Space Invaders & Track Progress
+              <a href="space-cheese-invaders.html" class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 text-sm">
+                🎮 Play Space Invaders Now
               </a>
             </div>
           </div>

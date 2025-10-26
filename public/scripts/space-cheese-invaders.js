@@ -198,7 +198,7 @@ let spaceInvadersRoleThemes = {
   '🏆 Holder': 'silver', 
   'Cheese Hunter': 'cheese',
   '🧀 Cheese Hunter': 'cheese',
-  'Season Tester': 'rainbow',
+  'Season Tester': 'green',
   'Early Bird': 'blue',
   'Champion': 'red'
 };
@@ -272,7 +272,7 @@ function applySpaceInvadersRoleTheme() {
       '1332016526848692345': 'golden',    // 🎴 VIP Holder
       '1402668301414563971': 'silver',    // 🏆 Holder
       '1332017420591697972': 'red',       // Champion
-      '1417279348989497532': 'rainbow',   // Season Tester
+      '1417279348989497532': 'green',     // Season Tester
       '1332017614108758148': 'blue',      // Early Bird
       '1399651053682692208': 'cheese',    // 🧀 Cheese Hunter
       '1332108350518857842': 'blue'       // WL (blue theme)
@@ -288,7 +288,7 @@ function applySpaceInvadersRoleTheme() {
   const canvas = document.getElementById('space-invaders-canvas');
   if (canvas) {
     // Remove existing theme classes
-    canvas.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'royal', 'blue', 'red');
+    canvas.classList.remove('golden', 'silver', 'cheese', 'green', 'royal', 'blue', 'red');
     // Add new theme class
     if (theme !== 'default') {
       canvas.classList.add(theme);
