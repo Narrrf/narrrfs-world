@@ -74,7 +74,7 @@ let roleThemes = {
   '🏆 Holder': 'silver', 
   'Cheese Hunter': 'cheese',
   '🧀 Cheese Hunter': 'cheese',
-  'Season Tester': 'rainbow',
+  'Season Tester': 'green',
   'Early Bird': 'blue',
   'Champion': 'red'
 };
@@ -103,6 +103,8 @@ async function fetchUserRoleIDs() {
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
     
     if (isLocalDevelopment) {
+      // 🏠 Local environment detected - using Narrrf's roles for testing
+      console.log('🏠 Local environment detected - using Narrrf\'s roles for Tetris testing');
       userRoleIDs = [
         "1332016526848692345",  // 🎴 VIP Holder
         "1402668301414563971",  // 🏆 Holder
@@ -111,6 +113,8 @@ async function fetchUserRoleIDs() {
         "1332017614108758148",  // Early Bird
         "1399651053682692208"   // 🧀 Cheese Hunter
       ];
+      
+      console.log('🏆 Local test role IDs loaded for Tetris:', userRoleIDs);
       
       // Apply role-based theme on load
       applyRoleTheme();
@@ -154,7 +158,7 @@ function applyRoleTheme() {
       '1332016526848692345': 'golden',    // 🎴 VIP Holder
       '1402668301414563971': 'silver',    // 🏆 Holder
       '1332017420591697972': 'red',       // Champion
-      '1417279348989497532': 'rainbow',   // Season Tester
+      '1417279348989497532': 'green',     // Season Tester
       '1332017614108758148': 'blue',      // Early Bird
       '1399651053682692208': 'cheese',    // 🧀 Cheese Hunter
       '1332108350518857842': 'blue'       // WL (blue theme)
@@ -167,7 +171,7 @@ function applyRoleTheme() {
   const canvas = document.getElementById('tetris-canvas');
   if (canvas) {
     // Remove existing theme classes
-    canvas.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    canvas.classList.remove('golden', 'silver', 'cheese', 'green', 'blue', 'red');
     // Add new theme class
     if (theme !== 'default') {
       canvas.classList.add(theme);
@@ -179,8 +183,8 @@ function applyRoleTheme() {
   const controlsTitle = document.getElementById('tetris-controls-title');
   if (controlsSection && controlsTitle) {
     // Remove existing theme classes
-    controlsSection.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
-    controlsTitle.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    controlsSection.classList.remove('golden', 'silver', 'cheese', 'green', 'blue', 'red');
+    controlsTitle.classList.remove('golden', 'silver', 'cheese', 'green', 'blue', 'red');
     // Add new theme class
     if (theme !== 'default') {
       controlsSection.classList.add(theme);
@@ -1185,7 +1189,7 @@ function collide(shape, row, col) {
               // Bomb defusal = 10 DSPOINC + role bonus (no double counting)
               const baseBombScore = 10; // Bonus for defusing bomb (reduced for balance)
               const roleMultiplier = getRoleScoreMultiplier();
-              const roleBombBonus = Math.floor(baseBombScore * (roleMultiplier - 1));
+              const roleBombBonus = Math.round(baseBombScore * (roleMultiplier - 1)); // Changed Math.floor to Math.round for fairer bonuses
               score += baseBombScore + roleBombBonus;
               
               // 🏆 Update score display with role bonus
@@ -1235,7 +1239,7 @@ function collide(shape, row, col) {
             // Use database configuration for DSPOINC calculation with role-based multipliers
             const baseScore = lines * 2; // Season 3: 2 DSPOINC per line (balanced for ~5k max)
             const roleMultiplier = getRoleScoreMultiplier();
-            const roleBonus = Math.floor(baseScore * (roleMultiplier - 1)); // Calculate bonus points
+            const roleBonus = Math.round(baseScore * (roleMultiplier - 1)); // Changed Math.floor to Math.round for fairer bonuses
             console.log(`🏆 Scoring breakdown: baseScore=${baseScore}, roleMultiplier=${roleMultiplier}, roleBonus=${roleBonus}`);
             console.log(`🏆 Score before: ${score}`);
             score += baseScore + roleBonus;

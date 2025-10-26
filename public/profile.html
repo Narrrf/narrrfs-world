@@ -221,10 +221,9 @@ require_once 'discord-invite.php';
       border-color: #FFA500 !important;
     }
     
-    #tetris-canvas.rainbow {
-      box-shadow: 0 0 20px rgba(138, 43, 226, 0.6), 0 0 40px rgba(138, 43, 226, 0.4) !important;
-      border-color: #8A2BE2 !important;
-      animation: rainbow-glow 2s ease-in-out infinite alternate;
+    #tetris-canvas.green {
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.6), 0 0 40px rgba(0, 255, 0, 0.4) !important;
+      border-color: #00FF00 !important;
     }
     
     #tetris-canvas.royal {
@@ -282,14 +281,14 @@ require_once 'discord-invite.php';
     #tetris-controls-section.golden { border-color: #FFD700 !important; }
     #tetris-controls-section.silver { border-color: #C0C0C0 !important; }
     #tetris-controls-section.cheese { border-color: #FFA500 !important; }
-    #tetris-controls-section.rainbow { border-color: #8A2BE2 !important; }
+    #tetris-controls-section.green { border-color: #00FF00 !important; }
     #tetris-controls-section.blue { border-color: #00BFFF !important; }
     #tetris-controls-section.red { border-color: #FF4500 !important; }
     
     #tetris-controls-title.golden { color: #FFD700 !important; }
     #tetris-controls-title.silver { color: #C0C0C0 !important; }
     #tetris-controls-title.cheese { color: #FFA500 !important; }
-    #tetris-controls-title.rainbow { color: #8A2BE2 !important; }
+    #tetris-controls-title.green { color: #00FF00 !important; }
     #tetris-controls-title.blue { color: #00BFFF !important; }
     #tetris-controls-title.red { color: #FF4500 !important; }
     
@@ -1705,7 +1704,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         <p class="text-xs text-gray-300 mb-1"><span style="color: #FF0000;">🔴 Red Frame:</span> Champion (1.4x scoring, enhanced effects)</p>
         <p class="text-xs text-gray-300 mb-1"><span style="color: #FFA500;">🟠 Orange Frame:</span> Cheese Hunter (1.1x scoring, cheese particles)</p>
         <p class="text-xs text-gray-300 mb-1"><span style="color: #00BFFF;">🔵 Blue Frame:</span> Early Bird (1.2x scoring, special effects)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #8A2BE2;">🌈 Rainbow Frame:</span> Season Tester (1.3x scoring, animated rainbow)</p>
+        <p class="text-xs text-gray-300 mb-1"><span style="color: #00FF00;">🟢 Green Frame:</span> Season Tester (1.3x scoring, green particles)</p>
         <p class="text-xs text-gray-300 mb-1"><span class="text-yellow-400 font-semibold">Your Discord roles determine your theme and bonuses!</span></p>
       </div>
       
@@ -2550,7 +2549,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 <!-- 🧠 Load Scroll Scripts -->
 <script src="scripts/tetris-scroll.js?v=9.9"></script>
-<script src="scripts/snake-scroll.js?v=1.1"></script>
+<script src="scripts/snake-scroll.js?v=1.2"></script>
 <!-- Space Invaders script removed from profile page - it has its own dedicated page -->
 <script>
   console.log('✅ Profile page scripts loaded - Tetris and Snake only');

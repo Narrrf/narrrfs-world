@@ -141,9 +141,11 @@ try {
         $unit = 'lines';
         $dspoinc_score = $raw_score; // Use score directly (already DSPOINC)
     } elseif ($game === 'snake') {
-        $pointsPerUnit = $seasonSettings['points_per_cheese'] ?? 1;
-        $unit = 'cheese';
-        $dspoinc_score = $raw_score * $pointsPerUnit;
+        // 🔧 FIX: Snake frontend now calculates DSPOINC (like Tetris and Space Invaders)
+        // Don't multiply again - use score as-is (already includes role bonus)
+        $pointsPerUnit = 1; // No multiplication needed
+        $unit = 'dspoinc';
+        $dspoinc_score = $raw_score; // Use score directly (already DSPOINC with role bonus)
     } elseif ($game === 'space_invaders') {
         // 🔧 FIX: Space Invaders frontend now calculates DSPOINC (like Tetris)
         // Don't multiply again - use score as-is (already includes role bonus)

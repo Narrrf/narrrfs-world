@@ -1307,3 +1307,24 @@
     "discord_name": "narrrf",
     "game": "snake"
 }
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "snake"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 20,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "snake"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 14,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "tetris"
+}
