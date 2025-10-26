@@ -181,7 +181,7 @@ let snakeRoleThemes = {
   '🏆 Holder': 'silver', 
   'Cheese Hunter': 'cheese',
   '🧀 Cheese Hunter': 'cheese',
-  'Season Tester': 'rainbow',
+  'Season Tester': 'green',
   'Early Bird': 'blue',
   'Champion': 'red'
 };
@@ -193,7 +193,7 @@ let snakeRoleColors = {
   'Holder': { snake: '#C0C0C0', food: '#E6E6FA', trail: '#C0C0C0' },
   '🏆 Holder': { snake: '#C0C0C0', food: '#E6E6FA', trail: '#C0C0C0' },
   'Champion': { snake: '#FF4500', food: '#FF6347', trail: '#FF4500' },
-  'Season Tester': { snake: '#8A2BE2', food: '#DA70D6', trail: '#8A2BE2' },
+  'Season Tester': { snake: '#00FF00', food: '#7FFF00', trail: '#00FF00' },
   'Early Bird': { snake: '#00BFFF', food: '#87CEEB', trail: '#00BFFF' },
   'Cheese Hunter': { snake: '#FFA500', food: '#FFD700', trail: '#FFA500' },
   '🧀 Cheese Hunter': { snake: '#FFA500', food: '#FFD700', trail: '#FFA500' }
@@ -206,11 +206,13 @@ async function fetchSnakeUserRoles() {
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     
     if (isLocalDevelopment) {
+      // 🏠 Local environment detected - using all test roles
       console.log('🏠 Local environment detected - using Narrrf\'s roles for Snake testing');
       snakeUserRoles = [
         "VIP Holder", "Holder", "Champion", "Season Tester", "Early Bird", "Cheese Hunter",
         "Alpha Caller", "Community Member", "Moderator", "PokerOG", "Rumble"
       ];
+      
       console.log('🏆 Local test roles loaded for Snake:', snakeUserRoles);
       
       // Apply role-based theme on load
@@ -257,7 +259,7 @@ function applySnakeRoleTheme() {
   const canvas = document.getElementById('snake-canvas');
   if (canvas) {
     // Remove existing theme classes
-    canvas.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'royal', 'blue', 'red');
+    canvas.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'green', 'royal', 'blue', 'red');
     // Add new theme class
     if (theme !== 'default') {
       canvas.classList.add(theme);
@@ -269,8 +271,8 @@ function applySnakeRoleTheme() {
   const controlsTitle = document.getElementById('snake-controls-title');
   if (controlsSection && controlsTitle) {
     // Remove existing theme classes
-    controlsSection.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
-    controlsTitle.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'blue', 'red');
+    controlsSection.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'green', 'blue', 'red');
+    controlsTitle.classList.remove('golden', 'silver', 'cheese', 'rainbow', 'green', 'blue', 'red');
     // Add new theme class
     if (theme !== 'default') {
       controlsSection.classList.add(theme);
@@ -652,11 +654,10 @@ function initSnake() {
       const roleMultiplier = getSnakeRoleScoreMultiplier();
       
       if (roleMultiplier > 1.0) {
-        // Show DSPOINC score (score * 10) with role bonus indicator
-        const dspoincScore = score * 10;
-        scoreDisplay.textContent = `💰 Snake Score: $${dspoincScore} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+        // Show DSPOINC score (already calculated with multiplier)
+        scoreDisplay.textContent = `💰 Snake Score: $${score} DSPOINC (${roleMultiplier}x Role Bonus!)`;
       } else {
-        scoreDisplay.textContent = `💰 Snake Score: $${score * 10} DSPOINC`;
+        scoreDisplay.textContent = `💰 Snake Score: $${score} DSPOINC`;
       }
     }
   }
@@ -685,7 +686,7 @@ function initSnake() {
 
   // ✅ TRAIT TRIGGER FUNCTION (only when x cheese eaten defined in score threshold is passed for first time)
   function tryActivateMutation(score) {
-    if (score >= 100 && !window.brainUnlocked) {
+    if (score >= 1000 && !window.brainUnlocked) { // Updated from 100 to 1000 (score is now in DSPOINC)
       unlockTrait("GENETIC_SENTINEL");
       mutationActive = true;
       localStorage.setItem("snake_mutation", "true");
@@ -877,7 +878,7 @@ function initSnake() {
       
       // Role-based scoring with multipliers
       const roleMultiplier = getSnakeRoleScoreMultiplier();
-      const baseScore = 1;
+      const baseScore = 10; // Changed from 1 to 10 for proper DSPOINC calculation
       const totalScore = Math.floor(baseScore * roleMultiplier);
       score += totalScore;
       
@@ -897,10 +898,10 @@ function initSnake() {
         console.log(`🏆 Level up! Now at level ${currentLevel}`);
       }
       
-      // 🎵 Check for score milestones (every 10 points)
-      if (score % 10 === 0) {
+      // 🎵 Check for score milestones (every 100 DSPOINC)
+      if (score % 100 === 0) {
         snakeSounds.playSound('scoreMilestone');
-        console.log(`🎵 Score milestone reached: ${score} points!`);
+        console.log(`🎵 Score milestone reached: ${score} DSPOINC!`);
       }
       
       updateScore();
@@ -954,9 +955,9 @@ function initSnake() {
 
     if (modal && finalScoreText) {
       // ✅ Only update score content, no style changes — handled in HTML
-      const dspoincScore = finalScore * 10; // Convert raw score to DSPOINC
-      finalScoreText.textContent = `You earned $${dspoincScore} DSPOINC`;
-      console.log("🐍 Displaying score:", finalScore, "DSPOINC:", dspoincScore);
+      // Score is already in DSPOINC (baseScore = 10 with role multiplier applied)
+      finalScoreText.textContent = `You earned $${finalScore} DSPOINC`;
+      console.log("🐍 Displaying final score:", finalScore, "DSPOINC");
 
       modal.classList.remove("hidden");
       modal.style.display = "flex"; // fallback for older browsers
@@ -1005,6 +1006,7 @@ function initSnake() {
     console.log('🏆 Checking Snake achievements...', { cheeseEaten, score, longestSnake, currentLevel });
     
     // Check achievements based on current game state
+    // Score thresholds updated for DSPOINC system (baseScore = 10)
     const achievements = [
       // Basic Achievements
       { key: 'first_cheese', condition: cheeseEaten >= 1 },
@@ -1013,10 +1015,10 @@ function initSnake() {
       { key: 'cheese_master', condition: cheeseEaten >= 25 },
       { key: 'speed_demon', condition: currentLevel >= 5 },
       { key: 'level_master', condition: currentLevel >= 10 },
-      { key: 'score_hunter', condition: score >= 100 },
-      { key: 'point_master', condition: score >= 250 },
-      { key: 'high_scorer', condition: score >= 500 },
-      { key: 'snake_king', condition: score >= 1000 },
+      { key: 'score_hunter', condition: score >= 1000 }, // Updated: 100 -> 1000 DSPOINC
+      { key: 'point_master', condition: score >= 2500 }, // Updated: 250 -> 2500 DSPOINC
+      { key: 'high_scorer', condition: score >= 5000 }, // Updated: 500 -> 5000 DSPOINC
+      { key: 'snake_king', condition: score >= 10000 }, // Updated: 1000 -> 10000 DSPOINC
       
       // Advanced Achievements
       { key: 'long_snake', condition: longestSnake >= 10 },
@@ -1028,8 +1030,8 @@ function initSnake() {
       // Expert Achievements
       { key: 'level_warrior', condition: currentLevel >= 15 },
       { key: 'level_champion', condition: currentLevel >= 20 },
-      { key: 'score_legend', condition: score >= 2000 },
-      { key: 'score_god', condition: score >= 5000 },
+      { key: 'score_legend', condition: score >= 20000 }, // Updated: 2000 -> 20000 DSPOINC
+      { key: 'score_god', condition: score >= 50000 }, // Updated: 5000 -> 50000 DSPOINC
       { key: 'cheese_legend', condition: cheeseEaten >= 100 },
       { key: 'snake_legend', condition: longestSnake >= 100 },
       
@@ -1038,10 +1040,10 @@ function initSnake() {
       { key: 'game_player', condition: gamesPlayed >= 5 },
       { key: 'game_master', condition: gamesPlayed >= 10 },
       { key: 'game_legend', condition: gamesPlayed >= 25 },
-      { key: 'snake_champion', condition: score >= 2000 && longestSnake >= 50 },
-      { key: 'snake_ninja', condition: perfectGame && score >= 500 },
+      { key: 'snake_champion', condition: score >= 20000 && longestSnake >= 50 }, // Updated: 2000 -> 20000
+      { key: 'snake_ninja', condition: perfectGame && score >= 5000 }, // Updated: 500 -> 5000
       { key: 'perfectionist', condition: perfectGame && longestSnake >= 25 },
-      { key: 'ultimate_player', condition: score >= 5000 && longestSnake >= 100 && cheeseEaten >= 100 }
+      { key: 'ultimate_player', condition: score >= 50000 && longestSnake >= 100 && cheeseEaten >= 100 } // Updated: 5000 -> 50000
     ];
     
     achievements.forEach(achievement => {

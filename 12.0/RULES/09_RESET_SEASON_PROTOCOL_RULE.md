@@ -48,6 +48,37 @@ cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world_backup_$(date +%Y%m%d
 echo "Database backup created: $(date)" >> /data/season_reset_log.txt
 ```
 
+### **🏆 ARCHIVE HISTORICAL STATS (CRITICAL - NEW IN v2.0):**
+```bash
+# 🚨 MOST CRITICAL STEP - Archive current season data BEFORE deletion
+# This preserves all player gaming history for all-time statistics display
+
+# Archive Season 4 data to historical tables
+curl https://narrrfs.world/api/admin/archive-season-stats.php
+
+# Verify archival worked (MANDATORY)
+echo "SELECT season, game, COUNT(*) FROM tbl_historical_stats WHERE season = 'Season 4' GROUP BY season, game;" | sqlite3 /var/www/html/db/narrrf_world.sqlite
+
+# Should show Season 4 data counts for tetris, snake, space_invaders
+# Example output:
+# Season 4|tetris|45
+# Season 4|snake|38
+# Season 4|space_invaders|52
+
+# Document archival completion
+echo "Historical stats archived for Season 4: $(date)" >> /data/season_reset_log.txt
+
+# 🚨 IF ARCHIVAL FAILS - DO NOT PROCEED WITH RESET!
+# Fix archival issues first, or all Season 4 player history will be lost forever!
+```
+
+**WHY THIS IS CRITICAL:**
+- Without archival, ALL player gaming history from Season 4 is **LOST FOREVER**
+- Players will only see Season 5 data on their profiles
+- Complete gaming legacy disappears
+- Community trust damaged
+- **This step enables the "All-Time Statistics" feature on profile pages!**
+
 ---
 
 ## 🚨 **RESET EXECUTION PROTOCOL**
@@ -286,6 +317,11 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is
 
 ### **📋 RULE UPDATES:**
 - **Version 1.0** - Initial rule based on Season 4 reset (October 6, 2025)
+- **Version 2.0** - Added Historical Stats Archival Protocol (October 25, 2025)
+  - **Critical Addition:** Archive historical stats BEFORE season reset
+  - **New Requirement:** Run `archive-season-stats.php` before deletion
+  - **Impact:** Preserves all player gaming history across unlimited seasons
+  - **Feature Enabled:** All-Time Statistics on profile pages
 - **Future Updates** - Rule will be updated based on new learnings and requirements
 - **Version Control** - All updates must be documented with rationale
 
@@ -294,6 +330,7 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is
 - **New Game Integration** - Extend reset commands for new games
 - **Process Improvements** - Incorporate efficiency improvements
 - **Error Prevention** - Add safeguards for common mistakes
+- **Historical Data Preservation** - Archive before delete (October 25, 2025)
 
 ---
 
@@ -311,8 +348,20 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is
 ---
 
 **RULE CREATED:** October 6, 2025  
+**LAST UPDATED:** October 25, 2025 (v2.0 - Historical Stats Archival)  
 **STATUS:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**  
-**PURPOSE:** Professional Season Reset Operations  
+**PURPOSE:** Professional Season Reset Operations with Historical Data Preservation  
 **SCOPE:** All future season resets, all team members, all environments  
 
 **🚀 THIS RULE ENSURES DECADES OF RELIABLE SEASON OPERATIONS! 🚀**
+
+---
+
+## 🏆 **VERSION 2.0 CRITICAL UPDATE (OCTOBER 25, 2025)**
+
+### **NEW MANDATORY STEP:**
+**ALWAYS run `archive-season-stats.php` BEFORE resetting any season!**
+
+This preserves complete player gaming history across unlimited seasons and enables the "All-Time Statistics" feature on profile pages.
+
+**Failure to archive = Permanent loss of that season's player data!**
