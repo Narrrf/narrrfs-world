@@ -1578,39 +1578,45 @@ let heldDown = false;
   // 🏆 Tetris Achievement Checking Function (Inside Game Scope) - Make globally accessible
   function checkTetrisAchievements(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears, linesClearedInTurn) {
     
-    // Define achievement checks
+    // 🏆 Define achievement checks (REVISED 2025-10-26 - Bug #131, #136, #127, #134)
+    // Based on max score ~2500 DSPOINC, balanced for realistic gameplay
     const achievementChecks = [
-      // Basic Achievements
+      // === SCORE-BASED (5 achievements - 8% to 100% of max) ===
+      { key: 'score_hunter', condition: gameScore >= 200 },   // 8% of max
+      { key: 'high_roller', condition: gameScore >= 800 },    // 32% of max
+      { key: 'point_master', condition: gameScore >= 1500 },  // 60% of max
+      { key: 'score_legend', condition: gameScore >= 2000 },  // 80% of max
+      { key: 'tetris_king', condition: gameScore >= 2500 },   // 100% of max
+      
+      // === LINE-BASED (5 achievements - beginner to expert) ===
       { key: 'first_line', condition: linesCleared >= 1 },
       { key: 'line_master', condition: linesCleared >= 10 },
-      { key: 'tetris_pro', condition: linesCleared >= 50 },
-      { key: 'line_legend', condition: linesCleared >= 100 },
+      { key: 'tetris_pro', condition: linesCleared >= 30 },
+      { key: 'line_legend', condition: linesCleared >= 50 },
+      { key: 'line_destroyer', condition: linesCleared >= 100 },
+      
+      // === LEVEL-BASED (4 achievements - speed progression) ===
       { key: 'speed_demon', condition: levelReached >= 5 },
-      { key: 'level_master', condition: levelReached >= 10 },
-      { key: 'high_roller', condition: gameScore >= 2000 },
-      { key: 'score_hunter', condition: gameScore >= 1000 },
-      { key: 'point_master', condition: gameScore >= 3000 },
-      { key: 'tetris_king', condition: gameScore >= 5000 },
+      { key: 'level_master', condition: levelReached >= 8 },
+      { key: 'level_warrior', condition: levelReached >= 12 },
+      { key: 'level_champion', condition: levelReached >= 15 },
       
-      // Advanced Achievements
-      { key: 'piece_dropper', condition: piecesDropped >= 100 },
-      { key: 'block_master', condition: piecesDropped >= 500 },
+      // === TETRIS CLEARS (5 achievements - 4-line mastery) ===
       { key: 'tetris_clear', condition: tetrisClears >= 1 },
-      { key: 'tetris_master', condition: tetrisClears >= 5 },
-      { key: 'tetris_god', condition: tetrisClears >= 10 },
-      { key: 'combo_starter', condition: linesClearedInTurn >= 2 },
-      { key: 'combo_master', condition: linesClearedInTurn >= 5 },
-      { key: 'combo_legend', condition: linesCleared >= 10 },
       { key: 'back_to_back', condition: tetrisClears >= 2 },
+      { key: 'tetris_master', condition: tetrisClears >= 5 },
+      { key: 'tetris_god', condition: tetrisClears >= 8 },
+      { key: 'tetris_legend', condition: tetrisClears >= 15 },
       
-      // Expert Achievements
-      { key: 'level_warrior', condition: levelReached >= 15 },
-      { key: 'level_champion', condition: levelReached >= 20 },
-      { key: 'score_legend', condition: gameScore >= 4000 },
-      { key: 'score_god', condition: gameScore >= 5000 },
-      { key: 'line_destroyer', condition: linesCleared >= 200 },
-      { key: 'piece_legend', condition: piecesDropped >= 1000 },
-      { key: 'tetris_legend', condition: tetrisClears >= 25 }
+      // === COMBO-BASED (3 achievements - FIXED: uses linesClearedInTurn) ===
+      { key: 'combo_starter', condition: linesClearedInTurn >= 2 },  // Double
+      { key: 'combo_master', condition: linesClearedInTurn >= 3 },   // Triple
+      { key: 'combo_legend', condition: linesClearedInTurn >= 4 },   // Tetris (max)
+      
+      // === PIECE-BASED (3 achievements - endurance) ===
+      { key: 'piece_dropper', condition: piecesDropped >= 100 },
+      { key: 'block_master', condition: piecesDropped >= 400 },
+      { key: 'piece_legend', condition: piecesDropped >= 600 }
     ];
     
     // Check each achievement
@@ -1636,39 +1642,45 @@ let heldDown = false;
   // 🏆 Save Achievements to Database (No Popups) - For Game End
   function saveAchievementsToDatabase(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
     
-    // Define achievement checks (same as checkTetrisAchievements but without popups)
+    // 🏆 Define achievement checks (REVISED 2025-10-26 - Bug #131, #136, #127, #134)
+    // Based on max score ~2500 DSPOINC, balanced for realistic gameplay
     const achievementChecks = [
-      // Basic Achievements
+      // === SCORE-BASED (5 achievements - 8% to 100% of max) ===
+      { key: 'score_hunter', condition: gameScore >= 200 },   // 8% of max
+      { key: 'high_roller', condition: gameScore >= 800 },    // 32% of max
+      { key: 'point_master', condition: gameScore >= 1500 },  // 60% of max
+      { key: 'score_legend', condition: gameScore >= 2000 },  // 80% of max
+      { key: 'tetris_king', condition: gameScore >= 2500 },   // 100% of max
+      
+      // === LINE-BASED (5 achievements - beginner to expert) ===
       { key: 'first_line', condition: linesCleared >= 1 },
       { key: 'line_master', condition: linesCleared >= 10 },
-      { key: 'tetris_pro', condition: linesCleared >= 50 },
-      { key: 'line_legend', condition: linesCleared >= 100 },
+      { key: 'tetris_pro', condition: linesCleared >= 30 },
+      { key: 'line_legend', condition: linesCleared >= 50 },
+      { key: 'line_destroyer', condition: linesCleared >= 100 },
+      
+      // === LEVEL-BASED (4 achievements - speed progression) ===
       { key: 'speed_demon', condition: levelReached >= 5 },
-      { key: 'level_master', condition: levelReached >= 10 },
-      { key: 'high_roller', condition: gameScore >= 2000 },
-      { key: 'score_hunter', condition: gameScore >= 1000 },
-      { key: 'point_master', condition: gameScore >= 3000 },
-      { key: 'tetris_king', condition: gameScore >= 5000 },
+      { key: 'level_master', condition: levelReached >= 8 },
+      { key: 'level_warrior', condition: levelReached >= 12 },
+      { key: 'level_champion', condition: levelReached >= 15 },
       
-      // Advanced Achievements
-      { key: 'piece_dropper', condition: piecesDropped >= 100 },
-      { key: 'block_master', condition: piecesDropped >= 500 },
+      // === TETRIS CLEARS (5 achievements - 4-line mastery) ===
       { key: 'tetris_clear', condition: tetrisClears >= 1 },
-      { key: 'tetris_master', condition: tetrisClears >= 5 },
-      { key: 'tetris_god', condition: tetrisClears >= 10 },
-      { key: 'combo_starter', condition: linesCleared >= 2 },
-      { key: 'combo_master', condition: linesCleared >= 5 },
-      { key: 'combo_legend', condition: linesCleared >= 10 },
       { key: 'back_to_back', condition: tetrisClears >= 2 },
+      { key: 'tetris_master', condition: tetrisClears >= 5 },
+      { key: 'tetris_god', condition: tetrisClears >= 8 },
+      { key: 'tetris_legend', condition: tetrisClears >= 15 },
       
-      // Expert Achievements
-      { key: 'level_warrior', condition: levelReached >= 15 },
-      { key: 'level_champion', condition: levelReached >= 20 },
-      { key: 'score_legend', condition: gameScore >= 4000 },
-      { key: 'score_god', condition: gameScore >= 5000 },
-      { key: 'line_destroyer', condition: linesCleared >= 200 },
-      { key: 'piece_legend', condition: piecesDropped >= 1000 },
-      { key: 'tetris_legend', condition: tetrisClears >= 25 }
+      // === COMBO-BASED (3 achievements - FIXED: uses linesClearedInTurn not linesCleared) ===
+      { key: 'combo_starter', condition: linesClearedInTurn >= 2 },  // Double (NOTE: needs linesClearedInTurn param!)
+      { key: 'combo_master', condition: linesClearedInTurn >= 3 },   // Triple (NOTE: needs linesClearedInTurn param!)
+      { key: 'combo_legend', condition: linesClearedInTurn >= 4 },   // Tetris (max) (NOTE: needs linesClearedInTurn param!)
+      
+      // === PIECE-BASED (3 achievements - endurance) ===
+      { key: 'piece_dropper', condition: piecesDropped >= 100 },
+      { key: 'block_master', condition: piecesDropped >= 400 },
+      { key: 'piece_legend', condition: piecesDropped >= 600 }
     ];
     
     // Check each achievement and save to database (no popups)
@@ -1781,35 +1793,47 @@ let heldDown = false;
         .then(unlockData => {
           if (unlockData.success) {
             // Show achievement popup
-            const achievementTitles = {
-              'first_line': 'First Line',
-              'line_master': 'Line Master',
-              'tetris_pro': 'Tetris Pro',
-              'line_legend': 'Line Legend',
-              'speed_demon': 'Speed Demon',
-              'level_master': 'Level Master',
-              'high_roller': 'High Roller',
-              'score_hunter': 'Score Hunter',
-              'point_master': 'Point Master',
-              'tetris_king': 'Tetris King',
-              'piece_dropper': 'Piece Dropper',
-              'block_master': 'Block Master',
-              'tetris_clear': 'Tetris Clear',
-              'tetris_master': 'Tetris Master',
-              'tetris_god': 'Tetris God',
-              'combo_starter': 'Combo Starter',
-              'combo_master': 'Combo Master',
-              'combo_legend': 'Combo Legend',
-              'back_to_back': 'Back to Back',
-              'level_warrior': 'Level Warrior',
-              'level_champion': 'Level Champion',
-              'score_legend': 'Score Legend',
-              'score_god': 'Score God',
-              'line_destroyer': 'Line Destroyer',
-              'piece_legend': 'Piece Legend',
-              'tetris_legend': 'Tetris Legend'
+            // 🏆 Achievement titles and descriptions (REVISED 2025-10-26)
+            const achievementData = {
+              // SCORE-BASED
+              'score_hunter': { title: 'Score Hunter', desc: 'Earn 200 DSPOINC in one game' },
+              'high_roller': { title: 'High Roller', desc: 'Earn 800 DSPOINC in one game' },
+              'point_master': { title: 'Point Master', desc: 'Earn 1,500 DSPOINC in one game' },
+              'score_legend': { title: 'Score Legend', desc: 'Earn 2,000 DSPOINC in one game' },
+              'tetris_king': { title: 'Tetris King', desc: 'Earn 2,500 DSPOINC (maximum score!)' },
+              
+              // LINE-BASED
+              'first_line': { title: 'First Line', desc: 'Clear your first line' },
+              'line_master': { title: 'Line Master', desc: 'Clear 10 lines in one game' },
+              'tetris_pro': { title: 'Tetris Pro', desc: 'Clear 30 lines in one game' },
+              'line_legend': { title: 'Line Legend', desc: 'Clear 50 lines in one game' },
+              'line_destroyer': { title: 'Line Destroyer', desc: 'Clear 100 lines in one game' },
+              
+              // LEVEL-BASED
+              'speed_demon': { title: 'Speed Demon', desc: 'Reach Level 5' },
+              'level_master': { title: 'Level Master', desc: 'Reach Level 8' },
+              'level_warrior': { title: 'Level Warrior', desc: 'Reach Level 12' },
+              'level_champion': { title: 'Level Champion', desc: 'Reach Level 15' },
+              
+              // TETRIS CLEARS (4-line clears)
+              'tetris_clear': { title: 'Tetris Clear', desc: 'Clear 4 lines at once (Tetris!)' },
+              'back_to_back': { title: 'Back to Back', desc: 'Clear 2 Tetris in one game' },
+              'tetris_master': { title: 'Tetris Master', desc: 'Clear 5 Tetris in one game' },
+              'tetris_god': { title: 'Tetris God', desc: 'Clear 8 Tetris in one game' },
+              'tetris_legend': { title: 'Tetris Legend', desc: 'Clear 15 Tetris in one game' },
+              
+              // COMBO-BASED
+              'combo_starter': { title: 'Combo Starter', desc: 'Clear 2 lines at once' },
+              'combo_master': { title: 'Combo Master', desc: 'Clear 3 lines at once' },
+              'combo_legend': { title: 'Combo Legend', desc: 'Clear 4 lines at once (Tetris!)' },
+              
+              // PIECE-BASED
+              'piece_dropper': { title: 'Piece Dropper', desc: 'Drop 100 pieces in one game' },
+              'block_master': { title: 'Block Master', desc: 'Drop 400 pieces in one game' },
+              'piece_legend': { title: 'Piece Legend', desc: 'Drop 600 pieces in one game' }
             };
-            const title = achievementTitles[achievementKey] || achievementKey;
+            const achievementInfo = achievementData[achievementKey] || { title: achievementKey, desc: 'Achievement unlocked!' };
+            const title = achievementInfo.title;
             showAchievementNotification(achievementKey, title);
           }
         })
@@ -1827,36 +1851,48 @@ let heldDown = false;
 
   // 🏆 Show Achievement Popup Function (Inside Game Scope)
   function showAchievementPopup(achievementKey, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
-    const achievementTitles = {
-      'first_line': 'First Line',
-      'line_master': 'Line Master',
-      'tetris_pro': 'Tetris Pro',
-      'line_legend': 'Line Legend',
-      'speed_demon': 'Speed Demon',
-      'level_master': 'Level Master',
-      'high_roller': 'High Roller',
-      'score_hunter': 'Score Hunter',
-      'point_master': 'Point Master',
-      'tetris_king': 'Tetris King',
-      'piece_dropper': 'Piece Dropper',
-      'block_master': 'Block Master',
-      'tetris_clear': 'Tetris Clear',
-      'tetris_master': 'Tetris Master',
-      'tetris_god': 'Tetris God',
-      'combo_starter': 'Combo Starter',
-      'combo_master': 'Combo Master',
-      'combo_legend': 'Combo Legend',
-      'back_to_back': 'Back-to-Back',
-      'level_warrior': 'Level Warrior',
-      'level_champion': 'Level Champion',
-      'score_legend': 'Score Legend',
-      'score_god': 'Score God',
-      'line_destroyer': 'Line Destroyer',
-      'piece_legend': 'Piece Legend',
-      'tetris_legend': 'Tetris Legend'
+    // 🏆 Achievement data (REVISED 2025-10-26 - removed score_god duplicate)
+    const achievementData = {
+      // SCORE-BASED
+      'score_hunter': { title: 'Score Hunter', desc: 'Earn 200 DSPOINC in one game' },
+      'high_roller': { title: 'High Roller', desc: 'Earn 800 DSPOINC in one game' },
+      'point_master': { title: 'Point Master', desc: 'Earn 1,500 DSPOINC in one game' },
+      'score_legend': { title: 'Score Legend', desc: 'Earn 2,000 DSPOINC in one game' },
+      'tetris_king': { title: 'Tetris King', desc: 'Earn 2,500 DSPOINC (maximum score!)' },
+      
+      // LINE-BASED
+      'first_line': { title: 'First Line', desc: 'Clear your first line' },
+      'line_master': { title: 'Line Master', desc: 'Clear 10 lines in one game' },
+      'tetris_pro': { title: 'Tetris Pro', desc: 'Clear 30 lines in one game' },
+      'line_legend': { title: 'Line Legend', desc: 'Clear 50 lines in one game' },
+      'line_destroyer': { title: 'Line Destroyer', desc: 'Clear 100 lines in one game' },
+      
+      // LEVEL-BASED
+      'speed_demon': { title: 'Speed Demon', desc: 'Reach Level 5' },
+      'level_master': { title: 'Level Master', desc: 'Reach Level 8' },
+      'level_warrior': { title: 'Level Warrior', desc: 'Reach Level 12' },
+      'level_champion': { title: 'Level Champion', desc: 'Reach Level 15' },
+      
+      // TETRIS CLEARS (4-line clears)
+      'tetris_clear': { title: 'Tetris Clear', desc: 'Clear 4 lines at once (Tetris!)' },
+      'back_to_back': { title: 'Back to Back', desc: 'Clear 2 Tetris in one game' },
+      'tetris_master': { title: 'Tetris Master', desc: 'Clear 5 Tetris in one game' },
+      'tetris_god': { title: 'Tetris God', desc: 'Clear 8 Tetris in one game' },
+      'tetris_legend': { title: 'Tetris Legend', desc: 'Clear 15 Tetris in one game' },
+      
+      // COMBO-BASED
+      'combo_starter': { title: 'Combo Starter', desc: 'Clear 2 lines at once' },
+      'combo_master': { title: 'Combo Master', desc: 'Clear 3 lines at once' },
+      'combo_legend': { title: 'Combo Legend', desc: 'Clear 4 lines at once (Tetris!)' },
+      
+      // PIECE-BASED
+      'piece_dropper': { title: 'Piece Dropper', desc: 'Drop 100 pieces in one game' },
+      'block_master': { title: 'Block Master', desc: 'Drop 400 pieces in one game' },
+      'piece_legend': { title: 'Piece Legend', desc: 'Drop 600 pieces in one game' }
     };
     
-    const title = achievementTitles[achievementKey] || achievementKey;
+    const achievementInfo = achievementData[achievementKey] || { title: achievementKey, desc: 'Achievement unlocked!' };
+    const title = achievementInfo.title;
     showAchievementNotification(achievementKey, title);
   }
 

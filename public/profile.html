@@ -4478,6 +4478,44 @@ async function loadTetrisAchievements() {
   }
 }
 
+// 🎯 Get Tetris Achievement Icon (Fix for emoji encoding issues)
+function getTetrisAchievementIcon(achievementKey) {
+  const iconMap = {
+    // SCORE-BASED
+    'score_hunter': '🎯',
+    'high_roller': '💰',
+    'point_master': '💎',
+    'score_legend': '💫',
+    'tetris_king': '👑',
+    // LINE-BASED
+    'first_line': '🎯',
+    'line_master': '⭐',
+    'tetris_pro': '✨',
+    'line_legend': '🌟',
+    'line_destroyer': '💥',
+    // LEVEL-BASED
+    'speed_demon': '⚡',
+    'level_master': '🏆',
+    'level_warrior': '⚔️',
+    'level_champion': '🏅',
+    // TETRIS CLEARS
+    'tetris_clear': '🎆',
+    'back_to_back': '🔄',
+    'tetris_master': '🎇',
+    'tetris_god': '⚡',
+    'tetris_legend': '🎆',
+    // COMBO-BASED
+    'combo_starter': '🔗',
+    'combo_master': '🔗',
+    'combo_legend': '🔗',
+    // PIECE-BASED
+    'piece_dropper': '🔻',
+    'block_master': '🧱',
+    'piece_legend': '🔻'
+  };
+  return iconMap[achievementKey] || '🏆';
+}
+
 // 🧩 Display Tetris Achievements
 function displayTetrisAchievements(achievements, stats) {
   console.log('🧩 Displaying Tetris achievements:', {
@@ -4499,9 +4537,9 @@ function displayTetrisAchievements(achievements, stats) {
   const lockedEl = achievementsSection.querySelector('#tetrisLockedAchievements');
   const progressEl = achievementsSection.querySelector('#tetrisCompletionPercentage');
   
-  if (totalEl) totalEl.textContent = stats.total || 29;
+  if (totalEl) totalEl.textContent = stats.total || 25;
   if (unlockedEl) unlockedEl.textContent = stats.unlocked || 0;
-  if (lockedEl) lockedEl.textContent = stats.locked || 29;
+  if (lockedEl) lockedEl.textContent = stats.locked || 25;
   if (progressEl) progressEl.textContent = (stats.percentage || 0) + '%';
   
   // Update achievements grid
@@ -4533,10 +4571,13 @@ function displayTetrisAchievements(achievements, stats) {
       ? `<div class="text-xs text-blue-300 mt-1">Unlocked: ${formatDateShort(achievement.unlocked_at)}</div>`
       : '';
     
+    // 🎯 Use icon mapping function (fix for emoji encoding)
+    const displayIcon = getTetrisAchievementIcon(achievement.achievement_key) || achievement.achievement_icon || '🏆';
+    
     const achievementCard = `
       <div class="${cardClass} rounded-lg p-4 border hover:shadow-lg transition-all duration-200">
         <div class="flex items-start space-x-4">
-          <div class="text-3xl flex-shrink-0">${achievement.achievement_icon}</div>
+          <div class="text-3xl flex-shrink-0">${displayIcon}</div>
           <div class="flex-1 min-w-0">
             <h3 class="font-semibold text-white text-base mb-2">${achievement.achievement_title}</h3>
             <p class="text-sm text-gray-300 mb-3 leading-relaxed">${achievement.achievement_description}</p>
