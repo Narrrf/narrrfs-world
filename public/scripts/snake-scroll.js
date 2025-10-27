@@ -1006,44 +1006,46 @@ function initSnake() {
     console.log('🏆 Checking Snake achievements...', { cheeseEaten, score, longestSnake, currentLevel });
     
     // Check achievements based on current game state
-    // Score thresholds updated for DSPOINC system (baseScore = 10)
+    // 🏆 REVISED 2025-10-26: Score thresholds based on realistic max (Grid: 10×20 = 200 tiles)
+    // Theoretical max: 3,920 DSPOINC (196 cheese with VIP 2.0x, 98% grid coverage)
+    // Expert realistic: 2,000 DSPOINC (100 cheese, 50% grid coverage)
+    // Legendary challenge: 3,500 DSPOINC (175 cheese, 88% grid coverage)
     const achievements = [
-      // Basic Achievements
+      // === CHEESE-BASED (5 achievements) ===
       { key: 'first_cheese', condition: cheeseEaten >= 1 },
       { key: 'cheese_collector', condition: cheeseEaten >= 5 },
       { key: 'cheese_hunter', condition: cheeseEaten >= 10 },
       { key: 'cheese_master', condition: cheeseEaten >= 25 },
+      { key: 'cheese_legend', condition: cheeseEaten >= 75 },  // Reduced: 100 → 75 (expert)
+      
+      // === SCORE-BASED (6 achievements - 5% to 89% of theoretical max 3920) ===
+      { key: 'score_hunter', condition: score >= 200 },    // Reduced: 1000 → 200 (5% of max)
+      { key: 'point_master', condition: score >= 500 },    // Reduced: 2500 → 500 (13% of max)
+      { key: 'high_scorer', condition: score >= 1000 },    // Reduced: 5000 → 1000 (26% of max)
+      { key: 'snake_king', condition: score >= 1500 },     // Reduced: 10000 → 1500 (38% of max)
+      { key: 'score_legend', condition: score >= 2000 },   // Reduced: 20000 → 2000 (51% of max)
+      { key: 'score_god', condition: score >= 3500 },      // Reduced: 50000 → 3500 (89% of max - LEGENDARY!)
+      
+      // === LEVEL-BASED (4 achievements) ===
       { key: 'speed_demon', condition: currentLevel >= 5 },
       { key: 'level_master', condition: currentLevel >= 10 },
-      { key: 'score_hunter', condition: score >= 1000 }, // Updated: 100 -> 1000 DSPOINC
-      { key: 'point_master', condition: score >= 2500 }, // Updated: 250 -> 2500 DSPOINC
-      { key: 'high_scorer', condition: score >= 5000 }, // Updated: 500 -> 5000 DSPOINC
-      { key: 'snake_king', condition: score >= 10000 }, // Updated: 1000 -> 10000 DSPOINC
+      { key: 'level_warrior', condition: currentLevel >= 15 },
+      { key: 'level_champion', condition: currentLevel >= 20 },
       
-      // Advanced Achievements
+      // === LENGTH-BASED (3 achievements) ===
       { key: 'long_snake', condition: longestSnake >= 10 },
       { key: 'giant_snake', condition: longestSnake >= 25 },
       { key: 'mega_snake', condition: longestSnake >= 50 },
-      { key: 'survivor', condition: (Date.now() - gameStartTime) >= 120000 }, // 2 minutes
-      { key: 'endurance_master', condition: (Date.now() - gameStartTime) >= 300000 }, // 5 minutes
+      // REMOVED: snake_legend (100 segments) - Too difficult
       
-      // Expert Achievements
-      { key: 'level_warrior', condition: currentLevel >= 15 },
-      { key: 'level_champion', condition: currentLevel >= 20 },
-      { key: 'score_legend', condition: score >= 20000 }, // Updated: 2000 -> 20000 DSPOINC
-      { key: 'score_god', condition: score >= 50000 }, // Updated: 5000 -> 50000 DSPOINC
-      { key: 'cheese_legend', condition: cheeseEaten >= 100 },
-      { key: 'snake_legend', condition: longestSnake >= 100 },
+      // === TIME-BASED (2 achievements) ===
+      { key: 'survivor', condition: (Date.now() - gameStartTime) >= 120000 },      // 2 minutes
+      { key: 'endurance_master', condition: (Date.now() - gameStartTime) >= 300000 } // 5 minutes
       
-      // Additional Achievements (from database)
-      { key: 'game_starter', condition: gamesPlayed >= 1 },
-      { key: 'game_player', condition: gamesPlayed >= 5 },
-      { key: 'game_master', condition: gamesPlayed >= 10 },
-      { key: 'game_legend', condition: gamesPlayed >= 25 },
-      { key: 'snake_champion', condition: score >= 20000 && longestSnake >= 50 }, // Updated: 2000 -> 20000
-      { key: 'snake_ninja', condition: perfectGame && score >= 5000 }, // Updated: 500 -> 5000
-      { key: 'perfectionist', condition: perfectGame && longestSnake >= 25 },
-      { key: 'ultimate_player', condition: score >= 50000 && longestSnake >= 100 && cheeseEaten >= 100 } // Updated: 5000 -> 50000
+      // REMOVED: All meta/perfect game achievements (8 total)
+      // - game_starter, game_player, game_master, game_legend
+      // - snake_champion, snake_ninja, perfectionist, ultimate_player
+      // - snake_legend (100 segments impossible)
     ];
     
     achievements.forEach(achievement => {

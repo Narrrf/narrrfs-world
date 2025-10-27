@@ -771,7 +771,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border border-emerald-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ml-2">
           🔄 Refresh
         </button>
-          <p class="text-xs text-green-400 mt-2 italic">Click to view all 28 Snake achievements</p>
+          <p class="text-xs text-green-400 mt-2 italic">Click to view all 20 Snake achievements</p>
         </div>
       
       <!-- 🏆 Overall Progress -->
@@ -4288,9 +4288,9 @@ function displayAchievements(data) {
     const lockedEl = achievementsSection.querySelector('#lockedAchievements');
     const progressEl = achievementsSection.querySelector('#completionPercentage');
     
-  if (totalEl) totalEl.textContent = stats.total_achievements || 28;
+  if (totalEl) totalEl.textContent = stats.total_achievements || 20;
   if (unlockedEl) unlockedEl.textContent = stats.unlocked_achievements || 0;
-  if (lockedEl) lockedEl.textContent = stats.locked_achievements || 25;
+  if (lockedEl) lockedEl.textContent = stats.locked_achievements || 20;
   if (progressEl) progressEl.textContent = (stats.completion_percentage || 0) + '%';
   
   console.log('🔓 Updated stats with:', {
@@ -4476,6 +4476,38 @@ async function loadTetrisAchievements() {
     console.error('❌ Error loading Tetris achievements:', error);
     displayTetrisAchievementsError(error.message);
   }
+}
+
+// 🐍 Get Snake Achievement Icon (Fix for emoji encoding issues)
+function getSnakeAchievementIcon(achievementKey) {
+  const iconMap = {
+    // CHEESE-BASED
+    'first_cheese': '🧀',
+    'cheese_collector': '🧀',
+    'cheese_hunter': '🧀',
+    'cheese_master': '🧀',
+    'cheese_legend': '🧀',
+    // SCORE-BASED
+    'score_hunter': '🎯',
+    'point_master': '⭐',
+    'high_scorer': '🌟',
+    'snake_king': '👑',
+    'score_legend': '💫',
+    'score_god': '👑',
+    // LEVEL-BASED
+    'speed_demon': '⚡',
+    'level_master': '🏆',
+    'level_warrior': '⚔️',
+    'level_champion': '🏅',
+    // LENGTH-BASED
+    'long_snake': '🐍',
+    'giant_snake': '🐍',
+    'mega_snake': '🐍',
+    // TIME-BASED
+    'survivor': '⏰',
+    'endurance_master': '⏰'
+  };
+  return iconMap[achievementKey] || '🏆';
 }
 
 // 🎯 Get Tetris Achievement Icon (Fix for emoji encoding issues)
@@ -4713,7 +4745,7 @@ function displaySnakeAchievements(achievements, stats) {
   const percentageEl = achievementsSection.querySelector('#snakeAchievementsPercentage');
   
   const unlocked = stats.unlocked_achievements || stats.unlocked || 0;
-  const total = stats.total_achievements || stats.total || 28;
+  const total = stats.total_achievements || stats.total || 20;
   const locked = stats.locked_achievements || (total - unlocked);
   const percentage = stats.completion_percentage || stats.percentage || 0;
   
@@ -4750,9 +4782,12 @@ function displaySnakeAchievements(achievements, stats) {
         : 'bg-gray-700/50 border-gray-600 text-gray-400'
     }`;
     
+    // 🎯 Use icon mapping function (fix for emoji encoding)
+    const displayIcon = getSnakeAchievementIcon(achievement.achievement_key) || achievement.achievement_icon || '🏆';
+    
     card.innerHTML = `
       <div class="flex items-center space-x-3 mb-2">
-        <div class="text-2xl">${achievement.achievement_icon || '🏆'}</div>
+        <div class="text-2xl">${displayIcon}</div>
         <div class="flex-1">
           <div class="font-semibold text-sm">${achievement.achievement_title}</div>
           <div class="text-xs opacity-75">${achievement.achievement_description}</div>

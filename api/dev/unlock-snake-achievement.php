@@ -51,28 +51,39 @@ try {
 
     if ($defExists['count'] == 0) {
         // Create achievement definition
+        // 🏆 Snake Achievement Definitions (REVISED 2025-10-26)
+        // Synchronized with snake-scroll.js achievement checks
+        // Based on theoretical max ~3,920 DSPOINC (196 cheese, 98% grid coverage)
         $achievementData = [
-            'first_apple' => ['title' => 'First Apple', 'description' => 'Eat your first apple', 'icon' => '🍎'],
-            'apple_collector' => ['title' => 'Apple Collector', 'description' => 'Eat 5 apples total', 'icon' => '🍎'],
-            'snake_grower' => ['title' => 'Snake Grower', 'description' => 'Eat 10 apples total', 'icon' => '🐍'],
-            'apple_master' => ['title' => 'Apple Master', 'description' => 'Eat 25 apples total', 'icon' => '🍎'],
-            'speed_demon' => ['title' => 'Speed Demon', 'description' => 'Reach level 5', 'icon' => '⚡'],
-            'level_master' => ['title' => 'Level Master', 'description' => 'Reach level 10', 'icon' => '🏆'],
-            'score_hunter' => ['title' => 'Score Hunter', 'description' => 'Reach 100 points', 'icon' => '🎯'],
-            'point_master' => ['title' => 'Point Master', 'description' => 'Reach 250 points', 'icon' => '⭐'],
-            'high_scorer' => ['title' => 'High Scorer', 'description' => 'Reach 500 points', 'icon' => '🌟'],
-            'snake_king' => ['title' => 'Snake King', 'description' => 'Reach 1000 points', 'icon' => '👑'],
+            // === CHEESE-BASED (5 achievements) ===
+            'first_cheese' => ['title' => 'First Cheese', 'description' => 'Eat your first cheese', 'icon' => '🧀'],
+            'cheese_collector' => ['title' => 'Cheese Collector', 'description' => 'Eat 5 cheeses in one game', 'icon' => '🧀'],
+            'cheese_hunter' => ['title' => 'Cheese Hunter', 'description' => 'Eat 10 cheeses in one game', 'icon' => '🧀'],
+            'cheese_master' => ['title' => 'Cheese Master', 'description' => 'Eat 25 cheeses in one game', 'icon' => '🧀'],
+            'cheese_legend' => ['title' => 'Cheese Legend', 'description' => 'Eat 75 cheeses in one game', 'icon' => '🧀'],
+            
+            // === SCORE-BASED (6 achievements - 5% to 89% of theoretical max 3920) ===
+            'score_hunter' => ['title' => 'Score Hunter', 'description' => 'Earn 200 DSPOINC in one game', 'icon' => '🎯'],
+            'point_master' => ['title' => 'Point Master', 'description' => 'Earn 500 DSPOINC in one game', 'icon' => '⭐'],
+            'high_scorer' => ['title' => 'High Scorer', 'description' => 'Earn 1,000 DSPOINC in one game', 'icon' => '🌟'],
+            'snake_king' => ['title' => 'Snake King', 'description' => 'Earn 1,500 DSPOINC in one game', 'icon' => '👑'],
+            'score_legend' => ['title' => 'Score Legend', 'description' => 'Earn 2,000 DSPOINC in one game', 'icon' => '💫'],
+            'score_god' => ['title' => 'Score God', 'description' => 'Earn 3,500 DSPOINC (near maximum!)', 'icon' => '👑'],
+            
+            // === LEVEL-BASED (4 achievements) ===
+            'speed_demon' => ['title' => 'Speed Demon', 'description' => 'Reach Level 5', 'icon' => '⚡'],
+            'level_master' => ['title' => 'Level Master', 'description' => 'Reach Level 10', 'icon' => '🏆'],
+            'level_warrior' => ['title' => 'Level Warrior', 'description' => 'Reach Level 15', 'icon' => '⚔️'],
+            'level_champion' => ['title' => 'Level Champion', 'description' => 'Reach Level 20', 'icon' => '🏅'],
+            
+            // === LENGTH-BASED (3 achievements) ===
             'long_snake' => ['title' => 'Long Snake', 'description' => 'Grow to 10 segments', 'icon' => '🐍'],
             'giant_snake' => ['title' => 'Giant Snake', 'description' => 'Grow to 25 segments', 'icon' => '🐍'],
             'mega_snake' => ['title' => 'Mega Snake', 'description' => 'Grow to 50 segments', 'icon' => '🐍'],
+            
+            // === TIME-BASED (2 achievements) ===
             'survivor' => ['title' => 'Survivor', 'description' => 'Survive for 2 minutes', 'icon' => '⏰'],
-            'endurance_master' => ['title' => 'Endurance Master', 'description' => 'Survive for 5 minutes', 'icon' => '⏰'],
-            'level_warrior' => ['title' => 'Level Warrior', 'description' => 'Reach level 15', 'icon' => '⚔️'],
-            'level_champion' => ['title' => 'Level Champion', 'description' => 'Reach level 20', 'icon' => '🏆'],
-            'score_legend' => ['title' => 'Score Legend', 'description' => 'Reach 2000 points', 'icon' => '🌟'],
-            'score_god' => ['title' => 'Score God', 'description' => 'Reach 5000 points', 'icon' => '👑'],
-            'apple_legend' => ['title' => 'Apple Legend', 'description' => 'Eat 100 apples total', 'icon' => '🍎'],
-            'snake_legend' => ['title' => 'Snake Legend', 'description' => 'Grow to 100 segments', 'icon' => '🐍']
+            'endurance_master' => ['title' => 'Endurance Master', 'description' => 'Survive for 5 minutes', 'icon' => '⏰']
         ];
 
         $defData = $achievementData[$achievement_key] ?? ['title' => 'Achievement', 'description' => 'Great job!', 'icon' => '🏆'];
