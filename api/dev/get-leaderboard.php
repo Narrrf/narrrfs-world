@@ -59,10 +59,9 @@ try {
     $snakeStmt->execute();
     $snakeLeaderboard = $snakeStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Convert Snake scores to DSPOINC (multiply by 10)
-    foreach ($snakeLeaderboard as &$entry) {
-        $entry['score'] = $entry['score'] * 10;
-    }
+    // ✅ FIX (2025-10-27): Snake scores are ALREADY in DSPOINC (baseScore = 10)
+    // No conversion needed - database stores correct DSPOINC values
+    // Legacy multiplication by 10 removed (was causing 1220 to show as 12200)
     
     // Get Space Invaders leaderboard (from tbl_tetris_scores) - current season
     $spaceInvadersStmt = $db->prepare("

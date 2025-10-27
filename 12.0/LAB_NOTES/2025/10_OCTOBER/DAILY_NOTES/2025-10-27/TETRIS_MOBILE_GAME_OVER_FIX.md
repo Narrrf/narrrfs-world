@@ -275,7 +275,39 @@ git push origin render-deploy
 
 ---
 
+---
+
+## 🚨 **BONUS BUG DISCOVERED - SNAKE LEADERBOARD DISPLAY**
+
+### **Issue Found:**
+While preparing deployment, discovered Snake leaderboard was displaying **12,200 DSPOINC** but database showed **1,220 DSPOINC**.
+
+### **Root Cause:**
+`api/dev/get-leaderboard.php` (lines 62-65) was **multiplying Snake scores by 10**:
+```php
+// OLD LEGACY CODE (WRONG):
+foreach ($snakeLeaderboard as &$entry) {
+    $entry['score'] = $entry['score'] * 10;  // ❌ DOUBLE CONVERSION!
+}
+```
+
+**Why This Was Wrong:**
+- **Before Bug #104 fix:** Snake used `baseScore = 1`, so API multiplied by 10
+- **After Bug #104 fix:** Snake now uses `baseScore = 10`, database already has DSPOINC
+- **Result:** API was double-converting (1,220 × 10 = 12,200) ❌
+
+### **Fix Applied:**
+Removed the legacy `* 10` multiplication - Snake scores are already in DSPOINC format.
+
+**Files Modified:**
+- `api/dev/get-leaderboard.php` (line 62-64)
+
+**Impact:** All Snake leaderboard scores will now display correctly (1,220 not 12,200)!
+
+---
+
 **Lab Note Created:** October 27, 2025 - 14:30  
+**Updated:** October 27, 2025 - 14:45 (Added Snake leaderboard fix)  
 **Maintained By:** Cursor LLM 12.0  
-**Status:** COMPLETE - READY FOR DEPLOYMENT  
+**Status:** COMPLETE - READY FOR DEPLOYMENT (2 bugs fixed!)  
 **Next Step:** Git commit and push to render-deploy
