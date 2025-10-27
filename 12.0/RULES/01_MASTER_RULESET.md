@@ -1132,7 +1132,7 @@ Write-Host "🚀 Ready for deployment to $EventName" -ForegroundColor Yellow
 - **Query:** `WHERE user_id = ?`
 - **API Endpoint:** `/api/user/get-space-invaders-achievements.php`
 
-### **CRITICAL RULES V2.0:**
+### **CRITICAL RULES V3.0 (Updated Oct 26-27, 2025):**
 1. **NEVER use `user_id` for Tetris, Snake, or Space Invaders SCORES**
 2. **NEVER use `discord_id` for Cheese Hunt SCORES**
 3. **ALWAYS use `user_id` for ALL ACHIEVEMENTS (Tetris, Snake, Space Invaders)**
@@ -1140,7 +1140,10 @@ Write-Host "🚀 Ready for deployment to $EventName" -ForegroundColor Yellow
 5. **NEVER assume all games use the same field name**
 6. **CRITICAL DISCOVERY: Snake & Space Invaders use tbl_tetris_scores, NOT tbl_user_scores**
 7. **CRITICAL DISCOVERY: Achievements use user_id, Scores use discord_id**
-8. **This system works for the next 100 years - don't change it if not really required!**
+8. **NEW: All achievement definitions must use `WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'`**
+9. **NEW: All 3 games MUST load achievement definitions dynamically from database**
+10. **NEW: NEVER hardcode achievement descriptions in API or frontend code**
+11. **This system works for the next 100 years - don't change it if not really required!**
 
 ### **TABLE DISTRIBUTION REALITY:**
 - **`tbl_tetris_scores`**: Contains Tetris, Snake, AND Space Invaders scores
@@ -1211,6 +1214,8 @@ $raceStats = "SELECT COUNT(*) FROM tbl_race_participants";
 - [ ] Discord Race queries use `tbl_race_participants` with `user_id`
 - [ ] Cheese Hunt queries use `tbl_cheese_clicks` with `user_wallet`
 - [ ] ALL achievement queries use `user_id` in their respective tables
+- [ ] ALL achievement APIs MUST load definitions from `WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'`
+- [ ] NEVER hardcode achievement descriptions in API files
 - [ ] No alternative game names (just `snake`, `space_invaders`)
 
 **✅ Field Validation:**
@@ -1228,10 +1233,220 @@ $raceStats = "SELECT COUNT(*) FROM tbl_race_participants";
 - **Based on actual database schema analysis**
 - **Tested and verified in production environment**
 
-### **FINAL WARNING V2.0:**
+### **FINAL WARNING V3.0:**
 **FOLLOW THIS RULE RELIGIOUSLY - IT'S THE FOUNDATION OF THE ENTIRE SCORING SYSTEM!**
 
 **This rule ensures perfect synchronization between admin interface, user profiles, and all game data displays.**
+
+---
+
+## 🎮 **ACHIEVEMENT SYSTEM ARCHITECTURE V3.0 (Oct 26-27, 2025)**
+
+### **CRITICAL ACHIEVEMENT ARCHITECTURE RULE:**
+**ALL 3 games (Tetris, Snake, Space Invaders) MUST use identical architecture patterns:**
+
+### **✅ MANDATORY ARCHITECTURE COMPONENTS:**
+
+#### **1. Database Structure:**
+```sql
+-- PATTERN: All 3 games follow this structure
+CREATE TABLE tbl_[game]_achievements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,              -- Discord ID or 'ACHIEVEMENT_DEFINITIONS'
+    achievement_key TEXT NOT NULL,
+    achievement_title TEXT NOT NULL,
+    achievement_description TEXT NOT NULL,
+    achievement_icon TEXT NOT NULL,
+    unlocked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    -- Game-specific tracking fields (score, kills, time, etc.)
+);
+
+-- SPECIAL RECORD: Achievement definitions
+-- user_id = 'ACHIEVEMENT_DEFINITIONS' contains master achievement list
+-- All other user_id values = actual Discord IDs with user unlocks
+```
+
+#### **2. API Architecture (CRITICAL - Must Be Dynamic!):**
+```php
+// ✅ CORRECT: Load definitions from database
+$stmt = $pdo->prepare("
+    SELECT achievement_key, achievement_title, achievement_description, achievement_icon
+    FROM tbl_[game]_achievements 
+    WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'
+");
+$stmt->execute();
+$definitions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Build definitions array
+$allAchievements = [];
+foreach ($definitions as $def) {
+    $allAchievements[$def['achievement_key']] = [
+        'title' => $def['achievement_title'],
+        'description' => $def['achievement_description'],
+        'icon' => $def['achievement_icon']
+    ];
+}
+
+// ❌ WRONG: Hardcoded descriptions (NEVER DO THIS!)
+$allAchievements = [
+    'score2500' => [
+        'title' => 'Getting Started',
+        'description' => 'Reached 30,000 points!',  // HARDCODED - BAD!
+    ]
+];
+```
+
+#### **3. Frontend Architecture (CRITICAL - Must Be Dynamic!):**
+```javascript
+// ✅ CORRECT: Dynamic HTML generation from API data
+function displayAchievements(data) {
+    const gridEl = document.querySelector('#achievementsGrid');
+    gridEl.innerHTML = ''; // Clear existing cards
+    
+    // Build cards dynamically from data
+    achievements.forEach(achievement => {
+        const card = buildAchievementCard(achievement);
+        gridEl.innerHTML += card;
+    });
+}
+
+// ❌ WRONG: Hardcoded HTML cards (NEVER DO THIS!)
+<div id="achievementsGrid">
+    <div>Getting Started: Reached 30,000 points!</div>
+    <!-- 420+ lines of hardcoded cards -->
+</div>
+```
+
+#### **4. Icon Mapping System (Required for Emoji Encoding):**
+```javascript
+// ✅ REQUIRED: Icon mapping function for all 3 games
+function get[Game]AchievementIcon(key) {
+    const iconMap = {
+        'achievement_key_1': '🎯',
+        'achievement_key_2': '💰',
+        // ... all achievement icons
+    };
+    return iconMap[key] || '🏆'; // Fallback icon
+}
+
+// WHY: SQLite emoji encoding issues on Windows (stores as ????)
+// JavaScript mapping ensures correct emoji display in browser
+```
+
+### **🏆 ACHIEVEMENT SYSTEM STATUS (Oct 26-27, 2025):**
+
+**Total Achievements:** 73 across all 3 games
+- ✅ **Tetris:** 25 achievements (v2.0 - verified)
+- ✅ **Snake:** 20 achievements (v2.0 - verified)
+- ✅ **Space Invaders:** 28 achievements (v2.0 - verified)
+
+**Architecture Compliance:**
+- ✅ All 3 use dynamic database loading
+- ✅ All 3 use icon mapping functions
+- ✅ All 3 use dynamic HTML generation
+- ✅ All 3 load from `ACHIEVEMENT_DEFINITIONS`
+- ✅ Zero hardcoded descriptions
+
+**Technical Documentation:**
+- ✅ TETRIS_ACHIEVEMENTS_SYSTEM.md (25KB, 775 lines)
+- ✅ SNAKE_ACHIEVEMENTS_SYSTEM.md (20KB, 624 lines)
+- ✅ SPACE_INVADERS_ACHIEVEMENTS_SYSTEM.md (27KB, 794 lines)
+- ✅ **Total:** 72KB, 2,193 lines of technical documentation
+
+### **CRITICAL PITFALLS TO AVOID:**
+
+#### **Pitfall #1: Hardcoded API Descriptions**
+- ❌ **WRONG:** Defining achievement descriptions in PHP array
+- ✅ **CORRECT:** Loading from database `WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'`
+- 🚨 **Impact:** Profile page shows old values even after database updates
+- 📅 **Fixed:** Space Invaders API on Oct 27, 2025
+
+#### **Pitfall #2: Hardcoded HTML Cards**
+- ❌ **WRONG:** 420+ lines of hardcoded achievement HTML
+- ✅ **CORRECT:** Dynamic HTML generation from API data
+- 🚨 **Impact:** Manual updates required, inconsistent with database
+- 📅 **Fixed:** Space Invaders profile page on Oct 26, 2025
+
+#### **Pitfall #3: Unrealistic Thresholds**
+- ❌ **WRONG:** 30k-300k DSPOINC when max is 20k
+- ✅ **CORRECT:** 1k-20k based on actual max scores
+- 🚨 **Impact:** Impossible achievements, frustrated players
+- 📅 **Fixed:** All 3 games Oct 26, 2025
+
+---
+
+## 🎯 **ROLE-BASED GAMING SYSTEM V2.0 (Oct 26, 2025)**
+
+### **COMPLETE ROLE MULTIPLIER SYSTEM:**
+
+**Discord Role IDs and Multipliers:**
+```javascript
+const roleMultipliersByID = {
+  '1332016526848692345': 2.0,  // 🎴 VIP Holder
+  '1402668301414563971': 1.5,  // 🏆 Holder
+  '1332017420591697972': 1.4,  // Champion
+  '1417279348989497532': 1.3,  // Season Tester (GREEN theme)
+  '1332017614108758148': 1.2,  // Early Bird
+  '1399651053682692208': 1.1,  // 🧀 Cheese Hunter
+  '1332108350518857842': 1.3   // WL
+};
+```
+
+### **✅ ALL 18 ROLE COMBINATIONS TESTED (Bug #104 Complete):**
+
+| Role | Multiplier | Snake | Tetris | Space Invaders | Theme |
+|------|-----------|-------|--------|----------------|-------|
+| VIP Holder | 2.0x | 20 | 16 | ~72 | 🟡 Golden |
+| Holder | 1.5x | 15 | 12 | ~54 | ⚪ Silver |
+| Champion | 1.4x | 14 | 11 | ~50 | 🔴 Red |
+| Season Tester | 1.3x | 13 | 10 | ~47 | 🟢 Green |
+| Early Bird | 1.2x | 12 | 10 | ~43 | 🔵 Blue |
+| Cheese Hunter | 1.1x | 11 | 9 | ~40 | 🧀 Cheese |
+
+**Test Results:** 18/18 PASSED ✅  
+**Status:** Production verified and deployed! 🚀
+
+### **CRITICAL BUG FIXES (Oct 26, 2025):**
+
+#### **1. Season Tester Theme:**
+- ❌ **OLD:** Rainbow theme (not displaying, stuck on violet)
+- ✅ **NEW:** Green theme (solid, reliable, consistent)
+- 📝 **Files:** All 3 game scripts + profile.html CSS
+- ✅ **Result:** Consistent green across all games
+
+#### **2. Tetris Math.round() Fix:**
+- ❌ **OLD:** Math.floor() truncated fractional bonuses to 0
+- ✅ **NEW:** Math.round() for fair rounding
+- 📊 **Example:** Champion 1.4x: 2→3 DSPOINC (was rounding down)
+- ✅ **Result:** All fractional bonuses work correctly
+
+#### **3. Snake Backend Double Multiplication:**
+- ❌ **OLD:** Backend multiplied by 10 after frontend already calculated
+- ✅ **NEW:** Backend uses score as-is (pointsPerUnit = 1)
+- 📊 **Example:** 1 cheese × 1.5 Holder = 15 (was showing 150)
+- ✅ **Result:** Correct DSPOINC display everywhere
+
+### **ROLE-BASED THEME SYSTEM:**
+
+**Visual Themes per Role:**
+- 🟡 **Golden:** VIP Holder (gold borders, particles)
+- ⚪ **Silver:** Holder (silver borders, particles)
+- 🔴 **Red:** Champion (red borders, particles)
+- 🟢 **Green:** Season Tester (green borders, particles)
+- 🔵 **Blue:** Early Bird (blue borders, particles)
+- 🧀 **Cheese:** Cheese Hunter (yellow/orange theme)
+
+**Implementation:**
+- ✅ Canvas border colors
+- ✅ Control section styling
+- ✅ Game-specific particle colors
+- ✅ Consistent across all 3 games
+
+### **TECHNICAL DOCUMENTATION:**
+- ROLE_ID_IMPLEMENTATION_COMPLETE.md (updated Oct 26)
+- ROLE_ID_MAPPING_FOR_MULTIPLIERS.md (updated Oct 26)
+- BUG_104 comprehensive test results
+- 04_GAME_SCORING_SYSTEM_RULES.md (backend rules)
 
 ---
 

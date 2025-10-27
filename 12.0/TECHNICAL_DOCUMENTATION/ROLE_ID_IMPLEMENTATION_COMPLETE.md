@@ -1,9 +1,10 @@
 # 🏆 ROLE ID-BASED MULTIPLIER SYSTEM - IMPLEMENTATION COMPLETE
 
 **Date:** October 13-14, 2025  
-**Last Updated:** October 14, 2025 - 22:15  
-**Status:** ✅ **COMPLETED & VERIFIED**  
+**Last Updated:** October 26, 2025 - 21:00 (Bug #104 Fixes)  
+**Status:** ✅ **COMPLETED & VERIFIED - ALL 18 ROLES TESTED**  
 **Purpose:** Fix role multiplier issues using Discord role IDs + Scoring system fixes  
+**Recent Fixes:** Season Tester theme (rainbow→green), Math.round() for Tetris, Backend double multiplication for Snake  
 
 ---
 
@@ -93,13 +94,13 @@ const rolePriorityByID = [
 
 ## 🎮 **ROLE THEME MAPPING**
 
-### **Role ID to Theme Mapping:**
+### **Role ID to Theme Mapping (Updated Oct 26, 2025):**
 ```javascript
 const roleIDToTheme = {
   '1332016526848692345': 'golden',    // 🎴 VIP Holder
   '1402668301414563971': 'silver',    // 🏆 Holder
   '1332017420591697972': 'red',       // Champion
-  '1417279348989497532': 'rainbow',   // Season Tester
+  '1417279348989497532': 'green',     // Season Tester (CHANGED from rainbow)
   '1332017614108758148': 'blue',      // Early Bird
   '1399651053682692208': 'cheese',    // 🧀 Cheese Hunter
   '1332108350518857842': 'blue'       // WL (blue theme)
@@ -325,3 +326,53 @@ const roleIDToTheme = {
 **🎯 ALL THREE GAMES NOW PERFECT! 🎯**
 
 **All scoring systems synchronized, all role multipliers working flawlessly! 🚀**
+
+---
+
+## 🔧 **BUG #104 FIXES (October 26, 2025)**
+
+### **Critical Role Multiplier Issues Resolved:**
+
+#### **1. Season Tester Theme Fix (All 3 Games):**
+- ❌ **Issue:** Rainbow theme not displaying correctly, getting stuck on violet
+- ✅ **Fix:** Changed Season Tester theme from 'rainbow' to 'green' in all 3 games
+- ✅ **Files:** snake-scroll.js, tetris-scroll.js, space-cheese-invaders.js, profile.html
+- ✅ **Result:** Consistent green theme across Tetris, Snake, and Space Invaders
+
+#### **2. Tetris Math.round() Fix:**
+- ❌ **Issue:** Champion role (1.4x) gave 2 DSPOINC instead of 3 (Math.floor truncated 0.8 to 0)
+- ✅ **Fix:** Changed Math.floor() to Math.round() for roleBombBonus and roleBonus
+- ✅ **Result:** Fair fractional bonuses (1.4x now gives 3 DSPOINC, not 2)
+
+#### **3. Snake Backend Double Multiplication Fix:**
+- ❌ **Issue:** Backend was multiplying by 10 again after frontend already calculated DSPOINC
+- ✅ **Fix:** Changed save-score.php pointsPerUnit from 10 to 1 for Snake
+- ✅ **Result:** Correct scoring (1 cheese = 10 base, ×1.5 Holder = 15 DSPOINC, not 150)
+
+### **Complete Testing Matrix (18 Role Combinations):**
+
+| Role | Snake | Tetris | Space Invaders | Status |
+|------|-------|--------|----------------|--------|
+| VIP Holder (2.0x) | 20 DSPOINC | 16 DSPOINC | ~72 DSPOINC | ✅ PASS |
+| Holder (1.5x) | 15 DSPOINC | 12 DSPOINC | ~54 DSPOINC | ✅ PASS |
+| Champion (1.4x) | 14 DSPOINC | 11 DSPOINC | ~50 DSPOINC | ✅ PASS |
+| Season Tester (1.3x) | 13 DSPOINC | 10 DSPOINC | ~47 DSPOINC | ✅ PASS |
+| Early Bird (1.2x) | 12 DSPOINC | 10 DSPOINC | ~43 DSPOINC | ✅ PASS |
+| Cheese Hunter (1.1x) | 11 DSPOINC | 9 DSPOINC | ~40 DSPOINC | ✅ PASS |
+
+**Total Tests:** 18/18 roles across 3 games  
+**Pass Rate:** 100% ✅  
+**Status:** Production Ready! 🚀
+
+### **Documentation Created:**
+- BUG_104_SNAKE_MULTIPLIER_FIX.md
+- BUG_104_BACKEND_FIX.md
+- TETRIS_MATH_ROUND_FIX.md
+- MULTIPLIER_TEST_RESULTS.md (all 3 games)
+- Updated 04_GAME_SCORING_SYSTEM_RULES.md
+
+---
+
+**🎯 ROLE-BASED MULTIPLIER SYSTEM - PERFECT ACROSS ALL 3 GAMES! 🎯**
+
+**All 18 role combinations tested and verified! Ready for decades of gaming! 🚀**

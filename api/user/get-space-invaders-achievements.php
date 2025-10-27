@@ -45,7 +45,32 @@ try {
     
     $pdo = getSQLite3Connection();
     
-    // Fetch user's Space Cheese Invaders achievements
+    // Fetch achievement DEFINITIONS from database (LIKE TETRIS AND SNAKE!)
+    $stmt = $pdo->prepare("
+        SELECT 
+            achievement_key,
+            achievement_title,
+            achievement_description,
+            achievement_icon
+        FROM tbl_space_invaders_achievements 
+        WHERE user_id = 'ACHIEVEMENT_DEFINITIONS' 
+        ORDER BY achievement_key
+    ");
+    
+    $stmt->execute();
+    $definitions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Build achievement definitions array from database
+    $allAchievements = [];
+    foreach ($definitions as $def) {
+        $allAchievements[$def['achievement_key']] = [
+            'title' => $def['achievement_title'],
+            'description' => $def['achievement_description'],
+            'icon' => $def['achievement_icon']
+        ];
+    }
+    
+    // Fetch user's unlocked Space Cheese Invaders achievements
     $stmt = $pdo->prepare("
         SELECT 
             achievement_key,
@@ -64,150 +89,6 @@ try {
     
     $stmt->execute([$discordId]);
     $achievements = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Define all possible achievements for reference (REBALANCED)
-    $allAchievements = [
-        'firstKill' => [
-            'title' => 'First Blood',
-            'description' => 'Destroyed your first 100 invaders!',
-            'icon' => '🎯'
-        ],
-        'killStreak8' => [
-            'title' => 'Killing Spree',
-            'description' => '25 kills in a row!',
-            'icon' => '🔥'
-        ],
-        'killStreak15' => [
-            'title' => 'Rampage',
-            'description' => '50 kills in a row!',
-            'icon' => '⚡'
-        ],
-        'killStreak25' => [
-            'title' => 'Unstoppable',
-            'description' => '100 kills in a row!',
-            'icon' => '💀'
-        ],
-        'score2500' => [
-            'title' => 'Getting Started',
-            'description' => 'Reached 30,000 points!',
-            'icon' => '⭐'
-        ],
-        'score7500' => [
-            'title' => 'Rising Star',
-            'description' => 'Reached 75,000 points!',
-            'icon' => '🌟'
-        ],
-        'score15000' => [
-            'title' => 'Space Ace',
-            'description' => 'Reached 150,000 points!',
-            'icon' => '🚀'
-        ],
-        'score30000' => [
-            'title' => 'Legend',
-            'description' => 'Reached 300,000 points!',
-            'icon' => '👑'
-        ],
-        'perfectWave' => [
-            'title' => 'Perfect Wave',
-            'description' => 'Cleared 5 waves without taking damage!',
-            'icon' => '✨'
-        ],
-        'noHitRun60' => [
-            'title' => 'Untouchable',
-            'description' => '5 minutes without taking damage!',
-            'icon' => '🛡️'
-        ],
-        'comboMaster8' => [
-            'title' => 'Combo Master',
-            'description' => 'Achieved 4x score multiplier!',
-            'icon' => '💥'
-        ],
-        'speedDemon20k' => [
-            'title' => 'Speed Demon',
-            'description' => 'Reached 50k points in under 3 minutes!',
-            'icon' => '⚡'
-        ],
-        'survivor10min' => [
-            'title' => 'Ultimate Survivor',
-            'description' => 'Survived for 20 minutes!',
-            'icon' => '🏆'
-        ],
-        'bossKiller1' => [
-            'title' => 'Boss Hunter',
-            'description' => 'Defeated Boss 1 - First Victory!',
-            'icon' => '⚔️'
-        ],
-        'bossKiller2' => [
-            'title' => 'Boss Conqueror',
-            'description' => 'Defeated Boss 3 - Rising Power!',
-            'icon' => '🏹'
-        ],
-        'bossKiller3' => [
-            'title' => 'Boss Slayer',
-            'description' => 'Defeated Boss 5 - Master Warrior!',
-            'icon' => '🗡️'
-        ],
-        'bossKiller4' => [
-            'title' => 'Boss Destroyer',
-            'description' => 'Defeated Boss 8 - Ultimate Achievement!',
-            'icon' => '💀'
-        ],
-        'phoenixHunter' => [
-            'title' => 'Phoenix Hunter',
-            'description' => 'Destroyed 10 Phoenix birds!',
-            'icon' => '🔥'
-        ],
-        'phoenixSlayer' => [
-            'title' => 'Phoenix Slayer',
-            'description' => 'Destroyed 25 Phoenix birds!',
-            'icon' => '⚡'
-        ],
-        'phoenixDestroyer' => [
-            'title' => 'Phoenix Destroyer',
-            'description' => 'Destroyed 50 Phoenix birds!',
-            'icon' => '💥'
-        ],
-        'phoenixMaster' => [
-            'title' => 'Phoenix Master',
-            'description' => 'Destroyed 100 Phoenix birds - Ultimate Phoenix Hunter!',
-            'icon' => '👑'
-        ],
-        'eggHunter' => [
-            'title' => 'Egg Hunter',
-            'description' => 'Destroyed 50 Phoenix eggs!',
-            'icon' => '🥚'
-        ],
-        'eggSlayer' => [
-            'title' => 'Egg Slayer',
-            'description' => 'Destroyed 100 Phoenix eggs!',
-            'icon' => '💣'
-        ],
-        'eggDestroyer' => [
-            'title' => 'Egg Destroyer',
-            'description' => 'Destroyed 200 Phoenix eggs!',
-            'icon' => '💥'
-        ],
-        'eggMaster' => [
-            'title' => 'Egg Master',
-            'description' => 'Destroyed 500 Phoenix eggs - Ultimate Egg Hunter!',
-            'icon' => '👑'
-        ],
-        'miniPhoenixHunter' => [
-            'title' => 'Mini-Phoenix Hunter',
-            'description' => 'Destroyed 25 Mini-Phoenix!',
-            'icon' => '🐣'
-        ],
-        'miniPhoenixSlayer' => [
-            'title' => 'Mini-Phoenix Slayer',
-            'description' => 'Destroyed 75 Mini-Phoenix!',
-            'icon' => '⚡'
-        ],
-        'miniPhoenixMaster' => [
-            'title' => 'Mini-Phoenix Master',
-            'description' => 'Destroyed 150 Mini-Phoenix - Ultimate Mini-Hunter!',
-            'icon' => '👑'
-        ]
-    ];
     
     // Process achievements data
     $processedAchievements = [];

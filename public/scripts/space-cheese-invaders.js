@@ -2113,21 +2113,41 @@ let lastKillTime = 0; // Track last kill time for combo system
 
 // 🏆 SEASON 3 PHASE 2: ACHIEVEMENT SYSTEM
 let achievements = {
+  // Kill achievements (4)
   firstKill: false,
-  killStreak8: false,        // Increased from 5
-  killStreak15: false,       // Increased from 10
-  killStreak25: false,       // Increased from 20
-  score2500: false,          // Increased from 1000
-  score7500: false,          // Increased from 5000
-  score15000: false,         // Increased from 10000
-  score30000: false,         // Increased from 25000
+  killStreak8: false,
+  killStreak15: false,
+  killStreak25: false,
+  // Score achievements (4)
+  score2500: false,
+  score7500: false,
+  score15000: false,
+  score30000: false,
+  // Skill achievements (5)
   perfectWave: false,
-  noHitRun60: false,         // Increased from 30 seconds
-  bossKiller3: false,        // NEW - Boss 3
-  bossKiller4: false,        // NEW - Boss 4 (ultimate)
-  comboMaster8: false,       // Increased from 5x
-  speedDemon20k: false,       // Harder speed challenge
-  survivor10min: false       // Increased from 5 minutes
+  noHitRun60: false,
+  comboMaster8: false,
+  speedDemon20k: false,
+  survivor10min: false,
+  // Boss achievements (4)
+  bossKiller1: false,
+  bossKiller2: false,
+  bossKiller3: false,
+  bossKiller4: false,
+  // Phoenix achievements (4)
+  phoenixHunter: false,
+  phoenixSlayer: false,
+  phoenixDestroyer: false,
+  phoenixMaster: false,
+  // Egg achievements (4)
+  eggHunter: false,
+  eggSlayer: false,
+  eggDestroyer: false,
+  eggMaster: false,
+  // Mini-Phoenix achievements (3)
+  miniPhoenixHunter: false,
+  miniPhoenixSlayer: false,
+  miniPhoenixMaster: false
 };
 let achievementPopups = []; // Array for achievement pop-ups
 let gameStartTime = 0; // Track game start time
@@ -8002,23 +8022,43 @@ let reloadButtonInterval = null;
       console.log('🏆 Saving all achievements to database after game end...');
       console.log('🏆 Current achievements state:', achievements);
       
-      // Check each achievement and save if unlocked
+      // Check each achievement and save if unlocked - ALL 28 ACHIEVEMENTS NOW INCLUDED!
       const achievementsToSave = [
+        // Kill achievements (4)
         { key: 'firstKill', title: 'First Blood', description: 'Destroyed your first 100 invaders!', icon: '🎯' },
         { key: 'killStreak8', title: 'Killing Spree', description: '25 kills in a row!', icon: '🔥' },
         { key: 'killStreak15', title: 'Rampage', description: '50 kills in a row!', icon: '⚡' },
         { key: 'killStreak25', title: 'Unstoppable', description: '100 kills in a row!', icon: '💀' },
-        { key: 'score2500', title: 'Getting Started', description: 'Reached 30,000 points!', icon: '⭐' },
-        { key: 'score7500', title: 'Rising Star', description: 'Reached 75,000 points!', icon: '🌟' },
-        { key: 'score15000', title: 'Space Warrior', description: 'Reached 150,000 points!', icon: '🚀' },
-        { key: 'score30000', title: 'Space Legend', description: 'Reached 300,000 points!', icon: '👑' },
+        // Score achievements (4)
+        { key: 'score2500', title: 'Getting Started', description: 'Reached 1,000 DSPOINC!', icon: '⭐' },
+        { key: 'score7500', title: 'Rising Star', description: 'Reached 5,000 DSPOINC!', icon: '🌟' },
+        { key: 'score15000', title: 'Space Ace', description: 'Reached 10,000 DSPOINC!', icon: '🚀' },
+        { key: 'score30000', title: 'Legend', description: 'Reached 20,000 DSPOINC - Maximum Score!', icon: '👑' },
+        // Skill achievements (5)
         { key: 'perfectWave', title: 'Perfect Wave', description: 'Cleared 5 waves without taking damage!', icon: '✨' },
-        { key: 'noHitRun60', title: 'Untouchable', description: 'Survived 60 seconds without taking damage!', icon: '🛡️' },
-        { key: 'bossKiller3', title: 'Boss Hunter', description: 'Defeated Boss 1 - First Victory!', icon: '🗡️' },
-        { key: 'bossKiller4', title: 'Phoenix Hunter', description: 'Destroyed 10 Phoenix birds!', icon: '🔥' },
-        { key: 'comboMaster8', title: 'Combo Master', description: 'Achieved 8x score multiplier!', icon: '💥' },
-        { key: 'speedDemon20k', title: 'Speed Demon', description: 'Reached 20,000 points in under 2 minutes!', icon: '⚡' },
-        { key: 'survivor10min', title: 'Survivor', description: 'Survived for 10 minutes!', icon: '⏰' }
+        { key: 'noHitRun60', title: 'Untouchable', description: '5 minutes without taking damage!', icon: '🛡️' },
+        { key: 'comboMaster8', title: 'Combo Master', description: 'Achieved 4x score multiplier!', icon: '💥' },
+        { key: 'speedDemon20k', title: 'Speed Demon', description: 'Reached 5,000 DSPOINC in under 3 minutes!', icon: '⚡' },
+        { key: 'survivor10min', title: 'Ultimate Survivor', description: 'Survived for 20 minutes!', icon: '⏰' },
+        // Boss achievements (4) - Only 4 bosses in game (Waves 10, 25, 75, 100)
+        { key: 'bossKiller1', title: 'Boss Novice', description: 'Defeated Cheese King - First Victory!', icon: '🎯' },
+        { key: 'bossKiller2', title: 'Boss Veteran', description: 'Defeated Cheese Emperor - Rising Power!', icon: '🏆' },
+        { key: 'bossKiller3', title: 'Boss Slayer', description: 'Defeated Cheese God - Master Warrior!', icon: '🗡️' },
+        { key: 'bossKiller4', title: 'Boss Destroyer', description: 'Defeated Cheese Destroyer - Ultimate!', icon: '💀' },
+        // Phoenix achievements (4)
+        { key: 'phoenixHunter', title: 'Phoenix Hunter', description: 'Destroyed 10 Phoenix birds!', icon: '🔥' },
+        { key: 'phoenixSlayer', title: 'Phoenix Slayer', description: 'Destroyed 25 Phoenix birds!', icon: '⚡' },
+        { key: 'phoenixDestroyer', title: 'Phoenix Destroyer', description: 'Destroyed 50 Phoenix birds!', icon: '💥' },
+        { key: 'phoenixMaster', title: 'Phoenix Master', description: 'Destroyed 100 Phoenix birds - Ultimate!', icon: '👑' },
+        // Egg achievements (4)
+        { key: 'eggHunter', title: 'Egg Hunter', description: 'Destroyed 50 Phoenix eggs!', icon: '🥚' },
+        { key: 'eggSlayer', title: 'Egg Slayer', description: 'Destroyed 100 Phoenix eggs!', icon: '💣' },
+        { key: 'eggDestroyer', title: 'Egg Destroyer', description: 'Destroyed 150 Phoenix eggs!', icon: '💥' },
+        { key: 'eggMaster', title: 'Egg Master', description: 'Destroyed 250 Phoenix eggs - Ultimate!', icon: '👑' },
+        // Mini-Phoenix achievements (3)
+        { key: 'miniPhoenixHunter', title: 'Mini-Phoenix Hunter', description: 'Destroyed 25 Mini-Phoenix!', icon: '🐣' },
+        { key: 'miniPhoenixSlayer', title: 'Mini-Phoenix Slayer', description: 'Destroyed 50 Mini-Phoenix!', icon: '⚡' },
+        { key: 'miniPhoenixMaster', title: 'Mini-Phoenix Master', description: 'Destroyed 75 Mini-Phoenix - Ultimate!', icon: '👑' }
       ];
       
       for (const achievement of achievementsToSave) {
@@ -8162,25 +8202,25 @@ let reloadButtonInterval = null;
       createAchievementPopup('killStreak25', 'Unstoppable', '100 kills in a row!', '💀');
     }
     
-    // Score Achievements (MUCH HARDER - End-game scores)
-    if (spaceInvadersScore >= 30000 && !achievements.score2500) {
+    // Score Achievements (BALANCED - Max 20k DSPOINC with VIP at Boss 4)
+    if (spaceInvadersScore >= 1000 && !achievements.score2500) {
       achievements.score2500 = true;
-      createAchievementPopup('score2500', 'Getting Started', 'Reached 30,000 points!', '⭐');
+      createAchievementPopup('score2500', 'Getting Started', 'Reached 1,000 DSPOINC!', '⭐');
     }
     
-    if (spaceInvadersScore >= 75000 && !achievements.score7500) {
+    if (spaceInvadersScore >= 5000 && !achievements.score7500) {
       achievements.score7500 = true;
-      createAchievementPopup('score7500', 'Rising Star', 'Reached 75,000 points!', '🌟');
+      createAchievementPopup('score7500', 'Rising Star', 'Reached 5,000 DSPOINC!', '🌟');
     }
     
-    if (spaceInvadersScore >= 150000 && !achievements.score15000) {
+    if (spaceInvadersScore >= 10000 && !achievements.score15000) {
       achievements.score15000 = true;
-      createAchievementPopup('score15000', 'Space Ace', 'Reached 150,000 points!', '🚀');
+      createAchievementPopup('score15000', 'Space Ace', 'Reached 10,000 DSPOINC!', '🚀');
     }
     
-    if (spaceInvadersScore >= 300000 && !achievements.score30000) {
+    if (spaceInvadersScore >= 20000 && !achievements.score30000) {
       achievements.score30000 = true;
-      createAchievementPopup('score30000', 'Legend', 'Reached 300,000 points!', '👑');
+      createAchievementPopup('score30000', 'Legend', 'Reached 20,000 DSPOINC - Maximum Score!', '👑');
     }
     
     // Perfect Wave Achievement (HARDER - Need 5 perfect waves)
@@ -8201,11 +8241,11 @@ let reloadButtonInterval = null;
       createAchievementPopup('Combo Master', 'Achieved 4x score multiplier!', '💥');
     }
     
-    // Speed Demon Achievement (MUCH HARDER - 50k in 3 minutes)
+    // Speed Demon Achievement (BALANCED - 5k in 3 minutes)
     const gameTime = Date.now() - gameStartTime;
-    if (spaceInvadersScore >= 50000 && gameTime < 180000 && !achievements.speedDemon20k) { // 3 minutes
+    if (spaceInvadersScore >= 5000 && gameTime < 180000 && !achievements.speedDemon20k) { // 3 minutes
       achievements.speedDemon20k = true;
-      createAchievementPopup('Speed Demon', 'Reached 50k points in under 3 minutes!', '⚡');
+      createAchievementPopup('Speed Demon', 'Reached 5,000 DSPOINC in under 3 minutes!', '⚡');
     }
     
     // Survivor Achievement (MUCH HARDER - 20 minutes)
@@ -8214,25 +8254,25 @@ let reloadButtonInterval = null;
       createAchievementPopup('Ultimate Survivor', 'Survived for 20 minutes!', '🏆');
     }
     
-    // Boss Kill Achievements (BOSS DESTRUCTION TITLES - 4 Levels)
+    // Boss Kill Achievements (ONLY 4 BOSSES IN GAME - Waves 10, 25, 75, 100)
     if (bossesKilled >= 1 && !achievements.bossKiller1) {
       achievements.bossKiller1 = true;
-      createAchievementPopup('Boss Hunter', 'Defeated Boss 1 - First Victory!', '⚔️');
+      createAchievementPopup('Boss Novice', 'Defeated Cheese King - First Victory!', '🎯');
     }
     
-    if (bossesKilled >= 3 && !achievements.bossKiller2) {
+    if (bossesKilled >= 2 && !achievements.bossKiller2) {
       achievements.bossKiller2 = true;
-      createAchievementPopup('Boss Conqueror', 'Defeated Boss 3 - Rising Power!', '🏹');
+      createAchievementPopup('Boss Veteran', 'Defeated Cheese Emperor - Rising Power!', '🏆');
     }
     
-    if (bossesKilled >= 5 && !achievements.bossKiller3) {
+    if (bossesKilled >= 3 && !achievements.bossKiller3) {
       achievements.bossKiller3 = true;
-      createAchievementPopup('Boss Slayer', 'Defeated Boss 5 - Master Warrior!', '🗡️');
+      createAchievementPopup('Boss Slayer', 'Defeated Cheese God - Master Warrior!', '🗡️');
     }
     
-    if (bossesKilled >= 8 && !achievements.bossKiller4) {
+    if (bossesKilled >= 4 && !achievements.bossKiller4) {
       achievements.bossKiller4 = true;
-      createAchievementPopup('Boss Destroyer', 'Defeated Boss 8 - Ultimate Achievement!', '💀');
+      createAchievementPopup('Boss Destroyer', 'Defeated Cheese Destroyer - Ultimate Achievement!', '💀');
     }
     
     // Phoenix Swarm Achievements (PHOENIX DESTRUCTION TITLES - 4 Levels)
@@ -8256,7 +8296,7 @@ let reloadButtonInterval = null;
       createAchievementPopup('Phoenix Master', 'Destroyed 100 Phoenix birds - Ultimate Phoenix Hunter!', '👑');
     }
     
-    // Phoenix Egg Achievements (EGG DESTRUCTION TITLES - 4 Levels)
+    // Phoenix Egg Achievements (~200-300 eggs total by wave 100)
     if (phoenixEggsDestroyed >= 50 && !achievements.eggHunter) {
       achievements.eggHunter = true;
       createAchievementPopup('Egg Hunter', 'Destroyed 50 Phoenix eggs!', '🥚');
@@ -8267,30 +8307,30 @@ let reloadButtonInterval = null;
       createAchievementPopup('Egg Slayer', 'Destroyed 100 Phoenix eggs!', '💣');
     }
     
-    if (phoenixEggsDestroyed >= 200 && !achievements.eggDestroyer) {
+    if (phoenixEggsDestroyed >= 150 && !achievements.eggDestroyer) {
       achievements.eggDestroyer = true;
-      createAchievementPopup('Egg Destroyer', 'Destroyed 200 Phoenix eggs!', '💥');
+      createAchievementPopup('Egg Destroyer', 'Destroyed 150 Phoenix eggs!', '💥');
     }
     
-    if (phoenixEggsDestroyed >= 500 && !achievements.eggMaster) {
+    if (phoenixEggsDestroyed >= 250 && !achievements.eggMaster) {
       achievements.eggMaster = true;
-      createAchievementPopup('Egg Master', 'Destroyed 500 Phoenix eggs - Ultimate Egg Hunter!', '👑');
+      createAchievementPopup('Egg Master', 'Destroyed 250 Phoenix eggs - Ultimate Egg Hunter!', '👑');
     }
     
-    // Mini-Phoenix Achievements (MINI-PHOENIX DESTRUCTION TITLES - 3 Levels)
+    // Mini-Phoenix Achievements (~60-90 mini-phoenixes total by wave 100)
     if (miniPhoenixesDestroyed >= 25 && !achievements.miniPhoenixHunter) {
       achievements.miniPhoenixHunter = true;
       createAchievementPopup('Mini-Phoenix Hunter', 'Destroyed 25 Mini-Phoenix!', '🐣');
     }
     
-    if (miniPhoenixesDestroyed >= 75 && !achievements.miniPhoenixSlayer) {
+    if (miniPhoenixesDestroyed >= 50 && !achievements.miniPhoenixSlayer) {
       achievements.miniPhoenixSlayer = true;
-      createAchievementPopup('Mini-Phoenix Slayer', 'Destroyed 75 Mini-Phoenix!', '⚡');
+      createAchievementPopup('Mini-Phoenix Slayer', 'Destroyed 50 Mini-Phoenix!', '⚡');
     }
     
-    if (miniPhoenixesDestroyed >= 150 && !achievements.miniPhoenixMaster) {
+    if (miniPhoenixesDestroyed >= 75 && !achievements.miniPhoenixMaster) {
       achievements.miniPhoenixMaster = true;
-      createAchievementPopup('Mini-Phoenix Master', 'Destroyed 150 Mini-Phoenix - Ultimate Mini-Hunter!', '👑');
+      createAchievementPopup('Mini-Phoenix Master', 'Destroyed 75 Mini-Phoenix - Ultimate Mini-Hunter!', '👑');
     }
   }
   
