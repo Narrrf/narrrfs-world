@@ -1424,11 +1424,36 @@ if (collide(current.shape, current.row, current.col)) {
   isTetrisPaused = true;
   onTetrisGameOver(score);
 
-  const modal = document.getElementById("game-over-modal");
-  const finalScoreText = document.getElementById("final-score-text");
+  // ✅ FIX: Get ALL modals with this ID and find the LOCAL one (in Tetris canvas area, like Snake!)
+  const allModals = document.querySelectorAll("#game-over-modal");
+  console.log(`🔍 Found ${allModals.length} game-over-modal elements`);
+  
+  let modal = null;
+  let finalScoreText = null;
+  
+  // Find the LOCAL modal (inside Tetris canvas container, NOT the global fixed one)
+  // The correct modal is the one that's ABSOLUTE positioned over the canvas (like Snake!)
+  allModals.forEach((m, index) => {
+    console.log(`🔍 Modal ${index}:`, m.parentElement?.className);
+    // Check if this modal is the local one (has absolute positioning, NOT fixed)
+    if (m.classList.contains('absolute') || (!m.classList.contains('fixed'))) {
+      modal = m;
+      finalScoreText = m.querySelector("#final-score-text");
+      console.log(`✅ Found LOCAL modal at index ${index} (like Snake!)`);
+    }
+  });
+  
+  // Fallback: use first modal if none found
+  if (!modal && allModals.length > 0) {
+    modal = allModals[0]; // Use first modal (the local one)
+    finalScoreText = modal.querySelector("#final-score-text");
+    console.log('⚠️ Using fallback modal (first one)');
+  }
+  
   const pauseBtn = document.getElementById("pause-tetris-btn");
 
   if (modal && finalScoreText) {
+    console.log('✅ Modal and score text found');
     const gameOverText = modal.querySelector('h2') || modal.querySelector('strong');
     if (gameOverText) {
       try {
@@ -1439,13 +1464,37 @@ if (collide(current.shape, current.row, current.col)) {
     }
     try {
       finalScoreText.textContent = `You earned $${score} DSPOINC`;
+      console.log(`✅ Final score set: ${score} DSPOINC`);
     } catch (error) {
       console.log('⚠️ Could not update final score text:', error);
     }
+    
     modal.classList.remove('hidden');
+    console.log('✅ Removed hidden class from modal');
+    
+    // ✅ CRITICAL FIX: Force display but keep original positioning (absolute over canvas, like Snake!)
+    console.log('🎯 Forcing modal display with explicit styling');
+    modal.style.display = 'flex';
+    modal.style.zIndex = '999'; // High but not 9999 (stays in canvas area)
+    
+    // ✅ Verify modal is visible
+    setTimeout(() => {
+      const isVisible = modal.offsetParent !== null && window.getComputedStyle(modal).display !== 'none';
+      console.log(`🔍 Modal visibility check: ${isVisible ? 'VISIBLE ✅' : 'NOT VISIBLE ❌'}`);
+      
+      if (!isVisible) {
+        console.log('🚨 Modal not visible - showing fallback alert');
+        alert(`🧠 GAME OVER\n\nYou earned $${score} DSPOINC!\n\nRefresh the page to play again.`);
+      }
+    }, 100);
+    
     cleanupTouchControls();
   } else {
-    console.log('⚠️ Game over modal elements not found - game over handled gracefully');
+    console.log('❌ Game over modal or score text not found!');
+    console.log('Modal:', modal);
+    console.log('Score text:', finalScoreText);
+    // ✅ CRITICAL FALLBACK: Always show alert if modal not found
+    alert(`🧠 GAME OVER\n\nYou earned $${score} DSPOINC!\n\nRefresh the page to play again.`);
     cleanupTouchControls();
   }
 
@@ -1640,7 +1689,8 @@ let heldDown = false;
   window.checkTetrisAchievements = checkTetrisAchievements;
   
   // 🏆 Save Achievements to Database (No Popups) - For Game End
-  function saveAchievementsToDatabase(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears) {
+  function saveAchievementsToDatabase(userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears, linesClearedInTurn = 0) {
+    console.log('💾 saveAchievementsToDatabase called with:', { userId, gameScore, linesCleared, levelReached, piecesDropped, tetrisClears, linesClearedInTurn });
     
     // 🏆 Define achievement checks (REVISED 2025-10-26 - Bug #131, #136, #127, #134)
     // Based on max score ~2500 DSPOINC, balanced for realistic gameplay
