@@ -1483,6 +1483,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="databaseOverview">🗄️ Database Overview</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="securityCrawler">🔒 Security Crawler</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="twelveZeroManagement">📁 12.0 Management</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="partners">🤝 Partners</button>
       </div>
       
       <!-- Quick Actions Section -->
@@ -19291,7 +19292,7 @@ function updateGameTabContent(gameType, gameData) {
           <h3 class="text-lg font-semibold mb-4 text-yellow-400">📊 Database Overview</h3>
           <div class="grid grid-cols-2 gap-4">
             <div class="text-center p-3 bg-gray-800 bg-opacity-50 rounded-lg">
-              <div id="totalTables" class="text-2xl font-bold text-green-400">45</div>
+              <div id="totalTables" class="text-2xl font-bold text-green-400">57</div>
               <div class="text-sm text-gray-300">Total Tables</div>
             </div>
             <div class="text-center p-3 bg-gray-800 bg-opacity-50 rounded-lg">
@@ -19310,67 +19311,212 @@ function updateGameTabContent(gameType, gameData) {
         </div>
 
         <div class="stats-card">
-          <h3 class="text-lg font-semibold mb-4 text-yellow-400">🔍 Critical Tables Status</h3>
-          <div id="criticalTablesStatus" class="space-y-2 max-h-80 overflow-y-auto">
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_cheese_races - Cheese races data</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">58</span>
+          <h3 class="text-lg font-semibold mb-4 text-yellow-400">🔍 All Database Tables (57 Total)</h3>
+          <div id="criticalTablesStatus" class="space-y-1 max-h-96 overflow-y-auto pr-2">
+            <!-- BOSS SYSTEM TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-purple-500">
+              <span class="text-xs font-medium">⭐ boss_configurations - Boss game configs</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_race_participants - Race participants</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">112</span>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-purple-500">
+              <span class="text-xs font-medium">⭐ boss_level_notifications - Boss level alerts</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_users - Discord users</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">456</span>
+            
+            <!-- LEADERBOARD TABLE -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-yellow-500">
+              <span class="text-xs font-medium">🏆 leaderboard - Current season leaderboard</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_user_scores - User scores</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">762</span>
+            
+            <!-- ADMIN SYSTEM TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-red-500">
+              <span class="text-xs font-medium">🔐 tbl_admin_sessions - Admin authentication</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_score_adjustments - Score adjustments</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">1277</span>
+            
+            <!-- GAME TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-blue-500">
+              <span class="text-xs font-medium">🎲 tbl_bingo_tickets - Bingo game tickets</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_tetris_scores - Game scores (Tetris/Snake/Space)</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">4979</span>
+            
+            <!-- BUG TRACKER TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-orange-500">
+              <span class="text-xs font-medium">🐛 tbl_bug_assignments - Bug assignments</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_cheese_clicks - Cheese hunt clicks</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">1006</span>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-orange-500">
+              <span class="text-xs font-medium">🐛 tbl_bug_categories - Bug categories</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_quests - Quest system</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">43</span>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-orange-500">
+              <span class="text-xs font-medium">🐛 tbl_bug_comments - Bug comments</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_quest_claims - Quest claims</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">126</span>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-orange-500">
+              <span class="text-xs font-medium">🐛 tbl_bug_priorities - Bug priorities</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_store_items - Store items</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">17</span>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-orange-500">
+              <span class="text-xs font-medium">🐛 tbl_bug_reports - Main bug reports</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_user_inventory - User inventory</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">427</span>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-orange-500">
+              <span class="text-xs font-medium">🐛 tbl_bug_status_history - Bug status history</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_community_funds - Community wallet</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">1</span>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-orange-500">
+              <span class="text-xs font-medium">🐛 tbl_bug_statuses - Bug status definitions</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_nft_ownership - NFT ownership</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">0</span>
+            
+            <!-- CHEESE HUNT & RACE TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-500">
+              <span class="text-xs font-medium">✅ tbl_cheese_clicks - Cheese Hunt clicks</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_holder_verifications - Holder verifications</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">54</span>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-500">
+              <span class="text-xs font-medium">✅ tbl_cheese_races - Discord Cheese Races</span>
             </div>
-            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded-lg border-l-4 border-green-500">
-              <span class="text-sm font-medium">✅ tbl_seasons - Game seasons</span>
-              <span class="px-2 py-1 bg-blue-600 bg-opacity-30 rounded-full text-xs">4</span>
+            
+            <!-- COMMUNITY TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-cyan-500">
+              <span class="text-xs font-medium">💰 tbl_community_funds - Community wallet</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-cyan-500">
+              <span class="text-xs font-medium">📣 tbl_discord_events - Discord bot events</span>
+            </div>
+            
+            <!-- GAME SETTINGS -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-blue-500">
+              <span class="text-xs font-medium">⚙️ tbl_game_settings - Game configs</span>
+            </div>
+            
+            <!-- GIVEAWAY SYSTEM TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-pink-500">
+              <span class="text-xs font-medium">🎁 tbl_giveaway_participants - Giveaway entries</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-pink-500">
+              <span class="text-xs font-medium">🎁 tbl_giveaway_winners - Giveaway winners</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-pink-500">
+              <span class="text-xs font-medium">🎁 tbl_giveaways - Giveaway events</span>
+            </div>
+            
+            <!-- HISTORICAL STATS TABLES (Oct 25, 2025) -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-indigo-500">
+              <span class="text-xs font-medium">📊 tbl_historical_cheese_stats - Historical Cheese Hunt</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-indigo-500">
+              <span class="text-xs font-medium">📊 tbl_historical_stats - Historical game stats</span>
+            </div>
+            
+            <!-- NFT & HOLDER TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-yellow-500">
+              <span class="text-xs font-medium">🎴 tbl_holder_verifications - NFT holder verifications</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-yellow-500">
+              <span class="text-xs font-medium">🎴 tbl_nft_ownership - NFT ownership records</span>
+            </div>
+            
+            <!-- PARTNER PORTAL TABLE (NEW - Oct 28, 2025) -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-400 glow-green">
+              <span class="text-xs font-medium">🤝 tbl_partners - Partner portal (NEW!)</span>
+            </div>
+            
+            <!-- STORE & INVENTORY TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-purple-500">
+              <span class="text-xs font-medium">🏪 tbl_purchase_history - Purchase history</span>
+            </div>
+            
+            <!-- QUEST SYSTEM TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-500">
+              <span class="text-xs font-medium">🏆 tbl_quest_claims - Quest claims</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-500">
+              <span class="text-xs font-medium">🏆 tbl_quests - Quest definitions</span>
+            </div>
+            
+            <!-- RACE TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-500">
+              <span class="text-xs font-medium">🏁 tbl_race_participants - Discord Race</span>
+            </div>
+            
+            <!-- REWARD & ROLE TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-cyan-500">
+              <span class="text-xs font-medium">🎁 tbl_rewards - Reward definitions</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-cyan-500">
+              <span class="text-xs font-medium">👑 tbl_role_grants - Discord role grants</span>
+            </div>
+            
+            <!-- SCORING TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-blue-500">
+              <span class="text-xs font-medium">💰 tbl_score_adjustments - Admin adjustments</span>
+            </div>
+            
+            <!-- SEASON TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-yellow-500">
+              <span class="text-xs font-medium">📅 tbl_season_leaderboards - Season rankings</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-yellow-500">
+              <span class="text-xs font-medium">📅 tbl_season_settings - Season configs</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-yellow-500">
+              <span class="text-xs font-medium">📅 tbl_seasons - Season management</span>
+            </div>
+            
+            <!-- ACHIEVEMENT TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-400">
+              <span class="text-xs font-medium">🐍 tbl_snake_achievements - Snake (20 total)</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-400">
+              <span class="text-xs font-medium">👾 tbl_space_invaders_achievements - Space (28 total)</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-blue-500">
+              <span class="text-xs font-medium">⚙️ tbl_space_invaders_settings - Space settings</span>
+            </div>
+            
+            <!-- STORE TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-purple-500">
+              <span class="text-xs font-medium">🏪 tbl_store_items - Store item definitions</span>
+            </div>
+            
+            <!-- TETRIS ACHIEVEMENTS -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-400">
+              <span class="text-xs font-medium">🧩 tbl_tetris_achievements - Tetris (25 total)</span>
+            </div>
+            
+            <!-- GAME SCORES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-blue-500">
+              <span class="text-xs font-medium">🎮 tbl_tetris_scores - Tetris/Snake/Space scores</span>
+            </div>
+            
+            <!-- USER TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-cyan-500">
+              <span class="text-xs font-medium">👤 tbl_user_inventory - User items</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-cyan-500">
+              <span class="text-xs font-medium">👥 tbl_user_roles - User role assignments</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-cyan-500">
+              <span class="text-xs font-medium">💰 tbl_user_scores - DSPOINC balances</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-cyan-500">
+              <span class="text-xs font-medium">🏆 tbl_user_season_achievements - Season achievements</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-cyan-500">
+              <span class="text-xs font-medium">🎨 tbl_user_traits - User trait assignments</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-cyan-500">
+              <span class="text-xs font-medium">👤 tbl_users - Main user accounts</span>
+            </div>
+            
+            <!-- WALLET TABLES -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-500">
+              <span class="text-xs font-medium">💳 tbl_wallet_balance_history - Balance history</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-500">
+              <span class="text-xs font-medium">💳 tbl_wallet_transactions - Wallet transactions</span>
+            </div>
+            
+            <!-- WHITELIST TABLE -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-yellow-500">
+              <span class="text-xs font-medium">✅ tbl_wl_role_grants - Whitelist grants</span>
+            </div>
+            
+            <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded-lg border border-green-500">
+              <p class="text-xs text-green-300">✅ Core tables displayed (35 shown) - Total: 57 tables</p>
+              <p class="text-xs text-gray-400 mt-1">Verified 2025-10-29 • Including: Partners (NEW), Achievements (73), Historical Stats</p>
+              <p class="text-xs text-gray-400 mt-1">Color codes: 🟣 Boss • 🟡 Season • 🔵 Games • 🟢 Users • 🟠 Bugs • 💚 New</p>
             </div>
           </div>
         </div>
@@ -19464,15 +19610,15 @@ function updateGameTabContent(gameType, gameData) {
             <div class="text-sm text-gray-300">Tables Ready</div>
           </div>
           <div class="text-center p-4 bg-gray-800 bg-opacity-50 rounded-lg">
-            <div class="text-2xl font-bold text-green-400">16/16</div>
-            <div class="text-sm text-gray-300">Critical Tables</div>
+            <div class="text-2xl font-bold text-green-400">35/57</div>
+            <div class="text-sm text-gray-300">Core Tables Shown</div>
           </div>
           <div class="text-center p-4 bg-gray-800 bg-opacity-50 rounded-lg">
             <div class="text-2xl font-bold text-blue-400">9,361</div>
             <div class="text-sm text-gray-300">Total Records</div>
           </div>
           <div class="text-center p-4 bg-gray-800 bg-opacity-50 rounded-lg">
-            <div class="text-2xl font-bold text-purple-400">45</div>
+            <div class="text-2xl font-bold text-purple-400">57</div>
             <div class="text-sm text-gray-300">Total Tables</div>
           </div>
         </div>
@@ -19950,6 +20096,186 @@ function updateGameTabContent(gameType, gameData) {
       <!-- Timestamp -->
       <div class="text-center mt-4 text-gray-400 text-sm">
         Last updated: <span id="twelveZeroTimestamp"></span>
+      </div>
+    </div>
+
+    <!-- 🤝 Partners Management Tab -->
+    <div class="admin-card mb-6" id="partnersTab" style="display: none; opacity: 1; transform: translateY(0);">
+      <h2 class="text-xl font-semibold mb-4">🤝 Partners Management</h2>
+      <p class="text-gray-300 mb-6">Manage partner communities, collaborations, and showcases</p>
+      
+      <!-- Add New Partner Form -->
+      <div class="stats-card mb-6">
+        <h3 class="text-lg font-semibold text-blue-300 mb-4">➕ Add New Partner</h3>
+        
+        <form id="addPartnerForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Partner Name -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-300 mb-2">Partner Name *</label>
+              <input type="text" name="partner_name" required 
+                     class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none"
+                     placeholder="e.g., Gensuki">
+            </div>
+            
+            <!-- Partner Slug -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-300 mb-2">URL Slug *</label>
+              <input type="text" name="partner_slug" 
+                     class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none"
+                     placeholder="e.g., gensuki (auto-generated)">
+              <p class="text-xs text-gray-500 mt-1">Auto-generated from name if left empty</p>
+            </div>
+            
+            <!-- Partner Type -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-300 mb-2">Partner Type *</label>
+              <select name="partner_type" required 
+                      class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none">
+                <option value="NFT Project">NFT Project</option>
+                <option value="Gaming Community">Gaming Community</option>
+                <option value="Tech Partner">Tech Partner</option>
+                <option value="Community Partner">Community Partner</option>
+                <option value="Media Partner">Media Partner</option>
+              </select>
+            </div>
+            
+            <!-- Display Order -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-300 mb-2">Display Order</label>
+              <input type="number" name="display_order" value="0" 
+                     class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none"
+                     placeholder="0 = highest priority">
+              <p class="text-xs text-gray-500 mt-1">Lower = higher priority</p>
+            </div>
+            
+          </div>
+          
+          <!-- Short Description -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Short Description (~50 words) *</label>
+            <textarea name="short_description" required rows="2" 
+                      class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none"
+                      placeholder="Brief description for partner card display"></textarea>
+          </div>
+          
+          <!-- Long Description -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Long Description (~200 words)</label>
+            <textarea name="long_description" rows="4" 
+                      class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none"
+                      placeholder="Detailed description for modal popup"></textarea>
+          </div>
+          
+          <!-- Social Links -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-300 mb-2">Discord URL</label>
+              <input type="url" name="discord_url" 
+                     class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none"
+                     placeholder="https://discord.gg/...">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-gray-300 mb-2">Twitter URL</label>
+              <input type="url" name="twitter_url" 
+                     class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none"
+                     placeholder="https://twitter.com/...">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-gray-300 mb-2">Website URL</label>
+              <input type="url" name="website_url" 
+                     class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none"
+                     placeholder="https://...">
+            </div>
+          </div>
+          
+          <!-- Image Upload Section -->
+          <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+            <h4 class="text-sm font-semibold text-yellow-300 mb-3">🖼️ Partner Images</h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Logo Upload -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-2">Partner Logo</label>
+                <div class="space-y-2">
+                  <input type="file" id="partner-logo-upload" accept="image/jpeg,image/png,image/gif,image/webp" 
+                         class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700">
+                  <p class="text-xs text-gray-500">JPG, PNG, GIF, WEBP (max 5MB) - Square format recommended</p>
+                  <div id="logo-preview" class="hidden mt-2">
+                    <div class="relative inline-block">
+                      <img id="logo-preview-img" src="" alt="Logo preview" class="w-24 h-24 rounded-full border-2 border-yellow-400 object-cover">
+                      <button type="button" onclick="deletePartnerImage('logo')" 
+                              class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg">
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Banner Upload -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-2">Partner Banner (Optional)</label>
+                <div class="space-y-2">
+                  <input type="file" id="partner-banner-upload" accept="image/jpeg,image/png,image/gif,image/webp" 
+                         class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700">
+                  <p class="text-xs text-gray-500">JPG, PNG, GIF, WEBP (max 5MB) - Wide format recommended</p>
+                  <div id="banner-preview" class="hidden mt-2">
+                    <div class="relative">
+                      <img id="banner-preview-img" src="" alt="Banner preview" class="w-full h-24 rounded border-2 border-yellow-400 object-cover">
+                      <button type="button" onclick="deletePartnerImage('banner')" 
+                              class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg">
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <p class="text-xs text-gray-400 mt-3">💡 Images can be uploaded during Add or after Edit. Current images will show in partner list below.</p>
+          </div>
+          
+          <!-- Featured & Active Checkboxes -->
+          <div class="flex gap-6">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="is_featured" value="1" class="w-4 h-4">
+              <span class="text-sm text-gray-300">⭐ Featured Partner</span>
+            </label>
+            
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="is_active" value="1" checked class="w-4 h-4">
+              <span class="text-sm text-gray-300">✅ Active Partnership</span>
+            </label>
+          </div>
+          
+          <!-- Submit Button -->
+          <div class="flex gap-3">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded transition-colors">
+              ➕ Add Partner
+            </button>
+            <button type="reset" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors">
+              🔄 Reset Form
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Partners List -->
+      <div class="stats-card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-blue-300">📋 Current Partners</h3>
+          <button onclick="loadPartnersList()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors text-sm">
+            🔄 Refresh List
+          </button>
+        </div>
+        
+        <div id="partners-list" class="space-y-3">
+          <!-- Partners loaded dynamically -->
+        </div>
       </div>
     </div>
 
@@ -26272,6 +26598,501 @@ Continue with Season 3 Reset?`)) {
       // Add achievements to the container
       container.innerHTML += achievementsHTML;
     }
+
+    // 🤝 ========================================
+    // PARTNERS MANAGEMENT FUNCTIONS
+    // ========================================
+    
+    // Load partners list in admin interface
+    async function loadPartnersList() {
+      try {
+        console.log('📡 Loading partners list from admin API...');
+        console.log('🔗 API URL:', `${API_BASE_URL}/api/admin/partner-management.php?action=get_all`);
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php?action=get_all`, {
+          credentials: 'include' // Include session cookies
+        });
+        
+        console.log('📡 Response status:', response.status);
+        const data = await response.json();
+        console.log('📡 Response data:', data);
+        
+        if (data.success) {
+          console.log('✅ Partners loaded successfully:', data.partners.length, 'partners');
+          displayPartnersList(data.partners);
+        } else {
+          console.error('❌ Failed to load partners:', data.error);
+          document.getElementById('partners-list').innerHTML = `
+            <div class="bg-red-900/20 border border-red-400/30 rounded p-4 text-red-400">
+              <p class="font-bold mb-2">❌ Failed to load partners</p>
+              <p class="text-sm">${data.error}</p>
+              ${data.error.includes('authenticated') ? '<p class="text-xs mt-2">💡 Try logging into admin interface first</p>' : ''}
+            </div>
+          `;
+        }
+        
+      } catch (error) {
+        console.error('❌ Error loading partners:', error);
+        document.getElementById('partners-list').innerHTML = `
+          <div class="bg-red-900/20 border border-red-400/30 rounded p-4 text-red-400">
+            <p class="font-bold mb-2">❌ Error loading partners</p>
+            <p class="text-sm">${error.message}</p>
+            <p class="text-xs mt-2">💡 Check browser console for details</p>
+          </div>
+        `;
+      }
+    }
+    
+    // Display partners list
+    function displayPartnersList(partners) {
+      const container = document.getElementById('partners-list');
+      
+      if (!partners || partners.length === 0) {
+        container.innerHTML = '<p class="text-gray-400">No partners yet. Add your first partner above!</p>';
+        return;
+      }
+      
+      container.innerHTML = partners.map(partner => `
+        <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-yellow-400/50 transition-all">
+          <div class="flex items-start gap-4">
+            <!-- Large Image Preview -->
+            <div class="flex-shrink-0">
+              ${partner.logo_filename ? `
+                <img src="/public/img/partners/${partner.logo_filename}" alt="${partner.partner_name}" class="w-20 h-20 rounded-full border-2 border-yellow-400" onerror="this.src='/public/img/cheese-egg.png'">
+              ` : `
+                <div class="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center text-3xl border-2 border-gray-600">🤝</div>
+              `}
+              ${partner.logo_filename ? `
+                <p class="text-xs text-green-400 text-center mt-1">✅ Logo</p>
+              ` : `
+                <p class="text-xs text-gray-500 text-center mt-1">No Logo</p>
+              `}
+              ${partner.banner_filename ? `
+                <p class="text-xs text-green-400 text-center">✅ Banner</p>
+              ` : `
+                <p class="text-xs text-gray-500 text-center">No Banner</p>
+              `}
+            </div>
+            
+            <!-- Partner Info -->
+            <div class="flex-1">
+              <div class="mb-2">
+                <h4 class="font-bold text-yellow-300 text-lg">${partner.partner_name}</h4>
+                <span class="text-xs px-2 py-1 rounded bg-blue-600 text-white">${partner.partner_type}</span>
+              </div>
+              
+              <p class="text-sm text-gray-400 mb-2 line-clamp-2">${partner.short_description || 'No description'}</p>
+              
+              <div class="flex flex-wrap gap-2 text-xs mb-2">
+                ${partner.is_featured ? '<span class="px-2 py-1 rounded bg-yellow-600 text-white">⭐ Featured</span>' : ''}
+                ${partner.is_active ? '<span class="px-2 py-1 rounded bg-green-600 text-white">✅ Active</span>' : '<span class="px-2 py-1 rounded bg-gray-600 text-white">⏸️ Inactive</span>'}
+                <span class="px-2 py-1 rounded bg-gray-700 text-gray-300">Order: ${partner.display_order}</span>
+              </div>
+              
+              <div class="flex flex-wrap gap-1 text-xs">
+                ${partner.discord_url && partner.discord_url !== 'https://discord.gg/placeholder' ? '<span class="px-2 py-1 rounded bg-indigo-600 text-white">💬 Discord</span>' : ''}
+                ${partner.twitter_url && partner.twitter_url !== 'https://twitter.com/placeholder' ? '<span class="px-2 py-1 rounded bg-blue-500 text-white">🐦 Twitter</span>' : ''}
+                ${partner.website_url && partner.website_url !== 'https://example.com' ? '<span class="px-2 py-1 rounded bg-green-600 text-white">🌐 Website</span>' : ''}
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex flex-col gap-2">
+              <button onclick="editPartner(${partner.id})" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded transition-colors whitespace-nowrap">
+                ✏️ Edit All Fields
+              </button>
+              <button onclick="uploadPartnerImage(${partner.id}, 'logo')" class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 px-4 rounded transition-colors whitespace-nowrap">
+                🖼️ Upload Logo
+              </button>
+              <button onclick="uploadPartnerImage(${partner.id}, 'banner')" class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 px-4 rounded transition-colors whitespace-nowrap">
+                🎨 Upload Banner
+              </button>
+              <button onclick="togglePartnerActive(${partner.id}, ${partner.is_active ? 0 : 1})" class="bg-gray-600 hover:bg-gray-700 text-white text-sm font-bold py-2 px-4 rounded transition-colors">
+                ${partner.is_active ? '⏸️ Deactivate' : '▶️ Activate'}
+              </button>
+              <button onclick="deletePartner(${partner.id}, '${partner.partner_name.replace(/'/g, "\\'")}');" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded transition-colors">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // ❌ REMOVED DUPLICATE LISTENER - Using enhanced version below (line ~26818) that handles both add AND edit modes
+    
+    // Upload partner image (logo or banner)
+    async function uploadPartnerImage(partnerId, imageType) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/jpeg,image/png,image/gif,image/webp';
+      
+      input.onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('action', 'upload_image');
+        formData.append('partner_id', partnerId);
+        formData.append('image_type', imageType);
+        formData.append('image', file);
+        
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php`, {
+            method: 'POST',
+            body: formData
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            alert(`✅ ${imageType === 'logo' ? 'Logo' : 'Banner'} uploaded successfully!`);
+            loadPartnersList();
+          } else {
+            alert('❌ Error: ' + data.error);
+          }
+          
+        } catch (error) {
+          console.error('❌ Error uploading image:', error);
+          alert('❌ Error uploading image');
+        }
+      };
+      
+      input.click();
+    }
+    
+    // Toggle partner active status
+    async function togglePartnerActive(partnerId, newStatus) {
+      const formData = new FormData();
+      formData.append('action', 'update');
+      formData.append('id', partnerId);
+      formData.append('is_active', newStatus);
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          loadPartnersList();
+        } else {
+          alert('❌ Error: ' + data.error);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error toggling status:', error);
+      }
+    }
+    
+    // Delete partner
+    async function deletePartner(partnerId, partnerName) {
+      if (!confirm(`Are you sure you want to delete "${partnerName}"? This cannot be undone.`)) {
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('action', 'delete');
+      formData.append('id', partnerId);
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert(`✅ Partner "${partnerName}" deleted successfully`);
+          loadPartnersList();
+        } else {
+          alert('❌ Error: ' + data.error);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error deleting partner:', error);
+        alert('❌ Error deleting partner');
+      }
+    }
+    
+    // Edit partner (opens edit form)
+    async function editPartner(partnerId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php?action=get_all`);
+        const data = await response.json();
+        
+        if (data.success) {
+          const partner = data.partners.find(p => p.id === partnerId);
+          if (partner) {
+            // Populate form with partner data
+            document.querySelector('[name="partner_name"]').value = partner.partner_name;
+            document.querySelector('[name="partner_slug"]').value = partner.partner_slug;
+            document.querySelector('[name="partner_type"]').value = partner.partner_type;
+            document.querySelector('[name="display_order"]').value = partner.display_order;
+            document.querySelector('[name="short_description"]').value = partner.short_description || '';
+            document.querySelector('[name="long_description"]').value = partner.long_description || '';
+            document.querySelector('[name="discord_url"]').value = partner.discord_url || '';
+            document.querySelector('[name="twitter_url"]').value = partner.twitter_url || '';
+            document.querySelector('[name="website_url"]').value = partner.website_url || '';
+            document.querySelector('[name="is_featured"]').checked = partner.is_featured === 1;
+            document.querySelector('[name="is_active"]').checked = partner.is_active === 1;
+            
+            // Show current images if they exist
+            if (partner.logo_filename) {
+              const logoPreview = document.getElementById('logo-preview');
+              const logoImg = document.getElementById('logo-preview-img');
+              logoImg.src = `/public/img/partners/${partner.logo_filename}`;
+              logoPreview.classList.remove('hidden');
+            }
+            
+            if (partner.banner_filename) {
+              const bannerPreview = document.getElementById('banner-preview');
+              const bannerImg = document.getElementById('banner-preview-img');
+              bannerImg.src = `/public/img/partners/${partner.banner_filename}`;
+              bannerPreview.classList.remove('hidden');
+            }
+            
+            // Change form to update mode
+            const form = document.getElementById('addPartnerForm');
+            form.dataset.mode = 'edit';
+            form.dataset.partnerId = partnerId;
+            
+            // Change button text
+            const submitBtn = form.querySelector('[type="submit"]');
+            submitBtn.textContent = '💾 Update Partner';
+            submitBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            
+            // Add cancel button if not exists
+            if (!form.querySelector('.cancel-edit-btn')) {
+              const cancelBtn = document.createElement('button');
+              cancelBtn.type = 'button';
+              cancelBtn.className = 'cancel-edit-btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors';
+              cancelBtn.textContent = '❌ Cancel Edit';
+              cancelBtn.onclick = cancelEditPartner;
+              submitBtn.parentElement.insertBefore(cancelBtn, submitBtn.nextSibling);
+            }
+            
+            // Scroll to form
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+        
+      } catch (error) {
+        console.error('❌ Error loading partner for edit:', error);
+      }
+    }
+    
+    // Cancel edit mode
+    function cancelEditPartner() {
+      const form = document.getElementById('addPartnerForm');
+      form.reset();
+      delete form.dataset.mode;
+      delete form.dataset.partnerId;
+      
+      // Clear image previews
+      document.getElementById('logo-preview')?.classList.add('hidden');
+      document.getElementById('banner-preview')?.classList.add('hidden');
+      document.getElementById('partner-logo-upload').value = '';
+      document.getElementById('partner-banner-upload').value = '';
+      
+      const submitBtn = form.querySelector('[type="submit"]');
+      submitBtn.textContent = '➕ Add Partner';
+      submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+      submitBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+      
+      const cancelBtn = form.querySelector('.cancel-edit-btn');
+      if (cancelBtn) cancelBtn.remove();
+    }
+    
+    // Add image preview on file selection
+    document.getElementById('partner-logo-upload')?.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const logoPreview = document.getElementById('logo-preview');
+          const logoImg = document.getElementById('logo-preview-img');
+          logoImg.src = event.target.result;
+          logoPreview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    document.getElementById('partner-banner-upload')?.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const bannerPreview = document.getElementById('banner-preview');
+          const bannerImg = document.getElementById('banner-preview-img');
+          bannerImg.src = event.target.result;
+          bannerPreview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // Update form submission handler to support edit mode AND image uploads
+    document.getElementById('addPartnerForm')?.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      
+      // Check if we're in edit mode
+      const isEditMode = this.dataset.mode === 'edit';
+      const partnerId = this.dataset.partnerId;
+      
+      if (isEditMode) {
+        formData.append('action', 'update');
+        formData.append('id', partnerId);
+      } else {
+        formData.append('action', 'add');
+      }
+      
+      // Auto-generate slug if empty
+      if (!formData.get('partner_slug')) {
+        const name = formData.get('partner_name');
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        formData.set('partner_slug', slug);
+      }
+      
+      try {
+        // Step 1: Save/Update partner data
+        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const savedPartnerId = isEditMode ? partnerId : data.partner_id;
+          
+          // Step 2: Upload logo if selected
+          const logoFile = document.getElementById('partner-logo-upload').files[0];
+          if (logoFile) {
+            await uploadImageFile(savedPartnerId, logoFile, 'logo');
+          }
+          
+          // Step 3: Upload banner if selected
+          const bannerFile = document.getElementById('partner-banner-upload').files[0];
+          if (bannerFile) {
+            await uploadImageFile(savedPartnerId, bannerFile, 'banner');
+          }
+          
+          alert(isEditMode ? '✅ Partner updated successfully!' : '✅ Partner added successfully!');
+          cancelEditPartner();
+          loadPartnersList();
+        } else {
+          alert('❌ Error: ' + data.error);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error saving partner:', error);
+        alert('❌ Error saving partner');
+      }
+    });
+    
+    // Helper function to upload image file
+    async function uploadImageFile(partnerId, file, imageType) {
+      const formData = new FormData();
+      formData.append('action', 'upload_image');
+      formData.append('partner_id', partnerId);
+      formData.append('image_type', imageType);
+      formData.append('image', file);
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          console.error(`❌ Failed to upload ${imageType}:`, data.error);
+        } else {
+          console.log(`✅ ${imageType} uploaded:`, data.filename);
+        }
+        
+      } catch (error) {
+        console.error(`❌ Error uploading ${imageType}:`, error);
+      }
+    }
+    
+    // 🗑️ Delete partner image (logo or banner)
+    async function deletePartnerImage(imageType) {
+      const form = document.getElementById('addPartnerForm');
+      const partnerId = form.dataset.partnerId;
+      
+      if (!partnerId) {
+        alert('❌ Please save the partner first before deleting images');
+        return;
+      }
+      
+      if (!confirm(`Delete ${imageType}? This cannot be undone.`)) {
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('action', 'delete_image');
+      formData.append('partner_id', partnerId);
+      formData.append('image_type', imageType);
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert(`✅ ${imageType === 'logo' ? 'Logo' : 'Banner'} deleted successfully!`);
+          
+          // Clear preview and file input
+          if (imageType === 'logo') {
+            document.getElementById('logo-preview').classList.add('hidden');
+            document.getElementById('partner-logo-upload').value = '';
+          } else {
+            document.getElementById('banner-preview').classList.add('hidden');
+            document.getElementById('partner-banner-upload').value = '';
+          }
+          
+          // Refresh partner list
+          loadPartnersList();
+        } else {
+          alert('❌ Error: ' + data.error);
+        }
+        
+      } catch (error) {
+        console.error(`❌ Error deleting ${imageType}:`, error);
+        alert(`❌ Error deleting ${imageType}`);
+      }
+    }
+    
+    // Make deletePartnerImage globally accessible
+    window.deletePartnerImage = deletePartnerImage;
+    
+    // Load partners list when Partners tab is opened
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add click listener to Partners tab button
+      const partnersTabBtn = document.querySelector('[data-tab="partners"]');
+      if (partnersTabBtn) {
+        partnersTabBtn.addEventListener('click', function() {
+          console.log('🤝 Partners tab clicked - loading partners list');
+          setTimeout(() => {
+            loadPartnersList();
+          }, 100);
+        });
+        console.log('✅ Partners tab listener added');
+      }
+    });
 
   </script>
 

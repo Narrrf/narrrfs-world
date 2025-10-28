@@ -575,7 +575,7 @@ Before creating ANY new API endpoint, you MUST:
 - **PREVENT table confusion** and duplication
 - **ENSURE database awareness** for all development
 
-### **CURRENT DATABASE TABLES (LIVE STATUS - 2025-10-17 - VERIFIED):**
+### **CURRENT DATABASE TABLES (LIVE STATUS - 2025-10-29 - VERIFIED - 57 TOTAL):**
 - **boss_configurations** - Boss game configurations
 - **boss_level_notifications** - Boss level achievement notifications
 - **leaderboard** - Current season leaderboard
@@ -593,11 +593,14 @@ Before creating ANY new API endpoint, you MUST:
 - **tbl_community_funds** - Community wallet funds tracking
 - **tbl_discord_events** - Discord bot events
 - **tbl_game_settings** - Game configuration settings
-- **tbl_giveaway_participants** - Giveaway participants (NEW - October 17, 2025)
-- **tbl_giveaway_winners** - Giveaway winners (NEW - October 17, 2025)
-- **tbl_giveaways** - Giveaway events (NEW - October 17, 2025)
+- **tbl_giveaway_participants** - Giveaway participants (October 17, 2025)
+- **tbl_giveaway_winners** - Giveaway winners (October 17, 2025)
+- **tbl_giveaways** - Giveaway events (October 17, 2025)
+- **tbl_historical_cheese_stats** - Historical Cheese Hunt season stats (October 25, 2025)
+- **tbl_historical_stats** - Historical game season stats (October 25, 2025)
 - **tbl_holder_verifications** - NFT holder verifications
 - **tbl_nft_ownership** - NFT ownership records
+- **tbl_partners** - Partner portal management (NEW - October 28, 2025)
 - **tbl_purchase_history** - Store purchase history
 - **tbl_quest_claims** - Quest reward claims
 - **tbl_quests** - Quest definitions
@@ -608,15 +611,15 @@ Before creating ANY new API endpoint, you MUST:
 - **tbl_season_leaderboards** - Season-based leaderboards
 - **tbl_season_settings** - Season configuration
 - **tbl_seasons** - Season management
-- **tbl_snake_achievements** - Snake game achievements
-- **tbl_space_invaders_achievements** - Space Invaders achievements
+- **tbl_snake_achievements** - Snake game achievements (20 total)
+- **tbl_space_invaders_achievements** - Space Invaders achievements (28 total)
 - **tbl_space_invaders_settings** - Space Invaders settings
 - **tbl_store_items** - Store item definitions
-- **tbl_tetris_achievements** - Tetris game achievements
-- **tbl_tetris_scores** - Tetris game scores
+- **tbl_tetris_achievements** - Tetris game achievements (25 total)
+- **tbl_tetris_scores** - Tetris, Snake, and Space Invaders game scores
 - **tbl_user_inventory** - User inventory items
 - **tbl_user_roles** - User role assignments
-- **tbl_user_scores** - User score tracking
+- **tbl_user_scores** - User score tracking (DSPOINC balance)
 - **tbl_user_season_achievements** - Season-based achievements
 - **tbl_user_traits** - User trait assignments
 - **tbl_users** - Main user accounts

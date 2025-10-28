@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<?php
+// Include Discord invite configuration
+require_once 'discord-invite.php';
+?>
+<head>
+  <!-- 🧠 Meta Essentials -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🤝 Partners & Friends | Narrrf's World</title>
+
+  <!-- 🧀 Favicon & Metadata -->
+  <link rel="icon" type="image/png" href="favicon-phantom.png" />
+  <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
+  <meta name="theme-color" content="#facc15" />
+  <meta name="title" content="Narrrf's World - Partners & Friends" />
+  <meta name="description" content="Meet our amazing partner communities and collaborative projects. Together we build the cheese-verse!" />
+
+  <!-- 🧵 OpenGraph for Discord & Socials -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="🤝 Partners & Friends - Narrrf's World" />
+  <meta property="og:description" content="Discover our partner communities and collaborative projects. Join the network!" />
+  <meta property="og:url" content="https://narrrfs.world/partners.html" />
+
+  <!-- 🎨 Tailwind (Dev CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 💫 Partner Portal Styles -->
+  <style>
+    @keyframes partnerGlow {
+      0%, 100% { 
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
+        transform: scale(1);
+      }
+      50% { 
+        box-shadow: 0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3);
+        transform: scale(1.02);
+      }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .partner-card {
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .partner-card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(251, 191, 36, 0.6);
+    }
+    
+    .featured-badge {
+      animation: partnerGlow 3s ease-in-out infinite;
+    }
+    
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    /* Modal Animation */
+    .modal-overlay {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+      opacity: 1;
+    }
+    
+    .modal-content {
+      transform: scale(0.7);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+      opacity: 1;
+    }
+    
+    /* Partner Type Badges */
+    .badge-nft {
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    }
+    
+    .badge-gaming {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+    }
+    
+    .badge-tech {
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+    }
+    
+    .badge-community {
+      background: linear-gradient(135deg, #10b981, #14b8a6);
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-purple-900 via-purple-800 to-gray-900 min-h-screen text-white relative overflow-x-hidden">
+
+<!-- 🌌 Background Effects -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+  <div class="absolute top-0 left-0 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl float-animation"></div>
+  <div class="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl float-animation" style="animation-delay: -3s;"></div>
+</div>
+
+<!-- 🏠 Navigation -->
+<nav class="sticky top-0 z-50 bg-gradient-to-r from-purple-900/95 via-purple-800/95 to-purple-900/95 backdrop-blur-md shadow-lg border-b border-yellow-400/30">
+  <div class="max-w-7xl mx-auto px-4 py-3">
+    <div class="flex items-center justify-between">
+      <a href="index.html" class="text-2xl font-bold text-yellow-400 hover:text-yellow-300 transition-colors">
+        🧀 Narrrf's World
+      </a>
+      <div class="flex gap-6">
+        <a href="index.html" class="text-yellow-300 hover:text-yellow-100 transition-colors">Home</a>
+        <a href="mint.html" class="text-yellow-300 hover:text-yellow-100 transition-colors">Mint</a>
+        <a href="whitepaper-pro.html" class="text-yellow-300 hover:text-yellow-100 transition-colors">Whitepaper</a>
+        <a href="get-roles.html" class="text-yellow-300 hover:text-yellow-100 transition-colors">Get Roles</a>
+        <a href="partners.html" class="text-yellow-100 font-bold border-b-2 border-yellow-400">Partners</a>
+        <a href="updates.html" class="text-yellow-300 hover:text-yellow-100 transition-colors">Updates</a>
+        <a href="faq.html" class="text-yellow-300 hover:text-yellow-100 transition-colors">FAQ</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- 🎯 Main Content -->
+<main class="relative z-10 max-w-7xl mx-auto px-4 py-12">
+  
+  <!-- 🤝 Header Section -->
+  <div class="text-center mb-12">
+    <h1 class="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
+      🤝 Partners & Friends
+    </h1>
+    <p class="text-xl text-yellow-200 mb-2">
+      Professional Collaboration Network
+    </p>
+    <p class="text-gray-300 max-w-2xl mx-auto mb-4">
+      Meet our amazing partner communities and collaborative projects. Together we're building the future of gaming, NFTs, and Web3!
+    </p>
+    
+    <!-- 🧀 Under Cheese-struction Banner -->
+    <div class="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 text-purple-900 font-bold px-6 py-3 rounded-full shadow-lg transform hover:scale-105 transition-all border-2 border-yellow-400 mt-4">
+      <span class="text-lg">🧀 UNDER CHEESE-STRUCTION 🧀</span>
+      <p class="text-sm font-normal mt-1">Adding our amazing partners - Coming soon!</p>
+    </div>
+  </div>
+
+  <!-- 🌟 Featured Partners Section -->
+  <div id="featured-partners-section" class="mb-16">
+    <h2 class="text-3xl font-bold text-yellow-400 mb-6 text-center">
+      ⭐ Featured Partners
+    </h2>
+    <div id="featured-partners" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <p class="text-gray-400 text-center col-span-full">Loading featured partners...</p>
+    </div>
+  </div>
+
+  <!-- 🎯 All Partners Section -->
+  <div id="all-partners-section">
+    <h2 class="text-3xl font-bold text-yellow-400 mb-6 text-center">
+      🌐 All Partners
+    </h2>
+    <div id="partners-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <p class="text-gray-400 text-center col-span-full">Loading partners...</p>
+    </div>
+  </div>
+
+  <!-- 📧 Partnership Inquiry Section -->
+  <div class="mt-16 bg-gradient-to-br from-purple-900/40 to-purple-800/40 rounded-2xl p-8 border border-yellow-400/30 text-center">
+    <h3 class="text-2xl font-bold text-yellow-400 mb-4">
+      💼 Interested in Partnering?
+    </h3>
+    <p class="text-gray-300 mb-6 max-w-2xl mx-auto">
+      We're always looking for amazing communities and projects to collaborate with. 
+      Join our network and let's build something great together!
+    </p>
+    <a href="<?php echo $discord_url; ?>" target="_blank" class="inline-block bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 shadow-lg">
+      📩 Contact Us on Discord
+    </a>
+  </div>
+
+</main>
+
+<!-- 🎨 Partner Detail Modal -->
+<div id="partner-modal" class="modal-overlay fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="modal-content bg-gradient-to-br from-purple-900 to-purple-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-yellow-400/50 shadow-2xl">
+    <!-- Modal content loaded dynamically -->
+  </div>
+</div>
+
+<!-- 🍩 Footer -->
+<footer class="relative z-10 text-center mt-16 py-8 text-xs text-yellow-600 border-t border-yellow-400/20">
+  <p class="mb-2">
+    Powered by 🧀 Cheese Architect <b>12.0</b> · Partner Portal System · Professional Collaboration Network 🌍
+  </p>
+  <p class="opacity-70">
+    Building Together | 2025 | 
+    <a href="<?php echo $discord_url; ?>" class="underline text-pink-500 hover:text-pink-600">Join Discord</a> · 
+    <a href="index.html" class="underline hover:text-yellow-500">Home</a> · 
+    <a href="get-roles.html" class="underline hover:text-yellow-500">Get Roles</a>
+  </p>
+</footer>
+
+<!-- 🎮 Partner Loading & Display Script -->
+<script>
+  // 🌍 Environment detection
+  const isProduction = window.location.hostname === 'narrrfs.world';
+  const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
+  
+  console.log('🤝 Partner Portal loaded');
+  console.log('🌍 Environment:', isProduction ? 'Production' : 'Local');
+  
+  // 🎨 Load partners on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    loadPartners();
+  });
+  
+  // 📡 Fetch and display partners
+  async function loadPartners() {
+    try {
+      console.log('📡 Fetching partners...');
+      
+      const response = await fetch(`${API_BASE_URL}/api/user/get-partners.php`);
+      const data = await response.json();
+      
+      console.log('✅ Partners loaded:', data);
+      
+      if (data.success) {
+        displayFeaturedPartners(data.partners.featured);
+        displayAllPartners(data.partners.regular);
+      } else {
+        console.error('❌ Failed to load partners:', data.error);
+        showError('Failed to load partners');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error loading partners:', error);
+      showError('Error loading partners');
+    }
+  }
+  
+  // 🌟 Display featured partners
+  function displayFeaturedPartners(partners) {
+    const container = document.getElementById('featured-partners');
+    console.log('🌟 Displaying featured partners:', partners);
+    
+    if (!partners || partners.length === 0) {
+      console.log('ℹ️ No featured partners, hiding section');
+      document.getElementById('featured-partners-section').style.display = 'none';
+      return;
+    }
+    
+    try {
+      const cards = partners.map(partner => createPartnerCard(partner, true));
+      console.log('✅ Created', cards.length, 'featured cards');
+      container.innerHTML = cards.join('');
+      console.log('✅ Featured partners displayed');
+    } catch (error) {
+      console.error('❌ Error displaying featured partners:', error);
+      container.innerHTML = '<p class="text-red-400">Error loading featured partners</p>';
+    }
+  }
+  
+  // 🎯 Display all partners
+  function displayAllPartners(partners) {
+    const container = document.getElementById('partners-grid');
+    console.log('🎯 Displaying all partners:', partners);
+    
+    if (!partners || partners.length === 0) {
+      console.log('ℹ️ No regular partners');
+      container.innerHTML = '<p class="text-gray-400 text-center col-span-full">No additional partners available yet.</p>';
+      return;
+    }
+    
+    try {
+      const cards = partners.map(partner => createPartnerCard(partner, false));
+      console.log('✅ Created', cards.length, 'partner cards');
+      container.innerHTML = cards.join('');
+      console.log('✅ All partners displayed');
+    } catch (error) {
+      console.error('❌ Error displaying partners:', error);
+      container.innerHTML = '<p class="text-red-400">Error loading partners</p>';
+    }
+  }
+  
+  // 🎨 Create partner card HTML
+  function createPartnerCard(partner, isFeatured) {
+    const logoUrl = partner.logo_filename 
+      ? `img/partners/${partner.logo_filename}` 
+      : 'img/cheese-egg.png'; // Fallback logo
+    
+    const typeBadgeClass = getTypeBadgeClass(partner.partner_type);
+    
+    return `
+      <div class="partner-card rounded-xl p-6 cursor-pointer relative ${isFeatured ? 'featured-badge' : ''}" 
+           onclick="showPartnerModal('${partner.partner_slug}')">
+        
+        ${isFeatured ? '<div class="absolute top-2 right-2 bg-yellow-400 text-purple-900 px-2 py-1 rounded-full text-xs font-bold">⭐ FEATURED</div>' : ''}
+        
+        <!-- Logo -->
+        <div class="flex justify-center mb-4">
+          <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center overflow-hidden border-2 border-yellow-400/30">
+            <img src="${logoUrl}" alt="${partner.partner_name}" class="w-full h-full object-cover" onerror="this.src='img/cheese-egg.png'">
+          </div>
+        </div>
+        
+        <!-- Partner Name -->
+        <h3 class="text-xl font-bold text-yellow-300 mb-2 text-center">
+          ${partner.partner_name}
+        </h3>
+        
+        <!-- Type Badge -->
+        <div class="flex justify-center mb-3">
+          <span class="${typeBadgeClass} px-3 py-1 rounded-full text-xs font-bold text-white">
+            ${partner.partner_type}
+          </span>
+        </div>
+        
+        <!-- Short Description -->
+        <p class="text-gray-300 text-sm text-center mb-4 line-clamp-3">
+          ${partner.short_description}
+        </p>
+        
+        <!-- Learn More Button -->
+        <div class="text-center">
+          <button class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-purple-900 font-bold py-2 px-6 rounded-lg transition-all transform hover:scale-105">
+            Learn More →
+          </button>
+        </div>
+        
+      </div>
+    `;
+  }
+  
+  // 🎨 Get badge class for partner type
+  function getTypeBadgeClass(type) {
+    const typeMap = {
+      'NFT Project': 'badge-nft',
+      'Gaming Community': 'badge-gaming',
+      'Tech Partner': 'badge-tech',
+      'Community Partner': 'badge-community'
+    };
+    return typeMap[type] || 'badge-community';
+  }
+  
+  // 🎭 Show partner detail modal
+  async function showPartnerModal(slug) {
+    try {
+      console.log('🎭 Opening modal for:', slug);
+      
+      const response = await fetch(`${API_BASE_URL}/api/user/get-partners.php`);
+      const data = await response.json();
+      
+      if (data.success) {
+        const partner = data.partners.all.find(p => p.partner_slug === slug);
+        
+        if (!partner) {
+          console.error('❌ Partner not found:', slug);
+          return;
+        }
+        
+        displayModal(partner);
+      }
+      
+    } catch (error) {
+      console.error('❌ Error loading partner details:', error);
+    }
+  }
+  
+  // 🎨 Display modal with partner details
+  function displayModal(partner) {
+    const modal = document.getElementById('partner-modal');
+    const bannerUrl = partner.banner_filename 
+      ? `img/partners/${partner.banner_filename}` 
+      : `img/partners/${partner.logo_filename || 'img/cheese-egg.png'}`;
+    
+    const logoUrl = partner.logo_filename 
+      ? `img/partners/${partner.logo_filename}` 
+      : 'img/cheese-egg.png';
+    
+    modal.querySelector('.modal-content').innerHTML = `
+      <!-- Close Button -->
+      <button onclick="closePartnerModal()" class="absolute top-4 right-4 text-yellow-400 hover:text-yellow-300 text-3xl font-bold z-10">
+        ×
+      </button>
+      
+      <!-- Banner/Logo -->
+      <div class="relative h-48 bg-gradient-to-br from-purple-700 to-purple-900 rounded-t-xl overflow-hidden">
+        <img src="${bannerUrl}" alt="${partner.partner_name}" class="w-full h-full object-cover opacity-60" onerror="this.src='img/cheese-egg.png'">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <img src="${logoUrl}" alt="${partner.partner_name}" class="w-32 h-32 rounded-full border-4 border-yellow-400 shadow-2xl bg-white/10" onerror="this.src='img/cheese-egg.png'">
+        </div>
+      </div>
+      
+      <!-- Content -->
+      <div class="p-8">
+        
+        <!-- Partner Name & Type -->
+        <h2 class="text-3xl font-bold text-yellow-400 mb-2 text-center">
+          ${partner.partner_name}
+        </h2>
+        <div class="flex justify-center mb-6">
+          <span class="${getTypeBadgeClass(partner.partner_type)} px-4 py-1 rounded-full text-sm font-bold text-white">
+            ${partner.partner_type}
+          </span>
+        </div>
+        
+        <!-- Long Description -->
+        <p class="text-gray-300 text-center mb-6 leading-relaxed">
+          ${partner.long_description}
+        </p>
+        
+        <!-- Social Links -->
+        <div class="flex flex-wrap gap-3 justify-center mb-4">
+          ${partner.discord_url && partner.discord_url !== 'https://discord.gg/placeholder' ? `
+            <a href="${partner.discord_url}" target="_blank" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-2 px-6 rounded-lg transition-all transform hover:scale-105 flex items-center gap-2">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/></svg>
+              Discord
+            </a>
+          ` : ''}
+          
+          ${partner.twitter_url && partner.twitter_url !== 'https://twitter.com/placeholder' ? `
+            <a href="${partner.twitter_url}" target="_blank" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-bold py-2 px-6 rounded-lg transition-all transform hover:scale-105 flex items-center gap-2">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+              Twitter
+            </a>
+          ` : ''}
+          
+          ${partner.website_url && partner.website_url !== 'https://example.com' ? `
+            <a href="${partner.website_url}" target="_blank" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-2 px-6 rounded-lg transition-all transform hover:scale-105 flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+              Website
+            </a>
+          ` : ''}
+        </div>
+        
+      </div>
+    `;
+    
+    // Show modal with animation
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.add('active');
+    }, 10);
+  }
+  
+  // 🚪 Close modal
+  function closePartnerModal() {
+    const modal = document.getElementById('partner-modal');
+    modal.classList.remove('active');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 300);
+  }
+  
+  // ⚠️ Show error message
+  function showError(message) {
+    const featuredContainer = document.getElementById('featured-partners');
+    const allContainer = document.getElementById('partners-grid');
+    
+    const errorHTML = `
+      <div class="col-span-full text-center text-red-400 bg-red-900/20 border border-red-400/30 rounded-lg p-4">
+        ❌ ${message}
+      </div>
+    `;
+    
+    featuredContainer.innerHTML = errorHTML;
+    allContainer.innerHTML = errorHTML;
+  }
+  
+  // 🎨 Close modal when clicking overlay
+  document.getElementById('partner-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closePartnerModal();
+    }
+  });
+  
+  // 🎨 Close modal with ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closePartnerModal();
+    }
+  });
+</script>
+
+</body>
+</html>
+
