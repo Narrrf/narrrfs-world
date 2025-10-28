@@ -178,6 +178,12 @@ try {
         $score_capped = false;
     }
 
+    // 🚨 FINAL SAFETY CHECK: Prevent negative scores from being saved (Bug #159 - Backend protection)
+    if ($dspoinc_score < 0) {
+        error_log("⚠️ NEGATIVE SCORE PREVENTED IN BACKEND: Game=$game, Score=$dspoinc_score, User=$discord_id - Converting to 0");
+        $dspoinc_score = 0;
+    }
+
     // 💾 Save to DB with DSPOINC score (always save, not just high scores)
     try {
         if ($game === 'tetris') {

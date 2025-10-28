@@ -12105,7 +12105,13 @@ window.emergencyCollisionCheck = function() {
     }
     
     // Save score to database
-    saveScore(spaceInvadersScore); // 🚀 CRITICAL FIX: Save traditional score instead of invader count
+    // 🚨 CRITICAL SAFETY CHECK: Ensure score is never negative (Bug #159 fix - Victory path)
+    const safeVictoryScore = Math.max(0, spaceInvadersScore);
+    if (spaceInvadersScore < 0) {
+      console.warn(`⚠️ NEGATIVE VICTORY SCORE PREVENTED: ${spaceInvadersScore} converted to 0`);
+    }
+    console.log('💾 Victory - saving score:', safeVictoryScore);
+    saveScore(safeVictoryScore); // 🚀 CRITICAL FIX: Save traditional score instead of invader count
     cleanupSpaceInvadersControls();
 
     // Dispatch game end event for UI reset
