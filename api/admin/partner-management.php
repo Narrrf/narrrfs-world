@@ -20,22 +20,30 @@ if ($isLocalhost) {
 } else {
     // 🔒 PRODUCTION MODE - Require authentication
     
-    // 🔒 Admin authentication check
-    if (!isset($_SESSION['discord_id'])) {
+    // 🔒 Check if already authenticated via admin panel
+    if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+        // ✅ Already authenticated via admin panel
+        error_log('✅ Admin authenticated via admin panel');
+    } else if (!isset($_SESSION['discord_id'])) {
+        // ❌ Not authenticated at all
         http_response_code(401);
         echo json_encode(['success' => false, 'error' => 'Not authenticated']);
         exit;
-    }
+    } else {
+        // 🔒 Check Discord roles for admin access
+        $adminRoles = ['Admin', 'Moderator', 'Owner', 'Founder'];
+        $userRoles = $_SESSION['roles'] ?? [];
+        $isAdmin = !empty(array_intersect($adminRoles, $userRoles));
 
-    // 🔒 Admin role verification
-    $adminRoles = ['Admin', 'Moderator', 'Owner', 'Founder'];
-    $userRoles = $_SESSION['roles'] ?? [];
-    $isAdmin = !empty(array_intersect($adminRoles, $userRoles));
-
-    if (!$isAdmin) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'error' => 'Admin access required']);
-        exit;
+        if (!$isAdmin) {
+            // Check for "narrrf" (you) - hardcoded owner access
+            $discordName = $_SESSION['discord_name'] ?? '';
+            if (strtolower($discordName) !== 'narrrf') {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'error' => 'Admin access required']);
+                exit;
+            }
+        }
     }
 }
 
