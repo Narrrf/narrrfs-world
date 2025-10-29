@@ -25439,28 +25439,49 @@ Continue with Season 3 Reset?`)) {
         box-shadow: 0 4px 12px rgba(220,38,38,0.4);
       `;
       
-      emergencyBtn.onclick = function() {
+      emergencyBtn.onclick = async function() {
         console.log('🚨 Emergency unlock activated!');
         
-        // Force unlock all database features
-        window.databaseUnlocked = true;
+        emergencyBtn.textContent = '🔄 Unlocking...';
+        emergencyBtn.disabled = true;
         
-        // Show all database features
-        const databaseElements = document.querySelectorAll('[id*="database"], [id*="Database"]');
-        databaseElements.forEach(el => {
-          if (el.style) {
-            el.style.display = 'block';
+        try {
+          // 🔒 Set admin session flag on backend
+          const response = await fetch(`${API_BASE_URL}/api/admin/set-admin-session.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              discord_id: localStorage.getItem('discord_id'),
+              discord_name: localStorage.getItem('discord_name')
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            console.log('✅ Admin session set successfully:', data);
+            emergencyBtn.textContent = '✅ UNLOCKED!';
+            emergencyBtn.style.background = '#059669';
+            
+            // Force reload partners list
+            setTimeout(() => {
+              if (typeof loadPartnersList === 'function') {
+                loadPartnersList();
+              }
+              emergencyBtn.style.display = 'none';
+            }, 1000);
+          } else {
+            console.error('❌ Failed to set admin session:', data.error);
+            emergencyBtn.textContent = '❌ FAILED';
+            emergencyBtn.style.background = '#dc2626';
+            emergencyBtn.disabled = false;
           }
-        });
-        
-        // Force load all game data
-        setTimeout(() => {
-          loadAllGameStatsForAuthenticatedUser();
-          addLog('🚨 Emergency database unlock activated for testing');
-        }, 100);
-        
-        // Hide the emergency button
-        emergencyBtn.style.display = 'none';
+        } catch (error) {
+          console.error('❌ Emergency unlock error:', error);
+          emergencyBtn.textContent = '❌ ERROR';
+          emergencyBtn.style.background = '#dc2626';
+          emergencyBtn.disabled = false;
+        }
       };
       
       document.body.appendChild(emergencyBtn);
