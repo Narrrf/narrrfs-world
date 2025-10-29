@@ -272,12 +272,24 @@ try {
             // Generate unique filename
             $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
             $filename = $partnerId . '_' . $imageType . '_' . time() . '.' . $extension;
-            $uploadPath = __DIR__ . '/../../public/img/partners/' . $filename;
+            
+            // 🚨 CRITICAL FIX: Different paths for local vs production
+            $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+            if ($isProduction) {
+                // Production: /var/www/html/img/partners/ (NO public/ subdirectory)
+                $uploadPath = '/var/www/html/img/partners/' . $filename;
+            } else {
+                // Local: public/img/partners/
+                $uploadPath = __DIR__ . '/../../public/img/partners/' . $filename;
+            }
+            
+            error_log("📁 Upload path determined: $uploadPath (Production: " . ($isProduction ? 'YES' : 'NO') . ")");
             
             // Create directory if it doesn't exist
             $dir = dirname($uploadPath);
             if (!is_dir($dir)) {
                 mkdir($dir, 0755, true);
+                error_log("📁 Created directory: $dir");
             }
             
             if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
@@ -325,7 +337,14 @@ try {
             
             if ($filename) {
                 // Delete physical file
-                $filePath = __DIR__ . '/../../public/img/partners/' . $filename;
+                // 🚨 CRITICAL FIX: Different paths for local vs production
+                $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+                if ($isProduction) {
+                    $filePath = '/var/www/html/img/partners/' . $filename;
+                } else {
+                    $filePath = __DIR__ . '/../../public/img/partners/' . $filename;
+                }
+                
                 if (file_exists($filePath)) {
                     unlink($filePath);
                     error_log("🗑️ Deleted image file: $filePath");
