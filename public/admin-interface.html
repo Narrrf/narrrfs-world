@@ -20169,7 +20169,7 @@ function updateGameTabContent(gameType, gameData) {
           </div>
           
           <!-- Social Links -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label class="block text-sm font-semibold text-gray-300 mb-2">Discord URL</label>
               <input type="url" name="discord_url" 
@@ -20189,6 +20189,13 @@ function updateGameTabContent(gameType, gameData) {
               <input type="url" name="website_url" 
                      class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none"
                      placeholder="https://...">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-gray-300 mb-2">YouTube URL</label>
+              <input type="url" name="youtube_url" 
+                     class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:border-blue-500 focus:outline-none"
+                     placeholder="https://youtube.com/...">
             </div>
           </div>
           
@@ -20239,15 +20246,28 @@ function updateGameTabContent(gameType, gameData) {
             <p class="text-xs text-gray-400 mt-3">💡 Images can be uploaded during Add or after Edit. Current images will show in partner list below.</p>
           </div>
           
-          <!-- Gallery Images Section (NEW) -->
+          <!-- Gallery Images & Videos Section (NEW) -->
           <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-            <h4 class="text-sm font-semibold text-yellow-300 mb-3">📸 Gallery Images (Optional)</h4>
-            <p class="text-xs text-gray-400 mb-3">Upload 2-5 screenshots, features, or gameplay images (shown in "More Details" section on partner page)</p>
+            <h4 class="text-sm font-semibold text-yellow-300 mb-3">📸 Gallery Images & Videos (Optional)</h4>
+            <p class="text-xs text-gray-400 mb-3">Upload 2-7 screenshots, features, gameplay images, or videos (shown in "More Details" section on partner page)</p>
             
             <div class="space-y-2">
-              <input type="file" id="partner-gallery-upload" accept="image/jpeg,image/png,image/gif,image/webp" multiple max="5"
+              <input type="file" id="partner-gallery-upload" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm" multiple max="7"
                      class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
-              <p class="text-xs text-gray-500">JPG, PNG, GIF, WEBP (max 2MB each) - Max 5 images</p>
+              <p class="text-xs text-gray-500">Images: JPG, PNG, GIF, WEBP (max 2MB each) | Videos: MP4, WEBM (max 25MB each) - Max 7 file uploads (YouTube videos unlimited)</p>
+              
+              <!-- YouTube Video Input -->
+              <div class="mt-4 pt-4 border-t border-gray-700">
+                <h5 class="text-xs font-semibold text-yellow-400 mb-2">▶️ Add YouTube Video (Unlimited)</h5>
+                <div class="flex gap-2">
+                  <input type="url" id="partner-youtube-url" placeholder="https://www.youtube.com/watch?v=..." 
+                         class="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm placeholder-gray-500">
+                  <button onclick="addYouTubeVideo()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded transition-colors">
+                    ➕ Add
+                  </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Supports: youtube.com/watch?v=, youtu.be/, youtube.com/embed/, youtube.com/shorts/ - Unlimited YouTube videos can be added</p>
+              </div>
               
               <!-- Gallery Previews Grid -->
               <div id="gallery-previews" class="grid grid-cols-3 gap-2 mt-3 hidden">
@@ -26887,6 +26907,7 @@ Continue with Season 3 Reset?`)) {
             document.querySelector('[name="discord_url"]').value = partner.discord_url || '';
             document.querySelector('[name="twitter_url"]').value = partner.twitter_url || '';
             document.querySelector('[name="website_url"]').value = partner.website_url || '';
+            document.querySelector('[name="youtube_url"]').value = partner.youtube_url || '';
             document.querySelector('[name="additional_info"]').value = partner.additional_info || '';
             document.querySelector('[name="is_featured"]').checked = partner.is_featured === 1;
             document.querySelector('[name="is_active"]').checked = partner.is_active === 1;
@@ -26931,19 +26952,72 @@ Continue with Season 3 Reset?`)) {
                 galleryPreview.innerHTML = '';
                 galleryPreview.classList.remove('hidden');
                 
-                galleryImages.forEach((filename, index) => {
-                  const imgPath = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${filename}`;
+                galleryImages.forEach((item, index) => {
+                  // Support both old format (string) and new format (object)
+                  let itemType, identifier, thumbnail, label;
+                  
+                  if (typeof item === 'string') {
+                    // Old format: just filename
+                    itemType = /\.(mp4|webm)$/i.test(item) ? 'video' : 'image';
+                    identifier = item;
+                    thumbnail = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${item}`;
+                    label = itemType === 'video' ? `🎥 Video ${index + 1}` : `Image ${index + 1}`;
+                  } else if (item.type === 'youtube') {
+                    // YouTube video
+                    itemType = 'youtube';
+                    identifier = item.video_id;
+                    thumbnail = item.thumbnail || `https://img.youtube.com/vi/${item.video_id}/maxresdefault.jpg`;
+                    label = `▶️ YouTube ${index + 1}`;
+                  } else if (item.type === 'file') {
+                    // File upload (image or video)
+                    itemType = /\.(mp4|webm)$/i.test(item.filename) ? 'video' : 'image';
+                    identifier = item.filename;
+                    thumbnail = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${item.filename}`;
+                    label = itemType === 'video' ? `🎥 Video ${index + 1}` : `Image ${index + 1}`;
+                  } else {
+                    return; // Skip invalid items
+                  }
+                  
                   const previewDiv = document.createElement('div');
                   previewDiv.className = 'relative';
-                  previewDiv.innerHTML = `
-                    <img src="${imgPath}" alt="Gallery ${index + 1}" class="w-full h-20 rounded border-2 border-blue-400 object-cover" onerror="this.src='${API_BASE_URL === '' ? '/public' : ''}/img/cheese-egg.png'">
-                    <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs text-center py-1">
-                      Image ${index + 1}
-                    </div>
-                    <button type="button" onclick="deleteGalleryImage(${partnerId}, '${filename}', ${index})" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg">
-                      ×
-                    </button>
-                  `;
+                  
+                  if (itemType === 'youtube') {
+                    previewDiv.innerHTML = `
+                      <img src="${thumbnail}" alt="YouTube ${index + 1}" class="w-full h-20 rounded border-2 border-red-500 object-cover" onerror="this.src='${API_BASE_URL === '' ? '/public' : ''}/img/cheese-egg.png'">
+                      <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                        <div class="bg-red-600 rounded-full p-2">
+                          <span class="text-white text-lg">▶️</span>
+                        </div>
+                      </div>
+                      <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs text-center py-1">
+                        ${label}
+                      </div>
+                      <button type="button" onclick="deleteGalleryImage(${partnerId}, '${identifier}', ${index})" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg">
+                        ×
+                      </button>
+                    `;
+                  } else if (itemType === 'video') {
+                    previewDiv.innerHTML = `
+                      <video src="${thumbnail}" class="w-full h-20 rounded border-2 border-purple-400 object-cover" muted>
+                      </video>
+                      <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs text-center py-1">
+                        ${label}
+                      </div>
+                      <button type="button" onclick="deleteGalleryImage(${partnerId}, '${identifier}', ${index})" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg">
+                        ×
+                      </button>
+                    `;
+                  } else {
+                    previewDiv.innerHTML = `
+                      <img src="${thumbnail}" alt="Gallery ${index + 1}" class="w-full h-20 rounded border-2 border-blue-400 object-cover" onerror="this.src='${API_BASE_URL === '' ? '/public' : ''}/img/cheese-egg.png'">
+                      <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs text-center py-1">
+                        ${label}
+                      </div>
+                      <button type="button" onclick="deleteGalleryImage(${partnerId}, '${identifier}', ${index})" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg">
+                        ×
+                      </button>
+                    `;
+                  }
                   galleryPreview.appendChild(previewDiv);
                 });
               }
@@ -27219,6 +27293,113 @@ Continue with Season 3 Reset?`)) {
     // Make deleteGalleryImage globally accessible
     window.deleteGalleryImage = deleteGalleryImage;
     
+    // ▶️ Add YouTube video to gallery
+    async function addYouTubeVideo() {
+      const youtubeUrl = document.getElementById('partner-youtube-url').value.trim();
+      const form = document.getElementById('addPartnerForm');
+      const formMode = form ? (form.dataset.mode || 'add') : 'add';
+      const partnerId = formMode === 'edit' ? parseInt(form.dataset.partnerId || document.querySelector('[name="partner_id"]')?.value || 0) : null;
+      
+      console.log('▶️ Add YouTube Video:', {
+        url: youtubeUrl,
+        formMode: formMode,
+        partnerId: partnerId,
+        formExists: !!form,
+        formDataset: form ? form.dataset : 'N/A'
+      });
+      
+      if (!youtubeUrl) {
+        alert('❌ Please enter a YouTube URL');
+        return;
+      }
+      
+      if (!partnerId) {
+        if (formMode === 'edit') {
+          alert('❌ Partner ID not found. Please save the partner first, then try again.');
+        } else {
+          alert('❌ Please add the partner first, then edit to add YouTube videos');
+        }
+        console.error('❌ Missing partner ID. Form mode:', formMode);
+        return;
+      }
+      
+      if (formMode !== 'edit') {
+        alert('❌ Please edit an existing partner to add YouTube videos');
+        console.error('❌ Form not in edit mode:', formMode);
+        return;
+      }
+      
+      // Validate YouTube URL format
+      const youtubePatterns = [
+        /youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/i,
+        /youtu\.be\/([a-zA-Z0-9_-]+)/i,
+        /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/i,
+        /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/i  // YouTube Shorts support
+      ];
+      
+      let isValidUrl = false;
+      for (const pattern of youtubePatterns) {
+        if (pattern.test(youtubeUrl)) {
+          isValidUrl = true;
+          break;
+        }
+      }
+      
+      if (!isValidUrl) {
+        alert('❌ Invalid YouTube URL format. Please use:\n- youtube.com/watch?v=...\n- youtu.be/...\n- youtube.com/embed/...\n- youtube.com/shorts/... (Shorts)');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('action', 'add_youtube_video');
+      formData.append('partner_id', partnerId);
+      formData.append('youtube_url', youtubeUrl);
+      
+      console.log('📤 Sending YouTube video request:', {
+        partnerId: partnerId,
+        youtubeUrl: youtubeUrl,
+        apiUrl: `${API_BASE_URL}/api/admin/partner-management.php`
+      });
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        console.log('📥 API Response status:', response.status);
+        const data = await response.json();
+        console.log('📥 API Response data:', data);
+        
+        if (data.success) {
+          alert(`✅ YouTube video added successfully!`);
+          document.getElementById('partner-youtube-url').value = '';
+          
+          // Reload partners list and re-edit to show updated gallery
+          console.log('🔄 Reloading partners list and re-editing partner', partnerId);
+          await loadPartnersList();
+          
+          // Ensure form is still in edit mode
+          if (form) {
+            form.dataset.mode = 'edit';
+            form.dataset.partnerId = partnerId;
+          }
+          
+          await editPartner(partnerId);
+        } else {
+          alert('❌ Error: ' + (data.error || 'Unknown error'));
+          console.error('❌ API Error response:', data);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error adding YouTube video:', error);
+        alert('❌ Error adding YouTube video: ' + error.message);
+      }
+    }
+    
+    // Make addYouTubeVideo globally accessible
+    window.addYouTubeVideo = addYouTubeVideo;
+    
     // 📸 Upload multiple gallery images
     async function uploadGalleryImages(partnerId, files) {
       if (!partnerId || !files || files.length === 0) {
@@ -27226,21 +27407,37 @@ Continue with Season 3 Reset?`)) {
         return;
       }
       
-      if (files.length > 5) {
-        alert('❌ Maximum 5 gallery images allowed');
+      // Count existing file uploads (not YouTube)
+      const existingGallery = document.getElementById('gallery-previews');
+      let existingFileCount = 0;
+      if (existingGallery && existingGallery.children.length > 0) {
+        existingGallery.querySelectorAll('div').forEach(div => {
+          // Check if it's a file (has video or img with local path, not YouTube thumbnail)
+          const hasLocalContent = div.querySelector('video') || (div.querySelector('img') && !div.innerHTML.includes('YouTube'));
+          if (hasLocalContent) {
+            existingFileCount++;
+          }
+        });
+      }
+      
+      if (existingFileCount + files.length > 7) {
+        alert(`❌ Maximum 7 file uploads allowed (you have ${existingFileCount}, trying to add ${files.length}). YouTube videos are unlimited.`);
         return;
       }
       
-      console.log(`📸 Uploading ${files.length} gallery images for partner ${partnerId}...`);
+      console.log(`📸 Uploading ${files.length} gallery items for partner ${partnerId}...`);
       
       const uploadedFilenames = [];
       
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         
-        // Check file size (max 2MB per image)
-        if (file.size > 2 * 1024 * 1024) {
-          alert(`❌ ${file.name} is too large. Max 2MB per image.`);
+        // Check file size (max 2MB per image, 25MB per video)
+        const isVideo = file.type.startsWith('video/');
+        const maxSize = isVideo ? (25 * 1024 * 1024) : (2 * 1024 * 1024);
+        if (file.size > maxSize) {
+          const maxSizeMB = isVideo ? '25MB' : '2MB';
+          alert(`❌ ${file.name} is too large. Max ${maxSizeMB} per ${isVideo ? 'video' : 'image'}.`);
           continue;
         }
         
@@ -27259,17 +27456,18 @@ Continue with Season 3 Reset?`)) {
           const data = await response.json();
           
           if (data.success) {
-            console.log(`✅ Gallery image ${i + 1} uploaded:`, data.filename);
+            const itemType = data.is_video ? 'video' : 'image';
+            console.log(`✅ Gallery ${itemType} ${i + 1} uploaded:`, data.filename);
             uploadedFilenames.push(data.filename);
           } else {
-            console.error(`❌ Failed to upload gallery image ${i + 1}:`, data.error);
+            console.error(`❌ Failed to upload gallery item ${i + 1}:`, data.error);
           }
         } catch (error) {
-          console.error(`❌ Error uploading gallery image ${i + 1}:`, error);
+          console.error(`❌ Error uploading gallery item ${i + 1}:`, error);
         }
       }
       
-      console.log(`📸 Gallery upload complete: ${uploadedFilenames.length}/${files.length} images uploaded`);
+      console.log(`📸 Gallery upload complete: ${uploadedFilenames.length}/${files.length} items uploaded`);
     }
     
     // 📸 Gallery image preview handler
@@ -27282,8 +27480,17 @@ Continue with Season 3 Reset?`)) {
         return;
       }
       
-      if (files.length > 5) {
-        alert('❌ Maximum 5 gallery images allowed');
+      // Count existing file uploads in preview
+      let existingFileCount = 0;
+      previewContainer.querySelectorAll('div').forEach(div => {
+        const hasLocalContent = div.querySelector('video') || (div.querySelector('img') && !div.innerHTML.includes('YouTube'));
+        if (hasLocalContent) {
+          existingFileCount++;
+        }
+      });
+      
+      if (existingFileCount + files.length > 7) {
+        alert(`❌ Maximum 7 file uploads allowed (you have ${existingFileCount}, trying to add ${files.length}). YouTube videos are unlimited.`);
         e.target.value = '';
         return;
       }
@@ -27292,22 +27499,38 @@ Continue with Season 3 Reset?`)) {
       previewContainer.classList.remove('hidden');
       
       Array.from(files).forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const previewDiv = document.createElement('div');
-          previewDiv.className = 'relative';
-          previewDiv.innerHTML = `
-            <img src="${event.target.result}" alt="Gallery ${index + 1}" class="w-full h-20 rounded border-2 border-blue-400 object-cover">
+        const isVideo = file.type.startsWith('video/');
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'relative';
+        
+        if (isVideo) {
+          const video = document.createElement('video');
+          video.src = URL.createObjectURL(file);
+          video.className = 'w-full h-20 rounded border-2 border-purple-400 object-cover';
+          video.muted = true;
+          previewDiv.appendChild(video);
+          previewDiv.innerHTML += `
             <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs text-center py-1">
-              Image ${index + 1}
+              🎥 Video ${index + 1}
             </div>
           `;
           previewContainer.appendChild(previewDiv);
-        };
-        reader.readAsDataURL(file);
+        } else {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            previewDiv.innerHTML = `
+              <img src="${event.target.result}" alt="Gallery ${index + 1}" class="w-full h-20 rounded border-2 border-blue-400 object-cover">
+              <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs text-center py-1">
+                Image ${index + 1}
+              </div>
+            `;
+            previewContainer.appendChild(previewDiv);
+          };
+          reader.readAsDataURL(file);
+        }
       });
       
-      console.log(`📸 Preview loaded for ${files.length} gallery images`);
+      console.log(`📸 Preview loaded for ${files.length} gallery items (images/videos)`);
     });
     
     // Load partners list when Partners tab is opened

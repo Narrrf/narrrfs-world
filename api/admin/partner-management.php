@@ -47,6 +47,56 @@ if ($isLocalhost) {
     }
 }
 
+// 🔧 HELPER FUNCTIONS
+
+/**
+ * Extract YouTube video ID from various URL formats
+ * Supports: youtube.com/watch?v=, youtu.be/, youtube.com/embed/
+ */
+function extractYouTubeVideoId($url) {
+    $patterns = [
+        '/youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/i',
+        '/youtu\.be\/([a-zA-Z0-9_-]+)/i',
+        '/youtube\.com\/embed\/([a-zA-Z0-9_-]+)/i',
+        '/youtube\.com\/v\/([a-zA-Z0-9_-]+)/i',
+        '/youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/i'  // YouTube Shorts support
+    ];
+    
+    foreach ($patterns as $pattern) {
+        if (preg_match($pattern, $url, $matches)) {
+            return $matches[1];
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * Normalize gallery format from old (strings) to new (objects)
+ * Supports backward compatibility
+ */
+function normalizeGalleryFormat($galleryImages) {
+    if (empty($galleryImages)) {
+        return [];
+    }
+    
+    $normalized = [];
+    foreach ($galleryImages as $item) {
+        if (is_string($item)) {
+            // Old format: convert string to object
+            $normalized[] = [
+                'type' => 'file',
+                'filename' => $item
+            ];
+        } else if (is_array($item) && isset($item['type'])) {
+            // New format: already normalized
+            $normalized[] = $item;
+        }
+    }
+    
+    return $normalized;
+}
+
 // Database connection
 $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
 $dbPath = $isProduction ? '/var/www/html/db/narrrf_world.sqlite' : __DIR__ . '/../../db/narrrf_world.sqlite';
@@ -91,6 +141,7 @@ try {
             $discordUrl = $_POST['discord_url'] ?? '';
             $twitterUrl = $_POST['twitter_url'] ?? '';
             $websiteUrl = $_POST['website_url'] ?? '';
+            $youtubeUrl = $_POST['youtube_url'] ?? '';
             $logoFilename = $_POST['logo_filename'] ?? '';
             $bannerFilename = $_POST['banner_filename'] ?? '';
             $isFeatured = intval($_POST['is_featured'] ?? 0);
@@ -105,14 +156,14 @@ try {
             $stmt = $pdo->prepare("
                 INSERT INTO tbl_partners 
                 (partner_name, partner_slug, short_description, long_description, partner_type, 
-                 discord_url, twitter_url, website_url, additional_info, logo_filename, banner_filename, 
+                 discord_url, twitter_url, website_url, youtube_url, additional_info, logo_filename, banner_filename, 
                  is_featured, display_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
             $stmt->execute([
                 $name, $slug, $shortDesc, $longDesc, $type,
-                $discordUrl, $twitterUrl, $websiteUrl, $additionalInfo,
+                $discordUrl, $twitterUrl, $websiteUrl, $youtubeUrl, $additionalInfo,
                 $logoFilename, $bannerFilename,
                 $isFeatured, $displayOrder
             ]);
@@ -157,7 +208,7 @@ try {
             
             $fields = [
                 'partner_name', 'partner_slug', 'short_description', 'long_description',
-                'partner_type', 'discord_url', 'twitter_url', 'website_url', 'additional_info',
+                'partner_type', 'discord_url', 'twitter_url', 'website_url', 'youtube_url', 'additional_info',
                 'logo_filename', 'banner_filename', 'is_featured', 'is_active', 'display_order'
             ];
             
@@ -378,15 +429,18 @@ try {
             
             $file = $_FILES['gallery_image'];
             
-            // Validate file type
-            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            // Validate file type (images and videos)
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
             if (!in_array($file['type'], $allowedTypes)) {
-                throw new Exception('Invalid file type. Only JPG, PNG, GIF, WEBP allowed');
+                throw new Exception('Invalid file type. Only JPG, PNG, GIF, WEBP, MP4, WEBM allowed');
             }
             
-            // Validate file size (2MB limit for gallery images)
-            if ($file['size'] > 2 * 1024 * 1024) {
-                throw new Exception('File too large. Maximum 2MB per gallery image');
+            // Validate file size (2MB for images, 25MB for videos)
+            $isVideo = strpos($file['type'], 'video/') === 0;
+            $maxSize = $isVideo ? (25 * 1024 * 1024) : (2 * 1024 * 1024);
+            if ($file['size'] > $maxSize) {
+                $maxSizeMB = $isVideo ? '25MB' : '2MB';
+                throw new Exception("File too large. Maximum {$maxSizeMB} per " . ($isVideo ? 'video' : 'image'));
             }
             
             // Generate unique filename
@@ -418,12 +472,45 @@ try {
                 $galleryImages = $partner['gallery_images'] ? json_decode($partner['gallery_images'], true) : [];
                 if (!is_array($galleryImages)) $galleryImages = [];
                 
-                // Add new filename to gallery
-                $galleryImages[] = $filename;
+                // Normalize old format to new format if needed
+                $galleryImages = normalizeGalleryFormat($galleryImages);
                 
-                // Limit to 5 images
-                if (count($galleryImages) > 5) {
-                    array_shift($galleryImages); // Remove oldest
+                // Add new filename to gallery (new format)
+                $galleryImages[] = [
+                    'type' => 'file',
+                    'filename' => $filename
+                ];
+                
+                // Limit to 7 items for files (images + videos), YouTube is unlimited
+                // Count only file items (not YouTube)
+                $fileCount = 0;
+                foreach ($galleryImages as $item) {
+                    $itemFilename = is_string($item) ? $item : (isset($item['type']) && $item['type'] === 'file' ? $item['filename'] : null);
+                    if ($itemFilename && preg_match('/\.(jpg|jpeg|png|gif|webp|mp4|webm)$/i', $itemFilename)) {
+                        $fileCount++;
+                    }
+                }
+                
+                // Only trim files if total files > 7
+                if ($fileCount > 7) {
+                    // Remove oldest file items until we're at 7
+                    $trimmed = [];
+                    $fileCount = 0;
+                    foreach ($galleryImages as $item) {
+                        $itemFilename = is_string($item) ? $item : (isset($item['type']) && $item['type'] === 'file' ? $item['filename'] : null);
+                        $isFile = $itemFilename && preg_match('/\.(jpg|jpeg|png|gif|webp|mp4|webm)$/i', $itemFilename);
+                        
+                        if ($isFile) {
+                            if ($fileCount < 7) {
+                                $trimmed[] = $item;
+                                $fileCount++;
+                            }
+                        } else {
+                            // Always keep YouTube videos
+                            $trimmed[] = $item;
+                        }
+                    }
+                    $galleryImages = $trimmed;
                 }
                 
                 // Update database
@@ -432,9 +519,10 @@ try {
                 
                 echo json_encode([
                     'success' => true,
-                    'message' => 'Gallery image uploaded successfully',
+                    'message' => 'Gallery item uploaded successfully',
                     'filename' => $filename,
-                    'gallery_count' => count($galleryImages)
+                    'gallery_count' => count($galleryImages),
+                    'is_video' => $isVideo
                 ]);
             } else {
                 throw new Exception('Failed to upload gallery image');
@@ -462,21 +550,45 @@ try {
             $galleryImages = $partner['gallery_images'] ? json_decode($partner['gallery_images'], true) : [];
             if (!is_array($galleryImages)) $galleryImages = [];
             
-            // Remove the filename from array
-            $galleryImages = array_filter($galleryImages, fn($img) => $img !== $filename);
+            // Normalize old format to new format if needed
+            $galleryImages = normalizeGalleryFormat($galleryImages);
+            
+            // Remove item from array (support both old string format and new object format)
+            $galleryImages = array_filter($galleryImages, function($item) use ($filename) {
+                if (is_string($item)) {
+                    return $item !== $filename; // Old format
+                } else if (is_array($item)) {
+                    // New format: check if it's a file with matching filename or YouTube video
+                    if (isset($item['type']) && $item['type'] === 'file') {
+                        return $item['filename'] !== $filename;
+                    }
+                    // For YouTube videos, check if deleting by video_id
+                    if (isset($item['type']) && $item['type'] === 'youtube') {
+                        return isset($item['video_id']) && $item['video_id'] !== $filename;
+                    }
+                }
+                return true;
+            });
             $galleryImages = array_values($galleryImages); // Re-index array
             
-            // Delete physical file
-            $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
-            if ($isProduction) {
-                $filePath = '/var/www/html/img/partners/' . $filename;
+            // Delete physical file (only for file type, not YouTube)
+            // Check if it's a file or YouTube by checking if filename contains extension
+            if (preg_match('/\.(jpg|jpeg|png|gif|webp|mp4|webm)$/i', $filename)) {
+                $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+                if ($isProduction) {
+                    $filePath = '/var/www/html/img/partners/' . $filename;
+                } else {
+                    $filePath = __DIR__ . '/../../public/img/partners/' . $filename;
+                }
+                
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                    $isVideo = preg_match('/\.(mp4|webm)$/i', $filename);
+                    error_log("🗑️ Deleted gallery " . ($isVideo ? "video" : "image") . ": $filePath");
+                }
             } else {
-                $filePath = __DIR__ . '/../../public/img/partners/' . $filename;
-            }
-            
-            if (file_exists($filePath)) {
-                unlink($filePath);
-                error_log("🗑️ Deleted gallery image: $filePath");
+                // YouTube video deletion (no file to delete)
+                error_log("🗑️ Deleted YouTube video: $filename");
             }
             
             // Update database
@@ -485,10 +597,109 @@ try {
             
             echo json_encode([
                 'success' => true,
-                'message' => 'Gallery image deleted successfully',
-                'remaining_images' => count($galleryImages)
+                'message' => 'Gallery item deleted successfully',
+                'remaining_count' => count($galleryImages)
             ]);
             break;
+            
+        // ▶️ ADD YOUTUBE VIDEO
+        case 'add_youtube_video':
+            $partnerId = intval($_POST['partner_id'] ?? 0);
+            $youtubeUrl = trim($_POST['youtube_url'] ?? '');
+            
+            if ($partnerId <= 0 || empty($youtubeUrl)) {
+                throw new Exception('Invalid partner ID or YouTube URL');
+            }
+            
+            // Extract YouTube video ID
+            $videoId = extractYouTubeVideoId($youtubeUrl);
+            if (!$videoId) {
+                throw new Exception('Invalid YouTube URL format');
+            }
+            
+            // Get current gallery images
+            $stmt = $pdo->prepare("SELECT gallery_images FROM tbl_partners WHERE id = ?");
+            $stmt->execute([$partnerId]);
+            $partner = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$partner) {
+                throw new Exception('Partner not found');
+            }
+            
+            $galleryImages = $partner['gallery_images'] ? json_decode($partner['gallery_images'], true) : [];
+            if (!is_array($galleryImages)) $galleryImages = [];
+            
+            // Normalize old format to new format if needed
+            $galleryImages = normalizeGalleryFormat($galleryImages);
+            
+            // Add YouTube video object
+            $galleryImages[] = [
+                'type' => 'youtube',
+                'video_id' => $videoId,
+                'thumbnail' => "https://img.youtube.com/vi/{$videoId}/maxresdefault.jpg"
+            ];
+            
+            // Limit to 7 items for files (images + videos), YouTube is unlimited
+            // Count only file items (not YouTube)
+            $fileCount = 0;
+            foreach ($galleryImages as $item) {
+                $itemFilename = is_string($item) ? $item : (isset($item['type']) && $item['type'] === 'file' ? $item['filename'] : null);
+                if ($itemFilename && preg_match('/\.(jpg|jpeg|png|gif|webp|mp4|webm)$/i', $itemFilename)) {
+                    $fileCount++;
+                }
+            }
+            
+            // Only trim files if total files > 7 (YouTube videos don't count)
+            if ($fileCount > 7) {
+                // Remove oldest file items until we're at 7
+                $trimmed = [];
+                $fileCount = 0;
+                foreach ($galleryImages as $item) {
+                    $itemFilename = is_string($item) ? $item : (isset($item['type']) && $item['type'] === 'file' ? $item['filename'] : null);
+                    $isFile = $itemFilename && preg_match('/\.(jpg|jpeg|png|gif|webp|mp4|webm)$/i', $itemFilename);
+                    
+                    if ($isFile) {
+                        if ($fileCount < 7) {
+                            $trimmed[] = $item;
+                            $fileCount++;
+                        }
+                    } else {
+                        // Always keep YouTube videos (and other non-file items)
+                        $trimmed[] = $item;
+                    }
+                }
+                $galleryImages = $trimmed;
+            }
+            
+            // Update database
+            $jsonData = json_encode($galleryImages);
+            error_log("📺 Saving YouTube video to gallery: Partner ID $partnerId, Video ID: $videoId, Gallery count: " . count($galleryImages));
+            error_log("📺 Gallery JSON: " . $jsonData);
+            
+            $stmt = $pdo->prepare("UPDATE tbl_partners SET gallery_images = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+            $stmt->execute([$jsonData, $partnerId]);
+            
+            // Verify update
+            $verify = $pdo->prepare("SELECT gallery_images FROM tbl_partners WHERE id = ?");
+            $verify->execute([$partnerId]);
+            $verified = $verify->fetch(PDO::FETCH_ASSOC);
+            error_log("📺 Verified saved gallery: " . ($verified['gallery_images'] ?? 'NULL'));
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'YouTube video added successfully',
+                'video_id' => $videoId,
+                'gallery_count' => count($galleryImages),
+                'thumbnail' => "https://img.youtube.com/vi/{$videoId}/maxresdefault.jpg",
+                'item' => [
+                    'type' => 'youtube',
+                    'video_id' => $videoId,
+                    'thumbnail' => "https://img.youtube.com/vi/{$videoId}/maxresdefault.jpg"
+                ]
+            ]);
+            break;
+            
+        // 🗑️ DELETE YOUTUBE VIDEO (uses same delete_gallery_image action, but by video_id)
             
         // ❌ INVALID ACTION
         default:
