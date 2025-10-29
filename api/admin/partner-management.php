@@ -100,17 +100,19 @@ try {
                 throw new Exception('Partner name is required');
             }
             
+            $additionalInfo = $_POST['additional_info'] ?? '';
+            
             $stmt = $pdo->prepare("
                 INSERT INTO tbl_partners 
                 (partner_name, partner_slug, short_description, long_description, partner_type, 
-                 discord_url, twitter_url, website_url, logo_filename, banner_filename, 
+                 discord_url, twitter_url, website_url, additional_info, logo_filename, banner_filename, 
                  is_featured, display_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
             $stmt->execute([
                 $name, $slug, $shortDesc, $longDesc, $type,
-                $discordUrl, $twitterUrl, $websiteUrl, 
+                $discordUrl, $twitterUrl, $websiteUrl, $additionalInfo,
                 $logoFilename, $bannerFilename,
                 $isFeatured, $displayOrder
             ]);
@@ -155,7 +157,7 @@ try {
             
             $fields = [
                 'partner_name', 'partner_slug', 'short_description', 'long_description',
-                'partner_type', 'discord_url', 'twitter_url', 'website_url',
+                'partner_type', 'discord_url', 'twitter_url', 'website_url', 'additional_info',
                 'logo_filename', 'banner_filename', 'is_featured', 'is_active', 'display_order'
             ];
             
@@ -358,6 +360,133 @@ try {
             echo json_encode([
                 'success' => true,
                 'message' => ucfirst($imageType) . ' deleted successfully'
+            ]);
+            break;
+            
+        // 📸 UPLOAD GALLERY IMAGE
+        case 'upload_gallery':
+            $partnerId = intval($_POST['partner_id'] ?? 0);
+            $galleryIndex = intval($_POST['gallery_index'] ?? 0);
+            
+            if ($partnerId <= 0) {
+                throw new Exception('Invalid partner ID');
+            }
+            
+            if (!isset($_FILES['gallery_image']) || $_FILES['gallery_image']['error'] !== UPLOAD_ERR_OK) {
+                throw new Exception('No file uploaded or upload error');
+            }
+            
+            $file = $_FILES['gallery_image'];
+            
+            // Validate file type
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!in_array($file['type'], $allowedTypes)) {
+                throw new Exception('Invalid file type. Only JPG, PNG, GIF, WEBP allowed');
+            }
+            
+            // Validate file size (2MB limit for gallery images)
+            if ($file['size'] > 2 * 1024 * 1024) {
+                throw new Exception('File too large. Maximum 2MB per gallery image');
+            }
+            
+            // Generate unique filename
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = $partnerId . '_gallery_' . ($galleryIndex + 1) . '_' . time() . '.' . $extension;
+            
+            // 🚨 CRITICAL: Environment-aware path (no /public/ on production!)
+            $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+            if ($isProduction) {
+                $uploadPath = '/var/www/html/img/partners/' . $filename;
+            } else {
+                $uploadPath = __DIR__ . '/../../public/img/partners/' . $filename;
+            }
+            
+            error_log("📸 Gallery upload path: $uploadPath (Production: " . ($isProduction ? 'YES' : 'NO') . ")");
+            
+            // Create directory if it doesn't exist
+            $dir = dirname($uploadPath);
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+            
+            if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+                // Get current gallery images
+                $stmt = $pdo->prepare("SELECT gallery_images FROM tbl_partners WHERE id = ?");
+                $stmt->execute([$partnerId]);
+                $partner = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                $galleryImages = $partner['gallery_images'] ? json_decode($partner['gallery_images'], true) : [];
+                if (!is_array($galleryImages)) $galleryImages = [];
+                
+                // Add new filename to gallery
+                $galleryImages[] = $filename;
+                
+                // Limit to 5 images
+                if (count($galleryImages) > 5) {
+                    array_shift($galleryImages); // Remove oldest
+                }
+                
+                // Update database
+                $stmt = $pdo->prepare("UPDATE tbl_partners SET gallery_images = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+                $stmt->execute([json_encode($galleryImages), $partnerId]);
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Gallery image uploaded successfully',
+                    'filename' => $filename,
+                    'gallery_count' => count($galleryImages)
+                ]);
+            } else {
+                throw new Exception('Failed to upload gallery image');
+            }
+            break;
+            
+        // 🗑️ DELETE GALLERY IMAGE
+        case 'delete_gallery_image':
+            $partnerId = intval($_POST['partner_id'] ?? 0);
+            $filename = $_POST['filename'] ?? '';
+            
+            if ($partnerId <= 0 || empty($filename)) {
+                throw new Exception('Invalid partner ID or filename');
+            }
+            
+            // Get current gallery images
+            $stmt = $pdo->prepare("SELECT gallery_images FROM tbl_partners WHERE id = ?");
+            $stmt->execute([$partnerId]);
+            $partner = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$partner) {
+                throw new Exception('Partner not found');
+            }
+            
+            $galleryImages = $partner['gallery_images'] ? json_decode($partner['gallery_images'], true) : [];
+            if (!is_array($galleryImages)) $galleryImages = [];
+            
+            // Remove the filename from array
+            $galleryImages = array_filter($galleryImages, fn($img) => $img !== $filename);
+            $galleryImages = array_values($galleryImages); // Re-index array
+            
+            // Delete physical file
+            $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+            if ($isProduction) {
+                $filePath = '/var/www/html/img/partners/' . $filename;
+            } else {
+                $filePath = __DIR__ . '/../../public/img/partners/' . $filename;
+            }
+            
+            if (file_exists($filePath)) {
+                unlink($filePath);
+                error_log("🗑️ Deleted gallery image: $filePath");
+            }
+            
+            // Update database
+            $stmt = $pdo->prepare("UPDATE tbl_partners SET gallery_images = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+            $stmt->execute([json_encode($galleryImages), $partnerId]);
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Gallery image deleted successfully',
+                'remaining_images' => count($galleryImages)
             ]);
             break;
             

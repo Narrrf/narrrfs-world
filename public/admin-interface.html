@@ -15,7 +15,7 @@
   <script>
     // Detect environment and set API base URL
     const isProduction = window.location.hostname === 'narrrfs.world';
-    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
     
     console.log('🌍 Environment detected:', isProduction ? 'Production' : 'Local');
     console.log('🔗 API Base URL:', API_BASE_URL);
@@ -20239,6 +20239,35 @@ function updateGameTabContent(gameType, gameData) {
             <p class="text-xs text-gray-400 mt-3">💡 Images can be uploaded during Add or after Edit. Current images will show in partner list below.</p>
           </div>
           
+          <!-- Gallery Images Section (NEW) -->
+          <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+            <h4 class="text-sm font-semibold text-yellow-300 mb-3">📸 Gallery Images (Optional)</h4>
+            <p class="text-xs text-gray-400 mb-3">Upload 2-5 screenshots, features, or gameplay images (shown in "More Details" section on partner page)</p>
+            
+            <div class="space-y-2">
+              <input type="file" id="partner-gallery-upload" accept="image/jpeg,image/png,image/gif,image/webp" multiple max="5"
+                     class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+              <p class="text-xs text-gray-500">JPG, PNG, GIF, WEBP (max 2MB each) - Max 5 images</p>
+              
+              <!-- Gallery Previews Grid -->
+              <div id="gallery-previews" class="grid grid-cols-3 gap-2 mt-3 hidden">
+                <!-- Populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Additional Info Section (NEW) -->
+          <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+            <h4 class="text-sm font-semibold text-yellow-300 mb-3">📝 Additional Information (Optional)</h4>
+            <textarea 
+              name="additional_info" 
+              rows="4" 
+              placeholder="Extra details, special features, upcoming events, or announcements that will show in the expandable 'More Details' section..."
+              class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded text-white text-sm"
+            ></textarea>
+            <p class="text-xs text-gray-400 mt-1">This text appears in the expandable "More Details" section on the partner page</p>
+          </div>
+          
           <!-- Featured & Active Checkboxes -->
           <div class="flex gap-6">
             <label class="flex items-center gap-2 cursor-pointer">
@@ -26679,7 +26708,7 @@ Continue with Season 3 Reset?`)) {
             <!-- Large Image Preview -->
             <div class="flex-shrink-0">
               ${partner.logo_filename ? `
-                <img src="/public/img/partners/${partner.logo_filename}" alt="${partner.partner_name}" class="w-20 h-20 rounded-full border-2 border-yellow-400" onerror="this.src='/public/img/cheese-egg.png'">
+                <img src="${API_BASE_URL === '' ? '/public' : ''}/img/partners/${partner.logo_filename}" alt="${partner.partner_name}" class="w-20 h-20 rounded-full border-2 border-yellow-400" onerror="this.src='${API_BASE_URL === '' ? '/public' : ''}/img/cheese-egg.png'">
               ` : `
                 <div class="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center text-3xl border-2 border-gray-600">🤝</div>
               `}
@@ -26858,6 +26887,7 @@ Continue with Season 3 Reset?`)) {
             document.querySelector('[name="discord_url"]').value = partner.discord_url || '';
             document.querySelector('[name="twitter_url"]').value = partner.twitter_url || '';
             document.querySelector('[name="website_url"]').value = partner.website_url || '';
+            document.querySelector('[name="additional_info"]').value = partner.additional_info || '';
             document.querySelector('[name="is_featured"]').checked = partner.is_featured === 1;
             document.querySelector('[name="is_active"]').checked = partner.is_active === 1;
             
@@ -26865,15 +26895,58 @@ Continue with Season 3 Reset?`)) {
             if (partner.logo_filename) {
               const logoPreview = document.getElementById('logo-preview');
               const logoImg = document.getElementById('logo-preview-img');
-              logoImg.src = `/public/img/partners/${partner.logo_filename}`;
+              // 🚨 CRITICAL: Environment-aware path (local = /public/img/, production = /img/)
+              const logoPath = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${partner.logo_filename}`;
+              console.log('📸 Loading logo preview:', logoPath);
+              console.log('🌍 API_BASE_URL:', API_BASE_URL);
+              logoImg.src = logoPath;
+              logoImg.onerror = () => {
+                console.error('❌ Logo failed to load:', logoPath);
+                logoImg.src = `${API_BASE_URL === '' ? '/public' : ''}/img/cheese-egg.png`;
+              };
               logoPreview.classList.remove('hidden');
             }
             
             if (partner.banner_filename) {
               const bannerPreview = document.getElementById('banner-preview');
               const bannerImg = document.getElementById('banner-preview-img');
-              bannerImg.src = `/public/img/partners/${partner.banner_filename}`;
+              // 🚨 CRITICAL: Environment-aware path (local = /public/img/, production = /img/)
+              const bannerPath = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${partner.banner_filename}`;
+              console.log('📸 Loading banner preview:', bannerPath);
+              bannerImg.src = bannerPath;
+              bannerImg.onerror = () => {
+                console.error('❌ Banner failed to load:', bannerPath);
+                bannerImg.src = `${API_BASE_URL === '' ? '/public' : ''}/img/cheese-egg.png`;
+              };
               bannerPreview.classList.remove('hidden');
+            }
+            
+            // 📸 Show existing gallery images
+            if (partner.gallery_images) {
+              const galleryPreview = document.getElementById('gallery-previews');
+              const galleryImages = JSON.parse(partner.gallery_images || '[]');
+              
+              if (galleryImages.length > 0) {
+                console.log('📸 Loading', galleryImages.length, 'gallery images');
+                galleryPreview.innerHTML = '';
+                galleryPreview.classList.remove('hidden');
+                
+                galleryImages.forEach((filename, index) => {
+                  const imgPath = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${filename}`;
+                  const previewDiv = document.createElement('div');
+                  previewDiv.className = 'relative';
+                  previewDiv.innerHTML = `
+                    <img src="${imgPath}" alt="Gallery ${index + 1}" class="w-full h-20 rounded border-2 border-blue-400 object-cover" onerror="this.src='${API_BASE_URL === '' ? '/public' : ''}/img/cheese-egg.png'">
+                    <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs text-center py-1">
+                      Image ${index + 1}
+                    </div>
+                    <button type="button" onclick="deleteGalleryImage(${partnerId}, '${filename}', ${index})" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg">
+                      ×
+                    </button>
+                  `;
+                  galleryPreview.appendChild(previewDiv);
+                });
+              }
             }
             
             // Change form to update mode
@@ -27006,6 +27079,13 @@ Continue with Season 3 Reset?`)) {
             await uploadImageFile(savedPartnerId, bannerFile, 'banner');
           }
           
+          // Step 4: Upload gallery images if selected
+          const galleryFiles = document.getElementById('partner-gallery-upload').files;
+          if (galleryFiles && galleryFiles.length > 0) {
+            console.log(`📸 Uploading ${galleryFiles.length} gallery images...`);
+            await uploadGalleryImages(savedPartnerId, galleryFiles);
+          }
+          
           alert(isEditMode ? '✅ Partner updated successfully!' : '✅ Partner added successfully!');
           cancelEditPartner();
           loadPartnersList();
@@ -27099,6 +27179,136 @@ Continue with Season 3 Reset?`)) {
     
     // Make deletePartnerImage globally accessible
     window.deletePartnerImage = deletePartnerImage;
+    
+    // 🗑️ Delete gallery image
+    async function deleteGalleryImage(partnerId, filename, index) {
+      if (!confirm(`Delete gallery image ${index + 1}? This cannot be undone.`)) {
+        return;
+      }
+      
+      console.log(`🗑️ Deleting gallery image: ${filename} for partner ${partnerId}`);
+      
+      const formData = new FormData();
+      formData.append('action', 'delete_gallery_image');
+      formData.append('partner_id', partnerId);
+      formData.append('filename', filename);
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert(`✅ Gallery image ${index + 1} deleted successfully!`);
+          // Reload partners list and re-edit to show updated gallery
+          await loadPartnersList();
+          await editPartner(partnerId);
+        } else {
+          alert('❌ Error: ' + data.error);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error deleting gallery image:', error);
+        alert('❌ Error deleting gallery image');
+      }
+    }
+    
+    // Make deleteGalleryImage globally accessible
+    window.deleteGalleryImage = deleteGalleryImage;
+    
+    // 📸 Upload multiple gallery images
+    async function uploadGalleryImages(partnerId, files) {
+      if (!partnerId || !files || files.length === 0) {
+        console.log('⚠️ No partner ID or files for gallery upload');
+        return;
+      }
+      
+      if (files.length > 5) {
+        alert('❌ Maximum 5 gallery images allowed');
+        return;
+      }
+      
+      console.log(`📸 Uploading ${files.length} gallery images for partner ${partnerId}...`);
+      
+      const uploadedFilenames = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Check file size (max 2MB per image)
+        if (file.size > 2 * 1024 * 1024) {
+          alert(`❌ ${file.name} is too large. Max 2MB per image.`);
+          continue;
+        }
+        
+        const formData = new FormData();
+        formData.append('action', 'upload_gallery');
+        formData.append('partner_id', partnerId);
+        formData.append('gallery_image', file);
+        formData.append('gallery_index', i);
+        
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php`, {
+            method: 'POST',
+            body: formData
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            console.log(`✅ Gallery image ${i + 1} uploaded:`, data.filename);
+            uploadedFilenames.push(data.filename);
+          } else {
+            console.error(`❌ Failed to upload gallery image ${i + 1}:`, data.error);
+          }
+        } catch (error) {
+          console.error(`❌ Error uploading gallery image ${i + 1}:`, error);
+        }
+      }
+      
+      console.log(`📸 Gallery upload complete: ${uploadedFilenames.length}/${files.length} images uploaded`);
+    }
+    
+    // 📸 Gallery image preview handler
+    document.getElementById('partner-gallery-upload')?.addEventListener('change', function(e) {
+      const files = e.target.files;
+      const previewContainer = document.getElementById('gallery-previews');
+      
+      if (!files || files.length === 0) {
+        previewContainer.classList.add('hidden');
+        return;
+      }
+      
+      if (files.length > 5) {
+        alert('❌ Maximum 5 gallery images allowed');
+        e.target.value = '';
+        return;
+      }
+      
+      previewContainer.innerHTML = '';
+      previewContainer.classList.remove('hidden');
+      
+      Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const previewDiv = document.createElement('div');
+          previewDiv.className = 'relative';
+          previewDiv.innerHTML = `
+            <img src="${event.target.result}" alt="Gallery ${index + 1}" class="w-full h-20 rounded border-2 border-blue-400 object-cover">
+            <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs text-center py-1">
+              Image ${index + 1}
+            </div>
+          `;
+          previewContainer.appendChild(previewDiv);
+        };
+        reader.readAsDataURL(file);
+      });
+      
+      console.log(`📸 Preview loaded for ${files.length} gallery images`);
+    });
     
     // Load partners list when Partners tab is opened
     document.addEventListener('DOMContentLoaded', function() {

@@ -29,6 +29,8 @@ try {
             discord_url,
             twitter_url,
             website_url,
+            additional_info,
+            gallery_images,
             is_featured,
             display_order
         FROM tbl_partners 

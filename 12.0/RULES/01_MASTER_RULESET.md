@@ -39,6 +39,83 @@ C:\xampp-server\htdocs\narrrfs-world\12.0\
 
 ---
 
+## 🚨 **CRITICAL FILE PATH RULE - LOCAL vs PRODUCTION**
+
+### **THE MOST COMMON MISTAKE - NEVER MAKE THIS AGAIN:**
+
+**CRITICAL:** Local development uses `/public/` subdirectory, Production does NOT!
+
+### **✅ CORRECT FILE PATHS:**
+
+**LOCAL DEVELOPMENT (localhost):**
+- ✅ `__DIR__ . '/../../public/img/partners/'` - Files in public/ folder
+- ✅ `http://localhost/public/profile.html` - Public pages
+- ✅ Database: `__DIR__ . '/../../db/narrrf_world.sqlite'`
+
+**PRODUCTION (narrrfs.world / Render):**
+- ✅ `/var/www/html/img/partners/` - NO public/ subdirectory!
+- ✅ `https://narrrfs.world/profile.html` - Direct access
+- ✅ Database: `/var/www/html/db/narrrf_world.sqlite`
+
+### **❌ WRONG PATTERNS (CAUSES 404 ERRORS):**
+- ❌ `/var/www/html/public/img/partners/` - public/ doesn't exist on Render!
+- ❌ `https://narrrfs.world/public/img/partners/` - Wrong URL on production
+- ❌ Using same path for both environments without checking
+
+### **✅ MANDATORY PATTERN FOR FILE OPERATIONS:**
+
+**ALWAYS use environment detection for file paths:**
+
+```php
+// 🚨 CRITICAL: Always check environment for file paths
+$isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+
+if ($isProduction) {
+    // Production: Direct paths, NO public/ subdirectory
+    $imagePath = '/var/www/html/img/partners/' . $filename;
+    $dbPath = '/var/www/html/db/narrrf_world.sqlite';
+} else {
+    // Local: Use public/ subdirectory
+    $imagePath = __DIR__ . '/../../public/img/partners/' . $filename;
+    $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+}
+
+error_log("📁 Using path: $imagePath (Production: " . ($isProduction ? 'YES' : 'NO') . ")");
+```
+
+### **🚨 COMMON MISTAKES THIS PREVENTS:**
+
+1. **Image Upload Errors:** Images save to wrong path, get 404 on production
+2. **Asset Loading Errors:** CSS, JS, images fail to load
+3. **Database Connection Errors:** Wrong database path
+4. **File Delete Errors:** Can't delete files because path is wrong
+
+### **✅ FILES THAT NEED THIS CHECK:**
+
+- **Image Uploads:** Partner logos, banners, profile pictures, game assets
+- **File Downloads:** Database backups, exports, reports
+- **Asset Loading:** CSS, JS, fonts, images
+- **File Deletion:** Cleanup operations, image removal
+
+### **🎯 RULE ENFORCEMENT:**
+
+**BEFORE writing ANY file operation code:**
+1. **Ask:** "Does this run on both local AND production?"
+2. **If YES:** Add environment detection
+3. **If NO:** Document why it's environment-specific
+
+**NEVER assume the same path works on both environments!**
+
+### **📚 HISTORICAL MISTAKES (LESSONS LEARNED):**
+
+1. **October 29, 2025 - Partner Portal Images:** Used `/public/img/partners/` on production (doesn't exist)
+2. **Previous:** Achievement API database paths (same issue)
+3. **Pattern:** Every time we forget this, we get 404 errors on production
+
+**This rule prevents this mistake forever!**
+
+---
+
 ## 🚨 **TOKEN LIMIT MANAGEMENT PROTOCOL**
 
 ### **WHEN APPROACHING TOKEN LIMITS (500+ tokens used):**
