@@ -104,7 +104,7 @@
     - **Status:** Awaiting responses and asset submissions
     - **Next:** Upload partners to Portal as assets received
     - **📁 Documentation Path:** New `12.0/COLLABORATIONS_PARTNERS/` folder created for partner tracking
-    - **✅ Submitted & Confirmed on Live:** 8 partners active (Gensuki, Mad Skulz NFT, Samuzi NFT, Artenova, Boundless NFT, Kekius Maximus, Golden Baboons, Fox Goblin NFT)
+    - **✅ Submitted & Confirmed on Live:** 9 partners active (Gensuki, Mad Skulz NFT, Samuzi NFT, Artenova, Boundless NFT, Kekius Maximus, Golden Baboons, Fox Goblin NFT, Web Builder 161 Group)
   
   - 📺 **YOUTUBE VIDEO INTEGRATION COMPLETE (Oct 29 - Evening):**
     - **YouTube Gallery:** Unlimited YouTube videos per partner (7 file uploads + unlimited YouTube)
@@ -117,6 +117,17 @@
     - **Testing:** 100% functional - YouTube videos displaying and playing correctly with fullscreen
     - **Files Modified:** `admin-interface.html`, `partner-management.php`, `partners.html`
     - **Status:** ✅ **PRODUCTION READY** - All paths verified (`/public/` rule enforced)
+
+- 🎃 **HALLOWEEN + VR GALLERY (Oct 30):**
+  - **VR Gallery Portal:** New section on `index.html` with preview image and CTA
+    - Primary: “Enter VR Gallery (Free)” → `https://framevr.io/webbuilder161group`
+    - Secondary: “View Partners”
+    - Thank-you credit: “Web Builder 161 Group” → links to partners tab
+  - **Halloween Theme:** Non-destructive seasonal skin on landing page only
+    - Subtle orange/black ambient overlays, mini 🦇/🎃 decorations
+    - Event ribbon: “HALLOWEEN BINGO NIGHT • with Golden Baboons”
+  - **Admin Cache Busting:** Fresh partner previews in editor (no stale images)
+    - `no-store` fetch + `?cb=TIMESTAMP` on image/video thumbnails
 
 - ✅ **October 27, 2025 - MONDAY SESSION - 4 Critical Bugs Fixed:**
   - 🐛 **Bug 1 - Tetris Mobile Game Over:** Modal not displaying on mobile

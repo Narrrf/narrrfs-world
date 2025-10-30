@@ -325,7 +325,7 @@
 
 **Status:**
 - ✅ Outreach complete (15/15 written)
-- ✅ Submitted & Confirmed on Live: 8 partners (Gensuki, Mad Skulz NFT, Samuzi NFT, Artenova, Boundless NFT, Kekius Maximus, Golden Baboons, Fox Goblin NFT) - 6 showing in Featured section
+- ✅ Submitted & Confirmed on Live: 9 partners (Gensuki, Mad Skulz NFT, Samuzi NFT, Artenova, Boundless NFT, Kekius Maximus, Golden Baboons, Fox Goblin NFT, Web Builder 161 Group) - 6+ showing in Featured section
 - ⏳ Awaiting partner responses
 - ⏳ Awaiting asset submissions (logos, descriptions, gallery images)
 - ⏳ Ready to list partners as assets arrive
@@ -389,4 +389,28 @@
 **Total Duration:** ~24 hours (extended session)  
 **Status:** ✅ **PARTNER PORTAL + GALLERY SYSTEM + YOUTUBE INTEGRATION COMPLETE**  
 **Next:** Deploy to production and update community!
+
+---
+
+## 🎃 HALLOWEEN + VR GALLERY UPDATES (Oct 30 - Early Morning)
+
+### New Public Features:
+- ✅ **VR Gallery Portal (FRAME VR):** Added a bold section on `index.html` with screenshot banner, gradient glow and CTA:
+  - Primary: “Enter VR Gallery (Free)” → `https://framevr.io/webbuilder161group`
+  - Secondary: “View Partners” → `partners.html`
+  - Subtle credit line: “Special thanks to Web Builder 161 Group for the gallery space.” (links to partners tab)
+- ✅ **Halloween Theme (non-destructive):** Lightweight seasonal styling applied to `index.html` only
+  - Body class `halloween` with subtle orange/black ambient overlays
+  - Seasonal ribbon: “HALLOWEEN BINGO NIGHT • with Golden Baboons”
+  - Tiny floating 🦇/🎃 decorations (CSS-only, pointer-events: none)
+
+### Admin UX Fixes:
+- ✅ **Image Cache Busting:** `admin-interface.html` now forces fresh previews when editing partners
+  - `fetch(..., { cache: 'no-store' })` for partner data
+  - Appends `?cb=TIMESTAMP` to logo, banner, and gallery file thumbnails
+  - Eliminates old-image “sticking” after edits
+
+### Docs synced:
+- Updated QUICK_STATUS with VR + Halloween + cache-busting notes
+- Partners now 9/17 listed (includes Web Builder 161 Group)
 

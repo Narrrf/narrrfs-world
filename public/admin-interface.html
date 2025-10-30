@@ -26680,7 +26680,9 @@ Continue with Season 3 Reset?`)) {
         console.log('🔗 API URL:', `${API_BASE_URL}/api/admin/partner-management.php?action=get_all`);
         
         const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php?action=get_all`, {
-          credentials: 'include' // Include session cookies
+          credentials: 'include', // Include session cookies
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
         });
         
         console.log('📡 Response status:', response.status);
@@ -26891,7 +26893,7 @@ Continue with Season 3 Reset?`)) {
     // Edit partner (opens edit form)
     async function editPartner(partnerId) {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php?action=get_all`);
+        const response = await fetch(`${API_BASE_URL}/api/admin/partner-management.php?action=get_all`, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } });
         const data = await response.json();
         
         if (data.success) {
@@ -26917,7 +26919,7 @@ Continue with Season 3 Reset?`)) {
               const logoPreview = document.getElementById('logo-preview');
               const logoImg = document.getElementById('logo-preview-img');
               // 🚨 CRITICAL: Environment-aware path (local = /public/img/, production = /img/)
-              const logoPath = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${partner.logo_filename}`;
+              const logoPath = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${partner.logo_filename}?cb=${Date.now()}`;
               console.log('📸 Loading logo preview:', logoPath);
               console.log('🌍 API_BASE_URL:', API_BASE_URL);
               logoImg.src = logoPath;
@@ -26932,7 +26934,7 @@ Continue with Season 3 Reset?`)) {
               const bannerPreview = document.getElementById('banner-preview');
               const bannerImg = document.getElementById('banner-preview-img');
               // 🚨 CRITICAL: Environment-aware path (local = /public/img/, production = /img/)
-              const bannerPath = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${partner.banner_filename}`;
+              const bannerPath = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${partner.banner_filename}?cb=${Date.now()}`;
               console.log('📸 Loading banner preview:', bannerPath);
               bannerImg.src = bannerPath;
               bannerImg.onerror = () => {
@@ -26960,7 +26962,7 @@ Continue with Season 3 Reset?`)) {
                     // Old format: just filename
                     itemType = /\.(mp4|webm)$/i.test(item) ? 'video' : 'image';
                     identifier = item;
-                    thumbnail = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${item}`;
+                    thumbnail = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${item}?cb=${Date.now()}`;
                     label = itemType === 'video' ? `🎥 Video ${index + 1}` : `Image ${index + 1}`;
                   } else if (item.type === 'youtube') {
                     // YouTube video
@@ -26972,7 +26974,7 @@ Continue with Season 3 Reset?`)) {
                     // File upload (image or video)
                     itemType = /\.(mp4|webm)$/i.test(item.filename) ? 'video' : 'image';
                     identifier = item.filename;
-                    thumbnail = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${item.filename}`;
+                    thumbnail = `${API_BASE_URL === '' ? '/public' : ''}/img/partners/${item.filename}?cb=${Date.now()}`;
                     label = itemType === 'video' ? `🎥 Video ${index + 1}` : `Image ${index + 1}`;
                   } else {
                     return; // Skip invalid items

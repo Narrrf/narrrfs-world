@@ -37,7 +37,7 @@
 **Partners Added:** 1 (Fox Goblin NFT - awaiting outreach)  
 **Total Partners:** 17  
 **Responses Received:** 6+ partners responded ✅  
-**Partners Listed:** 8/17 (Gensuki, Mad Skulz NFT, Samuzi NFT, Artenova, Boundless NFT, Kekius Maximus, Golden Baboons, Fox Goblin NFT) - 6 showing in Featured section on live site
+**Partners Listed:** 9/17 (Gensuki, Mad Skulz NFT, Samuzi NFT, Artenova, Boundless NFT, Kekius Maximus, Golden Baboons, Fox Goblin NFT, Web Builder 161 Group) - 6+ showing in Featured section on live site
 
 ---
 
