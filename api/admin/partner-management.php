@@ -331,7 +331,11 @@ try {
             if ($isProduction) {
                 // Production: use persistent storage in /data and serve via symlink /var/www/html/img/partners
                 $persistentDir = '/data/img/partners/';
-                if (!is_dir($persistentDir)) { @mkdir($persistentDir, 0775, true); }
+                if (!is_dir($persistentDir)) {
+                    @mkdir($persistentDir, 0775, true);
+                    @chown($persistentDir, 'www-data');
+                    @chgrp($persistentDir, 'www-data');
+                }
                 $uploadPath = $persistentDir . $filename;
             } else {
                 // Local: public/img/partners/
@@ -343,7 +347,9 @@ try {
             // Create directory if it doesn't exist
             $dir = dirname($uploadPath);
             if (!is_dir($dir)) {
-                mkdir($dir, 0755, true);
+                mkdir($dir, 0775, true);
+                @chown($dir, 'www-data');
+                @chgrp($dir, 'www-data');
                 error_log("📁 Created directory: $dir");
             }
             
@@ -454,7 +460,7 @@ try {
             $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
             if ($isProduction) {
                 $persistentDir = '/data/img/partners/';
-                if (!is_dir($persistentDir)) { @mkdir($persistentDir, 0775, true); }
+                if (!is_dir($persistentDir)) { @mkdir($persistentDir, 0775, true); @chown($persistentDir, 'www-data'); @chgrp($persistentDir, 'www-data'); }
                 $uploadPath = $persistentDir . $filename;
             } else {
                 $uploadPath = __DIR__ . '/../../public/img/partners/' . $filename;
@@ -465,7 +471,9 @@ try {
             // Create directory if it doesn't exist
             $dir = dirname($uploadPath);
             if (!is_dir($dir)) {
-                mkdir($dir, 0755, true);
+                mkdir($dir, 0775, true);
+                @chown($dir, 'www-data');
+                @chgrp($dir, 'www-data');
             }
             
             if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
