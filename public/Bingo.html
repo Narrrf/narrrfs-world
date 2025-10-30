@@ -152,7 +152,7 @@ require_once 'discord-invite.php';
   <!-- 🐒 Game Mode Selection for Golden Baboons Bingo -->
   <section class="bg-black/90 backdrop-blur-md border border-yellow-400/30 p-4 rounded-xl shadow-2xl mb-4">
     <label class="block mb-2 text-yellow-300 font-semibold">🎮 Game Mode:</label>
-    <div class="flex gap-4 mb-4">
+    <div class="flex flex-col gap-3 mb-4">
       <label class="flex items-center gap-2 cursor-pointer">
         <input type="radio" name="gameMode" value="normal" checked class="text-yellow-400 focus:ring-yellow-400">
         <span class="text-white">🧀 Normal Bingo (Rows/Columns/Diagonals)</span>
@@ -160,6 +160,10 @@ require_once 'discord-invite.php';
       <label class="flex items-center gap-2 cursor-pointer">
         <input type="radio" name="gameMode" value="corners" class="text-yellow-400 focus:ring-yellow-400">
         <span class="text-white">🔲 4 Corners Only</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="gameMode" value="progressiveFull" class="text-yellow-400 focus:ring-yellow-400">
+        <span class="text-white">🎯 Progressive Full (Complete Blackout - All 25 Cells)</span>
       </label>
     </div>
   </section>
@@ -501,6 +505,11 @@ function renderTickets() {
           cell.classList.add('ring-2', 'ring-blue-400', 'ring-opacity-50');
         }
         
+        // 🎯 Highlight all cells in Progressive Full mode
+        if (getCurrentGameMode() === 'progressiveFull') {
+          cell.classList.add('ring-1', 'ring-purple-400', 'ring-opacity-30');
+        }
+        
         // 🐒 Mark FREE space and called numbers for Golden Baboons Bingo
         if (num === 'FREE' || calledNumbers.includes(num)) {
           cell.classList.add('marked');
@@ -673,6 +682,18 @@ function getTicketHitCount(ticketObj) {
     });
     
     return cornerHits;
+  } else if (gameMode === 'progressiveFull') {
+    // For progressive full mode, count all hits (same as normal, but different win condition)
+    let hitCount = 0;
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        const num = ticket[r][c];
+        if (num === 'FREE' || calledNumbers.includes(num)) {
+          hitCount++;
+        }
+      }
+    }
+    return hitCount;
   } else {
     // For normal mode, count all hits
     let hitCount = 0;
@@ -709,6 +730,18 @@ function isTicketOneAwayFromBingo(ticketObj) {
     });
     
     return cornerHits === 3; // 1 away from 4 corners bingo
+  } else if (gameMode === 'progressiveFull') {
+    // For progressive full mode, check if 24 out of 25 cells are hit
+    let totalHits = 0;
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        const num = ticket[r][c];
+        if (num === 'FREE' || calledNumbers.includes(num)) {
+          totalHits++;
+        }
+      }
+    }
+    return totalHits === 24; // 1 away from complete blackout
   } else {
     // For normal mode, check rows, columns, and diagonals
     for (let r = 0; r < 5; r++) {
@@ -852,6 +885,17 @@ function checkBingo(ticket, ticketIndex, calledNumbers) {
     ];
     
     return corners.every(num => num === 'FREE' || calledNumbers.includes(num));
+  } else if (gameMode === 'progressiveFull') {
+    // For progressive full mode, check if ALL 25 cells are hit (complete blackout)
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        const num = ticket[r][c];
+        if (num !== 'FREE' && !calledNumbers.includes(num)) {
+          return false; // Found an unmarked cell, no bingo yet
+        }
+      }
+    }
+    return true; // All cells marked - BINGO!
   } else {
     // For normal mode, check rows, columns, and diagonals
     const size = ticket.length;

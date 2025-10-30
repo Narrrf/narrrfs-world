@@ -128,6 +128,24 @@
     - Event ribbon: “HALLOWEEN BINGO NIGHT • with Golden Baboons”
   - **Admin Cache Busting:** Fresh partner previews in editor (no stale images)
     - `no-store` fetch + `?cb=TIMESTAMP` on image/video thumbnails
+  - **Partners Live:** All approved partners activated on production; pending partners waiting on assets/OK
+  - **Persistence:** Partner images/videos now saved to `/data/img/partners` (symlinked at `/var/www/html/img/partners`)
+  - **Verification:** Uploads display instantly in admin and on partners page; survive subsequent deploys
+  - **Assets In Progress:** Golden Baboons 🔄 and Rough Ryders 🔄 confirmed sending assets soon (8+ partners responded)
+
+- 🎲 **BINGO PROGRESSIVE FULL MODE (Oct 30 - Pre-Event):**
+  - **New Mode Added:** "Progressive Full" (complete blackout - all 25 cells)
+  - **Win Condition:** Requires marking every single cell on the ticket
+  - **One Away Warning:** Shows alert at 24/25 cells marked
+  - **Visual Highlight:** Purple ring around all cells in this mode
+  - **Auto-Sorting:** Tickets sort by progress (most hits at top)
+  - **Hero Banner Added:** Prominent CTA on `index.html` (🎃 HALLOWEEN BINGO NIGHT • TONIGHT! 🦍)
+  - **Status:** ✅ Ready for tonight's Halloween Bingo with Golden Baboons
+  - **Total Modes:** 3 (Normal, 4 Corners, Progressive Full)
+
+### 📅 Next Session (Oct 31)
+- 🎃 Halloween Bingo Night with Golden Baboons – final run-through + comms
+- 👑 VIP Friday plan – schedule, asset checklist, announcements
 
 - ✅ **October 27, 2025 - MONDAY SESSION - 4 Critical Bugs Fixed:**
   - 🐛 **Bug 1 - Tetris Mobile Game Over:** Modal not displaying on mobile

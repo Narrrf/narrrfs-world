@@ -414,3 +414,67 @@
 - Updated QUICK_STATUS with VR + Halloween + cache-busting notes
 - Partners now 9/17 listed (includes Web Builder 161 Group)
 
+---
+
+## ✅ PARTNERS LIVE – ASSETS PERSISTENT (Oct 30 - Early Morning)
+
+### Status:
+- ✅ All approved partners activated on live; remaining partners pending assets/OK
+- ✅ Image/video persistence fixed on Render using `/data/img/partners` + symlink
+- ✅ Admin uploads and frontend display verified (logos, banners, galleries)
+
+### Notes:
+- Uploads now survive deploys; no DB changes required
+- If a preview looks cached, admin has Refresh List and cache-busting enabled
+
+### Next Session Plan (Oct 31):
+- 🎃 Halloween Bingo Night with Golden Baboons – final checks & comms
+- 👑 VIP Friday planning – outline schedule, assets, and announcements
+- 🔄 **Partner Assets Update:** Golden Baboons and Rough Ryders confirmed sending assets soon (8+ partners responded total)
+
+---
+
+## 🎲 BINGO PROGRESSIVE FULL MODE ADDED (Oct 30 - Pre-Event)
+
+### New Game Mode:
+- ✅ **"Progressive Full" Mode:** Complete blackout bingo (all 25 cells must be marked)
+- ✅ **Win Condition:** Requires marking every single cell on the ticket
+- ✅ **One Away Warning:** Shows "🚨 1 AWAY FROM BINGO!" when 24/25 cells marked
+- ✅ **Visual Highlighting:** Purple ring around all cells in Progressive Full mode
+- ✅ **Auto-Sorting:** Tickets sort by hit count (most progress at top)
+- ✅ **Mode Integration:** Seamlessly integrated with existing Normal and 4 Corners modes
+
+### Implementation Details:
+- **UI Update:** Added third radio button option in game mode selector
+- **Hit Count Logic:** Counts all 25 cells for Progressive Full (same as Normal mode)
+- **One Away Logic:** Detects 24/25 hit state for warning
+- **Bingo Check:** Verifies all cells are marked before declaring bingo
+- **Visual System:** Purple ring highlight differentiates from blue corners mode
+
+### Technical Changes:
+- Modified `getTicketHitCount()` - Added Progressive Full case
+- Modified `isTicketOneAwayFromBingo()` - Added 24/25 detection
+- Modified `checkBingo()` - Added complete blackout verification
+- Modified UI - Added new radio option with description
+- Changed layout to vertical (`flex-col`) for better mobile display
+
+### Files Modified:
+- `public/Bingo.html` - All game mode logic updated
+
+### Status:
+✅ **READY FOR TONIGHT'S HALLOWEEN BINGO WITH GOLDEN BABOONS!**
+
+### Notes:
+- Requested by team for tonight's event
+- Implemented as additive feature (no breaking changes)
+- All 3 modes now work perfectly together
+- Ready for immediate use in production
+
+### Hero Banner Added:
+- ✅ **Halloween Bingo CTA:** Prominent banner added to `index.html` hero section
+- ✅ **Location:** Right below Season 4 banner, above main hero copy
+- ✅ **Style:** Orange/purple/pink gradient with pulsing animation
+- ✅ **CTA Button:** "🎲 Join Bingo Now" → `Bingo.html`
+- ✅ **Content:** "HALLOWEEN BINGO NIGHT • TONIGHT! with Golden Baboons • 3 Game Modes • Special Prizes!"
+- ✅ **Visual:** 🎃 and 🦍 emojis, yellow border, full hover effects
+
