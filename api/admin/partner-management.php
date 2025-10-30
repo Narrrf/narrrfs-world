@@ -329,8 +329,10 @@ try {
             // 🚨 CRITICAL FIX: Different paths for local vs production
             $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
             if ($isProduction) {
-                // Production: /var/www/html/img/partners/ (NO public/ subdirectory)
-                $uploadPath = '/var/www/html/img/partners/' . $filename;
+                // Production: use persistent storage in /data and serve via symlink /var/www/html/img/partners
+                $persistentDir = '/data/img/partners/';
+                if (!is_dir($persistentDir)) { @mkdir($persistentDir, 0775, true); }
+                $uploadPath = $persistentDir . $filename;
             } else {
                 // Local: public/img/partners/
                 $uploadPath = __DIR__ . '/../../public/img/partners/' . $filename;
@@ -351,11 +353,12 @@ try {
                 $stmt = $pdo->prepare("UPDATE tbl_partners SET $field = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
                 $stmt->execute([$filename, $partnerId]);
                 
+                $publicUrl = $isProduction ? ('/img/partners/' . $filename) : ('/public/img/partners/' . $filename);
                 echo json_encode([
                     'success' => true,
                     'message' => ucfirst($imageType) . ' uploaded successfully',
                     'filename' => $filename,
-                    'url' => '/public/img/partners/' . $filename
+                    'url' => $publicUrl
                 ]);
             } else {
                 throw new Exception('Failed to upload file');
@@ -393,7 +396,7 @@ try {
                 // 🚨 CRITICAL FIX: Different paths for local vs production
                 $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
                 if ($isProduction) {
-                    $filePath = '/var/www/html/img/partners/' . $filename;
+                    $filePath = '/data/img/partners/' . $filename;
                 } else {
                     $filePath = __DIR__ . '/../../public/img/partners/' . $filename;
                 }
@@ -450,7 +453,9 @@ try {
             // 🚨 CRITICAL: Environment-aware path (no /public/ on production!)
             $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
             if ($isProduction) {
-                $uploadPath = '/var/www/html/img/partners/' . $filename;
+                $persistentDir = '/data/img/partners/';
+                if (!is_dir($persistentDir)) { @mkdir($persistentDir, 0775, true); }
+                $uploadPath = $persistentDir . $filename;
             } else {
                 $uploadPath = __DIR__ . '/../../public/img/partners/' . $filename;
             }
@@ -576,7 +581,7 @@ try {
             if (preg_match('/\.(jpg|jpeg|png|gif|webp|mp4|webm)$/i', $filename)) {
                 $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
                 if ($isProduction) {
-                    $filePath = '/var/www/html/img/partners/' . $filename;
+                    $filePath = '/data/img/partners/' . $filename;
                 } else {
                     $filePath = __DIR__ . '/../../public/img/partners/' . $filename;
                 }
