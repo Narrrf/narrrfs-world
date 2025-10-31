@@ -16,6 +16,11 @@ generate_db_password_hash.php
 /db/*.sqlite-journal
 !/db/schema.sql
 
+# 🤝 Partner Images - Persistent Storage (DO NOT COMMIT)
+# These are stored in /data/img/partners on Render (persistent)
+# Symlinked at /var/www/html/img/partners
+public/img/partners/
+
 # 🧩 JS backup scrolls
 public/scripts/tetris-scroll-backup*.js
 public/scripts/tetris-scroll (1).js
