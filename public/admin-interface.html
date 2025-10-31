@@ -2040,6 +2040,243 @@
         <button onclick="giveItemToUser()" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">Give Item</button>
       </div>
 
+      <!-- Discord Bot Commands Reference -->
+      <div class="bg-gradient-to-r from-purple-900 to-indigo-900 p-6 rounded-lg mb-6">
+        <h3 class="text-xl font-semibold mb-4 text-yellow-400">🤖 Discord Bot Commands</h3>
+        <p class="text-gray-300 mb-4">Complete command reference for store and inventory management via Discord bot.</p>
+        
+        <!-- User Commands Section -->
+        <div class="bg-gray-800 bg-opacity-60 p-4 rounded-lg mb-4">
+          <h4 class="text-lg font-semibold mb-3 text-green-400">👥 User Commands</h4>
+          <div class="space-y-3">
+            <div class="bg-gray-700 p-3 rounded">
+              <div class="flex items-start gap-2">
+                <span class="text-yellow-400 font-mono text-sm">/useitem</span>
+                <span class="text-gray-400">-</span>
+                <span class="text-gray-300">Use an item from inventory (creates admin ticket)</span>
+              </div>
+              <div class="ml-6 mt-1 text-sm text-gray-400">
+                Usage: <code class="bg-gray-900 px-2 py-1 rounded">/useitem item_name:[item] quantity:[1-10] reason:[optional]</code>
+              </div>
+            </div>
+            
+            <div class="bg-gray-700 p-3 rounded">
+              <div class="flex items-start gap-2">
+                <span class="text-yellow-400 font-mono text-sm">/inventory</span>
+                <span class="text-gray-400">-</span>
+                <span class="text-gray-300">View your inventory or another user's inventory</span>
+              </div>
+              <div class="ml-6 mt-1 text-sm text-gray-400">
+                Usage: <code class="bg-gray-900 px-2 py-1 rounded">/inventory [user:optional]</code>
+              </div>
+            </div>
+            
+            <div class="bg-gray-700 p-3 rounded">
+              <div class="flex items-start gap-2">
+                <span class="text-yellow-400 font-mono text-sm">/store view</span>
+                <span class="text-gray-400">-</span>
+                <span class="text-gray-300">Browse available items in the store</span>
+              </div>
+            </div>
+            
+            <div class="bg-gray-700 p-3 rounded">
+              <div class="flex items-start gap-2">
+                <span class="text-yellow-400 font-mono text-sm">/store buy</span>
+                <span class="text-gray-400">-</span>
+                <span class="text-gray-300">Purchase an item from the store</span>
+              </div>
+              <div class="ml-6 mt-1 text-sm text-gray-400">
+                Usage: <code class="bg-gray-900 px-2 py-1 rounded">/store buy item_id:[id] quantity:[1-100]</code>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Admin Commands Section -->
+        <div class="bg-gray-800 bg-opacity-60 p-4 rounded-lg">
+          <h4 class="text-lg font-semibold mb-3 text-red-400">👑 Admin Commands</h4>
+          
+          <!-- Admin Inventory Management -->
+          <div class="mb-4">
+            <h5 class="text-md font-semibold mb-2 text-purple-300">📦 Inventory Management</h5>
+            <div class="space-y-2">
+              <div class="bg-gray-700 p-3 rounded">
+                <div class="flex items-start gap-2">
+                  <span class="text-yellow-400 font-mono text-sm">/admininventory view</span>
+                  <span class="text-gray-400">-</span>
+                  <span class="text-gray-300">View any user's complete inventory</span>
+                </div>
+                <div class="ml-6 mt-1 text-sm text-gray-400">
+                  Usage: <code class="bg-gray-900 px-2 py-1 rounded">/admininventory view user:@Username</code>
+                </div>
+                <div class="ml-6 mt-1 text-xs text-green-400">
+                  ✅ Shows all items, quantities, values, and available admin actions
+                </div>
+              </div>
+              
+              <div class="bg-gray-700 p-3 rounded">
+                <div class="flex items-start gap-2">
+                  <span class="text-yellow-400 font-mono text-sm">/admininventory remove</span>
+                  <span class="text-gray-400">-</span>
+                  <span class="text-gray-300">Remove specific items from user's inventory</span>
+                </div>
+                <div class="ml-6 mt-1 text-sm text-gray-400">
+                  Usage: <code class="bg-gray-900 px-2 py-1 rounded">/admininventory remove user:@Username item_name:[item] quantity:[optional]</code>
+                </div>
+                <div class="ml-6 mt-1 text-xs text-blue-400">
+                  ℹ️ Has autocomplete, notifies user, logs action
+                </div>
+              </div>
+              
+              <div class="bg-gray-700 p-3 rounded border-2 border-red-500">
+                <div class="flex items-start gap-2">
+                  <span class="text-yellow-400 font-mono text-sm">/admininventory clear</span>
+                  <span class="text-gray-400">-</span>
+                  <span class="text-gray-300">Clear ALL items from user's inventory</span>
+                </div>
+                <div class="ml-6 mt-1 text-sm text-gray-400">
+                  Usage: <code class="bg-gray-900 px-2 py-1 rounded">/admininventory clear user:@Username confirm:true</code>
+                </div>
+                <div class="ml-6 mt-1 text-xs text-red-400">
+                  ⚠️ WARNING: Removes all items, requires confirmation, cannot be undone!
+                </div>
+              </div>
+              
+              <div class="bg-gray-700 p-3 rounded">
+                <div class="flex items-start gap-2">
+                  <span class="text-yellow-400 font-mono text-sm">/admininventory history</span>
+                  <span class="text-gray-400">-</span>
+                  <span class="text-gray-300">View user's inventory usage history and statistics</span>
+                </div>
+                <div class="ml-6 mt-1 text-sm text-gray-400">
+                  Usage: <code class="bg-gray-900 px-2 py-1 rounded">/admininventory history user:@Username</code>
+                </div>
+                <div class="ml-6 mt-1 text-xs text-purple-400">
+                  📊 Shows: total requests, approved/denied, most used items, recent activity
+                </div>
+              </div>
+              
+              <div class="bg-gray-700 p-3 rounded">
+                <div class="flex items-start gap-2">
+                  <span class="text-yellow-400 font-mono text-sm">/admininventory compare</span>
+                  <span class="text-gray-400">-</span>
+                  <span class="text-gray-300">Compare inventories between two users</span>
+                </div>
+                <div class="ml-6 mt-1 text-sm text-gray-400">
+                  Usage: <code class="bg-gray-900 px-2 py-1 rounded">/admininventory compare user1:@User1 user2:@User2</code>
+                </div>
+                <div class="ml-6 mt-1 text-xs text-blue-400">
+                  🔍 Shows: common items, unique items, value comparison
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Store Item Management -->
+          <div class="mb-4">
+            <h5 class="text-md font-semibold mb-2 text-purple-300">🏪 Store Item Management</h5>
+            <div class="space-y-2">
+              <div class="bg-gray-700 p-3 rounded">
+                <div class="flex items-start gap-2">
+                  <span class="text-yellow-400 font-mono text-sm">/storeitem create</span>
+                  <span class="text-gray-400">-</span>
+                  <span class="text-gray-300">Create new store item</span>
+                </div>
+              </div>
+              
+              <div class="bg-gray-700 p-3 rounded">
+                <div class="flex items-start gap-2">
+                  <span class="text-yellow-400 font-mono text-sm">/storeitem edit</span>
+                  <span class="text-gray-400">-</span>
+                  <span class="text-gray-300">Edit existing store item</span>
+                </div>
+              </div>
+              
+              <div class="bg-gray-700 p-3 rounded">
+                <div class="flex items-start gap-2">
+                  <span class="text-yellow-400 font-mono text-sm">/storeitem list</span>
+                  <span class="text-gray-400">-</span>
+                  <span class="text-gray-300">View all items for management</span>
+                </div>
+              </div>
+              
+              <div class="bg-gray-700 p-3 rounded">
+                <div class="flex items-start gap-2">
+                  <span class="text-yellow-400 font-mono text-sm">/quickgift</span>
+                  <span class="text-gray-400">-</span>
+                  <span class="text-gray-300">Quick gift items to users (with autocomplete)</span>
+                </div>
+                <div class="ml-6 mt-1 text-sm text-gray-400">
+                  Usage: <code class="bg-gray-900 px-2 py-1 rounded">/quickgift user:@Username item:[item] quantity:[1-100]</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Item Usage Workflow -->
+        <div class="bg-gray-800 bg-opacity-60 p-4 rounded-lg mt-4">
+          <h4 class="text-lg font-semibold mb-3 text-cyan-400">🎯 Item Usage Workflow</h4>
+          <div class="space-y-2 text-sm text-gray-300">
+            <div class="flex items-start gap-2">
+              <span class="text-green-400">1️⃣</span>
+              <span><strong>User:</strong> Uses <code class="bg-gray-900 px-2 py-1 rounded">/useitem</code> → Ticket created in "🎫-item-requests" category</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-yellow-400">2️⃣</span>
+              <span><strong>Admin:</strong> Receives notification, goes to ticket</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-blue-400">3️⃣</span>
+              <span><strong>Admin:</strong> Clicks ✅ Approve or ❌ Deny button</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-purple-400">4️⃣</span>
+              <span><strong>System:</strong> User notified, item consumed (approved) or returned (denied)</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="text-orange-400">5️⃣</span>
+              <span><strong>System:</strong> Ticket auto-closes after 30 seconds</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Quick Reference -->
+        <div class="bg-gray-800 bg-opacity-60 p-4 rounded-lg mt-4">
+          <h4 class="text-lg font-semibold mb-3 text-orange-400">⚡ Quick Reference</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <h5 class="font-semibold text-green-400 mb-2">User Support:</h5>
+              <div class="space-y-1 text-gray-300">
+                <div>• Lost item? → <code class="bg-gray-900 px-1">/admininventory view</code> + <code class="bg-gray-900 px-1">/quickgift</code></div>
+                <div>• Duplicate bug? → <code class="bg-gray-900 px-1">/admininventory remove</code></div>
+                <div>• Check usage? → <code class="bg-gray-900 px-1">/admininventory history</code></div>
+              </div>
+            </div>
+            <div>
+              <h5 class="font-semibold text-red-400 mb-2">Common Actions:</h5>
+              <div class="space-y-1 text-gray-300">
+                <div>• View inventory → <code class="bg-gray-900 px-1">/admininventory view</code></div>
+                <div>• Remove 1 item → <code class="bg-gray-900 px-1">/admininventory remove</code></div>
+                <div>• Clear all → <code class="bg-gray-900 px-1">/admininventory clear</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Permissions Notice -->
+        <div class="bg-yellow-900 bg-opacity-40 border-l-4 border-yellow-400 p-3 mt-4">
+          <div class="flex items-start gap-2">
+            <span class="text-yellow-400 text-xl">🔒</span>
+            <div class="text-sm text-gray-200">
+              <strong class="text-yellow-400">Permissions Required:</strong><br>
+              Admin commands require <strong>ManageMessages</strong> permission OR <strong>Admin/Moderator/Founder</strong> role.<br>
+              All admin commands are ephemeral (only visible to the admin using them).
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- View User Inventory -->
       <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">👤 View User Store Activity</h3>
@@ -2126,19 +2363,30 @@
             </div>
           </div>
           
-          <!-- Detailed Inventory -->
+          <!-- Detailed Inventory with Admin Controls -->
           <div class="bg-gray-700 p-4 rounded-lg">
-            <h4 class="text-lg font-semibold text-blue-400 mb-3">📋 Detailed Inventory</h4>
+            <div class="flex justify-between items-center mb-3">
+              <h4 class="text-lg font-semibold text-blue-400">📋 Detailed Inventory</h4>
+              <button onclick="clearUserInventory()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-semibold border-2 border-red-400">
+                🧹 Clear All Items
+              </button>
+            </div>
             <div id="detailedInventoryList" class="space-y-2 max-h-64 overflow-y-auto">
               <div class="text-gray-300">Loading inventory...</div>
             </div>
           </div>
           
-          <!-- Purchase History -->
+          <!-- Activity History (Purchases & Usage) -->
           <div class="bg-gray-700 p-4 rounded-lg">
-            <h4 class="text-lg font-semibold text-orange-400 mb-3">📜 Purchase History</h4>
+            <h4 class="text-lg font-semibold text-orange-400 mb-3">📜 Activity History</h4>
+            <div class="text-xs text-gray-400 mb-2">
+              <span class="text-blue-400">💰 Purchases</span> • 
+              <span class="text-green-400">✅ Used (Approved)</span> • 
+              <span class="text-yellow-400">⏳ Pending</span> • 
+              <span class="text-red-400">❌ Denied</span>
+            </div>
             <div id="detailedPurchaseHistory" class="space-y-2 max-h-64 overflow-y-auto">
-              <div class="text-gray-300">Loading purchase history...</div>
+              <div class="text-gray-300">Loading activity history...</div>
             </div>
           </div>
         </div>
@@ -10025,22 +10273,33 @@
       document.getElementById('averagePurchase').textContent = formatNumber(userData.stats.purchases.average_purchase) + ' $DSPOINC';
       document.getElementById('largestPurchase').textContent = formatNumber(userData.stats.purchases.largest_purchase) + ' $DSPOINC';
       
-      // Display detailed inventory
+      // Display detailed inventory with admin controls
       const inventoryContainer = document.getElementById('detailedInventoryList');
       if (userData.inventory && userData.inventory.length > 0) {
+        // Store current user ID for admin actions
+        window.currentInventoryUserId = userId;
+        
         inventoryContainer.innerHTML = userData.inventory.map(item => `
-          <div class="flex justify-between items-center bg-gray-600 p-3 rounded">
+          <div class="flex justify-between items-center bg-gray-600 p-3 rounded hover:bg-gray-550 transition-colors">
             <div class="flex-1">
               <div class="font-semibold text-white">${item.item_name}</div>
               <div class="text-sm text-gray-300">${item.description || 'No description'}</div>
+              <div class="text-xs text-gray-400 mt-1">ID: ${item.item_id} • Added: ${new Date(item.acquisition_date).toLocaleDateString()}</div>
             </div>
-            <div class="text-right">
+            <div class="text-right mx-4">
               <div class="text-white font-semibold">x${item.quantity}</div>
               <div class="text-sm text-gray-300">${formatNumber(item.price)} $DSPOINC each</div>
               <div class="text-sm text-green-400">Total: ${formatNumber(item.item_value)} $DSPOINC</div>
             </div>
-            <div class="text-xs text-gray-400 ml-2">
-              ${new Date(item.acquisition_date).toLocaleDateString()}
+            <div class="flex flex-col gap-1">
+              <button onclick="removeUserItem('${userId}', ${item.item_id}, '${item.item_name}', ${item.quantity}, 1)" 
+                      class="bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
+                🗑️ Remove 1
+              </button>
+              <button onclick="removeUserItem('${userId}', ${item.item_id}, '${item.item_name}', ${item.quantity}, ${item.quantity})" 
+                      class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
+                ❌ Remove All
+              </button>
             </div>
           </div>
         `).join('');
@@ -10048,33 +10307,254 @@
         inventoryContainer.innerHTML = '<div class="text-gray-300 text-center py-4">No inventory items found</div>';
       }
       
-      // Display purchase history
+      // Display purchase & usage history combined
       const historyContainer = document.getElementById('detailedPurchaseHistory');
+      
+      // Combine purchases and usage into a unified activity feed
+      const combinedHistory = [];
+      
+      // Add purchases
       if (userData.purchase_history && userData.purchase_history.length > 0) {
-        historyContainer.innerHTML = userData.purchase_history.map(purchase => `
-          <div class="flex justify-between items-center bg-gray-600 p-3 rounded">
-            <div class="flex-1">
-              <div class="font-semibold text-white">${purchase.item_name}</div>
-              <div class="text-sm text-gray-300">${purchase.description || 'No description'}</div>
-            </div>
-            <div class="text-right">
-              <div class="text-white font-semibold">x${purchase.quantity}</div>
-              <div class="text-sm text-gray-300">${formatNumber(purchase.price_paid)} $DSPOINC each</div>
-              <div class="text-sm text-red-400">Total: ${formatNumber(purchase.price_paid * purchase.quantity)} $DSPOINC</div>
-            </div>
-            <div class="text-xs text-gray-400 ml-2">
-              ${new Date(purchase.purchase_date).toLocaleDateString()}
-            </div>
-          </div>
-        `).join('');
+        userData.purchase_history.forEach(purchase => {
+          combinedHistory.push({
+            type: 'purchase',
+            date: purchase.purchase_date,
+            item_name: purchase.item_name,
+            description: purchase.description,
+            quantity: purchase.quantity,
+            price: purchase.price_paid,
+            total: purchase.price_paid * purchase.quantity
+          });
+        });
+      }
+      
+      // Add usage
+      if (userData.usage_history && userData.usage_history.length > 0) {
+        userData.usage_history.forEach(usage => {
+          combinedHistory.push({
+            type: 'usage',
+            date: usage.used_at,
+            item_name: usage.item_name,
+            description: usage.description,
+            quantity: usage.quantity,
+            reason: usage.reason,
+            status: usage.status,
+            approved_by: usage.approved_by,
+            approved_at: usage.approved_at
+          });
+        });
+      }
+      
+      // Sort by date (newest first)
+      combinedHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      if (combinedHistory.length > 0) {
+        historyContainer.innerHTML = combinedHistory.map(activity => {
+          if (activity.type === 'purchase') {
+            return `
+              <div class="flex justify-between items-center bg-gray-600 p-3 rounded border-l-4 border-blue-500">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-blue-400">💰 PURCHASE</span>
+                    <span class="font-semibold text-white">${activity.item_name}</span>
+                  </div>
+                  <div class="text-sm text-gray-300">${activity.description || 'No description'}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-white font-semibold">x${activity.quantity}</div>
+                  <div class="text-sm text-gray-300">${formatNumber(activity.price)} $DSPOINC each</div>
+                  <div class="text-sm text-red-400">Total: ${formatNumber(activity.total)} $DSPOINC</div>
+                </div>
+                <div class="text-xs text-gray-400 ml-2">
+                  ${new Date(activity.date).toLocaleDateString()}
+                </div>
+              </div>
+            `;
+          } else {
+            // Usage entry
+            const statusColors = {
+              'approved': 'border-green-500',
+              'pending': 'border-yellow-500',
+              'denied': 'border-red-500'
+            };
+            const statusIcons = {
+              'approved': '✅ USED',
+              'pending': '⏳ PENDING',
+              'denied': '❌ DENIED'
+            };
+            const statusTextColors = {
+              'approved': 'text-green-400',
+              'pending': 'text-yellow-400',
+              'denied': 'text-red-400'
+            };
+            
+            return `
+              <div class="flex justify-between items-center bg-gray-600 p-3 rounded border-l-4 ${statusColors[activity.status]}">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="${statusTextColors[activity.status]}">${statusIcons[activity.status]}</span>
+                    <span class="font-semibold text-white">${activity.item_name}</span>
+                  </div>
+                  <div class="text-sm text-gray-300">${activity.description || 'No description'}</div>
+                  ${activity.reason ? `<div class="text-sm text-yellow-300 italic mt-1">Reason: ${activity.reason}</div>` : ''}
+                </div>
+                <div class="text-right">
+                  <div class="text-white font-semibold">x${activity.quantity}</div>
+                  ${activity.status === 'approved' && activity.approved_at ? 
+                    `<div class="text-xs text-green-300">Approved: ${new Date(activity.approved_at).toLocaleDateString()}</div>` 
+                    : ''}
+                </div>
+                <div class="text-xs text-gray-400 ml-2">
+                  ${new Date(activity.date).toLocaleDateString()}
+                </div>
+              </div>
+            `;
+          }
+        }).join('');
       } else {
-        historyContainer.innerHTML = '<div class="text-gray-300 text-center py-4">No purchase history found</div>';
+        historyContainer.innerHTML = '<div class="text-gray-300 text-center py-4">No activity history found</div>';
       }
     }
 
     // Helper function to format numbers with commas
     function formatNumber(num) {
       return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    // 🗑️ Remove specific item from user inventory
+    async function removeUserItem(userId, itemId, itemName, currentQuantity, quantityToRemove) {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const confirmMessage = quantityToRemove >= currentQuantity 
+        ? `⚠️ Are you sure you want to remove ALL ${currentQuantity}x "${itemName}" from this user's inventory?`
+        : `Are you sure you want to remove ${quantityToRemove}x "${itemName}" from this user's inventory?`;
+
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      try {
+        addLog(`🗑️ Removing ${quantityToRemove}x "${itemName}" from user ${userId}...`);
+
+        const response = await fetch(API_BASE_URL + '/api/admin/remove-user-item.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: userId,
+            item_id: itemId,
+            quantity: quantityToRemove,
+            admin_username: currentAdmin.username
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          addLog(`✅ Successfully removed ${quantityToRemove}x "${itemName}" from user's inventory`);
+          
+          // Show success notification
+          showNotification(`✅ Removed ${quantityToRemove}x "${itemName}"`, 'success');
+          
+          // Refresh inventory display
+          await viewUserStoreActivity();
+        } else {
+          addLog(`❌ Failed to remove item: ${data.error}`);
+          showNotification(`❌ Failed: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        addLog(`❌ Remove item error: ${error.message}`);
+        showNotification(`❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    // 🧹 Clear all items from user inventory
+    async function clearUserInventory() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      const userId = window.currentInventoryUserId;
+      if (!userId) {
+        addLog('❌ No user selected. Please view a user\'s inventory first.');
+        showNotification('❌ No user selected', 'error');
+        return;
+      }
+
+      const confirmMessage = `⚠️⚠️⚠️ CRITICAL WARNING ⚠️⚠️⚠️
+
+Are you ABSOLUTELY SURE you want to CLEAR ALL ITEMS from this user's inventory?
+
+This will:
+- Remove ALL inventory items
+- Cannot be undone
+- User will be notified
+
+Type "CLEAR ALL" to confirm:`;
+
+      const confirmation = prompt(confirmMessage);
+      
+      if (confirmation !== 'CLEAR ALL') {
+        addLog('❌ Clear inventory cancelled - confirmation failed');
+        return;
+      }
+
+      try {
+        addLog(`🧹 Clearing ALL items from user ${userId}...`);
+
+        const response = await fetch(API_BASE_URL + '/api/admin/clear-user-inventory.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: userId,
+            admin_username: currentAdmin.username
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          addLog(`✅ Successfully cleared all items from user's inventory`);
+          addLog(`📊 Removed: ${data.items_removed} items worth ${formatNumber(data.total_value)} $DSPOINC`);
+          
+          // Show success notification
+          showNotification(`✅ Cleared ${data.items_removed} items (${formatNumber(data.total_value)} $DSPOINC)`, 'success');
+          
+          // Refresh inventory display
+          await viewUserStoreActivity();
+        } else {
+          addLog(`❌ Failed to clear inventory: ${data.error}`);
+          showNotification(`❌ Failed: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        addLog(`❌ Clear inventory error: ${error.message}`);
+        showNotification(`❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    // 📊 Helper function to show notifications
+    function showNotification(message, type = 'info') {
+      const colors = {
+        success: 'bg-green-600',
+        error: 'bg-red-600',
+        warning: 'bg-yellow-600',
+        info: 'bg-blue-600'
+      };
+
+      const notification = document.createElement('div');
+      notification.className = `fixed top-20 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-in`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.5s';
+        setTimeout(() => notification.remove(), 500);
+      }, 3000);
     }
 
     // Edit store item functionality is already implemented above
@@ -19292,7 +19772,7 @@ function updateGameTabContent(gameType, gameData) {
           <h3 class="text-lg font-semibold mb-4 text-yellow-400">📊 Database Overview</h3>
           <div class="grid grid-cols-2 gap-4">
             <div class="text-center p-3 bg-gray-800 bg-opacity-50 rounded-lg">
-              <div id="totalTables" class="text-2xl font-bold text-green-400">57</div>
+              <div id="totalTables" class="text-2xl font-bold text-green-400">58</div>
               <div class="text-sm text-gray-300">Total Tables</div>
             </div>
             <div class="text-center p-3 bg-gray-800 bg-opacity-50 rounded-lg">
@@ -19417,6 +19897,18 @@ function updateGameTabContent(gameType, gameData) {
               <span class="text-xs font-medium">🏪 tbl_purchase_history - Purchase history</span>
             </div>
             
+            <!-- ITEM USAGE TABLE (NEW - Oct 31, 2025) -->
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-400 glow-green">
+              <span class="text-xs font-medium">✨ tbl_item_usage_history - Item usage tracking (NEW!)</span>
+            </div>
+            
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-purple-500">
+              <span class="text-xs font-medium">📦 tbl_user_inventory - User inventory items</span>
+            </div>
+            <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-purple-500">
+              <span class="text-xs font-medium">🏪 tbl_store_items - Store item definitions</span>
+            </div>
+            
             <!-- QUEST SYSTEM TABLES -->
             <div class="flex justify-between items-center p-2 bg-gray-800 bg-opacity-50 rounded border-l-4 border-green-500">
               <span class="text-xs font-medium">🏆 tbl_quest_claims - Quest claims</span>
@@ -19514,8 +20006,8 @@ function updateGameTabContent(gameType, gameData) {
             </div>
             
             <div class="mt-4 p-3 bg-green-900 bg-opacity-30 rounded-lg border border-green-500">
-              <p class="text-xs text-green-300">✅ Core tables displayed (35 shown) - Total: 57 tables</p>
-              <p class="text-xs text-gray-400 mt-1">Verified 2025-10-29 • Including: Partners (NEW), Achievements (73), Historical Stats</p>
+              <p class="text-xs text-green-300">✅ Core tables displayed (38 shown) - Total: 58 tables</p>
+              <p class="text-xs text-gray-400 mt-1">Verified 2025-10-31 • Including: Item Usage (NEW), Partners, Achievements (73), Historical Stats</p>
               <p class="text-xs text-gray-400 mt-1">Color codes: 🟣 Boss • 🟡 Season • 🔵 Games • 🟢 Users • 🟠 Bugs • 💚 New</p>
             </div>
           </div>

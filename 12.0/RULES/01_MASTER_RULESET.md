@@ -652,7 +652,7 @@ Before creating ANY new API endpoint, you MUST:
 - **PREVENT table confusion** and duplication
 - **ENSURE database awareness** for all development
 
-### **CURRENT DATABASE TABLES (LIVE STATUS - 2025-10-29 - VERIFIED - 57 TOTAL):**
+### **CURRENT DATABASE TABLES (LIVE STATUS - 2025-10-31 - VERIFIED - 58 TOTAL):**
 - **boss_configurations** - Boss game configurations
 - **boss_level_notifications** - Boss level achievement notifications
 - **leaderboard** - Current season leaderboard
@@ -676,8 +676,9 @@ Before creating ANY new API endpoint, you MUST:
 - **tbl_historical_cheese_stats** - Historical Cheese Hunt season stats (October 25, 2025)
 - **tbl_historical_stats** - Historical game season stats (October 25, 2025)
 - **tbl_holder_verifications** - NFT holder verifications
+- **tbl_item_usage_history** - Item usage tracking (NEW - October 31, 2025)
 - **tbl_nft_ownership** - NFT ownership records
-- **tbl_partners** - Partner portal management (NEW - October 28, 2025)
+- **tbl_partners** - Partner portal management (October 28, 2025)
 - **tbl_purchase_history** - Store purchase history
 - **tbl_quest_claims** - Quest reward claims
 - **tbl_quests** - Quest definitions

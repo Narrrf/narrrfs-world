@@ -307,7 +307,7 @@ switch ($action) {
         
         try {
             // Get basic user info
-            $stmt = $db->prepare('SELECT username, avatar, created_at FROM tbl_users WHERE discord_id = ?');
+            $stmt = $db->prepare('SELECT username, avatar_url as avatar, created_at FROM tbl_users WHERE discord_id = ?');
             $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
             $result = $stmt->execute();
             $user = $result->fetchArray(SQLITE3_ASSOC);
@@ -321,18 +321,19 @@ switch ($action) {
             }
             
             // Get user's DSPOINC balance
-            $stmt = $db->prepare('SELECT score as balance FROM tbl_user_scores WHERE user_id = ?');
+            $stmt = $db->prepare('SELECT SUM(score) as balance FROM tbl_user_scores WHERE user_id = ?');
             $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
             $result = $stmt->execute();
             $score_row = $result->fetchArray(SQLITE3_ASSOC);
-            $balance = $score_row ? $score_row['balance'] : 0;
+            $balance = $score_row ? ($score_row['balance'] ?? 0) : 0;
             
             // Get user's inventory with item details
+            // First, try with item_id join (new schema)
             $stmt = $db->prepare('
-                SELECT ui.*, si.item_name, si.description, si.price, si.image_url
+                SELECT ui.*, si.item_name, si.description, si.price, si.image_url, si.item_id
                 FROM tbl_user_inventory ui 
                 JOIN tbl_store_items si ON ui.item_id = si.item_id 
-                WHERE ui.user_id = ? AND si.is_active = 1
+                WHERE ui.user_id = ?
                 ORDER BY ui.acquired_at DESC
             ');
             $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
@@ -340,48 +341,118 @@ switch ($action) {
             
             $inventory = [];
             $total_inventory_value = 0;
+            $has_data = false;
+            
             while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-                $item_value = $row['price'] * $row['quantity'];
+                $has_data = true;
+                $item_value = ($row['price'] ?? 0) * ($row['quantity'] ?? 0);
                 $total_inventory_value += $item_value;
                 $inventory[] = [
-                    'item_name' => $row['item_name'],
-                    'quantity' => $row['quantity'],
-                    'description' => $row['description'],
-                    'price' => $row['price'],
+                    'item_id' => $row['item_id'] ?? 0,
+                    'item_name' => $row['item_name'] ?? 'Unknown',
+                    'quantity' => $row['quantity'] ?? 0,
+                    'description' => $row['description'] ?? '',
+                    'price' => $row['price'] ?? 0,
                     'item_value' => $item_value,
-                    'acquisition_date' => $row['acquired_at']
+                    'acquisition_date' => $row['acquired_at'] ?? date('Y-m-d H:i:s')
                 ];
             }
             
-            // Get user's purchase history
-            $stmt = $db->prepare('
-                SELECT ph.*, si.item_name, si.description, si.image_url
-                FROM tbl_purchase_history ph
-                JOIN tbl_store_items si ON ph.item_id = si.item_id
-                WHERE ph.user_id = ?
-                ORDER BY ph.purchased_at DESC
-                LIMIT 20
-            ');
-            $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
-            $result = $stmt->execute();
+            // If no data with item_id join, try item_name join (old schema fallback)
+            if (!$has_data) {
+                $stmt = $db->prepare('
+                    SELECT ui.*, si.item_name, si.description, si.price, si.image_url, si.item_id
+                    FROM tbl_user_inventory ui 
+                    JOIN tbl_store_items si ON ui.item_name = si.item_name 
+                    WHERE ui.user_id = ?
+                    ORDER BY ui.acquired_at DESC
+                ');
+                $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
+                $result = $stmt->execute();
+                
+                while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                    $item_value = ($row['price'] ?? 0) * ($row['quantity'] ?? 0);
+                    $total_inventory_value += $item_value;
+                    $inventory[] = [
+                        'item_id' => $row['item_id'] ?? 0,
+                        'item_name' => $row['item_name'] ?? 'Unknown',
+                        'quantity' => $row['quantity'] ?? 0,
+                        'description' => $row['description'] ?? '',
+                        'price' => $row['price'] ?? 0,
+                        'item_value' => $item_value,
+                        'acquisition_date' => $row['acquired_at'] ?? date('Y-m-d H:i:s')
+                    ];
+                }
+            }
             
+            // Get user's purchase history (if table exists)
             $purchase_history = [];
             $total_spent = 0;
-            while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-                $total_spent += $row['price_paid'] * $row['quantity'];
-                $purchase_history[] = [
-                    'purchase_id' => $row['purchase_id'],
-                    'item_name' => $row['item_name'],
-                    'description' => $row['description'],
-                    'price_paid' => $row['price_paid'],
-                    'quantity' => $row['quantity'],
-                    'purchase_date' => $row['purchased_at']
-                ];
+            
+            try {
+                $stmt = $db->prepare('
+                    SELECT ph.*, si.item_name, si.description, si.image_url
+                    FROM tbl_purchase_history ph
+                    JOIN tbl_store_items si ON ph.item_id = si.item_id
+                    WHERE ph.user_id = ?
+                    ORDER BY ph.purchased_at DESC
+                    LIMIT 20
+                ');
+                $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
+                $result = $stmt->execute();
+                
+                while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                    $total_spent += ($row['price_paid'] ?? 0) * ($row['quantity'] ?? 0);
+                    $purchase_history[] = [
+                        'purchase_id' => $row['purchase_id'] ?? 0,
+                        'item_name' => $row['item_name'] ?? 'Unknown',
+                        'description' => $row['description'] ?? '',
+                        'price_paid' => $row['price_paid'] ?? 0,
+                        'quantity' => $row['quantity'] ?? 0,
+                        'purchase_date' => $row['purchased_at'] ?? date('Y-m-d H:i:s')
+                    ];
+                }
+            } catch (Exception $e) {
+                // Purchase history table might not exist, continue without it
+                error_log('Purchase history error: ' . $e->getMessage());
+            }
+            
+            // Get user's usage history
+            $usage_history = [];
+            
+            try {
+                $stmt = $db->prepare('
+                    SELECT uh.*, si.description, si.image_url
+                    FROM tbl_item_usage_history uh
+                    LEFT JOIN tbl_store_items si ON uh.item_id = si.item_id
+                    WHERE uh.user_id = ?
+                    ORDER BY uh.used_at DESC
+                    LIMIT 20
+                ');
+                $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
+                $result = $stmt->execute();
+                
+                while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                    $usage_history[] = [
+                        'usage_id' => $row['usage_id'] ?? 0,
+                        'item_name' => $row['item_name'] ?? 'Unknown',
+                        'description' => $row['description'] ?? '',
+                        'quantity' => $row['quantity'] ?? 0,
+                        'reason' => $row['reason'] ?? '',
+                        'status' => $row['status'] ?? 'pending',
+                        'approved_by' => $row['approved_by'] ?? null,
+                        'used_at' => $row['used_at'] ?? date('Y-m-d H:i:s'),
+                        'approved_at' => $row['approved_at'] ?? null
+                    ];
+                }
+            } catch (Exception $e) {
+                // Usage history table might not exist, continue without it
+                error_log('Usage history error: ' . $e->getMessage());
             }
             
             // Calculate statistics
             $inventory_stats = [
-                'total_items' => array_sum(array_column($inventory, 'quantity')),
+                'total_items' => $inventory ? array_sum(array_column($inventory, 'quantity')) : 0,
                 'unique_items' => count($inventory),
                 'total_value' => $total_inventory_value,
                 'most_valuable_item' => $inventory ? max(array_column($inventory, 'item_value')) : 0,
@@ -408,10 +479,17 @@ switch ($action) {
                     ],
                     'stats' => [
                         'inventory' => $inventory_stats,
-                        'purchases' => $purchase_stats
+                        'purchases' => $purchase_stats,
+                        'usage' => [
+                            'total_uses' => count($usage_history),
+                            'approved_uses' => count(array_filter($usage_history, function($u) { return $u['status'] === 'approved'; })),
+                            'pending_uses' => count(array_filter($usage_history, function($u) { return $u['status'] === 'pending'; })),
+                            'denied_uses' => count(array_filter($usage_history, function($u) { return $u['status'] === 'denied'; }))
+                        ]
                     ],
                     'inventory' => $inventory,
-                    'purchase_history' => $purchase_history
+                    'purchase_history' => $purchase_history,
+                    'usage_history' => $usage_history
                 ]
             ]);
             

@@ -2845,7 +2845,8 @@ d{
              " t a g s " :   [ " s e a s o n - 3 - c o m p l e t e " ,   " a c h i e v e m e n t - s y s t e m s " ,   " d i s c o r d - b o t " ,   " u i - a c c u r a c y " ,   " p r o d u c t i o n - d e p l o y m e n t " ,   " f r i d a y - s u c c e s s " ] 
          } 
      ] 
- }  
+ } 
+ 
  ,  "season_3_reset_system_major_milestone": {
     "achievement_id": "SEASON_3_RESET_SYSTEM_COMPLETE_0915",
     "date": "2025-09-15",
@@ -2861,5 +2862,72 @@ d{
     "estimated_completion": "2025-09-15",
     "priority": "PRODUCTION_READY",
     "tags": ["season-3-reset", "data-preservation", "season-management", "production-ready", "admin-interface", "enterprise-grade", "top-performer-recognition"]
+  },
+  
+  "inventory_usage_tracking_system": {
+    "achievement_id": "ITEM_USAGE_HISTORY_TABLE_1031",
+    "date": "2025-10-31",
+    "timestamp": "2025-10-31T00:45:00Z",
+    "title": "🗄️ ITEM USAGE HISTORY TABLE - COMPLETE AUDIT TRAIL SYSTEM",
+    "description": "Created tbl_item_usage_history table to track all item usage requests, approvals, and denials. Integrated with Discord bot ticket system and admin web interface for complete inventory oversight.",
+    "achievement_level": "DATABASE_ENHANCEMENT",
+    "production_status": "DEPLOYED - Table live on production (59 tables total)",
+    "table_details": {
+      "table_name": "tbl_item_usage_history",
+      "creation_date": "2025-10-31",
+      "fields": 10,
+      "indexes": 3,
+      "foreign_keys": 1,
+      "purpose": "Track item usage requests, approvals, denials, and audit trail"
+    },
+    "schema": {
+      "columns": [
+        "usage_id INTEGER PRIMARY KEY AUTOINCREMENT",
+        "user_id TEXT NOT NULL (Discord ID)",
+        "item_id INTEGER NOT NULL (Store item reference)",
+        "item_name TEXT NOT NULL (Item name)",
+        "quantity INTEGER DEFAULT 1",
+        "reason TEXT (User explanation)",
+        "status TEXT DEFAULT 'pending' (pending/approved/denied)",
+        "approved_by TEXT (Admin Discord ID)",
+        "used_at DATETIME DEFAULT CURRENT_TIMESTAMP",
+        "approved_at DATETIME (Approval timestamp)"
+      ],
+      "indexes": [
+        "idx_usage_history_user ON user_id",
+        "idx_usage_history_item ON item_id",
+        "idx_usage_history_date ON used_at"
+      ],
+      "foreign_keys": [
+        "item_id REFERENCES tbl_store_items(item_id)"
+      ]
+    },
+    "integration": {
+      "discord_bot": "/useitem command saves to this table when approved/denied",
+      "admin_interface": "Activity History displays combined purchases + usage",
+      "api_endpoint": "store-management.php returns usage_history array",
+      "visual_coding": "Blue (purchase), Green (approved), Yellow (pending), Red (denied)"
+    },
+    "database_totals": {
+      "local_tables": 58,
+      "production_tables": 59,
+      "tables_added_today": 1,
+      "total_indexes": 3,
+      "master_ruleset_updated": true,
+      "admin_interface_updated": true
+    },
+    "critical_schema_fixes": [
+      "Verified tbl_users uses avatar_url (NOT avatar)",
+      "Verified tbl_user_scores uses user_id (NOT discord_id)",
+      "Tested API with live production database structure",
+      "Confirmed all queries work with real schema"
+    ],
+    "deployment": {
+      "local": "Table created and tested successfully",
+      "production": "Deployed to Render via sqlite3 command",
+      "backup": "Database backed up to /data before changes",
+      "verification": "Schema verified, table count confirmed (59)"
+    },
+    "tags": ["database-table", "inventory-tracking", "audit-trail", "usage-history", "production-deployed", "schema-enhancement", "foreign-keys", "indexes"]
   }
 }
