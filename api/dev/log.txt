@@ -1370,3 +1370,38 @@
     "discord_name": "narrrf",
     "game": "space_invaders"
 }
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 60,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 0,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 40,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 12,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}

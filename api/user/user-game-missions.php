@@ -502,6 +502,52 @@ try {
                  ", Total score: " . $response['snake']['total_score']);
     }
 
+    // 🏆 TETRIS ACHIEVEMENTS - Add achievement data to Tetris game stats
+    try {
+        $tetrisAchievementStmt = $db->prepare("
+            SELECT 
+                COUNT(*) as total_achievements,
+                COUNT(CASE WHEN unlocked_at IS NOT NULL THEN 1 END) as unlocked_achievements
+            FROM tbl_tetris_achievements 
+            WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'
+        ");
+        $tetrisAchievementStmt->execute();
+        $tetrisAchievementData = $tetrisAchievementStmt->fetch(PDO::FETCH_ASSOC);
+        
+        $userTetrisAchievementStmt = $db->prepare("
+            SELECT COUNT(*) as unlocked_count
+            FROM tbl_tetris_achievements 
+            WHERE user_id = ? AND unlocked_at IS NOT NULL
+        ");
+        $userTetrisAchievementStmt->execute([$discordId]);
+        $userTetrisAchievementData = $userTetrisAchievementStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($tetrisAchievementData && $userTetrisAchievementData) {
+            $response['tetris']['achievements'] = [
+                'total_available' => (int)$tetrisAchievementData['total_achievements'],
+                'unlocked' => (int)$userTetrisAchievementData['unlocked_count'],
+                'completion_percentage' => $tetrisAchievementData['total_achievements'] > 0 
+                    ? round(($userTetrisAchievementData['unlocked_count'] / $tetrisAchievementData['total_achievements']) * 100, 1) 
+                    : 0
+            ];
+            error_log("✅ Tetris achievements found for user $discordId: " . $userTetrisAchievementData['unlocked_count'] . "/" . $tetrisAchievementData['total_achievements']);
+        } else {
+            $response['tetris']['achievements'] = [
+                'total_available' => 0,
+                'unlocked' => 0,
+                'completion_percentage' => 0
+            ];
+            error_log("❌ No Tetris achievements found for user $discordId");
+        }
+    } catch (Exception $e) {
+        error_log("Tetris achievements query error: " . $e->getMessage());
+        $response['tetris']['achievements'] = [
+            'total_available' => 0,
+            'unlocked' => 0,
+            'completion_percentage' => 0
+        ];
+    }
+
     // 🏆 SNAKE ACHIEVEMENTS - Add achievement data to Snake game stats
     try {
         $snakeAchievementStmt = $db->prepare("
@@ -617,6 +663,11 @@ try {
                     'total_score' => $response['tetris']['total_score'],
                     'dspoinc_earned' => $response['tetris']['dspoinc_earned'],
                     'last_played' => $response['tetris']['last_played']
+                ],
+                'achievements' => $response['tetris']['achievements'] ?? [
+                    'total_available' => 0,
+                    'unlocked' => 0,
+                    'completion_percentage' => 0
                 ]
             ],
             'snake' => [

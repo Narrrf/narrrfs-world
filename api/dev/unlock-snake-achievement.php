@@ -33,6 +33,13 @@ try {
     // ✅ Extract + validate input
     $user_id = $data['user_id'] ?? null;
     $achievement_key = $data['achievement_key'] ?? null;
+    
+    // 🎮 Extract game stats (NEW - Oct 31 fix)
+    $game_score = $data['game_score'] ?? 0;
+    $apples_eaten = $data['apples_eaten'] ?? 0;
+    $level_reached = $data['level_reached'] ?? 0;
+    $games_played = $data['games_played'] ?? 0;
+    $longest_snake = $data['longest_snake'] ?? 0;
 
     if (!$user_id || !$achievement_key) {
         http_response_code(400);
@@ -114,15 +121,15 @@ try {
         exit;
     }
 
-    // 🏆 Unlock the achievement for the user
+    // 🏆 Unlock the achievement for the user (FIXED - Now includes game stats!)
     $unlockStmt = $db->prepare("
         INSERT INTO tbl_snake_achievements 
-        (user_id, achievement_key, achievement_title, achievement_description, achievement_icon, unlocked_at) 
-        SELECT ?, ?, achievement_title, achievement_description, achievement_icon, CURRENT_TIMESTAMP
+        (user_id, achievement_key, achievement_title, achievement_description, achievement_icon, unlocked_at, game_score, apples_eaten, level_reached, games_played, longest_snake) 
+        SELECT ?, ?, achievement_title, achievement_description, achievement_icon, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?
         FROM tbl_snake_achievements 
         WHERE user_id = 'ACHIEVEMENT_DEFINITIONS' AND achievement_key = ?
     ");
-    $unlockStmt->execute([$user_id, $achievement_key, $achievement_key]);
+    $unlockStmt->execute([$user_id, $achievement_key, $game_score, $apples_eaten, $level_reached, $games_played, $longest_snake, $achievement_key]);
 
     error_log("🐍 Snake achievement unlocked: $achievement_key for user $user_id");
 

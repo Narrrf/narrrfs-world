@@ -78,33 +78,32 @@ try {
         exit;
     }
     
-    // Check user's balance and create record if doesn't exist
-    $stmt = $db->prepare('SELECT score FROM tbl_user_scores WHERE user_id = ?');
+    // Check user's balance - FIXED: Use SUM(score) to match balance command behavior
+    $stmt = $db->prepare('SELECT SUM(score) as total FROM tbl_user_scores WHERE user_id = ?');
     $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
     $result = $stmt->execute();
-    $user_score = $result->fetchArray(SQLITE3_ASSOC);
+    $balance_result = $result->fetchArray(SQLITE3_ASSOC);
     
-    if (!$user_score) {
-        // Create user score record if it doesn't exist
-        $stmt = $db->prepare('INSERT INTO tbl_user_scores (user_id, score, timestamp) VALUES (?, 0, datetime("now"))');
-        $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
-        $stmt->execute();
-        $user_score = ['score' => 0];
-    }
+    $current_balance = $balance_result['total'] ?? 0;
     
-    if ($user_score['score'] < $total_cost) {
+    if ($current_balance < $total_cost) {
         $db->exec('ROLLBACK');
         echo json_encode([
             'success' => false,
-            'error' => 'Insufficient balance. You have ' . $user_score['score'] . ' $DSPOINC, but need ' . $total_cost . ' $DSPOINC'
+            'error' => 'Insufficient balance. You have ' . $current_balance . ' $DSPOINC, but need ' . $total_cost . ' $DSPOINC'
         ]);
         exit;
     }
     
-    // Deduct points from user
-    $stmt = $db->prepare('UPDATE tbl_user_scores SET score = score - ? WHERE user_id = ?');
-    $stmt->bindValue(1, $total_cost, SQLITE3_INTEGER);
-    $stmt->bindValue(2, $user_id, SQLITE3_TEXT);
+    // Deduct points from user - Insert negative score entry instead of UPDATE
+    $stmt = $db->prepare('
+        INSERT INTO tbl_user_scores (user_id, score, game, source, timestamp) 
+        VALUES (?, ?, ?, ?, datetime("now"))
+    ');
+    $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
+    $stmt->bindValue(2, -$total_cost, SQLITE3_INTEGER); // Negative for deduction
+    $stmt->bindValue(3, 'store_purchase', SQLITE3_TEXT);
+    $stmt->bindValue(4, 'store', SQLITE3_TEXT);
     $stmt->execute();
     
     // Record the points deduction in score adjustments for audit trail
@@ -142,13 +141,14 @@ try {
     $stmt->bindValue(4, $quantity, SQLITE3_INTEGER);
     $stmt->execute();
     
-    // Verify final balance for security
-    $stmt = $db->prepare('SELECT score FROM tbl_user_scores WHERE user_id = ?');
+    // Verify final balance for security - Use SUM(score)
+    $stmt = $db->prepare('SELECT SUM(score) as total FROM tbl_user_scores WHERE user_id = ?');
     $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
     $result = $stmt->execute();
-    $final_balance = $result->fetchArray(SQLITE3_ASSOC);
+    $final_balance_result = $result->fetchArray(SQLITE3_ASSOC);
+    $final_balance = $final_balance_result['total'] ?? 0;
     
-    if (!$final_balance || $final_balance['score'] < 0) {
+    if ($final_balance < 0) {
         $db->exec('ROLLBACK');
         echo json_encode([
             'success' => false,
@@ -169,8 +169,8 @@ try {
         ],
         'quantity' => $quantity,
         'total_price' => $total_cost,
-        'new_balance' => $final_balance['score'],
-        'balance_before' => $user_score['score']
+        'new_balance' => $final_balance,
+        'balance_before' => $current_balance
     ]);
     
 } catch (Exception $e) {

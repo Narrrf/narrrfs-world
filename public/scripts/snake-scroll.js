@@ -1199,12 +1199,18 @@ function initSnake() {
     const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
     const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
     
+    // FIXED: Send game stats with achievement unlock (Nov 1, 2025)
     fetch(`${apiBaseUrl}/api/dev/unlock-snake-achievement.php`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         user_id: userId, 
-        achievement_key: achievementKey 
+        achievement_key: achievementKey,
+        game_score: score,
+        apples_eaten: applesEaten,
+        level_reached: level,
+        games_played: 1, // Current game
+        longest_snake: snake.length
       })
     })
     .then(response => response.json())

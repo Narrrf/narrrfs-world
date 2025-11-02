@@ -5492,6 +5492,10 @@ let reloadButtonInterval = null;
     
     // 🎯 NOTE: hasDoubleShotUpgrade is NOT reset - permanent upgrade after defeating first boss
     
+    // 🐛 BUG #214 FIX: Clear pressed keys to prevent stuck controls on restart
+    pressedKeys.clear();
+    console.log('⌨️ Pressed keys cleared - ship movement restored!');
+    
     playerShip.x = canvasWidth / 2;
     playerShip.health = 3;
     playerShip.invincible = false; // 🚀 NEW: Reset invincibility

@@ -2034,8 +2034,10 @@
             <input type="text" id="giveItemUserId" placeholder="Search User ID or Username" class="px-3 py-2 rounded text-gray-800 w-full" oninput="giveItemSearchUsersInstant(this.value)">
             <div id="giveItemUserResults" class="absolute z-10 w-full bg-gray-700 border border-gray-600 rounded mt-1 max-h-40 overflow-y-auto" style="display: none;"></div>
           </div>
-          <input type="text" id="giveItemName" placeholder="Item Name" class="px-3 py-2 rounded text-gray-800">
-          <input type="number" id="giveItemQuantity" placeholder="Quantity" value="1" class="px-3 py-2 rounded text-gray-800">
+          <select id="giveItemName" class="px-3 py-2 rounded text-gray-800">
+            <option value="">Select Item...</option>
+          </select>
+          <input type="number" id="giveItemQuantity" placeholder="Quantity" value="1" min="1" class="px-3 py-2 rounded text-gray-800">
         </div>
         <button onclick="giveItemToUser()" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">Give Item</button>
       </div>
@@ -2376,14 +2378,15 @@
             </div>
           </div>
           
-          <!-- Activity History (Purchases & Usage) -->
+          <!-- Activity History (Purchases, Usage & Admin Actions) -->
           <div class="bg-gray-700 p-4 rounded-lg">
             <h4 class="text-lg font-semibold text-orange-400 mb-3">📜 Activity History</h4>
             <div class="text-xs text-gray-400 mb-2">
               <span class="text-blue-400">💰 Purchases</span> • 
               <span class="text-green-400">✅ Used (Approved)</span> • 
               <span class="text-yellow-400">⏳ Pending</span> • 
-              <span class="text-red-400">❌ Denied</span>
+              <span class="text-red-400">❌ Denied</span> • 
+              <span class="text-orange-400">🗑️ Admin Removed</span>
             </div>
             <div id="detailedPurchaseHistory" class="space-y-2 max-h-64 overflow-y-auto">
               <div class="text-gray-300">Loading activity history...</div>
@@ -9680,6 +9683,7 @@
         
         if (data.success) {
           displayStoreItems(data.items);
+          populateGiveItemDropdown(data.items); // NEW: Also populate give item dropdown
           addLog(`🏪 Loaded ${data.items.length} store items`);
         } else {
           addLog(`❌ Failed to load store items: ${data.error}`);
@@ -9687,6 +9691,28 @@
       } catch (error) {
         addLog(`❌ Store items error: ${error.message}`);
       }
+    }
+    
+    // NEW: Populate give item dropdown with available items
+    function populateGiveItemDropdown(items) {
+      const dropdown = document.getElementById('giveItemName');
+      if (!dropdown) return;
+      
+      // Keep "Select Item..." option
+      dropdown.innerHTML = '<option value="">Select Item...</option>';
+      
+      // Add all active items
+      const activeItems = items.filter(item => item.is_active == 1);
+      activeItems.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.item_name; // Use exact item name for API
+        option.textContent = `${item.item_name} (${item.price} $DSPOINC)`;
+        option.dataset.itemId = item.item_id;
+        option.dataset.price = item.price;
+        dropdown.appendChild(option);
+      });
+      
+      console.log(`✅ Populated give item dropdown with ${activeItems.length} items`);
     }
 
     // Display store items
@@ -10345,6 +10371,22 @@
         });
       }
       
+      // Add admin removals
+      if (userData.removal_history && userData.removal_history.length > 0) {
+        userData.removal_history.forEach(removal => {
+          combinedHistory.push({
+            type: 'removal',
+            date: removal.action_timestamp,
+            item_name: removal.item_name,
+            description: removal.description,
+            quantity: removal.quantity,
+            item_value: removal.item_value,
+            admin_username: removal.admin_username,
+            action_type: removal.action_type
+          });
+        });
+      }
+      
       // Sort by date (newest first)
       combinedHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
       
@@ -10370,7 +10412,7 @@
                 </div>
               </div>
             `;
-          } else {
+          } else if (activity.type === 'usage') {
             // Usage entry
             const statusColors = {
               'approved': 'border-green-500',
@@ -10403,6 +10445,27 @@
                   ${activity.status === 'approved' && activity.approved_at ? 
                     `<div class="text-xs text-green-300">Approved: ${new Date(activity.approved_at).toLocaleDateString()}</div>` 
                     : ''}
+                </div>
+                <div class="text-xs text-gray-400 ml-2">
+                  ${new Date(activity.date).toLocaleDateString()}
+                </div>
+              </div>
+            `;
+          } else if (activity.type === 'removal') {
+            // Admin removal entry
+            return `
+              <div class="flex justify-between items-center bg-gray-600 p-3 rounded border-l-4 border-orange-500">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-orange-400">🗑️ ADMIN REMOVED</span>
+                    <span class="font-semibold text-white">${activity.item_name}</span>
+                  </div>
+                  <div class="text-sm text-gray-300">${activity.description || 'No description'}</div>
+                  <div class="text-sm text-orange-300 italic mt-1">By: ${activity.admin_username}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-white font-semibold">-${activity.quantity}</div>
+                  <div class="text-sm text-red-400">Value: ${formatNumber(activity.item_value)} $DSPOINC</div>
                 </div>
                 <div class="text-xs text-gray-400 ml-2">
                   ${new Date(activity.date).toLocaleDateString()}

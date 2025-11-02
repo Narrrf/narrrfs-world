@@ -450,6 +450,38 @@ switch ($action) {
                 error_log('Usage history error: ' . $e->getMessage());
             }
             
+            // Get admin removal history
+            $removal_history = [];
+            
+            try {
+                $stmt = $db->prepare('
+                    SELECT aia.*, si.description, si.image_url
+                    FROM tbl_admin_inventory_actions aia
+                    LEFT JOIN tbl_store_items si ON aia.item_id = si.item_id
+                    WHERE aia.user_id = ? AND aia.action_type IN (\'remove_item\', \'clear_inventory\')
+                    ORDER BY aia.action_timestamp DESC
+                    LIMIT 20
+                ');
+                $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
+                $result = $stmt->execute();
+                
+                while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+                    $removal_history[] = [
+                        'action_id' => $row['action_id'] ?? 0,
+                        'action_type' => $row['action_type'] ?? 'remove_item',
+                        'item_name' => $row['item_name'] ?? 'Unknown',
+                        'description' => $row['description'] ?? '',
+                        'quantity' => $row['quantity'] ?? 0,
+                        'item_value' => $row['item_value'] ?? 0,
+                        'admin_username' => $row['admin_username'] ?? 'Unknown Admin',
+                        'action_timestamp' => $row['action_timestamp'] ?? date('Y-m-d H:i:s')
+                    ];
+                }
+            } catch (Exception $e) {
+                // Admin actions table might not exist, continue without it
+                error_log('Admin removal history error: ' . $e->getMessage());
+            }
+            
             // Calculate statistics
             $inventory_stats = [
                 'total_items' => $inventory ? array_sum(array_column($inventory, 'quantity')) : 0,
@@ -489,7 +521,8 @@ switch ($action) {
                     ],
                     'inventory' => $inventory,
                     'purchase_history' => $purchase_history,
-                    'usage_history' => $usage_history
+                    'usage_history' => $usage_history,
+                    'removal_history' => $removal_history
                 ]
             ]);
             

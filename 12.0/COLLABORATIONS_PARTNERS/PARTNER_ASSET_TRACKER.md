@@ -7,17 +7,17 @@ Use this checklist to track incoming assets and listing status.
 | Gensuki | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 | Mad Skulz NFT | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 | Bear or Bulls | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅ | ⏳|
-| Golden Baboons | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | ✅ | ⏳ |
-| Boundless NFT | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅ | ✅ |
-| Samuzi NFT | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅ | ✅ |
-| The Realm Kin | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
-| Web Builder 161 Group | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅ | ✅ |
+| Golden Baboons | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Boundless NFT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Samuzi NFT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| The Realm Kin | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Web Builder 161 Group | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Robot Rabbit Syndicate | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅| ⏳  |
 | Tezza Poker | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
 | Solana Drug Lords | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
 | Kekius Maximus | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 | Luxury Poker | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅| ⏳|
-| Reactor Motors | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
+| Reactor Motors | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 | Rough Ryders | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | ✅ | ⏳ |
 | Jayk\'s Stake House | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅ | ⏳ |
 | Fox Goblin NFT | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅ | ⏳|
