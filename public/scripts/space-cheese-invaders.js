@@ -353,12 +353,15 @@ function updateSpaceInvadersScoreDisplay() {
   if (topScoreDisplay && roleMultiplierDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
     const primaryRoleID = getSpaceInvadersPrimaryRoleID();
-    const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4)
+    const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
-    const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
+    const beforeConversion = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
+    
+    // 🎯 SEASON 5: Apply 10:1 conversion (2,000 → 200)
+    const totalDSPOINC = Math.floor(beforeConversion / 10);
     
     // Debug logging
-    console.log(`🏆 Space Invaders score display update: Role ID=${primaryRoleID}, Multiplier=${roleMultiplier}x, Score=${totalDSPOINC} DSPOINC`);
+    console.log(`🏆 Space Invaders score display update: Role ID=${primaryRoleID}, Multiplier=${roleMultiplier}x, Score=${totalDSPOINC} DSPOINC (10:1)`);
     
     // Update top score display
     topScoreDisplay.textContent = `💰 Score: $${totalDSPOINC} DSPOINC`;
@@ -379,9 +382,12 @@ function updateSpaceInvadersScoreDisplay() {
   const scoreDisplay = document.getElementById('space-invaders-score');
   if (scoreDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4)
+    const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
-    const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
+    const beforeConversion = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
+    
+    // 🎯 SEASON 5: Apply 10:1 conversion
+    const totalDSPOINC = Math.floor(beforeConversion / 10);
     
     if (roleMultiplier > 1.0) {
       scoreDisplay.textContent = `💰 Space Invaders Score: $${totalDSPOINC} DSPOINC (${roleMultiplier}x Role Bonus!)`;
@@ -607,18 +613,24 @@ let hasQuadShotUpgrade = false; // Unlocked after defeating third boss (Cheese G
 let phoenixWaves = [];
 let phoenixEggs = [];
 let miniPhoenixes = [];
+let phoenixBullets = []; // 🔥 SEASON 5: Phoenix shooting mechanics
 let isPhoenixWave = false;
 let phoenixWaveConfig = {
-  // 🎯 PROFESSIONAL GAME BALANCE: Strategic Phoenix wave placement
-  waveFrequency: 5,        // Every 5th wave (3, 8, 13, 18, 23...)
-  basePhoenixCount: 3,     // 🔥 BALANCED: 3 Phoenix for early waves
-  difficultyScaling: 1.05, // 🔥 BALANCED: Gentle scaling for smooth progression
-  eggLayingRate: 0.18,     // 🔥 ENHANCED: Increased from 12% to 18% for more danger
-  formationPatterns: ['v', 'diamond', 'spiral'], // 🔥 BALANCED: Progressive pattern unlocking
-  maxPhoenixPerWave: 12,   // 🔥 BALANCED: Increased for late-game waves
-  eggHatchTime: 400,       // 🔥 ENHANCED: Reduced from 500 to 400 (4 seconds) for faster hatching
-  miniPhoenixHealth: 25,   // 🔥 ENHANCED: Increased from 15 to 25 HP for tougher mini-Phoenixes
-  phoenixHealth: 45        // 🔥 ENHANCED: Increased from 30 to 45 HP base for more challenging Phoenix birds
+  // 🎯 SEASON 5 TUNING: More challenging Phoenix waves
+  waveFrequency: 4,        // 🔥 SEASON 5: Every 4th wave (was 5) - 33% more frequent!
+  basePhoenixCount: 4,     // 🔥 SEASON 5: 4 Phoenix (was 3) - more birds!
+  difficultyScaling: 1.08, // 🔥 SEASON 5: 1.08 (was 1.05) - faster scaling
+  eggLayingRate: 0.22,     // 🔥 SEASON 5: 22% (was 18%) - more eggs!
+  formationPatterns: ['v', 'diamond', 'spiral', 'cluster'], // 🔥 SEASON 5: Added cluster formation
+  maxPhoenixPerWave: 15,   // 🔥 SEASON 5: 15 (was 12) - higher max
+  eggHatchTime: 350,       // 🔥 SEASON 5: 350 (was 400) - faster hatching!
+  miniPhoenixHealth: 30,   // 🔥 SEASON 5: 30 HP (was 25) - tougher mini-Phoenix
+  phoenixHealth: 55,       // 🔥 SEASON 5: 55 HP (was 45) - tougher Phoenix
+  // 🔥 NEW SEASON 5: Phoenix shooting mechanics
+  shootingEnabled: true,   // Enable Phoenix shooting
+  shootCooldown: 120,      // Shoot every 1.2 seconds (120 frames @ 100ms)
+  bulletSpeed: 3,          // Phoenix bullet speed
+  shootAccuracy: 0.7       // 70% accuracy (aimed at player)
 };
 
 // 🔥 PHOENIX CONFIGURATION LOADING - NEW!
@@ -743,6 +755,47 @@ miniPhoenixImg.onerror = (e) => {
   console.log('🔥 Using fallback rectangle drawing for Mini Phoenix');
 };
 
+// 🧀🎯 GIANT CHEESE BOSS SYSTEM - SEASON 5 FEATURE!
+// Appears every 8th wave with Tetris-inspired cheese block structures
+// Progressive difficulty, unique designs, rewards players with lives!
+let giantCheeseBosses = [];
+let giantCheeseBossActive = false;
+let giantCheeseBossDefeated = false;
+let fallingCheeseBlocks = []; // For visual block destruction effects
+
+let giantCheeseBossConfig = {
+  waveFrequency: 8,        // Every 8th wave (8, 16, 24, 32, 40...)
+  baseWidth: 100,          // Base width of cheese boss
+  baseHeight: 150,         // Base height of cheese boss
+  baseHP: 50,              // Base HP (scales with wave number)
+  hpScaling: 1.5,          // HP multiplier per wave (50 → 75 → 113 → 169...)
+  descentSpeed: 0.3,       // Slow descent speed (faster if player doesn't shoot!)
+  descentAcceleration: 0.05, // Speed increase when not taking damage
+  horizontalSpeed: 1.5,    // Side-to-side movement speed
+  shootingPatterns: {
+    wave8: { bullets: 1, spread: 0, speed: 2 },     // Very basic
+    wave16: { bullets: 2, spread: 30, speed: 2.5 }, // Medium
+    wave24: { bullets: 3, spread: 45, speed: 3 },   // Harder
+    wave32: { bullets: 5, spread: 60, speed: 3.5 }  // Maximum (Boss 4 level)
+  },
+  rewardLives: {
+    wave8: 1,    // 1 life for first cheese boss
+    wave16: 2,   // 2 lives for second
+    wave24: 3,   // 3 lives for third
+    wave32: 4    // 4+ lives for fourth and beyond
+  },
+  designs: [
+    'L-cheese',    // L-shape (orange/yellow)
+    'I-cheese',    // Tall vertical
+    'O-cheese',    // Square chunky
+    'T-cheese',    // Classic T
+    'Z-cheese',    // Zigzag
+    'creative'     // Special designs with eyes/elements
+  ]
+};
+
+console.log('🧀 Giant Cheese Boss System initialized:', giantCheeseBossConfig);
+
 const cheeseInvaderImg = new Image();
 cheeseInvaderImg.src = 'img/space/cheese-invader.png';
 cheeseInvaderImg.onload = () => {
@@ -783,9 +836,11 @@ class PhoenixBird {
     this.animationSpeed = 0.1;
     this.isDead = false;
     this.explosionTimer = 0;
-    this.damage = Math.max(1, Math.floor(difficulty * 0.8)); // 🔥 ENHANCED: Phoenix birds now deal damage on collision
+    this.damage = Math.max(2, Math.floor(difficulty * 1.5)); // 🔥 SEASON 5: Damage 2-15 range (was 1-3)
+    this.shootCooldown = Math.random() * phoenixWaveConfig.shootCooldown; // 🔥 SEASON 5: Random initial cooldown for varied shooting
+    this.shootingPattern = this.getShootingPattern(difficulty); // 🔥 SEASON 5: Shooting pattern based on difficulty
     
-    console.log(`🔥 PhoenixBird created at x=${x}, y=${y}, health=${this.health}, speed=${this.speed}, damage=${this.damage}`);
+    console.log(`🔥 PhoenixBird created at x=${x}, y=${y}, health=${this.health}, speed=${this.speed}, damage=${this.damage}, pattern=${this.shootingPattern}`);
   }
   
   generateFlightPattern() {
@@ -798,6 +853,118 @@ class PhoenixBird {
     };
     
     return patterns[this.formation] || patterns['v'];
+  }
+  
+  // 🔥 SEASON 5: Get shooting pattern based on difficulty
+  getShootingPattern(difficulty) {
+    // Progressive shooting patterns that get trickier with difficulty
+    if (difficulty >= 3.0) return 'spread'; // Late game: 3-bullet spread
+    if (difficulty >= 2.0) return 'burst'; // Mid game: 2-bullet burst
+    if (difficulty >= 1.5) return 'aimed'; // Early-mid: Aimed at player
+    return 'straight'; // Early game: Straight down
+  }
+  
+  // 🔥 SEASON 5: Phoenix shooting mechanics
+  shoot() {
+    if (!phoenixWaveConfig.shootingEnabled) return;
+    
+    const patterns = {
+      'straight': () => {
+        // Straight down - easiest pattern
+        phoenixBullets.push({
+          x: this.x,
+          y: this.y + this.height / 2,
+          vx: 0,
+          vy: phoenixWaveConfig.bulletSpeed,
+          width: 8,
+          height: 12,
+          damage: 1,
+          color: '#ff6b35'
+        });
+      },
+      'aimed': () => {
+        // Aimed at player with some inaccuracy
+        const dx = playerShip.x - this.x;
+        const dy = playerShip.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Add random inaccuracy based on shootAccuracy
+        const inaccuracy = (1 - phoenixWaveConfig.shootAccuracy) * 100;
+        const offsetX = (Math.random() - 0.5) * inaccuracy;
+        const offsetY = (Math.random() - 0.5) * inaccuracy;
+        
+        const targetX = playerShip.x + offsetX;
+        const targetY = playerShip.y + offsetY;
+        
+        const newDx = targetX - this.x;
+        const newDy = targetY - this.y;
+        const newDistance = Math.sqrt(newDx * newDx + newDy * newDy);
+        
+        phoenixBullets.push({
+          x: this.x,
+          y: this.y + this.height / 2,
+          vx: (newDx / newDistance) * phoenixWaveConfig.bulletSpeed,
+          vy: (newDy / newDistance) * phoenixWaveConfig.bulletSpeed,
+          width: 8,
+          height: 12,
+          damage: 1,
+          color: '#ff6b35'
+        });
+      },
+      'burst': () => {
+        // 2-bullet burst at player
+        const dx = playerShip.x - this.x;
+        const dy = playerShip.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Left bullet
+        phoenixBullets.push({
+          x: this.x - 10,
+          y: this.y + this.height / 2,
+          vx: ((dx - 20) / distance) * phoenixWaveConfig.bulletSpeed,
+          vy: (dy / distance) * phoenixWaveConfig.bulletSpeed,
+          width: 8,
+          height: 12,
+          damage: 1,
+          color: '#ff6b35'
+        });
+        
+        // Right bullet
+        phoenixBullets.push({
+          x: this.x + 10,
+          y: this.y + this.height / 2,
+          vx: ((dx + 20) / distance) * phoenixWaveConfig.bulletSpeed,
+          vy: (dy / distance) * phoenixWaveConfig.bulletSpeed,
+          width: 8,
+          height: 12,
+          damage: 1,
+          color: '#ff6b35'
+        });
+      },
+      'spread': () => {
+        // 3-bullet spread pattern - hardest
+        const angles = [-0.3, 0, 0.3]; // Left, center, right (in radians)
+        
+        angles.forEach(angle => {
+          const speed = phoenixWaveConfig.bulletSpeed;
+          phoenixBullets.push({
+            x: this.x,
+            y: this.y + this.height / 2,
+            vx: Math.sin(angle) * speed,
+            vy: Math.cos(angle) * speed,
+            width: 8,
+            height: 12,
+            damage: 1,
+            color: '#ff6b35'
+          });
+        });
+      }
+    };
+    
+    const pattern = patterns[this.shootingPattern] || patterns['straight'];
+    pattern();
+    
+    console.log(`🔥 Phoenix shooting (${this.shootingPattern} pattern)`);
   }
   
   createVFormation() {
@@ -919,6 +1086,13 @@ class PhoenixBird {
     if (this.eggLayingCooldown <= 0 && Math.random() < phoenixWaveConfig.eggLayingRate) {
       this.layEgg();
       this.eggLayingCooldown = 120; // 🔥 BALANCED: Increased from 60 to 120 (2 second cooldown)
+    }
+    
+    // 🔥 SEASON 5: Phoenix shooting mechanics
+    this.shootCooldown--;
+    if (this.shootCooldown <= 0) {
+      this.shoot();
+      this.shootCooldown = phoenixWaveConfig.shootCooldown;
     }
     
     return true;
@@ -1142,14 +1316,14 @@ class MiniPhoenix {
     this.height = 20; // 🔥 CRITICAL FIX: Add height for collision detection
     this.health = phoenixWaveConfig.miniPhoenixHealth;
     this.maxHealth = this.health;
-    this.speed = 2.2; // 🔥 ENHANCED: Increased from 1.5 to 2.2 for faster mini-Phoenixes
+    this.speed = 2.5; // 🔥 SEASON 5: Increased from 2.2 to 2.5 for faster mini-Phoenixes
     this.targetX = playerShip.x;
     this.targetY = playerShip.y;
     this.animationFrame = 0;
     this.animationSpeed = 0.3;
     this.isDead = false;
     this.explosionTimer = 0;
-    this.damage = 2; // 🔥 ENHANCED: Mini-Phoenixes now deal 2 damage on collision
+    this.damage = 3; // 🔥 SEASON 5: Mini-Phoenixes now deal 3 damage on collision (was 2)
   }
   
   update() {
@@ -1254,6 +1428,406 @@ class MiniPhoenix {
       ctx.fillStyle = '#00ff00';
       ctx.fillRect(-size/2, -size/2 - 6, healthBarWidth * healthPercentage, healthBarHeight);
     }
+    
+    ctx.restore();
+  }
+}
+
+// 🧀🎯 GIANT CHEESE BOSS CLASS - SEASON 5 EPIC FEATURE!
+// Massive Tetris-block cheese structure that appears every 8th wave
+class GiantCheeseBoss {
+  constructor(waveNumber, designType) {
+    this.waveNumber = waveNumber;
+    this.designType = designType;
+    this.width = giantCheeseBossConfig.baseWidth;
+    this.height = giantCheeseBossConfig.baseHeight;
+    this.x = canvasWidth / 2; // Center of screen
+    this.y = -this.height; // Start above screen
+    
+    // HP scaling with wave number
+    const hpMultiplier = Math.pow(giantCheeseBossConfig.hpScaling, waveNumber / 8);
+    this.maxHealth = Math.floor(giantCheeseBossConfig.baseHP * hpMultiplier);
+    this.health = this.maxHealth;
+    
+    // Movement
+    this.vx = giantCheeseBossConfig.horizontalSpeed;
+    this.vy = giantCheeseBossConfig.descentSpeed;
+    this.baseDescentSpeed = giantCheeseBossConfig.descentSpeed;
+    this.lastDamageTaken = Date.now();
+    
+    // Shooting pattern based on wave
+    this.shootCooldown = 0;
+    this.shootPattern = this.getShootingPattern(waveNumber);
+    
+    // Visual structure (3 layers like Tetris blocks)
+    this.blocks = this.generateCheeseStructure(designType);
+    this.isDead = false;
+    this.explosionTimer = 0;
+    
+    console.log(`🧀 Giant Cheese Boss spawned! Wave: ${waveNumber}, Design: ${designType}, HP: ${this.maxHealth}`);
+  }
+  
+  getShootingPattern(wave) {
+    if (wave >= 32) return giantCheeseBossConfig.shootingPatterns.wave32;
+    if (wave >= 24) return giantCheeseBossConfig.shootingPatterns.wave24;
+    if (wave >= 16) return giantCheeseBossConfig.shootingPatterns.wave16;
+    return giantCheeseBossConfig.shootingPatterns.wave8;
+  }
+  
+  generateCheeseStructure(designType) {
+    // Generate Tetris-inspired block patterns
+    // Each block is {x, y, width, height, color, active}
+    const blocks = [];
+    const blockSize = 10;
+    
+    switch(designType) {
+      case 'L-cheese':
+        // L-shape cheese (orange/yellow layers)
+        // Bottom horizontal part (10 blocks wide × 5 blocks tall)
+        for (let i = 0; i < 10; i++) {
+          for (let j = 0; j < 5; j++) {
+            blocks.push({
+              x: i * blockSize,
+              y: (this.height - blockSize * 5) + (j * blockSize),
+              width: blockSize,
+              height: blockSize,
+              color: '#ff8c00',
+              active: true
+            });
+          }
+        }
+        // Top vertical part (4 blocks wide × 5 blocks tall)
+        for (let i = 0; i < 4; i++) {
+          for (let j = 0; j < 5; j++) {
+            blocks.push({
+              x: i * blockSize,
+              y: (this.height - blockSize * 10) + (j * blockSize),
+              width: blockSize,
+              height: blockSize,
+              color: '#ffd700',
+              active: true
+            });
+          }
+        }
+        break;
+        
+      case 'I-cheese':
+        // Tall vertical cheese (purple middle layer)
+        for (let i = 0; i < 10; i++) {
+          for (let j = 0; j < 15; j++) {
+            const color = j < 5 ? '#ff8c00' : (j < 10 ? '#9370db' : '#90ee90');
+            blocks.push({
+              x: (i + 2) * blockSize,
+              y: j * blockSize,
+              width: blockSize,
+              height: blockSize,
+              color: color,
+              active: true
+            });
+          }
+        }
+        break;
+        
+      case 'O-cheese':
+        // Square chunky cheese
+        for (let i = 0; i < 10; i++) {
+          for (let j = 0; j < 10; j++) {
+            const color = j < 3 ? '#ff8c00' : (j < 7 ? '#9370db' : '#90ee90');
+            blocks.push({
+              x: i * blockSize,
+              y: (j + 2) * blockSize,
+              width: blockSize,
+              height: blockSize,
+              color: color,
+              active: true
+            });
+          }
+        }
+        break;
+        
+      case 'T-cheese':
+        // T-shape cheese
+        // Horizontal bar (10 blocks wide × 4 blocks tall)
+        for (let i = 0; i < 10; i++) {
+          for (let j = 0; j < 4; j++) {
+            blocks.push({
+              x: i * blockSize,
+              y: (this.height - blockSize * 10) + (j * blockSize),
+              width: blockSize,
+              height: blockSize,
+              color: '#ffd700',
+              active: true
+            });
+          }
+        }
+        // Vertical stem (1 block wide × 6 blocks tall, centered)
+        for (let j = 0; j < 6; j++) {
+          blocks.push({
+            x: 5 * blockSize,
+            y: (this.height - blockSize * 16) + (j * blockSize),
+            width: blockSize,
+            height: blockSize,
+            color: '#9370db',
+            active: true
+          });
+        }
+        break;
+        
+      case 'Z-cheese':
+        // Zigzag cheese
+        // Top-left section (6 blocks wide × 5 blocks tall)
+        for (let i = 0; i < 6; i++) {
+          for (let j = 0; j < 5; j++) {
+            blocks.push({
+              x: i * blockSize,
+              y: (blockSize * 5) + (j * blockSize),
+              width: blockSize,
+              height: blockSize,
+              color: '#ff8c00',
+              active: true
+            });
+          }
+        }
+        // Bottom-right section (6 blocks wide × 5 blocks tall)
+        for (let i = 0; i < 6; i++) {
+          for (let j = 0; j < 5; j++) {
+            blocks.push({
+              x: (i + 4) * blockSize,
+              y: (blockSize * 10) + (j * blockSize),
+              width: blockSize,
+              height: blockSize,
+              color: '#9370db',
+              active: true
+            });
+          }
+        }
+        break;
+        
+      case 'creative':
+        // Creative design with Gensuki eyes
+        // Main body
+        for (let i = 0; i < 10; i++) {
+          for (let j = 0; j < 12; j++) {
+            blocks.push({
+              x: i * blockSize,
+              y: j * blockSize,
+              width: blockSize,
+              height: blockSize,
+              color: '#ffd700',
+              active: true
+            });
+          }
+        }
+        // Eyes (darker blocks)
+        blocks.push({
+          x: 2 * blockSize,
+          y: 3 * blockSize,
+          width: blockSize * 2,
+          height: blockSize * 2,
+          color: '#000000',
+          active: true
+        });
+        blocks.push({
+          x: 6 * blockSize,
+          y: 3 * blockSize,
+          width: blockSize * 2,
+          height: blockSize * 2,
+          color: '#000000',
+          active: true
+        });
+        break;
+    }
+    
+    return blocks;
+  }
+  
+  update() {
+    if (this.isDead) {
+      this.explosionTimer++;
+      if (this.explosionTimer > 60) {
+        return false; // Remove from array
+      }
+      return true;
+    }
+    
+    // Horizontal movement (side to side)
+    this.x += this.vx;
+    if (this.x < this.width / 2 || this.x > canvasWidth - this.width / 2) {
+      this.vx = -this.vx;
+    }
+    
+    // Vertical descent (speeds up if player doesn't shoot!)
+    const timeSinceLastDamage = Date.now() - this.lastDamageTaken;
+    if (timeSinceLastDamage > 3000) { // 3 seconds without damage
+      this.vy += giantCheeseBossConfig.descentAcceleration;
+    } else {
+      this.vy = this.baseDescentSpeed; // Reset to base speed
+    }
+    this.y += this.vy;
+    
+    // Check if reached bottom (game over!)
+    if (this.y > canvasHeight) {
+      // 🐛 FIX: Use onGameOver() instead of undefined playerLives
+      onGameOver();
+      this.die(true); // Die without rewards
+      return false;
+    }
+    
+    // Shooting
+    this.shootCooldown--;
+    if (this.shootCooldown <= 0) {
+      this.shoot();
+      this.shootCooldown = 180; // 1.8 seconds between shots
+    }
+    
+    return true;
+  }
+  
+  shoot() {
+    const pattern = this.shootPattern;
+    const centerX = this.x;
+    const centerY = this.y + this.height / 2;
+    
+    // Create bullets based on pattern
+    for (let i = 0; i < pattern.bullets; i++) {
+      const angle = (i - (pattern.bullets - 1) / 2) * (pattern.spread * Math.PI / 180);
+      const vx = Math.sin(angle) * pattern.speed;
+      const vy = Math.cos(angle) * pattern.speed;
+      
+      invaderBullets.push({
+        x: centerX,
+        y: centerY,
+        vx: vx,
+        vy: vy,
+        width: 6,
+        height: 12
+      });
+    }
+  }
+  
+  takeDamage(damage) {
+    this.health -= damage;
+    this.lastDamageTaken = Date.now();
+    
+    // Visual block destruction (some blocks fall off!)
+    if (Math.random() < 0.3) { // 30% chance per hit
+      const activeBlocks = this.blocks.filter(b => b.active);
+      if (activeBlocks.length > 0) {
+        const blockToDestroy = activeBlocks[Math.floor(Math.random() * activeBlocks.length)];
+        blockToDestroy.active = false;
+        
+        // Create falling block effect
+        fallingCheeseBlocks.push({
+          x: this.x - this.width / 2 + blockToDestroy.x,
+          y: this.y + blockToDestroy.y,
+          vx: (Math.random() - 0.5) * 4,
+          vy: Math.random() * 2 + 1,
+          width: blockToDestroy.width,
+          height: blockToDestroy.height,
+          color: blockToDestroy.color,
+          rotation: 0,
+          rotationSpeed: (Math.random() - 0.5) * 0.2,
+          life: 60
+        });
+      }
+    }
+    
+    if (this.health <= 0) {
+      this.die(false);
+    }
+  }
+  
+  die(reachedBottom) {
+    this.isDead = true;
+    this.explosionTimer = 0;
+    giantCheeseBossDefeated = true;
+    
+    console.log(`🧀 Giant Cheese Boss defeated! Wave: ${this.waveNumber}, Reached bottom: ${reachedBottom}`);
+    
+    if (!reachedBottom) {
+      // Create massive explosion
+      createExplosion(this.x, this.y, 100, 50);
+      
+      // Award points
+      const points = 50 + (this.waveNumber * 10);
+      spaceInvadersScore += points;
+      
+      // Drop life rewards!
+      const livesToDrop = this.waveNumber >= 32 ? 
+        giantCheeseBossConfig.rewardLives.wave32 : 
+        (this.waveNumber >= 24 ? 
+          giantCheeseBossConfig.rewardLives.wave24 : 
+          (this.waveNumber >= 16 ? 
+            giantCheeseBossConfig.rewardLives.wave16 : 
+            giantCheeseBossConfig.rewardLives.wave8));
+      
+      for (let i = 0; i < livesToDrop; i++) {
+        powerUps.push({
+          x: this.x + (Math.random() - 0.5) * 60,
+          y: this.y,
+          width: 20,
+          height: 20,
+          type: 'life',
+          speed: 2 // 🐛 FIX: Use 'speed' not 'vy' (matches other power-ups)
+        });
+      }
+      
+      showNotification(`🧀 GIANT CHEESE DEFEATED! +${livesToDrop} LIVES! 🧀`, 'cheese');
+    }
+  }
+  
+  draw(ctx) {
+    if (this.isDead) {
+      // Massive explosion effect
+      const size = 50 + this.explosionTimer * 2;
+      ctx.fillStyle = `rgba(255, 200, 0, ${1 - this.explosionTimer / 60})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Secondary explosion rings
+      for (let i = 0; i < 3; i++) {
+        const ringSize = size * (1 + i * 0.3);
+        ctx.strokeStyle = `rgba(255, ${150 - i * 50}, 0, ${0.5 - this.explosionTimer / 60})`;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, ringSize, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      return;
+    }
+    
+    ctx.save();
+    ctx.translate(this.x - this.width / 2, this.y);
+    
+    // Draw all active blocks
+    this.blocks.forEach(block => {
+      if (block.active) {
+        ctx.fillStyle = block.color;
+        ctx.fillRect(block.x, block.y, block.width, block.height);
+        
+        // Block border for 3D effect
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(block.x, block.y, block.width, block.height);
+      }
+    });
+    
+    // Health bar
+    const healthBarWidth = this.width;
+    const healthBarHeight = 8;
+    const healthPercentage = this.health / this.maxHealth;
+    
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(0, -20, healthBarWidth, healthBarHeight);
+    ctx.fillStyle = '#00ff00';
+    ctx.fillRect(0, -20, healthBarWidth * healthPercentage, healthBarHeight);
+    
+    // Health text
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${Math.floor(this.health)} / ${this.maxHealth}`, this.width / 2, -25);
     
     ctx.restore();
   }
@@ -2442,7 +3016,7 @@ let reloadButtonInterval = null;
   function spawnPowerUp() {
     // Check if we already have too many power-ups on screen
     if (window.powerUps && window.powerUps.length >= 4) {
-      console.log(`🎁 Power-up spawn blocked: ${window.powerUps.length} power-ups on screen (limit: 4)`);
+      // 🐛 DEBUG: Removed per-frame logging that was flooding console
       return; // Don't spawn if we already have 4 or more (increased from 3)
     }
     
@@ -5016,8 +5590,15 @@ let reloadButtonInterval = null;
     // 🔥 CRITICAL FIX: Clear Phoenix entities
     phoenixEggs = [];
     miniPhoenixes = [];
+    phoenixBullets = []; // 🔥 SEASON 5: Clear Phoenix bullets on restart
     isPhoenixWave = false;
-    console.log('🧹 Restart: All entities cleared before new game starts (including Phoenix entities)');
+    
+    // 🧀🎯 CRITICAL FIX: Clear Giant Cheese Boss entities on restart
+    giantCheeseBosses = [];
+    giantCheeseBossActive = false;
+    giantCheeseBossDefeated = false;
+    fallingCheeseBlocks = [];
+    console.log('🧹 Restart: All entities cleared before new game starts (including Phoenix entities, bullets, and Giant Cheese Bosses)');
     
     // 🚨 BUG #165 FIX: Reset multi-shot upgrades to prevent starting with double/triple/quad shot
     hasDoubleShotUpgrade = false;
@@ -5428,7 +6009,14 @@ let reloadButtonInterval = null;
     // 🔥 CRITICAL FIX: Clear Phoenix entities in resetGame
     phoenixEggs = [];
     miniPhoenixes = [];
+    phoenixBullets = []; // 🔥 SEASON 5: Clear Phoenix bullets
     isPhoenixWave = false;
+    
+    // 🧀🎯 CRITICAL FIX: Clear Giant Cheese Boss entities in resetGame
+    giantCheeseBosses = [];
+    giantCheeseBossActive = false;
+    giantCheeseBossDefeated = false;
+    fallingCheeseBlocks = [];
     invaderDirection = 1;
     invaderDropTimer = 0;
     lastSpawnTime = Date.now();
@@ -5548,6 +6136,11 @@ let reloadButtonInterval = null;
   }
 
   function gameLoop() {
+    // 🚨 CRITICAL FIX (Bug #224): Stop ALL updates when game is over
+    if (!gameRunning || gamePhase === 'gameOver') {
+      return; // Don't update anything after game over
+    }
+    
     // 🌟 SEASON 3: Always update moving stars, even when paused
     updateMovingStars();
     
@@ -5615,6 +6208,16 @@ let reloadButtonInterval = null;
       checkPlayerHit();
       checkTetrisCollisions();
       
+      // 🧀🎯 GIANT CHEESE BOSS: Update Giant Cheese Boss entities during formation
+  if (giantCheeseBossActive) {
+    updateGiantCheeseBosses();
+    checkPlayerCollisionWithCheeseBoss();
+    checkBulletCollisionWithCheeseBoss();
+    
+    // 🧀 EXCLUSIVE MODE: No other updates during Giant Cheese Boss waves
+    return; // Skip all other logic
+  }
+      
         // 🔥 PHOENIX INVADERS: Update Phoenix entities during formation
   if (isPhoenixWave) {
     updatePhoenixEntities();
@@ -5651,6 +6254,16 @@ let reloadButtonInterval = null;
       checkBulletCollisions();
       checkPlayerHit();
       checkTetrisCollisions();
+      
+      // 🧀🎯 GIANT CHEESE BOSS: Update Giant Cheese Boss entities during attack
+      if (giantCheeseBossActive) {
+        updateGiantCheeseBosses();
+        checkPlayerCollisionWithCheeseBoss();
+        checkBulletCollisionWithCheeseBoss();
+        
+        // 🧀 EXCLUSIVE MODE: No other updates during Giant Cheese Boss waves
+        return; // Skip all other logic
+      }
       
       // 🔥 PHOENIX INVADERS: Update Phoenix entities during attack
       if (isPhoenixWave) {
@@ -6121,19 +6734,40 @@ let reloadButtonInterval = null;
       cheeseSoundManager.playBackgroundMusic(waveNumber);
     }
     
-      // 🔥 PHOENIX INVADERS: Check if this should be a Phoenix wave
-  if (waveNumber % phoenixWaveConfig.waveFrequency === 0) {
-    console.log(`🔥 Wave ${waveNumber}: PHOENIX INVADERS WAVE!`);
+    // 🧀🎯 GIANT CHEESE BOSS: Check for every 8th wave (PRIORITY OVER PHOENIX!)
+    if (waveNumber % giantCheeseBossConfig.waveFrequency === 0) {
+      console.log(`🧀 Wave ${waveNumber}: GIANT CHEESE BOSS WAVE!`);
+      
+      // 🧀 CLEAR SCREEN: Remove all other enemies during Giant Cheese Boss waves
+      invaders = [];
+      invaderBullets = [];
+      phoenixWaves = [];
+      phoenixEggs = [];
+      miniPhoenixes = [];
+      phoenixBullets = [];
+      tetrisDangerItems = [];
+      console.log('🧀 Screen cleared for Giant Cheese Boss battle!');
+      
+      spawnGiantCheeseBoss();
+      return; // Skip normal wave spawning
+    }
     
-    // 🔥 CLEAR SCREEN: Remove all other invaders during Phoenix waves
-    invaders = [];
-    invaderBullets = [];
-    tetrisDangerItems = [];
-    console.log('🔥 Screen cleared of regular invaders for Phoenix wave!');
-    
-    spawnPhoenixWave();
-    return;
-  }
+    // 🔥 PHOENIX INVADERS: Check if this should be a Phoenix wave (BUT SKIP IF GIANT CHEESE BOSS!)
+    // 🚨 FIX: Wave 8, 16, 24, 32 are BOTH Phoenix (every 4th) AND Giant Cheese Boss (every 8th)
+    // Giant Cheese Boss takes priority, so skip Phoenix on those waves
+    if (waveNumber % phoenixWaveConfig.waveFrequency === 0 && 
+        waveNumber % giantCheeseBossConfig.waveFrequency !== 0) {
+      console.log(`🔥 Wave ${waveNumber}: PHOENIX INVADERS WAVE!`);
+      
+      // 🔥 CLEAR SCREEN: Remove all other invaders during Phoenix waves
+      invaders = [];
+      invaderBullets = [];
+      tetrisDangerItems = [];
+      console.log('🔥 Screen cleared of regular invaders for Phoenix wave!');
+      
+      spawnPhoenixWave();
+      return;
+    }
     
     // 🚀 NEW: Choose formation pattern based on wave difficulty
     let patterns = [
@@ -6394,6 +7028,48 @@ let reloadButtonInterval = null;
     // Update mini-Phoenix enemies
     miniPhoenixes = miniPhoenixes.filter(mini => mini.update());
     
+    // 🔥 SEASON 5: Update Phoenix bullets
+    phoenixBullets = phoenixBullets.filter(bullet => {
+      // Move bullet
+      bullet.x += bullet.vx;
+      bullet.y += bullet.vy;
+      
+      // Remove if off screen
+      if (bullet.y > canvasHeight || bullet.y < 0 || bullet.x < 0 || bullet.x > canvasWidth) {
+        return false;
+      }
+      
+      // Check collision with player
+      if (checkCollision(bullet, playerShip)) {
+        // Deal damage to player
+        if (!playerShip.invincible) {
+          playerShip.health -= bullet.damage;
+          console.log(`🔥 Phoenix bullet hit player! Damage: ${bullet.damage}, Player health: ${playerShip.health}`);
+          
+          // Player invincibility frames
+          playerShip.invincible = true;
+          playerShip.invincibleTimer = 60; // 0.6 seconds
+          
+          // Create hit effect
+          explosions.push({
+            x: bullet.x,
+            y: bullet.y,
+            frame: 0,
+            maxFrames: 10,
+            color: '#ff6b35'
+          });
+          
+          // Check if player died
+          if (playerShip.health <= 0) {
+            onGameOver(); // 🐛 FIX: Was calling gameOver() which doesn't exist!
+          }
+        }
+        return false; // Remove bullet
+      }
+      
+      return true; // Keep bullet
+    });
+    
       // Check if Phoenix wave is complete
   if (phoenixWaves.length === 0 && phoenixEggs.length === 0 && miniPhoenixes.length === 0) {
     console.log('🔥 Phoenix wave completed! Returning to regular invaders...');
@@ -6435,6 +7111,27 @@ let reloadButtonInterval = null;
     // Draw mini-Phoenix enemies
     miniPhoenixes.forEach(mini => mini.draw(ctx));
     
+    // 🔥 SEASON 5: Draw Phoenix bullets
+    phoenixBullets.forEach(bullet => {
+      ctx.save();
+      ctx.fillStyle = bullet.color;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = bullet.color;
+      
+      // Draw flame-shaped bullet
+      ctx.beginPath();
+      ctx.ellipse(bullet.x, bullet.y, bullet.width / 2, bullet.height / 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Add inner glow
+      ctx.fillStyle = '#ffaa00';
+      ctx.beginPath();
+      ctx.ellipse(bullet.x, bullet.y, bullet.width / 4, bullet.height / 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.restore();
+    });
+    
     // Draw Phoenix wave indicator
     ctx.fillStyle = '#ff6b35';
     ctx.font = 'bold 24px Arial';
@@ -6445,6 +7142,191 @@ let reloadButtonInterval = null;
     ctx.fillStyle = '#ff8c42';
     ctx.font = '16px Arial';
     ctx.fillText(`Phoenix: ${phoenixWaves.length} | Eggs: ${phoenixEggs.length} | Mini: ${miniPhoenixes.length}`, canvasWidth / 2, 55);
+  }
+
+  // 🧀🎯 GIANT CHEESE BOSS HELPER FUNCTIONS - SEASON 5 FEATURE!
+  
+  function spawnGiantCheeseBoss() {
+    try {
+      giantCheeseBossActive = true;
+      giantCheeseBossDefeated = false;
+      
+      // Determine design type based on wave number (cycles through 6 designs)
+      const designIndex = Math.floor((waveNumber / 8) - 1) % giantCheeseBossConfig.designs.length;
+      const designType = giantCheeseBossConfig.designs[designIndex];
+      
+      console.log(`🧀 Creating Giant Cheese Boss: Wave ${waveNumber}, Design ${designType}, Index ${designIndex}`);
+      
+      // Create the boss
+      const boss = new GiantCheeseBoss(waveNumber, designType);
+      giantCheeseBosses.push(boss);
+      
+      console.log(`✅ Boss spawned successfully! HP: ${boss.health}, Blocks: ${boss.blocks.length}`);
+      
+      // Show epic notification based on wave number
+      if (waveNumber === 8) {
+        showNotification('🧀 WARNING: GIANT CHEESE BOSS APPROACHING! 🧀', 'cheese');
+      } else if (waveNumber === 16) {
+        showNotification('🧀🧀 GIANT CHEESE BOSS - ROUND 2! 🧀🧀', 'cheese');
+      } else if (waveNumber === 24) {
+        showNotification('🧀🧀🧀 MEGA CHEESE BOSS - ROUND 3! 🧀🧀🧀', 'cheese');
+      } else if (waveNumber === 32) {
+        showNotification('🧀🧀🧀🧀 ULTIMATE CHEESE BOSS - ROUND 4! 🧀🧀🧀🧀', 'cheese');
+      } else {
+        showNotification('🧀 LEGENDARY CHEESE BOSS! 🧀', 'cheese');
+      }
+    } catch (error) {
+      console.error('❌ CRITICAL ERROR spawning Giant Cheese Boss:', error);
+      console.error('Stack trace:', error.stack);
+      // Fallback: disable boss and continue with next wave
+      giantCheeseBossActive = false;
+      giantCheeseBossDefeated = true;
+      alert('⚠️ Boss spawn failed! Continuing to next wave. Error: ' + error.message);
+    }
+  }
+  
+  function updateGiantCheeseBosses() {
+    // Update all giant cheese bosses
+    giantCheeseBosses = giantCheeseBosses.filter(boss => boss.update());
+    
+    // Update falling blocks
+    fallingCheeseBlocks = fallingCheeseBlocks.filter(block => {
+      block.x += block.vx;
+      block.y += block.vy;
+      block.vy += 0.3; // Gravity
+      block.rotation += block.rotationSpeed;
+      block.life--;
+      
+      return block.life > 0 && block.y < canvasHeight + 50;
+    });
+    
+    // Check if all bosses defeated
+    if (giantCheeseBossActive && giantCheeseBosses.length === 0 && giantCheeseBossDefeated) {
+      giantCheeseBossActive = false;
+      console.log('🧀 Giant Cheese Boss wave complete! Hearts are falling...');
+      
+      // 🐛 FIX: Delay next wave spawn to let hearts fall and be collected
+      setTimeout(() => {
+        console.log('🧀 Hearts collected! Advancing to next wave...');
+        
+        // Advance to next wave
+        gamePhase = 'formation';
+        phaseTimer = 0;
+        waveNumber++;
+        invaderDropPhase = false;
+        dropStartTime = Date.now();
+        spawnNewWave();
+      }, 3000); // 3 second delay for hearts to fall
+    }
+  }
+  
+  function drawGiantCheeseBosses(ctx) {
+    // Draw all giant cheese bosses (removed debug logs - were flooding console every frame)
+    giantCheeseBosses.forEach(boss => {
+      boss.draw(ctx);
+    });
+    
+    // Draw falling blocks
+    fallingCheeseBlocks.forEach(block => {
+      ctx.save();
+      ctx.translate(block.x, block.y);
+      ctx.rotate(block.rotation);
+      ctx.globalAlpha = block.life / 60;
+      ctx.fillStyle = block.color;
+      ctx.fillRect(-block.width / 2, -block.height / 2, block.width, block.height);
+      ctx.restore();
+    });
+    
+    // Draw Giant Cheese Boss wave indicator
+    if (giantCheeseBossActive) {
+      ctx.fillStyle = '#ffa500';
+      ctx.font = 'bold 24px Arial';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#ff8c00';
+      ctx.shadowBlur = 10;
+      ctx.fillText('🧀 GIANT CHEESE BOSS WAVE 🧀', canvasWidth / 2, 30);
+      ctx.shadowBlur = 0;
+    }
+  }
+  
+  function checkPlayerCollisionWithCheeseBoss() {
+    giantCheeseBosses.forEach(boss => {
+      if (boss.isDead) return;
+      
+      // 🐛 FIX: Proper collision box detection using standard checkCollision logic
+      // Only check collision if boss is at least partially visible on screen
+      if (boss.y + boss.height < 0) return; // Boss still completely above screen
+      
+      // Check if player's hitbox overlaps with boss's hitbox
+      if (playerShip.x + playerShip.width > boss.x - boss.width / 2 &&
+          playerShip.x < boss.x + boss.width / 2 &&
+          playerShip.y + playerShip.height > boss.y &&
+          playerShip.y < boss.y + boss.height) {
+        
+        if (!playerShip.invincible) {
+          // Collision! Player takes damage (reduced from 10 to 2 - was instant death!)
+          playerShip.health -= 2;
+          console.log(`🧀 Giant Cheese Boss collision! Boss Y: ${boss.y}, Player Y: ${playerShip.y}, Player health: ${playerShip.health}`);
+          
+          // Player invincibility frames
+          playerShip.invincible = true;
+          playerShip.invincibleTimer = 60;
+          
+          // Create impact effect
+          explosions.push({
+            x: playerShip.x,
+            y: playerShip.y,
+            frame: 0,
+            maxFrames: 20,
+            color: '#ffa500'
+          });
+          
+          // Also damage the boss (collision damage)
+          boss.takeDamage(5);
+          
+          // Check if player died
+          if (playerShip.health <= 0) {
+            onGameOver(); // 🐛 FIX: Was calling gameOver() which doesn't exist!
+          }
+        }
+      }
+    });
+  }
+  
+  function checkBulletCollisionWithCheeseBoss() {
+    bullets.forEach((bullet, bulletIndex) => {
+      giantCheeseBosses.forEach(boss => {
+        if (boss.isDead) return;
+        
+        // Check if bullet hits boss
+        if (bullet.x > boss.x - boss.width / 2 &&
+            bullet.x < boss.x + boss.width / 2 &&
+            bullet.y > boss.y &&
+            bullet.y < boss.y + boss.height) {
+          
+          // Hit! Apply damage (1 damage per bullet)
+          const damage = 1;
+          boss.takeDamage(damage);
+          
+          // Remove bullet (🐛 FIX: use 'bullets', not 'playerBullets')
+          bullets.splice(bulletIndex, 1);
+          
+          // Play hit sound
+          if (cheeseSoundManager && typeof cheeseSoundManager.playSound === 'function') {
+            cheeseSoundManager.playSound('hit');
+          }
+          
+          // Create hit effect
+          explosions.push({
+            x: bullet.x,
+            y: bullet.y,
+            frame: 0,
+            maxFrames: 10,
+            color: '#ffa500'
+          });
+        }
+      });
+    });
   }
 
   // 🧩 NEW: Spawn Tetris block danger items with bomb level restrictions
@@ -6991,7 +7873,7 @@ let reloadButtonInterval = null;
               
               // 🚀 SEASON 3 PHASE 1: Enhanced explosion and score popup for weak point
               createEnhancedExplosion(invader.x + invader.width / 2, invader.y + invader.height / 2, 35, 1.5);
-              createScorePopup(invader.x + invader.width / 2, invader.y + invader.height / 2, weakPointScore, comboMultiplier);
+              createScorePopup(invader.x + invader.width / 2, invader.y + invader.height / 2, totalScore, comboMultiplier);
               
               // Create big explosion (keep for compatibility)
               explosions.push({
@@ -7031,7 +7913,7 @@ let reloadButtonInterval = null;
             
             // 🚀 SEASON 3 PHASE 1: Enhanced explosion and score popup
             createEnhancedExplosion(invader.x + invader.width / 2, invader.y + invader.height / 2, 25, 1);
-            createScorePopup(invader.x + invader.width / 2, invader.y + invader.height / 2, finalScore, comboMultiplier);
+            createScorePopup(invader.x + invader.width / 2, invader.y + invader.height / 2, totalScore, comboMultiplier);
             
             // Create normal explosion (keep for compatibility)
             explosions.push({
@@ -7246,15 +8128,8 @@ let reloadButtonInterval = null;
   }
 
   function checkPlayerHit() {
-    // 🧪 REDUCED DEBUG: Log less frequently during boss phase
-    if (gamePhase === 'boss' && Date.now() % 3000 < 16) { // Every 3 seconds
-      console.log(`🧪 checkPlayerHit() CALLED IN BOSS PHASE - Boss exists: ${!!boss}, Boss bullets: ${bossBullets?.length || 0}`);
-    }
-    
-    // 🧪 DEBUG: Confirm function is being called
-    if (Date.now() % 5000 < 16) { // Log every 5 seconds
-      console.log(`🧪 checkPlayerHit() called - Boss exists: ${!!boss}, Boss bullets: ${bossBullets?.length || 0}, Invader bullets: ${invaderBullets?.length || 0}`);
-    }
+    // 🐛 DEBUG: Removed excessive logging that was flooding console and causing freezes
+    // Only log in critical error situations, not every few seconds
     
     // Check invader bullets
     invaderBullets.forEach((bullet, index) => {
@@ -7283,30 +8158,13 @@ let reloadButtonInterval = null;
       }
     });
     
-    // 🚀 NEW: Check boss bullets for player damage
-    // 🧪 REDUCED DEBUG: Check conditions less frequently
-    if (gamePhase === 'boss' && Date.now() % 2000 < 16) { // Every 2 seconds
-      console.log(`🧪 BOSS BULLET CONDITIONS: boss=${!!boss}, bossBullets=${!!bossBullets}, length=${bossBullets?.length || 0}, typeof bossBullets=${typeof bossBullets}`);
-    }
-    
+    // 🚀 NEW: Check boss bullets for player damage (old boss system only)
     if (boss && bossBullets && bossBullets.length > 0) {
-      // 🧪 ENHANCED DEBUG: Log detailed boss bullet check
-      if (Date.now() % 1000 < 16) { // Log every second
-        console.log(`🧪 BOSS BULLET CHECK: ${bossBullets.length} bullets, Player at (${Math.round(playerShip.x)}, ${Math.round(playerShip.y)})`);
-        console.log(`🧪 Boss position: (${Math.round(boss.x)}, ${Math.round(boss.y)}) size: ${boss.width}x${boss.height}`);
-        if (bossBullets.length > 0) {
-          const firstBullet = bossBullets[0];
-          console.log(`🧪 First bullet at (${Math.round(firstBullet.x)}, ${Math.round(firstBullet.y)}) type: ${firstBullet.type || 'normal'}`);
-          console.log(`🧪 First bullet properties: x=${firstBullet.x}, y=${firstBullet.y}, speed=${firstBullet.speed}, angle=${firstBullet.angle}`);
-        }
-      }
-      
       bossBullets.forEach((bullet, index) => {
-        // 🧪 DEBUG: Log every collision check attempt
+        // 🐛 DEBUG: Removed excessive per-frame logging
         const collisionResult = checkCollision(playerShip, bullet);
         if (collisionResult) {
-          console.log(`💥 BOSS BULLET COLLISION DETECTED: ${bullet.type || 'normal'} hit player!`);
-          console.log(`🎯 Collision details: Bullet(${bullet.x}, ${bullet.y}, ${bullet.width}x${bullet.height}) vs Player(${playerShip.x}, ${playerShip.y}, ${playerShip.width}x${playerShip.height})`);
+          // Only log actual collisions, not every check
           // 🚀 NEW: Check if player is invincible
           if (playerShip.invincible && playerShip.invincibleTimer > 0) {
             console.log('🛡️ Player invincible - boss bullet blocked!');
@@ -7525,6 +8383,11 @@ let reloadButtonInterval = null;
     
     // 🏆 SEASON 3 PHASE 2: Draw achievement system
     drawAchievementPopups();
+    
+    // 🧀🎯 GIANT CHEESE BOSS: Draw Giant Cheese Boss entities if active
+    if (giantCheeseBossActive || giantCheeseBosses.length > 0) {
+      drawGiantCheeseBosses(ctx);
+    }
     
     // 🔥 PHOENIX INVADERS: Draw Phoenix entities if in Phoenix wave
     if (isPhoenixWave) {
@@ -9160,11 +10023,14 @@ let reloadButtonInterval = null;
   function drawScore() {
     const scoreDisplay = document.getElementById("space-invaders-score");
     if (scoreDisplay) {
-      // 🚀 CRITICAL FIX: Use same DSPOINC calculation as saveScore for consistency
+      // 🏆 SEASON 5: Calculate with 10:1 conversion for balanced scoring
       const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-      const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED for 10k max at Boss 4)
+      const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base
       const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
-      const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
+      const beforeConversion = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
+      
+      // 🎯 SEASON 5: Apply 10:1 conversion (2,000 → 200)
+      const totalDSPOINC = Math.floor(beforeConversion / 10);
       
       // Add mouse control indicator
       const mouseIndicator = isMouseControlEnabled && isMouseOverCanvas ? '🖱️' : '⌨️';
@@ -9406,20 +10272,24 @@ let reloadButtonInterval = null;
     const gameOverModal = document.getElementById("space-invaders-over-modal");
     const finalScoreText = document.getElementById("space-invaders-final-score-text");
     
-    // 🏆 ROLE-BASED SCORING: Use role multipliers for final score display
+    // 🏆 SEASON 5: Apply 10:1 conversion for balanced scoring
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const baseDSPOINC = finalSpaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base (BALANCED system - same as drawScore)
+    const baseDSPOINC = finalSpaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
-    const totalDSPOINC = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100; // Round to 2 decimal places
+    const totalDSPOINCBeforeConversion = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
+    
+    // 🎯 SEASON 5: 10:1 conversion for game balance
+    const totalDSPOINC = Math.floor(totalDSPOINCBeforeConversion / 10); // 2,000 → 200
     
     // 🔍 DEBUG: Log scoring details for game over screen
-    console.log('🎮 GAME OVER SCREEN CALCULATION:');
+    console.log('🎮 GAME OVER SCREEN CALCULATION (SEASON 5 - 10:1):');
     console.log('- finalSpaceInvadersScore (stored):', finalSpaceInvadersScore);
     console.log('- finalSpaceInvadersCount (stored):', finalSpaceInvadersCount);
     console.log('- roleMultiplier:', roleMultiplier);
     console.log('- baseDSPOINC:', baseDSPOINC);
     console.log('- roleBonusDSPOINC:', roleBonusDSPOINC);
-    console.log('- totalDSPOINC (display):', totalDSPOINC);
+    console.log('- totalDSPOINC (before 10:1):', totalDSPOINCBeforeConversion);
+    console.log('- totalDSPOINC (after 10:1 - SAVED):', totalDSPOINC);
     
     if (gameOverModal && finalScoreText) {
       if (roleMultiplier > 1.0) {
@@ -10097,16 +10967,7 @@ let reloadButtonInterval = null;
         targetX = globalX - playerShip.width / 2;
         targetY = globalY - playerShip.height / 2;
         
-        // 🐛 DEBUG: Log mouse tracking outside canvas
-        if (!isMouseOverCanvas) {
-          console.log('🖱️ Global mouse tracking - Outside canvas:', {
-            windowMouse: { x: window.mouseX, y: window.mouseY },
-            canvasRect: { left: rect.left, top: rect.top },
-            globalCoords: { x: globalX, y: globalY },
-            targetCoords: { x: targetX, y: targetY },
-            isMouseOverCanvas: isMouseOverCanvas
-          });
-        }
+        // 🐛 DEBUG: Removed per-frame logging that was flooding console and causing freezes
       } else {
         return; // Canvas not available
       }

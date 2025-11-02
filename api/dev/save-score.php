@@ -147,11 +147,13 @@ try {
         $unit = 'dspoinc';
         $dspoinc_score = $raw_score; // Use score directly (already DSPOINC with role bonus)
     } elseif ($game === 'space_invaders') {
-        // 🔧 FIX: Space Invaders frontend now calculates DSPOINC (like Tetris)
-        // Don't multiply again - use score as-is (already includes role bonus)
-        $pointsPerUnit = 1; // No multiplication needed
-        $unit = 'dspoinc';
-        $dspoinc_score = $raw_score; // Use score directly (already DSPOINC with role bonus)
+        // 🔧 SEASON 5 FIX: Space Invaders 10:1 conversion for balanced scoring
+        // Frontend sends full DSPOINC (with role bonus), backend divides by 10
+        $pointsPerUnit = 0.1; // 10:1 conversion ratio
+        $unit = 'invaders';
+        $original_dspoinc = $raw_score; // Store original for logging
+        $dspoinc_score = floor($raw_score / 10); // 10:1 conversion (2,000 → 200)
+        error_log("🎯 Space Invaders 10:1 conversion: {$original_dspoinc} DSPOINC → {$dspoinc_score} DSPOINC (saved)");
     } else {
         $pointsPerUnit = 10; // Default fallback
         $unit = 'units';
@@ -283,7 +285,8 @@ try {
     } elseif ($game === 'snake') {
         $message = "Score saved for $game: $raw_score cheese = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
     } elseif ($game === 'space_invaders') {
-        $message = "Score saved for $game: $raw_score invaders = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
+        // Show 10:1 conversion in message
+        $message = "Score saved for $game: $raw_score DSPOINC displayed → " . round($dspoinc_score) . " DSPOINC saved (10:1 Season 5 conversion)";
     } else {
         $message = "Score saved for $game: $raw_score $unit = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
     }
