@@ -19,7 +19,7 @@ Use this checklist to track incoming assets and listing status.
 | Luxury Poker | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅| ⏳|
 | Reactor Motors | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 | Rough Ryders | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | ✅ | ⏳ |
-| Jayk\'s Stake House | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅ | ⏳ |
+| Jayk's Stake House 2 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Fox Goblin NFT | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅ | ⏳|
 | Artenova | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 

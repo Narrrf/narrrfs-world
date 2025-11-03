@@ -38,7 +38,7 @@
 **Total Partners:** 17  
 **Responses Received:** 8+ partners responded ✅  
 **Assets In Progress:** 2 partners (Golden Baboons 🔄, Rough Ryders 🔄 - sending assets soon)  
-**Partners Listed:** 9/17 (Gensuki, Mad Skulz NFT, Samuzi NFT, Artenova, Boundless NFT, Kekius Maximus, Golden Baboons, Fox Goblin NFT, Web Builder 161 Group) - 6+ showing in Featured section on live site
+**Partners Listed:** 10/17 (Gensuki, Mad Skulz NFT, Samuzi NFT, Artenova, Boundless NFT, Kekius Maximus, Golden Baboons, Jayk's Stake House 2, Web Builder 161 Group, Reactor Motors) - Featured section on live site
 
 ---
 
