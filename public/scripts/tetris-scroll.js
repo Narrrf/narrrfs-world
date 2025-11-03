@@ -983,6 +983,10 @@ async function startTetris() {
   // 🧀 Clear cheese particles when starting new game
   cheeseParticles.clear();
   
+  // 📱 PREVENT SCREEN SWIPE (like Snake!)
+  document.body.style.overflow = "hidden";
+  console.log('📱 Screen swipe prevented - Tetris active');
+  
   if (!tetrisScoreDisplay) {
     console.log('⚠️ Score display element not found - creating fallback');
   }
@@ -1016,23 +1020,131 @@ async function startTetris() {
     [[6]]                       // 💣
   ];
 
+  // 👑 SEASON 5: TETRIS BOSS MODE SYSTEM (Like Snake Bosses!)
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
+  const tetrisBossConfig = {
+    // Test mode vs Production spawn intervals (in total lines cleared) - 9 BOSSES LIKE SNAKE!
+    spawnIntervals: isLocalhost 
+      ? [3, 10, 20, 35, 55, 80, 110, 145, 185]  // Test: Starting at 3, progressive spacing
+      : [10, 30, 60, 100, 150, 210, 280, 360, 450], // Production: More spaced out
+    
+    // Boss names (colorful and fun!) - 9 PROGRESSIVE BOSSES
+    names: [
+      '🧀 Cheese Block King',      // Boss 1 - Intro
+      '👑 Tetris Emperor',          // Boss 2 - Easy
+      '⚡ Lightning Lord',           // Boss 3 - Medium
+      '🌟 Galaxy Master',            // Boss 4 - Challenging
+      '💎 Diamond Deity',            // Boss 5 - Hard
+      '🔥 Inferno Architect',        // Boss 6 - Very Hard
+      '🌊 Tsunami Titan',            // Boss 7 - Extreme
+      '💀 Shadow Overlord',          // Boss 8 - Brutal
+      '🏆 ULTIMATE CHEESE GOD'       // Boss 9 - ULTIMATE!
+    ],
+    
+    // Boss colors (vibrant themed colors!) - 9 UNIQUE COLORS
+    colors: ['#FFD700', '#9370DB', '#00CED1', '#FF1493', '#00FF00', '#FF4500', '#1E90FF', '#8B008B', '#FF0000'],
+    
+    // Boss mechanics (progressive difficulty) - 9 BOSSES
+    frozenPercent: [15, 20, 25, 30, 35, 40, 45, 50, 60],  // Progressive freeze rate
+    giantChance: [20, 25, 30, 35, 40, 45, 50, 60, 70],     // Progressive giant rate
+    requiredLines: [5, 7, 9, 11, 13, 15, 18, 21, 25],      // Progressive line requirements
+    rewards: [50, 100, 150, 200, 300, 400, 550, 750, 1000] // Progressive rewards (BIG for final boss!)
+  };
+  
+  // Boss state tracking
+  let currentBoss = null;
+  let bossLinesCleared = 0;
+  let totalBossesDefeated = 0;
+
   let nextPiece = randomPiece();
   let current = {
-    shape: nextPiece,
+    shape: nextPiece.shape, // Extract shape from piece object
+    isFrozen: nextPiece.isFrozen, // Track frozen status
+    isGiant: nextPiece.isGiant, // Track giant status
+    isBomb: nextPiece.isBomb, // Track bomb status
     row: 0,
     col: 3,
     timer: null
   };
   nextPiece = randomPiece();
 
+  // 🚀 SEASON 5: FROZEN BLOCK SYSTEM (like Snake Mad Mode!)
   function randomPiece() {
-    const isExplosive = Math.random() < 0.1;
-    return isExplosive ? [[6]] : pieces[Math.floor(Math.random() * pieces.length)];
+    // 💣 BOSS MODE: More bombs during boss battles!
+    const bombChance = currentBoss ? 0.25 : 0.1; // Boss: 25%, Normal: 10%
+    const isExplosive = Math.random() < bombChance;
+    let piece = isExplosive ? [[6]] : pieces[Math.floor(Math.random() * pieces.length)];
+    let isBomb = isExplosive;
+    
+    // 👑 BOSS MODE: Adjust frozen chance and check for giant blocks
+    let frozenChance = isLocalhost ? 0.15 : 0.05; // Normal: Test 15%, Prod 5% (REDUCED - was too tricky!)
+    let isGiant = false;
+    
+    if (currentBoss) {
+      // During boss battle: Higher frozen chance based on boss level
+      const bossIndex = totalBossesDefeated % tetrisBossConfig.names.length;
+      frozenChance = tetrisBossConfig.frozenPercent[bossIndex] / 100;
+      
+      // Check for giant block during boss
+      const giantChance = tetrisBossConfig.giantChance[bossIndex] / 100;
+      isGiant = Math.random() < giantChance;
+      
+      if (isGiant) {
+        console.log(`🧀 GIANT BLOCK spawned during boss! (${tetrisBossConfig.giantChance[bossIndex]}% chance)`);
+        piece = makeGiantPiece(piece);
+        
+        // 💣 GIANT BOMB: If this is a bomb, make it a GIANT BOMB!
+        if (isBomb) {
+          console.log('💣 GIANT BOMB created! (2x2 = 4x explosion radius!)');
+        }
+      }
+    }
+    
+    // ❄️ FROZEN BLOCK CHANCE
+    const isFrozen = Math.random() < frozenChance;
+    
+    if (isFrozen) {
+      console.log(`❄️ FROZEN BLOCK spawned! (${currentBoss ? 'BOSS' : 'NORMAL'} mode, ${Math.round(frozenChance * 100)}% chance)`);
+    }
+    
+    return { shape: piece, isFrozen: isFrozen, isGiant: isGiant, isBomb: isBomb };
+  }
+  
+  // 🧀 Make a piece GIANT (1.5x size - better balance!)
+  function makeGiantPiece(normalPiece) {
+    // For 1.5x size, we add extra cells strategically
+    // This gives a bigger piece without being overwhelming
+    const giant = [];
+    
+    normalPiece.forEach((row, rowIndex) => {
+      const newRow = [];
+      row.forEach((cell, colIndex) => {
+        newRow.push(cell);
+        // Add extra column every other cell for 1.5x width
+        if (colIndex % 2 === 0 && colIndex < row.length - 1) {
+          newRow.push(cell);
+        }
+      });
+      giant.push(newRow);
+      
+      // Add extra row every other row for 1.5x height
+      if (rowIndex % 2 === 0 && rowIndex < normalPiece.length - 1) {
+        giant.push([...newRow]);
+      }
+    });
+    
+    return giant;
   }
 
-  function explode(centerX, centerY) {
-    for (let y = -1; y <= 1; y++) {
-      for (let x = -1; x <= 1; x++) {
+  function explode(centerX, centerY, isGiantBomb = false) {
+    // 💣 GIANT BOMB: 2x explosion radius! (4x4 area instead of 3x3)
+    const radius = isGiantBomb ? 2 : 1;
+    
+    console.log(`💥 EXPLODING ${isGiantBomb ? 'GIANT BOMB' : 'NORMAL BOMB'} at (${centerX}, ${centerY}) with radius ${radius}`);
+    
+    for (let y = -radius; y <= radius; y++) {
+      for (let x = -radius; x <= radius; x++) {
         const ny = centerY + y;
         const nx = centerX + x;
         if (ny >= 0 && ny < gridHeight && nx >= 0 && nx < gridWidth && grid[ny]?.[nx]) {
@@ -1040,6 +1152,13 @@ async function startTetris() {
         }
       }
     }
+    
+    // 🎆 Extra particles for giant bomb!
+    const canvas = document.getElementById("tetris-canvas");
+    if (canvas && isGiantBomb) {
+      cheeseParticles.createCheeseParticles(10, canvas.width, canvas.height); // Giant explosion particles!
+    }
+    
     window.tetrisDraw();
   }
 
@@ -1083,10 +1202,66 @@ function drawBlock(x, y, val) {
     );
     current.shape.forEach((row, y) =>
       row.forEach((val, x) => {
-        if (val) drawBlock(current.col + x, current.row + y, val);
+        if (val) {
+          drawBlock(current.col + x, current.row + y, val);
+          
+          // ❄️ FROZEN OVERLAY on current piece
+          if (current.isFrozen) {
+            context.fillStyle = 'rgba(59, 130, 246, 0.4)';
+            context.fillRect((current.col + x) * blockSize, (current.row + y) * blockSize, blockSize, blockSize);
+            context.strokeStyle = "#3b82f6";
+            context.lineWidth = 2;
+            context.strokeRect((current.col + x) * blockSize, (current.row + y) * blockSize, blockSize, blockSize);
+          }
+        }
       })
     );
     context.restore();
+    
+    // ❄️ FROZEN INDICATOR on top of canvas
+    if (current.isFrozen) {
+      context.save();
+      context.fillStyle = '#3b82f6';
+      context.font = 'bold 14px Arial';
+      context.textAlign = 'center';
+      context.shadowBlur = 10;
+      context.shadowColor = '#3b82f6';
+      context.fillText('❄️ FROZEN ❄️', canvas.width / 2, 15);
+      context.restore();
+    }
+    
+    // 👑 BOSS MODE INDICATOR on canvas
+    if (currentBoss) {
+      context.save();
+      context.fillStyle = currentBoss.color;
+      context.font = 'bold 12px Arial';
+      context.textAlign = 'center';
+      context.shadowBlur = 10;
+      context.shadowColor = currentBoss.color;
+      context.fillText(currentBoss.name, canvas.width / 2, 30);
+      
+      // Progress bar
+      const barWidth = canvas.width - 20;
+      const barHeight = 8;
+      const barX = 10;
+      const barY = 35;
+      const progress = bossLinesCleared / currentBoss.requiredLines;
+      
+      // Background
+      context.fillStyle = 'rgba(0,0,0,0.5)';
+      context.fillRect(barX, barY, barWidth, barHeight);
+      
+      // Progress fill
+      context.fillStyle = currentBoss.color;
+      context.fillRect(barX, barY, barWidth * progress, barHeight);
+      
+      // Text
+      context.fillStyle = '#FFD700';
+      context.font = 'bold 10px Arial';
+      context.fillText(`${bossLinesCleared}/${currentBoss.requiredLines} Lines`, canvas.width / 2, 52);
+      
+      context.restore();
+    }
     
     // 🧀 Update and draw cheese particles
     cheeseParticles.update();
@@ -1105,6 +1280,14 @@ function drawBlock(x, y, val) {
   
   function rotatePiece() {
     if (isTetrisPaused) return; // Prevent rotation while paused
+    
+    // ❄️ FROZEN BLOCK: Can't rotate!
+    if (current.isFrozen) {
+      console.log('❄️ FROZEN BLOCK - Rotation blocked!');
+      showFrozenWarning();
+      tetrisSounds.playSound('error'); // Optional: error sound
+      return;
+    }
 
     const rotated = current.shape[0].map((_, i) =>
       current.shape.map(row => row[i]).reverse()
@@ -1116,10 +1299,55 @@ function drawBlock(x, y, val) {
   
   window.tetrisRotatePiece = rotatePiece;
 
+  // ❄️ FROZEN BLOCK WARNING POPUP
+  function showFrozenWarning() {
+    const existing = document.getElementById('frozen-warning');
+    if (existing) return; // Don't spam warnings
+    
+    const warning = document.createElement('div');
+    warning.id = 'frozen-warning';
+    warning.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(45deg, rgba(59, 130, 246, 0.95), rgba(147, 197, 253, 0.95));
+      color: white;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 18px;
+      z-index: 10000;
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+      border: 3px solid rgba(255, 255, 255, 0.9);
+    `;
+    warning.innerHTML = '❄️ FROZEN! No Rotation! ❄️';
+    document.body.appendChild(warning);
+    
+    setTimeout(() => {
+      if (warning.parentNode) warning.parentNode.removeChild(warning);
+    }, 800);
+  }
+
   // --- Next block preview: PNG if available, else color ---
-  function renderNextBlock(shape) {
-    if (!nextCtx || !shape) return;
+  function renderNextBlock(pieceObj) {
+    if (!nextCtx || !pieceObj) return;
+    const shape = pieceObj.shape || pieceObj; // Support both object and array
+    const isFrozen = pieceObj.isFrozen || false;
+    
     nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+    
+    // ❄️ FROZEN INDICATOR on next piece preview
+    if (isFrozen) {
+      nextCtx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+      nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+      nextCtx.fillStyle = '#3b82f6';
+      nextCtx.font = 'bold 12px Arial';
+      nextCtx.textAlign = 'center';
+      nextCtx.fillText('❄️ FROZEN', nextCanvas.width / 2, 12);
+      nextCtx.textAlign = 'left';
+    }
+    
     const offsetX = Math.floor((4 - shape[0].length) / 2);
     const offsetY = Math.floor((4 - shape.length) / 2);
     shape.forEach((row, y) => {
@@ -1134,15 +1362,46 @@ function drawBlock(x, y, val) {
             nextCtx.strokeStyle = "#1f2937";
             nextCtx.strokeRect((x + offsetX) * 20 + 0.5, (y + offsetY) * 20 + 0.5, 19, 19);
           }
+          
+          // ❄️ FROZEN OVERLAY on blocks
+          if (isFrozen) {
+            nextCtx.fillStyle = 'rgba(59, 130, 246, 0.5)';
+            nextCtx.fillRect((x + offsetX) * 20, (y + offsetY) * 20, 20, 20);
+            nextCtx.strokeStyle = "#3b82f6";
+            nextCtx.lineWidth = 2;
+            nextCtx.strokeRect((x + offsetX) * 20, (y + offsetY) * 20, 20, 20);
+          }
         }
       });
     });
-    // 💣 Bomb detection & warning toggle
-    const bombWarning = document.getElementById("bomb-warning");
-    const isBomb = shape.length === 1 && shape[0].length === 1 && shape[0][0] === 6;
-    if (bombWarning) {
-      bombWarning.classList.toggle("hidden", !isBomb);
+  }
+
+  // --- Drawing blocks: PNG if available, else color ---
+  function drawBlock(x, y, val) {
+    context.save();
+
+    // 💣 Bomb glow (active countdown)
+    if (activeExplosive && activeExplosive.x === x && activeExplosive.y === y) {
+      const timeElapsed = (Date.now() - activeExplosive.start) / 1000;
+      const remaining = activeExplosive.countdown - timeElapsed;
+      const intensity = Math.max(0, Math.min(1, 1 - remaining / activeExplosive.countdown));
+      context.shadowColor = '#facc15';
+      context.shadowBlur = 10 + 30 * intensity;
     }
+
+    const img = blockImages[val];
+    if (img && img.complete) {
+      context.drawImage(img, x * blockSize, y * blockSize, blockSize, blockSize);
+    } else {
+      context.fillStyle = colors[val] || "#FFFFFF";
+      context.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+
+      // 👁️ Optional stroke for clarity
+      context.strokeStyle = "#1f2937";
+      context.strokeRect(x * blockSize + 0.5, y * blockSize + 0.5, blockSize - 1, blockSize - 1);
+    }
+
+    context.restore();
   }
 
 function collide(shape, row, col) {
@@ -1166,6 +1425,9 @@ function collide(shape, row, col) {
       
       function clearLines() {
         console.log('🔍 clearLines() called');
+        console.log(`🔍 Current total lines cleared: ${linesClearedTotal}`);
+        console.log(`🔍 Boss active: ${currentBoss ? 'YES' : 'NO'}, Boss lines: ${bossLinesCleared}`);
+        
         let lines = 0;
         let bombDefusedLines = 0; // Track bomb-defused lines separately
         for (let y = gridHeight - 1; y >= 0; y--) {
@@ -1173,6 +1435,7 @@ function collide(shape, row, col) {
           
           if (isFullLine) {
             console.log(`✅ FULL LINE DETECTED at row ${y}!`);
+            console.log(`📊 Row ${y} contents:`, grid[y]);
             // 🧠 Check for bomb BEFORE removing the row
             if (grid[y].includes(6)) {
               console.log(`💣 BOMB LINE - will score separately`);
@@ -1225,8 +1488,11 @@ function collide(shape, row, col) {
           
           // 🎵 Check for level up (every 20 lines)
           const oldLevel = Math.floor(linesClearedTotal / 20);
+          const oldTotal = linesClearedTotal;
           linesClearedTotal += lines + bombDefusedLines; // Count both types of lines
           const newLevel = Math.floor(linesClearedTotal / 20);
+          
+          console.log(`📊 LINES UPDATE: ${oldTotal} → ${linesClearedTotal} (added ${lines + bombDefusedLines})`);
           
           if (newLevel > oldLevel) {
             tetrisSounds.playSound('levelUp');
@@ -1236,13 +1502,28 @@ function collide(shape, row, col) {
           console.log(`🔍 About to check if lines > 0: lines=${lines}, type=${typeof lines}`);
           if (lines > 0) {
             console.log(`🏆 SCORING: Regular line scoring triggered for ${lines} lines`);
-            // Use database configuration for DSPOINC calculation with role-based multipliers
-            const baseScore = lines * 2; // Season 3: 2 DSPOINC per line (balanced for ~5k max)
+            
+            // 🚀 SEASON 5: MULTI-LINE BONUS SYSTEM (rewards clearing more lines!)
+            // Base: 2 DSPOINC per line
+            // Bonus: Extra points for 2, 3, or 4 lines cleared at once
+            let baseScore = lines * 2; // Base 2 per line
+            let multiLineBonus = 0;
+            
+            if (lines === 2) {
+              multiLineBonus = 1; // Double = +1 bonus (5 total)
+            } else if (lines === 3) {
+              multiLineBonus = 3; // Triple = +3 bonus (9 total)
+            } else if (lines === 4) {
+              multiLineBonus = 8; // TETRIS! = +8 bonus (16 total!)
+            }
+            
+            const totalBase = baseScore + multiLineBonus;
             const roleMultiplier = getRoleScoreMultiplier();
-            const roleBonus = Math.round(baseScore * (roleMultiplier - 1)); // Changed Math.floor to Math.round for fairer bonuses
-            console.log(`🏆 Scoring breakdown: baseScore=${baseScore}, roleMultiplier=${roleMultiplier}, roleBonus=${roleBonus}`);
+            const roleBonus = Math.round(totalBase * (roleMultiplier - 1)); // Fair rounding
+            
+            console.log(`🏆 SEASON 5 Multi-Line Scoring: ${lines} lines | Base: ${baseScore} | Bonus: ${multiLineBonus} | Total: ${totalBase} | Role: ${roleMultiplier}x | RoleBonus: ${roleBonus}`);
             console.log(`🏆 Score before: ${score}`);
-            score += baseScore + roleBonus;
+            score += totalBase + roleBonus;
             console.log(`🏆 Score after: ${score}`);
             
             // 🏆 Update score display immediately
@@ -1263,8 +1544,233 @@ function collide(shape, row, col) {
             clearInterval(gameInterval);
             gameInterval = setInterval(drop, dropInterval);
           }
+          
+          // 👑 BOSS MODE: Check if boss should spawn or if boss is defeated
+          if (currentBoss) {
+            // Boss active: Check if boss is defeated
+            bossLinesCleared += lines + bombDefusedLines; // Count ALL lines (regular + bomb)
+            console.log(`👑 Boss lines cleared: ${bossLinesCleared}/${currentBoss.requiredLines} (regular: ${lines}, bombs: ${bombDefusedLines})`);
+            
+            if (bossLinesCleared >= currentBoss.requiredLines) {
+              // Boss defeated!
+              defeatBoss();
+            }
+          } else {
+            // No boss: Check if boss should spawn
+            const nextBossIndex = totalBossesDefeated % tetrisBossConfig.spawnIntervals.length;
+            const nextBossSpawn = tetrisBossConfig.spawnIntervals[nextBossIndex];
+            
+            if (linesClearedTotal >= nextBossSpawn && totalBossesDefeated === nextBossIndex) {
+              // Spawn boss!
+              spawnBoss(nextBossIndex);
+            }
+          }
         }
       }
+      
+  // 👑 BOSS SPAWN FUNCTION (like Snake bosses!)
+  function spawnBoss(bossIndex) {
+    const bossName = tetrisBossConfig.names[bossIndex];
+    const bossColor = tetrisBossConfig.colors[bossIndex];
+    const requiredLines = tetrisBossConfig.requiredLines[bossIndex];
+    const reward = tetrisBossConfig.rewards[bossIndex];
+    
+    currentBoss = {
+      name: bossName,
+      color: bossColor,
+      requiredLines: requiredLines,
+      reward: reward,
+      bossIndex: bossIndex
+    };
+    
+    bossLinesCleared = 0;
+    
+    console.log(`👑 BOSS SPAWNED: ${bossName} | Lines: ${requiredLines} | Reward: ${reward} DSPOINC`);
+    
+    // Show boss spawn notification with countdown (like Snake!)
+    showBossSpawnNotification(bossName, bossColor, requiredLines, reward);
+  }
+  
+  // 👑 BOSS DEFEAT FUNCTION
+  function defeatBoss() {
+    const bossName = currentBoss.name;
+    const reward = currentBoss.reward;
+    const bossColor = currentBoss.color;
+    
+    console.log(`🎉 BOSS DEFEATED: ${bossName} | Reward: ${reward} DSPOINC`);
+    
+    // ⏸️ PAUSE GAME during victory countdown (like Snake!)
+    isTetrisPaused = true;
+    clearInterval(gameInterval);
+    console.log('⏸️ Game PAUSED for boss victory celebration!');
+    
+    // Add boss reward to score (with role multiplier!)
+    const roleMultiplier = getRoleScoreMultiplier();
+    const totalReward = Math.round(reward * roleMultiplier);
+    const oldScore = score;
+    score += totalReward;
+    
+    console.log(`💰 BOSS REWARD APPLIED: ${oldScore} + ${totalReward} = ${score} DSPOINC`);
+    console.log(`💰 Base reward: ${reward} | Role multiplier: ${roleMultiplier}x | Total: ${totalReward}`);
+    
+    updateTetrisScoreDisplay();
+    
+    totalBossesDefeated++;
+    console.log(`🏆 Total bosses defeated: ${totalBossesDefeated}`);
+    
+    // 💥 EPIC BOSS DEFEAT: Clear entire field! (All explode!)
+    console.log('💥 BOSS DEFEATED - CLEARING ENTIRE FIELD!');
+    for (let y = 0; y < gridHeight; y++) {
+      for (let x = 0; x < gridWidth; x++) {
+        grid[y][x] = 0;
+      }
+    }
+    
+    // 🎆 Create massive cheese particle explosion!
+    const canvas = document.getElementById("tetris-canvas");
+    if (canvas) {
+      cheeseParticles.createCheeseParticles(20, canvas.width, canvas.height); // Epic explosion!
+    }
+    
+    // 🎵 Play victory sound
+    tetrisSounds.playSound('levelUp');
+    
+    // Show boss victory notification with countdown
+    showBossVictoryNotification(bossName, bossColor, totalReward);
+    
+    // ⏱️ Resume game after countdown (4.9 seconds total)
+    setTimeout(() => {
+      // ⚡ Speed up game after boss (faster gameplay!)
+      dropInterval = Math.max(100, dropInterval - 100); // Bigger speed boost!
+      clearInterval(gameInterval);
+      gameInterval = setInterval(drop, dropInterval);
+      console.log(`⚡ Game speed increased! New interval: ${dropInterval}ms`);
+      
+      // ▶️ Resume game
+      isTetrisPaused = false;
+      console.log('▶️ Game RESUMED after boss victory!');
+    }, 4900); // Match countdown duration (3s countdown + 0.8s GO! + buffer)
+    
+    // Clear boss state
+    currentBoss = null;
+    bossLinesCleared = 0;
+  }
+  
+  // 📢 BOSS SPAWN NOTIFICATION (with countdown like Snake!)
+  function showBossSpawnNotification(bossName, bossColor, requiredLines, reward) {
+    const notification = document.createElement('div');
+    notification.id = 'boss-spawn-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(30,30,30,0.95));
+      color: white;
+      padding: 20px 30px;
+      border-radius: 15px;
+      font-weight: bold;
+      z-index: 10000;
+      box-shadow: 0 0 40px ${bossColor};
+      border: 4px solid ${bossColor};
+      text-align: center;
+      max-width: 90vw;
+      width: 400px;
+    `;
+    
+    notification.innerHTML = `
+      <div style="font-size: clamp(20px, 5vw, 32px); margin-bottom: 10px; color: ${bossColor};">${bossName}</div>
+      <div style="font-size: clamp(14px, 3.5vw, 18px); margin-bottom: 8px;">Clear ${requiredLines} lines to win!</div>
+      <div style="font-size: clamp(12px, 3vw, 16px); color: #FFD700;">Reward: +${reward} DSPOINC</div>
+      <div id="boss-countdown" style="font-size: clamp(32px, 8vw, 48px); margin-top: 15px; color: ${bossColor};">3</div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Wait 1 second before starting countdown (let player see boss info!)
+    setTimeout(() => {
+      const countdownEl = document.getElementById('boss-countdown');
+      if (!countdownEl) return;
+      
+      // Countdown: 3, 2, 1, GO!
+      let count = 3;
+      
+      const countdownInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownEl.textContent = count;
+          countdownEl.style.color = bossColor;
+        } else {
+          countdownEl.textContent = 'GO!';
+          countdownEl.style.color = '#FFD700'; // Gold for GO!
+          
+          setTimeout(() => {
+            if (notification.parentElement) notification.remove();
+          }, 800);
+          
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+    }, 1000); // Start countdown after 1 second
+  }
+  
+  // 🎉 BOSS VICTORY NOTIFICATION (with countdown!)
+  function showBossVictoryNotification(bossName, bossColor, totalReward) {
+    const notification = document.createElement('div');
+    notification.id = 'boss-victory-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, rgba(0,128,0,0.95), rgba(0,200,0,0.95));
+      color: white;
+      padding: 20px 30px;
+      border-radius: 15px;
+      font-weight: bold;
+      z-index: 10000;
+      box-shadow: 0 0 40px ${bossColor};
+      border: 4px solid #FFD700;
+      text-align: center;
+      max-width: 90vw;
+      width: 400px;
+    `;
+    
+    notification.innerHTML = `
+      <div style="font-size: clamp(24px, 6vw, 36px); margin-bottom: 10px;">🎉 BOSS DEFEATED! 🎉</div>
+      <div style="font-size: clamp(16px, 4vw, 24px); margin-bottom: 8px; color: ${bossColor};">${bossName}</div>
+      <div style="font-size: clamp(14px, 3.5vw, 20px); color: #FFD700;">+${totalReward} DSPOINC!</div>
+      <div id="victory-countdown" style="font-size: clamp(32px, 8vw, 48px); margin-top: 15px; color: #FFD700;">3</div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Wait 1 second before starting countdown (let player see victory message!)
+    setTimeout(() => {
+      const countdownEl = document.getElementById('victory-countdown');
+      if (!countdownEl) return;
+      
+      // Countdown: 3, 2, 1, GO!
+      let count = 3;
+      
+      const countdownInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownEl.textContent = count;
+          countdownEl.style.color = '#FFD700';
+        } else {
+          countdownEl.textContent = 'GO!';
+          countdownEl.style.color = '#10b981'; // Green for GO!
+          
+          setTimeout(() => {
+            if (notification.parentElement) notification.remove();
+          }, 800);
+          
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+    }, 1000); // Start countdown after 1 second
+  }
       
 // 🔔 Defused popup UI logic
 function showBombDefusedPopup() {
@@ -1312,8 +1818,14 @@ if (pauseBtn) {
     pauseBtn.textContent = isTetrisPaused ? "▶️ Resume" : "⏸️ Pause";
 
     if (isTetrisPaused) {
+      // 📱 PAUSED: Allow screen swipe (like Snake!)
+      document.body.style.overflow = "";
+      console.log('📱 Game PAUSED - Screen swipe ENABLED (user can scroll)');
       clearInterval(gameInterval);
     } else {
+      // 📱 RESUMED: Lock screen swipe again (like Snake!)
+      document.body.style.overflow = "hidden";
+      console.log('📱 Game RESUMED - Screen swipe LOCKED (no scrolling)');
       clearInterval(gameInterval); // always reset interval
       gameInterval = setInterval(drop, dropInterval);
       drop(); // redraw immediately
@@ -1374,21 +1886,24 @@ function drop() {
   if (!collide(current.shape, current.row + 1, current.col)) {
     current.row++;
   } else {
-    // 💣 Bomb piece logic
-    if (
+    // 💣 Bomb piece logic (normal or GIANT!)
+    if (current.isBomb || (
       current.shape.length === 1 &&
       current.shape[0].length === 1 &&
       current.shape[0][0] === 6
-    ) {
+    )) {
       const cx = current.col;
       const cy = current.row;
       const countdown = Math.floor(Math.random() * 30) + 1;
+      const isGiantBomb = current.isGiant; // Track if giant bomb!
 
-      activeExplosive = { x: cx, y: cy, countdown, start: Date.now() };
+      activeExplosive = { x: cx, y: cy, countdown, start: Date.now(), isGiant: isGiantBomb };
+      
+      console.log(`💣 ${isGiantBomb ? 'GIANT BOMB' : 'NORMAL BOMB'} placed at (${cx}, ${cy}) - Explodes in ${countdown}s`);
 
       setTimeout(() => {
         if (grid[cy]?.[cx] === 6) {
-          explode(cx, cy);
+          explode(cx, cy, isGiantBomb); // Pass giant flag to explode function!
         }
         activeExplosive = null;
       }, countdown * 1000);
@@ -1400,12 +1915,26 @@ function drop() {
     clearLines();
 
     current = {
-      shape: nextPiece,
+      shape: nextPiece.shape, // Extract shape from piece object
+      isFrozen: nextPiece.isFrozen, // Track frozen status
+      isGiant: nextPiece.isGiant, // Track giant status
+      isBomb: nextPiece.isBomb, // Track bomb status
       row: 0,
       col: 3
     };
     nextPiece = randomPiece();
-    renderNextBlock(nextPiece);
+    renderNextBlock(nextPiece); // Render with frozen indicator
+    
+    // 💬 Log special piece types
+    if (nextPiece.isFrozen) {
+      console.log('❄️ Next piece is FROZEN! Player will see frozen indicator!');
+    }
+    if (nextPiece.isGiant) {
+      console.log('🧀 Next piece is GIANT! Player will see 2x size!');
+    }
+    if (nextPiece.isBomb && nextPiece.isGiant) {
+      console.log('💣 Next piece is GIANT BOMB! Massive explosion incoming!');
+    }
     
     // ✅ CRITICAL FIX: Update window.tetrisCurrent to point to the new piece
     window.tetrisCurrent = current;
@@ -1488,6 +2017,10 @@ if (collide(current.shape, current.row, current.col)) {
       }
     }, 100);
     
+    // 📱 RESTORE SCREEN SWIPE (allow scrolling again)
+    document.body.style.overflow = "";
+    console.log('📱 Screen swipe restored - Tetris ended');
+    
     cleanupTouchControls();
   } else {
     console.log('❌ Game over modal or score text not found!');
@@ -1495,6 +2028,10 @@ if (collide(current.shape, current.row, current.col)) {
     console.log('Score text:', finalScoreText);
     // ✅ CRITICAL FALLBACK: Always show alert if modal not found
     alert(`🧠 GAME OVER\n\nYou earned $${score} DSPOINC!\n\nRefresh the page to play again.`);
+    
+    // 📱 RESTORE SCREEN SWIPE
+    document.body.style.overflow = "";
+    
     cleanupTouchControls();
   }
 

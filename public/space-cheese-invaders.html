@@ -291,6 +291,13 @@
         🔫 Weapon: NORMAL
       </p>
     </div>
+    
+    <!-- 📖 SPACE INVADERS GAME GUIDE BUTTON -->
+    <div class="text-center mt-4 mb-2">
+      <button onclick="toggleSpaceInvadersGuide()" class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-pink-400 transition-all duration-300 transform hover:scale-105">
+        📖 Space Invaders Game Guide - Waves & Bosses
+      </button>
+    </div>
 
     <!-- 🎮 SPACE INVADERS CONTROLS & HELP -->
     <div id="space-invaders-controls-section" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border: 2px solid #fbbf24; border-radius: 15px; padding: 25px; margin: 20px auto; max-width: 900px; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
@@ -381,6 +388,107 @@
           <p><strong>Unlock achievements</strong> by reaching milestones</p>
           <p><strong>Progress tracked automatically</strong> during gameplay</p>
           <p><strong>View your progress</strong> in profile achievements section</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 📖 SPACE INVADERS GAME GUIDE (Hidden by default) -->
+    <div id="spaceInvadersGameGuide" class="hidden mt-4 p-6 bg-gradient-to-br from-gray-900 to-pink-900 rounded-xl border-2 border-pink-400 shadow-2xl max-w-4xl mx-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-bold text-pink-300">📖 Space Invaders Game Guide</h3>
+        <button onclick="toggleSpaceInvadersGuide()" class="text-pink-400 hover:text-pink-300 text-2xl font-bold">✕</button>
+      </div>
+      
+      <!-- 👾 Wave System -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-purple-300 mb-3">👾 9-Wave System</h4>
+        <p class="text-sm text-gray-300 mb-3">Space Invaders features 9 progressive waves with special enemies!</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div class="bg-blue-900/30 p-3 rounded-lg border border-blue-500/50">
+            <div class="text-blue-400 font-bold mb-1">👾 Waves 1-3 (Normal)</div>
+            <div class="text-xs text-gray-300">Regular invaders</div>
+            <div class="text-xs text-blue-300">Formation patterns, increasing difficulty</div>
+            <div class="text-xs text-green-400">Standard rewards</div>
+          </div>
+          
+          <div class="bg-orange-900/30 p-3 rounded-lg border border-orange-500/50">
+            <div class="text-orange-400 font-bold mb-1">🔥 Wave 4: Phoenix Wave</div>
+            <div class="text-xs text-gray-300">Special Phoenix enemies!</div>
+            <div class="text-xs text-orange-300">Lay eggs → Mini-Phoenix spawn</div>
+            <div class="text-xs text-green-400">Bonus rewards!</div>
+          </div>
+          
+          <div class="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
+            <div class="text-yellow-400 font-bold mb-1">🧀 Wave 8: GIANT CHEESE BOSS</div>
+            <div class="text-xs text-gray-300">Multi-layer cheese boss!</div>
+            <div class="text-xs text-yellow-300">3 HP layers, shoots back!</div>
+            <div class="text-xs text-green-400">HUGE rewards!</div>
+          </div>
+        </div>
+        
+        <div class="mt-3 text-center text-sm text-yellow-400 font-semibold">
+          Wave progression gets harder! Phoenix every 4 waves, Giant Boss every 8!
+        </div>
+      </div>
+      
+      <!-- 🔥 Special Enemies -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-orange-300 mb-3">🔥 Special Enemies</h4>
+        
+        <div class="space-y-2">
+          <div class="bg-orange-900/20 p-3 rounded-lg border border-orange-500/30">
+            <div class="font-bold text-orange-400 mb-1">🔥 Phoenix Invaders</div>
+            <div class="text-xs text-gray-300">Spawn on Wave 4, 12, 16, etc. Lay eggs that hatch into Mini-Phoenix. Kill Phoenix before eggs hatch!</div>
+          </div>
+          
+          <div class="bg-pink-900/20 p-3 rounded-lg border border-pink-500/30">
+            <div class="font-bold text-pink-400 mb-1">🐣 Phoenix Eggs</div>
+            <div class="text-xs text-gray-300">Phoenix lay 2 eggs. After ~5 seconds, eggs hatch into Mini-Phoenix (faster, harder!).</div>
+          </div>
+          
+          <div class="bg-purple-900/20 p-3 rounded-lg border border-purple-500/30">
+            <div class="font-bold text-purple-400 mb-1">🐤 Mini-Phoenix</div>
+            <div class="text-xs text-gray-300">Hatched from eggs. Faster and more aggressive than regular Phoenix!</div>
+          </div>
+          
+          <div class="bg-yellow-900/20 p-3 rounded-lg border border-yellow-500/30">
+            <div class="font-bold text-yellow-400 mb-1">🧀 Giant Cheese Boss</div>
+            <div class="text-xs text-gray-300">Wave 8, 16, 24... Multi-layer boss with 3 HP. Shoots back! Defeat all layers to win!</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 💪 Power-Ups -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-green-300 mb-3">💪 Power-Ups & Weapons</h4>
+        
+        <div class="space-y-2">
+          <div class="bg-red-900/20 p-3 rounded-lg border border-red-500/30">
+            <div class="font-bold text-red-400 mb-1">❤️ Hearts</div>
+            <div class="text-xs text-gray-300">Drop from Giant Cheese Boss. Collect for bonus health or power-ups!</div>
+          </div>
+          
+          <div class="bg-cyan-900/20 p-3 rounded-lg border border-cyan-500/30">
+            <div class="font-bold text-cyan-400 mb-1">🔫 Laser Beam</div>
+            <div class="text-xs text-gray-300">Press '2' key. Pierces through multiple enemies! Limited ammo (5 shots).</div>
+          </div>
+          
+          <div class="bg-yellow-900/20 p-3 rounded-lg border border-yellow-500/30">
+            <div class="font-bold text-yellow-400 mb-1">💣 Screen Bomb</div>
+            <div class="text-xs text-gray-300">Press '3' key. Clears ALL enemies on screen! Limited ammo (3 bombs).</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 🎯 Scoring -->
+      <div>
+        <h4 class="text-xl font-bold text-blue-300 mb-3">🎯 Scoring System</h4>
+        <div class="space-y-2 text-sm text-gray-300">
+          <div>✅ <span class="text-cyan-400">10:1 Conversion</span> - 10,000 game points = 1 DSPOINC</div>
+          <div>✅ <span class="text-yellow-400">Role Multipliers</span> - 1.1x to 2.0x based on Discord roles</div>
+          <div>✅ <span class="text-purple-400">Boss Bonuses</span> - Extra rewards for defeating bosses</div>
+          <div>✅ <span class="text-green-400">Wave Completion</span> - Bonus for clearing all waves</div>
         </div>
       </div>
     </div>
@@ -605,6 +713,19 @@
     </div>
   </div>
 </footer>
+
+<!-- 📖 Space Invaders Game Guide Toggle Function -->
+<script>
+function toggleSpaceInvadersGuide() {
+  const guideSection = document.getElementById('spaceInvadersGameGuide');
+  guideSection.classList.toggle('hidden');
+  
+  // Smooth scroll to guide if opening
+  if (!guideSection.classList.contains('hidden')) {
+    guideSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+</script>
 
 <!-- 🧀 Load Space Cheese Invaders Script -->
     <script src="scripts/space-cheese-invaders.js?v=5.0.0&season5_boss_balance=1730520000"></script>

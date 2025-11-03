@@ -1140,17 +1140,19 @@ function initSnake() {
     notification.innerHTML = `
       <div id="boss-spawn-content" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
                   background: linear-gradient(45deg, rgba(148, 0, 211, 0.85), rgba(255, 215, 0, 0.85), rgba(148, 0, 211, 0.85)); 
-                  color: white; padding: 30px; border-radius: 20px; font-weight: bold; 
-                  font-size: 32px; z-index: 10000; text-align: center; box-shadow: 0 0 50px rgba(255, 215, 0, 0.7);
+                  color: white; padding: 20px 30px; border-radius: 20px; font-weight: bold; 
+                  z-index: 10000; text-align: center; box-shadow: 0 0 50px rgba(255, 215, 0, 0.7);
                   animation: bossSpawnPulse 0.5s ease-in-out infinite alternate;
                   border: 4px solid rgba(255, 215, 0, 0.9);
                   backdrop-filter: blur(5px);
                   transition: opacity 0.3s ease-in-out;
-                  opacity: 0;">
-        ${spawnTitle}<br>
-        <span style="font-size: 18px;">${subtitle}</span><br>
-        <span style="font-size: 14px; color: #FFD700;">Collect ${applesNeeded} Golden Apples!</span><br>
-        <span style="font-size: 12px; color: #FFA500;">Time Limit: 60 seconds</span>
+                  opacity: 0;
+                  max-width: 90vw;
+                  width: 400px;">
+        <div style="font-size: clamp(20px, 5vw, 32px);">${spawnTitle}</div>
+        <div style="font-size: clamp(14px, 3.5vw, 18px); margin-top: 8px;">${subtitle}</div>
+        <div style="font-size: clamp(12px, 3vw, 14px); color: #FFD700; margin-top: 8px;">Collect ${applesNeeded} Golden Apples!</div>
+        <div style="font-size: clamp(11px, 2.5vw, 12px); color: #FFA500; margin-top: 5px;">Time Limit: 60 seconds</div>
       </div>
       <style>
         @keyframes bossSpawnPulse {
@@ -1187,7 +1189,7 @@ function initSnake() {
         
         if (countdown > 0) {
           countdownDiv.innerHTML = `
-            <div style="font-size: 72px; font-weight: bold; text-shadow: 0 0 20px rgba(255, 255, 255, 1);
+            <div style="font-size: clamp(48px, 12vw, 72px); font-weight: bold; text-shadow: 0 0 20px rgba(255, 255, 255, 1);
                         animation: countdownPulse 0.5s ease-in-out;
                         color: #FFD700;">
               ${countdown}
@@ -1197,7 +1199,7 @@ function initSnake() {
           countdown--;
         } else {
           countdownDiv.innerHTML = `
-            <div style="font-size: 64px; font-weight: bold; text-shadow: 0 0 30px rgba(16, 185, 129, 1);
+            <div style="font-size: clamp(40px, 10vw, 64px); font-weight: bold; text-shadow: 0 0 30px rgba(16, 185, 129, 1);
                         animation: countdownPulse 0.3s ease-in-out;
                         color: #10b981;">
               GO!
@@ -1230,14 +1232,16 @@ function initSnake() {
     notification.innerHTML = `
       <div id="boss-victory-content" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
                   background: linear-gradient(45deg, rgba(16, 185, 129, 0.85), rgba(5, 150, 105, 0.85), rgba(16, 185, 129, 0.85)); 
-                  color: white; padding: 30px; border-radius: 20px; font-weight: bold; 
-                  font-size: 28px; z-index: 10000; text-align: center; box-shadow: 0 0 50px rgba(16, 185, 129, 0.7);
+                  color: white; padding: 20px 30px; border-radius: 20px; font-weight: bold; 
+                  z-index: 10000; text-align: center; box-shadow: 0 0 50px rgba(16, 185, 129, 0.7);
                   border: 4px solid rgba(255, 215, 0, 0.9);
                   backdrop-filter: blur(5px);
                   transition: opacity 0.3s ease-in-out;
-                  opacity: 0;">
-        ${victoryTitle}<br>
-        <span style="font-size: 22px; color: #FFD700;">+${bonus} DSPOINC!</span>
+                  opacity: 0;
+                  max-width: 90vw;
+                  width: 400px;">
+        <div style="font-size: clamp(20px, 5vw, 28px);">${victoryTitle}</div>
+        <div style="font-size: clamp(16px, 4vw, 22px); color: #FFD700; margin-top: 8px;">+${bonus} DSPOINC!</div>
       </div>
       <style>
         @keyframes countdownPulse {
@@ -1270,7 +1274,7 @@ function initSnake() {
         
         if (countdown > 0) {
           countdownDiv.innerHTML = `
-            <div style="font-size: 72px; font-weight: bold; text-shadow: 0 0 20px rgba(255, 255, 255, 1);
+            <div style="font-size: clamp(48px, 12vw, 72px); font-weight: bold; text-shadow: 0 0 20px rgba(255, 255, 255, 1);
                         animation: countdownPulse 0.5s ease-in-out;
                         color: #FFD700;">
               ${countdown}
@@ -1280,7 +1284,7 @@ function initSnake() {
           countdown--;
         } else {
           countdownDiv.innerHTML = `
-            <div style="font-size: 64px; font-weight: bold; text-shadow: 0 0 30px rgba(16, 185, 129, 1);
+            <div style="font-size: clamp(40px, 10vw, 64px); font-weight: bold; text-shadow: 0 0 30px rgba(16, 185, 129, 1);
                         animation: countdownPulse 0.3s ease-in-out;
                         color: #10b981;">
               GO!

@@ -1237,8 +1237,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">TETRIS SPOINC MODE</h2>
     <!-- 🧪 Role Based System Testing Mode Indicator -->
     <div class="text-center mb-4">
-      <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 border border-orange-200 animate-pulse">
-        🧪 Role Based System Testing Mode
+      <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-400">
+        ⭐ Season 5 Boss Mode Active! 👑
       </div>
     </div>
           
@@ -1284,6 +1284,13 @@ document.addEventListener('DOMContentLoaded', async function() {
       💣 BOMB DEFUSED! +50 DSPOINC
     </div>
     
+    <!-- 📖 TETRIS GAME GUIDE BUTTON -->
+    <div class="text-center mt-4 mb-2">
+      <button onclick="toggleTetrisGuide()" class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-yellow-400 transition-all duration-300 transform hover:scale-105">
+        📖 Tetris Game Guide - Bosses & Mechanics
+      </button>
+    </div>
+    
     <!-- 🎮 TETRIS CONTROLS & HELP -->
     <div id="tetris-controls-section" class="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
       <h4 id="tetris-controls-title" class="text-center text-md font-semibold mb-3 text-yellow-300">🎮 TETRIS CONTROLS & HELP</h4>
@@ -1324,6 +1331,94 @@ document.addEventListener('DOMContentLoaded', async function() {
         <h5 class="text-sm font-bold text-red-300 mb-1">ACHIEVEMENTS</h5>
         <p class="text-xs text-gray-300 mb-1">Unlock achievements by reaching milestones</p>
         <p class="text-xs text-gray-300 mb-1">Progress tracked automatically during gameplay</p>
+      </div>
+    </div>
+    
+    <!-- 📖 TETRIS GAME GUIDE (Hidden by default) -->
+    <div id="tetrisGameGuide" class="hidden mt-4 p-6 bg-gradient-to-br from-gray-900 to-purple-900 rounded-xl border-2 border-yellow-400 shadow-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-bold text-yellow-300">📖 Tetris Game Guide</h3>
+        <button onclick="toggleTetrisGuide()" class="text-yellow-400 hover:text-yellow-300 text-2xl font-bold">✕</button>
+      </div>
+      
+      <!-- 👑 Boss System -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-purple-300 mb-3">👑 9-Boss System</h4>
+        <p class="text-sm text-gray-300 mb-3">Tetris features 9 progressive bosses that spawn at specific line counts!</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div class="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
+            <div class="text-yellow-400 font-bold mb-1">🧀 Boss 1: Cheese Block King</div>
+            <div class="text-xs text-gray-300">Spawn: 3 lines (test) / 10 lines (live)</div>
+            <div class="text-xs text-yellow-300">Frozen: 15% | Giant: 20%</div>
+            <div class="text-xs text-green-400">Reward: 50 DSPOINC (100 VIP!)</div>
+          </div>
+          
+          <div class="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
+            <div class="text-purple-400 font-bold mb-1">👑 Boss 2: Tetris Emperor</div>
+            <div class="text-xs text-gray-300">Spawn: 10 lines / 30 lines</div>
+            <div class="text-xs text-purple-300">Frozen: 20% | Giant: 25%</div>
+            <div class="text-xs text-green-400">Reward: 100 DSPOINC (200 VIP!)</div>
+          </div>
+          
+          <div class="bg-cyan-900/30 p-3 rounded-lg border border-cyan-500/50">
+            <div class="text-cyan-400 font-bold mb-1">⚡ Boss 3: Lightning Lord</div>
+            <div class="text-xs text-gray-300">Spawn: 20 lines / 60 lines</div>
+            <div class="text-xs text-cyan-300">Frozen: 25% | Giant: 30%</div>
+            <div class="text-xs text-green-400">Reward: 150 DSPOINC (300 VIP!)</div>
+          </div>
+        </div>
+        
+        <div class="text-center text-xs text-gray-400 mb-2">+ 6 More Bosses (Boss 4-9)</div>
+        
+        <div class="bg-red-900/30 p-3 rounded-lg border border-red-500/50 text-center">
+          <div class="text-red-400 font-bold text-lg mb-1">🏆 Boss 9: ULTIMATE CHEESE GOD</div>
+          <div class="text-sm text-gray-300">Spawn: 185 lines (test) / 450 lines (live)</div>
+          <div class="text-sm text-red-300">Frozen: 60% | Giant: 70% | Lines: 25</div>
+          <div class="text-lg text-green-400 font-bold">Reward: 1,000 DSPOINC (2,000 VIP!)</div>
+        </div>
+        
+        <div class="mt-3 text-center text-sm text-yellow-400 font-semibold">
+          Total All Bosses: 3,550 DSPOINC (7,100 VIP!)
+        </div>
+      </div>
+      
+      <!-- 🧀 Special Mechanics -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-blue-300 mb-3">🧀 Special Mechanics</h4>
+        
+        <div class="space-y-2">
+          <div class="bg-blue-900/20 p-3 rounded-lg border border-blue-500/30">
+            <div class="font-bold text-blue-400 mb-1">❄️ Frozen Blocks</div>
+            <div class="text-xs text-gray-300">Can't rotate! 5% normal, 15-60% during boss. Blue overlay indicator.</div>
+          </div>
+          
+          <div class="bg-orange-900/20 p-3 rounded-lg border border-orange-500/30">
+            <div class="font-bold text-orange-400 mb-1">🧀 Giant Blocks</div>
+            <div class="text-xs text-gray-300">1.5x size! Only during bosses. 20-70% chance progressive.</div>
+          </div>
+          
+          <div class="bg-yellow-900/20 p-3 rounded-lg border border-yellow-500/30">
+            <div class="font-bold text-yellow-400 mb-1">💣 Giant Bombs</div>
+            <div class="text-xs text-gray-300">5x5 explosion (vs normal 3x3)! 1.5x size. Only during bosses.</div>
+          </div>
+          
+          <div class="bg-green-900/20 p-3 rounded-lg border border-green-500/30">
+            <div class="font-bold text-green-400 mb-1">⭐ Multi-Line Bonus</div>
+            <div class="text-xs text-gray-300">2 lines = 5 DSPOINC | 3 lines = 9 | 4 lines = 16 (rewards skill!)</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 💥 Boss Victory Effects -->
+      <div>
+        <h4 class="text-xl font-bold text-green-300 mb-3">💥 Boss Victory</h4>
+        <div class="space-y-2 text-sm text-gray-300">
+          <div>✅ <span class="text-green-400">Field Explosion</span> - All blocks clear!</div>
+          <div>✅ <span class="text-blue-400">Speed Boost</span> - Game gets 100ms faster!</div>
+          <div>✅ <span class="text-yellow-400">Big Rewards</span> - 50-1,000 DSPOINC per boss!</div>
+          <div>✅ <span class="text-purple-400">Countdown Timer</span> - Game pauses for celebration!</div>
+        </div>
       </div>
     </div>
   </section>
@@ -1372,6 +1467,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     </div>
     </div>
     
+    <!-- 📖 SNAKE GAME GUIDE BUTTON -->
+    <div class="text-center mt-4 mb-2">
+      <button onclick="toggleSnakeGuide()" class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-green-400 transition-all duration-300 transform hover:scale-105">
+        📖 Snake Game Guide - Bosses & Mechanics
+      </button>
+    </div>
+    
     <!-- 🐍 SNAKE CONTROLS & HELP -->
     <div id="snake-controls-section" class="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
       <h4 id="snake-controls-title" class="text-center text-md font-semibold mb-3 text-green-300">🐍 SNAKE CONTROLS & HELP</h4>
@@ -1409,6 +1511,85 @@ document.addEventListener('DOMContentLoaded', async function() {
         <p class="text-xs text-gray-300 mb-1"><span style="color: #00BFFF;">🔵 Blue Frame:</span> Early Bird (1.2x scoring, blue snake & food)</p>
         <p class="text-xs text-gray-300 mb-1"><span style="color: #00FF00;">🟢 Green Frame:</span> Season Tester (1.3x scoring, green snake & food)</p>
         <p class="text-xs text-gray-300 mb-1"><span class="text-yellow-400 font-semibold">Your Discord roles determine your theme and bonuses!</span></p>
+      </div>
+    </div>
+    
+    <!-- 📖 SNAKE GAME GUIDE (Hidden by default) -->
+    <div id="snakeGameGuide" class="hidden mt-4 p-6 bg-gradient-to-br from-gray-900 to-green-900 rounded-xl border-2 border-green-400 shadow-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-bold text-green-300">📖 Snake Game Guide</h3>
+        <button onclick="toggleSnakeGuide()" class="text-green-400 hover:text-green-300 text-2xl font-bold">✕</button>
+      </div>
+      
+      <!-- 🐍 Boss System -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-purple-300 mb-3">🐍 9-Boss System</h4>
+        <p class="text-sm text-gray-300 mb-3">Snake features 9 progressive Giant Cheese Snake Bosses!</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div class="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
+            <div class="text-purple-400 font-bold mb-1">🍼 Baby Boss (Tutorial)</div>
+            <div class="text-xs text-gray-300">Spawn: 3 cheeses</div>
+            <div class="text-xs text-purple-300">Apples: 5 | AI: 15% (very easy!)</div>
+            <div class="text-xs text-green-400">Reward: 30 DSPOINC (60 VIP!)</div>
+          </div>
+          
+          <div class="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
+            <div class="text-yellow-400 font-bold mb-1">🐍 Boss 2-8 (Progressive)</div>
+            <div class="text-xs text-gray-300">Spawn: 10, 30, 50, 80, 120, 170, 230</div>
+            <div class="text-xs text-yellow-300">AI: 20% → 90% progressive</div>
+            <div class="text-xs text-green-400">Rewards: 50-400 DSPOINC</div>
+          </div>
+          
+          <div class="bg-red-900/30 p-3 rounded-lg border border-red-500/50">
+            <div class="text-red-400 font-bold mb-1">🏆 Boss 9: Final Boss</div>
+            <div class="text-xs text-gray-300">Spawn: 300 cheeses</div>
+            <div class="text-xs text-red-300">Apples: 10 | AI: 95% (expert!)</div>
+            <div class="text-xs text-green-400">Reward: 550 DSPOINC (1,100 VIP!)</div>
+          </div>
+        </div>
+        
+        <div class="mt-3 text-center text-sm text-yellow-400 font-semibold">
+          Total All Bosses: 1,930 DSPOINC (3,860 VIP!)
+        </div>
+      </div>
+      
+      <!-- 🍎 Special Mechanics -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-blue-300 mb-3">🍎 Boss Battle Mechanics</h4>
+        
+        <div class="space-y-2">
+          <div class="bg-yellow-900/20 p-3 rounded-lg border border-yellow-500/30">
+            <div class="font-bold text-yellow-400 mb-1">🍎 Golden Apples</div>
+            <div class="text-xs text-gray-300">Collect 5-10 golden apples to damage boss. Each apple = 1 HP damage.</div>
+          </div>
+          
+          <div class="bg-purple-900/20 p-3 rounded-lg border border-purple-500/30">
+            <div class="font-bold text-purple-400 mb-1">🐍 Giant Boss Snake</div>
+            <div class="text-xs text-gray-300">1.5x size, actively hunts you! Head-to-head collision = game over.</div>
+          </div>
+          
+          <div class="bg-blue-900/20 p-3 rounded-lg border border-blue-500/30">
+            <div class="font-bold text-blue-400 mb-1">⏰ 60 Second Time Limit</div>
+            <div class="text-xs text-gray-300">Collect all apples within 60 seconds or game over!</div>
+          </div>
+          
+          <div class="bg-green-900/20 p-3 rounded-lg border border-green-500/30">
+            <div class="font-bold text-green-400 mb-1">🧠 Progressive AI</div>
+            <div class="text-xs text-gray-300">Boss gets smarter each level! 15% dumb → 95% expert hunter.</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 🏆 Boss Rewards -->
+      <div>
+        <h4 class="text-xl font-bold text-green-300 mb-3">🏆 Boss Features</h4>
+        <div class="space-y-2 text-sm text-gray-300">
+          <div>✅ <span class="text-yellow-400">Wall Wrapping</span> - Walls don't kill during boss!</div>
+          <div>✅ <span class="text-purple-400">Countdown Timers</span> - Pauses for spawn/victory (3, 2, 1, GO!)</div>
+          <div>✅ <span class="text-green-400">Boss Always Slower</span> - Fair challenge, you can outrun!</div>
+          <div>✅ <span class="text-blue-400">Cheese-Themed</span> - Rounded boss, cheese holes, golden eyes!</div>
+        </div>
       </div>
     </div>
   </section>
@@ -4033,6 +4214,17 @@ function formatDateShort(dateString) {
   }
 }
 
+// 📖 Tetris Game Guide Toggle Function
+function toggleTetrisGuide() {
+  const guideSection = document.getElementById('tetrisGameGuide');
+  guideSection.classList.toggle('hidden');
+  
+  // Smooth scroll to guide if opening
+  if (!guideSection.classList.contains('hidden')) {
+    guideSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
 // 🧩 Tetris Achievements Toggle Function
 function toggleTetrisAchievements() {
   const achievementsSection = document.getElementById('tetrisAchievements');
@@ -4279,6 +4471,17 @@ function displayTetrisAchievementsError(errorMessage) {
         </div>
       </div>
     `;
+  }
+}
+
+// 📖 Snake Game Guide Toggle Function
+function toggleSnakeGuide() {
+  const guideSection = document.getElementById('snakeGameGuide');
+  guideSection.classList.toggle('hidden');
+  
+  // Smooth scroll to guide if opening
+  if (!guideSection.classList.contains('hidden')) {
+    guideSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
 
