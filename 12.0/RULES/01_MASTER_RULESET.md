@@ -413,6 +413,28 @@ Before creating ANY new API endpoint, you MUST:
 - **Render Starter:** Automatically copies `/data/narrrf_world.sqlite` to new production after deploy
 - **Test in production environment** before final deployment
 
+### **🤖 DISCORD BOT DEPLOYMENT RULE (CRITICAL!):**
+**NEVER push Discord bot files to Render - Bot runs LOCALLY!**
+
+- **Discord Bot Location:** `C:\xampp-server\htdocs\narrrfs-world\discord\` (LOCAL ONLY)
+- **Discord Bot Execution:** Runs on local machine, NOT on Render server
+- **Database Access:** Local bot connects to LIVE production database via API
+- **Already Excluded:** `discord/commands/` directory excluded from Render deployment
+- **Deployment Method:** Bot changes take effect IMMEDIATELY when local bot restarts
+- **NO GIT PUSH NEEDED:** Discord bot code changes only need local restart
+
+**Why This Matters:**
+- Discord bot files don't need to be deployed to Render
+- Changes to Discord commands take effect when local bot restarts
+- Pushing Discord files to Render has NO effect on bot functionality
+- Local bot accesses live database through `https://narrrfs.world/api/discord/db-access.php`
+
+**Common Mistakes to Avoid:**
+- ❌ Don't push Discord files to Render (waste of time)
+- ❌ Don't expect Discord changes to deploy via git push
+- ✅ Restart local bot to apply Discord command changes
+- ✅ Only push web files (public/, api/) to Render
+
 ---
 
 ## 🖥️ **COMMAND SHELL RULES**

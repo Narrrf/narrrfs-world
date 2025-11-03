@@ -5980,6 +5980,12 @@ let reloadButtonInterval = null;
       // Lock scroll only when game is actually running
       lockSpaceInvadersScroll();
       
+      // 🐛 CRITICAL FIX (Nov 3): Re-enable touch controls on game start
+      // Touch controls are disabled in cleanupSpaceInvadersControls() when game ends
+      // Must re-enable them when restarting or touch won't work on 2nd+ game
+      enableGlobalSpaceInvadersTouch();
+      console.log('📱 Touch controls re-enabled for new game');
+      
       // 🆘 NEW: Ensure mobile controls are always visible when game starts
       setTimeout(() => {
         ensureMobileControlsVisible();

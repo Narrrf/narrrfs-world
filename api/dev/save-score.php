@@ -212,14 +212,14 @@ try {
             ");
 
             $stmt->bindValue(':wallet', $wallet);
-            $stmt->bindValue(':score', $raw_score, PDO::PARAM_INT); // Use raw score for game display
+            $stmt->bindValue(':score', $dspoinc_score, PDO::PARAM_INT); // 🐛 FIX (Nov 3): Use converted DSPOINC score (applies 10:1 for Space Invaders)
             $stmt->bindValue(':discord_id', $discord_id);
             $stmt->bindValue(':discord_name', $discord_name);
             $stmt->bindValue(':game', $game);
             $stmt->bindValue(':season', $currentSeason);
             $stmt->execute();
             
-            error_log("$game score inserted to tbl_tetris_scores: $raw_score for user $discord_id in season $currentSeason");
+            error_log("$game score inserted to tbl_tetris_scores: $dspoinc_score DSPOINC for user $discord_id in season $currentSeason");
         }
         
     } catch (Exception $e) {
