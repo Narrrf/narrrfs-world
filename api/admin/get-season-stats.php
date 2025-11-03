@@ -42,11 +42,15 @@ try {
     $stmt = $pdo->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY season_id DESC LIMIT 1");
     $stmt->execute();
     $current_season_result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $current_season = $current_season_result['season_name'] ?? 'Season 4 - The Ultimate Cheese Challenge';
+    $current_season = $current_season_result['season_name'] ?? 'Season 5';
 
     // Determine which season to show
     if ($season === 'current') {
-        $target_season = $current_season; // This will be "Season 4"
+        $target_season = $current_season; // This will be "Season 5" (or current active season)
+    } else if (strpos($season, 'season_') === 0) {
+        // Convert "season_5" format to "Season 5" format
+        $season_num = str_replace('season_', '', $season);
+        $target_season = 'Season ' . $season_num;
     } else {
         $target_season = $season;
     }

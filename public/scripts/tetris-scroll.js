@@ -1560,8 +1560,11 @@ function collide(shape, row, col) {
             const nextBossIndex = totalBossesDefeated % tetrisBossConfig.spawnIntervals.length;
             const nextBossSpawn = tetrisBossConfig.spawnIntervals[nextBossIndex];
             
+            console.log(`🔍 Boss Spawn Check: Lines ${linesClearedTotal}/${nextBossSpawn}, Boss Index: ${nextBossIndex}, Defeated: ${totalBossesDefeated}`);
+            
             if (linesClearedTotal >= nextBossSpawn && totalBossesDefeated === nextBossIndex) {
               // Spawn boss!
+              console.log(`🚀 BOSS ${nextBossIndex + 1} SPAWNING NOW!`);
               spawnBoss(nextBossIndex);
             }
           }

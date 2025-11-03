@@ -145,6 +145,19 @@ try {
         throw new Exception('Database connection failed: ' . $e->getMessage());
     }
 
+    // Get current active season from database
+    $currentSeason = 'Season 5'; // Default fallback
+    try {
+        $seasonStmt = $db->query("SELECT season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY season_id DESC LIMIT 1");
+        $seasonResult = $seasonStmt->fetch(PDO::FETCH_ASSOC);
+        if ($seasonResult && isset($seasonResult['season_name'])) {
+            $currentSeason = $seasonResult['season_name'];
+        }
+        error_log("🎯 Current active season detected: " . $currentSeason);
+    } catch (Exception $e) {
+        error_log("⚠️ Could not get current season, using fallback: " . $currentSeason);
+    }
+
     // Initialize response data structure
     $response = [
         'tetris' => [
@@ -201,9 +214,9 @@ try {
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
             WHERE discord_id = ? AND game = 'tetris'
-            AND (season = 'Season 4' OR season IS NULL OR season = '' OR season LIKE '%Season 4%' OR season = 'season_1' OR season = 'season_2' OR season = 'season_3')
+            AND (season = ? OR season IS NULL OR season = '')
         ");
-        $stmt->execute([$discordId]);
+        $stmt->execute([$discordId, $currentSeason]);
         $tetrisData = $stmt->fetch(PDO::FETCH_ASSOC);
         
         error_log("🔍 TETRIS DEBUG: Query result: " . json_encode($tetrisData));
@@ -233,9 +246,9 @@ try {
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
             WHERE discord_id = ? AND game = 'snake'
-            AND (season = 'Season 4' OR season IS NULL OR season = '' OR season LIKE '%Season 4%' OR season = 'season_1' OR season = 'season_2' OR season = 'season_3')
+            AND (season = ? OR season IS NULL OR season = '')
         ");
-        $stmt->execute([$discordId]);
+        $stmt->execute([$discordId, $currentSeason]);
         $snakeData = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($snakeData) {
@@ -273,9 +286,9 @@ try {
                 MAX(timestamp) as last_played
             FROM tbl_tetris_scores 
             WHERE discord_id = ? AND game = 'space_invaders'
-            AND (season = 'Season 4' OR season IS NULL OR season = '' OR season LIKE '%Season 4%' OR season = 'season_1' OR season = 'season_2' OR season = 'season_3')
+            AND (season = ? OR season IS NULL OR season = '')
         ");
-        $stmt->execute([$discordId]);
+        $stmt->execute([$discordId, $currentSeason]);
         $spaceData = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($spaceData) {
@@ -307,9 +320,9 @@ try {
                     MAX(timestamp) as last_click
                 FROM tbl_cheese_clicks 
                 WHERE user_wallet = ?
-                AND (season = 'Season 4' OR season IS NULL OR season = '' OR season LIKE '%Season 4%' OR season = 'season_1' OR season = 'season_2' OR season = 'season_3')
+                AND (season = ? OR season IS NULL OR season = '')
             ");
-            $cheeseStmt->execute([$discordId]);
+            $cheeseStmt->execute([$discordId, $currentSeason]);
             $cheeseData = $cheeseStmt->fetch(PDO::FETCH_ASSOC);
             
             if ($cheeseData && $cheeseData['total_clicks'] > 0) {
@@ -346,9 +359,9 @@ try {
                             MAX(timestamp) as last_click
                         FROM tbl_cheese_clicks 
                         WHERE user_wallet = ?
-                        AND (season = 'Season 4' OR season IS NULL OR season = '' OR season LIKE '%Season 4%' OR season = 'season_1' OR season = 'season_2' OR season = 'season_3')
+                        AND (season = ? OR season IS NULL OR season = '')
                     ");
-                    $stmt->execute([$walletAddress]);
+                    $stmt->execute([$walletAddress, $currentSeason]);
                     
                     $cheeseData = $stmt->fetch(PDO::FETCH_ASSOC);
                     
@@ -408,9 +421,9 @@ try {
                 SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
             FROM tbl_race_participants 
             WHERE user_id = ? -- 🔧 CRITICAL FIX: Use user_id field (matches database schema)
-            AND (season = 'Season 4' OR season IS NULL OR season = '' OR season LIKE '%Season 4%' OR season = 'season_1' OR season = 'season_2' OR season = 'season_3')
+            AND (season = ? OR season IS NULL OR season = '')
         ");
-        $stmt->execute([$discordId]);
+        $stmt->execute([$discordId, $currentSeason]);
         $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
         
         error_log("🔍 DISCORD RACE DEBUG: Query result for user $discordId: " . json_encode($raceData));

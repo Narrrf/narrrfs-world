@@ -32,7 +32,7 @@ try {
 
     // Get current active season
     $seasonStmt = $db->query("SELECT season_name FROM tbl_seasons WHERE is_active = 1 LIMIT 1");
-    $fullSeasonName = $seasonStmt->fetchColumn() ?: 'Season 4 - The Ultimate Cheese Challenge';
+    $fullSeasonName = $seasonStmt->fetchColumn() ?: 'Season 5';
     
     // Use the full season name directly (no mapping needed)
     $currentSeason = $fullSeasonName;
@@ -69,23 +69,8 @@ try {
         $stmt->execute([$currentSeason]);
         $tetrisData = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // If no Season 3 data, get the most recent season with data
-        if ($tetrisData['total_scores'] == 0) {
-            $stmt = $db->prepare("
-                SELECT 
-                    COUNT(*) as total_scores,
-                    COUNT(DISTINCT discord_id) as unique_players,
-                    MAX(score) as max_score,
-                    AVG(score) as avg_score,
-                    COUNT(CASE WHEN timestamp >= datetime('now', '-24 hours') THEN 1 END) as recent_24h,
-                    COUNT(CASE WHEN timestamp >= datetime('now', '-7 days') THEN 1 END) as recent_7d
-                FROM tbl_tetris_scores 
-                WHERE game = 'tetris'
-                ORDER BY timestamp DESC
-            ");
-            $stmt->execute();
-            $tetrisData = $stmt->fetch(PDO::FETCH_ASSOC);
-        }
+        // Keep Season 5 data even if 0 scores (fresh season start)
+        // Do NOT fallback to all-time data - show current season with 0 scores
 
         // Get top players for Tetris
         $topStmt = $db->prepare("
@@ -215,10 +200,9 @@ try {
                 COUNT(CASE WHEN quest_id IS NOT NULL THEN 1 END) as quest_clicks,
                 COUNT(CASE WHEN timestamp >= datetime('now', '-24 hours') THEN 1 END) as recent_24h,
                 COUNT(CASE WHEN timestamp >= datetime('now', '-7 days') THEN 1 END) as recent_7d
-            FROM tbl_cheese_clicks 
-            WHERE (season = ? OR season IS NULL OR season = '')
+            FROM tbl_cheese_clicks
         ");
-        $stmt->execute([$currentSeason]);
+        $stmt->execute();
         $cheeseData = $stmt->fetch(PDO::FETCH_ASSOC);
 
         $response['data']['games']['cheese_hunt'] = [
@@ -251,10 +235,9 @@ try {
                 COUNT(CASE WHEN position <= 3 THEN 1 END) as podiums,
                 COUNT(CASE WHEN joined_at >= datetime('now', '-24 hours') THEN 1 END) as recent_24h,
                 COUNT(CASE WHEN joined_at >= datetime('now', '-7 days') THEN 1 END) as recent_7d
-            FROM tbl_race_participants 
-            WHERE (season = ? OR season IS NULL OR season = '')
+            FROM tbl_race_participants
         ");
-        $stmt->execute([$currentSeason]);
+        $stmt->execute();
         $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
 
         $response['data']['games']['discord_race'] = [
