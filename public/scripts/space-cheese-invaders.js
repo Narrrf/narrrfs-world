@@ -3625,16 +3625,20 @@ let reloadButtonInterval = null;
     // 🚀 CRITICAL: Always update boss effects for cleanup even when boss is defeated
     updateBossEffects();
     
-    if (!boss || (bossDefeated && bossDefeatEffect <= 0)) return;
+    if (!boss || (bossDefeated && bossDefeatEffect <= 0)) {
+      if (!boss && phaseTimer % 100 === 0) {
+        console.log(`🚨 UPDATE BOSS CALLED BUT NO BOSS EXISTS! gamePhase: ${gamePhase}, bossPhase: ${bossPhase}`);
+      }
+      return;
+    }
     
     const currentTime = Date.now();
     
     // 🚀 DEBUG: Log boss update status
     if (phaseTimer % 100 === 0) { // Every 10 seconds
-      if (boss) {
-        console.log(`👑 BOSS UPDATE: ${boss.name} at ${boss.health}/${boss.maxHealth} HP, Phase: ${bossPhase}, Position: x=${boss.x}, y=${boss.y}`);
-        console.log(`🔍 BOSS PHASE DEBUG: bossPhase=${bossPhase}, typeof=${typeof bossPhase}, boss.phase=${boss.phase}`);
-      }
+      console.log(`👑 BOSS UPDATE: ${boss.name} at ${boss.health}/${boss.maxHealth} HP, Phase: ${bossPhase}, Position: x=${boss.x}, y=${boss.y}`);
+      console.log(`🔍 BOSS PHASE DEBUG: bossPhase=${bossPhase}, typeof=${typeof bossPhase}, boss.phase=${boss.phase}`);
+      console.log(`🔫 Attack status: lastAttack=${boss.lastAttack}, cooldown=${boss.attackCooldown}, timeSinceAttack=${currentTime - boss.lastAttack}`);
     }
     
     // 🚀 NEW: Update boss bullets movement
@@ -3657,6 +3661,7 @@ let reloadButtonInterval = null;
         // 🚀 NEW: Screen shake on boss arrival (REDUCED)
         screenShake = 8; // Reduced from 20 to 8
         console.log('👑 Boss entrance complete - FIGHT BEGINS!');
+        console.log(`🔫 Boss attack ready! currentTime=${currentTime}, lastAttack=${boss.lastAttack}, cooldown=${boss.attackCooldown}`);
       }
       
       // 🚀 DEBUG: Log entrance progress
@@ -3804,6 +3809,8 @@ let reloadButtonInterval = null;
       
       // 🚀 NEW: Enhanced regular attacks with more variety
       if (currentTime - boss.lastAttack > boss.attackCooldown) {
+        console.log(`🔫 BOSS ATTACK TRIGGERED! Time since last attack: ${currentTime - boss.lastAttack}ms (cooldown: ${boss.attackCooldown}ms)`);
+        
         // 🚀 NEW: Random attack pattern selection for variety
         if (Math.random() < 0.3) { // 30% chance to change attack pattern
           const availablePatterns = boss.availableAttackPatterns || [0, 1, 2, 3, 4];
@@ -3811,7 +3818,9 @@ let reloadButtonInterval = null;
           console.log(`🎯 ${boss.name} switches to attack pattern ${boss.attackPattern}!`);
         }
         
+        console.log(`🔫 Calling bossAttack()... Current bullets: ${bossBullets.length}`);
         bossAttack();
+        console.log(`🔫 bossAttack() complete! New bullets: ${bossBullets.length}`);
         boss.lastAttack = currentTime;
         
         // 🚀 BALANCED: Sometimes fire multiple attacks in quick succession
@@ -6324,7 +6333,7 @@ let reloadButtonInterval = null;
     } else if (gamePhase === 'boss') {
       // 🚀 NEW: Boss phase - boss battle!
       if (Date.now() % 1000 < 16) { // Log every second during boss phase
-        console.log(`🧪 BOSS PHASE ACTIVE: Updating boss and checking collisions... Time: ${Date.now()}`);
+        console.log(`🧪 BOSS PHASE ACTIVE: Updating boss and checking collisions... boss=${boss ? boss.name : 'NULL'}, bossPhase=${bossPhase}`);
       }
       updateBoss();
       moveBullets();
@@ -7209,13 +7218,23 @@ let reloadButtonInterval = null;
       setTimeout(() => {
         console.log('🧀 Hearts collected! Advancing to next wave...');
         
-        // Advance to next wave
-        gamePhase = 'formation';
-        phaseTimer = 0;
-        waveNumber++;
-        invaderDropPhase = false;
-        dropStartTime = Date.now();
-        spawnNewWave();
+        // 🚀 CRITICAL FIX: Check if NEXT wave should be a regular boss wave (10, 25, 75, 100)
+        const nextWave = waveNumber + 1;
+        if (nextWave === 10 || nextWave === 25 || nextWave === 75 || nextWave === 100) {
+          console.log(`🏆 BOSS WAVE! Wave ${nextWave} will be an epic boss fight!`);
+          gamePhase = 'boss';
+          phaseTimer = 0;
+          waveNumber++;
+          spawnBoss();
+        } else {
+          // Advance to next regular wave
+          gamePhase = 'formation';
+          phaseTimer = 0;
+          waveNumber++;
+          invaderDropPhase = false;
+          dropStartTime = Date.now();
+          spawnNewWave();
+        }
       }, 3000); // 3 second delay for hearts to fall
     }
   }
