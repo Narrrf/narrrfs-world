@@ -4936,21 +4936,50 @@
       <div id="bugDashboard" class="section mb-6">
         <h3 class="text-lg font-semibold mb-4">📊 Bug Dashboard</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <!-- Row 1: Main Status Counts -->
           <div class="stats-card">
-            <h4 class="text-sm font-medium mb-2">Live Bug Count</h4>
+            <h4 class="text-sm font-medium mb-2">🐛 Active Bugs</h4>
             <div id="liveBugCount" class="text-2xl font-bold">0</div>
+            <div class="text-xs text-gray-400 mt-1">Not resolved yet</div>
           </div>
           <div class="stats-card">
-            <h4 class="text-sm font-medium mb-2">Critical Issues</h4>
+            <h4 class="text-sm font-medium mb-2">✅ Total Resolved</h4>
+            <div id="totalResolvedCount" class="text-2xl font-bold text-green-400">0</div>
+            <div class="text-xs text-gray-400 mt-1">All-time fixes</div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">🔨 In Progress</h4>
+            <div id="inProgressCount" class="text-2xl font-bold text-blue-400">0</div>
+            <div class="text-xs text-gray-400 mt-1">Being worked on</div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">📊 Total Reports</h4>
+            <div id="totalBugCount" class="text-2xl font-bold text-purple-400">0</div>
+            <div class="text-xs text-gray-400 mt-1">All submissions</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <!-- Row 2: Priority & Recent Activity -->
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">🚨 Critical Issues</h4>
             <div id="criticalBugCount" class="text-2xl font-bold text-red-400">0</div>
+            <div class="text-xs text-gray-400 mt-1">Highest priority</div>
           </div>
           <div class="stats-card">
-            <h4 class="text-sm font-medium mb-2">High Priority</h4>
+            <h4 class="text-sm font-medium mb-2">⚠️ High Priority</h4>
             <div id="highPriorityCount" class="text-2xl font-bold text-orange-400">0</div>
+            <div class="text-xs text-gray-400 mt-1">Needs attention</div>
           </div>
           <div class="stats-card">
-            <h4 class="text-sm font-medium mb-2">Resolved Today</h4>
-            <div id="resolvedTodayCount" class="text-2xl font-bold text-green-400">0</div>
+            <h4 class="text-sm font-medium mb-2">✅ Resolved This Week</h4>
+            <div id="resolvedThisWeekCount" class="text-2xl font-bold text-green-400">0</div>
+            <div class="text-xs text-gray-400 mt-1">Last 7 days</div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium mb-2">📈 Resolution Rate</h4>
+            <div id="resolutionRate" class="text-2xl font-bold text-cyan-400">0%</div>
+            <div class="text-xs text-gray-400 mt-1">Bugs fixed vs total</div>
           </div>
         </div>
         
@@ -26241,25 +26270,58 @@ Continue with Season 3 Reset?`)) {
       }
 
       renderDashboard() {
+        // Calculate all bug statistics
+        const totalBugs = this.bugs.length;
         const liveBugCount = this.bugs.filter(bug => !this.statuses.find(s => s.status_id === bug.status_id)?.is_resolved).length;
-        const criticalCount = this.bugs.filter(bug => bug.priority_id === 1).length;
-        const highPriorityCount = this.bugs.filter(bug => bug.priority_id === 2).length;
-        const resolvedTodayCount = this.bugs.filter(bug => {
-          const resolvedDate = new Date(bug.resolved_at);
-          const today = new Date();
-          return bug.resolved_at && resolvedDate.toDateString() === today.toDateString();
+        const totalResolvedCount = this.bugs.filter(bug => this.statuses.find(s => s.status_id === bug.status_id)?.is_resolved).length;
+        const inProgressCount = this.bugs.filter(bug => {
+          const status = this.statuses.find(s => s.status_id === bug.status_id);
+          return status && !status.is_resolved && status.status_name.toLowerCase().includes('progress');
         }).length;
+        
+        const criticalCount = this.bugs.filter(bug => bug.priority_id === 1 && !this.statuses.find(s => s.status_id === bug.status_id)?.is_resolved).length;
+        const highPriorityCount = this.bugs.filter(bug => bug.priority_id === 2 && !this.statuses.find(s => s.status_id === bug.status_id)?.is_resolved).length;
+        
+        // Calculate resolved this week (last 7 days)
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const resolvedThisWeekCount = this.bugs.filter(bug => {
+          // Check if bug is resolved
+          const status = this.statuses.find(s => s.status_id === bug.status_id);
+          if (!status || !status.is_resolved) return false;
+          
+          // Use resolved_at if available, otherwise use updated_at
+          const dateToCheck = bug.resolved_at || bug.updated_at;
+          if (!dateToCheck) return false;
+          
+          const resolvedDate = new Date(dateToCheck);
+          return resolvedDate >= oneWeekAgo;
+        }).length;
+        
+        // Calculate resolution rate
+        const resolutionRate = totalBugs > 0 ? Math.round((totalResolvedCount / totalBugs) * 100) : 0;
 
-        // Update dashboard metrics
+        // Update Row 1: Main Status Counts
         const liveBugElement = document.getElementById('liveBugCount');
+        const totalResolvedElement = document.getElementById('totalResolvedCount');
+        const inProgressElement = document.getElementById('inProgressCount');
+        const totalBugElement = document.getElementById('totalBugCount');
+        
+        if (liveBugElement) liveBugElement.textContent = liveBugCount;
+        if (totalResolvedElement) totalResolvedElement.textContent = totalResolvedCount;
+        if (inProgressElement) inProgressElement.textContent = inProgressCount;
+        if (totalBugElement) totalBugElement.textContent = totalBugs;
+        
+        // Update Row 2: Priority & Recent Activity
         const criticalElement = document.getElementById('criticalBugCount');
         const highPriorityElement = document.getElementById('highPriorityCount');
-        const resolvedElement = document.getElementById('resolvedTodayCount');
-
-        if (liveBugElement) liveBugElement.textContent = liveBugCount;
+        const resolvedThisWeekElement = document.getElementById('resolvedThisWeekCount');
+        const resolutionRateElement = document.getElementById('resolutionRate');
+        
         if (criticalElement) criticalElement.textContent = criticalCount;
         if (highPriorityElement) highPriorityElement.textContent = highPriorityCount;
-        if (resolvedElement) resolvedElement.textContent = resolvedTodayCount;
+        if (resolvedThisWeekElement) resolvedThisWeekElement.textContent = resolvedThisWeekCount;
+        if (resolutionRateElement) resolutionRateElement.textContent = `${resolutionRate}%`;
 
         this.renderRecentActivity();
         this.renderTeamPerformance();

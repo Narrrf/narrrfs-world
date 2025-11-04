@@ -20,7 +20,7 @@ Use this checklist to track incoming assets and listing status.
 | Reactor Motors | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 | Rough Ryders | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | ✅ | ⏳ |
 | Jayk's Stake House 2 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Fox Goblin NFT | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅ | ⏳|
+| Fox Goblin NFT | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 | Artenova | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 
 Legend: ⏳ pending • 🔄 sending soon • ✅ complete
