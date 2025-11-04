@@ -2,8 +2,8 @@
 
 **Game:** Cheese Tetris Scroll  
 **Version:** 11.6.0 - Season 5 Boss Mode System (Final)  
-**Date:** November 3, 2025 - Morning Update (Final Polish)  
-**Status:** ✅ **PRODUCTION READY - COMPLETE BOSS SYSTEM - USER TESTED & APPROVED**  
+**Date:** November 4, 2025 - Afternoon Update (Profile Portal + Standalone Page)  
+**Status:** ✅ **PRODUCTION READY - COMPLETE SYSTEM - PROFILE PORTAL INTEGRATED**  
 
 ---
 
@@ -1283,6 +1283,38 @@ function explode(centerX, centerY, isGiantBomb = false) {
 **Tetris is the only game WITHOUT a boss system!** 🎯
 
 **Season 5 Tuning Opportunity:** Add boss system to match Snake and Space Invaders!
+
+---
+
+---
+
+## 🎮 **PROFILE PAGE GAME PORTAL INTEGRATION (November 4, 2025)**
+
+### **Game Portal Card Display:**
+The profile page (`public/profile.html`) features a dedicated game portal section that displays live Tetris statistics:
+
+**Card Features:**
+- ✅ **Best Score Display** - Shows player's best Tetris score in DSPOINC
+- ✅ **Season Rank** - Calculates and displays player's current rank (#1, #2, etc.)
+- ✅ **Achievement Count** - Displays unlocked achievements (e.g., "15/25")
+- ✅ **Click-to-Play** - Card links directly to standalone Tetris page (`tetris.html`)
+
+**Technical Implementation:**
+- **Function:** `loadGamePortalStats()` in `profile.html`
+- **API Endpoint:** `/api/user/user-game-missions.php?discord_id={id}`
+- **Data Structure:** `data.games.tetris.stats.best_score` and `data.games.tetris.achievements.unlocked`
+- **Rank Calculation:** Fetches leaderboard data from `/api/dev/get-leaderboard.php` and finds user's position
+- **Element IDs:** 
+  - `tetris-best-score-card` - Best score display
+  - `tetris-rank-card` - Season rank display
+  - `tetris-achievements-card` - Achievement count display
+
+**Local Development Bypass:**
+- Uses Narrrf's Discord ID (`328601656659017732`) for local testing
+- Automatically detects localhost environment
+- Production uses actual user's Discord ID from localStorage
+
+**Status:** ✅ **LIVE** - All 3 fields (Best Score, Season Rank, Achievements) display correctly
 
 ---
 

@@ -3584,8 +3584,16 @@ let reloadButtonInterval = null;
       bossBullets = [];
       bossExplosions = [];
       bossDefeated = false;
-              bossReward = Math.max(1, Math.floor(waveNumber * 0.02)); // 🚨 FIX: Ensure minimum reward of 1 DSPOINC to prevent negative scores
-      console.log(`✅ Boss phase variables set: phase=${bossPhase}, reward=${bossReward}`);
+      
+      // 🏆 SEASON 5 FIX (Nov 3): Proper boss rewards for each wave
+      const bossRewardsByWave = {
+        10: 50,   // Cheese King - First boss, solid reward
+        25: 100,  // Cheese Emperor - Mid-game boss, bigger reward
+        75: 200,  // Cheese God - Late game boss, huge reward
+        100: 300  // Cheese Destroyer - Final boss, massive reward
+      };
+      bossReward = bossRewardsByWave[waveNumber] || 50; // Default 50 for any other boss waves
+      console.log(`✅ Boss phase variables set: phase=${bossPhase}, reward=${bossReward} DSPOINC`);
       
       // 🚀 CRITICAL DEBUG: Verify phase variables
       if (bossPhase !== 'entrance') {
@@ -4586,7 +4594,9 @@ let reloadButtonInterval = null;
         if (boss.health <= 0 && !bossDefeated) {
           bossDefeated = true;
           boss.health = 0; // Ensure it stays at 0
-          bossReward = Math.max(1, Math.floor(bossReward * (1 + (waveNumber / 1000)))); // 🚨 FIX: Ensure minimum reward of 1 DSPOINC to prevent negative scores
+          
+          // 🏆 SEASON 5 FIX (Nov 3): Boss rewards are already set correctly at spawn (50-300 DSPOINC)
+          // Don't modify bossReward here - it's already the final value!
           console.log(`👑 BOSS DEFEATED! ${boss.name} has been vanquished! Reward: ${bossReward} DSPOINC`);
           console.log(`🎉 Final boss stats: Wave ${waveNumber}, Type: ${boss.type}, Max Health: ${boss.maxHealth}`);
           
@@ -4602,11 +4612,16 @@ let reloadButtonInterval = null;
           bossBullets = [];
           console.log(`🧹 Boss bullets cleared immediately to prevent player death`);
           
-                  // Add reward to score
-        spaceInvadersCount += bossReward; // Convert DSPOINC to invader count for scoring
-        
-        // 🚀 BALANCED FIX: Also add to traditional score for consistency
-        spaceInvadersScore += bossReward * 0.1; // Balanced: Convert invader count to traditional points (1 DSPOINC = 0.1 points)
+          // 🏆 SEASON 5 FIX (Nov 3): Apply boss reward correctly (add to SCORE, not count!)
+          // BEFORE: Was adding to spaceInvadersCount (wrong!) and only 0.1x to score (wrong!)
+          // AFTER: Add full reward to spaceInvadersScore for proper DSPOINC calculation
+          const oldScore = spaceInvadersScore;
+          spaceInvadersScore += bossReward; // Add full reward to score (50-300 DSPOINC)
+          spaceInvadersCount += 1; // Boss counts as 1 kill for statistics
+          console.log(`🏆 Boss reward applied: ${oldScore} → ${spaceInvadersScore} (+${bossReward} points)`);
+          
+          // 🎯 Update score display to show new total
+          updateSpaceInvadersScoreDisplay();
           
           // 🚀 NEW: Epic boss defeat effects (reduced intensity)
           bossDefeatEffect = 60; // Reduced from 100 to 60 frames
@@ -5499,7 +5514,6 @@ let reloadButtonInterval = null;
       // 🚀 CRITICAL FIX: Initialize mouse target to ship position to prevent jumping
       mouseTargetX = playerShip.x;
       mouseTargetY = playerShip.y;
-      console.log(`🖱️ Initial mouse target set to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
       
       // 🚀 CRITICAL FIX: Initialize global mouse tracking variables to ship position
       // This prevents the ship from jumping to (0,0) on game start
@@ -6107,7 +6121,6 @@ let reloadButtonInterval = null;
       // 🚀 CRITICAL FIX: Initialize mouse targets to ship position to prevent jumping
       mouseTargetX = playerShip.x;
       mouseTargetY = playerShip.y;
-      console.log(`🖱️ Mouse targets initialized to ship position: X=${mouseTargetX}, Y=${mouseTargetY}`);
       
       // 🚀 CRITICAL FIX: Initialize global mouse tracking variables to ship position
       // This prevents the ship from jumping to (0,0) on game reset
@@ -7219,6 +7232,21 @@ let reloadButtonInterval = null;
     if (giantCheeseBossActive && giantCheeseBosses.length === 0 && giantCheeseBossDefeated) {
       giantCheeseBossActive = false;
       console.log('🧀 Giant Cheese Boss wave complete! Hearts are falling...');
+      
+      // 🏆 SEASON 5 FIX (Nov 3): Add Giant Cheese Boss rewards!
+      // Progressive rewards based on wave number (30 base + 10 per wave level)
+      const giantBossBaseReward = 30;
+      const giantBossWaveBonus = Math.floor(waveNumber / 8) * 10; // +10 per boss level (Wave 8=0, 16=10, 24=20, etc.)
+      const giantBossReward = giantBossBaseReward + giantBossWaveBonus; // 30, 40, 50, 60...
+      
+      const oldScore = spaceInvadersScore;
+      spaceInvadersScore += giantBossReward; // Add full reward to score
+      spaceInvadersCount += 1; // Boss counts as 1 kill for statistics
+      console.log(`🧀 Giant Cheese Boss defeated! Reward: +${giantBossReward} DSPOINC (Wave ${waveNumber})`);
+      console.log(`🏆 Score updated: ${oldScore} → ${spaceInvadersScore} (+${giantBossReward} points)`);
+      
+      // Update score display to show new total
+      updateSpaceInvadersScoreDisplay();
       
       // 🐛 FIX: Delay next wave spawn to let hearts fall and be collected
       setTimeout(() => {
@@ -11858,12 +11886,7 @@ let reloadButtonInterval = null;
       
       // 🔧 CRITICAL FIX: DO NOT change mouse target on entry - wait for actual mouse movement
       // This prevents the "magnetic pull" toward invaders by keeping ship in place
-      console.log('🔍 === MOUSE ENTERED CANVAS ===');
-      console.log(`🖱️ Mouse entered canvas - keeping ship at current position: X=${playerShip.x.toFixed(1)}, Y=${playerShip.y.toFixed(1)}`);
-      console.log(`🎯 Mouse targets remain at: X=${mouseTargetX.toFixed(1)}, Y=${mouseTargetY.toFixed(1)}`);
-      console.log(`📍 Ship center would be at: X=${(mouseTargetX + playerShip.width / 2).toFixed(1)}, Y=${(mouseTargetY + playerShip.height / 2).toFixed(1)}`);
-      console.log(`📏 Canvas dimensions: ${canvasWidth}x${canvasHeight}`);
-      console.log(`🔄 Mouse movement flag reset: false`);
+      // Mouse entered canvas - ship position tracking removed (performance optimization)
       
       // 🔧 CRITICAL FIX: Reset mouse movement flag to prevent upward movement on entry
       window.hasMouseMovedInCanvas = false;

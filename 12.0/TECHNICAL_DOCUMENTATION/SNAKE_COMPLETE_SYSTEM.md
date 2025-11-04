@@ -2,8 +2,8 @@
 
 **Game:** Cheese Snake Scroll  
 **Version:** 5.4.0 - Season 5 Production (Mobile Polished)  
-**Date:** November 3, 2025  
-**Status:** ✅ **PRODUCTION READY - LIVE & MOBILE OPTIMIZED**  
+**Date:** November 4, 2025 - Afternoon Update (Profile Portal + Standalone Page)  
+**Status:** ✅ **PRODUCTION READY - PROFILE PORTAL INTEGRATED**  
 
 ---
 
@@ -801,8 +801,38 @@ class GiantCheeseSnakeBoss {
 
 ---
 
+## 🎮 **PROFILE PAGE GAME PORTAL INTEGRATION (November 4, 2025)**
+
+### **Game Portal Card Display:**
+The profile page (`public/profile.html`) features a dedicated game portal section that displays live Snake statistics:
+
+**Card Features:**
+- ✅ **Best Score Display** - Shows player's best Snake score in DSPOINC
+- ✅ **Season Rank** - Calculates and displays player's current rank (#1, #2, etc.)
+- ✅ **Achievement Count** - Displays unlocked achievements (e.g., "12/20")
+- ✅ **Click-to-Play** - Card links directly to standalone Snake page (`snake.html`)
+
+**Technical Implementation:**
+- **Function:** `loadGamePortalStats()` in `profile.html`
+- **API Endpoint:** `/api/user/user-game-missions.php?discord_id={id}`
+- **Data Structure:** `data.games.snake.stats.best_score` and `data.games.snake.achievements.unlocked`
+- **Rank Calculation:** Fetches leaderboard data from `/api/dev/get-leaderboard.php` and finds user's position
+- **Element IDs:** 
+  - `snake-best-score-card` - Best score display
+  - `snake-rank-card` - Season rank display
+  - `snake-achievements-card` - Achievement count display
+
+**Local Development Bypass:**
+- Uses Narrrf's Discord ID (`328601656659017732`) for local testing
+- Automatically detects localhost environment
+- Production uses actual user's Discord ID from localStorage
+
+**Status:** ✅ **LIVE** - All 3 fields (Best Score, Season Rank, Achievements) display correctly
+
+---
+
 **Document Version:** 1.3.1 (FINAL)  
-**Last Updated:** November 2, 2025 - Evening  
+**Last Updated:** November 4, 2025 - Profile Portal Integration  
 **Maintainer:** Cursor LLM (Season 5 Development)  
 **Status:** ✅ **PRODUCTION READY - DEPLOYING TO LIVE**
 

@@ -1590,8 +1590,22 @@ function collide(shape, row, col) {
     
     console.log(`👑 BOSS SPAWNED: ${bossName} | Lines: ${requiredLines} | Reward: ${reward} DSPOINC`);
     
+    // ⏸️ PAUSE GAME during boss spawn countdown (like Snake!)
+    isTetrisPaused = true;
+    clearInterval(gameInterval);
+    console.log('⏸️ Game PAUSED for boss spawn countdown!');
+    
     // Show boss spawn notification with countdown (like Snake!)
     showBossSpawnNotification(bossName, bossColor, requiredLines, reward);
+    
+    // ⏱️ Resume game after countdown (4.9 seconds total: 1s wait + 3s countdown + 0.8s GO!)
+    setTimeout(() => {
+      // ▶️ Resume game
+      isTetrisPaused = false;
+      clearInterval(gameInterval); // always reset interval
+      gameInterval = setInterval(drop, dropInterval);
+      console.log('▶️ Game RESUMED after boss spawn countdown!');
+    }, 4900); // Match countdown duration (1s wait + 3s countdown + 0.8s GO! + buffer)
   }
   
   // 👑 BOSS DEFEAT FUNCTION

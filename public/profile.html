@@ -428,14 +428,14 @@ require_once 'discord-invite.php';
     </div>
     <div class="grid grid-cols-3 gap-3 max-w-2xl mx-auto">
       <!-- 🧩 Tetris -->
-      <a href="#cheese-tetris" onclick="event.preventDefault(); document.getElementById('cheese-tetris').scrollIntoView({ behavior: 'smooth', block: 'center' });" class="group bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl p-4 border-2 border-purple-400 hover:border-yellow-400 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 cursor-pointer">
+      <a href="tetris.html" class="group bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl p-4 border-2 border-purple-400 hover:border-yellow-400 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 cursor-pointer">
         <div class="text-3xl mb-2 group-hover:animate-bounce">🧩</div>
         <h3 class="text-sm font-bold mb-1">Tetris</h3>
         <p class="text-xs text-purple-200">Block puzzle!</p>
       </a>
 
       <!-- 🐍 Snake -->
-      <a href="#cheese-snake" onclick="event.preventDefault(); document.getElementById('cheese-snake').scrollIntoView({ behavior: 'smooth', block: 'center' });" class="group bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl p-4 border-2 border-green-400 hover:border-yellow-400 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/50 cursor-pointer">
+      <a href="snake.html" class="group bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl p-4 border-2 border-green-400 hover:border-yellow-400 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/50 cursor-pointer">
         <div class="text-3xl mb-2 group-hover:animate-bounce">🐍</div>
         <h3 class="text-sm font-bold mb-1">Snake</h3>
         <p class="text-xs text-green-200">Eat cheese!</p>
@@ -500,9 +500,9 @@ function updateSeason5Banner() {
   }
 }
 
-// Start countdown and update every second
-updateSeason4Countdown();
-setInterval(updateSeason4Countdown, 1000);
+// Season 5 is live, no countdown needed anymore
+// updateSeason4Countdown();
+// setInterval(updateSeason4Countdown, 1000);
 </script>
 
 <script>
@@ -1226,439 +1226,126 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 
 
-<!-- 🎮 Triple Game Panel — Tetris + Snake + Space Invaders -->
-<section class="max-w-6xl w-full mx-auto px-4 mt-12 flex flex-col lg:flex-row gap-8 items-start justify-center relative z-10">
- <!-- 🎮 TETRIS PANEL -->
-  <section id="cheese-tetris" class="flex-1 relative finance-card py-8 px-6 rounded-3xl ring-2 ring-purple-500/50 border border-purple-400/30 mb-8 lg:mb-0 hover:ring-purple-400/70 transition-all duration-300">
-    <div class="text-center mb-4">
-      🎮 TETRIS
-    </div>
-    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">TETRIS SPOINC MODE</h2>
-    <!-- 🧪 Role Based System Testing Mode Indicator -->
-    <div class="text-center mb-4">
-      <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-400">
-        ⭐ Season 5 Boss Mode Active! 👑
-      </div>
-    </div>
-          
-          <!-- 💰 Score Display - Moved to top for visibility during gameplay -->
-          <div class="text-center mb-4">
-            <p id="tetris-score" class="text-yellow-300 font-mono text-lg font-bold">💰 Tetris Score: $0 DSPOINC</p>
-            <p id="bomb-warning" class="hidden text-pink-400 text-xs font-bold mt-1">💣 Incoming Cheese Bomb!</p>
-    </div>
-    
-          <!-- 🎮 Game Controls -->
-          <div class="text-center mb-4 space-y-2">
-      <button id="start-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
-      <button id="pause-tetris-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">⏸️ Pause</button>
-    </div>
-    
-    <!-- 🔮 Next Block Preview - Below controls -->
-    <div class="text-center mb-4">
-      <p class="text-yellow-300 text-sm mb-2">Next Block:</p>
-      <canvas id="next-canvas" width="80" height="80" class="bg-gray-900 rounded-md block mx-auto"></canvas>
-    </div>
-    
-    <div class="relative inline-block">
-      <canvas id="tetris-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
-      
-      <!-- 🚨 Tetris Countdown Overlay -->
-      <div id="tetris-countdown" class="hidden absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 z-50 rounded-lg" style="width: 200px; height: 400px; border: 4px solid #fbbf24; box-sizing: border-box; min-height: 400px;">
-        <span id="tetris-countdown-number">5</span>
-      </div>
-      
-      <!-- 🧠 Tetris Game Over Modal - Positioned over canvas only -->
-      <div id="game-over-modal" class="hidden absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm rounded-lg" style="width: 200px; height: 400px; border: 4px solid #fbbf24; box-sizing: border-box; min-height: 400px;">
-      <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
-        <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
-        <p id="final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-        <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
+<!-- 🎮 GAME PORTAL - Clean Link Cards -->
+<section class="max-w-6xl w-full mx-auto px-4 mt-12 relative z-10">
+  <div class="text-center mb-8">
+    <h2 class="text-3xl font-bold text-yellow-300 mb-2">🎮 Play Your Games</h2>
+    <p class="text-gray-400">Click any game to start playing • Season 5 NOW LIVE!</p>
+  </div>
+  
+  <div class="flex flex-col gap-4">
+    <!-- 🧩 TETRIS GAME CARD -->
+    <a href="tetris.html" class="block group">
+      <div class="finance-card p-6 rounded-2xl border-2 border-purple-500/50 bg-gradient-to-r from-purple-900/30 to-purple-800/20 hover:border-purple-400 hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 transform hover:-translate-y-1">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="text-5xl">🧩</div>
+            <div>
+              <h3 class="text-2xl font-bold text-yellow-300 mb-1">TETRIS</h3>
+              <p class="text-sm text-gray-400">9 Epic Bosses • Frozen & Giant Blocks</p>
+            </div>
+          </div>
+          <div class="text-4xl text-purple-400 group-hover:text-purple-300 transition-transform group-hover:translate-x-2">▶</div>
         </div>
-      </div>
-    </div>
-    
-    
-    <!-- 💣 Bomb Defused Popup - Positioned relative to canvas -->
-    <div id="bomb-defused-popup" class="absolute top-4 right-4 bg-yellow-300 text-black px-2 py-1 rounded-lg text-xs md:text-sm shadow-lg hidden z-50 scale-75">
-      💣 BOMB DEFUSED! +50 DSPOINC
-    </div>
-    
-    <!-- 📖 TETRIS GAME GUIDE BUTTON -->
-    <div class="text-center mt-4 mb-2">
-      <button onclick="toggleTetrisGuide()" class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-yellow-400 transition-all duration-300 transform hover:scale-105">
-        📖 Tetris Game Guide - Bosses & Mechanics
-      </button>
-    </div>
-    
-    <!-- 🎮 TETRIS CONTROLS & HELP -->
-    <div id="tetris-controls-section" class="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
-      <h4 id="tetris-controls-title" class="text-center text-md font-semibold mb-3 text-yellow-300">🎮 TETRIS CONTROLS & HELP</h4>
-      
-      <div class="mb-3">
-        <h5 class="text-sm font-bold text-blue-300 mb-1">MOVEMENT & ROTATION</h5>
-        <p class="text-xs text-gray-300 mb-1">Arrow Keys: ←=Left, →=Right, ↓=Soft Drop, ↑=Rotate</p>
-        <p class="text-xs text-gray-300 mb-1">WASD Keys: A=Left, D=Right, S=Soft Drop, W=Rotate</p>
-        <p class="text-xs text-gray-300 mb-1">Mobile: Swipe in direction to move/rotate</p>
-      </div>
-      
-      <div class="mb-3">
-        <h5 class="text-sm font-bold text-green-300 mb-1">GAME CONTROLS</h5>
-        <p class="text-xs text-gray-300 mb-1">⏸️ Pause Button: Pause/Resume game</p>
-        <p class="text-xs text-gray-300 mb-1">▶️ Start Button: Start new game</p>
-        <p class="text-xs text-gray-300 mb-1">Mobile: Use pause button and touch controls</p>
-      </div>
-      
-      <div class="mb-3">
-        <h5 class="text-sm font-bold text-purple-300 mb-1">SCORING & SPECIAL BLOCKS</h5>
-        <p class="text-xs text-gray-300 mb-1">Line Clear: 2 DSPOINC per line cleared</p>
-        <p class="text-xs text-gray-300 mb-1">💣 Bomb Blocks: Clear 3x3 area around bomb + 10 DSPOINC</p>
-        <p class="text-xs text-gray-300 mb-1">Combo System: Chain line clears for bonus points</p>
-      </div>
-      
-      <div class="mb-3">
-        <h5 class="text-sm font-bold text-yellow-300 mb-1">🏆 ROLE-BASED THEMES & BONUSES</h5>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #FFD700;">🟡 Golden Frame:</span> VIP Holder (2.0x scoring, 2x particles)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #C0C0C0;">⚪ Silver Frame:</span> Holder (1.5x scoring, 1.5x particles)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #FF0000;">🔴 Red Frame:</span> Champion (1.4x scoring, enhanced effects)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #FFA500;">🟠 Orange Frame:</span> Cheese Hunter (1.1x scoring, cheese particles)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #00BFFF;">🔵 Blue Frame:</span> Early Bird (1.2x scoring, special effects)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #00FF00;">🟢 Green Frame:</span> Season Tester (1.3x scoring, green particles)</p>
-        <p class="text-xs text-gray-300 mb-1"><span class="text-yellow-400 font-semibold">Your Discord roles determine your theme and bonuses!</span></p>
-      </div>
-      
-      <div>
-        <h5 class="text-sm font-bold text-red-300 mb-1">ACHIEVEMENTS</h5>
-        <p class="text-xs text-gray-300 mb-1">Unlock achievements by reaching milestones</p>
-        <p class="text-xs text-gray-300 mb-1">Progress tracked automatically during gameplay</p>
-      </div>
-    </div>
-    
-    <!-- 📖 TETRIS GAME GUIDE (Hidden by default) -->
-    <div id="tetrisGameGuide" class="hidden mt-4 p-6 bg-gradient-to-br from-gray-900 to-purple-900 rounded-xl border-2 border-yellow-400 shadow-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-2xl font-bold text-yellow-300">📖 Tetris Game Guide</h3>
-        <button onclick="toggleTetrisGuide()" class="text-yellow-400 hover:text-yellow-300 text-2xl font-bold">✕</button>
-      </div>
-      
-      <!-- 👑 Boss System -->
-      <div class="mb-6">
-        <h4 class="text-xl font-bold text-purple-300 mb-3">👑 9-Boss System</h4>
-        <p class="text-sm text-gray-300 mb-3">Tetris features 9 progressive bosses that spawn at specific line counts!</p>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          <div class="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
-            <div class="text-yellow-400 font-bold mb-1">🧀 Boss 1: Cheese Block King</div>
-            <div class="text-xs text-gray-300">Spawn: 3 lines (test) / 10 lines (live)</div>
-            <div class="text-xs text-yellow-300">Frozen: 15% | Giant: 20%</div>
-            <div class="text-xs text-green-400">Reward: 50 DSPOINC (100 VIP!)</div>
+        <div class="mt-4 flex gap-4 text-sm">
+          <div class="flex-1 bg-purple-800/20 p-3 rounded-lg">
+            <div class="text-gray-400 text-xs mb-1">Best Score</div>
+            <div class="text-yellow-300 font-bold text-lg" id="tetris-best-score-card">-- DSPOINC</div>
           </div>
-          
-          <div class="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
-            <div class="text-purple-400 font-bold mb-1">👑 Boss 2: Tetris Emperor</div>
-            <div class="text-xs text-gray-300">Spawn: 10 lines / 30 lines</div>
-            <div class="text-xs text-purple-300">Frozen: 20% | Giant: 25%</div>
-            <div class="text-xs text-green-400">Reward: 100 DSPOINC (200 VIP!)</div>
+          <div class="flex-1 bg-purple-800/20 p-3 rounded-lg">
+            <div class="text-gray-400 text-xs mb-1">Season Rank</div>
+            <div class="text-purple-300 font-bold text-lg" id="tetris-rank-card">#--</div>
           </div>
-          
-          <div class="bg-cyan-900/30 p-3 rounded-lg border border-cyan-500/50">
-            <div class="text-cyan-400 font-bold mb-1">⚡ Boss 3: Lightning Lord</div>
-            <div class="text-xs text-gray-300">Spawn: 20 lines / 60 lines</div>
-            <div class="text-xs text-cyan-300">Frozen: 25% | Giant: 30%</div>
-            <div class="text-xs text-green-400">Reward: 150 DSPOINC (300 VIP!)</div>
+          <div class="flex-1 bg-purple-800/20 p-3 rounded-lg">
+            <div class="text-gray-400 text-xs mb-1">Achievements</div>
+            <div class="text-green-300 font-bold text-lg" id="tetris-achievements-card">--/25</div>
           </div>
         </div>
         
-        <div class="text-center text-xs text-gray-400 mb-2">+ 6 More Bosses (Boss 4-9)</div>
-        
-        <div class="bg-red-900/30 p-3 rounded-lg border border-red-500/50 text-center">
-          <div class="text-red-400 font-bold text-lg mb-1">🏆 Boss 9: ULTIMATE CHEESE GOD</div>
-          <div class="text-sm text-gray-300">Spawn: 185 lines (test) / 450 lines (live)</div>
-          <div class="text-sm text-red-300">Frozen: 60% | Giant: 70% | Lines: 25</div>
-          <div class="text-lg text-green-400 font-bold">Reward: 1,000 DSPOINC (2,000 VIP!)</div>
-        </div>
-        
-        <div class="mt-3 text-center text-sm text-yellow-400 font-semibold">
-          Total All Bosses: 3,550 DSPOINC (7,100 VIP!)
+        <div class="mt-3 text-center">
+          <span class="inline-block px-3 py-1 bg-yellow-400/20 border border-yellow-400/50 rounded-full text-xs text-yellow-300 font-semibold">
+            ⭐ Season 5 Boss Mode Active! • Total Rewards: 3,550 DSPOINC
+          </span>
         </div>
       </div>
-      
-      <!-- 🧀 Special Mechanics -->
-      <div class="mb-6">
-        <h4 class="text-xl font-bold text-blue-300 mb-3">🧀 Special Mechanics</h4>
-        
-        <div class="space-y-2">
-          <div class="bg-blue-900/20 p-3 rounded-lg border border-blue-500/30">
-            <div class="font-bold text-blue-400 mb-1">❄️ Frozen Blocks</div>
-            <div class="text-xs text-gray-300">Can't rotate! 5% normal, 15-60% during boss. Blue overlay indicator.</div>
+    </a>
+    
+    <!-- 🐍 SNAKE GAME CARD -->
+    <a href="snake.html" class="block group">
+      <div class="finance-card p-6 rounded-2xl border-2 border-green-500/50 bg-gradient-to-r from-green-900/30 to-emerald-800/20 hover:border-green-400 hover:shadow-2xl hover:shadow-green-500/20 transition-all duration-300 transform hover:-translate-y-1">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="text-5xl">🐍</div>
+            <div>
+              <h3 class="text-2xl font-bold text-yellow-300 mb-1">SNAKE</h3>
+              <p class="text-sm text-gray-400">9 Boss Battles • Golden Apples • Progressive AI</p>
+            </div>
           </div>
-          
-          <div class="bg-orange-900/20 p-3 rounded-lg border border-orange-500/30">
-            <div class="font-bold text-orange-400 mb-1">🧀 Giant Blocks</div>
-            <div class="text-xs text-gray-300">1.5x size! Only during bosses. 20-70% chance progressive.</div>
-          </div>
-          
-          <div class="bg-yellow-900/20 p-3 rounded-lg border border-yellow-500/30">
-            <div class="font-bold text-yellow-400 mb-1">💣 Giant Bombs</div>
-            <div class="text-xs text-gray-300">5x5 explosion (vs normal 3x3)! 1.5x size. Only during bosses.</div>
-          </div>
-          
-          <div class="bg-green-900/20 p-3 rounded-lg border border-green-500/30">
-            <div class="font-bold text-green-400 mb-1">⭐ Multi-Line Bonus</div>
-            <div class="text-xs text-gray-300">2 lines = 5 DSPOINC | 3 lines = 9 | 4 lines = 16 (rewards skill!)</div>
-          </div>
+          <div class="text-4xl text-green-400 group-hover:text-green-300 transition-transform group-hover:translate-x-2">▶</div>
         </div>
-      </div>
-      
-      <!-- 💥 Boss Victory Effects -->
-      <div>
-        <h4 class="text-xl font-bold text-green-300 mb-3">💥 Boss Victory</h4>
-        <div class="space-y-2 text-sm text-gray-300">
-          <div>✅ <span class="text-green-400">Field Explosion</span> - All blocks clear!</div>
-          <div>✅ <span class="text-blue-400">Speed Boost</span> - Game gets 100ms faster!</div>
-          <div>✅ <span class="text-yellow-400">Big Rewards</span> - 50-1,000 DSPOINC per boss!</div>
-          <div>✅ <span class="text-purple-400">Countdown Timer</span> - Game pauses for celebration!</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 🟢 SNAKE PANEL -->
-  <section id="cheese-snake" class="flex-1 finance-card py-8 px-4 sm:px-6 rounded-3xl ring-2 ring-green-500/50 border border-green-400/30 relative flex flex-col items-center mb-8 lg:mb-0 hover:ring-green-400/70 transition-all duration-300">
-    <div class="text-center mb-4">
-      🐍 SNAKE
-    </div>
-    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">Cheese Snake</h2>
-    
-    <!-- 🎉 Season 5 LIVE Indicator -->
-    <div class="text-center mb-2">
-      <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-400 shadow-sm animate-pulse">
-        🎉 Season 5 NOW LIVE! 🏆
-      </div>
-    </div>
-    
-    <!-- 💰 Score Display - Compact for mobile -->
-    <div class="text-center mb-2">
-      <p id="snake-score" class="text-yellow-300 font-mono text-base sm:text-lg font-bold">💰 Snake Score: $0</p>
-      <p class="text-yellow-400 text-xs">DSPOINC (2x Role Bonus!)</p>
-    </div>
-    
-    <!-- 🎮 Game Controls - Original design restored -->
-    <div class="text-center mb-2 space-y-2">
-      <button id="start-snake-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
-      <button id="pause-snake-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded-xl shadow-md w-32">⏸️ Pause</button>
-    </div>
-    
-    <div class="relative inline-block">
-      <canvas id="snake-canvas" width="200" height="400" class="bg-gray-900 border-4 mx-auto block rounded-lg shadow-lg"></canvas>
-      
-      <!-- 🚨 Snake Countdown Overlay -->
-      <div id="snake-countdown" class="hidden absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 z-50 rounded-lg" style="width: 200px; height: 400px; border: 4px solid #fbbf24; box-sizing: border-box; min-height: 400px;">
-        <span id="countdown-number">3</span>
-      </div>
-      
-      <!-- 🧠 Snake Game Over Modal - Positioned over canvas only -->
-      <div id="snake-over-modal" class="hidden absolute top-0 left-1/2 transform -translate-x-1/2 flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm rounded-lg" style="width: 200px; height: 400px; border: 4px solid #fbbf24; box-sizing: border-box; min-height: 400px;">
-      <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
-        <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
-        <p id="snake-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-        <button id="snake-play-again-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg touch-manipulation">🔁 Play Again</button>
-      </div>
-    </div>
-    </div>
-    
-    <!-- 📖 SNAKE GAME GUIDE BUTTON -->
-    <div class="text-center mt-4 mb-2">
-      <button onclick="toggleSnakeGuide()" class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-green-400 transition-all duration-300 transform hover:scale-105">
-        📖 Snake Game Guide - Bosses & Mechanics
-      </button>
-    </div>
-    
-    <!-- 🐍 SNAKE CONTROLS & HELP -->
-    <div id="snake-controls-section" class="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
-      <h4 id="snake-controls-title" class="text-center text-md font-semibold mb-3 text-green-300">🐍 SNAKE CONTROLS & HELP</h4>
-      
-      <div class="mb-3">
-        <h5 class="text-sm font-bold text-blue-300 mb-1">MOVEMENT CONTROLS</h5>
-        <p class="text-xs text-gray-300 mb-1">Arrow Keys: ↑=Up, ↓=Down, ←=Left, →=Right</p>
-        <p class="text-xs text-gray-300 mb-1">WASD Keys: W=Up, S=Down, A=Left, D=Right</p>
-        <p class="text-xs text-gray-300 mb-1">Mobile: Swipe in direction to move</p>
-        <p class="text-xs text-gray-300 mb-1">Touch: Tap directional buttons below game</p>
-      </div>
-      
-      <div class="mb-3">
-        <h5 class="text-sm font-bold text-green-300 mb-1">GAME CONTROLS</h5>
-        <p class="text-xs text-gray-300 mb-1">⏸️ Pause Button: Pause/Resume game</p>
-        <p class="text-xs text-gray-300 mb-1">▶️ Start Button: Start new game</p>
-        <p class="text-xs text-gray-300 mb-1">Mobile: Use pause button and touch controls</p>
-      </div>
-      
-      <div class="mb-3">
-        <h5 class="text-sm font-bold text-purple-300 mb-1">SCORING & ACHIEVEMENTS</h5>
-        <p class="text-xs text-gray-300 mb-1">Food Points: Each food = 10 DSPOINC (base)</p>
-        <p class="text-xs text-gray-300 mb-1">Role multipliers apply to base scoring</p>
-        <p class="text-xs text-gray-300 mb-1">Unlock achievements by reaching milestones</p>
-        <p class="text-xs text-gray-300 mb-1">Progress tracked automatically during gameplay</p>
-      </div>
-
-      
-      <div class="mb-3">
-        <h5 class="text-sm font-bold text-yellow-300 mb-1">🏆 ROLE-BASED THEMES & BONUSES</h5>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #FFD700;">🟡 Golden Frame:</span> VIP Holder (2.0x scoring, golden snake & food)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #C0C0C0;">⚪ Silver Frame:</span> Holder (1.5x scoring, silver snake & food)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #FF0000;">🔴 Red Frame:</span> Champion (1.4x scoring, red snake & food)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #FFA500;">🟠 Orange Frame:</span> Cheese Hunter (1.1x scoring, orange snake & food)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #00BFFF;">🔵 Blue Frame:</span> Early Bird (1.2x scoring, blue snake & food)</p>
-        <p class="text-xs text-gray-300 mb-1"><span style="color: #00FF00;">🟢 Green Frame:</span> Season Tester (1.3x scoring, green snake & food)</p>
-        <p class="text-xs text-gray-300 mb-1"><span class="text-yellow-400 font-semibold">Your Discord roles determine your theme and bonuses!</span></p>
-      </div>
-    </div>
-    
-    <!-- 📖 SNAKE GAME GUIDE (Hidden by default) -->
-    <div id="snakeGameGuide" class="hidden mt-4 p-6 bg-gradient-to-br from-gray-900 to-green-900 rounded-xl border-2 border-green-400 shadow-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-2xl font-bold text-green-300">📖 Snake Game Guide</h3>
-        <button onclick="toggleSnakeGuide()" class="text-green-400 hover:text-green-300 text-2xl font-bold">✕</button>
-      </div>
-      
-      <!-- 🐍 Boss System -->
-      <div class="mb-6">
-        <h4 class="text-xl font-bold text-purple-300 mb-3">🐍 9-Boss System</h4>
-        <p class="text-sm text-gray-300 mb-3">Snake features 9 progressive Giant Cheese Snake Bosses!</p>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          <div class="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
-            <div class="text-purple-400 font-bold mb-1">🍼 Baby Boss (Tutorial)</div>
-            <div class="text-xs text-gray-300">Spawn: 3 cheeses</div>
-            <div class="text-xs text-purple-300">Apples: 5 | AI: 15% (very easy!)</div>
-            <div class="text-xs text-green-400">Reward: 30 DSPOINC (60 VIP!)</div>
+        <div class="mt-4 flex gap-4 text-sm">
+          <div class="flex-1 bg-green-800/20 p-3 rounded-lg">
+            <div class="text-gray-400 text-xs mb-1">Best Score</div>
+            <div class="text-yellow-300 font-bold text-lg" id="snake-best-score-card">-- DSPOINC</div>
           </div>
-          
-          <div class="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
-            <div class="text-yellow-400 font-bold mb-1">🐍 Boss 2-8 (Progressive)</div>
-            <div class="text-xs text-gray-300">Spawn: 10, 30, 50, 80, 120, 170, 230</div>
-            <div class="text-xs text-yellow-300">AI: 20% → 90% progressive</div>
-            <div class="text-xs text-green-400">Rewards: 50-400 DSPOINC</div>
+          <div class="flex-1 bg-green-800/20 p-3 rounded-lg">
+            <div class="text-gray-400 text-xs mb-1">Season Rank</div>
+            <div class="text-green-300 font-bold text-lg" id="snake-rank-card">#--</div>
           </div>
-          
-          <div class="bg-red-900/30 p-3 rounded-lg border border-red-500/50">
-            <div class="text-red-400 font-bold mb-1">🏆 Boss 9: Final Boss</div>
-            <div class="text-xs text-gray-300">Spawn: 300 cheeses</div>
-            <div class="text-xs text-red-300">Apples: 10 | AI: 95% (expert!)</div>
-            <div class="text-xs text-green-400">Reward: 550 DSPOINC (1,100 VIP!)</div>
+          <div class="flex-1 bg-green-800/20 p-3 rounded-lg">
+            <div class="text-gray-400 text-xs mb-1">Achievements</div>
+            <div class="text-emerald-300 font-bold text-lg" id="snake-achievements-card">--/20</div>
           </div>
         </div>
         
-        <div class="mt-3 text-center text-sm text-yellow-400 font-semibold">
-          Total All Bosses: 1,930 DSPOINC (3,860 VIP!)
+        <div class="mt-3 text-center">
+          <span class="inline-block px-3 py-1 bg-green-400/20 border border-green-400/50 rounded-full text-xs text-green-300 font-semibold">
+            🎉 Season 5 NOW LIVE! • Total Rewards: 1,930 DSPOINC
+          </span>
         </div>
       </div>
-      
-      <!-- 🍎 Special Mechanics -->
-      <div class="mb-6">
-        <h4 class="text-xl font-bold text-blue-300 mb-3">🍎 Boss Battle Mechanics</h4>
+    </a>
+    
+    <!-- 👾 SPACE INVADERS GAME CARD -->
+    <a href="space-cheese-invaders.html" class="block group">
+      <div class="finance-card p-6 rounded-2xl border-2 border-blue-500/50 bg-gradient-to-r from-blue-900/30 to-indigo-800/20 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 transform hover:-translate-y-1">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="text-5xl">👾</div>
+            <div>
+              <h3 class="text-2xl font-bold text-yellow-300 mb-1">SPACE CHEESE INVADERS</h3>
+              <p class="text-sm text-gray-400">Phoenix Waves • Giant Boss • 4 Weapons</p>
+            </div>
+          </div>
+          <div class="text-4xl text-blue-400 group-hover:text-blue-300 transition-transform group-hover:translate-x-2">▶</div>
+        </div>
         
-        <div class="space-y-2">
-          <div class="bg-yellow-900/20 p-3 rounded-lg border border-yellow-500/30">
-            <div class="font-bold text-yellow-400 mb-1">🍎 Golden Apples</div>
-            <div class="text-xs text-gray-300">Collect 5-10 golden apples to damage boss. Each apple = 1 HP damage.</div>
+        <div class="mt-4 flex gap-4 text-sm">
+          <div class="flex-1 bg-blue-800/20 p-3 rounded-lg">
+            <div class="text-gray-400 text-xs mb-1">Best Score</div>
+            <div class="text-yellow-300 font-bold text-lg" id="space-best-score-card">-- DSPOINC</div>
           </div>
-          
-          <div class="bg-purple-900/20 p-3 rounded-lg border border-purple-500/30">
-            <div class="font-bold text-purple-400 mb-1">🐍 Giant Boss Snake</div>
-            <div class="text-xs text-gray-300">1.5x size, actively hunts you! Head-to-head collision = game over.</div>
+          <div class="flex-1 bg-blue-800/20 p-3 rounded-lg">
+            <div class="text-gray-400 text-xs mb-1">Season Rank</div>
+            <div class="text-blue-300 font-bold text-lg" id="space-rank-card">#--</div>
           </div>
-          
-          <div class="bg-blue-900/20 p-3 rounded-lg border border-blue-500/30">
-            <div class="font-bold text-blue-400 mb-1">⏰ 60 Second Time Limit</div>
-            <div class="text-xs text-gray-300">Collect all apples within 60 seconds or game over!</div>
-          </div>
-          
-          <div class="bg-green-900/20 p-3 rounded-lg border border-green-500/30">
-            <div class="font-bold text-green-400 mb-1">🧠 Progressive AI</div>
-            <div class="text-xs text-gray-300">Boss gets smarter each level! 15% dumb → 95% expert hunter.</div>
+          <div class="flex-1 bg-blue-800/20 p-3 rounded-lg">
+            <div class="text-gray-400 text-xs mb-1">Achievements</div>
+            <div class="text-purple-300 font-bold text-lg" id="space-achievements-card">--/28</div>
           </div>
         </div>
-      </div>
-      
-      <!-- 🏆 Boss Rewards -->
-      <div>
-        <h4 class="text-xl font-bold text-green-300 mb-3">🏆 Boss Features</h4>
-        <div class="space-y-2 text-sm text-gray-300">
-          <div>✅ <span class="text-yellow-400">Wall Wrapping</span> - Walls don't kill during boss!</div>
-          <div>✅ <span class="text-purple-400">Countdown Timers</span> - Pauses for spawn/victory (3, 2, 1, GO!)</div>
-          <div>✅ <span class="text-green-400">Boss Always Slower</span> - Fair challenge, you can outrun!</div>
-          <div>✅ <span class="text-blue-400">Cheese-Themed</span> - Rounded boss, cheese holes, golden eyes!</div>
+        
+        <div class="mt-3 text-center">
+          <span class="inline-block px-3 py-1 bg-blue-400/20 border border-blue-400/50 rounded-full text-xs text-blue-300 font-semibold">
+            🚀 Season 5 Phoenix Mode • Progressive Boss Rewards
+          </span>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- 🚀 SPACE INVADERS PANEL -->
-  <section id="space-cheese-invaders" class="flex-1 finance-card py-8 px-6 rounded-3xl ring-2 ring-blue-500/50 border border-blue-400/30 relative cursor-pointer hover:ring-blue-400/70 transition-all duration-300" onclick="window.location.href='space-cheese-invaders.html'">
-    <div class="absolute top-4 left-4 bg-purple-400 text-black text-xs font-bold px-3 py-1 rounded-full shadow z-10">
-      🚀 SPACE INVADERS
-    </div>
-
-    <!-- 🎯 Click to Play Full Game Indicator -->
-    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/90 text-black text-lg font-bold px-6 py-3 rounded-xl shadow-2xl z-20 hover:bg-yellow-300 transition-all duration-300">
-      🎮 CLICK TO PLAY FULL GAME
-    </div>
-
-    <h2 class="text-center text-2xl font-bold mb-4 text-yellow-100 drop-shadow">SPACE CHEESE INVADERS</h2>
-    
-    <!-- 🎮 Game Controls - Moved to top for better UX -->
-    <div class="text-center mb-4 space-y-2 opacity-50">
-      <button id="start-space-invaders-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
-      <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded-xl shadow-md w-32">⏸️ Pause</button>
-    </div>
-    
-    <div class="relative opacity-50">
-      <canvas id="space-invaders-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 mx-auto block rounded-lg shadow-lg"></canvas>
-
-      <div id="space-invaders-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-300 bg-black/80 hidden z-50 rounded-lg">
-        5
-      </div>
-    </div>
-
-    <p id="space-invaders-score" class="text-center mt-6 text-sm font-semibold text-yellow-200 opacity-50">
-      💰 Space Invaders Score: $0 DSPOINC
-    </p>
-
-    <div class="text-xs italic text-center text-gray-500 mt-1">👾 Click to play the full Space Cheese Invaders game!</div>
-  </section>
+    </a>
+  </div>
 </section>
-
-<!-- 🧠 MODALS GAMEOVER-->
-<div id="game-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
-  <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
-    <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
-    <p id="final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-    <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg">🔁 Play Again</button>
-  </div>
-</div>
-
-<!-- 🧠 Space Invaders Game Over Modal (kept for global access) -->
-<div id="space-invaders-over-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
-  <div class="bg-yellow-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-yellow-400 max-w-xs w-full animate-fade-in">
-    <h2 class="text-3xl font-extrabold mb-3 text-yellow-900 drop-shadow">🧠 GAME OVER</h2>
-    <p id="space-invaders-final-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-    <div class="flex gap-3 justify-center">
-      <button onclick="window.location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg transition-colors">🔁 Play Again</button>
-      <button onclick="endSpaceInvadersGame()" class="bg-gray-500 hover:bg-gray-400 text-white font-bold px-4 py-2 rounded-xl shadow-lg transition-colors">🏁 End Game</button>
-    </div>
-  </div>
-</div>
-
-<div id="space-invaders-win-modal" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-80 z-50 backdrop-blur-sm">
-  <div class="bg-green-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-green-400 max-w-xs w-full animate-fade-in">
-    <h2 class="text-3xl font-extrabold mb-3 text-green-900 drop-shadow">🏆 VICTORY!</h2>
-    <p id="space-invaders-win-score-text" class="text-lg font-mono text-gray-800 mb-6">You earned $0 DSPOINC</p>
-    <div class="flex gap-3 justify-center">
-      <button onclick="window.location.reload()" class="bg-green-400 hover:bg-green-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg transition-colors">🔁 Play Again</button>
-      <button onclick="endSpaceInvadersGame()" class="bg-gray-500 hover:bg-gray-400 text-white font-bold px-4 py-2 rounded-xl shadow-lg transition-colors">🏁 End Game</button>
-    </div>
-  </div>
-</div>
 
 <!-- 🔐 Login Prompt -->
 <div id="tetris-auth" class="text-center my-6 w-full max-w-2xl mx-auto">
@@ -2356,11 +2043,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
 <!-- 🧠 Load Scroll Scripts -->
-<script src="scripts/tetris-scroll.js?v=11.6.0&season5_boss_system=1730649600"></script>
-<script src="scripts/snake-scroll.js?v=5.4.0&season5_boss_system=1730649600"></script>
+<!-- 🎮 Game scripts removed - games now on standalone pages (tetris.html, snake.html) -->
+<!-- <script src="scripts/tetris-scroll.js?v=11.6.0&season5_boss_system=1730649600"></script> -->
+<!-- <script src="scripts/snake-scroll.js?v=5.4.0&season5_boss_system=1730649600"></script> -->
 <!-- Space Invaders script removed from profile page - it has its own dedicated page -->
 <script>
-  console.log('✅ Profile page scripts loaded - Tetris and Snake only');
+  console.log('✅ Profile page - Game scripts removed (all games on standalone pages)');
+  console.log('🎮 Tetris: /public/tetris.html');
+  console.log('🐍 Snake: /public/snake.html');
+  console.log('👾 Space Invaders: /public/space-cheese-invaders.html');
 </script>
 
 <!-- 🏆 Leaderboard Logic -->
@@ -2734,9 +2425,189 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
+// 🎮 Function to load game portal card stats - DEFINED BEFORE USE
+async function loadGamePortalStats() {
+  try {
+    console.log('🎮 Loading game portal stats...');
+    
+    // 🧪 LOCAL DEVELOPMENT BYPASS - Use Narrrf's ID for testing
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID for local testing
+    
+    // Get Discord ID with local override
+    let discordId = isLocalDevelopment ? narrrfDiscordId : localStorage.getItem('discord_id');
+    
+    if (!discordId) {
+      console.log('⚠️ No Discord ID found, showing placeholders');
+      return;
+    }
+    
+    console.log(`🎮 Loading portal stats for Discord ID: ${discordId} (${isLocalDevelopment ? 'LOCAL TESTING MODE' : 'PRODUCTION'})`);
+    
+    // Fetch leaderboard data to calculate ranks
+    console.log('🏆 Fetching leaderboard data for rank calculation...');
+    const leaderboardResponse = await fetch('/api/dev/get-leaderboard.php', {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    });
+    
+    let userRanks = { tetris: '--', snake: '--', space_invaders: '--' };
+    
+    if (leaderboardResponse.ok) {
+      const leaderboardData = await leaderboardResponse.json();
+      console.log('🏆 Leaderboard data loaded:', leaderboardData);
+      
+      // Calculate user's rank for each game
+      if (leaderboardData.success) {
+        // Tetris rank
+        if (leaderboardData.tetris && Array.isArray(leaderboardData.tetris)) {
+          const tetrisRank = leaderboardData.tetris.findIndex(player => player.discord_id === discordId);
+          userRanks.tetris = tetrisRank >= 0 ? `#${tetrisRank + 1}` : '--';
+          console.log(`🏆 Tetris rank: ${userRanks.tetris}`);
+        }
+        
+        // Snake rank
+        if (leaderboardData.snake && Array.isArray(leaderboardData.snake)) {
+          const snakeRank = leaderboardData.snake.findIndex(player => player.discord_id === discordId);
+          userRanks.snake = snakeRank >= 0 ? `#${snakeRank + 1}` : '--';
+          console.log(`🏆 Snake rank: ${userRanks.snake}`);
+        }
+        
+        // Space Invaders rank
+        if (leaderboardData.space_invaders && Array.isArray(leaderboardData.space_invaders)) {
+          const spaceRank = leaderboardData.space_invaders.findIndex(player => player.discord_id === discordId);
+          userRanks.space_invaders = spaceRank >= 0 ? `#${spaceRank + 1}` : '--';
+          console.log(`🏆 Space Invaders rank: ${userRanks.space_invaders}`);
+        }
+      }
+    } else {
+      console.log('⚠️ Could not load leaderboard data, ranks will show as --');
+    }
+    
+    // Fetch data from mission status API
+    const response = await fetch(`/api/user/user-game-missions.php?discord_id=${discordId}`, {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    });
+    
+    if (!response.ok) {
+      console.error('❌ Failed to load portal stats:', response.statusText);
+      return;
+    }
+    
+    const data = await response.json();
+    console.log('✅ Portal stats loaded:', data);
+    
+    if (data.success && data.games) {
+      console.log('🔍 Games object structure:', data.games);
+      console.log('🔍 Tetris data:', data.games.tetris);
+      console.log('🔍 Snake data:', data.games.snake);
+      console.log('🔍 Space Invaders data:', data.games.space_invaders);
+      
+      // Update Tetris card - API returns best_score in games.tetris.stats.best_score
+      const tetris = data.games.tetris?.stats || {};
+      const tetrisAchievements = data.games.tetris?.achievements || { unlocked: 0, total_available: 25 };
+      console.log('🔍 Tetris processed:', tetris, 'best_score:', tetris.best_score, 'rank:', userRanks.tetris, 'achievements:', tetrisAchievements);
+      
+      const tetrisScoreEl = document.getElementById('tetris-best-score-card');
+      const tetrisRankEl = document.getElementById('tetris-rank-card');
+      const tetrisAchievementsEl = document.getElementById('tetris-achievements-card');
+      console.log('🔍 Tetris elements found - score:', tetrisScoreEl, 'rank:', tetrisRankEl, 'achievements:', tetrisAchievementsEl);
+      
+      if (tetris.best_score !== undefined && tetris.best_score !== null && tetris.best_score > 0 && tetrisScoreEl) {
+        tetrisScoreEl.textContent = `${tetris.best_score.toLocaleString()} DSPOINC`;
+        console.log('✅ Tetris best score updated:', tetris.best_score);
+      } else {
+        console.log('⚠️ Tetris score NOT updated - best_score:', tetris.best_score, 'element:', tetrisScoreEl);
+      }
+      
+      if (tetrisRankEl) {
+        tetrisRankEl.textContent = userRanks.tetris;
+        console.log('✅ Tetris rank updated:', userRanks.tetris);
+      }
+      
+      if (tetrisAchievementsEl) {
+        tetrisAchievementsEl.textContent = `${tetrisAchievements.unlocked || 0}/${tetrisAchievements.total_available || 25}`;
+        console.log('✅ Tetris achievements updated:', tetrisAchievements.unlocked, '/', tetrisAchievements.total_available);
+      }
+      
+      // Update Snake card - API returns best_score in games.snake.stats.best_score
+      const snake = data.games.snake?.stats || {};
+      const snakeAchievements = data.games.snake?.achievements || { unlocked: 0, total_available: 20 };
+      console.log('🔍 Snake processed:', snake, 'best_score:', snake.best_score, 'rank:', userRanks.snake, 'achievements:', snakeAchievements);
+      
+      const snakeScoreEl = document.getElementById('snake-best-score-card');
+      const snakeRankEl = document.getElementById('snake-rank-card');
+      const snakeAchievementsEl = document.getElementById('snake-achievements-card');
+      console.log('🔍 Snake elements found - score:', snakeScoreEl, 'rank:', snakeRankEl, 'achievements:', snakeAchievementsEl);
+      
+      if (snake.best_score !== undefined && snake.best_score !== null && snake.best_score > 0 && snakeScoreEl) {
+        snakeScoreEl.textContent = `${snake.best_score.toLocaleString()} DSPOINC`;
+        console.log('✅ Snake best score updated:', snake.best_score);
+      } else {
+        console.log('⚠️ Snake score NOT updated - best_score:', snake.best_score, 'element:', snakeScoreEl);
+      }
+      
+      if (snakeRankEl) {
+        snakeRankEl.textContent = userRanks.snake;
+        console.log('✅ Snake rank updated:', userRanks.snake);
+      }
+      
+      if (snakeAchievementsEl) {
+        snakeAchievementsEl.textContent = `${snakeAchievements.unlocked || 0}/${snakeAchievements.total_available || 20}`;
+        console.log('✅ Snake achievements updated:', snakeAchievements.unlocked, '/', snakeAchievements.total_available);
+      }
+      
+      // Update Space Invaders card - API returns best_score in games.space_invaders.stats.best_score
+      const space = data.games.space_invaders?.stats || {};
+      const spaceAchievements = data.games.space_invaders?.achievements || { unlocked: 0, total_available: 28 };
+      console.log('🔍 Space Invaders processed:', space, 'best_score:', space.best_score, 'rank:', userRanks.space_invaders, 'achievements:', spaceAchievements);
+      
+      const spaceScoreEl = document.getElementById('space-best-score-card');
+      const spaceRankEl = document.getElementById('space-rank-card');
+      const spaceAchievementsEl = document.getElementById('space-achievements-card');
+      console.log('🔍 Space Invaders elements found - score:', spaceScoreEl, 'rank:', spaceRankEl, 'achievements:', spaceAchievementsEl);
+      
+      if (space.best_score !== undefined && space.best_score !== null && space.best_score > 0 && spaceScoreEl) {
+        spaceScoreEl.textContent = `${space.best_score.toLocaleString()} DSPOINC`;
+        console.log('✅ Space Invaders best score updated:', space.best_score);
+      } else {
+        console.log('⚠️ Space Invaders score NOT updated - best_score:', space.best_score, 'element:', spaceScoreEl);
+      }
+      
+      if (spaceRankEl) {
+        spaceRankEl.textContent = userRanks.space_invaders;
+        console.log('✅ Space Invaders rank updated:', userRanks.space_invaders);
+      }
+      
+      if (spaceAchievementsEl) {
+        spaceAchievementsEl.textContent = `${spaceAchievements.unlocked || 0}/${spaceAchievements.total_available || 28}`;
+        console.log('✅ Space Invaders achievements updated:', spaceAchievements.unlocked, '/', spaceAchievements.total_available);
+      }
+      
+      console.log('✅ Game portal stats updated successfully');
+    } else {
+      console.error('❌ No games data in response:', data);
+    }
+    
+  } catch (error) {
+    console.error('❌ Error loading game portal stats:', error);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
   let user = {};
   let userId = window.sessionDiscordId || localStorage.getItem("discord_id") || "";
+
+  // 🎮 Load game portal stats automatically (always on localhost, only if logged in on production)
+  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
+  if (userId || isLocalDevelopment) {
+    console.log('🎮 Calling loadGamePortalStats with userId:', userId, '(isLocal:', isLocalDevelopment, ')');
+    loadGamePortalStats();
+  } else {
+    console.log('⚠️ No userId found and not local, skipping game portal stats');
+  }
 
   // Show/hide DSPOINC, debug, and missions sections based on login status
   const dspoincSection = document.getElementById('dspoincSection');
@@ -3909,6 +3780,9 @@ async function loadGameMissions() {
     
     // Also load all-time stats
     loadAllTimeStats();
+    
+    // Also load game portal stats (redundant but safe)
+    loadGamePortalStats();
     
     // Get the user's Discord ID from localStorage or the page
     let discordId = localStorage.getItem('discord_id');

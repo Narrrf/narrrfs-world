@@ -1,8 +1,8 @@
 # 👾🧀 SPACE CHEESE INVADERS - COMPLETE TECHNICAL DOCUMENTATION
 
 **Game Version:** v5.0.0 (Season 5 - COMPLETE)  
-**Last Updated:** November 2, 2025 - 03:35  
-**Status:** ✅ **PRODUCTION READY - ALL FEATURES COMPLETE + 10 BUGS FIXED**  
+**Last Updated:** November 4, 2025 - Afternoon (Profile Portal + Standalone Page)  
+**Status:** ✅ **PRODUCTION READY - PROFILE PORTAL INTEGRATED**  
 **Document Purpose:** Complete technical reference for all systems and features  
 
 ---
@@ -1168,7 +1168,40 @@ console.log('Health:', playerShip.health);
 
 ---
 
+---
+
+## 🎮 **PROFILE PAGE GAME PORTAL INTEGRATION (November 4, 2025)**
+
+### **Game Portal Card Display:**
+The profile page (`public/profile.html`) features a dedicated game portal section that displays live Space Invaders statistics:
+
+**Card Features:**
+- ✅ **Best Score Display** - Shows player's best Space Invaders score in DSPOINC
+- ✅ **Season Rank** - Calculates and displays player's current rank (#1, #2, etc.)
+- ✅ **Achievement Count** - Displays unlocked achievements (e.g., "18/28")
+- ✅ **Click-to-Play** - Card links directly to standalone Space Invaders page (`space-cheese-invaders.html`)
+
+**Technical Implementation:**
+- **Function:** `loadGamePortalStats()` in `profile.html`
+- **API Endpoint:** `/api/user/user-game-missions.php?discord_id={id}`
+- **Data Structure:** `data.games.space_invaders.stats.best_score` and `data.games.space_invaders.achievements.unlocked`
+- **Rank Calculation:** Fetches leaderboard data from `/api/dev/get-leaderboard.php` and finds user's position
+- **Element IDs:** 
+  - `space-best-score-card` - Best score display
+  - `space-rank-card` - Season rank display
+  - `space-achievements-card` - Achievement count display
+
+**Local Development Bypass:**
+- Uses Narrrf's Discord ID (`328601656659017732`) for local testing
+- Automatically detects localhost environment
+- Production uses actual user's Discord ID from localStorage
+
+**Status:** ✅ **LIVE** - All 3 fields (Best Score, Season Rank, Achievements) display correctly
+
+---
+
 **Document Created:** November 2, 2025 - 02:45 AM  
+**Last Updated:** November 4, 2025 - Profile Portal Integration  
 **Status:** ✅ **COMPLETE TECHNICAL REFERENCE**  
 **Purpose:** Complete system documentation for Space Cheese Invaders  
 **Scope:** All systems, features, configurations, and deployment procedures  

@@ -978,13 +978,7 @@ function initSnake() {
       snakeSounds.playSound('cheeseTeleport');
     }
     
-    // 🧪 VISUAL FEEDBACK: Flash the screen briefly to show teleportation
-    if (isLocalTesting) {
-      document.body.style.backgroundColor = '#ffeb3b'; // Yellow flash
-      setTimeout(() => {
-        document.body.style.backgroundColor = '';
-      }, 100);
-    }
+    // 🧪 VISUAL FEEDBACK: Yellow flash removed (user reported as bug - too distracting)
     
     console.log(`${mode} Cheese teleported from (${oldPosition.x}, ${oldPosition.y}) to (${food.x}, ${food.y}) at ${gameTime}s`);
   }
