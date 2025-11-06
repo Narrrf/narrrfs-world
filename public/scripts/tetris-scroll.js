@@ -333,6 +333,7 @@ const tetrisSounds = new TetrisSoundManager();
 // --- PNG Block Support simple only one template for all can be defined with new img/tetris ---
 let allImagesLoaded = false;
 let loadedCount = 0;
+let pendingTetrisStart = false;
 
 const blockImages = {};
 const pieceImageMap = {
@@ -365,6 +366,42 @@ let tetrisRotationTimer = null; // Timer for delayed rotation
 const TETRIS_HOLD_DELAY = 25; // Reduced delay for more responsive hold-to-drop (ms) - was 100
 const TETRIS_HOLD_INTERVAL = 20; // Faster interval for more responsive hold-to-drop (ms) - was 50
 let tetrisHoldStartTime = 0;
+let tetrisTouchRecoveryTimeout = null;
+let tetrisTouchMonitorInterval = null;
+let dropHoldTimeout = null;
+let touchDropInterval = null;
+let heldDown = false;
+
+function resetTouchControlTimers() {
+  if (tetrisTouchRecoveryTimeout) {
+    clearTimeout(tetrisTouchRecoveryTimeout);
+    tetrisTouchRecoveryTimeout = null;
+  }
+  if (tetrisTouchMonitorInterval) {
+    clearInterval(tetrisTouchMonitorInterval);
+    tetrisTouchMonitorInterval = null;
+  }
+}
+
+function cleanupTouchControls() {
+  if (dropHoldTimeout) {
+    clearTimeout(dropHoldTimeout);
+    dropHoldTimeout = null;
+  }
+  if (touchDropInterval) {
+    clearTimeout(touchDropInterval);
+    touchDropInterval = null;
+  }
+  heldDown = false;
+  resetTouchControlTimers();
+  stopTetrisHold();
+  if (tetrisRotationTimer) {
+    clearTimeout(tetrisRotationTimer);
+    tetrisRotationTimer = null;
+  }
+  tetrisLastMoveTime = 0;
+  unlockTetrisScroll();
+}
 
 // 🎮 Hold-to-drop functions
 function startTetrisHold() {
@@ -450,6 +487,17 @@ Object.entries(pieceImageMap).forEach(([key, filename]) => {
     if (loadedCount === Object.keys(pieceImageMap).length) {
       allImagesLoaded = true;
       checkAndStartTetris(); // ✅ Ensure the game can start after loading
+
+      if (pendingTetrisStart) {
+        console.log('🚀 Pending Tetris start detected - launching game now that assets are ready');
+        const btn = document.getElementById("start-tetris-btn");
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "🕹️ Playing...";
+        }
+        pendingTetrisStart = false;
+        window.startTetrisGame();
+      }
       
       // 🔧 MOBILE INITIALIZATION
       if (isTetrisMobileDevice) {
@@ -470,6 +518,15 @@ Object.entries(pieceImageMap).forEach(([key, filename]) => {
           }
         }, 500);
       }
+    }
+  };
+  img.onerror = (error) => {
+    loadedCount++;
+    console.error(`⚠️ Failed to load Tetris block image: ${filename}`, error);
+    if (loadedCount === Object.keys(pieceImageMap).length) {
+      allImagesLoaded = true;
+      console.warn('⚠️ Proceeding without one or more block textures (fallback colors will be used)');
+      checkAndStartTetris();
     }
   };
   blockImages[key] = img;
@@ -686,10 +743,23 @@ function handleTouchEnd(e) {
 
 window.startTetrisGame = async function () {
   console.log('🎮 startTetrisGame called');
+  const startBtn = document.getElementById("start-tetris-btn");
   
   if (!allImagesLoaded) {
-    console.warn("Assets still loading...");
+    console.warn("Assets still loading... deferring Tetris start until ready");
+    pendingTetrisStart = true;
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.textContent = "▶️ Start";
+    }
     return;
+  }
+  
+  pendingTetrisStart = false;
+  
+  if (startBtn) {
+    startBtn.disabled = true;
+    startBtn.textContent = "🕹️ Playing...";
   }
   
   // 🔧 MOBILE FIX: Ensure canvas is properly sized for mobile
@@ -992,6 +1062,24 @@ async function startTetris() {
   
   // 🏆 Fetch user roles for role-based gameplay (CRITICAL: await this!)
   await fetchTetrisUserRoles();
+
+  // 🔁 Reset control state before starting a fresh session
+  resetTouchControlTimers();
+  stopTetrisHold();
+  tetrisIsHolding = false;
+  if (tetrisRotationTimer) {
+    clearTimeout(tetrisRotationTimer);
+    tetrisRotationTimer = null;
+  }
+  if (dropHoldTimeout) {
+    clearTimeout(dropHoldTimeout);
+    dropHoldTimeout = null;
+  }
+  if (touchDropInterval) {
+    clearTimeout(touchDropInterval);
+    touchDropInterval = null;
+  }
+  tetrisLastMoveTime = 0;
   
   // 🧀 Clear cheese particles when starting new game
   cheeseParticles.clear();
@@ -2254,9 +2342,9 @@ if (collide(current.shape, current.row, current.col)) {
   }
 
   // Touch controls setup
-let heldDown = false;
-  let dropHoldTimeout;
-  let touchDropInterval;
+  heldDown = false;
+  dropHoldTimeout = null;
+  touchDropInterval = null;
   const sensitivity = 50;
 
   // 🏆 Tetris Achievement Checking Function (Inside Game Scope) - Make globally accessible
@@ -2581,14 +2669,6 @@ let heldDown = false;
     showAchievementNotification(achievementKey, title);
   }
 
-  // 🧹 Clean up touch controls (Inside Game Scope)
-  function cleanupTouchControls() {
-    clearTimeout(dropHoldTimeout);
-    clearTimeout(touchDropInterval);
-    heldDown = false;
-    unlockTetrisScroll();
-  }
-
   // 🎉 Show Achievement Notification (Inside Game Scope)
   function showAchievementNotification(achievementKey, achievementTitle) {
     const canvas = document.getElementById("tetris-canvas");
@@ -2679,7 +2759,7 @@ let heldDown = false;
   initTouchControls(canvas);
   
   // 🔧 MOBILE FIX: Ensure touch controls stay active even after other games start
-  setTimeout(() => {
+  tetrisTouchRecoveryTimeout = setTimeout(() => {
     console.log('📱 Checking Tetris touch controls after delay...');
     const tetrisCanvas = document.getElementById('tetris-canvas');
     if (tetrisCanvas && tetrisCanvas.ontouchstart === null) {
@@ -2689,7 +2769,7 @@ let heldDown = false;
   }, 2000);
   
   // 🔧 MOBILE FIX: Continuous touch control monitoring
-  setInterval(() => {
+  tetrisTouchMonitorInterval = setInterval(() => {
     const tetrisCanvas = document.getElementById('tetris-canvas');
     if (tetrisCanvas && tetrisCanvas.ontouchstart === null) {
       console.log('📱 Tetris touch controls lost - continuous recovery...');
@@ -2711,53 +2791,10 @@ let heldDown = false;
 // 🏁 Legacy OK button handler (matches live behavior)
 window.endTetrisGame = function() {
   console.log('🏁 OK button clicked - ending Legacy Tetris game');
-  
-  // Stop any running interval
-  if (typeof gameInterval !== 'undefined' && gameInterval) {
-    clearInterval(gameInterval);
-    gameInterval = null;
-  }
-  
-  // Hide modal
-  const modal = document.getElementById("game-over-modal");
-  if (modal) {
-    modal.classList.add("hidden");
-    modal.style.display = "none";
-  }
-  
-  // Re-enable page links/buttons
-  document.querySelectorAll('a, button').forEach(el => {
-    el.style.pointerEvents = '';
-    el.style.opacity = '';
-  });
-  
-  // Clear canvas
-  const canvas = document.getElementById("tetris-canvas");
-  if (canvas) {
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-  }
-  
-  // Reset buttons
-  const startBtn = document.getElementById("start-tetris-btn");
-  if (startBtn) {
-    startBtn.textContent = "▶️ Start";
-    startBtn.disabled = false;
-  }
-  const pauseBtn = document.getElementById("pause-tetris-btn");
-  if (pauseBtn) {
-    pauseBtn.textContent = "⏸️ Pause";
-  }
-  
-  // Reset pause flag / scroll lock
-  isTetrisPaused = false;
-  document.body.style.overflow = "";
-  
-  console.log('✅ Legacy Tetris game ended cleanly');
+  // Reload the page to ensure a clean reset (no auto-start)
+  cleanupTouchControls();
+  localStorage.removeItem('tetris_auto_start');
+  window.location.reload();
 };
 
 // 🔁 Legacy Play Again (reload + auto-start)
@@ -2769,7 +2806,7 @@ window.restartTetrisGame = function() {
     modal.classList.add("hidden");
     modal.style.display = "none";
   }
-  
+  cleanupTouchControls();
   localStorage.setItem('tetris_auto_start', 'true');
   window.location.reload();
 };

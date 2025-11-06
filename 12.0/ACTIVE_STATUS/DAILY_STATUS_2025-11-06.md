@@ -2,7 +2,7 @@
 
 **Date:** Wednesday, November 6, 2025  
 **Session:** Late Evening (Continuation from Nov 4)  
-**Status:** ✅ **SEASON 5 DAY 4 - 11 BUGS FIXED - READY FOR DEPLOYMENT!**  
+**Status:** ✅ **SEASON 5 DAY 4 - 13 BUGS FIXED - READY FOR DEPLOYMENT!**  
 
 ---
 
@@ -127,6 +127,14 @@
    - ✅ Auto-start flag supported after reload (Play Again UX)
    - **Result:** Tetris 10.0 (legacy boss build) now ready for production rollout
 
+13. ✅ **Tetris Restart & Touch Control Reset**
+   - **Issue:** After first game, swipe/hold controls and pause button degraded
+   - **Fix:** Rebuilt `cleanupTouchControls()` and reload flow to mirror Snake
+   - ✅ OK button now reloads without auto-start, clearing timers/handlers
+   - ✅ Play Again clears touch state before reload (fresh session)
+   - ✅ Start routine resets hold timers, rotation timers, throttle counters
+   - **Result:** Every new game has full touch + pause functionality (local + live)
+
 ---
 
 ## 📊 **CONTEXT FROM NOVEMBER 4TH:**
@@ -179,7 +187,7 @@
 
 ## 🧪 **TESTING CHECKLIST:**
 
-### **All Bugs Fixed (12 Total):**
+### **All Bugs Fixed (13 Total):**
 - [x] BUG #269 - Achievement duplicates cleaned (DEPLOYED!)
 - [x] Boss entrance protection - Space Invaders
 - [x] Snake boss spawn - Safe position detection
@@ -192,6 +200,7 @@
 - [x] Guide button disable - Tetris gameplay consistency
 - [x] BUG #285 - Tetris role multipliers not working (API fetch added)
 - [x] Tetris 10.0 Legacy Boss Build - Role system + Season 5 parity
+- [x] Tetris Restart & Touch Reset - Clean reload + control restoration
 
 ### **Ready for Final Testing:**
 - [ ] Test all 3 games game over modals

@@ -90,11 +90,12 @@
 - ✅ **Guide Disable Fixed** - Tetris guide button now disabled during gameplay
 - ✅ **BUG #285 Fixed** - Tetris now fetches roles (API) for multipliers + themes
 - ✅ **Tetris 10.0 Stable** - Legacy boss build aligned with Season 5 UX/score system
+- ✅ **Tetris Restart & Touch Reset** - OK/Play Again reload with clean controls
 - 🚀 **Next:** Git add, commit, and push to production!
-- **Context:** Season 5 Day 4 - 12 bugs fixed, ready for deployment!
+- **Context:** Season 5 Day 4 - 13 bugs fixed, ready for deployment!
 
 ### **🐛 NOVEMBER 6, 2025 - LATE EVENING SESSION:**
-**BUG FIXES MARATHON - 12 FIXES COMPLETE!**
+**BUG FIXES MARATHON - 13 FIXES COMPLETE!**
 1. ✅ **BUG #269** - Achievement duplicates cleaned (deployed to production!)
 2. ✅ **Boss Entrance Protection** - All Space Invaders bosses invulnerable during entrance
 3. ✅ **Snake Boss Spawn** - Safe position detection prevents instant death
@@ -107,6 +108,7 @@
 10. ✅ **Guide Button Disable** - Tetris guide button now disabled during gameplay (consistent!)
 11. ✅ **BUG #285** - Tetris role multipliers & themes fetch from API (no more flat gameplay)
 12. ✅ **Tetris 10.0 Legacy Boss Build** - Restored boss mechanics + modern role UX (ready for live)
+13. ✅ **Tetris Restart & Touch Reset** - Full control reset after game over (OK + Play Again)
 
 **Files Modified:**
 - `public/scripts/tetris-scroll-live.js` - P key + OK fix + guide disable + ROLE FETCH (4 fixes!)
