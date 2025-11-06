@@ -1626,6 +1626,11 @@ function initSnake() {
     const roleColors = getSnakeRoleColors();
     for (let i = 0; i < snake.length; i++) {
       const segment = snake[i];
+      
+      // 🐛 BUG #229 FIX: Clamp trail positions to visible bounds
+      const clampedX = Math.max(0, Math.min(tileCountX - 1, segment.x));
+      const clampedY = Math.max(0, Math.min(tileCountY - 1, segment.y));
+      
       const t = i / snake.length;
       const fade = 0.25 * (1 - t);
       ctx.save();
@@ -1633,8 +1638,8 @@ function initSnake() {
       ctx.fillStyle = roleColors.trail;
       ctx.beginPath();
       ctx.arc(
-        segment.x * gridSize + gridSize / 2,
-        segment.y * gridSize + gridSize / 2,
+        clampedX * gridSize + gridSize / 2,
+        clampedY * gridSize + gridSize / 2,
         gridSize * 0.3,
         0,
         2 * Math.PI
@@ -1645,6 +1650,16 @@ function initSnake() {
 
     // 🧬 Render Snake
     snake.forEach((segment, index) => {
+      // 🐛 BUG #229 FIX: Clamp segment positions to visible bounds
+      // Prevents snake from being rendered off-screen during boss battles or edge cases
+      const clampedX = Math.max(0, Math.min(tileCountX - 1, segment.x));
+      const clampedY = Math.max(0, Math.min(tileCountY - 1, segment.y));
+      
+      // 🧪 DEBUG: Log if segment was out of bounds
+      if (segment.x !== clampedX || segment.y !== clampedY) {
+        console.warn(`🐛 BUG #229: Snake segment out of bounds! Original: (${segment.x}, ${segment.y}), Clamped: (${clampedX}, ${clampedY})`);
+      }
+      
       const isHead = index === 0;
       const img = isHead ? snakeGameHeadImg : snakeGameDnaImg;
       const next = snake[index + 1] || snake[index - 1] || segment;
@@ -1653,8 +1668,8 @@ function initSnake() {
       const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 120 + index);
       ctx.globalAlpha = 0.85 + pulse * 0.1;
 
-      const posX = segment.x * gridSize + gridSize / 2;
-      const posY = segment.y * gridSize + gridSize / 2;
+      const posX = clampedX * gridSize + gridSize / 2;
+      const posY = clampedY * gridSize + gridSize / 2;
 
       if (img.complete) {
         ctx.save();
@@ -1831,6 +1846,10 @@ function initSnake() {
       if (head.x >= tileCountX) head.x = 0;
       if (head.y < 0) head.y = tileCountY - 1;
       if (head.y >= tileCountY) head.y = 0;
+      
+      // 🐛 BUG #229 FIX: Final safety clamp to ensure head is within bounds
+      head.x = Math.max(0, Math.min(tileCountX - 1, head.x));
+      head.y = Math.max(0, Math.min(tileCountY - 1, head.y));
       
       // Check self-collision only
       if (snake.some(seg => seg.x === head.x && seg.y === head.y)) {
@@ -2481,6 +2500,13 @@ function saveScore(finalScore) {
         clearInterval(gameInterval);
         // 🎯 Unlock scrolling when paused (like Tetris)
         unlockSnakeScroll();
+        
+        // 🚨 BUG #263 FIX: Re-enable all page links/buttons when paused
+        document.querySelectorAll('a, button').forEach(el => {
+          el.style.pointerEvents = '';
+          el.style.opacity = '';
+        });
+        console.log('🔓 Page links/buttons re-enabled during Snake pause');
       } else {
         // Only restart if game is not over
         if (gameInterval) {
@@ -2488,6 +2514,23 @@ function saveScore(finalScore) {
           gameInterval = setInterval(moveSnake, 400);
           // 🎯 Lock scrolling when resumed (like Tetris)
           lockSnakeScroll();
+          
+          // 🚨 BUG #263 FIX: Disable page links/buttons again when resumed
+          document.querySelectorAll('a, button').forEach(el => {
+            // Skip game control buttons
+            if (el.id && el.id.includes('snake') && !el.id.includes('guide')) {
+              return; // Keep game controls enabled
+            }
+            // Skip buttons inside modals
+            const parentModal = el.closest('[id*="modal"]') || el.closest('[class*="modal"]');
+            if (parentModal) {
+              return; // Keep modal buttons enabled
+            }
+            // Disable everything else
+            el.style.pointerEvents = 'none';
+            el.style.opacity = '0.5';
+          });
+          console.log('🔒 Page links/buttons disabled during Snake gameplay');
         }
       }
     };
@@ -2502,12 +2545,95 @@ function saveScore(finalScore) {
     startBtn.addEventListener("click", () => {
       startGameWithCountdown();
     });
+    
+    // 🚀 Check for auto-start flag (from Play Again button)
+    if (localStorage.getItem('snake_auto_start') === 'true') {
+      console.log('🚀 Auto-start flag detected - starting game automatically');
+      localStorage.removeItem('snake_auto_start'); // Clear flag
+      setTimeout(() => {
+        startGameWithCountdown();
+      }, 500); // Small delay to ensure page is fully loaded
+    }
   } else {
     startGameWithCountdown();
   }
 
-  // Expose start for external use
+  // 🎮 Restart game function (called by Play Again button) - Like Space Invaders
+  function restartSnakeGame() {
+    console.log('🔄 Play Again button clicked - restarting Snake game');
+    
+    // Hide game over modal
+    const modal = document.getElementById("snake-over-modal");
+    if (modal) {
+      modal.classList.add("hidden");
+      modal.style.display = "none";
+    }
+    
+    // 🚀 Set flag to auto-start game after reload
+    localStorage.setItem('snake_auto_start', 'true');
+    
+    // Reload page to get fresh game state (simplest and most reliable)
+    window.location.reload();
+  }
+  
+  // 🏁 End game function (called by OK button) - Like Space Invaders
+  function endSnakeGame() {
+    console.log('🏁 OK button clicked - ending Snake game');
+    
+    // 🚨 CRITICAL: Clear any existing game interval
+    if (gameInterval) {
+      clearInterval(gameInterval);
+      gameInterval = null;
+      console.log('🧹 Cleared game interval on end');
+    }
+    
+    // Hide game over modal
+    const modal = document.getElementById("snake-over-modal");
+    if (modal) {
+      modal.classList.add("hidden");
+      modal.style.display = "none";
+    }
+    
+    // Re-enable all page links/buttons (if not already done)
+    document.querySelectorAll('a, button').forEach(el => {
+      el.style.pointerEvents = '';
+      el.style.opacity = '';
+    });
+    console.log('🔓 Page links/buttons re-enabled after Snake game end');
+    
+    // Clear the canvas
+    const canvas = document.getElementById("snake-canvas");
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        console.log('🎨 Snake canvas cleared');
+      }
+    }
+    
+    // 🚨 CRITICAL: Reset game state flags
+    isSnakePaused = false;
+    
+    // Reset start button text and state
+    const startBtn = document.getElementById("start-snake-btn");
+    if (startBtn) {
+      startBtn.textContent = "▶️ Start";
+      startBtn.disabled = false;
+    }
+    
+    // Reset pause button text
+    const pauseBtn = document.getElementById("pause-snake-btn");
+    if (pauseBtn) {
+      pauseBtn.textContent = "⏸️ Pause";
+    }
+  }
+
+  // Expose functions for external use
   window.startSnakeGame = startGameWithCountdown;
+  window.restartSnakeGame = restartSnakeGame;
+  window.endSnakeGame = endSnakeGame;
 
   // 🏆 TEST FUNCTION - Test role-based features
   window.testSnakeRoleFeatures = function() {

@@ -197,10 +197,20 @@
         
         <!-- 🐍 Snake Game Over Modal -->
         <div id="snake-over-modal" class="hidden absolute inset-0 flex items-center justify-center bg-black bg-opacity-90 z-50 backdrop-blur-sm rounded-lg">
-          <div class="bg-green-100 text-gray-900 rounded-3xl px-8 py-10 text-center shadow-2xl border-4 border-green-400 max-w-sm w-11/12 animate-fade-in">
-            <h2 class="text-4xl font-extrabold mb-4 text-green-900 drop-shadow">🐍 GAME OVER</h2>
-            <p id="snake-final-score-text" class="text-xl font-mono text-gray-800 mb-8 font-bold">You earned $0 DSPOINC</p>
-            <button id="snake-play-again-btn" onclick="window.location.reload()" class="bg-green-400 hover:bg-green-300 text-black font-bold px-8 py-3 rounded-xl shadow-lg text-lg">🔁 Play Again</button>
+          <div class="bg-green-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-green-400 max-w-xs w-full animate-fade-in">
+            <h2 class="text-3xl font-extrabold mb-3 text-green-900 drop-shadow">🐍 GAME OVER</h2>
+            <p id="snake-final-score-text" class="text-lg font-mono text-gray-800 mb-4">You earned $0 DSPOINC</p>
+            <p class="text-sm text-green-700 font-semibold mb-6">✅ Score Saved!</p>
+            
+            <!-- PRIMARY ACTION: OK Button (BUG #171 FIX) -->
+            <button onclick="endSnakeGame()" class="w-full bg-green-500 hover:bg-green-400 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-colors mb-3 text-lg">
+              ✅ OK, Got It!
+            </button>
+            
+            <!-- SECONDARY ACTION: Play Again -->
+            <button id="snake-play-again-btn" onclick="restartSnakeGame()" class="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-semibold px-4 py-2 rounded-lg shadow transition-colors text-sm">
+              🔁 Play Again
+            </button>
           </div>
         </div>
       </div>

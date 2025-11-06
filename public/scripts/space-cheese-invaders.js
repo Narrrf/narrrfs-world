@@ -1706,6 +1706,12 @@ class GiantCheeseBoss {
   }
   
   takeDamage(damage) {
+    // 🚨 CRITICAL FIX: Giant Cheese Boss is invulnerable until it's fully on screen!
+    if (this.y < 0) {
+      // Boss is still entering from above - no damage allowed
+      return;
+    }
+    
     this.health -= damage;
     this.lastDamageTaken = Date.now();
     
@@ -4508,6 +4514,12 @@ let reloadButtonInterval = null;
   function checkBossCollisions() {
     if (!boss || bossDefeated) return;
     
+    // 🚨 CRITICAL FIX: Boss is invulnerable during entrance phase!
+    if (bossPhase === 'entrance') {
+      // Don't check collisions during entrance - boss should be untouchable
+      return;
+    }
+    
     // 🚨 CRITICAL FIX: Check if boss is too close to player to prevent instant death
     const bossPlayerDistance = Math.abs(boss.y - playerShip.y);
     if (bossPlayerDistance < 50) { // If boss is within 50 pixels of player
@@ -5568,18 +5580,8 @@ let reloadButtonInterval = null;
     createAlwaysVisibleHeatDisplay();
     
     // 🐛 BUG #118 FIX: Add keyboard event listeners for continuous movement
+    // NOTE: P key pause is handled by global listener at line ~11184
     document.addEventListener('keydown', (e) => {
-      // 🎮 P KEY PAUSE/UNPAUSE (BUG #263)
-      if (e.key === 'p' || e.key === 'P') {
-        e.preventDefault();
-        const pauseBtn = document.getElementById('pause-space-invaders-btn');
-        if (pauseBtn) {
-          pauseBtn.click(); // Trigger existing pause/unpause logic
-          console.log('🎮 P key pressed - toggling Space Invaders pause state');
-        }
-        return;
-      }
-      
       // Add key to pressed keys set for continuous movement
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'A', 'd', 'D', 'w', 'W'].includes(e.key)) {
         pressedKeys.add(e.key.toLowerCase());
@@ -5737,6 +5739,13 @@ let reloadButtonInterval = null;
       window.clearInterval(i);
     }
     console.log('🧹 All timeouts/intervals cleared');
+    
+    // 🚨 BUG FIX: Re-enable all page links/buttons when game ends
+    document.querySelectorAll('a, button').forEach(el => {
+      el.style.pointerEvents = '';
+      el.style.opacity = '';
+    });
+    console.log('🔓 Page links/buttons re-enabled after game end');
     
     // Ensure mobile controls are visible
     setTimeout(() => {
@@ -10427,6 +10436,13 @@ let reloadButtonInterval = null;
     
     // 🚀 NEW: Clean up ship cursor when game ends
     cleanupCustomCursor();
+    
+    // 🚨 BUG FIX: Re-enable all page links/buttons when game over
+    document.querySelectorAll('a, button').forEach(el => {
+      el.style.pointerEvents = '';
+      el.style.opacity = '';
+    });
+    console.log('🔓 Page links/buttons re-enabled after game over');
 
     // 🆘 NEW: Ensure mobile controls are visible when game ends
     setTimeout(() => {
@@ -13083,6 +13099,13 @@ window.emergencyCollisionCheck = function() {
     console.log('💾 Victory - saving score:', safeVictoryScore);
     saveScore(safeVictoryScore); // 🚀 CRITICAL FIX: Save traditional score instead of invader count
     cleanupSpaceInvadersControls();
+    
+    // 🚨 BUG FIX: Re-enable all page links/buttons when game won
+    document.querySelectorAll('a, button').forEach(el => {
+      el.style.pointerEvents = '';
+      el.style.opacity = '';
+    });
+    console.log('🔓 Page links/buttons re-enabled after victory');
 
     // Dispatch game end event for UI reset
     window.dispatchEvent(new Event('spaceInvadersGameEnd'));

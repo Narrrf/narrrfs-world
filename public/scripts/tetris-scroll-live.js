@@ -396,6 +396,15 @@ function checkAndStartTetris() {
         btn.textContent = "🕹️ Playing...";
       }, { passive: false });
     }
+    
+    // 🚀 Check for auto-start flag (from Play Again button)
+    if (localStorage.getItem('tetris_auto_start') === 'true') {
+      console.log('🚀 Auto-start flag detected - starting Tetris automatically');
+      localStorage.removeItem('tetris_auto_start'); // Clear flag
+      setTimeout(() => {
+        window.startTetrisGame();
+      }, 500); // Small delay to ensure page is fully loaded
+    }
   }
 }
 
@@ -669,6 +678,40 @@ window.startTetrisGame = function () {
   
   console.log('🚀 Starting Tetris game...');
   startTetris(); // ← main game logic
+};
+
+// 🎮 Restart game function (called by Play Again button) - Like Space Invaders
+window.restartTetrisGame = function() {
+  console.log('🔄 Play Again button clicked - restarting Tetris game');
+  
+  // Hide game over modal
+  const modal = document.getElementById("game-over-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+  
+  // 🚀 Set flag to auto-start game after reload
+  localStorage.setItem('tetris_auto_start', 'true');
+  
+  // Reload page to get fresh game state (simplest and most reliable)
+  window.location.reload();
+};
+
+// 🏁 End game function (called by OK button) - Reload page without auto-start
+window.endTetrisGame = function() {
+  console.log('🏁 OK button clicked - reloading page (no auto-start)');
+  
+  // Hide game over modal
+  const modal = document.getElementById("game-over-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+  
+  // 🚨 CRITICAL: DO NOT set auto-start flag (user wants clean reload)
+  // This is different from Play Again which sets the flag
+  
+  // Reload page to get fresh game state (no auto-start)
+  window.location.reload();
 };
 
 // 🎨 Cheese-Themed Block Colors do not work now code does so kind of backup 
@@ -996,10 +1039,16 @@ if (pauseBtn) {
 
     if (isTetrisPaused) {
       clearInterval(gameInterval);
+      // 🔓 Re-enable page links/buttons when paused (like Snake)
+      unlockTetrisScroll();
+      enableTetrisPageButtons();
     } else {
       clearInterval(gameInterval); // always reset interval
       gameInterval = setInterval(drop, dropInterval);
       drop(); // redraw immediately
+      // 🔒 Disable page links/buttons again when resumed (like Snake)
+      lockTetrisScroll();
+      disableTetrisPageButtons();
     }
   };
 
@@ -1009,6 +1058,15 @@ if (pauseBtn) {
 
 // Add keyboard event listener for movement controls
 document.addEventListener("keydown", e => {
+  // Handle pause key first (before checking if paused)
+  if (e.key === 'p' || e.key === 'P') {
+    const pauseBtn = document.getElementById("pause-tetris-btn");
+    if (pauseBtn) {
+      pauseBtn.click(); // Trigger the existing pause button handler
+    }
+    return;
+  }
+  
   if (isTetrisPaused) return; // Prevent movement while paused
 
   switch (e.key) {
@@ -1133,9 +1191,15 @@ if (collide(current.shape, current.row, current.col)) {
       console.log('⚠️ Could not update final score text:', error);
     }
     modal.classList.remove('hidden');
+    // 🔓 Re-enable page links/buttons when game over (like Snake)
+    unlockTetrisScroll();
+    enableTetrisPageButtons();
     cleanupTouchControls();
   } else {
     console.log('⚠️ Game over modal elements not found - game over handled gracefully');
+    // 🔓 Re-enable page links/buttons when game over (like Snake)
+    unlockTetrisScroll();
+    enableTetrisPageButtons();
     cleanupTouchControls();
   }
 
@@ -1677,6 +1741,10 @@ let heldDown = false;
   // 🚀 Start the game loop immediately when game starts
   gameInterval = setInterval(drop, dropInterval);
   
+  // 🔒 Disable page links/buttons (including guide button) when game starts
+  lockTetrisScroll();
+  disableTetrisPageButtons();
+  
   // ✅ Final game loop initialization
   renderNextBlock(nextPiece);
   
@@ -1722,6 +1790,38 @@ function lockTetrisScroll() {
 
 function unlockTetrisScroll() {
     document.body.style.overflow = "";
+}
+
+// 🔒 Disable page links/buttons during Tetris gameplay (including guide button)
+function disableTetrisPageButtons() {
+  document.querySelectorAll('a, button').forEach(el => {
+    // Skip game control buttons (but NOT guide button!)
+    if (el.id && el.id.includes('tetris') && !el.id.includes('guide')) {
+      return; // Keep game controls enabled (pause, start, etc.)
+    }
+    // Skip buttons inside modals
+    const parentModal = el.closest('[id*="modal"]') || el.closest('[class*="modal"]');
+    if (parentModal) {
+      return; // Keep modal buttons enabled
+    }
+    // Skip if button has onclick with game functions
+    if (el.onclick && (el.textContent.includes('Play Again') || el.textContent.includes('Restart'))) {
+      return; // Keep modal action buttons enabled
+    }
+    // Disable everything else (guide button, page links, etc.)
+    el.style.pointerEvents = 'none';
+    el.style.opacity = '0.5';
+  });
+  console.log('🔒 Page links/buttons disabled during Tetris gameplay (guide button blocked)');
+}
+
+// 🔓 Re-enable page links/buttons when Tetris game ends or pauses
+function enableTetrisPageButtons() {
+  document.querySelectorAll('a, button').forEach(el => {
+    el.style.pointerEvents = '';
+    el.style.opacity = '';
+  });
+  console.log('🔓 Page links/buttons re-enabled after Tetris gameplay');
 }
 
 // 🔧 MOBILE FIX: Removed conflicting global touch listeners

@@ -1,0 +1,114 @@
+🚀 BUG #269 - PRODUCTION DEPLOYMENT COMMANDS
+================================================
+Date: November 6, 2025
+Status: READY TO EXECUTE
+
+📋 STEP-BY-STEP COMMANDS FOR RENDER SHELL:
+===========================================
+
+STEP 1: BACKUP DATABASE (CRITICAL!)
+------------------------------------
+cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world_backup_pre_cleanup_nov6_$(date +%Y%m%d_%H%M%S).sqlite
+
+# Verify backup
+ls -lh /data/narrrf_world_backup_pre_cleanup_nov6_*
+
+
+STEP 2: CREATE CLEANUP SCRIPT
+------------------------------
+echo "-- Space Invaders Cleanup
+DELETE FROM tbl_space_invaders_achievements
+WHERE user_id != 'ACHIEVEMENT_DEFINITIONS'
+  AND achievement_key NOT IN (
+    SELECT achievement_key 
+    FROM tbl_space_invaders_achievements 
+    WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'
+  );
+
+-- Snake Cleanup
+DELETE FROM tbl_snake_achievements
+WHERE user_id != 'ACHIEVEMENT_DEFINITIONS'
+  AND achievement_key NOT IN (
+    SELECT achievement_key 
+    FROM tbl_snake_achievements 
+    WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'
+  );
+
+-- Verification
+SELECT 'Space Invaders Old Format Remaining:' as result, COUNT(*) as count
+FROM tbl_space_invaders_achievements
+WHERE user_id != 'ACHIEVEMENT_DEFINITIONS'
+  AND achievement_key NOT IN (
+    SELECT achievement_key 
+    FROM tbl_space_invaders_achievements 
+    WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'
+  );
+
+SELECT 'Snake Old Format Remaining:' as result, COUNT(*) as count
+FROM tbl_snake_achievements
+WHERE user_id != 'ACHIEVEMENT_DEFINITIONS'
+  AND achievement_key NOT IN (
+    SELECT achievement_key 
+    FROM tbl_snake_achievements 
+    WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'
+  );" > /tmp/cleanup_achievements.sql
+
+# Verify script
+cat /tmp/cleanup_achievements.sql
+
+
+STEP 3: EXECUTE CLEANUP
+------------------------
+sqlite3 /var/www/html/db/narrrf_world.sqlite < /tmp/cleanup_achievements.sql
+
+# Expected output:
+# Space Invaders Old Format Remaining:|0
+# Snake Old Format Remaining:|0
+
+
+STEP 4: VERIFY RESULTS
+-----------------------
+# Check Space Invaders (should be 0)
+echo "SELECT COUNT(*) FROM tbl_space_invaders_achievements WHERE user_id != 'ACHIEVEMENT_DEFINITIONS' AND achievement_key NOT IN (SELECT achievement_key FROM tbl_space_invaders_achievements WHERE user_id = 'ACHIEVEMENT_DEFINITIONS');" | sqlite3 /var/www/html/db/narrrf_world.sqlite
+
+# Check Snake (should be 0)
+echo "SELECT COUNT(*) FROM tbl_snake_achievements WHERE user_id != 'ACHIEVEMENT_DEFINITIONS' AND achievement_key NOT IN (SELECT achievement_key FROM tbl_snake_achievements WHERE user_id = 'ACHIEVEMENT_DEFINITIONS');" | sqlite3 /var/www/html/db/narrrf_world.sqlite
+
+# Verify Space Invaders DEFINITIONS (should be 28)
+echo "SELECT COUNT(*) FROM tbl_space_invaders_achievements WHERE user_id = 'ACHIEVEMENT_DEFINITIONS';" | sqlite3 /var/www/html/db/narrrf_world.sqlite
+
+# Verify Snake DEFINITIONS (should be 20)
+echo "SELECT COUNT(*) FROM tbl_snake_achievements WHERE user_id = 'ACHIEVEMENT_DEFINITIONS';" | sqlite3 /var/www/html/db/narrrf_world.sqlite
+
+
+STEP 5: COPY TO /data (CRITICAL FOR PERSISTENCE!)
+--------------------------------------------------
+cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world.sqlite
+
+# Verify
+ls -lh /data/narrrf_world.sqlite
+
+
+✅ DONE! 
+--------
+Test on live site: https://narrrfs.world/public/profile.html
+- All users should see correct achievement counts
+- No more duplicates
+- Total matches card count
+
+
+📊 EXPECTED RESULTS:
+====================
+- Space Invaders: 28 total achievements
+- Snake: 20 total achievements  
+- No duplicate achievements
+- All users affected (42 users, 72 old records deleted)
+- Users will re-unlock achievements as they play
+
+
+🔄 ROLLBACK (If Needed):
+=========================
+cp /data/narrrf_world_backup_pre_cleanup_nov6_* /var/www/html/db/narrrf_world.sqlite
+cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world.sqlite
+
+
