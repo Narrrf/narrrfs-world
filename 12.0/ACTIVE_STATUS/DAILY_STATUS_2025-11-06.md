@@ -2,7 +2,7 @@
 
 **Date:** Wednesday, November 6, 2025  
 **Session:** Late Evening (Continuation from Nov 4)  
-**Status:** ✅ **SEASON 5 DAY 4 - 10 BUGS FIXED - READY FOR DEPLOYMENT!**  
+**Status:** ✅ **SEASON 5 DAY 4 - 11 BUGS FIXED - READY FOR DEPLOYMENT!**  
 
 ---
 
@@ -102,6 +102,21 @@
    - **Result:** All 3 games now have consistent guide button behavior
    - **Impact:** Players can't accidentally navigate away during gameplay
 
+11. ✅ **BUG #285 - Tetris Role Multipliers Not Working**
+   - **Reported:** "no extra blocks, bosses etc. in tetris atm" + "players have no role attached"
+   - **Root Cause:** Tetris missing role fetching function (Snake/Space have it)
+   - **Issue:** Tetris only had hardcoded test roles, never fetched real roles from API
+   - **Impact:** No role multipliers, no role themes, no colored frames for players
+   - **Fix Applied:**
+   - ✅ Added `fetchTetrisUserRoles()` function (like Snake)
+   - ✅ Fetches real Discord roles from `/api/user/roles.php`
+   - ✅ Called on page load (DOMContentLoaded + timeout)
+   - ✅ Called when game starts (startTetris function)
+   - ✅ Applies role themes (golden, silver, cheese, rainbow, blue, red)
+   - ✅ Applies role multipliers (VIP 2.0x, Holder 1.5x, etc.)
+   - **Result:** Tetris now has role-based gameplay like Snake/Space Invaders
+   - **Tested:** ✅ Roles fetch from API, themes apply, multipliers work
+
 ---
 
 ## 📊 **CONTEXT FROM NOVEMBER 4TH:**
@@ -154,7 +169,7 @@
 
 ## 🧪 **TESTING CHECKLIST:**
 
-### **All Bugs Fixed (10 Total):**
+### **All Bugs Fixed (11 Total):**
 - [x] BUG #269 - Achievement duplicates cleaned (DEPLOYED!)
 - [x] Boss entrance protection - Space Invaders
 - [x] Snake boss spawn - Safe position detection
@@ -165,6 +180,7 @@
 - [x] BUG #171 - Game over OK button (all 3 games)
 - [x] Tetris OK button - State reset fix (reload page)
 - [x] Guide button disable - Tetris gameplay consistency
+- [x] BUG #285 - Tetris role multipliers not working (API fetch added)
 
 ### **Ready for Final Testing:**
 - [ ] Test all 3 games game over modals
@@ -179,13 +195,14 @@
 ## 🚀 **DEPLOYMENT STATUS:**
 
 ### **Ready for Production:**
-- ✅ 10 bugs fixed and tested
+- ✅ 11 bugs fixed and tested
 - ✅ All game modals updated (consistent UX)
 - ✅ P key pause working on all games
 - ✅ Snake bounds protection implemented
 - ✅ Profile mobile responsive
 - ✅ Tetris OK button fixed (clean reload)
 - ✅ Guide button disabled during gameplay (all 3 games)
+- ✅ Tetris role multipliers fixed (API fetch added)
 - ✅ No breaking changes
 - ✅ All code tested locally
 - ✅ Documentation complete
@@ -193,9 +210,9 @@
 
 ### **Files to Deploy (Nov 6 Session):**
 1. `public/scripts/snake-scroll.js` - Boss spawn + pause + BUG #229 bounds
-2. `public/scripts/tetris-scroll-live.js` - P key + OK button fix + guide disable
+2. `public/scripts/tetris-scroll-live.js` - P key + OK fix + guide + ROLE FETCH (BUG #285)
 3. `public/scripts/space-cheese-invaders.js` - Boss entrance protection
-4. `public/tetris.html` - Game over modal (BUG #171)
+4. `public/tetris.html` - Game over modal + version bump (v11.6.2)
 5. `public/snake.html` - Game over modal (BUG #171)
 6. `public/space-cheese-invaders.html` - Game over modal (BUG #171)
 7. `public/profile.html` - Mobile responsive cards

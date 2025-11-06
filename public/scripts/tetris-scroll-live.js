@@ -68,6 +68,9 @@ let roleThemes = {
   'Champion': 'red'
 };
 
+// 🧮 Global score tracker so role UI can render before game starts
+window.tetrisScore = 0;
+
 // Detect mobile device
 if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
   isTetrisMobileDevice = true;
@@ -85,16 +88,57 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
   console.log('🖥️ Desktop device detected - touch controls still enabled');
 }
 
+// 🏆 ROLE DETECTION SYSTEM - Fetch user Discord roles (like Snake)
+async function fetchTetrisUserRoles() {
+  try {
+    // 🌍 Local development bypass - use test roles
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    if (isLocalDevelopment) {
+      // 🏠 Local environment detected - using all test roles
+      console.log('🏠 Local environment detected - using test roles for Tetris testing');
+      userRoles = [
+        "VIP Holder", "Holder", "Champion", "Season Tester", "Early Bird", "Cheese Hunter",
+        "Alpha Caller", "Community Member", "Moderator", "PokerOG", "Rumble"
+      ];
+      
+      console.log('🏆 Local test roles loaded for Tetris:', userRoles);
+      
+      // Apply role-based theme on load
+      applyRoleTheme();
+      
+      return userRoles;
+    }
+    
+    const isProduction = window.location.hostname === 'narrrfs.world';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    
+    const response = await fetch(`${API_BASE_URL}/api/user/roles.php`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      userRoles = data.roles || [];
+      console.log('🏆 User roles loaded from API for Tetris:', userRoles);
+      
+      // Apply role-based theme on load
+      applyRoleTheme();
+      
+      return userRoles;
+    } else {
+      console.log('🏆 No roles found or not logged in for Tetris');
+      return [];
+    }
+  } catch (error) {
+    console.log('🏆 Error fetching roles for Tetris:', error);
+    return [];
+  }
+}
+
 // 🎨 Role-based theme application for Tetris
 function applyRoleTheme() {
-  // Get user roles from localStorage or default test roles
-  const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (isLocalDevelopment) {
-    userRoles = [
-      "VIP Holder", "Holder", "Champion", "Season Tester", "Early Bird", "Cheese Hunter"
-    ];
-  }
-  
   // Determine primary role
   const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
   let primaryRole = null;
@@ -158,18 +202,21 @@ function getRoleScoreMultiplier() {
 // 🏆 Update Tetris score display with role bonus
 function updateTetrisScoreDisplay() {
   const scoreDisplay = document.getElementById('tetris-score');
-  if (scoreDisplay) {
-    const roleMultiplier = getRoleScoreMultiplier();
-    const primaryRole = getUserPrimaryRole();
-    
-    if (roleMultiplier > 1.0) {
-      scoreDisplay.textContent = `💰 Tetris Score: $${score} DSPOINC (${roleMultiplier}x Role Bonus!)`;
-    } else {
-      scoreDisplay.textContent = `💰 Tetris Score: $${score} DSPOINC`;
-    }
-    
-    console.log(`🏆 Tetris score display update: Role=${primaryRole}, Multiplier=${roleMultiplier}x, Score=${score} DSPOINC`);
+  if (!scoreDisplay) {
+    return;
   }
+
+  const roleMultiplier = getRoleScoreMultiplier();
+  const primaryRole = getUserPrimaryRole();
+  const scoreValue = typeof window.tetrisScore === 'number' ? window.tetrisScore : 0;
+  
+  if (roleMultiplier > 1.0) {
+    scoreDisplay.textContent = `💰 Tetris Score: $${scoreValue} DSPOINC (${roleMultiplier}x Role Bonus!)`;
+  } else {
+    scoreDisplay.textContent = `💰 Tetris Score: $${scoreValue} DSPOINC`;
+  }
+  
+  console.log(`🏆 Tetris score display update: Role=${primaryRole}, Multiplier=${roleMultiplier}x, Score=${scoreValue} DSPOINC`);
 }
 
 // 🏆 GLOBAL TEST FUNCTION - Test Tetris role-based features
@@ -200,8 +247,11 @@ window.testTetrisRoleFeatures = function() {
   const canvas = document.getElementById('tetris-canvas');
   console.log('Canvas element:', canvas);
   console.log('Canvas classes:', canvas?.className);
-  console.log('Current score:', score);
-  console.log('Current DSPOINC:', score);
+  
+  // Test role detection
+  fetchTetrisUserRoles().then(() => {
+    console.log('🏆 Tetris role detection test completed');
+  });
 };
 
 // 🚫 Full page scroll prevention
@@ -740,12 +790,17 @@ function startTetris() {
   if (!scoreDisplay) {
     console.log('⚠️ Score display element not found - creating fallback');
   }
+  
+  // 🏆 Fetch user roles for role-based gameplay (like Snake)
+  fetchTetrisUserRoles();
 
   const gridWidth = 10;
   const gridHeight = 20;
   const blockSize = 20;
 
   let score = 0;
+  window.tetrisScore = 0;
+  updateTetrisScoreDisplay();
   let linesClearedTotal = 0;
   let piecesDropped = 0;
   let tetrisClears = 0;
@@ -921,9 +976,8 @@ function collide(shape, row, col) {
             if (grid[y].includes(6)) {
               showBombDefusedPopup();
           score += 10; // Bonus for defusing bomb (reduced for balance)
-          if (scoreDisplay) {
-            scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
-          }
+          window.tetrisScore = score;
+          updateTetrisScoreDisplay();
             }
       
             grid.splice(y, 1);
@@ -952,6 +1006,8 @@ function collide(shape, row, col) {
           const roleMultiplier = getRoleScoreMultiplier();
           const roleBonus = Math.floor(baseScore * (roleMultiplier - 1)); // Calculate bonus points
           score += baseScore + roleBonus;
+          window.tetrisScore = score;
+          updateTetrisScoreDisplay();
           
           console.log(`📊 Line clearing: ${lines} lines = ${baseScore} DSPOINC + ${roleBonus} role bonus = ${baseScore + roleBonus} total`);
           
@@ -979,9 +1035,8 @@ function collide(shape, row, col) {
             console.error('❌ Error stack:', error.stack);
           }
           
-      if (scoreDisplay) {
-          scoreDisplay.textContent = `💰 $DSPOINC earned: ${score}`;
-      }
+      window.tetrisScore = score;
+      updateTetrisScoreDisplay();
       
           // ⏩ Speed up every 20 lines
           if (linesClearedTotal % 20 === 0) {
@@ -1227,6 +1282,10 @@ if (collide(current.shape, current.row, current.col)) {
         
         // 🎵 Play game over sound
         tetrisSounds.playSound('gameOver');
+        
+        // 🧮 Update global score for UI consistency
+        window.tetrisScore = finalScore;
+        updateTetrisScoreDisplay();
         
         let wallet = localStorage.getItem("walletAddress");
         let discordId = localStorage.getItem("discord_id");
@@ -1921,6 +1980,13 @@ window.forceTetrisTouch = function() {
 
 // 🎨 Apply role theme on page load
 setTimeout(() => {
-  applyRoleTheme();
+  fetchTetrisUserRoles(); // 🏆 Fetch real roles from API (like Snake)
   console.log('🎨 Tetris role theme applied on load');
 }, 500);
+
+// 🏆 Also fetch roles when DOM is ready (like Snake)
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    fetchTetrisUserRoles();
+  }, 1000);
+});
