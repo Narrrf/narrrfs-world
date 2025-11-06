@@ -1,5 +1,11 @@
-// 🧀 Cheese Tetris Scroll v9.8 + PNG BLOCKS (all features from perfect backup, plus PNG support)
-// 
+// 🧀 Cheese Tetris Scroll v10.0 - Legacy Boss Build (Season 3 revamp + Season 5 fixes)
+//
+// 🏆 SEASON 5 UPDATE (2025-11-06):
+// - ROLE SYSTEM: Fetches live roles via /api/user/roles.php (emoji-safe normalization)
+// - UX PARITY: OK/Play Again buttons, auto-start flag, guide locking, P-key pause
+// - SCORE SYNC: Global score HUD, Snake-style achievement popups, DSPOINC parity
+// - TEST HELPERS: forceLoadTestRoles(), testRoleSystem(), testRoleFeatures()
+//
 // 🏆 SEASON 3 PHASE 2 COMPLETE (2025-01-28):
 // - ACHIEVEMENT SYSTEM: In-game milestone tracking with animated pop-ups
 // - DYNAMIC SCORING: Performance-based rewards and bonus objectives
@@ -43,27 +49,27 @@ let isTetrisMobileDevice = false;
 // 🛑 Pause Logic — Global variable for touch controls
 let isTetrisPaused = false;
 
-// 🏆 ROLE ID-BASED GAMEPLAY SYSTEM - Season 4 Feature
-let userRoleIDs = [];
-let roleMultipliersByID = {
-  '1332016526848692345': 2.0,  // 🎴 VIP Holder
-  '1402668301414563971': 1.5,  // 🏆 Holder
-  '1332017420591697972': 1.4,  // Champion
-  '1417279348989497532': 1.3,  // Season Tester
-  '1332017614108758148': 1.2,  // Early Bird
-  '1399651053682692208': 1.1,  // 🧀 Cheese Hunter
-  '1332108350518857842': 1.3   // WL
+// 🏆 ROLE-BASED GAMEPLAY SYSTEM
+let userRoles = [];
+let roleMultipliers = {
+  'VIP Holder': 2.0,
+  '🎴 VIP Holder': 2.0,
+  'Holder': 1.5,
+  '🏆 Holder': 1.5,
+  'Champion': 1.4,
+  'Season Tester': 1.3,
+  'Early Bird': 1.2,
+  'Cheese Hunter': 1.1,
+  '🧀 Cheese Hunter': 1.1
 };
 
-// Priority order (highest multiplier first)
-const rolePriorityByID = [
-  '1332016526848692345',  // 🎴 VIP Holder (2.0x) - HIGHEST
-  '1402668301414563971',  // 🏆 Holder (1.5x)
-  '1332017420591697972',  // Champion (1.4x)
-  '1332108350518857842',  // WL (1.3x)
-  '1417279348989497532',  // Season Tester (1.3x)
-  '1332017614108758148',  // Early Bird (1.2x)
-  '1399651053682692208'   // 🧀 Cheese Hunter (1.1x) - LOWEST
+const rolePriority = [
+  'VIP Holder',
+  'Holder',
+  'Champion',
+  'Season Tester',
+  'Early Bird',
+  'Cheese Hunter'
 ];
 
 // 🎨 Role-based visual themes
@@ -78,6 +84,123 @@ let roleThemes = {
   'Early Bird': 'blue',
   'Champion': 'red'
 };
+
+function normalizeRole(role) {
+  if (!role) return '';
+  try {
+    return role.replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\s]+/gu, '').trim();
+  } catch (error) {
+    return role.replace(/^[🎴🏆🧀\s]+/, '').trim();
+  }
+}
+
+function getNormalizedRoles() {
+  return userRoles.map(normalizeRole).filter(Boolean);
+}
+
+async function fetchTetrisUserRoles() {
+  try {
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
+    
+    if (isLocalDevelopment) {
+      console.log('🏠 Local environment detected - using test roles for Tetris');
+      userRoles = [
+        '🎴 VIP Holder',
+        '🏆 Holder',
+        'Champion',
+        'Season Tester',
+        'Early Bird',
+        '🧀 Cheese Hunter'
+      ];
+      applyRoleTheme();
+      return userRoles;
+    }
+    
+    const isProduction = window.location.hostname === 'narrrfs.world';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    
+    const response = await fetch(`${API_BASE_URL}/api/user/roles.php`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      userRoles = data.roles || [];
+      console.log('🏆 User roles loaded from API for Tetris:', userRoles);
+      applyRoleTheme();
+      return userRoles;
+    } else {
+      console.log('🏆 No roles found or not logged in for Tetris');
+      return [];
+    }
+  } catch (error) {
+    console.log('🏆 Error fetching roles for Tetris:', error);
+    return [];
+  }
+}
+
+function applyRoleTheme() {
+  const normalizedRoles = getNormalizedRoles();
+  let primaryRole = null;
+  
+  for (const role of rolePriority) {
+    if (normalizedRoles.includes(normalizeRole(role))) {
+      primaryRole = normalizeRole(role);
+      break;
+    }
+  }
+  
+  const theme =
+    roleThemes[primaryRole] ||
+    roleThemes[userRoles.find(role => normalizeRole(role) === primaryRole)] ||
+    'default';
+  
+  console.log(`🎨 Tetris theme: ${theme} for role: ${primaryRole} (normalized from ${JSON.stringify(userRoles)})`);
+  
+  updateTetrisScoreDisplay();
+  
+  const canvas = document.getElementById('tetris-canvas');
+  if (canvas) {
+    canvas.classList.remove('golden', 'silver', 'cheese', 'green', 'blue', 'red');
+    if (theme !== 'default') {
+      canvas.classList.add(theme);
+    }
+  }
+  
+  const controlsSection = document.getElementById('tetris-controls-section');
+  const controlsTitle = document.getElementById('tetris-controls-title');
+  if (controlsSection && controlsTitle) {
+    controlsSection.classList.remove('golden', 'silver', 'cheese', 'green', 'blue', 'red');
+    controlsTitle.classList.remove('golden', 'silver', 'cheese', 'green', 'blue', 'red');
+    if (theme !== 'default') {
+      controlsSection.classList.add(theme);
+      controlsTitle.classList.add(theme);
+    }
+  }
+}
+
+function getUserPrimaryRole() {
+  const normalizedRoles = getNormalizedRoles();
+  for (const role of rolePriority) {
+    const normalized = normalizeRole(role);
+    if (normalizedRoles.includes(normalized)) {
+      return normalized;
+    }
+  }
+  return null;
+}
+
+function getRoleScoreMultiplier() {
+  const primaryRole = getUserPrimaryRole();
+  if (!primaryRole) return 1.0;
+  
+  const matchingRole = userRoles.find(role => normalizeRole(role) === primaryRole);
+  if (matchingRole && roleMultipliers[matchingRole]) {
+    return roleMultipliers[matchingRole];
+  }
+  return roleMultipliers[primaryRole] || 1.0;
+}
 
 // Detect mobile device
 if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
@@ -94,126 +217,6 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
   }
 } else {
   console.log('🖥️ Desktop device detected - touch controls still enabled');
-}
-
-// 🏆 ROLE ID DETECTION SYSTEM - Fetch user Discord role IDs
-async function fetchUserRoleIDs() {
-  try {
-    // 🌍 Local development bypass - use test role IDs
-    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
-    
-    if (isLocalDevelopment) {
-      // 🏠 Local environment detected - using Narrrf's roles for testing
-      console.log('🏠 Local environment detected - using Narrrf\'s roles for Tetris testing');
-      userRoleIDs = [
-        "1332016526848692345",  // 🎴 VIP Holder
-        "1402668301414563971",  // 🏆 Holder
-        "1332017420591697972",  // Champion
-        "1417279348989497532",  // Season Tester
-        "1332017614108758148",  // Early Bird
-        "1399651053682692208"   // 🧀 Cheese Hunter
-      ];
-      
-      console.log('🏆 Local test role IDs loaded for Tetris:', userRoleIDs);
-      
-      // Apply role-based theme on load
-      applyRoleTheme();
-      
-      return userRoleIDs;
-    }
-    
-    const isProduction = window.location.hostname === 'narrrfs.world';
-    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
-    
-    // Fetch role IDs from Discord API via sync-role.php
-    const response = await fetch(`${API_BASE_URL}/api/auth/sync-role.php`, {
-      method: 'GET',
-      credentials: 'include'
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      userRoleIDs = data.role_ids || [];
-      
-      // Apply role-based theme on load
-      applyRoleTheme();
-      
-      return userRoleIDs;
-    } else {
-      return [];
-    }
-  } catch (error) {
-    return [];
-  }
-}
-
-// 🎨 Apply role-based visual theme using role IDs
-function applyRoleTheme() {
-  const primaryRoleID = getUserPrimaryRoleID();
-  let theme = 'default';
-  
-  if (primaryRoleID) {
-    // Map role IDs to themes
-    const roleIDToTheme = {
-      '1332016526848692345': 'golden',    // 🎴 VIP Holder
-      '1402668301414563971': 'silver',    // 🏆 Holder
-      '1332017420591697972': 'red',       // Champion
-      '1417279348989497532': 'green',     // Season Tester
-      '1332017614108758148': 'blue',      // Early Bird
-      '1399651053682692208': 'cheese',    // 🧀 Cheese Hunter
-      '1332108350518857842': 'blue'       // WL (blue theme)
-    };
-    
-    theme = roleIDToTheme[primaryRoleID] || 'default';
-  }
-  
-  // Add theme class to canvas or game container
-  const canvas = document.getElementById('tetris-canvas');
-  if (canvas) {
-    // Remove existing theme classes
-    canvas.classList.remove('golden', 'silver', 'cheese', 'green', 'blue', 'red');
-    // Add new theme class
-    if (theme !== 'default') {
-      canvas.classList.add(theme);
-    }
-  }
-  
-  // 🎨 NEW: Apply theme to controls section
-  const controlsSection = document.getElementById('tetris-controls-section');
-  const controlsTitle = document.getElementById('tetris-controls-title');
-  if (controlsSection && controlsTitle) {
-    // Remove existing theme classes
-    controlsSection.classList.remove('golden', 'silver', 'cheese', 'green', 'blue', 'red');
-    controlsTitle.classList.remove('golden', 'silver', 'cheese', 'green', 'blue', 'red');
-    // Add new theme class
-    if (theme !== 'default') {
-      controlsSection.classList.add(theme);
-      controlsTitle.classList.add(theme);
-    }
-  }
-}
-
-// 🏆 Get user's primary role ID (highest priority role)
-function getUserPrimaryRoleID() {
-  // Check roles in priority order (highest multiplier first)
-  for (const roleID of rolePriorityByID) {
-    if (userRoleIDs.includes(roleID)) {
-      return roleID;
-    }
-  }
-  
-  return null; // No premium role found
-}
-
-// ⚡ Calculate role-based score multiplier using role IDs
-function getRoleScoreMultiplier() {
-  const primaryRoleID = getUserPrimaryRoleID();
-  
-  if (primaryRoleID) {
-    return roleMultipliersByID[primaryRoleID] || 1.0;
-  }
-  
-  return 1.0;
 }
 
 // 🏆 Global score display element and score variable
@@ -424,6 +427,17 @@ function checkAndStartTetris() {
         btn.disabled = true;
         btn.textContent = "🕹️ Playing...";
       }, { passive: false });
+    }
+
+    // 🚀 Auto-start support (matches live build)
+    if (localStorage.getItem('tetris_auto_start') === 'true') {
+      console.log('🚀 Auto-start flag detected - starting Legacy Tetris automatically');
+      localStorage.removeItem('tetris_auto_start');
+      setTimeout(() => {
+        window.startTetrisGame();
+        btn.disabled = true;
+        btn.textContent = "🕹️ Playing...";
+      }, 500);
     }
   }
 }
@@ -731,12 +745,12 @@ class CheeseParticleSystem {
     let baseParticleCount = clearedLines * 4; // Base particles per line
     
     // Role-based particle enhancement using role IDs
-    const primaryRoleID = getUserPrimaryRoleID();
-    if (primaryRoleID === '1332016526848692345') { // VIP Holder
+    const primaryRole = getUserPrimaryRole();
+    if (primaryRole === 'VIP Holder') {
       baseParticleCount *= 2; // Double particles for VIP
-    } else if (primaryRoleID === '1402668301414563971' || primaryRoleID === '1332017420591697972') { // Holder or Champion
+    } else if (primaryRole === 'Holder' || primaryRole === 'Champion') {
       baseParticleCount = Math.floor(baseParticleCount * 1.5); // 1.5x particles for Holder/Champion
-    } else if (primaryRoleID === '1399651053682692208') { // Cheese Hunter
+    } else if (primaryRole === 'Cheese Hunter') {
       baseParticleCount = Math.floor(baseParticleCount * 1.3); // Extra particles for Cheese Hunter
     }
     
@@ -764,10 +778,10 @@ class CheeseParticleSystem {
 
   // Get random cheese-themed colors with role-based enhancement
   getRandomCheeseColor() {
-    const primaryRoleID = getUserPrimaryRoleID();
+    const primaryRole = getUserPrimaryRole();
     
     // Role-based color themes using role IDs
-    if (primaryRoleID === '1332016526848692345') { // VIP Holder
+    if (primaryRole === 'VIP Holder') {
       const vipColors = [
         '#FFD700', // Golden yellow
         '#FFA500', // Cheddar orange
@@ -776,7 +790,7 @@ class CheeseParticleSystem {
         '#DAA520'  // Goldenrod
       ];
       return vipColors[Math.floor(Math.random() * vipColors.length)];
-    } else if (primaryRoleID === '1402668301414563971') { // Holder
+    } else if (primaryRole === 'Holder') {
       const holderColors = [
         '#C0C0C0', // Silver
         '#D3D3D3', // Light gray
@@ -785,7 +799,7 @@ class CheeseParticleSystem {
         '#F5F5F5'  // White smoke
       ];
       return holderColors[Math.floor(Math.random() * holderColors.length)];
-    } else if (primaryRoleID === '1399651053682692208') { // Cheese Hunter
+    } else if (primaryRole === 'Cheese Hunter') {
       const cheeseHunterColors = [
         '#FFA500', // Cheddar orange
         '#FF8C00', // Dark orange
@@ -794,7 +808,7 @@ class CheeseParticleSystem {
         '#FF4500'  // Orange red
       ];
       return cheeseHunterColors[Math.floor(Math.random() * cheeseHunterColors.length)];
-    } else if (primaryRoleID === '1417279348989497532') { // Season Tester
+    } else if (primaryRole === 'Season Tester') {
       const seasonTesterColors = [
         '#8A2BE2', // Blue violet
         '#9932CC', // Dark orchid
@@ -803,7 +817,7 @@ class CheeseParticleSystem {
         '#9400D3'  // Violet
       ];
       return seasonTesterColors[Math.floor(Math.random() * seasonTesterColors.length)];
-    } else if (primaryRoleID === '1332017420591697972') { // Champion
+    } else if (primaryRole === 'Champion') {
       const championColors = [
         '#FF4500', // Orange red
         '#FF6347', // Tomato
@@ -812,7 +826,7 @@ class CheeseParticleSystem {
         '#B22222'  // Fire brick
       ];
       return championColors[Math.floor(Math.random() * championColors.length)];
-    } else if (primaryRoleID === '1332017614108758148') { // Early Bird
+    } else if (primaryRole === 'Early Bird') {
       const earlyBirdColors = [
         '#00BFFF', // Deep sky blue
         '#1E90FF', // Dodger blue
@@ -959,12 +973,11 @@ window.testCheeseParticles = function() {
 // 🏆 TEST FUNCTION - Test role-based features
 window.testRoleFeatures = function() {
   console.log('🏆 Testing role-based features...');
-  console.log('Current role IDs:', userRoleIDs);
-  console.log('Primary role ID:', getUserPrimaryRoleID());
+  console.log('Current roles:', userRoles);
+  console.log('Primary role:', getUserPrimaryRole());
   console.log('Score multiplier:', getRoleScoreMultiplier());
   console.log('Theme applied:', document.getElementById('tetris-canvas')?.className);
   
-  // Test particle creation with role colors
   const canvas = document.getElementById("tetris-canvas");
   if (canvas) {
     cheeseParticles.createCheeseParticles(2, canvas.width, canvas.height);
@@ -977,8 +990,8 @@ async function startTetris() {
   const context = canvas.getContext("2d");
   tetrisScoreDisplay = document.getElementById("tetris-score");
   
-  // 🏆 Fetch user role IDs for role-based gameplay (CRITICAL: await this!)
-  await fetchUserRoleIDs();
+  // 🏆 Fetch user roles for role-based gameplay (CRITICAL: await this!)
+  await fetchTetrisUserRoles();
   
   // 🧀 Clear cheese particles when starting new game
   cheeseParticles.clear();
@@ -2695,6 +2708,72 @@ let heldDown = false;
   }, 100);
 }
 
+// 🏁 Legacy OK button handler (matches live behavior)
+window.endTetrisGame = function() {
+  console.log('🏁 OK button clicked - ending Legacy Tetris game');
+  
+  // Stop any running interval
+  if (typeof gameInterval !== 'undefined' && gameInterval) {
+    clearInterval(gameInterval);
+    gameInterval = null;
+  }
+  
+  // Hide modal
+  const modal = document.getElementById("game-over-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.style.display = "none";
+  }
+  
+  // Re-enable page links/buttons
+  document.querySelectorAll('a, button').forEach(el => {
+    el.style.pointerEvents = '';
+    el.style.opacity = '';
+  });
+  
+  // Clear canvas
+  const canvas = document.getElementById("tetris-canvas");
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  
+  // Reset buttons
+  const startBtn = document.getElementById("start-tetris-btn");
+  if (startBtn) {
+    startBtn.textContent = "▶️ Start";
+    startBtn.disabled = false;
+  }
+  const pauseBtn = document.getElementById("pause-tetris-btn");
+  if (pauseBtn) {
+    pauseBtn.textContent = "⏸️ Pause";
+  }
+  
+  // Reset pause flag / scroll lock
+  isTetrisPaused = false;
+  document.body.style.overflow = "";
+  
+  console.log('✅ Legacy Tetris game ended cleanly');
+};
+
+// 🔁 Legacy Play Again (reload + auto-start)
+window.restartTetrisGame = function() {
+  console.log('🔄 Play Again button clicked - restarting Legacy Tetris game');
+  
+  const modal = document.getElementById("game-over-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.style.display = "none";
+  }
+  
+  localStorage.setItem('tetris_auto_start', 'true');
+  window.location.reload();
+};
+
 function lockTetrisScroll() {
     document.body.style.overflow = "hidden";
 }
@@ -2776,20 +2855,18 @@ window.reinitializeTetrisTouch = function() {
   }
 };
 
-// 🧪 GLOBAL TEST FUNCTION - Test role ID system specifically
-window.testRoleIDSystem = function() {
-  console.log('🧪 Testing Role ID System...');
+// 🧪 GLOBAL TEST FUNCTION - Test role system (names)
+window.testRoleSystem = function() {
+  console.log('🧪 Testing Role System...');
   console.log('Hostname:', window.location.hostname);
-  console.log('Is Local Development:', window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '');
-  console.log('User Role IDs:', userRoleIDs);
-  console.log('Role Multipliers By ID:', roleMultipliersByID);
-  console.log('Role Priority By ID:', rolePriorityByID);
-  
-  // Test each function
-  console.log('Testing getUserPrimaryRoleID():', getUserPrimaryRoleID());
-  console.log('Testing getRoleScoreMultiplier():', getRoleScoreMultiplier());
-  
-  // Test score calculation
+  console.log('Is Local Development:', ['localhost', '127.0.0.1', ''].includes(window.location.hostname));
+  console.log('User Roles:', userRoles);
+  console.log('Role Multipliers:', roleMultipliers);
+  console.log('Role Priority:', rolePriority);
+  console.log('Normalized Roles:', getNormalizedRoles());
+  console.log('Primary role:', getUserPrimaryRole());
+  console.log('Current multiplier:', getRoleScoreMultiplier());
+
   const testScore = 10;
   const multiplier = getRoleScoreMultiplier();
   const finalScore = testScore * multiplier;
@@ -2820,15 +2897,15 @@ window.testTetrisGame = function() {
 // 🧪 GLOBAL TEST FUNCTION - Force load test roles
 window.forceLoadTestRoles = function() {
   console.log('🧪 Force loading test roles...');
-  userRoleIDs = [
-    "1332016526848692345",  // 🎴 VIP Holder
-    "1402668301414563971",  // 🏆 Holder
-    "1332017420591697972",  // Champion
-    "1417279348989497532",  // Season Tester
-    "1332017614108758148",  // Early Bird
-    "1399651053682692208"   // 🧀 Cheese Hunter
+  userRoles = [
+    '🎴 VIP Holder',
+    '🏆 Holder',
+    'Champion',
+    'Season Tester',
+    'Early Bird',
+    '🧀 Cheese Hunter'
   ];
-  console.log('🏆 Test role IDs forced:', userRoleIDs);
+  console.log('🏆 Test roles forced:', userRoles);
   applyRoleTheme();
   updateTetrisScoreDisplay();
   console.log('🏆 Role theme and score display updated');

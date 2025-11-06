@@ -63,10 +63,19 @@ let roleThemes = {
   '🏆 Holder': 'silver', 
   'Cheese Hunter': 'cheese',
   '🧀 Cheese Hunter': 'cheese',
-  'Season Tester': 'rainbow',
+  'Season Tester': 'green',
   'Early Bird': 'blue',
   'Champion': 'red'
 };
+
+function normalizeRole(role) {
+  if (!role) return '';
+  try {
+    return role.replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\s]+/gu, '').trim();
+  } catch (error) {
+    return role.replace(/^[🎴🏆🧀\s]+/, '').trim();
+  }
+}
 
 // 🧮 Global score tracker so role UI can render before game starts
 window.tetrisScore = 0;
@@ -138,20 +147,28 @@ async function fetchTetrisUserRoles() {
 }
 
 // 🎨 Role-based theme application for Tetris
+function getNormalizedRoles() {
+  return userRoles.map(normalizeRole).filter(Boolean);
+}
+
 function applyRoleTheme() {
-  // Determine primary role
   const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
+  const normalizedRoles = getNormalizedRoles();
+  
   let primaryRole = null;
   for (const role of priorityOrder) {
-    if (userRoles.includes(role)) {
-      // Return clean role name for consistent theming and multipliers
-      primaryRole = role.replace(/^[🎴🏆🧀]\s*/, '');
+    if (normalizedRoles.includes(normalizeRole(role))) {
+      primaryRole = normalizeRole(role);
       break;
     }
   }
   
-  const theme = roleThemes[primaryRole] || 'default';
-  console.log(`🎨 Tetris theme: ${theme} for role: ${primaryRole}`);
+  const theme =
+    roleThemes[primaryRole] ||
+    roleThemes[userRoles.find(role => normalizeRole(role) === primaryRole)] ||
+    'default';
+  
+  console.log(`🎨 Tetris theme: ${theme} for role: ${primaryRole} (normalized from ${JSON.stringify(userRoles)})`);
   
   // Update score display with role multiplier
   updateTetrisScoreDisplay();
@@ -182,11 +199,12 @@ function applyRoleTheme() {
 // 🏆 Get user's primary role (highest priority role)
 function getUserPrimaryRole() {
   const priorityOrder = ['VIP Holder', '🎴 VIP Holder', 'Holder', '🏆 Holder', 'Champion', 'Season Tester', 'Early Bird', 'Cheese Hunter', '🧀 Cheese Hunter'];
+  const normalizedRoles = getNormalizedRoles();
   
   for (const role of priorityOrder) {
-    if (userRoles.includes(role)) {
-      // Return clean role name for consistent theming and multipliers
-      return role.replace(/^[🎴🏆🧀]\s*/, '');
+    const normalized = normalizeRole(role);
+    if (normalizedRoles.includes(normalized)) {
+      return normalized;
     }
   }
   
