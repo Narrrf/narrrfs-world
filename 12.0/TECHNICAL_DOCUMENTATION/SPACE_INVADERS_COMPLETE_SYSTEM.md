@@ -1,7 +1,7 @@
 # 👾🧀 SPACE CHEESE INVADERS - COMPLETE TECHNICAL DOCUMENTATION
 
-**Game Version:** v5.0.0 (Season 5 - COMPLETE)  
-**Last Updated:** November 4, 2025 - Afternoon (Profile Portal + Standalone Page)  
+**Game Version:** v5.1.0 (Season 5 - Stable Modal Update)  
+**Last Updated:** November 6, 2025 - Evening Stability Pass  
 **Status:** ✅ **PRODUCTION READY - PROFILE PORTAL INTEGRATED**  
 **Document Purpose:** Complete technical reference for all systems and features  
 
@@ -40,7 +40,7 @@ Space Cheese Invaders is a modern take on the classic space shooter with extensi
 - **Role-Based Multipliers:** 6 Discord roles with DSPOINC bonuses
 - **Progressive Difficulty:** Waves 1-1000+ supported
 
-### **Season 5 Complete Feature List:**
+### **Season 5 Complete Feature List (Updated Nov 6, 2025):**
 - ✅ **Giant Cheese Boss System** (Nov 2, 2025) - Every 8th wave, 6 unique designs, 619 lines
 - ✅ **Phoenix Shooting System** (Nov 2, 2025) - 4 progressive patterns, enabled on all Phoenix waves
 - ✅ **10:1 Score Conversion** (Nov 2, 2025) - Perfect game balance (2,000 → 200 DSPOINC)
@@ -51,6 +51,8 @@ Space Cheese Invaders is a modern take on the classic space shooter with extensi
 - ✅ **Achievement System** (Oct 26, 2025) - 28 dynamic achievements
 - ✅ **Role Multipliers** (Oct 26, 2025) - All 6 roles verified
 - ✅ **Negative Score Prevention** (Oct 23, 2025) - 3-layer protection
+- ✅ **Modal Parity** (Nov 6, 2025) - "Score Saved!" + OK/Play Again buttons aligned with Tetris/Snake
+- ✅ **Back-To-Profile Reset** (Nov 6, 2025) - Page links re-enabled after game over/win/end-game
 
 ---
 

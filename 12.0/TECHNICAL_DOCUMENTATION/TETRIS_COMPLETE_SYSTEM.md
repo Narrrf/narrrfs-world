@@ -1,9 +1,9 @@
-# 🧩 TETRIS COMPLETE SYSTEM - TECHNICAL DOCUMENTATION V11.6
+# 🧩 TETRIS COMPLETE SYSTEM - TECHNICAL DOCUMENTATION V10.0 (Season 5 Stable)
 
 **Game:** Cheese Tetris Scroll  
-**Version:** 11.6.0 - Season 5 Boss Mode System (Final)  
-**Date:** November 4, 2025 - Afternoon Update (Profile Portal + Standalone Page)  
-**Status:** ✅ **PRODUCTION READY - COMPLETE SYSTEM - PROFILE PORTAL INTEGRATED**  
+**Version:** 10.0.0 - Legacy Boss Build Restored + Role System Parity  
+**Date:** November 6, 2025 - Evening Stability Pass  
+**Status:** ✅ **PRODUCTION READY - STABLE ACROSS PROFILE + STANDALONE**  
 
 ---
 
@@ -32,7 +32,7 @@
 ### **What is Tetris?**
 Cheese Tetris Scroll is a classic block-stacking puzzle game where players rotate and position falling pieces (tetrominoes) to create complete horizontal lines. Season 5 continues with the perfected role-based scoring system, 25 achievements, and professional particle effects.
 
-### **Season 5 Features:**
+### **Season 5 Features (Updated Nov 6, 2025):**
 - **🏆 Role-Based Gameplay** - Discord role multipliers (1.1x → 2.0x)
 - **🎨 Role-Based Themes** - 7 unique visual themes (Golden, Silver, Red, Green, Blue, Cheese)
 - **🏆 25 Achievements** - Balanced achievement system (removed unreachable)
@@ -43,33 +43,38 @@ Cheese Tetris Scroll is a classic block-stacking puzzle game where players rotat
 - **✅ Zero Bugs** - All Season 4 bugs fixed (particle system, combo logic, etc.)
 - **⭐ Multi-Line Bonus** - Rewards clearing 2-4 lines (Nov 2)
 - **❄️ Frozen Blocks** - Rare random events (8% normal, 30-70% boss) (Nov 2)
-- **👑 5-Boss System** - Progressive boss battles (NEW - Nov 3!)
-- **🧀 Giant Blocks** - 1.5x size pieces during boss (NEW - Nov 3!)
-- **💣 Giant Bombs** - 5x5 explosion radius (NEW - Nov 3!)
-- **💥 Field Explosion** - Board clears on boss defeat (NEW - Nov 3!)
-- **⚡ Speed Boost** - Game faster after each boss (NEW - Nov 3!)
-- **📱 Swipe Lock** - No screen scrolling during game (NEW - Nov 3!)
+- **👑 9-Boss System** - Progressive boss battles (legacy build restored)
+- **🧀 Giant Blocks** - 1.5x size pieces during boss
+- **💣 Giant Bombs** - 5x5 explosion radius
+- **💥 Field Explosion** - Board clears on boss defeat
+- **⚡ Speed Boost** - Game faster after each boss
+- **📱 Swipe Lock** - No screen scrolling during game
+- **✅ OK / Play Again Modal UX** - Matches Space Invaders + Snake (Nov 6)
+- **✅ Guide Button Lock** - Disabled during active play (Nov 6)
+- **✅ Role Fetch Normalization** - Emoji-stripped names via `/api/user/roles.php` (Nov 6)
 
 ---
 
 ## 🚀 **SEASON 5 FEATURES**
 
-### **1. Role-Based Multiplier System**
-**Discord Role IDs and Multipliers:**
+### **1. Role-Based Multiplier System (Emoji-Safe)**
+**Discord Role Names and Multipliers (normalized server-side):**
 ```javascript
-const roleMultipliersByID = {
-  '1332016526848692345': 2.0,  // 🎴 VIP Holder
-  '1402668301414563971': 1.5,  // 🏆 Holder
-  '1332017420591697972': 1.4,  // Champion
-  '1417279348989497532': 1.3,  // Season Tester
-  '1332017614108758148': 1.2,  // Early Bird
-  '1399651053682692208': 1.1,  // 🧀 Cheese Hunter
-  '1332108350518857842': 1.3   // WL
+const roleMultipliers = {
+  'VIP Holder': 2.0,
+  'Holder': 1.5,
+  'Champion': 1.4,
+  'Season Tester': 1.3,
+  'Early Bird': 1.2,
+  'Cheese Hunter': 1.1,
+  'WL': 1.3
 };
 ```
 
 **How It Works:**
-- Player's highest multiplier role is detected
+- Roles are fetched from `/api/user/roles.php`
+- Emoji/glyph prefixes are removed via `normalizeRole()` (🎴🏆🧀 etc.)
+- Player's highest multiplier role is detected after normalization
 - All DSPOINC earned is multiplied by role bonus
 - Visual theme applied based on role
 - Score display shows role bonus (e.g., "💰 Tetris Score: $48 DSPOINC (2x Role Bonus!)")
