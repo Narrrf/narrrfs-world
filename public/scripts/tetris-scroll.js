@@ -987,6 +987,27 @@ async function startTetris() {
   document.body.style.overflow = "hidden";
   console.log('📱 Screen swipe prevented - Tetris active');
   
+  // 🚨 BUG #263 FIX: Disable all page links/buttons when game starts (except game controls and modal buttons)
+  document.querySelectorAll('a, button').forEach(el => {
+    // Skip game control buttons (but NOT guide button!)
+    if (el.id && el.id.includes('tetris') && !el.id.includes('guide')) {
+      return; // Keep game controls enabled (pause, start, etc.)
+    }
+    // Skip buttons inside modals
+    const parentModal = el.closest('[id*="modal"]') || el.closest('[class*="modal"]');
+    if (parentModal) {
+      return; // Keep modal buttons enabled
+    }
+    // Skip if button has onclick with game functions
+    if (el.onclick && (el.textContent.includes('Play Again') || el.textContent.includes('Restart'))) {
+      return; // Keep modal action buttons enabled
+    }
+    // Disable everything else (guide button, page links, etc.)
+    el.style.pointerEvents = 'none';
+    el.style.opacity = '0.5';
+  });
+  console.log('🔒 Page links/buttons disabled - Tetris game started (guide button blocked)');
+  
   if (!tetrisScoreDisplay) {
     console.log('⚠️ Score display element not found - creating fallback');
   }
@@ -1839,6 +1860,13 @@ if (pauseBtn) {
       document.body.style.overflow = "";
       console.log('📱 Game PAUSED - Screen swipe ENABLED (user can scroll)');
       clearInterval(gameInterval);
+      
+      // 🚨 BUG #263 FIX: Re-enable all page links/buttons when paused
+      document.querySelectorAll('a, button').forEach(el => {
+        el.style.pointerEvents = '';
+        el.style.opacity = '';
+      });
+      console.log('🔓 Page links/buttons re-enabled during Tetris pause');
     } else {
       // 📱 RESUMED: Lock screen swipe again (like Snake!)
       document.body.style.overflow = "hidden";
@@ -1846,6 +1874,27 @@ if (pauseBtn) {
       clearInterval(gameInterval); // always reset interval
       gameInterval = setInterval(drop, dropInterval);
       drop(); // redraw immediately
+      
+      // 🚨 BUG #263 FIX: Disable all page links/buttons during active gameplay (except modal buttons)
+      document.querySelectorAll('a, button').forEach(el => {
+        // Skip game control buttons (but NOT guide button!)
+        if (el.id && el.id.includes('tetris') && !el.id.includes('guide')) {
+          return; // Keep game controls enabled (pause, start, etc.)
+        }
+        // Skip buttons inside modals
+        const parentModal = el.closest('[id*="modal"]') || el.closest('[class*="modal"]');
+        if (parentModal) {
+          return; // Keep modal buttons enabled
+        }
+        // Skip if button has onclick with game functions
+        if (el.onclick && (el.textContent.includes('Play Again') || el.textContent.includes('Restart'))) {
+          return; // Keep modal action buttons enabled
+        }
+        // Disable everything else (guide button, page links, etc.)
+        el.style.pointerEvents = 'none';
+        el.style.opacity = '0.5';
+      });
+      console.log('🔒 Page links/buttons disabled during Tetris gameplay (guide button blocked)');
     }
   };
 
@@ -1855,6 +1904,17 @@ if (pauseBtn) {
 
 // Add keyboard event listener for movement controls
 document.addEventListener("keydown", e => {
+  // 🎮 P KEY PAUSE/UNPAUSE (BUG #263)
+  if (e.key === 'p' || e.key === 'P') {
+    e.preventDefault();
+    const pauseBtn = document.getElementById('pause-tetris-btn');
+    if (pauseBtn) {
+      pauseBtn.click(); // Trigger existing pause/unpause logic
+      console.log('🎮 P key pressed - toggling pause state');
+    }
+    return;
+  }
+  
   if (isTetrisPaused) return; // Prevent movement while paused
 
   switch (e.key) {
@@ -1968,6 +2028,14 @@ if (collide(current.shape, current.row, current.col)) {
   clearInterval(gameInterval);
   gameInterval = null;
   isTetrisPaused = true;
+  
+  // 🚨 BUG #263 FIX: Re-enable all page links/buttons when game ends
+  document.querySelectorAll('a, button').forEach(el => {
+    el.style.pointerEvents = '';
+    el.style.opacity = '';
+  });
+  console.log('🔓 Page links/buttons re-enabled - Tetris game over');
+  
   onTetrisGameOver(score);
 
   // ✅ FIX: Get ALL modals with this ID and find the LOCAL one (in Tetris canvas area, like Snake!)

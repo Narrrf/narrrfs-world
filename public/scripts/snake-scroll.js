@@ -433,13 +433,46 @@ function initSnake() {
       this.aiMode = 'hunt';
       this.lastMoveTime = Date.now();
       
-      // 🎯 Initialize boss BELOW UI panels (y >= 5 to avoid UI zone at y = 0-3)
+      // 🎯 Initialize boss BELOW UI panels AND away from player (BUG FIX: prevent instant collision)
       this.segments = [];
-      const startY = 6; // Start at row 6 (well below UI panels)
+      
+      // Find safe spawn position that doesn't collide with player
+      let startY = 6; // Start at row 6 (well below UI panels)
+      let safeSpawnFound = false;
+      
+      // Try different Y positions until we find one that doesn't collide with player
+      for (let tryY = 6; tryY <= 15 && !safeSpawnFound; tryY++) {
+        let collision = false;
+        
+        // Check if ANY segment of boss would collide with player snake at this Y position
+        for (let i = 0; i < this.length; i++) {
+          const testSegment = { x: i, y: tryY };
+          
+          // Check collision with player snake
+          const playerCollision = snake.some(seg => seg.x === testSegment.x && seg.y === testSegment.y);
+          
+          if (playerCollision) {
+            collision = true;
+            break;
+          }
+        }
+        
+        if (!collision) {
+          startY = tryY;
+          safeSpawnFound = true;
+          console.log(`🎯 Safe boss spawn position found at y=${startY} (no player collision)`);
+        }
+      }
+      
+      // Build boss segments at safe position
       for (let i = 0; i < this.length; i++) {
         this.segments.push({ x: i, y: startY });
       }
       this.direction = { x: 1, y: 0 }; // Moving right initially
+      
+      if (!safeSpawnFound) {
+        console.warn('⚠️ Could not find completely safe spawn position, using y=15 (furthest from player)');
+      }
       
       // 🍼 Baby Boss indicator
       const isBabyBoss = bossNumber === 1;
@@ -2189,6 +2222,17 @@ function initSnake() {
 
   // Keyboard controls
   document.addEventListener("keydown", e => {
+    // 🎮 P KEY PAUSE/UNPAUSE (BUG #263)
+    if (e.key === 'p' || e.key === 'P') {
+      e.preventDefault();
+      const pauseBtn = document.getElementById('pause-snake-btn');
+      if (pauseBtn) {
+        pauseBtn.click(); // Trigger existing pause/unpause logic
+        console.log('🎮 P key pressed - toggling Snake pause state');
+      }
+      return;
+    }
+    
     switch (e.key) {
       case "ArrowLeft": case "a": if (velocity.x === 0) velocity = { x: -1, y: 0 }; break;
       case "ArrowRight": case "d": if (velocity.x === 0) velocity = { x: 1, y: 0 }; break;
@@ -2207,6 +2251,27 @@ function enableGlobalSnakeTouch() {
   isSnakeGameActive = true; 
   document.body.style.overflow = "hidden";
   snakeScrollLocked = true;
+  
+  // 🚨 BUG #263 FIX: Disable all page links/buttons during active gameplay (except game controls and modal buttons)
+  document.querySelectorAll('a, button').forEach(el => {
+    // Skip game control buttons (but NOT guide button!)
+    if (el.id && el.id.includes('snake') && !el.id.includes('guide')) {
+      return; // Keep game controls enabled (pause, start, etc.)
+    }
+    // Skip buttons inside modals
+    const parentModal = el.closest('[id*="modal"]') || el.closest('[class*="modal"]');
+    if (parentModal) {
+      return; // Keep modal buttons enabled
+    }
+    // Skip if button has onclick with game functions
+    if (el.onclick && (el.textContent.includes('Play Again') || el.textContent.includes('Restart'))) {
+      return; // Keep modal action buttons enabled
+    }
+    // Disable everything else (guide button, page links, etc.)
+    el.style.pointerEvents = 'none';
+    el.style.opacity = '0.5';
+  });
+  console.log('🔒 Page links/buttons disabled during Snake gameplay (guide button blocked)');
 }
 
 function disableGlobalSnakeTouch() { 
@@ -2214,6 +2279,13 @@ function disableGlobalSnakeTouch() {
   document.body.style.overflow = "";
   snakeScrollLocked = false;
   unlockSnakeScroll(); // 🎯 Ensure scrolling is unlocked when disabling touch
+  
+  // 🚨 BUG #263 FIX: Re-enable all page links/buttons when game ends
+  document.querySelectorAll('a, button').forEach(el => {
+    el.style.pointerEvents = '';
+    el.style.opacity = '';
+  });
+  console.log('🔓 Page links/buttons re-enabled after Snake gameplay');
 }
 
 // Helper: Lock/unlock scrolling for Snake (like Tetris)

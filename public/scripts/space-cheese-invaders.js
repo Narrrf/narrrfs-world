@@ -5569,6 +5569,17 @@ let reloadButtonInterval = null;
     
     // 🐛 BUG #118 FIX: Add keyboard event listeners for continuous movement
     document.addEventListener('keydown', (e) => {
+      // 🎮 P KEY PAUSE/UNPAUSE (BUG #263)
+      if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        const pauseBtn = document.getElementById('pause-space-invaders-btn');
+        if (pauseBtn) {
+          pauseBtn.click(); // Trigger existing pause/unpause logic
+          console.log('🎮 P key pressed - toggling Space Invaders pause state');
+        }
+        return;
+      }
+      
       // Add key to pressed keys set for continuous movement
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'A', 'd', 'D', 'w', 'W'].includes(e.key)) {
         pressedKeys.add(e.key.toLowerCase());
@@ -5969,6 +5980,45 @@ let reloadButtonInterval = null;
     gameStarted = true; // Set game as started
     gameRunning = true; // Set game as running
     
+  // 🚨 BUG #263 FIX: Disable all page links/buttons when game starts (except game controls and modal buttons)
+  document.querySelectorAll('a, button').forEach(el => {
+    // Skip if element has game-related ID
+    if (el.id && (
+      el.id.includes('space') || 
+      el.id.includes('invaders') || 
+      el.id.includes('pause') || 
+      el.id.includes('start') || 
+      el.id.includes('mobile') ||
+      el.id.includes('weapon') ||
+      el.id.includes('shoot') ||
+      el.id.includes('auto') ||
+      el.id.includes('panel')
+    )) {
+      return; // Keep game controls enabled
+    }
+    // Skip weapon quick shot buttons (left side buttons: ⚡💣🚀)
+    if (el.textContent && (el.textContent.includes('⚡') || el.textContent.includes('💣') || el.textContent.includes('🚀'))) {
+      return; // Keep weapon buttons enabled
+    }
+    // Skip auto-shoot and game panel buttons (right side buttons)
+    if (el.textContent && (el.textContent.includes('AUTO') || el.textContent.includes('PANEL') || el.textContent.includes('GAME'))) {
+      return; // Keep setting buttons enabled
+    }
+    // Skip buttons inside modals (game over, victory)
+    const parentModal = el.closest('[id*="modal"]') || el.closest('[class*="modal"]');
+    if (parentModal) {
+      return; // Keep modal buttons enabled
+    }
+    // Skip if button has onclick with game functions
+    if (el.onclick && (el.textContent.includes('Play Again') || el.textContent.includes('End Game'))) {
+      return; // Keep modal action buttons enabled
+    }
+    // Disable everything else (guide button, page links, etc.)
+    el.style.pointerEvents = 'none';
+    el.style.opacity = '0.5';
+  });
+  console.log('🔒 Page links/buttons disabled - Space Invaders game started (all game controls enabled)');
+    
     // 🛠️ Mock fallback if testing locally (same as Tetris)
     let discordId = localStorage.getItem("discord_id");
     let discordName = localStorage.getItem("discord_name");
@@ -6020,6 +6070,13 @@ let reloadButtonInterval = null;
     
     // Unlock scroll when game is reset
     unlockSpaceInvadersScroll();
+    
+    // 🚨 BUG #263 FIX: Re-enable all page links/buttons when game ends
+    document.querySelectorAll('a, button').forEach(el => {
+      el.style.pointerEvents = '';
+      el.style.opacity = '';
+    });
+    console.log('🔓 Page links/buttons re-enabled - Space Invaders game ended');
     
     spaceInvadersScore = 0;
     spaceInvadersCount = 0; // NEW: Reset invader count
@@ -13429,12 +13486,58 @@ window.emergencyCollisionCheck = function() {
     // Unlock scroll when paused, lock when resumed
     if (isSpaceInvadersPaused) {
       unlockSpaceInvadersScroll();
+      
+      // 🚨 BUG #263 FIX: Re-enable all page links/buttons when paused
+      document.querySelectorAll('a, button').forEach(el => {
+        el.style.pointerEvents = '';
+        el.style.opacity = '';
+      });
+      console.log('🔓 Page links/buttons re-enabled during Space Invaders pause');
     } else {
       lockSpaceInvadersScroll();
       // 🆘 NEW: Ensure mobile controls are visible when resuming game
       setTimeout(() => {
         ensureMobileControlsVisible();
       }, 50);
+      
+      // 🚨 BUG #263 FIX: Disable all page links/buttons during active gameplay (except modal buttons)
+      document.querySelectorAll('a, button').forEach(el => {
+        // Skip if element has game-related ID
+        if (el.id && (
+          el.id.includes('space') || 
+          el.id.includes('invaders') || 
+          el.id.includes('pause') || 
+          el.id.includes('start') || 
+          el.id.includes('mobile') ||
+          el.id.includes('weapon') ||
+          el.id.includes('shoot') ||
+          el.id.includes('auto') ||
+          el.id.includes('panel')
+        )) {
+          return; // Keep game controls enabled
+        }
+        // Skip weapon quick shot buttons (left side buttons: ⚡💣🚀)
+        if (el.textContent && (el.textContent.includes('⚡') || el.textContent.includes('💣') || el.textContent.includes('🚀'))) {
+          return; // Keep weapon buttons enabled
+        }
+        // Skip auto-shoot and game panel buttons (right side buttons)
+        if (el.textContent && (el.textContent.includes('AUTO') || el.textContent.includes('PANEL') || el.textContent.includes('GAME'))) {
+          return; // Keep setting buttons enabled
+        }
+        // Skip buttons inside modals (game over, victory)
+        const parentModal = el.closest('[id*="modal"]') || el.closest('[class*="modal"]');
+        if (parentModal) {
+          return; // Keep modal buttons enabled
+        }
+        // Skip if button has onclick with game functions
+        if (el.onclick && (el.textContent.includes('Play Again') || el.textContent.includes('End Game'))) {
+          return; // Keep modal action buttons enabled
+        }
+        // Disable everything else (guide button, page links, etc.)
+        el.style.pointerEvents = 'none';
+        el.style.opacity = '0.5';
+      });
+      console.log('🔒 Page links/buttons disabled during Space Invaders gameplay (all game controls enabled)');
     }
   }
 
