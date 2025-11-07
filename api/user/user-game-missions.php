@@ -147,15 +147,24 @@ try {
 
     // Get current active season from database
     $currentSeason = 'Season 5'; // Default fallback
+    $currentSeasonStart = null;
+    $currentSeasonEnd = null;
     try {
-        $seasonStmt = $db->query("SELECT season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY season_id DESC LIMIT 1");
+        $seasonStmt = $db->query("SELECT season_name, start_date, end_date FROM tbl_seasons WHERE is_active = 1 ORDER BY season_id DESC LIMIT 1");
         $seasonResult = $seasonStmt->fetch(PDO::FETCH_ASSOC);
         if ($seasonResult && isset($seasonResult['season_name'])) {
             $currentSeason = $seasonResult['season_name'];
+            $currentSeasonStart = $seasonResult['start_date'] ?? null;
+            $currentSeasonEnd = $seasonResult['end_date'] ?? null;
         }
         error_log("🎯 Current active season detected: " . $currentSeason);
     } catch (Exception $e) {
         error_log("⚠️ Could not get current season, using fallback: " . $currentSeason);
+    }
+
+    if (!$currentSeasonStart) {
+        // Fallback: assume current season started 30 days ago to keep stats reasonable
+        $currentSeasonStart = date('Y-m-d H:i:s', strtotime('-30 days'));
     }
 
     // Initialize response data structure
@@ -206,30 +215,62 @@ try {
     // 1. TETRIS STATS (using discord_id from tbl_tetris_scores)
     try {
         error_log("🔍 TETRIS DEBUG: Querying for user $discordId");
-        $stmt = $db->prepare("
-            SELECT 
-                COUNT(*) as total_games,
-                MAX(score) as best_score,
-                SUM(score) as total_score,
-                MAX(timestamp) as last_played
-            FROM tbl_tetris_scores 
-            WHERE discord_id = ? AND game = 'tetris'
-            AND (season = ? OR season IS NULL OR season = '')
-        ");
-        $stmt->execute([$discordId, $currentSeason]);
-        $tetrisData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $tetrisData = null;
+        $tetrisSeasonFilters = [
+            ['condition' => 'season = ?', 'label' => 'exact'],
+            ['condition' => 'season LIKE ? || "%"', 'label' => 'prefix']
+        ];
+
+        foreach ($tetrisSeasonFilters as $filter) {
+            $stmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_games,
+                    MAX(score) as best_score,
+                    SUM(score) as total_score,
+                    MAX(timestamp) as last_played
+                FROM tbl_tetris_scores 
+                WHERE discord_id = ? AND game = 'tetris'
+                AND (
+                    " . $filter['condition'] . "
+                    OR (timestamp >= ? AND (? IS NULL OR timestamp < ?))
+                )
+            ");
+            $stmt->execute([
+                $discordId,
+                $currentSeason,
+                $currentSeasonStart,
+                $currentSeasonEnd,
+                $currentSeasonEnd
+            ]);
+            $tetrisData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($tetrisData && (int)$tetrisData['total_games'] > 0) {
+                error_log("✅ TETRIS: season match (" . $filter['label'] . ") for $discordId");
+                break;
+            }
+        }
         
-        error_log("🔍 TETRIS DEBUG: Query result: " . json_encode($tetrisData));
+        if (!$tetrisData || (int)$tetrisData['total_games'] === 0) {
+            error_log("⚠️ TETRIS: No Season $currentSeason data for $discordId, loading all-time totals");
+            $fallbackStmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_games,
+                    MAX(score) as best_score,
+                    SUM(score) as total_score,
+                    MAX(timestamp) as last_played
+                FROM tbl_tetris_scores 
+                WHERE discord_id = ? AND game = 'tetris'
+            ");
+            $fallbackStmt->execute([$discordId]);
+            $tetrisData = $fallbackStmt->fetch(PDO::FETCH_ASSOC);
+        }
         
-        if ($tetrisData) {
+        if ($tetrisData && (int)$tetrisData['total_games'] > 0) {
             $response['tetris']['total_games'] = (int)$tetrisData['total_games'];
             $response['tetris']['best_score'] = (int)$tetrisData['best_score'];
             $response['tetris']['total_score'] = (int)$tetrisData['total_score'];
             $response['tetris']['last_played'] = $tetrisData['last_played'];
-            $response['tetris']['dspoinc_earned'] = (int)$tetrisData['total_score']; // Tetris now saves DSPOINC directly
-            error_log("🔍 TETRIS DEBUG: Data processed successfully");
-        } else {
-            error_log("🔍 TETRIS DEBUG: No data found for user $discordId");
+            $response['tetris']['dspoinc_earned'] = (int)$tetrisData['total_score']; // Tetris saves DSPOINC directly
         }
     } catch (Exception $e) {
         error_log("Tetris query error: " . $e->getMessage());
@@ -238,38 +279,62 @@ try {
     // 2. SNAKE STATS (using discord_id from tbl_tetris_scores)
     try {
         error_log("🔍 SNAKE DEBUG: Querying for user $discordId");
-        $stmt = $db->prepare("
-            SELECT 
-                COUNT(*) as total_games,
-                MAX(score) as best_score,
-                SUM(score) as total_score,
-                MAX(timestamp) as last_played
-            FROM tbl_tetris_scores 
-            WHERE discord_id = ? AND game = 'snake'
-            AND (season = ? OR season IS NULL OR season = '')
-        ");
-        $stmt->execute([$discordId, $currentSeason]);
-        $snakeData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $snakeData = null;
+        $snakeSeasonFilters = [
+            ['condition' => 'season = ?', 'label' => 'exact'],
+            ['condition' => 'season LIKE ? || "%"', 'label' => 'prefix']
+        ];
+
+        foreach ($snakeSeasonFilters as $filter) {
+            $stmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_games,
+                    MAX(score) as best_score,
+                    SUM(score) as total_score,
+                    MAX(timestamp) as last_played
+                FROM tbl_tetris_scores 
+                WHERE discord_id = ? AND game = 'snake'
+                AND (
+                    " . $filter['condition'] . "
+                    OR (timestamp >= ? AND (? IS NULL OR timestamp < ?))
+                )
+            ");
+            $stmt->execute([
+                $discordId,
+                $currentSeason,
+                $currentSeasonStart,
+                $currentSeasonEnd,
+                $currentSeasonEnd
+            ]);
+            $snakeData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($snakeData && (int)$snakeData['total_games'] > 0) {
+                error_log("✅ SNAKE: season match (" . $filter['label'] . ") for $discordId");
+                break;
+            }
+        }
+
+        if (!$snakeData || (int)$snakeData['total_games'] === 0) {
+            error_log("⚠️ SNAKE: No Season $currentSeason data for $discordId, loading all-time totals");
+            $fallbackStmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_games,
+                    MAX(score) as best_score,
+                    SUM(score) as total_score,
+                    MAX(timestamp) as last_played
+                FROM tbl_tetris_scores 
+                WHERE discord_id = ? AND game = 'snake'
+            ");
+            $fallbackStmt->execute([$discordId]);
+            $snakeData = $fallbackStmt->fetch(PDO::FETCH_ASSOC);
+        }
         
-        if ($snakeData) {
+        if ($snakeData && (int)$snakeData['total_games'] > 0) {
             $response['snake']['total_games'] = (int)$snakeData['total_games'];
             $response['snake']['best_score'] = (int)$snakeData['best_score'];
             $response['snake']['total_score'] = (int)$snakeData['total_score'];
             $response['snake']['last_played'] = $snakeData['last_played'];
             $response['snake']['dspoinc_earned'] = (int)$snakeData['total_score'] * 10; // DSPOINC conversion
-            error_log("✅ Snake stats found for user $discordId: " . $snakeData['total_games'] . " games, total score: " . $snakeData['total_score']);
-        } else {
-            error_log("❌ No snake stats found for user $discordId");
-            // 🔍 DEBUG: Check if any snake data exists at all
-            $debugStmt = $db->query("SELECT COUNT(*) as total FROM tbl_tetris_scores WHERE game = 'snake'");
-            $debugResult = $debugStmt->fetch(PDO::FETCH_ASSOC);
-            error_log("🔍 SNAKE DEBUG: Total snake games in database: " . $debugResult['total']);
-            
-            // Check if user exists in tetris_scores at all
-            $userDebug = $db->prepare("SELECT COUNT(*) as total FROM tbl_tetris_scores WHERE discord_id = ?");
-            $userDebug->execute([$discordId]);
-            $userResult = $userDebug->fetch(PDO::FETCH_ASSOC);
-            error_log("🔍 SNAKE DEBUG: Total games for user $discordId: " . $userResult['total']);
         }
     } catch (Exception $e) {
         error_log("Snake query error: " . $e->getMessage());
@@ -278,32 +343,62 @@ try {
     // 3. SPACE INVADERS STATS (using discord_id from tbl_tetris_scores)
     try {
         error_log("🔍 SPACE INVADERS DEBUG: Querying for user $discordId");
-        $stmt = $db->prepare("
-            SELECT 
-                COUNT(*) as total_games,
-                MAX(score) as best_score,
-                SUM(score) as total_score,
-                MAX(timestamp) as last_played
-            FROM tbl_tetris_scores 
-            WHERE discord_id = ? AND game = 'space_invaders'
-            AND (season = ? OR season IS NULL OR season = '')
-        ");
-        $stmt->execute([$discordId, $currentSeason]);
-        $spaceData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $spaceData = null;
+        $spaceSeasonFilters = [
+            ['condition' => 'season = ?', 'label' => 'exact'],
+            ['condition' => 'season LIKE ? || "%"', 'label' => 'prefix']
+        ];
+
+        foreach ($spaceSeasonFilters as $filter) {
+            $stmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_games,
+                    MAX(score) as best_score,
+                    SUM(score) as total_score,
+                    MAX(timestamp) as last_played
+                FROM tbl_tetris_scores 
+                WHERE discord_id = ? AND game = 'space_invaders'
+                AND (
+                    " . $filter['condition'] . "
+                    OR (timestamp >= ? AND (? IS NULL OR timestamp < ?))
+                )
+            ");
+            $stmt->execute([
+                $discordId,
+                $currentSeason,
+                $currentSeasonStart,
+                $currentSeasonEnd,
+                $currentSeasonEnd
+            ]);
+            $spaceData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($spaceData && (int)$spaceData['total_games'] > 0) {
+                error_log("✅ SPACE INVADERS: season match (" . $filter['label'] . ") for $discordId");
+                break;
+            }
+        }
         
-        if ($spaceData) {
+        if (!$spaceData || (int)$spaceData['total_games'] === 0) {
+            error_log("⚠️ SPACE INVADERS: No Season $currentSeason data for $discordId, loading all-time totals");
+            $fallbackStmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_games,
+                    MAX(score) as best_score,
+                    SUM(score) as total_score,
+                    MAX(timestamp) as last_played
+                FROM tbl_tetris_scores 
+                WHERE discord_id = ? AND game = 'space_invaders'
+            ");
+            $fallbackStmt->execute([$discordId]);
+            $spaceData = $fallbackStmt->fetch(PDO::FETCH_ASSOC);
+        }
+        
+        if ($spaceData && (int)$spaceData['total_games'] > 0) {
             $response['space_invaders']['total_games'] = (int)$spaceData['total_games'];
             $response['space_invaders']['best_score'] = (int)$spaceData['best_score'];
             $response['space_invaders']['total_score'] = (int)$spaceData['total_score'];
             $response['space_invaders']['last_played'] = $spaceData['last_played'];
-            $response['space_invaders']['dspoinc_earned'] = (int)($spaceData['total_score'] * 0.1); // DSPOINC conversion: 1 invader = 0.1 DSPOINC
-            error_log("✅ Space Invaders stats found for user $discordId: " . $spaceData['total_games'] . " games, total score: " . $spaceData['total_score']);
-        } else {
-            error_log("❌ No Space Invaders stats found for user $discordId");
-            // 🔍 DEBUG: Check if any space invaders data exists at all
-            $debugStmt = $db->query("SELECT COUNT(*) as total FROM tbl_tetris_scores WHERE game = 'space_invaders'");
-            $debugResult = $debugStmt->fetch(PDO::FETCH_ASSOC);
-            error_log("🔍 SPACE INVADERS DEBUG: Total space invaders games in database: " . $debugResult['total']);
+            $response['space_invaders']['dspoinc_earned'] = (int)($spaceData['total_score'] * 0.1); // DSPOINC conversion
         }
     } catch (Exception $e) {
         error_log("Space Invaders query error: " . $e->getMessage());
@@ -312,76 +407,47 @@ try {
         // 🔧 CRITICAL FIX: Direct Discord ID to cheese clicks mapping
         // Try to get cheese clicks directly using Discord ID first
         try {
-            $cheeseStmt = $db->prepare("
-                SELECT 
-                    COUNT(*) as total_clicks,
-                    COUNT(CASE WHEN quest_id IS NOT NULL THEN 1 END) as quest_clicks,
-                    COUNT(DISTINCT egg_id) as unique_eggs,
-                    MAX(timestamp) as last_click
-                FROM tbl_cheese_clicks 
-                WHERE user_wallet = ?
-                AND (season = ? OR season IS NULL OR season = '')
-            ");
-            $cheeseStmt->execute([$discordId, $currentSeason]);
-            $cheeseData = $cheeseStmt->fetch(PDO::FETCH_ASSOC);
-            
+            $cheeseData = null;
+            $seasonFilters = [
+                ['condition' => 'season = ?', 'label' => 'exact'],
+                ['condition' => 'season LIKE ? || "%"', 'label' => 'prefix']
+            ];
+
+            foreach ($seasonFilters as $filter) {
+                $cheeseStmt = $db->prepare("
+                    SELECT 
+                        COUNT(*) as total_clicks,
+                        COUNT(CASE WHEN quest_id IS NOT NULL THEN 1 END) as quest_clicks,
+                        COUNT(DISTINCT egg_id) as unique_eggs,
+                        MAX(timestamp) as last_click
+                    FROM tbl_cheese_clicks 
+                    WHERE user_wallet = ?
+                    AND (
+                        " . $filter['condition'] . "
+                        OR (timestamp >= ? AND (? IS NULL OR timestamp < ?))
+                    )
+                ");
+                $params = [$discordId, $currentSeason, $currentSeasonStart, $currentSeasonEnd, $currentSeasonEnd];
+                $cheeseStmt->execute($params);
+                $cheeseData = $cheeseStmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($cheeseData && $cheeseData['total_clicks'] > 0) {
+                    error_log("✅ Cheese Hunt season match (" . $filter['label'] . ") for $discordId: " . $cheeseData['total_clicks']);
+                    break;
+                }
+            }
+
+            if (!$cheeseData || $cheeseData['total_clicks'] == 0) {
+                error_log("ℹ️ Cheese Hunt: no Season $currentSeason data for $discordId (no fallback applied)");
+                $cheeseData = null;
+            }
+
             if ($cheeseData && $cheeseData['total_clicks'] > 0) {
-                // Direct Discord ID mapping worked!
                 $response['cheese_hunt']['total_clicks'] = (int)$cheeseData['total_clicks'];
                 $response['cheese_hunt']['quest_clicks'] = (int)$cheeseData['quest_clicks'];
                 $response['cheese_hunt']['unique_eggs'] = (int)$cheeseData['unique_eggs'];
                 $response['cheese_hunt']['last_click'] = $cheeseData['last_click'];
                 $response['cheese_hunt']['dspoinc_earned'] = (int)$cheeseData['total_clicks'] * 10; // DSPOINC conversion
-                error_log("✅ Cheese clicks found directly with Discord ID: " . $discordId . " - Total: " . $cheeseData['total_clicks']);
-            } else {
-                // Try wallet lookup as fallback
-                $walletAddress = null;
-                
-                // Try to get wallet from tbl_holder_verifications using user_id (Discord ID)
-                try {
-                    $walletStmt = $db->prepare("SELECT wallet FROM tbl_holder_verifications WHERE user_id = ? LIMIT 1");
-                    $walletStmt->execute([$discordId]);
-                    $walletResult = $walletStmt->fetch(PDO::FETCH_ASSOC);
-                    if ($walletResult && isset($walletResult['wallet'])) {
-                        $walletAddress = $walletResult['wallet'];
-                    }
-                } catch (Exception $e) {
-                    error_log("Wallet lookup error: " . $e->getMessage());
-                }
-                
-                // If we have a wallet address, query cheese clicks with it
-                if ($walletAddress) {
-                    $stmt = $db->prepare("
-                        SELECT 
-                            COUNT(*) as total_clicks,
-                            COUNT(CASE WHEN quest_id IS NOT NULL THEN 1 END) as quest_clicks,
-                            COUNT(DISTINCT egg_id) as unique_eggs,
-                            MAX(timestamp) as last_click
-                        FROM tbl_cheese_clicks 
-                        WHERE user_wallet = ?
-                        AND (season = ? OR season IS NULL OR season = '')
-                    ");
-                    $stmt->execute([$walletAddress, $currentSeason]);
-                    
-                    $cheeseData = $stmt->fetch(PDO::FETCH_ASSOC);
-                    
-                    if ($cheeseData) {
-                        $response['cheese_hunt']['total_clicks'] = (int)$cheeseData['total_clicks'];
-                        $response['cheese_hunt']['quest_clicks'] = (int)$cheeseData['quest_clicks'];
-                        $response['cheese_hunt']['unique_eggs'] = (int)$cheeseData['unique_eggs'];
-                        $response['cheese_hunt']['last_click'] = $cheeseData['last_click'];
-                        $response['cheese_hunt']['dspoinc_earned'] = (int)$cheeseData['total_clicks'] * 10; // DSPOINC conversion
-                        error_log("✅ Cheese clicks found via wallet lookup: " . $walletAddress . " - Total: " . $cheeseData['total_clicks']);
-                    }
-                } else {
-                    // If no wallet found, log this for debugging and return 0 stats
-                    error_log("❌ No wallet found for Discord ID: " . $discordId . " in tbl_holder_verifications");
-                    $response['cheese_hunt']['total_clicks'] = 0;
-                    $response['cheese_hunt']['quest_clicks'] = 0;
-                    $response['cheese_hunt']['unique_eggs'] = 0;
-                    $response['cheese_hunt']['last_click'] = null;
-                    $response['cheese_hunt']['dspoinc_earned'] = 0;
-                }
             }
         } catch (Exception $e) {
             error_log("Cheese Hunt query error: " . $e->getMessage());
@@ -411,22 +477,51 @@ try {
         
         // 🔧 FIXED: Query for Discord Race stats - count ALL races (not just completed ones)
         // This will show total race participation including joined, waiting, and completed races
-        $stmt = $db->prepare("
-            SELECT 
-                COUNT(*) as total_races,
-                COUNT(CASE WHEN finished_at IS NOT NULL THEN 1 END) as completed_races, -- Count races that have finished
-                COUNT(CASE WHEN position = 1 THEN 1 END) as wins, -- Count first place finishes
-                COUNT(CASE WHEN position <= 3 THEN 1 END) as podiums, -- Count podium finishes (top 3)
-                MIN(position) as best_position, -- Best position achieved
-                SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
-            FROM tbl_race_participants 
-            WHERE user_id = ? -- 🔧 CRITICAL FIX: Use user_id field (matches database schema)
-            AND (season = ? OR season IS NULL OR season = '')
-        ");
-        $stmt->execute([$discordId, $currentSeason]);
-        $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $raceData = null;
+        $raceSeasonFilters = [
+            ['condition' => 'season = ?', 'label' => 'exact'],
+            ['condition' => 'season LIKE ? || "%"', 'label' => 'prefix']
+        ];
+
+        foreach ($raceSeasonFilters as $filter) {
+            $stmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_races,
+                    COUNT(CASE WHEN finished_at IS NOT NULL THEN 1 END) as completed_races,
+                    COUNT(CASE WHEN position = 1 THEN 1 END) as wins,
+                    COUNT(CASE WHEN position <= 3 THEN 1 END) as podiums,
+                    MIN(position) as best_position,
+                    SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
+                FROM tbl_race_participants 
+                WHERE user_id = ?
+                AND (
+                    " . $filter['condition'] . "
+                    OR (
+                        COALESCE(joined_at, start_time, updated_at, finished_at) >= ?
+                        AND (? IS NULL OR COALESCE(joined_at, start_time, updated_at, finished_at) < ?)
+                    )
+                )
+            ");
+            $stmt->execute([
+                $discordId,
+                $currentSeason,
+                $currentSeasonStart,
+                $currentSeasonEnd,
+                $currentSeasonEnd
+            ]);
+            $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($raceData && (int)$raceData['total_races'] > 0) {
+                error_log("✅ DISCORD RACE: season match (" . $filter['label'] . ") for $discordId: " . $raceData['total_races']);
+                break;
+            }
+        }
         
-        error_log("🔍 DISCORD RACE DEBUG: Query result for user $discordId: " . json_encode($raceData));
+        // Fallback: if no races are detected for the active season, aggregate all-time values
+        if (!$raceData || (int)$raceData['total_races'] === 0) {
+            error_log("ℹ️ DISCORD RACE DEBUG: No Season $currentSeason data found for user $discordId (no fallback applied)");
+            $raceData = null;
+        }
         
         if ($raceData) {
             $response['discord_race']['total_races'] = (int)$raceData['total_races'];
@@ -741,7 +836,7 @@ try {
                     'total_races' => $response['discord_race']['total_races'],
                     'wins' => $response['discord_race']['wins'],
                     'podium_finishes' => $response['discord_race']['podiums'],
-                    'best_position' => $response['discord_race']['best_position'] ? number_format($response['discord_race']['best_position'], 1) : 'N/A',
+                    'best_position' => $response['discord_race']['best_position'] !== null ? $response['discord_race']['best_position'] : 'N/A',
                     'dspoinc_earned' => $response['discord_race']['dspoinc_earned']
                 ]
             ]

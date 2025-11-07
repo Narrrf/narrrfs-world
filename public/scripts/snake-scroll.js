@@ -704,7 +704,7 @@ function initSnake() {
       setTimeout(() => {
         isSnakePaused = false; // 🔧 UNPAUSE after countdown
         console.log('🐍 Boss defeated! Returning to normal gameplay...');
-        spawnFood();
+        placeFood();
       }, 4900); // Match countdown timing
     }
     
@@ -1949,8 +1949,8 @@ function initSnake() {
     gameInterval = null;
     isSnakePaused = true;
 
-    // 🎯 Unlock scrolling when game over (like Tetris)
-    unlockSnakeScroll();
+    // 🎯 Disable touch gating so buttons work post-game (matches Tetris)
+    disableGlobalSnakeTouch();
 
     // 🐍 Capture the final score before any potential resets
     const finalScore = score;
@@ -2218,11 +2218,13 @@ function initSnake() {
         user_id: userId, 
         achievement_key: achievementKey,
         game_score: score,
-        apples_eaten: applesEaten,
-        level_reached: level,
-        games_played: 1, // Current game
-        longest_snake: snake.length
-      })
+        apples_eaten: cheeseEaten,
+        level_reached: currentLevel,
+        games_played: gamesPlayed,
+        longest_snake: longestSnake
+      }),
+      keepalive: true,
+      cache: 'no-store'
     })
     .then(response => response.json())
     .then(data => {
@@ -2569,6 +2571,9 @@ function saveScore(finalScore) {
       modal.style.display = "none";
     }
     
+    // Release touch locks before reload to avoid stuck UI if reload is blocked
+    disableGlobalSnakeTouch();
+
     // 🚀 Set flag to auto-start game after reload
     localStorage.setItem('snake_auto_start', 'true');
     
@@ -2586,6 +2591,9 @@ function saveScore(finalScore) {
       gameInterval = null;
       console.log('🧹 Cleared game interval on end');
     }
+
+    // ✅ Fully release touch/scroll locks so UI becomes interactive again
+    disableGlobalSnakeTouch();
     
     // Hide game over modal
     const modal = document.getElementById("snake-over-modal");
@@ -2593,13 +2601,6 @@ function saveScore(finalScore) {
       modal.classList.add("hidden");
       modal.style.display = "none";
     }
-    
-    // Re-enable all page links/buttons (if not already done)
-    document.querySelectorAll('a, button').forEach(el => {
-      el.style.pointerEvents = '';
-      el.style.opacity = '';
-    });
-    console.log('🔓 Page links/buttons re-enabled after Snake game end');
     
     // Clear the canvas
     const canvas = document.getElementById("snake-canvas");

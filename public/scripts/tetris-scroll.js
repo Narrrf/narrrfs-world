@@ -2478,6 +2478,8 @@ if (collide(current.shape, current.row, current.col)) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ user_id: userId }),
+      keepalive: true,
+      cache: 'no-store'
     })
     .then(response => response.json())
     .then(data => {
@@ -2506,6 +2508,8 @@ if (collide(current.shape, current.row, current.col)) {
             pieces_dropped: piecesDropped,
             tetris_clears: tetrisClears
           }),
+          keepalive: true,
+          cache: 'no-store'
         })
         .then(response => response.json())
         .catch(error => {
@@ -2533,6 +2537,8 @@ if (collide(current.shape, current.row, current.col)) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ user_id: userId }),
+      keepalive: true,
+      cache: 'no-store'
     })
     .then(response => response.json())
     .then(data => {
@@ -2561,6 +2567,8 @@ if (collide(current.shape, current.row, current.col)) {
             pieces_dropped: piecesDropped,
             tetris_clears: tetrisClears
           }),
+          keepalive: true,
+          cache: 'no-store'
         })
         .then(response => response.json())
         .then(unlockData => {
@@ -2748,6 +2756,7 @@ if (collide(current.shape, current.row, current.col)) {
 
   // 🚀 Start the game loop immediately when game starts
   gameInterval = setInterval(drop, dropInterval);
+  drop();
   
   // ✅ Final game loop initialization
   renderNextBlock(nextPiece);

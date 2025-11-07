@@ -280,9 +280,13 @@
 
         // Display projects in the grid
         function displayProjects(projects, container) {
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            const maxProjects = isMobile ? 6 : projects.length;
+            const limitedProjects = projects.slice(0, maxProjects);
+
             // Small delay to show loading, then display projects
             setTimeout(() => {
-                if (projects.length === 0) {
+                if (limitedProjects.length === 0) {
                     container.innerHTML = `
                         <div class="content-text" style="grid-column: 1/-1; text-align: center; padding: 60px;">
                             <div style="font-size: 3rem; margin-bottom: 20px;">📸</div>
@@ -294,11 +298,12 @@
                 }
 
                 // Display actual projects
-                container.innerHTML = projects.map(project => `
+                container.innerHTML = limitedProjects.map(project => `
                     <div class="reference-item">
                         <div class="reference-image">
                             <img src="./assets/${project.photos && project.photos.length > 0 ? project.photos[0] : 'pool4.webp'}" 
                                  alt="${project.title}" 
+                                 loading="lazy"
                                  onerror="this.src='./assets/pool4.webp'"
                                  data-project-id="${project.id}"
                                  data-project-title="${project.title}"
@@ -351,6 +356,10 @@
 
         // Load bubble effect
         async function loadBubbleEffect() {
+            if (window.matchMedia('(max-width: 768px)').matches) {
+                console.log('Skipping bubble effect on mobile to improve performance.');
+                return;
+            }
             try {
                 console.log('🔵 Loading bubble effect...');
                 const response = await fetch('./api/get-bubble-settings.php');
@@ -565,6 +574,7 @@
                     const thumb = document.createElement('img');
                     thumb.src = `./assets/${photo}`;
                     thumb.alt = `Thumbnail ${index + 1}`;
+                    thumb.loading = 'lazy';
                     thumb.className = 'zoom-thumbnail';
                     if (index === 0) thumb.classList.add('active');
                     thumb.onclick = () => loadZoomImage(index);

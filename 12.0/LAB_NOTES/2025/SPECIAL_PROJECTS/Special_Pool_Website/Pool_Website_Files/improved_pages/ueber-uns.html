@@ -148,7 +148,7 @@
                 
                 <!-- Owner Photo -->
                 <div style="text-align: center; margin: 2rem 0;">
-                    <img src="./assets/owner.PNG" alt="Patrick Ladinig - Poolbauprofi.at Inhaber" style="max-width: 400px; width: 100%; height: auto; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 3px solid #ffd700;">
+                    <img src="./assets/owner.PNG" alt="Patrick Ladinig - Poolbauprofi.at Inhaber" loading="lazy" style="max-width: 400px; width: 100%; height: auto; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 3px solid #ffd700;">
                 </div>
                 
                 <div class="services-with-icons">
@@ -282,6 +282,10 @@
 
         // Load bubble effect
         async function loadBubbleEffect() {
+            if (window.matchMedia('(max-width: 768px)').matches) {
+                console.log('Skipping bubble effect on mobile to improve performance.');
+                return;
+            }
             try {
                 const response = await fetch('./api/get-bubble-settings.php');
                 const data = await response.json();

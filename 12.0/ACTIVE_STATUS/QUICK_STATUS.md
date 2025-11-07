@@ -1,8 +1,8 @@
 # 🚀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** November 7, 2025 - Early Evening  
+**Last Updated:** November 7, 2025 - Late Evening  
 **Current Session:** Thursday - 🎯 VIP EVENT PREP + BUG TRIAGE  
-**Status:** 🟡 Planning & verification in progress  
+**Status:** 🟢 Achievements patched, final verification underway
 
 ---
 
@@ -74,15 +74,25 @@
 
 ### **Active Session:**
 - **Focus:** 🎮 **SEASON 5 DAY 4 - BUG FIXES + POLISH**
-- **Date:** November 6, 2025 (Wednesday Late Evening)
-- **Phase:** Comprehensive bug fixing and UX improvements
+- **Date:** November 7, 2025 (Thursday Late Evening)
+- **Phase:** Achievement resilience + pre-event QA
 
 ### **Current Task:**
-- 🟡 Sync Nov 7 lab notes + daily status (DONE ✅)
-- 🧩 Collect fresh player bug reports for Tetris / Snake / Space Invaders
-- 🛠️ Prioritize fixes required before tonight's VIP event
-- 🧪 Re-run smoke tests once urgent fixes land
-- 🗒️ Update LLM sync files after triage/fixes
+- ✅ Sync Nov 7 lab notes + daily status
+- ✅ Investigate player reports (Tetris/Snake achievements)
+- ✅ Harden achievement calls (`keepalive` + `cache: 'no-store'`)
+- ✅ Verify `score_hunter` locally on Tetris & Snake
+- 🔄 Update LLM sync files + prep render push
+
+### **🐛 NOVEMBER 7, 2025 - EVENING SESSION:**
+**ACHIEVEMENT RELIABILITY + GRAVITY RESET**
+1. ✅ **Tetris Gravity Loop** — Promoted `dropInterval`, immediate tick after interval start; confirmed mobile controls
+2. ✅ **Tetris Achievements** — Added keepalive/no-store on definition + unlock fetches
+3. ✅ **Snake Achievements** — Added keepalive/no-store to unlock API
+4. ✅ **Discord Race Card** — Mission API now falls back when season labels differ so profile shows today’s races
+5. ✅ **Season Stats Refactor** — Exact/prefix match + timestamp safety net keeps Season 5 data accurate (Cheese Hunt/Race season-only) — ready for deploy
+6. ✅ **Manual Backfill Plan** — Documented delete/insert steps for `snake_king` (IDs `1224428436928594015`, `946199839111266354`)
+7. ✅ **Production Reminder** — Copy `/var/www/html/db/narrrf_world.sqlite` → `/data/narrrf_world.sqlite` after updates
 
 ### **🐛 NOVEMBER 6, 2025 - LATE EVENING SESSION:**
 **BUG FIXES MARATHON - 13 FIXES COMPLETE!**

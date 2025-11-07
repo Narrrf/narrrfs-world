@@ -182,7 +182,7 @@
             
             <!-- Pool Image Section -->
             <div class="pool-image-section">
-                <img src="./assets/pool_20250929_135433_0.webp" alt="Professioneller Poolbau" class="main-pool-image">
+                <img src="./assets/pool_20250929_135433_0.webp" alt="Professioneller Poolbau" class="main-pool-image" loading="lazy">
             </div>
             
             <!-- Slogan Section -->
@@ -320,6 +320,10 @@
 
         // Load bubble effect
         async function loadBubbleEffect() {
+            if (window.matchMedia('(max-width: 768px)').matches) {
+                console.log('Skipping bubble effect on mobile to improve performance.');
+                return;
+            }
             try {
                 const response = await fetch('./api/get-bubble-settings.php');
                 const data = await response.json();
@@ -453,17 +457,20 @@
                 const response = await fetch('./api/get-slider-photos.php');
                 const data = await response.json();
                 
+                const isMobile = window.matchMedia('(max-width: 768px)').matches;
+                const maxSlides = isMobile ? 4 : 10;
+
                 console.log('Slideshow photos response:', data);
                 
                 const slideshowContainer = document.getElementById('slideshowContainer');
                 if (data.success && data.photos && data.photos.length > 0) {
                     console.log('Loading admin photos:', data.photos);
                     // Load admin photos
-                    data.photos.slice(0, 10).forEach((photo, index) => {
+                    data.photos.slice(0, maxSlides).forEach((photo, index) => {
                         const slide = document.createElement('div');
                         slide.className = `slide ${index === 0 ? 'active' : ''}`;
                         slide.innerHTML = `
-                            <img src="./slider-photos/${photo.filename}" alt="${photo.name}" class="pool-image" 
+                            <img src="./slider-photos/${photo.filename}" alt="${photo.name}" class="pool-image" loading="lazy"
                                  onclick="openSlideshowZoom(this.src, '${photo.name}')" style="cursor: pointer;">
                             <div class="slide-caption">${photo.name}</div>
                         `;
@@ -476,11 +483,11 @@
                         'pool6.png', 'pool7.png', 'pool8.png', 'pool9.png', '2nd-pool1.png'
                     ];
                     
-                    staticPhotos.forEach((photo, index) => {
+                    staticPhotos.slice(0, maxSlides).forEach((photo, index) => {
                         const slide = document.createElement('div');
                         slide.className = `slide ${index === 0 ? 'active' : ''}`;
                         slide.innerHTML = `
-                            <img src="./slider-photos/${photo}" alt="Pool ${index + 1}" class="pool-image" 
+                            <img src="./slider-photos/${photo}" alt="Pool ${index + 1}" class="pool-image" loading="lazy"
                                  onclick="openSlideshowZoom(this.src, 'Pool ${index + 1}')" style="cursor: pointer;">
                             <div class="slide-caption">Pool ${index + 1}</div>
                         `;
