@@ -2469,3 +2469,7 @@ Before creating ANY new achievement API endpoint, you MUST:
 - **Every season launch**
 
 **REMEMBER: This unified rule ensures decades of professional development documentation! 🚀**
+
+### 🗓️ 2025-11-07 Updates
+- **Profile Portal Season Stats** — API now filters Season 5 cards using three-tier matching (exact name → prefix → timestamp window). Cheese Hunt & Discord Cheese Race remain season-only (no legacy fallbacks). Timestamp guard relies on `tbl_seasons.start_date` (fallback 30 days) until all records carry the new `Season 5` label.
+- **Achievement Reliability** — Tetris & Snake achievement unlock calls use `keepalive` + `cache: 'no-store'` to survive page reloads; any new achievement endpoints must inherit this pattern.

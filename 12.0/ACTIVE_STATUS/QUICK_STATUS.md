@@ -91,8 +91,10 @@
 3. ✅ **Snake Achievements** — Added keepalive/no-store to unlock API
 4. ✅ **Discord Race Card** — Mission API now falls back when season labels differ so profile shows today’s races
 5. ✅ **Season Stats Refactor** — Exact/prefix match + timestamp safety net keeps Season 5 data accurate (Cheese Hunt/Race season-only) — ready for deploy
-6. ✅ **Manual Backfill Plan** — Documented delete/insert steps for `snake_king` (IDs `1224428436928594015`, `946199839111266354`)
-7. ✅ **Production Reminder** — Copy `/var/www/html/db/narrrf_world.sqlite` → `/data/narrrf_world.sqlite` after updates
+6. ✅ **Snake Play Again** — Modal button now calls restartSnakeGame() directly with click/touch handler (reliable reload + auto-start)
+7. ✅ **Snake Boss Reset** — resetGame() clears boss flags/apples/timers so OK → Start begins fresh
+8. ✅ **Manual Backfill Plan** — Documented delete/insert steps for `snake_king` (IDs `1224428436928594015`, `946199839111266354`)
+9. ✅ **Production Reminder** — Copy `/var/www/html/db/narrrf_world.sqlite` → `/data/narrrf_world.sqlite` after updates
 
 ### **🐛 NOVEMBER 6, 2025 - LATE EVENING SESSION:**
 **BUG FIXES MARATHON - 13 FIXES COMPLETE!**

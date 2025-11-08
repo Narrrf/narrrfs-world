@@ -2657,6 +2657,10 @@ let bullets = [];
 let invaderBullets = [];
 let tetrisDangerItems = []; // NEW: Tetris block danger items
 let explosions = [];
+const PLAYER_DAMAGE_EFFECT_DURATION = 24;
+let playerDamageEffectTimer = 0;
+let playerDamageFlashColor = '#ff4d4f';
+let lastPlayerHitPosition = null;
 let gameSpeed = 0.1; // ULTRA SLOW BASE SPEED
 let invaderDirection = 1;
 let invaderDropTimer = 0;
@@ -2896,6 +2900,87 @@ let reloadButtonInterval = null;
         console.log('🛡️ Invincibility expired');
       }
     }
+  }
+
+  function updatePlayerDamageEffect() {
+    if (playerDamageEffectTimer > 0) {
+      playerDamageEffectTimer--;
+      if (playerDamageEffectTimer <= 0) {
+        lastPlayerHitPosition = null;
+      }
+    }
+  }
+
+  function triggerPlayerDamageEffect(color = '#ff4d4f', screenShakeForce = 4, hitX, hitY) {
+    playerDamageEffectTimer = PLAYER_DAMAGE_EFFECT_DURATION;
+    playerDamageFlashColor = color || '#ff4d4f';
+
+    if (typeof screenShake === 'number') {
+      screenShake = Math.max(screenShake, screenShakeForce);
+    }
+
+    if (typeof window !== 'undefined' && typeof window.screenShake === 'function') {
+      try {
+        window.screenShake(screenShakeForce * 2, 120);
+      } catch (error) {
+        console.warn('screenShake helper failed:', error);
+      }
+    }
+
+    if (typeof hitX === 'number' && typeof hitY === 'number') {
+      lastPlayerHitPosition = { x: hitX, y: hitY };
+    } else if (playerShip) {
+      lastPlayerHitPosition = {
+        x: playerShip.x + (playerShip.width || 0) / 2,
+        y: playerShip.y + (playerShip.height || 0) / 2
+      };
+    }
+  }
+
+  function applyPlayerDamage(damage, options = {}) {
+    if (!playerShip || typeof damage !== 'number' || damage <= 0) {
+      return false;
+    }
+
+    const {
+      hitX,
+      hitY,
+      invincibilityDuration = 60,
+      effectColor = '#ff4d4f',
+      screenShakeForce = 4,
+      logLabel
+    } = options;
+
+    if (playerShip.invincible && playerShip.invincibleTimer > 0 && invincibilityDuration !== 0) {
+      return false;
+    }
+
+    const previousHealth = playerShip.health;
+    playerShip.health -= damage;
+
+    if (logLabel) {
+      console.log(`${logLabel} damage: ${damage}, Player health: ${previousHealth} -> ${playerShip.health}`);
+    }
+
+    if (invincibilityDuration > 0) {
+      playerShip.invincible = true;
+      playerShip.invincibleTimer = invincibilityDuration;
+    } else if (invincibilityDuration === 0) {
+      playerShip.invincible = false;
+      playerShip.invincibleTimer = 0;
+    }
+
+    triggerPlayerDamageEffect(effectColor, screenShakeForce, hitX, hitY);
+
+    if (playerShip.maxHealth == null) {
+      playerShip.maxHealth = previousHealth;
+    }
+
+    if (playerShip.health <= 0) {
+      onGameOver();
+    }
+
+    return true;
   }
 
   // 🚀 NEW: Get current player speed
@@ -5412,6 +5497,7 @@ let reloadButtonInterval = null;
       height: 30,
       speed: 8, // 🐛 BUG #118 FIX: Balanced speed - 8px optimal for 400px canvas (5→15→25→8 testing)
       health: 3,
+      maxHealth: 3,
       invincible: false, // 🚀 NEW: Invincibility state
       invincibleTimer: 0 // 🚀 NEW: Invincibility timer
     };
@@ -6101,6 +6187,18 @@ let reloadButtonInterval = null;
     invaderBullets = [];
     tetrisDangerItems = [];
     explosions = [];
+    playerDamageEffectTimer = 0;
+    lastPlayerHitPosition = null;
+    if (playerShip) {
+      playerShip.invincible = false;
+      playerShip.invincibleTimer = 0;
+      if (typeof playerShip.maxHealth === 'number') {
+        playerShip.health = playerShip.maxHealth;
+      } else if (typeof playerShip.health !== 'number' || playerShip.health <= 0) {
+        playerShip.health = 3;
+        playerShip.maxHealth = 3;
+      }
+    }
     // 🔥 CRITICAL FIX: Clear Phoenix entities in resetGame
     phoenixEggs = [];
     miniPhoenixes = [];
@@ -6277,6 +6375,7 @@ let reloadButtonInterval = null;
     
     // 🚀 NEW: Update player invincibility
     updatePlayerInvincibility();
+    updatePlayerDamageEffect();
     
     // 🐛 BUG #118 FIX: Apply continuous keyboard movement every frame
     applyContinuousKeyboardMovement();
@@ -7135,16 +7234,14 @@ let reloadButtonInterval = null;
       
       // Check collision with player
       if (checkCollision(bullet, playerShip)) {
-        // Deal damage to player
-        if (!playerShip.invincible) {
-          playerShip.health -= bullet.damage;
-          console.log(`🔥 Phoenix bullet hit player! Damage: ${bullet.damage}, Player health: ${playerShip.health}`);
-          
-          // Player invincibility frames
-          playerShip.invincible = true;
-          playerShip.invincibleTimer = 60; // 0.6 seconds
-          
-          // Create hit effect
+        if (applyPlayerDamage(bullet.damage, {
+          hitX: bullet.x,
+          hitY: bullet.y,
+          invincibilityDuration: 60,
+          effectColor: '#ff6b35',
+          screenShakeForce: 6,
+          logLabel: '🔥 Phoenix bullet'
+        })) {
           explosions.push({
             x: bullet.x,
             y: bullet.y,
@@ -7152,11 +7249,6 @@ let reloadButtonInterval = null;
             maxFrames: 10,
             color: '#ff6b35'
           });
-          
-          // Check if player died
-          if (playerShip.health <= 0) {
-            onGameOver(); // 🐛 FIX: Was calling gameOver() which doesn't exist!
-          }
         }
         return false; // Remove bullet
       }
@@ -7382,16 +7474,14 @@ let reloadButtonInterval = null;
           playerShip.y + playerShip.height > boss.y &&
           playerShip.y < boss.y + boss.height) {
         
-        if (!playerShip.invincible) {
-          // Collision! Player takes damage (reduced from 10 to 2 - was instant death!)
-          playerShip.health -= 2;
-          console.log(`🧀 Giant Cheese Boss collision! Boss Y: ${boss.y}, Player Y: ${playerShip.y}, Player health: ${playerShip.health}`);
-          
-          // Player invincibility frames
-          playerShip.invincible = true;
-          playerShip.invincibleTimer = 60;
-          
-          // Create impact effect
+        if (applyPlayerDamage(2, {
+          hitX: playerShip.x + playerShip.width / 2,
+          hitY: playerShip.y + playerShip.height / 2,
+          invincibilityDuration: 60,
+          effectColor: '#ffa500',
+          screenShakeForce: 8,
+          logLabel: '🧀 Giant Cheese Boss collision'
+        })) {
           explosions.push({
             x: playerShip.x,
             y: playerShip.y,
@@ -7400,13 +7490,7 @@ let reloadButtonInterval = null;
             color: '#ffa500'
           });
           
-          // Also damage the boss (collision damage)
           boss.takeDamage(5);
-          
-          // Check if player died
-          if (playerShip.health <= 0) {
-            onGameOver(); // 🐛 FIX: Was calling gameOver() which doesn't exist!
-          }
         }
       }
     });
@@ -7603,13 +7687,14 @@ let reloadButtonInterval = null;
       const distance = Math.sqrt(dx * dx + dy * dy);
       
       if (distance < zone.radius && zone.active) {
-        // Player takes damage
-        if (!playerShip.invincible || playerShip.invincibleTimer <= 0) {
-          playerShip.health -= zone.damage;
-          playerShip.invincible = true;
-          playerShip.invincibleTimer = 60; // 1 second invincibility
-          
-          // Create damage effect
+        if (applyPlayerDamage(zone.damage, {
+          hitX: playerShip.x + playerShip.width / 2,
+          hitY: playerShip.y + playerShip.height / 2,
+          invincibilityDuration: 60,
+          effectColor: '#ff4d4f',
+          screenShakeForce: 6,
+          logLabel: '💥 Explosion danger zone'
+        })) {
           createEnhancedExplosion(playerShip.x, playerShip.y, 30, 1);
         }
         zone.active = false; // Only damage once
@@ -7683,21 +7768,30 @@ let reloadButtonInterval = null;
         
         // Special bomb effects - bombs do more damage!
         if (item.isBomb) {
-          playerShip.health -= 2; // Bombs take 2 health instead of 1
-          console.log('💥 BOMB HIT! Double damage!');
-          
-          // Create bigger explosion for bombs
-          explosions.push({
-            x: item.x,
-            y: item.y,
-            size: 50, // Bigger explosion
-            timer: 30, // Longer explosion
-            isBombExplosion: true // Flag for special bomb explosion
-          });
-        } else {
-          playerShip.health--;
-          
-          // Create normal explosion effect
+          if (applyPlayerDamage(2, {
+            hitX: item.x,
+            hitY: item.y,
+            invincibilityDuration: 0,
+            effectColor: '#ff7043',
+            screenShakeForce: 10,
+            logLabel: '💥 Bomb hit'
+          })) {
+            explosions.push({
+              x: item.x,
+              y: item.y,
+              size: 50,
+              timer: 30,
+              isBombExplosion: true
+            });
+          }
+        } else if (applyPlayerDamage(1, {
+          hitX: item.x,
+          hitY: item.y,
+          invincibilityDuration: 0,
+          effectColor: '#ffb347',
+          screenShakeForce: 6,
+          logLabel: '🧱 Tetris item collision'
+        })) {
           explosions.push({
             x: item.x,
             y: item.y,
@@ -8307,62 +8401,61 @@ let reloadButtonInterval = null;
             bossBullets.splice(index, 1);
           }
           
-          playerShip.health -= damage;
-          
-          // 🧀 Create enhanced explosion effect based on cheese bullet type
-          let explosionSize = 25;
-          let explosionTimer = 15;
-          
-          // Different explosion effects for different cheese types
-          switch (bulletType) {
-            case 'cheese_cannon':
-              explosionSize = 35;
-              explosionTimer = 20;
-              console.log(`🧀 CHEESE CANNON BLAST! The power of aged cheddar overwhelms you!`);
-              break;
-            case 'gouda_grenade':
-              explosionSize = 40;
-              explosionTimer = 25;
-              console.log(`🧀 GOUDA GRENADE EXPLOSION! You're covered in molten cheese!`);
-              break;
-            case 'swiss_sniper':
-              explosionSize = 30;
-              explosionTimer = 18;
-              console.log(`🧀 SWISS PRECISION STRIKE! Those holes aren't just for show!`);
-              break;
-            case 'cheddar_chaos':
-              explosionSize = 32;
-              explosionTimer = 20;
-              console.log(`🧀 CHEDDAR CHAOS BURNS! The heat of aged cheddar sears you!`);
-              break;
-            case 'melted_cheese':
-              explosionSize = 28;
-              explosionTimer = 22;
-              console.log(`🧀 MELTED CHEESE SPLASH! You're dripping with dairy destruction!`);
-              break;
-            default:
-              console.log(`🧀 Cheese attack hits! The dairy devastation continues!`);
-          }
-          
-          explosions.push({
-            x: playerShip.x + playerShip.width / 2,
-            y: playerShip.y + playerShip.height / 2,
-            size: explosionSize,
-            timer: explosionTimer,
-            isBossHit: true,
-            cheeseType: bulletType
-          });
-          
-          // 🚀 NEW: Screen shake on boss bullet hit
-          screenShake = 12;
-          
-          // 🚀 NEW: Boss bullet hit sound effect
-          if (window.cheeseSoundManager && window.cheeseSoundManager.soundEnabled) {
-            window.cheeseSoundManager.playStarWarsLaser();
-          }
-          
-          if (playerShip.health <= 0) {
-            onGameOver();
+          if (applyPlayerDamage(damage, {
+            hitX: playerShip.x + playerShip.width / 2,
+            hitY: playerShip.y + playerShip.height / 2,
+            invincibilityDuration: 0,
+            effectColor: '#ffd166',
+            screenShakeForce: bulletType === 'swiss_sniper' ? 18 : 12,
+            logLabel: `💥 ${bulletType.toUpperCase()} hits player`
+          })) {
+            let explosionSize = 25;
+            let explosionTimer = 15;
+            
+            switch (bulletType) {
+              case 'cheese_cannon':
+                explosionSize = 35;
+                explosionTimer = 20;
+                console.log(`🧀 CHEESE CANNON BLAST! The power of aged cheddar overwhelms you!`);
+                break;
+              case 'gouda_grenade':
+                explosionSize = 40;
+                explosionTimer = 25;
+                console.log(`🧀 GOUDA GRENADE EXPLOSION! You're covered in molten cheese!`);
+                break;
+              case 'swiss_sniper':
+                explosionSize = 30;
+                explosionTimer = 18;
+                console.log(`🧀 SWISS PRECISION STRIKE! Those holes aren't just for show!`);
+                break;
+              case 'cheddar_chaos':
+                explosionSize = 32;
+                explosionTimer = 20;
+                console.log(`🧀 CHEDDAR CHAOS BURNS! The heat of aged cheddar sears you!`);
+                break;
+              case 'melted_cheese':
+                explosionSize = 28;
+                explosionTimer = 22;
+                console.log(`🧀 MELTED CHEESE SPLASH! You're dripping with dairy destruction!`);
+                break;
+              default:
+                console.log(`🧀 Cheese attack hits! The dairy devastation continues!`);
+            }
+            
+            explosions.push({
+              x: playerShip.x + playerShip.width / 2,
+              y: playerShip.y + playerShip.height / 2,
+              size: explosionSize,
+              timer: explosionTimer,
+              isBossHit: true,
+              cheeseType: bulletType
+            });
+            
+            screenShake = Math.max(screenShake, 12);
+            
+            if (window.cheeseSoundManager && window.cheeseSoundManager.soundEnabled) {
+              window.cheeseSoundManager.playStarWarsLaser();
+            }
           }
         }
       });
@@ -8523,6 +8616,7 @@ let reloadButtonInterval = null;
     drawScore();
     drawHealth();
     drawPhaseInfo(); // NEW: Show current phase info
+    drawPlayerDamageOverlay();
     
     // 🚀 NEW: Draw boss wave announcement
     if (gamePhase === 'boss' && boss && !bossDefeated) {
@@ -8531,6 +8625,31 @@ let reloadButtonInterval = null;
     
     // 🚀 NEW: Restore screen shake
     if (screenShake > 0) {
+      ctx.restore();
+    }
+  }
+
+  function drawPlayerDamageOverlay() {
+    if (!ctx || playerDamageEffectTimer <= 0) {
+      return;
+    }
+
+    const intensity = playerDamageEffectTimer / PLAYER_DAMAGE_EFFECT_DURATION;
+
+    ctx.save();
+    ctx.globalAlpha = 0.18 + 0.22 * intensity;
+    ctx.fillStyle = playerDamageFlashColor;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    ctx.restore();
+
+    if (lastPlayerHitPosition) {
+      ctx.save();
+      ctx.globalAlpha = 0.4 * intensity;
+      ctx.fillStyle = playerDamageFlashColor;
+      const radius = 35 + 45 * intensity;
+      ctx.beginPath();
+      ctx.arc(lastPlayerHitPosition.x, lastPlayerHitPosition.y, radius, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     }
   }
@@ -9349,6 +9468,15 @@ let reloadButtonInterval = null;
   }
 
   function drawPlayerShip() {
+    if (playerDamageEffectTimer > 0) {
+      const intensity = playerDamageEffectTimer / PLAYER_DAMAGE_EFFECT_DURATION;
+      ctx.save();
+      ctx.globalAlpha = 0.25 + 0.25 * intensity;
+      ctx.fillStyle = playerDamageFlashColor;
+      ctx.fillRect(playerShip.x - 6, playerShip.y - 6, playerShip.width + 12, playerShip.height + 12);
+      ctx.restore();
+    }
+
     // 🚀 NEW: Add invincibility glow effect
     if (playerShip.invincible && playerShip.invincibleTimer > 0) {
       // Create pulsing invincibility glow

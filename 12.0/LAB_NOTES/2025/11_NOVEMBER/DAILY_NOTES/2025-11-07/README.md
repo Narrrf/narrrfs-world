@@ -25,6 +25,8 @@
     - (Season-only: no fallback; cards display 0 until Season 5 data exists, `is_current_season = 1` acts as interim safety net)
 - **22:20** — Added timestamp window (>= active season start) fallback for all profile queries so mis-labeled rows still count as Season 5
 - **22:30** — Season stats verified on profile (timestamp + label filters) → ready for render push
+- **22:35** — Snake “Play Again” button now hooks restartSnakeGame() directly (no modal cloning) for reliable reload/auto-start
+- **22:38** — resetGame() now clears boss flags/apples/timers so OK → Start restarts from fresh field (no lingering boss state)
 - **Next:** Update status files, sync accomplishments, prep render push
 
 ---

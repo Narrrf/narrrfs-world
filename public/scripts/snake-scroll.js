@@ -941,6 +941,14 @@ function initSnake() {
     teleportCooldown = 0;
     // 🚨 DON'T reset firstTeleportDone here - only reset when actually starting new game
     
+    // 🐍 Reset boss battle state
+    giantSnakeBossActive = false;
+    bossBattleActive = false;
+    giantSnakeBoss = null;
+    goldenApples = [];
+    goldenApplesCollected = 0;
+    bossTimer = 0;
+    
     // 🔥 Reset mad mode system
     madModeActive = false;
     madModeTimer = 0;
@@ -2635,6 +2643,19 @@ function saveScore(finalScore) {
   window.startSnakeGame = startGameWithCountdown;
   window.restartSnakeGame = restartSnakeGame;
   window.endSnakeGame = endSnakeGame;
+
+  const playAgainBtn = document.getElementById('snake-play-again-btn');
+  if (playAgainBtn) {
+    const restartHandler = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      restartSnakeGame();
+    };
+    playAgainBtn.addEventListener('click', restartHandler);
+    playAgainBtn.addEventListener('touchend', restartHandler, { passive: false });
+    playAgainBtn.style.touchAction = 'manipulation';
+    playAgainBtn.style.webkitTapHighlightColor = 'transparent';
+  }
 
   // 🏆 TEST FUNCTION - Test role-based features
   window.testSnakeRoleFeatures = function() {
