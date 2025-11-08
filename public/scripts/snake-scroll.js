@@ -436,42 +436,113 @@ function initSnake() {
       // 🎯 Initialize boss BELOW UI panels AND away from player (BUG FIX: prevent instant collision)
       this.segments = [];
       
-      // Find safe spawn position that doesn't collide with player
-      let startY = 6; // Start at row 6 (well below UI panels)
-      let safeSpawnFound = false;
-      
-      // Try different Y positions until we find one that doesn't collide with player
-      for (let tryY = 6; tryY <= 15 && !safeSpawnFound; tryY++) {
-        let collision = false;
-        
-        // Check if ANY segment of boss would collide with player snake at this Y position
-        for (let i = 0; i < this.length; i++) {
-          const testSegment = { x: i, y: tryY };
-          
-          // Check collision with player snake
-          const playerCollision = snake.some(seg => seg.x === testSegment.x && seg.y === testSegment.y);
-          
-          if (playerCollision) {
-            collision = true;
-            break;
+      // Build quick lookup tables for player body and a 1-tile safety buffer
+      const clampToBoard = (x, y) =>
+        x >= 0 && x < tileCountX && y >= 0 && y < tileCountY;
+      const occupiedCells = new Set();
+      const bufferCells = new Set();
+      snake.forEach(seg => {
+        if (clampToBoard(seg.x, seg.y)) {
+          occupiedCells.add(`${seg.x},${seg.y}`);
+        }
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dy = -1; dy <= 1; dy++) {
+            const bx = seg.x + dx;
+            const by = seg.y + dy;
+            if (clampToBoard(bx, by)) {
+              bufferCells.add(`${bx},${by}`);
+            }
           }
         }
+      });
+      
+      const orientations = [
+        { name: 'horizontal', dx: 1, dy: 0, maxLength: tileCountX },
+        { name: 'vertical', dx: 0, dy: 1, maxLength: tileCountY }
+      ];
+      
+      const uiSafeStartY = 5; // Keep boss below UI overlay (rows 0-4)
+      let chosenPlacement = null;
+      
+      orientations.forEach(orientation => {
+        if (chosenPlacement) return;
         
-        if (!collision) {
-          startY = tryY;
-          safeSpawnFound = true;
-          console.log(`🎯 Safe boss spawn position found at y=${startY} (no player collision)`);
+        const maxSegments = orientation.maxLength;
+        if (maxSegments <= 0) return;
+        
+        const spawnLength = Math.min(this.length, maxSegments);
+        if (spawnLength <= 0) return;
+        
+        let startYMax = orientation.dy === 0
+          ? tileCountY - 1
+          : tileCountY - spawnLength;
+        let startYMin = orientation.dy === 0 ? uiSafeStartY : uiSafeStartY;
+        if (startYMax < startYMin) {
+          startYMin = Math.max(0, startYMax);
         }
-      }
+        startYMin = Math.max(0, startYMin);
+        startYMax = Math.max(startYMax, startYMin);
+        
+        for (let tryY = startYMin; tryY <= startYMax && !chosenPlacement; tryY++) {
+          for (let tryX = 0; tryX < tileCountX && !chosenPlacement; tryX++) {
+            const segments = [];
+            let collision = false;
+            let minDistanceToPlayer = Infinity;
+            
+            for (let i = 0; i < spawnLength; i++) {
+              const x = tryX + orientation.dx * i;
+              const y = tryY + orientation.dy * i;
+              
+              if (!clampToBoard(x, y)) {
+                collision = true;
+                break;
+              }
+              
+              const key = `${x},${y}`;
+              if (occupiedCells.has(key) || bufferCells.has(key)) {
+                collision = true;
+                break;
+              }
+              
+              const distance = snake.reduce((min, seg) => {
+                const dist = Math.abs(seg.x - x) + Math.abs(seg.y - y);
+                return Math.min(min, dist);
+              }, Infinity);
+              minDistanceToPlayer = Math.min(minDistanceToPlayer, distance);
+              
+              segments.push({ x, y });
+            }
+            
+            if (!collision && segments.length === spawnLength) {
+              chosenPlacement = {
+                segments,
+                orientation: orientation.name,
+                direction: orientation.name === 'vertical' ? { x: 0, y: 1 } : { x: 1, y: 0 },
+                spawnLength,
+                minDistanceToPlayer
+              };
+            }
+          }
+        }
+      });
       
-      // Build boss segments at safe position
-      for (let i = 0; i < this.length; i++) {
-        this.segments.push({ x: i, y: startY });
-      }
-      this.direction = { x: 1, y: 0 }; // Moving right initially
-      
-      if (!safeSpawnFound) {
-        console.warn('⚠️ Could not find completely safe spawn position, using y=15 (furthest from player)');
+      if (chosenPlacement) {
+        if (chosenPlacement.spawnLength !== this.length) {
+          console.warn(`⚠️ Adjusted boss length from ${this.length} to ${chosenPlacement.spawnLength} to fit board safely.`);
+          this.length = chosenPlacement.spawnLength;
+        }
+        this.segments = chosenPlacement.segments;
+        this.direction = chosenPlacement.direction;
+        console.log(`🎯 Safe boss spawn found (${chosenPlacement.orientation}) with minimum player distance ${chosenPlacement.minDistanceToPlayer}`);
+      } else {
+        // Fallback to legacy spawn (kept for absolute safety) - ensure coordinates stay on board
+        console.warn('⚠️ Fallback boss spawn used. Unable to find fully safe placement.');
+        const fallbackY = 6;
+        for (let i = 0; i < Math.min(this.length, tileCountX); i++) {
+          this.segments.push({ x: i, y: fallbackY });
+        }
+        this.length = this.segments.length;
+        this.direction = { x: 1, y: 0 };
       }
       
       // 🍼 Baby Boss indicator

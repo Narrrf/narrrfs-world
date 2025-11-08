@@ -19,7 +19,6 @@ try {
     
     $userId = $input['user_id'] ?? '';
     $walletAddress = $input['wallet_address'] ?? '';
-    $nfts = $input['nfts'] ?? [];
     $collection = $input['collection'] ?? '';
     $signature = $input['signature'] ?? '';
     $message = $input['message'] ?? '';
@@ -85,129 +84,241 @@ try {
         }
     }
     
-    // Check for existing verification
-    $existingStmt = $db->prepare("
-        SELECT * FROM tbl_holder_verifications 
-        WHERE user_id = ? AND wallet = ? AND collection = ?
-        ORDER BY verified_at DESC LIMIT 1
-    ");
-    $existingVerification = $existingStmt->fetch(PDO::FETCH_ASSOC);
-    
-    // Process NFTs and determine role
-    $roleId = null;
-    $roleName = null;
-    $nftCount = count($nfts);
+    // Known collections mapped to their Discord roles
+    $collectionsConfig = [
+        'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML' => [
+            'name' => 'Narrrfs World: Genesis Genetic',
+            'role_name' => '🏆 Holder',
+            'role_id' => '1402668301414563971'
+        ],
+        'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg' => [
+            'name' => 'Narrrf Genesis VIP Drop',
+            'role_name' => '🎴 VIP Holder',
+            'role_id' => '1332016526848692345'
+        ]
+    ];
+
+    // Helper maps for role name / collection name lookup
+    $collectionsByRole = [];
+    $collectionsByName = [];
+    foreach ($collectionsConfig as $address => $info) {
+        $collectionsByRole[$info['role_name']] = $address;
+        $collectionsByName[strtolower($info['name'])] = $address;
+    }
+
+    // Determine which collections to verify (default: all)
+    $collectionsToVerify = $collectionsConfig;
+    if (!empty($collection)) {
+        if (isset($collectionsConfig[$collection])) {
+            $collectionsToVerify = [$collection => $collectionsConfig[$collection]];
+        } elseif (isset($collectionsByRole[$collection])) {
+            $addr = $collectionsByRole[$collection];
+            $collectionsToVerify = [$addr => $collectionsConfig[$addr]];
+        } elseif (isset($collectionsByName[strtolower($collection)])) {
+            $addr = $collectionsByName[strtolower($collection)];
+            $collectionsToVerify = [$addr => $collectionsConfig[$addr]];
+        }
+    }
+
     $verifiedCollections = [];
 
-    if ($nftCount > 0) {
-        // Process each collection found
-        foreach ($nfts as $nft) {
-            $collectionName = $nft['collection'] ?? '';
-            $role = $nft['role'] ?? '';
-            $roleId = $nft['roleId'] ?? '';
-            $count = $nft['count'] ?? 0;
-            
-            // Validate collection and role
-            if ($collectionName === 'Narrrfs World: Genesis Genetic' && $role === '🏆 Holder') {
-                $roleId = '1402668301414563971';
-                $roleName = '🏆 Holder';
-            } elseif ($collectionName === 'Narrrf Genesis VIP Drop' && $role === '🎴 VIP Holder') {
-                $roleId = '1332016526848692345';
-                $roleName = '🎴 VIP Holder';
-            } else {
-                // Skip invalid collections
-                continue;
-            }
+    foreach ($collectionsToVerify as $collectionAddress => $info) {
+        $collectionCount = fetchCollectionNFTCount($walletAddress, $collectionAddress);
 
-            // Grant Discord role
-            $discordApiUrl = 'https://narrrfs.world/api/discord/grant-role.php';
-            $data = [
-                'action' => 'add_role',
-                'user_id' => $userId,
-                'role_id' => $roleId
-            ];
+        $roleGranted = false;
+        if ($collectionCount > 0) {
+            $roleGranted = grantDiscordRole($userId, $user['username'] ?? '', $info['role_id'], $info['role_name']);
 
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $discordApiUrl);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json',
-                'Authorization: Bearer admin_quest_system'
-            ]);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            logHolderVerification($db, $userId, $user['username'] ?? '', $walletAddress, $info['name'], $collectionCount, $roleGranted);
 
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            $result = json_decode($response, true);
-            $roleGranted = ($httpCode === 200 && isset($result['success']) && $result['success']);
-
-            // Log verification - only use existing columns
-            $verificationStmt = $db->prepare("
-                INSERT OR REPLACE INTO tbl_holder_verifications 
-                (user_id, username, wallet, collection, nft_count, role_granted, verified_at)
-                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            ");
-            
-            $verificationStmt->execute([
-                $userId,
-                $user['username'] ?? '',
-                $walletAddress,
-                $collectionName,
-                $count,
-                $roleGranted ? 1 : 0
-            ]);
-
-            // Log role grant
             if ($roleGranted) {
-                $roleGrantStmt = $db->prepare("
-                    INSERT INTO tbl_role_grants 
-                    (user_id, username, role_id, role_name, granted_at, reason, granted_by)
-                    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
-                ");
-                
-                $roleGrantStmt->execute([
-                    $userId,
-                    $user['username'] ?? '',
-                    $roleId,
-                    $roleName,
-                    'NFT Holder Verification - Helius searchAssets (Signed)',
-                    'system'
-                ]);
+                logRoleGrant($db, $userId, $user['username'] ?? '', $info['role_id'], $info['role_name']);
             }
-
-            $verifiedCollections[] = [
-                'collection' => $collectionName,
-                'role' => $roleName,
-                'role_id' => $roleId,
-                'count' => $count,
-                'granted' => $roleGranted
-            ];
+        } else {
+            // Always log verification attempts even when no NFTs were found
+            logHolderVerification($db, $userId, $user['username'] ?? '', $walletAddress, $info['name'], 0, false);
         }
 
-        echo json_encode([
-            'success' => true,
-            'role_name' => $roleName,
-            'role_id' => $roleId,
-            'nft_count' => $nftCount,
-            'wallet' => $walletAddress,
-            'collections_found' => array_column($verifiedCollections, 'collection'),
-            'verified_collections' => $verifiedCollections,
-            'message' => 'NFT verification successful! Role granted.'
-        ]);
-
-    } else {
-        throw new Exception('No NFTs found in the specified collections.');
+        $verifiedCollections[] = [
+            'collection_address' => $collectionAddress,
+            'collection' => $info['name'],
+            'role' => $info['role_name'],
+            'role_id' => $info['role_id'],
+            'count' => $collectionCount,
+            'granted' => $roleGranted
+        ];
     }
+
+    echo json_encode([
+        'success' => true,
+        'wallet' => $walletAddress,
+        'verified_collections' => $verifiedCollections,
+        'message' => 'NFT verification completed.'
+    ]);
 
 } catch (Exception $e) {
     error_log("NFT Holder Verification Error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
+    ]);
+}
+
+/**
+ * Fetch the number of NFTs a wallet holds for a specific collection using Helius.
+ */
+function fetchCollectionNFTCount(string $walletAddress, string $collectionAddress): int
+{
+    try {
+        $apiKey = getenv('HELIUS_API_KEY') ?: ($_ENV['HELIUS_API_KEY'] ?? $_SERVER['HELIUS_API_KEY'] ?? '');
+        if (!$apiKey) {
+            throw new Exception('Helius API key is not configured.');
+        }
+
+        $url = "https://api.helius.xyz/v0/addresses/{$walletAddress}/nfts?api-key={$apiKey}";
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 25);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'User-Agent: Narrrfs-World-NFT-Verification/1.0'
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($curlError) {
+            throw new Exception('Helius request error: ' . $curlError);
+        }
+
+        if ($httpCode !== 200) {
+            throw new Exception("Helius request failed with HTTP code {$httpCode}");
+        }
+
+        $data = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Invalid JSON response from Helius: ' . json_last_error_msg());
+        }
+
+        $count = 0;
+        if (is_array($data)) {
+            foreach ($data as $nft) {
+                $nftCollection = $nft['collection'] ?? $nft['collectionAddress'] ?? $nft['grouping'] ?? '';
+
+                if (is_array($nftCollection)) {
+                    foreach ($nftCollection as $group) {
+                        if (isset($group['groupKey'], $group['groupValue']) && $group['groupKey'] === 'collection') {
+                            $nftCollection = $group['groupValue'];
+                            break;
+                        }
+                    }
+                } elseif (is_array($nftCollection) && isset($nftCollection['key'])) {
+                    $nftCollection = $nftCollection['key'];
+                }
+
+                if ($nftCollection === $collectionAddress) {
+                    $count++;
+                }
+            }
+        }
+
+        return $count;
+    } catch (Exception $e) {
+        error_log("Collection NFT count error ({$walletAddress}, {$collectionAddress}): " . $e->getMessage());
+        return 0;
+    }
+}
+
+/**
+ * Grant a Discord role via internal API.
+ */
+function grantDiscordRole(string $userId, string $username, string $roleId, string $roleName): bool
+{
+    try {
+        $discordApiUrl = 'https://narrrfs.world/api/discord/grant-role.php';
+        $payload = [
+            'action' => 'add_role',
+            'user_id' => $userId,
+            'role_id' => $roleId
+        ];
+
+        $ch = curl_init($discordApiUrl);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Authorization: Bearer admin_quest_system'
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($curlError) {
+            throw new Exception('Discord role grant CURL error: ' . $curlError);
+        }
+
+        if ($httpCode !== 200) {
+            throw new Exception("Discord role grant failed with HTTP code {$httpCode}: {$response}");
+        }
+
+        $result = json_decode($response, true);
+        $success = isset($result['success']) && $result['success'];
+
+        if (!$success) {
+            throw new Exception('Discord role grant failed: ' . $response);
+        }
+
+        return true;
+    } catch (Exception $e) {
+        error_log("Failed to grant Discord role {$roleName} ({$roleId}) to {$userId} ({$username}): " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Log holder verification attempts/successes.
+ */
+function logHolderVerification(PDO $db, string $userId, string $username, string $wallet, string $collectionName, int $count, bool $granted): void
+{
+    $stmt = $db->prepare("
+        INSERT OR REPLACE INTO tbl_holder_verifications
+        (user_id, username, wallet, collection, nft_count, role_granted, verified_at)
+        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ");
+
+    $stmt->execute([
+        $userId,
+        $username,
+        $wallet,
+        $collectionName,
+        $count,
+        $granted ? 1 : 0
+    ]);
+}
+
+/**
+ * Log role grants for auditing.
+ */
+function logRoleGrant(PDO $db, string $userId, string $username, string $roleId, string $roleName): void
+{
+    $stmt = $db->prepare("
+        INSERT INTO tbl_role_grants 
+        (user_id, username, role_id, role_name, granted_at, reason, granted_by)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
+    ");
+
+    $stmt->execute([
+        $userId,
+        $username,
+        $roleId,
+        $roleName,
+        'NFT Holder Verification - Helius verification',
+        'system'
     ]);
 }
 
