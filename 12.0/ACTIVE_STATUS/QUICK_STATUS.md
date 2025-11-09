@@ -78,11 +78,19 @@
 - **Phase:** Achievement resilience + pre-event QA
 
 ### **Current Task:**
+- ✅ Resolve Snake boss spawn kill reports (Bug #296) with collision-free spawn lanes
+- ✅ Restore admin emergency unlock for moderators via role-based session check (Bug #193)
 - ✅ Sync Nov 7 lab notes + daily status
 - ✅ Investigate player reports (Tetris/Snake achievements)
 - ✅ Harden achievement calls (`keepalive` + `cache: 'no-store'`)
 - ✅ Verify `score_hunter` locally on Tetris & Snake
 - 🔄 Update LLM sync files + prep render push
+
+### **🐛 NOVEMBER 8, 2025 - EARLY MORNING SESSION:**
+**BOSS SAFETY + ADMIN RESILIENCE**
+1. ✅ **Snake Boss Safe Spawn** — Added grid scan + player buffer to Giant Cheese Snake spawn to prevent instant collisions (Bug #296)
+2. ✅ **Emergency Unlock Roles** — Emergency admin unlock now grants sessions to Founder/Moderator/Admin/Bot Master roles via `tbl_user_roles` lookup (Bug #193)
+3. ✅ **Stable Build Archive** — Stored Tetris/Snake/Space Invaders scripts under `12.0/ARCHIVE/STABLE_BUILDS/2025-11-08_SEASON5_STABLE/` as Season 5 baseline snapshot
 
 ### **🐛 NOVEMBER 7, 2025 - EVENING SESSION:**
 **ACHIEVEMENT RELIABILITY + GRAVITY RESET**

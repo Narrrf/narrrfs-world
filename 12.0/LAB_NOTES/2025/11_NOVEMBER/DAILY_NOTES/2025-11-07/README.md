@@ -27,6 +27,9 @@
 - **22:30** — Season stats verified on profile (timestamp + label filters) → ready for render push
 - **22:35** — Snake “Play Again” button now hooks restartSnakeGame() directly (no modal cloning) for reliable reload/auto-start
 - **22:38** — resetGame() now clears boss flags/apples/timers so OK → Start restarts from fresh field (no lingering boss state)
+- **23:55** — Built safe-spawn solver for Giant Cheese Snake bosses (horizontal/vertical scan + buffer) to prevent spawn kills (Bug #296)
+- **00:15** — Expanded admin emergency unlock to respect Founder/Moderator/Admin/Bot Master roles via `tbl_user_roles` (Bug #193)
+- **00:30** — Archived Season 5 stable scripts (Tetris/Snake/Space Invaders) to `12.0/ARCHIVE/STABLE_BUILDS/2025-11-08_SEASON5_STABLE/`
 - **Next:** Update status files, sync accomplishments, prep render push
 
 ---
@@ -36,6 +39,9 @@
 - Capture all new bugs with reproduction steps before attempting fixes
 - Tetris/Snake achievements now resilient to page reloads via `keepalive`
 - Discord Cheese Race cards now fall back to all-time stats when season labels are inconsistent (profile matches admin view)
+- Snake boss system now searches for collision-free spawn lanes and enforces player buffer (Bug #296)
+- Admin emergency unlock honors trusted Discord roles so moderators can recover access without owner intervention (Bug #193)
+- Current stable Season 5 scripts archived under `12.0/ARCHIVE/STABLE_BUILDS/2025-11-08_SEASON5_STABLE/` for rollback safety
 - Tetris/Snake/Space Invaders now prioritize Season 5 totals (exact → prefix → career fallback)
 - Cheese Hunt + Discord Race share the same three-pass logic; documentation published in `GAME_SYSTEMS/PROFILE_SEASON_STATISTICS.md`
    - (Season-only: no fallback; cards display 0 until Season 5 data exists)

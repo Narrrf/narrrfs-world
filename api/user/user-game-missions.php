@@ -708,9 +708,14 @@ try {
         $spaceAchievementStmt = $db->prepare("
             SELECT COUNT(DISTINCT achievement_key) as total_achievements
             FROM tbl_space_invaders_achievements
+            WHERE user_id = 'ACHIEVEMENT_DEFINITIONS'
         ");
         $spaceAchievementStmt->execute();
         $spaceAchievementData = $spaceAchievementStmt->fetch(PDO::FETCH_ASSOC);
+        if ($spaceAchievementData && (int)$spaceAchievementData['total_achievements'] === 0) {
+            // Fallback to known Season 5 total if definition rows are missing
+            $spaceAchievementData['total_achievements'] = 28;
+        }
         
         $userSpaceAchievementStmt = $db->prepare("
             SELECT COUNT(*) as unlocked_count
