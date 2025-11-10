@@ -1193,7 +1193,7 @@ require_once 'discord-invite.php';
       🔍 Explore Lab Partners →
     </a>
     <a href="/mint.html" class="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-extrabold px-6 py-2 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105 border-2 border-gray-900">
-      💰 Mint NFT (0.4275 SOL)
+      💰 Mint NFT (0.45 SOL)
     </a>
   </div>
   <div class="mt-2">
@@ -1317,7 +1317,7 @@ require_once 'discord-invite.php';
     <!-- 🧬 Mint Now -->
     <a href="mint.html"
        class="bg-white border border-pink-600 text-pink-600 font-semibold py-2 px-6 rounded-full shadow hover:bg-pink-50 transition">
-      🧬 Mint Now
+      🧬 Mint Now (0.45 SOL)
     </a>
   </div>
 </div>
@@ -1426,7 +1426,7 @@ require_once 'discord-invite.php';
   <div class="max-w-6xl mx-auto relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
     <!-- Portal Image -->
     <div class="relative group rounded-2xl overflow-hidden border-4 border-fuchsia-400 shadow-[0_0_40px_rgba(236,72,153,0.35)]">
-      <img src="img/partners/vr-gallery.JPG" alt="Enter the Web3 VR Gallery on FRAME" class="w-full h-full object-cover group-hover:scale-[1.02] transition duration-300 ease-out" />
+      <img src="img/vr-gallery2.JPG" alt="Enter the Web3 VR Gallery on FRAME" class="w-full h-full object-cover group-hover:scale-[1.02] transition duration-300 ease-out" />
       <!-- Glow overlay -->
       <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
       <!-- Play/Enter badge -->
@@ -1613,7 +1613,7 @@ require_once 'discord-invite.php';
 
 <!-- 🧬 Cheese Lab Countdown – Linked to Mint -->
 <div class="my-16 mx-auto max-w-4xl">
-  <h3 class="text-2xl font-bold text-center mb-6 text-gray-800">🧬 Mint Stages</h3>
+  <h3 id="mint-stages" class="text-2xl font-bold text-center mb-6 text-gray-800">🧬 Mint Stages</h3>
   
   <!-- 🚀 EXTENDED MINT ANNOUNCEMENT -->
   <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-4 mb-6 shadow-lg border-2 border-purple-400 extended-mint-hype">
@@ -1642,8 +1642,8 @@ require_once 'discord-invite.php';
         <span class="font-bold text-white">Redemption ACTIVE</span>
       </div>
       <div class="text-sm text-white mb-2">🔥 MINT NOW</div>
-      <div id="redemption-countdown" class="text-lg font-bold text-green-900">✅ 0.4275 SOL</div>
-      <div class="text-xs text-white mt-2">UNLIMITED / Wallet • Redemption Price: 0.4275 SOL • Max Mint: UNLIMITED</div>
+      <div id="redemption-countdown" class="text-lg font-bold text-green-900">✅ 0.45 SOL</div>
+      <div class="text-xs text-white mt-2">UNLIMITED / Wallet • Redemption Price: 0.45 SOL • Max Mint: UNLIMITED</div>
     </div>
     
     <!-- Public Stage - ENDED -->
@@ -1658,7 +1658,33 @@ require_once 'discord-invite.php';
     </div>
   </div>
   
-  <div class="text-center">
+  <div class="mt-4">
+    <div class="relative bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-gray-900 py-4 px-4 shadow-xl border-2 border-amber-400 rounded-xl">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="text-center md:text-left">
+          <p class="uppercase tracking-wider text-sm font-bold text-amber-800">Golden Rascals Holder Bonus</p>
+          <p class="text-lg font-semibold">
+            Golden Rascals holders enjoy the huge partner discount — redemption price stays locked at <span class="font-bold">0.45 SOL</span> when verified through the Gensuki mint hub.
+          </p>
+          <p class="text-xs text-amber-900/80 mt-1">
+            Tap the Gensuki portal, verify your Rascal, and mint with the Season 5 rate before the vault closes.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href="https://app.gensuki.xyz/Solana/NarrrfsWorldGenesis" target="_blank" rel="noopener noreferrer"
+             class="bg-amber-600 hover:bg-amber-500 text-white font-extrabold px-5 py-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105 whitespace-nowrap border-2 border-amber-300">
+            🧬 Verify & Mint
+          </a>
+          <button onclick="window.location.href='#mint-stages'"
+                  class="bg-white hover:bg-yellow-50 text-amber-800 font-bold px-5 py-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105 whitespace-nowrap border-2 border-amber-400">
+            ℹ️ Holder Requirements
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="text-center mt-6">
     <a href="mint.html"
        class="inline-block px-8 py-4 rounded-full border-3 border-yellow-300 bg-yellow-100 text-yellow-900 font-bold text-lg shadow-xl animate-bounce-slow ring-2 ring-yellow-200 ring-offset-2 flex items-center gap-4 hover:bg-yellow-200 transition-all duration-200 transform hover:scale-105 mx-auto w-fit">
       <span class="text-2xl">🧬</span>
@@ -1784,7 +1810,7 @@ The next wave is close — don't miss the real Genesis scroll.
                     // Redemption Stage - ACTIVE NOW (Public mint ended)
                     if (redemptionEl) {
                         // Redemption is now active - show static message with price
-                        redemptionEl.innerText = "✅ 0.4275 SOL";
+  redemptionEl.innerText = "✅ 0.45 SOL";
                     }
                     
                     // Debug log for testing

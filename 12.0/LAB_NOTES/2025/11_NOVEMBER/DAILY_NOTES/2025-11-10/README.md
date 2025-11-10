@@ -24,10 +24,13 @@
   - Snake: pulls `/api/user/user-game-missions.php`, `/api/user/get-snake-achievements.php`, and global leaderboard (`game='snake'`).
   - Tetris: same stack with Tetris-specific slices and achievements endpoint.
 - Drafted Monday hype tweet copy highlighting Season 5 polish, 3×$10 SOL bounty, and mint discount perks.
+- Final QA pass: re-applied the 0.45 SOL messaging + Golden Rascals banner on `index.html` after cache purge confirmation.
 
 ### ðŸ’» Infrastructure / Housekeeping
 - Confirmed date/time (`Get-Date`) pre-documentation per master rules.
 - Noted outstanding lint warning (`user-select`) carried from legacy CSS; no new violations introduced.
+- Validated Space Invaders store flow with fresh inventory: triple-shot auto-applies after cache clear, new QA note added.
+- Ship Paint Kit UI verified: purchase surfaces color picker, `Ship color updated!` status, and selected HEX (#07016D) pushes immediately to settings endpoint.
 
 ---
 
@@ -36,6 +39,7 @@
 - Begin shop system implementation pass (Snake/Tetris/Invaders store tiles).
 - Capture VR gallery swap & mint updates in LLM sync files after testing on production.
 - Monitor leaderboard endpoints for any season filtering edge cases post-expansion.
+- Confirm Ship Paint Kit tint persistence and align documentation once live tests pass.
 
 ---
 

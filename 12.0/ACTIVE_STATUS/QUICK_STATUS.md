@@ -1,8 +1,8 @@
 # 🚀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** November 7, 2025 - Late Evening  
-**Current Session:** Thursday - 🎯 VIP EVENT PREP + BUG TRIAGE  
-**Status:** 🟢 Achievements patched, final verification underway
+**Last Updated:** November 10, 2025 - Evening  
+**Current Session:** Monday - 🧬 Season 5 UX Polish + Store QA  
+**Status:** 🟢 Mint pricing & Space Invaders store verified (ready to push)
 
 ---
 
@@ -11,8 +11,9 @@
 ### **🎁 MINT PHASE DETAILS:**
 - **Phase:** Redemption Phase (ACTIVE NOW)
 - **Public Mint:** ENDED
-- **Redemption Price:** 0.4275 SOL
+- **Redemption Price:** 0.45 SOL
 - **Gensuki Discount:** Massive discount (check mint page for pricing)
+- **Golden Rascals Bonus:** Verified holders mint at the 0.45 SOL Season 5 rate
 - **Status:** Live and active
 - **Progress:** Ongoing redemption phase
 

@@ -4,11 +4,10 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Database connection
-$db_path = '/var/www/html/db/narrrf_world.sqlite';
+require_once __DIR__ . '/../config/database.php';
 
 try {
-    $db = new SQLite3($db_path);
+    $db = getSQLite3Connection();
     $db->enableExceptions(true);
 } catch (Exception $e) {
     echo json_encode([

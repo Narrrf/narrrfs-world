@@ -582,25 +582,15 @@
       
       <!-- Store -->
       <div id="store" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
-        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center">
-          🛒 Store
-          <span class="ml-2 text-xs text-orange-400">🚧</span>
+        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center justify-between">
+          <span>🛒 Store Upgrades</span>
+          <span class="text-xs text-green-400 bg-green-900/40 border border-green-500/40 rounded-full px-2 py-0.5">LIVE</span>
         </h4>
-        <div class="space-y-3 text-sm">
-          <div class="text-center">
-            <p class="text-gray-400 mb-3">Upgrade your Space Cheese Invaders experience!</p>
-            <div class="space-y-2 text-xs text-gray-300">
-              <p>🎨 Custom Backgrounds</p>
-              <p>🚀 Special Ships</p>
-              <p>💥 Unique Shots</p>
-              <p>✨ Power-ups</p>
-            </div>
-          </div>
-          <a href="profile.html#store" class="block w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-center font-bold px-4 py-2 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
-            🛒 Visit Store
-          </a>
-          <p class="text-xs text-gray-500 text-center">Coming Soon!</p>
+        <p id="store-balance" class="text-xs text-gray-400 mb-3 hidden"></p>
+        <div id="store-items" class="space-y-3 text-sm">
+          <p class="text-gray-400 text-center">Loading store items...</p>
         </div>
+        <p class="text-xs text-gray-500 text-center mt-4">All purchases use $DSPOINC and appear in your Discord inventory.</p>
       </div>
     </div>
     
@@ -889,6 +879,9 @@ async function loadUserStats(discordId) {
     // Load leaderboard
     await loadLeaderboard(discordId);
     
+    // Load store items
+    await loadSpaceInvadersStore(discordId);
+    
     // Hide loading and show stats
     document.getElementById('stats-loading').classList.add('hidden');
     document.getElementById('game-stats').classList.remove('hidden');
@@ -901,6 +894,371 @@ async function loadUserStats(discordId) {
   } catch (error) {
     console.error('❌ Error loading user stats:', error);
     showError('Failed to load stats. Please try again.');
+  }
+}
+
+const DEFAULT_SHIP_COLOR_HEX = '#fbbf24';
+const SPACE_STORE_DEFS = {
+  triple: {
+    key: 'triple',
+    title: 'Triple Shot Core',
+    icon: '🎯',
+    description: 'Start every Space Cheese Invaders run with triple-shot active. Permanent unlock tied to your account.',
+    match: ['Space Triple Shot Core', 'Triple Shot Core']
+  },
+  color: {
+    key: 'color',
+    title: 'Ship Paint Kit',
+    icon: '🎨',
+    description: 'Unlock the advanced ship paint lab and choose any color for your cheese fighter.',
+    match: ['Space Ship Paint Kit', 'Ship Paint Kit']
+  }
+};
+
+const spaceStoreState = {
+  userId: null,
+  items: {},
+  orderedKeys: ['triple', 'color'],
+  owned: new Set(),
+  settings: {},
+  balance: null
+};
+
+function sanitizeHexColor(value) {
+  if (typeof value !== 'string') {
+    return DEFAULT_SHIP_COLOR_HEX;
+  }
+  const trimmed = value.trim();
+  return /^#([0-9a-fA-F]{6})$/.test(trimmed) ? trimmed.toUpperCase() : DEFAULT_SHIP_COLOR_HEX;
+}
+
+async function loadSpaceInvadersStore(discordId) {
+  const storeSection = document.getElementById('store');
+  const storeContainer = document.getElementById('store-items');
+  const balanceEl = document.getElementById('store-balance');
+  
+  if (!storeSection || !storeContainer) {
+    return;
+  }
+  
+  storeSection.classList.remove('hidden');
+  spaceStoreState.userId = discordId || null;
+  
+  if (!discordId) {
+    if (balanceEl) {
+      balanceEl.classList.add('hidden');
+    }
+    storeContainer.innerHTML = '<p class="text-gray-400 text-center">Login to purchase Space Cheese Invaders upgrades.</p>';
+    updateSpaceStorePerkState();
+    return;
+  }
+  
+  try {
+    storeContainer.innerHTML = '<p class="text-gray-400 text-center">Loading store items...</p>';
+    
+    const [itemsRes, inventoryRes, settingsRes, balanceRes] = await Promise.all([
+      fetch(`${apiBaseUrl}/api/store/items.php`),
+      fetch(`${apiBaseUrl}/api/store/inventory.php?user_id=${discordId}`),
+      fetch(`${apiBaseUrl}/api/store/get-user-settings.php?user_id=${discordId}&game=space_invaders`),
+      fetch(`${apiBaseUrl}/api/user/score-total.php?user_id=${discordId}`)
+    ]);
+    
+    const itemsData = itemsRes.ok ? await itemsRes.json() : { success: false, items: [] };
+    const inventoryData = inventoryRes.ok ? await inventoryRes.json() : { success: false, items: [] };
+    const settingsData = settingsRes.ok ? await settingsRes.json() : { success: false, settings: {} };
+    const balanceData = balanceRes.ok ? await balanceRes.json() : null;
+    
+    const normalizeName = (name) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const itemMap = {};
+    (itemsData.items || []).forEach(item => {
+      const normalizedItemName = normalizeName(item.item_name);
+      const defKey = Object.keys(SPACE_STORE_DEFS).find(key => {
+        const def = SPACE_STORE_DEFS[key];
+        const candidates = [def.title, ...(def.match || [])];
+        return candidates.some(candidate => normalizeName(candidate) === normalizedItemName);
+      });
+      
+      if (defKey) {
+        itemMap[defKey] = item;
+      }
+    });
+    
+    const ownedSet = new Set();
+    if (inventoryData.success && Array.isArray(inventoryData.items)) {
+      inventoryData.items.forEach(invItem => {
+        const defKey = Object.keys(SPACE_STORE_DEFS).find(key => {
+          const def = SPACE_STORE_DEFS[key];
+          const candidates = [def.title, ...(def.match || [])];
+          return candidates.some(candidate => normalizeName(candidate) === normalizeName(invItem.name));
+        });
+        if (defKey && itemMap[defKey]) {
+          ownedSet.add(itemMap[defKey].item_id);
+        }
+      });
+    }
+    
+    spaceStoreState.items = itemMap;
+    spaceStoreState.owned = ownedSet;
+    spaceStoreState.settings = settingsData.success ? (settingsData.settings || {}) : {};
+    spaceStoreState.balance = balanceData && typeof balanceData.total_dspoinc !== 'undefined' ? balanceData.total_dspoinc : null;
+    
+    renderSpaceStore();
+    updateSpaceStorePerkState();
+  } catch (error) {
+    console.error('❌ Error loading Space Invaders store:', error);
+    storeContainer.innerHTML = '<p class="text-red-400 text-center">Failed to load store items. Please try again later.</p>';
+  }
+}
+
+function renderSpaceStore() {
+  const storeContainer = document.getElementById('store-items');
+  const balanceEl = document.getElementById('store-balance');
+  
+  if (!storeContainer) {
+    return;
+  }
+  
+  if (!spaceStoreState.userId) {
+    storeContainer.innerHTML = '<p class="text-gray-400 text-center">Login to purchase Space Cheese Invaders upgrades.</p>';
+    if (balanceEl) {
+      balanceEl.classList.add('hidden');
+    }
+    return;
+  }
+  
+  if (balanceEl) {
+    if (spaceStoreState.balance !== null) {
+      balanceEl.textContent = `Current Balance: ${formatNumber(spaceStoreState.balance)} DSPOINC`;
+      balanceEl.classList.remove('hidden');
+    } else {
+      balanceEl.classList.add('hidden');
+    }
+  }
+  
+  storeContainer.innerHTML = '';
+  let hasItems = false;
+  
+  spaceStoreState.orderedKeys.forEach(defKey => {
+    const item = spaceStoreState.items[defKey];
+    const def = SPACE_STORE_DEFS[defKey];
+    if (!item || !def) {
+      return;
+    }
+    hasItems = true;
+    const owned = spaceStoreState.owned.has(item.item_id);
+    const card = buildStoreCard(defKey, item, def, owned);
+    storeContainer.appendChild(card);
+  });
+  
+  if (!hasItems) {
+    storeContainer.innerHTML = '<p class="text-gray-400 text-center">Store items are being prepared. Check back soon!</p>';
+  }
+}
+
+function buildStoreCard(defKey, item, def, owned) {
+  const card = document.createElement('div');
+  card.className = 'bg-gray-900/60 rounded-xl border border-gray-700/50 p-4 shadow-inner';
+  
+  const priceText = `${formatNumber(item.price)} DSPOINC`;
+  const statusId = `store-item-status-${item.item_id}`;
+  
+  card.innerHTML = `
+    <div class="flex items-start justify-between">
+      <div class="pr-6">
+        <div class="text-sm font-semibold text-yellow-200 flex items-center gap-2">
+          <span>${def.icon}</span>
+          <span>${def.title}</span>
+        </div>
+        <p class="text-xs text-gray-400 mt-2 leading-relaxed">${def.description}</p>
+      </div>
+      <div class="text-right">
+        <div class="text-xs font-bold text-yellow-300">${priceText}</div>
+        ${owned ? '<span class="inline-block mt-2 text-xs text-green-400 font-semibold">Owned</span>' : `<button data-store-button="${defKey}" class="mt-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors duration-200">Buy</button>`}
+      </div>
+    </div>
+    <div id="${statusId}" class="mt-3 text-xs hidden"></div>
+  `;
+  
+  if (!owned) {
+    const button = card.querySelector(`[data-store-button="${defKey}"]`);
+    if (button) {
+      button.addEventListener('click', () => purchaseSpaceStoreItem(defKey));
+    }
+  }
+  
+  if (defKey === 'color') {
+    const note = document.createElement('p');
+    note.className = 'text-xs text-gray-500 mt-3';
+    note.textContent = owned ? 'Pick your ship color below. Changes are saved immediately.' : 'Unlock the paint kit to enable custom ship colors.';
+    card.appendChild(note);
+    
+    if (owned) {
+      const colorWrapper = document.createElement('div');
+      colorWrapper.className = 'mt-2 flex items-center gap-3';
+      
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.className = 'w-12 h-10 rounded border border-gray-600 bg-gray-800 cursor-pointer';
+      colorInput.value = sanitizeHexColor(spaceStoreState.settings.ship_color || DEFAULT_SHIP_COLOR_HEX);
+      
+      const preview = document.createElement('div');
+      preview.className = 'w-10 h-10 rounded-lg border border-gray-600 shadow-inner';
+      preview.style.background = colorInput.value;
+      
+      const valueLabel = document.createElement('span');
+      valueLabel.className = 'text-xs text-gray-300 font-mono';
+      valueLabel.textContent = colorInput.value.toUpperCase();
+      
+      colorInput.addEventListener('input', event => {
+        const sanitized = sanitizeHexColor(event.target.value);
+        preview.style.background = sanitized;
+        valueLabel.textContent = sanitized.toUpperCase();
+      });
+      
+      colorInput.addEventListener('change', event => {
+        const sanitized = sanitizeHexColor(event.target.value);
+        preview.style.background = sanitized;
+        valueLabel.textContent = sanitized.toUpperCase();
+        saveShipColor(sanitized);
+      });
+      
+      colorWrapper.appendChild(colorInput);
+      colorWrapper.appendChild(preview);
+      colorWrapper.appendChild(valueLabel);
+      card.appendChild(colorWrapper);
+    }
+  }
+  
+  return card;
+}
+
+function showStoreMessage(itemId, message, type = 'info') {
+  const statusEl = document.getElementById(`store-item-status-${itemId}`);
+  if (!statusEl) {
+    return;
+  }
+  
+  statusEl.classList.remove('hidden');
+  statusEl.classList.remove('text-red-400', 'text-green-400', 'text-gray-300');
+  
+  if (type === 'error') {
+    statusEl.classList.add('text-red-400');
+  } else if (type === 'success') {
+    statusEl.classList.add('text-green-400');
+  } else {
+    statusEl.classList.add('text-gray-300');
+  }
+  
+  statusEl.textContent = message;
+}
+
+async function purchaseSpaceStoreItem(defKey) {
+  const item = spaceStoreState.items[defKey];
+  if (!item || !spaceStoreState.userId) {
+    return;
+  }
+  
+  const button = document.querySelector(`[data-store-button="${defKey}"]`);
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Processing...';
+  }
+  
+  showStoreMessage(item.item_id, 'Processing purchase...', 'info');
+  
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/store/purchase.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: spaceStoreState.userId,
+        item_id: item.item_id,
+        quantity: 1
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      spaceStoreState.owned.add(item.item_id);
+      if (typeof data.new_balance !== 'undefined') {
+        spaceStoreState.balance = data.new_balance;
+      }
+      if (defKey === 'color' && !spaceStoreState.settings.ship_color) {
+        spaceStoreState.settings.ship_color = DEFAULT_SHIP_COLOR_HEX;
+      }
+      
+      showStoreMessage(item.item_id, 'Purchase successful! 🎉', 'success');
+      renderSpaceStore();
+      updateSpaceStorePerkState();
+      return;
+    }
+    
+    showStoreMessage(item.item_id, data.error || 'Purchase failed. Please try again.', 'error');
+  } catch (error) {
+    console.error('❌ Purchase failed:', error);
+    showStoreMessage(item.item_id, 'Purchase failed. Please try again.', 'error');
+  } finally {
+    if (button && button.isConnected) {
+      button.disabled = false;
+      button.textContent = `Buy`;
+    }
+  }
+}
+
+async function saveShipColor(colorHex) {
+  const colorItem = spaceStoreState.items.color;
+  if (!colorItem || !spaceStoreState.userId) {
+    return;
+  }
+  
+  showStoreMessage(colorItem.item_id, 'Saving color preference...', 'info');
+  
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/store/update-user-setting.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: spaceStoreState.userId,
+        game: 'space_invaders',
+        setting_key: 'ship_color',
+        setting_value: colorHex
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      spaceStoreState.settings.ship_color = colorHex;
+      showStoreMessage(colorItem.item_id, 'Ship color updated! 🚀', 'success');
+      updateSpaceStorePerkState();
+    } else {
+      showStoreMessage(colorItem.item_id, data.error || 'Failed to save color. Please try again.', 'error');
+    }
+  } catch (error) {
+    console.error('❌ Failed to save ship color:', error);
+    showStoreMessage(colorItem.item_id, 'Failed to save color. Please try again.', 'error');
+  }
+}
+
+function updateSpaceStorePerkState() {
+  const tripleItem = spaceStoreState.items.triple;
+  const colorItem = spaceStoreState.items.color;
+  
+  const storeState = window.spaceInvadersStoreState || {};
+  storeState.tripleShotOwned = tripleItem ? spaceStoreState.owned.has(tripleItem.item_id) : false;
+  storeState.shipColorOwned = colorItem ? spaceStoreState.owned.has(colorItem.item_id) : false;
+  const rawColor = spaceStoreState.settings.ship_color || DEFAULT_SHIP_COLOR_HEX;
+  storeState.shipColor = storeState.shipColorOwned ? sanitizeHexColor(rawColor) : DEFAULT_SHIP_COLOR_HEX;
+  
+  window.spaceInvadersStoreState = storeState;
+  
+  if (typeof window.applySpaceInvadersStorePerks === 'function') {
+    window.applySpaceInvadersStorePerks(storeState);
   }
 }
 

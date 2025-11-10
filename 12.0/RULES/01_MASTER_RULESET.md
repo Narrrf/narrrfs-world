@@ -674,7 +674,7 @@ Before creating ANY new API endpoint, you MUST:
 - **PREVENT table confusion** and duplication
 - **ENSURE database awareness** for all development
 
-### **CURRENT DATABASE TABLES (LIVE STATUS - 2025-10-31 - VERIFIED - 58 TOTAL):**
+### **CURRENT DATABASE TABLES (LIVE STATUS - 2025-11-10 - VERIFIED - 59 TOTAL):**
 - **boss_configurations** - Boss game configurations
 - **boss_level_notifications** - Boss level achievement notifications
 - **leaderboard** - Current season leaderboard
@@ -715,6 +715,7 @@ Before creating ANY new API endpoint, you MUST:
 - **tbl_space_invaders_achievements** - Space Invaders achievements (28 total)
 - **tbl_space_invaders_settings** - Space Invaders settings
 - **tbl_store_items** - Store item definitions
+- **tbl_user_store_settings** - Per-game player settings (e.g. Space Invaders ship color)
 - **tbl_tetris_achievements** - Tetris game achievements (25 total)
 - **tbl_tetris_scores** - Tetris, Snake, and Space Invaders game scores
 - **tbl_user_inventory** - User inventory items

@@ -3,7 +3,7 @@
 **Game Version:** v5.1.0 (Season 5 - Stable Modal Update)  
 **Last Updated:** November 6, 2025 - Evening Stability Pass  
 **Status:** ✅ **PRODUCTION READY - PROFILE PORTAL INTEGRATED**  
-**Document Purpose:** Complete technical reference for all systems and features  
+**Document Purpose:** Complete technical reference for all systems and features (updated with Season 5 store upgrades)  
 
 ---
 
@@ -20,9 +20,10 @@
 9. [Audio System](#audio-system)
 10. [Visual Effects](#visual-effects)
 11. [Configuration Reference](#configuration-reference)
-12. [Database Schema](#database-schema)
-13. [API Endpoints](#api-endpoints)
-14. [Deployment Guide](#deployment-guide)
+12. [Store & Player Upgrades](#store--player-upgrades)
+13. [Database Schema](#database-schema)
+14. [API Endpoints](#api-endpoints)
+15. [Deployment Guide](#deployment-guide)
 
 ---
 
@@ -607,6 +608,43 @@ invaderSpeed = baseSpeed * (1 + waveNumber * 0.01)
 - **Max Lives:** Unlimited (can collect more)
 - **Invincibility Duration:** 60 frames (0.6 seconds)
 - **Ship Speed:** 5 pixels/frame (10 with speed boost)
+
+---
+
+## 🧾 **STORE & PLAYER UPGRADES**
+
+### **Season 5 Storefront (November 10, 2025)**
+
+- **Location:** `public/space-cheese-invaders.html` → “Store Upgrades” panel beneath the stats dashboard.  
+- **Purpose:** Let players spend $DSPOINC on persistent Space Invaders perks that also show up in Discord inventory and the admin item tools.
+
+| Item Name | Price | Effect | Notes |
+|-----------|-------|--------|-------|
+| `Space Triple Shot Core` | 500,000 DSPOINC | Automatically enables double+triple shot from the first wave. | Mirrors the Cheese Emperor reward, owned flag applied every restart. |
+| `Space Ship Paint Kit` | 250,000 DSPOINC | Unlocks a color picker that tints the ship sprite (canvas overlay). | Selected HEX color is stored per-user and reapplied on load. |
+
+### **Runtime Integration**
+
+- `public/space-cheese-invaders.html` fetches catalog, inventory, settings, and balance via:
+  - `GET /api/store/items.php`
+  - `GET /api/store/inventory.php?user_id={discord_id}`
+  - `GET /api/store/get-user-settings.php?user_id={discord_id}&game=space_invaders`
+  - `POST /api/store/update-user-setting.php`
+  - `POST /api/store/purchase.php`
+- Inventory ownership is compared using normalized item names to avoid mismatches (e.g., “Space Triple Shot Core” vs “Triple Shot Core”); cache bust or hard refresh after first purchase during QA.
+- Store state is pushed into `window.spaceInvadersStoreState` and consumed by `public/scripts/space-cheese-invaders.js`:
+  ```javascript
+  window.applySpaceInvadersStorePerks = function(storeState) { ... }
+  applyStoreUpgrades(); // called on load and restart
+  ```
+- Triple-shot ownership sets `hasDoubleShotUpgrade = hasTripleShotUpgrade = true` before the first wave.
+- Ship paint kit sanitizes and caches a HEX value; color picker writes through to `/api/store/update-user-setting.php`, surfaces an immediate “Ship color updated! 🚀” status, and the draw routine adds a `source-atop` tint over the ship sprite (fallback rectangle when image missing).
+
+### **Discord & Admin Visibility**
+
+- Purchases add rows to `tbl_user_inventory` (existing store infrastructure).  
+- Discord `/inventory` command and the admin item management page automatically list the new item IDs.  
+- The color picker remains disabled until the paint kit is owned; changes are persisted immediately via the new settings endpoint.
 
 ---
 

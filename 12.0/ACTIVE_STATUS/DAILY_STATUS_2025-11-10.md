@@ -17,6 +17,7 @@
    - ✅ Ported “Your Stats” panels from Space Invaders to Cheese Snake + Cheese Tetris
    - ✅ Hooked each panel into the correct API endpoints (missions, achievements, leaderboard)
    - ✅ Added store teaser content per game ahead of the shop rollout
+   - ✅ QA: Space Invaders store purchases propagate (Triple Shot auto-applies, Ship Paint Kit tint saved & renders)
 
 3. **Comms prep**
    - ✅ Drafted Monday hype tweet (Season 5 polish, 3×$10 SOL bounty, mint discounts)
@@ -32,6 +33,7 @@
 - [x] Draft social copy for Monday campaign
 - [ ] Update LLM sync files after QA pass
 - [ ] QA on production once assets propagate
+- [x] Sync Narrrf’s World ruleset with Space Invaders store ownership/tint guidance
 
 ---
 

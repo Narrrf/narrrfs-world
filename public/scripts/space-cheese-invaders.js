@@ -608,6 +608,55 @@ let hasDoubleShotUpgrade = false; // Unlocked after defeating first boss (Cheese
 let hasTripleShotUpgrade = false; // Unlocked after defeating second boss (Cheese Emperor)
 let hasQuadShotUpgrade = false; // Unlocked after defeating third boss (Cheese God)
 
+const DEFAULT_SHIP_COLOR = '#fbbf24';
+let playerShipColor = null;
+
+window.spaceInvadersStoreState = {
+  tripleShotOwned: false,
+  shipColorOwned: false,
+  shipColor: DEFAULT_SHIP_COLOR,
+  ...(window.spaceInvadersStoreState || {})
+};
+
+function sanitizeStoreColor(color) {
+  if (typeof color !== 'string') {
+    return DEFAULT_SHIP_COLOR;
+  }
+  const trimmed = color.trim();
+  return /^#([0-9a-f]{6})$/i.test(trimmed) ? trimmed.toUpperCase() : DEFAULT_SHIP_COLOR;
+}
+
+function applyStoreUpgrades() {
+  const storeState = window.spaceInvadersStoreState || {};
+
+  if (storeState.tripleShotOwned) {
+    hasDoubleShotUpgrade = true;
+    hasTripleShotUpgrade = true;
+  }
+
+  if (storeState.shipColorOwned) {
+    playerShipColor = sanitizeStoreColor(storeState.shipColor || DEFAULT_SHIP_COLOR);
+  } else {
+    playerShipColor = null;
+  }
+}
+
+window.applySpaceInvadersStorePerks = function(storeStateOverride = {}) {
+  window.spaceInvadersStoreState = {
+    ...(window.spaceInvadersStoreState || {}),
+    ...storeStateOverride
+  };
+
+  window.spaceInvadersStoreState.shipColor = sanitizeStoreColor(window.spaceInvadersStoreState.shipColor || DEFAULT_SHIP_COLOR);
+  applyStoreUpgrades();
+
+  if (typeof updateWeaponDisplay === 'function') {
+    updateWeaponDisplay();
+  }
+};
+
+applyStoreUpgrades();
+
 // 🔥 PHOENIX INVADERS SYSTEM - NEW FEATURE!
 // Phoenix wave system that alternates with regular invader waves
 let phoenixWaves = [];
@@ -5727,6 +5776,7 @@ let reloadButtonInterval = null;
     hasTripleShotUpgrade = false;
     hasQuadShotUpgrade = false;
     console.log('🎯 Multi-shot upgrades reset - starting fresh with single shot');
+    applyStoreUpgrades();
     
     // Hide any open modals
     const gameOverModal = document.getElementById("space-invaders-over-modal");
@@ -9488,9 +9538,17 @@ let reloadButtonInterval = null;
     // Try to draw cheese ship image first
     if (cheeseShipImg.complete && cheeseShipImg.naturalWidth > 0) {
       ctx.drawImage(cheeseShipImg, playerShip.x, playerShip.y, playerShip.width, playerShip.height);
+      
+      if (playerShipColor) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-atop';
+        ctx.fillStyle = playerShipColor;
+        ctx.fillRect(playerShip.x, playerShip.y, playerShip.width, playerShip.height);
+        ctx.restore();
+      }
     } else {
       // Fallback to cheese-themed rectangle
-      ctx.fillStyle = '#fbbf24'; // Cheese yellow
+      ctx.fillStyle = playerShipColor || DEFAULT_SHIP_COLOR; // Cheese yellow
       ctx.fillRect(playerShip.x, playerShip.y, playerShip.width, playerShip.height);
       
       // Draw cheese details
