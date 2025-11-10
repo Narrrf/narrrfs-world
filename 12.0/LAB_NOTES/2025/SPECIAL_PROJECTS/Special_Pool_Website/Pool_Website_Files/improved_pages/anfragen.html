@@ -424,15 +424,21 @@
             e.preventDefault();
             
             const formData = new FormData(this);
-            const submitBtn = this.querySelector('.btn-primary');
+            const data = Object.fromEntries(formData.entries());
+            const submitBtn = this.querySelector('.cta-button') || this.querySelector('button[type="submit"]');
             
-            submitBtn.textContent = 'Wird gesendet...';
-            submitBtn.disabled = true;
+            if (submitBtn) {
+                submitBtn.textContent = 'Wird gesendet...';
+                submitBtn.disabled = true;
+            }
             
             try {
                 const response = await fetch('./api/send-email.php', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
                 });
                 
                 const result = await response.json();
@@ -447,8 +453,10 @@
                 alert('Fehler beim Senden der Anfrage. Bitte versuchen Sie es erneut.');
             }
             
-            submitBtn.textContent = 'Anfrage senden';
-            submitBtn.disabled = false;
+            if (submitBtn) {
+                submitBtn.textContent = 'Anfrage senden';
+                submitBtn.disabled = false;
+            }
         });
 
         // Initialize page

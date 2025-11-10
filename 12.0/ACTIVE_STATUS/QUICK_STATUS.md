@@ -85,6 +85,19 @@
 - ✅ Harden achievement calls (`keepalive` + `cache: 'no-store'`)
 - ✅ Verify `score_hunter` locally on Tetris & Snake
 - 🔄 Update LLM sync files + prep render push
+- ✅ Add stats/leaderboard/store panels to Snake & Tetris standalone pages
+- ✅ Update mint CTA + Golden Rascals banner with 0.45 SOL pricing and holder notice
+- ✅ Replace VR gallery hero asset (`vr-gallery2.JPG`) on index
+- 🔄 Collect assets + schedule Season 5 Monday hype post (3×$10 SOL bounty)
+
+### **🐛 NOVEMBER 10, 2025 - SEASON 5 UX EXPANSION**
+**Mint & Profile polish**
+1. ✅ VR gallery hero art swapped (`vr-gallery2.JPG`) with clean pathing (`img/vr-gallery2.JPG`)
+2. ✅ Redemption stage + CTA updated to live **0.45 SOL** pricing
+3. ✅ Golden Rascals holder notice added under Mint Stages (discount reminder without altering global price)
+4. ✅ Snake & Tetris standalone pages now include “Your Stats” dashboards (missions API, achievements API, leaderboard refresh, store teaser)
+5. ✅ Monday hype tweet drafted (Season 5 polish, 3×$10 SOL bounty, discount mint CTA)
+6. 🔄 Prep LLM sync entries + production asset upload (VR image) after QA
 
 ### **🐛 NOVEMBER 8, 2025 - EARLY MORNING SESSION:**
 **BOSS SAFETY + ADMIN RESILIENCE**

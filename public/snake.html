@@ -358,6 +358,105 @@
   </section>
 </section>
 
+<!-- 🎯 USER STATS SECTION -->
+<section id="snake-user-stats-section" class="max-w-6xl w-full mx-auto px-4 mt-10 mb-10">
+  <div class="bg-gradient-to-r from-gray-800/90 to-gray-700/90 rounded-2xl border border-yellow-400/30 p-6 shadow-xl">
+    <div class="text-center mb-6">
+      <h3 class="text-2xl font-bold text-yellow-300 mb-2">🐍 Your Cheese Snake Stats</h3>
+      <p class="text-gray-400 text-sm">Track your runs, achievements, and prep for the coming store</p>
+    </div>
+
+    <div id="snake-user-stats-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div id="snake-stats-loading" class="col-span-full text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
+        <p class="text-gray-400 mt-2">Loading your snake stats...</p>
+      </div>
+
+      <!-- Game Stats -->
+      <div id="snake-game-stats" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center gap-2">
+          📊 Game Statistics
+        </h4>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-400">Games Played:</span>
+            <span id="snake-total-games" class="text-yellow-300 font-bold">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Best Score:</span>
+            <span id="snake-best-score" class="text-yellow-300 font-bold">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Total Score:</span>
+            <span id="snake-total-score" class="text-yellow-300 font-bold">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">DSPOINC Earned:</span>
+            <span id="snake-dspoin-earned" class="text-green-400 font-bold">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      <div id="snake-achievements" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center gap-2">
+          🏆 Achievements
+        </h4>
+        <div id="snake-achievements-list" class="space-y-2 text-sm max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-yellow-400 scrollbar-track-gray-700">
+          <p class="text-gray-400">Loading achievements...</p>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div id="snake-leaderboard" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center gap-2">
+          🏆 Leaderboard
+        </h4>
+        <div id="snake-leaderboard-content" class="space-y-2 text-sm">
+          <p class="text-gray-400">Loading leaderboard...</p>
+        </div>
+        <button id="snake-refresh-leaderboard" class="mt-3 w-full bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-lg transition-colors duration-200">
+          🔄 Refresh
+        </button>
+      </div>
+
+      <!-- Store -->
+      <div id="snake-store" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center gap-2">
+          🛒 Store
+          <span class="ml-2 text-xs text-green-400">🚧</span>
+        </h4>
+        <div class="space-y-3 text-sm">
+          <div class="text-center">
+            <p class="text-gray-400 mb-3">Planned upgrades for Cheese Snake:</p>
+            <div class="space-y-2 text-xs text-gray-300">
+              <p>🎨 Custom snake skins</p>
+              <p>🍏 Golden apple trails</p>
+              <p>💥 Boss intro effects</p>
+              <p>⚡ Speed burst boosts</p>
+            </div>
+          </div>
+          <a href="profile.html#store" class="block w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white text-center font-bold px-4 py-2 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
+            🛍️ Visit Store
+          </a>
+          <p class="text-xs text-gray-500 text-center">Coming Soon!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Prompt -->
+    <div id="snake-login-prompt" class="hidden text-center py-8">
+      <div class="bg-gray-900/50 rounded-xl p-6 border border-gray-600/30">
+        <h4 class="text-lg font-bold text-yellow-300 mb-3">🔐 Login Required</h4>
+        <p class="text-gray-400 mb-4">Sign in to view your Cheese Snake stats and achievements</p>
+        <a href="profile.html" class="inline-block bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-2 rounded-xl shadow-lg transition-colors duration-200">
+          🚀 Go to Profile
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 🎮 Game Script -->
 <script src="scripts/snake-scroll.js?v=5.4.0&season5_standalone=1730649600"></script>
 
@@ -428,6 +527,198 @@
   });
   
   console.log('🎮 Snake standalone page loaded successfully!');
+</script>
+
+<!-- 🎯 Snake User Stats Script -->
+<script>
+(function() {
+  let snakeApiBaseUrl = '';
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const discordId = localStorage.getItem('discord_id');
+    const discordName = localStorage.getItem('discord_name');
+    const isProductionEnv = window.location.hostname === 'narrrfs.world';
+    snakeApiBaseUrl = isProductionEnv ? 'https://narrrfs.world' : 'http://localhost';
+
+    console.log('🐍 Snake Stats Environment:', isProductionEnv ? 'Production' : 'Local');
+
+    if (!discordId && !isProductionEnv) {
+      console.log('🐍 Local dev fallback for stats');
+      const narrrfId = '328601656659017732';
+      localStorage.setItem('discord_id', narrrfId);
+      localStorage.setItem('discord_name', 'Narrrf');
+      loadSnakeUserStats(narrrfId);
+      return;
+    }
+
+    if (!discordId) {
+      console.log('🐍 No user session found for stats');
+      showSnakeLoginPrompt();
+      return;
+    }
+
+    console.log(`🐍 Loading stats for ${discordName} (${discordId})`);
+    loadSnakeUserStats(discordId);
+
+    const refreshBtn = document.getElementById('snake-refresh-leaderboard');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', async () => {
+        refreshBtn.textContent = '🔄 Refreshing...';
+        refreshBtn.disabled = true;
+        await loadSnakeLeaderboard(discordId);
+        refreshBtn.textContent = '🔄 Refresh';
+        refreshBtn.disabled = false;
+      });
+    }
+  });
+
+  function showSnakeLoginPrompt() {
+    document.getElementById('snake-stats-loading')?.classList.add('hidden');
+    document.getElementById('snake-login-prompt')?.classList.remove('hidden');
+  }
+
+  async function loadSnakeUserStats(discordId) {
+    try {
+      await Promise.all([
+        loadSnakeGameStats(discordId),
+        loadSnakeAchievements(discordId),
+        loadSnakeLeaderboard(discordId)
+      ]);
+
+      document.getElementById('snake-stats-loading')?.classList.add('hidden');
+      document.getElementById('snake-game-stats')?.classList.remove('hidden');
+      document.getElementById('snake-achievements')?.classList.remove('hidden');
+      document.getElementById('snake-leaderboard')?.classList.remove('hidden');
+      document.getElementById('snake-store')?.classList.remove('hidden');
+
+      console.log('🐍 Snake user stats loaded successfully');
+    } catch (error) {
+      console.error('🐍 Error loading snake stats:', error);
+      showSnakeStatsError();
+    }
+  }
+
+  async function loadSnakeGameStats(discordId) {
+    try {
+      const response = await fetch(`${snakeApiBaseUrl}/api/user/user-game-missions.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: discordId })
+      });
+
+      const data = await response.json();
+      const stats = data?.games?.snake?.stats || {};
+
+      document.getElementById('snake-total-games').textContent = stats.total_games ?? '0';
+      document.getElementById('snake-best-score').textContent = snakeFormatNumber(stats.best_score ?? 0);
+      document.getElementById('snake-total-score').textContent = snakeFormatNumber(stats.total_score ?? 0);
+      document.getElementById('snake-dspoin-earned').textContent = `${snakeFormatNumber(stats.dspoinc_earned ?? 0)} DSPOINC`;
+    } catch (error) {
+      console.error('🐍 Error loading snake game stats:', error);
+      throw error;
+    }
+  }
+
+  async function loadSnakeAchievements(discordId) {
+    try {
+      const response = await fetch(`${snakeApiBaseUrl}/api/user/get-snake-achievements.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: discordId })
+      });
+
+      const data = await response.json();
+      const list = document.getElementById('snake-achievements-list');
+      list.innerHTML = '';
+
+      if (!data.success || !Array.isArray(data.achievements) || data.achievements.length === 0) {
+        list.innerHTML = '<p class="text-gray-400">No achievements yet. Keep playing!</p>';
+        return;
+      }
+
+      data.achievements.slice(0, 5).forEach((achievement) => {
+        const unlocked = Boolean(achievement.unlocked_at);
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between p-2 bg-gray-800/50 rounded-lg';
+        row.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="text-lg">${unlocked ? '🏆' : '🔒'}</span>
+            <span class="${unlocked ? 'text-yellow-300' : 'text-gray-500'} text-sm">
+              ${achievement.achievement_title}
+            </span>
+          </div>
+          ${unlocked ? '<span class="text-xs text-green-400">✓</span>' : ''}
+        `;
+        list.appendChild(row);
+      });
+
+      if (data.achievements.length > 5) {
+        const more = document.createElement('div');
+        more.className = 'text-center mt-2';
+        more.innerHTML = `<span class="text-xs text-gray-500">+${data.achievements.length - 5} more achievements</span>`;
+        list.appendChild(more);
+      }
+    } catch (error) {
+      console.error('🐍 Error loading snake achievements:', error);
+      document.getElementById('snake-achievements-list').innerHTML = '<p class="text-red-400">Failed to load achievements</p>';
+    }
+  }
+
+  async function loadSnakeLeaderboard(discordId) {
+    try {
+      const response = await fetch(`${snakeApiBaseUrl}/api/dev/get-leaderboard.php`);
+      const data = await response.json();
+      const leaderboard = data?.snake || [];
+      const container = document.getElementById('snake-leaderboard-content');
+      container.innerHTML = '';
+
+      if (!Array.isArray(leaderboard) || leaderboard.length === 0) {
+        container.innerHTML = '<p class="text-gray-400">No Cheese Snake scores yet</p>';
+        return;
+      }
+
+      leaderboard.slice(0, 5).forEach((player, index) => {
+        const isUser = player.discord_id === discordId;
+        const row = document.createElement('div');
+        row.className = `flex justify-between items-center p-2 rounded-lg ${isUser ? 'bg-green-400/20' : ''}`;
+        row.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-gray-400 w-6">${index + 1}.</span>
+            <span class="${isUser ? 'text-yellow-300 font-bold' : 'text-gray-300 text-xs'}">
+              ${player.discord_name || 'Player'}
+            </span>
+            ${isUser ? '<span class="text-xs text-green-400">(You)</span>' : ''}
+          </div>
+          <span class="text-xs text-yellow-300 font-bold">${player.score} DSPOINC</span>
+        `;
+        container.appendChild(row);
+      });
+    } catch (error) {
+      console.error('🐍 Error loading snake leaderboard:', error);
+      document.getElementById('snake-leaderboard-content').innerHTML = '<p class="text-red-400">Failed to load leaderboard</p>';
+    }
+  }
+
+  function showSnakeStatsError() {
+    const content = document.getElementById('snake-user-stats-content');
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'col-span-full text-center py-8';
+    errorDiv.innerHTML = `
+      <div class="text-red-400 mb-2">❌ Failed to load Snake stats.</div>
+      <button onclick="location.reload()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-lg transition-colors duration-200">
+        🔄 Retry
+      </button>
+    `;
+    content.appendChild(errorDiv);
+    document.getElementById('snake-stats-loading')?.classList.add('hidden');
+  }
+
+  function snakeFormatNumber(num) {
+    if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
+    if (num >= 1_000) return (num / 1_000).toFixed(1) + 'K';
+    return Number(num).toLocaleString();
+  }
+})();
 </script>
 
 </body>

@@ -26,6 +26,13 @@ if (!function_exists('poolbau_get_email_settings')) {
         $data = json_decode($json, true);
 
         $cached = is_array($data) ? $data : [];
+
+        // Allow overriding only the sensitive SMTP password via environment variable.
+        $envPassword = getenv('POOLBAU_SMTP_PASSWORD');
+        if ($envPassword !== false && $envPassword !== '') {
+            $cached['smtp_password'] = $envPassword;
+        }
+
         return $cached;
     }
 }

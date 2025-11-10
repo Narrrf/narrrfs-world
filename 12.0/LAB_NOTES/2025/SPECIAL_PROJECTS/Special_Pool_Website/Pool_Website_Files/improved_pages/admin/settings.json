@@ -7,7 +7,7 @@
     "smtp_host": "smtp.titan.email",
     "smtp_port": 587,
     "smtp_username": "office@poolbauprofi.at",
-    "smtp_password": "LadinigPool1!",
+    "smtp_password": "",
     "smtp_encryption": "tls",
     "slider_speed": 5,
     "bubble_effect": "medium",
