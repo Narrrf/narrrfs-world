@@ -89,6 +89,7 @@
 - ✅ Add stats/leaderboard/store panels to Snake & Tetris standalone pages
 - ✅ Update mint CTA + Golden Rascals banner with 0.45 SOL pricing and holder notice
 - ✅ Replace VR gallery hero asset (`vr-gallery2.JPG`) on index
+- ✅ Fix standalone navigation links (Tetris/Snake/Space Invaders/Partners → Project Updates) to follow production paths (no `/public/`)
 - 🔄 Collect assets + schedule Season 5 Monday hype post (3×$10 SOL bounty)
 
 ### **🐛 NOVEMBER 10, 2025 - SEASON 5 UX EXPANSION**

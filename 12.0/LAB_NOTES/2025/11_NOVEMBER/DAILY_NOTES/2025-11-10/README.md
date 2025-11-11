@@ -25,6 +25,7 @@
   - Tetris: same stack with Tetris-specific slices and achievements endpoint.
 - Drafted Monday hype tweet copy highlighting Season 5 polish, 3×$10 SOL bounty, and mint discount perks.
 - Final QA pass: re-applied the 0.45 SOL messaging + Golden Rascals banner on `index.html` after cache purge confirmation.
+- Audited top-level navigation: updated all game links (Tetris/Snake/Space Invaders) and partner nav “Updates” item to production-safe paths (no `/public/`), matching live routing.
 
 ### ðŸ’» Infrastructure / Housekeeping
 - Confirmed date/time (`Get-Date`) pre-documentation per master rules.

@@ -21207,7 +21207,7 @@ function updateGameTabContent(gameType, gameData) {
 
     // 🎯 Quick Test Functions
     function testMainPage() {
-      document.getElementById('securityTargetUrl').value = `${window.location.protocol}//${window.location.host}/public/index.html`;
+      document.getElementById('securityTargetUrl').value = `${window.location.protocol}//${window.location.host}/index.html`;
       startSecurityCrawl();
     }
 
@@ -21217,7 +21217,7 @@ function updateGameTabContent(gameType, gameData) {
     }
 
     function testAdminInterface() {
-      document.getElementById('securityTargetUrl').value = `${window.location.protocol}//${window.location.host}/public/admin-interface.html`;
+      document.getElementById('securityTargetUrl').value = `${window.location.protocol}//${window.location.host}/admin-interface.html`;
       startSecurityCrawl();
     }
 
@@ -21361,9 +21361,9 @@ function updateGameTabContent(gameType, gameData) {
     // 🚀 Bulk Testing Functions
     async function bulkSecurityTest() {
       const urls = [
-        `${window.location.protocol}//${window.location.host}/public/index.html`,
+        `${window.location.protocol}//${window.location.host}/index.html`,
         `${window.location.protocol}//${window.location.host}/profile.html`,
-        `${window.location.protocol}//${window.location.host}/public/admin-interface.html`,
+        `${window.location.protocol}//${window.location.host}/admin-interface.html`,
         `${window.location.protocol}//${window.location.host}/api/admin/get-all-games-stats.php`
       ];
 

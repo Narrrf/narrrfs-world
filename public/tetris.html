@@ -501,7 +501,7 @@
   if (!discordId || !discordName) {
     console.log('⚠️ No authentication found, redirecting to profile...');
     alert('Please log in through your profile page first!');
-    window.location.href = isProduction ? '/public/profile.html' : '/public/profile.html';
+    window.location.href = '/profile.html';
   } else {
     console.log('✅ User authenticated:', discordName, '(' + discordId + ')');
   }
