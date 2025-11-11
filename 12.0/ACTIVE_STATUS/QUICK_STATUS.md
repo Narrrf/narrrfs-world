@@ -1,8 +1,8 @@
 # 🚀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** November 10, 2025 - Evening  
+**Last Updated:** November 10, 2025 - Late Evening  
 **Current Session:** Monday - 🧬 Season 5 UX Polish + Store QA  
-**Status:** 🟢 Mint pricing & Space Invaders store verified (ready to push)
+**Status:** 🟢 Mint pricing verified, store gating set (Snake live, Tetris reactor coming soon)
 
 ---
 
@@ -14,6 +14,7 @@
 - **Redemption Price:** 0.45 SOL
 - **Gensuki Discount:** Massive discount (check mint page for pricing)
 - **Golden Rascals Bonus:** Verified holders mint at the 0.45 SOL Season 5 rate
+- **Taco Tuesday Spaces:** Every Tuesday @ **3 PM EST** (updated on index + project updates)
 - **Status:** Live and active
 - **Progress:** Ongoing redemption phase
 
@@ -90,6 +91,10 @@
 - ✅ Update mint CTA + Golden Rascals banner with 0.45 SOL pricing and holder notice
 - ✅ Replace VR gallery hero asset (`vr-gallery2.JPG`) on index
 - ✅ Fix standalone navigation links (Tetris/Snake/Space Invaders/Partners → Project Updates) to follow production paths (no `/public/`)
+- ✅ Refresh Phase 6 promo copy on index to reflect Season 5 redemption + Space Invaders store (November 2025)
+- ✅ Launch Cheese Snake store items (Serpent Velocity Core speed boost + Golden Apple Booster), gameplay perks wired and DSPOINC flow verified
+- ✅ Launch Cheese Tetris store items (Matrix Glow Pack + Cheese Drop Reactor toggle) with DSPOINC purchases, glow picker persistence, and first-clear reactor boost
+- ✅ Disable Tetris `Cheese Drop Reactor` purchases until production-ready (UI shows Coming Soon) & confirm Snake booster remains purchasable
 - 🔄 Collect assets + schedule Season 5 Monday hype post (3×$10 SOL bounty)
 
 ### **🐛 NOVEMBER 10, 2025 - SEASON 5 UX EXPANSION**

@@ -347,6 +347,40 @@ const pieceImageMap = {
   8: "block_J.png"
 };
 
+window.tetrisStoreState = window.tetrisStoreState || {
+  glowOwned: false,
+  glowColor: '#FFD700',
+  reactorOwned: false,
+  reactorEnabled: false
+};
+
+const TETRIS_HOLD_DELAY_BASE = 25;
+const TETRIS_HOLD_INTERVAL_BASE = 20;
+let tetrisHoldDelay = TETRIS_HOLD_DELAY_BASE;
+let tetrisHoldIntervalDuration = TETRIS_HOLD_INTERVAL_BASE;
+let reactorFirstClearPending = false;
+
+function applyTetrisStorePerks(stateOverride) {
+  const state = stateOverride || {};
+  const glowOwned = Boolean(state.glowOwned);
+  const glowColor = state.glowColor || '#FFD700';
+  const reactorOwned = Boolean(state.reactorOwned);
+  const reactorEnabled = Boolean(state.reactorEnabled);
+
+  window.tetrisStoreState = { glowOwned, glowColor, reactorOwned, reactorEnabled };
+
+  tetrisHoldDelay = reactorOwned && reactorEnabled
+    ? Math.max(10, TETRIS_HOLD_DELAY_BASE - 10)
+    : TETRIS_HOLD_DELAY_BASE;
+
+  tetrisHoldIntervalDuration = reactorOwned && reactorEnabled
+    ? Math.max(10, TETRIS_HOLD_INTERVAL_BASE - 5)
+    : TETRIS_HOLD_INTERVAL_BASE;
+}
+
+window.applyTetrisStorePerks = applyTetrisStorePerks;
+applyTetrisStorePerks(window.tetrisStoreState);
+
 // 🎮 Touch control variables (Tetris-specific) - OPTIMIZED FOR MOBILE
 let tetrisTouchStartX = 0;
 let tetrisTouchStartY = 0;
@@ -361,10 +395,8 @@ const TETRIS_MOVE_THROTTLE = 50; // Reduced throttle for more responsive control
 
 // 🎮 Hold-to-drop functionality
 let tetrisIsHolding = false;
-let tetrisHoldInterval = null;
+let tetrisHoldIntervalId = null;
 let tetrisRotationTimer = null; // Timer for delayed rotation
-const TETRIS_HOLD_DELAY = 25; // Reduced delay for more responsive hold-to-drop (ms) - was 100
-const TETRIS_HOLD_INTERVAL = 20; // Faster interval for more responsive hold-to-drop (ms) - was 50
 let tetrisHoldStartTime = 0;
 let tetrisTouchRecoveryTimeout = null;
 let tetrisTouchMonitorInterval = null;
@@ -407,14 +439,14 @@ function cleanupTouchControls() {
 function startTetrisHold() {
   if (tetrisIsHolding) return; // Already holding
   
-  console.log('📱 Starting hold-to-drop - delay:', TETRIS_HOLD_DELAY, 'ms, interval:', TETRIS_HOLD_INTERVAL, 'ms');
+  console.log('📱 Starting hold-to-drop - delay:', tetrisHoldDelay, 'ms, interval:', tetrisHoldIntervalDuration, 'ms');
   tetrisIsHolding = true;
   tetrisHoldStartTime = Date.now();
   
   // Start the hold interval after initial delay
   setTimeout(() => {
     if (tetrisIsHolding) {
-      tetrisHoldInterval = setInterval(() => {
+      tetrisHoldIntervalId = setInterval(() => {
         if (tetrisIsHolding && typeof window.tetrisCollide === 'function' && typeof window.tetrisCurrent !== 'undefined' && window.tetrisCurrent.shape) {
           // Move piece down one step
           if (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row + 1, window.tetrisCurrent.col)) {
@@ -427,9 +459,9 @@ function startTetrisHold() {
             stopTetrisHold();
           }
         }
-      }, TETRIS_HOLD_INTERVAL);
+      }, tetrisHoldIntervalDuration);
     }
-  }, TETRIS_HOLD_DELAY);
+  }, tetrisHoldDelay);
 }
 
 function stopTetrisHold() {
@@ -438,9 +470,9 @@ function stopTetrisHold() {
   console.log('📱 Stopping hold-to-drop');
   tetrisIsHolding = false;
   
-  if (tetrisHoldInterval) {
-    clearInterval(tetrisHoldInterval);
-    tetrisHoldInterval = null;
+  if (tetrisHoldIntervalId) {
+    clearInterval(tetrisHoldIntervalId);
+    tetrisHoldIntervalId = null;
   }
 }
 
@@ -579,15 +611,15 @@ function handleTouchStart(e) {
   console.log('📱 Touch state reset for new gesture');
 
   // 🎮 Start hold-to-drop timer (will be cancelled if user moves finger significantly)
-  console.log('📱 Touch start - starting hold timer with delay:', TETRIS_HOLD_DELAY, 'ms');
+  console.log('📱 Touch start - starting hold timer with delay:', tetrisHoldDelay, 'ms');
   tetrisRotationTimer = setTimeout(() => {
     // Check if touch is still at the same position (no movement)
     const timeSinceStart = Date.now() - tetrisTouchStartTime;
-    if (timeSinceStart >= TETRIS_HOLD_DELAY && !tetrisIsHolding) {
+    if (timeSinceStart >= tetrisHoldDelay && !tetrisIsHolding) {
       console.log('📱 Long press detected - starting hold-to-drop');
       startTetrisHold();
     }
-  }, TETRIS_HOLD_DELAY);
+  }, tetrisHoldDelay);
 }
 
 function handleTouchMove(e) {
@@ -1062,6 +1094,9 @@ async function startTetris() {
   
   // 🏆 Fetch user roles for role-based gameplay (CRITICAL: await this!)
   await fetchTetrisUserRoles();
+
+  reactorFirstClearPending = Boolean(window.tetrisStoreState.reactorOwned && window.tetrisStoreState.reactorEnabled);
+  console.log('🧬 Reactor perk pending:', reactorFirstClearPending);
 
   // 🔁 Reset control state before starting a fresh session
   resetTouchControlTimers();
@@ -1639,17 +1674,33 @@ function collide(shape, row, col) {
               multiLineBonus = 8; // TETRIS! = +8 bonus (16 total!)
             }
             
-            const totalBase = baseScore + multiLineBonus;
+            let totalBase = baseScore + multiLineBonus;
+            let reactorTriggered = false;
+
+            if (reactorFirstClearPending) {
+              reactorTriggered = true;
+              reactorFirstClearPending = false;
+              totalBase *= 2;
+              console.log('🧬 Cheese Drop Reactor activated! First clear DSPOINC doubled.');
+            }
+
             const roleMultiplier = getRoleScoreMultiplier();
             const roleBonus = Math.round(totalBase * (roleMultiplier - 1)); // Fair rounding
             
-            console.log(`🏆 SEASON 5 Multi-Line Scoring: ${lines} lines | Base: ${baseScore} | Bonus: ${multiLineBonus} | Total: ${totalBase} | Role: ${roleMultiplier}x | RoleBonus: ${roleBonus}`);
+            console.log(`🏆 SEASON 5 Multi-Line Scoring: ${lines} lines | Base: ${baseScore} | Bonus: ${multiLineBonus} | Total (after reactor): ${totalBase} | Role: ${roleMultiplier}x | RoleBonus: ${roleBonus}`);
             console.log(`🏆 Score before: ${score}`);
             score += totalBase + roleBonus;
             console.log(`🏆 Score after: ${score}`);
             
             // 🏆 Update score display immediately
             updateTetrisScoreDisplay();
+
+            if (reactorTriggered) {
+              dropInterval = Math.max(100, dropInterval - 50);
+              clearInterval(gameInterval);
+              gameInterval = setInterval(drop, dropInterval);
+              console.log(`🧬 Reactor speed boost applied. New drop interval: ${dropInterval}ms`);
+            }
           }
           
           // 🏆 Track Tetris clears (4 lines at once)

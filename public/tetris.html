@@ -81,6 +81,15 @@
       border: 4px solid #00BFFF !important;
       border-radius: 12px !important;
     }
+
+    :root {
+      --matrix-glow-color: #FFD700;
+    }
+
+    #tetris-canvas.matrix-glow-active {
+      box-shadow: 0 0 40px var(--matrix-glow-color) !important;
+      border-color: var(--matrix-glow-color) !important;
+    }
     
     #tetris-canvas.red {
       box-shadow: 0 0 30px rgba(255, 69, 0, 0.8) !important;
@@ -450,25 +459,16 @@
 
       <!-- Store -->
       <div id="tetris-store" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
-        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center gap-2">
-          🛒 Store
-          <span class="ml-2 text-xs text-purple-400">🚧</span>
-        </h4>
-        <div class="space-y-3 text-sm">
-          <div class="text-center">
-            <p class="text-gray-400 mb-3">Planned Cheese Tetris upgrades:</p>
-            <div class="space-y-2 text-xs text-gray-300">
-              <p>🎨 Custom board skins</p>
-              <p>🧱 Block particle packs</p>
-              <p>💥 Bomb animations</p>
-              <p>🔊 Soundtrack variations</p>
-            </div>
-          </div>
-          <a href="profile.html#store" class="block w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-center font-bold px-4 py-2 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
-            🛍️ Visit Store
-          </a>
-          <p class="text-xs text-gray-500 text-center">Coming Soon!</p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+          <h4 class="text-lg font-bold text-yellow-300 flex items-center gap-2">
+            🛒 Store Upgrades
+          </h4>
+          <div id="tetris-store-balance" class="text-xs text-purple-300 font-semibold hidden"></div>
         </div>
+        <p class="text-xs text-gray-400 mb-4 text-center sm:text-left">
+          Unlock permanent Cheese Tetris perks. Cosmetic glows are safe; gameplay boosts are optional and tailored for experts.
+        </p>
+        <div id="tetris-store-items" class="space-y-3"></div>
       </div>
     </div>
 
@@ -562,6 +562,34 @@
 (function() {
   let tetrisApiBaseUrl = '';
 
+  const TETRIS_STORE_DEFS = {
+    glow: {
+      key: 'glow',
+      title: 'Matrix Glow Pack',
+      icon: '🌈',
+      description: 'Unlock a customizable neon glow for your Cheese Tetris well. Pick any color to match your role.',
+      match: ['Tetris Matrix Glow Pack', 'Matrix Glow Pack'],
+      settingKey: 'matrix_color'
+    },
+    reactor: {
+      key: 'reactor',
+      title: 'Cheese Drop Reactor',
+      icon: '🧬',
+      description: 'First line clear each run grants double DSPOINC and hold-to-drop kickstarts faster.',
+      warning: '⚠️ Precision required: combo momentum ramps up immediately.',
+      match: ['Tetris Cheese Drop Reactor', 'Cheese Drop Reactor']
+    }
+  };
+
+  const tetrisStoreState = {
+    userId: null,
+    items: {},
+    orderedKeys: ['glow', 'reactor'],
+    owned: new Set(),
+    settings: {},
+    balance: null
+  };
+
   document.addEventListener('DOMContentLoaded', function() {
     const discordId = localStorage.getItem('discord_id');
     const discordName = localStorage.getItem('discord_name');
@@ -610,7 +638,8 @@
       await Promise.all([
         loadTetrisGameStats(discordId),
         loadTetrisAchievements(discordId),
-        loadTetrisLeaderboard(discordId)
+        loadTetrisLeaderboard(discordId),
+        loadTetrisStore(discordId)
       ]);
 
       document.getElementById('tetris-stats-loading')?.classList.add('hidden');
@@ -724,6 +753,469 @@
     } catch (error) {
       console.error('🧩 Error loading Tetris leaderboard:', error);
       document.getElementById('tetris-leaderboard-content').innerHTML = '<p class="text-red-400">Failed to load leaderboard</p>';
+    }
+  }
+
+  const tetrisStoreNumberFormatter = new Intl.NumberFormat('en-US');
+
+  function sanitizeHexColor(value) {
+    if (typeof value !== 'string') {
+      return '#FFD700';
+    }
+    const trimmed = value.trim();
+    return /^#([0-9a-fA-F]{6})$/.test(trimmed) ? trimmed.toUpperCase() : '#FFD700';
+  }
+
+  async function loadTetrisStore(discordId) {
+    const storeSection = document.getElementById('tetris-store');
+    const storeContainer = document.getElementById('tetris-store-items');
+    const balanceEl = document.getElementById('tetris-store-balance');
+
+    if (!storeSection || !storeContainer) {
+      return;
+    }
+
+    tetrisStoreState.userId = discordId || null;
+
+    if (!discordId) {
+      storeContainer.innerHTML = '<p class="text-gray-400 text-center">Login to purchase Cheese Tetris upgrades.</p>';
+      balanceEl?.classList.add('hidden');
+      tetrisStoreState.items = {};
+      tetrisStoreState.owned = new Set();
+      tetrisStoreState.settings = {};
+      tetrisStoreState.balance = null;
+      updateTetrisStorePerkState();
+      return;
+    }
+
+    storeContainer.innerHTML = '<p class="text-gray-400 text-center">Loading store items...</p>';
+
+    const apiBase = tetrisApiBaseUrl || (window.location.hostname === 'narrrfs.world' ? 'https://narrrfs.world' : 'http://localhost');
+
+    try {
+      const [itemsRes, inventoryRes, settingsRes, balanceRes] = await Promise.all([
+        fetch(`${apiBase}/api/store/items.php`),
+        fetch(`${apiBase}/api/store/inventory.php?user_id=${discordId}`),
+        fetch(`${apiBase}/api/store/get-user-settings.php?user_id=${discordId}&game=tetris`),
+        fetch(`${apiBase}/api/user/score-total.php?user_id=${discordId}`)
+      ]);
+
+      const itemsData = itemsRes.ok ? await itemsRes.json() : { success: false, items: [] };
+      const inventoryData = inventoryRes.ok ? await inventoryRes.json() : { success: false, items: [] };
+      const settingsData = settingsRes.ok ? await settingsRes.json() : { success: false, settings: {} };
+      const balanceData = balanceRes.ok ? await balanceRes.json() : null;
+
+      const normalizeName = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      const itemMap = {};
+      (itemsData.items || []).forEach(item => {
+        const normalizedItemName = normalizeName(item.item_name);
+        const defKey = Object.keys(TETRIS_STORE_DEFS).find(key => {
+          const def = TETRIS_STORE_DEFS[key];
+          const candidates = [def.title, ...(def.match || [])];
+          return candidates.some(candidate => normalizeName(candidate) === normalizedItemName);
+        });
+        if (defKey) {
+          itemMap[defKey] = item;
+        }
+      });
+
+      const ownedSet = new Set();
+      if (inventoryData.success && Array.isArray(inventoryData.items)) {
+        inventoryData.items.forEach(invItem => {
+          const normalizedInvName = normalizeName(invItem.name);
+          const defKey = Object.keys(TETRIS_STORE_DEFS).find(key => {
+            const def = TETRIS_STORE_DEFS[key];
+            const candidates = [def.title, ...(def.match || [])];
+            return candidates.some(candidate => normalizeName(candidate) === normalizedInvName);
+          });
+          if (defKey && itemMap[defKey]) {
+            ownedSet.add(itemMap[defKey].item_id);
+          }
+        });
+      }
+
+      tetrisStoreState.items = itemMap;
+      tetrisStoreState.owned = ownedSet;
+      tetrisStoreState.settings = settingsData.success ? (settingsData.settings || {}) : {};
+      tetrisStoreState.balance = balanceData && typeof balanceData.total_dspoinc !== 'undefined'
+        ? balanceData.total_dspoinc
+        : null;
+
+      renderTetrisStore();
+      updateTetrisStorePerkState();
+
+      if (balanceEl) {
+        if (tetrisStoreState.balance !== null) {
+          balanceEl.textContent = `Current Balance: ${formatTetrisStoreNumber(tetrisStoreState.balance)} DSPOINC`;
+          balanceEl.classList.remove('hidden');
+        } else {
+          balanceEl.classList.add('hidden');
+        }
+      }
+    } catch (error) {
+      console.error('🧩 Error loading Tetris store:', error);
+      storeContainer.innerHTML = '<p class="text-red-400 text-center">Failed to load store items. Please try again later.</p>';
+    }
+  }
+
+  function formatTetrisStoreNumber(value) {
+    if (typeof value !== 'number') return value;
+    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';
+    if (value >= 1_000) return (value / 1_000).toFixed(1) + 'K';
+    return tetrisStoreNumberFormatter.format(value);
+  }
+
+  function renderTetrisStore() {
+    const storeContainer = document.getElementById('tetris-store-items');
+    if (!storeContainer) {
+      return;
+    }
+
+    if (!tetrisStoreState.userId) {
+      storeContainer.innerHTML = '<p class="text-gray-400 text-center">Login to purchase Cheese Tetris upgrades.</p>';
+      return;
+    }
+
+    storeContainer.innerHTML = '';
+    let hasItems = false;
+
+    tetrisStoreState.orderedKeys.forEach(defKey => {
+      const item = tetrisStoreState.items[defKey];
+      const def = TETRIS_STORE_DEFS[defKey];
+      if (!item || !def) {
+        return;
+      }
+      hasItems = true;
+      const owned = tetrisStoreState.owned.has(item.item_id);
+      storeContainer.appendChild(buildTetrisStoreCard(defKey, item, def, owned));
+    });
+
+    if (!hasItems) {
+      storeContainer.innerHTML = '<p class="text-gray-400 text-center">Store items are being prepared. Check back soon!</p>';
+    }
+  }
+
+  function buildTetrisStoreCard(defKey, item, def, owned) {
+    const card = document.createElement('div');
+    card.className = 'bg-gray-900/60 rounded-xl border border-gray-700/50 p-4 shadow-inner';
+    const priceText = `${formatTetrisStoreNumber(item.price)} DSPOINC`;
+    const statusId = `tetris-store-status-${item.item_id}`;
+    const isPurchaseDisabled = defKey === 'reactor';
+
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `
+      <div class="flex items-start justify-between">
+        <div class="pr-6">
+          <div class="text-sm font-semibold text-yellow-200 flex items-center gap-2">
+            <span>${def.icon}</span>
+            <span>${def.title}</span>
+          </div>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed">${def.description}</p>
+          ${def.warning ? `<p class="text-xs text-purple-300 mt-2">${def.warning}</p>` : ''}
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-bold text-yellow-300">${priceText}</div>
+          ${owned
+            ? '<span class="inline-block mt-2 text-xs text-green-400 font-semibold">Owned</span>'
+            : isPurchaseDisabled
+              ? '<span class="inline-block mt-2 text-xs text-gray-500 font-semibold">Coming Soon</span>'
+              : `<button data-tetris-store-button="${defKey}" class="mt-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors duration-200">Buy</button>`}
+        </div>
+      </div>
+      <div id="${statusId}" class="mt-3 text-xs hidden"></div>
+    `;
+
+    if (!owned && !isPurchaseDisabled) {
+      const button = wrapper.querySelector(`[data-tetris-store-button="${defKey}"]`);
+      if (button) {
+        button.addEventListener('click', () => purchaseTetrisStoreItem(defKey));
+      }
+    } else if (defKey === 'glow') {
+      const note = document.createElement('p');
+      note.className = 'text-xs text-gray-500 mt-3';
+      note.textContent = 'Choose your glow below. Changes save instantly.';
+      wrapper.appendChild(note);
+
+      const colorWrapper = document.createElement('div');
+      colorWrapper.className = 'mt-2 flex items-center gap-3';
+
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.className = 'w-12 h-10 rounded border border-gray-600 bg-gray-800 cursor-pointer';
+      const storedColor = sanitizeHexColor(tetrisStoreState.settings.matrix_color);
+      colorInput.value = storedColor;
+
+      const preview = document.createElement('div');
+      preview.className = 'w-10 h-10 rounded-lg border border-gray-600 shadow-inner';
+      preview.style.background = storedColor;
+
+      const valueLabel = document.createElement('span');
+      valueLabel.className = 'text-xs text-gray-300 font-mono';
+      valueLabel.textContent = storedColor.toUpperCase();
+
+      colorInput.addEventListener('input', event => {
+        const sanitized = sanitizeHexColor(event.target.value);
+        preview.style.background = sanitized;
+        valueLabel.textContent = sanitized.toUpperCase();
+      });
+
+      colorInput.addEventListener('change', event => {
+        const sanitized = sanitizeHexColor(event.target.value);
+        preview.style.background = sanitized;
+        valueLabel.textContent = sanitized.toUpperCase();
+        saveTetrisColorSetting(sanitized);
+      });
+
+      colorWrapper.appendChild(colorInput);
+      colorWrapper.appendChild(preview);
+      colorWrapper.appendChild(valueLabel);
+      wrapper.appendChild(colorWrapper);
+    } else if (defKey === 'reactor') {
+      const reactorEnabled = tetrisStoreState.settings.reactor_enabled === '1' || tetrisStoreState.settings.reactor_enabled === 'true';
+
+      if (owned) {
+        const status = document.createElement('p');
+        status.className = 'text-xs text-gray-400 mt-3';
+        status.textContent = `Currently: ${reactorEnabled ? 'Enabled' : 'Disabled'}`;
+        wrapper.appendChild(status);
+
+        const toggleButton = document.createElement('button');
+        toggleButton.className = `mt-2 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors duration-200 ${reactorEnabled ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-green-600 hover:bg-green-500 text-white'}`;
+        toggleButton.textContent = reactorEnabled ? 'Disable Reactor' : 'Enable Reactor';
+        toggleButton.addEventListener('click', () => saveTetrisReactorSetting(!reactorEnabled, toggleButton));
+        wrapper.appendChild(toggleButton);
+
+        const info = document.createElement('p');
+        info.className = 'text-[11px] text-gray-500 mt-2 leading-relaxed';
+        info.textContent = 'Toggle off if you need the classic pacing without the first-clear surge.';
+        wrapper.appendChild(info);
+      }
+    }
+
+    card.appendChild(wrapper);
+    return card;
+  }
+
+  function showTetrisStoreMessage(itemId, message, type = 'info') {
+    const statusEl = document.getElementById(`tetris-store-status-${itemId}`);
+    if (!statusEl) {
+      return;
+    }
+
+    statusEl.classList.remove('hidden', 'text-red-400', 'text-green-400', 'text-gray-300');
+
+    if (type === 'error') {
+      statusEl.classList.add('text-red-400');
+    } else if (type === 'success') {
+      statusEl.classList.add('text-green-400');
+    } else {
+      statusEl.classList.add('text-gray-300');
+    }
+
+    statusEl.textContent = message;
+  }
+
+  async function purchaseTetrisStoreItem(defKey) {
+    const item = tetrisStoreState.items[defKey];
+    if (!item || !tetrisStoreState.userId) {
+      return;
+    }
+
+    const button = document.querySelector(`[data-tetris-store-button="${defKey}"]`);
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Processing...';
+    }
+
+    showTetrisStoreMessage(item.item_id, 'Processing purchase...', 'info');
+
+    const apiBase = tetrisApiBaseUrl || (window.location.hostname === 'narrrfs.world' ? 'https://narrrfs.world' : 'http://localhost');
+
+    try {
+      const response = await fetch(`${apiBase}/api/store/purchase.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: tetrisStoreState.userId,
+          item_id: item.item_id,
+          quantity: 1
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        tetrisStoreState.owned.add(item.item_id);
+        if (typeof data.new_balance !== 'undefined') {
+          tetrisStoreState.balance = data.new_balance;
+          const balanceEl = document.getElementById('tetris-store-balance');
+          if (balanceEl) {
+            balanceEl.textContent = `Current Balance: ${formatTetrisStoreNumber(tetrisStoreState.balance)} DSPOINC`;
+            balanceEl.classList.remove('hidden');
+          }
+        }
+
+        if (defKey === 'glow' && !tetrisStoreState.settings.matrix_color) {
+          const defaultColor = '#FFD700';
+          tetrisStoreState.settings.matrix_color = defaultColor;
+          await saveTetrisColorSetting(defaultColor, { silent: true });
+        }
+
+        renderTetrisStore();
+        updateTetrisStorePerkState();
+        showTetrisStoreMessage(item.item_id, 'Purchase successful! 🎉', 'success');
+        return;
+      }
+
+      showTetrisStoreMessage(item.item_id, data.error || 'Purchase failed. Please try again.', 'error');
+    } catch (error) {
+      console.error('🧩 Purchase failed:', error);
+      showTetrisStoreMessage(item.item_id, 'Purchase failed. Please try again.', 'error');
+    } finally {
+      if (button && button.isConnected) {
+        button.disabled = false;
+        button.textContent = 'Buy';
+      }
+    }
+  }
+
+  async function saveTetrisColorSetting(colorHex, options = {}) {
+    const sanitized = sanitizeHexColor(colorHex);
+    const apiBase = tetrisApiBaseUrl || (window.location.hostname === 'narrrfs.world' ? 'https://narrrfs.world' : 'http://localhost');
+
+    try {
+      const response = await fetch(`${apiBase}/api/store/update-user-setting.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: tetrisStoreState.userId,
+          game: 'tetris',
+          setting_key: 'matrix_color',
+          setting_value: sanitized
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        tetrisStoreState.settings.matrix_color = sanitized;
+        updateTetrisStorePerkState();
+        if (!options.silent) {
+          showTetrisStoreMessage(
+            tetrisStoreState.items.glow?.item_id,
+            'Glow color updated! ✨',
+            'success'
+          );
+        }
+      } else if (!options.silent) {
+        showTetrisStoreMessage(
+          tetrisStoreState.items.glow?.item_id,
+          data.error || 'Failed to save color. Please try again.',
+          'error'
+        );
+      }
+    } catch (error) {
+      console.error('🧩 Failed to save glow color:', error);
+      if (!options.silent) {
+        showTetrisStoreMessage(
+          tetrisStoreState.items.glow?.item_id,
+          'Failed to save color. Please try again.',
+          'error'
+        );
+      }
+    }
+  }
+
+  async function saveTetrisReactorSetting(enabled, button) {
+    const reactorItem = tetrisStoreState.items.reactor;
+    if (!reactorItem) return;
+    const apiBase = tetrisApiBaseUrl || (window.location.hostname === 'narrrfs.world' ? 'https://narrrfs.world' : 'http://localhost');
+
+    try {
+      if (button) {
+        button.disabled = true;
+        button.textContent = enabled ? 'Enabling...' : 'Disabling...';
+      }
+      showTetrisStoreMessage(reactorItem.item_id, 'Saving preference...', 'info');
+
+      const response = await fetch(`${apiBase}/api/store/update-user-setting.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: tetrisStoreState.userId,
+          game: 'tetris',
+          setting_key: 'reactor_enabled',
+          setting_value: enabled ? '1' : '0'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        tetrisStoreState.settings.reactor_enabled = enabled ? '1' : '0';
+        updateTetrisStorePerkState();
+        renderTetrisStore();
+        showTetrisStoreMessage(
+          reactorItem.item_id,
+          enabled ? 'Cheese Drop Reactor enabled ⚡️' : 'Cheese Drop Reactor disabled.',
+          'success'
+        );
+      } else {
+        showTetrisStoreMessage(
+          reactorItem.item_id,
+          data.error || 'Failed to update reactor setting.',
+          'error'
+        );
+      }
+    } catch (error) {
+      console.error('🧩 Failed to toggle reactor:', error);
+      showTetrisStoreMessage(
+        reactorItem.item_id,
+        'Failed to update reactor setting. Please try again.',
+        'error'
+      );
+    } finally {
+      if (button && button.isConnected) {
+        button.disabled = false;
+        const enabledNow = tetrisStoreState.settings.reactor_enabled === '1';
+        button.textContent = enabledNow ? 'Disable Reactor' : 'Enable Reactor';
+      }
+    }
+  }
+
+  function updateTetrisStorePerkState() {
+    const glowItem = tetrisStoreState.items.glow;
+    const reactorItem = tetrisStoreState.items.reactor;
+    const owned = tetrisStoreState.owned;
+    const glowOwned = glowItem ? owned.has(glowItem.item_id) : false;
+    const reactorOwned = reactorItem ? owned.has(reactorItem.item_id) : false;
+    const glowColor = sanitizeHexColor(tetrisStoreState.settings.matrix_color || '#FFD700');
+    const reactorEnabled = reactorOwned && (tetrisStoreState.settings.reactor_enabled === '1' || tetrisStoreState.settings.reactor_enabled === 'true');
+
+    tetrisStoreState.settings.matrix_color = glowColor;
+    tetrisStoreState.settings.reactor_enabled = reactorEnabled ? '1' : '0';
+
+    window.tetrisStoreState = {
+      glowOwned,
+      glowColor,
+      reactorOwned,
+      reactorEnabled
+    };
+
+    const canvas = document.getElementById('tetris-canvas');
+    if (canvas) {
+      if (glowOwned) {
+        canvas.classList.add('matrix-glow-active');
+        document.documentElement.style.setProperty('--matrix-glow-color', glowColor);
+      } else {
+        canvas.classList.remove('matrix-glow-active');
+        document.documentElement.style.setProperty('--matrix-glow-color', '#FFD700');
+      }
+    }
+
+    if (typeof window.applyTetrisStorePerks === 'function') {
+      window.applyTetrisStorePerks(window.tetrisStoreState);
     }
   }
 

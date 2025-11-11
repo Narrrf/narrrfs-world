@@ -31,7 +31,7 @@
 ### **What is Snake?**
 Snake is a classic arcade game where players control a growing snake, collecting cheese pieces while avoiding walls and their own tail. Season 5 introduces the **Giant Cheese Snake Boss** system, adding epic boss battles every 10 levels.
 
-### **Season 5 Update Summary (Updated Nov 6, 2025):**
+### **Season 5 Update Summary (Updated Nov 11, 2025):**
 - **🍼 Baby Boss Tutorial** - First boss at 3 cheeses (easy introduction!)
 - **🐍 9-Boss Progression** - Baby Boss + 8 progressive bosses (3 → 300 cheeses)
 - **🍎 Golden Apple System** - Collect 5-10 golden apples to defeat the boss
@@ -47,6 +47,7 @@ Snake is a classic arcade game where players control a growing snake, collecting
 - **✅ Auto-Restart Workflow** - Play Again stores `snake_auto_start` localStorage flag (Nov 6)
 - **✅ Pause UX Fix** - Back to Profile & page links re-enabled on pause/end (Nov 6)
 - **✅ Bounds Clamp** - BUG #229 fix keeps snake trail inside canvas (Nov 6)
+- **🛒 Store Upgrades** - Permanent DSPOINC purchases for Serpent Velocity Core + Golden Apple Booster, with runtime perk wiring (Nov 11)
 
 ---
 
@@ -70,14 +71,31 @@ Snake is a classic arcade game where players control a growing snake, collecting
 - **Victory:** All apples must be collected to defeat boss
 - **UI Display:** Visual apple icons (●●●●● for Baby, ●●●●●●●●●● for others)
 
-### **3. Boss Battle Mechanics**
+### **3. Store Upgrades & Perks (Nov 11, 2025)**
+- **`Snake Serpent Velocity Core` — 250,000 DSPOINC**
+  - Permanently reduces base movement interval from 400 ms → 320 ms. Mad Mode speed recalculated to half of the active base.
+  - Applied through `updateSnakeSpeedFromPerks()`; active games immediately rebind `gameInterval` when perk state changes.
+  - Store card includes difficulty warning so players understand the increased challenge.
+- **`Snake Golden Apple Booster` — 500,000 DSPOINC**
+  - Automatically credits two golden apples at every boss spawn (HP reduced but clamped to ≥ 1).
+  - Implemented inside `GiantCheeseSnakeBoss` constructor; notifications, HUD, and countdown reference `giantSnakeBoss.maxHealth`.
+- **Frontend Panel (`snake.html`)**
+  - `SNAKE_STORE_DEFS`, `loadSnakeStore`, and `renderSnakeStore` replace placeholder content with live items, DSPOINC balance, and purchase buttons.
+  - Purchases flow through existing store APIs (`items.php`, `inventory.php`, `purchase.php`, `score-total.php`, `get-user-settings.php`, `update-user-setting.php`).
+  - `window.snakeStoreState` + `window.applySnakeStorePerks()` broadcast runtime state to gameplay.
+- **Persistence**
+  - Ownership recorded in `tbl_store_items` + `tbl_user_inventory`; no new schema required.
+  - No additional user-setting needed (perks derived from inventory ownership).
+  - Verified purchases show in `$DSPOINC` journey log and persist across reloads.
+
+### **4. Boss Battle Mechanics**
 - **Time Limit:** 60 seconds (150 frames at 400ms intervals)
 - **Collision:** Instant game over if player touches boss (head-to-head only)
 - **AI Behavior:** Boss actively hunts player with progressive intelligence
 - **Wall Wrapping:** Player can wrap through walls during boss battles (no wall deaths!)
 - **Countdown System:** Game pauses for ~5 second countdown (3, 2, 1, GO!)
 
-### **4. Reward System**
+### **5. Reward System**
 **Production Mode (Cheese-based spawning):**
 | Boss | Cheeses | DSPOINC | Lives | Apples | Intelligence |
 |------|---------|---------|-------|--------|--------------|
@@ -566,7 +584,8 @@ class GiantCheeseSnakeBoss {
 | Boss Class | 250 | GiantCheeseSnakeBoss class |
 | Helper Functions | 254 | Boss management |
 | Integration | 33 | Game loop integration |
-| **TOTAL** | **559** | **Total lines added** |
+| Store Integration (Nov 2025) | 190 | Store panel, `snakeStoreState`, perk wiring |
+| **TOTAL** | **749** | **Total lines added** |
 
 ### **File Size:**
 - **Before:** 1,630 lines (original Snake)
@@ -585,6 +604,7 @@ class GiantCheeseSnakeBoss {
 - **v1.1:** Speed balancing, boundary clamping, bug fixes
 - **v1.2:** Intelligence system, dumb moves, bonus display
 - **v1.3:** Production 9-boss system, Baby Boss, countdown timers
+- **v1.4:** Store integration (Serpent Velocity Core, Golden Apple Booster), runtime perk wiring
 
 ---
 
@@ -594,6 +614,13 @@ class GiantCheeseSnakeBoss {
 **Status:** ✅ **MODIFIED - PRODUCTION READY**  
 **Size:** 2,591 lines (+961 lines from original)  
 **Version:** v1.3.1 - Production Boss System (Final)
+
+**Changes v1.4.0 (Store Integration – Nov 11, 2025):**
+- ✅ Added `snakeStoreState`, `SNAKE_STORE_DEFS`, and store panel renderer in `snake.html`.
+- ✅ Hooked store APIs (items, inventory, purchase, score-total, user-setting) for Snake.
+- ✅ Implemented runtime perks: base speed modifier + golden apple credit (never below 1).
+- ✅ Added purchase feedback + DSPOINC balance refresh; warning copy for advanced players.
+- ✅ Documented QA evidence (DSPOINC journey log entries, in-game HUD changes).
 
 **Changes v1.3.1 (FINAL):**
 - ✅ 9-boss production system (Baby Boss + 8 progressive bosses)

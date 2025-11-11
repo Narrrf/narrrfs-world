@@ -422,25 +422,16 @@
 
       <!-- Store -->
       <div id="snake-store" class="hidden bg-gray-900/50 rounded-xl p-4 border border-gray-600/30">
-        <h4 class="text-lg font-bold text-yellow-300 mb-3 flex items-center gap-2">
-          🛒 Store
-          <span class="ml-2 text-xs text-green-400">🚧</span>
-        </h4>
-        <div class="space-y-3 text-sm">
-          <div class="text-center">
-            <p class="text-gray-400 mb-3">Planned upgrades for Cheese Snake:</p>
-            <div class="space-y-2 text-xs text-gray-300">
-              <p>🎨 Custom snake skins</p>
-              <p>🍏 Golden apple trails</p>
-              <p>💥 Boss intro effects</p>
-              <p>⚡ Speed burst boosts</p>
-            </div>
-          </div>
-          <a href="profile.html#store" class="block w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white text-center font-bold px-4 py-2 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105">
-            🛍️ Visit Store
-          </a>
-          <p class="text-xs text-gray-500 text-center">Coming Soon!</p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+          <h4 class="text-lg font-bold text-yellow-300 flex items-center gap-2">
+            🛒 Store Upgrades
+          </h4>
+          <div id="snake-store-balance" class="text-xs text-green-400 font-semibold hidden"></div>
         </div>
+        <p class="text-xs text-gray-400 mb-4 text-center sm:text-left">
+          Spend $DSPOINC on permanent Cheese Snake perks. Cosmetic upgrades are safe; gameplay boosts are optional and increase difficulty.
+        </p>
+        <div id="snake-store-items" class="space-y-3"></div>
       </div>
     </div>
 
@@ -534,6 +525,32 @@
 (function() {
   let snakeApiBaseUrl = '';
 
+  const SNAKE_STORE_DEFS = {
+    speed: {
+      key: 'speed',
+      title: 'Serpent Velocity Core',
+      icon: '⚡',
+      description: 'Reduce your base movement interval by 20% for every run. Warning: far less reaction time on every move.',
+      warning: '⚠️ This perk makes boss fights and high-speed sections considerably harder.',
+      match: ['Snake Serpent Velocity Core', 'Serpent Velocity Core']
+    },
+    apples: {
+      key: 'apples',
+      title: 'Golden Apple Booster',
+      icon: '🍏',
+      description: 'Start each boss battle with 2 golden apples already counted. Boss HP drops accordingly.',
+      match: ['Snake Golden Apple Booster', 'Golden Apple Booster']
+    }
+  };
+
+  const snakeStoreState = {
+    userId: null,
+    items: {},
+    orderedKeys: ['speed', 'apples'],
+    owned: new Set(),
+    balance: null
+  };
+
   document.addEventListener('DOMContentLoaded', function() {
     const discordId = localStorage.getItem('discord_id');
     const discordName = localStorage.getItem('discord_name');
@@ -582,7 +599,8 @@
       await Promise.all([
         loadSnakeGameStats(discordId),
         loadSnakeAchievements(discordId),
-        loadSnakeLeaderboard(discordId)
+        loadSnakeLeaderboard(discordId),
+        loadSnakeStore(discordId)
       ]);
 
       document.getElementById('snake-stats-loading')?.classList.add('hidden');
@@ -696,6 +714,263 @@
     } catch (error) {
       console.error('🐍 Error loading snake leaderboard:', error);
       document.getElementById('snake-leaderboard-content').innerHTML = '<p class="text-red-400">Failed to load leaderboard</p>';
+    }
+  }
+
+  const snakeStoreNumberFormatter = new Intl.NumberFormat('en-US');
+
+  function formatSnakeStoreNumber(value) {
+    if (typeof value !== 'number') return value;
+    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';
+    if (value >= 1_000) return (value / 1_000).toFixed(1) + 'K';
+    return snakeStoreNumberFormatter.format(value);
+  }
+
+  async function loadSnakeStore(discordId) {
+    const storeSection = document.getElementById('snake-store');
+    const storeContainer = document.getElementById('snake-store-items');
+    const balanceEl = document.getElementById('snake-store-balance');
+
+    if (!storeSection || !storeContainer) {
+      return;
+    }
+
+    snakeStoreState.userId = discordId || null;
+
+    if (!discordId) {
+      storeContainer.innerHTML = '<p class="text-gray-400 text-center">Login to purchase Cheese Snake upgrades.</p>';
+      balanceEl?.classList.add('hidden');
+      snakeStoreState.items = {};
+      snakeStoreState.owned = new Set();
+      snakeStoreState.balance = null;
+      updateSnakeStorePerkState();
+      return;
+    }
+
+    storeContainer.innerHTML = '<p class="text-gray-400 text-center">Loading store items...</p>';
+
+    const apiBase = snakeApiBaseUrl || (window.location.hostname === 'narrrfs.world' ? 'https://narrrfs.world' : 'http://localhost');
+
+    try {
+      const [itemsRes, inventoryRes, balanceRes] = await Promise.all([
+        fetch(`${apiBase}/api/store/items.php`),
+        fetch(`${apiBase}/api/store/inventory.php?user_id=${discordId}`),
+        fetch(`${apiBase}/api/user/score-total.php?user_id=${discordId}`)
+      ]);
+
+      const itemsData = itemsRes.ok ? await itemsRes.json() : { success: false, items: [] };
+      const inventoryData = inventoryRes.ok ? await inventoryRes.json() : { success: false, items: [] };
+      const balanceData = balanceRes.ok ? await balanceRes.json() : null;
+
+      const normalizeName = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      const itemMap = {};
+      (itemsData.items || []).forEach(item => {
+        const normalizedItemName = normalizeName(item.item_name);
+        const defKey = Object.keys(SNAKE_STORE_DEFS).find(key => {
+          const def = SNAKE_STORE_DEFS[key];
+          const candidates = [def.title, ...(def.match || [])];
+          return candidates.some(candidate => normalizeName(candidate) === normalizedItemName);
+        });
+        if (defKey) {
+          itemMap[defKey] = item;
+        }
+      });
+
+      const ownedSet = new Set();
+      if (inventoryData.success && Array.isArray(inventoryData.items)) {
+        inventoryData.items.forEach(invItem => {
+          const normalizedInvName = normalizeName(invItem.name);
+          const defKey = Object.keys(SNAKE_STORE_DEFS).find(key => {
+            const def = SNAKE_STORE_DEFS[key];
+            const candidates = [def.title, ...(def.match || [])];
+            return candidates.some(candidate => normalizeName(candidate) === normalizedInvName);
+          });
+          if (defKey && itemMap[defKey]) {
+            ownedSet.add(itemMap[defKey].item_id);
+          }
+        });
+      }
+
+      snakeStoreState.items = itemMap;
+      snakeStoreState.owned = ownedSet;
+      snakeStoreState.balance = balanceData && typeof balanceData.total_dspoinc !== 'undefined'
+        ? balanceData.total_dspoinc
+        : null;
+
+      renderSnakeStore();
+      updateSnakeStorePerkState();
+
+      if (balanceEl) {
+        if (snakeStoreState.balance !== null) {
+          balanceEl.textContent = `Current Balance: ${formatSnakeStoreNumber(snakeStoreState.balance)} DSPOINC`;
+          balanceEl.classList.remove('hidden');
+        } else {
+          balanceEl.classList.add('hidden');
+        }
+      }
+    } catch (error) {
+      console.error('🐍 Error loading Snake store:', error);
+      storeContainer.innerHTML = '<p class="text-red-400 text-center">Failed to load store items. Please try again later.</p>';
+    }
+  }
+
+  function renderSnakeStore() {
+    const storeContainer = document.getElementById('snake-store-items');
+    if (!storeContainer) {
+      return;
+    }
+
+    if (!snakeStoreState.userId) {
+      storeContainer.innerHTML = '<p class="text-gray-400 text-center">Login to purchase Cheese Snake upgrades.</p>';
+      return;
+    }
+
+    storeContainer.innerHTML = '';
+    let hasItems = false;
+
+    snakeStoreState.orderedKeys.forEach(defKey => {
+      const item = snakeStoreState.items[defKey];
+      const def = SNAKE_STORE_DEFS[defKey];
+      if (!item || !def) {
+        return;
+      }
+      hasItems = true;
+      const owned = snakeStoreState.owned.has(item.item_id);
+      storeContainer.appendChild(buildSnakeStoreCard(defKey, item, def, owned));
+    });
+
+    if (!hasItems) {
+      storeContainer.innerHTML = '<p class="text-gray-400 text-center">Store items are being prepared. Check back soon!</p>';
+    }
+  }
+
+  function buildSnakeStoreCard(defKey, item, def, owned) {
+    const card = document.createElement('div');
+    card.className = 'bg-gray-900/60 rounded-xl border border-gray-700/50 p-4 shadow-inner';
+    const priceText = `${formatSnakeStoreNumber(item.price)} DSPOINC`;
+    const statusId = `snake-store-status-${item.item_id}`;
+
+    card.innerHTML = `
+      <div class="flex items-start justify-between">
+        <div class="pr-6">
+          <div class="text-sm font-semibold text-yellow-200 flex items-center gap-2">
+            <span>${def.icon}</span>
+            <span>${def.title}</span>
+          </div>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed">${def.description}</p>
+          ${def.warning ? `<p class="text-xs text-red-400 mt-2">${def.warning}</p>` : ''}
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-bold text-yellow-300">${priceText}</div>
+          ${owned
+            ? '<span class="inline-block mt-2 text-xs text-green-400 font-semibold">Owned</span>'
+            : `<button data-snake-store-button="${defKey}" class="mt-2 bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors duration-200">Buy</button>`}
+        </div>
+      </div>
+      <div id="${statusId}" class="mt-3 text-xs hidden"></div>
+    `;
+
+    if (!owned) {
+      const button = card.querySelector(`[data-snake-store-button="${defKey}"]`);
+      if (button) {
+        button.addEventListener('click', () => purchaseSnakeStoreItem(defKey));
+      }
+    }
+
+    return card;
+  }
+
+  function showSnakeStoreMessage(itemId, message, type = 'info') {
+    const statusEl = document.getElementById(`snake-store-status-${itemId}`);
+    if (!statusEl) {
+      return;
+    }
+
+    statusEl.classList.remove('hidden', 'text-red-400', 'text-green-400', 'text-gray-300');
+
+    if (type === 'error') {
+      statusEl.classList.add('text-red-400');
+    } else if (type === 'success') {
+      statusEl.classList.add('text-green-400');
+    } else {
+      statusEl.classList.add('text-gray-300');
+    }
+
+    statusEl.textContent = message;
+  }
+
+  async function purchaseSnakeStoreItem(defKey) {
+    const item = snakeStoreState.items[defKey];
+    if (!item || !snakeStoreState.userId) {
+      return;
+    }
+
+    const button = document.querySelector(`[data-snake-store-button="${defKey}"]`);
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Processing...';
+    }
+
+    showSnakeStoreMessage(item.item_id, 'Processing purchase...', 'info');
+
+    const apiBase = snakeApiBaseUrl || (window.location.hostname === 'narrrfs.world' ? 'https://narrrfs.world' : 'http://localhost');
+
+    try {
+      const response = await fetch(`${apiBase}/api/store/purchase.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: snakeStoreState.userId,
+          item_id: item.item_id,
+          quantity: 1
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        snakeStoreState.owned.add(item.item_id);
+        if (typeof data.new_balance !== 'undefined') {
+          snakeStoreState.balance = data.new_balance;
+          const balanceEl = document.getElementById('snake-store-balance');
+          if (balanceEl) {
+            balanceEl.textContent = `Current Balance: ${formatSnakeStoreNumber(snakeStoreState.balance)} DSPOINC`;
+            balanceEl.classList.remove('hidden');
+          }
+        }
+
+        renderSnakeStore();
+        updateSnakeStorePerkState();
+        showSnakeStoreMessage(item.item_id, 'Purchase successful! 🎉', 'success');
+        return;
+      }
+
+      showSnakeStoreMessage(item.item_id, data.error || 'Purchase failed. Please try again.', 'error');
+    } catch (error) {
+      console.error('🐍 Purchase failed:', error);
+      showSnakeStoreMessage(item.item_id, 'Purchase failed. Please try again.', 'error');
+    } finally {
+      if (button && button.isConnected) {
+        button.disabled = false;
+        button.textContent = 'Buy';
+      }
+    }
+  }
+
+  function updateSnakeStorePerkState() {
+    const speedItem = snakeStoreState.items.speed;
+    const applesItem = snakeStoreState.items.apples;
+
+    const storeState = {
+      speedSurgeOwned: speedItem ? snakeStoreState.owned.has(speedItem.item_id) : false,
+      appleBoosterOwned: applesItem ? snakeStoreState.owned.has(applesItem.item_id) : false
+    };
+
+    window.snakeStoreState = storeState;
+
+    if (typeof window.applySnakeStorePerks === 'function') {
+      window.applySnakeStorePerks(storeState);
     }
   }
 

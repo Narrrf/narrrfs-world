@@ -387,6 +387,7 @@ function initSnake() {
     
     // 🍎 Golden apples required per boss
     applesRequired: [5, 10, 10, 10, 10, 10, 10, 10, 10],  // Baby: 5 apples (easy!), others: 10
+    goldenApplesRequired: 10,
     
     // 💰 DSPOINC rewards
     rewards: [30, 50, 80, 120, 170, 230, 300, 400, 550],  // Baby: 30, Boss 9: 550
@@ -428,8 +429,14 @@ function initSnake() {
       this.speed = giantSnakeBossConfig.speeds[index] || 650;
       this.intelligence = giantSnakeBossConfig.intelligence[index] || 15;
       this.color = giantSnakeBossConfig.colors[index] || '#E6B3FF';
-      this.health = giantSnakeBossConfig.applesRequired[index] || 5;
+      const baseApplesRequired = giantSnakeBossConfig.applesRequired[index] || 5;
+      const effectiveApples = Math.max(1, baseApplesRequired - snakeAppleBonus);
+      if (effectiveApples !== baseApplesRequired) {
+        console.log(`🍏 Golden Apple Booster active - boss apples reduced from ${baseApplesRequired} to ${effectiveApples}`);
+      }
+      this.health = effectiveApples;
       this.maxHealth = this.health;
+      giantSnakeBossConfig.goldenApplesRequired = this.maxHealth;
       this.aiMode = 'hunt';
       this.lastMoveTime = Date.now();
       
@@ -915,8 +922,46 @@ function initSnake() {
   let madModeActive = false;
   let madModeTimer = 0;
   let madModeDuration = 150; // 60 seconds at 400ms intervals
-  let originalGameSpeed = 400;
-  let madModeSpeed = 200; // 2x faster
+
+  const snakeBaseSpeed = 400;
+  let snakeActiveSpeed = snakeBaseSpeed;
+  let madModeSpeed = Math.floor(snakeActiveSpeed / 2);
+  let snakeAppleBonus = 0;
+
+  window.snakeStoreState = window.snakeStoreState || {
+    speedSurgeOwned: false,
+    appleBoosterOwned: false
+  };
+
+  function updateSnakeSpeedFromPerks() {
+    snakeActiveSpeed = snakeBaseSpeed;
+    if (window.snakeStoreState.speedSurgeOwned) {
+      snakeActiveSpeed = Math.max(220, Math.floor(snakeBaseSpeed * 0.8));
+    }
+    madModeSpeed = Math.max(120, Math.floor(snakeActiveSpeed / 2));
+  }
+
+  updateSnakeSpeedFromPerks();
+
+  window.applySnakeStorePerks = function(storeStateOverride) {
+    const override = storeStateOverride || {};
+    window.snakeStoreState = {
+      speedSurgeOwned: Boolean(override.speedSurgeOwned),
+      appleBoosterOwned: Boolean(override.appleBoosterOwned)
+    };
+    snakeAppleBonus = window.snakeStoreState.appleBoosterOwned ? 2 : 0;
+    updateSnakeSpeedFromPerks();
+
+    if (gameInterval) {
+      clearInterval(gameInterval);
+      const intervalSpeed = madModeActive ? madModeSpeed : snakeActiveSpeed;
+      gameInterval = setInterval(moveSnake, intervalSpeed);
+    }
+
+    console.log('🐍 Store perks applied:', window.snakeStoreState, 'speed:', snakeActiveSpeed, 'apple bonus:', snakeAppleBonus);
+  };
+
+  window.applySnakeStorePerks(window.snakeStoreState);
 
   // 🏆 ROLE-BASED GAMEPLAY SYSTEM - Using Global Functions
 
@@ -989,8 +1034,9 @@ function initSnake() {
       localStorage.setItem("discord_name", discordName);
     }
     
-    console.log('🎮 Setting up gameInterval - moveSnake will be called every 400ms');
-    gameInterval = setInterval(moveSnake, 400); // slower start for better device compatibility
+    updateSnakeSpeedFromPerks();
+    console.log(`🎮 Setting up gameInterval - moveSnake will be called every ${snakeActiveSpeed}ms`);
+    gameInterval = setInterval(moveSnake, snakeActiveSpeed);
     console.log('🎮 gameInterval set:', gameInterval);
     enableGlobalSnakeTouch(); // Enable touch controls when game starts
     lockSnakeScroll(); // 🎯 Lock scrolling when game starts (like Tetris)
@@ -1240,7 +1286,8 @@ function initSnake() {
     
     const isBabyBoss = bossNumber === 1;
     const spawnTitle = isBabyBoss ? '🍼 BABY BOSS - TINY CHEESE SNAKE! 🧀' : `🐍 BOSS ${bossNumber} - GIANT CHEESE SNAKE! 🧀`;
-    const applesNeeded = giantSnakeBossConfig.applesRequired[bossNumber - 1] || 5;
+    const baseApples = giantSnakeBossConfig.applesRequired[bossNumber - 1] || 5;
+    const applesNeeded = Math.max(1, baseApples - snakeAppleBonus);
     const subtitle = isBabyBoss ? `Your first boss battle!` : `After ${cheeseCount} cheeses!`;
     
     notification.innerHTML = `
@@ -1579,7 +1626,8 @@ function initSnake() {
     
     // 🔥 Return to normal speed
     clearInterval(gameInterval);
-    gameInterval = setInterval(moveSnake, originalGameSpeed);
+    updateSnakeSpeedFromPerks();
+    gameInterval = setInterval(moveSnake, snakeActiveSpeed);
     
     // 🔥 Remove visual effects
     document.body.classList.remove('mad-mode');

@@ -8614,5 +8614,20 @@ Context: Phase 3 prep has begun. Trait sync is under testing. Riddle logic is li
       "spaces": "Weekly Taco Tuesday with Gensuki. Narrrf updates + partner pitches. META tags + max hype. Website links always."
     },
     "reminder": "When posting: hype first, structure second, lore always. Thank community, highlight feedback, and push cheese scroll magic."
+  },
+  "2025_11_10_evening_sync": {
+    "timestamp": "2025-11-10T23:45:00Z",
+    "context": "Season 5 storefront polish + community schedule reminder",
+    "brief": [
+      "Cheese Drop Reactor is labeled Coming Soon on the Tetris store. Purchasing is disabled until the perk ships live, but owners retain the enable/disable toggle.",
+      "Snake store remains fully open — Golden Apple Booster buy button re-enabled after QA pass.",
+      "Site copy now advertises Taco Tuesday Gensuki Spaces at 3 PM EST (updated on index + project-updates)."
+    ],
+    "discord_actions": [
+      "Prep a #project-updates blurb after deploy: highlight Snake store availability, Tetris reactor warming up, and the new Taco Tuesday 3 PM EST slot.",
+      "Tag @community and @holder roles in the Taco Tuesday reminder so regulars adjust to the new start time."
+    ],
+    "twitter_prompt": "After deployment: “Taco Tuesday slides to 3 PM EST with @gensuki_! Snake store perks live, Tetris reactor warming up 🔥🧀 narrrfs.world”",
+    "notes": "Hold announcements until Corebrain confirms push complete; this entry parks the talking points for Social Brain."
   }
 }

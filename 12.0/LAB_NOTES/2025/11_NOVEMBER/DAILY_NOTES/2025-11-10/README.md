@@ -26,6 +26,10 @@
 - Drafted Monday hype tweet copy highlighting Season 5 polish, 3×$10 SOL bounty, and mint discount perks.
 - Final QA pass: re-applied the 0.45 SOL messaging + Golden Rascals banner on `index.html` after cache purge confirmation.
 - Audited top-level navigation: updated all game links (Tetris/Snake/Space Invaders) and partner nav “Updates” item to production-safe paths (no `/public/`), matching live routing.
+- Updated `index.html` Phase 6 spotlight to November verbiage highlighting Season 5 redemption + store rollout.
+- Implemented Cheese Snake store (Serpent Velocity Core, Golden Apple Booster) with DSPOINC purchase flow, balance sync, and perk wiring (speed modifier + boss apple credit).
+- Implemented Cheese Tetris store (Matrix Glow Pack color customization + Cheese Drop Reactor toggle) with DSPOINC purchases, reactor preference setting, and gameplay hook for first-clear bonus.
+- Evening polish: set Tetris `Cheese Drop Reactor` to “Coming Soon” (toggle only when owned), re-enabled Snake `Golden Apple Booster` purchases, and bumped Taco Tuesday Gensuki Spaces slots to **3 PM EST** on `index.html` + `project-updates.html`.
 
 ### ðŸ’» Infrastructure / Housekeeping
 - Confirmed date/time (`Get-Date`) pre-documentation per master rules.

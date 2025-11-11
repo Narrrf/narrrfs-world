@@ -1,8 +1,8 @@
 # 🧩 TETRIS COMPLETE SYSTEM - TECHNICAL DOCUMENTATION V10.0 (Season 5 Stable)
 
 **Game:** Cheese Tetris Scroll  
-**Version:** 10.0.0 - Legacy Boss Build Restored + Role System Parity  
-**Date:** November 6, 2025 - Evening Stability Pass  
+**Version:** 10.1.0 - Store Upgrades + Reactor Toggle  
+**Date:** November 11, 2025 - Store Integration Pass  
 **Status:** ✅ **PRODUCTION READY - STABLE ACROSS PROFILE + STANDALONE**  
 
 ---
@@ -32,7 +32,7 @@
 ### **What is Tetris?**
 Cheese Tetris Scroll is a classic block-stacking puzzle game where players rotate and position falling pieces (tetrominoes) to create complete horizontal lines. Season 5 continues with the perfected role-based scoring system, 25 achievements, and professional particle effects.
 
-### **Season 5 Features (Updated Nov 6, 2025):**
+### **Season 5 Features (Updated Nov 11, 2025):**
 - **🏆 Role-Based Gameplay** - Discord role multipliers (1.1x → 2.0x)
 - **🎨 Role-Based Themes** - 7 unique visual themes (Golden, Silver, Red, Green, Blue, Cheese)
 - **🏆 25 Achievements** - Balanced achievement system (removed unreachable)
@@ -52,6 +52,7 @@ Cheese Tetris Scroll is a classic block-stacking puzzle game where players rotat
 - **✅ OK / Play Again Modal UX** - Matches Space Invaders + Snake (Nov 6)
 - **✅ Guide Button Lock** - Disabled during active play (Nov 6)
 - **✅ Role Fetch Normalization** - Emoji-stripped names via `/api/user/roles.php` (Nov 6)
+- **🛒 Store Upgrades** - Matrix Glow Pack customization + Cheese Drop Reactor (toggleable) with DSPOINC purchases (Nov 11)
 
 ---
 
@@ -112,7 +113,12 @@ const roleMultipliers = {
 }
 ```
 
-### **3. Achievement System (25 Total)**
+### **3. Store Upgrades (Nov 11, 2025)**
+- **Matrix Glow Pack** (250,000 DSPOINC) — Cosmetic neon glow customization for the playfield. Color picker writes to `tbl_user_store_settings` (`matrix_color`) via `/api/store/update-user-setting.php`; applied instantly with the `matrix-glow-active` class and `--matrix-glow-color` CSS variable.
+- **Cheese Drop Reactor** (400,000 DSPOINC) — Toggleable perk: first line clear each run grants double DSPOINC and immediately reduces drop interval by 50 ms. Also lowers the mobile hold-to-drop delay/interval for the entire session. Preference stored in `tbl_user_store_settings` (`reactor_enabled`) and changed from the store card without repurchase.
+- **Implementation:** Store panel lives in `tetris.html` (`loadTetrisStore`, `renderTetrisStore`, `saveTetrisColorSetting`, `saveTetrisReactorSetting`). Gameplay wiring in `tetris-scroll.js` via `applyTetrisStorePerks`, dynamic hold timing, and `reactorFirstClearPending` inside `clearLines()`.
+
+### **4. Achievement System (25 Total)**
 **Achievement Categories:**
 
 **Score Achievements (5):**
@@ -158,7 +164,7 @@ const roleMultipliers = {
 - Dynamic HTML generation (no hardcoded cards)
 - Real-time unlocking with animated popups
 
-### **4. Cheese Particle System**
+### **5. Cheese Particle System**
 **Visual Enhancement:**
 - Particles spawn when lines are cleared
 - Follow role-based colors (gold, silver, red, green, blue, cheese)
@@ -187,7 +193,7 @@ class CheeseParticleSystem {
 }
 ```
 
-### **5. Bomb Block System**
+### **6. Bomb Block System**
 **Special Power-Up:**
 - Random blocks can be "bomb blocks"
 - Marked with special visual indicator
@@ -197,7 +203,7 @@ class CheeseParticleSystem {
 
 **Spawn Rate:** ~5-10% of pieces
 
-### **6. Sound System**
+### **7. Sound System**
 **Professional Web Audio API:**
 - **piecePlace** - Soft landing sound (220Hz → 110Hz, 0.15s)
 - **lineClear** - Satisfying clear sound (440Hz → 880Hz, 0.3s)
@@ -211,7 +217,7 @@ class CheeseParticleSystem {
 - Frequency-based sound design
 - No external audio files needed!
 
-### **7. Mobile Optimization**
+### **8. Mobile Optimization**
 **Touch Controls:**
 - Left/Right swipe - Move piece
 - Up swipe - Rotate
@@ -790,7 +796,8 @@ function isValidMove(piece, offsetX, offsetY) {
 | Mobile Controls | ~200 | Touch controls and swipe detection |
 | Rendering | ~300 | Canvas drawing and animations |
 | UI Integration | ~259 | Button handlers and displays |
-| **TOTAL** | **2,259** | **Complete Tetris system** |
+| Store Integration (Nov 2025) | ~210 | Store panel, color picker, reactor toggle, perk wiring |
+| **TOTAL** | **2,469** | **Complete Tetris system** |
 
 ### **Complexity Metrics:**
 - **Functions:** 40+
@@ -822,6 +829,7 @@ function isValidMove(piece, offsetX, offsetY) {
 - ✅ Math.round() fair scoring
 - ✅ Icon mapping (emoji fix)
 - ✅ Dynamic achievement loading
+- ✅ Store upgrade system (Matrix Glow Pack, Cheese Drop Reactor)
 - ✅ **⭐ Multi-Line Bonus System (NEW - Nov 2)**
 - ✅ **❄️ Frozen Blocks System (NEW - Nov 2)**
 
@@ -848,6 +856,11 @@ function isValidMove(piece, offsetX, offsetY) {
 - ✅ **Progressive Spacing:** More lines between later bosses
 - ✅ **Countdown Pause:** Game pauses during boss notifications
 - ✅ **Mobile Responsive:** All notifications scale perfectly
+
+**Changes v1.4.0 (Store Integration – Nov 11, 2025):**
+- ✅ Introduced `loadTetrisStore`, `renderTetrisStore`, `saveTetrisColorSetting`, and `saveTetrisReactorSetting` with live DSPOINC balance + status messaging.
+- ✅ Added Matrix Glow Pack UI with color picker, persistent CSS variable, and `matrix-glow-active` styling.
+- ✅ Added Cheese Drop Reactor toggle (stored via `reactor_enabled`), runtime hook (`applyTetrisStorePerks`), faster hold-to-drop timing, and first-clear double DSPOINC logic inside `clearLines()`.
 
 ### **2. `public/profile.html`**
 **Tetris Integration:**
@@ -1192,6 +1205,7 @@ function explode(centerX, centerY, isGiantBomb = false) {
 - [x] Math.round() fair scoring
 - [x] Icon mapping system
 - [x] Dynamic achievement loading
+- [x] Store upgrades (Matrix Glow Pack, Cheese Drop Reactor toggle)
 - [x] Database integration
 - [x] Zero linting errors
 - [x] Production deployed
@@ -1323,7 +1337,7 @@ The profile page (`public/profile.html`) features a dedicated game portal sectio
 
 ---
 
-## 🎉 **ACHIEVEMENT UNLOCKED: TETRIS V5.0 DOCUMENTED!**
+## 🎉 **ACHIEVEMENT UNLOCKED: TETRIS V10.1 DOCUMENTED!**
 
 **This document provides complete technical reference for Tetris, enabling decades of maintenance and enhancement!** 🧩🧀👑
 
@@ -1336,6 +1350,7 @@ The profile page (`public/profile.html`) features a dedicated game portal sectio
 - 📱 **Mobile Optimized:** Touch controls
 - ⚡ **Fair Scoring:** Math.round() for bonuses
 - 🐛 **Zero Bugs:** All Season 4 issues fixed
+- 🛒 **Store Upgrades:** Matrix Glow Pack customization + Cheese Drop Reactor toggle (first-clear boost)
 
 **Ready for Season 5 tuning and boss system addition!** 🚀
 

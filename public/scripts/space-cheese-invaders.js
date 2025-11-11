@@ -7826,9 +7826,9 @@ let reloadButtonInterval = null;
             screenShakeForce: 10,
             logLabel: '💥 Bomb hit'
           })) {
-            explosions.push({
-              x: item.x,
-              y: item.y,
+          explosions.push({
+            x: item.x,
+            y: item.y,
               size: 50,
               timer: 30,
               isBombExplosion: true
@@ -8459,53 +8459,53 @@ let reloadButtonInterval = null;
             screenShakeForce: bulletType === 'swiss_sniper' ? 18 : 12,
             logLabel: `💥 ${bulletType.toUpperCase()} hits player`
           })) {
-            let explosionSize = 25;
-            let explosionTimer = 15;
-            
-            switch (bulletType) {
-              case 'cheese_cannon':
-                explosionSize = 35;
-                explosionTimer = 20;
-                console.log(`🧀 CHEESE CANNON BLAST! The power of aged cheddar overwhelms you!`);
-                break;
-              case 'gouda_grenade':
-                explosionSize = 40;
-                explosionTimer = 25;
-                console.log(`🧀 GOUDA GRENADE EXPLOSION! You're covered in molten cheese!`);
-                break;
-              case 'swiss_sniper':
-                explosionSize = 30;
-                explosionTimer = 18;
-                console.log(`🧀 SWISS PRECISION STRIKE! Those holes aren't just for show!`);
-                break;
-              case 'cheddar_chaos':
-                explosionSize = 32;
-                explosionTimer = 20;
-                console.log(`🧀 CHEDDAR CHAOS BURNS! The heat of aged cheddar sears you!`);
-                break;
-              case 'melted_cheese':
-                explosionSize = 28;
-                explosionTimer = 22;
-                console.log(`🧀 MELTED CHEESE SPLASH! You're dripping with dairy destruction!`);
-                break;
-              default:
-                console.log(`🧀 Cheese attack hits! The dairy devastation continues!`);
-            }
-            
-            explosions.push({
-              x: playerShip.x + playerShip.width / 2,
-              y: playerShip.y + playerShip.height / 2,
-              size: explosionSize,
-              timer: explosionTimer,
-              isBossHit: true,
-              cheeseType: bulletType
-            });
-            
+          let explosionSize = 25;
+          let explosionTimer = 15;
+          
+          switch (bulletType) {
+            case 'cheese_cannon':
+              explosionSize = 35;
+              explosionTimer = 20;
+              console.log(`🧀 CHEESE CANNON BLAST! The power of aged cheddar overwhelms you!`);
+              break;
+            case 'gouda_grenade':
+              explosionSize = 40;
+              explosionTimer = 25;
+              console.log(`🧀 GOUDA GRENADE EXPLOSION! You're covered in molten cheese!`);
+              break;
+            case 'swiss_sniper':
+              explosionSize = 30;
+              explosionTimer = 18;
+              console.log(`🧀 SWISS PRECISION STRIKE! Those holes aren't just for show!`);
+              break;
+            case 'cheddar_chaos':
+              explosionSize = 32;
+              explosionTimer = 20;
+              console.log(`🧀 CHEDDAR CHAOS BURNS! The heat of aged cheddar sears you!`);
+              break;
+            case 'melted_cheese':
+              explosionSize = 28;
+              explosionTimer = 22;
+              console.log(`🧀 MELTED CHEESE SPLASH! You're dripping with dairy destruction!`);
+              break;
+            default:
+              console.log(`🧀 Cheese attack hits! The dairy devastation continues!`);
+          }
+          
+          explosions.push({
+            x: playerShip.x + playerShip.width / 2,
+            y: playerShip.y + playerShip.height / 2,
+            size: explosionSize,
+            timer: explosionTimer,
+            isBossHit: true,
+            cheeseType: bulletType
+          });
+          
             screenShake = Math.max(screenShake, 12);
-            
-            if (window.cheeseSoundManager && window.cheeseSoundManager.soundEnabled) {
-              window.cheeseSoundManager.playStarWarsLaser();
-            }
+          
+          if (window.cheeseSoundManager && window.cheeseSoundManager.soundEnabled) {
+            window.cheeseSoundManager.playStarWarsLaser();
+          }
           }
         }
       });

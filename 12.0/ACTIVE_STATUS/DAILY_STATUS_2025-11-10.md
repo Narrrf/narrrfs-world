@@ -19,6 +19,11 @@
    - ✅ Added store teaser content per game ahead of the shop rollout
    - ✅ QA: Space Invaders store purchases propagate (Triple Shot auto-applies, Ship Paint Kit tint saved & renders)
 
+4. **Store + scheduling touch-ups**
+   - ✅ Set Tetris `Cheese Drop Reactor` to “Coming Soon” (purchase disabled until live)
+   - ✅ Restored Snake `Golden Apple Booster` buy button after QA
+   - ✅ Updated Gensuki Taco Tuesday slot to 3 PM EST across `index.html` and `project-updates.html`
+
 3. **Comms prep**
    - ✅ Drafted Monday hype tweet (Season 5 polish, 3×$10 SOL bounty, mint discounts)
    - 🔄 Collect fresh leaderboard screenshot prior to posting
@@ -31,6 +36,8 @@
 - [x] Update mint pricing references + Golden Rascals notice
 - [x] Implement stats/leaderboard modules for Snake & Tetris
 - [x] Draft social copy for Monday campaign
+- [x] Gate Tetris reactor purchase + verify Snake booster flow
+- [x] Update Taco Tuesday Gensuki time to 3 PM EST (index + project-updates)
 - [ ] Update LLM sync files after QA pass
 - [ ] QA on production once assets propagate
 - [x] Sync Narrrf’s World ruleset with Space Invaders store ownership/tint guidance
@@ -51,6 +58,7 @@
 - Stats panels currently duplicate logic; consider shared helper after shop refactor.
 - Production deploy will require copying updated VR asset to `/data/img/`.
 - Next sprint: begin storefront interactions + finalize Monday tweet assets.
+- Tetris store now shows reactor perk as Coming Soon; Snake store back to full functionality; community comms to note Taco Tuesday at 3 PM EST.
 
 ---
 
