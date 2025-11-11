@@ -30,6 +30,7 @@
 - Implemented Cheese Snake store (Serpent Velocity Core, Golden Apple Booster) with DSPOINC purchase flow, balance sync, and perk wiring (speed modifier + boss apple credit).
 - Implemented Cheese Tetris store (Matrix Glow Pack color customization + Cheese Drop Reactor toggle) with DSPOINC purchases, reactor preference setting, and gameplay hook for first-clear bonus.
 - Evening polish: set Tetris `Cheese Drop Reactor` to “Coming Soon” (toggle only when owned), re-enabled Snake `Golden Apple Booster` purchases, and bumped Taco Tuesday Gensuki Spaces slots to **3 PM EST** on `index.html` + `project-updates.html`.
+- Post-push fix: cleaned up `/api/store/inventory.php` to omit zero-quantity rows and purged spent items in `/discord/commands/useitem.js` when admin approvals burn the usage (prevents ghost items returning).
 
 ### ðŸ’» Infrastructure / Housekeeping
 - Confirmed date/time (`Get-Date`) pre-documentation per master rules.

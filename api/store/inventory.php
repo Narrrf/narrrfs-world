@@ -33,7 +33,9 @@ try {
                     SELECT ui.*, si.item_name, si.description, si.image_url 
                     FROM tbl_user_inventory ui 
                     JOIN tbl_store_items si ON ui.item_id = si.item_id 
-                    WHERE ui.user_id = ? AND si.is_active = 1
+                    WHERE ui.user_id = ? 
+                      AND si.is_active = 1
+                      AND ui.quantity > 0
                     ORDER BY si.item_name
                 ');
     $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
