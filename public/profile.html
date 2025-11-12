@@ -752,6 +752,22 @@ document.addEventListener('DOMContentLoaded', async function() {
       </div>
     </div>
 
+  <!-- 🛒 Profile Store Catalog -->
+  <div id="profile-store-catalog" class="mt-6 bg-gradient-to-br from-indigo-900/30 to-purple-900/20 rounded-lg p-4 shadow-inner border border-indigo-500/30">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+      <div>
+        <h3 class="text-lg font-semibold text-indigo-200 flex items-center gap-2">
+          <span>🛒 Store Catalog</span>
+        </h3>
+        <p class="text-xs text-indigo-300 mt-1">Browse and purchase Season 5 upgrades directly from your profile. All purchases sync instantly across games, Discord, and the admin dashboard.</p>
+      </div>
+      <div id="profile-store-balance" class="text-sm text-emerald-300 font-semibold hidden"></div>
+    </div>
+    <div id="profile-store-items" class="space-y-3">
+      <div class="text-center text-gray-400 py-3">Loading store catalog…</div>
+    </div>
+  </div>
+
     <!-- 🎮 5-Game Missions Section -->
     <div id="missions-section" class="mt-6 bg-gradient-to-br from-green-900/30 to-blue-900/30 rounded-lg p-4 shadow-inner border border-green-500/30">
       <h2 class="font-semibold text-lg mb-4 text-green-300">🎮 Game Missions & Achievements</h2>
@@ -1632,6 +1648,14 @@ function hideElement(id) {
   if (el) el.classList.add('hidden');
 }
 
+function getApiBaseUrl() {
+  const host = window.location.hostname;
+  if (host === 'narrrfs.world' || host === 'narrrfs-world.onrender.com') {
+    return 'https://narrrfs.world';
+  }
+  return '';
+}
+
 // Function to navigate to admin interface with proper redirect flag
 function goToAdminInterface() {
   // Set the admin redirect flag before navigating
@@ -1742,6 +1766,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           console.log('❌ Not localhost - no local override');
         }
 
+        await loadProfileStore(null, apiBaseUrl);
         // Make sure login link is visible and clickable
         if (loginLink) {
           loginLink.href = "https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read";
@@ -1816,6 +1841,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       displayInventoryAndHistory(enhancedData);
     }
 
+    await loadProfileStore(user.discord_id, apiBaseUrl);
+    
     // Load 5-game missions data
     try {
       const missionsRes = await fetch('/api/user/user-game-missions.php', {
@@ -3374,6 +3401,588 @@ function displayInventoryAndHistory(enhancedData) {
     </div>
   `;
     }
+  }
+}
+
+const PROFILE_STORE_ORDER = ['space_triple', 'space_color', 'tetris_glow', 'tetris_reactor', 'snake_speed', 'snake_apples'];
+const PROFILE_STORE_DEFS = {
+  space_triple: {
+    key: 'space_triple',
+    title: 'Space Triple Shot Core',
+    icon: '🎯',
+    description: 'Start every Space Cheese Invaders run with triple-shot active. Permanent account unlock.',
+    match: ['Space Triple Shot Core', 'Triple Shot Core'],
+    game: 'space_invaders',
+    badge: 'Space Cheese Invaders',
+    type: 'purchase'
+  },
+  space_color: {
+    key: 'space_color',
+    title: 'Space Ship Paint Kit',
+    icon: '🎨',
+    description: 'Unlock the Space hangar paint lab and customize your cheese fighter with any color.',
+    match: ['Space Ship Paint Kit', 'Ship Paint Kit'],
+    game: 'space_invaders',
+    badge: 'Space Cheese Invaders',
+    type: 'color',
+    settingKey: 'ship_color',
+    defaultColor: '#FBBF24'
+  },
+  tetris_glow: {
+    key: 'tetris_glow',
+    title: 'Tetris Matrix Glow Pack',
+    icon: '🌈',
+    description: 'Illuminate the Cheese Tetris well with a neon glow. Pick a signature color for your arena.',
+    match: ['Tetris Matrix Glow Pack', 'Matrix Glow Pack'],
+    game: 'tetris',
+    badge: 'Cheese Tetris',
+    type: 'color',
+    settingKey: 'matrix_color',
+    defaultColor: '#FFD700'
+  },
+  tetris_reactor: {
+    key: 'tetris_reactor',
+    title: 'Tetris Cheese Drop Reactor',
+    icon: '🧬',
+    description: 'First line clear each run grants double DSPOINC and accelerates drop timing. Toggle on/off after unlock.',
+    match: ['Tetris Cheese Drop Reactor', 'Cheese Drop Reactor'],
+    game: 'tetris',
+    badge: 'Cheese Tetris',
+    type: 'toggle',
+    settingKey: 'reactor_enabled',
+    disablePurchase: true,
+    comingSoonText: 'Coming Soon',
+    toggleLabels: {
+      on: 'Disable Reactor',
+      off: 'Enable Reactor'
+    },
+    toggleHelper: 'Toggle off if you need the classic pacing without the first-clear surge.'
+  },
+  snake_speed: {
+    key: 'snake_speed',
+    title: 'Snake Serpent Velocity Core',
+    icon: '⚡',
+    description: 'Reduce your base movement interval by 20% for every run. High-speed mastery required!',
+    match: ['Snake Serpent Velocity Core', 'Serpent Velocity Core'],
+    game: 'snake',
+    badge: 'Cheese Snake',
+    type: 'purchase',
+    warning: '⚠️ Boss fights become significantly faster—practice your reactions.'
+  },
+  snake_apples: {
+    key: 'snake_apples',
+    title: 'Snake Golden Apple Booster',
+    icon: '🍏',
+    description: 'Begin each boss fight with bonus golden apples already counted. Boss HP drops immediately.',
+    match: ['Snake Golden Apple Booster', 'Golden Apple Booster'],
+    game: 'snake',
+    badge: 'Cheese Snake',
+    type: 'purchase'
+  }
+};
+
+PROFILE_STORE_ORDER.forEach((key) => {
+  const def = PROFILE_STORE_DEFS[key];
+  if (!def) return;
+  const aliases = [def.title, def.itemName, ...(def.match || []), ...(def.aliases || [])];
+  def.matchers = aliases
+    .filter(Boolean)
+    .map((name) => name.toLowerCase().replace(/[^a-z0-9]/g, ''))
+    .filter((value, index, arr) => value && arr.indexOf(value) === index);
+  if (def.type === 'color' && !def.defaultColor) {
+    def.defaultColor = '#FFFFFF';
+  }
+});
+
+const profileStoreNumberFormatter = new Intl.NumberFormat('en-US');
+const profileStoreState = {
+  userId: null,
+  items: {},
+  ownedIds: new Set(),
+  settingsByGame: {},
+  balance: null,
+  apiBaseUrl: ''
+};
+
+function formatProfileStoreNumber(value) {
+  if (typeof value !== 'number') return value;
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(2).replace(/\.00$/, '') + 'M';
+  if (value >= 1_000) return (value / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return profileStoreNumberFormatter.format(value);
+}
+
+function sanitizeProfileStoreColor(value, fallback) {
+  const safeFallback = (fallback || '#FFFFFF').toUpperCase();
+  if (typeof value !== 'string') {
+    return safeFallback;
+  }
+  const trimmed = value.trim();
+  return /^#([0-9a-fA-F]{6})$/.test(trimmed) ? trimmed.toUpperCase() : safeFallback;
+}
+
+async function loadProfileStore(discordId, baseUrlOverride) {
+  const catalogSection = document.getElementById('profile-store-catalog');
+  const itemsContainer = document.getElementById('profile-store-items');
+  const balanceEl = document.getElementById('profile-store-balance');
+
+  if (!catalogSection || !itemsContainer) {
+    return;
+  }
+
+  const apiBase = typeof baseUrlOverride === 'string' ? baseUrlOverride : getApiBaseUrl();
+
+  profileStoreState.apiBaseUrl = apiBase;
+  profileStoreState.userId = discordId || null;
+
+  if (!discordId) {
+    if (itemsContainer) {
+      itemsContainer.innerHTML = '<div class="text-center text-gray-400 py-3">Log in with Discord to access the Narrrf\'s World store catalog.</div>';
+    }
+    balanceEl?.classList.add('hidden');
+    return;
+  }
+
+  itemsContainer.innerHTML = '<div class="text-center text-gray-400 py-3">Loading store catalog…</div>';
+
+  try {
+    const gamesNeeded = Array.from(
+      new Set(
+        PROFILE_STORE_ORDER
+          .map((key) => PROFILE_STORE_DEFS[key]?.game)
+          .filter(Boolean)
+      )
+    );
+
+    const requests = [
+      fetch(`${apiBase}/api/store/items.php`),
+      fetch(`${apiBase}/api/store/inventory.php?user_id=${discordId}`),
+      fetch(`${apiBase}/api/user/score-total.php?user_id=${discordId}`)
+    ];
+
+    gamesNeeded.forEach((game) => {
+      requests.push(fetch(`${apiBase}/api/store/get-user-settings.php?user_id=${discordId}&game=${game}`));
+    });
+
+    const responses = await Promise.all(requests);
+    const [itemsRes, inventoryRes, balanceRes, ...settingsResponses] = responses;
+
+    const itemsData = itemsRes && itemsRes.ok ? await itemsRes.json() : { success: false, items: [] };
+    const inventoryData = inventoryRes && inventoryRes.ok ? await inventoryRes.json() : { success: false, items: [] };
+    const balanceData = balanceRes && balanceRes.ok ? await balanceRes.json() : null;
+    const settingsJson = await Promise.all(
+      settingsResponses.map((res) => (res && res.ok ? res.json() : null))
+    );
+
+    const settingsByGame = {};
+    settingsJson.forEach((data, index) => {
+      const gameKey = gamesNeeded[index];
+      if (!gameKey) return;
+      if (data && data.success) {
+        settingsByGame[gameKey] = data.settings || {};
+      }
+    });
+
+    const normalizeName = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    const itemsMap = {};
+    (itemsData.items || []).forEach((item) => {
+      const normalized = normalizeName(item.item_name);
+      const matchKey = PROFILE_STORE_ORDER.find((key) => {
+        const def = PROFILE_STORE_DEFS[key];
+        return def && def.matchers && def.matchers.includes(normalized);
+      });
+      if (matchKey) {
+        itemsMap[matchKey] = item;
+      }
+    });
+
+    const ownedIds = new Set();
+    if (inventoryData.success && Array.isArray(inventoryData.items)) {
+      inventoryData.items.forEach((inventoryItem) => {
+        const normalizedInv = normalizeName(inventoryItem.name);
+        const matchKey = PROFILE_STORE_ORDER.find((key) => {
+          const def = PROFILE_STORE_DEFS[key];
+          return def && def.matchers && def.matchers.includes(normalizedInv);
+        });
+        if (matchKey && itemsMap[matchKey]) {
+          ownedIds.add(itemsMap[matchKey].item_id);
+        }
+      });
+    }
+
+    profileStoreState.items = itemsMap;
+    profileStoreState.ownedIds = ownedIds;
+    profileStoreState.settingsByGame = settingsByGame;
+    profileStoreState.balance =
+      balanceData && typeof balanceData.total_dspoinc !== 'undefined'
+        ? Number(balanceData.total_dspoinc)
+        : null;
+
+    renderProfileStore();
+  } catch (error) {
+    console.error('❌ Error loading profile store:', error);
+    itemsContainer.innerHTML = '<div class="text-center text-red-400 py-3">Failed to load store catalog. Please try again later.</div>';
+    balanceEl?.classList.add('hidden');
+  }
+}
+
+function renderProfileStore() {
+  const itemsContainer = document.getElementById('profile-store-items');
+  const balanceEl = document.getElementById('profile-store-balance');
+
+  if (!itemsContainer) {
+    return;
+  }
+
+  if (!profileStoreState.userId) {
+    return;
+  }
+
+  if (balanceEl) {
+    if (profileStoreState.balance !== null) {
+      balanceEl.textContent = `Balance: ${formatProfileStoreNumber(profileStoreState.balance)} DSPOINC`;
+      balanceEl.classList.remove('hidden');
+    } else {
+      balanceEl.classList.add('hidden');
+    }
+  }
+
+  itemsContainer.innerHTML = '';
+  let itemsRendered = 0;
+
+  PROFILE_STORE_ORDER.forEach((defKey) => {
+    const def = PROFILE_STORE_DEFS[defKey];
+    if (!def) return;
+
+    const item = profileStoreState.items[defKey];
+    const owned = item && profileStoreState.ownedIds.has(item.item_id);
+    const card = buildProfileStoreCard(defKey, def, item, owned);
+    itemsContainer.appendChild(card);
+    itemsRendered += 1;
+  });
+
+  if (itemsRendered === 0) {
+    itemsContainer.innerHTML = '<div class="text-center text-gray-400 py-3">Store catalog is being prepared. Check back soon!</div>';
+  }
+}
+
+function buildProfileStoreCard(defKey, def, item, owned) {
+  const card = document.createElement('div');
+  card.className = 'bg-gray-900/60 rounded-xl border border-gray-700/50 p-4 shadow-inner';
+
+  const statusTargetId = `profile-store-status-${item ? item.item_id : defKey}`;
+  const badge = def.badge
+    ? `<span class="inline-flex items-center text-[10px] uppercase tracking-wider bg-indigo-500/20 text-indigo-200 px-2 py-1 rounded-full border border-indigo-400/30">${def.badge}</span>`
+    : '';
+
+  if (!item) {
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-3">
+        <div class="pr-4">
+          <div class="flex items-center gap-2 text-sm font-semibold text-indigo-200">
+            <span>${def.icon}</span>
+            <span>${def.title}</span>
+          </div>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed">${def.description}</p>
+        </div>
+        ${badge}
+      </div>
+      <div class="mt-3 text-xs text-gray-500">Coming soon to the Season 5 store.</div>
+    `;
+    return card;
+  }
+
+  const priceText = `${formatProfileStoreNumber(item.price)} DSPOINC`;
+
+  const actionHtml = owned
+    ? '<span class="inline-block mt-2 text-xs text-green-400 font-semibold">Owned</span>'
+    : def.disablePurchase
+      ? `<span class="inline-block mt-2 text-xs text-gray-500 font-semibold">${def.comingSoonText || 'Coming Soon'}</span>`
+      : `<button data-profile-store-button="${defKey}" class="mt-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors duration-200">Buy</button>`;
+
+  card.innerHTML = `
+    <div class="flex items-start justify-between gap-3">
+      <div class="pr-4">
+        <div class="flex items-center gap-2 text-sm font-semibold text-indigo-200">
+          <span>${def.icon}</span>
+          <span>${def.title}</span>
+        </div>
+        <p class="text-xs text-gray-400 mt-2 leading-relaxed">${def.description}</p>
+      </div>
+      <div class="text-right">
+        ${badge ? `<div class="mb-2">${badge}</div>` : ''}
+        <div class="text-xs font-bold text-yellow-300">${priceText}</div>
+        ${actionHtml}
+      </div>
+    </div>
+    <div id="${statusTargetId}" class="mt-3 text-xs hidden"></div>
+  `;
+
+  if (!owned && !def.disablePurchase) {
+    const button = card.querySelector(`[data-profile-store-button="${defKey}"]`);
+    if (button) {
+      button.addEventListener('click', () => purchaseProfileStoreItem(defKey));
+    }
+  }
+
+  if (def.type === 'color') {
+    if (owned) {
+      const gameSettings = profileStoreState.settingsByGame[def.game] || {};
+      const currentValue = sanitizeProfileStoreColor(gameSettings[def.settingKey], def.defaultColor);
+
+      const colorWrapper = document.createElement('div');
+      colorWrapper.className = 'mt-2 flex items-center gap-3';
+
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.className = 'w-10 h-10 rounded border border-gray-600 bg-gray-800 cursor-pointer';
+      colorInput.value = currentValue;
+
+      const colorPreview = document.createElement('div');
+      colorPreview.className = 'w-10 h-10 rounded border border-gray-600';
+      colorPreview.style.background = currentValue;
+
+      const valueLabel = document.createElement('span');
+      valueLabel.className = 'text-xs text-gray-300';
+      valueLabel.textContent = currentValue;
+
+      colorInput.addEventListener('input', (event) => {
+        const sanitized = sanitizeProfileStoreColor(event.target.value, def.defaultColor);
+        colorPreview.style.background = sanitized;
+        valueLabel.textContent = sanitized;
+      });
+
+      colorInput.addEventListener('change', (event) => {
+        const sanitized = sanitizeProfileStoreColor(event.target.value, def.defaultColor);
+        saveProfileStoreSetting(defKey, sanitized);
+      });
+
+      colorWrapper.appendChild(colorInput);
+      colorWrapper.appendChild(colorPreview);
+      colorWrapper.appendChild(valueLabel);
+      card.appendChild(colorWrapper);
+
+      const helper = document.createElement('p');
+      helper.className = 'text-[11px] text-gray-500 mt-2 leading-relaxed';
+      helper.textContent = 'Color changes save instantly and apply the next time you launch the game.';
+      card.appendChild(helper);
+    } else {
+      const helper = document.createElement('p');
+      helper.className = 'text-[11px] text-gray-500 mt-2 leading-relaxed';
+      helper.textContent = 'Unlock this item to enable customization controls.';
+      card.appendChild(helper);
+    }
+  } else if (def.type === 'toggle') {
+    const gameSettings = profileStoreState.settingsByGame[def.game] || {};
+    const enabled = gameSettings[def.settingKey] === '1' || gameSettings[def.settingKey] === 'true';
+
+    if (owned) {
+      const status = document.createElement('p');
+      status.className = 'text-xs text-gray-400 mt-3';
+      status.textContent = `Currently: ${enabled ? 'Enabled' : 'Disabled'}`;
+      card.appendChild(status);
+
+      const toggleButton = document.createElement('button');
+      const onLabel = def.toggleLabels?.on || 'Disable';
+      const offLabel = def.toggleLabels?.off || 'Enable';
+      toggleButton.className = `mt-2 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors duration-200 ${
+        enabled ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-green-600 hover:bg-green-500 text-white'
+      }`;
+      toggleButton.textContent = enabled ? onLabel : offLabel;
+      toggleButton.addEventListener('click', () => saveProfileStoreToggle(defKey, def, !enabled, toggleButton));
+      card.appendChild(toggleButton);
+
+      if (def.toggleHelper) {
+        const helper = document.createElement('p');
+        helper.className = 'text-[11px] text-gray-500 mt-2 leading-relaxed';
+        helper.textContent = def.toggleHelper;
+        card.appendChild(helper);
+      }
+    } else {
+      const helper = document.createElement('p');
+      helper.className = 'text-[11px] text-gray-500 mt-2 leading-relaxed';
+      helper.textContent = 'Unlock this item to control advanced gameplay toggles.';
+      card.appendChild(helper);
+    }
+  }
+
+  return card;
+}
+
+function showProfileStoreMessage(itemId, message, type = 'info') {
+  const statusEl = document.getElementById(`profile-store-status-${itemId}`);
+  if (!statusEl) {
+    return;
+  }
+
+  statusEl.classList.remove('hidden', 'text-red-400', 'text-green-400', 'text-gray-300');
+
+  if (type === 'error') {
+    statusEl.classList.add('text-red-400');
+  } else if (type === 'success') {
+    statusEl.classList.add('text-green-400');
+  } else {
+    statusEl.classList.add('text-gray-300');
+  }
+
+  statusEl.textContent = message;
+}
+
+async function purchaseProfileStoreItem(defKey) {
+  const def = PROFILE_STORE_DEFS[defKey];
+  const item = profileStoreState.items[defKey];
+
+  if (!def || !item || !profileStoreState.userId) {
+    return;
+  }
+
+  const button = document.querySelector(`[data-profile-store-button="${defKey}"]`);
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Processing...';
+  }
+
+  showProfileStoreMessage(item.item_id, 'Processing purchase...', 'info');
+
+  try {
+    const response = await fetch(`${profileStoreState.apiBaseUrl || getApiBaseUrl()}/api/store/purchase.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: profileStoreState.userId,
+        item_id: item.item_id,
+        quantity: 1
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      await loadProfileStore(profileStoreState.userId, profileStoreState.apiBaseUrl);
+      const refreshedItem = profileStoreState.items[defKey];
+      if (refreshedItem) {
+        showProfileStoreMessage(refreshedItem.item_id, 'Purchase successful! 🎉', 'success');
+      }
+      await refreshProfileInventory();
+      return;
+    }
+
+    showProfileStoreMessage(item.item_id, data.error || 'Purchase failed. Please try again.', 'error');
+  } catch (error) {
+    console.error('❌ Profile store purchase failed:', error);
+    showProfileStoreMessage(item.item_id, 'Purchase failed. Please try again.', 'error');
+  } finally {
+    if (button && button.isConnected) {
+      button.disabled = false;
+      button.textContent = 'Buy';
+    }
+  }
+}
+
+async function saveProfileStoreSetting(defKey, value) {
+  const def = PROFILE_STORE_DEFS[defKey];
+  const item = profileStoreState.items[defKey];
+
+  if (!def || !item || !profileStoreState.userId || !def.settingKey || !def.game) {
+    return;
+  }
+
+  const sanitized = sanitizeProfileStoreColor(value, def.defaultColor);
+  showProfileStoreMessage(item.item_id, 'Saving preference…', 'info');
+
+  try {
+    const response = await fetch(`${profileStoreState.apiBaseUrl || getApiBaseUrl()}/api/store/update-user-setting.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: profileStoreState.userId,
+        game: def.game,
+        setting_key: def.settingKey,
+        setting_value: sanitized
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      profileStoreState.settingsByGame[def.game] = profileStoreState.settingsByGame[def.game] || {};
+      profileStoreState.settingsByGame[def.game][def.settingKey] = sanitized;
+      showProfileStoreMessage(item.item_id, 'Preference saved! ✅', 'success');
+    } else {
+      showProfileStoreMessage(item.item_id, data.error || 'Failed to save preference.', 'error');
+    }
+  } catch (error) {
+    console.error('❌ Failed to save profile store setting:', error);
+    showProfileStoreMessage(item.item_id, 'Failed to save preference.', 'error');
+  }
+}
+
+async function saveProfileStoreToggle(defKey, def, enabled, toggleButton) {
+  const item = profileStoreState.items[defKey];
+
+  if (!def || !item || !profileStoreState.userId || !def.settingKey || !def.game) {
+    return;
+  }
+
+  showProfileStoreMessage(item.item_id, 'Saving preference…', 'info');
+
+  if (toggleButton) {
+    toggleButton.disabled = true;
+    toggleButton.textContent = enabled ? (def.toggleLabels?.on || 'Disable') : (def.toggleLabels?.off || 'Enable');
+  }
+
+  try {
+    const response = await fetch(`${profileStoreState.apiBaseUrl || getApiBaseUrl()}/api/store/update-user-setting.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: profileStoreState.userId,
+        game: def.game,
+        setting_key: def.settingKey,
+        setting_value: enabled ? '1' : '0'
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      profileStoreState.settingsByGame[def.game] = profileStoreState.settingsByGame[def.game] || {};
+      profileStoreState.settingsByGame[def.game][def.settingKey] = enabled ? '1' : '0';
+      showProfileStoreMessage(item.item_id, enabled ? 'Reactor enabled! ⚡' : 'Reactor disabled.', 'success');
+      renderProfileStore();
+    } else {
+      showProfileStoreMessage(item.item_id, data.error || 'Failed to save preference.', 'error');
+    }
+  } catch (error) {
+    console.error('❌ Failed to save toggle preference:', error);
+    showProfileStoreMessage(item.item_id, 'Failed to save preference.', 'error');
+  } finally {
+    if (toggleButton) {
+      toggleButton.disabled = false;
+      const onLabel = def.toggleLabels?.on || 'Disable';
+      const offLabel = def.toggleLabels?.off || 'Enable';
+      toggleButton.textContent = enabled ? onLabel : offLabel;
+    }
+  }
+}
+
+async function refreshProfileInventory() {
+  try {
+    const apiBase = profileStoreState.apiBaseUrl || getApiBaseUrl();
+    const response = await fetch(`${apiBase}/api/user/enhanced-profile.php`, {
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        window.enhancedProfileData = data;
+        displayInventoryAndHistory(data);
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Unable to refresh inventory after purchase:', error);
   }
 }
 

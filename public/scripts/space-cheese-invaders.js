@@ -6265,6 +6265,13 @@ let reloadButtonInterval = null;
     lastSpawnTime = Date.now();
     lastTetrisSpawnTime = Date.now();
     
+    // 🚀 BUG #309 FIX: Reset multi-shot upgrades each run (store perks reapplied)
+    hasDoubleShotUpgrade = false;
+    hasTripleShotUpgrade = false;
+    hasQuadShotUpgrade = false;
+    applyStoreUpgrades();
+    console.log('🎯 Multi-shot upgrades reset for new game (store perks applied if owned)');
+    
     // 🚀 NEW: Reset weapon system
     currentWeaponType = 'normal';
     weaponCooldowns = { normal: 0, laser: 0, bomb: 0 };
@@ -6320,8 +6327,6 @@ let reloadButtonInterval = null;
     shootingStars = [];
     achievementPopups = [];
     console.log('🚀 Combo and visual effects reset - ready for new game!');
-    
-    // 🎯 NOTE: hasDoubleShotUpgrade is NOT reset - permanent upgrade after defeating first boss
     
     // 🐛 BUG #214 FIX: Clear pressed keys to prevent stuck controls on restart
     pressedKeys.clear();

@@ -6,7 +6,7 @@ Use this checklist to track incoming assets and listing status.
 |---|---|---|---|---|---|---|---|---|---|
 | Gensuki | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
 | Mad Skulz NFT | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ | ✅ | ✅ |
-| Bear or Bulls | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ✅ | ⏳|
+| Bear or Bulls | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⏳ | ✅ | ✅ |
 | Golden Baboons | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Boundless NFT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Samuzi NFT | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
