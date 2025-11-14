@@ -9,6 +9,8 @@
     <meta name="author" content="Poolbauprofi.at">
     
     <link rel="stylesheet" href="./assets/shared-styles.css?v=20250128">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <style>
         * {
             margin: 0;
@@ -734,13 +736,78 @@
             const ua = navigator.userAgent || navigator.vendor || window.opera || '';
             const isIOSDevice = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             const isTouchSafari = /^((?!chrome|android).)*safari/i.test(ua) && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-            const useFixedAttachment = !(isIOSDevice || isTouchSafari);
+            const useFixedLayer = !(isIOSDevice || isTouchSafari);
 
             return {
-                attachment: useFixedAttachment ? 'fixed' : 'scroll',
+                attachment: useFixedLayer ? 'fixed' : 'scroll',
                 position: isIOSDevice ? 'center top' : 'center',
-                size: 'cover'
+                size: 'cover',
+                fixedLayer: useFixedLayer
             };
+        }
+
+        function getBackgroundVersion(data) {
+            return data?.background_version || data?.last_updated || data?.updated_at || Math.floor(Date.now() / 1000);
+        }
+
+        function withCacheBust(path, version) {
+            if (!version) return path;
+            const separator = path.includes('?') ? '&' : '?';
+            return `${path}${separator}v=${version}`;
+        }
+
+        function ensureGlobalBackgroundElement() {
+            let bg = document.getElementById('poolGlobalBackground');
+            if (!bg) {
+                bg = document.createElement('div');
+                bg.id = 'poolGlobalBackground';
+                document.body.prepend(bg);
+            }
+            return bg;
+        }
+
+        function updateScrollableBackgroundHeight(bgEl) {
+            if (!bgEl) return;
+            const doc = document.documentElement;
+            const height = Math.max(
+                doc.scrollHeight,
+                doc.offsetHeight,
+                document.body.scrollHeight,
+                document.body.offsetHeight
+            );
+            bgEl.style.height = height + 'px';
+        }
+
+        function applyGlobalBackground(backgroundPath, config) {
+            const bgEl = ensureGlobalBackgroundElement();
+            bgEl.style.backgroundImage = `url('${backgroundPath}')`;
+            bgEl.style.backgroundSize = config.size;
+            bgEl.style.backgroundPosition = config.position;
+            bgEl.style.backgroundRepeat = 'no-repeat';
+
+            if (config.fixedLayer) {
+                bgEl.style.position = 'fixed';
+                bgEl.style.height = '100%';
+                document.body.classList.add('desktop-background');
+                document.body.classList.remove('mobile-background');
+            } else {
+                bgEl.style.position = 'absolute';
+                document.body.classList.add('mobile-background');
+                document.body.classList.remove('desktop-background');
+                updateScrollableBackgroundHeight(bgEl);
+                if (!window.__poolBackgroundResizeHandler) {
+                    window.__poolBackgroundResizeHandler = () => {
+                        if (window.__poolBackgroundConfig && !window.__poolBackgroundConfig.fixedLayer && window.__poolBackgroundElement) {
+                            updateScrollableBackgroundHeight(window.__poolBackgroundElement);
+                        }
+                    };
+                    window.addEventListener('resize', window.__poolBackgroundResizeHandler);
+                    window.addEventListener('orientationchange', window.__poolBackgroundResizeHandler);
+                }
+            }
+
+            window.__poolBackgroundElement = bgEl;
+            window.__poolBackgroundConfig = config;
         }
 
         // Contact form handling
@@ -962,16 +1029,10 @@
                             backgroundPath = './slider-photos/' + pageBackground;
                         }
                         
-                        // Apply as full page background
                         const backgroundConfig = getResponsiveBackgroundConfig();
-                        body.style.backgroundImage = `url('${backgroundPath}')`;
-                        body.style.backgroundSize = backgroundConfig.size;
-                        body.style.backgroundPosition = backgroundConfig.position;
-                        body.style.backgroundAttachment = backgroundConfig.attachment;
-                        body.style.backgroundRepeat = 'no-repeat';
-                        body.style.backgroundColor = '#0b1524';
-                        body.classList.toggle('mobile-background', backgroundConfig.attachment === 'scroll');
-                        body.classList.toggle('desktop-background', backgroundConfig.attachment === 'fixed');
+                        const backgroundVersion = getBackgroundVersion(data);
+                        const versionedPath = withCacheBust(backgroundPath, backgroundVersion);
+                        applyGlobalBackground(versionedPath, backgroundConfig);
                         
                         // Apply transparency setting
                         const transparency = data.background_transparency || 'full';
@@ -990,7 +1051,7 @@
                             case 'hero-only':
                                 const hero = document.querySelector('.hero');
                                 if (hero) {
-                                    hero.style.background = `linear-gradient(rgba(0,102,204,0.85), rgba(0,68,153,0.85)), url('${backgroundPath}')`;
+                                    hero.style.background = `linear-gradient(rgba(0,102,204,0.85), rgba(0,68,153,0.85)), url('${versionedPath}')`;
                                     hero.style.backgroundSize = 'cover';
                                     hero.style.backgroundPosition = 'center';
                                 }
