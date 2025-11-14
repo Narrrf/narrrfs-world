@@ -95,3 +95,6 @@ render_*.txt
 check_*.sql
 cleanup_*.sql
 extend_*.sql
+
+# 🧊 Three.js Dimension Development - Local Only
+three.js/

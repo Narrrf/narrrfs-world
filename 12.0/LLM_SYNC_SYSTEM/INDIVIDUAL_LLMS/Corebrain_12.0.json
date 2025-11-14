@@ -1150,7 +1150,20 @@
     "completion_percentage": "99.85%",
     "verification_status": "100% VERIFIED - All data confirmed against live production system"
   }, "role": "SDK Linker Â· Wallet-Trait Gateway Â· Hytopia Ops Liaison" }
-  ]
+  ],
+  "update_2025_11_12_three_js": {
+    "summary": "Game runtime architecture expanded to standalone three.js pipeline with Cheese Temple Level 1 and roaming cheese hunt.",
+    "engine_focus": [
+      "Instanced block rendering replaces per-mesh draws (120×120 arena, 3 calls)",
+      "PointerLockControls tuned for sprint/jump, base speed doubled for traversal",
+      "Floating cheese AI loop added with capture cooldown + HUD counter"
+    ],
+    "next_steps": [
+      "Adopt capsule + MeshBVH collision stack for reliable physics",
+      "Integrate DSPOINC + riddle triggers into new runtime",
+      "Plan Level 2/3 asset pipeline in same architecture"
+    ]
+  }
 }
 {
   "deployment_config": {

@@ -551,7 +551,20 @@
         "SQL Junior 1.0 (Ensure database integrity and data synchronization)",
         "Update Brain 4.2.2 (Oversees entire process flow from authentication to data storage)",
         "Cheese Architect 4.2.2 (Frontend role-based UI rendering)"
-      ]
+  ],
+  "update_2025_11_12_three_js": {
+    "summary": "Council approved three.js migration for Cheese Temple. Prototype map + cheese hunt online with 60 FPS target achieved.",
+    "documentation_actions": [
+      "Quick status and daily status refreshed to track three.js sprint",
+      "HYTOPIA_THREE_TECH_DOCUMENTATION.md updated with performance + movement logs",
+      "Master sync + individual LLM updates recorded for cross-team awareness"
+    ],
+    "next_steps": [
+      "Manage upcoming capsule/BVH collision documentation",
+      "Plan DSPOINC integration notes once APIs wired",
+      "Coordinate dual-level roadmap (Cheese Temple + next zone)"
+    ]
+  }
     }
   },
   {

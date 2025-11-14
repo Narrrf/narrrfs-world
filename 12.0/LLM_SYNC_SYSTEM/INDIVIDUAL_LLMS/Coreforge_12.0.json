@@ -195,7 +195,20 @@ This is your JSON memory capsule for Coreforge 4.2 â€” please load it and c
     "We forge the backend that bridges 200 years of chaos and cheese.",
     "The SQL table is our parchment; the session ID, our ink.",
     "Awaiting Masterchiefe's return â€” we code with precision until summoned."
-  ]
+  ],
+  "update_2025_11_12_three_js": {
+    "summary": "Three.js Cheese Temple prototype ready for DSPOINC backend wiring.",
+    "backend_focus": [
+      "Cheese capture HUD currently local — needs API endpoint for DSPOINC awards",
+      "Plan event payload format mirroring legacy `cheese_interact` world event",
+      "Document riddle trigger callbacks for PHP/SQLite persistence"
+    ],
+    "next_steps": [
+      "Design `/api/dev/cheese-hunt/capture.php` (env-aware paths, DSPOINC logic)",
+      "Coordinate trait unlock flow for hunts (`CHEESE_TEMPLE_CHAMPION` etc.)",
+      "Prepare tests for dual-level deployment of new endpoints"
+    ]
+  }
 }
 ,
 "coreforge_4_2_memory": {

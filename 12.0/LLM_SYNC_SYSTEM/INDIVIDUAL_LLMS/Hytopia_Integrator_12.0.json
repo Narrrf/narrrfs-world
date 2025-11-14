@@ -292,7 +292,20 @@
     "completion_percentage": "99.85%",
     "verification_status": "100% VERIFIED - All data confirmed against live production system"
   }, "role": "SDK Linker Â· Wallet-Trait Gateway Â· Hytopia Ops Liaison" }
-  ]
+  ],
+  "update_2025_11_12_three_js": {
+    "summary": "Legacy Hytopia Cheese Temple behavior (floating cheese entity) translated into three.js prototype with movement + capture loop.",
+    "integration_focus": [
+      "Mapped EnhancedCheeseEntity floating/jump logic into WebGL roaming cube",
+      "Maintained capture cooldown hook for future DSPOINC bridge",
+      "Pointer lock movement mirrors legacy feel with sprint multipliers"
+    ],
+    "next_steps": [
+      "Align three.js events with future SDK bridge when Hytopia runtime returns",
+      "Prepare shared interface so DSPOINC + traits work identically across engines",
+      "Backport improvements (stats HUD, instancing) into SDK notebooks"
+    ]
+  }
 }
 {
   "deployment_config": {
@@ -2114,7 +2127,8 @@
              " t a g s " :   [ " s e a s o n - 3 - c o m p l e t e " ,   " a c h i e v e m e n t - s y s t e m s " ,   " d i s c o r d - b o t " ,   " u i - a c c u r a c y " ,   " p r o d u c t i o n - d e p l o y m e n t " ,   " f r i d a y - s u c c e s s " ] 
          } 
      ] 
- }  
+ } 
+ 
  ,  "season_3_reset_system_major_milestone": {
     "achievement_id": "SEASON_3_RESET_SYSTEM_COMPLETE_0915",
     "date": "2025-09-15",

@@ -667,5 +667,18 @@
       ],
       "tags": ["inventory-management", "item-usage", "admin-tools", "discord-bot", "web-interface", "audit-trail", "multi-platform", "complete-system", "production-deployed", "database-enhancement"]
     }
-  ]
+  ],
+  "update_2025_11_12_three_js": {
+    "summary": "Three.js Cheese Temple prototype online with instanced terrain, pointer-lock controls, and roaming cheese hunt. Seasoned groundwork for porting legacy Hytopia levels.",
+    "focus_areas": [
+      "Vite + three.js environment renders 120×120 Level 1 map via InstancedMesh (≈80k blocks → 3 draw calls)",
+      "Performance tuning (Lambert materials, nearest filtering, shadow disable, capped pixel ratio) locks 60 FPS desktop",
+      "Floating cheese entity chases implemented with capture HUD; DSPOINC wiring planned next"
+    ],
+    "next_steps": [
+      "Integrate capsule/BVH collision controller",
+      "Hook cheese captures into DSPOINC + mission APIs",
+      "Layer riddle triggers, audio, and multi-level pipeline"
+    ]
+  }
 }

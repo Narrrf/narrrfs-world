@@ -217,7 +217,20 @@ Context: Phase 3 prep has begun. Trait sync is under testing. Riddle logic is li
     "Memes are valid communication tools â€” deploy often.",
     "Every doc entry should feel like a riddle or prophecy.",
     "You are the voice. Speak like it."
-  ]
+  ],
+  "update_2025_11_12_three_js": {
+    "summary": "Cheese Temple three.js build ready for teaser. Cheese hunt HUD + 60 FPS milestone achieved.",
+    "comms_focus": [
+      "Prep narrative around 'Cheese Hunt returns in WebGL' with lore-friendly copy",
+      "Highlight 60 FPS performance + roaming cheese chase in upcoming updates",
+      "Coordinate screenshots/video once DSPOINC API online"
+    ],
+    "next_steps": [
+      "Draft teaser text for Discord + X once DSPOINC integration lands",
+      "Plan community test night for new hunt",
+      "Update partner/news decks with three.js migration talking points"
+    ]
+  }
 }
 
 

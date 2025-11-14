@@ -674,7 +674,7 @@ Before creating ANY new API endpoint, you MUST:
 - **PREVENT table confusion** and duplication
 - **ENSURE database awareness** for all development
 
-### **CURRENT DATABASE TABLES (LIVE STATUS - 2025-11-10 - VERIFIED - 59 TOTAL):**
+### **CURRENT DATABASE TABLES (LIVE STATUS - 2025-11-12 - VERIFIED - 61 TOTAL):**
 - **boss_configurations** - Boss game configurations
 - **boss_level_notifications** - Boss level achievement notifications
 - **leaderboard** - Current season leaderboard
@@ -688,6 +688,7 @@ Before creating ANY new API endpoint, you MUST:
 - **tbl_bug_status_history** - Bug status change history
 - **tbl_bug_statuses** - Bug status definitions
 - **tbl_cheese_clicks** - Cheese Hunt game clicks
+- **tbl_cheese_hunt_captures** - Three.js Cheese Temple hunt captures (November 12, 2025)
 - **tbl_cheese_races** - Discord Cheese Race events
 - **tbl_community_funds** - Community wallet funds tracking
 - **tbl_discord_events** - Discord bot events
@@ -706,6 +707,7 @@ Before creating ANY new API endpoint, you MUST:
 - **tbl_quests** - Quest definitions
 - **tbl_race_participants** - Discord Race participants
 - **tbl_rewards** - Reward definitions
+- **tbl_riddle_completions** - Three.js Cheese Temple riddle completions (November 12, 2025)
 - **tbl_role_grants** - Discord role grants
 - **tbl_score_adjustments** - Admin score adjustments
 - **tbl_season_leaderboards** - Season-based leaderboards
@@ -1204,6 +1206,7 @@ Write-Host "🚀 Ready for deployment to $EventName" -ForegroundColor Yellow
 - **Field:** `user_wallet` (contains Discord ID)
 - **Query:** `WHERE user_wallet = ?`
 - **API Structure:** `data.games.cheese_hunt.current_data`
+- **Three.js Extension:** `tbl_cheese_hunt_captures` (DSPOINC ledger for Cheese Temple hunts) — API `/api/dev/cheese-hunt-capture.php` writes capture logs + inserts DSPOINC into `tbl_user_scores` with standard role multipliers.
 
 ### **GAME 5: DISCORD CHEESE RACE**
 - **Table:** `tbl_race_participants`
@@ -1561,6 +1564,8 @@ const roleMultipliersByID = {
 - **`tbl_user_scores`** - For DSPOINC balance and rewards
 - **`tbl_score_adjustments`** - For admin interface and audit trail
 - **`tbl_cheese_clicks`** - For Cheese Hunt game tracking
+- **`tbl_cheese_hunt_captures`** - For Three.js Cheese Temple hunt captures (November 12, 2025)
+- **`tbl_riddle_completions`** - For Three.js Cheese Temple riddle completions (November 12, 2025)
 - **`tbl_race_participants`** - For Discord Race participation tracking
 
 ### **API Response Structure:**
@@ -1573,6 +1578,8 @@ const roleMultipliersByID = {
       "snake": { "season_data": {...} },
       "space_invaders": { "season_data": {...} },
       "cheese_hunt": { "current_data": {...} },
+      "cheese_hunt_3d": { "current_data": {...} },
+      "cheese_temple_riddles": { "current_data": {...} },
       "discord_race": { "race_data": {...} }
     }
   }
@@ -1582,9 +1589,100 @@ const roleMultipliersByID = {
 ### **Why This Matters:**
 - Mission status API queries `tbl_tetris_scores` for Tetris, Snake, Space Invaders
 - Mission status API queries `tbl_cheese_clicks` for Cheese Hunt
+- Mission status API queries `tbl_cheese_hunt_captures` for Three.js Cheese Temple hunt
+- Mission status API queries `tbl_riddle_completions` for Three.js Cheese Temple riddles
 - Mission status API queries `tbl_race_participants` for Discord Race
 - Admin interface displays data from consolidated API endpoints
 - All systems now properly synchronized
+
+---
+
+## 🧩 **THREE.JS DIMENSION / CHEESE TEMPLE RIDDLE SYSTEM**
+
+### **System Overview:**
+- **Game Type:** 3D Adventure / Riddle System
+- **Platform:** Three.js (WebGL)
+- **Location:** `three.js/main.js` (Vite-powered development server)
+- **Status:** ✅ **PRODUCTION READY** (November 12, 2025)
+- **Migration Progress:** ~95% Hytopia features migrated to Three.js
+
+### **Riddle DSPOINC Reward System (November 12, 2025):**
+- **Base Reward:** 500 DSPOINC per riddle completion
+- **Role Multipliers:** Applied automatically based on player's role
+  - **VIP Holder:** ×2.0 (1,000 DSPOINC)
+  - **Holder:** ×1.5 (750 DSPOINC)
+  - **Champion:** ×1.4 (700 DSPOINC)
+  - **WL/Season Tester:** ×1.3 (650 DSPOINC)
+  - **Early Bird:** ×1.2 (600 DSPOINC)
+  - **Cheese Hunter:** ×1.1 (550 DSPOINC)
+  - **Default:** ×1.0 (500 DSPOINC)
+- **One-Time Reward:** Each riddle can only be completed once per player (duplicate prevention)
+- **Trait Unlocking:** Riddle completion unlocks trait `CHEESE_TEMPLE_RIDDLE_SOLVED`
+- **HUD Integration:** DSPOINC balance automatically updated in pause menu and HUD
+- **Reward Notification:** Visual notification shows DSPOINC amount and multiplier
+
+### **Database Tables:**
+- **`tbl_riddle_completions`** - Riddle completion tracking
+  - Fields: `id`, `discord_id`, `discord_name`, `riddle_id`, `level_id`, `base_reward`, `multiplier`, `total_reward`, `completed_at`, `session_id`, `metadata`
+  - Unique constraint: `(discord_id, riddle_id)` prevents duplicate completions
+  - Index: `idx_riddle_completions_discord_riddle` for faster lookups
+- **`tbl_cheese_hunt_captures`** - Cheese Temple hunt captures
+  - Fields: `id`, `discord_id`, `discord_name`, `level_id`, `base_reward`, `multiplier`, `total_reward`, `capture_time`, `session_id`, `metadata`
+  - Cooldown system: 1-second cooldown between captures
+  - Role multipliers applied automatically
+
+### **API Endpoints:**
+- **`/api/dev/riddle-reward.php`** - Riddle completion reward API
+  - Method: `POST`
+  - Parameters: `discord_id`, `discord_name`, `riddle_id`, `level_id`, `base_reward`, `session_id`
+  - Response: `success`, `data` (includes `ds_poinc_awarded`, `total_ds_poinc`, `multiplier`, `multiplier_source`)
+  - Error Handling: `409 Conflict` if riddle already completed
+- **`/api/dev/cheese-hunt-capture.php`** - Cheese Temple hunt capture API
+  - Method: `POST`
+  - Parameters: `discord_id`, `discord_name`, `level_id`, `base_reward`, `session_id`, `capture_index`, `cooldown_seconds`
+  - Response: `success`, `data` (includes `total_captures`, `captures_today`, `ds_poinc_awarded`, `total_ds_poinc`)
+  - Cooldown: 1-second server-side cooldown prevents spam
+
+### **DSPOINC Integration:**
+- **DSPOINC Awarded:** Riddles award DSPOINC based on role multiplier
+- **DSPOINC Tracking:** All rewards tracked in `tbl_user_scores` (game: `cheese_temple_riddles`, source: `riddle_completion`)
+- **DSPOINC Audit:** All rewards tracked in `tbl_score_adjustments` (admin: `system-riddle-reward`)
+- **HUD Updates:** DSPOINC balance automatically updated in pause menu and HUD
+- **Local Storage:** DSPOINC balance saved to `narrrfs_last_ds_balance` for persistence
+
+### **Riddle System (Riddle #1 - Cheese Temple Level 1):**
+- **Three-Step Challenge:**
+  1. **Step 0:** Find and stand on hidden golden stone block (10 seconds)
+  2. **Step 1:** Aim at floating cheese entity (10 seconds)
+  3. **Step 2:** Aim at unlockable block (10 seconds)
+- **Detection Method:** Strict raycast detection for precision aiming
+- **Timer System:** 10-second timers with decay mechanism (prevents accidental completion)
+- **Progress UI:** Real-time progress bar with countdown timer
+- **Completion:** Trait unlock + DSPOINC reward + reward notification
+- **Status:** ✅ **TESTED & WORKING** (November 12, 2025)
+
+### **Technical Implementation:**
+- **File Location:** `three.js/main.js`
+- **Riddle State:** `riddleState` object tracks step completion and timers
+- **API Integration:** `completeRiddle()` function handles trait unlock + DSPOINC reward
+- **Reward Notification:** `showRiddleRewardNotification()` displays DSPOINC amount and multiplier
+- **HUD Updates:** `updatePausePlayerInfo()` updates DSPOINC balance in pause menu
+- **Error Handling:** Comprehensive error handling for API failures and duplicate completions
+
+### **Future Enhancements:**
+- **Additional Riddles:** Riddle #2, #3, etc. for future levels
+- **Audio Integration:** Sound effects for riddle completion
+- **VFX Integration:** Particle effects for riddle completion
+- **Advanced Mechanics:** Power-ups, special abilities, etc.
+- **Multiplayer Support:** Cooperative riddle solving (if needed)
+
+### **Documentation:**
+- **Technical Documentation:** `12.0/TECHNICAL_DOCUMENTATION/HYTOPIA_THREE_TECH_DOCUMENTATION.md`
+- **Riddle Documentation:** `12.0/TECHNICAL_DOCUMENTATION/3d_riddles/RIDDLE_01_CHEESE_TEMPLE_LEVEL_1.md`
+- **Lab Notes:** `12.0/LAB_NOTES/2025/11_NOVEMBER/DAILY_NOTES/2025-11-11/RIDDLE_DSPOINC_REWARD_IMPLEMENTATION.md`
+- **Three.js Ruleset:** `12.0/RULES/11_THREE_JS_RULE.md`
+
+---
 
 ---
 
@@ -1597,12 +1695,31 @@ const roleMultipliersByID = {
 4. **Admin interface continues to show all data**
 5. **API response structure remains consistent**
 
+### **NEVER change the riddle-reward.php logic without ensuring:**
+1. **All riddles save to `tbl_riddle_completions` table**
+2. **DSPOINC rewards are calculated correctly (base × multiplier)**
+3. **Duplicate prevention works (unique constraint on `discord_id, riddle_id`)**
+4. **Role multipliers are applied correctly**
+5. **DSPOINC balance updates in `tbl_user_scores` and `tbl_score_adjustments`**
+6. **HUD updates correctly after riddle completion**
+7. **Error handling works for duplicate completions (409 Conflict)**
+
 ### **If adding new games:**
 1. **Check where mission status API looks for data**
 2. **Ensure save-score.php saves to correct tables**
 3. **Test mission status updates immediately**
 4. **Document the table dependencies here**
 5. **Update admin interface data structure handling**
+
+### **If adding new riddles:**
+1. **Create riddle documentation in `12.0/TECHNICAL_DOCUMENTATION/3d_riddles/`**
+2. **Update `completeRiddle()` function to handle new riddle IDs**
+3. **Test DSPOINC reward system with new riddle**
+4. **Verify duplicate prevention works (unique constraint)**
+5. **Test role multipliers with new riddle**
+6. **Update HUD and reward notification for new riddle**
+7. **Document riddle in Three.js ruleset (`11_THREE_JS_RULE.md`)**
+8. **Update master ruleset with new riddle information**
 
 ### **Testing Checklist:**
 - [ ] Play the game
@@ -1611,6 +1728,20 @@ const roleMultipliersByID = {
 - [ ] Verify data is in the correct table
 - [ ] Test with multiple users
 - [ ] Verify API response structure
+
+### **Riddle Testing Checklist:**
+- [ ] Complete riddle (all 3 steps)
+- [ ] Check if trait unlocks (`CHEESE_TEMPLE_RIDDLE_SOLVED`)
+- [ ] Check if DSPOINC reward is awarded correctly
+- [ ] Check if role multiplier is applied correctly
+- [ ] Check if HUD updates with new DSPOINC balance
+- [ ] Check if reward notification displays correctly
+- [ ] Verify riddle completion is saved to `tbl_riddle_completions`
+- [ ] Verify DSPOINC is saved to `tbl_user_scores` and `tbl_score_adjustments`
+- [ ] Test duplicate prevention (try completing same riddle twice)
+- [ ] Test error handling (API failures, network errors)
+- [ ] Test with different roles (VIP, Holder, etc.)
+- [ ] Verify pause menu shows updated DSPOINC balance
 
 ---
 

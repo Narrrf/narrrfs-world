@@ -1,64 +1,87 @@
 <?php
+session_start();
+
 header('Content-Type: application/json');
 
-// Get user ID
-$userId = $_GET['user_id'] ?? '';
-if (empty($userId)) {
-    echo json_encode(['error' => 'User ID required']);
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
     exit;
 }
 
-// Connect to database
-$dbPath = '/var/www/html/db/narrrf_world.sqlite';
+$userId = $_GET['user_id'] ?? '';
+if (!$userId && isset($_SESSION['discord_id'])) {
+    $userId = $_SESSION['discord_id'];
+}
+
+if (empty($userId)) {
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'error' => 'User ID required and no active session found.'
+    ]);
+    exit;
+}
+
+$isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+$dbPath = $isProduction
+    ? '/var/www/html/db/narrrf_world.sqlite'
+    : __DIR__ . '/../../db/narrrf_world.sqlite';
+
 try {
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    echo json_encode(['error' => 'Database connection failed']);
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Database connection failed'
+    ]);
     exit;
 }
 
 try {
-    // Get user info
-    $userStmt = $db->prepare("SELECT * FROM tbl_users WHERE discord_id = ?");
+    $userStmt = $db->prepare("SELECT discord_id, username, avatar_url, created_at FROM tbl_users WHERE discord_id = ?");
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-        echo json_encode(['error' => 'User not found']);
+        http_response_code(404);
+        echo json_encode([
+            'success' => false,
+            'error' => 'User not found'
+        ]);
         exit;
     }
 
-    // Get balance
-    $balanceStmt = $db->prepare("SELECT SUM(score) as total FROM tbl_user_scores WHERE user_id = ?");
+    $balanceStmt = $db->prepare("SELECT COALESCE(SUM(score), 0) AS total FROM tbl_user_scores WHERE user_id = ?");
     $balanceStmt->execute([$userId]);
-    $balance = $balanceStmt->fetch(PDO::FETCH_ASSOC);
+    $balanceRow = $balanceStmt->fetch(PDO::FETCH_ASSOC);
+    $balance = (int)($balanceRow['total'] ?? 0);
 
-    // Get inventory
-    $inventoryStmt = $db->prepare("
-        SELECT i.*, s.name, s.description, s.price, s.image_url 
-        FROM tbl_user_inventory i 
-        JOIN tbl_store_items s ON i.item_id = s.id 
-        WHERE i.user_id = ?
-    ");
-    $inventoryStmt->execute([$userId]);
-    $inventory = $inventoryStmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Get roles
     $rolesStmt = $db->prepare("SELECT role_name FROM tbl_user_roles WHERE user_id = ?");
     $rolesStmt->execute([$userId]);
-    $roles = $rolesStmt->fetchAll(PDO::FETCH_COLUMN);
+    $roles = $rolesStmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+
+    $traitsStmt = $db->prepare("SELECT trait FROM tbl_user_traits WHERE user_id = ?");
+    $traitsStmt->execute([$userId]);
+    $traits = $traitsStmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
 
     echo json_encode([
         'success' => true,
         'user' => [
             'discord_id' => $user['discord_id'],
             'username' => $user['username'],
-            'balance' => intval($balance['total'] ?? 0),
-            'inventory' => $inventory,
-            'roles' => $roles
+            'avatar_url' => $user['avatar_url'] ?? '',
+            'member_since' => $user['created_at'] ?? '',
+            'balance' => $balance,
+            'roles' => $roles,
+            'traits' => $traits
         ]
     ]);
 } catch (Exception $e) {
-    echo json_encode(['error' => 'Failed to get user details']);
-} 
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Failed to load user details'
+    ]);
+}

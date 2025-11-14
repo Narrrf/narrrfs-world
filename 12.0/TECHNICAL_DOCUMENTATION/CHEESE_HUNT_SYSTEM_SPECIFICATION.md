@@ -268,6 +268,55 @@ const seededRandom = (min, max) => {
 
 ---
 
+## 🧀 **THREE.JS CHEESE TEMPLE EXTENSION (2025-11-12)**
+
+### **New Endpoint:** `/api/dev/cheese-hunt-capture.php`
+- Awards DSPOINC for three.js Cheese Temple captures
+- Applies Discord role multipliers (VIP 2.0×, Holder 1.5×, etc.)
+- Inserts capture log → `tbl_cheese_hunt_captures`
+- Inserts DSPOINC → `tbl_user_scores` (`game = cheese_hunt_3d`, `source = game_score`)
+- Tracks audit entry → `tbl_score_adjustments` (`admin_id = system-cheese-hunt`)
+
+### **New Table:** `tbl_cheese_hunt_captures`
+```sql
+CREATE TABLE tbl_cheese_hunt_captures (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  discord_id TEXT NOT NULL,
+  discord_name TEXT,
+  level_id TEXT NOT NULL,
+  base_reward INTEGER NOT NULL,
+  multiplier REAL NOT NULL,
+  total_reward INTEGER NOT NULL,
+  capture_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  session_id TEXT,
+  metadata TEXT
+);
+```
+
+### **Client Integration:**
+- `three.js/main.js` queues POST requests after each capture
+- Payload: `discord_id`, `discord_name`, `level_id`, `base_reward`, `session_id`, `capture_index`
+- HUD updates with server-confirmed totals to keep DSPOINC accurate
+- Graceful fallback when user not logged in (local counter only)
+
+### **Pause Overlay & Profile Hydration (NEW - 2025-11-12)**
+- Pause menu (P / Esc) now mirrors legacy games:
+  - Shows player subtitle and live DSPOINC total.
+  - Buttons: Resume, Back to Portal (environment-aware link), Restart Level.
+- New lightweight profile fetch at boot:
+  - `GET ${API_BASE_URL}/api/user/details.php?user_id={discord_id}`
+  - Endpoint updated for local + production DB paths and CORS-safe headers.
+  - Response cached in `currentTotalDspoinc` and `playerDisplayName` for HUD/overlay display.
+- Local fallbacks now include legacy storage keys (`narrrfs_last_discord_name`, `narrrfs_last_discord_id`) to keep older sessions recognized.
+- Pointer-lock listener invokes pause when Esc released in browser (prevents runaway camera).
+
+### **Next Steps:**
+- Add riddle triggers + trait rewards (`CHEESE_TEMPLE_*`)
+- Surface stats in admin dashboard (Game Management → Cheese Hunt 3D)
+- Extend to additional levels once Level 2 assets migrate
+
+---
+
 ## 📊 **ANALYTICS TRACKING**
 
 ### **Key Metrics:**
@@ -334,7 +383,7 @@ const seededRandom = (min, max) => {
 ---
 
 **Document Version:** 3.0  
-**Last Updated:** October 26, 2025 - 20:00  
+**Last Updated:** November 12, 2025 - 22:15  
 **Maintained By:** Cheese Architect 12.0  
-**Status:** Production Ready - Fully Documented
+**Status:** Production Ready - Three.js Prototype Phase
 

@@ -194,7 +194,20 @@
     "Monitor backend trait reward logs",
     "Gather player interactions",
     "Support the Social Brain with co-op puzzle systems"
-  ]
+  ],
+  "update_2025_11_12_three_js": {
+    "summary": "New three.js Cheese Temple provides arena for riddle triggers and hidden clues.",
+    "puzzle_focus": [
+      "Floating cheese capture event ready for riddle gating (cooldown hook available)",
+      "Need placement map for clue pillars + lava whispers in Level 1 JSON",
+      "Plan DSPOINC + trait unlock messages per riddle solved"
+    ],
+    "next_steps": [
+      "Design riddle activation zones (instanced block coordinates → triggers)",
+      "Author clue copy for Level 1 + future Level 2",
+      "Coordinate with Coreforge for event payload to `/api/user/traits.php`"
+    ]
+  }
 }
 
 

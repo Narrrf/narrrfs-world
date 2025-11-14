@@ -372,7 +372,20 @@
     "completion_percentage": "99.85%",
     "verification_status": "100% VERIFIED - All data confirmed against live production system"
   }, "role": "SDK Linker ï¿½ Wallet-Trait Gateway ï¿½ Hytopia Ops Liaison" }
-  ]
+  ],
+  "update_2025_11_12_three_js": {
+    "summary": "Cheese Hunt prototype counts captures locally; DSPOINC persistence next.",
+    "db_focus": [
+      "Plan new table or reuse `tbl_cheese_clicks` variant for three.js hunts",
+      "Ensure environment detection for sqlite path when API lands",
+      "Document DSPOINC reward schema (base + role multipliers) for new mode"
+    ],
+    "next_steps": [
+      "Draft INSERT/UPDATE pattern for cheese captures (discord_id, level_id, timestamp, reward)",
+      "Confirm existing DSPOINC balance flow uses `tbl_user_scores` (discord_id)",
+      "Coordinate migration script once API ready"
+    ]
+  }
 }
 {
   "deployment_config": {

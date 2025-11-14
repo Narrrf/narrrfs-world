@@ -345,7 +345,20 @@
         "images": [
           "1259.png", "1260.png", "1261.png", "1262.png", "1263.png",
           "1264.png", "1265.png", "1266.png", "1267.png", "1268.png", "1269.png", "1270.png"
-        ]
+  ],
+  "update_2025_11_12_three_js": {
+    "summary": "Three.js Cheese Temple sets stage for Cheese Hunt rewards + trait drops.",
+    "nft_focus": [
+      "Need DSPOINC → reward pipeline to mint hunt-exclusive cosmetics",
+      "Plan metadata tags for \"Cheese Temple Hunter\" accomplishments",
+      "Capture event logs can feed future proof-of-hunt collectibles"
+    ],
+    "next_steps": [
+      "Design reward ladder for cheese captures (DSPOINC thresholds → NFT unlocks)",
+      "Coordinate trait format `CHEESE_TEMPLE_CHAMPION` with Coreforge/SQL Junior",
+      "Prepare teaser art once gameplay capture is recorded"
+    ]
+  }
       }
     ],
     "scroll_rule_enforcement": {

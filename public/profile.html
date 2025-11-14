@@ -12,8 +12,41 @@ require_once 'discord-invite.php';
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🧀 Your Narrrf Profile - Season 5 NOW LIVE!</title>
   <script>
-  window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
-</script>
+    window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!window.sessionDiscordId) {
+        console.warn("🔐 Narrrf Profile: No active Discord session detected. Local storage not updated.");
+        return;
+      }
+
+      try {
+        localStorage.setItem("narrrfs_last_discord_id", window.sessionDiscordId);
+        localStorage.setItem("discord_id", window.sessionDiscordId);
+
+        const response = await fetch(`/api/user/details.php?user_id=${encodeURIComponent(window.sessionDiscordId)}`, {
+          credentials: "include"
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        if (data?.success && data.user) {
+          const username = data.user.username || "";
+          if (username) {
+            localStorage.setItem("narrrfs_last_discord_name", username);
+            localStorage.setItem("discord_name", username);
+            localStorage.setItem("DISCORD_NAME", username);
+          }
+          window.narrrfsProfileHydrated = true;
+          console.info("✅ Narrrf Profile: Local storage credentials synced for Three.js prototype.");
+        } else {
+          console.warn("⚠️ Narrrf Profile: Unable to hydrate username from API response.", data);
+        }
+      } catch (error) {
+        console.error("❌ Narrrf Profile: Failed to sync credentials for Three.js prototype.", error);
+      }
+    });
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- 🔗 Discord Token of Render System -->
