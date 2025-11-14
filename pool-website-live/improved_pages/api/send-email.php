@@ -7,6 +7,8 @@
  * Purpose: Professional email handling for pool website contact forms
  */
 
+require_once __DIR__ . '/smtp-helper.php';
+
 // Suppress all output and warnings to ensure clean JSON response
 error_reporting(0);
 ini_set('display_errors', 0);
@@ -82,7 +84,9 @@ $message = htmlspecialchars(trim($input['message']), ENT_QUOTES, 'UTF-8');
 $form_type = isset($input['form_type']) ? htmlspecialchars(trim($input['form_type']), ENT_QUOTES, 'UTF-8') : 'Contact Form';
 
 // Email configuration
-$to_email = 'office@poolbauprofi.at';
+$settings = poolbau_get_email_settings();
+
+$to_email = $settings['email_address'] ?? 'office@poolbauprofi.at';
 $subject = 'Neue Anfrage von Poolbauprofi.at - ' . $form_type;
 
 // Build email body
@@ -128,18 +132,46 @@ $email_body .= "User Agent: " . $_SERVER['HTTP_USER_AGENT'] . "\n";
 $email_body .= "Referrer: " . (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'Direct') . "\n";
 
 // Email headers
+$from_email = $settings['from_email'] ?? 'noreply@poolbauprofi.at';
+$from_name = $settings['from_name'] ?? 'Poolbauprofi.at Website';
+
 $headers = [
-    'From: Poolbauprofi.at Website <noreply@poolbauprofi.at>',
+    'From: ' . $from_name . ' <' . $from_email . '>',
     'Reply-To: ' . $name . ' <' . $email . '>',
-    'X-Mailer: PHP/' . phpversion(),
+    'X-Mailer: Poolbauprofi.at',
     'Content-Type: text/plain; charset=UTF-8'
 ];
 
 // Try to send email, but also save to file for testing
 $mail_sent = false;
+$smtp_attempted = false;
+$smtp_error = '';
+$smtp_debug = [];
 
-// Try sending via mail() function
-if (function_exists('mail')) {
+// Try sending via SMTP helper if configured
+if (poolbau_can_use_smtp($settings)) {
+    $smtp_attempted = true;
+    $smtpResult = poolbau_send_email_via_smtp($settings, [
+        'to_email' => $to_email,
+        'to_name' => 'Poolbauprofi.at',
+        'from_email' => $from_email,
+        'from_name' => $from_name,
+        'reply_to_email' => $email,
+        'reply_to_name' => $name,
+        'subject' => $subject,
+        'body' => $email_body
+    ]);
+
+    if ($smtpResult['success']) {
+        $mail_sent = true;
+    } else {
+        $smtp_error = $smtpResult['error'];
+        $smtp_debug = $smtpResult['debug'];
+    }
+}
+
+// Fallback to PHP mail() if SMTP failed or not configured
+if (!$mail_sent && function_exists('mail')) {
     $mail_sent = mail($to_email, $subject, $email_body, implode("\r\n", $headers));
 }
 
@@ -158,7 +190,14 @@ $file_content .= "=== END EMAIL ===\n\n";
 file_put_contents($email_file, $file_content, FILE_APPEND | LOCK_EX);
 
 // Log submission
-$log_entry = date('Y-m-d H:i:s') . " - Form submitted from " . $email . " (" . $name . ") - Mail sent: " . ($mail_sent ? 'YES' : 'NO') . "\n";
+$log_entry = date('Y-m-d H:i:s') . " - Form submitted from " . $email . " (" . $name . ") - Mail sent: " . ($mail_sent ? 'YES' : 'NO');
+if ($smtp_attempted) {
+    $log_entry .= " - SMTP attempted: YES";
+    if (!$mail_sent && $smtp_error) {
+        $log_entry .= " - SMTP error: " . $smtp_error;
+    }
+}
+$log_entry .= "\n";
 file_put_contents('email_log.txt', $log_entry, FILE_APPEND | LOCK_EX);
 
 // Clean any output buffer to ensure clean JSON
@@ -172,6 +211,8 @@ echo json_encode([
     'debug_info' => [
         'mail_function_available' => function_exists('mail'),
         'mail_sent' => $mail_sent,
+        'smtp_attempted' => $smtp_attempted,
+        'smtp_error' => $smtp_error,
         'saved_to_file' => $email_file,
         'timestamp' => date('Y-m-d H:i:s')
     ]

@@ -6,6 +6,8 @@
  * Created: September 29, 2025
  */
 
+require_once __DIR__ . '/../api/smtp-helper.php';
+
 // Suppress all output and warnings to ensure clean JSON response
 error_reporting(0);
 ini_set('display_errors', 0);
@@ -76,16 +78,41 @@ try {
     $from_name = $input['from_name'] ?? 'Poolbauprofi.at Test';
     $to_email = $input['email_address'] ?? 'office@poolbauprofi.at';
     
-    // Test email sending using PHP's mail() function with SMTP
-    $test_result = testEmailConnection($smtp_host, $smtp_port, $smtp_username, $smtp_password, $smtp_encryption, $from_email, $from_name, $to_email);
-    
-    if ($test_result['success']) {
+    $smtpResult = poolbau_send_email_via_smtp([
+        'smtp_host' => $smtp_host,
+        'smtp_port' => $smtp_port,
+        'smtp_username' => $smtp_username,
+        'smtp_password' => $smtp_password,
+        'smtp_encryption' => $smtp_encryption,
+        'smtp_timeout' => 30,
+        'from_email' => $from_email,
+        'from_name' => $from_name
+    ], [
+        'to_email' => $to_email,
+        'to_name' => 'Poolbauprofi.at',
+        'from_email' => $from_email,
+        'from_name' => $from_name,
+        'reply_to_email' => $from_email,
+        'reply_to_name' => $from_name,
+        'subject' => 'Poolbauprofi.at - E-Mail-Test',
+        'body' => "Dies ist eine Test-E-Mail von Ihrem Poolbauprofi.at Admin-System.\n\n" .
+            "E-Mail-Konfiguration:\n" .
+            "- SMTP-Server: {$smtp_host}\n" .
+            "- Port: {$smtp_port}\n" .
+            "- Verschlüsselung: {$smtp_encryption}\n" .
+            "- Absender: {$from_email}\n" .
+            "- Test-Zeit: " . date('Y-m-d H:i:s') . "\n\n" .
+            "Wenn Sie diese E-Mail erhalten, ist Ihre SMTP-Konfiguration korrekt!\n\n" .
+            "Mit freundlichen Grüßen,\nIhr Poolbauprofi.at System"
+    ]);
+
+    if ($smtpResult['success']) {
         ob_clean();
         http_response_code(200);
         echo json_encode([
             'success' => true,
             'message' => 'Email connection test successful! Test email sent.',
-            'details' => $test_result['message']
+            'details' => 'SMTP delivery completed successfully.'
         ], JSON_UNESCAPED_UNICODE);
         ob_end_flush();
     } else {
@@ -93,7 +120,7 @@ try {
         http_response_code(400);
         echo json_encode([
             'success' => false,
-            'message' => $test_result['message']
+            'message' => $smtpResult['error']
         ], JSON_UNESCAPED_UNICODE);
         ob_end_flush();
     }
@@ -106,51 +133,6 @@ try {
         'message' => 'Error testing email connection: ' . $e->getMessage()
     ], JSON_UNESCAPED_UNICODE);
     ob_end_flush();
-}
-
-function testEmailConnection($host, $port, $username, $password, $encryption, $from_email, $from_name, $to_email) {
-    try {
-        // Create a test email message
-        $subject = 'Poolbauprofi.at - E-Mail-Test';
-        $message = "Dies ist eine Test-E-Mail von Ihrem Poolbauprofi.at Admin-System.\n\n";
-        $message .= "E-Mail-Konfiguration:\n";
-        $message .= "- SMTP-Server: $host\n";
-        $message .= "- Port: $port\n";
-        $message .= "- Verschlüsselung: $encryption\n";
-        $message .= "- Absender: $from_email\n";
-        $message .= "- Test-Zeit: " . date('Y-m-d H:i:s') . "\n\n";
-        $message .= "Wenn Sie diese E-Mail erhalten, ist Ihre SMTP-Konfiguration korrekt!\n\n";
-        $message .= "Mit freundlichen Grüßen,\nIhr Poolbauprofi.at System";
-        
-        $headers = [
-            'From: ' . $from_name . ' <' . $from_email . '>',
-            'Reply-To: ' . $from_email,
-            'X-Mailer: Poolbauprofi.at Admin System',
-            'Content-Type: text/plain; charset=UTF-8'
-        ];
-        
-        // For now, use PHP's built-in mail() function
-        // In production, you might want to use PHPMailer or similar
-        $mail_sent = mail($to_email, $subject, $message, implode("\r\n", $headers));
-        
-        if ($mail_sent) {
-            return [
-                'success' => true,
-                'message' => 'Test email sent successfully using PHP mail() function'
-            ];
-        } else {
-            return [
-                'success' => false,
-                'message' => 'Failed to send test email. Check your server mail configuration.'
-            ];
-        }
-        
-    } catch (Exception $e) {
-        return [
-            'success' => false,
-            'message' => 'Error during email test: ' . $e->getMessage()
-        ];
-    }
 }
 
 // Log the test attempt

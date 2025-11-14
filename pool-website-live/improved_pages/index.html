@@ -985,6 +985,19 @@
     </footer>
 
     <script>
+        function getResponsiveBackgroundConfig() {
+            const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+            const isIOSDevice = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isTouchSafari = /^((?!chrome|android).)*safari/i.test(ua) && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+            const useFixedAttachment = !(isIOSDevice || isTouchSafari);
+            
+            return {
+                attachment: useFixedAttachment ? 'fixed' : 'scroll',
+                position: isIOSDevice ? 'center top' : 'center',
+                size: 'cover'
+            };
+        }
+
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -1317,11 +1330,15 @@
                         }
                         
                         // Apply as full page background
-                        body.style.background = `url('${backgroundPath}')`;
-                        body.style.backgroundSize = 'cover';
-                        body.style.backgroundPosition = 'center';
-                        body.style.backgroundAttachment = 'fixed';
+                        const backgroundConfig = getResponsiveBackgroundConfig();
+                        body.style.backgroundImage = `url('${backgroundPath}')`;
+                        body.style.backgroundSize = backgroundConfig.size;
+                        body.style.backgroundPosition = backgroundConfig.position;
+                        body.style.backgroundAttachment = backgroundConfig.attachment;
                         body.style.backgroundRepeat = 'no-repeat';
+                        body.style.backgroundColor = '#0b1524';
+                        body.classList.toggle('mobile-background', backgroundConfig.attachment === 'scroll');
+                        body.classList.toggle('desktop-background', backgroundConfig.attachment === 'fixed');
                         
                         // Apply transparency setting
                         const transparency = data.background_transparency || 'full';
