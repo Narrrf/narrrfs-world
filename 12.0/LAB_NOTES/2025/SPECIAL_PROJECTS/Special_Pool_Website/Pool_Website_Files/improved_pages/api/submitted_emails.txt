@@ -1,0 +1,29 @@
+=== NEW EMAIL SUBMISSION ===
+Date: 2025-11-15 01:08:09
+To: office@poolbauprofi.at
+Subject: Neue Anfrage von Poolbauprofi.at - Contact Form
+From: Markus Wrulich <markuswrulich@gmail.com>
+Form Type: Contact Form
+--- EMAIL CONTENT ---
+Neue Anfrage von der Poolbauprofi.at Website
+
+Formular-Typ: Contact Form
+Datum: 15.11.2025 01:08:06
+IP-Adresse: ::1
+
+=== KONTAKTDATEN ===
+Name: Markus Wrulich
+E-Mail: markuswrulich@gmail.com
+Telefon: 066499219087
+Gewünschte Leistung: technik-wartung
+Budget: bis-30000
+
+=== NACHRICHT ===
+Der Techniker Test
+
+=== TECHNISCHE DATEN ===
+User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Referrer: http://localhost/12.0/LAB_NOTES/2025/SPECIAL_PROJECTS/Special_Pool_Website/Pool_Website_Files/improved_pages/anfragen.html
+
+=== END EMAIL ===
+

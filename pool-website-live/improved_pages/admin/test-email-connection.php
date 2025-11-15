@@ -61,7 +61,7 @@ try {
     }
     
     // Validate required fields
-    $required_fields = ['smtp_host', 'smtp_username', 'smtp_password'];
+    $required_fields = ['smtp_host', 'smtp_username'];
     foreach ($required_fields as $field) {
         if (empty($input[$field])) {
             throw new Exception("Field '$field' is required");
@@ -72,11 +72,20 @@ try {
     $smtp_host = $input['smtp_host'];
     $smtp_port = $input['smtp_port'] ?? 587;
     $smtp_username = $input['smtp_username'];
-    $smtp_password = $input['smtp_password'];
+    $smtp_password = $input['smtp_password'] ?? '';
     $smtp_encryption = $input['smtp_encryption'] ?? 'tls';
     $from_email = $input['from_email'] ?? $smtp_username;
     $from_name = $input['from_name'] ?? 'Poolbauprofi.at Test';
     $to_email = $input['email_address'] ?? 'office@poolbauprofi.at';
+
+    if (empty($smtp_password)) {
+        $envPassword = getenv('POOLBAU_SMTP_PASSWORD');
+        if ($envPassword !== false && $envPassword !== '') {
+            $smtp_password = $envPassword;
+        } else {
+            throw new Exception('Es wurde kein SMTP-Passwort angegeben. Bitte tragen Sie es ein oder konfigurieren Sie die Render-Variable POOLBAU_SMTP_PASSWORD.');
+        }
+    }
     
     $smtpResult = poolbau_send_email_via_smtp([
         'smtp_host' => $smtp_host,
