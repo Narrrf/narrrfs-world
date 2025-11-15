@@ -166,6 +166,12 @@ Current scene components:
 
 ## 7. Action Items & Next Steps
 
+### 📅 Update Log — 2025-11-15
+- **Joystick input bridge hardened:** movement joystick now calls `refreshJoystickMovementFlags()` on every drag + release, which keeps the aggregated `movement` struct in sync with keyboard flags. This resolves the “camera wiggles but avatar stays still” regression reported during Joystick View QA.
+- **Riddle UI safety guard:** introduced `invokeRiddleProgressUIUpdate()` so timer ticks never crash when the UI script loads late. Missing UI now logs a warning instead of freezing the render loop.
+- **Next QA focus:** verify joystick-driven locomotion across all camera modes (3rd person + joystick view) and confirm riddle timers show their overlays immediately after load.
+- **NEW Audio Layer:** Added listener + loader, Footstep loop (`footstep_cheese.ogg`) auto-triggers when on-ground velocity > 0.5, Jump one-shot (`jump_cheese.ogg`) fires on Space. Options menu now exposes a “Sound FX On/Off” toggle that persists via `cheese_temple_sound_fx_enabled`.
+
 ### ✅ Completed (November 13, 2025):
 - ✅ **Hytopia Integrator:** JSON-based block system implemented (level1.json)
 - ✅ **Cheese Architect:** HUD overlay, riddle progress UI, instructions implemented

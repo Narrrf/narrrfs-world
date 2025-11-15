@@ -7,3 +7,6 @@
 2025-10-17 04:10:29 - Settings updated by pooladmin: {"company_name":"Poolbauprofi.at","phone_number":"+43 660 8669020","slider_speed":"5","hero_background":"background2.png","background_transparency":"full","page_backgrounds":{"index":"background2.png","referenzen":"background2.png","anfragen":"background2.png","ueber_uns":"background2.png","kontakt":"background2.png","impressum":"background2.png"},"bubble_effect":"medium","bubble_enabled":true,"bubble_intensity":"medium","bubble_color":"#12d9d6","bubble_opacity":"low","bubble_speed":"slow","bubble_pages":{"index":true,"referenzen":true,"anfragen":true,"ueber_uns":true,"kontakt":true,"impressum":true}}
 2025-11-15 02:34:13 - Admin login successful from IP: ::1
 2025-11-15 02:35:02 - Email connection test by pooladmin
+2025-11-15 03:09:46 - Settings updated by pooladmin: {"email_address":"office@poolbauprofi.at","smtp_host":"smtp.titan.email","smtp_port":"587","smtp_username":"office@poolbauprofi.at","smtp_password":"POOLBAU_SMTP_PASSWORD","smtp_encryption":"tls","from_email":"office@poolbauprofi.at","from_name":"Poolbauprofi.at"}
+2025-11-15 03:09:51 - Email connection test by pooladmin
+2025-11-15 03:10:05 - Email connection test by pooladmin

@@ -1351,10 +1351,18 @@
                 from_name: document.getElementById('fromName').value
             };
             
-            // Validate required fields
-            if (!emailSettings.smtp_host || !emailSettings.smtp_username) {
-                showAlert('❌ Bitte füllen Sie mindestens SMTP-Server und Benutzername aus', 'error');
+            // Validate required fields (password is optional - falls back to env variable)
+            const hasHost = emailSettings.smtp_host && emailSettings.smtp_host.trim().length > 0;
+            const hasUsername = emailSettings.smtp_username && emailSettings.smtp_username.trim().length > 0;
+            const hasPassword = emailSettings.smtp_password && emailSettings.smtp_password.trim().length > 0;
+
+            if (!hasHost || !hasUsername) {
+                showAlert('❌ Bitte geben Sie zumindest SMTP-Server und Benutzername an.', 'error');
                 return;
+            }
+
+            if (!hasPassword) {
+                showAlert('ℹ️ Kein SMTP-Passwort eingegeben – verwende Render-Variable POOLBAU_SMTP_PASSWORD.', 'info');
             }
             
             try {
