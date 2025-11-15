@@ -1323,6 +1323,7 @@
                 const response = await fetch('save-settings.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify(emailSettings)
                 });
 
@@ -1362,6 +1363,7 @@
                 const response = await fetch('test-email-connection.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify(emailSettings)
                 });
 
