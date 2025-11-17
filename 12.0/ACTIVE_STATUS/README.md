@@ -1,12 +1,17 @@
 # 🎯 NARRRFS WORLD 12.0 - ACTIVE STATUS
 
-**Last Updated:** November 15, 2025 - 15:15  
-**Current Session:** Saturday - Three.js Level 2 Showroom Expansion  
-**Session Number:** November 15, 2025 - Construct Extension Session  
+**Last Updated:** November 17, 2025 - 08:05  
+**Current Session:** Monday - Three.js Weapon Gallery Cleanup & Save Point  
+**Session Number:** November 17, 2025 - W1–W3 Snapshot Session  
 
 ---
 
 ## 🚨 **CURRENT SESSION STATUS**
+
+### **Session Overview (Nov 17, 2025):**
+- **Focus:** Locking the weapon gallery baseline (W1–W3 pedestals), removing the oversized backdrop block above the W2 shelf, and scaffolding all 40 primary weapon slots around the monster runway.
+- **Highlights:** `createLevel2WeaponGallery()` now spawns only pedestals + labels; weapon layout upgraded to mirrored rows (two lanes per side, ten slots each) along the monster runway so every primary Fire Weapons FBX loads immediately using the same pipeline as W1‑W3; new lab note (`2025-11-17/README.md`) captures the exact render state for recovery; docs (`3d_riddles/RIDDLE_01_THE_SPAWN_LEVEL_2.md`) updated with row instructions.
+- **Status:** ✅ GALLERY CLEANUP COMPLETE — baseline preserved for future expansions; ✅ PRIMARY RING READY — all 40 slots labeled and populated with weapons.
 
 ### **Session Overview (Nov 15, 2025):**
 - **Focus:** Level 2 Construct — mirrored shelf extension + monster lineup

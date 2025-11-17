@@ -1,8 +1,51 @@
 # 🚀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** November 15, 2025 - Afternoon  
-**Current Session:** Saturday - 🧀 Three.js Dimension - Level 2 Showroom Expansion  
-**Status:** 🟢 **LEVEL 2 SHOWROOM EXTENDED & STABLE (SHELVES 1-36 + BONUS PADS)**
+**Last Updated:** November 17, 2025 - Late Night  
+**Current Session:** Monday - 🧀 Three.js Dimension - Level 4 Step 2 Trait Tracking  
+**Status:** 🟢 **LEVEL 4 COMPLETE — All 3 Steps Track Traits (Step 0, 1, 2)**
+
+---
+
+## 🏹 Level 3 Initial Build — Nov 17 (Late Evening)
+- **Arena:** Massive 160x160 cheese stone floor with Level 1-style dark walls
+- **Step 0:** Hidden cheese stone trigger unlocks the hunt (same logic as Level 2)
+- **Monster System:** Demon (B1 from Level 2) spawns with full animation, runs randomly around arena
+- **Integration:** Level 2 portal warps to Level 3, collision/update loops active
+- **Rewards:** Step 0 awards +100 DSPOINC + `CHEESE_TEMPLE_LEVEL3_STEP0` trait
+- **Documentation:** `RIDDLE_01_THE_HUNT_LEVEL_3.md` created with full specs
+
+## ✅ Level 3 Step 0 Verified — Nov 17 (16:49)
+- **Database Confirmed:** Trait `CHEESE_TEMPLE_LEVEL3_STEP0` saved (2025-11-17 16:49:22)
+- **DSPOINC Verified:** +100 reward recorded in database (same timestamp)
+- **Monster Working:** Demon spawns and runs with full animation loop
+- **Visual Polish:** Floor flickering fixed, all animations smooth
+- **Status:** Step 0 fully tested and working — ready for capture mechanics
+
+## 🎯 Level 4 Step 2 Trait Tracking — Nov 17 (Late Night)
+- **Issue Fixed:** Level 4 was missing Step 2 trait tracking (only had Step 0 and Step 1)
+- **Solution:** Added `LEVEL4_STEP2_TRAIT` constant and portal entry reward system
+- **Rewards:** Step 2 now awards +200 DSPOINC and unlocks `CHEESE_TEMPLE_LEVEL4_STEP2` trait
+- **Total Rewards:** Level 4 now awards +2,800 DSPOINC total (Step 0: +100, Step 1: +2,500, Step 2: +200)
+- **Trait API Fix:** Fixed `unlockLevel4Trait()` to use correct `trait_name` parameter
+- **Status:** Level 4 now matches Level 2 and Level 3 with complete 3-step trait tracking
+
+## 🎮 God Mode Level Selector — Nov 17 (Late Evening)
+- **L Key:** Press L in God Mode to open level selector popup
+- **Menu:** Beautiful popup with Level 1, 2, 3, and 4 buttons for instant warping
+- **Features:** Current level highlighted, Escape to close, seamless integration
+
+## ⚡ Level 2 UX / Rewards Update — Nov 17 (Evening)
+- **Guidance:** All Level 2 riddle steps now use the same HUD toast style as Level 1 (Cheese Stone → Lever → Portal).
+- **Rewards:** Each milestone awards **+100 DSPOINC** via the riddle reward API (`CHEESE_TEMPLE_LEVEL2_STEP0/1/2`), with live HUD balance refresh.
+- **Cheese Stone Feedback:** Step 0 trigger block now physically sinks while the player stands on it, resetting when they step off.
+- **Completion Overlay:** Entering the portal shows a themed screen with three buttons — _Stay in Level 2_ (soft restart), _Back to Level 1_, and a Level 3 teaser toast.
+- **Docs Synced:** `DAILY_STATUS_2025-11-17.md`, `RIDDLE_01_THE_SPAWN_LEVEL_2.md`, and the lab notes all record the new flow.
+
+## ✅ Level 2 Greenlight — Nov 17 (Late Night)
+- **Super Working Build:** Step 0 (cheese stone), Step 1 (lever), and Step 2 (inspection sweep) now award **+100 / +100 / +120 DSPOINC** with the same HUD reward cards as Level 1.
+- **Inspection HUD:** New “Inspect Every Display” overlay tracks `visited / total` aisles and lists any missing zones so players always know how to unlock the portal.
+- **Portal Gate:** Exit portal only spawns after the HUD reports all zones complete, ensuring QA can’t skip the documentation tour.
+- **Reset Safety:** Restarting Level 2 clears the HUD + portal state so each run mirrors the intended flow.
 
 ---
 
@@ -87,9 +130,9 @@
 - **Production Status:** ✅ **READY FOR TESTING** - API endpoints ready, database tables ready, local testing enabled, database synced, 3D models documented
 
 ### **Active Session:**
-- **Focus:** 🧀 **Three.js Dimension - Level 2 Showroom Expansion (Shelves 1-36)**
-- **Date:** November 15, 2025 (Saturday)
-- **Phase:** Level 2 QA + monster showcase expansion; shelves 25‑36 mirrored with Blob+Flying collections; `DEBUG_FORCE_LEVEL2_START` enabled for rapid verification
+- **Focus:** 🧀 **Three.js Dimension - Weapon Gallery Save Point + Primary Ring**
+- **Date:** November 17, 2025 (Monday)
+- **Phase:** Locked in Level 2 gallery snapshot (W1-W3), removed the oversized backdrop block, and replaced the old ring with mirrored weapon rows (2 lanes per side, 10 slots each) flanking the monster runway. Labels show 01‑40 and each slot now spawns its FBX immediately (rifles, bullpups, SMGs, shotguns, snipers, pistols, revolvers) using the same pipeline as the shelf weapons. `DEBUG_FORCE_LEVEL2_START` still enabled for rapid verification and camera sweeps captured for documentation.
 
 - ✅ **Riddle DSPOINC Reward System (Nov 13):** Complete implementation with 500 DSPOINC base reward, role multipliers (VIP: ×2.0, Holder: ×1.5, etc.), duplicate prevention (unique constraint), HUD updates, reward notifications, and pause menu updates - **TESTED & WORKING** ✅
 - ✅ **CORS Fixes (Nov 13):** Fixed duplicate CORS header issues by removing headers from PHP files (handled by `.htaccess`), updated `.htaccess` to use `Header set` instead of `Header always set`, added OPTIONS request handling to both API endpoints - **TESTED & WORKING** ✅

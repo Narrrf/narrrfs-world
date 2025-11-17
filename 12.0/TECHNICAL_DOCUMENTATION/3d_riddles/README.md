@@ -50,12 +50,37 @@ This folder contains comprehensive documentation for all riddles implemented in 
 
 ### **Riddle #1: The Spawn (Level 2)**
 - **File:** `RIDDLE_01_THE_SPAWN_LEVEL_2.md`
-- **Status:** ⛳ **PLAYABLE PROTOTYPE (Nov 15, 2025)**
-- **Description:** Matrix-style Construct room. Players must inspect both shelf rows and the creature lineup to materialize the Level 3 portal. Currently linked to Level 1’s portal warp with placeholder completion toast.
+- **Status:** ✅ **FULLY IMPLEMENTED & TESTED (Nov 17, 2025)**
+- **Difficulty:** Medium
+- **Traits:** `CHEESE_TEMPLE_LEVEL2_STEP0`, `CHEESE_TEMPLE_LEVEL2_STEP1`, `CHEESE_TEMPLE_LEVEL2_STEP2`
+- **Description:** Matrix-style white room with weapon galleries, accessory corridors, and monster displays. Three-step challenge: find hidden cheese stone → activate lever → inspect all displays to unlock portal.
+- **Rewards:** +100 DSPOINC per step (300 total)
+- **Version:** 2.0 (Updated Nov 17, 2025 - Complete 3-step system with traits and DSPOINC rewards)
+- **Last Updated:** November 17, 2025 - Complete implementation with all steps, traits, and rewards verified
+
+### **Riddle #1: The Hunt (Level 3)**
+- **File:** `RIDDLE_01_THE_HUNT_LEVEL_3.md`
+- **Status:** ✅ **FULLY IMPLEMENTED & TESTED (Nov 17, 2025)**
+- **Difficulty:** Hard (10 monsters to catch across 2 phases)
+- **Traits:** `CHEESE_TEMPLE_LEVEL3_STEP0`, `CHEESE_TEMPLE_LEVEL3_STEP1`, `CHEESE_TEMPLE_LEVEL3_STEP2`
+- **Description:** Massive 160x160 cheese stone arena. Three-step challenge: find hidden cheese stone → hunt 5 monsters (Step 1) → hunt 5 more monsters (Step 2) → portal opens. Each monster rewards +50 DSPOINC with progressive scaling.
+- **Rewards:** +100 DSPOINC (Step 0) + +250 DSPOINC (Step 1) + +250 DSPOINC (Step 2) = 600 total
+- **Version:** 3.0 (Updated Nov 17, 2025 - Complete 3-step system with 10 monsters, traits, and portal)
+- **Last Updated:** November 17, 2025 - Complete implementation verified: all 3 traits and 10 monster rewards confirmed in database
+
+### **Riddle #1: The First Shot (Level 4)**
+- **File:** `RIDDLE_01_THE_FIRST_SHOT_LEVEL_4.md`
+- **Status:** ✅ **FULLY IMPLEMENTED (Nov 17, 2025)** — 50-cheese shooting challenge with progressive difficulty
+- **Difficulty:** Hard (50 cheeses to shoot with increasing difficulty)
+- **Traits:** `CHEESE_TEMPLE_LEVEL4_STEP0`, `CHEESE_TEMPLE_LEVEL4_STEP1`, `CHEESE_TEMPLE_LEVEL4_STEP2`
+- **Description:** Massive 160x160 cheese stone arena. Step 0: find hidden cheese stone → stand for 10 seconds → unlock Step 1. Step 1: shoot 50 floating cheese entities with first-person weapon. Cheeses spawn continuously (1-5 per batch) with progressive difficulty - get smaller, faster, and smarter as you progress. Step 2: enter portal for completion screen.
+- **Rewards:** +100 DSPOINC (Step 0) + +2,500 DSPOINC (Step 1: 50 × 50) + +200 DSPOINC (Step 2) = 2,800 total
+- **Version:** 3.0 (Updated Nov 17, 2025 - Complete 50-cheese system with shooting mechanics, progressive difficulty, portal, and completion screen)
+- **Last Updated:** November 17, 2025 - Fully implemented: 50-cheese shooting challenge with first-person weapon viewmodel, raycasting hit detection, progressive difficulty system, explosion effects, progress HUD, portal system, and completion screen. God Mode G and L keys supported.
 
 ### **Future Riddles:**
-- Riddle #3: Cheese Temple Level 2 (Planned)
-- Riddle #4: Cheese Temple Level 3 (Planned)
+- Riddle #2: Cheese Temple Level 2 (Planned)
+- Riddle #2: Cheese Temple Level 3 (Planned)
 - Additional riddles will be added as they are implemented
 
 ---
@@ -75,9 +100,11 @@ This folder contains comprehensive documentation for all riddles implemented in 
 ├── README.md (this file)
 ├── RIDDLE_01_CHEESE_TEMPLE_LEVEL_1.md (✅ Implemented)
 ├── RIDDLE_02_CHEESE_TEMPLE_LEVEL_1.md (✅ Implemented)
-├── RIDDLE_03_CHEESE_TEMPLE_LEVEL_1.md (🔄 Planning)
-├── RIDDLE_04_CHEESE_TEMPLE_LEVEL_2.md (future)
-└── RIDDLE_05_CHEESE_TEMPLE_LEVEL_3.md (future)
+├── RIDDLE_03_CHEESE_TEMPLE_LEVEL_1.md (✅ Implemented)
+├── RIDDLE_01_THE_SPAWN_LEVEL_2.md (✅ Implemented)
+├── RIDDLE_01_THE_HUNT_LEVEL_3.md (✅ Implemented)
+├── RIDDLE_01_THE_FIRST_SHOT_LEVEL_4.md (✅ Step 1 Complete)
+└── [Future riddles will be added here]
 ```
 
 ---
@@ -149,9 +176,9 @@ This folder contains comprehensive documentation for all riddles implemented in 
 
 ---
 
-**Folder Version:** 1.2  
-**Last Updated:** November 13, 2025  
+**Folder Version:** 2.0  
+**Last Updated:** November 17, 2025  
 **Maintained By:** Narrrf's Lab Tech Council
 
-**Latest Update:** November 13, 2025 - Added Riddle #3 documentation structure (planning phase), portal image (`Portal1.png`) documented for use. Riddle #2 status updated to "Successfully Implemented and Tested".
+**Latest Update:** November 17, 2025 - Level 4 "The First Shot" Step 1 complete! Implemented 2 FloatingCheese entities with mad mode (red glow, aggressive behavior), AI dodging, capture detection, and rewards (+50 DSPOINC per cheese). God Mode G and L keys fully supported. Total rewards: +200 DSPOINC (100 + 100).
 
