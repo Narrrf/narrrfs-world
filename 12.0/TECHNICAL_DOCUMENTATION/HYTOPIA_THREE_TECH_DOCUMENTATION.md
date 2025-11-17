@@ -171,6 +171,14 @@ Current scene components:
 - **Riddle UI safety guard:** introduced `invokeRiddleProgressUIUpdate()` so timer ticks never crash when the UI script loads late. Missing UI now logs a warning instead of freezing the render loop.
 - **Next QA focus:** verify joystick-driven locomotion across all camera modes (3rd person + joystick view) and confirm riddle timers show their overlays immediately after load.
 - **NEW Audio Layer:** Added listener + loader, Footstep loop (`footstep_cheese.ogg`) auto-triggers when on-ground velocity > 0.5, Jump one-shot (`jump_cheese.ogg`) fires on Space. Options menu now exposes a “Sound FX On/Off” toggle that persists via `cheese_temple_sound_fx_enabled`.
+- **Riddle Step Performance:** removed the `scene.children` fallback raycasts in `updateCrosshairAim`. After Step 0, we now only intersect the cheese mesh / unlockable block directly (recursive flag), eliminating the per-frame 80k mesh sweep that tanked FPS once the cheese challenge started.
+- **Portal Finish Polish:** Level completion now requires jumping directly into the Riddle #3 portal. A suction radius (5 u) gently pulls the player toward the portal once nearby, while the win condition now demands < 2.5 u horizontal and < 3 u vertical distance.
+- **GOD Mode QA Shortcuts:** Shift/Ctrl + 1/2/3 (or K) now teleport between riddles, but only while GOD Mode is enabled. Each jump resets the relevant state, respawns the correct puzzle pieces, and hides later-riddle props so QA can instantly regression test any step.
+- **New Riddle SFX:** Added `cheese_platform_active.ogg` when the hidden cheese stone unlocks in Riddle #1, and `slever.ogg` when the Riddle #3 lever flips. Both respect the Sound FX toggle.
+- **Pause resume sync:** `hidePauseMenu()` replays the active camera mode and re-requests pointer lock so HUD, joystick visibility, and mouse-look state always match the selected view after unpausing.
+- **Cheese stone trigger cue:** Standing on the hidden Step 0 stone now fires `cheese_platform_active.ogg` immediately (separate from the 10 s completion), so players hear confirmation the moment they find the block.
+- **Block placement feedback:** `block_moved_correct.ogg` plays when Riddle #2 Step 1 or Riddle #3 Step 2 snaps the movable block onto its oak target, matching the new documentation callouts.
+- **Arcade aim celebration:** When the strict cheese-aim timers finish (Riddle #1 Step 2 and Riddle #2 Step 2), the floating cheese shakes/glows once and `cheese_aim_clear.wav` plays, closing the loop between HUD progress and in-world feedback.
 
 ### ✅ Completed (November 13, 2025):
 - ✅ **Hytopia Integrator:** JSON-based block system implemented (level1.json)
@@ -1556,3 +1564,150 @@ loadPlayerCharacter("/textures/3d models/Monster 1/Big/glTF/Ninja.gltf");
 - **Model Location:** `three.js/public/textures/3d models/`
 
 ---
+
+## 20. Update Log — 2025-11-15 (Level 2 “The Spawn” Prototype)
+
+### 20.1 Level 1 Portal → Level 2 Warp
+The Level 1 exit portal now immediately warps the player into Level 2 once they meet the proximity gate. No modal blockers—the warp runs straight out of `updateRiddle3()`.
+
+```7148:7207:three.js/main.js
+    if (r3.portal && r3.portal.visible && r3.step3Complete && !level1Completed && !isGamePaused) {
+      const portalPos = r3.portal.position;
+      const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+      const horizontalDistance = Math.sqrt(
+        Math.pow(playerPos.x - portalPos.x, 2) + 
+        Math.pow(playerPos.z - portalPos.z, 2)
+      );
+      const verticalDistance = Math.abs(playerPos.y - portalPos.y);
+      const canEnter = horizontalDistance < RIDDLE3_PORTAL_ENTER_DISTANCE && verticalDistance < 3.0;
+      if (canEnter) {
+        warpToLevel2();
+        level1Completed = true;
+      }
+    }
+```
+
+### 20.2 Matrix Construct Builder + Inspection Zones
+`buildLevel2WhiteRoom()` spawns the white Construct (dual shelf aisles + monster runway). `updateLevel2()` checks a trio of bounding boxes; when all are visited the exit portal materializes at the north wall.
+
+```4526:4752:three.js/main.js
+function buildLevel2WhiteRoom() {
+  if (level2State.built) return;
+  level2State.group.visible = false;
+  level2State.inspectionZones = [];
+  level2State.previewAnchors = [];
+  const origin = level2Config.origin;
+  const size = level2Config.size;
+  const floorGeometry = new THREE.PlaneGeometry(size * 4, size * 4);
+  const floorMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, side: THREE.DoubleSide, shininess: 30 });
+  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.set(origin.x, origin.y, origin.z);
+  level2State.group.add(floor);
+  // shelves + pedestals + monster pads omitted for brevity
+  level2State.built = true;
+  resetLevel2Progress();
+}
+
+function updateLevel2(delta) {
+  if (!level2State.built || currentLevel !== LEVEL_IDS.LEVEL2) return;
+  const playerCenter = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+  let newlyVisited = false;
+  for (const zone of level2State.inspectionZones) {
+    if (!zone.visited && isPointInsideBounds(playerCenter, zone.bounds)) {
+      zone.visited = true;
+      newlyVisited = true;
+    }
+  }
+  if (!level2State.portalActive && level2State.inspectionZones.every((zone) => zone.visited)) {
+    activateLevel2Portal();
+  }
+}
+```
+
+### 20.3 Level 2 Collision + Bounds
+Because the Construct lives far from the Cheese Temple BVH, `handleLevel2Collisions()` clamps the capsule to the white floor and keeps movement inside the 60×60 bounds.
+
+```4153:4202:three.js/main.js
+function handleLevel2Collisions() {
+  const floorY = level2Config.origin.y + PLAYER_RADIUS;
+  const boundsPadding = PLAYER_RADIUS + 0.2;
+  const minX = level2Config.origin.x - level2Config.size + boundsPadding;
+  const maxX = level2Config.origin.x + level2Config.size - boundsPadding;
+  const minZ = level2Config.origin.z - level2Config.size + boundsPadding;
+  const maxZ = level2Config.origin.z + level2Config.size - boundsPadding;
+  onGround = false;
+  const distanceToFloor = playerCollider.start.y - floorY;
+  if (distanceToFloor <= 0.08 && playerVelocity.y <= 0) {
+    playerCollider.start.y = floorY;
+    playerCollider.end.y = floorY + PLAYER_HEIGHT;
+    playerVelocity.y = Math.max(0, playerVelocity.y);
+    onGround = true;
+  } else if (playerCollider.start.y < floorY) {
+    playerCollider.start.y = floorY;
+    playerCollider.end.y = floorY + PLAYER_HEIGHT;
+    playerVelocity.y = 0;
+    onGround = true;
+  }
+  const prevX = playerCollider.start.x;
+  const clampedX = THREE.MathUtils.clamp(playerCollider.start.x, minX, maxX);
+  playerCollider.start.x = clampedX;
+  playerCollider.end.x = clampedX;
+  if (prevX !== clampedX) {
+    playerVelocity.x = 0;
+  }
+  const prevZ = playerCollider.start.z;
+  const clampedZ = THREE.MathUtils.clamp(playerCollider.start.z, minZ, maxZ);
+  playerCollider.start.z = clampedZ;
+  playerCollider.end.z = clampedZ;
+  if (prevZ !== clampedZ) {
+    playerVelocity.z = 0;
+  }
+}
+```
+
+### 20.4 Warp UX + Placeholder Messaging
+`warpToLevel2()` toggles scene visibility, fog, spawn position, HUD toast, and resets the inspection state so QA can loop through The Spawn repeatedly.
+
+```4822:4884:three.js/main.js
+function warpToLevel2() {
+  if (currentLevel === LEVEL_IDS.LEVEL2) return;
+  if (!level2State.built) {
+    buildLevel2WhiteRoom();
+  }
+  resetLevel2Progress();
+  currentLevel = LEVEL_IDS.LEVEL2;
+  level2State.group.visible = true;
+  if (floatingCheese && floatingCheese.mesh) {
+    floatingCheese.mesh.visible = false;
+  }
+  if (typeof riddleProgressUI !== "undefined" && riddleProgressUI) {
+    riddleProgressUI.style.display = "none";
+  }
+  applyLevelEnvironment(LEVEL_IDS.LEVEL2);
+  setPlayerFeetPosition(level2Config.spawnPosition.clone());
+  showLevel2IntroToast();
+}
+```
+
+### 20.5 Restart Path Safety
+Calling `restartLevel1()` now forces `currentLevel = LEVEL_IDS.LEVEL1`, reapplies the Cheese Temple fog, hides the Construct group, resets Level 2 progress, and teleports the player to the recorded spawn—ensuring QA can bounce between levels without reloading the page.
+
+---
+
+### 20.6 Step 0 Standardization for Level 2
+- Introduced `level2RiddleState` and a hidden cheese stone trigger (`createLevel2TriggerBlock()`) so every level now begins with the same “find the golden block” ritual.
+- `showLevel2IntroToast()` now instructs players to locate/stand on the block for 10 s; completing it hides the block, plays the standard sound, and `showLevel2Step1Intro()` enables the inspection hunt.
+- `updateLevel2(delta)` gates inspection/portal logic until Step 0 is complete, ensuring future riddles inherit the same entry flow without manual wiring each time.
+
+### 20.7 Shelf QA Snapshot (2025-11-15)
+- Verified that Shelf 7 (Cactoro) remains in `LEVEL2_MONSTER_PREVIEWS` and spawns once Level 2 rebuilds; any missing statue reports were traced to stale local builds.
+- Added rotation offsets for shelves 14/16/18/20/22/24 so the “back wall” aisle faces the walkway automatically.
+- Added mid-lane bonus pads B1/B2 (pad indices 2 & 3) tied to Demon + Captor statues with dedicated labels.
+- Extended aisles with shelves 25-36 (Blob variants on the left continuation, Flying collection on the mirrored right), keeping the original 1-24 lineup untouched.
+- Current monster map: 1-12 front aisle populated, 13-24 back aisle populated, 25-36 extension populated, bonus pads B1/B2 in the runway, rotation logic per shelf index to prevent future mix-ups. Flag `DEBUG_FORCE_LEVEL2_START` is ON for local QA.
+
+### 20.8 Riddle Trait Rule
+- **Rule:** every riddle step (Level 1, Level 2, etc.) must unlock a matching trait entry the moment the step is completed. Traits are logged via `/api/user/unlock-trait.php` so QA/production accounts stay in sync.
+- **Level 2 Mapping:** Step 0 uses `CHEESE_TEMPLE_LEVEL2_STEP0`, Step 1 (lever/gallery unlock) uses `CHEESE_TEMPLE_LEVEL2_STEP1`.
+- **Guidance:** if a new step is added (Step 2, Step 3, etc.), reserve a trait name first, document it in the riddle spec, then call the unlock helper when the step completes.

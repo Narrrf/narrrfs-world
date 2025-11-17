@@ -45,7 +45,7 @@ Players must demonstrate exploration skills, focus, and precision by:
 4. **Stand on the block** - Position yourself directly on top of the golden stone block
 5. **Wait for 10 seconds** - The riddle UI will appear showing "🔍 Step 0: Stand on Golden Stone" with a countdown
 6. **Keep standing on the block** - Timer will decay if you step off (prevents accidental completion)
-7. **After 10 seconds** - Step 0 completes and the riddle hint unlocks, revealing Step 1 instructions
+7. **Audio feedback and completion** - As soon as you step on the stone the `cheese_platform_active.ogg` cue plays once to confirm you found the correct trigger. After 10 seconds the riddle hint unlocks and Step 1 instructions appear.
 
 ### **Step 1: Aim at Cheese Entity (10 seconds)**
 1. After Step 0 completes, the riddle UI now shows "Step 1: Aim at Cheese"
@@ -62,6 +62,7 @@ Players must demonstrate exploration skills, focus, and precision by:
 4. **Keep aiming continuously for 10 seconds** - do not move your crosshair away
 5. Watch the progress bar for countdown
 6. Timer will decay if you stop aiming
+7. When the timer completes, the floating cheese entity does a quick shake/glow celebration and the new `cheese_aim_clear.wav` arcade cue plays so you instantly know you nailed the aim challenge.
 
 ### **Completion:**
 - When all three steps are complete, a celebration message appears: **"🧩 RIDDLE SOLVED! 🧀"**
@@ -71,6 +72,7 @@ Players must demonstrate exploration skills, focus, and precision by:
 - HUD and pause menu automatically update with new DSPOINC balance
 - Progress UI disappears after completion
 - **One-time reward:** Riddle can only be completed once per player (duplicate completions are prevented)
+- **Audio Cue:** When the hidden cheese stone unlocks (Step 2), the new `cheese_platform_active.ogg` sound plays so players immediately know the platform spawned even if it’s off-camera.
 
 ---
 
@@ -150,6 +152,7 @@ const RIDDLE_AIM_TIME = 10;  // 10 seconds required for each step
 - **Actions:**
   - Sets `unlockableBlock.visible = true`
   - Increases emissive intensity from 0.3 to 0.6
+  - Calls `playCheesePlatformSound()` which plays `cheese_platform_active.ogg` for instant audio feedback
 
 #### **7. `completeRiddle()`**
 - **Purpose:** Handles riddle completion, trait unlocking, and DSPOINC reward

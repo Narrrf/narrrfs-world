@@ -995,7 +995,7 @@
             
             return {
                 attachment: useFixedLayer ? 'fixed' : 'scroll',
-                position: isIOSDevice ? 'center top' : 'center',
+                position: 'center center', // Consistent centering for all devices - matches Android display
                 size: 'cover',
                 fixedLayer: useFixedLayer
             };

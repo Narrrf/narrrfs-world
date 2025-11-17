@@ -3,9 +3,9 @@
 **Document Created:** November 13, 2025  
 **Riddle ID:** `CHEESE_TEMPLE_RIDDLE_03`  
 **Level:** Cheese Temple - Level 1 (Same Map)  
-**Status:** 🔄 **PLANNING** - Implementation Details Provided  
-**Trait Unlocked:** `CHEESE_TEMPLE_RIDDLE_03_SOLVED` (Planned)  
-**Last Updated:** November 13, 2025
+**Status:** ✅ **IMPLEMENTED & TESTED (LIVE)**  
+**Trait Unlocked:** `CHEESE_TEMPLE_RIDDLE_03_SOLVED`  
+**Last Updated:** November 15, 2025
 
 ---
 
@@ -40,12 +40,11 @@ After completing Riddle #2, players must:
 - **Visual:** Bright and glowing stone archway portal
 
 ### **Reward:**
-- **Trait Unlocked:** `CHEESE_TEMPLE_RIDDLE_03_SOLVED` (value: `true`) - *Planned*
-- **DSPOINC Reward:** *[Amount to be determined]*
-  - Role multipliers will be applied automatically (VIP: ×2.0, Holder: ×1.5, etc.)
-- **Visual Feedback:** Completion message, reward notification, and visual effects - *Planned*
-- **Progress Tracking:** Real-time progress UI with countdown timer - *Planned*
-- **HUD Update:** DSPOINC balance automatically updated in pause menu and HUD - *Planned*
+- **Trait Unlocked:** `CHEESE_TEMPLE_RIDDLE_03_SOLVED` (`true`)
+- **DSPOINC Reward:** 750 base DSPOINC (VIP ×2.0, Holder ×1.5, Champion ×1.4, Tester ×1.3, Early ×1.2, Cheese Hunter ×1.1, WL ×1.3)
+- **Visual Feedback:** Dedicated completion toast (“🧩 RIDDLE #3 SOLVED! 🧀 PORTAL ACTIVATED!”) + DSPOINC reward pop-up
+- **Progress Tracking:** Existing HUD panel updates instantly; pause menu reflects new total
+- **APIs:** `POST /api/user/unlock-trait.php`, `POST /api/dev/riddle-reward.php` (payload `riddle_id: CHEESE_TEMPLE_RIDDLE_03`)
 
 ---
 
@@ -58,20 +57,21 @@ After completing Riddle #2, players must:
 4. Walk up to the lever and press/click it to activate it.
 5. The lever will switch from `slever1.png` (off) to `slever2.png` (on) state.
 6. This unlocks a movable block for Step 2.
+7. **Audio Cue:** `slever.ogg` plays when the lever flips so players get immediate confirmation.
 
 ### **Step 2: Move the Block to the Oak Block**
 1. After pressing the lever, a movable block will appear (or become movable).
 2. Walk up to the block and push it by moving into it while pressing W/A/S/D keys.
 3. Guide the block to an oak block (similar to Riddle #2 Step 1).
-4. When the block is within 1.5 units of the oak block, Step 2 completes automatically.
+4. When the block is within 1.5 units of the oak block, Step 2 completes automatically and `block_moved_correct.ogg` fires so you hear the success even if you’re staring at the portal spawn point.
 5. The block will snap to the oak block position and lock in place.
 
-### **Step 3: Portal Appears**
-1. After Step 2 completes, a huge and bright portal will appear on the wall.
-2. The portal will be very large and glowing to indicate Level 2 entrance.
-3. Riddle #3 completes automatically when the portal appears.
-4. Player receives trait unlock and DSPOINC reward.
-5. Player can now enter Level 2 through the portal.
+### **Step 3: Portal Appears & Jump-In Requirement**
+1. After Step 2 completes, a huge glowing portal spawns on the north wall (x:60, y:5, z:10).
+2. The portal exerts a subtle suction when you’re within ~5 units horizontally (assistive pull).
+3. To finish the level you must jump directly into the portal: you need to be **< 2.5 units horizontally and < 3 units vertically**.
+4. Once inside the threshold, Riddle #3 locks in, awards the trait + DSPOINC, and triggers the Level 1 completion screen.
+5. If you hover near the edge, the suction keeps nudging you toward the doorway until you cross the finish line.
 
 ### **Debug Shortcut for Testing:**
 - Press **Shift+K** or **Ctrl+K** to skip Riddles #1 and #2 and test Riddle #3 directly.
@@ -132,6 +132,10 @@ const RIDDLE3_PROXIMITY_THRESHOLD = 1.5; // Distance threshold for block on oak 
 const RIDDLE3_LEVER_CLICK_DISTANCE = 2.0; // Distance threshold for clicking lever (2.0 units)
 const RIDDLE3_PORTAL_SCALE = 5.0; // Portal scale multiplier (very huge)
 const RIDDLE3_PORTAL_BRIGHTNESS = 2.0; // Portal brightness multiplier (very bright)
+const RIDDLE3_PORTAL_ENTER_DISTANCE = 2.5; // Player must be within 2.5 units horizontally
+const RIDDLE3_PORTAL_VERTICAL_THRESHOLD = 3.0; // Player must be within 3 units vertically
+const RIDDLE3_PORTAL_SUCTION_RADIUS = 5.0; // Distance where suction starts
+const RIDDLE3_PORTAL_SUCTION_STRENGTH = 18.0; // Force multiplier applied each frame
 ```
 
 ### **Key Functions (Planned):**
@@ -173,8 +177,8 @@ const RIDDLE3_PORTAL_BRIGHTNESS = 2.0; // Portal brightness multiplier (very bri
 - **Lever Interaction:** Checks if player is near lever and clicks to switch state
 - **Block Movement:** Applies player push force, friction, and bounds clamping (similar to Riddle #2)
 - **Proximity Detection:** Checks if movable block is within threshold of oak block
-- **Portal Appearance:** Shows portal when Step 2 completes (block moved to oak block)
-- **Step 3 Completion:** Completes riddle when portal appears
+- **Portal Appearance:** Shows portal when Step 2 completes (block moved to oak block) and enables suction
+- **Step 3 Completion:** Requires player to enter suction radius and cross the jump-in threshold; completion triggers trait + reward
 
 #### **3. `completeRiddle3()` (Planned)**
 - **Purpose:** Handles Riddle #3 completion, trait unlocking, and DSPOINC reward.
@@ -196,6 +200,7 @@ const RIDDLE3_PORTAL_BRIGHTNESS = 2.0; // Portal brightness multiplier (very bri
   - Sets `riddle3.step1Complete = true`
   - Unlocks movable block for Step 2
   - Makes oak block visible
+  - Plays `slever.ogg` through `playLeverSound()` for instant feedback
 
 #### **7. `skipRiddles1And2ForTesting()` (Debug Function)**
 - **Purpose:** Skips Riddle #1 and Riddle #2 for testing Riddle #3 directly.
@@ -525,6 +530,7 @@ CREATE TABLE tbl_user_traits (
 - **Size:** Very huge (scale 5.0× = 5×5×5 units or larger)
 - **Brightness:** Very bright (brightness 2.0×, emissiveIntensity: 2.0)
 - **Glow:** Very bright emissive glow to indicate Level 2 entrance
+- **Gameplay Effect:** Applies suction when player is within 5u horizontally to help them jump into the portal; completion requires <2.5u horizontal & <3u vertical distance.
 
 ### **Progress UI:**
 - **Step 1:** Shows "Step 1: Find and Press the Lever" with distance to lever
@@ -569,13 +575,13 @@ CREATE TABLE tbl_user_traits (
 |----------|-------|
 | **Riddle Number** | 3 |
 | **Level** | Cheese Temple - Level 1 (Same Map) |
-| **Difficulty** | *[To be determined]* |
-| **Estimated Time** | *[To be determined]* |
-| **Required Skill** | *[To be determined]* |
+| **Difficulty** | Hard (multi-zone search + precision finish) |
+| **Estimated Time** | 6-10 minutes on first attempt |
+| **Required Skill** | Exploration, block pushing control, precise portal entry |
 | **Trait Name** | `CHEESE_TEMPLE_RIDDLE_03_SOLVED` |
 | **Trait Value** | `true` |
-| **Status** | 🔄 **PLANNING** - Awaiting Implementation Details |
-| **Steps** | *[To be determined]* |
+| **Status** | ✅ Implemented & Tested (Nov 15, 2025) |
+| **Steps** | 1) Press lever 2) Push block to oak stone 3) Jump into portal |
 | **Portal Asset** | `Portal1.png` |
 
 ---
@@ -602,22 +608,23 @@ CREATE TABLE tbl_user_traits (
 - **API Integration:** Will use same API endpoints (different riddle_id)
 - **Debug Shortcut:** Will extend existing Shift+K / Ctrl+K shortcut to skip Riddles #1 and #2
 
-### **Next Steps:**
-1. ✅ **Documentation Created:** Riddle #3 documentation structure created
-2. ✅ **Portal Asset Noted:** Portal image (`Portal1.png`) documented for use
-3. ⏳ **Awaiting Details:** User will provide riddle mechanics and implementation details
-4. ⏳ **Implementation:** Will implement riddle based on user specifications
-5. ⏳ **Testing:** Will test riddle after implementation
-6. ⏳ **Documentation Update:** Will update documentation with final implementation details
+### **Current Status & Next Steps:**
+1. ✅ **Implementation Complete:** Lever → block push → portal flow live in `three.js/main.js`
+2. ✅ **Assets Wired:** `slever1/2.png`, `Portal1.png`, oak/cheese textures deployed
+3. ✅ **Rewards Live:** Trait + 750 DSPOINC base payout hooked to APIs
+4. ✅ **Portal Suction:** Jump-in requirement + suction radius documented (see `RIDDLE_PORTAL_SUCTION_NOTE.md`)
+5. 🔄 **Future Enhancements:** Add portal VFX/audio, integrate leaderboard timing, design Level 2 entry cutscene
 
 ---
 
-**Document Version:** 1.1  
-**Last Updated:** November 13, 2025  
+**Document Version:** 2.0  
+**Last Updated:** November 15, 2025  
 **Maintained By:** Narrrf's Lab Tech Council  
-**Status:** 🔄 **PLANNING** - Implementation Details Provided, Ready for Implementation
+**Status:** ✅ **LIVE IMPLEMENTATION**
 
-**Riddle Note:** November 13, 2025 - Riddle #3 mechanics specified! Lever interaction (find and press lever on wall), block movement (move block to oak block), and portal appearance (huge and bright portal on wall) mechanics provided. Lever images (`slever1.png`, `slever2.png`) and portal image (`Portal1.png`) documented. Ready for implementation.
+**Riddle Notes:**  
+- **Nov 13, 2025:** Mechanics specced (lever → block → portal).  
+- **Nov 15, 2025:** Portal suction + jump-in requirement shipped. See `12.0/LAB_NOTES/2025/11_NOVEMBER/DAILY_NOTES/2025-11-15/RIDDLE_PORTAL_SUCTION_NOTE.md` for granular QA details.
 
 ---
 

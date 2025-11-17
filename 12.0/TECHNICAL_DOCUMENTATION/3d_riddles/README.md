@@ -40,14 +40,18 @@ This folder contains comprehensive documentation for all riddles implemented in 
 
 ### **Riddle #3: Cheese Temple Level 1 (Same Map)**
 - **File:** `RIDDLE_03_CHEESE_TEMPLE_LEVEL_1.md`
-- **Status:** 🔄 **PLANNING** - Implementation Details Provided, Ready for Implementation
-- **Difficulty:** *[To be determined]*
-- **Trait:** `CHEESE_TEMPLE_RIDDLE_03_SOLVED` (Planned)
-- **Description:** Find and press lever on wall, move block to oak block, portal appears for Level 2 entrance
-- **Lever Assets:** `slever1.png` (off), `slever2.png` (on) (available for use)
-- **Portal Asset:** `Portal1.png` (available for use)
-- **Version:** 1.1 (Created Nov 13, 2025 - Mechanics specified, ready for implementation)
-- **Last Updated:** November 13, 2025 - Riddle Note: Riddle mechanics specified! Lever interaction, block movement, and portal appearance mechanics provided. Ready for implementation.
+- **Status:** ✅ **IMPLEMENTED & TESTED (Nov 15, 2025)**
+- **Difficulty:** Hard (multi-step puzzle + precision portal entry)
+- **Trait:** `CHEESE_TEMPLE_RIDDLE_03_SOLVED`
+- **Description:** Press hidden lever → push liberated block onto oak stone → giant portal spawns. Player must jump directly into the portal; suction radius (5u) assists, but completion requires <2.5u horizontal & <3u vertical distance.
+- **Reward:** 750 base DSPOINC + Discord role multipliers
+- **Version:** 2.0 (Updated Nov 15, 2025 - portal suction + completion gating live)
+- **Last Updated:** November 15, 2025 - Riddle Note: “RIDDLE_PORTAL_SUCTION_NOTE.md” documents new jump-in requirement & suction force.
+
+### **Riddle #1: The Spawn (Level 2)**
+- **File:** `RIDDLE_01_THE_SPAWN_LEVEL_2.md`
+- **Status:** ⛳ **PLAYABLE PROTOTYPE (Nov 15, 2025)**
+- **Description:** Matrix-style Construct room. Players must inspect both shelf rows and the creature lineup to materialize the Level 3 portal. Currently linked to Level 1’s portal warp with placeholder completion toast.
 
 ### **Future Riddles:**
 - Riddle #3: Cheese Temple Level 2 (Planned)

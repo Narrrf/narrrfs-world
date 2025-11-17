@@ -28,7 +28,7 @@ body.desktop-background {
 
 body.mobile-background {
     background-attachment: scroll !important;
-    background-position: center top;
+    background-position: center center; /* Centered like Android for consistent display */
 }
 
 #poolGlobalBackground {
@@ -39,7 +39,7 @@ body.mobile-background {
     height: 100%;
     background-repeat: no-repeat;
     background-size: cover;
-    background-position: center;
+    background-position: center center; /* Explicit center center for consistent display across devices */
     z-index: -5;
     pointer-events: none;
     will-change: transform;
@@ -55,7 +55,7 @@ body.mobile-background #poolGlobalBackground {
 @media (max-width: 1024px) {
     body {
         background-attachment: scroll;
-        background-position: center top;
+        background-position: center center; /* Centered for all mobile devices - matches Android display */
     }
 }
 

@@ -40,7 +40,7 @@ After completing Riddle #1, players must:
 4. Walk up to the Cheese Stone (unlockable block from Riddle #1) - it should be visible at its original position.
 5. Push the Cheese Stone by moving into it while pressing W/A/S/D keys.
 6. Guide the Cheese Stone to the oak stone location.
-7. When the Cheese Stone is within 1.5 units of the oak stone, Step 1 completes automatically.
+7. When the Cheese Stone is within 1.5 units of the oak stone, Step 1 completes automatically and the new `block_moved_correct.ogg` cue plays once so players get instant confirmation even if they’re not looking at the HUD.
 8. The Cheese Stone will snap to the oak stone position and lock in place.
 9. The oak stone will glow permanently to indicate completion.
 
@@ -48,7 +48,7 @@ After completing Riddle #1, players must:
 1. After Step 1 completes, aim at the floating cheese entity with your crosshair.
 2. Keep the crosshair on the cheese for 10 seconds continuously.
 3. If you move the crosshair away, the timer decays at 0.5× speed.
-4. Once the timer reaches 10 seconds, Riddle #2 completes.
+4. Once the timer reaches 10 seconds, the cheese shakes/glows briefly and `cheese_aim_clear.wav` fires, then Riddle #2 completes.
 5. You will receive the trait unlock and DSPOINC reward.
 
 ### **Debug Shortcut for Testing:**
