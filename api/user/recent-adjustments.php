@@ -4,15 +4,41 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: https://narrrfs.world');
 header('Access-Control-Allow-Credentials: true');
 
+// 🔧 CRITICAL FIX: Local development bypass and database path
+$isLocalDevelopment = $_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['HTTP_HOST'] === '127.0.0.1';
+
+$LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
+
 $user_id = $_SESSION['discord_id'] ?? '';
+// For local development, use Narrrf's account if no session exists
+if (!$user_id && $isLocalDevelopment) {
+    // Check if user_id is provided in POST/GET
+    $user_id = $_POST['user_id'] ?? $_GET['user_id'] ?? '';
+    // If empty or legacy LOCAL_TEST_DISCORD, use Narrrf's account
+    if ($user_id === 'LOCAL_TEST_DISCORD' || $user_id === '') {
+        $user_id = $LOCAL_TEST_DISCORD_ID;
+    }
+}
+
 if (!$user_id) {
     http_response_code(401);
     echo json_encode(['error' => 'Not logged in']);
     exit;
 }
 
+// Prevent test user IDs in production (only allow real Discord sessions)
+if (!$isLocalDevelopment && ($user_id === 'LOCAL_TEST_DISCORD' || $user_id === $LOCAL_TEST_DISCORD_ID)) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Test user not allowed in production']);
+    exit;
+}
+
 // Use a safe relative path so it works both locally and on Render!
-$dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+if ($isLocalDevelopment) {
+    $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
+} else {
+    $dbPath = '/var/www/html/db/narrrf_world.sqlite';
+}
 try {
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

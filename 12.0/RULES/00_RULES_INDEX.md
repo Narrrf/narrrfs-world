@@ -57,6 +57,27 @@
    - **Critical:** Mission status and admin interface synchronization
    - **Status:** ✅ **CORRECTED FIELD MAPPINGS**
 
+10. **`10_FILE_PATH_LOCAL_VS_PRODUCTION_RULE.md`** - **PATH HANDLING**
+    - **Purpose:** Prevents #1 most common deployment mistake
+    - **Critical:** Local vs production path differences
+    - **Status:** ✅ **ACTIVE - CRITICAL DEPLOYMENT RULE**
+
+11. **`11_THREE_JS_RULE.md`** - **THREE.JS DEVELOPMENT**
+    - **Purpose:** Three.js game development guidelines
+    - **Status:** ✅ **ACTIVE**
+
+12. **`12_UNIVERSAL_LEVEL_REQUIREMENTS_RULE.md`** - **🎮 LEVEL CONSISTENCY**
+    - **Purpose:** Ensures all levels have identical GOD Mode, sound, and controls
+    - **Critical:** Level selector (L key), GOD Mode, sound system consistency
+    - **Status:** ✅ **ACTIVE - MANDATORY FOR ALL LEVELS**
+    - **Created:** November 18, 2025
+
+13. **`13_3D_GAME_DSPOINC_SYNC_RULE.md`** - **🎯 DSPOINC REWARDS SYNC**
+    - **Purpose:** Standardizes how DSPOINC rewards and traits from 3D game are synced to DB and profiles
+    - **Critical:** Recent Score Changes display, trait unlocking, riddle reward API usage
+    - **Status:** ✅ **ACTIVE - MANDATORY FOR ALL 3D GAME RIDDLE REWARDS**
+    - **Created:** November 18, 2025
+
 ---
 
 ## 🚨 **CRITICAL RULE HIERARCHY**

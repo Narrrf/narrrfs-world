@@ -13,6 +13,13 @@ if (!$userId && isset($_SESSION['discord_id'])) {
     $userId = $_SESSION['discord_id'];
 }
 
+// Handle legacy LOCAL_TEST_DISCORD string for local development
+$isLocal = $_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false;
+if ($isLocal && $userId === 'LOCAL_TEST_DISCORD') {
+    // Convert to Narrrf's actual Discord ID for local testing
+    $userId = '328601656659017732';
+}
+
 if (empty($userId)) {
     http_response_code(400);
     echo json_encode([
@@ -53,10 +60,16 @@ try {
         exit;
     }
 
+    // Query balance from tbl_user_scores (user_id field contains Discord ID)
     $balanceStmt = $db->prepare("SELECT COALESCE(SUM(score), 0) AS total FROM tbl_user_scores WHERE user_id = ?");
     $balanceStmt->execute([$userId]);
     $balanceRow = $balanceStmt->fetch(PDO::FETCH_ASSOC);
     $balance = (int)($balanceRow['total'] ?? 0);
+    
+    // Debug logging for local development
+    if ($isLocal) {
+        error_log("🔍 [DETAILS API] User balance query: userId=$userId, balance=$balance");
+    }
 
     $rolesStmt = $db->prepare("SELECT role_name FROM tbl_user_roles WHERE user_id = ?");
     $rolesStmt->execute([$userId]);

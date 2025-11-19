@@ -8,6 +8,7 @@
  */
 
 require_once __DIR__ . '/smtp-helper.php';
+require_once __DIR__ . '/email-api-service.php';
 
 // Suppress all output and warnings to ensure clean JSON response
 error_reporting(0);
@@ -86,7 +87,14 @@ $form_type = isset($input['form_type']) ? htmlspecialchars(trim($input['form_typ
 // Email configuration
 $settings = poolbau_get_email_settings();
 
+// CRITICAL: TO address is where emails are delivered (customer's office)
 $to_email = $settings['email_address'] ?? 'office@poolbauprofi.at';
+
+// CRITICAL: FROM address should be YOUR email (not customer's)
+// This is the sender address that appears in the email
+$from_email = $settings['sender_email'] ?? $settings['from_email'] ?? 'noreply@poolbauprofi.at';
+$from_name = $settings['from_name'] ?? 'Poolbauprofi.at Website';
+
 $subject = 'Neue Anfrage von Poolbauprofi.at - ' . $form_type;
 
 // Build email body
@@ -132,9 +140,8 @@ $email_body .= "User Agent: " . $_SERVER['HTTP_USER_AGENT'] . "\n";
 $email_body .= "Referrer: " . (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'Direct') . "\n";
 
 // Email headers
-$from_email = $settings['from_email'] ?? 'noreply@poolbauprofi.at';
-$from_name = $settings['from_name'] ?? 'Poolbauprofi.at Website';
-
+// FROM: Your email address (appears as sender)
+// REPLY-TO: Customer's email (so replies go to the person who filled the form)
 $headers = [
     'From: ' . $from_name . ' <' . $from_email . '>',
     'Reply-To: ' . $name . ' <' . $email . '>',
@@ -145,18 +152,40 @@ $headers = [
 // Try to send email, but also save to file for testing
 $mail_sent = false;
 $smtp_attempted = false;
+$api_attempted = false;
 $smtp_error = '';
 $smtp_debug = [];
+$api_error = '';
+$api_service = '';
 
-// Try sending via mail() function
-if (poolbau_can_use_smtp($settings)) {
+// PRIORITY 1: Try sending via Email API (SendGrid, Mailgun, Resend) - NO SMTP NEEDED!
+$apiResult = send_email_via_api($settings, [
+    'to_email' => $to_email,  // Customer's office email (where email is delivered)
+    'from_email' => $from_email,  // Your email (appears as sender)
+    'from_name' => $from_name,
+    'reply_to_email' => $email,  // Customer's email (for replies)
+    'subject' => $subject,
+    'body' => $email_body
+]);
+
+if ($apiResult['success']) {
+    $mail_sent = true;
+    $api_attempted = true;
+    $api_service = $apiResult['service'] ?? 'API';
+} else {
+    $api_attempted = !empty($settings['sendgrid_api_key']) || !empty($settings['mailgun_api_key']) || !empty($settings['resend_api_key']);
+    $api_error = $apiResult['error'] ?? '';
+}
+
+// PRIORITY 2: Try sending via SMTP using YOUR credentials (if API failed)
+if (!$mail_sent && poolbau_can_use_smtp($settings)) {
     $smtp_attempted = true;
     $smtpResult = poolbau_send_email_via_smtp($settings, [
-        'to_email' => $to_email,
+        'to_email' => $to_email,  // Customer's office email (where email is delivered)
         'to_name' => 'Poolbauprofi.at',
-        'from_email' => $from_email,
+        'from_email' => $from_email,  // Your email (appears as sender)
         'from_name' => $from_name,
-        'reply_to_email' => $email,
+        'reply_to_email' => $email,  // Customer's email (for replies)
         'reply_to_name' => $name,
         'subject' => $subject,
         'body' => $email_body
@@ -170,6 +199,7 @@ if (poolbau_can_use_smtp($settings)) {
     }
 }
 
+// PRIORITY 3: Fallback to PHP mail() function (least reliable)
 if (!$mail_sent && function_exists('mail')) {
     $mail_sent = mail($to_email, $subject, $email_body, implode("\r\n", $headers));
 }
@@ -190,6 +220,14 @@ file_put_contents($email_file, $file_content, FILE_APPEND | LOCK_EX);
 
 // Log submission
 $log_entry = date('Y-m-d H:i:s') . " - Form submitted from " . $email . " (" . $name . ") - Mail sent: " . ($mail_sent ? 'YES' : 'NO');
+if ($api_attempted) {
+    $log_entry .= " - API attempted: YES";
+    if ($mail_sent && $api_service) {
+        $log_entry .= " - API service: " . $api_service;
+    } elseif (!$mail_sent && $api_error) {
+        $log_entry .= " - API error: " . $api_error;
+    }
+}
 if ($smtp_attempted) {
     $log_entry .= " - SMTP attempted: YES";
     if (!$mail_sent && $smtp_error) {
@@ -210,6 +248,9 @@ echo json_encode([
     'debug_info' => [
         'mail_function_available' => function_exists('mail'),
         'mail_sent' => $mail_sent,
+        'api_attempted' => $api_attempted,
+        'api_service' => $api_service,
+        'api_error' => $api_error,
         'smtp_attempted' => $smtp_attempted,
         'smtp_error' => $smtp_error,
         'saved_to_file' => $email_file,

@@ -648,6 +648,13 @@ Before creating ANY new API endpoint, you MUST:
 - **API Root:** `C:\xampp-server\htdocs\narrrfs-world\api\`
 - **Admin APIs:** `C:\xampp-server\htdocs\narrrfs-world\api\admin\`
 - **User APIs:** `C:\xampp-server\htdocs\narrrfs-world\api\user\`
+  - **Achievement APIs:**
+    - `get-tetris-achievements.php` - Tetris achievements (25 total)
+    - `get-snake-achievements.php` - Snake achievements (20 total)
+    - `get-space-invaders-achievements.php` - Space Invaders achievements (28 total)
+    - `get-3d-puzzles-achievements.php` - **3D Puzzles achievements (NEW - November 18, 2025)** - Auto-detects all `CHEESE_TEMPLE_*` traits, groups by level, scalable for unlimited levels
+  - **Trait APIs:**
+    - `unlock-trait.php` - Unlock user traits (used by 3D game)
 - **Dev APIs:** `C:\xampp-server\htdocs\narrrfs-world\api\dev\`
 - **Discord APIs:** `C:\xampp-server\htdocs\narrrfs-world\api\discord\`
 - **Store APIs:** `C:\xampp-server\htdocs\narrrfs-world\api\store\`
@@ -664,6 +671,49 @@ Before creating ANY new API endpoint, you MUST:
 5. **CREATE new API** ONLY if no existing solution exists
 6. **DOCUMENT new API** in existing structure
 7. **UPDATE team** about new API creation
+
+### **3D PUZZLES ACHIEVEMENTS API (November 18, 2025):**
+- **Endpoint:** `/api/user/get-3d-puzzles-achievements.php`
+- **Purpose:** Display all 3D game riddle completions as achievements on profile page
+- **Features:**
+  - Auto-detects all `CHEESE_TEMPLE_*` traits from database
+  - Dynamically generates achievement definitions from trait names
+  - Groups achievements by level (Level 1, 2, 3, 4...)
+  - Scalable for unlimited levels and steps
+  - Always includes known traits (even if not in database yet)
+- **Environment Support:**
+  - **Local:** Uses `LOCAL_TEST_DISCORD` test user automatically
+  - **Production:** Uses logged-in user's Discord ID
+- **Trait Patterns:**
+  - Level 1 Riddles: `CHEESE_TEMPLE_RIDDLE_SOLVED`, `CHEESE_TEMPLE_RIDDLE_02_SOLVED`, `CHEESE_TEMPLE_RIDDLE_03_SOLVED`
+  - Level 2+ Steps: `CHEESE_TEMPLE_LEVEL2_STEP0`, `CHEESE_TEMPLE_LEVEL2_STEP1`, `CHEESE_TEMPLE_LEVEL2_STEP2`, etc.
+- **Documentation:** `12.0/TECHNICAL_DOCUMENTATION/HYTOPIA_THREE_TECH_DOCUMENTATION.md` (Section 21)
+- **Status:** ✅ **IMPLEMENTED & TESTED** - Works for all current and future levels
+
+### **3D GAME DSPOINC REWARDS SYNC RULE (November 18, 2025):**
+- **Rule Document:** `12.0/RULES/13_3D_GAME_DSPOINC_SYNC_RULE.md`
+- **Purpose:** Standardizes how DSPOINC rewards and traits from 3D game are synchronized to database, player profiles, and Discord
+- **Critical Requirements:**
+  - **ALWAYS use `/api/dev/riddle-reward.php`** for riddle step completions (Level 2, 3, 4)
+  - **ALWAYS insert into `tbl_score_adjustments`** with descriptive `reason` field for "Recent Score Changes" display
+  - **ALWAYS unlock trait BEFORE awarding DSPOINC** to ensure proper tracking order
+  - **ALWAYS use `game: "cheese_temple_riddles"` and `source: "riddle_completion"`** in `tbl_user_scores`
+  - **ALWAYS use descriptive `reason` format:** `"Riddle completion (RIDDLE_ID): base X × Y.Z = W DSPOINC"`
+- **API Endpoint:** `/api/dev/riddle-reward.php` (used by Level 2, 3, 4)
+- **Database Tables:**
+  - `tbl_riddle_completions` - Completion tracking (prevents duplicates)
+  - `tbl_user_scores` - DSPOINC balance (`game: "cheese_temple_riddles"`, `source: "riddle_completion"`)
+  - `tbl_score_adjustments` - **CRITICAL** for "Recent Score Changes" display (`reason` field required)
+- **Profile Page Integration:**
+  - `/api/user/recent-adjustments.php` queries `tbl_score_adjustments` filtered by `user_id`
+  - Local development: Auto-uses `LOCAL_TEST_DISCORD` if no session exists
+  - Production: Requires valid Discord session
+- **Standard DSPOINC Rewards:**
+  - Level 2: Step 0 (100), Step 1 (100), Step 2 (120)
+  - Level 3: Step 0 (100), Step 1 (50 per monster), Step 2 (50 per monster), Step 3 (200)
+  - Level 4: Step 0 (100), Step 1 (50 per cheese), Step 2 (200)
+- **Documentation:** `12.0/RULES/13_3D_GAME_DSPOINC_SYNC_RULE.md` (comprehensive rule document)
+- **Status:** ✅ **ACTIVE - MANDATORY FOR ALL 3D GAME RIDDLE REWARDS**
 
 ### **DATABASE TABLE MANAGEMENT RULE:**
 - **ALWAYS know our actual tables** - Never ask "which tables do we have?"
@@ -2601,6 +2651,13 @@ Before creating ANY new achievement API endpoint, you MUST:
 - **Every season launch**
 
 **REMEMBER: This unified rule ensures decades of professional development documentation! 🚀**
+
+### 🗓️ 2025-11-19 Updates
+- **Role-Based Gaming Fix — PRODUCTION VERIFIED** — Fixed role multiplier system for 3D game riddle rewards. `getRoleMultiplier()` function was querying non-existent `role_id` column; fixed to query `role_name` column only. VIP Holders now correctly receive 2.0x multiplier (was 1.0x). Fresh database test completed successfully: All 3 Level 1 riddles tested, all traits unlocked, all DSPOINC rewards awarded correctly (3,500 total for VIP), all database records verified, all frontend displays working perfectly. Status: ✅ **PRODUCTION VERIFIED** - All systems working correctly.
+- **Level 1 Documentation Complete** — Updated riddle documentation to reflect all 3 separate riddles with individual rewards. Complete walkthrough added for all 3 riddles. Total rewards: 1,750 DSPOINC base (VIP: 3,500 DSPOINC with 2.0x multiplier). All documentation synced across lab notes, riddle notes, daily status, quick status, and rules.
+
+### 🗓️ 2025-11-18 Updates
+- **Local Test User System** — Updated to use Narrrf's actual Discord ID (`328601656659017732`) for local testing. Old `LOCAL_TEST_DISCORD` string automatically converted. Balance always fetched from database (no stale cache). All traits and DSPOINC rewards sync to Narrrf's account. Production uses logged-in user's Discord ID from session.
 
 ### 🗓️ 2025-11-07 Updates
 - **Profile Portal Season Stats** — API now filters Season 5 cards using three-tier matching (exact name → prefix → timestamp window). Cheese Hunt & Discord Cheese Race remain season-only (no legacy fallbacks). Timestamp guard relies on `tbl_seasons.start_date` (fallback 30 days) until all records carry the new `Season 5` label.

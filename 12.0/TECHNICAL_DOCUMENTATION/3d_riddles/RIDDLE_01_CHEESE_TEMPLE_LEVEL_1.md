@@ -1,15 +1,82 @@
-# 🧩 RIDDLE #1 - CHEESE TEMPLE LEVEL 1
+# 🧩 LEVEL 1 - CHEESE TEMPLE (3 RIDDLES)
 
 **Document Created:** November 12, 2025  
-**Riddle ID:** `CHEESE_TEMPLE_RIDDLE_01`  
 **Level:** Cheese Temple - Level 1  
 **Status:** ✅ **IMPLEMENTED & TESTED**  
-**Trait Unlocked:** `CHEESE_TEMPLE_RIDDLE_SOLVED`  
-**Last Tested:** November 12, 2025 - ✅ **WORKING**
+**Total Riddles:** 3 separate riddles with individual rewards  
+**Last Tested:** November 19, 2025 - ✅ **WORKING**
 
 ---
 
-## 📋 **RIDDLE OVERVIEW**
+## 📋 **LEVEL 1 OVERVIEW**
+
+### **Level 1 Contains 3 Separate Riddles:**
+
+#### **🧩 RIDDLE #1: The Discovery**
+- **Riddle ID:** `CHEESE_TEMPLE_RIDDLE_01`
+- **Trait Unlocked:** `CHEESE_TEMPLE_RIDDLE_SOLVED`
+- **Base Reward:** 500 DSPOINC
+- **VIP Holder (×2.0):** 1,000 DSPOINC
+- **Holder (×1.5):** 750 DSPOINC
+- **Champion (×1.4):** 700 DSPOINC
+- **WL/Season Tester (×1.3):** 650 DSPOINC
+- **Early Bird (×1.2):** 600 DSPOINC
+- **Cheese Hunter (×1.1):** 550 DSPOINC
+- **Default (×1.0):** 500 DSPOINC
+
+#### **🧩 RIDDLE #2: The Push**
+- **Riddle ID:** `CHEESE_TEMPLE_RIDDLE_02`
+- **Trait Unlocked:** `CHEESE_TEMPLE_RIDDLE_02_SOLVED`
+- **Base Reward:** 500 DSPOINC
+- **VIP Holder (×2.0):** 1,000 DSPOINC
+- **Holder (×1.5):** 750 DSPOINC
+- **Champion (×1.4):** 700 DSPOINC
+- **WL/Season Tester (×1.3):** 650 DSPOINC
+- **Early Bird (×1.2):** 600 DSPOINC
+- **Cheese Hunter (×1.1):** 550 DSPOINC
+- **Default (×1.0):** 500 DSPOINC
+
+#### **🧩 RIDDLE #3: The Portal**
+- **Riddle ID:** `CHEESE_TEMPLE_RIDDLE_03`
+- **Trait Unlocked:** `CHEESE_TEMPLE_RIDDLE_03_SOLVED`
+- **Base Reward:** 750 DSPOINC
+- **VIP Holder (×2.0):** 1,500 DSPOINC
+- **Holder (×1.5):** 1,125 DSPOINC
+- **Champion (×1.4):** 1,050 DSPOINC
+- **WL/Season Tester (×1.3):** 975 DSPOINC
+- **Early Bird (×1.2):** 900 DSPOINC
+- **Cheese Hunter (×1.1):** 825 DSPOINC
+- **Default (×1.0):** 750 DSPOINC
+
+### **🎯 TOTAL LEVEL 1 REWARDS (All 3 Riddles):**
+
+**VIP Holder (×2.0):**
+- Riddle #1: 1,000 DSPOINC
+- Riddle #2: 1,000 DSPOINC
+- Riddle #3: 1,500 DSPOINC
+- **Total: 3,500 DSPOINC** 🧀
+
+**Holder (×1.5):**
+- Riddle #1: 750 DSPOINC
+- Riddle #2: 750 DSPOINC
+- Riddle #3: 1,125 DSPOINC
+- **Total: 2,625 DSPOINC** 🧀
+
+**Champion (×1.4):**
+- Riddle #1: 700 DSPOINC
+- Riddle #2: 700 DSPOINC
+- Riddle #3: 1,050 DSPOINC
+- **Total: 2,450 DSPOINC** 🧀
+
+**Default (×1.0):**
+- Riddle #1: 500 DSPOINC
+- Riddle #2: 500 DSPOINC
+- Riddle #3: 750 DSPOINC
+- **Total: 1,750 DSPOINC** 🧀
+
+---
+
+## 🧩 **RIDDLE #1: THE DISCOVERY**
 
 ### **Objective:**
 Solve the Cheese Temple riddle by completing three sequential challenges: discovery, precision aiming, and final activation.
@@ -33,6 +100,7 @@ Players must demonstrate exploration skills, focus, and precision by:
 - **Visual Feedback:** Completion message, reward notification, and glowing block effect
 - **Progress Tracking:** Real-time progress bar with countdown timer
 - **HUD Update:** DSPOINC balance automatically updated in pause menu and HUD
+- **Recent Score Changes:** Appears in profile page with format: `Riddle completion (CHEESE_TEMPLE_RIDDLE_01): base 500 × [multiplier] = [total] DSPOINC`
 
 ---
 
@@ -67,12 +135,281 @@ Players must demonstrate exploration skills, focus, and precision by:
 ### **Completion:**
 - When all three steps are complete, a celebration message appears: **"🧩 RIDDLE SOLVED! 🧀"**
 - The trait `CHEESE_TEMPLE_RIDDLE_SOLVED` is automatically unlocked
-- DSPOINC reward is automatically awarded based on role multiplier
+- DSPOINC reward is automatically awarded based on role multiplier:
+  - **VIP Holder:** 1,000 DSPOINC (base 500 × 2.0)
+  - **Holder:** 750 DSPOINC (base 500 × 1.5)
+  - **Champion:** 700 DSPOINC (base 500 × 1.4)
+  - **WL/Season Tester:** 650 DSPOINC (base 500 × 1.3)
+  - **Early Bird:** 600 DSPOINC (base 500 × 1.2)
+  - **Cheese Hunter:** 550 DSPOINC (base 500 × 1.1)
+  - **Default:** 500 DSPOINC (base 500 × 1.0)
 - Reward notification appears showing DSPOINC amount (e.g., "🎉 +1,000 DSPOINC (×2.0)! 🧀")
 - HUD and pause menu automatically update with new DSPOINC balance
 - Progress UI disappears after completion
 - **One-time reward:** Riddle can only be completed once per player (duplicate completions are prevented)
-- **Audio Cue:** When the hidden cheese stone unlocks (Step 2), the new `cheese_platform_active.ogg` sound plays so players immediately know the platform spawned even if it’s off-camera.
+- **Audio Cue:** When the hidden cheese stone unlocks (Step 2), the new `cheese_platform_active.ogg` sound plays so players immediately know the platform spawned even if it's off-camera.
+- **Recent Score Changes:** Reward appears in profile page "Recent Score Changes" section with full details
+
+---
+
+## 🎮 **COMPLETE LEVEL 1 WALKTHROUGH**
+
+### **Starting Level 1:**
+1. **Spawn Location:** Player spawns at center of level (approximately x: 60, z: 15, y: 2)
+2. **Initial State:** Riddle UI is hidden - no hints visible
+3. **Objective:** Complete all 3 riddles to unlock Level 2 portal
+4. **Total Rewards:** 1,750 DSPOINC base (VIP: 3,500 DSPOINC with 2.0x multiplier)
+
+---
+
+## 🧩 **RIDDLE #1: THE DISCOVERY - COMPLETE WALKTHROUGH**
+
+### **Step 0: Discovery (10 seconds)**
+1. **Explore the Level:**
+   - Level is 120×120 blocks
+   - Hidden block is at coordinates (110, 1, 110) - far back corner
+   - Use WASD to move, mouse to look around
+   - Look for a block with yellow-cheese texture and golden glow
+
+2. **Finding the Block:**
+   - Navigate to the back of the level (opposite direction from spawn)
+   - The block is on the ground level (y: 1)
+   - It has a subtle golden glow to help discovery
+   - Audio cue plays when you step on it: `cheese_platform_active.ogg`
+
+3. **Completing Step 0:**
+   - Stand directly on top of the block
+   - Riddle UI appears at bottom of screen: "🔍 Step 0: Stand on Golden Stone"
+   - Progress bar shows countdown from 10 seconds
+   - **Important:** Timer decays if you step off (must stay on block)
+   - After 10 seconds, Step 1 unlocks
+
+### **Step 1: Aim at Cheese (10 seconds)**
+1. **After Step 0 Completes:**
+   - Riddle UI updates: "Step 1: Aim at Cheese"
+   - Floating cheese entity is already in the level (roaming around)
+   - Locate the cheese cube that moves around the temple
+
+2. **Aiming at Cheese:**
+   - Use mouse to aim crosshair at the cheese entity
+   - Crosshair turns yellow/gold when aiming at cheese
+   - **STRICT:** Must keep crosshair directly on cheese pixels
+   - Timer increments only when crosshair is on cheese
+   - Timer decays immediately if crosshair moves off (even 1 pixel)
+
+3. **Completing Step 1:**
+   - Keep crosshair on cheese for 10 continuous seconds
+   - Progress bar shows countdown
+   - When complete, unlockable block appears in center of platform
+   - Audio cue: `cheese_platform_active.ogg` plays
+
+### **Step 2: Aim at Block (10 seconds)**
+1. **After Step 1 Completes:**
+   - Special glowing block appears in middle of platform
+   - Block is positioned one block above spawn point
+   - Block has cheese-stone texture with bright glow
+
+2. **Aiming at Block:**
+   - Use mouse to aim crosshair at the unlockable block
+   - Crosshair turns yellow/gold when aiming at block
+   - **STRICT:** Must keep crosshair directly on block pixels
+   - Timer increments only when crosshair is on block
+   - Timer decays immediately if crosshair moves off
+
+3. **Completing Step 2:**
+   - Keep crosshair on block for 10 continuous seconds
+   - Progress bar shows countdown
+   - When complete, celebration message appears: "🧩 RIDDLE SOLVED! 🧀"
+   - Trait unlocked: `CHEESE_TEMPLE_RIDDLE_SOLVED`
+   - DSPOINC reward awarded (VIP: 1,000 DSPOINC with 2.0x multiplier)
+   - Reward notification shows: "🎉 +1,000 DSPOINC (×2.0)! 🧀"
+   - **Riddle #2 unlocks** - The unlockable block becomes movable
+
+---
+
+## 🧩 **RIDDLE #2: THE PUSH - COMPLETE WALKTHROUGH**
+
+### **Step 1: Push Cheese Stone to Oak Stone**
+1. **After Riddle #1 Completes:**
+   - The unlockable block from Riddle #1 becomes the movable cheese stone
+   - A blinking oak stone appears on the middle platform
+   - Oak stone blinks every 15 seconds (2-second blink duration)
+   - Riddle UI shows: "Step 1: Move Cheese Stone to Oak Stone"
+
+2. **Pushing the Block:**
+   - Walk to the cheese stone block (it's in the center of the platform)
+   - Press movement keys (W/A/S/D) while near the block (within 2.0 units)
+   - Block moves in the direction you're pressing
+   - **Works in both normal mode and God Mode**
+   - Push force: 30.0 (strong enough to move block easily)
+   - Block has physics - it will slide and slow down naturally
+
+3. **Completing Step 1:**
+   - Push block to within 1.5 units of the oak stone
+   - Block automatically snaps to oak stone position
+   - Oak stone stops blinking and glows permanently (golden glow)
+   - Audio cue: `block_moved_correct.ogg` plays
+   - Step 2 unlocks
+
+### **Step 2: Aim at Cheese (10 seconds)**
+1. **After Step 1 Completes:**
+   - Riddle UI updates: "Step 2: Aim at Cheese"
+   - Floating cheese entity is already in the level (same as Riddle #1)
+
+2. **Aiming at Cheese:**
+   - Use mouse to aim crosshair at the cheese entity
+   - Crosshair turns yellow/gold when aiming at cheese
+   - **STRICT:** Must keep crosshair directly on cheese pixels
+   - Timer increments only when crosshair is on cheese
+   - Timer decays immediately if crosshair moves off
+
+3. **Completing Step 2:**
+   - Keep crosshair on cheese for 10 continuous seconds
+   - Progress bar shows countdown
+   - When complete, celebration message appears: "🧩 RIDDLE #2 SOLVED! 🧀"
+   - Trait unlocked: `CHEESE_TEMPLE_RIDDLE_02_SOLVED`
+   - DSPOINC reward awarded (VIP: 1,000 DSPOINC with 2.0x multiplier)
+   - Reward notification shows: "🎉 +1,000 DSPOINC (×2.0)! 🧀"
+   - **Lever for Riddle #3 becomes visible**
+
+---
+
+## 🧩 **RIDDLE #3: THE PORTAL - COMPLETE WALKTHROUGH**
+
+### **Step 1: Press the Lever**
+1. **After Riddle #2 Completes:**
+   - Lever appears on the wall (near the end of the room)
+   - Lever position: approximately (20.5, 2.5, 100.5)
+   - Lever is visible and ready to interact
+   - Riddle UI shows: "Step 1: Press the Lever"
+
+2. **Pressing the Lever:**
+   - Walk to the lever (must be within 2.0 units)
+   - Press E key to interact with lever
+   - Lever switches from off to on state
+   - Lever texture changes (visual feedback)
+   - Lever glows green when activated
+   - Audio cue: `slever.ogg` plays
+
+3. **After Lever is Pressed:**
+   - Movable block appears near the lever position
+   - Oak block appears as target destination
+   - Step 2 unlocks
+   - Riddle UI updates: "Step 2: Move Block to Oak Block"
+
+### **Step 2: Push Block to Oak Block**
+1. **After Step 1 Completes:**
+   - Movable block is near the lever position
+   - Oak block is the target (similar to Riddle #2)
+
+2. **Pushing the Block:**
+   - Walk to the movable block
+   - Press movement keys (W/A/S/D) while near the block
+   - Block moves in the direction you're pressing
+   - Push block to within 1.5 units of the oak block
+
+3. **Completing Step 2:**
+   - Block automatically snaps to oak block position
+   - Oak block glows permanently (completion indicator)
+   - Audio cue: `block_moved_correct.ogg` plays
+   - **Huge portal appears** (5.0x scale, very bright, 2.0x brightness)
+   - Step 3 unlocks
+   - Riddle UI updates: "Step 3: Enter the Portal"
+
+### **Step 3: Enter the Portal**
+1. **After Step 2 Completes:**
+   - Massive portal appears (very large and bright)
+   - Portal is positioned near the end of the room
+   - Portal is hard to miss (5.0x scale, very bright)
+
+2. **Entering the Portal:**
+   - Walk into the portal (must be within 2.5 units)
+   - Portal entrance triggers completion
+   - Audio cue: `LEVEL UP!.wav` plays
+
+3. **Completing Riddle #3:**
+   - Celebration message appears: "🧩 RIDDLE #3 SOLVED! 🧀"
+   - Trait unlocked: `CHEESE_TEMPLE_RIDDLE_03_SOLVED`
+   - DSPOINC reward awarded (VIP: 1,500 DSPOINC with 2.0x multiplier)
+   - Reward notification shows: "🎉 +1,500 DSPOINC (×2.0)! 🧀"
+   - **Level 1 completion screen appears**
+   - Options: Go to Level 2, Level 3, Level 4, or back to Level 1
+
+---
+
+## 🎁 **REWARD COLLECTION SUMMARY**
+
+### **All 3 Riddles Complete:**
+- **Riddle #1:** 500 DSPOINC base (VIP: 1,000 with 2.0x)
+- **Riddle #2:** 500 DSPOINC base (VIP: 1,000 with 2.0x)
+- **Riddle #3:** 750 DSPOINC base (VIP: 1,500 with 2.0x)
+- **Total Base:** 1,750 DSPOINC
+- **Total VIP (×2.0):** 3,500 DSPOINC 🧀
+
+### **Reward Tracking:**
+- All rewards automatically added to balance
+- Balance updates in pause menu (press P)
+- Balance updates in HUD
+- All 3 rewards appear in "Recent Score Changes" on profile page
+- Format for each: `Riddle completion (CHEESE_TEMPLE_RIDDLE_XX): base [amount] × [multiplier] = [total] DSPOINC`
+
+---
+
+## 🎯 **TIPS & STRATEGY**
+
+### **For Riddle #1:**
+- **Step 0 (Discovery):**
+  - **Exploration:** Don't rush - take time to explore the level
+  - **Visual Cues:** Look for golden glow in the distance
+  - **Audio Cues:** Listen for the audio cue when you step on the block
+  - **Patience:** Must stand on block for full 10 seconds
+- **Step 1 (Aim at Cheese):**
+  - **Tracking:** Cheese moves around - follow it with crosshair
+  - **Precision:** Keep crosshair directly on cheese (no tolerance)
+  - **Focus:** Don't move crosshair away even slightly
+  - **Practice:** Cheese movement is predictable - learn the pattern
+- **Step 2 (Aim at Block):**
+  - **Positioning:** Block is stationary - easier than Step 1
+  - **Stability:** Keep crosshair steady on block center
+  - **Patience:** 10 seconds feels long but stay focused
+  - **Completion:** Audio cue confirms completion
+
+### **For Riddle #2:**
+- **Step 1 (Push Block):**
+  - **Block Pushing:** Works in both normal mode and God Mode
+  - **Movement:** Press W/A/S/D while near block to push it
+  - **Direction:** Block moves in the direction you're pressing
+  - **Oak Stone:** Look for blinking oak stone - it blinks every 15 seconds
+  - **Proximity:** Block must be within 1.5 units of oak stone
+- **Step 2 (Aim at Cheese):**
+  - **Same as Riddle #1 Step 1:** Follow cheese with crosshair for 10 seconds
+  - **Strict Aiming:** Must keep crosshair directly on cheese pixels
+
+### **For Riddle #3:**
+- **Step 1 (Press Lever):**
+  - **Lever Location:** Near the end of the room (approximately x: 20.5, z: 100.5)
+  - **Interaction:** Walk within 2.0 units and press E key
+  - **Visual Feedback:** Lever texture changes and glows green when pressed
+  - **Audio Cue:** `slever.ogg` plays when lever is activated
+- **Step 2 (Push Block):**
+  - **Block Location:** Movable block appears near lever after it's pressed
+  - **Target:** Oak block is the destination (similar to Riddle #2)
+  - **Pushing:** Same mechanics as Riddle #2 Step 1
+- **Step 3 (Enter Portal):**
+  - **Portal Size:** Very large (5.0x scale) - hard to miss
+  - **Portal Brightness:** Very bright (2.0x brightness) - highly visible
+  - **Proximity:** Must be within 2.5 units to enter
+  - **Completion:** Audio cue `LEVEL UP!.wav` plays
+
+### **General Tips for All Riddles:**
+- **God Mode:** Press G to enable God Mode for easier navigation (faster movement, flying)
+- **Level Selector:** Press L (in God Mode) to jump to any level
+- **Pause:** Press P to pause and check balance
+- **Camera:** Use mouse to look around, WASD to move
+- **Audio:** Keep sound on for audio cues
+- **One-Time:** Each riddle can only be completed once - make it count!
+- **Role Multipliers:** VIP Holders get 2.0x multiplier on all rewards (double DSPOINC!)
+- **Total Rewards:** Complete all 3 riddles for maximum DSPOINC (VIP: 3,500 total)
 
 ---
 
@@ -592,18 +929,51 @@ The riddle system includes comprehensive debug logging:
 
 ---
 
-**Document Version:** 2.2  
-**Last Updated:** November 13, 2025  
+**Document Version:** 2.4  
+**Last Updated:** November 19, 2025  
 **Maintained By:** Narrrf's Lab Tech Council  
-**Status:** ✅ **PRODUCTION READY** - 3-Step System with Strict Aiming Detection  
-**Riddle Note:** November 13, 2025 - Trait unlock API fix complete
+**Status:** ✅ **PRODUCTION VERIFIED** - 3-Step System with Strict Aiming Detection + Role-Based Rewards  
+**Riddle Note:** November 19, 2025 - Production testing complete, all systems verified
 
 **Changes:** 
 - **Version 2.0:** Added Step 0 (hidden discovery challenge) - Riddle UI now hidden until player finds and stands on trigger block
 - **Version 2.1:** Implemented STRICT aiming detection for both Step 1 and Step 2 - removed fallback tolerance checks, both steps now require exact raycast hits on target pixels. Timer only increments when crosshair is directly on target, decays immediately when crosshair moves off by even 1 pixel.
 - **Version 2.2:** Fixed trait unlock API database schema mismatch - updated SQL queries to match actual table structure (`trait` instead of `trait_name`, `timestamp` instead of `created_at`/`updated_at`). Trait unlock now works correctly with existing database schema.
+- **Version 2.3:** Fixed role-based multiplier system - corrected `getRoleMultiplier()` function to query `role_name` column (not non-existent `role_id`). Role multipliers now correctly applied (VIP Holder: 2.0x, Holder: 1.5x, etc.)
+- **Version 2.4:** Production testing verified - All 3 riddles tested with fresh database, all systems working perfectly
 
-**Latest Riddle Note (November 13, 2025):**
+**Latest Riddle Note (November 19, 2025 - Evening):**
+- **Production Testing Complete:** Fresh database test with Narrrf (VIP Holder) account
+  - **Test Method:** Normal user mode (no God Mode), fresh database with no riddle data
+  - **Results:** ✅ **ALL TESTS PASSED**
+    - All 3 riddles completed successfully (Riddle #1, #2, #3)
+    - All 3 traits unlocked correctly:
+      - `CHEESE_TEMPLE_RIDDLE_SOLVED` - 2025-11-19 01:36:37
+      - `CHEESE_TEMPLE_RIDDLE_02_SOLVED` - 2025-11-19 01:38:30
+      - `CHEESE_TEMPLE_RIDDLE_03_SOLVED` - 2025-11-19 01:39:13
+    - All 3 DSPOINC rewards awarded with correct 2.0x multiplier:
+      - Riddle #1: +1000 DSPOINC (base 500 × 2.00)
+      - Riddle #2: +1000 DSPOINC (base 500 × 2.00)
+      - Riddle #3: +1500 DSPOINC (base 750 × 2.00)
+      - **Total: 3,500 DSPOINC** (matches VIP Holder expected total)
+    - All database records verified (traits, score adjustments, riddle completions, user scores)
+    - All frontend displays working perfectly (Recent Score Changes, 3D Puzzles Achievements)
+  - **Status:** ✅ **PRODUCTION VERIFIED** - All systems working correctly
+
+**Previous Riddle Note (November 19, 2025 - Afternoon):**
+- **Role-Based Gaming Fix:** Fixed role multiplier system for riddle rewards
+  - **Issue:** `getRoleMultiplier()` function was querying non-existent `role_id` column from `tbl_user_roles` table
+  - **Root Cause:** Table only has `user_id`, `role_name`, `timestamp` columns (no `role_id`)
+  - **Fix:** Updated function to query only `role_name` column and check against priority-based role list
+  - **Result:** Role multipliers now correctly applied (VIP Holder: 2.0x = 1000 DSPOINC, Holder: 1.5x = 750 DSPOINC, etc.)
+  - **Status:** ✅ **FIXED - Role multipliers working correctly**
+- **Block Pushing Fix:** Fixed block pushing in Level 1 Riddle #2 Step 1 for normal mode
+  - **Issue:** Block could only be pushed in God Mode, not in normal mode
+  - **Fix:** Added fallback push mechanism when world movement direction calculation fails
+  - **Result:** Block now pushable in both normal mode and God Mode
+  - **Status:** ✅ **FIXED - Block pushing works in all modes**
+
+**Previous Riddle Note (November 13, 2025):**
 - **Trait Unlock API Fix:** Fixed 500 Internal Server Error - database schema mismatch resolved
   - **Issue:** Code was using incorrect column names (`trait_name`, `trait_value`, `created_at`, `updated_at`)
   - **Fix:** Updated SQL queries to use correct column names (`trait`, `timestamp`)
@@ -611,7 +981,7 @@ The riddle system includes comprehensive debug logging:
   - **Status:** ✅ **FIXED - API now works correctly**
 - **Database Schema Verified:** Actual table structure uses `user_id`, `trait`, `timestamp` columns
 - **Testing Status:** ✅ Trait unlock API fixed and ready for testing
-- **DSPOINC Reward:** ✅ Working correctly (500 DSPOINC awarded successfully)
+- **DSPOINC Reward:** ✅ Working correctly (500 DSPOINC base, multiplied by role)
 
 **Previous Riddle Note (November 12, 2025):**
 - **Step 1 (Cheese Entity):** Fixed to require EXACT raycast hit - removed distance/angle fallback check. Now matches Step 2 strictness. Timer only counts when crosshair is directly on moving cheese entity pixels. Any pixel deviation = immediate timer decay.

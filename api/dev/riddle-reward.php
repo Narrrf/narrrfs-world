@@ -141,42 +141,65 @@ try {
 
 /**
  * Get role-based multiplier.
+ * FIXED: tbl_user_roles only has role_name (no role_id column)
  */
 function getRoleMultiplier(PDO $pdo, $discordId, $ROLE_MULTIPLIERS_BY_ID, $ROLE_PRIORITY, $ROLE_MULTIPLIERS_BY_NAME) {
     $multiplier = 1.0;
     $source = 'none';
 
     try {
-        $roleStmt = $pdo->prepare("SELECT role_id, role_name FROM tbl_user_roles WHERE user_id = ?");
+        // FIXED: tbl_user_roles only has role_name column (no role_id)
+        $roleStmt = $pdo->prepare("SELECT role_name FROM tbl_user_roles WHERE user_id = ?");
         $roleStmt->execute([$discordId]);
         $roles = $roleStmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
+        error_log("❌ [RIDDLE REWARD] Error fetching roles for user $discordId: " . $e->getMessage());
         return [$multiplier, $source];
     }
 
-    $roleIds = [];
     $roleNames = [];
     foreach ($roles as $role) {
-        if (!empty($role['role_id'])) {
-            $roleIds[] = (string)$role['role_id'];
-        }
         if (!empty($role['role_name'])) {
             $roleNames[] = $role['role_name'];
         }
     }
 
-    foreach ($ROLE_PRIORITY as $roleId) {
-        if (in_array($roleId, $roleIds, true)) {
-            return [$ROLE_MULTIPLIERS_BY_ID[$roleId] ?? 1.0, $roleId];
+    // Check role names in priority order (highest multiplier first)
+    // Priority order: VIP Holder (2.0) > Holder (1.5) > Champion (1.4) > WL/Season Tester (1.3) > Early Bird (1.2) > Cheese Hunter (1.1)
+    $priorityRoleNames = [
+        '🎴 VIP Holder',
+        'VIP Holder',
+        '🏆 Holder',
+        'Holder',
+        'Champion',
+        'WL',
+        'Season Tester',
+        'Early Bird',
+        '🧀 Cheese Hunter',
+        'Cheese Hunter'
+    ];
+
+    // Check in priority order (highest multiplier first)
+    foreach ($priorityRoleNames as $priorityName) {
+        if (in_array($priorityName, $roleNames, true)) {
+            if (isset($ROLE_MULTIPLIERS_BY_NAME[$priorityName])) {
+                $foundMultiplier = $ROLE_MULTIPLIERS_BY_NAME[$priorityName];
+                error_log("✅ [RIDDLE REWARD] Found role multiplier for user $discordId: $priorityName = $foundMultiplier");
+                return [$foundMultiplier, $priorityName];
+            }
         }
     }
 
+    // Fallback: Check any role name against multiplier map
     foreach ($roleNames as $name) {
         if (isset($ROLE_MULTIPLIERS_BY_NAME[$name])) {
-            return [$ROLE_MULTIPLIERS_BY_NAME[$name], $name];
+            $foundMultiplier = $ROLE_MULTIPLIERS_BY_NAME[$name];
+            error_log("✅ [RIDDLE REWARD] Found role multiplier for user $discordId: $name = $foundMultiplier");
+            return [$foundMultiplier, $name];
         }
     }
 
+    error_log("⚠️ [RIDDLE REWARD] No role multiplier found for user $discordId (roles: " . implode(', ', $roleNames) . ") - using default 1.0");
     return [$multiplier, $source];
 }
 

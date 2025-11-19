@@ -1015,6 +1015,85 @@ document.addEventListener('DOMContentLoaded', async function() {
       </div>
     </div>
 
+    <!-- 🧩 3D Puzzles Achievements Button -->
+    <div class="mt-6">
+      <button onclick="toggle3DPuzzlesAchievements()" 
+              class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold px-8 py-4 rounded-xl shadow-2xl border-2 border-purple-400 transition-all duration-300 transform hover:scale-105 cursor-pointer ring-4 ring-purple-500/50 hover:ring-purple-400/70 relative overflow-hidden group">
+        <span class="relative z-10 flex items-center gap-2">
+          <span class="text-2xl">🧩</span>
+          <span>View 3D Puzzles Achievements</span>
+        </span>
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+      </button>
+      <button onclick="load3DPuzzlesAchievements()" 
+              class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border border-purple-500 transition-all duration-300 transform hover:scale-105 cursor-pointer ml-2">
+        🔄 Refresh
+      </button>
+      <p class="text-xs text-purple-400 mt-2 italic">Explore your 3D adventure progress across all levels</p>
+    </div>
+
+    <!-- 🧩 3D Puzzles Achievements Section -->
+    <div id="puzzles3DAchievements" class="mt-6 p-6 bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 rounded-xl border-2 border-purple-500/50 shadow-2xl hidden">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
+          🧩 3D Puzzles Achievements
+        </h3>
+        <div class="flex space-x-2">
+          <button onclick="load3DPuzzlesAchievements()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded transition-colors text-sm">
+            🔄 Refresh
+          </button>
+          <button onclick="toggle3DPuzzlesAchievements()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors">
+            ✕ Close
+          </button>
+        </div>
+      </div>
+      
+      <!-- Statistics Row -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-blue-900/40 to-blue-800/20 p-4 rounded-lg border-2 border-blue-500/50 text-center shadow-lg">
+          <div class="text-blue-200 text-sm mb-1">Total Puzzles</div>
+          <div class="text-white font-bold text-2xl" id="puzzles3DTotalAchievements">0</div>
+        </div>
+        <div class="bg-gradient-to-br from-green-900/40 to-green-800/20 p-4 rounded-lg border-2 border-green-500/50 text-center shadow-lg">
+          <div class="text-green-200 text-sm mb-1">Solved</div>
+          <div class="text-white font-bold text-2xl" id="puzzles3DUnlockedAchievements">0</div>
+        </div>
+        <div class="bg-gradient-to-br from-red-900/40 to-red-800/20 p-4 rounded-lg border-2 border-red-500/50 text-center shadow-lg">
+          <div class="text-red-200 text-sm mb-1">Locked</div>
+          <div class="text-white font-bold text-2xl" id="puzzles3DLockedAchievements">0</div>
+        </div>
+        <div class="bg-gradient-to-br from-purple-900/40 to-pink-800/20 p-4 rounded-lg border-2 border-purple-500/50 text-center shadow-lg">
+          <div class="text-purple-200 text-sm mb-1">Progress</div>
+          <div class="text-white font-bold text-2xl" id="puzzles3DCompletionPercentage">0%</div>
+        </div>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="w-full bg-gray-700 rounded-full h-3 mb-6 shadow-inner">
+        <div id="puzzles3DAchievementsProgress" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500 shadow-lg" style="width: 0%"></div>
+      </div>
+      
+      <!-- Level Grouping Container -->
+      <div id="puzzles3DLevelGroups" class="space-y-6">
+        <!-- Level groups will be populated by JavaScript -->
+        <div class="flex items-center justify-center py-12">
+          <div class="text-gray-400 text-lg">Loading 3D Puzzles achievements...</div>
+        </div>
+      </div>
+      
+      <!-- Loading State -->
+      <div id="puzzles3DLoading" class="text-center py-8 hidden">
+        <div class="text-purple-300 text-lg">🧩 Loading achievements...</div>
+      </div>
+      
+      <!-- Error State -->
+      <div id="puzzles3DError" class="text-center py-8 hidden">
+        <div class="text-red-300 text-lg">❌ Failed to load achievements</div>
+        <div class="text-gray-400 text-sm mt-2" id="puzzles3DErrorMessage"></div>
+      </div>
+    </div>
+
       <!-- 🏆 ALL-TIME STATISTICS OVERVIEW -->
       <div class="mb-8">
         <div class="flex justify-between items-center mb-4">
@@ -5177,6 +5256,267 @@ function displaySnakeAchievementsError(errorMessage) {
       </div>
     `;
   }
+}
+
+// 🧩 3D Puzzles Achievements Toggle Function
+function toggle3DPuzzlesAchievements() {
+  const achievementsSection = document.getElementById('puzzles3DAchievements');
+  
+  console.log('🧩 3D Puzzles Toggle clicked, current visibility:', !achievementsSection.classList.contains('hidden'));
+  
+  if (achievementsSection.classList.contains('hidden')) {
+    // Show achievements
+    achievementsSection.classList.remove('hidden');
+    console.log('🧩 3D Puzzles achievements shown');
+    
+    // Load achievements data
+    load3DPuzzlesAchievements();
+  } else {
+    // Hide achievements
+    achievementsSection.classList.add('hidden');
+    console.log('🧩 3D Puzzles achievements hidden');
+  }
+}
+
+// 🧩 Load 3D Puzzles Achievements
+async function load3DPuzzlesAchievements() {
+  try {
+    console.log('🧩 Loading 3D Puzzles achievements...');
+    
+    // Show loading state
+    const loadingEl = document.getElementById('puzzles3DLoading');
+    const errorEl = document.getElementById('puzzles3DError');
+    const groupsEl = document.getElementById('puzzles3DLevelGroups');
+    
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    if (errorEl) errorEl.classList.add('hidden');
+    if (groupsEl) groupsEl.innerHTML = '<div class="flex items-center justify-center py-12"><div class="text-gray-400 text-lg">Loading 3D Puzzles achievements...</div></div>';
+    
+    // Get Discord ID from localStorage
+    const discordId = localStorage.getItem('discord_id');
+    console.log('🔍 Discord ID from localStorage:', discordId);
+    
+    // Environment detection - use Narrrf's account for local, real user for production
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID for local testing
+    
+    // FORCE use Narrrf's account for local development (ignore localStorage)
+    const finalUserId = isLocalDevelopment ? narrrfDiscordId : discordId;
+    console.log('🔍 Final User ID (with local override):', finalUserId);
+    console.log('🌍 Environment:', isLocalDevelopment ? 'Local (using Narrrf\'s account)' : 'Production (using logged-in user)');
+    
+    if (!finalUserId) {
+      throw new Error('User ID is required');
+    }
+    
+    // Environment-aware API endpoint
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+    
+    console.log(`🔗 3D Puzzles Achievements API URL: ${apiBaseUrl}/api/user/get-3d-puzzles-achievements.php`);
+    
+    // Load achievements from API
+    const response = await fetch(`${apiBaseUrl}/api/user/get-3d-puzzles-achievements.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: finalUserId })
+    });
+    
+    console.log('🔗 API response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('🧩 3D Puzzles achievements response:', data);
+
+    if (data.success && data.data) {
+      display3DPuzzlesAchievements(data.data);
+    } else {
+      throw new Error(data.error || 'Failed to load 3D Puzzles achievements');
+    }
+
+  } catch (error) {
+    console.error('❌ Error loading 3D Puzzles achievements:', error);
+    display3DPuzzlesAchievementsError(error.message);
+  }
+}
+
+// 🧩 Display 3D Puzzles Achievements
+function display3DPuzzlesAchievements(data) {
+  console.log('🧩 Displaying 3D Puzzles achievements:', data);
+  
+  // Hide loading, show content
+  const loadingEl = document.getElementById('puzzles3DLoading');
+  const errorEl = document.getElementById('puzzles3DError');
+  const groupsEl = document.getElementById('puzzles3DLevelGroups');
+  
+  if (loadingEl) loadingEl.classList.add('hidden');
+  if (errorEl) errorEl.classList.add('hidden');
+  
+  if (!groupsEl) {
+    console.error('❌ puzzles3DLevelGroups not found!');
+    return;
+  }
+  
+  // Update statistics
+  const stats = data.statistics || {};
+  const totalEl = document.getElementById('puzzles3DTotalAchievements');
+  const unlockedEl = document.getElementById('puzzles3DUnlockedAchievements');
+  const lockedEl = document.getElementById('puzzles3DLockedAchievements');
+  const percentageEl = document.getElementById('puzzles3DCompletionPercentage');
+  const progressBar = document.getElementById('puzzles3DAchievementsProgress');
+  
+  if (totalEl) totalEl.textContent = stats.total || 0;
+  if (unlockedEl) unlockedEl.textContent = stats.unlocked || 0;
+  if (lockedEl) lockedEl.textContent = stats.locked || 0;
+  if (percentageEl) percentageEl.textContent = (stats.percentage || 0) + '%';
+  if (progressBar) progressBar.style.width = (stats.percentage || 0) + '%';
+  
+  // Clear groups
+  groupsEl.innerHTML = '';
+  
+  // Group achievements by level
+  const levels = data.levels || [];
+  
+  if (levels.length === 0) {
+    groupsEl.innerHTML = '<div class="flex items-center justify-center py-12"><div class="text-gray-400 text-lg">No 3D Puzzles achievements found</div></div>';
+    return;
+  }
+  
+  // Create level groups
+  levels.forEach(levelData => {
+    const levelGroup = createLevelGroup(levelData);
+    groupsEl.appendChild(levelGroup);
+  });
+  
+  console.log('🧩 3D Puzzles achievements displayed successfully');
+}
+
+// 🧩 Create Level Group
+function createLevelGroup(levelData) {
+  const level = levelData.level;
+  const levelName = levelData.name || `Level ${level}`;
+  const achievements = levelData.achievements || [];
+  const total = levelData.total || 0;
+  const unlocked = levelData.unlocked || 0;
+  const percentage = total > 0 ? Math.round((unlocked / total) * 100) : 0;
+  
+  // Level icons
+  const levelIcons = {
+    1: '🏛️',
+    2: '🏛️',
+    3: '🏹',
+    4: '🔫'
+  };
+  const levelIcon = levelIcons[level] || '🧩';
+  
+  const groupDiv = document.createElement('div');
+  groupDiv.className = 'bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-lg border-2 border-purple-500/30 p-4 shadow-lg';
+  
+  // Level header (expandable)
+  const headerDiv = document.createElement('div');
+  headerDiv.className = 'flex items-center justify-between cursor-pointer hover:bg-purple-900/20 rounded p-2 transition-colors';
+  headerDiv.onclick = () => {
+    const contentDiv = groupDiv.querySelector('.level-achievements-content');
+    const arrow = groupDiv.querySelector('.level-arrow');
+    if (contentDiv && arrow) {
+      contentDiv.classList.toggle('hidden');
+      arrow.textContent = contentDiv.classList.contains('hidden') ? '▶' : '▼';
+    }
+  };
+  
+  headerDiv.innerHTML = `
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">${levelIcon}</span>
+      <div>
+        <div class="text-lg font-bold text-purple-300">${levelName}</div>
+        <div class="text-sm text-gray-400">${unlocked}/${total} solved (${percentage}%)</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="text-sm text-purple-300 font-semibold">${percentage}%</div>
+      <span class="level-arrow text-purple-400">▼</span>
+    </div>
+  `;
+  
+  // Level progress bar
+  const progressDiv = document.createElement('div');
+  progressDiv.className = 'w-full bg-gray-700 rounded-full h-2 mt-2 mb-3';
+  progressDiv.innerHTML = `
+    <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+  `;
+  
+  // Achievements grid
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'level-achievements-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4';
+  
+  achievements.forEach(achievement => {
+    const card = createAchievementCard(achievement);
+    contentDiv.appendChild(card);
+  });
+  
+  groupDiv.appendChild(headerDiv);
+  groupDiv.appendChild(progressDiv);
+  groupDiv.appendChild(contentDiv);
+  
+  return groupDiv;
+}
+
+// 🧩 Create Achievement Card
+function createAchievementCard(achievement) {
+  const card = document.createElement('div');
+  const isUnlocked = achievement.unlocked;
+  
+  card.className = `p-4 rounded-lg border-2 transition-all duration-300 ${
+    isUnlocked 
+      ? 'bg-gradient-to-br from-green-900/40 to-green-800/20 border-green-500/70 text-green-100 shadow-lg shadow-green-500/20' 
+      : 'bg-gradient-to-br from-gray-700/50 to-gray-800/30 border-gray-600/50 text-gray-400'
+  }`;
+  
+  const icon = achievement.icon || '🧩';
+  const title = achievement.title || achievement.key;
+  const description = achievement.description || '';
+  const reward = achievement.reward || '';
+  const level = achievement.level || 0;
+  
+  card.innerHTML = `
+    <div class="flex items-start space-x-3">
+      <div class="text-3xl flex-shrink-0 ${isUnlocked ? '' : 'opacity-50'}">${icon}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm mb-1 ${isUnlocked ? 'text-green-200' : 'text-gray-400'}">${title}</div>
+        <div class="text-xs opacity-75 mb-2">${description}</div>
+        ${reward ? `<div class="text-xs ${isUnlocked ? 'text-yellow-300' : 'text-gray-500'} font-semibold">${reward}</div>` : ''}
+        ${isUnlocked && achievement.unlocked_at ? 
+          `<div class="text-xs text-green-300 mt-2">Unlocked: ${formatDateShort(achievement.unlocked_at)}</div>` : 
+          '<div class="text-xs text-gray-500 mt-2">🔒 Locked</div>'
+        }
+      </div>
+      <div class="text-xl flex-shrink-0">
+        ${isUnlocked ? '✅' : '🔒'}
+      </div>
+    </div>
+  `;
+  
+  return card;
+}
+
+// 🧩 Display 3D Puzzles Achievements Error
+function display3DPuzzlesAchievementsError(errorMessage) {
+  const loadingEl = document.getElementById('puzzles3DLoading');
+  const errorEl = document.getElementById('puzzles3DError');
+  const errorMsgEl = document.getElementById('puzzles3DErrorMessage');
+  const groupsEl = document.getElementById('puzzles3DLevelGroups');
+  
+  if (loadingEl) loadingEl.classList.add('hidden');
+  if (errorEl) errorEl.classList.remove('hidden');
+  if (errorMsgEl) errorMsgEl.textContent = errorMessage;
+  if (groupsEl) groupsEl.innerHTML = '';
+  
+  console.error('❌ 3D Puzzles achievements error:', errorMessage);
 }
 
 

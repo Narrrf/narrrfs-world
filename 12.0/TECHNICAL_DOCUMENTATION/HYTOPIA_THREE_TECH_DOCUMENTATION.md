@@ -1,6 +1,6 @@
 ﻿# HYTOPIA THREE TECH DOCUMENTATION
 
-Date: 2025-11-13 (Last Updated: November 13, 2025 - Animation System Complete - All 5 Core Movements Working, Old School Weapons Collection added, Survival Pack Collection added, 3D Models integration, Database setup and sync, GOD Mode, MAD MODE notification fix, trait unlock foreign key fix)
+Date: 2025-11-13 (Last Updated: November 18, 2025 - 3D Puzzles Achievements System Complete + DSPOINC Rewards Sync Rule - Auto-detection, level grouping, profile integration, Recent Score Changes integration, scalable for unlimited levels)
 Maintainer: Narrrf's Lab Tech Council
 Scope: Migration roadmap from Hytopia SDK (Bun/Node) integration to the new Vite-powered three.js prototype located at C:\xampp-server\htdocs\narrrfs-world\three.js.
 
@@ -771,7 +771,8 @@ GOD Mode is a debug/testing feature that grants players enhanced movement capabi
   - **Space:** Fly up (hold to continue flying)
   - **Shift:** Fly down (hold to continue descending)
   - **No Gravity:** Gravity is disabled when GOD Mode is enabled
-  - **No Ground Collision:** Ground collision detection is disabled (wall collisions still work)
+  - **Ground Collision:** ✅ **ALWAYS ACTIVE** - Player can "feel the ground" even in GOD Mode (prevents going through floor, same as Level 2, 3, 4)
+  - **Wall Collision:** Still active in GOD Mode - Prevents going through walls
 - **Options Menu Toggle:** GOD Mode can be enabled/disabled via Options menu
 - **Persistent Setting:** GOD Mode preference is saved in localStorage (`cheese_temple_god_mode`)
 
@@ -812,10 +813,34 @@ GOD Mode is a debug/testing feature that grants players enhanced movement capabi
 - **Development:** Faster iteration during development
 - **Accessibility:** Easier navigation for players who need assistance
 
-### 15.8 Status
-- **Status:** ✅ **IMPLEMENTED & TESTED** - GOD Mode working correctly
-- **Last Tested:** November 13, 2025
-- **Features:** Double speed, fly mode, options menu toggle, localStorage persistence
+### 15.8 Level Selector (L Key)
+- **Key:** Press **L** in GOD Mode to open level selector menu
+- **Availability:** Works in ALL levels (Level 1, 2, 3, 4, and future levels)
+- **Features:**
+  - Instant level warping between all available levels
+  - Current level highlighted in menu
+  - Escape key or Close button to dismiss
+  - Pauses game automatically when opened
+- **Implementation:** Global event handler (not level-specific)
+- **Status:** ✅ **WORKS IN ALL LEVELS** - Universal feature across entire game
+
+### 15.9 Universal Level Requirements
+**CRITICAL RULE:** All levels MUST have identical GOD Mode features and sound systems:
+- ✅ **GOD Mode:** Double speed + fly mode (Space/Shift) - SAME in all levels
+- ✅ **Level Selector:** L key opens level menu - SAME in all levels
+- ✅ **Riddle Cycling:** G key cycles riddle steps - SAME in all levels
+- ✅ **Sound System:** Footsteps, jump sounds, level-up sounds - SAME in all levels
+- ✅ **Options Menu:** GOD Mode toggle, camera modes - SAME in all levels
+- ✅ **Player Speed:** 1.5x base speed (12 normal, 21 sprint) - SAME in all levels
+- ✅ **Controls:** WASD movement, Space jump, Shift sprint - SAME in all levels
+
+**Enforcement:** These features are implemented at the global level and automatically extend to all levels. No level-specific overrides are allowed.
+
+### 15.10 Status
+- **Status:** ✅ **IMPLEMENTED & TESTED** - GOD Mode working correctly in ALL levels
+- **Last Tested:** November 18, 2025
+- **Features:** Double speed, fly mode, level selector (L key), riddle cycling (G key), options menu toggle, localStorage persistence
+- **Level Compatibility:** ✅ All 4 levels (Level 1, 2, 3, 4) have identical GOD Mode features
 - **Known Issues:** None
 
 ---
@@ -1711,3 +1736,161 @@ Calling `restartLevel1()` now forces `currentLevel = LEVEL_IDS.LEVEL1`, reapplie
 - **Rule:** every riddle step (Level 1, Level 2, etc.) must unlock a matching trait entry the moment the step is completed. Traits are logged via `/api/user/unlock-trait.php` so QA/production accounts stay in sync.
 - **Level 2 Mapping:** Step 0 uses `CHEESE_TEMPLE_LEVEL2_STEP0`, Step 1 (lever/gallery unlock) uses `CHEESE_TEMPLE_LEVEL2_STEP1`.
 - **Guidance:** if a new step is added (Step 2, Step 3, etc.), reserve a trait name first, document it in the riddle spec, then call the unlock helper when the step completes.
+
+---
+
+## 21. 3D Puzzles Achievements System (2025-11-18)
+
+### 21.1 Overview
+The 3D Puzzles Achievements system automatically displays all riddle completions from the 3D game as achievements on the player's profile page. The system is fully dynamic, auto-detecting all `CHEESE_TEMPLE_*` traits and organizing them by level.
+
+### 21.2 API Endpoint
+- **Endpoint:** `api/user/get-3d-puzzles-achievements.php`
+- **Method:** `POST`
+- **Parameters:**
+  - `user_id` (required): Discord ID of player (or `LOCAL_TEST_DISCORD` for local testing)
+- **Response:**
+  - `success`: Boolean indicating success
+  - `data`: Achievement data including:
+    - `achievements`: Array of all achievements with unlock status
+    - `statistics`: Total, unlocked, locked counts and percentage
+    - `levels`: Achievements grouped by level
+- **Environment Support:**
+  - **Local:** Uses `LOCAL_TEST_DISCORD` test user automatically
+  - **Production:** Uses logged-in user's Discord ID
+
+### 21.3 Auto-Detection System
+- **Database Query:** Automatically finds all `CHEESE_TEMPLE_*` traits from `tbl_user_traits`
+- **Known Traits Fallback:** Always includes all known traits (Level 1-4) even if not in database yet
+- **Trait Parsing:** Intelligently parses trait names to extract:
+  - Level number (1, 2, 3, 4...)
+  - Step number (0, 1, 2...)
+  - Riddle number (1, 2, 3...)
+- **Dynamic Generation:** Creates achievement definitions automatically from trait names
+
+### 21.4 Trait Name Patterns
+The system recognizes two trait patterns:
+
+#### **Pattern 1: Level 1 Riddles**
+- `CHEESE_TEMPLE_RIDDLE_SOLVED` → Riddle #1: The Discovery
+- `CHEESE_TEMPLE_RIDDLE_02_SOLVED` → Riddle #2: The Movement
+- `CHEESE_TEMPLE_RIDDLE_03_SOLVED` → Riddle #3: The Portal
+
+#### **Pattern 2: Level 2+ Steps**
+- `CHEESE_TEMPLE_LEVEL2_STEP0` → Level 2 - Step 0: Hidden Discovery
+- `CHEESE_TEMPLE_LEVEL2_STEP1` → Level 2 - Step 1: Gallery Unlocked
+- `CHEESE_TEMPLE_LEVEL2_STEP2` → Level 2 - Step 2: Complete Tour
+- `CHEESE_TEMPLE_LEVEL3_STEP0` → Level 3 - Step 0: Hunt Begins
+- `CHEESE_TEMPLE_LEVEL4_STEP1` → Level 4 - Step 1: Sharpshooter
+- (And so on for all future levels...)
+
+### 21.5 Profile Page Integration
+- **Location:** `public/profile.html`
+- **Button:** "🧩 View 3D Puzzles Achievements" (gradient purple/pink theme)
+- **Section:** Expandable achievement display with:
+  - Statistics cards (Total, Solved, Locked, Progress)
+  - Progress bar with gradient
+  - Level grouping (expandable/collapsible)
+  - Individual achievement cards with icons, descriptions, rewards
+- **JavaScript Functions:**
+  - `toggle3DPuzzlesAchievements()` - Toggle section visibility
+  - `load3DPuzzlesAchievements()` - Load from API
+  - `display3DPuzzlesAchievements()` - Display achievements
+  - `createLevelGroup()` - Create level sections
+  - `createAchievementCard()` - Create achievement cards
+
+### 21.6 Scalability
+- **Future-Proof:** Automatically detects new `CHEESE_TEMPLE_*` traits as they're added
+- **No Hardcoding:** All achievement definitions generated dynamically
+- **Level Support:** Works for unlimited levels (Level 1, 2, 3, 4, 5, 6...)
+- **Step Support:** Works for unlimited steps per level (Step 0, 1, 2, 3...)
+- **Riddle Support:** Works for unlimited riddles per level (Riddle #1, #2, #3...)
+
+### 21.7 Achievement Definitions
+Each achievement includes:
+- **Title:** Auto-generated from level/step/riddle info
+- **Description:** Context-aware description based on level and step
+- **Icon:** Appropriate emoji icon (🧀, 🎚️, 👁️, 🚀, etc.)
+- **Reward:** DSPOINC amount from riddle documentation
+- **Level:** Level number for grouping
+- **Unlock Status:** Whether user has unlocked it
+- **Unlock Date:** Timestamp when unlocked (if unlocked)
+
+### 21.8 Level Grouping
+Achievements are automatically grouped by level:
+- **Level 1:** Cheese Temple (Riddles #1, #2, #3)
+- **Level 2:** The Spawn (Steps 0, 1, 2)
+- **Level 3:** The Hunt (Steps 0, 1, 2)
+- **Level 4:** The First Shot (Steps 0, 1, 2)
+- **Future Levels:** Automatically added as new levels are created
+
+### 21.9 Visual Design
+- **Theme:** Purple/pink gradient theme (distinct from other achievement sections)
+- **Cards:** Green gradient for unlocked, gray for locked
+- **Icons:** Large emoji icons (3xl size)
+- **Progress Bars:** Gradient progress bars per level
+- **Expandable Sections:** Click level headers to expand/collapse
+- **Responsive:** Works on all screen sizes
+
+### 21.10 Database Integration
+- **Table:** `tbl_user_traits`
+- **Query:** `SELECT trait, timestamp FROM tbl_user_traits WHERE user_id = ? AND trait LIKE 'CHEESE_TEMPLE_%'`
+- **Auto-Creation:** Test user auto-created if missing (uses Narrrf's Discord ID for local testing)
+- **Foreign Keys:** Properly handles foreign key constraints
+
+### 21.11 Local Test User System (Updated: November 18, 2025)
+**CRITICAL:** The local test user system has been updated to use Narrrf's actual account for testing.
+
+#### **Local Development (localhost):**
+- **Discord ID:** `328601656659017732` (Narrrf's actual Discord ID)
+- **Display Name:** `Narrrf`
+- **Auto-Seeding:** Automatically replaces old `LOCAL_TEST_DISCORD` string with Narrrf's ID
+- **Balance:** Fetches real balance from database (not cached)
+- **Traits:** All traits and DSPOINC rewards sync to Narrrf's account
+- **API Behavior:** All APIs receive Narrrf's Discord ID and query real database data
+
+#### **Production (narrrfs.world):**
+- **Discord ID:** Logged-in user's actual Discord ID from session
+- **Display Name:** User's actual Discord username
+- **Balance:** Fetches user's real balance from database
+- **Traits:** All traits and DSPOINC rewards sync to logged-in user's account
+
+#### **Implementation Details:**
+- **Code Location:** `three.js/main.js` (lines 137-179)
+- **Constants:** 
+  - `LOCAL_TEST_DISCORD_ID = "328601656659017732"`
+  - `LOCAL_TEST_DISPLAY_NAME = "Narrrf"`
+  - `OLD_LOCAL_TEST_DISCORD_STRING = "LOCAL_TEST_DISCORD"` (legacy)
+- **Auto-Replacement:** Old `LOCAL_TEST_DISCORD` string automatically converted to Narrrf's ID
+- **Balance Fetching:** Always fetches from API (no cached balance for test users)
+- **localStorage:** Clears cached balance when switching to Narrrf's account
+
+#### **API Support:**
+- **`api/user/details.php`:** Handles legacy `LOCAL_TEST_DISCORD` string conversion
+- **All APIs:** Support Narrrf's Discord ID for local testing
+- **Database Queries:** Use `user_id` field which contains Discord ID
+
+#### **Testing Workflow:**
+1. **Local Development:** Game automatically uses Narrrf's account
+2. **Play Levels:** Complete riddles and earn DSPOINC
+3. **Verify:** Check profile page and database for traits/rewards
+4. **Production:** Real users use their own accounts automatically
+
+### 21.12 Testing
+- **Local Testing:** Uses Narrrf's Discord ID (`328601656659017732`) automatically
+- **Production Testing:** Uses logged-in user's Discord ID from session
+- **Console Logging:** Comprehensive logging for debugging (shows account switching)
+- **Error Handling:** Graceful error messages and fallbacks
+- **Balance Sync:** Always fetches fresh balance from database (no stale cache)
+
+### 21.12 Status
+- **Status:** ✅ **IMPLEMENTED & TESTED** - 3D Puzzles Achievements system fully operational
+- **Last Updated:** November 18, 2025
+
+### 21.13 Related Rules
+- **DSPOINC Rewards Sync:** See `12.0/RULES/13_3D_GAME_DSPOINC_SYNC_RULE.md` for standardized DSPOINC reward and trait synchronization rules
+- **Master Ruleset:** See `12.0/RULES/01_MASTER_RULESET.md` (Section: "3D GAME DSPOINC REWARDS SYNC RULE") for API endpoint requirements
+- **Recent Score Changes:** DSPOINC rewards from 3D game appear in "Recent Score Changes" on profile page via `tbl_score_adjustments` table
+- **Features:** Auto-detection, level grouping, dynamic generation, profile integration
+- **Level Support:** All 4 levels (Level 1, 2, 3, 4) working correctly
+- **Known Issues:** None

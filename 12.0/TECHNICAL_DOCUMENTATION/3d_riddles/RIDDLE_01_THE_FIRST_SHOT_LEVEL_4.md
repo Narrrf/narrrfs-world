@@ -102,6 +102,7 @@ Enter a massive 160x160 cheese stone arena and complete "The First Shot" challen
 1. Portal appears at back of arena after 50 cheeses shot
 2. Portal has suction effect (pulls player closer when within 6 units)
 3. Enter portal (within 2.5 units horizontally, 3 units vertically) to complete Step 2:
+   - Plays **"LEVEL UP!" sound** (same as Level 1)
    - Awards **+200 DSPOINC**
    - Unlocks trait `CHEESE_TEMPLE_LEVEL4_STEP2`
    - Shows completion screen
