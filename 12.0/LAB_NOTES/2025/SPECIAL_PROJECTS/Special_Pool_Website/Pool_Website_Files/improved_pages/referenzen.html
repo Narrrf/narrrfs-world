@@ -188,7 +188,13 @@
 
     <script>
 
-        // Load page background
+        // Detect iOS devices
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        // Load page background with iOS fix
         async function loadPageBackground() {
             try {
                 const response = await fetch('./api/get-bubble-settings.php');
@@ -198,11 +204,27 @@
                     // Apply page-specific background
                     const pageBackground = data.page_backgrounds?.referenzen || 'background2.png';
                     if (pageBackground && pageBackground !== 'none') {
-                        document.body.style.backgroundImage = `url('./assets/background/${pageBackground}')`;
-                        document.body.style.backgroundSize = 'cover';
-                        document.body.style.backgroundPosition = 'center';
-                        document.body.style.backgroundAttachment = 'fixed';
-                        document.body.style.backgroundRepeat = 'no-repeat';
+                        const backgroundUrl = `url('./assets/background/${pageBackground}')`;
+                        
+                        if (isIOS()) {
+                            // iOS fix: Use fixed pseudo-element via CSS variable
+                            document.documentElement.style.setProperty('--background-image', backgroundUrl);
+                            document.body.classList.add('ios-background-fix');
+                            
+                            // Also set on body for fallback
+                            document.body.style.backgroundImage = backgroundUrl;
+                            document.body.style.backgroundSize = 'cover';
+                            document.body.style.backgroundPosition = 'center';
+                            document.body.style.backgroundAttachment = 'scroll';
+                            document.body.style.backgroundRepeat = 'no-repeat';
+                        } else {
+                            // Desktop/Android: Use standard fixed attachment
+                            document.body.style.backgroundImage = backgroundUrl;
+                            document.body.style.backgroundSize = 'cover';
+                            document.body.style.backgroundPosition = 'center';
+                            document.body.style.backgroundAttachment = 'fixed';
+                            document.body.style.backgroundRepeat = 'no-repeat';
+                        }
                     }
                     
                     // Ensure header and navigation are transparent

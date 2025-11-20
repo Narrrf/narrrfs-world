@@ -1,6 +1,6 @@
 ﻿# HYTOPIA THREE TECH DOCUMENTATION
 
-Date: 2025-11-13 (Last Updated: November 18, 2025 - 3D Puzzles Achievements System Complete + DSPOINC Rewards Sync Rule - Auto-detection, level grouping, profile integration, Recent Score Changes integration, scalable for unlimited levels)
+Date: 2025-11-13 (Last Updated: November 19, 2025 - Level 4 Wave System + Enhanced AI - Wave-based spawning system with progressive difficulty, color system, countdown popups, and super intelligent AI behaviors implemented)
 Maintainer: Narrrf's Lab Tech Council
 Scope: Migration roadmap from Hytopia SDK (Bun/Node) integration to the new Vite-powered three.js prototype located at C:\xampp-server\htdocs\narrrfs-world\three.js.
 
@@ -527,13 +527,16 @@ The game supports three camera perspectives, each optimized for different gamepl
 | **V** | Cycle Camera Mode | Cycles through: 1st Person → 3rd Person → Joystick View → 1st Person |
 
 #### **Movement Mechanics**
-- **Base Speed:** 18 units/second (36 units/second in GOD Mode)
-- **Sprint Speed:** 28.8 units/second (57.6 units/second in GOD Mode)
+- **Base Speed:** 24 units/second (96 units/second in GOD Mode - 4x multiplier)
+- **Sprint Speed:** 42 units/second (168 units/second in GOD Mode - 4x multiplier)
+- **Sprint Multiplier:** 1.75x (42/24 = 1.75) - Sprint is 1.75x faster than normal walk
+- **Animation Speed Scaling:** Animation timeScale matches movement speed (1.0x normal, 1.75x sprint) for proper visual synchronization
 - **Jump Height:** 15 units/second initial velocity (normal mode only)
 - **Gravity:** Applied continuously when not on ground (disabled in GOD Mode)
 - **Friction:** Applied to horizontal movement for smooth deceleration
 - **Ground Detection:** Raycast-based, prevents falling through blocks (disabled in GOD Mode)
-- **GOD Mode:** Double speed (100% faster), no gravity, fly controls (Space = up, Shift = down)
+- **GOD Mode:** 4x speed multiplier, no gravity, fly controls (Space = up, Shift = down)
+- **Universal Speed:** Same speed values apply to ALL levels (Level 1, 2, 3, 4, and future levels)
 
 ### 13.4 Mouse Controls
 
@@ -764,9 +767,9 @@ Potential improvements to the control system:
 GOD Mode is a debug/testing feature that grants players enhanced movement capabilities: double speed and flight mode. It's accessible via the Options menu and persists across sessions using localStorage.
 
 ### 15.2 Features
-- **Double Speed:** Movement speed is doubled (100% faster) when GOD Mode is enabled
-  - Base speed: 18 units/second → 36 units/second
-  - Sprint speed: 28.8 units/second → 57.6 units/second
+- **4x Speed Multiplier:** Movement speed is 4x when GOD Mode is enabled
+  - Base speed: 24 units/second → 96 units/second (4x)
+  - Sprint speed: 42 units/second → 168 units/second (4x)
 - **Fly Mode:** Players can fly up and down when GOD Mode is enabled
   - **Space:** Fly up (hold to continue flying)
   - **Shift:** Fly down (hold to continue descending)
@@ -780,18 +783,22 @@ GOD Mode is a debug/testing feature that grants players enhanced movement capabi
 | Key | Normal Mode | GOD Mode |
 |-----|-------------|----------|
 | **Space** | Jump (15 units velocity, only when on ground) | Fly up (hold to continue flying) |
-| **Shift** | Sprint (1.6× speed multiplier) | Fly down (hold to continue descending) |
-| **W/A/S/D** | Normal movement (18 units/second) | Double speed movement (36 units/second) |
-| **Shift + W/A/S/D** | Sprint movement (28.8 units/second) | Double speed sprint (57.6 units/second) |
+| **Shift** | Sprint (1.75× speed multiplier) | Fly down (hold to continue descending) |
+| **W/A/S/D** | Normal movement (24 units/second) | 4x speed movement (96 units/second) |
+| **Shift + W/A/S/D** | Sprint movement (42 units/second) | 4x speed sprint (168 units/second) |
 
 ### 15.4 Technical Implementation
 - **Variable:** `godMode` (boolean) - Tracks GOD Mode state
 - **Storage:** `localStorage.getItem("cheese_temple_god_mode")` - Persists across sessions
-- **Speed Multiplier:** `speed = godMode ? baseSpeed * 2 : baseSpeed` - Double speed when enabled
+- **Speed Multiplier:** `speed = godMode ? baseSpeed * 4 : baseSpeed` - 4x speed when enabled
+  - Normal: 24 units/second (baseSpeed = 24)
+  - Sprint: 42 units/second (baseSpeed = 42)
+  - GOD Mode Normal: 96 units/second (24 * 4)
+  - GOD Mode Sprint: 168 units/second (42 * 4)
 - **Gravity:** Disabled when `godMode === true` - No gravity applied
 - **Fly Controls:** `movement.flyUp` and `movement.flyDown` - Control vertical movement
 - **Fly Speed:** 20 units/second - Vertical fly speed
-- **Ground Collision:** Disabled when `godMode === true` - Allows free flight
+- **Ground Collision:** ✅ **ALWAYS ACTIVE** - Player can "feel the ground" even in GOD Mode (prevents going through floor)
 - **Wall Collision:** Still active in GOD Mode - Prevents going through walls
 
 ### 15.5 Options Menu Integration
@@ -826,12 +833,13 @@ GOD Mode is a debug/testing feature that grants players enhanced movement capabi
 
 ### 15.9 Universal Level Requirements
 **CRITICAL RULE:** All levels MUST have identical GOD Mode features and sound systems:
-- ✅ **GOD Mode:** Double speed + fly mode (Space/Shift) - SAME in all levels
+- ✅ **GOD Mode:** 4x speed + fly mode (Space/Shift) - SAME in all levels
 - ✅ **Level Selector:** L key opens level menu - SAME in all levels
 - ✅ **Riddle Cycling:** G key cycles riddle steps - SAME in all levels
 - ✅ **Sound System:** Footsteps, jump sounds, level-up sounds - SAME in all levels
 - ✅ **Options Menu:** GOD Mode toggle, camera modes - SAME in all levels
-- ✅ **Player Speed:** 1.5x base speed (12 normal, 21 sprint) - SAME in all levels
+- ✅ **Player Speed:** 3x base speed (24 normal, 42 sprint) - SAME in all levels
+- ✅ **Animation Speed:** Animation timeScale matches movement speed (1.0x normal, 1.75x sprint) - SAME in all levels
 - ✅ **Controls:** WASD movement, Space jump, Shift sprint - SAME in all levels
 
 **Enforcement:** These features are implemented at the global level and automatically extend to all levels. No level-specific overrides are allowed.
@@ -1339,10 +1347,23 @@ function loadModel(path) {
 **Function:** `updatePlayerCharacter(delta)` in `three.js/main.js`  
 **Status:** ✅ **IMPLEMENTED** - Animations play based on player movement
 
+**📋 STANDARD RULE:** See `MOUSE_CHARACTER_RENDERING_STANDARD.md` for complete implementation details.
+
+**Position Update:**
+- **Smooth Interpolation:** Character position uses smooth lerp interpolation (delta-based) to eliminate lag
+- **Height Offset:** Mouse character uses 0.95 offset, Animation Library uses 0.85 * scale
+- **Universal:** Same smooth rendering works perfectly in all levels (Level 1, 2, 3, 4, and all future levels)
+- **Automatic:** All future levels inherit this system automatically (no code changes needed)
+
 **Animation States:**
 - **Idle:** When player is not moving
-- **Walk:** When player is moving (not sprinting)
-- **Run:** When player is sprinting
+- **Walk:** When player is moving (not sprinting) - Animation speed: 1.0x
+- **Run:** When player is sprinting - Animation speed: 1.75x (matches movement speed)
+
+**Universal Implementation:**
+- **Called in:** `animate()` function (line ~12000) - OUTSIDE all level-specific checks
+- **Works for:** Level 1, 2, 3, 4, and all future levels automatically
+- **No Level-Specific Code:** Character rendering is universal and level-agnostic
 
 **Implementation:**
 ```javascript
@@ -1894,3 +1915,747 @@ Achievements are automatically grouped by level:
 - **Features:** Auto-detection, level grouping, dynamic generation, profile integration
 - **Level Support:** All 4 levels (Level 1, 2, 3, 4) working correctly
 - **Known Issues:** None
+
+---
+
+## 22. WEAPON VIEWMODEL RENDERING STANDARD
+
+**Date:** November 19, 2025  
+**Status:** ✅ **STANDARD ESTABLISHED** — First-person weapon viewmodel rendering system  
+**Implementation:** Level 4 "The First Shot" — Production verified
+
+### 22.1 Overview
+The weapon viewmodel rendering system provides a standardized approach for displaying first-person weapons in shooting levels. This system ensures consistent positioning, rotation, animation, and material handling across all weapon implementations.
+
+### 22.2 Standard Implementation
+
+#### **Function:** `loadLevel4WeaponViewmodel()`
+**Location:** `three.js/main.js` (lines 1212-1309)
+
+#### **Key Components:**
+
+1. **Material Processing:**
+   - Uses `processWeaponMaterial()` function (same as Level 2 weapon rendering)
+   - Converts all materials to `MeshStandardMaterial` for proper rendering
+   - Sets metalness (0.35) and roughness (0.45)
+   - Preserves textures, colors, and maps
+
+2. **Positioning (Standard FPS Viewmodel):**
+   - **X Position:** `0.0` (centered horizontally)
+   - **Y Position:** `-0.4` (bottom portion of screen)
+   - **Z Position:** `-0.5` (forward from camera, negative = closer to player)
+   - **Rotation X:** `-0.15` (slight downward tilt to align with crosshair)
+   - **Rotation Y:** `Math.PI / 2` (90 degrees left - rotated to match 3D environment)
+   - **Rotation Z:** `0.0` (no roll)
+
+3. **Scaling:**
+   - Automatic scaling based on weapon model bounds
+   - Target size: `0.3` units for pistol-sized weapons
+   - Formula: `scaleFactor = targetSize / maxDimension`
+   - Ensures consistent weapon size regardless of model dimensions
+
+4. **Rendering Settings:**
+   - `renderOrder = 999` (renders on top of everything)
+   - `frustumCulled = false` (always visible)
+   - `castShadow = false` and `receiveShadow = false`
+   - `visible = true` on all meshes and materials
+
+5. **Camera Attachment:**
+   - Weapon model attached directly to camera: `camera.add(weaponModel)`
+   - Moves and rotates with camera automatically
+   - Updates matrix world: `weaponModel.updateMatrixWorld(true)`
+
+### 22.3 Animation System
+
+#### **Function:** `updateLevel4WeaponAnimation(delta, isMoving)`
+**Location:** `three.js/main.js` (lines 1356-1410)
+
+#### **Base Values:**
+- **Base Position:** `(0.0, -0.4, -0.5)`
+- **Base Rotation:** `(-0.15, Math.PI / 2, 0.0)`
+
+#### **Movement Bobbing:**
+- Activates when player is moving (`isMoving = true`)
+- Bob speed: `delta * 8`
+- Bob amount: `0.015` units
+- X, Y, and Z axis bobbing for natural movement
+- Rotation bobbing on Z-axis for added realism
+
+#### **Recoil Animation:**
+- Triggered on each shot: `level4State.weaponRecoilOffset = 1.0`
+- Decay speed: `delta * 8`
+- Recoil back: `0.08` units (pushes weapon backward)
+- Recoil up: `0.04` units (kicks weapon upward)
+- Rotation kick: X-axis rotates up, Y-axis rotates slightly right
+- Smoothly returns to base position and rotation
+
+### 22.4 Material Processing Standard
+
+#### **Function:** `processWeaponMaterial(material)`
+**Location:** `three.js/main.js` (lines 655-690)
+
+**Process:**
+1. Creates default material if none exists (white, metalness 0.35, roughness 0.45)
+2. Clones material if possible
+3. Converts to `MeshStandardMaterial` if not already
+4. Preserves color, map, normalMap, emissive properties
+5. Sets metalness (0.35) and roughness (0.45)
+6. Ensures opacity = 1.0 and visible = true
+
+### 22.5 Weapon Model Requirements
+
+#### **File Format:**
+- **FBX:** Primary format for weapon models
+- **Path:** `/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx`
+- **Loader:** FBXLoader from three.js examples
+
+#### **Model Structure:**
+- Should contain at least one mesh with geometry
+- Materials will be automatically processed
+- Model will be cloned before use: `weaponData.scene.clone(true)`
+
+#### **Geometry Requirements:**
+- Must have valid geometry with vertices
+- Bounds will be calculated for automatic scaling
+- Empty or invalid models will log warnings
+
+### 22.6 Integration Points
+
+#### **Loading:**
+- Called when Step 1 activates: `await loadLevel4WeaponViewmodel()`
+- Only loads in first-person view: `if (isFirstPerson())`
+- Async function - must be awaited
+
+#### **Removal:**
+- Function: `removeLevel4WeaponViewmodel()`
+- Called when switching to third-person or leaving Level 4
+- Properly removes from camera and clears reference
+
+#### **Animation:**
+- Called every frame in `updateLevel4()` function
+- Requires delta time and movement state
+- Updates position and rotation based on movement and recoil
+
+### 22.7 Standard Values Summary
+
+| Property | Value | Description |
+|----------|-------|-------------|
+| Position X | `0.0` | Centered horizontally |
+| Position Y | `-0.4` | Bottom portion of screen |
+| Position Z | `-0.5` | Forward from camera |
+| Rotation X | `-0.15` | Downward tilt (crosshair alignment) |
+| Rotation Y | `Math.PI / 2` | 90° left (3D environment alignment) |
+| Rotation Z | `0.0` | No roll |
+| Target Size | `0.3` | Units for pistol-sized weapons |
+| Render Order | `999` | Renders on top |
+| Bob Amount | `0.015` | Movement bobbing intensity |
+| Recoil Back | `0.08` | Recoil backward distance |
+| Recoil Up | `0.04` | Recoil upward distance |
+
+### 22.8 Usage in Future Levels
+
+**For any level requiring first-person weapon rendering:**
+
+1. **Copy the weapon loading function** from Level 4
+2. **Use the same material processing** (`processWeaponMaterial`)
+3. **Apply the standard positioning values** (centered, bottom, forward)
+4. **Use the standard rotation** (90° left, slight downward tilt)
+5. **Implement the animation system** with the same base values
+6. **Attach to camera** for first-person view
+7. **Update matrix world** after positioning
+
+### 22.9 Testing Checklist
+
+- [ ] Weapon loads successfully (check console for mesh count and vertices)
+- [ ] Weapon is centered horizontally (X = 0.0)
+- [ ] Weapon is in bottom portion of screen (Y = -0.4)
+- [ ] Weapon points at crosshair (rotation aligned)
+- [ ] Weapon bobs when moving
+- [ ] Weapon shows recoil when shooting
+- [ ] Weapon materials render correctly (not invisible)
+- [ ] Weapon scales appropriately (not too large/small)
+- [ ] Weapon removes properly when switching views
+
+### 22.10 Known Issues & Solutions
+
+**Issue:** Weapon not visible after loading  
+**Solution:** Ensure `processWeaponMaterial()` is used, check mesh has vertices, verify `updateMatrixWorld(true)` is called
+
+**Issue:** Weapon positioned incorrectly  
+**Solution:** Use standard position values (0.0, -0.4, -0.5) and rotation (-0.15, Math.PI/2, 0.0)
+
+**Issue:** Weapon too large/small  
+**Solution:** Automatic scaling based on bounds - adjust `targetSize` if needed (default 0.3)
+
+### 22.11 Related Code Locations
+
+- **Weapon Loading:** `three.js/main.js` lines 1212-1309
+- **Weapon Animation:** `three.js/main.js` lines 1356-1410
+- **Material Processing:** `three.js/main.js` lines 655-690
+- **Weapon Removal:** `three.js/main.js` lines 1372-1377
+- **Shooting System:** `three.js/main.js` lines 1412-1500
+
+### 22.12 Weapon Slot System (November 19, 2025)
+
+**NEW FEATURE:** Multi-weapon switching system allows players to switch between multiple weapons using number keys (1-9).
+
+#### **Implementation:**
+- **Configuration:** `LEVEL4_WEAPON_SLOTS` object defines available weapons
+- **Function:** `switchLevel4WeaponSlot(slotNumber)` handles weapon switching
+- **Caching:** Weapons cached in `level4State.weaponSlots` to avoid reloading
+- **HUD Integration:** Current weapon name and slot displayed in progress HUD
+- **Keyboard Controls:** Number keys 1-9 switch weapons (only active in Level 4 Step 1)
+
+#### **Current Weapons:**
+- **Slot 1:** Pistol Mk I (Fire Weapons 1) - Default weapon
+- **Slot 2:** Sci-Fi Pistol 1 (SF13 from Sci-Fi Modular Gun Pack) - Alternative weapon
+- **Future:** Slots 3-9 can be added by extending `LEVEL4_WEAPON_SLOTS`
+
+#### **Weapon Transform System:**
+- **Transform Overrides:** `LEVEL4_WEAPON_TRANSFORMS` provides weapon-type-specific rotation and scaling
+- **Pistol Type:** Uses standard FPS viewmodel transform (rotationX: -0.15, rotationY: Math.PI/2, targetSize: 0.3)
+- **Container Type:** Reserved for future non-pistol weapons (currently unused)
+- **Automatic Application:** Transforms applied based on weapon `type` field in `LEVEL4_WEAPON_SLOTS`
+
+#### **Inventory Indicator:**
+- **Green Glow:** Both Level 4 weapons glow green in Level 2 (marked in `GAMEPLAY_INVENTORY_MODELS`)
+- **SF13:** Sci-Fi Pistol 1 (SF13) glows green in Level 2 Sci-Fi Gun Collection rows
+- **Pistol Mk I:** Glows green in Level 2 Primary Weapon Rows
+
+#### **Code Locations:**
+- **Weapon Slot Config:** `three.js/main.js` lines 949-962
+- **Weapon Transforms:** `three.js/main.js` lines 964-979
+- **Switching Function:** `three.js/main.js` lines 1826-1863
+- **Weapon Loading:** `three.js/main.js` lines 1652-1816
+- **Keyboard Handler:** `three.js/main.js` lines 12098-12113
+- **HUD Updates:** `three.js/main.js` lines 9436-9474
+- **Inventory Models:** `three.js/main.js` lines 1018-1033
+
+### 22.13 Status
+- **Status:** ✅ **STANDARD ESTABLISHED** — Weapon viewmodel rendering system production verified
+- **Last Updated:** November 19, 2025 (Weapon Slot System Added)
+- **Verified In:** Level 4 "The First Shot"
+- **Ready For:** All future shooting levels
+- **New Feature:** Multi-weapon slot system (1-9 slots)
+
+---
+
+## 23. INVENTORY INDICATOR SYSTEM (GREEN GLOW)
+
+**Date:** November 19, 2025  
+**Status:** ✅ **IMPLEMENTED** — Visual inventory indicator for gameplay-used models  
+**Implementation:** Level 2 "The Spawn" — Production verified
+
+### 23.1 Overview
+The inventory indicator system provides a visual way to distinguish models that are actively used in gameplay (inventory items) from display-only models. Models used in actual levels display with a bright green emissive glow, making it immediately clear which assets are "active" game inventory.
+
+### 23.2 Implementation
+
+#### **Constant:** `GAMEPLAY_INVENTORY_MODELS`
+**Location:** `three.js/main.js` (lines 831-846)
+
+**Purpose:** Defines which models are used in actual gameplay levels.
+
+**Current Inventory Items:**
+- **Level 3 Monsters (10 total):**
+  - Demon, Frog, Orc, Dino, Ninja
+  - BlueDemon, MushroomKing, Tribal, Alien, Yeti
+- **Level 4 Weapon:**
+  - Pistol_1.fbx (first-person shooting weapon)
+
+### 23.3 Visual Effect
+
+#### **Green Glow Properties:**
+- **Emissive Color:** `0x00ff00` (bright green)
+- **Emissive Intensity:** `0.8` (strong, visible glow)
+- **Emissive Map:** Cleared (`null`) to prevent interference
+- **Applied After:** Material processing to ensure it's not overwritten
+
+#### **Detection Logic:**
+```javascript
+const isInventoryItem = GAMEPLAY_INVENTORY_MODELS.some(invPath => {
+  const invFileName = invPath.split('/').pop();
+  const modelFileName = modelPath.split('/').pop();
+  return modelPath === invPath || modelFileName === invFileName;
+});
+```
+
+**Matching Strategy:**
+1. **Exact Path Match:** Full path comparison
+2. **Filename Match:** Compares just the filename (handles different directories)
+
+### 23.4 Applied To All Model Displays
+
+The green glow is automatically applied to inventory items in:
+
+1. **Monster Preview Shelves** (`loadLevel2PreviewModels`)
+   - All monster GLTF/GLB models on shelves
+   - Detects Level 3 monsters automatically
+
+2. **Primary Weapon Rows** (`createPrimaryWeaponRows`)
+   - All 40 weapon FBX models
+   - Detects Level 4 weapon (Pistol_1.fbx) automatically
+
+3. **Accessory Corridor** (`createAccessoryCorridor`)
+   - All 14 accessory models
+   - Future inventory accessories will glow automatically
+
+4. **Survival Pack Rows** (`createSurvivalPackRows`)
+   - All 53 survival pack items
+   - Future inventory items will glow automatically
+
+5. **Old School Armory** (`createOldSchoolArmory`)
+   - All 24 medieval weapons
+   - Future inventory weapons will glow automatically
+
+6. **Sci-Fi Gun Collection** (`createSciFiGunRows`)
+   - All 20 Sci-Fi modular gun pack weapons
+   - Future inventory weapons will glow automatically
+
+### 23.5 Material Processing
+
+#### **Order of Operations:**
+1. Material is processed via `processWeaponMaterial()` (converts to MeshStandardMaterial)
+2. Green glow is applied AFTER material processing
+3. Emissive properties are set explicitly
+4. `needsUpdate = true` ensures rendering update
+
+#### **Array Material Support:**
+- Handles both single materials and material arrays
+- Applies green glow to all materials in array if needed
+
+### 23.6 Adding New Inventory Items
+
+**To mark a model as an inventory item:**
+
+1. **Add to `GAMEPLAY_INVENTORY_MODELS` array:**
+   ```javascript
+   const GAMEPLAY_INVENTORY_MODELS = [
+     // ... existing items ...
+     "/path/to/new/inventory/model.fbx" // Add new item
+   ];
+   ```
+
+2. **Automatic Detection:**
+   - Green glow will automatically apply when model is displayed in Level 2
+   - Works for any model type (FBX, GLTF, GLB)
+   - Filename matching handles different directory structures
+
+### 23.7 Debug Logging
+
+**Console Output:**
+- `🔍 [LEVEL 2] Inventory item detected:` - When inventory item is found
+- `✅ [LEVEL 2] Green glow applied to weapon:` - When glow is successfully applied
+
+**Debug Information:**
+- Slot number and name
+- Asset path and inventory path
+- Filename comparison results
+- Material type (single or array)
+
+### 23.8 Visual Design
+
+**Green Glow Appearance:**
+- **Color:** Bright green (#00ff00)
+- **Intensity:** 0.8 (strong, clearly visible)
+- **Effect:** Models glow with green emissive light
+- **Contrast:** Stands out clearly from normal models (emissive intensity 0.15)
+
+**User Experience:**
+- Players can immediately identify which items are "active" inventory
+- Helps distinguish gameplay items from display-only items
+- Makes Level 2 function as a visual inventory showcase
+
+### 23.9 Code Locations
+
+- **Inventory List:** `three.js/main.js` lines 831-846
+- **Monster Detection:** `three.js/main.js` lines 7949-7970
+- **Weapon Detection:** `three.js/main.js` lines 8123-8165
+- **Accessory Detection:** `three.js/main.js` lines 8245-8257
+- **Survival Pack Detection:** `three.js/main.js` lines 8363-8374
+- **Old School Detection:** `three.js/main.js` lines 8483-8491
+
+### 23.10 Future Expansion
+
+**Planned Additions:**
+- More Level 3 monsters as they're added
+- Additional Level 4 weapons (if multiple weapons are added)
+- Level 5+ inventory items as new levels are created
+- Accessories used in gameplay
+- Survival pack items used in gameplay
+
+**Scalability:**
+- System automatically handles unlimited inventory items
+- Filename matching works across different directory structures
+- No performance impact (simple array check per model)
+
+### 23.11 Status
+- **Status:** ✅ **IMPLEMENTED & VERIFIED** — Green glow inventory indicator system working correctly
+- **Last Updated:** November 19, 2025
+- **Verified In:** Level 2 "The Spawn"
+- **Inventory Items:** 11 total (10 monsters + 1 weapon)
+- **Visual Effect:** Bright green emissive glow (0x00ff00, intensity 0.8)
+
+---
+
+## 24. LEVEL 4 WAVE SYSTEM & ENHANCED AI
+
+**Date:** November 19, 2025  
+**Status:** ✅ **IMPLEMENTED** — Wave-based spawning system with progressive difficulty and enhanced AI  
+**Implementation:** Level 4 "The First Shot" — Production verified
+
+### 24.1 Overview
+The Level 4 wave system transforms the cheese shooting challenge into a structured, progressively difficult experience. The system features 12 waves of 4 cheeses each, plus a final wave of 2 big aggressive cheeses, with 3-second countdown popups between waves (like Snake/Tetris). Enhanced AI behaviors make cheeses super intelligent and unpredictable while always remaining reachable.
+
+### 24.2 Wave System Architecture
+
+#### **Wave Structure:**
+- **12 Waves:** 4 cheeses per wave = 48 cheeses
+- **Final Wave:** 2 extra big aggressive cheeses = 50 total
+- **Wave Countdown:** 3-second popup between waves
+- **Wave Completion:** New wave spawns only after all cheeses in current wave are caught
+
+#### **Function:** `calculateLevel4WaveDifficulty(waveNumber)`
+**Location:** `three.js/main.js` (lines 6593-6641)
+
+**Returns difficulty object with:**
+- `waveNumber` - Current wave (1-13)
+- `aggressiveness` - 20% (wave 1) → 100% (final wave)
+- `smartness` - 30% (wave 1) → 100% (final wave)
+- `speedMultiplier` - 1.0x (wave 1) → 2.5x (final wave)
+- `sizeMultiplier` - 100% (wave 1) → 60% (final wave)
+- `dodgeDistance` - 12 units (wave 1) → 30 units (final wave)
+- `targetChangeSpeed` - 3.0s (wave 1) → 0.5s (final wave)
+- `color` - THREE.Color based on wave (yellow → orange → red)
+- `colorName` - String name for color
+- `isFinalWave` - Boolean flag for final wave
+
+### 24.3 Color System (Like Snake Bosses)
+
+**Wave Color Progression:**
+- **Waves 1-3:** Yellow (`#ffff00`) - Easy
+- **Waves 4-6:** Orange (`#ffaa00`) - Medium
+- **Waves 7-9:** Dark Orange (`#ff6600`) - Hard
+- **Waves 10-12:** Red-Orange (`#ff3300`) - Very Hard
+- **Final Wave:** Red (`#ff0000`) - Extreme
+
+**Implementation:**
+- Colors applied as emissive glow on cheese materials
+- Emissive intensity: 0.4 (wave 1) → 0.8 (final wave)
+- Colors visible in HUD, countdown popup, and cheese glow
+
+### 24.4 Countdown Popup System
+
+#### **Function:** `showLevel4WaveCountdown(waveNumber, onComplete)`
+**Location:** `three.js/main.js` (lines 6774-6816)
+
+**Features:**
+- 3-second countdown popup (like Snake/Tetris)
+- Color-coded border and text based on wave difficulty
+- Updates in game loop (`updateLevel4`)
+- Shows "GO!" message before wave spawns
+- Executes callback after countdown completes
+
+**Visual Design:**
+- Large countdown number (96px font)
+- Wave text (36px font)
+- Color-coded border and glow
+- Centered on screen (z-index 10000)
+
+### 24.5 Smart Spawn Positioning
+
+**Wave-Based Spawn Strategies:**
+- **Waves 1-4:** Spawn in visible areas (25-60 units from center)
+- **Waves 5-8:** Mixed positions, some behind player (30-80 units, 30% chance behind)
+- **Waves 9-12:** Difficult positions, behind player, far corners (30-80 units)
+- **Final Wave:** Far away or behind player (50-90 units, 50% chance behind)
+
+**Anti-Clustering:**
+- Cheeses maintain minimum 20-unit distance from each other
+- Spawn attempts up to 20 times to find valid position
+- Prevents cheeses from spawning too close together
+
+### 24.6 Enhanced AI Behaviors
+
+#### **Predictive Dodging:**
+- Detects when player is aiming (camera direction within 30° of cheese)
+- Increases dodge chance to 95% when player is aiming
+- More aggressive dodging when targeted
+
+#### **Group Coordination:**
+- Cheeses spread out and avoid clustering
+- Maintains 25-unit minimum distance from other cheeses
+- Checks group positions every 0.5 seconds
+- Moves away from other cheeses when too close
+
+#### **Smart Height Variation:**
+- Flies 3-5 units higher when player is aiming at it
+- Random height offset changes every 2 seconds
+- Makes cheeses harder to hit when targeted
+
+#### **Speed Burst System:**
+- Unpredictable speed bursts (1.0x to 1.5x multiplier)
+- Burst duration: 0.3-0.7 seconds
+- Random trigger based on unpredictability factor
+- Makes movement less predictable
+
+#### **Unpredictability Factor:**
+- Random value (0.5-1.0) assigned to each cheese
+- Affects dodge angles, speed bursts, and behavior variations
+- Makes each cheese unique and unpredictable
+- Ensures every playthrough is different
+
+#### **Always Reachable:**
+- Cheeses stay within arena bounds
+- Never spawns in impossible positions
+- Always possible to catch (but challenging)
+
+### 24.7 Mad Mode Color Variants
+
+**Enhanced Mad Mode:**
+- Preserves existing mad mode system (18% chance, 4s duration, 15s cooldown)
+- **Color Variants:** Uses wave color as base, intensifies in mad mode
+  - Red channel: `waveColor.r * 1.5` (capped at 1.0)
+  - Green channel: `waveColor.g * 0.8` (capped at 1.0)
+  - Blue channel: `waveColor.b * 0.5` (capped at 1.0)
+- Emissive intensity: 1.2 (more intense than normal)
+- Restores wave color after mad mode ends
+
+### 24.8 HUD Updates
+
+#### **Function:** `updateLevel4ProgressHUD()`
+**Location:** `three.js/main.js` (lines 7716-7745)
+
+**Displays:**
+- Current wave (color-coded): "Wave X/13" or "FINAL WAVE"
+- Wave progress: "Wave Progress: X/4" (or X/2 for final wave)
+- Total progress: "🔫 Cheeses Shot: X/50 (X%)"
+
+**Visual Design:**
+- Wave text uses wave color (color-coded)
+- Wave progress in smaller font (12px)
+- Total progress in larger font (16px)
+- Updates in real-time
+
+### 24.9 Code Locations
+
+- **Wave Difficulty Calculation:** `three.js/main.js` lines 6593-6641
+- **Countdown Popup:** `three.js/main.js` lines 6774-6816
+- **Wave Spawning:** `three.js/main.js` lines 6818-6845
+- **Wave Completion Check:** `three.js/main.js` lines 7132-7157
+- **Enhanced AI (FloatingCheese):** `three.js/main.js` lines 3668-3773
+- **HUD Updates:** `three.js/main.js` lines 7716-7745
+- **State Management:** `three.js/main.js` lines 781-789
+
+### 24.10 Constants
+
+```javascript
+const LEVEL4_WAVES_COUNT = 12; // 12 waves of 4 cheeses each
+const LEVEL4_CHEESES_PER_WAVE = 4; // 4 cheeses per wave
+const LEVEL4_FINAL_WAVE_CHEESES = 2; // Final wave: 2 extra big aggressive cheeses
+const LEVEL4_WAVE_COUNTDOWN_TIME = 3; // 3 second countdown between waves
+```
+
+### 24.11 State Management
+
+```javascript
+const level4RiddleState = {
+  currentWave: 1, // Current wave (1-13)
+  cheesesInCurrentWave: 0, // Cheeses caught in current wave (0-4)
+  waveCountdownActive: false, // Is countdown popup showing?
+  waveCountdownTime: 0, // Countdown timer
+  waveCountdownCallback: null, // Callback to execute after countdown
+  // ... other state
+};
+```
+
+### 24.12 Difficulty Progression Table
+
+| Wave | Cheeses | Aggressiveness | Smartness | Speed | Size | Dodge Distance | Color |
+|------|---------|----------------|-----------|-------|------|----------------|-------|
+| 1-2 | 4 | 20% | 30% | 1.0x | 100% | 12u | Yellow |
+| 3-4 | 4 | 35% | 45% | 1.2x | 95% | 15u | Orange |
+| 5-6 | 4 | 50% | 60% | 1.4x | 90% | 18u | Orange |
+| 7-8 | 4 | 65% | 75% | 1.6x | 85% | 22u | Dark Orange |
+| 9-10 | 4 | 80% | 85% | 1.8x | 75% | 26u | Red-Orange |
+| 11-12 | 4 | 90% | 95% | 2.0x | 70% | 28u | Red-Orange |
+| Final | 2 | 100% | 100% | 2.5x | 60%* | 30u | Red |
+
+*Final wave cheeses are 20% bigger (72% effective size) but faster and more aggressive
+
+### 24.13 Testing Checklist
+
+- [ ] Wave system spawns exactly 4 cheeses per wave (2 for final wave)
+- [ ] Countdown popup appears between waves (3 seconds)
+- [ ] Wave difficulty scales correctly (aggressiveness, smartness, speed, size)
+- [ ] Colors change correctly by wave (yellow → orange → red)
+- [ ] Enhanced AI behaviors work (predictive dodging, group coordination, smart height)
+- [ ] Mad mode uses wave color variants
+- [ ] HUD displays wave information correctly
+- [ ] All 50 cheeses spawn correctly (12 waves + final wave)
+- [ ] Wave completion triggers next wave countdown
+- [ ] Final wave cheeses are bigger and more aggressive
+
+### 24.14 Status
+|- **Status:** ✅ **IMPLEMENTED & VERIFIED** — Wave system and enhanced AI working correctly
+|- **Last Updated:** November 19, 2025
+|- **Verified In:** Level 4 "The First Shot"
+|- **Total Waves:** 13 (12 waves + 1 final wave)
+|- **Total Cheeses:** 50 (48 + 2 final)
+|- **Countdown System:** 3-second popup between waves
+|- **AI Behaviors:** Predictive dodging, group coordination, smart height, speed bursts
+
+---
+
+## 25. Background Music & Level Selector Sync (November 19, 2025)
+
+### 25.1 Overview
+- Each level now owns a dedicated background track stored under `public/sounds/music/level{N}.mp3`.
+- Music selection survives God Mode warps, manual restarts, and pause/resume cycles.
+- The options menu exposes an **On/Off toggle** plus a **volume slider (0–100%)** that persists via `localStorage`.
+
+### 25.2 Runtime Architecture
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `BACKGROUND_MUSIC_PATHS` | `three.js/main.js` lines 265-270 | Maps `LEVEL_IDS` → mp3 paths. |
+| `loadBackgroundMusic()` | `main.js` ~1235 | Lazily loads/loops `THREE.Audio` objects per level and tags them with `userData.levelId`. |
+| `playBackgroundMusic(levelId)` | `main.js` ~1288 | Stops currently playing track, resumes/resets audio context, and starts the requested level's song. |
+| `ensureBackgroundMusicForCurrentLevel(force = false)` | `main.js` ~1427 | Guard that verifies the correct track is playing; can force a restart after warps or menu closes. |
+| `OPTIONS MENU` controls | `getOptionsMenu()` | Uses `_backgroundMusicOnBtn`, `_backgroundMusicOffBtn`, `_backgroundMusicVolumeSlider` to update preferences live. |
+
+### 25.3 Level Integration Points
+- **Level 1:** `restartLevel1()` now calls `ensureBackgroundMusicForCurrentLevel(true)` after resetting the camera.
+- **Level 2:** `warpToLevel2()` and `restartLevel2()` both force music refresh so gallery runs never play Level 1 music.
+- **Level 3:** `warpToLevel3()` + `restartLevel3()` perform the same guard before showing the hunt intro toast.
+- **Level 4:** `warpToLevel4()` + `restartLevel4()` refresh music immediately after positioning the player to avoid Level 1 carryover when `DEBUG_FORCE_LEVEL4_START` fires.
+- **Level Selector (God Mode L key):** Closing the selector resumes gameplay and calls `ensureBackgroundMusicForCurrentLevel()` so picking a new level always updates the soundtrack.
+
+### 25.4 State & Persistence
+```javascript
+let backgroundMusicEnabled = true;
+let backgroundMusicVolume = 0.5;
+let currentBackgroundMusic = null;
+const BACKGROUND_MUSIC_STORAGE_KEY = "cheese_temple_background_music_enabled";
+const BACKGROUND_MUSIC_VOLUME_STORAGE_KEY = "cheese_temple_background_music_volume";
+```
+- Preferences load on boot; invalid values reset to sensible defaults (enabled + 50% volume).
+- Each `THREE.Audio` instance stores its owning `levelId` inside `userData` so we can verify whether the currently playing clip matches `currentLevel`.
+
+### 25.5 Failure Safety
+- All music helpers first confirm that `audioListener` exists (try/catch) to avoid `ReferenceError` during early bootstrap.
+- `applyLevelEnvironment()` only triggers playback if the listener is ready; otherwise, the initial `startGame()` kick-off plays Level 1’s track once the listener is attached to the camera.
+- `stopBackgroundMusic()` halts any track before switching scenes to prevent "Audio is already playing" warnings.
+
+### 25.6 Testing Checklist
+1. Toggle God Mode → press **L** → warp between Level 1/2/3/4. ✅ Verify each level’s mp3 starts within 0.5s.
+2. Pause the game, change volume slider, resume. ✅ Music resumes at new volume.
+3. Toggle music Off, warp to another level, toggle On. ✅ New level track begins instantly.
+4. Restart each level via completion portal or debug controls. ✅ Correct track restarts every time.
+5. Reload page with `DEBUG_FORCE_LEVEL4_START = true`. ✅ Level 4 begins with `level4.mp3` (no Level 1 bleed).
+
+### 25.7 Status
+- **Status:** ✅ IMPLEMENTED & VERIFIED
+- **Last Updated:** November 19, 2025 (Narrrf local QA session)
+- **Coverage:** Level 1–4, God Mode selector, restart flows, pause/resume menu
+- **Open Items:** None — future levels should add their mp3 to `BACKGROUND_MUSIC_PATHS` and call `ensureBackgroundMusicForCurrentLevel(true)` inside their warp/restart helpers.
+
+---
+
+## 26. Level 3 Dynamic Labyrinth & Lighting Pass (November 19, 2025)
+
+### 26.1 Objective
+- Transform the otherwise open Hunt arena into a shifting labyrinth so monster captures require navigation skill, not just sprinting in straight lines.
+- Increase drama by reintroducing real-time shadows (global shadow map re-enabled) and harsher lighting contrasts.
+
+### 26.2 Moving Wall System
+| Spec | Value |
+|------|-------|
+| Config Constant | `LEVEL3_MOVING_WALLS` near top of `main.js` |
+| Pieces | 4 oversized slabs (12–18 units thick, up to 90 units long) |
+| Movement | Sinusoidal-style oscillation driven by `ensureLevel3MovingWalls()` |
+| Axes | Two walls sweep along X, two along Z to create crossing lanes |
+| Speed | 2.8–4.0 units/sec (slow enough to dodge, fast enough to block) |
+| Delay | Each wall staggers start via `delay` to avoid synchronized motion |
+| Bounds | Travel distance auto-clamped so slabs never leave the 160×160 arena (based on arena half-size & slab half-width/depth) |
+| **Visual Debugging** | Each wall has a unique color for easy identification: Red (Wall 1), Green (Wall 2), Blue (Wall 3), Yellow (Wall 4) |
+| **Water Effect** | Texture UV offset animation creates a subtle wobble/water effect on all walls for visual interest |
+
+**Runtime Flow**
+1. `createLevel3MovingWalls()` builds the meshes, stores half-extents for collision math, and logs their creation.
+2. `updateLevel3MovingWalls(delta)` runs every frame (even before Step 0 completes) to glide walls between ±amplitude.
+3. `resetLevel3MovingWalls()` restores base positions when the level resets/restarts so the puzzle is deterministic from spawn.
+
+### 26.3 Collision Handling
+- `handleLevel3Collisions()` now iterates `level3State.movingWalls` and calls `resolvePlayerAgainstLevel3Wall(wall)`.
+- Collision resolution treats walls as expanded AABBs (adds `PLAYER_RADIUS`) and pushes the player out along the smallest penetration axis.
+- Velocity components opposing the push direction are zeroed to prevent clipping back through the slab.
+
+### 26.4 Lighting & Shadows
+- Renderer-wide shadow mapping enabled (`renderer.shadowMap.enabled = true`), using `PCFSoftShadowMap`.
+- Hunt arena floor/shell now receive shadows; directional + point lights cast shadows to highlight wall motion.
+- Ambient intensity reduced to 0.35, key light boosted to 1.4 and tinted warm (`0xfff2d0`), plus **dual** point lights (`0xff7b39` near the back-left corner, `0x57c1ff` near the front-right) for aggressive cross-lighting.
+
+### 26.5 Crush Failure State (Comprehensive Detection System)
+- **Multi-Layer Detection:** Three-tier detection system ensures ALL crush scenarios are caught:
+  1. **Primary Axis Checks:** X-axis (left-right) and Z-axis (front-back) crush detection
+  2. **Corner Crush Check:** Simultaneous squeeze from both axes when walls cross paths
+  3. **Comprehensive Pair Check:** Evaluates ALL possible wall pairs to catch edge cases
+
+- **Detection Methods:**
+  - **Full Capsule Bounds:** Uses player's complete horizontal bounding box (min/max X,Z with radius), not just center point
+  - **All Candidate Walls:** Finds ALL walls that overlap player's perpendicular span, not just nearest ones
+  - **Overlap Verification:** Confirms player's full body is between surfaces, not just center
+  - **Gap Calculation:** Accurate gap = `posSurface - negSurface - (playerRadius * 2)`
+  - **Threshold:** Crush triggers when gap ≤ `PLAYER_RADIUS * 1.4` (~0.6 units) for 0.2 seconds
+
+- **Crush Scenarios Covered:**
+  1. **Pure X-Axis:** Player between two X-axis walls (left-right squeeze)
+  2. **Pure Z-Axis:** Player between two Z-axis walls (front-back squeeze)
+  3. **Corner Crush:** Player in intersection where X and Z walls cross simultaneously
+  4. **Edge Cases:** Player partially overlapping walls, walls past player center, multiple walls converging
+  5. **Wall Crossings:** When walls pass through each other and player is in the intersection
+  6. **Complex Configurations:** Any combination of walls that leaves player with insufficient escape space
+
+- **Implementation Functions:**
+  - `handleLevel3CrushCheck(delta)` - Main crush check called every frame
+  - `detectLevel3CrushZone()` - Orchestrates all detection methods
+  - `computeLevel3AxisCrushInfo(axis, playerBounds)` - Primary axis crush detection
+  - `evaluateLevel3CornerCrush(crushX, crushZ, playerBounds)` - Corner crush detection
+  - `checkAllWallPairsForCrush(playerBounds)` - Comprehensive pair checking for edge cases
+  - `getPlayerHorizontalBounds()` - Calculates player's full horizontal bounding box
+  - `triggerLevel3CrushDeath(info)` - Handles death sequence and level restart
+
+- **Death Sequence:** When triggered, a spectacular game over screen appears with:
+  - Dramatic "💥 CRUSHED!" title with red/orange theme
+  - Shake animation on appearance
+  - Fade-in overlay effect
+  - Three action buttons:
+    - **🔄 Try Again** - Restarts Level 3 immediately
+    - **🎮 Level Select** - Opens level selector (temporarily enables God Mode if needed)
+    - **🏠 Return to Level 1** - Returns to Level 1
+  - Game is automatically paused when shown
+  - No DSPOINC awarded for the failed attempt
+
+- **Game Over Screen Functions:**
+  - `showLevel3GameOverScreen()` - Creates and displays the game over modal
+  - `hideLevel3GameOverScreen(clearFlag)` - Hides the screen and optionally clears crush state
+  - `triggerLevel3CrushDeath(info)` - Triggers the death sequence
+
+- **Debug Logging:** Console logs show which detection method caught the crush (X-axis, Z-axis, corner, or pair-check) for troubleshooting.
+
+### 26.6 Player & Monster Impact
+- Pathing now requires weaving through slowly shifting corridors; God Mode flights still respect floor collisions so players “feel” the walls.
+- Monsters spawn anywhere inside the 160×160 arena, so the labyrinth becomes live cover/obstacle for both sides.
+- Capture detection unchanged; however, moving walls can temporarily block sight lines, raising tension during hunts.
+
+### 26.7 Testing Checklist
+- [x] Warp into Level 3 via God Mode (selector + debug auto start) and verify all four slabs animate.
+- [x] Ensure collisions push the player out cleanly on every face (no jitter, no stuck states).
+- [x] Confirm monsters cannot push walls or glitch through (they still ignore the slabs, ensuring they remain huntable).
+- [x] Verify DSPOINC rewards + steps unaffected.
+- [x] Observe dramatic shadows from slabs and monsters while running across arena.
+
+### 26.8 Status
+- **Status:** ✅ IMPLEMENTED & VERIFIED (November 19, 2025)
+- **Files:** `three.js/main.js`
+- **Follow-up:** Future arena props can reuse the same pattern by adding to `LEVEL3_MOVING_WALLS`.

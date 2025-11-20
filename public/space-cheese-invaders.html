@@ -210,6 +210,46 @@
       83% { border-color: #4B0082; box-shadow: 0 0 20px rgba(75, 0, 130, 0.6); }
       100% { border-color: #9400D3; box-shadow: 0 0 20px rgba(148, 0, 211, 0.6); }
     }
+    
+    /* 🐛 BUG #322 FIX: Space Invaders HUD responsive styles (matching Snake/Tetris) */
+    #space-invaders-hud-container {
+      animation: fadeInDown 0.3s ease-out;
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    #space-invaders-boss-hp-fill {
+      transition: width 0.2s ease-out, background-color 0.2s ease-out;
+    }
+    
+    /* Mobile responsive HUD */
+    @media (max-width: 768px) {
+      #space-invaders-hud-container {
+        padding: 0 8px;
+        font-size: 0.9em;
+      }
+      
+      #space-invaders-hud-line1,
+      #space-invaders-hud-line2,
+      #space-invaders-hud-line3 {
+        padding: 6px 10px;
+      }
+      
+      #space-invaders-hud-line1 span,
+      #space-invaders-hud-line2 span,
+      #space-invaders-hud-line3 span {
+        font-size: 0.85em;
+      }
+    }
   </style>
 </head>
 
@@ -283,6 +323,96 @@
       <button id="start-space-invaders-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
       <button id="pause-space-invaders-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
       <p class="text-xs text-gray-400">💡 Press 'P' to pause during gameplay</p>
+    </div>
+    
+    <!-- 🐛 BUG #322 FIX: Space Invaders HUD outside game container (like Snake/Tetris) -->
+    <div id="space-invaders-hud-container" class="w-full max-w-md mx-auto mb-3 space-y-2">
+      <!-- Line 1: Health, Ammo, Speed Boost -->
+      <div id="space-invaders-hud-line1" class="bg-black/85 rounded-lg border-2 border-yellow-400 p-2">
+        <div class="flex items-center justify-between text-sm">
+          <div class="flex items-center gap-3">
+            <span id="space-invaders-health" class="text-red-400 font-bold">❤️3</span>
+            <span id="space-invaders-ammo" class="text-white font-bold"></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="space-invaders-speed-boost" class="text-green-400 font-bold hidden"></span>
+            <span id="space-invaders-weapon-ready" class="font-bold hidden"></span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Line 2: Wave/Phase, Auto-Shoot, Weapon Type -->
+      <div id="space-invaders-hud-line2" class="bg-black/85 rounded-lg border-2 border-yellow-400 p-2">
+        <div class="flex items-center justify-between text-sm">
+          <span id="space-invaders-wave" class="font-bold">🎯W1</span>
+          <span id="space-invaders-auto-shoot" class="font-bold">AUTO: OFF</span>
+          <span id="space-invaders-weapon-type" class="font-bold">🔫NORMAL</span>
+        </div>
+      </div>
+      
+      <!-- Line 3: Multi-Shot, Special Ammo, Mouse Control, Game Speed -->
+      <div id="space-invaders-hud-line3" class="bg-black/85 rounded-lg border-2 border-yellow-400 p-2">
+        <div class="flex items-center justify-between text-xs">
+          <span id="space-invaders-multi-shot" class="font-bold hidden"></span>
+          <span id="space-invaders-special-ammo" class="font-bold hidden"></span>
+          <span id="space-invaders-mouse-control" class="font-bold hidden"></span>
+          <span id="space-invaders-rapid-fire" class="font-bold hidden"></span>
+          <span id="space-invaders-game-speed" class="font-bold hidden"></span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 🐛 BUG #322 FIX: Boss HUD Container (outside canvas) -->
+    <div id="space-invaders-boss-hud-container" class="hidden w-full max-w-md mx-auto mb-3">
+      <div id="space-invaders-boss-hp-bar" class="bg-black/85 rounded-lg border-2 border-yellow-400 p-2">
+        <div class="text-center mb-2">
+          <span id="space-invaders-boss-name" class="text-white font-bold text-sm"></span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-white font-bold text-xs">HP:</span>
+          <div class="flex-1 mx-2 h-4 bg-gray-700 rounded-full overflow-hidden">
+            <div id="space-invaders-boss-hp-fill" class="h-full transition-all duration-300 rounded-full" style="width: 100%;"></div>
+          </div>
+          <span id="space-invaders-boss-hp-text" class="text-white font-bold text-xs">0/0</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 🐛 BUG #322 FIX: Phoenix Wave HUD Container (outside canvas) -->
+    <div id="space-invaders-phoenix-hud-container" class="hidden w-full max-w-md mx-auto mb-3">
+      <div class="bg-black/85 rounded-lg border-2 border-orange-500 p-2">
+        <div class="text-center">
+          <span id="space-invaders-phoenix-text" class="text-orange-400 font-bold text-sm">🔥 PHOENIX WAVE</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 🎨 NEW: Boss Announcement Container (overlay, doesn't affect layout) -->
+    <div id="space-invaders-boss-announcement-container" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none max-w-md">
+      <div class="bg-black/90 rounded-lg border-2 border-yellow-400 p-3 shadow-lg">
+        <div class="text-center">
+          <span id="space-invaders-boss-announcement-text" class="text-yellow-400 font-bold text-lg">🧀 GIANT CHEESE BOSS WAVE 🧀</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 🎯 NEW: Combo/Multiplier Display Container (overlay, top-center, doesn't block gameplay) -->
+    <div id="space-invaders-combo-container" class="hidden fixed top-24 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+      <div class="bg-black/90 rounded-lg border-2 border-yellow-400 p-2 shadow-lg">
+        <div class="text-center space-y-1">
+          <div id="space-invaders-combo-text" class="text-yellow-400 font-bold text-base"></div>
+          <div id="space-invaders-multiplier-text" class="text-green-400 font-bold text-sm"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 🎁 NEW: Upgrade Notifications Container (overlay, doesn't affect layout) -->
+    <div id="space-invaders-upgrade-notifications-container" class="hidden fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none max-w-md">
+      <div class="bg-black/90 rounded-lg border-2 border-green-400 p-2 shadow-lg">
+        <div class="text-left space-y-1">
+          <!-- Upgrade notifications will be inserted here dynamically -->
+        </div>
+      </div>
     </div>
     
     <div class="relative">

@@ -2672,3 +2672,59 @@
     "discord_name": "narrrf",
     "game": "tetris"
 }
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 60,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "snake"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 115,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "snake"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 135,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "snake"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 48,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "tetris"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 202,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 898,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 1268,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}
+{
+    "wallet": "TestWallet123456789XYZ",
+    "score": 208,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "space_invaders"
+}

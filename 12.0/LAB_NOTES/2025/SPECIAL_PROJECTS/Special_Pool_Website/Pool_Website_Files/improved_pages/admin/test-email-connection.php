@@ -1,12 +1,14 @@
 <?php
 /**
  * Pool Website Admin - Test Email Connection
- * Tests SMTP connection and sends a test email
+ * Tests Resend.com API service only (SMTP removed)
  * 
  * Created: September 29, 2025
+ * Updated: November 19, 2025 - Resend.com API only (no SMTP)
  */
 
 require_once __DIR__ . '/../api/smtp-helper.php';
+require_once __DIR__ . '/../api/email-api-service.php';
 
 // Suppress all output and warnings to ensure clean JSON response
 error_reporting(0);
@@ -53,66 +55,64 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // Get JSON input
+    // Load settings from settings.json (includes Resend API key from env var or hardcoded)
+    $settings = poolbau_get_email_settings();
+    
+    // Get JSON input (email settings from form)
     $input = json_decode(file_get_contents('php://input'), true);
     
     if (!$input) {
-        throw new Exception('Invalid JSON input');
+        $input = [];
     }
     
-    // Validate required fields
-    $required_fields = ['smtp_host', 'smtp_username', 'smtp_password'];
-    foreach ($required_fields as $field) {
-        if (empty($input[$field])) {
-            throw new Exception("Field '$field' is required");
+    // Merge input with saved settings (use saved settings for API key, input for email addresses)
+    $testSettings = array_merge($settings, $input);
+    
+    // Extract email settings
+    $from_email = $testSettings['from_email'] ?? $testSettings['sender_email'] ?? 'onboarding@resend.dev';
+    $from_name = $testSettings['from_name'] ?? 'Poolbauprofi.at Test';
+    $to_email = $testSettings['email_address'] ?? 'office@poolbauprofi.at';
+    
+    $testSubject = 'Poolbauprofi.at - E-Mail-Test';
+    $testBody = "Dies ist eine Test-E-Mail von Ihrem Poolbauprofi.at Admin-System.\n\n" .
+        "Test-Zeit: " . date('Y-m-d H:i:s') . "\n\n" .
+        "Wenn Sie diese E-Mail erhalten, ist Ihre Resend.com API-Konfiguration korrekt!\n\n" .
+        "Mit freundlichen Grüßen,\nIhr Poolbauprofi.at System";
+    
+    $emailSent = false;
+    $serviceUsed = '';
+    $errorMessage = '';
+    
+    // ONLY USE RESEND API (SMTP removed)
+    if (!empty($testSettings['resend_api_key'])) {
+        $apiResult = send_email_via_resend(
+            $testSettings['resend_api_key'],
+            $to_email,
+            $from_email,
+            $from_name,
+            $testSubject,
+            $testBody,
+            $from_email // reply-to
+        );
+        
+        if ($apiResult['success']) {
+            $emailSent = true;
+            $serviceUsed = 'Resend';
+        } else {
+            $errorMessage = $apiResult['error'] ?? 'Resend API error';
         }
+    } else {
+        $errorMessage = 'Resend API key not configured. Please set RESEND_API_KEY environment variable (Render) or check local hardcoded value.';
     }
     
-    // Extract SMTP settings
-    $smtp_host = $input['smtp_host'];
-    $smtp_port = $input['smtp_port'] ?? 587;
-    $smtp_username = $input['smtp_username'];
-    $smtp_password = $input['smtp_password'];
-    $smtp_encryption = $input['smtp_encryption'] ?? 'tls';
-    $from_email = $input['from_email'] ?? $smtp_username;
-    $from_name = $input['from_name'] ?? 'Poolbauprofi.at Test';
-    $to_email = $input['email_address'] ?? 'office@poolbauprofi.at';
-    
-    $smtpResult = poolbau_send_email_via_smtp([
-        'smtp_host' => $smtp_host,
-        'smtp_port' => $smtp_port,
-        'smtp_username' => $smtp_username,
-        'smtp_password' => $smtp_password,
-        'smtp_encryption' => $smtp_encryption,
-        'smtp_timeout' => 30,
-        'from_email' => $from_email,
-        'from_name' => $from_name
-    ], [
-        'to_email' => $to_email,
-        'to_name' => 'Poolbauprofi.at',
-        'from_email' => $from_email,
-        'from_name' => $from_name,
-        'reply_to_email' => $from_email,
-        'reply_to_name' => $from_name,
-        'subject' => 'Poolbauprofi.at - E-Mail-Test',
-        'body' => "Dies ist eine Test-E-Mail von Ihrem Poolbauprofi.at Admin-System.\n\n" .
-            "E-Mail-Konfiguration:\n" .
-            "- SMTP-Server: {$smtp_host}\n" .
-            "- Port: {$smtp_port}\n" .
-            "- Verschlüsselung: {$smtp_encryption}\n" .
-            "- Absender: {$from_email}\n" .
-            "- Test-Zeit: " . date('Y-m-d H:i:s') . "\n\n" .
-            "Wenn Sie diese E-Mail erhalten, ist Ihre SMTP-Konfiguration korrekt!\n\n" .
-            "Mit freundlichen Grüßen,\nIhr Poolbauprofi.at System"
-    ]);
-
-    if ($smtpResult['success']) {
+    if ($emailSent) {
         ob_clean();
         http_response_code(200);
         echo json_encode([
             'success' => true,
-            'message' => 'Email connection test successful! Test email sent.',
-            'details' => 'SMTP delivery completed successfully.'
+            'message' => 'Email connection test successful! Test email sent via Resend.com API.',
+            'details' => 'Test email delivered successfully using Resend.com.',
+            'service' => 'Resend'
         ], JSON_UNESCAPED_UNICODE);
         ob_end_flush();
     } else {
@@ -120,7 +120,14 @@ try {
         http_response_code(400);
         echo json_encode([
             'success' => false,
-            'message' => $smtpResult['error']
+            'message' => 'Email test failed: ' . $errorMessage,
+            'details' => $errorMessage,
+            'debug' => [
+                'resend_api_key_configured' => !empty($testSettings['resend_api_key']),
+                'resend_api_key_length' => !empty($testSettings['resend_api_key']) ? strlen($testSettings['resend_api_key']) : 0,
+                'from_email' => $from_email,
+                'to_email' => $to_email
+            ]
         ], JSON_UNESCAPED_UNICODE);
         ob_end_flush();
     }
@@ -136,7 +143,7 @@ try {
 }
 
 // Log the test attempt
-$log_entry = date('Y-m-d H:i:s') . " - Email connection test by " . $_SESSION['admin_username'] . "\n";
+$log_entry = date('Y-m-d H:i:s') . " - Email connection test by " . ($_SESSION['admin_username'] ?? 'unknown') . " - Result: " . ($emailSent ?? false ? 'SUCCESS' : 'FAILED') . " - Service: Resend.com API\n";
 file_put_contents('../api/admin_log.txt', $log_entry, FILE_APPEND | LOCK_EX);
 
 ?>

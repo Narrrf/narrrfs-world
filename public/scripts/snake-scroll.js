@@ -359,6 +359,10 @@ function initSnake() {
   let score = 0;
   let isSnakePaused = false;
   
+  // 🐛 BUG #312 FIX: Invalid turn glow effect
+  let invalidTurnGlow = 0; // Glow intensity (0-1)
+  let invalidTurnGlowDirection = null; // Direction that was attempted
+  
   // 🐍🧀 SEASON 5: GIANT CHEESE SNAKE BOSS SYSTEM
   let giantSnakeBossActive = false;
   let giantSnakeBoss = null;
@@ -1051,6 +1055,10 @@ function initSnake() {
     isSnakePaused = false;
     window.brainUnlocked = false;
     
+    // 🐛 BUG #312 FIX: Reset invalid turn glow on game reset
+    invalidTurnGlow = 0;
+    invalidTurnGlowDirection = null;
+    
     // 🧀 Reset cheese teleportation system
     cheeseTeleportTimer = 0;
     cheeseTeleportChance = 0.001; // Reset to base chance
@@ -1065,6 +1073,9 @@ function initSnake() {
     goldenApples = [];
     goldenApplesCollected = 0;
     bossTimer = 0;
+    
+    // 🐛 BUG #322 FIX: Hide boss HUD when game resets
+    updateBossHUD();
     
     // 🔥 Reset mad mode system
     madModeActive = false;
@@ -1259,6 +1270,9 @@ function initSnake() {
         }
         
         console.log(`🍎 Golden apple collected! ${goldenApplesCollected}/${giantSnakeBossConfig.goldenApplesRequired}`);
+        
+        // 🐛 BUG #322 FIX: Update HUD immediately when apple is collected
+        updateBossHUD();
         
         // Check if all apples collected (boss defeated)
         if (goldenApplesCollected >= giantSnakeBossConfig.goldenApplesRequired && giantSnakeBoss) {
@@ -1460,104 +1474,110 @@ function initSnake() {
     }, 1500); // Start countdown after 1.5 seconds
   }
   
-  function drawBossUI(ctx) {
-    if (!bossBattleActive || !giantSnakeBoss) return;
-    
-    // 🎨 IMPROVED BOSS UI - Clear visual indicators
-    const panelX = 5;
-    const panelY = 5;
-    const panelWidth = 190;
-    
-    // 🐍 BOSS HEALTH BAR (Top Priority - Most Important!)
-    const healthBarY = panelY;
-    const healthBarHeight = 22;
-    
-    // Background with semi-transparent dark panel
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-    ctx.fillRect(panelX, healthBarY, panelWidth, healthBarHeight);
-    
-    // Health bar fill
-    const healthPercent = giantSnakeBoss.health / giantSnakeBoss.maxHealth;
-    ctx.fillStyle = healthPercent > 0.5 ? '#10b981' : (healthPercent > 0.25 ? '#f59e0b' : '#ef4444');
-    ctx.fillRect(panelX + 2, healthBarY + 2, (panelWidth - 4) * healthPercent, healthBarHeight - 4);
-    
-    // Golden border
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(panelX, healthBarY, panelWidth, healthBarHeight);
-    
-    // Boss health text (centered on bar)
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 11px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(`🐍 BOSS HP: ${giantSnakeBoss.health}/${giantSnakeBoss.maxHealth}`, panelX + panelWidth / 2, healthBarY + 15);
-    ctx.textAlign = 'left'; // Reset
-    
-    // 🍎 GOLDEN APPLES COUNTER (Visual with icons!)
-    const applesY = healthBarY + healthBarHeight + 6;
-    const applesHeight = 20;
-    
-    // Dark background panel
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-    ctx.fillRect(panelX, applesY, panelWidth, applesHeight);
-    
-    // Draw golden apple icons (visual representation!)
-    const totalApples = giantSnakeBoss.maxHealth; // Baby: 5, Others: 10
-    const iconSize = 12;
-    const iconSpacing = totalApples <= 5 ? 20 : 14; // Larger spacing for Baby Boss (5 apples)
-    const startX = panelX + 5;
-    
-    for (let i = 0; i < totalApples; i++) {
-      const iconX = startX + (i * iconSpacing);
-      const iconY = applesY + 4;
-      
-      if (i < goldenApplesCollected) {
-        // ✅ Collected apple (golden glow)
-        ctx.shadowBlur = 5;
-        ctx.shadowColor = '#FFD700';
-        ctx.fillStyle = '#FFD700';
-      } else {
-        // ⬜ Not collected (gray)
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = '#444444';
+  // 🐛 BUG #322 FIX: Update boss HUD HTML elements (outside canvas)
+  function updateBossHUD() {
+    if (!bossBattleActive || !giantSnakeBoss) {
+      // Hide HUD container when no boss battle
+      const hudContainer = document.getElementById('snake-boss-hud-container');
+      if (hudContainer) {
+        hudContainer.classList.add('hidden');
       }
-      
-      ctx.beginPath();
-      ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, Math.PI * 2);
-      ctx.fill();
+      return;
     }
-    ctx.shadowBlur = 0;
     
-    // Apples text
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 10px Arial';
-    ctx.fillText(`${goldenApplesCollected}/${totalApples} 🍎`, panelX + panelWidth - 45, applesY + 14);
+    // Show HUD container
+    const hudContainer = document.getElementById('snake-boss-hud-container');
+    if (hudContainer) {
+      hudContainer.classList.remove('hidden');
+    }
     
-    // ⏰ TIMER (Right side, yellow warning color)
-    const timerY = applesY + applesHeight + 4;
+    // 1. Update Boss HP Bar
+    const healthPercent = giantSnakeBoss.health / giantSnakeBoss.maxHealth;
+    const hpFill = document.getElementById('snake-boss-hp-fill');
+    const hpText = document.getElementById('snake-boss-hp-text');
+    
+    if (hpFill) {
+      hpFill.style.width = `${healthPercent * 100}%`;
+      // Color based on health percentage
+      if (healthPercent > 0.5) {
+        hpFill.style.backgroundColor = '#10b981'; // Green
+      } else if (healthPercent > 0.25) {
+        hpFill.style.backgroundColor = '#f59e0b'; // Orange
+      } else {
+        hpFill.style.backgroundColor = '#ef4444'; // Red
+      }
+    }
+    
+    if (hpText) {
+      hpText.textContent = `${giantSnakeBoss.health}/${giantSnakeBoss.maxHealth}`;
+    }
+    
+    // 2. Update Golden Apples Counter
+    const totalApples = giantSnakeBoss.maxHealth; // Baby: 5, Others: 10
+    const applesIcons = document.getElementById('snake-boss-apples-icons');
+    const applesText = document.getElementById('snake-boss-apples-text');
+    
+    if (applesIcons) {
+      applesIcons.innerHTML = ''; // Clear existing icons
+      
+      for (let i = 0; i < totalApples; i++) {
+        const icon = document.createElement('div');
+        icon.className = 'apple-icon rounded-full';
+        icon.style.width = '12px';
+        icon.style.height = '12px';
+        
+        if (i < goldenApplesCollected) {
+          // ✅ Collected apple (golden glow)
+          icon.style.backgroundColor = '#FFD700';
+          icon.style.boxShadow = '0 0 5px rgba(255, 215, 0, 0.8)';
+        } else {
+          // ⬜ Not collected (gray)
+          icon.style.backgroundColor = '#444444';
+          icon.style.boxShadow = 'none';
+        }
+        
+        applesIcons.appendChild(icon);
+      }
+    }
+    
+    if (applesText) {
+      applesText.textContent = `${goldenApplesCollected}/${totalApples} 🍎`;
+    }
+    
+    // 3. Update Timer + Bonus
     const timeLeft = giantSnakeBossConfig.bossTimeLimit - bossTimer;
     const seconds = Math.ceil(timeLeft * 0.4);
+    const timerText = document.getElementById('snake-boss-timer-text');
+    const bonusText = document.getElementById('snake-boss-bonus-text');
     
-    // Timer background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-    ctx.fillRect(panelX, timerY, panelWidth, 18);
+    if (timerText) {
+      timerText.textContent = `⏰ Time: ${seconds}s`;
+      // Warning color if low
+      if (seconds < 10) {
+        timerText.style.color = '#ef4444'; // Red
+      } else {
+        timerText.style.color = '#fbbf24'; // Yellow
+      }
+    }
     
-    // Timer text (warning color if low)
-    ctx.fillStyle = seconds < 10 ? '#ef4444' : '#fbbf24';
-    ctx.font = 'bold 11px Arial';
-    ctx.fillText(`⏰ Time: ${seconds}s`, panelX + 5, timerY + 13);
+    if (bonusText) {
+      const index = giantSnakeBoss.bossNumber - 1;
+      const potentialBonus = giantSnakeBossConfig.rewards[index] || 30;
+      bonusText.textContent = `+${potentialBonus} 💰`;
+    }
+  }
+  
+  function drawBossUI(ctx) {
+    if (!bossBattleActive || !giantSnakeBoss) {
+      // 🐛 BUG #322 FIX: Hide HUD when no boss battle
+      updateBossHUD();
+      return;
+    }
     
-    // 💰 DEFEAT BONUS (Right aligned on timer bar)
-    const index = giantSnakeBoss.bossNumber - 1;
-    const potentialBonus = giantSnakeBossConfig.rewards[index] || 30;
+    // 🐛 BUG #322 FIX: Update HTML HUD instead of drawing on canvas
+    updateBossHUD();
     
-    ctx.fillStyle = '#10b981';
-    ctx.font = 'bold 10px Arial';
-    ctx.textAlign = 'right';
-    ctx.fillText(`+${potentialBonus} 💰`, panelX + panelWidth - 5, timerY + 13);
-    ctx.textAlign = 'left'; // Reset
-    
-    // 🐍 BOSS BATTLE INDICATOR (Bottom of screen)
+    // 🐍 BOSS BATTLE INDICATOR (Bottom of screen - still on canvas)
     ctx.shadowBlur = 10;
     ctx.shadowColor = giantSnakeBoss.color;
     ctx.fillStyle = giantSnakeBoss.color;
@@ -1828,6 +1848,99 @@ function initSnake() {
       ctx.filter = "none";
     });
 
+    // 🐛 BUG #312 FIX: Draw invalid turn glow effect (enhanced - more frames, more love!)
+    if (invalidTurnGlow > 0 && snake.length > 0) {
+      const head = snake[0];
+      const headX = head.x * gridSize + gridSize / 2;
+      const headY = head.y * gridSize + gridSize / 2;
+      
+      // Enhanced pulsing red/orange glow effect with more intensity
+      const glowIntensity = invalidTurnGlow;
+      const pulsePhase = performance.now() / 100; // Pulsing animation
+      const pulseAmount = 0.3 + 0.2 * Math.sin(pulsePhase); // Pulsing between 0.3-0.5
+      const glowSize = gridSize * (1.8 + pulseAmount); // Larger, pulsing size
+      
+      // Outer glow (red/orange gradient) - more intense
+      const gradient = ctx.createRadialGradient(headX, headY, 0, headX, headY, glowSize);
+      gradient.addColorStop(0, `rgba(255, 0, 0, ${glowIntensity * 0.95})`); // Brighter red center
+      gradient.addColorStop(0.4, `rgba(255, 100, 0, ${glowIntensity * 0.75})`); // Brighter orange middle
+      gradient.addColorStop(0.7, `rgba(255, 150, 0, ${glowIntensity * 0.4})`); // Extended orange
+      gradient.addColorStop(1, `rgba(255, 0, 0, 0)`); // Transparent edge
+      
+      ctx.save();
+      ctx.globalAlpha = glowIntensity;
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(headX, headY, glowSize, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Middle glow layer (orange/yellow)
+      ctx.globalAlpha = glowIntensity * 0.85;
+      const middleGradient = ctx.createRadialGradient(headX, headY, 0, headX, headY, gridSize * 1.2);
+      middleGradient.addColorStop(0, `rgba(255, 200, 0, ${glowIntensity * 0.9})`);
+      middleGradient.addColorStop(1, `rgba(255, 100, 0, 0)`);
+      ctx.fillStyle = middleGradient;
+      ctx.beginPath();
+      ctx.arc(headX, headY, gridSize * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Inner bright flash (white/yellow) - more intense
+      ctx.globalAlpha = glowIntensity * 0.95;
+      ctx.fillStyle = `rgba(255, 255, 200, ${glowIntensity})`; // Brighter yellow-white flash
+      ctx.beginPath();
+      ctx.arc(headX, headY, gridSize * 0.9, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Direction indicator (arrow pointing in attempted direction)
+      if (invalidTurnGlowDirection) {
+        ctx.strokeStyle = `rgba(255, 255, 255, ${glowIntensity})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        
+        const arrowSize = gridSize * 0.6;
+        let arrowX = headX;
+        let arrowY = headY;
+        
+        switch (invalidTurnGlowDirection) {
+          case 'left':
+            arrowX -= arrowSize;
+            ctx.moveTo(headX, headY);
+            ctx.lineTo(arrowX, arrowY);
+            ctx.lineTo(arrowX + arrowSize * 0.3, arrowY - arrowSize * 0.3);
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(arrowX + arrowSize * 0.3, arrowY + arrowSize * 0.3);
+            break;
+          case 'right':
+            arrowX += arrowSize;
+            ctx.moveTo(headX, headY);
+            ctx.lineTo(arrowX, arrowY);
+            ctx.lineTo(arrowX - arrowSize * 0.3, arrowY - arrowSize * 0.3);
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(arrowX - arrowSize * 0.3, arrowY + arrowSize * 0.3);
+            break;
+          case 'up':
+            arrowY -= arrowSize;
+            ctx.moveTo(headX, headY);
+            ctx.lineTo(arrowX, arrowY);
+            ctx.lineTo(arrowX - arrowSize * 0.3, arrowY + arrowSize * 0.3);
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(arrowX + arrowSize * 0.3, arrowY + arrowSize * 0.3);
+            break;
+          case 'down':
+            arrowY += arrowSize;
+            ctx.moveTo(headX, headY);
+            ctx.lineTo(arrowX, arrowY);
+            ctx.lineTo(arrowX - arrowSize * 0.3, arrowY - arrowSize * 0.3);
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(arrowX + arrowSize * 0.3, arrowY - arrowSize * 0.3);
+            break;
+        }
+        ctx.stroke();
+      }
+      
+      ctx.restore();
+    }
+
     // 🧀 Draw cheese - Role-based colors (only if not in boss battle)
     if (!bossBattleActive) {
       if (cheeseImg.complete) {
@@ -1864,6 +1977,14 @@ function initSnake() {
 
   function moveSnake() {
     if (isSnakePaused) return;
+    
+    // 🐛 BUG #312 FIX: Decay invalid turn glow effect (enhanced - more frames, more love!)
+    if (invalidTurnGlow > 0) {
+      invalidTurnGlow = Math.max(0, invalidTurnGlow - 0.08); // Fade out over ~12-13 frames (longer, more visible)
+      if (invalidTurnGlow <= 0) {
+        invalidTurnGlowDirection = null; // Clear direction when glow fades
+      }
+    }
 
     // 🧪 DEBUG: Log every moveSnake call (disabled for production)
     // console.log('🐍 moveSnake() called - Timer:', cheeseTeleportTimer);
@@ -2381,11 +2502,52 @@ function initSnake() {
       return;
     }
     
+    // 🐛 BUG #312 FIX: Prevent opposite direction turns (prevents self-collision)
     switch (e.key) {
-      case "ArrowLeft": case "a": if (velocity.x === 0) velocity = { x: -1, y: 0 }; break;
-      case "ArrowRight": case "d": if (velocity.x === 0) velocity = { x: 1, y: 0 }; break;
-      case "ArrowUp": case "w": if (velocity.y === 0) velocity = { x: 0, y: -1 }; break;
-      case "ArrowDown": case "s": if (velocity.y === 0) velocity = { x: 0, y: 1 }; break;
+      case "ArrowLeft": case "a": 
+        // Only allow left if not moving right (opposite direction)
+        if (velocity.x === 0) {
+          velocity = { x: -1, y: 0 };
+        } else if (velocity.x === 1) {
+          // Attempted opposite turn - show glow instead of changing direction
+          invalidTurnGlow = 1.0;
+          invalidTurnGlowDirection = 'left';
+          console.log('🚫 Invalid turn: Cannot turn left while moving right');
+        }
+        break;
+      case "ArrowRight": case "d": 
+        // Only allow right if not moving left (opposite direction)
+        if (velocity.x === 0) {
+          velocity = { x: 1, y: 0 };
+        } else if (velocity.x === -1) {
+          // Attempted opposite turn - show glow instead of changing direction
+          invalidTurnGlow = 1.0;
+          invalidTurnGlowDirection = 'right';
+          console.log('🚫 Invalid turn: Cannot turn right while moving left');
+        }
+        break;
+      case "ArrowUp": case "w": 
+        // Only allow up if not moving down (opposite direction)
+        if (velocity.y === 0) {
+          velocity = { x: 0, y: -1 };
+        } else if (velocity.y === 1) {
+          // Attempted opposite turn - show glow instead of changing direction
+          invalidTurnGlow = 1.0;
+          invalidTurnGlowDirection = 'up';
+          console.log('🚫 Invalid turn: Cannot turn up while moving down');
+        }
+        break;
+      case "ArrowDown": case "s": 
+        // Only allow down if not moving up (opposite direction)
+        if (velocity.y === 0) {
+          velocity = { x: 0, y: 1 };
+        } else if (velocity.y === -1) {
+          // Attempted opposite turn - show glow instead of changing direction
+          invalidTurnGlow = 1.0;
+          invalidTurnGlowDirection = 'down';
+          console.log('🚫 Invalid turn: Cannot turn down while moving up');
+        }
+        break;
     }
   });
 
@@ -2480,19 +2642,52 @@ document.body.addEventListener("touchend", function(e) {
   const minSwipeDistance = SNAKE_SWIPE_THRESHOLD;
   
   // Only process swipes if game is active and not paused
+  // 🐛 BUG #312 FIX: Prevent opposite direction turns for touch controls too
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
     // Horizontal swipe detection - more responsive
-    if (deltaX > minSwipeDistance && velocity.x === 0) {
-      velocity = { x: 1, y: 0 }; // Right
-    } else if (deltaX < -minSwipeDistance && velocity.x === 0) {
-      velocity = { x: -1, y: 0 }; // Left
+    if (deltaX > minSwipeDistance) {
+      // Only allow right if not moving left (opposite direction)
+      if (velocity.x === 0) {
+        velocity = { x: 1, y: 0 }; // Right
+      } else if (velocity.x === -1) {
+        // Attempted opposite turn - show glow instead
+        invalidTurnGlow = 1.0;
+        invalidTurnGlowDirection = 'right';
+        console.log('🚫 Invalid turn (touch): Cannot turn right while moving left');
+      }
+    } else if (deltaX < -minSwipeDistance) {
+      // Only allow left if not moving right (opposite direction)
+      if (velocity.x === 0) {
+        velocity = { x: -1, y: 0 }; // Left
+      } else if (velocity.x === 1) {
+        // Attempted opposite turn - show glow instead
+        invalidTurnGlow = 1.0;
+        invalidTurnGlowDirection = 'left';
+        console.log('🚫 Invalid turn (touch): Cannot turn left while moving right');
+      }
     }
   } else {
     // Vertical swipe detection - more responsive
-    if (deltaY > minSwipeDistance && velocity.y === 0) {
-      velocity = { x: 0, y: 1 }; // Down
-    } else if (deltaY < -minSwipeDistance && velocity.y === 0) {
-      velocity = { x: 0, y: -1 }; // Up
+    if (deltaY > minSwipeDistance) {
+      // Only allow down if not moving up (opposite direction)
+      if (velocity.y === 0) {
+        velocity = { x: 0, y: 1 }; // Down
+      } else if (velocity.y === -1) {
+        // Attempted opposite turn - show glow instead
+        invalidTurnGlow = 1.0;
+        invalidTurnGlowDirection = 'down';
+        console.log('🚫 Invalid turn (touch): Cannot turn down while moving up');
+      }
+    } else if (deltaY < -minSwipeDistance) {
+      // Only allow up if not moving down (opposite direction)
+      if (velocity.y === 0) {
+        velocity = { x: 0, y: -1 }; // Up
+      } else if (velocity.y === 1) {
+        // Attempted opposite turn - show glow instead
+        invalidTurnGlow = 1.0;
+        invalidTurnGlowDirection = 'up';
+        console.log('🚫 Invalid turn (touch): Cannot turn up while moving down');
+      }
     }
   }
 }, { passive: false });

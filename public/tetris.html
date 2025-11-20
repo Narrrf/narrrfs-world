@@ -120,6 +120,52 @@
         touch-action: manipulation;
       }
     }
+    
+    /* 🐛 BUG #322 FIX: Boss HUD responsive styles (matching Snake) */
+    #tetris-boss-hud-container {
+      animation: fadeInDown 0.3s ease-out;
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    #tetris-boss-hp-fill {
+      transition: width 0.3s ease-out, background-color 0.3s ease-out;
+    }
+    
+    /* Mobile responsive boss HUD */
+    @media (max-width: 768px) {
+      #tetris-boss-hud-container {
+        padding: 0 8px;
+        font-size: 0.9em;
+      }
+      
+      #tetris-boss-hp-bar {
+        padding: 8px 10px;
+      }
+      
+      #tetris-boss-name,
+      #tetris-boss-lines-text {
+        font-size: 0.85em;
+      }
+      
+      #tetris-boss-hp-fill {
+        height: 12px !important;
+      }
+    }
+    
+    /* Ensure HUD is always visible and properly styled */
+    #tetris-boss-hud-container:not(.hidden) {
+      display: block;
+    }
 
   </style>
 </head>
@@ -198,10 +244,27 @@
       <p class="text-xs text-gray-400">💡 Press 'P' to pause during gameplay</p>
     </div>
     
+    <!-- 🐛 BUG #322 FIX: Boss HUD outside game container (like Snake) -->
+    <div id="tetris-boss-hud-container" class="hidden w-full max-w-md mx-auto mb-3">
+      <!-- Boss HP Bar -->
+      <div id="tetris-boss-hp-bar" class="bg-black/85 rounded-lg border-2 border-yellow-400 p-3 shadow-lg">
+        <div class="text-center mb-2">
+          <span id="tetris-boss-name" class="text-white font-bold text-sm"></span>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-white font-bold text-xs whitespace-nowrap">📊 Progress:</span>
+          <div class="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden">
+            <div id="tetris-boss-hp-fill" class="h-full transition-all duration-300 rounded-full" style="width: 0%;"></div>
+          </div>
+          <span id="tetris-boss-lines-text" class="text-white font-bold text-xs whitespace-nowrap ml-2">0/0</span>
+        </div>
+      </div>
+    </div>
+    
     <!-- 🔮 Next Block Preview -->
     <div class="text-center mb-4">
       <p class="text-yellow-300 text-sm mb-2">Next Block:</p>
-      <canvas id="next-canvas" width="80" height="80" class="bg-gray-900 rounded-md block mx-auto"></canvas>
+      <canvas id="next-canvas" width="80" height="80" class="bg-gray-900 rounded-md block mx-auto border-2 border-gray-700"></canvas>
     </div>
     
     <div class="flex justify-center items-center mb-4">

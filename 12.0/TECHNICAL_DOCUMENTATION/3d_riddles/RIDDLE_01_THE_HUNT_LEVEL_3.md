@@ -32,9 +32,36 @@ Enter a massive 160x160 cheese stone arena and hunt animated monsters in two pha
   - **Flickering Fix:** Added `polygonOffset` to material and elevated floor by 0.01 units to prevent z-fighting
   - Texture repeats across the 160x160 area (size/4 pattern)
 - **Walls:** Level 1-style dark walls (not white like Level 2)
-- **Lighting:** Ambient + directional (darker atmosphere like Level 1)
+- **Dynamic Labyrinth:** Four gigantic slabs sweep across the arena (two on X, two on Z) using `LEVEL3_MOVING_WALLS`; collisions push the player out so the hunt feels like a shifting maze.
+  - **Visual Debugging:** Each wall has a unique color for easy identification during testing:
+    - 🔴 **Red** - Wall 1 (X-axis, left side)
+    - 🟢 **Green** - Wall 2 (X-axis, right side)
+    - 🔵 **Blue** - Wall 3 (Z-axis, back)
+    - 🟡 **Yellow** - Wall 4 (Z-axis, front)
+  - **Water Effect:** Texture UV offset animation creates a subtle wobble/water effect on all walls for visual interest
+- **Movement Bounds:** Each slab auto-clamps its travel distance so it never leaves the 160x160 play space, preventing clipping outside the arena.
+- **Lighting:** Ambient 0.35 + directional 1.4 (warm tint) plus dual point lights (warm back-left + cool front-right) for high-contrast shadows
 - **Spawn Position:** Center of arena (x: 0, y: 1, z: 750)
 - **Auto-Start:** Level 3 auto-starts in local development (same as Level 2)
+
+### Danger Mechanic — Wall Crush
+- Getting pinned between two moving slabs (X- or Z-aligned) will crush the player and trigger a spectacular game over screen.
+- Detection is **comprehensive multi-layer system**:
+  - **Primary Axis Checks:** X-axis (left-right) and Z-axis (front-back) crush detection
+  - **Corner Crush Check:** Simultaneous squeeze from both axes when walls cross paths
+  - **Comprehensive Pair Check:** Evaluates ALL possible wall pairs to catch edge cases
+- **Edge-aware detection**: Uses player's full horizontal bounding box (min/max X,Z with radius), not just center point
+- **Gap calculation**: Accurate gap = `posSurface - negSurface - (playerRadius * 2)`
+- **Threshold**: Crush triggers when gap ≤ `PLAYER_RADIUS * 1.4` (~0.6 units) for 0.2 seconds
+- **Game Over Screen**: When triggered, a dramatic popup appears (like Snake/Tetris) with:
+  - **💥 CRUSHED!** title with red/orange danger theme
+  - Shake animation and fade-in effects
+  - Three action buttons:
+    - **🔄 Try Again** - Restarts Level 3 from Step 0
+    - **🎮 Level Select** - Opens level selector menu
+    - **🏠 Return to Level 1** - Returns to Level 1
+  - Game automatically pauses when shown
+  - No DSPOINC awarded for failed attempts
 
 ### Hidden Cheese Stone Trigger
 - **Position:** Random location in arena (currently: x: -20, y: 0.35, z: -30 relative to origin)
@@ -263,4 +290,34 @@ Enter a massive 160x160 cheese stone arena and hunt animated monsters in two pha
 - ✅ G key step cycling in God Mode (0 → 1 → 2 → 3 → 0)
 - ✅ Monster name display in spawn messages ("🏹 Hunt the [Name]!")
 - ✅ God Mode 4x speed (2x faster than before)
+
+---
+
+## ✅ PRODUCTION TESTING VERIFICATION (November 19, 2025 - Evening)
+
+### Complete Level 3 Testing Results:
+- ✅ **Step 0:** Cheese stone platform works, reward awarded correctly (200 DSPOINC with VIP 2x)
+- ✅ **Step 1:** All 5 monsters caught, reward awarded correctly (500 DSPOINC with VIP 2x)
+- ✅ **Step 2:** All 5 monsters caught, reward awarded correctly (500 DSPOINC with VIP 2x)
+- ✅ **Total Rewards:** 1,200 DSPOINC (600 base × 2.0 VIP multiplier)
+- ✅ **Traits:** All 3 traits (`CHEESE_TEMPLE_LEVEL3_STEP0/1/2`) unlocked correctly
+- ✅ **Profile Page:** All 3 achievements appear in "3D Puzzles Achievements" section
+- ✅ **Recent Score Changes:** All 11 rewards appear with correct formatting and amounts
+  - 1 Step 0 entry: +200 DSPOINC
+  - 10 monster entries: +100 DSPOINC each (monster_1 through monster_10)
+- ✅ **Role Multiplier:** VIP 2x multiplier confirmed working for all rewards
+- ✅ **Database Records:** All 11 entries correctly logged in `tbl_riddle_completions` and `tbl_score_adjustments`
+
+### Production Status:
+- ✅ **FULLY VERIFIED** - All systems working correctly in production
+- ✅ **Database Integration** - All rewards and traits correctly stored
+- ✅ **Frontend Integration** - All achievements and rewards displaying correctly
+- ✅ **Role Multipliers** - VIP 2.0x multiplier confirmed working
+- ✅ **Complete System** - Ready for community engagement
+
+---
+
+**Last Updated:** November 19, 2025 (Evening - Production Verified)  
+**Status:** ✅ **3-STEP SYSTEM COMPLETE & PRODUCTION VERIFIED** — All steps implemented with traits and DSPOINC rewards  
+**Version:** 2.1 (Updated Nov 19, 2025 - Production verification complete)
 

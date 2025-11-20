@@ -94,6 +94,7 @@
         padding: 10px;
         -webkit-touch-callout: none;
         -webkit-user-select: none;
+        user-select: none;
         touch-action: manipulation;
       }
       
@@ -109,6 +110,76 @@
         font-size: 0.9em;
         touch-action: manipulation;
       }
+    }
+    
+    /* 🐛 BUG #322 FIX: Boss HUD responsive styles */
+    #snake-boss-hud-container {
+      animation: fadeInDown 0.3s ease-out;
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    #snake-boss-hp-fill {
+      transition: width 0.2s ease-out, background-color 0.2s ease-out;
+    }
+    
+    /* Mobile responsive boss HUD */
+    @media (max-width: 768px) {
+      #snake-boss-hud-container {
+        padding: 0 8px;
+        font-size: 0.9em;
+      }
+      
+      #snake-boss-hp-bar,
+      #snake-boss-apples-counter,
+      #snake-boss-timer-bonus {
+        padding: 8px 10px;
+        font-size: 0.85em;
+      }
+      
+      #snake-boss-hp-bar span,
+      #snake-boss-hp-text,
+      #snake-boss-apples-text,
+      #snake-boss-timer-text,
+      #snake-boss-bonus-text {
+        font-size: 0.85em;
+      }
+      
+      #snake-boss-apples-icons {
+        gap: 6px !important;
+      }
+      
+      #snake-boss-apples-icons .apple-icon {
+        width: 10px !important;
+        height: 10px !important;
+        min-width: 10px;
+        min-height: 10px;
+      }
+      
+      #snake-boss-hp-fill {
+        height: 12px !important;
+      }
+    }
+    
+    /* Desktop boss HUD */
+    @media (min-width: 769px) {
+      #snake-boss-hud-container {
+        max-width: 400px;
+      }
+    }
+    
+    /* Ensure HUD is always visible and properly styled */
+    #snake-boss-hud-container:not(.hidden) {
+      display: block;
     }
   </style>
 </head>
@@ -185,6 +256,38 @@
       <button id="start-snake-btn" class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl shadow-lg w-32">▶️ Start</button>
       <button id="pause-snake-btn" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-1 rounded-xl shadow-md w-32">⏸️ Pause</button>
       <p class="text-xs text-gray-400">💡 Use arrow keys or swipe to move</p>
+    </div>
+    
+    <!-- 🐛 BUG #322 FIX: Boss HUD outside game container -->
+    <div id="snake-boss-hud-container" class="hidden w-full max-w-md mx-auto mb-3 space-y-2">
+      <!-- 1. Boss HP Bar -->
+      <div id="snake-boss-hp-bar" class="bg-black/85 rounded-lg border-2 border-yellow-400 p-2">
+        <div class="flex items-center justify-between">
+          <span class="text-white font-bold text-sm">🐍 BOSS HP:</span>
+          <div class="flex-1 mx-2 h-4 bg-gray-700 rounded-full overflow-hidden">
+            <div id="snake-boss-hp-fill" class="h-full transition-all duration-300 rounded-full" style="width: 100%;"></div>
+          </div>
+          <span id="snake-boss-hp-text" class="text-white font-bold text-sm">0/0</span>
+        </div>
+      </div>
+      
+      <!-- 2. Golden Apples Counter -->
+      <div id="snake-boss-apples-counter" class="bg-black/75 rounded-lg border-2 border-yellow-400/50 p-2">
+        <div class="flex items-center justify-between">
+          <div id="snake-boss-apples-icons" class="flex items-center gap-2 flex-wrap">
+            <!-- Apple icons will be dynamically inserted here -->
+          </div>
+          <span id="snake-boss-apples-text" class="text-white font-bold text-sm ml-2">0/0 🍎</span>
+        </div>
+      </div>
+      
+      <!-- 3. Timer + Bonus -->
+      <div id="snake-boss-timer-bonus" class="bg-black/75 rounded-lg border-2 border-yellow-400/50 p-2">
+        <div class="flex items-center justify-between">
+          <span id="snake-boss-timer-text" class="text-yellow-400 font-bold text-sm">⏰ Time: 60s</span>
+          <span id="snake-boss-bonus-text" class="text-green-400 font-bold text-sm">+0 💰</span>
+        </div>
+      </div>
     </div>
     
     <div class="flex justify-center items-center mb-4">

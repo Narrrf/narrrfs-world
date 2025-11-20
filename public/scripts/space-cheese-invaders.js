@@ -7503,16 +7503,9 @@ let reloadButtonInterval = null;
       ctx.restore();
     });
     
-    // Draw Giant Cheese Boss wave indicator
-    if (giantCheeseBossActive) {
-      ctx.fillStyle = '#ffa500';
-      ctx.font = 'bold 24px Arial';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = '#ff8c00';
-      ctx.shadowBlur = 10;
-      ctx.fillText('🧀 GIANT CHEESE BOSS WAVE 🧀', canvasWidth / 2, 30);
-      ctx.shadowBlur = 0;
-    }
+    // 🎨 HTML-BASED HUD: Boss announcement moved to HTML
+    // Canvas drawing removed - now using updateSpaceInvadersBossHUD()
+    updateSpaceInvadersBossHUD();
   }
   
   function checkPlayerCollisionWithCheeseBoss() {
@@ -8940,27 +8933,9 @@ let reloadButtonInterval = null;
   }
   
   function drawComboDisplay() {
-    if (killCombo > 1) {
-      const alpha = Math.min(1, (Date.now() - comboTimer) / 1000); // Fade in
-      ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
-      ctx.font = 'bold 20px Arial';
-      ctx.textAlign = 'center';
-      
-      const comboText = `${killCombo} KILL COMBO!`;
-      const multiplierText = `${comboMultiplier.toFixed(1)}x MULTIPLIER`;
-      
-      // Draw combo text with glow
-      ctx.strokeStyle = `rgba(255, 255, 0, ${alpha * 0.5})`;
-      ctx.lineWidth = 3;
-      ctx.strokeText(comboText, canvasWidth / 2, 50);
-      ctx.fillText(comboText, canvasWidth / 2, 50);
-      
-      ctx.font = 'bold 16px Arial';
-      ctx.strokeText(multiplierText, canvasWidth / 2, 75);
-      ctx.fillText(multiplierText, canvasWidth / 2, 75);
-      
-      ctx.textAlign = 'left';
-    }
+    // 🎨 HTML-BASED HUD: Combo display moved to HTML
+    // Canvas drawing removed - now using updateSpaceInvadersComboHUD()
+    updateSpaceInvadersComboHUD();
   }
   
   function createEnhancedExplosion(x, y, size = 25, intensity = 1) {
@@ -10356,199 +10331,217 @@ let reloadButtonInterval = null;
     }
   }
 
-  // ❤️ NEW: Draw health display (compact layout)
+  // ❤️ NEW: Draw health display (HTML-based, canvas drawing removed)
   function drawHealth() {
-    ctx.fillStyle = '#ff0000';
-    ctx.font = '16px Arial';
-    ctx.fillText(`❤${playerShip.health}`, 10, 30);
-    
-    // 🚀 NEW: Compact ammo display in one line
-    let ammoText = '';
-    let ammoColor = '#ffffff';
-    
-    if (weaponAmmo.bomb > 0) {
-      ammoText += `💣${weaponAmmo.bomb} `;
-    }
-    if (weaponAmmo.laser > 0) {
-      ammoText += `🔫${weaponAmmo.laser} `;
-    }
-    if (speedBoostAmmo > 0) {
-      ammoText += `⚡${speedBoostAmmo} `;
-    }
-    
-    // Position ammo info to the right of health
-    if (ammoText) {
-      ctx.fillStyle = ammoColor;
-      ctx.fillText(ammoText, 80, 30);
-    }
-    
-    // 🚀 NEW: Speed boost timer (if active) - positioned on the right side
-    if (speedBoostActive) {
-      ctx.fillStyle = '#00ff00';
-      const timeLeft = Math.ceil(speedBoostTimer / 10);
-      const timeText = `⚡${timeLeft}s`;
-      const timeWidth = ctx.measureText(timeText).width;
-      // Position on the right side with some margin
-      ctx.fillText(timeText, canvasWidth - timeWidth - 10, 30);
-    }
-    
-    // 🚀 NEW: Weapon ready indicator for desktop players
-    if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
-      ctx.fillStyle = '#00ffff';
-      ctx.font = '12px Arial';
-      ctx.fillText('🔫 READY', canvasWidth - 80, 50);
-    } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
-      ctx.fillStyle = '#ff00ff';
-      ctx.font = '12px Arial';
-      ctx.fillText('💣 READY', canvasWidth - 80, 50);
-    }
+    // 🎨 HTML-BASED HUD: All health/ammo display moved to HTML
+    // Canvas drawing removed - now using updateSpaceInvadersMainHUD()
+    updateSpaceInvadersMainHUD();
   }
 
-  // 📊 NEW: Draw phase information with bomb status (compact layout)
+  // 📊 NEW: Draw phase information (HTML-based, canvas drawing removed)
   function drawPhaseInfo() {
-    if (!ctx || typeof canvasHeight === 'undefined') {
-      return; // Don't draw if context or canvas height is not available
+    // 🎨 HTML-BASED HUD: All phase/wave/weapon info moved to HTML
+    // Canvas drawing removed - now using updateSpaceInvadersMainHUD()
+    updateSpaceInvadersMainHUD();
+    updateSpaceInvadersUpgradeNotifications();
+  }
+
+  // 🎨 HTML-BASED HUD UPDATE FUNCTIONS (November 19, 2025)
+  // These functions replace canvas drawing with HTML updates for better visibility and consistency
+
+  function updateSpaceInvadersMainHUD() {
+    // Update health display
+    const healthEl = document.getElementById('space-invaders-health');
+    if (healthEl && playerShip) {
+      healthEl.textContent = `❤️ ${playerShip.health}`;
     }
-    
-    ctx.font = '14px Arial';
-    
-    // 🚀 NEW: Compact phase display
-    let phaseText = '';
-    let phaseColor = '#ffffff';
-    
-    // 🎮 NEW: Speed indicator
-    if (gameSpeedMultiplier !== 1.0) {
-      ctx.fillStyle = '#ffaa00';
-      ctx.fillText(`🎮 Speed: ${Math.round(gameSpeedMultiplier * 100)}%`, 10, canvasHeight - 20);
+
+    // Update wave number (fixes W not updating issue)
+    const waveEl = document.getElementById('space-invaders-wave');
+    if (waveEl) {
+      waveEl.textContent = `🎯 W${waveNumber}`;
     }
-    
-    if (gamePhase === 'formation') {
-      phaseColor = '#4ade80'; // Green for formation
-      phaseText = `🎯W${waveNumber}`; // Ultra compact
-    } else if (gamePhase === 'attack') {
-      if (invaderDropPhase) {
-        phaseColor = '#ff6b6b'; // Red for drop phase
-        phaseText = `🚀W${waveNumber}`; // Ultra compact
+
+    // Update ammo display
+    const ammoEl = document.getElementById('space-invaders-ammo');
+    if (ammoEl) {
+      let ammoText = '';
+      if (weaponAmmo.bomb > 0) ammoText += `💣${weaponAmmo.bomb} `;
+      if (weaponAmmo.laser > 0) ammoText += `🔫${weaponAmmo.laser} `;
+      if (speedBoostAmmo > 0) ammoText += `⚡${speedBoostAmmo} `;
+      ammoEl.textContent = ammoText || 'No ammo';
+    }
+
+    // Update speed boost timer
+    const speedBoostEl = document.getElementById('space-invaders-speed-boost');
+    if (speedBoostEl) {
+      if (speedBoostActive && speedBoostTimer > 0) {
+        const timeLeft = Math.ceil(speedBoostTimer / 10);
+        speedBoostEl.textContent = `⚡${timeLeft}s`;
+        speedBoostEl.classList.remove('hidden');
       } else {
-        phaseColor = '#4ecdc4'; // Cyan for break phase
-        phaseText = `⏸️W${waveNumber}`; // Ultra compact
+        speedBoostEl.classList.add('hidden');
       }
     }
-    
-    // 🔥 PHOENIX INVADERS: Show Phoenix wave indicator
-    if (isPhoenixWave) {
-      phaseColor = '#ff6b35'; // Orange for Phoenix waves
-      phaseText = `🔥W${waveNumber}`; // Phoenix wave indicator
+
+    // Update weapon ready indicator
+    const weaponReadyEl = document.getElementById('space-invaders-weapon-ready');
+    if (weaponReadyEl) {
+      if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
+        weaponReadyEl.textContent = '🔫 READY';
+        weaponReadyEl.classList.remove('hidden');
+      } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
+        weaponReadyEl.textContent = '💣 READY';
+        weaponReadyEl.classList.remove('hidden');
+      } else {
+        weaponReadyEl.classList.add('hidden');
+      }
     }
-    
-    // 🚀 NEW: Show phase info on the left
-    ctx.fillStyle = phaseColor;
-    ctx.fillText(phaseText, 10, 50);
-    
-    // 🚀 NEW: Show auto-shoot status in the center
-    const autoText = `AUTO: ${autoShootEnabled ? 'ON' : 'OFF'}`;
-    const autoWidth = ctx.measureText(autoText).width;
-    ctx.fillStyle = autoShootEnabled ? '#4ade80' : '#ff6b6b';
-    ctx.fillText(autoText, (canvasWidth - autoWidth) / 2, 50);
-    
-    // 🚀 NEW: Show weapon type on the right
-    const weaponText = `🔫${currentWeaponType.toUpperCase()}`;
-    const weaponWidth = ctx.measureText(weaponText).width;
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(weaponText, canvasWidth - weaponWidth - 10, 50);
-    
-    // 🚀 NEW: Show mouse control status for desktop players
-    if (isMouseControlEnabled && !isMobileDevice) {
+
+    // Update auto-shoot status
+    const autoShootEl = document.getElementById('space-invaders-auto-shoot');
+    if (autoShootEl) {
+      autoShootEl.textContent = `AUTO: ${autoShootEnabled ? 'ON' : 'OFF'}`;
+      autoShootEl.className = autoShootEnabled ? 'text-green-400' : 'text-red-400';
+    }
+
+    // Update weapon type
+    const weaponTypeEl = document.getElementById('space-invaders-weapon-type');
+    if (weaponTypeEl) {
+      weaponTypeEl.textContent = `🔫 ${currentWeaponType.toUpperCase()}`;
+    }
+
+    // Update mouse control status
+    const mouseControlEl = document.getElementById('space-invaders-mouse-control');
+    if (mouseControlEl && isMouseControlEnabled && !isMobileDevice) {
       const mouseText = hasPlayerMovedMouse ? '🖱️ READY' : '🖱️ MOVE MOUSE';
-      const mouseColor = hasPlayerMovedMouse ? '#4ade80' : '#ffaa00';
-      ctx.fillStyle = mouseColor;
-      ctx.font = '12px Arial';
-      const mouseWidth = ctx.measureText(mouseText).width;
-      ctx.fillText(mouseText, (canvasWidth - mouseWidth) / 2, 70);
+      mouseControlEl.textContent = mouseText;
+      mouseControlEl.className = hasPlayerMovedMouse ? 'text-green-400' : 'text-yellow-400';
+      mouseControlEl.classList.remove('hidden');
+    } else if (mouseControlEl) {
+      mouseControlEl.classList.add('hidden');
     }
-    
-    // 🎯 NEW: Show multi-shot upgrade status
-    if (currentWeaponType === 'normal') {
-      let upgradeText = '';
-      let upgradeColor = '#ffffff';
-      
-      if (hasQuadShotUpgrade) {
-        upgradeText = '🎯 QUAD SHOT';
-        upgradeColor = '#ff00ff'; // Magenta for quad shot
-      } else if (hasTripleShotUpgrade) {
-        upgradeText = '🎯 TRIPLE SHOT';
-        upgradeColor = '#ff8800'; // Orange for triple shot
-      } else if (hasDoubleShotUpgrade) {
-        upgradeText = '🎯 DOUBLE SHOT';
-        upgradeColor = '#00ff00'; // Green for double shot
-      }
-      
-      if (upgradeText) {
-        ctx.fillStyle = upgradeColor;
-        ctx.font = '12px Arial';
-        const upgradeWidth = ctx.measureText(upgradeText).width;
-        ctx.fillText(upgradeText, canvasWidth - upgradeWidth - 10, 70);
-      }
-    }
-    
-    // 🚀 NEW: Show special weapon ammo below if available
-    if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
-      ctx.fillStyle = '#00ffff';
-      ctx.fillText(`⚡${weaponAmmo.laser}`, 10, 70);
-    } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
-      ctx.fillStyle = '#ff00ff';
-      ctx.fillText(`💣${weaponAmmo.bomb}`, 10, 70);
-    }
-    
-    // 🖱️ NEW: Show mouse control status
-    if (isMouseOverCanvas && isMouseControlEnabled) {
-      ctx.fillStyle = '#10b981';
-      ctx.fillText('🖱️ MOUSE', canvasWidth - 80, 70);
-      
-      // 🚀 NEW: Show rapid fire status
+
+    // Update rapid fire status
+    const rapidFireEl = document.getElementById('space-invaders-rapid-fire');
+    if (rapidFireEl && isMouseOverCanvas && isMouseControlEnabled) {
       if (typeof window.isMouseButtonDown !== 'undefined' && window.isMouseButtonDown) {
-        ctx.fillStyle = '#ff6b6b';
-        ctx.fillText('🔥 RAPID FIRE', canvasWidth - 100, 85);
+        rapidFireEl.textContent = '🔥 RAPID FIRE';
+        rapidFireEl.className = 'text-red-400';
+        rapidFireEl.classList.remove('hidden');
+      } else {
+        rapidFireEl.classList.add('hidden');
       }
-      
-      // 🔥 REMOVED: Canvas-based heat bar (now using unified HTML heat display only)
-      // This eliminates the duplicate heat bar that was causing confusion
-      // The unified heat display in the top-right corner now handles all heat information consistently
-      
-      // Debug: Show mouse position and target
-      if (typeof window.mouseTargetX !== 'undefined' && typeof window.mouseTargetY !== 'undefined') {
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '10px Arial';
-        ctx.fillText(`Mouse: ${Math.round(mouseX)},${Math.round(mouseY)}`, 10, 90);
-        ctx.fillText(`Target: ${Math.round(window.mouseTargetX)},${Math.round(window.mouseTargetY)}`, 10, 105);
-        ctx.fillText(`Ship: ${Math.round(playerShip.x)},${Math.round(playerShip.y)}`, 10, 120);
-      }
-      
-      // 🎯 NEW: Show all unlocked upgrades permanently
-      let upgradeY = 140;
-      ctx.font = '12px Arial';
-      
-      if (hasDoubleShotUpgrade) {
-        ctx.fillStyle = '#00ff00';
-        ctx.fillText('✅ DOUBLE SHOT UNLOCKED', 10, upgradeY);
-        upgradeY += 15;
-      }
-      
-      if (hasTripleShotUpgrade) {
-        ctx.fillStyle = '#ff8800';
-        ctx.fillText('✅ TRIPLE SHOT UNLOCKED', 10, upgradeY);
-        upgradeY += 15;
-      }
-      
+    } else if (rapidFireEl) {
+      rapidFireEl.classList.add('hidden');
+    }
+
+    // Update multi-shot upgrade status
+    const multiShotEl = document.getElementById('space-invaders-multi-shot');
+    if (multiShotEl && currentWeaponType === 'normal') {
       if (hasQuadShotUpgrade) {
-        ctx.fillStyle = '#ff00ff';
-        ctx.fillText('✅ QUAD SHOT UNLOCKED', 10, upgradeY);
-        upgradeY += 15;
+        multiShotEl.textContent = '🎯 QUAD SHOT';
+        multiShotEl.className = 'text-purple-400';
+        multiShotEl.classList.remove('hidden');
+      } else if (hasTripleShotUpgrade) {
+        multiShotEl.textContent = '🎯 TRIPLE SHOT';
+        multiShotEl.className = 'text-orange-400';
+        multiShotEl.classList.remove('hidden');
+      } else if (hasDoubleShotUpgrade) {
+        multiShotEl.textContent = '🎯 DOUBLE SHOT';
+        multiShotEl.className = 'text-green-400';
+        multiShotEl.classList.remove('hidden');
+      } else {
+        multiShotEl.classList.add('hidden');
+      }
+    } else if (multiShotEl) {
+      multiShotEl.classList.add('hidden');
+    }
+
+    // Update special weapon ammo
+    const specialAmmoEl = document.getElementById('space-invaders-special-ammo');
+    if (specialAmmoEl) {
+      if (currentWeaponType === 'laser' && weaponAmmo.laser > 0) {
+        specialAmmoEl.textContent = `⚡${weaponAmmo.laser}`;
+        specialAmmoEl.classList.remove('hidden');
+      } else if (currentWeaponType === 'bomb' && weaponAmmo.bomb > 0) {
+        specialAmmoEl.textContent = `💣${weaponAmmo.bomb}`;
+        specialAmmoEl.classList.remove('hidden');
+      } else {
+        specialAmmoEl.classList.add('hidden');
+      }
+    }
+
+    // Update game speed
+    const gameSpeedEl = document.getElementById('space-invaders-game-speed');
+    if (gameSpeedEl) {
+      if (gameSpeedMultiplier !== 1.0) {
+        gameSpeedEl.textContent = `🎮 Speed: ${Math.round(gameSpeedMultiplier * 100)}%`;
+        gameSpeedEl.classList.remove('hidden');
+      } else {
+        gameSpeedEl.classList.add('hidden');
       }
     }
   }
 
+  function updateSpaceInvadersBossHUD() {
+    const bossHudContainer = document.getElementById('space-invaders-boss-announcement-container');
+    if (bossHudContainer) {
+      if (giantCheeseBossActive) {
+        const bossTextEl = document.getElementById('space-invaders-boss-announcement-text');
+        if (bossTextEl) {
+          bossTextEl.textContent = '🧀 GIANT CHEESE BOSS WAVE 🧀';
+        }
+        bossHudContainer.classList.remove('hidden');
+      } else {
+        bossHudContainer.classList.add('hidden');
+      }
+    }
+  }
 
+  function updateSpaceInvadersComboHUD() {
+    const comboContainer = document.getElementById('space-invaders-combo-container');
+    if (comboContainer) {
+      if (killCombo > 1) {
+        const comboTextEl = document.getElementById('space-invaders-combo-text');
+        const multiplierEl = document.getElementById('space-invaders-multiplier-text');
+        if (comboTextEl) {
+          comboTextEl.textContent = `${killCombo} KILL COMBO!`;
+        }
+        if (multiplierEl) {
+          multiplierEl.textContent = `${comboMultiplier.toFixed(1)}x MULTIPLIER`;
+        }
+        comboContainer.classList.remove('hidden');
+      } else {
+        comboContainer.classList.add('hidden');
+      }
+    }
+  }
+
+  function updateSpaceInvadersUpgradeNotifications() {
+    const upgradeContainer = document.getElementById('space-invaders-upgrade-notifications-container');
+    if (upgradeContainer && isMouseOverCanvas && isMouseControlEnabled) {
+      let upgradeHTML = '';
+      if (hasDoubleShotUpgrade) {
+        upgradeHTML += '<div class="text-green-400 text-xs">✅ DOUBLE SHOT UNLOCKED</div>';
+      }
+      if (hasTripleShotUpgrade) {
+        upgradeHTML += '<div class="text-orange-400 text-xs">✅ TRIPLE SHOT UNLOCKED</div>';
+      }
+      if (hasQuadShotUpgrade) {
+        upgradeHTML += '<div class="text-purple-400 text-xs">✅ QUAD SHOT UNLOCKED</div>';
+      }
+      
+      if (upgradeHTML) {
+        upgradeContainer.innerHTML = upgradeHTML;
+        upgradeContainer.classList.remove('hidden');
+      } else {
+        upgradeContainer.classList.add('hidden');
+      }
+    } else if (upgradeContainer) {
+      upgradeContainer.classList.add('hidden');
+    }
+  }
 
   function onGameOver() {
     // 🚨 CRITICAL: Stop all game loops and timers

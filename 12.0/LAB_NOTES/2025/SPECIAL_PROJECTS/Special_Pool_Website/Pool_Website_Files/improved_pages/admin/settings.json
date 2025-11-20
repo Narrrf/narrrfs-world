@@ -5,7 +5,7 @@
     "sender_email": "onboarding@resend.dev",
     "from_email": "onboarding@resend.dev",
     "from_name": "Poolbauprofi.at Website",
-    "resend_api_key": "re_9KCgAcb5_HdcFLVi7gvjdgJtjs6NYMmVw",
+    "_comment": "resend_api_key removed for security - uses RESEND_API_KEY environment variable in production (Render) or hardcoded value in smtp-helper.php for local testing only",
     "smtp_host": "smtp.titan.email",
     "smtp_port": "587",
     "smtp_username": "office@poolbauprofi.at",

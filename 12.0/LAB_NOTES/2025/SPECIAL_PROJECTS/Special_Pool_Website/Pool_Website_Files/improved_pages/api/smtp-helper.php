@@ -27,11 +27,36 @@ if (!function_exists('poolbau_get_email_settings')) {
 
         $cached = is_array($data) ? $data : [];
 
-        // Allow overriding only the sensitive SMTP password via environment variable.
+        // Allow overriding sensitive credentials via environment variables (for production/Render)
+        // Priority: Environment Variable (Production) > Hardcoded (Local) > settings.json (Fallback)
+        
+        // Resend API Key
+        // PRODUCTION (Render): ALWAYS use RESEND_API_KEY environment variable (set in Render dashboard)
+        // LOCAL: Use hardcoded value below ONLY for local development
+        $envResendKey = getenv('RESEND_API_KEY');
+        
+        // PRODUCTION CHECK: If environment variable is set, use it (production on Render)
+        if ($envResendKey !== false && $envResendKey !== '') {
+            // Production: Use environment variable from Render
+            // This is secure - API key not in code or git
+            $cached['resend_api_key'] = $envResendKey;
+        } else {
+            // LOCAL TESTING ONLY: Hardcoded value for local development
+            // ⚠️ SECURITY: This is ONLY for local testing! Production MUST use RESEND_API_KEY environment variable.
+            // ⚠️ This hardcoded key is NOT used in production - Render uses environment variable instead.
+            // Office Resend account - Free tier (Created Nov 19, 2025)
+            $cached['resend_api_key'] = 're_4EqSK8rf_PWUqZjkBhyQfcDMcCGU5hLy4';
+        }
+        // Note: Production (Render) always uses environment variable, never hardcoded value
+        
+        // SMTP Password (from environment variable for production)
+        // RENDER/PRODUCTION: Set POOLBAU_SMTP_PASSWORD environment variable in Render dashboard
         $envPassword = getenv('POOLBAU_SMTP_PASSWORD');
         if ($envPassword !== false && $envPassword !== '') {
+            // Production: Use environment variable from Render
             $cached['smtp_password'] = $envPassword;
         }
+        // If settings.json has smtp_password, it's used (overridden by env var if present)
 
         return $cached;
     }

@@ -1119,6 +1119,9 @@ async function startTetris() {
   // 🧀 Clear cheese particles when starting new game
   cheeseParticles.clear();
   
+  // 🐛 BUG #322 FIX: Hide boss HUD on game start
+  hideTetrisBossHUD();
+  
   // 📱 PREVENT SCREEN SWIPE (like Snake!)
   document.body.style.overflow = "hidden";
   console.log('📱 Screen swipe prevented - Tetris active');
@@ -1387,38 +1390,8 @@ function drawBlock(x, y, val) {
       context.restore();
     }
     
-    // 👑 BOSS MODE INDICATOR on canvas
-    if (currentBoss) {
-      context.save();
-      context.fillStyle = currentBoss.color;
-      context.font = 'bold 12px Arial';
-      context.textAlign = 'center';
-      context.shadowBlur = 10;
-      context.shadowColor = currentBoss.color;
-      context.fillText(currentBoss.name, canvas.width / 2, 30);
-      
-      // Progress bar
-      const barWidth = canvas.width - 20;
-      const barHeight = 8;
-      const barX = 10;
-      const barY = 35;
-      const progress = bossLinesCleared / currentBoss.requiredLines;
-      
-      // Background
-      context.fillStyle = 'rgba(0,0,0,0.5)';
-      context.fillRect(barX, barY, barWidth, barHeight);
-      
-      // Progress fill
-      context.fillStyle = currentBoss.color;
-      context.fillRect(barX, barY, barWidth * progress, barHeight);
-      
-      // Text
-      context.fillStyle = '#FFD700';
-      context.font = 'bold 10px Arial';
-      context.fillText(`${bossLinesCleared}/${currentBoss.requiredLines} Lines`, canvas.width / 2, 52);
-      
-      context.restore();
-    }
+    // 👑 BOSS MODE INDICATOR - Now handled by HTML HUD (Bug #322 Fix)
+    // Boss HUD is updated via updateTetrisBossHUD() function
     
     // 🧀 Update and draw cheese particles
     cheeseParticles.update();
@@ -1724,6 +1697,9 @@ function collide(shape, row, col) {
             bossLinesCleared += lines + bombDefusedLines; // Count ALL lines (regular + bomb)
             console.log(`👑 Boss lines cleared: ${bossLinesCleared}/${currentBoss.requiredLines} (regular: ${lines}, bombs: ${bombDefusedLines})`);
             
+            // 🐛 BUG #322 FIX: Update boss HUD
+            updateTetrisBossHUD();
+            
             if (bossLinesCleared >= currentBoss.requiredLines) {
               // Boss defeated!
               defeatBoss();
@@ -1744,6 +1720,59 @@ function collide(shape, row, col) {
         }
       }
       
+  // 🐛 BUG #322 FIX: Boss HUD Management Functions
+  function showTetrisBossHUD() {
+    const container = document.getElementById('tetris-boss-hud-container');
+    if (container) {
+      container.classList.remove('hidden');
+    }
+  }
+  
+  function hideTetrisBossHUD() {
+    const container = document.getElementById('tetris-boss-hud-container');
+    if (container) {
+      container.classList.add('hidden');
+    }
+  }
+  
+  function updateTetrisBossHUD() {
+    if (!currentBoss) {
+      hideTetrisBossHUD();
+      return;
+    }
+    
+    const container = document.getElementById('tetris-boss-hud-container');
+    const hpBarEl = document.getElementById('tetris-boss-hp-bar');
+    const nameEl = document.getElementById('tetris-boss-name');
+    const hpFillEl = document.getElementById('tetris-boss-hp-fill');
+    const linesTextEl = document.getElementById('tetris-boss-lines-text');
+    
+    if (!container || !hpBarEl || !nameEl || !hpFillEl || !linesTextEl) {
+      return;
+    }
+    
+    // Update boss name with color
+    nameEl.textContent = currentBoss.name;
+    nameEl.style.color = currentBoss.color;
+    
+    // Update progress bar with boss color
+    const progress = Math.min(1, bossLinesCleared / currentBoss.requiredLines);
+    const progressPercent = Math.round(progress * 100);
+    hpFillEl.style.width = `${progressPercent}%`;
+    hpFillEl.style.backgroundColor = currentBoss.color;
+    
+    // Update border color to match boss (like Snake)
+    hpBarEl.style.borderColor = currentBoss.color;
+    
+    // Update lines text
+    linesTextEl.textContent = `${bossLinesCleared}/${currentBoss.requiredLines}`;
+    
+    // Show HUD if hidden
+    if (container.classList.contains('hidden')) {
+      showTetrisBossHUD();
+    }
+  }
+  
   // 👑 BOSS SPAWN FUNCTION (like Snake bosses!)
   function spawnBoss(bossIndex) {
     const bossName = tetrisBossConfig.names[bossIndex];
@@ -1762,6 +1791,9 @@ function collide(shape, row, col) {
     bossLinesCleared = 0;
     
     console.log(`👑 BOSS SPAWNED: ${bossName} | Lines: ${requiredLines} | Reward: ${reward} DSPOINC`);
+    
+    // 🐛 BUG #322 FIX: Show boss HUD
+    updateTetrisBossHUD();
     
     // ⏸️ PAUSE GAME during boss spawn countdown (like Snake!)
     isTetrisPaused = true;
@@ -1844,6 +1876,9 @@ function collide(shape, row, col) {
     // Clear boss state
     currentBoss = null;
     bossLinesCleared = 0;
+    
+    // 🐛 BUG #322 FIX: Hide boss HUD
+    hideTetrisBossHUD();
   }
   
   // 📢 BOSS SPAWN NOTIFICATION (with countdown like Snake!)
@@ -2187,6 +2222,9 @@ if (collide(current.shape, current.row, current.col)) {
     el.style.opacity = '';
   });
   console.log('🔓 Page links/buttons re-enabled - Tetris game over');
+  
+  // 🐛 BUG #322 FIX: Hide boss HUD on game over
+  hideTetrisBossHUD();
   
   onTetrisGameOver(score);
 

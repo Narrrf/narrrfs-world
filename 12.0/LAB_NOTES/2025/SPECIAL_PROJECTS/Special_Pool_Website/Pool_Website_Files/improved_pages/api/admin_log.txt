@@ -10,3 +10,10 @@
 2025-11-15 03:09:46 - Settings updated by pooladmin: {"email_address":"office@poolbauprofi.at","smtp_host":"smtp.titan.email","smtp_port":"587","smtp_username":"office@poolbauprofi.at","smtp_password":"POOLBAU_SMTP_PASSWORD","smtp_encryption":"tls","from_email":"office@poolbauprofi.at","from_name":"Poolbauprofi.at"}
 2025-11-15 03:09:51 - Email connection test by pooladmin
 2025-11-15 03:10:05 - Email connection test by pooladmin
+2025-11-20 23:34:45 - Failed admin login attempt from IP: ::1 (Username: pooladmin)
+2025-11-20 23:34:51 - Admin login successful from IP: ::1
+2025-11-20 23:37:40 - Email connection test by pooladmin - Result: FAILED
+2025-11-20 23:50:31 - Email connection test by pooladmin - Result: FAILED
+2025-11-21 00:11:12 - Email connection test by pooladmin - Result: FAILED - Service: Resend.com API
+2025-11-21 00:11:35 - Email connection test by pooladmin - Result: FAILED - Service: Resend.com API
+2025-11-21 00:27:45 - Email connection test by pooladmin - Result: SUCCESS - Service: Resend.com API

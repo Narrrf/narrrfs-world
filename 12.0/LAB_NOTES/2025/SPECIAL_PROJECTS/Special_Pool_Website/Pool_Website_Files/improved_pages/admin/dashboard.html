@@ -1128,64 +1128,49 @@
                     <div class="form-group">
                         <label for="emailAddress">E-Mail-Adresse für Anfragen:</label>
                         <input type="email" id="emailAddress" value="office@poolbauprofi.at">
-                        <small class="form-help">Hierhin werden alle Kontaktformulare gesendet</small>
+                        <small class="form-help">
+                            <strong>Test-Modus:</strong> Verwenden Sie Ihre verifizierte Test-E-Mail (z.B. markuswrulich@gmail.com)<br>
+                            <strong>Nach Domain-Verifizierung:</strong> Verwenden Sie office@poolbauprofi.at oder Ihre gewünschte Adresse
+                        </small>
                     </div>
                     
-                    <h4>🔧 SMTP-Konfiguration (für E-Mail-Versand)</h4>
-                    <div class="form-group">
-                        <label for="smtpHost">SMTP-Server:</label>
-                        <input type="text" id="smtpHost" placeholder="z.B. smtp.gmail.com oder mail.ihre-domain.com">
-                        <small class="form-help">Server-Adresse Ihres E-Mail-Anbieters</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="smtpPort">SMTP-Port:</label>
-                        <select id="smtpPort">
-                            <option value="587">587 (TLS/STARTTLS)</option>
-                            <option value="465">465 (SSL)</option>
-                            <option value="25">25 (Standard)</option>
-                            <option value="2525">2525 (Alternative)</option>
-                        </select>
-                        <small class="form-help">Port für sichere E-Mail-Übertragung</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="smtpUsername">SMTP-Benutzername:</label>
-                        <input type="text" id="smtpUsername" placeholder="Ihre E-Mail-Adresse">
-                        <small class="form-help">Meist Ihre E-Mail-Adresse</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="smtpPassword">SMTP-Passwort:</label>
-                        <input type="password" id="smtpPassword" placeholder="Ihr E-Mail-Passwort oder App-Passwort">
-                        <small class="form-help">Passwort oder App-spezifisches Passwort</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="smtpEncryption">Verschlüsselung:</label>
-                        <select id="smtpEncryption">
-                            <option value="tls">TLS (STARTTLS)</option>
-                            <option value="ssl">SSL</option>
-                            <option value="none">Keine Verschlüsselung</option>
-                        </select>
-                        <small class="form-help">Empfohlen: TLS für bessere Sicherheit</small>
+                    <h4>📤 E-Mail-Versand (Resend.com API - Free Tier)</h4>
+                    <div class="form-group" style="background: #d1f2eb; padding: 15px; border-radius: 8px; border: 2px solid #27ae60; margin: 20px 0;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span style="font-size: 1.5rem;">✅</span>
+                            <strong>Resend.com Free Tier konfiguriert</strong>
+                        </div>
+                        <p style="margin: 10px 0; color: #27ae60;">
+                            ✅ <strong>Kostenlos:</strong> Bis zu 3.000 E-Mails/Monat<br>
+                            ✅ <strong>Kann senden an:</strong> Beliebige E-Mail-Adressen (office@poolbauprofi.at funktioniert!)<br>
+                            ✅ <strong>Von-Adresse:</strong> onboarding@resend.dev (Resend Test-Domain - funktioniert ohne Domain-Verifizierung)<br>
+                            💡 <strong>Optional später:</strong> Domain verifizieren für eigene "Von-Adresse" (z.B. noreply@poolbauprofi.at)
+                        </p>
+                        <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; border: 1px solid #27ae60;">
+                            <strong>Von-Adresse:</strong> <span id="resendFromEmail">onboarding@resend.dev</span> (Resend Test-Domain)<br>
+                            <strong>Absender-Name:</strong> <span id="resendFromName">Poolbauprofi.at Website</span><br>
+                            <strong>An-Adresse:</strong> <span id="resendToEmail">office@poolbauprofi.at</span> (oder beliebige Adresse)
+                        </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="fromEmail">Absender-E-Mail:</label>
-                        <input type="email" id="fromEmail" value="noreply@poolbauprofi.at">
-                        <small class="form-help">Von welcher Adresse E-Mails gesendet werden</small>
+                        <input type="email" id="fromEmail" value="onboarding@resend.dev" readonly style="background-color: #f5f5f5;">
+                        <small class="form-help">
+                            <strong>Free Tier:</strong> onboarding@resend.dev (funktioniert ohne Domain-Verifizierung)<br>
+                            <strong>Hinweis:</strong> Für eigene Adresse wie noreply@poolbauprofi.at Domain bei resend.com/domains verifizieren (optional)
+                        </small>
                     </div>
                     
                     <div class="form-group">
                         <label for="fromName">Absender-Name:</label>
-                        <input type="text" id="fromName" value="Poolbauprofi.at">
+                        <input type="text" id="fromName" value="Poolbauprofi.at Website">
                         <small class="form-help">Name der als Absender angezeigt wird</small>
                     </div>
                     
                     <div class="form-group">
                         <button class="btn btn-info" onclick="testEmailConnection()">📧 E-Mail-Verbindung testen</button>
-                        <small class="form-help">Testet die SMTP-Konfiguration</small>
+                        <small class="form-help">Testet die Resend.com API-Verbindung</small>
                     </div>
                     
                     <button class="btn btn-success" onclick="saveEmailSettings()">💾 E-Mail-Einstellungen speichern</button>
@@ -1550,17 +1535,13 @@
             }
         }
 
-        // Save email settings
+        // Save email settings (Resend.com API only, no SMTP)
         async function saveEmailSettings() {
             const emailSettings = {
                 email_address: document.getElementById('emailAddress').value,
-                smtp_host: document.getElementById('smtpHost').value,
-                smtp_port: document.getElementById('smtpPort').value,
-                smtp_username: document.getElementById('smtpUsername').value,
-                smtp_password: document.getElementById('smtpPassword').value,
-                smtp_encryption: document.getElementById('smtpEncryption').value,
                 from_email: document.getElementById('fromEmail').value,
-                from_name: document.getElementById('fromName').value
+                from_name: document.getElementById('fromName').value,
+                sender_email: document.getElementById('fromEmail').value
             };
             
             try {
@@ -1573,6 +1554,9 @@
                 const result = await response.json();
                 if (result.success) {
                     showAlert('✅ E-Mail-Einstellungen gespeichert!');
+                    // Update display
+                    document.getElementById('resendFromEmail').textContent = emailSettings.from_email;
+                    document.getElementById('resendFromName').textContent = emailSettings.from_name;
                 } else {
                     showAlert('❌ Fehler beim Speichern', 'error');
                 }
@@ -1582,26 +1566,16 @@
             }
         }
 
-        // Test email connection
+        // Test email connection (Resend.com API only)
         async function testEmailConnection() {
             const emailSettings = {
-                smtp_host: document.getElementById('smtpHost').value,
-                smtp_port: document.getElementById('smtpPort').value,
-                smtp_username: document.getElementById('smtpUsername').value,
-                smtp_password: document.getElementById('smtpPassword').value,
-                smtp_encryption: document.getElementById('smtpEncryption').value,
+                email_address: document.getElementById('emailAddress').value,
                 from_email: document.getElementById('fromEmail').value,
                 from_name: document.getElementById('fromName').value
             };
             
-            // Validate required fields
-            if (!emailSettings.smtp_host || !emailSettings.smtp_username || !emailSettings.smtp_password) {
-                showAlert('❌ Bitte füllen Sie mindestens SMTP-Server, Benutzername und Passwort aus', 'error');
-                return;
-            }
-            
             try {
-                showAlert('🔄 Teste E-Mail-Verbindung...', 'info');
+                showAlert('🔄 Teste Resend.com API-Verbindung...', 'info');
                 
                 const response = await fetch('test-email-connection.php', {
                     method: 'POST',
@@ -1611,7 +1585,7 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    showAlert('✅ E-Mail-Verbindung erfolgreich getestet! Test-E-Mail gesendet.', 'success');
+                    showAlert(`✅ E-Mail-Verbindung erfolgreich getestet! Test-E-Mail gesendet via ${result.service || 'Resend'}.`, 'success');
                 } else {
                     showAlert(`❌ E-Mail-Test fehlgeschlagen: ${result.message}`, 'error');
                 }
@@ -1819,7 +1793,7 @@
         }
 
 
-        // Load email settings
+        // Load email settings (Resend.com API only)
         async function loadEmailSettings() {
             try {
                 const response = await fetch('get-settings.php');
@@ -1828,15 +1802,23 @@
                 if (result.success && result.settings) {
                     const settings = result.settings;
                     
-                    // Load SMTP settings into form
-                    if (settings.smtp_host) document.getElementById('smtpHost').value = settings.smtp_host;
-                    if (settings.smtp_port) document.getElementById('smtpPort').value = settings.smtp_port;
-                    if (settings.smtp_username) document.getElementById('smtpUsername').value = settings.smtp_username;
-                    if (settings.smtp_password) document.getElementById('smtpPassword').value = settings.smtp_password;
-                    if (settings.smtp_encryption) document.getElementById('smtpEncryption').value = settings.smtp_encryption;
-                    if (settings.from_email) document.getElementById('fromEmail').value = settings.from_email;
-                    if (settings.from_name) document.getElementById('fromName').value = settings.from_name;
+                    // Load Resend settings into form
                     if (settings.email_address) document.getElementById('emailAddress').value = settings.email_address;
+                    if (settings.from_email || settings.sender_email) {
+                        const fromEmail = settings.from_email || settings.sender_email || 'onboarding@resend.dev';
+                        document.getElementById('fromEmail').value = fromEmail;
+                        document.getElementById('resendFromEmail').textContent = fromEmail;
+                    }
+                    if (settings.from_name) {
+                        document.getElementById('fromName').value = settings.from_name;
+                        document.getElementById('resendFromName').textContent = settings.from_name;
+                    }
+                    
+                    // Show Resend API status
+                    const hasResendKey = settings.resend_api_key && settings.resend_api_key.length > 0;
+                    if (hasResendKey) {
+                        console.log('✅ Resend API key configured (from environment variable or hardcoded for local)');
+                    }
                 }
             } catch (error) {
                 console.log('Could not load email settings:', error);

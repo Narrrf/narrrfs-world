@@ -74,26 +74,8 @@ try {
         updateEmailInSendEmail($input['email_address']);
     }
     
-    // SMTP Settings
-    if (isset($input['smtp_host'])) {
-        $current_settings['smtp_host'] = $input['smtp_host'];
-    }
-    
-    if (isset($input['smtp_port'])) {
-        $current_settings['smtp_port'] = $input['smtp_port'];
-    }
-    
-    if (isset($input['smtp_username'])) {
-        $current_settings['smtp_username'] = $input['smtp_username'];
-    }
-    
-    if (isset($input['smtp_password'])) {
-        $current_settings['smtp_password'] = $input['smtp_password'];
-    }
-    
-    if (isset($input['smtp_encryption'])) {
-        $current_settings['smtp_encryption'] = $input['smtp_encryption'];
-    }
+    // SMTP Settings REMOVED - Only using Resend.com API now
+    // SMTP settings are no longer used or saved
     
     if (isset($input['from_email'])) {
         $current_settings['from_email'] = $input['from_email'];

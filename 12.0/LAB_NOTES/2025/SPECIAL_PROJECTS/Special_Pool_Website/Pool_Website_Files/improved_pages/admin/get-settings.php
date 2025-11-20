@@ -51,13 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $settings_file = 'settings.json';
-    $settings = [];
+    // Use the same settings loading function that email sending uses
+    // This ensures environment variables and hardcoded values are included
+    require_once __DIR__ . '/../api/smtp-helper.php';
     
-    // Load settings if file exists
-    if (file_exists($settings_file)) {
-        $settings = json_decode(file_get_contents($settings_file), true) ?: [];
-    }
+    // Load settings using the same function as email sending (includes env vars)
+    $settings = poolbau_get_email_settings();
     
     // Set default values if not present
     $default_settings = [
@@ -85,10 +84,9 @@ try {
             'ueber_uns' => true,
             'kontakt' => true
         ],
-        'smtp_port' => '587',
-        'smtp_encryption' => 'tls',
-        'from_email' => 'noreply@poolbauprofi.at',
-        'from_name' => 'Poolbauprofi.at'
+        'from_email' => 'onboarding@resend.dev',
+        'from_name' => 'Poolbauprofi.at Website',
+        'sender_email' => 'onboarding@resend.dev'
     ];
     
     // Merge with defaults

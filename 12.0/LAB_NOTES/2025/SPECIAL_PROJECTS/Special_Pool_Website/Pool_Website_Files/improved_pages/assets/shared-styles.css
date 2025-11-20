@@ -12,10 +12,40 @@ body {
     line-height: 1.6;
     color: #333;
     background-color: transparent;
-    background-attachment: fixed;
+    /* iOS Safari fix: Don't use background-attachment: fixed - it causes rendering issues */
+    background-attachment: scroll;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    /* Ensure full viewport coverage */
+    min-height: 100vh;
+    position: relative;
+}
+
+/* iOS Safari workaround: Use fixed pseudo-element for background */
+/* This ensures the background stays fixed while scrolling on iOS */
+body.ios-background-fix::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: var(--background-image, inherit);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    z-index: -1;
+    /* Ensure it covers the entire viewport */
+    min-height: 100vh;
+    /* Prevent any scrolling issues */
+    will-change: transform;
+}
+
+/* For iOS devices, hide body background when using pseudo-element */
+body.ios-background-fix {
+    background-image: none !important;
 }
 
 .container {

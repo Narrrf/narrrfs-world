@@ -2809,45 +2809,66 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   }
 
-  // Fetch recent adjustments
-// Fetch recent adjustments
-if (user && user.discord_id) {
-  fetch('/api/user/recent-adjustments.php', { credentials: 'include' })
-    .then(res => res.json())
-    .then(response => {
-      const recentList = document.getElementById('recentAdjustments');
-      const emptyMsg = document.getElementById('no-score-history');
-      const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
-
-      // If there are adjustments, hide the message and show the list
-      if (adjustments.length > 0) {
-        if (recentList) {
-          recentList.innerHTML = adjustments
-            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-            .slice(0, 10)
-            .map(a =>
-              `<li>
-                <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
-                <span class="italic">(${a.reason || a.action})</span>
-              </li>`
-            ).join('');
-        }
-        if (emptyMsg) emptyMsg.style.display = "none";
-      } else {
-        // No score changes: show the empty msg and clear the list
-        if (recentList) recentList.innerHTML = '';
-        if (emptyMsg) emptyMsg.style.display = "";
-      }
+  // 🐛 BUG #335 FIX: Fetch recent adjustments - use userId instead of user.discord_id
+  // This ensures it works in production where user object might not be set correctly
+  if (userId) {
+    // 🌍 Environment-aware API endpoint (works both locally and in production)
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+    
+    console.log('📊 Loading Recent Score Changes for user:', userId, '(Environment:', isProduction ? 'Production' : 'Local', ')');
+    
+    fetch(`${apiBaseUrl}/api/user/recent-adjustments.php?user_id=${encodeURIComponent(userId)}`, { 
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
     })
-    .catch(() => {
-      // On error, show a fallback error in the list and show the empty msg
-      const recentList = document.getElementById('recentAdjustments');
-      if (recentList) recentList.innerHTML = '<li class="text-red-400">Could not load recent changes.</li>';
-      const emptyMsg = document.getElementById('no-score-history');
-      if (emptyMsg) emptyMsg.style.display = "";
-    });
-}
+      .then(res => {
+        console.log('📊 Recent adjustments API response status:', res.status);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(response => {
+        console.log('📊 Recent adjustments API response:', response);
+        const recentList = document.getElementById('recentAdjustments');
+        const emptyMsg = document.getElementById('no-score-history');
+        const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
+
+        // If there are adjustments, hide the message and show the list
+        if (adjustments.length > 0) {
+          console.log('📊 Displaying', adjustments.length, 'recent score changes');
+          if (recentList) {
+            recentList.innerHTML = adjustments
+              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+              .slice(0, 10)
+              .map(a =>
+                `<li>
+                  <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
+                  : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
+                  <span class="italic">(${a.reason || a.action || 'Score adjustment'})</span>
+                </li>`
+              ).join('');
+          }
+          if (emptyMsg) emptyMsg.style.display = "none";
+        } else {
+          console.log('📊 No recent score changes found');
+          // No score changes: show the empty msg and clear the list
+          if (recentList) recentList.innerHTML = '';
+          if (emptyMsg) emptyMsg.style.display = "";
+        }
+      })
+      .catch((error) => {
+        console.error('❌ Error loading recent adjustments:', error);
+        // On error, show a fallback error in the list and show the empty msg
+        const recentList = document.getElementById('recentAdjustments');
+        if (recentList) recentList.innerHTML = '<li class="text-red-400">Could not load recent changes.</li>';
+        const emptyMsg = document.getElementById('no-score-history');
+        if (emptyMsg) emptyMsg.style.display = "";
+      });
+  } else {
+    console.log('⚠️ No userId found, skipping Recent Score Changes load');
+  }
 
 
   // 2. Load and display quests for this user

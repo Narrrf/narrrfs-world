@@ -1,9 +1,10 @@
 # 🎯 RIDDLE #1 — THE FIRST SHOT (LEVEL 4)
 
 **Document Created:** November 17, 2025  
+**Last Updated:** November 19, 2025 (Wave System + Enhanced AI)  
 **Riddle ID:** `CHEESE_TEMPLE_LEVEL4_RIDDLE_01`  
 **Level:** Cheese Temple — Level 4 "The First Shot"  
-**Status:** ✅ **FULLY IMPLEMENTED** — 50-cheese shooting challenge with progressive difficulty  
+**Status:** ✅ **FULLY IMPLEMENTED** — 50-cheese shooting challenge with wave-based progressive difficulty and enhanced AI  
 **Traits / Rewards:** 
 - `CHEESE_TEMPLE_LEVEL4_STEP0` (+100 DSPOINC)
 - `CHEESE_TEMPLE_LEVEL4_STEP1` (unlocked after shooting 50 cheeses)
@@ -17,8 +18,8 @@
 Enter a massive 160x160 cheese stone arena and complete "The First Shot" challenge. Find the hidden cheese stone to unlock Step 1, then shoot 50 floating cheese entities with a weapon. The challenge features progressive difficulty - cheeses get smaller, faster, and smarter as you progress.
 
 ### Flow Summary
-1. **Step 0 (Hidden Cheese Stone):** Stand on the hidden cheese stone platform for 10 seconds to unlock Step 1. Awards **+100 DSPOINC** and unlocks trait `CHEESE_TEMPLE_LEVEL4_STEP0`, then starts Step 1.
-2. **Step 1 (Shoot 50 Cheeses):** Shoot 50 floating cheese entities with a first-person weapon. Cheeses spawn in batches of 1-5 randomly. Each cheese rewards **+50 DSPOINC**. Difficulty increases progressively - cheeses get smaller (100% → 60% size), faster (1x → 2.5x speed), and smarter (better dodging) as you progress. After all 50 are shot, unlocks trait `CHEESE_TEMPLE_LEVEL4_STEP1` and portal appears.
+1. **Step 0 (Hidden Cheese Stone):** Stand on the hidden cheese stone platform for 10 seconds to unlock Step 1. Awards **+100 DSPOINC** and unlocks trait `CHEESE_TEMPLE_LEVEL4_STEP0`, then shows 3-second countdown before starting Step 1.
+2. **Step 1 (Shoot 50 Cheeses in Waves):** Shoot 50 floating cheese entities with a first-person weapon in **12 waves of 4 cheeses each, plus 1 final wave of 2 big aggressive cheeses**. Each wave shows a 3-second countdown popup (like Snake/Tetris) before spawning. Each cheese rewards **+50 DSPOINC**. Difficulty increases progressively by wave - cheeses get smaller (100% → 60% size), faster (1x → 2.5x speed), smarter (better dodging), and change color (yellow → orange → red) as waves progress. After all 50 are shot, unlocks trait `CHEESE_TEMPLE_LEVEL4_STEP1` and portal appears.
 3. **Step 2 (Portal Completion):** Enter the portal to see completion screen with options to proceed to Level 5, restart Level 4, or return to other levels.
 
 ---
@@ -57,42 +58,84 @@ Enter a massive 160x160 cheese stone arena and complete "The First Shot" challen
    - Shows toast: "Step 1 begins! The First Shot awaits..."
    - Ready for Step 1 implementation
 
-### Step 1: Shoot 50 Floating Cheeses
-1. After Step 0 completes, weapon viewmodel loads and pointer lock activates
-2. Initial batch of 1-5 cheeses spawns randomly in the arena
+### Step 1: Shoot 50 Floating Cheeses (Wave-Based System)
+1. After Step 0 completes, **3-second countdown popup** appears (like Snake/Tetris)
+2. **Wave System:**
+   - **12 waves** of 4 cheeses each = 48 cheeses
+   - **Final wave:** 2 extra big aggressive cheeses = 50 total
+   - **Wave countdown:** 3-second popup between each wave
+   - **Wave completion:** New wave spawns only after all cheeses in current wave are caught
 3. **Shooting System:**
-   - First-person weapon viewmodel (Pistol_1.fbx) attached to camera
+   - First-person weapon viewmodel system with **multi-weapon slot support**
+   - **Weapon Slot System:** Press number keys (1-9) to switch between weapons
+     - **Slot 1:** Pistol Mk I (Fire Weapons 1) - Default weapon
+     - **Slot 2:** Sci-Fi Pistol 1 (SF13 from Sci-Fi Modular Gun Pack) - Alternative weapon
+     - **Future Slots:** 3-9 can be added by extending `LEVEL4_WEAPON_SLOTS`
+     - **Transform System:** Each weapon type uses appropriate rotation/scale via `LEVEL4_WEAPON_TRANSFORMS`
+     - **Inventory Indicator:** Both weapons glow green in Level 2 (marked as gameplay inventory items)
+   - **Weapon Rendering Standard:** Centered position (0.0, -0.4, -0.5), rotated 90° left (Math.PI/2) to match 3D environment, slight downward tilt (-0.15) to align with crosshair
+   - Uses `processWeaponMaterial()` function (same as Level 2) for proper material conversion
+   - Automatic scaling based on weapon bounds (target size: 0.3 units)
+   - **Weapon Caching:** Weapons are cached to avoid reloading when switching
+   - **HUD Display:** Shows current weapon name and slot number
    - Left mouse button to shoot (mousedown event)
    - Raycasting from camera center (crosshair position)
    - Hit indicator shows cheese-themed radial gradient flash
    - Shooting sound: Space Invaders `normal_shoot.wav`
-   - Weapon bobbing animation when moving
-   - Recoil animation on each shot
-4. **Continuous Spawning:**
-   - New batch (1-5 cheeses) spawns 0.5 seconds after each cheese is hit
-   - Spawning continues until 50 total cheeses are shot
-   - Random spawn positions within arena bounds
-5. **Progressive Difficulty System:**
-   - **Size:** Decreases from 100% to 60% (smaller = harder to hit)
-   - **Speed:** Increases from 1x to 2.5x (faster movement)
-   - **Dodging:** Aggressiveness increases from 30% to 80%
-   - **Smartness:** Pathfinding improves from 40% to 90%
-   - Difficulty scales based on progress: `progress = cheesesCaught / 50`
-6. **Cheese Behavior:**
-   - Cheeses jump and fly around with AI behavior
+   - Weapon bobbing animation when moving (X, Y, Z axis bobbing + rotation)
+   - Recoil animation on each shot (pushes back and up, rotates upward)
+   - **See Technical Documentation Section 22 for complete weapon rendering standard**
+4. **Wave-Based Spawning:**
+   - **Smart Spawn Positioning:** Cheeses spawn strategically based on wave difficulty
+     - Waves 1-4: Spawn in visible areas (25-60 units from center)
+     - Waves 5-8: Mixed positions, some behind player (30-80 units)
+     - Waves 9-12: Difficult positions, behind player, far corners (30-80 units)
+     - Final Wave: Far away or behind player (50-90 units), 50% chance behind
+   - **Anti-Clustering:** Cheeses maintain minimum 20-unit distance from each other
+   - **Wave Countdown:** 3-second popup between waves (gives player breathing room)
+5. **Progressive Difficulty System (Wave-Based):**
+   - **Wave 1-2:** Easy (20% aggressiveness, 30% smartness, 1.0x speed, 100% size)
+   - **Wave 3-4:** Medium (35% aggressiveness, 45% smartness, 1.2x speed, 95% size)
+   - **Wave 5-6:** Hard (50% aggressiveness, 60% smartness, 1.4x speed, 90% size)
+   - **Wave 7-8:** Very Hard (65% aggressiveness, 75% smartness, 1.6x speed, 85% size)
+   - **Wave 9-10:** Extreme (80% aggressiveness, 85% smartness, 1.8x speed, 75% size)
+   - **Wave 11-12:** Nightmare (90% aggressiveness, 95% smartness, 2.0x speed, 70% size)
+   - **Final Wave:** Maximum (100% aggressiveness, 100% smartness, 2.5x speed, 60% size, but 20% bigger)
+   - Difficulty scales by wave number: `waveProgress = (waveNumber - 1) / 13`
+6. **Color System (Like Snake Bosses):**
+   - **Waves 1-3:** Yellow (easy) - `#ffff00`
+   - **Waves 4-6:** Orange (medium) - `#ffaa00`
+   - **Waves 7-9:** Dark Orange (hard) - `#ff6600`
+   - **Waves 10-12:** Red-Orange (very hard) - `#ff3300`
+   - **Final Wave:** Red (extreme) - `#ff0000`
+   - Colors applied as emissive glow (intensity 0.4-0.8 based on wave)
+7. **Enhanced AI Behaviors (Super Intelligent & Unpredictable):**
+   - **Predictive Dodging:** Detects when player is aiming (within 30° of crosshair) and dodges more aggressively (95% chance)
+   - **Group Coordination:** Cheeses spread out and avoid clustering (maintains 25-unit minimum distance)
+   - **Smart Height Variation:** Flies 3-5 units higher when player is aiming at it
+   - **Speed Burst System:** Unpredictable speed bursts (1.0x to 1.5x multiplier, 0.3-0.7 second duration)
+   - **Unpredictability Factor:** Random behavior variations (0.5-1.0) make each cheese unique
+   - **Direction Changes:** Unpredictable dodge angles based on unpredictability factor
+   - **Always Reachable:** Cheeses stay within arena bounds, never impossible to catch
+8. **Cheese Behavior:**
+   - Cheeses jump and fly around with enhanced AI behavior
    - **Mad Mode:** Can enter "mad mode" randomly (18% chance, 4-second duration, 15-second cooldown)
-   - Red-orange pulsing glow in mad mode
-   - More aggressive dodging and faster target changes
+   - **Mad Mode Color Variants:** Uses wave color as base, intensifies in mad mode (abstract color variants)
+   - More aggressive dodging and faster target changes in mad mode
+   - Restores wave color after mad mode ends
 7. **Explosion Effect:**
    - When hit, cheese explodes into 12 cheese particles
    - Particles fade out over 1 second with gravity
    - Cartoon/arcade style visual feedback
-8. **Progress Tracking:**
-   - HUD displays: "🔫 Cheeses Shot: X/50 (X%)"
+9. **Progress Tracking:**
+   - HUD displays:
+     - Current wave (color-coded): "Wave X/13" or "FINAL WAVE"
+     - Wave progress: "Wave Progress: X/4" (or X/2 for final wave)
+     - Total progress: "🔫 Cheeses Shot: X/50 (X%)"
    - Updates in real-time as cheeses are hit
    - Toast notifications for each cheese hit
-9. Each cheese shot rewards **+50 DSPOINC**
-10. After all 50 cheeses are shot:
+10. Each cheese shot rewards **+50 DSPOINC**
+11. After all 50 cheeses are shot:
     - Unlocks trait `CHEESE_TEMPLE_LEVEL4_STEP1`
     - Shows completion toast: "Step 1 Complete! All cheeses caught! Portal opening..."
     - Portal appears at back of arena
@@ -119,13 +162,15 @@ Enter a massive 160x160 cheese stone arena and complete "The First Shot" challen
 ### Core Functions
 - `buildLevel4FirstShotArena()` — Builds the 160x160 arena with cheese stone floor and dark walls
 - `createLevel4TriggerBlock()` — Creates the hidden cheese stone trigger block
-- `spawnLevel4Cheeses(count)` — Spawns 1-5 FloatingCheese instances (random if count not specified)
-- `resetLevel4Progress()` — Resets all Level 4 state, clears cheeses array
+- `calculateLevel4WaveDifficulty(waveNumber)` — Calculates wave-based difficulty (aggressiveness, smartness, speed, size, color)
+- `showLevel4WaveCountdown(waveNumber, onComplete)` — Shows 3-second countdown popup between waves (like Snake/Tetris)
+- `spawnLevel4Cheeses(count)` — Spawns exactly 4 cheeses per wave (or 2 for final wave) with wave-based difficulty and smart positioning
+- `resetLevel4Progress()` — Resets all Level 4 state, clears cheeses array, resets wave system
 - `checkLevel4TriggerBlockStanding()` — Checks if player is standing on trigger block
 - `updateLevel4Step0(delta)` — Updates Step 0 logic (timer, trait unlock, DSPOINC reward)
 - `updateLevel4TriggerBlockVisual(delta)` — Animates the trigger block sinking/rising
-- `updateLevel4(delta)` — Main update loop for Level 4 (updates cheeses, portal, HUD, particles)
-- `captureLevel4Cheese(cheeseIndex)` — Handles cheese hit, creates explosion, awards DSPOINC, spawns new batch
+- `updateLevel4(delta)` — Main update loop for Level 4 (updates wave countdown, cheeses, portal, HUD, particles)
+- `captureLevel4Cheese(cheeseIndex)` — Handles cheese hit, creates explosion, awards DSPOINC, checks wave completion, triggers next wave countdown
 - `completeLevel4Step1()` — Completes Step 1, unlocks trait, creates portal
 - `createLevel4Portal()` — Creates portal mesh at back of arena
 - `handleLevel4PortalProximity(playerPos, delta)` — Handles portal suction and entry detection
@@ -141,7 +186,7 @@ Enter a massive 160x160 cheese stone arena and complete "The First Shot" challen
 - `updateLevel4HitIndicator(delta)` — Updates hit indicator fade-out
 - `createCheeseExplosionEffect(position)` — Creates 12-particle explosion effect
 - `createLevel4ProgressHUD()` — Creates progress HUD element
-- `updateLevel4ProgressHUD()` — Updates progress HUD with current count
+- `updateLevel4ProgressHUD()` — Updates progress HUD with current wave, wave progress, and total count (color-coded)
 - `handleLevel4Collisions()` — Handles player collisions with walls, floor, and ceiling
 - `unlockLevel4Trait(traitKey, description)` — Unlocks trait via API
 - `awardLevel4DspoincReward(stepId, amount, description)` — Awards DSPOINC via API
@@ -178,6 +223,11 @@ const level4RiddleState = {
   step0TraitUnlocked: false,
   step1Active: false,
   cheesesCaught: 0, // Total cheeses shot (target: 50)
+  currentWave: 1, // Current wave (1-13: 12 waves + 1 final wave)
+  cheesesInCurrentWave: 0, // Cheeses caught in current wave (0-4)
+  waveCountdownActive: false, // Is countdown popup showing?
+  waveCountdownTime: 0, // Countdown timer
+  waveCountdownCallback: null, // Callback to execute after countdown
   step1TraitUnlocked: false,
   step2Complete: false,
   step2TraitUnlocked: false,
@@ -201,30 +251,70 @@ const level4Config = {
 - `LEVEL4_STEP1_TRAIT = "CHEESE_TEMPLE_LEVEL4_STEP1"`
 - `LEVEL4_STEP2_TRAIT = "CHEESE_TEMPLE_LEVEL4_STEP2"`
 - `LEVEL4_CHEESES_TO_CATCH = 50` (total cheeses to shoot)
-- `LEVEL4_MIN_SPAWN_COUNT = 1` (minimum cheeses to spawn at once)
-- `LEVEL4_MAX_SPAWN_COUNT = 5` (maximum cheeses to spawn at once)
+- `LEVEL4_WAVES_COUNT = 12` (12 waves of 4 cheeses each = 48 cheeses)
+- `LEVEL4_CHEESES_PER_WAVE = 4` (4 cheeses per wave)
+- `LEVEL4_FINAL_WAVE_CHEESES = 2` (Final wave: 2 extra big aggressive cheeses)
+- `LEVEL4_WAVE_COUNTDOWN_TIME = 3` (3 second countdown between waves)
 - `LEVEL4_DSPOINC_PER_CHEESE = 50` (DSPOINC reward per cheese)
 - `LEVEL4_WEAPON_PATH = "/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx"`
 - `LEVEL4_SHOOT_RANGE = 200` (maximum shooting range)
 - `LEVEL4_HIT_INDICATOR_DURATION = 0.3` (hit indicator flash duration)
 - `RIDDLE_AIM_TIME = 10.0` (seconds to stand on trigger block)
 
-### Cheese System
-- **FloatingCheese Class:** Same as Level 1 - includes mad mode, jumping, flying, AI dodging
-- **Spawn System:** Continuous spawning - 1-5 cheeses per batch, new batch spawns 0.5s after each hit
-- **Spawn Positions:** Random positions within arena bounds (20-70 units from center)
+### Cheese System (Wave-Based)
+- **FloatingCheese Class:** Enhanced with wave-based properties and advanced AI behaviors
+- **Wave System:**
+  - **12 waves** of 4 cheeses each (48 total)
+  - **Final wave:** 2 extra big aggressive cheeses (50 total)
+  - **Wave countdown:** 3-second popup between waves (like Snake/Tetris)
+  - **Wave completion:** New wave spawns only after all cheeses in current wave are caught
+- **Spawn System:** Wave-based spawning with smart positioning
+  - **Smart Spawn Positioning:** Strategic spawns based on wave difficulty
+    - Waves 1-4: Visible areas (25-60 units from center)
+    - Waves 5-8: Mixed positions, some behind player (30-80 units)
+    - Waves 9-12: Difficult positions, behind player, far corners (30-80 units)
+    - Final Wave: Far away or behind player (50-90 units), 50% chance behind
+  - **Anti-Clustering:** Cheeses maintain minimum 20-unit distance from each other
 - **Roam Radius:** 70 units (for 160x160 arena)
-- **Base Height:** 8 units above ground (with height variation)
-- **Progressive Difficulty:**
-  - Size multiplier: `1 - (progress * 0.4)` → 100% to 60%
-  - Speed multiplier: `1 + (progress * 1.5)` → 1x to 2.5x
-  - Aggressiveness: `0.3 + (progress * 0.5)` → 30% to 80%
-  - Smartness: `0.4 + (progress * 0.5)` → 40% to 90%
+- **Base Height:** 8 units above ground (with smart height variation)
+- **Wave-Based Progressive Difficulty:**
+  - Calculated by `calculateLevel4WaveDifficulty(waveNumber)`
+  - **Size multiplier:** 100% (wave 1) → 60% (final wave)
+  - **Speed multiplier:** 1.0x (wave 1) → 2.5x (final wave)
+  - **Aggressiveness:** 20% (wave 1) → 100% (final wave)
+  - **Smartness:** 30% (wave 1) → 100% (final wave)
+  - **Dodge distance:** 12 units (wave 1) → 30 units (final wave)
+  - **Target change speed:** 3.0s (wave 1) → 0.5s (final wave)
+- **Color System (Like Snake Bosses):**
+  - Waves 1-3: Yellow (`#ffff00`) - Easy
+  - Waves 4-6: Orange (`#ffaa00`) - Medium
+  - Waves 7-9: Dark Orange (`#ff6600`) - Hard
+  - Waves 10-12: Red-Orange (`#ff3300`) - Very Hard
+  - Final Wave: Red (`#ff0000`) - Extreme
+  - Colors applied as emissive glow (intensity 0.4-0.8 based on wave)
+- **Enhanced AI Behaviors:**
+  - **Predictive Dodging:** Detects when player is aiming (within 30° of crosshair) and dodges more aggressively (95% chance)
+  - **Group Coordination:** Cheeses spread out and avoid clustering (maintains 25-unit minimum distance)
+  - **Smart Height Variation:** Flies 3-5 units higher when player is aiming at it
+  - **Speed Burst System:** Unpredictable speed bursts (1.0x to 1.5x multiplier, 0.3-0.7 second duration)
+  - **Unpredictability Factor:** Random behavior variations (0.5-1.0) make each cheese unique
+  - **Direction Changes:** Unpredictable dodge angles based on unpredictability factor
+  - **Always Reachable:** Cheeses stay within arena bounds, never impossible to catch
 - **Mad Mode:** 18% chance, 4-second duration, 15-second cooldown
+  - **Color Variants:** Uses wave color as base, intensifies in mad mode (abstract color variants)
+  - Restores wave color after mad mode ends
 - **Hit Detection:** Raycasting from camera center (crosshair position)
 
 ### Shooting System
 - **Weapon Viewmodel:** Pistol_1.fbx model attached to camera in first-person view
+- **Weapon Rendering Standard (Established November 19, 2025):**
+  - **Position:** Centered (0.0, -0.4, -0.5) - center-bottom of screen
+  - **Rotation:** (-0.15, Math.PI/2, 0.0) - 90° left rotation to match 3D environment, slight downward tilt for crosshair alignment
+  - **Material Processing:** Uses `processWeaponMaterial()` function (same as Level 2) for proper MeshStandardMaterial conversion
+  - **Scaling:** Automatic based on weapon bounds (target size: 0.3 units)
+  - **Rendering:** renderOrder 999, frustumCulled false, always visible
+  - **Animation:** X/Y/Z bobbing when moving, recoil on shot (back 0.08, up 0.04 units)
+  - **See:** Technical Documentation Section 22 "WEAPON VIEWMODEL RENDERING STANDARD" for complete implementation details
 - **Controls:** Left mouse button (mousedown event) to shoot
 - **Raycasting:** From camera center (0, 0) with 200 unit range
 - **Hit Indicator:** Cheese-themed radial gradient overlay (yellow/orange)
@@ -232,8 +322,16 @@ const level4Config = {
   - Bobbing when moving (based on player velocity)
   - Recoil animation on each shot
   - Smooth return to rest position
-- **Audio:** Space Invaders `normal_shoot.wav` sound effect
+- **Audio:** Space Invaders `normal_shoot.wav` sound effect (weapon 1), SF13 triple-shot sound (weapon 2)
 - **Cooldown:** 0.2 seconds (5 shots per second max)
+- **Heat/Overload System (Like Space Invaders):**
+  - **Heat Generation:** 6 heat per shot (normal weapon), 18 heat per triple shot (SF13)
+  - **Max Heat:** 150 (triggers overheat at 100%)
+  - **Heat Decay:** 0.1 per frame (~6 per second at 60 FPS) when not shooting
+  - **Overheat Cooldown:** 6 seconds (must wait before shooting again)
+  - **Heat Display:** HUD shows heat bar with color-coded status (Green → Yellow → Orange → Red)
+  - **Overheat State:** Weapon cannot fire during cooldown period
+  - **Status:** Normal (0-49%), Warning (50-79%), Critical (80-99%), OVERHEATED (100%)
 
 ---
 
@@ -384,7 +482,59 @@ const level4Config = {
 
 ---
 
-**Last Updated:** November 17, 2025  
-**Status:** ✅ **FULLY IMPLEMENTED** — 50-cheese shooting challenge with progressive difficulty, weapon system, portal, and completion screen  
-**Version:** 3.0 (Updated Nov 17, 2025 - Complete 50-cheese system with shooting mechanics)
+---
+
+## ✅ PRODUCTION TESTING VERIFICATION (November 19, 2025 - Evening)
+
+### Complete Level 4 Testing Results:
+- ✅ **Step 0:** Cheese stone platform works, reward awarded correctly (200 DSPOINC with VIP 2x)
+- ✅ **Step 1:** All 50 cheeses shot, all rewards awarded correctly (5,000 DSPOINC with VIP 2x)
+- ✅ **Step 2:** Portal entry works, reward awarded correctly (400 DSPOINC with VIP 2x)
+- ✅ **Total Rewards:** 5,600 DSPOINC (2,800 base × 2.0 VIP multiplier)
+- ✅ **Traits:** All 3 traits (`CHEESE_TEMPLE_LEVEL4_STEP0/1/2`) unlocked correctly
+- ✅ **Profile Page:** All 3 achievements appear in "3D Puzzles Achievements" section
+- ✅ **Recent Score Changes:** All 52 rewards appear with correct formatting and amounts
+  - 1 Step 0 entry: +200 DSPOINC
+  - 50 cheese entries: +100 DSPOINC each (`CHEESE_TEMPLE_LEVEL4_CHEESE_1` through `CHEESE_50`)
+  - 1 Step 2 entry: +400 DSPOINC
+- ✅ **Role Multiplier:** VIP 2x multiplier confirmed working for all rewards
+- ✅ **Database Records:** All 52 entries correctly logged in `tbl_riddle_completions` and `tbl_score_adjustments`
+- ✅ **Pointer Lock Fix:** Movement works immediately after Step 0 (automatic pointer lock request)
+
+### Production Status:
+- ✅ **FULLY VERIFIED** - All systems working correctly in production
+- ✅ **Database Integration** - All rewards and traits correctly stored
+- ✅ **Frontend Integration** - All achievements and rewards displaying correctly
+- ✅ **Role Multipliers** - VIP 2.0x multiplier confirmed working
+- ✅ **Complete System** - Ready for community engagement
+- ✅ **Bug Fixes** - Pointer lock movement issue fixed (automatic activation)
+
+---
+
+## 🎮 UX Improvements (November 19, 2025 - Late Evening)
+
+### **1. Overheat Cooldown Extended** ✅
+- **Change:** Increased overheat cooldown from 3 seconds to 6 seconds
+- **Reason:** Players requested longer cooldown period to make overheating more impactful
+- **Impact:** Players must wait 6 seconds before shooting again after weapon overheats
+- **File Modified:** `three.js/main.js` - `level4State.overheatCooldown: 6000`
+- **Status:** ✅ **COMPLETE**
+
+### **2. "Already Completed" Notification Fix** ✅
+- **Issue:** "Riddle already completed" popup was too large and poorly positioned, blocking gameplay view
+- **Changes Applied:**
+  - **Size:** Reduced from 18px to 14px font, 8px padding (was 16px)
+  - **Width:** Reduced from 300px to 180px
+  - **Position:** Moved to top-right corner (like MAD MODE notification) instead of center
+  - **Duration:** Reduced from 4 seconds to 2.5 seconds
+  - **Text:** Changed from "🧩 Riddle Already Completed!" to "🧩 Already Completed"
+- **Result:** Less intrusive, doesn't block gameplay view
+- **File Modified:** `three.js/main.js` - `showRiddleRewardNotification()`
+- **Status:** ✅ **COMPLETE**
+
+---
+
+**Last Updated:** November 19, 2025 (Late Evening - UX Improvements)  
+**Status:** ✅ **FULLY IMPLEMENTED & PRODUCTION VERIFIED** — 50-cheese shooting challenge with progressive difficulty, weapon system, portal, and completion screen  
+**Version:** 3.1 (Updated Nov 19, 2025 - Production verification complete, pointer lock fix applied)
 
