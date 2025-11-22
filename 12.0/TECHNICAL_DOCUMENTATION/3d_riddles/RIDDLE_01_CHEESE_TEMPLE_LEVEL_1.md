@@ -430,6 +430,11 @@ Players must discover and interact with 3 hidden levers on the wall, performing 
 - **Wrong combinations reset sequence:** If player deviates from sequence, it resets to Step 0
 - **No partial credit:** Must complete all 3 steps in exact order
 - **Hint system:** After 5 failed attempts (with 10-second cooldown), hint messages appear
+- **Reset Logic (Fixed November 22, 2025):**
+  - **Step 1:** Only resets if all levers are turned back ON (player went backwards)
+  - **Step 2:** Only resets if lever1 or lever3 is turned ON (wrong levers)
+  - **Player can turn levers OFF one by one** in Step 1 without resetting
+  - **Player can turn lever2 ON** in Step 2 without resetting
 
 ### **Reward:**
 - **Fixed Reward:** 1,000 DSPOINC (no role multiplier)
@@ -1049,11 +1054,11 @@ The riddle system includes comprehensive debug logging:
 
 ---
 
-**Document Version:** 2.4  
-**Last Updated:** November 19, 2025  
+**Document Version:** 2.5  
+**Last Updated:** November 22, 2025  
 **Maintained By:** Narrrf's Lab Tech Council  
 **Status:** ✅ **PRODUCTION VERIFIED** - 3-Step System with Strict Aiming Detection + Role-Based Rewards  
-**Riddle Note:** November 19, 2025 - Production testing complete, all systems verified
+**Riddle Note:** November 22, 2025 - Fixed Riddle #4 sequence reset logic bug
 
 **Changes:** 
 - **Version 2.0:** Added Step 0 (hidden discovery challenge) - Riddle UI now hidden until player finds and stands on trigger block
@@ -1061,6 +1066,7 @@ The riddle system includes comprehensive debug logging:
 - **Version 2.2:** Fixed trait unlock API database schema mismatch - updated SQL queries to match actual table structure (`trait` instead of `trait_name`, `timestamp` instead of `created_at`/`updated_at`). Trait unlock now works correctly with existing database schema.
 - **Version 2.3:** Fixed role-based multiplier system - corrected `getRoleMultiplier()` function to query `role_name` column (not non-existent `role_id`). Role multipliers now correctly applied (VIP Holder: 2.0x, Holder: 1.5x, etc.)
 - **Version 2.4:** Production testing verified - All 3 riddles tested with fresh database, all systems working perfectly
+- **Version 2.5:** Fixed Riddle #4 sequence reset logic bug (November 22, 2025) - Reset logic was too aggressive, resetting when player was correctly turning levers OFF one by one. Now only resets if player goes backwards or turns wrong levers ON.
 
 **Latest Riddle Note (November 19, 2025 - Evening):**
 - **Production Testing Complete:** Fresh database test with Narrrf (VIP Holder) account

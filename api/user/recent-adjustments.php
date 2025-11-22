@@ -96,9 +96,10 @@ if (!$user_id) {
     exit;
 }
 
-// Prevent test user IDs in production (only allow real Discord sessions)
-if (!$isLocalDevelopment && ($user_id === 'LOCAL_TEST_DISCORD' || $user_id === $LOCAL_TEST_DISCORD_ID)) {
-    error_log("❌ Recent adjustments: Test user blocked in production: " . $user_id);
+// Prevent test user IDs in production (only block the literal test string, not real Discord IDs)
+// Note: $LOCAL_TEST_DISCORD_ID is Narrrf's real Discord ID, so it should work in production
+if (!$isLocalDevelopment && $user_id === 'LOCAL_TEST_DISCORD') {
+    error_log("❌ Recent adjustments: Test user string blocked in production: " . $user_id);
     http_response_code(403);
     echo json_encode(['error' => 'Test user not allowed in production']);
     exit;

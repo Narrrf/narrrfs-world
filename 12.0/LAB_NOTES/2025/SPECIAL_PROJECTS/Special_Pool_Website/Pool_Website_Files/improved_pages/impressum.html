@@ -190,7 +190,13 @@
     </div>
 
     <script>
-        // Load page background
+        // Detect iOS devices
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        // Load page background with iOS fix
         async function loadPageBackground() {
             try {
                 const response = await fetch('./api/get-bubble-settings.php');
@@ -198,18 +204,96 @@
                 
                 if (data.success && data.page_backgrounds && data.page_backgrounds.impressum) {
                     const backgroundImage = data.page_backgrounds.impressum;
-                    document.body.style.backgroundImage = `url('./assets/background/${backgroundImage}')`;
-                    document.body.style.backgroundSize = 'cover';
-                    document.body.style.backgroundPosition = 'center';
-                    document.body.style.backgroundAttachment = 'fixed';
-                    document.body.style.backgroundRepeat = 'no-repeat';
+                    const backgroundPath = `./assets/background/${backgroundImage}`;
+                    const backgroundUrl = `url('${backgroundPath}')`;
+                    
+                    if (isIOS()) {
+                        // iOS fix: Create real DOM element (more reliable than pseudo-element)
+                        // Remove any existing iOS background element
+                        const existingBg = document.getElementById('ios-background-element');
+                        if (existingBg) {
+                            existingBg.remove();
+                        }
+                        
+                        // Create new background element
+                        const bgElement = document.createElement('div');
+                        bgElement.id = 'ios-background-element';
+                        
+                        // Preload image to ensure it loads before applying
+                        const img = new Image();
+                        img.onload = function() {
+                            // Image loaded successfully - apply background
+                            bgElement.style.backgroundImage = backgroundUrl;
+                            bgElement.style.backgroundSize = 'cover';
+                            bgElement.style.backgroundPosition = 'center';
+                            bgElement.style.backgroundRepeat = 'no-repeat';
+                            console.log('✅ iOS background image loaded successfully:', backgroundPath);
+                        };
+                        img.onerror = function() {
+                            // Image failed to load - try fallback
+                            console.error('❌ iOS background image failed to load:', backgroundPath);
+                            // Try direct path without relative notation
+                            const fallbackPath = backgroundPath.replace('./', '/');
+                            bgElement.style.backgroundImage = `url('${fallbackPath}')`;
+                            bgElement.style.backgroundSize = 'cover';
+                            bgElement.style.backgroundPosition = 'center';
+                            bgElement.style.backgroundRepeat = 'no-repeat';
+                        };
+                        img.src = backgroundPath;
+                        
+                        // Insert at the beginning of body (before all content)
+                        document.body.insertBefore(bgElement, document.body.firstChild);
+                        document.body.classList.add('ios-background-fix');
+                        
+                        console.log('📱 iOS background element created, loading image:', backgroundPath);
+                    } else {
+                        // Desktop/Android: Use standard fixed attachment
+                        document.body.style.backgroundImage = backgroundUrl;
+                        document.body.style.backgroundSize = 'cover';
+                        document.body.style.backgroundPosition = 'center';
+                        document.body.style.backgroundAttachment = 'fixed';
+                        document.body.style.backgroundRepeat = 'no-repeat';
+                        console.log('🖥️ Desktop/Android background applied:', backgroundPath);
+                    }
                 } else {
                     // Fallback to default background
-                    document.body.style.backgroundImage = `url('./assets/background/pool_background_1.jpg')`;
-                    document.body.style.backgroundSize = 'cover';
-                    document.body.style.backgroundPosition = 'center';
-                    document.body.style.backgroundAttachment = 'fixed';
-                    document.body.style.backgroundRepeat = 'no-repeat';
+                    const fallbackPath = './assets/background/pool_background_1.jpg';
+                    const fallbackUrl = `url('${fallbackPath}')`;
+                    
+                    if (isIOS()) {
+                        const existingBg = document.getElementById('ios-background-element');
+                        if (existingBg) {
+                            existingBg.remove();
+                        }
+                        
+                        const bgElement = document.createElement('div');
+                        bgElement.id = 'ios-background-element';
+                        
+                        const img = new Image();
+                        img.onload = function() {
+                            bgElement.style.backgroundImage = fallbackUrl;
+                            bgElement.style.backgroundSize = 'cover';
+                            bgElement.style.backgroundPosition = 'center';
+                            bgElement.style.backgroundRepeat = 'no-repeat';
+                        };
+                        img.onerror = function() {
+                            const directPath = fallbackPath.replace('./', '/');
+                            bgElement.style.backgroundImage = `url('${directPath}')`;
+                            bgElement.style.backgroundSize = 'cover';
+                            bgElement.style.backgroundPosition = 'center';
+                            bgElement.style.backgroundRepeat = 'no-repeat';
+                        };
+                        img.src = fallbackPath;
+                        
+                        document.body.insertBefore(bgElement, document.body.firstChild);
+                        document.body.classList.add('ios-background-fix');
+                    } else {
+                        document.body.style.backgroundImage = fallbackUrl;
+                        document.body.style.backgroundSize = 'cover';
+                        document.body.style.backgroundPosition = 'center';
+                        document.body.style.backgroundAttachment = 'fixed';
+                        document.body.style.backgroundRepeat = 'no-repeat';
+                    }
                 }
                 
                 // Ensure header and navigation are transparent
@@ -219,18 +303,53 @@
                 // Apply transparency settings
                 if (data.background_transparency === 'full') {
                     document.body.classList.add('full-transparency');
-                    document.querySelector('.main-content').classList.add('full-transparency');
+                    const mainContent = document.querySelector('.main-content');
+                    if (mainContent) {
+                        mainContent.classList.add('full-transparency');
+                    }
                 } else if (data.background_transparency === 'complete') {
                     document.body.classList.add('complete-transparency');
                 }
             } catch (error) {
-                console.log('Could not load page background:', error);
+                console.error('❌ Could not load page background:', error);
                 // Fallback background
-                document.body.style.backgroundImage = `url('./assets/background/pool_background_1.jpg')`;
-                document.body.style.backgroundSize = 'cover';
-                document.body.style.backgroundPosition = 'center';
-                document.body.style.backgroundAttachment = 'fixed';
-                document.body.style.backgroundRepeat = 'no-repeat';
+                const fallbackPath = './assets/background/pool_background_1.jpg';
+                const fallbackUrl = `url('${fallbackPath}')`;
+                
+                if (isIOS()) {
+                    const existingBg = document.getElementById('ios-background-element');
+                    if (existingBg) {
+                        existingBg.remove();
+                    }
+                    
+                    const bgElement = document.createElement('div');
+                    bgElement.id = 'ios-background-element';
+                    
+                    const img = new Image();
+                    img.onload = function() {
+                        bgElement.style.backgroundImage = fallbackUrl;
+                        bgElement.style.backgroundSize = 'cover';
+                        bgElement.style.backgroundPosition = 'center';
+                        bgElement.style.backgroundRepeat = 'no-repeat';
+                    };
+                    img.onerror = function() {
+                        const directPath = fallbackPath.replace('./', '/');
+                        bgElement.style.backgroundImage = `url('${directPath}')`;
+                        bgElement.style.backgroundSize = 'cover';
+                        bgElement.style.backgroundPosition = 'center';
+                        bgElement.style.backgroundRepeat = 'no-repeat';
+                    };
+                    img.src = fallbackPath;
+                    
+                    document.body.insertBefore(bgElement, document.body.firstChild);
+                    document.body.classList.add('ios-background-fix');
+                } else {
+                    document.body.style.backgroundImage = fallbackUrl;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                    document.body.style.backgroundAttachment = 'fixed';
+                    document.body.style.backgroundRepeat = 'no-repeat';
+                }
             }
         }
 
