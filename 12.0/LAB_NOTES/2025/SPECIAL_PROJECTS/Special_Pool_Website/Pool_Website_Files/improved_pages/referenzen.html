@@ -204,19 +204,48 @@
                     // Apply page-specific background
                     const pageBackground = data.page_backgrounds?.referenzen || 'background2.png';
                     if (pageBackground && pageBackground !== 'none') {
-                        const backgroundUrl = `url('./assets/background/${pageBackground}')`;
+                        const backgroundPath = `./assets/background/${pageBackground}`;
+                        const backgroundUrl = `url('${backgroundPath}')`;
                         
                         if (isIOS()) {
-                            // iOS fix: Use fixed pseudo-element via CSS variable
-                            document.documentElement.style.setProperty('--background-image', backgroundUrl);
+                            // iOS fix: Create real DOM element (more reliable than pseudo-element)
+                            // Remove any existing iOS background element
+                            const existingBg = document.getElementById('ios-background-element');
+                            if (existingBg) {
+                                existingBg.remove();
+                            }
+                            
+                            // Create new background element
+                            const bgElement = document.createElement('div');
+                            bgElement.id = 'ios-background-element';
+                            
+                            // Preload image to ensure it loads before applying
+                            const img = new Image();
+                            img.onload = function() {
+                                // Image loaded successfully - apply background
+                                bgElement.style.backgroundImage = backgroundUrl;
+                                bgElement.style.backgroundSize = 'cover';
+                                bgElement.style.backgroundPosition = 'center';
+                                bgElement.style.backgroundRepeat = 'no-repeat';
+                                console.log('✅ iOS background image loaded successfully:', backgroundPath);
+                            };
+                            img.onerror = function() {
+                                // Image failed to load - try fallback
+                                console.error('❌ iOS background image failed to load:', backgroundPath);
+                                // Try direct path without relative notation
+                                const fallbackPath = backgroundPath.replace('./', '/');
+                                bgElement.style.backgroundImage = `url('${fallbackPath}')`;
+                                bgElement.style.backgroundSize = 'cover';
+                                bgElement.style.backgroundPosition = 'center';
+                                bgElement.style.backgroundRepeat = 'no-repeat';
+                            };
+                            img.src = backgroundPath;
+                            
+                            // Insert at the beginning of body (before all content)
+                            document.body.insertBefore(bgElement, document.body.firstChild);
                             document.body.classList.add('ios-background-fix');
                             
-                            // Also set on body for fallback
-                            document.body.style.backgroundImage = backgroundUrl;
-                            document.body.style.backgroundSize = 'cover';
-                            document.body.style.backgroundPosition = 'center';
-                            document.body.style.backgroundAttachment = 'scroll';
-                            document.body.style.backgroundRepeat = 'no-repeat';
+                            console.log('📱 iOS background element created, loading image:', backgroundPath);
                         } else {
                             // Desktop/Android: Use standard fixed attachment
                             document.body.style.backgroundImage = backgroundUrl;
@@ -224,6 +253,7 @@
                             document.body.style.backgroundPosition = 'center';
                             document.body.style.backgroundAttachment = 'fixed';
                             document.body.style.backgroundRepeat = 'no-repeat';
+                            console.log('🖥️ Desktop/Android background applied:', backgroundPath);
                         }
                     }
                     

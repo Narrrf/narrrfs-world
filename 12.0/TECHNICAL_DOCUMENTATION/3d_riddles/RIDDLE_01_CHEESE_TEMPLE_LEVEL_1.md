@@ -1,10 +1,10 @@
-# 🧩 LEVEL 1 - CHEESE TEMPLE (3 RIDDLES)
+# 🧩 LEVEL 1 - CHEESE TEMPLE (4 RIDDLES)
 
 **Document Created:** November 12, 2025  
 **Level:** Cheese Temple - Level 1  
 **Status:** ✅ **IMPLEMENTED & TESTED**  
-**Total Riddles:** 3 separate riddles with individual rewards  
-**Last Tested:** November 19, 2025 - ✅ **WORKING**
+**Total Riddles:** 4 separate riddles with individual rewards (3 main + 1 hidden secret)  
+**Last Tested:** November 21, 2025 - ✅ **WORKING**
 
 ---
 
@@ -48,31 +48,43 @@
 - **Cheese Hunter (×1.1):** 825 DSPOINC
 - **Default (×1.0):** 750 DSPOINC
 
-### **🎯 TOTAL LEVEL 1 REWARDS (All 3 Riddles):**
+#### **🧩 RIDDLE #4: The Hidden Secret (Secret Riddle)**
+- **Riddle ID:** `CHEESE_TEMPLE_RIDDLE_04_SECRET`
+- **Trait Unlocked:** None (hidden secret riddle)
+- **Base Reward:** 1,000 DSPOINC (fixed, no role multiplier)
+- **Reward:** Always 1,000 DSPOINC regardless of role
+- **Location:** Wall at x: 10.5, z: 95.7, 100.7, 105.7 (3 levers horizontally aligned)
+- **Type:** Sequence-based combination puzzle
+
+### **🎯 TOTAL LEVEL 1 REWARDS (All 4 Riddles):**
 
 **VIP Holder (×2.0):**
 - Riddle #1: 1,000 DSPOINC
 - Riddle #2: 1,000 DSPOINC
 - Riddle #3: 1,500 DSPOINC
-- **Total: 3,500 DSPOINC** 🧀
+- Riddle #4 (Secret): 1,000 DSPOINC
+- **Total: 4,500 DSPOINC** 🧀
 
 **Holder (×1.5):**
 - Riddle #1: 750 DSPOINC
 - Riddle #2: 750 DSPOINC
 - Riddle #3: 1,125 DSPOINC
-- **Total: 2,625 DSPOINC** 🧀
+- Riddle #4 (Secret): 1,000 DSPOINC
+- **Total: 3,625 DSPOINC** 🧀
 
 **Champion (×1.4):**
 - Riddle #1: 700 DSPOINC
 - Riddle #2: 700 DSPOINC
 - Riddle #3: 1,050 DSPOINC
-- **Total: 2,450 DSPOINC** 🧀
+- Riddle #4 (Secret): 1,000 DSPOINC
+- **Total: 3,450 DSPOINC** 🧀
 
 **Default (×1.0):**
 - Riddle #1: 500 DSPOINC
 - Riddle #2: 500 DSPOINC
 - Riddle #3: 750 DSPOINC
-- **Total: 1,750 DSPOINC** 🧀
+- Riddle #4 (Secret): 1,000 DSPOINC
+- **Total: 2,750 DSPOINC** 🧀
 
 ---
 
@@ -352,6 +364,114 @@ Players must demonstrate exploration skills, focus, and precision by:
 - Balance updates in HUD
 - All 3 rewards appear in "Recent Score Changes" on profile page
 - Format for each: `Riddle completion (CHEESE_TEMPLE_RIDDLE_XX): base [amount] × [multiplier] = [total] DSPOINC`
+
+---
+
+## 🧩 **RIDDLE #4: THE HIDDEN SECRET (SECRET RIDDLE)**
+
+**Riddle ID:** `CHEESE_TEMPLE_RIDDLE_04_SECRET`  
+**Type:** Sequence-based combination puzzle  
+**Reward:** 1,000 DSPOINC (fixed, no role multiplier)  
+**Status:** ✅ **IMPLEMENTED** (November 21, 2025)
+
+### **Objective:**
+Solve the hidden secret riddle by performing a specific sequence of lever activations on the wall.
+
+### **Location:**
+- **Wall Coordinates:** x: 10.5 (10 blocks from spawn, on the left wall)
+- **Lever Positions (Horizontal Line):**
+  - **Lever 1 (Left):** x: 10.5, y: 2.5, z: 95.7
+  - **Lever 2 (Middle):** x: 10.5, y: 2.5, z: 100.7
+  - **Lever 3 (Right):** x: 10.5, y: 2.5, z: 105.7
+- **Wall Position:** Left wall of Level 1 (z: 100.5 wall, levers positioned slightly forward at z: 100.7 for visibility)
+
+### **Riddle Description:**
+Players must discover and interact with 3 hidden levers on the wall, performing a specific sequence:
+1. **Step 1:** Switch all 3 levers ON (lever1, lever2, lever3 all ON)
+2. **Step 2:** Switch all 3 levers OFF (lever1, lever2, lever3 all OFF)
+3. **Step 3:** Activate only the middle lever (lever2 ON, lever1 and lever3 OFF)
+
+### **How to Solve:**
+1. **Find the Levers:**
+   - Explore the left wall of Level 1 (x: 10.5)
+   - Look for 3 grey cube-shaped objects with levers
+   - Levers are positioned horizontally in a line
+   - Levers are always visible (unlike Riddle #3 lever)
+
+2. **Interact with Levers:**
+   - Walk close to a lever (within 2.0 units)
+   - Press E key to toggle lever state
+   - Lever switches between OFF (slever1.png) and ON (slever2.png)
+   - When ON, lever glows green (emissive intensity 1.5)
+   - Audio cue: `slever.ogg` plays on toggle
+
+3. **Perform the Sequence:**
+   - **Step 1:** Toggle all 3 levers to ON state
+     - Lever 1: ON
+     - Lever 2: ON
+     - Lever 3: ON
+   - **Step 2:** Toggle all 3 levers to OFF state
+     - Lever 1: OFF
+     - Lever 2: OFF
+     - Lever 3: OFF
+   - **Step 3:** Toggle only the middle lever (Lever 2) to ON
+     - Lever 1: OFF
+     - Lever 2: ON
+     - Lever 3: OFF
+
+4. **Completing the Riddle:**
+   - Success message appears: "🎉 You found a hidden riddle! 🎉"
+   - Reward notification: "+1,000 DSPOINC"
+   - Riddle is marked as complete
+   - Sequence resets if wrong combination is attempted
+
+### **Sequence Logic:**
+- **Sequence is tracked step-by-step:** Must complete steps in order
+- **Wrong combinations reset sequence:** If player deviates from sequence, it resets to Step 0
+- **No partial credit:** Must complete all 3 steps in exact order
+- **Hint system:** After 5 failed attempts (with 10-second cooldown), hint messages appear
+
+### **Reward:**
+- **Fixed Reward:** 1,000 DSPOINC (no role multiplier)
+- **Reward ID:** `CHEESE_TEMPLE_RIDDLE_04_SECRET`
+- **Description:** "Secret Riddle #4 - Hidden Lever Combination"
+- **API Endpoint:** `/api/user/award-level1-dspoinc-reward.php`
+- **Database:** Recorded in `tbl_user_scores` and `tbl_score_adjustments`
+
+### **Visual Feedback:**
+- **Lever OFF State:** Grey texture (`slever1.png`), no glow
+- **Lever ON State:** Green texture (`slever2.png`), green emissive glow (intensity 1.5)
+- **Success Message:** Green toast notification with celebration message
+- **Hint Messages:** Yellow toast notification with random hint text
+
+### **Hint Messages (After 5 Failed Attempts):**
+- "🔍 You need more information to solve this riddle..."
+- "🧠 This riddle requires more skills..."
+- "💡 Keep exploring to find clues..."
+- "🔎 The answer lies elsewhere in the temple..."
+
+### **Technical Details:**
+- **Lever Click Distance:** 2.0 units (RIDDLE4_LEVER_CLICK_DISTANCE)
+- **Hint Cooldown:** 10 seconds (RIDDLE4_HINT_COOLDOWN)
+- **Hint Threshold:** 5 attempts (RIDDLE4_HINT_ATTEMPT_THRESHOLD)
+- **Sequence Tracking:** `riddleState.riddle4.sequenceStep` (0 = initial, 1 = all ON, 2 = all OFF, 3 = solved)
+- **Reset on Level Restart:** Sequence resets to Step 0 when Level 1 restarts
+
+### **Code Locations:**
+- **Lever Creation:** `three.js/main.js` ~13928 (`createRiddle4Levers()`)
+- **Lever Interaction:** `three.js/main.js` ~14644 (`handleRiddle4LeverClick()`)
+- **Sequence Checking:** `three.js/main.js` ~14701 (`checkRiddle4Combination()`)
+- **Reward Unlock:** `three.js/main.js` ~14748 (`unlockRiddle4Reward()`)
+- **Success Message:** `three.js/main.js` ~14760 (`showRiddle4SuccessMessage()`)
+- **Hint Messages:** `three.js/main.js` ~14773 (`showRiddle4HintMessage()`)
+
+### **Wall Coordinates Note:**
+The levers are positioned on the left wall of Level 1:
+- **Wall X Position:** 10.5 (10 blocks from spawn point at x: 60)
+- **Wall Z Position:** 100.5 (wall extends along z-axis)
+- **Lever Z Positions:** 95.7, 100.7, 105.7 (spaced 5 blocks apart horizontally)
+- **Lever Y Position:** 2.5 (same height for all, horizontal line)
+- **Lever Forward Offset:** +0.2 units from wall (z: 100.7 vs z: 100.5) for visibility and clickability
 
 ---
 

@@ -1,16 +1,38 @@
 # 🚀 NARRRFS WORLD 12.0 - QUICK STATUS
 
-**Last Updated:** November 19, 2025 - Late Evening  
-**Current Session:** Tuesday - 🧀 Three.js Dimension - Game Development  
-**Status:** 🟢 **PRODUCTION VERIFIED — ALL 4 LEVELS TESTED & VERIFIED, COMPLETE SYSTEM READY**
+**Last Updated:** November 22, 2025 - Morning  
+**Current Session:** Friday - 🌐 Website & Game Development  
+**Status:** 🟢 **READY FOR DEPLOYMENT — URGENT FIXES COMPLETE**
 
-## 🎮 Latest Updates — Nov 19 (Late Evening)
-- **✅ LEVEL 4 OVERHEAT:** Extended cooldown from 3s to 6s for more impactful overheating
-- **✅ NOTIFICATION FIX:** "Already completed" popup now smaller, top-right corner, less intrusive
+## 🚨 Latest Updates — Nov 22 (Morning) - URGENT FIXES
+- **✅ POOLBAUPROFI IPHONE BACKGROUND FIX v2.0:** Real DOM element solution (replaces unreliable pseudo-element)
+- **✅ RECENT SCORE CHANGES 403 FIX:** CORS preflight + POST method + GET fallback implemented
+- **✅ ALL CHANGES RULE COMPLIANT:** Verified and ready for deployment
+
+## 🎮 Latest Updates — Nov 22 (Earlier)
+- **✅ LEVEL 1 START FIX:** Game now always starts at Level 1 (localStorage debug flags cleared)
+- **✅ RIDDLE #4 IMPLEMENTED:** Hidden secret riddle with sequence-based combination (All ON → All OFF → Middle ON)
+- **✅ WALL COORDINATES DOCUMENTED:** Level 1 levers positioned at x: 10.5, z: 95.7, 100.7, 105.7
+
+## 🎮 Latest Updates — Nov 21 (Afternoon)
+- **✅ LEVEL 1 RIDDLE #4:** 3-lever sequence puzzle implemented (1,000 DSPOINC reward)
+- **✅ LEVEL 1 START FIX:** Fixed game not starting at Level 1 (localStorage debug flags)
 
 ---
 
-## 🎮 Today's Focus — Nov 19 (Evening)
+## 🚨 Today's Focus — Nov 22 (Morning) - URGENT FIXES COMPLETE
+- **✅ POOLBAUPROFI IPHONE BACKGROUND:** Real DOM element solution implemented (6 files updated)
+- **✅ RECENT SCORE CHANGES 403 FIX:** CORS preflight + POST method + GET fallback (2 files updated)
+- **✅ RULE COMPLIANCE:** All changes verified and compliant
+- **✅ DOCUMENTATION:** Lab notes and daily status updated
+- **⏳ DEPLOYMENT:** Ready to push to production
+
+## 🎮 Previous Focus — Nov 22 (Earlier)
+- **🌐 WEBSITE DEVELOPMENT:** Continue work on website features and improvements
+- **🎮 GAME DEVELOPMENT:** Three.js game enhancements and bug fixes
+- **🧩 RIDDLE #4 TESTING:** User verification of Level 1 hidden secret riddle sequence
+
+## 🎮 Previous Focus — Nov 19 (Evening)
 - **✅ CRITICAL FIX: Role-Based Gaming** - Fixed role multiplier system for riddle rewards
 - **✅ LEVEL MUSIC SYNC:** Added per-level background music enforcement + God Mode selector refresh so `level1.mp3` never bleeds into higher levels
 - **✅ LEVEL 3 LABYRINTH:** Added four massive moving walls + dramatic lighting/shadow pass and a crush-death mechanic (caught between slabs = instant restart)

@@ -22,16 +22,13 @@ body {
     position: relative;
 }
 
-/* iOS Safari workaround: Use fixed pseudo-element for background */
-/* This ensures the background stays fixed while scrolling on iOS */
-body.ios-background-fix::before {
-    content: '';
+/* iOS Safari workaround: Real DOM element for background (more reliable than pseudo-element) */
+#ios-background-element {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: var(--background-image, inherit);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -41,9 +38,11 @@ body.ios-background-fix::before {
     min-height: 100vh;
     /* Prevent any scrolling issues */
     will-change: transform;
+    /* Ensure it's behind all content */
+    pointer-events: none;
 }
 
-/* For iOS devices, hide body background when using pseudo-element */
+/* For iOS devices, hide body background when using real element */
 body.ios-background-fix {
     background-image: none !important;
 }
