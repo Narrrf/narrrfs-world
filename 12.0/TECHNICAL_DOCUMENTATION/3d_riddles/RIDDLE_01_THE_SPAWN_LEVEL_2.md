@@ -124,10 +124,12 @@ Each aisle registers an axis-aligned bounding box via `addLevel2InspectionZone(i
 - **Maintenance:** Ring assets are cached and only load once per boot; if pedestals reset, the spawn helper re-runs automatically.
 - **Inventory Indicator System (November 19, 2025):** Models that are used in actual gameplay (inventory items) display with a **bright green emissive glow** (`emissive: 0x00ff00`, `emissiveIntensity: 0.8`) to visually distinguish them from display-only items. This includes:
   - **Level 3 Monsters:** Demon, Frog, Orc, Dino, Ninja, BlueDemon, MushroomKing, Tribal, Alien, Yeti (all used in Level 3 monster hunt)
-  - **Level 4 Weapon:** Pistol_1.fbx (used in Level 4 shooting challenge)
+  - **Level 4 Weapons:** Pistol_1.fbx from Fire Weapons 1 and Sci-Fi Modular Gun Pack (used in Level 4 shooting challenge)
+  - **Level 1 Bear Traps:** BearTrap_Open.fbx (SP08) and BearTrap_Closed.fbx (SP07) - used as deadly traps in Level 1 gameplay
   - **Detection:** Automatic filename matching against `GAMEPLAY_INVENTORY_MODELS` array
   - **Visual Effect:** Strong green glow makes inventory items immediately recognizable as "active" game assets
   - **Applied To:** All model displays (monster shelves, weapon rows, accessories, survival pack, old school armory)
+  - **Updated:** November 22, 2025 - Added bear traps to inventory items list (they cause instant death when stepped on in Level 1)
 - **Accessory Corridor (2025‑11‑17 evening pass):** `createAccessoryCorridor()` lines the inner walkway (x = ±1.45u) with 14 attachment pedestals (`A01`‑`A14`). Slots start 12u south of the monster strip and advance every 3.4u toward the Cheese Stone. Each accessory pulls from `/Accessories/*.fbx`, shares the PBR material converter, and applies compact transforms per type (bayonet, scope, silencer, grip, stock, etc.) so the corridor feels curated without blocking traversal.
 - **Survival Pack Archive (2025‑11‑17 evening):** `createSurvivalPackRows()` now builds four mirrored lanes (offsets ±18.5u and ±22.5u) that host every FBX inside `Survival Pack/FBX`. Pedestals are labeled `SP01`‑`SP53`, use slim geometry so the outer corridor stays walkable, and register under inspection zone `survival_pack_rows`. Walking those aisles is required to unlock the portal.
 - **Old School Armory (2025‑11‑17 late):** The empty quadrant next to the cheese stone now features two compact rows (offsets −13u / −15.5u) showcasing the 24 medieval weapons from `Old School Weapons/FBX`. Slots `OS01`‑`OS24` cover swords, shields, bows, axes, spears, etc., each with tailored transforms via `LEVEL2_OLD_SCHOOL_TRANSFORM_OVERRIDES`. The new `old_school_armory` inspection zone ties these relics directly into Step 2, so QA must tour them before the portal appears.

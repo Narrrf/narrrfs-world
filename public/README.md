@@ -328,6 +328,6 @@ This project is **private** and proprietary. All rights reserved.
 
 *Ready to embark on the cheese adventure? Join us and help build the future of Web3 gaming!*
 
-[🌐 Visit Narrrfs World](https://narrrfs.world) • [💬 Join Discord](https://discord.gg/dSJDkDhPKZ) • [📖 Read Documentation](#documentation)
+[🌐 Visit Narrrfs World](https://narrrfs.world) • [💬 Join Discord](https://discord.gg/zgjAwzuDqV) • [📖 Read Documentation](#documentation)
 
 </div>

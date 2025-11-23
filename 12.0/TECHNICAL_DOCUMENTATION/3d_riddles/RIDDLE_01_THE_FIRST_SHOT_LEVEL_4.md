@@ -1,10 +1,10 @@
 # 🎯 RIDDLE #1 — THE FIRST SHOT (LEVEL 4)
 
 **Document Created:** November 17, 2025  
-**Last Updated:** November 19, 2025 (Wave System + Enhanced AI)  
+**Last Updated:** November 23, 2025 (Wave Countdown UI Improvements + Monster Waves + Bullet Fix)  
 **Riddle ID:** `CHEESE_TEMPLE_LEVEL4_RIDDLE_01`  
 **Level:** Cheese Temple — Level 4 "The First Shot"  
-**Status:** ✅ **FULLY IMPLEMENTED** — 50-cheese shooting challenge with wave-based progressive difficulty and enhanced AI  
+**Status:** ✅ **FULLY IMPLEMENTED** — 50-cheese shooting challenge + 30-monster wave challenge with wave-based progressive difficulty and enhanced AI  
 **Traits / Rewards:** 
 - `CHEESE_TEMPLE_LEVEL4_STEP0` (+100 DSPOINC)
 - `CHEESE_TEMPLE_LEVEL4_STEP1` (unlocked after shooting 50 cheeses)
@@ -19,8 +19,9 @@ Enter a massive 160x160 cheese stone arena and complete "The First Shot" challen
 
 ### Flow Summary
 1. **Step 0 (Hidden Cheese Stone):** Stand on the hidden cheese stone platform for 10 seconds to unlock Step 1. Awards **+100 DSPOINC** and unlocks trait `CHEESE_TEMPLE_LEVEL4_STEP0`, then shows 3-second countdown before starting Step 1.
-2. **Step 1 (Shoot 50 Cheeses in Waves):** Shoot 50 floating cheese entities with a first-person weapon in **12 waves of 4 cheeses each, plus 1 final wave of 2 big aggressive cheeses**. Each wave shows a 3-second countdown popup (like Snake/Tetris) before spawning. Each cheese rewards **+50 DSPOINC**. Difficulty increases progressively by wave - cheeses get smaller (100% → 60% size), faster (1x → 2.5x speed), smarter (better dodging), and change color (yellow → orange → red) as waves progress. After all 50 are shot, unlocks trait `CHEESE_TEMPLE_LEVEL4_STEP1` and portal appears.
-3. **Step 2 (Portal Completion):** Enter the portal to see completion screen with options to proceed to Level 5, restart Level 4, or return to other levels.
+2. **Step 1 (Shoot 50 Cheeses in Waves):** Shoot 50 floating cheese entities with a first-person weapon in **12 waves of 4 cheeses each, plus 1 final wave of 2 big aggressive cheeses**. Each wave shows a 3-second countdown popup (small mad mode style notification in top-right corner) before spawning. Each cheese rewards **+50 DSPOINC**. Difficulty increases progressively by wave - cheeses get smaller (100% → 60% size), faster (1x → 2.5x speed), smarter (better dodging), and change color (yellow → orange → red) as waves progress. After all 50 are shot, unlocks trait `CHEESE_TEMPLE_LEVEL4_STEP1` and Step 2 (monster waves) begins.
+3. **Step 2 (Shoot 30 Monsters in Waves):** After completing cheese waves, players face **10 waves of 3 monsters each (30 total)**. Each wave shows a 3-second countdown popup (small mad mode style notification in top-right corner) before spawning. Each monster rewards **+50 DSPOINC**. Difficulty increases progressively - monsters get larger, faster, and smarter. Final wave features flying monsters that can shoot projectiles at the player. After all 30 are defeated, unlocks trait `CHEESE_TEMPLE_LEVEL4_STEP2` and portal appears.
+4. **Step 3 (Portal Completion):** Enter the portal to see completion screen with options to proceed to Level 5, restart Level 4, or return to other levels.
 
 ---
 
@@ -92,7 +93,7 @@ Enter a massive 160x160 cheese stone arena and complete "The First Shot" challen
      - Waves 9-12: Difficult positions, behind player, far corners (30-80 units)
      - Final Wave: Far away or behind player (50-90 units), 50% chance behind
    - **Anti-Clustering:** Cheeses maintain minimum 20-unit distance from each other
-   - **Wave Countdown:** 3-second popup between waves (gives player breathing room)
+   - **Wave Countdown:** 3-second popup between waves (small mad mode style notification in top-right corner - doesn't block gameplay view)
 5. **Progressive Difficulty System (Wave-Based):**
    - **Wave 1-2:** Easy (20% aggressiveness, 30% smartness, 1.0x speed, 100% size)
    - **Wave 3-4:** Medium (35% aggressiveness, 45% smartness, 1.2x speed, 95% size)
@@ -534,7 +535,37 @@ const level4Config = {
 
 ---
 
-**Last Updated:** November 19, 2025 (Late Evening - UX Improvements)  
-**Status:** ✅ **FULLY IMPLEMENTED & PRODUCTION VERIFIED** — 50-cheese shooting challenge with progressive difficulty, weapon system, portal, and completion screen  
-**Version:** 3.1 (Updated Nov 19, 2025 - Production verification complete, pointer lock fix applied)
+**Last Updated:** November 23, 2025 (Wave Countdown UI Improvements + Monster Waves + Bullet Fix)  
+**Status:** ✅ **FULLY IMPLEMENTED & PRODUCTION VERIFIED** — 50-cheese shooting challenge + 30-monster wave challenge with progressive difficulty, weapon system, portal, and completion screen  
+**Version:** 4.0 (Updated Nov 23, 2025 - Monster waves implemented, wave countdown UI improved, bullet freeze fixed)
+
+---
+
+## 🎨 UX Improvements (November 23, 2025)
+
+### **1. Wave Countdown UI Redesign** ✅
+- **Change:** Redesigned both cheese wave and monster wave countdown popups to use smaller "mad mode" style
+- **Position:** Changed from center-screen to top-right corner (20px top, 20px right)
+- **Size:** Reduced from large popups (40px padding, 72px font) to compact notifications (12px padding, 18px font)
+- **Countdown Numbers:** Reduced from 96px to 24px for better readability without blocking view
+- **Style:** Applied mad mode styling (gradient background, blur, pulse animation) for consistency with Level 1
+- **Result:** Less intrusive, gameplay remains visible during countdown, professional appearance
+- **Files Modified:** `three.js/main.js` - `showLevel4WaveCountdown()`, `showLevel4MonsterWaveCountdown()`, `updateLevel4()` countdown update logic
+- **Status:** ✅ **COMPLETE**
+
+### **2. Bullet Freeze Fix** ✅
+- **Issue:** Bullets froze in air when portal activated (last monster defeated)
+- **Root Cause:** `updateLevel4Bullets()` required `step1Active` or `step2Active` to be true, but these are set to false when portal activates
+- **Fix:** Removed step requirement - bullets now update as long as player is in Level 4, allowing them to complete their flight path
+- **Result:** Bullets complete their trajectory even after portal appears
+- **Files Modified:** `three.js/main.js` - `updateLevel4Bullets()`
+- **Status:** ✅ **COMPLETE**
+
+### **3. Function Name Fix** ✅
+- **Issue:** `ReferenceError: switchLevel4Weapon is not defined` when pressing number keys 2-9
+- **Root Cause:** Function calls used wrong name (`switchLevel4Weapon` instead of `switchLevel4WeaponSlot`)
+- **Fix:** Updated all 8 function calls (keys 2-9) to use correct function name
+- **Result:** Weapon switching works correctly for all number keys
+- **Files Modified:** `three.js/main.js` - `document.addEventListener("keydown", ...)` handler
+- **Status:** ✅ **COMPLETE**
 

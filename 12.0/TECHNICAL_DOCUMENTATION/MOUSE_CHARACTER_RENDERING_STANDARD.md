@@ -2,6 +2,7 @@
 
 **STATUS:** ✅ **ACTIVE - MANDATORY FOR ALL LEVELS**  
 **CREATED:** November 19, 2025  
+**LAST UPDATED:** November 24, 2025 (Level 5 Animation Speed Fix)  
 **PURPOSE:** Standardized smooth character rendering for all current and future levels  
 **PRIORITY:** 🚨 **CRITICAL - UNIVERSAL IMPLEMENTATION**  
 
@@ -28,6 +29,7 @@
 - ✅ **Level 2** - Smooth rendering confirmed
 - ✅ **Level 3** - Smooth rendering confirmed (fixed lag issue)
 - ✅ **Level 4** - Smooth rendering confirmed (reference standard)
+- ✅ **Level 5** - Smooth rendering confirmed (1.8x animation speed in normal mode for perfect walk)
 
 ### **Future Levels:**
 - ✅ **Automatic** - All future levels inherit this system automatically
@@ -76,15 +78,27 @@ const targetY = playerPos.y - heightOffset;
 const targetPos = new THREE.Vector3(playerPos.x, targetY, playerPos.z);
 
 // Smooth interpolation for position (reduces lag, especially in complex levels)
-const lerpFactor = Math.min(1.0, delta * 30); // Smooth interpolation based on delta
+// CRITICAL FIX (Level 3): Faster lerp in Level 3 due to aggressive collision clamping
+// Also scales with god mode to match 4x movement speed
+const isLevel3 = currentLevel === LEVEL_IDS.LEVEL3;
+let baseLerpSpeed = isLevel3 ? 60 : 30; // Faster lerp in Level 3 (60 vs 30)
+
+// CRITICAL FIX (Level 3 God Mode): Scale lerp speed in god mode to keep up with 4x movement speed
+if (isLevel3 && godMode) {
+  baseLerpSpeed *= 2.0; // 2x faster lerp in god mode (120 vs 60) to match 4x movement speed
+}
+
+const lerpFactor = Math.min(1.0, delta * baseLerpSpeed); // Smooth interpolation based on delta
 playerCharacterModel.position.lerp(targetPos, lerpFactor);
 ```
 
 **Key Features:**
 - **Smooth Interpolation:** Uses `lerp()` instead of direct `copy()` to eliminate visual lag
-- **Delta-Based:** Interpolation factor adapts to frame rate (`delta * 30`)
+- **Delta-Based:** Interpolation factor adapts to frame rate (`delta * 30` for normal, `delta * 60` for Level 3, `delta * 120` for Level 3 god mode)
+- **Level 3 Optimization:** Faster lerp (60x) prevents robotic movement when collision system snaps positions
+- **God Mode Scaling:** In god mode, lerp speed doubles (120x) to keep up with 4x movement speed
 - **Height Offset:** Correctly positions character feet on ground
-- **Universal:** Works identically in all levels
+- **Universal:** Works identically in all levels, with Level 3-specific optimizations
 
 ---
 
@@ -102,20 +116,93 @@ playerCharacterModel.position.lerp(targetPos, lerpFactor);
 
 ---
 
-### **4. Animation Speed Scaling**
+### **4. Animation Mixer Update (Separate Clock)**
 
-**Location:** `updatePlayerCharacter(delta)` - Animation section
+**Location:** `updatePlayerCharacter(delta)` - Animation mixer update  
+**Last Updated:** November 23, 2025 - Fixed missing animation frames in Level 3
 
 ```javascript
-// Animation speed matches player movement speed
-const speedMultiplier = isSprinting ? 1.75 : 1.0; // Sprint = 1.75x, Normal = 1.0x
-action.setEffectiveTimeScale(speedMultiplier);
+// CRITICAL FIX (Level 3): Use actual delta but ensure it's consistent and clamped
+// This ensures smooth animation playback even when main game loop has frame drops
+// The delta from animate() is already clamped to 0.1, but we ensure smoothness here
+// Use actual time passed for accurate animation speed, but clamp for stability
+const animationDelta = Math.min(delta, 0.033); // Max 30 FPS equivalent (prevents huge jumps)
+playerCharacterMixer.update(animationDelta);
 ```
 
-**Speed Multipliers:**
-- **Normal Walk:** `1.0x` (matches 24 units/second movement)
-- **Sprint:** `1.75x` (matches 42 units/second movement)
-- **God Mode:** Speed multiplier doesn't affect animation (uses base speed)
+**Why This Matters:**
+- **Actual Time-Based:** Character animations use actual time passed (delta), ensuring correct animation speed at all framerates
+- **Delta Clamping:** Maximum delta of 0.033 seconds (30 FPS equivalent) prevents animation jumps when frames are severely dropped
+- **Frame Drop Protection:** When Level 3's heavy systems (moving walls, monsters) cause frame drops, animation delta is clamped to prevent stuttering
+- **Smooth Playback:** Animation mixer receives consistent, clamped delta values, ensuring smooth animation playback
+- **Accurate Speed:** Animations play at correct speed because they use actual time passed, not fixed values
+
+---
+
+### **5. Animation Speed Scaling (Velocity-Based)**
+
+**Location:** `updatePlayerCharacter(delta)` - Animation section  
+**Last Updated:** November 23, 2025 - Fixed frame rate mismatch in Levels 3 & 4
+
+```javascript
+// Animation speed scales dynamically based on ACTUAL velocity magnitude
+// Base speed: 24 units/sec (normal), 42 units/sec (sprint)
+// In god mode: movement can be up to 4x faster (168 units/sec sprint)
+if (finalIsMoving && !isJumping && !isFalling) {
+  const actualSpeed = velocityMagnitude; // Current horizontal speed (units/sec)
+  const baseWalkSpeed = 24.0; // Base walk speed (units/sec)
+  // Scale animation speed to match actual movement speed
+  animationSpeed = Math.max(0.5, Math.min(5.0, actualSpeed / baseWalkSpeed)); // Clamp 0.5x-5.0x
+} else {
+  animationSpeed = 1.0; // Default speed when not moving
+}
+action.setEffectiveTimeScale(animationSpeed);
+```
+
+**Speed Multipliers (Dynamic):**
+- **Normal Walk (24 units/sec):** `1.0x` animation speed
+- **Sprint (42 units/sec):** `1.75x` animation speed  
+- **God Mode Normal (96 units/sec):** `4.0x` animation speed
+- **God Mode Sprint (168 units/sec):** `7.0x` animation speed (clamped to 5.0x max)
+- **Range:** Clamped between `0.5x` and `5.0x` for stability
+
+**Level 3 Collision Fix:**
+- **When velocity is zeroed (collision) but player has input:** Uses intended speed instead of actual velocity
+- **Intended Speed Calculation:** `isSprinting ? 42.0 : 24.0` × `godMode ? 4.0 : 1.0`
+- **Prevents:** Animation stuttering when player hits walls or boundaries in Level 3
+
+**Level 5 Animation Speed Fix (November 24, 2025):**
+- **Issue:** 3rd person mouse character animation was too slow in normal mode (looked like slow motion)
+- **Solution:** Added 1.8x animation speed multiplier for Level 5 in normal mode
+- **Code:**
+  ```javascript
+  const isLevel5 = currentLevel === LEVEL_IDS.LEVEL5;
+  if (isLevel5 && !godMode) {
+    animationSpeed *= 1.8; // Nearly double animation speed in Level 5 normal mode
+  }
+  ```
+- **Result:** Smooth, natural-looking walk animation matching movement speed perfectly
+
+**CRITICAL FIXES (November 23, 2025):**
+- **Issue 1:** Animation frame rate didn't match movement in Levels 3 & 4
+- **Root Cause 1:** Fixed animation speed (1.0x or 1.75x) didn't account for actual velocity variations
+- **Solution 1:** Dynamic velocity-based animation speed scaling
+- **Issue 2:** Level 3 animation stuttering when hitting walls/boundaries
+- **Root Cause 2:** Level 3's collision handler zeros velocity aggressively, causing animation to use minimum speed
+- **Solution 2:** Fallback to intended speed when velocity is zeroed but player has movement input
+- **Issue 3:** Missing animation frames in Level 3 (arms/legs not moving correctly)
+- **Root Cause 3:** Animation mixer used main game delta which becomes inconsistent during Level 3 frame drops
+- **Solution 3:** Use separate `playerCharacterClock` for character animations to maintain consistent timing
+- **Issue 4:** Level 3 character movement feels "robotic" compared to other levels
+- **Root Cause 4:** Level 3's collision system aggressively snaps player positions when hitting boundaries, while character model uses smooth lerp interpolation, causing lag between actual position and visual position
+- **Solution 4:** Increased lerp speed (60x vs 30x) and rotation speed (0.5 vs 0.3) specifically for Level 3 to make character model follow player position more responsively
+- **Issue 5:** Level 3 character movement feels slow in god mode compared to other levels
+- **Root Cause 5:** Lerp speed was fixed at 60x in Level 3, but didn't scale with god mode's 4x movement speed, causing character model to lag behind when player moves faster
+- **Solution 5:** Scale lerp speed by 2x (120x) and rotation speed by 1.5x (0.75) in god mode for Level 3 to match the 4x movement speed
+- **Issue 6:** Level 5 animation too slow in normal mode (looked like slow motion)
+- **Root Cause 6:** Animation speed not scaled for Level 5 normal mode walk
+- **Solution 6:** Added 1.8x animation speed multiplier for Level 5 in normal mode (November 24, 2025)
+- **Result:** Animation now matches actual movement speed in all levels and modes (normal, sprint, god mode), including when blocked by collisions, with smooth frame playback even during performance drops, and smooth, responsive character movement matching other levels in both normal and god mode. Level 5 now has perfect walk animation speed (1.8x in normal mode) matching other levels.
 
 ---
 
@@ -194,7 +281,7 @@ if (!isFirstPerson() && controls.isLocked && useGLTFCharacter && playerCharacter
 - **Smooth Interpolation** - Always use `lerp()` for position updates
 - **Delta-Based Factors** - Always use `delta * factor` for interpolation
 - **Consistent Height Offset** - Always use 0.95 for Mouse, 0.85 * scale for Animation Library
-- **Animation Speed Scaling** - Always match animation speed to movement speed
+- **Animation Speed Scaling** - Always match animation speed to actual movement velocity (dynamic scaling, not fixed multipliers)
 
 ---
 
@@ -208,6 +295,7 @@ if (!isFirstPerson() && controls.isLocked && useGLTFCharacter && playerCharacter
 ### **Complex Level Support:**
 - **Level 3 Moving Walls:** Smooth rendering even with complex moving geometry
 - **Level 4 Shooting:** Smooth rendering during fast-paced action
+- **Level 5 Large Map:** Smooth rendering on massive exploration level (1.8x animation speed in normal mode)
 - **Future Levels:** Will automatically benefit from smooth rendering
 
 ---
@@ -291,9 +379,10 @@ if (!isFirstPerson() && controls.isLocked && useGLTFCharacter && playerCharacter
 
 ### **User Experience:**
 - **Smooth Movement:** Character follows player position without lag
-- **Natural Animation:** Animation speed matches movement speed
+- **Natural Animation:** Animation speed dynamically matches actual movement velocity (fixed November 23, 2025)
 - **Correct Positioning:** Character feet are always on ground
 - **Responsive Rotation:** Character faces movement direction smoothly
+- **Consistent Across Levels:** Same smooth animation experience in all levels (1, 2, 3, 4, 5)
 
 ---
 
@@ -311,9 +400,10 @@ if (!isFirstPerson() && controls.isLocked && useGLTFCharacter && playerCharacter
 ---
 
 **RULE CREATED:** November 19, 2025  
+**LAST UPDATED:** November 24, 2025 (Level 5 Animation Speed Fix)  
 **STATUS:** ✅ **ACTIVE - MANDATORY FOR ALL LEVELS**  
 **PURPOSE:** Universal Character Rendering Standard  
-**SCOPE:** All current levels (1, 2, 3, 4) and all future levels  
+**SCOPE:** All current levels (1, 2, 3, 4, 5) and all future levels  
 
 **🐭 THIS RULE ENSURES DECADES OF SMOOTH CHARACTER RENDERING! 🐭**
 

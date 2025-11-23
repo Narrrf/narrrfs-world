@@ -29,7 +29,7 @@ if (!checkAdminAuthentication()) {
     // while still requiring authentication for sensitive operations
     
     // Return basic config without sensitive bot information
-    $inviteCode = getenv('DISCORD_INVITE_CODE') ?: 'dSJDkDhPKZ';
+    $inviteCode = getenv('DISCORD_INVITE_CODE') ?: 'zgjAwzuDqV';
     
     echo json_encode([
         'success' => true,
@@ -60,7 +60,7 @@ if (!checkAdminAuthentication()) {
 
 try {
     // Get Discord invite code from environment variable
-    $inviteCode = getenv('DISCORD_INVITE_CODE') ?: 'dSJDkDhPKZ';
+    $inviteCode = getenv('DISCORD_INVITE_CODE') ?: 'zgjAwzuDqV';
     
     // Get Discord bot status and configuration
     $discordConfig = [

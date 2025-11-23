@@ -78,6 +78,14 @@
     - **Status:** ✅ **ACTIVE - MANDATORY FOR ALL 3D GAME RIDDLE REWARDS**
     - **Created:** November 18, 2025
 
+14. **`14_GLTF_SKELETON_CLONING_RULE.md`** - **🚨 GLTF CLONING RENDERING**
+    - **Purpose:** Prevent invisible GLTF monster rendering issues
+    - **Critical:** SkeletonUtils.clone() required for animated GLTF models
+    - **Status:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**
+    - **Created:** November 23, 2025
+    - **Discovery:** Level 4 monster waves - 10+ attempts to fix invisible monsters
+    - **Solution:** Use SkeletonUtils.clone() instead of standard clone() for skinned meshes
+
 ---
 
 ## 🚨 **CRITICAL RULE HIERARCHY**
@@ -110,7 +118,13 @@
 ├── 05_TOKEN_LIMIT_RULE.md               # Reference only (integrated)
 ├── 06_ADMIN_INTERFACE_RULE.md           # Reference only (integrated)
 ├── 07_GAME_SCORE_RETRIEVAL_SYSTEM.md    # Reference only (integrated)
-└── 08_CRITICAL_CODE_PRESERVATION_RULE.md # 🚨 CRITICAL - NEVER DELETE WORKING CODE
+├── 08_CRITICAL_CODE_PRESERVATION_RULE.md # 🚨 CRITICAL - NEVER DELETE WORKING CODE
+├── 09_RESET_SEASON_PROTOCOL_RULE.md     # 🚀 SEASON RESET OPERATIONS
+├── 10_FILE_PATH_LOCAL_VS_PRODUCTION_RULE.md # 🚨 PATH HANDLING
+├── 11_THREE_JS_RULE.md                  # THREE.JS DEVELOPMENT
+├── 12_UNIVERSAL_LEVEL_REQUIREMENTS_RULE.md # 🎮 LEVEL CONSISTENCY
+├── 13_3D_GAME_DSPOINC_SYNC_RULE.md      # 🎯 DSPOINC REWARDS SYNC
+└── 14_GLTF_SKELETON_CLONING_RULE.md     # 🚨 GLTF CLONING RENDERING
 ```
 
 ---

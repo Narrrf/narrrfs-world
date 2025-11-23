@@ -134,7 +134,11 @@ The reset logic in `checkRiddle4Combination()` was too aggressive. When the play
 
 **Bug #1 (Sequence Reset):** ✅ **FIXED**  
 **Bug #2 (Reward Not Awarding):** ✅ **FIXED**  
-**Testing:** ⏳ **REQUIRED** - User should test the sequence and verify reward appears  
+**Testing:** ✅ **CONFIRMED WORKING** - User tested and confirmed:
+  - ✅ Sequence works correctly (all ON → all OFF → middle ON)
+  - ✅ Achievement unlocked successfully
+  - ✅ +1,000 DSPOINC reward awarded and displayed
+  - ✅ Score shown in profile page
 **Documentation:** ✅ **UPDATED** - This lab note created
 
 ---
@@ -152,4 +156,116 @@ The reset logic in `checkRiddle4Combination()` was too aggressive. When the play
 
 **Created:** November 22, 2025  
 **Status:** ✅ **FIXED - READY FOR TESTING**
+
+---
+
+## 🐻 **BEAR TRAP IMPLEMENTATION (November 22, 2025 - Afternoon)**
+
+### **Features Added:**
+1. **Deadly Bear Trap in Level 1:**
+   - Uses SP08 (open trap) and SP07 (closed trap) models
+   - Positioned at x=65, z=25 (relative to spawn)
+   - Switches from open to closed when player steps on it
+   - Triggers game over sequence (same as Level 3 crush death)
+
+2. **Death Delay & Visual Feedback:**
+   - 1-second delay between trap closing and death screen
+   - Player can see the closed trap before game over
+   - Player movement blocked during delay (can't escape)
+
+3. **Sound Effect:**
+   - Bear trap sound (`bear-trap-103800.mp3`) plays when trap closes
+   - Volume: 0.7
+   - Loaded on game start
+
+4. **Game Over Screen Fixes:**
+   - Single "Restart Level 1" button when death is from bear trap (no duplicates)
+   - Level Select button hidden when death is from bear trap (prevents going to wrong level)
+   - Properly restarts Level 1 and recreates trap in open state
+
+### **Files Modified:**
+- ✅ `three.js/main.js`
+  - Added `createLevel1BearTrap()` function
+  - Added `checkLevel1BearTrapCollision()` function
+  - Added `triggerLevel1BearTrapDeath()` function
+  - Added bear trap sound loading
+  - Added player movement blocking when trap triggered
+  - Fixed game over screen button logic (removed duplicates)
+  - Added trap recreation in `restartLevel1()`
+
+### **Status:** ✅ **COMPLETE & TESTED**
+
+---
+
+## 🔊 **HIDDEN SLEVER RIDDLE SOUND IMPLEMENTATION (November 22, 2025 - Evening)**
+
+### **Feature Added:**
+**Sound Effect for Hidden Secret Riddle (Riddle #4) Completion**
+
+When the player successfully solves the hidden 3-slever riddle (Riddle #4), they now hear a sound effect (`hidden-slever.mp3`) to celebrate the achievement.
+
+### **Implementation Details:**
+
+1. **Sound File:**
+   - **Path:** `/sounds/SFX/hidden-slever.mp3`
+   - **Location:** `three.js/public/sounds/SFX/hidden-slever.mp3`
+   - **Volume:** 0.8
+   - **Loading:** Loaded at game start in `loadCharacterAudio()`
+
+2. **Sound Playback:**
+   - **Trigger:** Plays when Riddle #4 is solved (Step 3: only middle lever ON)
+   - **Function:** `playHiddenSleverSound()`
+   - **Pattern:** Follows same pattern as other game sounds (checks `soundFxEnabled`, calls `resumeAudioContextIfNeeded()`)
+   - **Timing:** Plays immediately after riddle completion, before UI messages/rewards
+
+3. **Code Changes:**
+   - **File:** `three.js/main.js`
+   - **Sound Variables:** Added `hiddenSleverSound` and `hiddenSleverAudioReady` (line ~1063)
+   - **Sound Loading:** Added to `loadCharacterAudio()` (line ~1237-1253)
+   - **Sound Function:** Created `playHiddenSleverSound()` (line ~1336-1343)
+   - **Sound Playback:** Called in `checkRiddle4Combination()` when riddle solved (line ~15020)
+
+4. **Execution Order Fix:**
+   - **Issue:** JavaScript error (`showToast is not defined`) was preventing sound from playing
+   - **Fix:** Reordered code so sound plays FIRST, before any UI functions that might throw errors
+   - **Protection:** Wrapped UI code (rewards, success messages) in try-catch so sound still plays even if UI fails
+
+### **Code Structure:**
+```javascript
+// Sound plays FIRST (before any UI that might throw errors)
+console.log("🧩 [RIDDLE #4] ✅ SECRET RIDDLE SOLVED! Sequence complete!");
+playHiddenSleverSound();
+
+// Then show success message and unlock reward (even if these fail, sound already played)
+try {
+  unlockRiddle4Reward();
+  showRiddle4SuccessMessage();
+} catch (error) {
+  console.error("❌ [RIDDLE #4] Error showing success/reward (sound should have played):", error);
+}
+```
+
+### **Debug Logging:**
+- Sound loading success/failure logged
+- Sound state logged when riddle solved
+- Error handling for sound playback
+- Console warnings if sound cannot play (shows reason)
+
+### **Testing:**
+- ✅ Sound loads successfully on game start
+- ✅ Sound plays when riddle is solved
+- ✅ Sound plays even if UI code throws errors
+- ✅ Sound respects `soundFxEnabled` setting
+- ✅ Audio context properly unlocked before playing
+
+### **Files Modified:**
+- ✅ `three.js/main.js`
+  - Added hidden slever sound variable declarations
+  - Added sound loading in `loadCharacterAudio()`
+  - Added `playHiddenSleverSound()` function
+  - Added sound playback call in `checkRiddle4Combination()`
+  - Reordered code so sound plays before UI code
+  - Added try-catch protection for UI code
+
+### **Status:** ✅ **COMPLETE & TESTED** - Sound plays successfully when riddle is solved
 

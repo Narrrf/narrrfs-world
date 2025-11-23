@@ -420,6 +420,7 @@ Players must discover and interact with 3 hidden levers on the wall, performing 
      - Lever 3: OFF
 
 4. **Completing the Riddle:**
+   - **Sound Effect:** `hidden-slever.mp3` plays immediately when riddle is solved
    - Success message appears: "🎉 You found a hidden riddle! 🎉"
    - Reward notification: "+1,000 DSPOINC"
    - Riddle is marked as complete
@@ -442,6 +443,13 @@ Players must discover and interact with 3 hidden levers on the wall, performing 
 - **Description:** "Secret Riddle #4 - Hidden Lever Combination"
 - **API Endpoint:** `/api/user/award-level1-dspoinc-reward.php`
 - **Database:** Recorded in `tbl_user_scores` and `tbl_score_adjustments`
+
+### **Audio Feedback:**
+- **Lever Toggle Sound:** `slever.ogg` plays when any lever is toggled ON or OFF
+- **Riddle Solved Sound:** `hidden-slever.mp3` plays when riddle is successfully completed (Step 3: only middle lever ON)
+- **Sound Volume:** 0.8 (80% volume)
+- **Sound Loading:** Loaded at game start in `loadCharacterAudio()`
+- **Sound Playback:** Plays immediately before UI messages/rewards (ensures sound plays even if UI code fails)
 
 ### **Visual Feedback:**
 - **Lever OFF State:** Grey texture (`slever1.png`), no glow
@@ -469,6 +477,9 @@ Players must discover and interact with 3 hidden levers on the wall, performing 
 - **Reward Unlock:** `three.js/main.js` ~14748 (`unlockRiddle4Reward()`)
 - **Success Message:** `three.js/main.js` ~14760 (`showRiddle4SuccessMessage()`)
 - **Hint Messages:** `three.js/main.js` ~14773 (`showRiddle4HintMessage()`)
+- **Sound Loading:** `three.js/main.js` ~1237-1253 (`loadCharacterAudio()` - hidden slever sound)
+- **Sound Function:** `three.js/main.js` ~1336-1343 (`playHiddenSleverSound()`)
+- **Sound Playback:** `three.js/main.js` ~15020 (called in `checkRiddle4Combination()` when riddle solved)
 
 ### **Wall Coordinates Note:**
 The levers are positioned on the left wall of Level 1:
@@ -1054,11 +1065,13 @@ The riddle system includes comprehensive debug logging:
 
 ---
 
-**Document Version:** 2.5  
-**Last Updated:** November 22, 2025  
+**Document Version:** 2.6  
+**Last Updated:** November 22, 2025 (Evening)  
 **Maintained By:** Narrrf's Lab Tech Council  
 **Status:** ✅ **PRODUCTION VERIFIED** - 3-Step System with Strict Aiming Detection + Role-Based Rewards  
-**Riddle Note:** November 22, 2025 - Fixed Riddle #4 sequence reset logic bug
+**Riddle Notes:** 
+- November 22, 2025 (Afternoon) - Fixed Riddle #4 sequence reset logic bug
+- November 22, 2025 (Evening) - Added hidden slever sound (`hidden-slever.mp3`) for Riddle #4 completion
 
 **Changes:** 
 - **Version 2.0:** Added Step 0 (hidden discovery challenge) - Riddle UI now hidden until player finds and stands on trigger block
@@ -1066,7 +1079,8 @@ The riddle system includes comprehensive debug logging:
 - **Version 2.2:** Fixed trait unlock API database schema mismatch - updated SQL queries to match actual table structure (`trait` instead of `trait_name`, `timestamp` instead of `created_at`/`updated_at`). Trait unlock now works correctly with existing database schema.
 - **Version 2.3:** Fixed role-based multiplier system - corrected `getRoleMultiplier()` function to query `role_name` column (not non-existent `role_id`). Role multipliers now correctly applied (VIP Holder: 2.0x, Holder: 1.5x, etc.)
 - **Version 2.4:** Production testing verified - All 3 riddles tested with fresh database, all systems working perfectly
-- **Version 2.5:** Fixed Riddle #4 sequence reset logic bug (November 22, 2025) - Reset logic was too aggressive, resetting when player was correctly turning levers OFF one by one. Now only resets if player goes backwards or turns wrong levers ON.
+- **Version 2.5:** Fixed Riddle #4 sequence reset logic bug (November 22, 2025 - Afternoon) - Reset logic was too aggressive, resetting when player was correctly turning levers OFF one by one. Now only resets if player goes backwards or turns wrong levers ON.
+- **Version 2.6:** Added hidden slever sound for Riddle #4 completion (November 22, 2025 - Evening) - `hidden-slever.mp3` now plays when riddle is solved. Sound plays before UI code to ensure it always works even if UI fails. Added `playHiddenSleverSound()` function following same pattern as other game sounds.
 
 **Latest Riddle Note (November 19, 2025 - Evening):**
 - **Production Testing Complete:** Fresh database test with Narrrf (VIP Holder) account
