@@ -128,9 +128,16 @@ require_once 'discord-invite.php';
 </nav>
 
 <!-- 🧀 Dark Theme Header -->
-<header class="text-center p-8 rounded-xl shadow-2xl my-8 mx-4 bg-black/90 backdrop-blur-md border border-yellow-400/30">
-  <h1 class="text-5xl font-bold text-yellow-400 animate-pulse trophy-glow">🐒 Golden Baboons Bingo Night 🧀</h1>
-  <p class="text-gray-300">Tickets auto-sort by hits! Watch for "1 AWAY FROM BINGO!" warnings!</p>
+<header class="text-center p-8 rounded-xl shadow-2xl my-8 mx-4 bg-black/90 backdrop-blur-md border border-yellow-400/30 relative overflow-hidden">
+  <!-- Event Night Banner -->
+  <div class="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-400/20 via-yellow-500/30 to-yellow-400/20 py-2 border-b border-yellow-400/50">
+    <p class="text-yellow-300 font-bold text-sm animate-pulse">🎉 TONIGHT'S SPECIAL EVENT - BINGO NIGHT! 🎉</p>
+  </div>
+  <div class="mt-6">
+    <h1 class="text-5xl font-bold text-yellow-400 animate-pulse trophy-glow">🐒 Golden Baboons Bingo Night 🧀</h1>
+    <p class="text-gray-300 mt-2">Tickets auto-sort by hits! Watch for "1 AWAY FROM BINGO!" warnings!</p>
+    <p class="text-yellow-300 font-semibold mt-3 text-lg">🎲 Ready to play? Add your tickets and start marking numbers! 🎲</p>
+  </div>
 </header>
 
 <!-- Main Bingo Section -->

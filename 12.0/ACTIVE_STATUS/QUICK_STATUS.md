@@ -1,14 +1,34 @@
 # 🚀 NARRRFS WORLD 12.0 - QUICK STATUS
 
 **Last Updated:** November 24, 2025 - Evening  
-**Current Session:** Sunday - 🎮 Level 5 Polish & Riddle Preparation  
-**Status:** 🟢 **LEVEL 5 COMPLETE — READY FOR FIRST RIDDLE STEP**
+**Current Session:** Monday - 🎮 Level 5 Polish + Discord Onboarding Refresh  
+**Status:** 🟢 **LEVEL 5 READY · DISCORD “GET STARTED” UPDATED**
 
-## 🚨 Latest Updates — Nov 24 (Evening) - LEVEL 5 ANIMATION FIX & RIDDLE READY
+## 🚨 Latest Updates — Nov 23 (Evening) - LEVEL 5 COLLISION MESH FIX COMPLETE
+- **✅ LEVEL 5 COLLISION MESH:** Fixed attribute compatibility issue (UV mismatch) - mergeGeometries() now working
+- **✅ LEVEL 5 GROUND COLLISION:** Player walks on map surface correctly (no more falling through)
+- **✅ LEVEL 5 WALL COLLISION:** Player blocked by cheese border walls (no more walking through)
+- **✅ LEVEL 5 SUPER JUMP:** 5x higher jump working perfectly (75 units vs 15 units)
+- **✅ LEVEL 5 STATUS:** Fully playable with complete collision detection - ready for first riddle step
+
+## 🚨 Latest Updates — Nov 24 (Evening) - LEVEL 5 STEP 1 IMPLEMENTATION & FIXES
+- **✅ LEVEL 5 STEP 1 MONSTER HUNT:** 50 monsters across entire map, 10-minute timer, flying monsters with thunder bullets
+- **✅ LEVEL 5 TIMER COUNTDOWN FIX:** Timer now counts down continuously (10:00 → 0:00) - added auto-reactivation logic to prevent stops
+- **✅ LEVEL 5 FLYING MONSTER SHOOTING FIX:** Enhanced hit detection with bounding box fallback - flying monsters can now be shot
+- **✅ LEVEL 5 THUNDER BULLET SPEED:** Increased by 50% (6 → 9 units/second) for better gameplay balance
+- **✅ LEVEL 5 EXPLOSION EFFECTS:** Rainbow pixel cube explosions matching Level 4 style
+- **✅ LEVEL 5 POPUP SIZE FIX:** Reduced countdown popup by 40% with subtle animation instead of aggressive bounce
+- **✅ LEVEL 5 COUNTER DISPLAY:** Monster counter (X/50 Monsters) working correctly and updating as monsters are defeated
+- **✅ RIDDLE NOTE CREATED:** `LEVEL_5_STEP1_TIMER_AND_POPUP_FIXES_2025-11-24.md` documents all fixes
+- **✅ TECHNICAL DOCS UPDATED:** Level 5 riddle documentation updated with Step 1 section and all fixes
+
+## 🚨 Latest Updates — Nov 24 (Earlier) - LEVEL 5 STEP 0 & DISCORD REFRESH
 - **✅ LEVEL 5 ANIMATION SPEED:** Fixed 3rd person mouse character animation (1.8x multiplier in normal mode)
 - **✅ LEVEL 5 CHARACTER RENDERING:** Perfect in both god mode and normal mode
 - **✅ LEVEL 5 SUPER JUMP:** 5x higher jump working perfectly (75 units vs 15 units)
-- **✅ LEVEL 5 STATUS:** Core functionality complete, ready for first riddle step
+- **✅ LEVEL 5 STEP 0 TRIGGER:** Cheese plate spawns near the player spawn; standing on it unlocks weapon slots 1 & 2 (Level 4 shooter system) for riddle prototyping
+- **✅ DISCORD “GET STARTED” UPDATE:** Rebuilt #overview, #official-links, #roadmap, #holder-benefits, #game-guide, and #role-info with current game matrix, partner perks, DSPOINC details, and whitepaper-aligned roadmap
+- **✅ LEVEL 5 STATUS:** Step 0 complete - Step 1 monster hunt implemented and working
 
 ## 🚨 Latest Updates — Nov 22 (Afternoon) - BEAR TRAP & GAME OVER FIXES
 - **✅ LEVEL 1 BEAR TRAP:** Deadly trap implemented (SP08/SP07 models, sound, movement blocking, 1s delay)

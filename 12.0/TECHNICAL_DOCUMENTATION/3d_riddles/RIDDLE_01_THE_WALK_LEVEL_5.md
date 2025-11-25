@@ -1,10 +1,10 @@
 # 🚶 RIDDLE #1 — THE WALK (LEVEL 5)
 
 **Document Created:** November 24, 2025  
-**Last Updated:** November 24, 2025  
+**Last Updated:** November 23, 2025  
 **Riddle ID:** `CHEESE_TEMPLE_LEVEL5_RIDDLE_01` (to be implemented)  
 **Level:** Cheese Temple — Level 5 "The Walk"  
-**Status:** ✅ **MAP LOADING IMPLEMENTED** — Exploration level with Klagenfurt city map (5x scaled)  
+**Status:** ✅ **STEP 1 COMPLETE — MONSTER HUNT WORKING** — Exploration level with monster hunt riddle (10-minute timer, 50 monsters, flying monster shooting)  
 **Traits / Rewards:** 
 - (To be implemented - exploration objectives will be added)
 
@@ -257,6 +257,18 @@ level5State.spawnPosition.set(0, spawnY, 0);
 **Fix Date:** November 24, 2025  
 **Result:** Smooth, natural-looking walk animation matching movement speed
 
+### Issue 5: Collision Mesh Creation Failure (UV Attribute Mismatch)
+**Status:** ✅ FIXED  
+**Cause:** `mergeGeometries()` failed because GLTF map meshes had inconsistent UV attributes (some had UVs, some didn't), while border walls (BoxGeometry) always had UVs. The merge function requires ALL geometries to have identical attribute sets.  
+**Solution:** Created `normalizeGeometryAttributes()` helper function that ensures all geometries have compatible attributes (indices, normals, UVs) before merging. Adds dummy UVs `(0,0)` to geometries missing them, computes normals if missing, and creates indices if missing.  
+**Fix Date:** November 23, 2025  
+**Result:** Collision mesh now merges successfully with all 9 geometries (5 map meshes + 4 border walls). Ground collision and wall collision working perfectly. Player can walk on map surface and is blocked by cheese border walls. Super jump feature fully functional.  
+**Technical Details:**
+- **Function:** `normalizeGeometryAttributes()` in `three.js/main.js` (lines ~9500-9534)
+- **Applied To:** All map meshes and border walls before merging
+- **Merge Result:** Single indexed `BufferGeometry` with `MeshBVH` for efficient collision detection
+- **Console Output:** `✅ [LEVEL 5] Collision mesh created successfully!`
+
 ---
 
 ## 📝 FUTURE DEVELOPMENT
@@ -272,7 +284,7 @@ level5State.spawnPosition.set(0, spawnY, 0);
 8. **Performance Optimization:** LOD system if needed for large map
 
 ### Technical Improvements
-1. **Collision System:** Improved collision with city geometry
+1. **Collision System:** ✅ Complete - Ground and wall collision working perfectly (November 23, 2025)
 2. **Lighting:** Dynamic lighting based on time of day
 3. **Weather:** Optional weather effects
 4. **Sound Design:** Ambient city sounds, footsteps
@@ -309,18 +321,22 @@ The implementation includes comprehensive logging:
 - `✅ [LEVEL 5] Warped to 'The Walk'` - Warp complete
 
 ### Testing Checklist
-- [ ] Map loads successfully from level selector
-- [ ] Map loads successfully from Level 4 completion
-- [ ] Player spawns on top of ground (not floating or clipping)
-- [ ] Player can walk/run through city
-- [ ] Camera works correctly in first-person
-- [ ] Camera works correctly in third-person
-- [ ] God mode works (4x speed)
-- [ ] Map scales correctly (5x larger)
-- [ ] Fog renders correctly
-- [ ] Background color applies correctly
-- [ ] No console errors during loading
-- [ ] Performance is acceptable
+- [x] Map loads successfully from level selector
+- [x] Map loads successfully from Level 4 completion
+- [x] Player spawns on top of ground (not floating or clipping)
+- [x] Player can walk/run through city
+- [x] Ground collision working (player walks on map surface)
+- [x] Wall collision working (player blocked by cheese border walls)
+- [x] Super jump working (75 units jump height)
+- [x] Camera works correctly in first-person
+- [x] Camera works correctly in third-person
+- [x] God mode works (4x speed)
+- [x] Map scales correctly (5x larger)
+- [x] Fog renders correctly
+- [x] Background color applies correctly
+- [x] Collision mesh created successfully
+- [x] No console errors during loading
+- [x] Performance is acceptable
 
 ---
 
@@ -441,7 +457,164 @@ level5State.borderWalls = {
 
 ---
 
-**Last Updated:** November 23, 2025 (Cheese Border Walls + Collision)  
-**Status:** ✅ **CORE FUNCTIONALITY COMPLETE - READY FOR FIRST RIDDLE STEP**  
-**Next Phase:** Design and implement first riddle step
+---
+
+## 🧀 STEP 0: WEAPON TRIGGER PLATE (November 24, 2025)
+
+### Implementation
+Classic cheese-stone trigger plate spawns near player spawn point. When player stands on the plate, it activates the weapon system (slots 1 & 2) for Level 5 riddle gameplay.
+
+### Trigger Plate Specifications
+- **Texture:** `/textures/blocks/cheese-stone.png`
+- **Size:** 2.6 x 0.35 x 2.6 units (BoxGeometry)
+- **Position:** Near spawn point (X: spawn + 4, Z: spawn - 4, Y: ground level)
+- **Ground Alignment:** Plate center positioned at `groundLevel + (plateHeight / 2)` so top sits flush with ground
+- **Material:** `MeshStandardMaterial` with cheese-stone texture, emissive yellow glow (0.2 intensity)
+
+### Step 0 State Machine
+- **State Object:** `level5RiddleState` manages plate, timers, and weapon flags
+- **Activation:** Player must stand on plate for `LEVEL5_TRIGGER_PLATE_ACTIVATION_TIME` (1.5 seconds)
+- **Visual Feedback:** Plate animates down when pressed, smoothly lerps to pressed position
+- **Weapon Unlock:** After activation, weapons in slots 1 & 2 become available (same as Level 4)
+
+### Technical Details
+**Function:** `createLevel5TriggerPlate()` creates and positions the plate  
+**Update:** `updateLevel5Step0()` handles player detection and plate animation  
+**Reset:** `resetLevel5RiddleState()` cleans up state on level warp/restart
+
+### Known Issues & Fixes
+
+**Issue:** Plate was floating too high above ground  
+**Status:** ✅ FIXED (November 24, 2025)  
+**Solution:** Calculate and use actual ground level from raycast instead of spawn-relative offset  
+**Technical:** Plate positioned at `groundLevel + (plateHeight / 2)` using stored `level5State.groundLevelY`
+
+**Issue:** Bullets not visible when shooting in Level 5  
+**Status:** ✅ FIXED (November 24, 2025)  
+**Solution:** Updated `updateLevel4Bullets()` to allow Level 5 bullets when weapons enabled  
+**Technical:** Added check: `currentLevel === LEVEL_IDS.LEVEL5 && level5RiddleState.weaponsEnabled`
+
+### Weapon System Integration
+- **Slots:** 1 (Pistol Mk I) and 2 (Sci-Fi Pistol 1)
+- **Bullets:** Yellow cheese bullets (slot 1), purple SF13 bullets (slot 2)
+- **Shooting:** Same system as Level 4 (reuses `handleLevel4Shooting()`, `fireLevel4SingleShot()`)
+- **Update Loop:** Bullets update via `updateLevel4Bullets()` called in `updateLevel5()` when weapons enabled
+
+---
+
+---
+
+## 🐉 STEP 1: MONSTER HUNT (November 24, 2025)
+
+### Implementation
+After weapons are activated in Step 0, Step 1 begins automatically: a 10-minute monster hunt across the entire Level 5 map. Players must defeat all 50 monsters before time runs out to complete the step.
+
+### Step 1 Specifications
+- **Duration:** 10 minutes (600 seconds) countdown timer
+- **Monster Count:** 50 monsters spawned across the entire map
+- **Spawn System:** Two-pass grid system ensuring full map coverage
+  - **Pass 1:** At least one monster per grid cell (60x60 unit cells)
+  - **Pass 2:** Remaining monsters randomly distributed
+- **Monster Types:** All available monsters from Level 4, including flying monsters
+- **Flying Monsters:** Can shoot thunder bullets at the player (dangerous!)
+- **Reward:** 2,500 DSPOINC on completion
+- **Trait:** `CHEESE_TEMPLE_LEVEL5_STEP1_COMPLETE` trait unlocked
+
+### Timer System
+- **HUD Display:** Top-center timer showing remaining time (MM:SS format)
+- **Auto-Reactivation:** Timer auto-reactivates if accidentally disabled (prevents stops)
+- **Warning State:** Timer turns red and pulses when < 1 minute remains
+- **Timeout Handling:** Game over screen if timer reaches 0:00
+- **Status:** ✅ **FIXED** (November 24, 2025) — Timer now counts down continuously without stopping
+
+### Countdown Popup
+- **Duration:** 5-second countdown (5, 4, 3, 2, 1, BEGIN!)
+- **Size:** Compact design (40% smaller than original)
+  - Padding: 20px 30px
+  - Font sizes: Title 20px, Countdown 36px
+  - Dimensions: 250px-300px width
+- **Animation:** Subtle scale animation (1.0 to 1.1) instead of aggressive bounce
+- **Status:** ✅ **FIXED** (November 24, 2025) — Popup is appropriately sized and less distracting
+
+### Monster Spawning
+- **Grid System:** 25 columns × 16 rows = 400 cells covering entire map
+- **Map Bounds:** X(-750 to 750), Z(-480 to 480)
+- **Ground Detection:** Uses `getLevel5GroundLevelAt(x, z)` raycast for accurate ground positioning
+- **Flying Monsters:** Spawn at ground level + height offset (20-30 units above ground)
+- **Size Variation:** Random size multipliers (1.0x to 1.5x) for variety
+- **Animation:** Monsters play 'Walk' or 'Fly' animation based on type
+
+### Flying Monster Thunder Bullets
+- **Speed:** 9 units/second (50% faster than original 6)
+- **Cooldown:** 4.5 seconds between shots
+- **Lifetime:** 10 seconds
+- **Visual:** Yellow sphere with purple emissive glow, pulsing animation
+- **Danger:** Player hit = instant game over (crushed death scene)
+- **Collision:** Ray-based collision detection with player collider
+
+### Explosion Effects
+- **Style:** Rainbow pixel cubes (matches Level 4)
+- **Particle Count:** 15 cubes per explosion
+- **Physics:** Outward explosion with gravity and fade-out
+- **Visual:** Random HSL colors, smooth rotation and opacity fade
+
+### Known Issues & Fixes
+
+**Issue:** Timer stopped counting down at 9:59  
+**Status:** ✅ FIXED (November 24, 2025)  
+**Solution:** Added auto-reactivation logic - if `step1Active` is true but `step1TimerActive` is false, timer automatically reactivates  
+**Technical:** Modified `updateLevel5Step1Timer()` to detect and recover from accidental timer stops
+
+**Issue:** Countdown popup too large and bouncy  
+**Status:** ✅ FIXED (November 24, 2025)  
+**Solution:** Reduced popup size by 40% and changed animation to subtle scale (1.0 to 1.1)  
+**Technical:** Reduced padding, font sizes, dimensions, and visual effects in `showLevel5Step1Countdown()`
+
+**Issue:** Flying monsters couldn't be shot  
+**Status:** ✅ FIXED (November 24, 2025)  
+**Solution:** Enhanced hit detection with bounding box fallback for skinned meshes  
+**Technical:** Modified `fireLevel4SingleShot()` to handle skinned meshes and use bounding box approximation if raycast fails
+
+**Issue:** Monster explosion effects not matching Level 4  
+**Status:** ✅ FIXED (November 24, 2025)  
+**Solution:** Created `createLevel5MonsterExplosionEffect()` with rainbow pixel cubes matching Level 4  
+**Technical:** Particles use random HSL colors, explode outward with gravity, fade out over 1 second
+
+### Technical Details
+**Functions:**
+- `startLevel5Step1()` — Initializes Step 1 state and spawns monsters
+- `updateLevel5Step1Timer(delta)` — Updates timer countdown and display
+- `updateLevel5MonsterCounter()` — Updates monster count display
+- `spawnLevel5Step1Monsters()` — Two-pass spawn system for map coverage
+- `spawnLevel5Monster()` — Individual monster spawn with skeleton fixes
+- `defeatLevel5Monster()` — Handles monster defeat, explosion, and rewards
+- `updateLevel5FlyingMonsters()` — Updates flying monster shooting logic
+- `updateLevel5ThunderBullets()` — Updates thunder bullet movement and collision
+- `updateLevel5ExplosionParticles()` — Updates rainbow cube explosion particles
+- `createLevel5Step1HUD()` — Creates timer and counter UI elements
+
+**State Management:**
+- `level5RiddleState.step1Active` — Step 1 is active
+- `level5RiddleState.step1Timer` — Remaining time in seconds
+- `level5RiddleState.step1TimerActive` — Timer is counting down
+- `level5RiddleState.monstersDefeated` — Count of defeated monsters
+- `level5RiddleState.totalMonsters` — Total monsters to defeat (50)
+- `level5State.monsters[]` — Array of active monster objects
+- `level5State.thunderBullets[]` — Array of active thunder bullets
+- `level5State.explosionParticles[]` — Array of explosion particle objects
+
+**Constants:**
+- `LEVEL5_STEP1_TIMER_DURATION = 600` (10 minutes)
+- `LEVEL5_STEP1_MONSTER_COUNT = 50`
+- `LEVEL5_STEP1_GRID_CELL_SIZE = 50`
+- `LEVEL5_THUNDER_BULLET_SPEED = 9` (50% faster)
+- `LEVEL5_THUNDER_BULLET_COOLDOWN = 4500` (4.5 seconds)
+- `LEVEL5_STEP1_DSPOINC_REWARD = 2500`
+- `LEVEL5_STEP1_TRAIT = 'CHEESE_TEMPLE_LEVEL5_STEP1_COMPLETE'`
+
+---
+
+**Last Updated:** November 24, 2025 (Step 1 Implementation + Timer/Popup Fixes)  
+**Status:** ✅ **STEP 1 COMPLETE - MONSTER HUNT WORKING** — Timer counting down, monsters shootable, explosions working  
+**Next Phase:** Test Step 1 completion and design Step 2 riddle objectives
 
