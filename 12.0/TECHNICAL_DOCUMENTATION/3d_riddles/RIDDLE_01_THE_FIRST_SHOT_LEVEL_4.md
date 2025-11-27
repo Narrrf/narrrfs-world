@@ -1,10 +1,11 @@
 # 🎯 RIDDLE #1 — THE FIRST SHOT (LEVEL 4)
 
 **Document Created:** November 17, 2025  
-**Last Updated:** November 23, 2025 (Wave Countdown UI Improvements + Monster Waves + Bullet Fix)  
+**Last Updated:** November 27, 2025 (GOD Mode Initialization Fix)  
 **Riddle ID:** `CHEESE_TEMPLE_LEVEL4_RIDDLE_01`  
 **Level:** Cheese Temple — Level 4 "The First Shot"  
 **Status:** ✅ **FULLY IMPLEMENTED** — 50-cheese shooting challenge + 30-monster wave challenge with wave-based progressive difficulty and enhanced AI  
+**Initialization:** ✅ **VERIFIED WORKING** — GOD mode warp works correctly, all elements spawn on first attempt  
 **Traits / Rewards:** 
 - `CHEESE_TEMPLE_LEVEL4_STEP0` (+100 DSPOINC)
 - `CHEESE_TEMPLE_LEVEL4_STEP1` (unlocked after shooting 50 cheeses)
@@ -568,4 +569,58 @@ const level4Config = {
 - **Result:** Weapon switching works correctly for all number keys
 - **Files Modified:** `three.js/main.js` - `document.addEventListener("keydown", ...)` handler
 - **Status:** ✅ **COMPLETE**
+
+---
+
+## 💾 DATABASE STRUCTURE & REWARD SYSTEM
+
+### **Database Tables Used for Level 4 Rewards & Traits**
+
+**See:** `12.0/RULES/15_RIDDLE_REWARD_DATABASE_RULE.md` for complete database documentation.
+
+**Key Tables:**
+- **`tbl_user_traits`** - Stores trait unlocks (`CHEESE_TEMPLE_LEVEL4_STEP0`, `CHEESE_TEMPLE_LEVEL4_STEP1`, `CHEESE_TEMPLE_LEVEL4_STEP2`, `CHEESE_TEMPLE_LEVEL4_STEP3`)
+- **`tbl_riddle_completions`** - Tracks step completions with base reward, multiplier, and total reward
+- **`tbl_user_scores`** - Stores DSPOINC balance updates (`game: 'cheese_temple_riddles'`, `source: 'riddle_completion'`)
+- **`tbl_score_adjustments`** - Audit trail for "Recent Score Changes" display
+
+**Riddle IDs:**
+- `CHEESE_TEMPLE_LEVEL4_STEP0` - Base reward: 100 DSPOINC
+- `CHEESE_TEMPLE_LEVEL4_CHEESE_1` through `CHEESE_TEMPLE_LEVEL4_CHEESE_50` - Base reward: 50 DSPOINC each
+- `CHEESE_TEMPLE_LEVEL4_MONSTER_1` through `CHEESE_TEMPLE_LEVEL4_MONSTER_30` - Base reward: 50 DSPOINC each (Step 2)
+- `CHEESE_TEMPLE_LEVEL4_STEP3` - Base reward: 200 DSPOINC
+
+**API Endpoints:**
+- **Reward API:** `/api/dev/riddle-reward.php` (POST method)
+- **Trait API:** `/api/user/traits.php` (POST method)
+
+**Query Examples:**
+```sql
+-- Check Level 4 traits for user
+SELECT * FROM tbl_user_traits 
+WHERE user_id = ? AND trait_name LIKE 'CHEESE_TEMPLE_LEVEL4_%';
+
+-- Check Level 4 rewards for user (1 step + 50 cheeses + 30 monsters + 1 step)
+SELECT * FROM tbl_riddle_completions 
+WHERE discord_id = ? AND (riddle_id LIKE 'CHEESE_TEMPLE_LEVEL4_STEP%' OR riddle_id LIKE 'CHEESE_TEMPLE_LEVEL4_CHEESE_%' OR riddle_id LIKE 'CHEESE_TEMPLE_LEVEL4_MONSTER_%')
+ORDER BY completed_at DESC;
+```
+
+**Total Rewards:**
+- **Base Total:** 2,800 DSPOINC (100 + 50×50 cheeses + 50×30 monsters + 200)
+- **VIP Holder (2.0x):** 5,600 DSPOINC
+- **Holder (1.5x):** 4,200 DSPOINC
+- **Default (1.0x):** 2,800 DSPOINC
+
+**Last Updated:** November 27, 2025 (GOD Mode Initialization Fix)
+
+---
+
+## 🔧 TECHNICAL NOTES
+
+### **Initialization Fix (November 27, 2025):**
+- ✅ Added group scene verification to `warpToLevel4()` and `restartLevel4()`
+- ✅ `spawnLevel4Monster()` already had group scene verification
+- ✅ **Result:** GOD mode warp works correctly, all elements spawn on first attempt (cheeses, weapons, monsters)
+- ✅ **Verified:** Level 4 works perfectly with GOD mode (L key) and G key step jumps
 

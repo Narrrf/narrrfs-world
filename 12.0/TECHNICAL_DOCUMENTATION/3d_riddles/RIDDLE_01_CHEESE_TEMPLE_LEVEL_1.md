@@ -1134,3 +1134,49 @@ The riddle system includes comprehensive debug logging:
   - Step 2 Timer: `three.js/main.js` ~2816 (updateRiddleAiming function)
 - **Testing Status:** ✅ Both steps tested and confirmed working perfectly with strict detection
 
+---
+
+## 💾 DATABASE STRUCTURE & REWARD SYSTEM
+
+### **Database Tables Used for Level 1 Rewards & Traits**
+
+**See:** `12.0/RULES/15_RIDDLE_REWARD_DATABASE_RULE.md` for complete database documentation.
+
+**Key Tables:**
+- **`tbl_user_traits`** - Stores trait unlocks (`CHEESE_TEMPLE_RIDDLE_SOLVED`, `CHEESE_TEMPLE_RIDDLE_02_SOLVED`, `CHEESE_TEMPLE_RIDDLE_03_SOLVED`)
+- **`tbl_riddle_completions`** - Tracks riddle completions with base reward, multiplier, and total reward
+- **`tbl_user_scores`** - Stores DSPOINC balance updates (`game: 'cheese_temple_riddles'`, `source: 'riddle_completion'`)
+- **`tbl_score_adjustments`** - Audit trail for "Recent Score Changes" display
+
+**Riddle IDs:**
+- `CHEESE_TEMPLE_RIDDLE_01` - Base reward: 500 DSPOINC
+- `CHEESE_TEMPLE_RIDDLE_02` - Base reward: 500 DSPOINC
+- `CHEESE_TEMPLE_RIDDLE_03` - Base reward: 750 DSPOINC
+- `CHEESE_TEMPLE_RIDDLE_04_SECRET` - Base reward: 1,000 DSPOINC (fixed, no multiplier)
+
+**API Endpoints:**
+- **Reward API:** `/api/dev/riddle-reward.php` (POST method)
+- **Trait API:** `/api/user/traits.php` (POST method)
+
+**Query Examples:**
+```sql
+-- Check Level 1 traits for user
+SELECT * FROM tbl_user_traits 
+WHERE user_id = ? AND trait_name LIKE 'CHEESE_TEMPLE_RIDDLE%';
+
+-- Check Level 1 rewards for user (all 4 riddles)
+SELECT * FROM tbl_riddle_completions 
+WHERE discord_id = ? AND riddle_id LIKE 'CHEESE_TEMPLE_RIDDLE%'
+ORDER BY completed_at DESC;
+```
+
+**Total Rewards:**
+- **Base Total:** 2,750 DSPOINC (500 + 500 + 750 + 1,000)
+- **VIP Holder (2.0x):** 4,500 DSPOINC (1,000 + 1,000 + 1,500 + 1,000)
+- **Holder (1.5x):** 3,625 DSPOINC (750 + 750 + 1,125 + 1,000)
+- **Default (1.0x):** 2,750 DSPOINC
+
+**Note:** Riddle #4 (Secret) always awards 1,000 DSPOINC regardless of role multiplier.
+
+**Last Updated:** November 26, 2025 (Database Documentation Added)
+

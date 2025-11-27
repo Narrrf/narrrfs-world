@@ -1,9 +1,11 @@
 # 🏹 RIDDLE #1 — THE HUNT (LEVEL 3)
 
 **Document Created:** November 17, 2025  
+**Last Updated:** November 27, 2025 (GOD Mode Initialization Fix)  
 **Riddle ID:** `CHEESE_TEMPLE_LEVEL3_RIDDLE_01`  
 **Level:** Cheese Temple — Level 3 "The Hunt for the Cheese Monsters"  
 **Status:** ✅ **3-STEP SYSTEM COMPLETE** — Step 0, Step 1 (5 monsters), Step 2 (5 monsters), Step 3 (portal)  
+**Initialization:** ✅ **VERIFIED WORKING** — GOD mode warp works correctly, monsters spawn on first attempt  
 **Traits / Rewards:** 
 - `CHEESE_TEMPLE_LEVEL3_STEP0` (+100 DSPOINC)
 - `CHEESE_TEMPLE_LEVEL3_STEP1` (unlocked after catching 5 monsters)
@@ -317,7 +319,61 @@ Enter a massive 160x160 cheese stone arena and hunt animated monsters in two pha
 
 ---
 
-**Last Updated:** November 19, 2025 (Evening - Production Verified)  
+---
+
+## 💾 DATABASE STRUCTURE & REWARD SYSTEM
+
+### **Database Tables Used for Level 3 Rewards & Traits**
+
+**See:** `12.0/RULES/15_RIDDLE_REWARD_DATABASE_RULE.md` for complete database documentation.
+
+**Key Tables:**
+- **`tbl_user_traits`** - Stores trait unlocks (`CHEESE_TEMPLE_LEVEL3_STEP0`, `CHEESE_TEMPLE_LEVEL3_STEP1`, `CHEESE_TEMPLE_LEVEL3_STEP2`)
+- **`tbl_riddle_completions`** - Tracks step completions with base reward, multiplier, and total reward
+- **`tbl_user_scores`** - Stores DSPOINC balance updates (`game: 'cheese_temple_riddles'`, `source: 'riddle_completion'`)
+- **`tbl_score_adjustments`** - Audit trail for "Recent Score Changes" display
+
+**Riddle IDs:**
+- `CHEESE_TEMPLE_LEVEL3_STEP0` - Base reward: 100 DSPOINC
+- `CHEESE_TEMPLE_LEVEL3_MONSTER_1` through `CHEESE_TEMPLE_LEVEL3_MONSTER_10` - Base reward: 50 DSPOINC each
+
+**API Endpoints:**
+- **Reward API:** `/api/dev/riddle-reward.php` (POST method)
+- **Trait API:** `/api/user/traits.php` (POST method)
+
+**Query Examples:**
+```sql
+-- Check Level 3 traits for user
+SELECT * FROM tbl_user_traits 
+WHERE user_id = ? AND trait_name LIKE 'CHEESE_TEMPLE_LEVEL3_%';
+
+-- Check Level 3 rewards for user (1 step + 10 monsters)
+SELECT * FROM tbl_riddle_completions 
+WHERE discord_id = ? AND (riddle_id LIKE 'CHEESE_TEMPLE_LEVEL3_STEP%' OR riddle_id LIKE 'CHEESE_TEMPLE_LEVEL3_MONSTER_%')
+ORDER BY completed_at DESC;
+```
+
+**Total Rewards:**
+- **Base Total:** 600 DSPOINC (100 + 50×10 monsters)
+- **VIP Holder (2.0x):** 1,200 DSPOINC
+- **Holder (1.5x):** 900 DSPOINC
+- **Default (1.0x):** 600 DSPOINC
+
+---
+
+**Last Updated:** November 27, 2025 (GOD Mode Initialization Fix)  
 **Status:** ✅ **3-STEP SYSTEM COMPLETE & PRODUCTION VERIFIED** — All steps implemented with traits and DSPOINC rewards  
-**Version:** 2.1 (Updated Nov 19, 2025 - Production verification complete)
+**Version:** 2.3 (Updated Nov 27, 2025 - Initialization fixes verified)
+
+---
+
+## 🔧 TECHNICAL NOTES
+
+### **Initialization Fix (November 27, 2025):**
+- ✅ Added group scene verification to `warpToLevel3()` and `restartLevel3()`
+- ✅ Enhanced `spawnLevel3Monster()` with comprehensive checks
+- ✅ Enhanced Step 0 completion with group verification
+- ✅ Enhanced G key jump (`cycleLevel3Step()`) with group verification
+- ✅ **Result:** GOD mode warp works correctly, monsters spawn on first attempt
+- ✅ **Verified:** Level 3 works perfectly with GOD mode (L key) and G key step jumps
 

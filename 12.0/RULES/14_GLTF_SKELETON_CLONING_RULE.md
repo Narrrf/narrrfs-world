@@ -129,7 +129,22 @@ async function spawnLevel4Monster(monsterPath, spawnPosition, waveNumber, sizeMu
 
 ---
 
-## 🎮 **LEVEL 3 vs LEVEL 4 COMPARISON**
+## 🎮 **LEVEL 2, 3, 4 COMPARISON (All Working)**
+
+### **LEVEL 2 (Works Perfectly):**
+```javascript
+// Level 2 shows motionless monster previews on shelves
+// No cloning needed - uses original scene directly
+const gltf = await loadModel(monsterPath);
+const monsterMesh = gltf.scene; // ✅ Direct use, no clone
+level2State.group.add(monsterMesh);
+```
+
+**Why Level 2 Works:**
+- ✅ Uses original `gltf.scene` directly (no cloning)
+- ✅ No skeleton structure issues
+- ✅ Models render perfectly
+- ✅ Motionless previews work correctly
 
 ### **LEVEL 3 (Works Perfectly):**
 ```javascript
@@ -145,8 +160,9 @@ level3State.group.add(monsterMesh);
 - ✅ No skeleton structure issues
 - ✅ Models render perfectly
 - ✅ Animations work correctly
+- ✅ Movement works correctly
 
-### **LEVEL 4 (Fixed with SkeletonUtils):**
+### **LEVEL 4 (Fixed with SkeletonUtils - Verified Working):**
 ```javascript
 // Level 4 spawns 3 monsters at once (same model, multiple instances)
 // MUST clone for multiple instances
@@ -160,6 +176,10 @@ level4State.group.add(monsterMesh);
 - ✅ Standard clone() breaks skeleton structure
 - ✅ SkeletonUtils.clone() preserves skeleton
 - ✅ Models now render correctly
+- ✅ Animations work correctly
+- ✅ Movement works correctly
+- ✅ Raycasting works correctly
+- ✅ **VERIFIED WORKING - November 26, 2025**
 
 ---
 
@@ -184,6 +204,69 @@ level4State.group.add(monsterMesh);
 ---
 
 ## 📚 **TECHNICAL DETAILS**
+
+### **Three.js Skeleton Class Documentation:**
+According to the official Three.js documentation (https://threejs.org/docs/#Skeleton), the Skeleton class is used for representing armatures in three.js. The skeleton is defined by a hierarchy of bones.
+
+#### **Skeleton Constructor:**
+```javascript
+new Skeleton( bones : Array.<Bone>, boneInverses : Array.<Matrix4> )
+```
+- `bones`: An array of bones
+- `boneInverses`: An array of bone inverse matrices. If not provided, these matrices will be computed automatically via `Skeleton.calculateInverses()`
+
+#### **Critical Skeleton Methods:**
+
+**`.init()`**
+- Initializes the skeleton
+- This method gets automatically called by the constructor but depending on how the skeleton is created it might be necessary to call this method manually
+- **MUST be called after cloning** if skeleton structure needs re-initialization
+
+**`.calculateInverses()`**
+- Computes the bone inverse matrices
+- This method resets `Skeleton.boneInverses` and fills it with new matrices
+- **MUST be called** if `boneInverses` are missing or incorrect after cloning
+
+**`.pose()`**
+- Resets the skeleton to the base pose
+- **MUST be called** after cloning to ensure skeleton is in correct state
+
+**`.update()`**
+- Resets the skeleton to the base pose (similar to `pose()`)
+- **SHOULD be called** after skeleton initialization to ensure consistency
+
+#### **✅ WORKING PATTERN (Verified in Backup - Levels 2, 3, 4 Working):**
+```javascript
+// After SkeletonUtils.clone(), SIMPLE validation only (NO complex initialization!)
+monsterMesh.traverse((child) => {
+  if (child.isSkinnedMesh && child.skeleton) {
+    // SIMPLE: Just validate skeleton has bones - SkeletonUtils.clone() handles the rest!
+    if (!child.skeleton.bones || child.skeleton.bones.length === 0) {
+      console.warn(`⚠️ [LEVEL 4] Invalid skeleton for ${monsterPath} - skeleton has no bones`);
+    }
+  }
+});
+
+// CRITICAL: NO complex bone fixing loops needed!
+// SkeletonUtils.clone() properly preserves skeleton structure automatically
+// The renderer and animation system handle skeleton updates during normal game loop
+```
+
+#### **❌ DO NOT USE (Complex patterns cause issues):**
+```javascript
+// ❌ WRONG - Complex bone initialization causes matrixWorld errors
+monsterMesh.traverse((child) => {
+  if (child.isSkinnedMesh && child.skeleton) {
+    // DON'T manually fix bones - SkeletonUtils.clone() already did this!
+    child.skeleton.bones.forEach((bone, index) => {
+      if (!bone || !bone.matrixWorld) {
+        // This causes more problems than it solves!
+        bone.matrixWorld = new THREE.Matrix4();
+      }
+    });
+  }
+});
+```
 
 ### **Why SkeletonUtils.clone() Works:**
 - **Properly clones skeleton structure** (bones, bind matrices)
@@ -298,11 +381,21 @@ async function spawnMultipleNPCs(npcPath, count) {
 - **Root Cause:** Standard clone() doesn't preserve skeleton
 - **Solution:** SkeletonUtils.clone() for animated GLTF models
 
+### **Critical Update (November 26, 2025):**
+- **Status:** ✅ **VERIFIED WORKING** - Backup restored, Levels 2, 3, 4 all working perfectly
+- **Key Discovery:** **SIMPLE validation is sufficient** - NO complex bone fixing needed!
+- **Working Pattern:** SkeletonUtils.clone() + simple validation + ensure visibility
+- **Failed Pattern:** Complex bone matrixWorld initialization loops (caused more errors)
+- **Current State:** Level 2, 3, 4 monsters spawn, move, animate, and render correctly
+- **Weapon System:** Working correctly with simple material processing
+
 ### **Lessons Learned:**
-1. **GLTF models with animations** require special cloning
+1. **GLTF models with animations** require special cloning (SkeletonUtils.clone())
 2. **Standard clone()** only works for static models
 3. **SkeletonUtils.clone()** is mandatory for skinned meshes
-4. **Always check model type** before choosing clone method
+4. **SIMPLE validation is enough** - SkeletonUtils.clone() handles skeleton structure automatically
+5. **NO complex bone fixing loops** - They cause matrixWorld errors during raycasting
+6. **Trust SkeletonUtils.clone()** - It works correctly without manual intervention
 
 ---
 
@@ -313,6 +406,16 @@ async function spawnMultipleNPCs(npcPath, count) {
 - Documented SkeletonUtils.clone() requirement
 - Added implementation patterns and examples
 - Created verification checklist
+
+### **Version 2.0 (November 26, 2025) - CRITICAL UPDATE:**
+- **✅ VERIFIED WORKING** - Backup restored, Levels 2, 3, 4 all working perfectly
+- **Key Discovery:** **SIMPLE validation is sufficient** - NO complex bone fixing needed!
+- **Working Pattern:** SkeletonUtils.clone() + simple validation + ensure visibility
+- **Failed Pattern:** Complex bone matrixWorld initialization loops (caused more errors)
+- **Current State:** Level 2, 3, 4 monsters spawn, move, animate, and render correctly
+- **Weapon System:** Working correctly with simple material processing
+- **Raycasting:** Works correctly with direct call (no try-catch needed)
+- **Removed:** Complex skeleton initialization patterns (caused matrixWorld errors)
 
 ### **Future Updates:**
 - Rule will be updated based on new learnings

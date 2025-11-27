@@ -244,5 +244,46 @@ if (currentLevel === LEVEL_IDS.LEVEL2) {
 
 ---
 
-_Maintained by Narrrf's Lab Tech Council — last updated 2025-11-19 (Evening - Production Verified)._
+## 💾 DATABASE STRUCTURE & REWARD SYSTEM
+
+### **Database Tables Used for Level 2 Rewards & Traits**
+
+**See:** `12.0/RULES/15_RIDDLE_REWARD_DATABASE_RULE.md` for complete database documentation.
+
+**Key Tables:**
+- **`tbl_user_traits`** - Stores trait unlocks (`CHEESE_TEMPLE_LEVEL2_STEP0`, `CHEESE_TEMPLE_LEVEL2_STEP1`, `CHEESE_TEMPLE_LEVEL2_STEP2`)
+- **`tbl_riddle_completions`** - Tracks step completions with base reward, multiplier, and total reward
+- **`tbl_user_scores`** - Stores DSPOINC balance updates (`game: 'cheese_temple_riddles'`, `source: 'riddle_completion'`)
+- **`tbl_score_adjustments`** - Audit trail for "Recent Score Changes" display
+
+**Riddle IDs:**
+- `CHEESE_TEMPLE_LEVEL2_STEP0` - Base reward: 100 DSPOINC
+- `CHEESE_TEMPLE_LEVEL2_STEP1` - Base reward: 100 DSPOINC
+- `CHEESE_TEMPLE_LEVEL2_STEP2` - Base reward: 120 DSPOINC
+
+**API Endpoints:**
+- **Reward API:** `/api/dev/riddle-reward.php` (POST method)
+- **Trait API:** `/api/user/traits.php` (POST method)
+
+**Query Examples:**
+```sql
+-- Check Level 2 traits for user
+SELECT * FROM tbl_user_traits 
+WHERE user_id = ? AND trait_name LIKE 'CHEESE_TEMPLE_LEVEL2_%';
+
+-- Check Level 2 rewards for user
+SELECT * FROM tbl_riddle_completions 
+WHERE discord_id = ? AND riddle_id LIKE 'CHEESE_TEMPLE_LEVEL2_%'
+ORDER BY completed_at DESC;
+```
+
+**Total Rewards:**
+- **Base Total:** 320 DSPOINC (100 + 100 + 120)
+- **VIP Holder (2.0x):** 640 DSPOINC
+- **Holder (1.5x):** 480 DSPOINC
+- **Default (1.0x):** 320 DSPOINC
+
+---
+
+_Maintained by Narrrf's Lab Tech Council — last updated 2025-11-26 (Database Documentation Added)._
 

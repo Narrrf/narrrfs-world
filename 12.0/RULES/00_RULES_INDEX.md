@@ -86,6 +86,14 @@
     - **Discovery:** Level 4 monster waves - 10+ attempts to fix invisible monsters
     - **Solution:** Use SkeletonUtils.clone() instead of standard clone() for skinned meshes
 
+15. **`15_RIDDLE_REWARD_DATABASE_RULE.md`** - **🎯 RIDDLE REWARD & DATABASE SYSTEM**
+    - **Purpose:** Document database tables and reward system for riddle completions
+    - **Critical:** Database table structure, API endpoints, reward calculation flow
+    - **Status:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**
+    - **Created:** November 26, 2025
+    - **Tables:** `tbl_user_traits`, `tbl_riddle_completions`, `tbl_user_scores`, `tbl_score_adjustments`
+    - **Scope:** All riddle rewards, all trait unlocks, all DSPOINC awards
+
 ---
 
 ## 🚨 **CRITICAL RULE HIERARCHY**
@@ -124,7 +132,8 @@
 ├── 11_THREE_JS_RULE.md                  # THREE.JS DEVELOPMENT
 ├── 12_UNIVERSAL_LEVEL_REQUIREMENTS_RULE.md # 🎮 LEVEL CONSISTENCY
 ├── 13_3D_GAME_DSPOINC_SYNC_RULE.md      # 🎯 DSPOINC REWARDS SYNC
-└── 14_GLTF_SKELETON_CLONING_RULE.md     # 🚨 GLTF CLONING RENDERING
+├── 14_GLTF_SKELETON_CLONING_RULE.md     # 🚨 GLTF CLONING RENDERING
+└── 15_RIDDLE_REWARD_DATABASE_RULE.md    # 🎯 RIDDLE REWARD & DATABASE SYSTEM
 ```
 
 ---
@@ -164,5 +173,29 @@
 **STATUS:** ACTIVE - COMPREHENSIVE RULES COLLECTION  
 **PURPOSE:** Centralized rules management for decades of development  
 **SCOPE:** All development sessions, all rule updates, all LLM synchronization  
+
+---
+
+## 📚 **MASTER DEVELOPMENT REFERENCE**
+
+**For complete documentation of all levels, games, riddles, traits, rewards, APIs, database structures, and code patterns:**
+
+**`12.0/TECHNICAL_DOCUMENTATION/MASTER_DEVELOPMENT_REFERENCE.md`**
+
+This master reference serves as the **single source of truth** for:
+- ✅ All 5 levels (Level 1-5) structure and implementation patterns
+- ✅ Complete riddle system architecture with naming conventions
+- ✅ All trait systems and naming patterns
+- ✅ All reward systems and calculation flows
+- ✅ All API endpoints with request/response examples
+- ✅ All database tables with complete schema and query examples
+- ✅ All 5 games (Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race) with correct field mappings
+- ✅ Code patterns and standards for all development
+- ✅ File structure and organization
+- ✅ Quick reference checklist for new level/riddle/game development
+
+**Use this master reference alongside the rules for all future development to ensure consistency and synchronization across decades of development.**
+
+---
 
 **🧀 THIS IS THE CENTRAL HUB FOR ALL NARRRFS WORLD RULES! 🧀**

@@ -6,7 +6,9 @@
 **Level:** Cheese Temple — Level 5 "The Walk"  
 **Status:** ✅ **STEP 1 COMPLETE — MONSTER HUNT WORKING** — Exploration level with monster hunt riddle (10-minute timer, 50 monsters, flying monster shooting)  
 **Traits / Rewards:** 
-- (To be implemented - exploration objectives will be added)
+- ✅ **STEP 1 Trait:** `CHEESE_TEMPLE_LEVEL5_STEP1` (unlocked on completion of all 10 waves)
+- ✅ **STEP 1 Rewards:** 250 DSPOINC base per wave × 10 waves = 2,500 base DSPOINC (multiplied by role multiplier server-side)
+- ✅ **Database Tables:** See "DATABASE STRUCTURE & REWARD SYSTEM" section below
 
 ---
 
@@ -539,10 +541,16 @@ After weapons are activated in Step 0, Step 1 begins automatically: a 10-minute 
 ### Monster Spawning
 - **Grid System:** 25 columns × 16 rows = 400 cells covering entire map
 - **Map Bounds:** X(-750 to 750), Z(-480 to 480)
+- **Two-Pass Distribution System:**
+  - **Pass 1:** At least one monster per grid cell (ensures full map coverage up to 400 cells)
+  - **Pass 2:** Remaining monsters randomly distributed across all cells
+  - **Cell Size:** ~60×60 units per cell (map width/depth divided by grid dimensions)
+  - **Cell Padding:** 10% padding from cell edges (prevents boundary spawns)
 - **Ground Detection:** Uses `getLevel5GroundLevelAt(x, z)` raycast for accurate ground positioning
 - **Flying Monsters:** Spawn at ground level + height offset (20-30 units above ground)
-- **Size Variation:** Random size multipliers (1.0x to 1.5x) for variety
-- **Animation:** Monsters play 'Walk' or 'Fly' animation based on type
+- **Ground Monsters:** Spawn on ground + small offset (1-3 units above ground)
+- **Size Variation:** Base scale 4x for testing visibility, +10% per wave (wave 1: 4x, wave 10: 4.9x)
+- **Animation:** Monsters play 'Walk', 'Run', 'Fly', or first available animation based on type
 
 ### Flying Monster Thunder Bullets
 - **Speed:** 9 units/second (50% faster than original 6)
@@ -614,7 +622,192 @@ After weapons are activated in Step 0, Step 1 begins automatically: a 10-minute 
 
 ---
 
-**Last Updated:** November 24, 2025 (Step 1 Implementation + Timer/Popup Fixes)  
-**Status:** ✅ **STEP 1 COMPLETE - MONSTER HUNT WORKING** — Timer counting down, monsters shootable, explosions working  
+---
+
+## 💾 DATABASE STRUCTURE & REWARD SYSTEM
+
+### **Database Tables Used for Level 5 Rewards & Traits**
+
+#### **1. Trait Storage: `tbl_user_traits`**
+**Purpose:** Stores user trait unlocks for Level 5 completion  
+**Schema:**
+```sql
+CREATE TABLE tbl_user_traits (
+  user_id TEXT NOT NULL,
+  trait TEXT NOT NULL,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, trait)
+);
+```
+
+**Level 5 Traits:**
+- **Trait Key:** `CHEESE_TEMPLE_LEVEL5_STEP1`
+- **Description:** "Level 5 Step 1 - All Waves Complete"
+- **Unlocked:** When player completes all 10 waves of Step 1
+- **Storage:** Saved via `/api/user/traits.php` POST endpoint
+
+**Query Example:**
+```sql
+-- Check if user has Level 5 Step 1 trait
+SELECT * FROM tbl_user_traits 
+WHERE user_id = ? AND trait = 'CHEESE_TEMPLE_LEVEL5_STEP1';
+```
+
+#### **2. Reward Completion Tracking: `tbl_riddle_completions`**
+**Purpose:** Records each wave completion with base reward, multiplier, and total reward  
+**Schema:**
+```sql
+CREATE TABLE tbl_riddle_completions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  discord_id TEXT NOT NULL,
+  discord_name TEXT,
+  riddle_id TEXT NOT NULL,
+  level_id TEXT NOT NULL,
+  base_reward INTEGER NOT NULL,
+  multiplier REAL NOT NULL,
+  total_reward INTEGER NOT NULL,
+  completed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  session_id TEXT,
+  metadata TEXT,
+  UNIQUE(discord_id, riddle_id)
+);
+```
+
+**Level 5 Wave Riddle IDs:**
+- `CHEESE_TEMPLE_LEVEL5_WAVE1` through `CHEESE_TEMPLE_LEVEL5_WAVE10`
+- Each wave: `base_reward: 250`, `multiplier: 2.0` (if VIP Holder), `total_reward: 500`
+- Total for all 10 waves: **5,000 DSPOINC** (with 2x multiplier)
+
+**Query Example:**
+```sql
+-- Check all Level 5 wave completions for a user
+SELECT riddle_id, base_reward, multiplier, total_reward, completed_at 
+FROM tbl_riddle_completions 
+WHERE discord_id = ? AND riddle_id LIKE 'CHEESE_TEMPLE_LEVEL5_WAVE%'
+ORDER BY completed_at DESC;
+
+-- Get total DSPOINC from Level 5 waves
+SELECT COUNT(*) as wave_count, SUM(total_reward) as total_dspoinc 
+FROM tbl_riddle_completions 
+WHERE discord_id = ? AND riddle_id LIKE 'CHEESE_TEMPLE_LEVEL5_WAVE%';
+```
+
+#### **3. DSPOINC Balance: `tbl_user_scores`**
+**Purpose:** Stores actual DSPOINC points added to user balance  
+**Schema:**
+```sql
+CREATE TABLE tbl_user_scores (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
+  game TEXT NOT NULL,
+  score INTEGER NOT NULL,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  source TEXT DEFAULT 'legacy',
+  game_type TEXT,
+  season TEXT DEFAULT 'season_2',
+  created_at DATETIME
+);
+```
+
+**Level 5 Score Records:**
+- **game:** `'cheese_temple_riddles'`
+- **source:** `'riddle_completion'`
+- **score:** Total reward amount (e.g., 500 per wave with multiplier)
+- Each wave completion adds a separate record with the multiplied reward
+
+**Query Example:**
+```sql
+-- Get total DSPOINC from Level 5 rewards
+SELECT SUM(score) as total_dspoinc 
+FROM tbl_user_scores 
+WHERE user_id = ? 
+  AND source = 'riddle_completion' 
+  AND game = 'cheese_temple_riddles';
+```
+
+#### **4. Score Adjustment History: `tbl_score_adjustments`**
+**Purpose:** Audit trail for all DSPOINC awards (admin tracking)  
+**Schema:**
+```sql
+CREATE TABLE tbl_score_adjustments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
+  admin_id TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  action TEXT NOT NULL,
+  reason TEXT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Level 5 Adjustment Records:**
+- **admin_id:** `'system-riddle-reward'`
+- **action:** `'add'`
+- **amount:** Total reward (e.g., 500 per wave)
+- **reason:** `'Riddle completion (CHEESE_TEMPLE_LEVEL5_WAVE1): base 250 × 2.00 = 500 DSPOINC'`
+
+### **Reward Calculation Flow**
+
+1. **Base Reward:** 250 DSPOINC per wave (defined in `LEVEL5_STEP1_WAVE_REWARD_DSPOINC`)
+2. **Role Multiplier:** Applied server-side by `/api/dev/riddle-reward.php`
+   - VIP Holder: 2.0x
+   - Holder: 1.5x
+   - Champion: 1.4x
+   - Season Tester/WL: 1.3x
+   - Early Bird: 1.2x
+   - Cheese Hunter: 1.1x
+   - Default: 1.0x
+3. **Total Reward:** `base_reward × multiplier = total_reward`
+   - Example: 250 × 2.0 = 500 DSPOINC per wave
+   - Total for 10 waves: 5,000 DSPOINC (with 2x multiplier)
+
+### **API Endpoints**
+
+**Reward API:** `/api/dev/riddle-reward.php`
+- **Method:** POST
+- **Payload:**
+  ```json
+  {
+    "discord_id": "user_discord_id",
+    "discord_name": "username",
+    "riddle_id": "CHEESE_TEMPLE_LEVEL5_WAVE1",
+    "level_id": "CHEESE_TEMPLE_LEVEL5",
+    "base_reward": 250,
+    "session_id": "session_id"
+  }
+  ```
+- **Response:** Returns `success`, `total_reward`, `multiplier`, `multiplier_source`
+
+**Trait API:** `/api/user/traits.php`
+- **Method:** POST
+- **Payload:**
+  ```json
+  {
+    "user_id": "user_discord_id",
+    "trait_key": "CHEESE_TEMPLE_LEVEL5_STEP1",
+    "trait_value": "1"
+  }
+  ```
+- **Response:** Returns `success` and confirmation message
+
+### **Important Notes**
+
+⚠️ **Display vs Actual Reward:**
+- The game UI displays base reward (e.g., "2500 DSPOINC" = 250 × 10 waves)
+- The API applies role multipliers server-side
+- Actual DSPOINC awarded = base reward × multiplier (e.g., 5000 DSPOINC with 2x multiplier)
+
+✅ **Duplicate Prevention:**
+- `tbl_riddle_completions` has `UNIQUE(discord_id, riddle_id)` constraint
+- Prevents duplicate rewards if player completes same wave multiple times
+- Returns 409 Conflict if already completed
+
+✅ **Trait Unlocking:**
+- Trait is unlocked once when all 10 waves are complete
+- Stored in `tbl_user_traits` with timestamp
+- Can be queried to check completion status
+
+**Last Updated:** November 26, 2025 (Database Structure Documentation Added)  
+**Status:** ✅ **STEP 1 COMPLETE - MONSTER HUNT WORKING** — Timer counting down, monsters shootable, explosions working, rewards and traits verified  
 **Next Phase:** Test Step 1 completion and design Step 2 riddle objectives
 
