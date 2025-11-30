@@ -1,0 +1,7 @@
+fix: Level 3 & 4 GOD mode initialization - ensure group in scene before spawning
+
+- Added group scene verification to warpToLevel3/4 and restartLevel3/4
+- Enhanced spawn functions with comprehensive checks
+- Fixed monsters/elements not spawning after GOD mode warp
+- Both levels verified working on first attempt
+

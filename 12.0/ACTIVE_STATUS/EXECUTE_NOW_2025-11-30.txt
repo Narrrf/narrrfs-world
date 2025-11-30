@@ -1,0 +1,40 @@
+🚀 READY FOR LIVE EXECUTION - SEASON 5 FREEZE
+
+✅ LOCAL TEST PASSED - ALL SYSTEMS GO!
+
+📋 QUICK COMMAND SET (5 STEPS):
+
+STEP 1: BACKUP
+cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world_backup_$(date +%Y%m%d_%H%M%S).sqlite
+ls -lh /data/narrrf_world_backup_*.sqlite | tail -1
+
+STEP 2: ARCHIVE
+curl https://narrrfs.world/api/admin/archive-season-stats.php
+echo "" && echo "=== VERIFY ARCHIVAL ===" && \
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT season, game, COUNT(*) FROM tbl_historical_stats WHERE season = 'Season 5' GROUP BY season, game;"
+
+STEP 3: RESET
+sqlite3 /var/www/html/db/narrrf_world.sqlite "
+BEGIN TRANSACTION;
+DELETE FROM tbl_tetris_scores WHERE game IN ('tetris', 'snake', 'space_invaders');
+DELETE FROM tbl_user_season_achievements WHERE game IN ('tetris', 'snake', 'space_invaders');
+UPDATE tbl_seasons SET is_active = 0 WHERE is_active = 1;
+INSERT INTO tbl_seasons (season_name, start_date, end_date, is_active) 
+VALUES ('Season 6', datetime('now'), datetime('now', '+30 days'), 1);
+COMMIT;
+"
+
+STEP 4: VERIFY
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT season_name FROM tbl_seasons WHERE is_active = 1;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_scores WHERE game = 'tetris';"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_scores WHERE game = 'snake';"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_scores WHERE game = 'space_invaders';"
+
+STEP 5: COPY TO /DATA
+cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world.sqlite
+ls -lh /data/narrrf_world.sqlite
+
+✅ ALL TESTS PASSED - READY TO EXECUTE!
+
+Full details: LIVE_EXECUTION_FINAL_2025-11-30.md
+

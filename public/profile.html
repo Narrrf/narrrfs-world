@@ -10,7 +10,7 @@ require_once 'discord-invite.php';
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🧀 Your Narrrf Profile - Season 5 NOW LIVE!</title>
+  <title>🧀 Your Narrrf Profile - Season 6 Starting Soon!</title>
   <script>
     window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
     document.addEventListener("DOMContentLoaded", async () => {
@@ -65,6 +65,72 @@ require_once 'discord-invite.php';
       --card-bg: #1a1a2e;
       --border-color: #374151;
     }
+
+/* ❄️ CHRISTMAS SNOWFLAKE ANIMATIONS */
+@keyframes snowfall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes snowflakeFloat {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  25% {
+    transform: translateX(20px) rotate(90deg);
+  }
+  50% {
+    transform: translateX(-20px) rotate(180deg);
+  }
+  75% {
+    transform: translateX(10px) rotate(270deg);
+  }
+}
+
+.snowflake {
+  position: fixed;
+  top: -10px;
+  color: #ffffff;
+  font-size: 1em;
+  font-family: Arial, sans-serif;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  user-select: none;
+  pointer-events: none;
+  z-index: 1000;
+  animation: snowfall linear infinite, snowflakeFloat ease-in-out infinite;
+}
+
+.snowflake:nth-child(odd) {
+  animation-duration: 8s, 3s;
+}
+
+.snowflake:nth-child(even) {
+  animation-duration: 10s, 4s;
+}
+
+.snowflake:nth-child(3n) {
+  animation-duration: 12s, 5s;
+}
+
+.snowflake:nth-child(4n) {
+  animation-duration: 7s, 2.5s;
+}
+
+.snowflake:nth-child(5n) {
+  animation-duration: 9s, 3.5s;
+}
     
     /* 📱 Mobile Header Optimization */
     @media (max-width: 768px) {
@@ -428,10 +494,10 @@ require_once 'discord-invite.php';
 <header class="mobile-header bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <div>
-      <h1 class="text-xl font-bold tracking-wide text-green-400">🎉 Narrrf's World – Season 5 NOW LIVE! 🏆</h1>
-      <!-- 🎉 SEASON 5 LIVE MESSAGE -->
-      <div class="season-info text-xs text-green-300 animate-pulse mt-1">
-        🚀 Season 5 Active! • Fresh Leaderboards • Boss Battles Live • Happy Gaming! • 🐛 Bug Tracker Ready!
+      <h1 class="text-xl font-bold tracking-wide text-blue-400">🚀 Narrrf's World – Season 6 Starting Soon! ⏸️</h1>
+      <!-- 🚀 SEASON 6 STARTING SOON MESSAGE -->
+      <div class="season-info text-xs text-blue-300 animate-pulse mt-1">
+        ⏸️ Season 5 Leaderboard Freezed! • Season 6 Starting Soon! • Prepare for New Season! • 🐛 Bug Tracker Ready!
       </div>
     </div>
     <nav class="mobile-hide-nav space-x-4 text-sm md:text-base flex items-center">
@@ -484,58 +550,37 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
-<!-- 🎉 SEASON 5 LIVE - LAUNCH ANNOUNCEMENT -->
-<div class="bg-gradient-to-r from-green-600 via-emerald-500 to-blue-600 text-white text-center py-4 z-30 relative animate-pulse mb-6">
+<!-- 🚀 SEASON 6 STARTING SOON - SEASON 5 FREEZED ANNOUNCEMENT -->
+<div class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white text-center py-4 z-30 relative animate-pulse mb-6">
   <div class="mb-2">
-    <span class="text-yellow-300 text-lg font-bold animate-bounce">🎉 SEASON 5 IS NOW LIVE! 🏆</span>
+    <span class="text-yellow-300 text-lg font-bold animate-bounce">⏸️ SEASON 5 LEADERBOARD FREEZED! 🚀</span>
   </div>
   <div class="text-center">
-    <span id="season5-live-status" class="text-white text-2xl font-bold">🎮 COMPETE NOW! 🎮</span>
+    <span id="season6-coming-status" class="text-white text-2xl font-bold">🎯 SEASON 6 STARTING SOON! 🎯</span>
   </div>
   <div class="mt-2">
-    <span class="text-green-200 text-sm">🏆 Boss Battles • Fresh Leaderboards • Enhanced Rewards</span>
+    <span class="text-blue-200 text-sm">🏆 Season 5 Final Rankings Locked • Prepare for Season 6 Launch!</span>
   </div>
   <div class="mt-1">
-    <span class="text-white text-xs">Season 5 Active! • Fair start for all • Bug tracker ready!</span>
+    <span class="text-white text-xs">Season 5 Leaderboard Freezed! • Season 6 Starting Soon! • Bug tracker ready!</span>
   </div>
 </div>
 
 <script>
-// 🎉 SEASON 5 LIVE BANNER - No countdown, just celebration
-function updateSeason5Banner() {
-  // Season 5 launched on November 3rd, 2025
-  const season5Launch = new Date('2025-11-03T00:00:00-05:00'); // EST timezone
+// 🚀 SEASON 6 STARTING SOON BANNER - Season 5 Freezed
+function updateSeason6Banner() {
+  // Season 5 ended, Season 6 starting soon
   const now = new Date();
   
-  const timeElapsed = now - season5Launch;
-  
-  if (timeElapsed >= 0) {
-    document.getElementById('season5-live-status').innerHTML = '🎮 COMPETE NOW! 🎮';
-    return;
-  }
-  
-  // Calculate time components
-  const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-  
-  // Format countdown display
-  const countdownText = `⏰ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  document.getElementById('season4-countdown').innerHTML = countdownText;
-  
-  // Change color based on time remaining
-  if (hours < 2) {
-    document.getElementById('season4-countdown').classList.add('text-red-400');
-    document.getElementById('season4-countdown').classList.remove('text-white');
-  } else if (hours < 6) {
-    document.getElementById('season4-countdown').classList.add('text-yellow-400');
-    document.getElementById('season4-countdown').classList.remove('text-white');
+  // Update banner status
+  const statusElement = document.getElementById('season6-coming-status');
+  if (statusElement) {
+    statusElement.innerHTML = '🎯 SEASON 6 STARTING SOON! 🎯';
   }
 }
 
-// Season 5 is live, no countdown needed anymore
-// updateSeason4Countdown();
-// setInterval(updateSeason4Countdown, 1000);
+// Initialize Season 6 banner
+updateSeason6Banner();
 </script>
 
 <script>
@@ -664,7 +709,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         🎯 Mint Now 🔥
       </a>
       <div class="mt-2 text-green-400 font-semibold">🔥 Mint is LIVE! Get your Narrrf's Genesis NFT!</div>
-      <div class="text-gray-400 text-sm">Season 5 NOW LIVE - join the competition!</div>
+      <div class="text-gray-400 text-sm">Season 6 Starting Soon - Season 5 Leaderboard Freezed!</div>
     </div>
 
     <!-- 🧀 12.0 Management Button (for authorized users) -->
@@ -682,34 +727,35 @@ document.addEventListener('DOMContentLoaded', async function() {
     <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner border-2 border-orange-300">
       <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
       
-      <!-- 🎉 Season 5 LIVE Ready Banner -->
-      <div class="mb-3 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center">
-        <span class="text-green-800 font-semibold text-sm">🎉 Season 5 NOW LIVE - Fresh Leaderboards & Boss Battles! 🏆</span>
+      <!-- 🚀 Season 6 Starting Soon Banner -->
+      <div class="mb-3 bg-gradient-to-r from-blue-200 to-indigo-200 border border-blue-400 rounded-lg p-2 text-center">
+        <span class="text-blue-800 font-semibold text-sm">🚀 Season 6 Starting Soon - Season 5 Leaderboard Freezed! ⏸️</span>
       </div>
       
       <p id="wallet-address">🔗 Linked wallet: <em class="text-sm text-green-600">TestWallet123456789XYZ</em></p>
       <p>🧬 Traits: <span id="traits" class="text-green-600">Season Tester • Cheese Master • Game Champion</span></p>
       
-      <!-- 🎉 Season 5 LIVE Features -->
-      <div class="mt-3 text-xs text-gray-600 bg-green-50 rounded p-2 border border-green-200">
-        <strong>🎉 Season 5 NOW LIVE Features:</strong><br>
+      <!-- 🚀 Season 6 Starting Soon Features -->
+      <div class="mt-3 text-xs text-gray-600 bg-blue-50 rounded p-2 border border-blue-200">
+        <strong>🚀 Season 6 Starting Soon Features:</strong><br>
+        • Season 5 Leaderboard Freezed - Final rankings locked!<br>
         • Boss Battles: Tetris (9 Bosses), Snake (9 Bosses), Space Invaders (Giant Boss)<br>
         • Enhanced Role-Based Gaming (VIP 2.0x, Holder 1.5x, Season Tester 1.3x)<br>
-        • Fresh Leaderboards: Fair start for all players!<br>
-        • Season 5 LIVE - Compete, defeat bosses, earn DSPOINC rewards!
+        • Fresh Leaderboards: Season 6 starting soon with fair start for all players!<br>
+        • Season 6 Coming - Prepare for new challenges, defeat bosses, earn DSPOINC rewards!
       </div>
     </div>
 
-    <!-- 🎉 SEASON 5 LIVE BANNER -->
-    <div class="bg-gradient-to-r from-green-500 via-emerald-500 to-blue-500 text-white p-4 rounded-xl shadow-lg border-4 border-green-300 mb-6 text-center animate-pulse">
-      <div class="text-lg font-bold mb-2">🎉 SEASON 5 IS NOW LIVE! 🏆</div>
-      <div class="text-sm mb-2 font-semibold">Fresh Leaderboards Reset • Boss Battles Active • Compete Now!</div>
-      <div class="text-xs mb-2 text-green-100 italic font-bold">Fair Start for All • Enhanced Rewards • Professional Gaming! 🎮</div>
+    <!-- 🚀 SEASON 6 STARTING SOON BANNER -->
+    <div class="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white p-4 rounded-xl shadow-lg border-4 border-blue-300 mb-6 text-center animate-pulse">
+      <div class="text-lg font-bold mb-2">⏸️ SEASON 5 LEADERBOARD FREEZED! 🚀</div>
+      <div class="text-sm mb-2 font-semibold">Season 6 Starting Soon • Final Rankings Locked • Prepare for New Season!</div>
+      <div class="text-xs mb-2 text-blue-100 italic font-bold">Season 5 Final Rankings • Season 6 Coming Soon • Professional Gaming! 🎯</div>
       <div class="text-2xl font-bold text-yellow-300 mb-2 border-2 border-yellow-300 inline-block px-4 py-1 rounded-full">
-        🎮 PLAY NOW! 🎮
+        🎯 SEASON 6 STARTING SOON! 🎯
       </div>
       <div class="text-xs mt-2 text-white">
-        Season 5 Active • 5 Games Available • Boss Battles • Real-time Leaderboards • Achievements System • Bug Tracker Ready!
+        Season 5 Leaderboard Freezed • Season 6 Starting Soon • 5 Games Available • Boss Battles • Real-time Leaderboards • Achievements System • Bug Tracker Ready!
       </div>
     </div>
 
@@ -717,9 +763,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     <div id="inventory-history-section" class="mt-6 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-lg p-4 shadow-inner border border-purple-500/30">
       <h2 class="font-semibold text-lg mb-4 text-purple-300">🛍️ Store Activity</h2>
       
-      <!-- 🎉 Season 5 LIVE Store Ready Banner -->
-      <div class="mb-4 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center">
-        <span class="text-green-800 font-semibold text-sm">🎉 Season 5 NOW LIVE Store - Boss Battles & Fresh Rewards! 🏆</span>
+      <!-- 🚀 Season 6 Starting Soon Store Banner -->
+      <div class="mb-4 bg-gradient-to-r from-blue-200 to-indigo-200 border border-blue-400 rounded-lg p-2 text-center">
+        <span class="text-blue-800 font-semibold text-sm">🚀 Season 6 Starting Soon Store - Season 5 Leaderboard Freezed! ⏸️</span>
       </div>
       
       <!-- 📦 Inventory Summary -->
@@ -792,7 +838,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         <h3 class="text-lg font-semibold text-indigo-200 flex items-center gap-2">
           <span>🛒 Store Catalog</span>
         </h3>
-        <p class="text-xs text-indigo-300 mt-1">Browse and purchase Season 5 upgrades directly from your profile. All purchases sync instantly across games, Discord, and the admin dashboard.</p>
+        <p class="text-xs text-indigo-300 mt-1">Browse and purchase Season 6 upgrades directly from your profile. All purchases sync instantly across games, Discord, and the admin dashboard.</p>
       </div>
       <div id="profile-store-balance" class="text-sm text-emerald-300 font-semibold hidden"></div>
     </div>
@@ -1358,7 +1404,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 <section class="max-w-6xl w-full mx-auto px-4 mt-12 relative z-10">
   <div class="text-center mb-8">
     <h2 class="text-3xl font-bold text-yellow-300 mb-2">🎮 Play Your Games</h2>
-    <p class="text-gray-400">Click any game to start playing • Season 5 NOW LIVE!</p>
+    <p class="text-gray-400">Click any game to start playing • Season 6 Starting Soon!</p>
   </div>
   
   <div class="flex flex-col gap-4">
@@ -1393,7 +1439,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         <div class="mt-3 text-center">
           <span class="inline-block px-3 py-1 bg-yellow-400/20 border border-yellow-400/50 rounded-full text-xs text-yellow-300 font-semibold">
-            ⭐ Season 5 Boss Mode Active! • Total Rewards: 3,550 DSPOINC
+            ⭐ Season 5 Boss Mode (Freezed) • Total Rewards: 3,550 DSPOINC
           </span>
         </div>
       </div>
@@ -1430,7 +1476,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         <div class="mt-3 text-center">
           <span class="inline-block px-3 py-1 bg-green-400/20 border border-green-400/50 rounded-full text-xs text-green-300 font-semibold">
-            🎉 Season 5 NOW LIVE! • Total Rewards: 1,930 DSPOINC
+            ⏸️ Season 5 Leaderboard Freezed! • Total Rewards: 1,930 DSPOINC
           </span>
         </div>
       </div>
@@ -1467,7 +1513,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         <div class="mt-3 text-center">
           <span class="inline-block px-3 py-1 bg-blue-400/20 border border-blue-400/50 rounded-full text-xs text-blue-300 font-semibold">
-            🚀 Season 5 Phoenix Mode • Progressive Boss Rewards
+            🚀 Season 5 Phoenix Mode (Freezed) • Progressive Boss Rewards
           </span>
         </div>
       </div>
@@ -1485,40 +1531,40 @@ document.addEventListener('DOMContentLoaded', async function() {
 <!-- 🧀 Discord Login Button - MOVED TO TOP NAVIGATION AREA -->
 
 <!-- 🎉 Season 5 LIVE Notification -->
-<div id="season5Live" class="max-w-6xl mx-auto bg-gradient-to-r from-green-500/30 via-emerald-500/30 to-blue-500/30 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-lg ring-2 ring-green-400/50 mt-6 relative z-10 border-2 border-green-400/40">
+<div id="season6Coming" class="max-w-6xl mx-auto bg-gradient-to-r from-blue-500/30 via-indigo-500/30 to-purple-500/30 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-lg ring-2 ring-blue-400/50 mt-6 relative z-10 border-2 border-blue-400/40">
   <div class="flex items-center justify-center gap-3 mb-2">
-    <span class="text-2xl">🎉</span>
-    <h3 class="text-lg font-bold text-green-200">Season 5 Is Now Live!</h3>
-    <span class="text-2xl">🏆</span>
+    <span class="text-2xl">⏸️</span>
+    <h3 class="text-lg font-bold text-blue-200">Season 5 Leaderboard Freezed!</h3>
+    <span class="text-2xl">🚀</span>
   </div>
   <div class="text-center">
-    <p class="text-sm text-green-200 mb-2 font-semibold">🚀 Fresh Leaderboards Reset • Boss Battles Active • Fair Start for All!</p>
-    <p class="text-xs text-blue-200 mb-2 italic">⚠️ Game mechanics may be fine-tuned during the season • All players have fair chances on fresh leaderboards! 🎮</p>
+    <p class="text-sm text-blue-200 mb-2 font-semibold">🎯 Season 6 Starting Soon • Final Rankings Locked • Prepare for New Season!</p>
+    <p class="text-xs text-yellow-200 mb-2 italic">🚀 Season 6 Starting Soon! • Fresh leaderboards coming! • Get ready for new challenges! 🎯</p>
     <div class="text-lg font-mono font-bold text-yellow-300 mb-2 border-2 border-yellow-300 inline-block px-4 py-1 rounded-full">
-      🎮 COMPETE NOW! 🎮
+      🎯 SEASON 6 STARTING SOON! 🎯
     </div>
-    <p class="text-xs text-white mt-2 italic">Season 5: Boss battles • Enhanced rewards • Professional gaming • Bug tracker ready! 🏆</p>
+    <p class="text-xs text-white mt-2 italic">Season 5: Final rankings locked • Season 6: Starting soon • Professional gaming • Bug tracker ready! 🏆</p>
   </div>
 </div>
 
-<!-- 🎉 Season 5 LIVE Banner - Above Leaderboard -->
+<!-- 🚀 Season 6 Starting Soon Banner - Season 5 Freezed -->
 <div class="max-w-6xl mx-auto mt-10 mb-4">
-  <div class="bg-gradient-to-r from-green-500 via-emerald-500 to-blue-500 text-white rounded-2xl p-6 shadow-2xl border-4 border-green-400 animate-pulse">
+  <div class="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white rounded-2xl p-6 shadow-2xl border-4 border-blue-400 animate-pulse">
     <div class="text-center">
-      <div class="text-2xl font-extrabold mb-2">🎉 SEASON 5 IS NOW LIVE! 🏆</div>
-      <div class="text-sm font-semibold mb-3">🚀 Fresh Leaderboards Reset • Boss Battles Active • Fair Competition!</div>
-      <div class="bg-gray-900 text-green-300 inline-block px-4 py-2 rounded-full text-xs font-bold border-2 border-green-300">
-        🎮 SEASON 5 LEADERBOARDS - EVERYONE STARTS AT 0! 🎮
+      <div class="text-2xl font-extrabold mb-2">⏸️ SEASON 5 LEADERBOARD FREEZED! 🚀</div>
+      <div class="text-sm font-semibold mb-3">🎯 Season 6 Starting Soon • Final Rankings Locked • Prepare for New Season!</div>
+      <div class="bg-gray-900 text-blue-300 inline-block px-4 py-2 rounded-full text-xs font-bold border-2 border-blue-300">
+        🏆 SEASON 5 LEADERBOARDS - FINAL RANKINGS LOCKED! 🏆
       </div>
-      <div class="text-xs mt-3 font-bold text-blue-100">⚠️ Game mechanics may be fine-tuned during the season • All players have fair chances on fresh leaderboards! 🎯</div>
+      <div class="text-xs mt-3 font-bold text-yellow-100">🚀 Season 6 Starting Soon! • Fresh leaderboards coming! • Get ready for new challenges! 🎯</div>
     </div>
   </div>
 </div>
 
-<!-- 🏆 Leaderboard Section - Season 5 LIVE -->
-<section id="leaderboard" class="max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-green-400/50 mt-2 relative z-10 border-2 border-green-400/50">
-  <h3 class="text-center text-xl font-bold">🏆 Season 5 Leaderboard - LIVE Competition!</h3>
-  <div class="text-center text-xs text-green-300 mb-4 font-semibold">🎉 Season 5 Active • Fresh Start • Climb to the Top!</div>
+<!-- 🏆 Leaderboard Section - Season 5 FREEZED -->
+<section id="leaderboard" class="max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-blue-400/50 mt-2 relative z-10 border-2 border-blue-400/50">
+  <h3 class="text-center text-xl font-bold">⏸️ Season 5 Leaderboard - FREEZED (Final Rankings)</h3>
+  <div class="text-center text-xs text-blue-300 mb-4 font-semibold">🚀 Season 6 Starting Soon • Season 5 Final Rankings • Check Your Position!</div>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
     <div>
       <h4 class="text-center text-md font-semibold">🧀 Tetris Top Scores</h4>
@@ -3027,10 +3073,10 @@ window.claimQuest = async function(questId, btn) {
 
 // 🎉 SEASON 5 LIVE STATUS - Season 5 is now active!
 
-// 🎉 SEASON 5 LIVE - Season active and ready for competition!
-function showSeason5Live() {
-  // Season 5 launched and active
-  console.log('🎉 Season 5 NOW LIVE - Fresh Leaderboards, Boss Battles Active!');
+// 🚀 SEASON 6 STARTING SOON - Season 5 Leaderboard Freezed!
+function showSeason6Coming() {
+  // Season 5 ended, Season 6 starting soon
+  console.log('🚀 Season 6 Starting Soon - Season 5 Leaderboard Freezed!');
 }
 
 // 🎯 WL Role Button Logic
@@ -3883,7 +3929,7 @@ function buildProfileStoreCard(defKey, def, item, owned) {
         </div>
         ${badge}
       </div>
-      <div class="mt-3 text-xs text-gray-500">Coming soon to the Season 5 store.</div>
+      <div class="mt-3 text-xs text-gray-500">Coming soon to the Season 6 store.</div>
     `;
     return card;
   }
@@ -5858,6 +5904,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 });
+
+  // ❄️ CHRISTMAS SNOWFLAKE EFFECT
+  function createSnowflakes() {
+    const snowflakeContainer = document.createElement('div');
+    snowflakeContainer.id = 'snowflake-container';
+    snowflakeContainer.style.position = 'fixed';
+    snowflakeContainer.style.top = '0';
+    snowflakeContainer.style.left = '0';
+    snowflakeContainer.style.width = '100%';
+    snowflakeContainer.style.height = '100%';
+    snowflakeContainer.style.pointerEvents = 'none';
+    snowflakeContainer.style.zIndex = '999';
+    document.body.appendChild(snowflakeContainer);
+
+    const snowflakeSymbols = ['❄', '❅', '❆', '✻', '✼', '✽', '✾', '✿'];
+    const numSnowflakes = 50;
+
+    for (let i = 0; i < numSnowflakes; i++) {
+      const snowflake = document.createElement('div');
+      snowflake.className = 'snowflake';
+      snowflake.textContent = snowflakeSymbols[Math.floor(Math.random() * snowflakeSymbols.length)];
+      snowflake.style.left = Math.random() * 100 + '%';
+      snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+      snowflake.style.animationDelay = Math.random() * 5 + 's';
+      snowflake.style.opacity = Math.random() * 0.5 + 0.5;
+      snowflakeContainer.appendChild(snowflake);
+    }
+  }
+
+  // Initialize snowflakes when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    createSnowflakes();
+  });
 </script>
 
 </body>
