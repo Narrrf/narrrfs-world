@@ -550,38 +550,21 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
-<!-- 🚀 SEASON 6 STARTING SOON - SEASON 5 FREEZED ANNOUNCEMENT -->
-<div class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white text-center py-4 z-30 relative animate-pulse mb-6">
+<!-- 🚀 SEASON STATUS BANNER - Dynamic Based on Leaderboard Status -->
+<div id="season-status-banner" class="bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 text-white text-center py-4 z-30 relative animate-pulse mb-6">
   <div class="mb-2">
-    <span class="text-yellow-300 text-lg font-bold animate-bounce">⏸️ SEASON 5 LEADERBOARD FREEZED! 🚀</span>
+    <span id="season-status-main" class="text-yellow-300 text-lg font-bold animate-bounce">🎮 SEASON 6 IS LIVE! 🚀</span>
   </div>
   <div class="text-center">
-    <span id="season6-coming-status" class="text-white text-2xl font-bold">🎯 SEASON 6 STARTING SOON! 🎯</span>
+    <span id="season6-coming-status" class="text-white text-2xl font-bold">🎮 SEASON 6 RUNNING! 🎮</span>
   </div>
   <div class="mt-2">
-    <span class="text-blue-200 text-sm">🏆 Season 5 Final Rankings Locked • Prepare for Season 6 Launch!</span>
+    <span id="season-status-subtitle" class="text-green-200 text-sm">🎮 Season 6 Running • Play now and compete for top spots!</span>
   </div>
   <div class="mt-1">
-    <span class="text-white text-xs">Season 5 Leaderboard Freezed! • Season 6 Starting Soon! • Bug tracker ready!</span>
+    <span id="season-status-details" class="text-white text-xs">Season 6 is Live! • Compete now! • Bug tracker ready!</span>
   </div>
 </div>
-
-<script>
-// 🚀 SEASON 6 STARTING SOON BANNER - Season 5 Freezed
-function updateSeason6Banner() {
-  // Season 5 ended, Season 6 starting soon
-  const now = new Date();
-  
-  // Update banner status
-  const statusElement = document.getElementById('season6-coming-status');
-  if (statusElement) {
-    statusElement.innerHTML = '🎯 SEASON 6 STARTING SOON! 🎯';
-  }
-}
-
-// Initialize Season 6 banner
-updateSeason6Banner();
-</script>
 
 <script>
 // Role-gate: show tester collab button when user has allowed roles
@@ -709,7 +692,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         🎯 Mint Now 🔥
       </a>
       <div class="mt-2 text-green-400 font-semibold">🔥 Mint is LIVE! Get your Narrrf's Genesis NFT!</div>
-      <div class="text-gray-400 text-sm">Season 6 Starting Soon - Season 5 Leaderboard Freezed!</div>
+      <div id="mint-season-status" class="text-gray-400 text-sm">🎮 Season 6 Running! Play now and compete!</div>
     </div>
 
     <!-- 🧀 12.0 Management Button (for authorized users) -->
@@ -727,35 +710,35 @@ document.addEventListener('DOMContentLoaded', async function() {
     <div class="mt-6 bg-yellow-100 text-gray-900 rounded-lg p-4 shadow-inner border-2 border-orange-300">
       <h2 class="font-semibold text-lg mb-2">🎒 Wallet & Traits</h2>
       
-      <!-- 🚀 Season 6 Starting Soon Banner -->
-      <div class="mb-3 bg-gradient-to-r from-blue-200 to-indigo-200 border border-blue-400 rounded-lg p-2 text-center">
-        <span class="text-blue-800 font-semibold text-sm">🚀 Season 6 Starting Soon - Season 5 Leaderboard Freezed! ⏸️</span>
+      <!-- 🚀 Season Status Banner (Dynamic) -->
+      <div id="wallet-season-banner" class="mb-3 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center">
+        <span class="text-green-800 font-semibold text-sm">🎮 Season 6 Running! Play now and compete! 🎮</span>
       </div>
       
       <p id="wallet-address">🔗 Linked wallet: <em class="text-sm text-green-600">TestWallet123456789XYZ</em></p>
       <p>🧬 Traits: <span id="traits" class="text-green-600">Season Tester • Cheese Master • Game Champion</span></p>
       
-      <!-- 🚀 Season 6 Starting Soon Features -->
-      <div class="mt-3 text-xs text-gray-600 bg-blue-50 rounded p-2 border border-blue-200">
-        <strong>🚀 Season 6 Starting Soon Features:</strong><br>
-        • Season 5 Leaderboard Freezed - Final rankings locked!<br>
+      <!-- 🚀 Season 6 Running Features -->
+      <div class="mt-3 text-xs text-gray-600 bg-green-50 rounded p-2 border border-green-200">
+        <strong>🎮 Season 6 Running Features:</strong><br>
+        • Season 6 is Live! - Fresh leaderboards and fair start for all players!<br>
         • Boss Battles: Tetris (9 Bosses), Snake (9 Bosses), Space Invaders (Giant Boss)<br>
         • Enhanced Role-Based Gaming (VIP 2.0x, Holder 1.5x, Season Tester 1.3x)<br>
-        • Fresh Leaderboards: Season 6 starting soon with fair start for all players!<br>
-        • Season 6 Coming - Prepare for new challenges, defeat bosses, earn DSPOINC rewards!
+        • Real-time Leaderboards: Compete for top spots and earn DSPOINC!<br>
+        • Season 6 Active - Defeat bosses, earn rewards, and climb the ranks!
       </div>
     </div>
 
-    <!-- 🚀 SEASON 6 STARTING SOON BANNER -->
-    <div class="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white p-4 rounded-xl shadow-lg border-4 border-blue-300 mb-6 text-center animate-pulse">
-      <div class="text-lg font-bold mb-2">⏸️ SEASON 5 LEADERBOARD FREEZED! 🚀</div>
-      <div class="text-sm mb-2 font-semibold">Season 6 Starting Soon • Final Rankings Locked • Prepare for New Season!</div>
-      <div class="text-xs mb-2 text-blue-100 italic font-bold">Season 5 Final Rankings • Season 6 Coming Soon • Professional Gaming! 🎯</div>
-      <div class="text-2xl font-bold text-yellow-300 mb-2 border-2 border-yellow-300 inline-block px-4 py-1 rounded-full">
-        🎯 SEASON 6 STARTING SOON! 🎯
+    <!-- 🚀 SEASON STATUS BANNER (Dynamic) -->
+    <div id="main-season-banner" class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white p-4 rounded-xl shadow-lg border-4 border-green-300 mb-6 text-center animate-pulse">
+      <div id="main-season-title" class="text-lg font-bold mb-2">🎮 SEASON 6 IS LIVE! 🚀</div>
+      <div id="main-season-subtitle" class="text-sm mb-2 font-semibold">Season 6 Running • Play now and compete! • Fresh leaderboards!</div>
+      <div id="main-season-details" class="text-xs mb-2 text-green-100 italic font-bold">Season 6 Active • Compete for Top Spots • Professional Gaming! 🎯</div>
+      <div id="main-season-cta" class="text-2xl font-bold text-yellow-300 mb-2 border-2 border-yellow-300 inline-block px-4 py-1 rounded-full">
+        🎮 SEASON 6 RUNNING! 🎮
       </div>
-      <div class="text-xs mt-2 text-white">
-        Season 5 Leaderboard Freezed • Season 6 Starting Soon • 5 Games Available • Boss Battles • Real-time Leaderboards • Achievements System • Bug Tracker Ready!
+      <div id="main-season-features" class="text-xs mt-2 text-white">
+        Season 6 is Live! • Play now! • 5 Games Available • Boss Battles • Real-time Leaderboards • Achievements System • Bug Tracker Ready!
       </div>
     </div>
 
@@ -763,9 +746,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     <div id="inventory-history-section" class="mt-6 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-lg p-4 shadow-inner border border-purple-500/30">
       <h2 class="font-semibold text-lg mb-4 text-purple-300">🛍️ Store Activity</h2>
       
-      <!-- 🚀 Season 6 Starting Soon Store Banner -->
-      <div class="mb-4 bg-gradient-to-r from-blue-200 to-indigo-200 border border-blue-400 rounded-lg p-2 text-center">
-        <span class="text-blue-800 font-semibold text-sm">🚀 Season 6 Starting Soon Store - Season 5 Leaderboard Freezed! ⏸️</span>
+      <!-- 🚀 Season 6 Running Store Banner -->
+      <div class="mb-4 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center">
+        <span class="text-green-800 font-semibold text-sm">🎮 Season 6 Running Store - Play now and compete! 🎮</span>
       </div>
       
       <!-- 📦 Inventory Summary -->
@@ -1561,10 +1544,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   </div>
 </div>
 
-<!-- 🏆 Leaderboard Section - Season 6 Active -->
+<!-- 🏆 Leaderboard Section - Dynamic Season Status -->
 <section id="leaderboard" class="max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-green-400/50 mt-2 relative z-10 border-2 border-green-400/50">
-  <h3 class="text-center text-xl font-bold">🎮 Season 6 Leaderboard - ACTIVE</h3>
-  <div class="text-center text-xs text-green-300 mb-4 font-semibold">🎮 Season 6 Running • Play now and compete! • Check Your Position!</div>
+  <h3 id="leaderboard-title" class="text-center text-xl font-bold">🎮 Season 6 Leaderboard - ACTIVE</h3>
+  <div id="leaderboard-subtitle" class="text-center text-xs text-green-300 mb-4 font-semibold">🎮 Season 6 Running • Play now and compete! • Check Your Position!</div>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
     <div>
       <h4 class="text-center text-md font-semibold">🧀 Tetris Top Scores</h4>
@@ -2817,6 +2800,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('⚠️ No userId found and not local, skipping game portal stats');
   }
 
+  // 🏆 Load leaderboard and update season status dynamically
+  loadLeaderboard();
+
   // Show/hide DSPOINC, debug, and missions sections based on login status
   const dspoincSection = document.getElementById('dspoincSection');
   const debugSection = document.getElementById('debugSection');
@@ -3098,6 +3084,217 @@ window.claimQuest = async function(questId, btn) {
 function showSeason6Active() {
   // Season 6 is active and running
   console.log('🎮 Season 6 Running - Play now and compete for the top spots!');
+}
+
+// 🏆 Load Leaderboard and Update Season Status Dynamically
+async function loadLeaderboard() {
+  try {
+    // Environment-aware API endpoint
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+    
+    console.log('🏆 Loading leaderboard...');
+    
+    const response = await fetch(`${apiBaseUrl}/api/dev/get-leaderboard.php`);
+    const data = await response.json();
+    
+    if (!data.success) {
+      console.error('❌ Leaderboard API error:', data.error);
+      return;
+    }
+    
+    console.log('🏆 Leaderboard data:', {
+      current_season: data.current_season,
+      display_season: data.display_season,
+      is_frozen: data.is_frozen
+    });
+    
+    // Update leaderboard header based on frozen status
+    const titleEl = document.getElementById('leaderboard-title');
+    const subtitleEl = document.getElementById('leaderboard-subtitle');
+    const leaderboardSection = document.getElementById('leaderboard');
+    
+    // Update season status banner
+    const seasonBanner = document.getElementById('season-status-banner');
+    const seasonStatusMain = document.getElementById('season-status-main');
+    const seasonStatusSubtitle = document.getElementById('season-status-subtitle');
+    const seasonStatusDetails = document.getElementById('season-status-details');
+    const season6ComingStatus = document.getElementById('season6-coming-status');
+    
+    // Update main season banner
+    const mainSeasonBanner = document.getElementById('main-season-banner');
+    const mainSeasonTitle = document.getElementById('main-season-title');
+    const mainSeasonSubtitle = document.getElementById('main-season-subtitle');
+    const mainSeasonDetails = document.getElementById('main-season-details');
+    const mainSeasonCta = document.getElementById('main-season-cta');
+    const mainSeasonFeatures = document.getElementById('main-season-features');
+    
+    // Update wallet season banner
+    const walletSeasonBanner = document.getElementById('wallet-season-banner');
+    const mintSeasonStatus = document.getElementById('mint-season-status');
+    
+    if (data.is_frozen) {
+      // Show frozen Season 5 leaderboard
+      if (titleEl) {
+        titleEl.textContent = `⏸️ ${data.display_season} Leaderboard - FREEZED`;
+        titleEl.className = 'text-center text-xl font-bold text-blue-300';
+      }
+      if (subtitleEl) {
+        subtitleEl.textContent = `⏸️ ${data.display_season} Leaderboard Freezed! • ${data.current_season} Starting Soon! • Final Rankings`;
+        subtitleEl.className = 'text-center text-xs text-blue-300 mb-4 font-semibold';
+      }
+      if (leaderboardSection) {
+        leaderboardSection.className = 'max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-blue-400/50 mt-2 relative z-10 border-2 border-blue-400/50';
+      }
+      
+      // Update season status banner (frozen)
+      if (seasonBanner) {
+        seasonBanner.className = 'bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white text-center py-4 z-30 relative animate-pulse mb-6';
+      }
+      if (seasonStatusMain) {
+        seasonStatusMain.textContent = '⏸️ SEASON 5 LEADERBOARD FREEZED! 🚀';
+      }
+      if (season6ComingStatus) {
+        season6ComingStatus.textContent = '🎯 SEASON 6 STARTING SOON! 🎯';
+      }
+      if (seasonStatusSubtitle) {
+        seasonStatusSubtitle.textContent = '🏆 Season 5 Final Rankings Locked • Prepare for Season 6 Launch!';
+      }
+      if (seasonStatusDetails) {
+        seasonStatusDetails.textContent = 'Season 5 Leaderboard Freezed! • Season 6 Starting Soon! • Bug tracker ready!';
+      }
+      
+      // Update main season banner (frozen)
+      if (mainSeasonBanner) {
+        mainSeasonBanner.className = 'bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white p-4 rounded-xl shadow-lg border-4 border-blue-300 mb-6 text-center animate-pulse';
+      }
+      if (mainSeasonTitle) {
+        mainSeasonTitle.textContent = '⏸️ SEASON 5 LEADERBOARD FREEZED! 🚀';
+      }
+      if (mainSeasonSubtitle) {
+        mainSeasonSubtitle.textContent = 'Season 6 Starting Soon • Final Rankings Locked • Prepare for New Season!';
+      }
+      if (mainSeasonDetails) {
+        mainSeasonDetails.textContent = 'Season 5 Final Rankings • Season 6 Coming Soon • Professional Gaming! 🎯';
+      }
+      if (mainSeasonCta) {
+        mainSeasonCta.textContent = '🎯 SEASON 6 STARTING SOON! 🎯';
+      }
+      if (mainSeasonFeatures) {
+        mainSeasonFeatures.textContent = 'Season 5 Leaderboard Freezed • Season 6 Starting Soon • 5 Games Available • Boss Battles • Real-time Leaderboards • Achievements System • Bug Tracker Ready!';
+      }
+      
+      // Update wallet/mint banners (frozen)
+      if (walletSeasonBanner) {
+        walletSeasonBanner.className = 'mb-3 bg-gradient-to-r from-blue-200 to-indigo-200 border border-blue-400 rounded-lg p-2 text-center';
+        walletSeasonBanner.querySelector('span').textContent = '🚀 Season 6 Starting Soon - Season 5 Leaderboard Freezed! ⏸️';
+        walletSeasonBanner.querySelector('span').className = 'text-blue-800 font-semibold text-sm';
+      }
+      if (mintSeasonStatus) {
+        mintSeasonStatus.textContent = 'Season 6 Starting Soon - Season 5 Leaderboard Freezed!';
+      }
+    } else {
+      // Show active Season 6 leaderboard
+      if (titleEl) {
+        titleEl.textContent = `🎮 ${data.display_season} Leaderboard - ACTIVE`;
+        titleEl.className = 'text-center text-xl font-bold text-green-300';
+      }
+      if (subtitleEl) {
+        subtitleEl.textContent = `🎮 ${data.display_season} Running • Play now and compete! • Check Your Position!`;
+        subtitleEl.className = 'text-center text-xs text-green-300 mb-4 font-semibold';
+      }
+      if (leaderboardSection) {
+        leaderboardSection.className = 'max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-green-400/50 mt-2 relative z-10 border-2 border-green-400/50';
+      }
+      
+      // Update season status banner (active)
+      if (seasonBanner) {
+        seasonBanner.className = 'bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 text-white text-center py-4 z-30 relative animate-pulse mb-6';
+      }
+      if (seasonStatusMain) {
+        seasonStatusMain.textContent = '🎮 SEASON 6 IS LIVE! 🚀';
+      }
+      if (season6ComingStatus) {
+        season6ComingStatus.textContent = '🎮 SEASON 6 RUNNING! 🎮';
+      }
+      if (seasonStatusSubtitle) {
+        seasonStatusSubtitle.textContent = '🎮 Season 6 Running • Play now and compete for top spots!';
+      }
+      if (seasonStatusDetails) {
+        seasonStatusDetails.textContent = 'Season 6 is Live! • Compete now! • Bug tracker ready!';
+      }
+      
+      // Update main season banner (active)
+      if (mainSeasonBanner) {
+        mainSeasonBanner.className = 'bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white p-4 rounded-xl shadow-lg border-4 border-green-300 mb-6 text-center animate-pulse';
+      }
+      if (mainSeasonTitle) {
+        mainSeasonTitle.textContent = '🎮 SEASON 6 IS LIVE! 🚀';
+      }
+      if (mainSeasonSubtitle) {
+        mainSeasonSubtitle.textContent = 'Season 6 Running • Play now and compete! • Fresh leaderboards!';
+      }
+      if (mainSeasonDetails) {
+        mainSeasonDetails.textContent = 'Season 6 Active • Compete for Top Spots • Professional Gaming! 🎯';
+      }
+      if (mainSeasonCta) {
+        mainSeasonCta.textContent = '🎮 SEASON 6 RUNNING! 🎮';
+      }
+      if (mainSeasonFeatures) {
+        mainSeasonFeatures.textContent = 'Season 6 is Live! • Play now! • 5 Games Available • Boss Battles • Real-time Leaderboards • Achievements System • Bug Tracker Ready!';
+      }
+      
+      // Update wallet/mint banners (active)
+      if (walletSeasonBanner) {
+        walletSeasonBanner.className = 'mb-3 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center';
+        walletSeasonBanner.querySelector('span').textContent = '🎮 Season 6 Running! Play now and compete! 🎮';
+        walletSeasonBanner.querySelector('span').className = 'text-green-800 font-semibold text-sm';
+      }
+      if (mintSeasonStatus) {
+        mintSeasonStatus.textContent = '🎮 Season 6 Running! Play now and compete!';
+      }
+    }
+    
+    // Populate leaderboard lists
+    const tetrisList = document.getElementById('leaderboard-tetris-list');
+    const snakeList = document.getElementById('leaderboard-snake-list');
+    const spaceInvadersList = document.getElementById('leaderboard-space-invaders-list');
+    
+    if (tetrisList && data.tetris) {
+      tetrisList.innerHTML = data.tetris.length > 0 
+        ? data.tetris.map((entry, index) => `
+            <li class="text-sm py-1">
+              ${index + 1}. ${entry.discord_name || entry.discord_id} - ${entry.score.toLocaleString()}
+            </li>
+          `).join('')
+        : '<li class="text-gray-400 text-sm">No scores yet</li>';
+    }
+    
+    if (snakeList && data.snake) {
+      snakeList.innerHTML = data.snake.length > 0
+        ? data.snake.map((entry, index) => `
+            <li class="text-sm py-1">
+              ${index + 1}. ${entry.discord_name || entry.discord_id} - ${entry.score.toLocaleString()}
+            </li>
+          `).join('')
+        : '<li class="text-gray-400 text-sm">No scores yet</li>';
+    }
+    
+    if (spaceInvadersList && data.space_invaders) {
+      spaceInvadersList.innerHTML = data.space_invaders.length > 0
+        ? data.space_invaders.map((entry, index) => `
+            <li class="text-sm py-1">
+              ${index + 1}. ${entry.discord_name || entry.discord_id} - ${Math.round(entry.score).toLocaleString()}
+            </li>
+          `).join('')
+        : '<li class="text-gray-400 text-sm">No scores yet</li>';
+    }
+    
+    console.log('✅ Leaderboard loaded and displayed successfully');
+    
+  } catch (error) {
+    console.error('❌ Error loading leaderboard:', error);
+  }
 }
 
 // 🎯 WL Role Button Logic

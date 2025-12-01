@@ -35,26 +35,10 @@ try {
     error_log("Current season: $currentSeason, Previous season: $previousSeason");
     
     // Helper function to get leaderboard from current season or fallback to previous
-    function getLeaderboard($db, $game, $currentSeason, $previousSeason) {
-        // First, try to get scores from current season
-        $currentStmt = $db->prepare("
-            SELECT 
-                discord_id,
-                discord_name,
-                MAX(score) as score,
-                MIN(timestamp) as timestamp
-            FROM tbl_tetris_scores 
-            WHERE game = ? AND season = ?
-            GROUP BY discord_id, discord_name
-            ORDER BY score DESC, timestamp ASC
-            LIMIT 10
-        ");
-        $currentStmt->execute([$game, $currentSeason]);
-        $currentLeaderboard = $currentStmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // If current season has no scores (or very few), use previous season from historical stats
-        if (empty($currentLeaderboard) || count($currentLeaderboard) < 3) {
-            error_log("Current season $currentSeason has no/few scores for $game, using frozen $previousSeason leaderboard");
+    function getLeaderboard($db, $game, $currentSeason, $previousSeason, $useFrozenLeaderboard = false) {
+        // If we should use frozen leaderboard (determined by total scores across all games), skip current season check
+        if ($useFrozenLeaderboard) {
+            error_log("Using frozen $previousSeason leaderboard for $game (total scores across all games < 3)");
             
             // Get from historical stats (previous season's frozen leaderboard)
             $historicalStmt = $db->prepare("
@@ -80,6 +64,22 @@ try {
             ];
         }
         
+        // Get current season scores (only if not using frozen leaderboard)
+        $currentStmt = $db->prepare("
+            SELECT 
+                discord_id,
+                discord_name,
+                MAX(score) as score,
+                MIN(timestamp) as timestamp
+            FROM tbl_tetris_scores 
+            WHERE game = ? AND season = ?
+            GROUP BY discord_id, discord_name
+            ORDER BY score DESC, timestamp ASC
+            LIMIT 10
+        ");
+        $currentStmt->execute([$game, $currentSeason]);
+        $currentLeaderboard = $currentStmt->fetchAll(PDO::FETCH_ASSOC);
+        
         // Return current season scores
         return [
             'leaderboard' => $currentLeaderboard,
@@ -88,23 +88,34 @@ try {
         ];
     }
     
+    // 🐛 BUG FIX: Check total scores across ALL 3 games combined (not per game)
+    // This ensures that if a player plays 1 game of each (3 total), the leaderboard switches to Season 6
+    $totalScoresStmt = $db->prepare("
+        SELECT COUNT(*) as total_scores
+        FROM tbl_tetris_scores 
+        WHERE season = ? AND game IN ('tetris', 'snake', 'space_invaders')
+    ");
+    $totalScoresStmt->execute([$currentSeason]);
+    $totalScoresAcrossAllGames = $totalScoresStmt->fetchColumn() ?: 0;
+    
+    error_log("Total scores across all 3 games in $currentSeason: $totalScoresAcrossAllGames");
+    
+    // If we have 3+ scores total across all games, use current season; otherwise use frozen
+    $useFrozenLeaderboard = ($totalScoresAcrossAllGames < 3);
+    
     // Get leaderboards for all three games
-    $tetrisResult = getLeaderboard($db, 'tetris', $currentSeason, $previousSeason);
-    $snakeResult = getLeaderboard($db, 'snake', $currentSeason, $previousSeason);
-    $spaceInvadersResult = getLeaderboard($db, 'space_invaders', $currentSeason, $previousSeason);
+    $tetrisResult = getLeaderboard($db, 'tetris', $currentSeason, $previousSeason, $useFrozenLeaderboard);
+    $snakeResult = getLeaderboard($db, 'snake', $currentSeason, $previousSeason, $useFrozenLeaderboard);
+    $spaceInvadersResult = getLeaderboard($db, 'space_invaders', $currentSeason, $previousSeason, $useFrozenLeaderboard);
     
     // Round Space Invaders scores
     foreach ($spaceInvadersResult['leaderboard'] as &$entry) {
         $entry['score'] = round($entry['score']);
     }
     
-    // Determine which season is being displayed (use first non-empty result)
-    $displaySeason = $currentSeason;
-    $isFrozen = false;
-    if ($tetrisResult['is_frozen'] || $snakeResult['is_frozen'] || $spaceInvadersResult['is_frozen']) {
-        $isFrozen = true;
-        $displaySeason = $previousSeason;
-    }
+    // Determine which season is being displayed
+    $displaySeason = $useFrozenLeaderboard ? $previousSeason : $currentSeason;
+    $isFrozen = $useFrozenLeaderboard;
     
     echo json_encode([
         'success' => true,
