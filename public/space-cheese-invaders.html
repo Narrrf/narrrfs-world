@@ -439,6 +439,13 @@
         📖 Space Invaders Game Guide - Waves & Bosses
       </button>
     </div>
+    
+    <!-- 💰 DSPOINC Scores Toggle Button -->
+    <div class="text-center mt-4 mb-2">
+      <button onclick="toggleSpaceInvadersDSPOINScores()" class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold px-6 py-3 rounded-xl shadow-lg border-2 border-yellow-400 transition-all duration-300 transform hover:scale-105">
+        💰 DSPOINC Scores - Rewards & Bosses
+      </button>
+    </div>
 
     <!-- 🎮 SPACE INVADERS CONTROLS & HELP -->
     <div id="space-invaders-controls-section" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border: 2px solid #fbbf24; border-radius: 15px; padding: 25px; margin: 20px auto; max-width: 900px; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
@@ -631,6 +638,165 @@
           <div>✅ <span class="text-purple-400">Boss Bonuses</span> - Extra rewards for defeating bosses</div>
           <div>✅ <span class="text-green-400">Wave Completion</span> - Bonus for clearing all waves</div>
         </div>
+      </div>
+    </div>
+    
+    <!-- 💰 SPACE INVADERS DSPOINC SCORES (Expandable) -->
+    <div id="spaceInvadersDSPOINScores" class="hidden mt-4 p-6 bg-gradient-to-br from-gray-900 to-pink-900 rounded-xl border-2 border-pink-400 shadow-2xl max-w-4xl mx-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-bold text-pink-300">💰 Space Invaders DSPOINC Rewards</h3>
+        <button onclick="toggleSpaceInvadersDSPOINScores()" class="text-pink-400 hover:text-pink-300 text-2xl font-bold">✕</button>
+      </div>
+      
+      <!-- Regular Gameplay Rewards -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-green-300 mb-3">🎮 Regular Gameplay Rewards</h4>
+        <div class="space-y-2 text-sm text-gray-300">
+          <div>✅ <span class="text-green-400">Invader Kill:</span> 0.0002 DSPOINC per kill (10,000 game points = 1 DSPOINC)</div>
+          <div>✅ <span class="text-green-400">Combo System:</span> Bonus DSPOINC for kill streaks</div>
+          <div>✅ <span class="text-green-400">Power-ups:</span> Collecting power-ups can indirectly boost scores</div>
+        </div>
+      </div>
+      
+      <!-- Regular Boss Rewards (Waves 10, 25, 75, 100) -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-purple-300 mb-3">👑 Regular Boss Rewards</h4>
+        <p class="text-sm text-gray-300 mb-3">Defeat epic bosses for significant DSPOINC bonuses!</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          <div class="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
+            <div class="text-yellow-400 font-bold mb-1">🧀 Boss 1: Cheese King</div>
+            <div class="text-xs text-gray-300">Wave 10 - First boss encounter</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 40 DSPOINC (80 VIP!)</div>
+          </div>
+          
+          <div class="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
+            <div class="text-purple-400 font-bold mb-1">👑 Boss 2: Cheese Emperor</div>
+            <div class="text-xs text-gray-300">Wave 25 - Rising power</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 80 DSPOINC (160 VIP!)</div>
+          </div>
+          
+          <div class="bg-orange-900/30 p-3 rounded-lg border border-orange-500/50">
+            <div class="text-orange-400 font-bold mb-1">⚡ Boss 3: Cheese God</div>
+            <div class="text-xs text-gray-300">Wave 75 - Master warrior</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 150 DSPOINC (300 VIP!)</div>
+          </div>
+          
+          <div class="bg-red-900/30 p-3 rounded-lg border border-red-500/50">
+            <div class="text-red-400 font-bold text-lg mb-1">🏆 Boss 4: Cheese Destroyer</div>
+            <div class="text-sm text-gray-300">Wave 100 - Ultimate boss!</div>
+            <div class="text-lg text-green-400 font-bold">Reward: 250 DSPOINC (500 VIP!)</div>
+          </div>
+        </div>
+        
+        <div class="mt-3 text-center text-sm text-yellow-400 font-semibold">
+          Total Regular Bosses: 520 DSPOINC (1,040 VIP!)
+        </div>
+      </div>
+      
+      <!-- Giant Cheese Boss Rewards (Waves 8, 16, 24, 32, 40, 48, 56, 64, 72+) -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-orange-300 mb-3">🧀 Giant Cheese Boss Rewards</h4>
+        <p class="text-sm text-gray-300 mb-3">Defeat massive multi-layer cheese bosses every 8 waves!</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div class="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
+            <div class="text-yellow-400 font-bold mb-1">🧀 Wave 8: First Giant Boss</div>
+            <div class="text-xs text-gray-300">Multi-layer cheese structure</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 30 DSPOINC (60 VIP!)</div>
+          </div>
+          
+          <div class="bg-orange-900/30 p-3 rounded-lg border border-orange-500/50">
+            <div class="text-orange-400 font-bold mb-1">🧀 Wave 16: Second Giant Boss</div>
+            <div class="text-xs text-gray-300">Increased difficulty</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 60 DSPOINC (120 VIP!)</div>
+          </div>
+          
+          <div class="bg-red-900/30 p-3 rounded-lg border border-red-500/50">
+            <div class="text-red-400 font-bold mb-1">🧀 Wave 24: Third Giant Boss</div>
+            <div class="text-xs text-gray-300">More challenging</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 100 DSPOINC (200 VIP!)</div>
+          </div>
+          
+          <div class="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
+            <div class="text-purple-400 font-bold mb-1">🧀 Wave 32: Fourth Giant Boss</div>
+            <div class="text-xs text-gray-300">Elite challenge</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 150 DSPOINC (300 VIP!)</div>
+          </div>
+          
+          <div class="bg-pink-900/30 p-3 rounded-lg border border-pink-500/50">
+            <div class="text-pink-400 font-bold mb-1">🧀 Wave 40: Fifth Giant Boss</div>
+            <div class="text-xs text-gray-300">Master level</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 200 DSPOINC (400 VIP!)</div>
+          </div>
+          
+          <div class="bg-indigo-900/30 p-3 rounded-lg border border-indigo-500/50">
+            <div class="text-indigo-400 font-bold mb-1">🧀 Wave 48: Sixth Giant Boss</div>
+            <div class="text-xs text-gray-300">Expert challenge</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 250 DSPOINC (500 VIP!)</div>
+          </div>
+          
+          <div class="bg-cyan-900/30 p-3 rounded-lg border border-cyan-500/50">
+            <div class="text-cyan-400 font-bold mb-1">🧀 Wave 56: Seventh Giant Boss</div>
+            <div class="text-xs text-gray-300">Legendary tier</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 300 DSPOINC (600 VIP!)</div>
+          </div>
+          
+          <div class="bg-blue-900/30 p-3 rounded-lg border border-blue-500/50">
+            <div class="text-blue-400 font-bold mb-1">🧀 Wave 64: Eighth Giant Boss</div>
+            <div class="text-xs text-gray-300">Mythical challenge</div>
+            <div class="text-xs text-green-400 font-bold">Reward: 400 DSPOINC (800 VIP!)</div>
+          </div>
+          
+          <div class="bg-red-900/30 p-3 rounded-lg border border-red-500/50 text-center">
+            <div class="text-red-400 font-bold text-lg mb-1">🏆 Wave 72+: ULTIMATE GIANT BOSS</div>
+            <div class="text-sm text-gray-300">Ultimate cheese challenge!</div>
+            <div class="text-lg text-green-400 font-bold">Reward: 500 DSPOINC (1,000 VIP!)</div>
+          </div>
+        </div>
+        
+        <div class="mt-3 text-center text-sm text-yellow-400 font-semibold">
+          Total Giant Cheese Bosses: 1,990 DSPOINC (3,980 VIP!)
+        </div>
+      </div>
+      
+      <!-- Role Multipliers -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-blue-300 mb-3">🏆 Role Multipliers</h4>
+        <div class="space-y-2 text-sm text-gray-300">
+          <div class="flex justify-between">
+            <span class="text-yellow-400">🟡 VIP Holder:</span>
+            <span class="text-green-400 font-bold">2.0x all rewards</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-300">⚪ Holder:</span>
+            <span class="text-green-400 font-bold">1.5x all rewards</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-red-400">🔴 Champion:</span>
+            <span class="text-green-400 font-bold">1.4x all rewards</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-green-400">🟢 Season Tester:</span>
+            <span class="text-green-400 font-bold">1.3x all rewards</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-blue-400">🔵 Early Bird:</span>
+            <span class="text-green-400 font-bold">1.2x all rewards</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-orange-400">🟠 Cheese Hunter:</span>
+            <span class="text-green-400 font-bold">1.1x all rewards</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Total Potential -->
+      <div class="bg-green-900/30 p-4 rounded-lg border border-green-500/50 text-center">
+        <div class="text-green-400 font-bold text-lg mb-2">💰 Maximum Potential Per Game</div>
+        <div class="text-2xl text-yellow-400 font-bold">2,510+ DSPOINC</div>
+        <div class="text-sm text-gray-300 mt-2">(5,020+ DSPOINC with VIP Holder role!)</div>
+        <div class="text-xs text-gray-400 mt-2">Regular Bosses: 520 + Giant Bosses: 1,990 = 2,510 total</div>
       </div>
     </div>
   </section>
@@ -868,6 +1034,20 @@ function toggleSpaceInvadersGuide() {
   // Smooth scroll to guide if opening
   if (!guideSection.classList.contains('hidden')) {
     guideSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+// DSPOINC Scores toggle function
+function toggleSpaceInvadersDSPOINScores() {
+  const scores = document.getElementById('spaceInvadersDSPOINScores');
+  if (scores) {
+    if (scores.classList.contains('hidden')) {
+      scores.classList.remove('hidden');
+      scores.classList.add('animate-fade-in');
+      scores.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      scores.classList.add('hidden');
+    }
   }
 }
 </script>

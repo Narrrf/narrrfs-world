@@ -528,6 +528,93 @@ After every season reset, MUST update 8 files to prevent errors and ensure prope
 
 ---
 
+## 🏆 **VERSION 4.0 - SEASON 5 → 6 SUCCESSFUL EXECUTION (NOVEMBER 30, 2025)**
+
+### **✅ VERIFIED SUCCESSFUL EXECUTION - PERFECT PATTERN**
+
+**Date:** November 30, 2025, 23:01:45  
+**Season Transition:** Season 5 → Season 6  
+**Status:** ✅ **100% SUCCESS - ALL STEPS VERIFIED**
+
+### **📋 EXECUTION SUMMARY:**
+
+**Step-by-Step Execution (VERIFIED WORKING):**
+
+1. **✅ Backup Created:**
+   ```bash
+   cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world_backup_$(date +%Y%m%d_%H%M%S).sqlite
+   ```
+
+2. **✅ Archive Historical Stats (API Call):**
+   ```bash
+   curl https://narrrfs.world/api/admin/archive-season-stats.php
+   ```
+   **Result:** 
+   - Success: `{"success": true, "season_archived": "Season 5"}`
+   - 48 games archived (17 snake, 15 space_invaders, 16 tetris)
+   - 37 cheese users archived
+
+3. **✅ Database Reset (Single Transaction):**
+   ```sql
+   BEGIN TRANSACTION;
+   DELETE FROM tbl_tetris_scores WHERE game IN ('tetris', 'snake', 'space_invaders');
+   DELETE FROM tbl_user_season_achievements WHERE game IN ('tetris', 'snake', 'space_invaders');
+   UPDATE tbl_seasons SET is_active = 0 WHERE is_active = 1;
+   INSERT INTO tbl_seasons (season_name, start_date, end_date, is_active) 
+   VALUES ('Season 6', datetime('now'), datetime('now', '+30 days'), 1);
+   COMMIT;
+   ```
+
+4. **✅ Verification Passed:**
+   - Season 6 active: ✅ `Season 6|2025-11-30 23:01:45|2025-12-30 23:01:45`
+   - All games reset: ✅ Tetris: 0, Snake: 0, Space Invaders: 0
+   - Preserved data intact: ✅ Cheese Hunt: 1597, Discord Race: 821
+   - Historical stats archived: ✅ Season 5 data confirmed in `tbl_historical_stats`
+
+5. **✅ Database Copied to /data:**
+   ```bash
+   cp /var/www/html/db/narrrf_world.sqlite /data/narrrf_world.sqlite
+   ```
+
+### **🎯 KEY IMPROVEMENTS THIS EXECUTION:**
+
+1. **✅ Single Transaction Execution:** All reset commands in one transaction (more reliable)
+2. **✅ API-Based Archival:** Used `archive-season-stats.php` API (cleaner, verified)
+3. **✅ Complete Verification:** Verified ALL games reset (not just total count)
+4. **✅ Immediate /data Copy:** Database copied immediately after verification
+
+### **📊 SEASON 5 FINAL STATISTICS:**
+- **Games Archived:** 48 total (17 snake, 15 space_invaders, 16 tetris)
+- **Cheese Users Archived:** 37 players
+- **Preserved Data:** 1,597 cheese clicks, 821 race participants
+
+### **🚀 SEASON 6 CONFIGURATION:**
+- **Start Date:** 2025-11-30 23:01:45
+- **End Date:** 2025-12-30 23:01:45 (30-day duration)
+- **Status:** Active and ready for players
+
+### **✅ ADDITIONAL FEATURES DEPLOYED:**
+
+1. **Frozen Leaderboard System:** ✅
+   - Shows Season 5 frozen leaderboard until Season 6 has 3+ scores
+   - Automatically switches to live Season 6 leaderboard
+   - Dynamic header updates based on frozen status
+
+2. **Frontend Theming:** ✅
+   - All pages themed for Season 6 + Christmas theme
+   - Snowflake effects on index.html and profile.html
+   - Complete Season 5 → Season 6 transition messaging
+
+### **📝 NOTES FOR FUTURE RESETS:**
+
+- **This execution pattern is now the standard** for all future season resets
+- Single transaction execution ensures atomicity
+- API-based archival is preferred over manual SQL
+- Complete verification MUST include game-by-game counts
+- Leaderboard frozen system prevents empty leaderboard display
+
+---
+
 ## 🏆 **VERSION 2.0 CRITICAL UPDATE (OCTOBER 25, 2025)**
 
 ### **NEW MANDATORY STEP:**

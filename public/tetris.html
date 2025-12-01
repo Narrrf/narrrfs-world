@@ -316,6 +316,13 @@
       </button>
     </div>
     
+    <!-- 💰 DSPOINC Scores Toggle Button -->
+    <div class="text-center mt-4">
+      <button id="toggle-tetris-dspoin-scores-btn" onclick="toggleTetrisDSPOINScores()" class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+        💰 DSPOINC Scores - Rewards & Bosses
+      </button>
+    </div>
+    
     <!-- 🎮 TETRIS CONTROLS & HELP -->
     <div id="tetris-controls-section" style="background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%); border: 2px solid #fbbf24; border-radius: 15px; padding: 25px; margin: 20px 0; color: white; box-shadow: 0 8px 32px rgba(139, 92, 246, 0.4);">
       <h3 id="tetris-controls-title" style="color: #fbbf24; font-size: 1.4em; font-weight: bold; margin-bottom: 20px; text-align: center; border-bottom: 2px solid #fbbf24; padding-bottom: 10px;">🎮 TETRIS CONTROLS & HELP</h3>
@@ -455,6 +462,134 @@
         </div>
       </div>
     </div>
+    
+    <!-- 💰 TETRIS DSPOINC SCORES (Expandable) -->
+    <div id="tetrisDSPOINScores" class="hidden mt-4 p-6 bg-gradient-to-br from-gray-900 to-yellow-900 rounded-xl border-2 border-yellow-400 shadow-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-bold text-yellow-300">💰 Tetris DSPOINC Rewards</h3>
+        <button onclick="toggleTetrisDSPOINScores()" class="text-yellow-400 hover:text-yellow-300 text-2xl font-bold">✕</button>
+      </div>
+      
+      <!-- Regular Gameplay Rewards -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-green-300 mb-3">🎮 Regular Gameplay</h4>
+        <div class="space-y-2 text-sm text-gray-300">
+          <div class="flex justify-between">
+            <span>Line Clear:</span>
+            <span class="text-green-400 font-bold">2 DSPOINC per line</span>
+          </div>
+          <div class="flex justify-between">
+            <span>2 Lines (Multi-Line):</span>
+            <span class="text-green-400 font-bold">5 DSPOINC</span>
+          </div>
+          <div class="flex justify-between">
+            <span>3 Lines (Multi-Line):</span>
+            <span class="text-green-400 font-bold">9 DSPOINC</span>
+          </div>
+          <div class="flex justify-between">
+            <span>4 Lines (Multi-Line):</span>
+            <span class="text-green-400 font-bold">16 DSPOINC</span>
+          </div>
+          <div class="flex justify-between">
+            <span>💣 Bomb Defused:</span>
+            <span class="text-green-400 font-bold">10 DSPOINC</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Boss Rewards -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-purple-300 mb-3">👑 Boss Rewards</h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div class="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
+            <div class="text-yellow-400 font-bold mb-1">🧀 Boss 1: Cheese Block King</div>
+            <div class="text-xs text-gray-300">Spawn: 10 lines</div>
+            <div class="text-xs text-green-400 font-bold">50 DSPOINC (100 VIP!)</div>
+          </div>
+          <div class="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
+            <div class="text-purple-400 font-bold mb-1">👑 Boss 2: Tetris Emperor</div>
+            <div class="text-xs text-gray-300">Spawn: 30 lines</div>
+            <div class="text-xs text-green-400 font-bold">100 DSPOINC (200 VIP!)</div>
+          </div>
+          <div class="bg-cyan-900/30 p-3 rounded-lg border border-cyan-500/50">
+            <div class="text-cyan-400 font-bold mb-1">⚡ Boss 3: Lightning Lord</div>
+            <div class="text-xs text-gray-300">Spawn: 60 lines</div>
+            <div class="text-xs text-green-400 font-bold">150 DSPOINC (300 VIP!)</div>
+          </div>
+          <div class="bg-blue-900/30 p-3 rounded-lg border border-blue-500/50">
+            <div class="text-blue-400 font-bold mb-1">🌊 Boss 4: Wave Master</div>
+            <div class="text-xs text-gray-300">Spawn: 100 lines</div>
+            <div class="text-xs text-green-400 font-bold">200 DSPOINC (400 VIP!)</div>
+          </div>
+          <div class="bg-indigo-900/30 p-3 rounded-lg border border-indigo-500/50">
+            <div class="text-indigo-400 font-bold mb-1">⚔️ Boss 5: Block Crusher</div>
+            <div class="text-xs text-gray-300">Spawn: 150 lines</div>
+            <div class="text-xs text-green-400 font-bold">250 DSPOINC (500 VIP!)</div>
+          </div>
+          <div class="bg-pink-900/30 p-3 rounded-lg border border-pink-500/50">
+            <div class="text-pink-400 font-bold mb-1">💎 Boss 6: Crystal King</div>
+            <div class="text-xs text-gray-300">Spawn: 210 lines</div>
+            <div class="text-xs text-green-400 font-bold">300 DSPOINC (600 VIP!)</div>
+          </div>
+          <div class="bg-teal-900/30 p-3 rounded-lg border border-teal-500/50">
+            <div class="text-teal-400 font-bold mb-1">🔥 Boss 7: Fire Lord</div>
+            <div class="text-xs text-gray-300">Spawn: 280 lines</div>
+            <div class="text-xs text-green-400 font-bold">400 DSPOINC (800 VIP!)</div>
+          </div>
+          <div class="bg-violet-900/30 p-3 rounded-lg border border-violet-500/50">
+            <div class="text-violet-400 font-bold mb-1">🌟 Boss 8: Star Emperor</div>
+            <div class="text-xs text-gray-300">Spawn: 360 lines</div>
+            <div class="text-xs text-green-400 font-bold">500 DSPOINC (1,000 VIP!)</div>
+          </div>
+          <div class="bg-red-900/30 p-3 rounded-lg border border-red-500/50 text-center">
+            <div class="text-red-400 font-bold text-lg mb-1">🏆 Boss 9: ULTIMATE CHEESE GOD</div>
+            <div class="text-xs text-gray-300 mb-1">Spawn: 450 lines</div>
+            <div class="text-lg text-green-400 font-bold">1,000 DSPOINC (2,000 VIP!)</div>
+          </div>
+        </div>
+        <div class="mt-3 text-center text-sm text-yellow-400 font-semibold">
+          Total All Bosses: 3,550 DSPOINC (7,100 VIP!)
+        </div>
+      </div>
+      
+      <!-- Role Multipliers -->
+      <div class="mb-6">
+        <h4 class="text-xl font-bold text-blue-300 mb-3">🏆 Role Multipliers</h4>
+        <div class="space-y-2 text-sm text-gray-300">
+          <div class="flex justify-between">
+            <span class="text-yellow-400">🟡 VIP Holder:</span>
+            <span class="text-green-400 font-bold">2.0x all rewards</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-300">⚪ Holder:</span>
+            <span class="text-green-400 font-bold">1.5x all rewards</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-red-400">🔴 Champion:</span>
+            <span class="text-green-400 font-bold">1.4x all rewards</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-green-400">🟢 Season Tester:</span>
+            <span class="text-green-400 font-bold">1.3x all rewards</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-blue-400">🔵 Early Bird:</span>
+            <span class="text-green-400 font-bold">1.2x all rewards</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-orange-400">🟠 Cheese Hunter:</span>
+            <span class="text-green-400 font-bold">1.1x all rewards</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Total Potential -->
+      <div class="bg-green-900/30 p-4 rounded-lg border border-green-500/50 text-center">
+        <div class="text-green-400 font-bold text-lg mb-2">💰 Maximum Potential Per Game</div>
+        <div class="text-2xl text-yellow-400 font-bold">3,550+ DSPOINC</div>
+        <div class="text-sm text-gray-300 mt-2">(7,100+ DSPOINC with VIP Holder role!)</div>
+      </div>
+    </div>
   </section>
 </section>
 
@@ -580,6 +715,20 @@
         guide.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else {
         guide.classList.add('hidden');
+      }
+    }
+  }
+  
+  // DSPOINC Scores toggle function
+  function toggleTetrisDSPOINScores() {
+    const scores = document.getElementById('tetrisDSPOINScores');
+    if (scores) {
+      if (scores.classList.contains('hidden')) {
+        scores.classList.remove('hidden');
+        scores.classList.add('animate-fade-in');
+        scores.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        scores.classList.add('hidden');
       }
     }
   }

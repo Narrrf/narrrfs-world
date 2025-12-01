@@ -1691,12 +1691,11 @@ class GiantCheeseBoss {
   }
   
   update() {
+    // 🐛 BUG FIX: Remove boss from array IMMEDIATELY when dead (prevents explosion staying visible)
+    // Don't keep boss in array for explosion animation - remove it right away
     if (this.isDead) {
-      this.explosionTimer++;
-      if (this.explosionTimer > 60) {
-        return false; // Remove from array
-      }
-      return true;
+      console.log(`🧀 Giant Cheese Boss defeated, removing from game immediately`);
+      return false; // Remove from array immediately - no explosion animation delay
     }
     
     // Horizontal movement (side to side)
@@ -1796,16 +1795,71 @@ class GiantCheeseBoss {
     this.isDead = true;
     this.explosionTimer = 0;
     giantCheeseBossDefeated = true;
+    giantCheeseBossActive = false; // 🐛 BUG FIX: Hide boss message when defeated
+    
+    // 🐛 BUG FIX: Hide boss announcement message immediately when boss is defeated
+    const bossHudContainer = document.getElementById('space-invaders-boss-announcement-container');
+    if (bossHudContainer) {
+      bossHudContainer.classList.add('hidden');
+    }
+    
+    // 🐛 BUG FIX: Clear ALL falling cheese blocks (crumbles) immediately when boss dies
+    // Since only one Giant Cheese Boss is active at a time, clear all falling blocks
+    const blocksCleared = fallingCheeseBlocks.length;
+    fallingCheeseBlocks = []; // Clear all falling blocks immediately
+    console.log(`🧹 Cleared ${blocksCleared} falling cheese blocks when boss died`);
     
     console.log(`🧀 Giant Cheese Boss defeated! Wave: ${this.waveNumber}, Reached bottom: ${reachedBottom}`);
+    console.log(`🧹 Cleared falling cheese blocks near boss position`);
     
     if (!reachedBottom) {
-      // Create massive explosion
-      createExplosion(this.x, this.y, 100, 50);
-      
       // Award points
       const points = 50 + (this.waveNumber * 10);
       spaceInvadersScore += points;
+      
+      // 💰 GIANT CHEESE BOSS REWARD SYSTEM: Award DSPOINC based on wave number with role multipliers
+      const giantBossRewards = {
+        8: 30,    // Wave 8: First Giant Cheese Boss - 30 DSPOINC base
+        16: 60,   // Wave 16: Second Giant Cheese Boss - 60 DSPOINC base
+        24: 100,  // Wave 24: Third Giant Cheese Boss - 100 DSPOINC base
+        32: 150,  // Wave 32: Fourth Giant Cheese Boss - 150 DSPOINC base
+        40: 200,  // Wave 40: Fifth Giant Cheese Boss - 200 DSPOINC base
+        48: 250,  // Wave 48: Sixth Giant Cheese Boss - 250 DSPOINC base
+        56: 300,  // Wave 56: Seventh Giant Cheese Boss - 300 DSPOINC base
+        64: 400,  // Wave 64: Eighth Giant Cheese Boss - 400 DSPOINC base
+        72: 500   // Wave 72+: Ultimate Giant Cheese Boss - 500 DSPOINC base
+      };
+      
+      // Calculate base reward based on wave (use closest lower wave or default to 30)
+      let baseReward = 30;
+      const waveKeys = Object.keys(giantBossRewards).map(Number).sort((a, b) => b - a);
+      for (const waveKey of waveKeys) {
+        if (this.waveNumber >= waveKey) {
+          baseReward = giantBossRewards[waveKey];
+          break;
+        }
+      }
+      
+      const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
+      const totalReward = Math.round(baseReward * roleMultiplier);
+      const roleBonus = totalReward - baseReward;
+      
+      // Add reward to score
+      spaceInvadersScore += totalReward;
+      
+      // Log boss defeat with reward
+      console.log(`🧀 GIANT CHEESE BOSS DEFEATED! Wave ${this.waveNumber}`);
+      console.log(`💰 Giant Boss Reward: ${baseReward} DSPOINC base + ${roleBonus} role bonus = ${totalReward} DSPOINC total (${roleMultiplier}x multiplier)`);
+      
+      // 🐛 BUG FIX: DO NOT create separate explosions - use only the boss's own draw() explosion
+      // This prevents lingering explosions that don't get cleared
+      // The boss's draw() method will handle the explosion animation
+      
+      createScorePopup(this.x, this.y, totalReward, 1, '🧀 GIANT BOSS DEFEATED!');
+      
+      // Update score display
+      updateSpaceInvadersScoreDisplay();
+      drawScore();
       
       // Drop life rewards!
       const livesToDrop = this.waveNumber >= 32 ? 
@@ -1827,29 +1881,15 @@ class GiantCheeseBoss {
         });
       }
       
-      showNotification(`🧀 GIANT CHEESE DEFEATED! +${livesToDrop} LIVES! 🧀`, 'cheese');
+      showNotification(`🧀 GIANT CHEESE DEFEATED! +${livesToDrop} LIVES! +${totalReward} DSPOINC! 🧀`, 'cheese');
     }
   }
   
   draw(ctx) {
+    // 🐛 BUG FIX: NEVER draw anything when boss is dead - remove immediately instead
+    // This prevents the explosion from staying visible after boss defeat
     if (this.isDead) {
-      // Massive explosion effect
-      const size = 50 + this.explosionTimer * 2;
-      ctx.fillStyle = `rgba(255, 200, 0, ${1 - this.explosionTimer / 60})`;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Secondary explosion rings
-      for (let i = 0; i < 3; i++) {
-        const ringSize = size * (1 + i * 0.3);
-        ctx.strokeStyle = `rgba(255, ${150 - i * 50}, 0, ${0.5 - this.explosionTimer / 60})`;
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, ringSize, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-      return;
+      return; // Don't draw anything - boss should be removed from array immediately
     }
     
     ctx.save();
@@ -6269,6 +6309,25 @@ let reloadButtonInterval = null;
     hasDoubleShotUpgrade = false;
     hasTripleShotUpgrade = false;
     hasQuadShotUpgrade = false;
+    
+    // 🐛 BUG #310 FIX: Ensure store state is loaded before applying upgrades
+    // This ensures triple shot and other store purchases persist across replays
+    if (typeof window.spaceInvadersStoreState === 'undefined' || !window.spaceInvadersStoreState) {
+      // Try to load store state from localStorage or other sources
+      const savedStoreState = localStorage.getItem('spaceInvadersStoreState');
+      if (savedStoreState) {
+        try {
+          window.spaceInvadersStoreState = JSON.parse(savedStoreState);
+          console.log('💾 Loaded store state from localStorage:', window.spaceInvadersStoreState);
+        } catch (e) {
+          console.warn('⚠️ Failed to parse saved store state:', e);
+          window.spaceInvadersStoreState = {};
+        }
+      } else {
+        window.spaceInvadersStoreState = {};
+      }
+    }
+    
     applyStoreUpgrades();
     console.log('🎯 Multi-shot upgrades reset for new game (store perks applied if owned)');
     
@@ -6332,10 +6391,28 @@ let reloadButtonInterval = null;
     pressedKeys.clear();
     console.log('⌨️ Pressed keys cleared - ship movement restored!');
     
-    playerShip.x = canvasWidth / 2;
+    // 🐛 BUG #327 FIX: Position ship at bottom of canvas when game starts
+    // This prevents players (especially mobile) from dying immediately because ship spawns too high
+    // Ensure ship dimensions are set if not already initialized
+    if (!playerShip.width) {
+      playerShip.width = 40; // Default ship width
+    }
+    if (!playerShip.height) {
+      playerShip.height = 30; // Default ship height
+    }
+    
+    // Get canvas dimensions (fallback to defaults if not set)
+    const canvasEl = document.getElementById('space-invaders-canvas');
+    const actualCanvasWidth = canvasEl ? canvasEl.width : (typeof canvasWidth !== 'undefined' ? canvasWidth : 400);
+    const actualCanvasHeight = canvasEl ? canvasEl.height : (typeof canvasHeight !== 'undefined' ? canvasHeight : 600);
+    
+    playerShip.x = actualCanvasWidth / 2;
+    playerShip.y = actualCanvasHeight - playerShip.height - 20; // Position at bottom with 20px margin
     playerShip.health = 3;
     playerShip.invincible = false; // 🚀 NEW: Reset invincibility
     playerShip.invincibleTimer = 0; // 🚀 NEW: Reset invincibility timer
+    
+    console.log(`🚀 Ship positioned at bottom: X=${playerShip.x}, Y=${playerShip.y} (Canvas: ${actualCanvasWidth}x${actualCanvasHeight})`);
     
       // 🚀 CRITICAL FIX: Initialize mouse targets to ship position to prevent jumping
       mouseTargetX = playerShip.x;
@@ -6343,9 +6420,8 @@ let reloadButtonInterval = null;
       
       // 🚀 CRITICAL FIX: Initialize global mouse tracking variables to ship position
       // This prevents the ship from jumping to (0,0) on game reset
-      const canvas = document.getElementById('space-invaders-canvas');
-      if (canvas) {
-        const rect = canvas.getBoundingClientRect();
+      if (canvasEl) {
+        const rect = canvasEl.getBoundingClientRect();
         // Set initial mouse position to ship position to prevent jumping
         window.mouseX = rect.left + playerShip.x + playerShip.width / 2;
         window.mouseY = rect.top + playerShip.y + playerShip.height / 2;
@@ -7444,6 +7520,12 @@ let reloadButtonInterval = null;
     // Check if all bosses defeated
     if (giantCheeseBossActive && giantCheeseBosses.length === 0 && giantCheeseBossDefeated) {
       giantCheeseBossActive = false;
+      
+      // 🐛 BUG FIX: Clear all remaining falling cheese blocks when all bosses are defeated
+      // This ensures no crumbles remain visible after boss defeat
+      fallingCheeseBlocks = [];
+      console.log('🧹 Cleared all remaining falling cheese blocks after boss defeat');
+      
       console.log('🧀 Giant Cheese Boss wave complete! Hearts are falling...');
       
       // 🏆 SEASON 5 FIX (Nov 3): Add Giant Cheese Boss rewards!
@@ -7487,9 +7569,13 @@ let reloadButtonInterval = null;
   }
   
   function drawGiantCheeseBosses(ctx) {
+    // 🐛 BUG FIX: Only draw bosses that are NOT dead (prevents explosion staying visible)
     // Draw all giant cheese bosses (removed debug logs - were flooding console every frame)
     giantCheeseBosses.forEach(boss => {
-      boss.draw(ctx);
+      // 🐛 BUG FIX: Skip drawing dead bosses immediately (prevents explosion staying visible)
+      if (!boss.isDead) {
+        boss.draw(ctx);
+      }
     });
     
     // Draw falling blocks
@@ -8314,6 +8400,63 @@ let reloadButtonInterval = null;
           bulletHit = true;
         }
       });
+      
+      // 💰 NEW: Check bullet collisions with regular boss (Waves 10, 25, 75, 100)
+      if (boss && !bossDefeated && gamePhase === 'boss' && checkCollision(bullet, boss)) {
+        // Calculate damage based on bullet type
+        let damage = 1;
+        if (bullet.type === 'laser') damage = 2;
+        if (bullet.type === 'bomb') damage = 5;
+        
+        // Apply damage to boss
+        boss.health -= damage;
+        
+        // Create hit effect
+        explosions.push({
+          x: bullet.x,
+          y: bullet.y,
+          size: 20 + damage * 3,
+          timer: 20,
+          isBossHit: true
+        });
+        
+        // Check if boss is defeated
+        if (boss.health <= 0) {
+          bossDefeated = true;
+          boss.health = 0;
+          
+          // 💰 BOSS REWARD SYSTEM: Award DSPOINC based on wave number with role multipliers
+          const bossRewards = {
+            10: 40,   // Wave 10: Cheese King - 40 DSPOINC base
+            25: 80,   // Wave 25: Cheese Emperor - 80 DSPOINC base
+            75: 150,  // Wave 75: Cheese God - 150 DSPOINC base
+            100: 250  // Wave 100: Cheese Destroyer - 250 DSPOINC base
+          };
+          
+          const baseReward = bossRewards[waveNumber] || 40; // Default to 40 if wave not in list
+          const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
+          const totalReward = Math.round(baseReward * roleMultiplier);
+          const roleBonus = totalReward - baseReward;
+          
+          // Add reward to score
+          spaceInvadersScore += totalReward;
+          
+          // Log boss defeat with reward
+          console.log(`👑 BOSS DEFEATED! ${boss.name || 'Boss'} at Wave ${waveNumber}`);
+          console.log(`💰 Boss Reward: ${baseReward} DSPOINC base + ${roleBonus} role bonus = ${totalReward} DSPOINC total (${roleMultiplier}x multiplier)`);
+          
+          // Create boss defeat explosion
+          createEnhancedExplosion(boss.x + boss.width / 2, boss.y + boss.height / 2, 80, 3);
+          createScorePopup(boss.x + boss.width / 2, boss.y + boss.height / 2, totalReward, 1, '💰 BOSS DEFEATED!');
+          
+          // Update score display
+          updateSpaceInvadersScoreDisplay();
+          drawScore();
+        }
+        
+        // Mark bullet as hit
+        bulletHit = true;
+      }
       
       // Remove bullet if it hit something or if it's a laser that's lost all damage
       if (bulletHit && (!bullet.pierce || bullet.damage <= 0)) {
@@ -10487,13 +10630,15 @@ let reloadButtonInterval = null;
   function updateSpaceInvadersBossHUD() {
     const bossHudContainer = document.getElementById('space-invaders-boss-announcement-container');
     if (bossHudContainer) {
-      if (giantCheeseBossActive) {
+      // 🐛 BUG FIX: Check if boss is active AND not defeated
+      if (giantCheeseBossActive && !giantCheeseBossDefeated && giantCheeseBosses.length > 0) {
         const bossTextEl = document.getElementById('space-invaders-boss-announcement-text');
         if (bossTextEl) {
           bossTextEl.textContent = '🧀 GIANT CHEESE BOSS WAVE 🧀';
         }
         bossHudContainer.classList.remove('hidden');
       } else {
+        // 🐛 BUG FIX: Hide message if boss is defeated or no bosses exist
         bossHudContainer.classList.add('hidden');
       }
     }
@@ -10518,27 +10663,64 @@ let reloadButtonInterval = null;
     }
   }
 
+  // 🐛 BUG FIX: Track when upgrades were unlocked to show messages only once
+  let doubleShotUnlockTime = null;
+  let tripleShotUnlockTime = null;
+  let quadShotUnlockTime = null;
+  const UPGRADE_MESSAGE_DURATION = 5000; // Show message for 5 seconds
+
   function updateSpaceInvadersUpgradeNotifications() {
     const upgradeContainer = document.getElementById('space-invaders-upgrade-notifications-container');
-    if (upgradeContainer && isMouseOverCanvas && isMouseControlEnabled) {
-      let upgradeHTML = '';
-      if (hasDoubleShotUpgrade) {
+    if (!upgradeContainer) return;
+    
+    // 🐛 BUG FIX: Only show messages when upgrades are first unlocked or within 5 seconds
+    const currentTime = Date.now();
+    let upgradeHTML = '';
+    
+    // Check double shot
+    if (hasDoubleShotUpgrade) {
+      if (!doubleShotUnlockTime) {
+        doubleShotUnlockTime = currentTime; // Mark as unlocked now
+      }
+      // Show message only if unlocked within last 5 seconds
+      if (currentTime - doubleShotUnlockTime < UPGRADE_MESSAGE_DURATION) {
         upgradeHTML += '<div class="text-green-400 text-xs">✅ DOUBLE SHOT UNLOCKED</div>';
       }
-      if (hasTripleShotUpgrade) {
+    } else {
+      doubleShotUnlockTime = null; // Reset if upgrade is lost
+    }
+    
+    // Check triple shot
+    if (hasTripleShotUpgrade) {
+      if (!tripleShotUnlockTime) {
+        tripleShotUnlockTime = currentTime; // Mark as unlocked now
+      }
+      // Show message only if unlocked within last 5 seconds
+      if (currentTime - tripleShotUnlockTime < UPGRADE_MESSAGE_DURATION) {
         upgradeHTML += '<div class="text-orange-400 text-xs">✅ TRIPLE SHOT UNLOCKED</div>';
       }
-      if (hasQuadShotUpgrade) {
+    } else {
+      tripleShotUnlockTime = null; // Reset if upgrade is lost
+    }
+    
+    // Check quad shot
+    if (hasQuadShotUpgrade) {
+      if (!quadShotUnlockTime) {
+        quadShotUnlockTime = currentTime; // Mark as unlocked now
+      }
+      // Show message only if unlocked within last 5 seconds
+      if (currentTime - quadShotUnlockTime < UPGRADE_MESSAGE_DURATION) {
         upgradeHTML += '<div class="text-purple-400 text-xs">✅ QUAD SHOT UNLOCKED</div>';
       }
-      
-      if (upgradeHTML) {
-        upgradeContainer.innerHTML = upgradeHTML;
-        upgradeContainer.classList.remove('hidden');
-      } else {
-        upgradeContainer.classList.add('hidden');
-      }
-    } else if (upgradeContainer) {
+    } else {
+      quadShotUnlockTime = null; // Reset if upgrade is lost
+    }
+    
+    // Only show container if we have messages to display and mouse is over canvas
+    if (upgradeHTML && isMouseOverCanvas && isMouseControlEnabled) {
+      upgradeContainer.innerHTML = upgradeHTML;
+      upgradeContainer.classList.remove('hidden');
+    } else {
       upgradeContainer.classList.add('hidden');
     }
   }
