@@ -1561,7 +1561,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   </div>
 </div>
 
-<!-- 🏆 Leaderboard Section - Season 5 FREEZED -->
+<!-- 🏆 Leaderboard Section - Dynamic Frozen Status -->
 <section id="leaderboard" class="max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-blue-400/50 mt-2 relative z-10 border-2 border-blue-400/50">
   <h3 class="text-center text-xl font-bold">⏸️ Season 5 Leaderboard - FREEZED (Final Rankings)</h3>
   <div class="text-center text-xs text-blue-300 mb-4 font-semibold">🚀 Season 6 Starting Soon • Season 5 Final Rankings • Check Your Position!</div>
@@ -2255,6 +2255,29 @@ document.addEventListener("DOMContentLoaded", async function () {
       const result = await res.json();
 
       console.log('📊 Leaderboard data received:', result);
+
+      // Update leaderboard header based on frozen status
+      const leaderboardHeader = document.querySelector('#leaderboard h3');
+      const leaderboardSubtitle = document.querySelector('#leaderboard .text-center.text-xs');
+      
+      if (result.is_frozen && result.display_season) {
+        // Show frozen Season 5 leaderboard
+        if (leaderboardHeader) {
+          leaderboardHeader.innerHTML = `⏸️ ${result.display_season} Leaderboard - FREEZED (Final Rankings)`;
+        }
+        if (leaderboardSubtitle) {
+          const nextSeason = result.current_season || 'Season 6';
+          leaderboardSubtitle.innerHTML = `🚀 ${nextSeason} Starting Soon • ${result.display_season} Final Rankings • Check Your Position!`;
+        }
+      } else if (result.display_season) {
+        // Show current active season leaderboard
+        if (leaderboardHeader) {
+          leaderboardHeader.innerHTML = `🏆 ${result.display_season} Leaderboard (Live Rankings)`;
+        }
+        if (leaderboardSubtitle) {
+          leaderboardSubtitle.innerHTML = `🎮 Active Season • Compete for the Top Spots!`;
+        }
+      }
 
       const tetrisList = document.getElementById("leaderboard-tetris-list");
       const snakeList = document.getElementById("leaderboard-snake-list");
