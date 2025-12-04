@@ -4494,6 +4494,15 @@ function getGameStats(gameKey, game) {
           <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
         `;
         break;
+    case 'cheese_rumble':
+        statsHTML = `
+          <div class="text-blue-300">Total Rumbles: ${stats.total_rumbles || 0}</div>
+          <div class="text-green-300">Wins: ${stats.wins || 0}</div>
+          <div class="text-purple-300">Podium Finishes: ${stats.podium_finishes || 0}</div>
+          <div class="text-yellow-300">Best Position: ${stats.best_position || 'N/A'}</div>
+          <div class="text-yellow-300">DSPOINC Earned: ${stats.dspoinc_earned ? stats.dspoinc_earned.toLocaleString() : '0'}</div>
+        `;
+        break;
     default:
         statsHTML = '<div class="text-gray-400">Unknown game type</div>';
     }
@@ -4591,6 +4600,15 @@ async function loadAllTimeStats() {
     // Get the user's Discord ID
     let discordId = localStorage.getItem('discord_id');
     
+    // 🏠 LOCAL DEVELOPMENT: Use test user if not logged in
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!discordId && isLocalDevelopment) {
+      console.log('🏠 LOCAL DEV - No Discord ID found, using test user (328601656659017732)');
+      discordId = '328601656659017732';
+      localStorage.setItem('discord_id', discordId);
+      localStorage.setItem('discord_name', 'Test User');
+    }
+    
     if (!discordId) {
       console.log('🏆 No Discord ID found, cannot load all-time stats');
       displayAllTimeStatsError('Please log in with Discord to view all-time stats');
@@ -4661,6 +4679,7 @@ function displayAllTimeStats(stats) {
         if (game.total_games) return game.total_games > 0;
         if (game.total_clicks) return game.total_clicks > 0;
         if (game.total_races) return game.total_races > 0;
+        if (game.total_rumbles) return game.total_rumbles > 0; // 6th game: Cheese Rumble
         return false;
       }).length;
       
@@ -4682,7 +4701,7 @@ function displayAllTimeStats(stats) {
         </div>
         <div class="bg-gradient-to-br from-blue-900/30 to-blue-700/30 rounded-lg p-4 border border-blue-500/30 text-center">
           <div class="text-blue-300 text-xs mb-1">Games Played</div>
-          <div class="text-white font-bold text-xl">${gamesPlayed}/5</div>
+          <div class="text-white font-bold text-xl">${gamesPlayed}/6</div>
           <div class="text-blue-200 text-xs mt-1">Unique games</div>
         </div>
       `;
@@ -4818,6 +4837,33 @@ function displayAllTimeStats(stats) {
         </div>
       `;
       
+      // Cheese Rumble (6th Game)
+      const rumble = stats.games.cheese_rumble;
+      if (rumble) {
+        cardsHTML += `
+          <div class="bg-gradient-to-br from-orange-900/20 to-red-900/20 rounded-lg p-3 border border-orange-500/30">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-2xl">💥</span>
+              <span class="text-white font-semibold">${rumble.name || 'Cheese Rumble'}</span>
+            </div>
+            <div class="text-xs space-y-1">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Total Rumbles:</span>
+                <span class="text-white font-semibold">${rumble.total_rumbles ? rumble.total_rumbles.toLocaleString() : 0}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Wins:</span>
+                <span class="text-orange-300">${rumble.total_wins || 0} (${rumble.total_rumbles > 0 ? Math.round(((rumble.total_wins || 0)/rumble.total_rumbles)*100) : 0}%)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Best Position:</span>
+                <span class="text-red-300">#${rumble.best_position || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      
       breakdownEl.innerHTML = cardsHTML;
     }
     
@@ -4856,6 +4902,9 @@ async function loadGameMissions() {
     // Get the user's Discord ID from localStorage or the page
     let discordId = localStorage.getItem('discord_id');
     
+    // 🏠 LOCAL DEVELOPMENT: Use test user if not logged in
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
     if (!discordId) {
       // Try to get from the page content
       const usernameElement = document.getElementById('username');
@@ -4869,6 +4918,14 @@ async function loadGameMissions() {
           discordId = enhancedData.basic_info.discord_id;
         }
       }
+    }
+    
+    // 🏠 LOCAL DEVELOPMENT: Use test user if still no Discord ID
+    if (!discordId && isLocalDevelopment) {
+      console.log('🏠 LOCAL DEV - No Discord ID found, using test user (328601656659017732)');
+      discordId = '328601656659017732';
+      localStorage.setItem('discord_id', discordId);
+      localStorage.setItem('discord_name', 'Test User');
     }
     
     if (!discordId) {

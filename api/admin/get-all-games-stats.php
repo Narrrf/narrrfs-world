@@ -51,9 +51,9 @@ try {
         ]
     ];
 
-    // 1. TETRIS STATS (Season 3 compatible)
+    // 1. TETRIS STATS (Strict season filtering - only current season)
     try {
-        // First try to get Season 3 data
+        // Get current season data ONLY (strict filtering - no NULL/empty seasons)
         $stmt = $db->prepare("
             SELECT 
                 COUNT(*) as total_scores,
@@ -64,15 +64,15 @@ try {
                 COUNT(CASE WHEN timestamp >= datetime('now', '-7 days') THEN 1 END) as recent_7d
             FROM tbl_tetris_scores 
             WHERE game = 'tetris'
-            AND (season = ? OR season IS NULL OR season = '')
+            AND season = ?
         ");
         $stmt->execute([$currentSeason]);
         $tetrisData = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Keep Season 5 data even if 0 scores (fresh season start)
+        // Keep current season data even if 0 scores (fresh season start)
         // Do NOT fallback to all-time data - show current season with 0 scores
 
-        // Get top players for Tetris
+        // Get top players for Tetris (strict season filtering)
         $topStmt = $db->prepare("
             SELECT 
                 discord_id,
@@ -82,7 +82,7 @@ try {
                 MAX(timestamp) as last_game
             FROM tbl_tetris_scores 
             WHERE game = 'tetris'
-            AND (season = ? OR season IS NULL OR season = '')
+            AND season = ?
             GROUP BY discord_id, discord_name
             ORDER BY best_score DESC
             LIMIT 10
@@ -115,7 +115,7 @@ try {
         error_log("Tetris stats error trace: " . $e->getTraceAsString());
     }
 
-    // 2. SNAKE STATS (Season 3 compatible)
+    // 2. SNAKE STATS (Strict season filtering - only current season)
     try {
         $stmt = $db->prepare("
             SELECT 
@@ -127,7 +127,7 @@ try {
                 COUNT(CASE WHEN timestamp >= datetime('now', '-7 days') THEN 1 END) as recent_7d
             FROM tbl_tetris_scores 
             WHERE game = 'snake'
-            AND (season = ? OR season IS NULL OR season = '')
+            AND season = ?
         ");
         $stmt->execute([$currentSeason]);
         $snakeData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -153,19 +153,19 @@ try {
         error_log("Snake stats error: " . $e->getMessage());
     }
 
-    // 3. SPACE INVADERS STATS (Season 3 compatible)
+    // 3. SPACE INVADERS STATS (Strict season filtering - only current season)
     try {
         $stmt = $db->prepare("
             SELECT 
                 COUNT(*) as total_scores,
-                COUNT(DISTINCT user_id) as unique_players,
+                COUNT(DISTINCT discord_id) as unique_players,
                 MAX(score) as max_score,
                 AVG(score) as avg_score,
                 COUNT(CASE WHEN timestamp >= datetime('now', '-24 hours') THEN 1 END) as recent_24h,
                 COUNT(CASE WHEN timestamp >= datetime('now', '-7 days') THEN 1 END) as recent_7d
-            FROM tbl_user_scores 
+            FROM tbl_tetris_scores 
             WHERE game = 'space_invaders'
-            AND (season = ? OR season IS NULL OR season = '')
+            AND season = ?
         ");
         $stmt->execute([$currentSeason]);
         $spaceData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -261,13 +261,132 @@ try {
         error_log("Discord Race stats error: " . $e->getMessage());
     }
 
-    // Calculate total games (count games that have data)
+    // 6. CHEESE RUMBLE STATS (Season-aware, similar to Discord Race)
+    try {
+        // Get current season start/end dates for filtering
+        $seasonDateStmt = $db->prepare("SELECT start_date FROM tbl_seasons WHERE is_active = 1 LIMIT 1");
+        $seasonDateStmt->execute();
+        $seasonStart = $seasonDateStmt->fetchColumn();
+        $seasonStart = $seasonStart ? date('Y-m-d H:i:s', strtotime($seasonStart)) : date('Y-m-d H:i:s', strtotime('-30 days'));
+        
+        // Query rumbles first (to get total count even if no participants)
+        // Handle ISO date format (2025-12-04T00:50:03.756Z) - convert season start to ISO format for comparison
+        $seasonStartISO = date('Y-m-d\TH:i:s', strtotime($seasonStart)) . 'Z';
+        $recent24hISO = date('Y-m-d\TH:i:s', strtotime('-24 hours')) . 'Z';
+        $recent7dISO = date('Y-m-d\TH:i:s', strtotime('-7 days')) . 'Z';
+        
+        $rumbleStmt = $db->prepare("
+            SELECT 
+                COUNT(DISTINCT cr.rumble_id) as total_rumbles,
+                COUNT(CASE WHEN cr.created_at >= ? THEN 1 END) as recent_24h,
+                COUNT(CASE WHEN cr.created_at >= ? THEN 1 END) as recent_7d
+            FROM tbl_cheese_rumbles cr
+            WHERE cr.created_at >= ?
+        ");
+        $rumbleStmt->execute([$recent24hISO, $recent7dISO, $seasonStartISO]);
+        $rumbleCounts = $rumbleStmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Query participants for player stats
+        $participantStmt = $db->prepare("
+            SELECT 
+                COUNT(DISTINCT rp.user_id) as unique_players,
+                COUNT(CASE WHEN rp.status = 'winner' OR rp.final_position = 1 THEN 1 END) as wins,
+                COUNT(CASE WHEN rp.final_position <= 3 AND rp.final_position IS NOT NULL THEN 1 END) as podiums
+            FROM tbl_rumble_participants rp
+            JOIN tbl_cheese_rumbles cr ON rp.rumble_id = cr.rumble_id
+            WHERE cr.created_at >= ?
+        ");
+        $participantStmt->execute([$seasonStartISO]);
+        $participantData = $participantStmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Query top players for leaderboard (top 10 by wins, then by podiums)
+        $topPlayersStmt = $db->prepare("
+            SELECT 
+                rp.user_id,
+                u.username,
+                COUNT(CASE WHEN rp.status = 'winner' OR rp.final_position = 1 THEN 1 END) as wins,
+                COUNT(CASE WHEN rp.final_position <= 3 AND rp.final_position IS NOT NULL THEN 1 END) as podiums,
+                COUNT(*) as total_rumbles,
+                SUM(COALESCE(rp.dspoinc_earned, 0)) as total_dspoinc,
+                MIN(rp.final_position) as best_position
+            FROM tbl_rumble_participants rp
+            JOIN tbl_cheese_rumbles cr ON rp.rumble_id = cr.rumble_id
+            LEFT JOIN tbl_users u ON rp.user_id = u.discord_id
+            WHERE cr.created_at >= ?
+            GROUP BY rp.user_id
+            ORDER BY wins DESC, podiums DESC, best_position ASC
+            LIMIT 10
+        ");
+        $topPlayersStmt->execute([$seasonStartISO]);
+        $topPlayers = $topPlayersStmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Query rumble overview (last 10 rumbles)
+        $rumbleOverviewStmt = $db->prepare("
+            SELECT 
+                cr.rumble_id,
+                cr.creator_name,
+                cr.status,
+                cr.max_players,
+                cr.created_at,
+                cr.duration,
+                cr.dspoinc_reward,
+                COUNT(rp.user_id) as participant_count,
+                (SELECT u2.username FROM tbl_rumble_participants rp2 
+                 JOIN tbl_users u2 ON rp2.user_id = u2.discord_id 
+                 WHERE rp2.rumble_id = cr.rumble_id AND rp2.status = 'winner' LIMIT 1) as winner_name
+            FROM tbl_cheese_rumbles cr
+            LEFT JOIN tbl_rumble_participants rp ON cr.rumble_id = rp.rumble_id
+            WHERE cr.created_at >= ?
+            GROUP BY cr.rumble_id
+            ORDER BY cr.created_at DESC
+            LIMIT 10
+        ");
+        $rumbleOverviewStmt->execute([$seasonStartISO]);
+        $rumbleOverview = $rumbleOverviewStmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Combine results
+        $rumbleData = [
+            'total_rumbles' => (int)($rumbleCounts['total_rumbles'] ?? 0),
+            'unique_players' => (int)($participantData['unique_players'] ?? 0),
+            'wins' => (int)($participantData['wins'] ?? 0),
+            'podiums' => (int)($participantData['podiums'] ?? 0),
+            'recent_24h' => (int)($rumbleCounts['recent_24h'] ?? 0),
+            'recent_7d' => (int)($rumbleCounts['recent_7d'] ?? 0),
+            'top_players' => $topPlayers,
+            'rumble_overview' => $rumbleOverview
+        ];
+
+        $response['data']['games']['cheese_rumble'] = [
+            'game_name' => 'Cheese Rumble',
+            'game_icon' => '💥',
+            'status' => 'active',
+            'season_data' => [
+                'current_season' => $fullSeasonName,
+                'total_rumbles' => (int)$rumbleData['total_rumbles'],
+                'unique_players' => (int)$rumbleData['unique_players'],
+                'wins' => (int)$rumbleData['wins'],
+                'podiums' => (int)$rumbleData['podiums'],
+                'recent_24h' => (int)$rumbleData['recent_24h'],
+                'recent_7d' => (int)$rumbleData['recent_7d'],
+                'top_players' => $topPlayers,
+                'rumble_overview' => $rumbleOverview
+            ]
+        ];
+
+        $response['data']['overview']['total_active_players'] += (int)$rumbleData['unique_players'];
+        $response['data']['overview']['total_games_played'] += (int)$rumbleData['total_rumbles'];
+    } catch (Exception $e) {
+        error_log("Cheese Rumble stats error: " . $e->getMessage());
+    }
+
+    // Calculate total games (count games that have data - including Cheese Rumble - 6th game)
     $totalGames = 0;
     if (isset($response['data']['games']['tetris']['season_data']['total_scores']) && $response['data']['games']['tetris']['season_data']['total_scores'] > 0) $totalGames++;
     if (isset($response['data']['games']['snake']['season_data']['total_scores']) && $response['data']['games']['snake']['season_data']['total_scores'] > 0) $totalGames++;
     if (isset($response['data']['games']['space_invaders']['season_data']['total_scores']) && $response['data']['games']['space_invaders']['season_data']['total_scores'] > 0) $totalGames++;
     if (isset($response['data']['games']['cheese_hunt']['season_data']['total_clicks']) && $response['data']['games']['cheese_hunt']['season_data']['total_clicks'] > 0) $totalGames++;
     if (isset($response['data']['games']['discord_race']['season_data']['total_races']) && $response['data']['games']['discord_race']['season_data']['total_races'] > 0) $totalGames++;
+    if (isset($response['data']['games']['cheese_rumble']['season_data']['total_rumbles']) && $response['data']['games']['cheese_rumble']['season_data']['total_rumbles'] > 0) $totalGames++; // 6th game
     
     $response['data']['overview']['total_games'] = $totalGames;
 

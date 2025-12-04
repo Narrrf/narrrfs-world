@@ -33,6 +33,8 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_scores;"
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_cheese_clicks;"
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_race_participants;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_cheese_rumbles;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_rumble_participants;"
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_achievements;"
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_snake_achievements;"
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_space_invaders_achievements;"
@@ -130,6 +132,8 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_sc
 # 3. Verify preserved data (should match pre-reset counts)
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_cheese_clicks;"
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_race_participants;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_cheese_rumbles;"
+sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_rumble_participants;"
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_tetris_achievements;"
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_snake_achievements;"
 sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT COUNT(*) FROM tbl_space_invaders_achievements;"
@@ -309,13 +313,15 @@ echo "Code deployed to production: $(date)" >> /data/season_reset_log.txt
 
 ## 📊 **DATA PRESERVATION RULES**
 
-### **✅ ALWAYS RESET (3 Main Games):**
+### **✅ ALWAYS RESET (3 Main Games - Season-Based):**
 - **`tbl_tetris_scores`** - Tetris, Snake, Space Invaders scores
-- **`tbl_user_season_achievements`** - Season achievements for 3 main games
+- **`tbl_user_season_achievements`** - Season achievements for 3 main games (Tetris, Snake, Space Invaders)
 
-### **🚨 NEVER RESET (Critical Data):**
-- **`tbl_cheese_clicks`** - Cheese Hunt data (PRESERVE ALWAYS)
-- **`tbl_race_participants`** - Discord Race data (PRESERVE ALWAYS)
+### **🚨 NEVER RESET (Critical Data - Preserve All History):**
+- **`tbl_cheese_clicks`** - Cheese Hunt data (PRESERVE ALWAYS - Non-season game)
+- **`tbl_race_participants`** - Discord Race data (PRESERVE ALWAYS - Discord event game)
+- **`tbl_cheese_rumbles`** - Cheese Rumble events (PRESERVE ALWAYS - Discord event game, season-filtered in queries)
+- **`tbl_rumble_participants`** - Cheese Rumble participants (PRESERVE ALWAYS - Historical participation data)
 - **`tbl_tetris_achievements`** - Individual Tetris achievements (PRESERVE ALWAYS)
 - **`tbl_snake_achievements`** - Individual Snake achievements (PRESERVE ALWAYS)
 - **`tbl_space_invaders_achievements`** - Individual Space Invaders achievements (PRESERVE ALWAYS)
@@ -450,6 +456,20 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is
   - **Fair Play Notice:** Added transparency about potential game tuning during season
   - **Complete Status:** All "Coming Soon" → "NOW LIVE", all "Season 4" → "Season 5"
   - **Ready for Deployment:** Database copied to /data, all messaging updated, ready for push
+- **Version 4.0** - Season 5 → 6 Reset Execution (November 30, 2025)
+  - **Reset Execution:** Successfully executed Season 5 → Season 6 transition
+  - **Historical Stats:** 48 games archived (17 snake, 15 space_invaders, 16 tetris)
+  - **Cheese Users:** 37 players archived
+  - **Season 6 Created:** 30-day duration (Nov 30 - Dec 30, 2025)
+  - **Frozen Leaderboard System:** Implemented to show Season 5 until Season 6 has 3+ scores
+  - **Frontend Theming:** All pages themed for Season 6 + Christmas theme
+- **Version 5.0** - Season 6 Live Launch + Critical Fixes (December 1, 2025)
+  - **DSPOINC Scores Feature:** New feature showing all rewards on all 3 game pages
+  - **Leaderboard Auto-Reset Fix:** Fixed logic to count total scores across ALL games (not per game)
+  - **Dynamic Status Updates:** All season status messages now update automatically
+  - **Space Invaders Fixes:** Boss explosion cleanup, falling blocks cleanup, shot messages frequency
+  - **Season 6 Theming:** All "Starting Soon" → "Season 6 Running" messages updated
+  - **Status:** ✅ Season 6 is LIVE and fully operational
 - **Future Updates** - Rule will be updated based on new learnings and requirements
 - **Version Control** - All updates must be documented with rationale
 
@@ -463,6 +483,14 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is
   - **Symptom:** Local shows old season, live works fine
   - **Fix:** Hard refresh (CTRL+SHIFT+R) or clear all cache
   - **Prevention:** Disable cache during development (F12 → Network → Disable cache)
+- **Leaderboard Auto-Reset Logic** - Count total scores across ALL games (December 1, 2025)
+  - **Issue:** Per-game checking caused false negatives
+  - **Fix:** Count `WHERE season = ? AND game IN ('tetris', 'snake', 'space_invaders')` >= 3
+  - **Impact:** Leaderboard now auto-switches correctly when 3+ total scores exist
+- **Dynamic Status Updates** - All season messages should be dynamic (December 1, 2025)
+  - **Issue:** Hardcoded messages don't update with season status
+  - **Fix:** Use API `is_frozen` flag to update all banners dynamically
+  - **Impact:** All messages stay synchronized with actual season status
 
 ---
 
@@ -480,7 +508,7 @@ sqlite3 /var/www/html/db/narrrf_world.sqlite "SELECT * FROM tbl_seasons WHERE is
 ---
 
 **RULE CREATED:** October 6, 2025  
-**LAST UPDATED:** November 3, 2025 (v3.2 - Season 5 Complete Launch)  
+**LAST UPDATED:** December 1, 2025 (v5.0 - Season 6 Live Launch)  
 **STATUS:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**  
 **PURPOSE:** Professional Season Reset Operations with Historical Data Preservation  
 **SCOPE:** All future season resets, all team members, all environments  
@@ -623,3 +651,142 @@ After every season reset, MUST update 8 files to prevent errors and ensure prope
 This preserves complete player gaming history across unlimited seasons and enables the "All-Time Statistics" feature on profile pages.
 
 **Failure to archive = Permanent loss of that season's player data!**
+
+---
+
+## 🎉 **VERSION 5.0 - SEASON 6 LIVE LAUNCH (DECEMBER 1, 2025)**
+
+### **✅ SEASON 6 IS NOW LIVE - ALL SYSTEMS OPERATIONAL**
+
+**Date:** December 1, 2025  
+**Status:** ✅ **SEASON 6 RUNNING - FULLY OPERATIONAL**  
+**Launch:** Successfully deployed with all new features
+
+### **🚀 NEW FEATURES DEPLOYED WITH SEASON 6:**
+
+#### **1. DSPOINC Scores Overview Feature** ✅
+- **Location:** All 3 game pages (Tetris, Snake, Space Invaders)
+- **Functionality:** Shows complete DSPOINC reward breakdowns
+- **Content:**
+  - Regular gameplay rewards
+  - All boss rewards (9 bosses per game)
+  - Role-based multipliers
+  - Total potential DSPOINC per game
+- **Impact:** Players can now see exactly how much they can earn before playing!
+
+#### **2. Dynamic Leaderboard Auto-Reset System** ✅
+- **File:** `api/dev/get-leaderboard.php`
+- **Functionality:** Automatically switches from frozen Season 5 to active Season 6
+- **Trigger:** When 3+ total scores are recorded across all games
+- **Logic:** Counts total scores across ALL games (not per game)
+- **Impact:** Leaderboard automatically updates without manual intervention
+
+#### **3. Dynamic Season Status Updates** ✅
+- **File:** `public/profile.html`
+- **Functionality:** All season status messages update automatically
+- **Updates:**
+  - Top season banner
+  - Main season banner
+  - Wallet & Traits banner
+  - Mint section status
+  - Store banner
+  - Leaderboard header
+- **Visual:** Blue theme (frozen) → Green theme (active)
+- **Impact:** All messages stay synchronized with actual season status
+
+#### **4. Space Invaders Bug Fixes** ✅
+- Fixed Giant Cheese Boss explosion cleanup
+- Fixed falling cheese blocks cleanup
+- Fixed shot messages frequency (reduced spam)
+- Fixed player ship spawn position (better mobile experience)
+
+#### **5. Season 6 Theming Complete** ✅
+- All pages updated: "Starting Soon" → "Season 6 Running"
+- Files updated: `index.html`, `profile.html`, `project-updates.html`
+- Color scheme: Blue/Purple → Green/Emerald (active status)
+- Icons: ⏸️ → 🎮 (frozen → active)
+
+### **🔧 CRITICAL FIXES FOR FUTURE RESETS:**
+
+#### **Leaderboard Auto-Reset Logic (NEW - December 1, 2025):**
+- **Issue:** Leaderboard didn't switch from frozen to active after 3 games
+- **Root Cause:** API checked per-game scores instead of total scores across all games
+- **Fix:** Changed logic to count total scores across ALL 3 games combined
+- **File:** `api/dev/get-leaderboard.php`
+- **Pattern:** Check `COUNT(*) WHERE season = ? AND game IN ('tetris', 'snake', 'space_invaders')` >= 3
+- **Result:** Leaderboard now auto-switches correctly when 3+ total scores exist
+
+#### **Dynamic Season Status Updates (NEW - December 1, 2025):**
+- **Issue:** Hardcoded "Season 6 Starting Soon" messages throughout profile page
+- **Root Cause:** Static HTML didn't update based on leaderboard status
+- **Fix:** Created `loadLeaderboard()` function that updates all banners dynamically
+- **File:** `public/profile.html`
+- **Pattern:** Check `is_frozen` flag from API, update all banners accordingly
+- **Result:** All season status messages now update automatically
+
+### **📋 POST-LAUNCH VERIFICATION (DECEMBER 1, 2025):**
+
+**✅ Verified Working:**
+- Leaderboard auto-switches from frozen to active (after 3 scores)
+- All season status banners update dynamically
+- DSPOINC Scores buttons work on all 3 games
+- Role multipliers active and working
+- Boss rewards display correctly
+- Space Invaders bug fixes working
+- All "Season 6 Running" messages display correctly
+
+**✅ Ready for Players:**
+- Season 6 is live and active
+- All new features deployed
+- Dynamic systems operational
+- Ready for Twitter announcement
+
+### **📝 LESSONS LEARNED:**
+
+1. **Leaderboard Auto-Reset:**
+   - Must count total scores across ALL games (not per game)
+   - One player playing 3 games (1 each) = 3 total scores = should trigger switch
+   - Previous logic checked per-game, causing false negatives
+
+2. **Dynamic Status Updates:**
+   - All season status messages should be dynamic (not hardcoded)
+   - Use API `is_frozen` flag to determine status
+   - Update all banners, messages, and themes together
+   - Ensures consistency across entire page
+
+3. **Frontend Theming:**
+   - Update all pages simultaneously for consistency
+   - Use color coding: Blue (frozen) → Green (active)
+   - Update icons: ⏸️ (frozen) → 🎮 (active)
+
+### **🎯 FOR FUTURE SEASON RESETS:**
+
+**MANDATORY ADDITIONAL STEPS (NEW - December 1, 2025):**
+
+1. **Verify Leaderboard Auto-Reset Logic:**
+   - Test that leaderboard switches after 3 scores
+   - Verify total score counting works correctly
+   - Check that all banners update dynamically
+
+2. **Update Dynamic Status System:**
+   - Ensure `loadLeaderboard()` function works
+   - Verify all banner IDs exist and update correctly
+   - Test frozen → active transition
+
+3. **Frontend Theming:**
+   - Update all "Starting Soon" → "Running" messages
+   - Update color schemes (Blue → Green)
+   - Update icons (⏸️ → 🎮)
+
+### **🚀 SEASON 6 STATUS:**
+
+- **Active:** ✅ Season 6 is live and running
+- **Duration:** 30 days (Nov 30 - Dec 30, 2025)
+- **Features:** All new features deployed and working
+- **Leaderboard:** Auto-switches from frozen to active
+- **Status Messages:** All update dynamically
+- **Ready:** ✅ Ready for players and announcement
+
+---
+
+**SEASON 6 IS LIVE! 🎮**

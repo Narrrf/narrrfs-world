@@ -2830,7 +2830,7 @@
     <!-- 🚀 CONSOLIDATED GAME MANAGEMENT TAB - ENTERPRISE SEASON CONTROL -->
     <div class="admin-card mb-6" id="gamesTab" style="display: none;">
       <h2 class="text-xl font-semibold mb-4">🎮 Game Management - Enterprise Season Control</h2>
-      <p class="text-gray-300 mb-4">Comprehensive management for all 5 games with season control, statistics, and advanced features.</p>
+      <p class="text-gray-300 mb-4">Comprehensive management for all 6 games with season control, statistics, and advanced features.</p>
       
       <!-- 🚀 ENHANCED: Season Management Header -->
       <div class="mb-6 bg-gradient-to-r from-blue-900 to-purple-900 p-4 rounded-lg border border-blue-700">
@@ -2872,6 +2872,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="space-invaders" onclick="forceLoadTabOnClick('space-invaders')">👾 Space Invaders</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-hunt" onclick="forceLoadTabOnClick('cheese-hunt')">🧀 Cheese Hunt</button>
         <button class="tab-btn px-4 py-2 rounded" data-game-tab="discord-race" onclick="forceLoadTabOnClick('discord-race')">🏁 Discord Race</button>
+        <button class="tab-btn px-4 py-2 rounded" data-game-tab="cheese-rumble" onclick="forceLoadTabOnClick('cheese-rumble')">💥 Cheese Rumble</button>
       </div>
       
       <!-- 🚀 ENHANCED: Action Buttons -->
@@ -3005,12 +3006,7 @@
               <label class="block text-sm font-medium mb-2">📅 Select Season:</label>
               <select id="seasonSelector" class="w-full px-3 py-2 rounded text-gray-800" onchange="loadSeasonStats()">
                 <option value="current" selected>Current Season</option>
-                <option value="season_5">Season 5</option>
-                <option value="season_4">Season 4 - The Ultimate Cheese Challenge</option>
-                <option value="season_3">Season 3 - The Ultimate Cheese Challenge (Historical)</option>
-                <option value="season_2">Season 2 - The Great Reset</option>
-                <option value="season_1">Season 1 - Historical</option>
-                <option value="all">All Seasons Combined</option>
+                <!-- Seasons will be dynamically populated by updateSeasonSelector() -->
               </select>
             </div>
             <div>
@@ -3022,6 +3018,7 @@
                 <option value="space_invaders">Space Invaders Only</option>
                 <option value="cheese_hunt">Cheese Hunt Only</option>
                 <option value="discord_race">Discord Race Only</option>
+                <option value="cheese_rumble">Cheese Rumble Only</option>
               </select>
             </div>
           </div>
@@ -3664,6 +3661,124 @@
         </div>
       </div>
 
+      <!-- Cheese Rumble Tab -->
+      <div id="cheeseRumbleTab" class="game-tab-content" style="display: none;">
+        <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-3">💥 Cheese Rumble Management</h3>
+          
+          <!-- Cheese Rumble Statistics -->
+          <div class="game-stats-grid">
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>💥</span>
+                <span>Rumble Statistics</span>
+              </div>
+              <div class="game-stat-value" id="rumbleTotalRumbles">-</div>
+              <div class="game-stat-label">Total Rumbles</div>
+              <div class="game-stat-subvalue">Participants: <span id="rumbleTotalParticipants" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Winners: <span id="rumbleTotalWinners" class="text-green-400">-</span></div>
+            </div>
+
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>👥</span>
+                <span>Participation</span>
+              </div>
+              <div class="game-stat-value" id="rumbleCompletedRumbles">-</div>
+              <div class="game-stat-label">Completed Rumbles</div>
+              <div class="game-stat-subvalue">Active: <span id="rumbleActiveRumbles" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Avg: <span id="rumbleAvgParticipants" class="text-green-400">-</span></div>
+            </div>
+
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>📊</span>
+                <span>Performance</span>
+              </div>
+              <div class="game-stat-value" id="rumbleSuccessRate">-</div>
+              <div class="game-stat-label">Success Rate</div>
+              <div class="game-stat-subvalue">Podiums: <span id="rumbleTotalPodiums" class="text-blue-400">-</span></div>
+              <div class="game-stat-subvalue">Top: <span id="rumbleTopWinner" class="text-yellow-400">-</span></div>
+            </div>
+
+            <div class="game-stat-card">
+              <div class="game-stat-header">
+                <span>⚙️</span>
+                <span>Rumble Settings</span>
+              </div>
+              <div class="game-stat-value" id="rumbleStatus">🟢 Active</div>
+              <div class="game-stat-label">Bot status</div>
+              <div class="game-stat-subvalue">Unique: <span id="rumbleUniqueWinners" class="text-blue-400">-</span></div>
+            </div>
+          </div>
+
+          <!-- Cheese Rumble Leaderboard -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-orange-400 mb-3">🏆 Top 10 Rumble Champions</h4>
+            <div id="rumbleLeaderboard" class="space-y-2">
+              <div class="text-gray-400 text-center">Loading leaderboard...</div>
+            </div>
+          </div>
+
+          <!-- Rumble Overview Table -->
+          <div class="bg-gray-700 p-4 rounded mb-4">
+            <h4 class="font-semibold text-orange-400 mb-3">💥 Rumble Overview</h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-gray-600">
+                    <th class="text-left p-2">Rumble ID</th>
+                    <th class="text-left p-2">Creator</th>
+                    <th class="text-left p-2">Status</th>
+                    <th class="text-left p-2">Players</th>
+                    <th class="text-left p-2">Created</th>
+                    <th class="text-left p-2">Duration</th>
+                    <th class="text-left p-2">Reward</th>
+                    <th class="text-left p-2">Winner</th>
+                  </tr>
+                </thead>
+                <tbody id="rumbleOverviewTable">
+                  <tr>
+                    <td colspan="8" class="text-center p-4 text-gray-400">Loading rumble overview...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Rumble Activity -->
+          <div class="activity-section">
+            <div class="activity-header">
+              <h4 class="activity-title">
+                <span class="activity-icon">📈</span>
+                Recent Rumble Activity
+              </h4>
+              <div class="activity-actions">
+                <button class="activity-action-btn" onclick="refreshRumbleActivity()">
+                  <span class="action-icon">🔄</span>Refresh
+                </button>
+              </div>
+            </div>
+            <div class="activity-content">
+              <div id="recentRumbleActivity" class="activity-list">
+                <div class="activity-loading">
+                  <div class="loading-spinner"></div>
+                  <span>Loading recent activity...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cheese Rumble Actions -->
+          <div class="flex flex-wrap gap-3">
+            <button onclick="loadCheeseRumbleData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded admin-button">🔄 Refresh Data</button>
+            <button onclick="syncCheeseRumbleData()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded admin-button">🔄 Sync Discord Bot</button>
+            <button onclick="exportRumbleData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded admin-button">📊 Export Data</button>
+            <button onclick="manageRumbleBot()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded admin-button">🤖 Bot Settings</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Score Reset Management -->
       <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
         <h3 class="text-lg font-semibold mb-3">🔄 Score Reset Management</h3>
@@ -3674,12 +3789,13 @@
           <div>
             <label class="block text-sm font-medium mb-2">🎮 Select Game:</label>
             <select id="resetGameType" class="w-full px-3 py-2 rounded text-gray-800">
-              <option value="all">All Games (Tetris + Snake + Space Invaders + Cheese Hunt + Discord Race)</option>
+              <option value="all">All Games (Tetris + Snake + Space Invaders + Cheese Hunt + Discord Race + Cheese Rumble)</option>
               <option value="tetris">🟦 Tetris Only</option>
               <option value="snake">🐍 Snake Only</option>
               <option value="space_invaders">👾 Space Invaders Only</option>
               <option value="cheese_hunt">🧀 Cheese Hunt Only</option>
               <option value="discord_race">🏁 Discord Race Only</option>
+              <option value="cheese_rumble">💥 Cheese Rumble Only</option>
             </select>
           </div>
 
@@ -3729,7 +3845,7 @@
       </div>
 
       <!-- Top Players -->
-      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <!-- Tetris Top Players -->
         <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
           <h4 class="font-semibold text-blue-400 mb-3">🟦 Tetris Top Players</h4>
@@ -3753,10 +3869,18 @@
             <div class="text-gray-300">Loading top players...</div>
           </div>
         </div>
+
+        <!-- Cheese Rumble Top Players -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-orange-400 mb-3">💥 Cheese Rumble Top Players</h4>
+          <div id="rumbleTopPlayers" class="space-y-2 max-h-64 overflow-y-auto">
+            <div class="text-gray-300">Loading top players...</div>
+          </div>
+        </div>
       </div>
       
       <!-- Additional Game Statistics -->
-      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Cheese Hunt Statistics -->
         <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
           <h4 class="font-semibold text-yellow-400 mb-3">🧀 Cheese Hunt Statistics</h4>
@@ -3770,6 +3894,14 @@
           <h4 class="font-semibold text-purple-400 mb-3">🏁 Discord Race Statistics</h4>
           <div id="discordRaceStats" class="space-y-2">
             <div class="text-gray-300">Loading discord race stats...</div>
+          </div>
+        </div>
+
+        <!-- Cheese Rumble Statistics -->
+        <div class="bg-gray-800 bg-opacity-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-orange-400 mb-3">💥 Cheese Rumble Statistics</h4>
+          <div id="cheeseRumbleStats" class="space-y-2">
+            <div class="text-gray-300">Loading cheese rumble stats...</div>
           </div>
         </div>
       </div>
@@ -5721,6 +5853,10 @@
             gameName = 'Discord Race';
             loadFunction = () => loadDiscordRaceData();
             break;
+          case 'cheeseRumbleTab':
+            gameName = 'Cheese Rumble';
+            loadFunction = () => loadCheeseRumbleData();
+            break;
           default:
             addLog(`❌ Unknown tab type: ${tabId}`);
             return;
@@ -6224,8 +6360,24 @@
             displayOverviewDiscordRaceStats({});
           }
           
-          console.log('✅ Overview game statistics loaded successfully for all 5 games');
-          addLog('✅ Overview game statistics loaded successfully for all 5 games');
+          // Load Cheese Rumble statistics
+          if (games.cheese_rumble) {
+            console.log('💥 Cheese Rumble data found:', games.cheese_rumble);
+            displayOverviewCheeseRumbleStats(games.cheese_rumble);
+            // Load Cheese Rumble top players
+            if (games.cheese_rumble.season_data && games.cheese_rumble.season_data.top_players) {
+              displayOverviewRumbleTopPlayers(games.cheese_rumble.season_data.top_players);
+            } else {
+              displayOverviewRumbleTopPlayers([]);
+            }
+          } else {
+            console.log('⚠️ No Cheese Rumble data found');
+            displayOverviewCheeseRumbleStats({});
+            displayOverviewRumbleTopPlayers([]);
+          }
+          
+          console.log('✅ Overview game statistics loaded successfully for all 6 games');
+          addLog('✅ Overview game statistics loaded successfully for all 6 games');
           
           // Update dashboard status
           updateDashboardStatus('Games data loaded');
@@ -6241,6 +6393,8 @@
           displayOverviewSpaceInvadersTopPlayers({});
           displayOverviewCheeseHuntStats({});
           displayOverviewDiscordRaceStats({});
+          displayOverviewCheeseRumbleStats({});
+          displayOverviewRumbleTopPlayers([]);
         }
       } catch (error) {
         console.error(`❌ Overview game statistics loading error: ${error.message}`);
@@ -6470,6 +6624,41 @@
       }
     }
 
+    // Display Cheese Rumble top players in Overview Dashboard
+    function displayOverviewRumbleTopPlayers(players) {
+      const container = document.getElementById('rumbleTopPlayers');
+      if (!container) {
+        console.error('Cheese Rumble top players container not found');
+        return;
+      }
+
+      try {
+        if (players && players.length > 0) {
+          container.innerHTML = players.slice(0, 5).map((player, index) => `
+            <div class="flex justify-between items-center p-2 bg-gray-700 rounded hover:bg-gray-600 transition-colors">
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-semibold text-gray-300">#${index + 1}</span>
+                <div>
+                  <div class="text-sm font-semibold text-white">${player.username || 'Unknown'}</div>
+                  <div class="text-xs text-gray-400">${player.user_id || 'N/A'}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-bold text-orange-400">${player.wins || 0} win${player.wins !== 1 ? 's' : ''}</div>
+                <div class="text-xs text-gray-400">${player.total_rumbles || 0} rumbles</div>
+                <div class="text-xs text-yellow-400">${(player.total_dspoinc || 0).toLocaleString()} DSPOINC</div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<div class="text-gray-400 text-sm">No players found</div>';
+        }
+      } catch (error) {
+        console.error('Error displaying overview Cheese Rumble top players:', error);
+        container.innerHTML = '<div class="text-red-400">Error loading Cheese Rumble top players</div>';
+      }
+    }
+
     // Display Cheese Hunt statistics in Overview Dashboard
     function displayOverviewCheeseHuntStats(cheeseData) {
       const statsElement = document.getElementById('cheeseHuntStats');
@@ -6548,6 +6737,45 @@
       } catch (error) {
         console.error('Error displaying overview Discord Race stats:', error);
         statsElement.innerHTML = '<div class="text-red-400">Error loading Discord Race statistics</div>';
+      }
+    }
+
+    function displayOverviewCheeseRumbleStats(rumbleData) {
+      const statsElement = document.getElementById('cheeseRumbleStats');
+      if (!statsElement) {
+        console.error('Cheese Rumble stats element not found');
+        return;
+      }
+
+      try {
+        const rumbleStats = rumbleData.season_data || {};
+        
+        statsElement.innerHTML = `
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Total Rumbles</div>
+              <div class="text-xl font-bold text-orange-400">${rumbleStats.total_rumbles || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Total Participants</div>
+              <div class="text-xl font-bold text-blue-400">${rumbleStats.unique_players || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Total Wins</div>
+              <div class="text-xl font-bold text-yellow-400">${rumbleStats.wins || 0}</div>
+            </div>
+            <div class="bg-gray-700 p-3 rounded-lg">
+              <div class="text-sm text-gray-400">Recent 24h</div>
+              <div class="text-xl font-bold text-green-400">${rumbleStats.recent_24h || 0}</div>
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-gray-400">
+            Recent 7d: ${rumbleStats.recent_7d || 0} | Podiums: ${rumbleStats.podiums || 0}
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error displaying overview Cheese Rumble stats:', error);
+        statsElement.innerHTML = '<div class="text-red-400">Error loading Cheese Rumble statistics</div>';
       }
     }
 
@@ -13308,7 +13536,8 @@ function updateGameTabContent(gameType, gameData) {
         'space-invaders': 'spaceInvadersTab',
         'cheese-invaders': 'cheeseInvadersTab',
         'cheese-hunt': 'cheeseHuntTab',
-        'discord-race': 'discordRaceTab'
+        'discord-race': 'discordRaceTab',
+        'cheese-rumble': 'cheeseRumbleTab'
       };
       
       // Show selected tab and activate button
@@ -13382,6 +13611,10 @@ function updateGameTabContent(gameType, gameData) {
             case 'discord-race':
               console.log('🚀 FORCE LOADING Discord Race data...');
               await forceLoadDiscordRaceData();
+              break;
+            case 'cheese-rumble':
+              console.log('🚀 FORCE LOADING Cheese Rumble data...');
+              await loadCheeseRumbleData();
               break;
             default:
               console.log('❌ Unknown tab:', tabName);
@@ -13506,6 +13739,14 @@ function updateGameTabContent(gameType, gameData) {
             if (game.current_data && game.current_data.total_clicks) {
               return sum + game.current_data.total_clicks;
             }
+            if (game.season_data && game.season_data.total_rumbles) {
+              // Cheese Rumble uses total_rumbles
+              return sum + game.season_data.total_rumbles;
+            }
+            if (game.season_data && game.season_data.total_races) {
+              // Discord Race uses total_races
+              return sum + game.season_data.total_races;
+            }
             return sum;
           }, 0);
           
@@ -13560,6 +13801,11 @@ function updateGameTabContent(gameType, gameData) {
             if (game.race_data) {
               totalScores += game.race_data.total_races || 0;
               totalPlayers += game.race_data.total_participants || 0;
+            }
+            if (game.season_data && game.season_data.total_rumbles) {
+              // Cheese Rumble uses season_data with total_rumbles
+              totalScores += game.season_data.total_rumbles || 0;
+              totalPlayers += game.season_data.unique_players || 0;
             }
           });
           
@@ -15608,6 +15854,284 @@ function updateGameTabContent(gameType, gameData) {
       document.body.appendChild(modal);
       addLog(`📈 Showing all ${activities.length} race activities`);
     }
+
+    // Cheese Rumble Tab Functions
+    async function loadCheeseRumbleData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('💥 Loading Cheese Rumble data...');
+
+      // Show loading state
+      const rumbleTab = document.getElementById('cheeseRumbleTab');
+      if (rumbleTab) {
+        rumbleTab.classList.add('loading');
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.id = 'rumbleLoading';
+        loadingIndicator.className = 'fixed top-4 right-4 bg-orange-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        loadingIndicator.innerHTML = '🔄 Loading Cheese Rumble Data...';
+        document.body.appendChild(loadingIndicator);
+      }
+
+      try {
+        const response = await fetch(API_BASE_URL + '/api/admin/get-all-games-stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.games && data.data.games.cheese_rumble) {
+          displayCheeseRumbleData(data.data.games.cheese_rumble);
+          addLog('✅ Cheese Rumble data loaded successfully');
+        } else {
+          addLog(`❌ Failed to load Cheese Rumble data: ${data.error || 'No data available'}`);
+          displayCheeseRumbleData(null);
+        }
+      } catch (error) {
+        addLog(`❌ Cheese Rumble data loading error: ${error.message}`);
+        displayCheeseRumbleData(null);
+      } finally {
+        if (rumbleTab) {
+          rumbleTab.classList.remove('loading');
+        }
+        const loadingIndicator = document.getElementById('rumbleLoading');
+        if (loadingIndicator) {
+          loadingIndicator.remove();
+        }
+      }
+    }
+
+    function displayCheeseRumbleData(rumbleData) {
+      try {
+        console.log('🔍 DEBUG: displayCheeseRumbleData called with:', rumbleData);
+        
+        const gamesTab = document.getElementById('gamesTab');
+        if (!gamesTab || gamesTab.style.display === 'none') {
+          console.log('⚠️ Games tab not visible, deferring Cheese Rumble data display');
+          window.pendingCheeseRumbleData = rumbleData;
+          return;
+        }
+
+        if (!rumbleData || !rumbleData.season_data) {
+          // Show empty state
+          if (document.getElementById('rumbleTotalRumbles')) {
+            document.getElementById('rumbleTotalRumbles').textContent = '0';
+          }
+          if (document.getElementById('rumbleTotalParticipants')) {
+            document.getElementById('rumbleTotalParticipants').textContent = '0';
+          }
+          if (document.getElementById('rumbleTotalWinners')) {
+            document.getElementById('rumbleTotalWinners').textContent = '0';
+          }
+          if (document.getElementById('rumbleLeaderboard')) {
+            document.getElementById('rumbleLeaderboard').innerHTML = '<div class="text-gray-400 text-center">No rumbles found yet</div>';
+          }
+          if (document.getElementById('rumbleOverviewTable')) {
+            document.getElementById('rumbleOverviewTable').innerHTML = '<tr><td colspan="8" class="text-center p-4 text-gray-400">No rumbles available</td></tr>';
+          }
+          return;
+        }
+
+        const seasonData = rumbleData.season_data;
+        
+        // Update statistics
+        if (document.getElementById('rumbleTotalRumbles')) {
+          document.getElementById('rumbleTotalRumbles').textContent = (seasonData.total_rumbles || 0).toLocaleString();
+        }
+        if (document.getElementById('rumbleTotalParticipants')) {
+          document.getElementById('rumbleTotalParticipants').textContent = (seasonData.unique_players || 0).toLocaleString();
+        }
+        if (document.getElementById('rumbleTotalWinners')) {
+          document.getElementById('rumbleTotalWinners').textContent = (seasonData.wins || 0).toLocaleString();
+        }
+        if (document.getElementById('rumbleCompletedRumbles')) {
+          document.getElementById('rumbleCompletedRumbles').textContent = (seasonData.total_rumbles || 0).toLocaleString();
+        }
+        if (document.getElementById('rumbleActiveRumbles')) {
+          document.getElementById('rumbleActiveRumbles').textContent = '0';
+        }
+        if (document.getElementById('rumbleAvgParticipants')) {
+          const avg = seasonData.total_rumbles > 0 ? Math.round((seasonData.unique_players || 0) / seasonData.total_rumbles) : 0;
+          document.getElementById('rumbleAvgParticipants').textContent = avg;
+        }
+        if (document.getElementById('rumbleSuccessRate')) {
+          const successRate = seasonData.total_rumbles > 0 ? Math.round(((seasonData.wins || 0) / seasonData.total_rumbles) * 100) : 0;
+          document.getElementById('rumbleSuccessRate').textContent = successRate + '%';
+        }
+        if (document.getElementById('rumbleTotalPodiums')) {
+          document.getElementById('rumbleTotalPodiums').textContent = (seasonData.podiums || 0).toLocaleString();
+        }
+        if (document.getElementById('rumbleTopWinner')) {
+          document.getElementById('rumbleTopWinner').textContent = seasonData.wins > 0 ? 'Champion' : 'Coming Soon';
+        }
+        if (document.getElementById('rumbleUniqueWinners')) {
+          document.getElementById('rumbleUniqueWinners').textContent = (seasonData.wins || 0).toLocaleString();
+        }
+        if (document.getElementById('rumbleStatus')) {
+          document.getElementById('rumbleStatus').textContent = '🟢 Active';
+        }
+
+        // Update leaderboard with actual data
+        const rumbleLeaderboard = document.getElementById('rumbleLeaderboard');
+        if (rumbleLeaderboard) {
+          const topPlayers = seasonData.top_players || [];
+          if (topPlayers.length > 0) {
+            rumbleLeaderboard.innerHTML = `
+              <div class="space-y-3">
+                ${topPlayers.map((player, index) => {
+                  const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
+                  return `
+                    <div class="flex items-center justify-between p-3 bg-gray-600 bg-opacity-50 rounded-lg border border-gray-500">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-orange-400 text-black rounded-full flex items-center justify-center font-bold text-sm">
+                          ${rankEmoji} ${index + 1}
+                        </div>
+                        <div>
+                          <div class="font-semibold text-white">${player.username || `User ${player.user_id}`}</div>
+                          <div class="text-xs text-gray-300">ID: ${player.user_id}</div>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <div class="text-green-400 font-semibold">${player.wins || 0} win${player.wins !== 1 ? 's' : ''}</div>
+                        <div class="text-xs text-gray-300">${player.total_rumbles || 0} rumbles, ${player.podiums || 0} podiums</div>
+                        <div class="text-xs text-yellow-400">${(player.total_dspoinc || 0).toLocaleString()} DSPOINC</div>
+                        <div class="text-xs text-blue-400">Best: #${player.best_position || 'N/A'}</div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `;
+          } else {
+            rumbleLeaderboard.innerHTML = `
+              <div class="text-center mb-4">
+                <div class="text-3xl font-bold text-orange-400">${seasonData.total_rumbles || 0}</div>
+                <div class="text-sm text-gray-300">Total Rumbles This Season</div>
+              </div>
+              <div class="bg-gray-600 p-4 rounded-lg text-center">
+                <div class="text-gray-300 mb-2">🏆 Top Players</div>
+                <div class="text-sm text-gray-400">No players yet</div>
+              </div>
+            `;
+          }
+        }
+
+        // Update overview table with actual data
+        const rumbleOverviewTable = document.getElementById('rumbleOverviewTable');
+        if (rumbleOverviewTable) {
+          const rumbleOverview = seasonData.rumble_overview || [];
+          if (rumbleOverview.length > 0) {
+            rumbleOverviewTable.innerHTML = rumbleOverview.map((rumble, index) => {
+              const statusColor = rumble.status === 'finished' ? 'bg-green-600' : 
+                                  rumble.status === 'active' ? 'bg-blue-600' : 
+                                  rumble.status === 'waiting' ? 'bg-yellow-600' : 'bg-gray-600';
+              const statusEmoji = rumble.status === 'finished' ? '✅' : 
+                                  rumble.status === 'active' ? '🔄' : 
+                                  rumble.status === 'waiting' ? '⏳' : '❓';
+              const createdDate = rumble.created_at ? new Date(rumble.created_at.replace('T', ' ').replace('Z', '')).toLocaleString() : 'N/A';
+              return `
+                <tr class="border-b border-gray-600 hover:bg-gray-600 transition-colors">
+                  <td class="p-2 text-xs font-mono text-blue-400">${rumble.rumble_id ? rumble.rumble_id.substring(0, 12) + '...' : 'N/A'}</td>
+                  <td class="p-2 text-white font-semibold">${rumble.creator_name || 'Unknown'}</td>
+                  <td class="p-2">
+                    <span class="px-2 py-1 text-xs rounded-full ${statusColor} text-white">
+                      ${statusEmoji} ${rumble.status || 'Unknown'}
+                    </span>
+                  </td>
+                  <td class="p-2 text-center">
+                    <span class="text-blue-400 font-semibold">${rumble.participant_count || 0}</span>
+                    <span class="text-gray-400 text-xs">/${rumble.max_players || '?'}</span>
+                  </td>
+                  <td class="p-2 text-xs text-gray-300">${createdDate}</td>
+                  <td class="p-2 text-xs text-gray-300">${rumble.duration ? Math.round(rumble.duration / 60) + ' min' : 'N/A'}</td>
+                  <td class="p-2 text-yellow-400 font-semibold">${(rumble.dspoinc_reward || 0).toLocaleString()}</td>
+                  <td class="p-2 text-xs text-green-400">${rumble.winner_name || 'N/A'}</td>
+                </tr>
+              `;
+            }).join('');
+          } else {
+            rumbleOverviewTable.innerHTML = `
+              <tr>
+                <td colspan="8" class="text-center p-4 text-gray-400">
+                  <div class="text-lg mb-2">💥 ${seasonData.total_rumbles || 0} Rumbles This Season</div>
+                  <div class="text-sm text-gray-500">No rumbles found</div>
+                </td>
+              </tr>
+            `;
+          }
+        }
+
+        // Update recent activity
+        const recentActivity = document.getElementById('recentRumbleActivity');
+        if (recentActivity) {
+          recentActivity.innerHTML = `
+            <div class="activity-item">
+              <div class="activity-icon">💥</div>
+              <div class="activity-content">
+                <div class="activity-title">Recent Activity</div>
+                <div class="activity-description">
+                  ${seasonData.recent_24h || 0} rumbles in last 24h | ${seasonData.recent_7d || 0} rumbles in last 7 days
+                </div>
+              </div>
+              <div class="activity-time">Just now</div>
+            </div>
+          `;
+        }
+
+        console.log('✅ Successfully updated Cheese Rumble statistics');
+      } catch (error) {
+        console.error('Error displaying Cheese Rumble data:', error);
+        addLog(`❌ Error displaying Cheese Rumble data: ${error.message}`);
+      }
+    }
+
+    async function syncCheeseRumbleData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Syncing Cheese Rumble data with bot...');
+      showNotification('🔄 Sync Started', 'Syncing Cheese Rumble data with Discord bot...', 'info');
+      
+      setTimeout(() => {
+        loadCheeseRumbleData();
+        showNotification('✅ Sync Complete', 'Cheese Rumble data synchronized!', 'success');
+      }, 1000);
+    }
+
+    async function exportRumbleData() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('📊 Exporting Cheese Rumble data...');
+      showNotification('📊 Export Started', 'Preparing Cheese Rumble data export...', 'info');
+      
+      setTimeout(() => {
+        showNotification('✅ Export Ready', 'Cheese Rumble data export feature coming soon', 'success');
+      }, 1000);
+    }
+
+    async function manageRumbleBot() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🤖 Opening Cheese Rumble bot settings...');
+      showNotification('🤖 Bot Settings', 'Cheese Rumble bot management coming soon', 'info');
+    }
+
+    async function refreshRumbleActivity() {
+      if (!currentAdmin) {
+        addLog('❌ Please authenticate first');
+        return;
+      }
+
+      addLog('🔄 Refreshing Cheese Rumble activity...');
+      await loadCheeseRumbleData();
+    }
     
     async function refreshCheeseHuntDisplay() {
       console.log('🧀 Refreshing Cheese Hunt display...');
@@ -16284,8 +16808,8 @@ function updateGameTabContent(gameType, gameData) {
           </div>
         </div>
         
-        <!-- Second Row for Cheese Hunt and Discord Race -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <!-- Second Row for Cheese Hunt, Discord Race, and Cheese Rumble -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div class="bg-gray-700 p-3 rounded">
             <h5 class="font-semibold text-yellow-400 mb-2">🧀 Cheese Hunt Statistics</h5>
             ${data.season_stats.cheese_hunt ? `
@@ -16304,6 +16828,16 @@ function updateGameTabContent(gameType, gameData) {
               <p class="text-sm text-gray-300">Prizes Awarded: ${data.season_stats.discord_race.total_prizes_awarded ? data.season_stats.discord_race.total_prizes_awarded.toLocaleString() : '0'}</p>
               <p class="text-sm text-gray-300">Recent 24h: ${data.season_stats.discord_race.recent_24h ? data.season_stats.discord_race.recent_24h.toLocaleString() : '0'}</p>
               <p class="text-sm text-yellow-400">Active Racers: ${data.season_stats.discord_race.total_participants || '0'}</p>
+            ` : '<p class="text-sm text-gray-400">No data available</p>'}
+          </div>
+          <div class="bg-gray-700 p-3 rounded">
+            <h5 class="font-semibold text-orange-400 mb-2">💥 Cheese Rumble Statistics</h5>
+            ${data.season_stats.cheese_rumble ? `
+              <p class="text-sm text-gray-300">Total Rumbles: ${data.season_stats.cheese_rumble.total_rumbles ? data.season_stats.cheese_rumble.total_rumbles.toLocaleString() : '0'}</p>
+              <p class="text-sm text-gray-300">Total Participants: ${data.season_stats.cheese_rumble.total_participants ? data.season_stats.cheese_rumble.total_participants.toLocaleString() : '0'}</p>
+              <p class="text-sm text-gray-300">Total Wins: ${data.season_stats.cheese_rumble.total_wins ? data.season_stats.cheese_rumble.total_wins.toLocaleString() : '0'}</p>
+              <p class="text-sm text-gray-300">Recent 24h: ${data.season_stats.cheese_rumble.recent_24h ? data.season_stats.cheese_rumble.recent_24h.toLocaleString() : '0'}</p>
+              <p class="text-sm text-yellow-400">Podiums: ${data.season_stats.cheese_rumble.podiums || '0'}</p>
             ` : '<p class="text-sm text-gray-400">No data available</p>'}
           </div>
         </div>
@@ -16421,17 +16955,32 @@ function updateGameTabContent(gameType, gameData) {
 
     function updateSeasonSelector(availableSeasons) {
       const selector = document.getElementById('seasonSelector');
-      const currentOptions = selector.innerHTML;
+      const currentValue = selector.value; // Save current selection
       
       // Keep the "Current Season" option and add available seasons
       selector.innerHTML = '<option value="current">Current Season</option>';
       
-      availableSeasons.forEach(season => {
+      // Sort seasons in reverse order (newest first) and add to dropdown
+      const sortedSeasons = [...availableSeasons].sort((a, b) => {
+        // Extract season numbers for sorting
+        const numA = parseInt(a.replace(/[^0-9]/g, '')) || 0;
+        const numB = parseInt(b.replace(/[^0-9]/g, '')) || 0;
+        return numB - numA; // Descending order (6, 5, 4, ...)
+      });
+      
+      sortedSeasons.forEach(season => {
         const option = document.createElement('option');
-        option.value = season;
+        // Convert "Season 6" to "season_6" format for API
+        const seasonNum = season.replace(/[^0-9]/g, '');
+        option.value = seasonNum ? `season_${seasonNum}` : season;
         option.textContent = season;
         selector.appendChild(option);
       });
+      
+      // Restore previous selection if it still exists
+      if (currentValue && currentValue !== 'current') {
+        selector.value = currentValue;
+      }
     }
 
     function displayTopPlayers(gameType, players) {
@@ -23383,7 +23932,8 @@ function updateGameTabContent(gameType, gameData) {
       #snakeTab,
       #spaceInvadersTab,
       #cheeseHuntTab,
-      #discordRaceTab {
+      #discordRaceTab,
+      #cheeseRumbleTab {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;

@@ -179,7 +179,7 @@ error_log("📁 Using path: $imagePath (Production: " . ($isProduction ? 'YES' :
 
 ## 🎮 **GAME SCORING SYSTEM RULES**
 
-### **THE 5 GAMES AND THEIR TABLE DEPENDENCIES:**
+### **THE 6 GAMES AND THEIR TABLE DEPENDENCIES:**
 
 #### **1. Tetris** ✅
 - **Saves to:** `tbl_tetris_scores` (game: 'tetris')
@@ -206,12 +206,20 @@ error_log("📁 Using path: $imagePath (Production: " . ($isProduction ? 'YES' :
 - **Field:** `user_id` (contains Discord ID)
 - **API Structure:** `data.games.discord_race.race_data`
 
+#### **6. Cheese Rumble** ✅ (NEW - December 3, 2025)
+- **Saves to:** `tbl_rumble_participants` (different table)
+- **Field:** `user_id` (contains Discord ID)
+- **API Structure:** `data.games.cheese_rumble.rumble_data` (future integration)
+- **Game Type:** Text-based battle royale Discord game
+- **Rewards:** Winner gets configurable DSPOINC, first out gets 1,000 DSPOINC
+
 ### **CRITICAL RULES:**
 1. **ALWAYS use `discord_id` for Tetris, Snake, and Space Invaders SCORES**
 2. **ALWAYS use `user_wallet` for Cheese Hunt SCORES**
 3. **ALWAYS use `user_id` for Discord Race SCORES**
-4. **ALWAYS use the correct table for each game**
-5. **NEVER assume all games use the same field name**
+4. **ALWAYS use `user_id` for Cheese Rumble SCORES**
+5. **ALWAYS use the correct table for each game**
+6. **NEVER assume all games use the same field name**
 
 ---
 
@@ -724,7 +732,7 @@ Before creating ANY new API endpoint, you MUST:
 - **PREVENT table confusion** and duplication
 - **ENSURE database awareness** for all development
 
-### **CURRENT DATABASE TABLES (LIVE STATUS - 2025-11-12 - VERIFIED - 61 TOTAL):**
+### **CURRENT DATABASE TABLES (LIVE STATUS - 2025-12-03 - VERIFIED - 61 TOTAL):**
 - **boss_configurations** - Boss game configurations
 - **boss_level_notifications** - Boss level achievement notifications
 - **leaderboard** - Current season leaderboard
@@ -740,6 +748,7 @@ Before creating ANY new API endpoint, you MUST:
 - **tbl_cheese_clicks** - Cheese Hunt game clicks
 - **tbl_cheese_hunt_captures** - Three.js Cheese Temple hunt captures (November 12, 2025)
 - **tbl_cheese_races** - Discord Cheese Race events
+- **tbl_cheese_rumbles** - Cheese Rumble battle royale events (NEW - December 3, 2025)
 - **tbl_community_funds** - Community wallet funds tracking
 - **tbl_discord_events** - Discord bot events
 - **tbl_game_settings** - Game configuration settings
@@ -756,6 +765,7 @@ Before creating ANY new API endpoint, you MUST:
 - **tbl_quest_claims** - Quest reward claims
 - **tbl_quests** - Quest definitions
 - **tbl_race_participants** - Discord Race participants
+- **tbl_rumble_participants** - Cheese Rumble participants (NEW - December 3, 2025)
 - **tbl_rewards** - Reward definitions
 - **tbl_riddle_completions** - Three.js Cheese Temple riddle completions (November 12, 2025)
 - **tbl_role_grants** - Discord role grants
@@ -1231,7 +1241,7 @@ Write-Host "🚀 Ready for deployment to $EventName" -ForegroundColor Yellow
 ## 🎯 **PERFECT 5-GAME SCORE RETRIEVAL SYSTEM V2.0**
 
 ### **CRITICAL RULE FOR ALL GAME SCORING:**
-**When retrieving scores from any of the 5 games in Narrrf's World, you MUST use these exact field mappings and table references:**
+**When retrieving scores from any of the 6 games in Narrrf's World, you MUST use these exact field mappings and table references:**
 
 ### **GAME 1: TETRIS**
 - **Table:** `tbl_tetris_scores`
@@ -1263,6 +1273,14 @@ Write-Host "🚀 Ready for deployment to $EventName" -ForegroundColor Yellow
 - **Field:** `user_id` (contains Discord ID)
 - **Query:** `WHERE user_id = ?`
 - **API Structure:** `data.games.discord_race.race_data`
+
+### **GAME 6: CHEESE RUMBLE** ✅ (NEW - December 3, 2025)
+- **Table:** `tbl_rumble_participants`
+- **Field:** `user_id` (contains Discord ID)
+- **Query:** `WHERE user_id = ?`
+- **API Structure:** `data.games.cheese_rumble.rumble_data` (future integration)
+- **Game Type:** Text-based battle royale Discord game
+- **Rewards:** Winner gets configurable DSPOINC, first out gets 1,000 DSPOINC
 
 ---
 
@@ -1307,6 +1325,7 @@ Write-Host "🚀 Ready for deployment to $EventName" -ForegroundColor Yellow
 - **`tbl_user_scores`**: Contains Discord rewards and other adjustments
 - **`tbl_cheese_clicks`**: Contains Cheese Hunt click data
 - **`tbl_race_participants`**: Contains Discord Race participation data
+- **`tbl_rumble_participants`**: Contains Cheese Rumble participation data (NEW - December 3, 2025)
 - **`tbl_tetris_achievements`**: Contains Tetris achievements (separate API)
 - **`tbl_snake_achievements`**: Contains Snake achievements (integrated in missions API)
 - **`tbl_space_invaders_achievements`**: Contains Space Invaders achievements (integrated in missions API)
@@ -1315,6 +1334,7 @@ Write-Host "🚀 Ready for deployment to $EventName" -ForegroundColor Yellow
 - **Tetris, Snake, Space Invaders SCORES**: All use `discord_id` in `tbl_tetris_scores`
 - **Cheese Hunt SCORES**: Uses `user_wallet` in `tbl_cheese_clicks`
 - **Discord Race SCORES**: Uses `user_id` in `tbl_race_participants`
+- **Cheese Rumble SCORES**: Uses `user_id` in `tbl_rumble_participants` (NEW - December 3, 2025)
 - **ALL ACHIEVEMENTS**: Use `user_id` in their respective achievement tables
 
 ### **COMMON MISTAKES TO AVOID:**
@@ -1617,6 +1637,7 @@ const roleMultipliersByID = {
 - **`tbl_cheese_hunt_captures`** - For Three.js Cheese Temple hunt captures (November 12, 2025)
 - **`tbl_riddle_completions`** - For Three.js Cheese Temple riddle completions (November 12, 2025)
 - **`tbl_race_participants`** - For Discord Race participation tracking
+- **`tbl_rumble_participants`** - For Cheese Rumble participation tracking (NEW - December 3, 2025)
 
 ### **API Response Structure:**
 ```json
@@ -1630,7 +1651,8 @@ const roleMultipliersByID = {
       "cheese_hunt": { "current_data": {...} },
       "cheese_hunt_3d": { "current_data": {...} },
       "cheese_temple_riddles": { "current_data": {...} },
-      "discord_race": { "race_data": {...} }
+      "discord_race": { "race_data": {...} },
+      "cheese_rumble": { "rumble_data": {...} }
     }
   }
 }
@@ -1642,6 +1664,7 @@ const roleMultipliersByID = {
 - Mission status API queries `tbl_cheese_hunt_captures` for Three.js Cheese Temple hunt
 - Mission status API queries `tbl_riddle_completions` for Three.js Cheese Temple riddles
 - Mission status API queries `tbl_race_participants` for Discord Race
+- Mission status API queries `tbl_rumble_participants` for Cheese Rumble (future integration)
 - Admin interface displays data from consolidated API endpoints
 - All systems now properly synchronized
 
@@ -1739,7 +1762,7 @@ const roleMultipliersByID = {
 ## ⚠️ **FUTURE DEVELOPMENT RULES**
 
 ### **NEVER change the save-score.php logic without ensuring:**
-1. **All 5 games save to their required tables**
+1. **All 6 games save to their required tables**
 2. **Mission status API can find the data**
 3. **DSPOINC calculations remain consistent**
 4. **Admin interface continues to show all data**
@@ -1842,13 +1865,13 @@ const roleMultipliersByID = {
 - **Issue:** Snake and Space Invaders not showing in mission status
 - **Root Cause:** Not saving to `tbl_tetris_scores`
 - **Solution:** Modified `save-score.php` to save to both tables
-- **Result:** Mission status now shows all 5 games correctly
+- **Result:** Mission status now shows all 6 games correctly
 
 ### **2025-09-13: Admin Interface Fix Applied**
 - **Issue:** Discord Race showing "0" in admin interface
 - **Root Cause:** Wrong data structure references
 - **Solution:** Updated all Discord Race display functions
-- **Result:** All 5 games now display correctly in admin interface
+- **Result:** All 6 games now display correctly in admin interface
 
 ### **2025-09-13: System Status Update**
 - **Status:** 🟢 **FULLY OPERATIONAL**
@@ -1867,6 +1890,7 @@ const roleMultipliersByID = {
 - **Space Invaders:** ✅ Games played, best score, DSPOINC earned
 - **Cheese Hunt:** ✅ Total clicks, quest clicks, DSPOINC earned
 - **Discord Race:** ✅ Total races, wins, DSPOINC earned
+- **Cheese Rumble:** ✅ Total rumbles, wins, kills, DSPOINC earned
 
 ### **Admin Interface Should Show:**
 - **Tetris:** ✅ Total scores, unique players, max score, avg score
@@ -1874,6 +1898,7 @@ const roleMultipliersByID = {
 - **Space Invaders:** ✅ Total scores, unique players, max score, avg score
 - **Cheese Hunt:** ✅ Total clicks, unique players, recent activity
 - **Discord Race:** ✅ Total races, participants, winners, recent activity
+- **Cheese Rumble:** ✅ Total rumbles, participants, winners, kills, recent activity
 
 ### **Achievements Should Show:**
 - **Tetris:** ✅ All unlocked achievements with proper icons and descriptions
@@ -1881,15 +1906,15 @@ const roleMultipliersByID = {
 - **Space Invaders:** ✅ All unlocked achievements with proper icons and descriptions
 
 ### **Total Games Played:**
-- **Should show:** 5/5 Games Played
-- **Should NOT show:** 2/5 or 3/5 Games Played
+- **Should show:** 6/6 Games Played
+- **Should NOT show:** 2/6 or 3/6 Games Played
 
 ---
 
 ## 🚀 **CURRENT STATUS: FULLY OPERATIONAL**
 
 ### **✅ Working Systems:**
-- **Mission Status API:** ✅ Returning correct data for all 5 games
+- **Mission Status API:** ✅ Returning correct data for all 6 games
 - **User Profile Pages:** ✅ Displaying correct mission status
 - **Database Tables:** ✅ Properly synchronized
 - **Score System:** ✅ DSPOINC rewards working correctly
@@ -1938,7 +1963,7 @@ const roleMultipliersByID = {
 - **All JavaScript patterns verified** from live `admin-interface.html`
 
 #### **✅ GAME SCORING SYSTEM VERIFIED:**
-- **All 5 games field mappings confirmed** through live API analysis
+- **All 6 games field mappings confirmed** through live API analysis
 - **All 3 achievement systems confirmed** through live API analysis
 - **Dual table strategy confirmed** through live database queries
 - **API response structure confirmed** through live system testing
@@ -2021,6 +2046,7 @@ const roleMultipliersByID = {
 🧀 Cheese Hunt - Click-based analytics (id="cheeseHuntTab")
 👾 Space Invaders - Advanced metrics (id="spaceInvadersTab")
 🏁 Discord Cheese Race - Race management (id="discordRaceTab")
+💥 Cheese Rumble - Battle royale management (id="cheeseRumbleTab") (NEW - December 3, 2025)
 ```
 
 ### **Boss Management Sub-Tabs (LIVE VERIFIED):**

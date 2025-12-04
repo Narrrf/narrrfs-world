@@ -94,6 +94,14 @@
     - **Tables:** `tbl_user_traits`, `tbl_riddle_completions`, `tbl_user_scores`, `tbl_score_adjustments`
     - **Scope:** All riddle rewards, all trait unlocks, all DSPOINC awards
 
+16. **`16_DISCORD_BOT_MANAGEMENT_RULE.md`** - **🤖 DISCORD BOT MANAGEMENT**
+    - **Purpose:** Standardized Discord bot management for live database operations
+    - **Critical:** Command deployment, bot lifecycle, database interaction, giveaway system
+    - **Status:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**
+    - **Created:** December 3, 2025
+    - **Scope:** All bot operations, command deployment, database interactions, server functions
+    - **Features:** Giveaway system, bug tracker monitoring, command management
+
 ---
 
 ## 🚨 **CRITICAL RULE HIERARCHY**
@@ -133,7 +141,8 @@
 ├── 12_UNIVERSAL_LEVEL_REQUIREMENTS_RULE.md # 🎮 LEVEL CONSISTENCY
 ├── 13_3D_GAME_DSPOINC_SYNC_RULE.md      # 🎯 DSPOINC REWARDS SYNC
 ├── 14_GLTF_SKELETON_CLONING_RULE.md     # 🚨 GLTF CLONING RENDERING
-└── 15_RIDDLE_REWARD_DATABASE_RULE.md    # 🎯 RIDDLE REWARD & DATABASE SYSTEM
+├── 15_RIDDLE_REWARD_DATABASE_RULE.md    # 🎯 RIDDLE REWARD & DATABASE SYSTEM
+└── 16_DISCORD_BOT_MANAGEMENT_RULE.md    # 🤖 DISCORD BOT MANAGEMENT
 ```
 
 ---

@@ -57,6 +57,12 @@ try {
     
     // Debug logging
     error_log("Season API Debug: season=$season, current_season=$current_season, target_season=$target_season");
+    
+    // Verify target season is set correctly for strict filtering
+    if (empty($target_season)) {
+        error_log("WARNING: target_season is empty, defaulting to current_season");
+        $target_season = $current_season;
+    }
 
     // Get all available seasons from tbl_seasons (not just seasons with scores)
     $stmt = $pdo->prepare("SELECT season_name FROM tbl_seasons ORDER BY season_id DESC");
@@ -79,6 +85,7 @@ try {
         ");
         $stmt->execute([$target_season]);
         $season_stats['tetris'] = $stmt->fetch(PDO::FETCH_ASSOC);
+        error_log("Tetris stats for season '$target_season': " . json_encode($season_stats['tetris']));
     }
     
     if ($game_type === 'all' || $game_type === 'snake') {
@@ -94,6 +101,7 @@ try {
         ");
         $stmt->execute([$target_season]);
         $season_stats['snake'] = $stmt->fetch(PDO::FETCH_ASSOC);
+        error_log("Snake stats for season '$target_season': " . json_encode($season_stats['snake']));
     }
     
     if ($game_type === 'all' || $game_type === 'space_invaders') {
@@ -109,6 +117,7 @@ try {
         ");
         $stmt->execute([$target_season]);
         $season_stats['space_invaders'] = $stmt->fetch(PDO::FETCH_ASSOC);
+        error_log("Space Invaders stats for season '$target_season': " . json_encode($season_stats['space_invaders']));
     }
 
     // Add Cheese Hunt statistics
@@ -176,6 +185,35 @@ try {
             'recent_24h' => $race_data['recent_24h'] ?? 0,
             'recent_7d' => $race_data['recent_7d'] ?? 0,
             'top_performers' => $race_data['top_performers'] ?? 0
+        ];
+    }
+
+    // Add Cheese Rumble statistics
+    if ($game_type === 'all' || $game_type === 'cheese_rumble') {
+        // Cheese Rumble shows ALL-TIME data (preserved across seasons, similar to Discord Race)
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(DISTINCT cr.rumble_id) as total_rumbles,
+                COUNT(DISTINCT rp.user_id) as total_participants,
+                COUNT(CASE WHEN rp.status = 'winner' OR rp.final_position = 1 THEN 1 END) as total_wins,
+                COUNT(CASE WHEN rp.final_position <= 3 AND rp.final_position IS NOT NULL THEN 1 END) as podiums,
+                COUNT(CASE WHEN cr.created_at >= datetime('now', '-24 hours') THEN 1 END) as recent_24h,
+                COUNT(CASE WHEN cr.created_at >= datetime('now', '-7 days') THEN 1 END) as recent_7d
+            FROM tbl_cheese_rumbles cr
+            LEFT JOIN tbl_rumble_participants rp ON cr.rumble_id = rp.rumble_id
+        ");
+        $stmt->execute();
+        $rumble_data = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Convert to match the expected structure
+        $season_stats['cheese_rumble'] = [
+            'total_rumbles' => $rumble_data['total_rumbles'] ?? 0,
+            'total_participants' => $rumble_data['total_participants'] ?? 0,
+            'total_wins' => $rumble_data['total_wins'] ?? 0,
+            'podiums' => $rumble_data['podiums'] ?? 0,
+            'recent_24h' => $rumble_data['recent_24h'] ?? 0,
+            'recent_7d' => $rumble_data['recent_7d'] ?? 0,
+            'top_performers' => $rumble_data['total_participants'] ?? 0
         ];
     }
 

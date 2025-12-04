@@ -86,6 +86,77 @@ require_once 'discord-invite.php';
     .gold-shadow {
       box-shadow: 0 0 15px #fcd34d;
     }
+
+    /* ❄️ CHRISTMAS SNOWFLAKE ANIMATIONS */
+    @keyframes snowfall {
+      0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes snowflakeFloat {
+      0%, 100% {
+        transform: translateX(0) rotate(0deg);
+      }
+      25% {
+        transform: translateX(20px) rotate(90deg);
+      }
+      50% {
+        transform: translateX(-20px) rotate(180deg);
+      }
+      75% {
+        transform: translateX(10px) rotate(270deg);
+      }
+    }
+
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: #ffffff;
+      font-size: 1em;
+      font-family: Arial, sans-serif;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+      user-select: none;
+      pointer-events: none;
+      z-index: 1000;
+      animation: snowfall linear infinite, snowflakeFloat ease-in-out infinite;
+    }
+
+    .snowflake:nth-child(odd) {
+      animation-duration: 8s, 3s;
+    }
+
+    .snowflake:nth-child(even) {
+      animation-duration: 10s, 4s;
+    }
+
+    .snowflake:nth-child(3n) {
+      animation-duration: 12s, 5s;
+    }
+
+    .snowflake:nth-child(4n) {
+      animation-duration: 7s, 2.5s;
+    }
+
+    .snowflake:nth-child(5n) {
+      animation-duration: 9s, 3.5s;
+    }
+
+    /* 🎄 CHRISTMAS THEMING - Subtle accents */
+    .christmas-glow {
+      text-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(0, 255, 0, 0.5);
+    }
   </style>
 </head>
 <body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
@@ -129,14 +200,14 @@ require_once 'discord-invite.php';
 
 <!-- 🧀 Dark Theme Header -->
 <header class="text-center p-8 rounded-xl shadow-2xl my-8 mx-4 bg-black/90 backdrop-blur-md border border-yellow-400/30 relative overflow-hidden">
-  <!-- Event Night Banner -->
-  <div class="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-400/20 via-yellow-500/30 to-yellow-400/20 py-2 border-b border-yellow-400/50">
-    <p class="text-yellow-300 font-bold text-sm animate-pulse">🎉 TONIGHT'S SPECIAL EVENT - BINGO NIGHT! 🎉</p>
+  <!-- Event Night Banner with Christmas Theme -->
+  <div class="absolute top-0 left-0 right-0 bg-gradient-to-r from-red-600/30 via-green-600/30 to-red-600/30 py-2 border-b border-yellow-400/50">
+    <p class="text-yellow-300 font-bold text-sm animate-pulse">🎉 ❄️ TONIGHT'S SPECIAL EVENT - BINGO NIGHT! ❄️ 🎉</p>
   </div>
   <div class="mt-6">
-    <h1 class="text-5xl font-bold text-yellow-400 animate-pulse trophy-glow">🐒 Golden Baboons Bingo Night 🧀</h1>
+    <h1 class="text-5xl font-bold text-yellow-400 animate-pulse trophy-glow christmas-glow">🐒 ❄️ Golden Baboons Bingo Night ❄️ 🧀</h1>
     <p class="text-gray-300 mt-2">Tickets auto-sort by hits! Watch for "1 AWAY FROM BINGO!" warnings!</p>
-    <p class="text-yellow-300 font-semibold mt-3 text-lg">🎲 Ready to play? Add your tickets and start marking numbers! 🎲</p>
+    <p class="text-yellow-300 font-semibold mt-3 text-lg">🎲 ❄️ Ready to play? Add your tickets and start marking numbers! ❄️ 🎲</p>
   </div>
 </header>
 
@@ -197,7 +268,7 @@ require_once 'discord-invite.php';
   <div class="text-gray-300 mt-1">
     <a href="<?php echo $discord_url; ?>" class="text-yellow-400 hover:text-yellow-300 underline transition-colors duration-200">Join Discord</a>
   </div>
-  <div class="text-gray-400 mt-1">🧀 Last Update: 2025 | Cheese & Luck are not financial advice!</div>
+  <div class="text-gray-400 mt-1">🧀 ❄️ Last Update: 2025 | Cheese & Luck are not financial advice! ❄️</div>
 </footer>
 
 <!-- Notification Popup -->
@@ -936,6 +1007,39 @@ function checkBingo(ticket, ticketIndex, calledNumbers) {
     return bingo;
   }
 }
+
+  // ❄️ CHRISTMAS SNOWFLAKE EFFECT
+  function createSnowflakes() {
+    const snowflakeContainer = document.createElement('div');
+    snowflakeContainer.id = 'snowflake-container';
+    snowflakeContainer.style.position = 'fixed';
+    snowflakeContainer.style.top = '0';
+    snowflakeContainer.style.left = '0';
+    snowflakeContainer.style.width = '100%';
+    snowflakeContainer.style.height = '100%';
+    snowflakeContainer.style.pointerEvents = 'none';
+    snowflakeContainer.style.zIndex = '999';
+    document.body.appendChild(snowflakeContainer);
+
+    const snowflakeSymbols = ['❄', '❅', '❆', '✻', '✼', '✽', '✾', '✿'];
+    const numSnowflakes = 50;
+
+    for (let i = 0; i < numSnowflakes; i++) {
+      const snowflake = document.createElement('div');
+      snowflake.className = 'snowflake';
+      snowflake.textContent = snowflakeSymbols[Math.floor(Math.random() * snowflakeSymbols.length)];
+      snowflake.style.left = Math.random() * 100 + '%';
+      snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+      snowflake.style.animationDelay = Math.random() * 5 + 's';
+      snowflake.style.opacity = Math.random() * 0.5 + 0.5;
+      snowflakeContainer.appendChild(snowflake);
+    }
+  }
+
+  // Initialize snowflakes when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    createSnowflakes();
+  });
 
 </script>
 <!-- 🧀 If you found this, you’re a Bingo Dev legend! -->

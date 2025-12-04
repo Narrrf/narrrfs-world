@@ -1,6 +1,6 @@
 ﻿# HYTOPIA THREE TECH DOCUMENTATION
 
-Date: 2025-11-13 (Last Updated: November 19, 2025 - Level 4 Wave System + Enhanced AI - Wave-based spawning system with progressive difficulty, color system, countdown popups, and super intelligent AI behaviors implemented)
+Date: 2025-11-13 (Last Updated: December 2, 2025 - Collapsible GUI System + Sky & Ground Systems Complete - Expandable, collapsible options menu with synchronized live-working controls for Sky and Ground systems across all 5 levels)
 Maintainer: Narrrf's Lab Tech Council
 Scope: Migration roadmap from Hytopia SDK (Bun/Node) integration to the new Vite-powered three.js prototype located at C:\xampp-server\htdocs\narrrfs-world\three.js.
 
@@ -2659,3 +2659,241 @@ const BACKGROUND_MUSIC_VOLUME_STORAGE_KEY = "cheese_temple_background_music_volu
 - **Status:** ✅ IMPLEMENTED & VERIFIED (November 19, 2025)
 - **Files:** `three.js/main.js`
 - **Follow-up:** Future arena props can reuse the same pattern by adding to `LEVEL3_MOVING_WALLS`.
+
+---
+
+## 27. COLLAPSIBLE GUI SYSTEM FOR GOD MODE OPTIONS (December 2, 2025)
+
+**Date:** December 2, 2025  
+**Status:** ✅ **IMPLEMENTED & VERIFIED** — Collapsible, expandable GUI system for Sky and Ground configuration  
+**Scope:** Global options menu with collapsible sections - works across all 5 levels
+
+### 27.1 Overview
+The collapsible GUI system provides an organized, expandable interface for God Mode configuration options. The Sky System and Ground System sections can be collapsed/expanded to manage menu length while providing access to all configuration options. The system works identically across all 5 levels with per-level settings persistence.
+
+### 27.2 Features
+- ✅ **Collapsible Sections** - Click headers to expand/collapse
+- ✅ **State Persistence** - Expanded/collapsed state saved to localStorage
+- ✅ **Visual Indicators** - ▼ when expanded, ▶ when collapsed
+- ✅ **Smooth Animations** - Smooth transitions when expanding/collapsing
+- ✅ **God Mode Gating** - Sections only visible when god mode is enabled
+- ✅ **Global Menu** - Single options menu shared across all levels
+- ✅ **Per-Level Settings** - Each level saves its own sky and ground settings
+
+### 27.3 Implementation
+
+#### **Function:** `createCollapsibleSection(panel, title, contentCallback, defaultExpanded, storageKey)`
+**Location:** `three.js/main.js` (lines 6113-6248)
+
+**Parameters:**
+- `panel` - Parent container element
+- `title` - Section header text
+- `contentCallback` - Function that adds content to the section
+- `defaultExpanded` - Initial expanded state (default: true)
+- `storageKey` - localStorage key for state persistence (optional)
+
+**Returns:**
+- `{ section, content, header, toggle }` - Section element and control functions
+
+**Features:**
+- Creates clickable header with expand/collapse icon
+- Creates content container that shows/hides smoothly
+- Saves expanded/collapsed state to localStorage
+- Provides smooth animation transitions
+
+#### **Sky System Collapsible Section:**
+**Location:** `three.js/main.js` (lines 6579-7170)
+
+**Storage Key:** `god_mode_sky_section_collapsed`
+
+**Content:**
+- Time of Day Selector (Dawn/Day/Dusk/Night)
+- Hour Slider (0-23)
+- Minute Slider (0-59)
+- Cloud Density Slider (0.0-1.0)
+- Star Count Slider (0-5000)
+- Lensflare Toggle
+- Day/Night Cycle Toggle
+- Save Time for Level Button
+
+**Visibility:**
+- Hidden when god mode is OFF
+- Shown when god mode is ON
+- Controlled via `optionsMenu._skySystemSection.style.display`
+
+#### **Ground System Collapsible Section:**
+**Location:** `three.js/main.js` (lines 7172-7564)
+
+**Storage Key:** `god_mode_ground_section_collapsed`
+
+**Content:**
+- Ground Type Selector (Grass/Blank/Color)
+- Blade Count Slider (1000-50000) - for grass mode
+- Wind Speed Slider (0.0-3.0) - for grass mode
+- Wind Strength Slider (0.0-1.0) - for grass mode
+- Grass Color Picker - for grass mode
+- Ground Color Picker - for color mode
+- Save Ground for Level Button
+
+**Visibility:**
+- Hidden when god mode is OFF
+- Shown when god mode is ON
+- Controlled via `optionsMenu._groundSystemSection.style.display`
+
+### 27.4 God Mode Integration
+
+#### **God Mode OFF:**
+```javascript
+// Hide sections when god mode is off
+if (optionsMenu._skySystemSection) {
+  optionsMenu._skySystemSection.style.display = "none";
+}
+if (optionsMenu._groundSystemSection) {
+  optionsMenu._groundSystemSection.style.display = "none";
+}
+```
+
+#### **God Mode ON:**
+```javascript
+// Show sections when god mode is on
+if (optionsMenu._skySystemSection) {
+  optionsMenu._skySystemSection.style.display = "flex";
+}
+if (optionsMenu._groundSystemSection) {
+  optionsMenu._groundSystemSection.style.display = "flex";
+}
+```
+
+### 27.5 Per-Level Configuration
+
+#### **Sky System Configs:**
+All 5 levels have sky configurations in `levelSkyConfigs`:
+- Level 1: Full day/night cycle, clouds, stars, lensflare
+- Level 2: Full day/night cycle, clouds, stars, lensflare
+- Level 3: Full day/night cycle, clouds, stars, lensflare
+- Level 4: Full day/night cycle, clouds, stars, lensflare
+- Level 5: Full day/night cycle, clouds, stars, lensflare
+
+#### **Ground System Configs:**
+All 5 levels have ground configurations in `levelGroundConfigs`:
+- Level 1: Grass mode (10000 blades, centered at 60,0,60)
+- Level 2: Blank mode (white floor)
+- Level 3: Color mode (gray solid ground)
+- Level 4: Color mode (gray solid ground)
+- Level 5: Grass mode (20000 blades, larger field)
+
+### 27.6 Real-Time Updates
+
+#### **Sky System Controls:**
+- ✅ Hour/Minute sliders update sky time instantly
+- ✅ Time of Day select changes sky appearance immediately
+- ✅ Cloud density slider fades clouds in/out in real-time
+- ✅ Star count slider updates star count instantly (recreates starfield)
+- ✅ Lensflare toggle enables/disables sun lensflare immediately
+- ✅ All changes apply to current level's sky system
+
+#### **Ground System Controls:**
+- ✅ Ground type select switches modes instantly
+- ✅ Blade count slider updates grass blade count in real-time
+- ✅ Wind speed slider updates wind animation speed instantly
+- ✅ Wind strength slider updates wind intensity in real-time
+- ✅ Color pickers update colors immediately
+- ✅ All changes apply to current level's ground system
+
+### 27.7 Per-Level Settings Persistence
+
+#### **Sky Settings Storage:**
+- Level 1: `sky_settings_LEVEL1`
+- Level 2: `sky_settings_LEVEL2`
+- Level 3: `sky_settings_LEVEL3`
+- Level 4: `sky_settings_LEVEL4`
+- Level 5: `sky_settings_LEVEL5`
+
+**Saved Settings:**
+- Hour, Minute, Time of Day
+- Cloud Density, Star Count
+- Lensflare, Day/Night Cycle
+
+#### **Ground Settings Storage:**
+- Level 1: `ground_settings_LEVEL1`
+- Level 2: `ground_settings_LEVEL2`
+- Level 3: `ground_settings_LEVEL3`
+- Level 4: `ground_settings_LEVEL4`
+- Level 5: `ground_settings_LEVEL5`
+
+**Saved Settings:**
+- Ground Type
+- Blade Count, Wind Speed, Wind Strength
+- Grass Color, Ground Color
+
+### 27.8 User Workflow
+
+1. **Open Options Menu** - Press ESC or P, then click "Options"
+2. **Enable God Mode** - Sky and Ground sections appear
+3. **Expand Sections** - Click headers (🌌 or 🌱) to expand/collapse
+4. **Adjust Settings** - All changes apply instantly
+5. **Save Settings** - Click save buttons to persist per level
+6. **Reload Level** - Settings automatically load when entering level
+
+### 27.9 Level Integration
+
+#### **Initialization:**
+All levels call `applyLevelEnvironment(levelId)` when entered:
+```javascript
+function applyLevelEnvironment(levelId) {
+  initializeSkySystem(levelId);  // Initializes sky with per-level config
+  initializeGrassSystem(levelId); // Initializes ground with per-level config
+  // ... loads saved settings automatically
+}
+```
+
+#### **Called From:**
+- `warpToLevel1()` → `applyLevelEnvironment(LEVEL_IDS.LEVEL1)`
+- `warpToLevel2()` → `applyLevelEnvironment(LEVEL_IDS.LEVEL2)`
+- `warpToLevel3()` → `applyLevelEnvironment(LEVEL_IDS.LEVEL3)`
+- `warpToLevel4()` → `applyLevelEnvironment(LEVEL_IDS.LEVEL4)`
+- `warpToLevel5()` → `applyLevelEnvironment(LEVEL_IDS.LEVEL5)`
+
+### 27.10 Visual Design
+
+#### **Section Header:**
+- Background: Changes based on expanded state
+- Border: Golden border when expanded
+- Icon: ▼ when expanded, ▶ when collapsed
+- Clickable: Entire header is clickable
+
+#### **Section Content:**
+- Padding: 16px when expanded, 0 when collapsed
+- Animation: Smooth 0.3s ease transition
+- Display: Flex when expanded, none when collapsed
+
+#### **Storage Keys:**
+- Sky Section: `god_mode_sky_section_collapsed`
+- Ground Section: `god_mode_ground_section_collapsed`
+
+### 27.11 Code Locations
+
+- **Collapsible Section Function:** `three.js/main.js` lines 6113-6248
+- **Sky System Section:** `three.js/main.js` lines 6579-7170
+- **Ground System Section:** `three.js/main.js` lines 7172-7564
+- **God Mode Toggle:** `three.js/main.js` lines 6525-6572
+- **Per-Level Initialization:** `three.js/main.js` lines 643-648
+
+### 27.12 Testing Checklist
+
+- [x] Collapsible sections expand/collapse correctly
+- [x] State persists to localStorage
+- [x] Sections hide when god mode is off
+- [x] Sections show when god mode is on
+- [x] All controls work in all 5 levels
+- [x] Settings save per level correctly
+- [x] Settings load automatically on level entry
+- [x] Real-time updates work instantly
+- [x] Menu structure is identical across all levels
+
+### 27.13 Status
+- **Status:** ✅ **IMPLEMENTED & VERIFIED** - Collapsible GUI system working across all 5 levels
+- **Last Updated:** December 2, 2025
+- **Coverage:** All 5 levels have identical GUI structure
+- **Features:** Collapsible sections, state persistence, real-time updates, per-level settings
+- **Ready For:** Future expansion with additional collapsible sections

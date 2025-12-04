@@ -204,6 +204,14 @@ try {
             'best_position' => null,
             'dspoinc_earned' => 0
         ],
+        'cheese_rumble' => [
+            'total_rumbles' => 0,
+            'wins' => 0,
+            'podiums' => 0,
+            'best_position' => null,
+            'dspoinc_earned' => 0,
+            'last_played' => null
+        ],
         'overall' => [
             'total_dspoinc' => 0,
             'games_played' => 0,
@@ -554,21 +562,85 @@ try {
         error_log("Discord Race query error: " . $e->getMessage());
     }
 
-    // Calculate total DSPOINC from all games
+    // 6. CHEESE RUMBLE STATS (using user_id from tbl_rumble_participants)
+    try {
+        error_log("🔍 CHEESE RUMBLE DEBUG: Querying for user $discordId");
+        
+        // Query for Cheese Rumble stats - try season first, then fallback to all-time
+        $rumbleData = null;
+        
+        // Try current season first
+        $stmt = $db->prepare("
+            SELECT 
+                COUNT(*) as total_rumbles,
+                COUNT(CASE WHEN rp.status = 'winner' OR rp.final_position = 1 THEN 1 END) as wins,
+                COUNT(CASE WHEN rp.final_position <= 3 AND rp.final_position IS NOT NULL THEN 1 END) as podiums,
+                MIN(rp.final_position) as best_position,
+                SUM(COALESCE(rp.dspoinc_earned, 0)) as total_dspoinc_earned,
+                MAX(COALESCE(rp.joined_at, rp.updated_at, cr.finished_at)) as last_played
+            FROM tbl_rumble_participants rp
+            JOIN tbl_cheese_rumbles cr ON rp.rumble_id = cr.rumble_id
+            WHERE rp.user_id = ?
+            AND (
+                cr.created_at >= ? 
+                AND cr.created_at < ?
+            )
+        ");
+        $stmt->execute([
+            $discordId,
+            $currentSeasonStart,
+            $currentSeasonEnd
+        ]);
+        $rumbleData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Fallback to all-time if no season data
+        if (!$rumbleData || (int)$rumbleData['total_rumbles'] === 0) {
+            error_log("ℹ️ CHEESE RUMBLE: No Season $currentSeason data for $discordId, loading all-time totals");
+            $fallbackStmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_rumbles,
+                    COUNT(CASE WHEN status = 'winner' OR final_position = 1 THEN 1 END) as wins,
+                    COUNT(CASE WHEN final_position <= 3 AND final_position IS NOT NULL THEN 1 END) as podiums,
+                    MIN(final_position) as best_position,
+                    SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned,
+                    MAX(COALESCE(joined_at, updated_at)) as last_played
+                FROM tbl_rumble_participants 
+                WHERE user_id = ?
+            ");
+            $fallbackStmt->execute([$discordId]);
+            $rumbleData = $fallbackStmt->fetch(PDO::FETCH_ASSOC);
+        }
+        
+        if ($rumbleData && (int)$rumbleData['total_rumbles'] > 0) {
+            $response['cheese_rumble']['total_rumbles'] = (int)$rumbleData['total_rumbles'];
+            $response['cheese_rumble']['wins'] = (int)$rumbleData['wins'];
+            $response['cheese_rumble']['podiums'] = (int)$rumbleData['podiums'];
+            $response['cheese_rumble']['best_position'] = $rumbleData['best_position'] ? (int)$rumbleData['best_position'] : null;
+            $response['cheese_rumble']['dspoinc_earned'] = (int)$rumbleData['total_dspoinc_earned'];
+            $response['cheese_rumble']['last_played'] = $rumbleData['last_played'];
+            error_log("✅ Cheese Rumble stats found for user $discordId: " . $rumbleData['total_rumbles'] . " rumbles, " . $rumbleData['total_dspoinc_earned'] . " DSPOINC");
+        }
+    } catch (Exception $e) {
+        error_log("Cheese Rumble query error: " . $e->getMessage());
+    }
+
+    // Calculate total DSPOINC from all games (including Cheese Rumble)
     $response['overall']['total_dspoinc'] = 
         $response['tetris']['dspoinc_earned'] + 
         $response['snake']['dspoinc_earned'] + 
         $response['space_invaders']['dspoinc_earned'] + 
         $response['cheese_hunt']['dspoinc_earned'] + 
-        $response['discord_race']['dspoinc_earned'];
+        $response['discord_race']['dspoinc_earned'] +
+        $response['cheese_rumble']['dspoinc_earned'];
 
-    // Count how many games the user has played
+    // Count how many games the user has played (including Cheese Rumble - 6th game)
     $gamesPlayed = 0;
     if ($response['tetris']['total_games'] > 0) $gamesPlayed++;
     if ($response['snake']['total_games'] > 0) $gamesPlayed++;
     if ($response['space_invaders']['total_games'] > 0) $gamesPlayed++;
     if ($response['cheese_hunt']['total_clicks'] > 0) $gamesPlayed++;
     if ($response['discord_race']['total_races'] > 0) $gamesPlayed++;
+    if ($response['cheese_rumble']['total_rumbles'] > 0) $gamesPlayed++; // 6th game
     
     $response['overall']['games_played'] = $gamesPlayed;
 
@@ -843,6 +915,20 @@ try {
                     'podium_finishes' => $response['discord_race']['podiums'],
                     'best_position' => $response['discord_race']['best_position'] !== null ? $response['discord_race']['best_position'] : 'N/A',
                     'dspoinc_earned' => $response['discord_race']['dspoinc_earned']
+                ]
+            ],
+            'cheese_rumble' => [
+                'name' => 'Cheese Rumble',
+                'icon' => '💥',
+                'url' => 'https://discord.com/invite/PFFztgqwe2',
+                'status' => $response['cheese_rumble']['total_rumbles'] > 0 ? 'active' : 'not_played',
+                'stats' => [
+                    'total_rumbles' => $response['cheese_rumble']['total_rumbles'],
+                    'wins' => $response['cheese_rumble']['wins'],
+                    'podium_finishes' => $response['cheese_rumble']['podiums'],
+                    'best_position' => $response['cheese_rumble']['best_position'] !== null ? $response['cheese_rumble']['best_position'] : 'N/A',
+                    'dspoinc_earned' => $response['cheese_rumble']['dspoinc_earned'],
+                    'last_played' => $response['cheese_rumble']['last_played']
                 ]
             ]
         ]

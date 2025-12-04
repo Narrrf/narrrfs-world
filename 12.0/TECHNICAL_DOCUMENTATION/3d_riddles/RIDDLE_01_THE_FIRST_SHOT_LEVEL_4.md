@@ -46,6 +46,43 @@ Enter a massive 160x160 cheese stone arena and complete "The First Shot" challen
 
 ---
 
+## 🌌 **SKY SYSTEM**
+
+### **Sky System Status:**
+- ✅ **Fully Integrated** - Dynamic sky system working in Level 4
+- ✅ **Per-Level Save** - Level 4 can save its own sky time settings
+- ✅ **God Mode Controls** - Real-time sky configuration available
+
+### **Features:**
+- **Dynamic Day/Night Cycle** - Smooth transitions (sunrise, midday, sunset, night)
+- **Procedural Clouds** - Scrolling cloud layers with color tinting
+- **Twinkling Stars** - High-density starfield with individual star flickering
+- **Sun Lensflare** - Infinite-distance flare effects
+- **Per-Level Save** - Save custom time settings (hour, minute, clouds, stars, lensflare)
+
+### **Default Configuration:**
+- **Day/Night Cycle:** Enabled
+- **Time of Day:** Day (default)
+- **Cloud Density:** 0.7
+- **Star Count:** 1500
+- **Lensflare:** Enabled
+
+### **Customization:**
+When god mode is enabled, you can:
+1. Adjust hour (0-23) and minute (0-59) sliders
+2. Change cloud density (0.0-1.0)
+3. Adjust star count (0-5000)
+4. Toggle lensflare on/off
+5. Click "💾 Save Time for Level" to save settings for Level 4
+
+**Saved settings persist across sessions** and automatically load when entering Level 4.
+
+**See:** `SKY_SYSTEM_COMPLETE_DOCUMENTATION.md` for full technical documentation.
+
+**Last Updated:** December 2, 2025 - Sky system integrated and per-level save feature working
+
+---
+
 ## 🎮 GAMEPLAY MECHANICS
 
 ### Step 0: Unlock The First Shot

@@ -263,13 +263,36 @@ try {
         'best_position' => (int)($race['best_position'] ?? 0)
     ];
     
-    // Calculate total games played across all games
+    // 6. CHEESE RUMBLE - All-time stats
+    $rumbleStmt = $db->prepare("
+        SELECT 
+            COUNT(*) as total_rumbles,
+            COUNT(CASE WHEN status = 'winner' OR final_position = 1 THEN 1 END) as total_wins,
+            COUNT(CASE WHEN final_position <= 3 AND final_position IS NOT NULL THEN 1 END) as podium_finishes,
+            MIN(final_position) as best_position
+        FROM tbl_rumble_participants 
+        WHERE user_id = :user_id
+    ");
+    $rumbleStmt->execute([':user_id' => $user_id]);
+    $rumble = $rumbleStmt->fetch(PDO::FETCH_ASSOC);
+    
+    $response['all_time_stats']['games']['cheese_rumble'] = [
+        'name' => 'Cheese Rumble',
+        'icon' => '💥',
+        'total_rumbles' => (int)($rumble['total_rumbles'] ?? 0),
+        'total_wins' => (int)($rumble['total_wins'] ?? 0),
+        'podium_finishes' => (int)($rumble['podium_finishes'] ?? 0),
+        'best_position' => (int)($rumble['best_position'] ?? 0)
+    ];
+    
+    // Calculate total games played across all games (including Cheese Rumble - 6th game)
     $response['all_time_stats']['total_games_played'] = 
         $response['all_time_stats']['games']['tetris']['total_games'] +
         $response['all_time_stats']['games']['snake']['total_games'] +
         $response['all_time_stats']['games']['space_invaders']['total_games'] +
         $response['all_time_stats']['games']['cheese_hunt']['total_clicks'] +
-        $response['all_time_stats']['games']['discord_race']['total_races'];
+        $response['all_time_stats']['games']['discord_race']['total_races'] +
+        $response['all_time_stats']['games']['cheese_rumble']['total_rumbles'];
     
     // Calculate total DSPOINC earned (from tbl_tetris_scores only)
     $response['all_time_stats']['total_dspoinc_earned'] = 

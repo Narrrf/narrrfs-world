@@ -57,6 +57,7 @@
 👾 Space Invaders - Advanced metrics
 🧀 Cheese Hunt - Click-based analytics
 🏁 Discord Cheese Race - Race management
+💥 Cheese Rumble - Battle royale management (NEW - December 3, 2025)
 ```
 
 ---
