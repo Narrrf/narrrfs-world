@@ -4,7 +4,7 @@
 **Last Updated:** November 23, 2025  
 **Riddle ID:** `CHEESE_TEMPLE_LEVEL5_RIDDLE_01` (to be implemented)  
 **Level:** Cheese Temple — Level 5 "The Walk"  
-**Status:** ✅ **STEP 1 COMPLETE — MONSTER HUNT WORKING** — Exploration level with monster hunt riddle (10-minute timer, 50 monsters, flying monster shooting)  
+**Status:** ✅ **WEAPON SYSTEM OPERATIONAL** (December 7, 2025) — Both weapon slots (1 & 2) instantly available, shooting works perfectly, ready for riddle implementation  
 **Traits / Rewards:** 
 - ✅ **STEP 1 Trait:** `CHEESE_TEMPLE_LEVEL5_STEP1` (unlocked on completion of all 10 waves)
 - ✅ **STEP 1 Rewards:** 250 DSPOINC base per wave × 10 waves = 2,500 base DSPOINC (multiplied by role multiplier server-side)
@@ -498,10 +498,21 @@ level5State.borderWalls = {
 
 ---
 
-## 🧀 STEP 0: WEAPON TRIGGER PLATE (November 24, 2025)
+## 🧀 STEP 0: WEAPON SYSTEM (December 7, 2025)
 
 ### Implementation
-Classic cheese-stone trigger plate spawns near player spawn point. When player stands on the plate, it activates the weapon system (slots 1 & 2) for Level 5 riddle gameplay.
+**✅ UPDATED:** Weapons are now instantly available at Level 5 start (no trigger plate required). Both weapon slots (1 & 2) are loaded and ready to use immediately when warping to Level 5.
+
+### Weapon System Status
+- ✅ **Slot 1:** Pistol Mk I (yellow bullets, single shot) - Instantly available
+- ✅ **Slot 2:** Sci-Fi Pistol 1 (purple bullets, triple shot) - Instantly available
+- ✅ **Shooting:** Works perfectly from Level 5 start
+- ✅ **Switching:** Keys 1 and 2 work for weapon switching
+- ✅ **Camera Modes:** Weapons visible in first-person, hidden in third-person
+
+### Previous Implementation (Deprecated)
+~~Classic cheese-stone trigger plate spawns near player spawn point. When player stands on the plate, it activates the weapon system (slots 1 & 2) for Level 5 riddle gameplay.~~  
+**Status:** ✅ **UPDATED** (December 7, 2025) - Weapons now load instantly at Level 5 start, no trigger plate needed.
 
 ### Trigger Plate Specifications
 - **Texture:** `/textures/blocks/cheese-stone.png`
@@ -536,8 +547,10 @@ Classic cheese-stone trigger plate spawns near player spawn point. When player s
 ### Weapon System Integration
 - **Slots:** 1 (Pistol Mk I) and 2 (Sci-Fi Pistol 1)
 - **Bullets:** Yellow cheese bullets (slot 1), purple SF13 bullets (slot 2)
-- **Shooting:** Same system as Level 4 (reuses `handleLevel4Shooting()`, `fireLevel4SingleShot()`)
-- **Update Loop:** Bullets update via `updateLevel4Bullets()` called in `updateLevel5()` when weapons enabled
+- **Shooting:** Same system as Level 4 (uses `weaponSystem.fire()`)
+- **Update Loop:** Bullets update via `weaponSystem.update(delta)` called in `updateLevel5()`
+- **Availability:** ✅ **Instantly available at Level 5 start** (December 7, 2025)
+- **Status:** ✅ **Verified Working** - Both slots functional, shooting works perfectly
 
 ---
 
