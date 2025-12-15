@@ -2876,8 +2876,16 @@ The collapsible GUI system provides an organized, expandable interface for God M
 **Content:**
 - Ground Type Selector (Grass/Blank/Color)
 - Blade Count Slider (1000-50000) - for grass mode
+- Blade Length Multiplier Slider (0.5x-2.0x) - for grass mode
 - Wind Speed Slider (0.0-3.0) - for grass mode
 - Wind Strength Slider (0.0-1.0) - for grass mode
+- Wind Direction Slider (0-360°) - for grass mode
+- Wind Turbulence Slider (0.0-1.0) - for grass mode
+- Wind Gust Frequency Slider (0-2.0/s) - for grass mode
+- Wind Gust Intensity Slider (1.0-3.0x) - for grass mode
+- Chunked Grass Toggle - Enable/disable chunked mode
+- Chunk Size Slider (10-200 world units) - when chunked enabled
+- Max Blades Per Chunk Slider (10K-1M) - when chunked enabled
 - Grass Color Picker - for grass mode
 - Ground Color Picker - for color mode
 - Save Ground for Level Button
@@ -2990,6 +2998,18 @@ All levels call `applyLevelEnvironment(levelId)` when entered:
 function applyLevelEnvironment(levelId) {
   initializeSkySystem(levelId);  // Initializes sky with per-level config
   initializeGrassSystem(levelId); // Initializes ground with per-level config
+  
+  // ========================================================================
+  // GRASS SYSTEM COMPLETE (December 13, 2025)
+  // ========================================================================
+  // All core features from Medium article implemented:
+  // - Phase 1: Noise-based wind, blade length, wind direction
+  // - Phase 2: Chunked grass meshes (hybrid auto-detection, configurable)
+  // - Phase 4: Advanced wind features (turbulence, gusts, per-blade variation)
+  // - Supports unlimited blade counts via chunked mode
+  // - Comprehensive documentation in grass-system.js
+  // See: GRASS_ARTICLE_IMPLEMENTATION_STATUS.md for complete status
+  // ========================================================================
   // ... loads saved settings automatically
 }
 ```
@@ -3038,7 +3058,120 @@ function applyLevelEnvironment(levelId) {
 - [x] Real-time updates work instantly
 - [x] Menu structure is identical across all levels
 
-### 27.13 Status
+### 27.13 Grass System Complete (December 13, 2025)
+
+#### **Complete Implementation:**
+- ✅ **All core features from Medium article implemented**
+- ✅ **Phase 1:** Noise-based wind, blade length, wind direction
+- ✅ **Phase 2:** Chunked grass meshes (hybrid auto-detection, configurable)
+- ✅ **Phase 4:** Advanced wind features (turbulence, gusts, per-blade variation)
+
+#### **Chunked System Features:**
+- ✅ **Hybrid Auto-Detection:** Automatically enables if blade count > 2M
+- ✅ **Configurable Chunk Size:** 10-200 world units (UI slider)
+- ✅ **Configurable Max Blades:** 10K-1M per chunk (UI slider)
+- ✅ **Performance Optimized:** Throttled updates, async generation
+- ✅ **Per-Level Settings:** All chunk settings save/load per level
+
+#### **Documentation:**
+- ✅ **Inline Documentation:** Comprehensive comments in `grass-system.js`
+- ✅ **Status Document:** `GRASS_ARTICLE_IMPLEMENTATION_STATUS.md`
+- ✅ **Progress Notes:** `GRASS_SYSTEM_PROGRESS_NOTES.md`
+- ✅ **Feature Plan:** `GRASS_SYSTEM_ADVANCED_FEATURES_PLAN.md`
+- ✅ **Phase 2 Plan:** `GRASS_PHASE_2_CHUNKED_MESHES_PLAN.md`
+
+#### **System Status:**
+- ✅ **Production Ready:** All features working
+- ✅ **Ready for Bigger Levels:** Chunked mode supports unlimited blades
+- ✅ **Well Documented:** Complete technical documentation
+- ✅ **Future Proof:** Optional enhancements available if needed
+
+**Reference:** [Making Grass with Triangles in GLSL using Three.js](https://medium.com/antaeus-ar/making-grass-with-triangles-in-glsl-using-three-js-e106771a71ff)
+
+### 27.14 3D Model Rendering System (December 13, 2025)
+
+#### **Complete Implementation Pattern:**
+- ✅ **Standardized Model Loading** - GLB/GLTF/FBX support via `loadModel()` function
+- ✅ **Position Calculation** - Spawn-relative positioning with ground level calculation
+- ✅ **Material Processing** - Automatic material conversion via `processWeaponMaterial()`
+- ✅ **Scene Integration** - Proper shadow settings, visibility, and frustum culling
+- ✅ **State Management** - Model references stored in level state
+- ✅ **Error Handling** - Comprehensive error logging and fallbacks
+
+#### **Model Loading Pattern:**
+```javascript
+// 1. Add to level state
+const level1State = {
+  tree: null, // Model reference
+  treePosition: null // Position vector (optional)
+};
+
+// 2. Create loading function
+function createLevel1Tree(spawnData, blockSize) {
+  // Calculate position relative to spawn
+  const spawnX = spawnData.x * blockSize + blockSize / 2;
+  const spawnZ = spawnData.z * blockSize + blockSize / 2;
+  const floorTopY = 0 * blockSize + blockSize; // Ground level = 1.0
+  
+  // Load model
+  loadModel("/textures/3d models/tree-with-arms/tree-with-arms.glb")
+    .then((gltf) => {
+      const model = gltf.scene;
+      model.position.set(spawnX - 10, floorTopY, spawnZ + 20);
+      model.scale.setScalar(1.0);
+      
+      // Process materials
+      model.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material = processWeaponMaterial(child.material);
+          }
+        }
+      });
+      
+      scene.add(model);
+      level1State.tree = model;
+    });
+}
+
+// 3. Call in buildLevel()
+if (mapData.spawn && !level1State.tree) {
+  createLevel1Tree(mapData.spawn, blockSize);
+}
+```
+
+#### **Key Configuration:**
+- **Ground Level:** `floorTopY = 0 * blockSize + blockSize` (always 1.0)
+- **Position Calculation:** Relative to spawn (works with any spawn location)
+- **Material Processing:** Required for visibility (handles dark FBX materials)
+- **Scale:** Start with 1.0, adjust based on model size
+- **Rotation:** Adjust based on model orientation
+
+#### **Multiple Models:**
+- **Option 1:** Clone model for multiple positions (efficient)
+- **Option 2:** Individual functions for each model (flexible)
+- **Store in array:** `level1State.trees = []` for multiple instances
+
+#### **Documentation:**
+- ✅ **Rule Document:** `18_3D_MODEL_RENDERING_RULE.md` (complete implementation guide)
+- ✅ **Tech Docs:** This section (quick reference)
+- ✅ **Code Comments:** Inline documentation in model loading functions
+
+**Reference:** See `18_3D_MODEL_RENDERING_RULE.md` for complete implementation details.
+
+#### **Working Tree Implementations (Production Ready):**
+- ✅ **Tree 1 (tree-with-arms):** Scale 9.0, Position: left of spawn, forward area
+- ✅ **Tree 2 (tree-with-arms):** Scale 10.0, Position: left front, back area, Rotated 45°
+- ✅ **Tree 3 (tree dead lians):** Scale 7.0, Position: right of spawn, forward area
+- ✅ **Tree 4 (tree dead lians):** Scale 8.5, Position: back right area
+
+**Files:** `three.js/main.js` - Functions: `createLevel1Tree()`, `createLevel1Tree2()`, `createLevel1Tree3()`, `createLevel1Tree4()`
+
+**Quick Copy:** These implementations are production-ready and can be copied to other levels. See `18_3D_MODEL_RENDERING_RULE.md` for complete code examples.
+
+### 27.15 Status
 - **Status:** ✅ **IMPLEMENTED & VERIFIED** - Collapsible GUI system working across all 5 levels
 - **Last Updated:** December 2, 2025
 - **Coverage:** All 5 levels have identical GUI structure

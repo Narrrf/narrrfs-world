@@ -102,6 +102,28 @@
     - **Scope:** All bot operations, command deployment, database interactions, server functions
     - **Features:** Giveaway system, bug tracker monitoring, command management
 
+17. **`17_WEAPON_RENDERING_RULE.md`** - **🔫 WEAPON RENDERING - FBX MODELS**
+    - **Purpose:** Complete weapon rendering guide for FBX weapon models in first-person view
+    - **Critical:** Material brightening, duplicate prevention, visibility enforcement, animation compatibility
+    - **Status:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**
+    - **Created:** December 13, 2025
+    - **Scope:** All weapon slots (1-9), all levels (4-9), all FBX weapon models
+    - **Features:** Material brightening system, duplicate detection, position preservation, scale configuration
+
+18. **`18_3D_MODEL_RENDERING_RULE.md`** - **🎨 3D MODEL RENDERING - DECORATIVE MODELS**
+   - **Purpose:** Standardized method for adding 3D models (GLB/GLTF/FBX) to game levels
+   - **Critical:** Model loading, position calculation, material processing, scene integration, FBX vs GLB/GLTF differences
+   - **Status:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**
+   - **Created:** December 13, 2025
+   - **Last Updated:** December 13, 2025 - Added comprehensive FBX vs GLB/GLTF rendering differences section
+   - **Scope:** All 3D models, all levels, decorative and interactive elements
+   - **Features:** 
+     - Complete implementation pattern for GLB/GLTF models
+     - **CRITICAL FBX pattern** - Cloning requirements, material processing, dark material brightening
+     - Complete comparison table (FBX vs GLB/GLTF)
+     - Debugging guide and troubleshooting checklist
+     - Working examples (trees, bear trap, weapons)
+
 ---
 
 ## 🚨 **CRITICAL RULE HIERARCHY**
@@ -142,7 +164,9 @@
 ├── 13_3D_GAME_DSPOINC_SYNC_RULE.md      # 🎯 DSPOINC REWARDS SYNC
 ├── 14_GLTF_SKELETON_CLONING_RULE.md     # 🚨 GLTF CLONING RENDERING
 ├── 15_RIDDLE_REWARD_DATABASE_RULE.md    # 🎯 RIDDLE REWARD & DATABASE SYSTEM
-└── 16_DISCORD_BOT_MANAGEMENT_RULE.md    # 🤖 DISCORD BOT MANAGEMENT
+├── 16_DISCORD_BOT_MANAGEMENT_RULE.md    # 🤖 DISCORD BOT MANAGEMENT
+├── 17_WEAPON_RENDERING_RULE.md          # 🔫 WEAPON RENDERING - FBX MODELS
+└── 18_3D_MODEL_RENDERING_RULE.md        # 🎨 3D MODEL RENDERING - DECORATIVE MODELS
 ```
 
 ---

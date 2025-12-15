@@ -62,3 +62,30 @@ Sign when applied: 🧀 three.js rule applied
     - **Status:** ✅ **PRODUCTION READY** (November 12, 2025)
     - **Documentation:** See `12.0/TECHNICAL_DOCUMENTATION/3d_riddles/RIDDLE_01_CHEESE_TEMPLE_LEVEL_1.md`
     - **Lab Notes:** See `12.0/LAB_NOTES/2025/11_NOVEMBER/DAILY_NOTES/2025-11-11/RIDDLE_DSPOINC_REWARD_IMPLEMENTATION.md`
+
+11. **Weapon Rendering System for FBX Models (December 13, 2025)**
+    - **CRITICAL:** FBX weapon models require special material processing to render correctly
+    - **Material Brightening:** ALWAYS brighten dark materials (3x for brightness < 0.3, 2x for < 0.6)
+    - **Emissive Glow:** Add emissive properties for very dark materials (brightness < 0.3)
+    - **Duplicate Prevention:** ALWAYS check for and remove duplicate weapons before animations
+    - **Position Preservation:** Use `preservePosition = true` during bobbing/recoil animations
+    - **Visibility Enforcement:** ALWAYS set `frustumCulled = false` and `renderOrder = 999`
+    - **Scale Configuration:** Use `targetSize: 0.35` for all weapon types (consistent first-person size, reduced from 0.45)
+    - **Base Position:** `(0.0, -0.4, -0.5)` - Negative Z places weapon in front of camera
+    - **Files:** `three.js/main.js` (processWeaponMaterial, updateLevel4WeaponAnimation), `three.js/weapon-system.js` (loadWeapon, _applyWeaponTransforms)
+    - **Status:** ✅ **PRODUCTION READY** (December 13, 2025)
+    - **Scope:** All weapon slots (1-9), all levels (4-9), all FBX weapon models
+    - **Documentation:** See `12.0/RULES/17_WEAPON_RENDERING_RULE.md` for complete guide
+    - **Technical Docs:** See `12.0/TECHNICAL_DOCUMENTATION/WEAPON_RENDERING_RULES.md` and `WEAPON_RENDERING_SOLUTION_2025-12-13.md`
+
+12. **Grass Blade Length System (December 13, 2025)**
+    - **Feature:** Adjustable grass blade length via shader uniform multiplier
+    - **Implementation:** Add `bladeLengthMultiplier` uniform to vertex shader (0.5x to 2.0x range)
+    - **Real-time Updates:** Blade length adjustable without regenerating geometry
+    - **UI Integration:** Slider in God Mode menu Ground Controls section
+    - **Per-Level Settings:** Blade length saved/loaded per level (similar to grass quality)
+    - **Performance:** No additional geometry or calculations (shader-based scaling)
+    - **Files:** `three.js/grass-system.js` (shader, setBladeLength method), `three.js/main.js` (UI controls)
+    - **Status:** 📋 **PLANNED** (December 13, 2025)
+    - **Reference:** [Making Grass with Triangles in GLSL using Three.js](https://medium.com/antaeus-ar/making-grass-with-triangles-in-glsl-using-three-js-e106771a71ff)
+    - **Documentation:** See `12.0/TECHNICAL_DOCUMENTATION/GRASS_BLADE_LENGTH_INTEGRATION_PLAN.md` for complete implementation plan
