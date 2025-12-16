@@ -1295,6 +1295,10 @@ function initSnake() {
   }
   
   function showBossSpawnNotification(cheeseCount, bossNumber) {
+    // 🐛 BUG #350 FIX: Save scroll position before showing notification to prevent frame shift
+    const savedScrollX = window.scrollX || window.pageXOffset || 0;
+    const savedScrollY = window.scrollY || window.pageYOffset || 0;
+    
     const notification = document.createElement('div');
     notification.id = 'boss-spawn-notification';
     
@@ -1315,7 +1319,8 @@ function initSnake() {
                   transition: opacity 0.3s ease-in-out;
                   opacity: 0;
                   max-width: 90vw;
-                  width: 400px;">
+                  width: 400px;
+                  pointer-events: auto;">
         <div style="font-size: clamp(20px, 5vw, 32px);">${spawnTitle}</div>
         <div style="font-size: clamp(14px, 3.5vw, 18px); margin-top: 8px;">${subtitle}</div>
         <div style="font-size: clamp(12px, 3vw, 14px); color: #FFD700; margin-top: 8px;">Collect ${applesNeeded} Golden Apples!</div>
@@ -1332,7 +1337,23 @@ function initSnake() {
         }
       </style>
     `;
+    
+    // 🐛 BUG #350 FIX: Set notification container to not affect layout (position fixed, no dimensions)
+    notification.style.position = 'fixed';
+    notification.style.top = '0';
+    notification.style.left = '0';
+    notification.style.width = '0';
+    notification.style.height = '0';
+    notification.style.overflow = 'visible';
+    notification.style.pointerEvents = 'none';
+    notification.style.zIndex = '10000';
+    
     document.body.appendChild(notification);
+    
+    // 🐛 BUG #350 FIX: Restore scroll position immediately after DOM update to prevent frame shift
+    requestAnimationFrame(() => {
+      window.scrollTo(savedScrollX, savedScrollY);
+    });
     
     // Fade in
     setTimeout(() => {
@@ -1381,6 +1402,10 @@ function initSnake() {
             setTimeout(() => {
               if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
+                // 🐛 BUG #350 FIX: Restore scroll position after notification removed to prevent frame shift
+                requestAnimationFrame(() => {
+                  window.scrollTo(savedScrollX, savedScrollY);
+                });
               }
             }, 300);
           }, 500);
@@ -1390,6 +1415,10 @@ function initSnake() {
   }
   
   function showBossVictoryNotification(bonus, bossNumber) {
+    // 🐛 BUG #350 FIX: Save scroll position before showing notification to prevent frame shift
+    const savedScrollX = window.scrollX || window.pageXOffset || 0;
+    const savedScrollY = window.scrollY || window.pageYOffset || 0;
+    
     const notification = document.createElement('div');
     notification.id = 'boss-victory-notification';
     
@@ -1406,7 +1435,8 @@ function initSnake() {
                   transition: opacity 0.3s ease-in-out;
                   opacity: 0;
                   max-width: 90vw;
-                  width: 400px;">
+                  width: 400px;
+                  pointer-events: auto;">
         <div style="font-size: clamp(20px, 5vw, 28px);">${victoryTitle}</div>
         <div style="font-size: clamp(16px, 4vw, 22px); color: #FFD700; margin-top: 8px;">+${bonus} DSPOINC!</div>
       </div>
@@ -1417,7 +1447,23 @@ function initSnake() {
         }
       </style>
     `;
+    
+    // 🐛 BUG #350 FIX: Set notification container to not affect layout (position fixed, no dimensions)
+    notification.style.position = 'fixed';
+    notification.style.top = '0';
+    notification.style.left = '0';
+    notification.style.width = '0';
+    notification.style.height = '0';
+    notification.style.overflow = 'visible';
+    notification.style.pointerEvents = 'none';
+    notification.style.zIndex = '10000';
+    
     document.body.appendChild(notification);
+    
+    // 🐛 BUG #350 FIX: Restore scroll position immediately after DOM update to prevent frame shift
+    requestAnimationFrame(() => {
+      window.scrollTo(savedScrollX, savedScrollY);
+    });
     
     // Fade in
     setTimeout(() => {
@@ -1466,6 +1512,10 @@ function initSnake() {
             setTimeout(() => {
               if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
+                // 🐛 BUG #350 FIX: Restore scroll position after notification removed to prevent frame shift
+                requestAnimationFrame(() => {
+                  window.scrollTo(savedScrollX, savedScrollY);
+                });
               }
             }, 300);
           }, 500);

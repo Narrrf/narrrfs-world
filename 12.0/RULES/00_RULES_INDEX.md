@@ -124,6 +124,21 @@
      - Debugging guide and troubleshooting checklist
      - Working examples (trees, bear trap, weapons)
 
+19. **`19_CHEST_SYSTEM_RULE.md`** - **🎁 CHEST SYSTEM - TREASURE CHEST IMPLEMENTATION**
+   - **Purpose:** Complete guide for implementing treasure chests with animation and rewards
+   - **Critical:** Chest creation, animation system, state management, reward integration, counter system
+   - **Status:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**
+   - **Created:** December 15, 2025
+   - **Scope:** All chests across all levels, standardized chest2 model with animation
+   - **Features:**
+     - Complete chest creation guide with examples
+     - Animation system (lid rotation, state switching)
+     - Reward system integration (DSPOINC via API)
+     - Chest counter system (tracks opened chests)
+     - Standardization (all chests use chest2)
+     - Position guidelines (Y = 1.0, matches bear trap)
+     - Naming conventions (chest_001, chest_002, etc.)
+
 ---
 
 ## 🚨 **CRITICAL RULE HIERARCHY**
@@ -166,7 +181,8 @@
 ├── 15_RIDDLE_REWARD_DATABASE_RULE.md    # 🎯 RIDDLE REWARD & DATABASE SYSTEM
 ├── 16_DISCORD_BOT_MANAGEMENT_RULE.md    # 🤖 DISCORD BOT MANAGEMENT
 ├── 17_WEAPON_RENDERING_RULE.md          # 🔫 WEAPON RENDERING - FBX MODELS
-└── 18_3D_MODEL_RENDERING_RULE.md        # 🎨 3D MODEL RENDERING - DECORATIVE MODELS
+├── 18_3D_MODEL_RENDERING_RULE.md        # 🎨 3D MODEL RENDERING - DECORATIVE MODELS
+└── 19_CHEST_SYSTEM_RULE.md              # 🎁 CHEST SYSTEM - TREASURE CHEST IMPLEMENTATION
 ```
 
 ---

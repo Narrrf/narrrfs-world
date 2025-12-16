@@ -1,8 +1,8 @@
 # 🧀 NARRRFS WORLD 12.0 - DAILY STATUS
 
-**Date:** December 15, 2025  
-**Session:** Level 1 Warp Back & Chest Position Fixes  
-**Status:** ✅ **COMPLETE - PRODUCTION READY**
+**Date:** December 15-16, 2025  
+**Session:** Level 1 Warp Back & Chest Position Fixes → Chest System Fine-Tuning → Grass Exclusion Zone System  
+**Status:** 🔄 **IN PROGRESS - GRASS EXCLUSION ZONE SYSTEM (PHASE 1 - Reference Fix Applied)**
 
 ---
 
@@ -310,5 +310,98 @@ const audioPath = isDevServer
 
 ---
 
-**STATUS:** ✅ **COMPLETE - ALL SYSTEMS WORKING - PHASE 2 COMPLETE - PRODUCTION READY - TESTED & VERIFIED**
+---
+
+## ✅ **CHEST STANDARDIZATION - CHEST2 ONLY**
+
+### **Standardization Decision - December 15, 2025 (Evening Session)**
+
+**Status:** ✅ **COMPLETE - ALL CHESTS USE CHEST2**
+
+### **Decision:**
+- ✅ **Chest2 Standardized:** All chests now use chest2 (has animation support)
+- ✅ **Chest1 Deprecated:** chest1 type automatically converts to chest2
+- ✅ **All Levels:** All future chests will use chest2 by default
+- ✅ **Backward Compatible:** Legacy chest1 references automatically use chest2
+
+### **Implementation:**
+- ✅ **Code Updated:** All chest creation now uses `type: 'chest2'`
+- ✅ **Auto-Conversion:** chest1 type automatically converts to chest2 in `ChestSystem.addChest()`
+- ✅ **Model Loading:** chest1 type automatically uses chest2 model path
+- ✅ **Validation:** System validates and converts chest types
+
+### **Files Modified:**
+- `three.js/main.js` - All chest creation updated to use `type: 'chest2'`
+- `three.js/chest-system.js` - Auto-conversion logic added for chest1 → chest2
+
+### **Result:**
+- ✅ All chests in Level 1 now use chest2
+- ✅ All future chests will use chest2 by default
+- ✅ Animation system works perfectly on all chests
+- ✅ No breaking changes (backward compatible)
+
+---
+
+**STATUS:** ✅ **COMPLETE - ALL SYSTEMS WORKING - PHASE 2 COMPLETE - PHASE 3 COMPLETE - ANIMATION PERFECT - CHEST2 STANDARDIZED - PRODUCTION READY**
+
+---
+
+## 🌱 **GRASS EXCLUSION ZONE SYSTEM (NEW - IN PROGRESS)**
+
+### **Problem Identified:**
+Grass is rendering through objects (chests, trees, etc.), creating visual artifacts where grass blades appear inside 3D models.
+
+### **Solution: Exclusion Zone System**
+Implementing a system that registers objects with bounding boxes and excludes grass generation in those areas.
+
+### **Phase 1: Core Exclusion Zone System (IN PROGRESS)**
+**Goal:** Create the foundation for preventing grass from rendering through objects.
+
+**Implementation Status:**
+1. ✅ **Exclusion Zone Registry:** `exclusionZones` Map added to `GrassSystem` class
+2. ✅ **Registration Methods:** `registerExclusionZone()`, `unregisterExclusionZone()`, `clearExclusionZones()` implemented
+3. ✅ **Exclusion Check Function:** `isPositionExcluded(x, z)` implemented - checks if position overlaps with any exclusion zone
+4. ✅ **Integration Points:** `generateGrassField()` and `GrassChunk.generate()` updated to check exclusion zones
+5. ✅ **Auto-Registration:** Chest system automatically registers exclusion zones when chests load
+6. ✅ **Grass Regeneration:** System triggers grass regeneration after exclusion zones are registered
+7. 🔄 **CRITICAL FIX (December 16, 2025):** Added `chestSystem.setGrassSystem(grassSystem)` call when grassSystem is recreated to fix stale reference issue
+
+**Technical Details:**
+- Exclusion zones stored as: `{ id, bounds: { minX, maxX, minZ, maxZ }, padding }`
+- Bounding boxes calculated using `THREE.Box3().setFromObject(mesh)`
+- Padding parameter allows natural grass-free area around objects
+- Performance: O(n) check per blade position (negligible for 10-50 objects)
+
+**Benefits:**
+- ✅ Clean visuals (no grass through objects)
+- ✅ Performance-friendly (checks only during generation)
+- ✅ Scalable (works with any number of objects)
+- ✅ Universal (works for chests, trees, NPCs, buildings, etc.)
+
+**Current Issue (December 16, 2025):**
+- **Problem:** Grass still rendering inside chests despite exclusion zone system
+- **Root Cause:** DUPLICATE `initializeGrassSystem()` calls in `warpToLevel1()`:
+  1. First call: `applyLevelEnvironment()` (line 30212) - creates grassSystem #1, exclusion zones registered
+  2. Second call: `initializeGrassSystem()` in Promise (line 30217) - creates grassSystem #2, **WIPES OUT exclusion zones!**
+- **Previous Fix:** Added `chestSystem.setGrassSystem(grassSystem)` call - this was correct but not enough
+- **REAL FIX Applied (Dec 16, 2025):** Removed duplicate `initializeGrassSystem()` and `initializeSkySystem()` calls from `warpToLevel1()` 
+  - `applyLevelEnvironment()` already calls both functions internally
+  - Calling them again was destroying the exclusion zones
+- **Status:** ✅ **WORKING - VERIFIED DECEMBER 16, 2025**
+
+**VERIFICATION RESULT:**
+✅ First time ever - NO grass inside chests!
+✅ Exclusion zones working correctly
+✅ Grass regeneration with exclusion zones successful
+
+**Completed Phases:**
+- ✅ Phase 1: Core exclusion zone registry and methods
+- ✅ Phase 2: Integration with grass generation (single mesh + chunked mode)
+- ✅ Phase 3: Auto-registration system (chests auto-register on load)
+- ✅ Bug Fix: Removed duplicate initializeGrassSystem() call in warpToLevel1()
+
+**Ready for Extension:**
+- Phase 4: Extend to trees (auto-register tree positions)
+- Phase 5: Extend to NPCs/entities (auto-register moving objects)
+- Phase 6: Dynamic updates (support moving objects with real-time exclusion updates)
 

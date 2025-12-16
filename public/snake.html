@@ -113,18 +113,34 @@
     }
     
     /* 🐛 BUG #322 FIX: Boss HUD responsive styles */
+    /* 🐛 BUG #350 FIX: Boss HUD positioned absolutely - doesn't affect canvas layout */
     #snake-boss-hud-container {
       animation: fadeInDown 0.3s ease-out;
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 8px;
+      z-index: 10;  /* Above canvas, but below buttons */
+    }
+    
+    /* 🐛 BUG #350 FIX: Game control buttons always visible above boss HUD */
+    #start-snake-btn,
+    #pause-snake-btn {
+      position: relative;
+      z-index: 20;  /* Higher than boss HUD (z-index: 10) */
     }
     
     @keyframes fadeInDown {
       from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateX(-50%) translateY(-10px);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(-50%) translateY(0);
       }
     }
     
@@ -258,40 +274,40 @@
       <p class="text-xs text-gray-400">💡 Use arrow keys or swipe to move</p>
     </div>
     
-    <!-- 🐛 BUG #322 FIX: Boss HUD outside game container -->
-    <div id="snake-boss-hud-container" class="hidden w-full max-w-md mx-auto mb-3 space-y-2">
-      <!-- 1. Boss HP Bar -->
-      <div id="snake-boss-hp-bar" class="bg-black/85 rounded-lg border-2 border-yellow-400 p-2">
-        <div class="flex items-center justify-between">
-          <span class="text-white font-bold text-sm">🐍 BOSS HP:</span>
-          <div class="flex-1 mx-2 h-4 bg-gray-700 rounded-full overflow-hidden">
-            <div id="snake-boss-hp-fill" class="h-full transition-all duration-300 rounded-full" style="width: 100%;"></div>
-          </div>
-          <span id="snake-boss-hp-text" class="text-white font-bold text-sm">0/0</span>
-        </div>
-      </div>
-      
-      <!-- 2. Golden Apples Counter -->
-      <div id="snake-boss-apples-counter" class="bg-black/75 rounded-lg border-2 border-yellow-400/50 p-2">
-        <div class="flex items-center justify-between">
-          <div id="snake-boss-apples-icons" class="flex items-center gap-2 flex-wrap">
-            <!-- Apple icons will be dynamically inserted here -->
-          </div>
-          <span id="snake-boss-apples-text" class="text-white font-bold text-sm ml-2">0/0 🍎</span>
-        </div>
-      </div>
-      
-      <!-- 3. Timer + Bonus -->
-      <div id="snake-boss-timer-bonus" class="bg-black/75 rounded-lg border-2 border-yellow-400/50 p-2">
-        <div class="flex items-center justify-between">
-          <span id="snake-boss-timer-text" class="text-yellow-400 font-bold text-sm">⏰ Time: 60s</span>
-          <span id="snake-boss-bonus-text" class="text-green-400 font-bold text-sm">+0 💰</span>
-        </div>
-      </div>
-    </div>
-    
     <div class="flex justify-center items-center mb-4">
       <div class="relative inline-block">
+        <!-- 🐛 BUG #350 FIX: Boss HUD container positioned absolutely above canvas (doesn't shift canvas position) -->
+        <div id="snake-boss-hud-container" class="hidden w-full space-y-2">
+          <!-- 1. Boss HP Bar -->
+          <div id="snake-boss-hp-bar" class="bg-black/85 rounded-lg border-2 border-yellow-400 p-2">
+            <div class="flex items-center justify-between">
+              <span class="text-white font-bold text-sm">🐍 BOSS HP:</span>
+              <div class="flex-1 mx-2 h-4 bg-gray-700 rounded-full overflow-hidden">
+                <div id="snake-boss-hp-fill" class="h-full transition-all duration-300 rounded-full" style="width: 100%;"></div>
+              </div>
+              <span id="snake-boss-hp-text" class="text-white font-bold text-sm">0/0</span>
+            </div>
+          </div>
+          
+          <!-- 2. Golden Apples Counter -->
+          <div id="snake-boss-apples-counter" class="bg-black/75 rounded-lg border-2 border-yellow-400/50 p-2">
+            <div class="flex items-center justify-between">
+              <div id="snake-boss-apples-icons" class="flex items-center gap-2 flex-wrap">
+                <!-- Apple icons will be dynamically inserted here -->
+              </div>
+              <span id="snake-boss-apples-text" class="text-white font-bold text-sm ml-2">0/0 🍎</span>
+            </div>
+          </div>
+          
+          <!-- 3. Timer + Bonus -->
+          <div id="snake-boss-timer-bonus" class="bg-black/75 rounded-lg border-2 border-yellow-400/50 p-2">
+            <div class="flex items-center justify-between">
+              <span id="snake-boss-timer-text" class="text-yellow-400 font-bold text-sm">⏰ Time: 60s</span>
+              <span id="snake-boss-bonus-text" class="text-green-400 font-bold text-sm">+0 💰</span>
+            </div>
+          </div>
+        </div>
+        
         <canvas id="snake-canvas" width="200" height="400" class="bg-gray-900 border-4 border-green-400 block rounded-lg shadow-lg" style="width: 100%; max-width: 400px; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: -moz-crisp-edges;"></canvas>
 
         <div id="snake-countdown" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-green-300 bg-black/80 hidden z-50 rounded-lg">
