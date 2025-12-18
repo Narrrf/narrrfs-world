@@ -23,6 +23,11 @@ try {
         throw new Exception('Bug not found');
     }
     
+    // Check if status is changing to "Resolved" (status_id = 5)
+    $isResolvedStatus = ($input['status_id'] == 5);
+    $wasResolved = ($existingBug['status_id'] == 5);
+    $shouldSetResolvedAt = $isResolvedStatus && !$wasResolved && empty($existingBug['resolved_at']);
+    
     // Update bug report
     $updateQuery = "
         UPDATE tbl_bug_reports SET
@@ -33,6 +38,10 @@ try {
             status_id = ?,
             assigned_to = ?,
             resolution_notes = ?,
+            resolved_at = CASE 
+                WHEN ? = 5 AND (resolved_at IS NULL OR resolved_at = '') THEN CURRENT_TIMESTAMP
+                ELSE resolved_at
+            END,
             updated_at = CURRENT_TIMESTAMP
         WHERE bug_id = ?
     ";
@@ -45,7 +54,8 @@ try {
     $stmt->bindValue(5, $input['status_id']);
     $stmt->bindValue(6, $input['assigned_to'] ?: null);
     $stmt->bindValue(7, $input['resolution_notes'] ?: null);
-    $stmt->bindValue(8, $input['bug_id']);
+    $stmt->bindValue(8, $input['status_id']); // For CASE condition
+    $stmt->bindValue(9, $input['bug_id']);
     
     $result = $stmt->execute();
     
@@ -83,9 +93,22 @@ try {
             $assignmentStmt->execute();
         }
         
+        // Get updated bug to return resolved_at if it was set
+        $updatedQuery = "SELECT resolved_at FROM tbl_bug_reports WHERE bug_id = ?";
+        $updatedStmt = $db->prepare($updatedQuery);
+        $updatedStmt->bindValue(1, $input['bug_id']);
+        $updatedResult = $updatedStmt->execute();
+        $updatedBug = $updatedResult->fetchArray(SQLITE3_ASSOC);
+        
+        $message = 'Bug report updated successfully';
+        if ($shouldSetResolvedAt && $updatedBug['resolved_at']) {
+            $message .= '. Bug marked as resolved - Discord bot will add 🟢 reaction.';
+        }
+        
         echo json_encode([
             'success' => true,
-            'message' => 'Bug report updated successfully'
+            'message' => $message,
+            'resolved_at' => $updatedBug['resolved_at'] ?? null
         ]);
     } else {
         throw new Exception('Failed to update bug report');

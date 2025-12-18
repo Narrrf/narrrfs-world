@@ -235,3 +235,29 @@ Added higher z-index to control buttons to ensure they appear above the boss HUD
 **Bug Fix Completed:** December 16, 2025  
 **Status:** ✅ **FIXED - COMPLETE**  
 **Impact:** 🔥 **CRITICAL - MOBILE USER EXPERIENCE IMPROVED**
+
+---
+
+## 🔔 **DISCORD REACTION STATUS**
+
+### **Issue Identified:**
+- Bug #350 marked as "Resolved" (status_id = 5) in database
+- Discord message ID: `1445921175703388162`
+- Discord channel ID: `1379193350162485351`
+- **🟢 reaction NOT automatically added to Discord message**
+
+### **Root Cause:**
+- Database updated directly via SQL (bypassed API)
+- Discord bot likely monitors `update-bug-report.php` API endpoint
+- Direct database updates don't trigger bot's Discord reaction handler
+
+### **Potential Solutions:**
+1. **Update bug via Admin Interface API** - Use `update-bug-report.php` endpoint which bot might monitor
+2. **Restart Discord Bot** - If bot polls database, restart might trigger detection
+3. **Manual Reaction** - Admin can manually add 🟢 reaction in Discord
+4. **Add Discord Integration** - Enhance `update-bug-report.php` to directly add Discord reactions via Discord API
+
+### **Next Steps:**
+- Test updating bug status via admin interface API
+- Check Discord bot logs for status change detection
+- Verify bot is running and monitoring bug status changes

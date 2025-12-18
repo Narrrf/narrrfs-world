@@ -713,3 +713,45 @@ Implemented climbing system for Mouse character, allowing the Mouse to climb up 
 - **All Systems:** Working correctly
 
 ---
+
+### **4. Level 5 & 6 Underground Flickering Fixed**
+**Problem:** Level 5 and Level 6 had severe underground flickering described as "T shapes from light grey to dark grey each frame making it like a light show not playable"
+
+**Root Cause:**
+- Z-fighting between overlapping ground meshes at the same position
+- Multiple ground meshes created without proper disposal
+- Insufficient depth offset between underground and ground meshes
+- Missing polygon offset on materials
+
+**Solution:**
+- ✅ **MeshBasicMaterial for Solid Colors:** Switched all blank/color grounds to `MeshBasicMaterial` (completely unlit, zero flickering)
+- ✅ **Polygon Offset Added:** Added `polygonOffset: true`, `polygonOffsetFactor: -1/-2`, `polygonOffsetUnits: -1/-2` to all ground materials
+- ✅ **Increased Depth Offset:** Changed underground mesh Y offset from `-0.02` to `-0.05` for better depth separation
+- ✅ **Enhanced Disposal Logic:** Added `scene.children.includes()` checks before removing meshes
+- ✅ **Duplicate Prevention:** Added guards to check mesh isn't already in scene before adding
+- ✅ **Ground Type Recreation Guard:** Skip recreation if ground type already active with existing meshes
+
+**Files Modified:**
+- `three.js/grass-system.js`:
+  - `createBlankGround()` - Added polygon offset, documentation
+  - `createColorGround()` - Added polygon offset, documentation
+  - `createUndergroundMesh()` - Increased depth offset, added polygon offset, proper color fallback
+  - `disposeCurrentGround()` - Enhanced with scene.children checks, explicit undergroundMesh disposal
+  - `setGroundType()` - Added recreation guard, duplicate prevention
+
+**Technical Details:**
+- **Material Type:** `THREE.MeshBasicMaterial` for solid colors (completely unaffected by lighting)
+- **Depth Offset:** Underground mesh at `position.y - 0.05` (was `-0.02`)
+- **Polygon Offset:** Factor `-1/-2`, Units `-1/-2` prevents z-fighting
+- **Color Handling:** Uses `options.groundColor` with proper fallback to `options.undergroundColor`
+
+**Result:**
+- ✅ **Level 5:** Underground mesh displays correctly without flickering
+- ✅ **Level 6:** Blank ground displays correctly without flickering
+- ✅ **All Levels:** Underground matches saved grass ground system settings perfectly
+- ✅ **No T-shape Flickering:** Z-fighting completely eliminated
+- ✅ **Consistent Colors:** Ground colors remain stable, no light/dark grey alternation
+
+**Date:** December 16, 2025 (Current Session)
+
+---
