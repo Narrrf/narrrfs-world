@@ -1,11 +1,13 @@
-# 🎯 CURSOR RULE: PERFECT 5-GAME SCORE RETRIEVAL SYSTEM V3.0
+# 🎯 CURSOR RULE: PERFECT 7-GAME SCORE RETRIEVAL SYSTEM V4.0
 
 ## 🚨 CRITICAL RULE FOR CURSOR - ALWAYS FOLLOW THIS SYSTEM
 
-**Last Updated:** October 26, 2025 - Bug #104 Complete  
+**Last Updated:** December 20, 2025 - Complete Technical Documentation Sync  
 **Status:** ✅ **ALL SYSTEMS VERIFIED AND WORKING**  
 
-**When retrieving scores from any of the 5 games in Narrrf's World, you MUST use these exact field mappings and table references:**
+**When retrieving scores from any of the 7 games in Narrrf's World, you MUST use these exact field mappings and table references:**
+
+**📚 Complete Technical Documentation:** `12.0/YEAR_END_2025/TECHNICAL_COMPLETE_2025_MASTER_INDEX.md`
 
 ---
 
@@ -74,19 +76,62 @@ WHERE user_id = ?
 
 ---
 
+## 💥 GAME 6: CHEESE RUMBLE
+```sql
+-- Table: tbl_rumble_participants
+-- Field: user_id (contains Discord ID)
+-- Query: WHERE user_id = ?
+-- CRITICAL: Use final_position (NOT position) for Cheese Rumble
+-- Example:
+SELECT COUNT(*) as total_rumbles, 
+       COUNT(CASE WHEN final_position = 1 THEN 1 END) as wins,
+       COUNT(CASE WHEN final_position <= 3 THEN 1 END) as podiums
+FROM tbl_rumble_participants 
+WHERE user_id = ?
+```
+
+---
+
+## 🎮 GAME 7: 3D HYTOPIA GAME
+```sql
+-- Table: tbl_riddle_completions (for riddle completions)
+-- Field: discord_id (contains Discord ID)
+-- Query: WHERE discord_id = ?
+-- Example:
+SELECT COUNT(*) as total_riddles_completed,
+       SUM(total_reward) as total_dspoinc_earned
+FROM tbl_riddle_completions 
+WHERE discord_id = ?
+
+-- Table: tbl_cheese_hunt_captures (for Cheese Temple captures)
+-- Field: discord_id (contains Discord ID)
+-- Query: WHERE discord_id = ?
+-- Example:
+SELECT COUNT(*) as total_captures,
+       SUM(dspoinc_earned) as total_dspoinc_earned
+FROM tbl_cheese_hunt_captures 
+WHERE discord_id = ?
+```
+
+---
+
 ## 🚨 **CRITICAL FIELD MAPPING RULES:**
 
 ### **✅ CORRECT FIELD MAPPINGS:**
 1. **Tetris, Snake, Space Invaders SCORES:** Use `discord_id` in `tbl_tetris_scores`
 2. **Cheese Hunt SCORES:** Use `user_wallet` in `tbl_cheese_clicks`
-3. **Discord Race SCORES:** Use `user_id` in `tbl_race_participants`
-4. **ALL ACHIEVEMENTS:** Use `user_id` in their respective achievement tables
+3. **Discord Race SCORES:** Use `user_id` in `tbl_race_participants` (use `position` field)
+4. **Cheese Rumble SCORES:** Use `user_id` in `tbl_rumble_participants` (use `final_position` field)
+5. **3D Hytopia SCORES:** Use `discord_id` in `tbl_riddle_completions` and `tbl_cheese_hunt_captures`
+6. **ALL ACHIEVEMENTS:** Use `user_id` in their respective achievement tables
 
 ### **❌ COMMON MISTAKES TO AVOID:**
 - ❌ Using `user_id` for Tetris, Snake, or Space Invaders SCORE queries
 - ❌ Using `discord_id` for Cheese Hunt SCORE queries
 - ❌ Looking for Snake/Space Invaders in `tbl_user_scores`
-- ❌ Using `final_position` instead of `position` in race queries
+- ❌ Using `final_position` instead of `position` in Discord Race queries
+- ❌ Using `position` instead of `final_position` in Cheese Rumble queries
+- ❌ Confusing `tbl_race_participants` (Discord Race) with `tbl_rumble_participants` (Cheese Rumble)
 
 ---
 
@@ -120,7 +165,10 @@ WHERE user_id = ?
 ### **SCORE TABLES:**
 - **`tbl_tetris_scores`** - Tetris, Snake, Space Invaders scores (uses `discord_id`)
 - **`tbl_cheese_clicks`** - Cheese Hunt clicks (uses `user_wallet`)
-- **`tbl_race_participants`** - Discord Race participation (uses `user_id`)
+- **`tbl_race_participants`** - Discord Race participation (uses `user_id`, field: `position`)
+- **`tbl_rumble_participants`** - Cheese Rumble participation (uses `user_id`, field: `final_position`)
+- **`tbl_riddle_completions`** - 3D Hytopia riddle completions (uses `discord_id`)
+- **`tbl_cheese_hunt_captures`** - 3D Hytopia Cheese Temple captures (uses `discord_id`)
 
 ### **ACHIEVEMENT TABLES:**
 - **`tbl_tetris_achievements`** - Tetris achievements (uses `user_id`)

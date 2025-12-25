@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<?php
+// Include Discord invite configuration
+require_once 'discord-invite.php';
+?>
+<head>
+  <!-- 🧠 Meta Essentials -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🧬 Nerd Lab - Technical Documentation | Narrrf's World</title>
+
+  <!-- 🧀 Favicon & Metadata -->
+  <link rel="icon" type="image/png" href="favicon-phantom.png" />
+  <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
+  <meta name="theme-color" content="#facc15" />
+  <meta name="description" content="Exclusive technical documentation for Narrrf's World - Complete system overview for Holders and VIP Holders" />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- 🧵 OpenGraph for Discord & Socials -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="🧬 Nerd Lab - Technical Documentation - Narrrf's World" />
+  <meta property="og:description" content="Exclusive technical documentation - Complete system overview" />
+  <meta property="og:image" content="img/narrrf-logo-professional.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- 🎨 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 🔗 Discord Token of Render System -->
+  <script src="discord-config.js"></script>
+
+  <!-- 📚 Markdown Parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- 🧬 Overview Content -->
+  <script src="js/nerd-lab-overviews.js"></script>
+
+  <!-- 💫 Enhanced Styles -->
+  <style>
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .doc-card {
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .doc-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(251, 191, 36, 0.5);
+    }
+
+    .tab-btn {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      opacity: 0.7;
+    }
+
+    .tab-btn:hover {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+
+    .tab-btn.active {
+      opacity: 1;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1));
+      border-color: rgba(251, 191, 36, 0.5);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Markdown Content Styling */
+    .markdown-content {
+      line-height: 1.8;
+    }
+
+    .markdown-content h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin: 2rem 0 1rem;
+      color: #fbbf24;
+      border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+      padding-bottom: 0.5rem;
+    }
+
+    .markdown-content h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 1.5rem 0 0.75rem;
+      color: #fcd34d;
+    }
+
+    .markdown-content h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 1.25rem 0 0.5rem;
+      color: #fde68a;
+    }
+
+    .markdown-content code {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 0.2rem 0.4rem;
+      border-radius: 0.25rem;
+      font-family: 'Courier New', monospace;
+      color: #fbbf24;
+    }
+
+    .markdown-content pre {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin: 1rem 0;
+    }
+
+    .markdown-content pre code {
+      background: none;
+      padding: 0;
+      color: #e5e7eb;
+    }
+
+    .markdown-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    .markdown-content table th,
+    .markdown-content table td {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.75rem;
+      text-align: left;
+    }
+
+    .markdown-content table th {
+      background: rgba(251, 191, 36, 0.2);
+      font-weight: 600;
+    }
+
+    .markdown-content table tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .markdown-content a {
+      color: #fbbf24;
+      text-decoration: underline;
+    }
+
+    .markdown-content a:hover {
+      color: #fcd34d;
+    }
+
+    .markdown-content ul,
+    .markdown-content ol {
+      margin: 1rem 0;
+      padding-left: 2rem;
+    }
+
+    .markdown-content li {
+      margin: 0.5rem 0;
+    }
+
+    .markdown-content blockquote {
+      border-left: 4px solid #fbbf24;
+      padding-left: 1rem;
+      margin: 1rem 0;
+      color: rgba(255, 255, 255, 0.8);
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body class="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
+
+  <!-- 🌟 Floating Background Elements -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute w-4 h-4 bg-yellow-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
+    <div class="absolute w-6 h-6 bg-purple-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
+    <div class="absolute w-3 h-3 bg-pink-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
+    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
+  </div>
+
+  <!-- 🧬 Lab Status Badge -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-purple-400">
+    🧬 Nerd Lab v1.0 - Exclusive Access
+  </div>
+
+  <!-- 🧭 Navigation Bar (Sticky Top) -->
+  <header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="index.html" class="text-xl font-bold tracking-tight text-yellow-400">🧠 Narrrf's World</a>
+
+      <!-- 🧠 Main Navigation -->
+      <nav aria-label="Main Navigation" class="space-x-4 text-sm md:text-base flex items-center">
+        <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
+        <a href="profile.html" class="hover:text-yellow-400 transition-colors">Profile</a>
+        <a href="get-roles.html" class="hover:text-yellow-400 transition-colors">Get Roles</a>
+        <a href="partners.html" class="hover:text-yellow-400 transition-colors">Partners</a>
+        <a href="project-updates.html" class="hover:text-yellow-400 transition-colors">Updates</a>
+        <a href="faq.html" class="hover:text-yellow-400 transition-colors">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 🔐 Access Control Check -->
+  <div id="access-denied" style="display: none;" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-gray-800 border-4 border-red-500 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+      <div class="text-6xl mb-4">🚫</div>
+      <h1 class="text-2xl font-bold text-red-400 mb-4">Access Denied</h1>
+      <p class="text-gray-300 mb-6">
+        This page is exclusive to <strong>Holders</strong> and <strong>VIP Holders</strong>.
+      </p>
+      <div class="space-y-3">
+        <a href="<?php echo $discord_url; ?>" target="_blank"
+           class="block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition">
+          🔗 Join Discord & Get NFT
+        </a>
+        <a href="mint.html"
+           class="block bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 px-6 rounded-xl transition">
+          🎨 Mint Your NFT
+        </a>
+        <a href="index.html"
+           class="block bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition">
+          🏠 Go Home
+        </a>
+      </div>
+      <p class="text-xs text-gray-500 mt-4">
+        Need help? Contact an admin in Discord.
+      </p>
+    </div>
+  </div>
+
+  <!-- 🧬 Main Content (Hidden until access verified) -->
+  <div id="main-content" style="display: none;">
+
+    <!-- 🏆 Hero Section -->
+    <section class="relative z-10 py-20 px-4 md:px-6 text-center">
+      <div class="max-w-6xl mx-auto">
+        <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">
+          🧬 Nerd Lab
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+          Complete Technical Documentation - Your exclusive access to the Narrrf's World Cheese Engine system
+        </p>
+        <div class="bg-green-900/30 border border-green-500/50 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
+          <p class="text-green-100 text-sm">
+            <strong>2025 Complete Documentation:</strong> All 7 games + Admin Interface + Discord Bot + Database + Frontend + Cheese Engine 13.0 Agent System
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 📚 Tab Navigation -->
+    <section class="relative z-10 px-4 md:px-6 pb-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-black/50 backdrop-blur-md rounded-xl p-4 border border-yellow-400/30">
+          <div class="flex flex-wrap gap-2 overflow-x-auto pb-2">
+            <button class="tab-btn active px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="masterIndex">
+              📚 Master Index
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="tetris">
+              🎮 Tetris
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="snake">
+              🐍 Snake
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="spaceInvaders">
+              👾 Space Invaders
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="cheeseHunt">
+              🧀 Cheese Hunt
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="discordRace">
+              🏁 Discord Race
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="cheeseRumble">
+              ⚔️ Cheese Rumble
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="hytopia3d">
+              🧩 3D Riddle Game
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="adminInterface">
+              🖥️ Admin Interface
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="discordBot">
+              🤖 Discord Bot
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="database">
+              🗄️ Database
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="frontend">
+              🌐 Frontend
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="cheeseEngine">
+              🧠 Cheese Engine
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 📄 Tab Content Areas -->
+    <section class="relative z-10 px-4 md:px-6 pb-16">
+      <div class="max-w-7xl mx-auto">
+        
+        <!-- Master Index Tab -->
+        <div id="tab-masterIndex" class="tab-content active">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="masterIndexContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Master Index...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Game Documentation Tabs -->
+        <div id="tab-tetris" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="tetrisContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Tetris documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-snake" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="snakeContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Snake documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-spaceInvaders" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="spaceInvadersContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Space Invaders documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-cheeseHunt" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="cheeseHuntContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Cheese Hunt documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-discordRace" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="discordRaceContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Discord Race documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-cheeseRumble" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="cheeseRumbleContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Cheese Rumble documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-hytopia3d" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="hytopia3dContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading 3D Riddle Game documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Documentation Tabs -->
+        <div id="tab-adminInterface" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="adminInterfaceContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Admin Interface documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-discordBot" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="discordBotContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Discord Bot documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-database" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="databaseContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Database documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-frontend" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="frontendContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Frontend documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-cheeseEngine" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="cheeseEngineContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Cheese Engine 13.0 documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-yellow-500/20">
+      <div class="max-w-4xl mx-auto px-6">
+        <p class="mb-4">
+          Made with 🧪 & strategy in Narrrf's Lab | 
+          <a href="<?php echo $discord_url; ?>" class="text-yellow-400 hover:text-yellow-300 underline transition-colors">
+            Join us on Discord
+          </a>
+        </p>
+        <p class="text-sm">
+          © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
+        </p>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- 🧠 JavaScript -->
+  <script>
+    // Environment detection
+    const isProduction = window.location.hostname === 'narrrfs.world';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+
+    // Document file mapping
+    const DOCUMENT_FILES = {
+      masterIndex: 'TECHNICAL_COMPLETE_2025_MASTER_INDEX.md',
+      tetris: 'GAME_01_TETRIS_COMPLETE_TECHNICAL.md',
+      snake: 'GAME_02_SNAKE_COMPLETE_TECHNICAL.md',
+      spaceInvaders: 'GAME_03_SPACE_INVADERS_COMPLETE_TECHNICAL.md',
+      cheeseHunt: 'GAME_04_CHEESE_HUNT_COMPLETE_TECHNICAL.md',
+      discordRace: 'GAME_05_DISCORD_RACE_COMPLETE_TECHNICAL.md',
+      cheeseRumble: 'GAME_06_CHEESE_RUMBLE_COMPLETE_TECHNICAL.md',
+      hytopia3d: 'GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md',
+      adminInterface: 'ADMIN_INTERFACE_COMPLETE_TECHNICAL.md',
+      discordBot: 'DISCORD_BOT_COMPLETE_TECHNICAL.md',
+      database: 'DATABASE_COMPLETE_TECHNICAL.md',
+      frontend: 'FRONTEND_WEBSITE_COMPLETE_TECHNICAL.md',
+      cheeseEngine: 'CHEESE_ENGINE_13.0_AGENT_SYSTEM_COMPLETE_TECHNICAL.md'
+    };
+
+    // Content cache
+    const contentCache = {};
+
+    // Access Control - Check for Holder/VIP Holder
+    async function checkHolderAccess() {
+      // 🧪 LOCAL DEVELOPMENT OVERRIDE - Only for narrrf user on localhost
+      // Check localStorage FIRST (matches pattern from Bingo.html, snake.html, etc.)
+      if (!isProduction) {
+        const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID
+        let localDiscordId = localStorage.getItem('discord_id');
+        
+        // If no discord_id in localStorage on localhost, set it for narrrf
+        if (!localDiscordId) {
+          console.log('🧪 Local Development: Setting narrrf Discord ID in localStorage');
+          localStorage.setItem('discord_id', narrrfDiscordId);
+          localStorage.setItem('discord_name', 'Narrrf');
+          localDiscordId = narrrfDiscordId;
+        }
+        
+        // Check if it matches narrrf's ID
+        if (localDiscordId === narrrfDiscordId) {
+          console.log('🧪 Local Development Override: Access granted for narrrf (localStorage check)');
+          return true;
+        }
+        
+        // Also try API check for local development (in case localStorage has different ID)
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/user/profile.php`, {
+            credentials: 'include',
+            headers: { 'Accept': 'application/json' }
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            const discordId = userData.discord_id || userData.user_id || localDiscordId || '';
+            const username = userData.username || userData.discord_name || '';
+            
+            // Local development override for narrrf
+            if (discordId === narrrfDiscordId || username.toLowerCase() === 'narrrf') {
+              // Set in localStorage for future checks
+              localStorage.setItem('discord_id', narrrfDiscordId);
+              if (username) localStorage.setItem('discord_name', username);
+              console.log('🧪 Local Development Override: Access granted for narrrf (API check)');
+              return true;
+            }
+          }
+        } catch (error) {
+          // If API fails, still grant access if we're in local development
+          console.log('🧪 Local Development: API check failed, granting access based on localhost');
+          if (!localDiscordId || localDiscordId === narrrfDiscordId) {
+            localStorage.setItem('discord_id', narrrfDiscordId);
+            localStorage.setItem('discord_name', 'Narrrf');
+            return true;
+          }
+        }
+      }
+
+      // Production or normal check
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/user/profile.php`, {
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) {
+          console.log('Access Check: Profile API not accessible');
+          return false;
+        }
+
+        const userData = await response.json();
+        
+        if (!userData.roles || !Array.isArray(userData.roles)) {
+          console.log('Access Check: No roles found');
+          return false;
+        }
+
+        // Check for Holder or VIP Holder roles
+        const hasAccess = userData.roles.some(role => {
+          const roleStr = String(role).toLowerCase();
+          return roleStr.includes('holder') || 
+                 roleStr.includes('vip holder') || 
+                 roleStr.includes('🎴 vip holder') || 
+                 roleStr.includes('🏆 holder');
+        });
+
+        console.log('Access Check: User roles:', userData.roles);
+        console.log('Access Check: Has access:', hasAccess);
+
+        return hasAccess;
+
+      } catch (error) {
+        console.error('Access Check: Error:', error);
+        return false;
+      }
+    }
+
+    // Tab switching
+    function showTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Remove active class from all buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      // Show selected tab
+      const selectedTab = document.getElementById(`tab-${tabName}`);
+      if (selectedTab) {
+        selectedTab.classList.add('active');
+      }
+
+      // Add active class to selected button
+      const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
+      if (selectedBtn) {
+        selectedBtn.classList.add('active');
+      }
+
+      // Load content if not cached
+      loadTabContent(tabName);
+    }
+
+    // Load document content
+    async function loadTabContent(tabName) {
+      const contentId = `${tabName}Content`;
+      const contentElement = document.getElementById(contentId);
+      
+      if (!contentElement) {
+        console.error('Content element not found for:', tabName);
+        return;
+      }
+
+      // Check cache first
+      if (contentCache[tabName]) {
+        contentElement.innerHTML = contentCache[tabName];
+        return;
+      }
+
+      // Show overview first
+      let overviewHTML = '';
+      if (typeof generateOverviewHTML === 'function') {
+        overviewHTML = generateOverviewHTML(tabName);
+      }
+
+      const fileName = DOCUMENT_FILES[tabName];
+      if (!fileName) {
+        contentElement.innerHTML = overviewHTML + '<p class="text-red-400 mt-4">Document not found.</p>';
+        return;
+      }
+
+      try {
+        // Show overview + loading state
+        contentElement.innerHTML = overviewHTML + `
+          <div class="mt-8 pt-8 border-t border-yellow-400/30">
+            <div class="text-center py-8">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+              <p class="mt-4 text-gray-400">Loading full technical documentation...</p>
+              <p class="text-xs text-gray-500 mt-2">File: ${fileName}</p>
+            </div>
+          </div>
+        `;
+
+        // TODO: Load actual markdown content when API is ready
+        // Uncomment when API endpoint is created:
+        /*
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/nerd-lab/get-document.php?file=${fileName}`);
+          const data = await response.json();
+          if (data.success && data.content) {
+            const html = marked.parse(data.content);
+            contentCache[tabName] = overviewHTML + html;
+            contentElement.innerHTML = overviewHTML + html;
+          } else {
+            contentElement.innerHTML = overviewHTML + `<p class="text-yellow-400 mt-4">⚠️ Full documentation coming soon. Overview displayed above.</p>`;
+          }
+        } catch (apiError) {
+          console.error('API Error:', apiError);
+          contentElement.innerHTML = overviewHTML + `<p class="text-yellow-400 mt-4">⚠️ Documentation API not yet configured. Overview displayed above.</p>`;
+        }
+        */
+
+        // For now, show overview with placeholder
+        setTimeout(() => {
+          contentElement.innerHTML = overviewHTML + `
+            <div class="mt-8 pt-8 border-t border-yellow-400/30">
+              <div class="bg-yellow-900/20 border border-yellow-500/50 rounded-xl p-6">
+                <p class="text-yellow-200">
+                  <strong>📚 Full Technical Documentation:</strong> The complete technical documentation will be loaded here once the API endpoint is configured. 
+                  The overview above provides a summary of this system's 2025 achievements.
+                </p>
+                <p class="text-sm text-yellow-300/70 mt-4">
+                  File: <code>${fileName}</code>
+                </p>
+              </div>
+            </div>
+          `;
+        }, 1000);
+
+      } catch (error) {
+        console.error('Error loading document:', error);
+        contentElement.innerHTML = overviewHTML + `<p class="text-red-400 mt-4">Error loading document: ${error.message}</p>`;
+      }
+    }
+
+    // Get tab title
+    function getTabTitle(tabName) {
+      const titles = {
+        masterIndex: '📚 Master Index',
+        tetris: '🎮 Tetris - Complete Technical Documentation',
+        snake: '🐍 Snake - Complete Technical Documentation',
+        spaceInvaders: '👾 Space Invaders - Complete Technical Documentation',
+        cheeseHunt: '🧀 Cheese Hunt - Complete Technical Documentation',
+        discordRace: '🏁 Discord Race - Complete Technical Documentation',
+        cheeseRumble: '⚔️ Cheese Rumble - Complete Technical Documentation',
+        hytopia3d: '🧩 3D Riddle Game - Complete Technical Documentation',
+        adminInterface: '🖥️ Admin Interface - Complete Technical Documentation',
+        discordBot: '🤖 Discord Bot - Complete Technical Documentation',
+        database: '🗄️ Database System - Complete Technical Documentation',
+        frontend: '🌐 Frontend Website - Complete Technical Documentation',
+        cheeseEngine: '🧠 Cheese Engine 13.0 Agent System - Complete Technical Documentation'
+      };
+      return titles[tabName] || tabName;
+    }
+
+    // Initialize page
+    async function initPage() {
+      // Check access first
+      const hasAccess = await checkHolderAccess();
+      
+      if (!hasAccess) {
+        document.getElementById('access-denied').style.display = 'flex';
+        document.getElementById('main-content').style.display = 'none';
+        return;
+      }
+
+      // Show main content
+      document.getElementById('access-denied').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+
+      // Set up tab button listeners
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabName = btn.getAttribute('data-tab');
+          showTab(tabName);
+        });
+      });
+
+      // Load initial tab (Master Index)
+      loadTabContent('masterIndex');
+    }
+
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', initPage);
+  </script>
+
+</body>
+</html>
+

@@ -9,49 +9,70 @@
 
 ---
 
-## 🎯 **THE 5 GAMES AND THEIR TABLE DEPENDENCIES**
+## 🎯 **THE 7 GAMES AND THEIR TABLE DEPENDENCIES**
 
 ### **1. Tetris** ✅
 - **Saves to:** `tbl_tetris_scores` (game: 'tetris')
 - **Field:** `discord_id` (contains Discord ID)
 - **Mission Status:** ✅ Working
 - **Admin Interface:** ✅ Working
+- **Technical Doc:** `12.0/YEAR_END_2025/GAME_01_TETRIS_COMPLETE_TECHNICAL.md`
 
 ### **2. Snake** ✅
 - **Saves to:** `tbl_tetris_scores` (game: 'snake') 
 - **Field:** `discord_id` (contains Discord ID)
 - **Mission Status:** ✅ Working
 - **Admin Interface:** ✅ Working
+- **Technical Doc:** `12.0/YEAR_END_2025/GAME_02_SNAKE_COMPLETE_TECHNICAL.md`
 
 ### **3. Space Invaders** ✅
 - **Saves to:** `tbl_tetris_scores` (game: 'space_invaders')
 - **Field:** `discord_id` (contains Discord ID)
 - **Mission Status:** ✅ Working
 - **Admin Interface:** ✅ Working
+- **Technical Doc:** `12.0/YEAR_END_2025/GAME_03_SPACE_INVADERS_COMPLETE_TECHNICAL.md`
 
 ### **4. Cheese Hunt** ✅
 - **Saves to:** `tbl_cheese_clicks` (different table)
 - **Field:** `user_wallet` (contains Discord ID)
 - **Mission Status:** ✅ Working
 - **Admin Interface:** ✅ Working
+- **Technical Doc:** `12.0/YEAR_END_2025/GAME_04_CHEESE_HUNT_COMPLETE_TECHNICAL.md`
 
 ### **5. Discord Race** ✅
 - **Saves to:** `tbl_race_participants` (different table)
 - **Field:** `user_id` (contains Discord ID)
 - **Mission Status:** ✅ Working
 - **Admin Interface:** ✅ Working
+- **Technical Doc:** `12.0/YEAR_END_2025/GAME_05_DISCORD_RACE_COMPLETE_TECHNICAL.md`
+
+### **6. Cheese Rumble** ✅ (December 3, 2025)
+- **Saves to:** `tbl_rumble_participants` (different table)
+- **Field:** `user_id` (contains Discord ID)
+- **Mission Status:** ✅ Working
+- **Admin Interface:** ✅ Working
+- **Technical Doc:** `12.0/YEAR_END_2025/GAME_06_CHEESE_RUMBLE_COMPLETE_TECHNICAL.md`
+
+### **7. 3D Hytopia Game** ✅ (December 20, 2025)
+- **Saves to:** `tbl_riddle_completions`, `tbl_cheese_hunt_captures`, `tbl_user_scores`
+- **Field:** `discord_id` (contains Discord ID)
+- **Mission Status:** ⏳ Future integration
+- **Admin Interface:** ⏳ Future integration
+- **Technical Doc:** `12.0/YEAR_END_2025/GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md`
 
 ---
 
 ## 🚨 **CRITICAL RULES:**
 
-1. **ALWAYS use `discord_id` for Tetris, Snake, and Space Invaders SCORES**
+1. **ALWAYS use `discord_id` for Tetris, Snake, Space Invaders, and 3D Hytopia SCORES**
 2. **ALWAYS use `user_wallet` for Cheese Hunt SCORES**
 3. **ALWAYS use `user_id` for Discord Race SCORES**
-4. **ALWAYS use the correct table for each game**
-5. **NEVER assume all games use the same field name**
-6. **🚨 CRITICAL:** Frontend calculates final DSPOINC - Backend MUST NOT multiply again
-7. **🚨 CRITICAL:** Role multipliers applied in frontend - Backend uses score as-is
+4. **ALWAYS use `user_id` for Cheese Rumble SCORES**
+5. **ALWAYS use the correct table for each game**
+6. **NEVER assume all games use the same field name**
+7. **🚨 CRITICAL:** Frontend calculates final DSPOINC - Backend MUST NOT multiply again
+8. **🚨 CRITICAL:** Role multipliers applied in frontend - Backend uses score as-is
+9. **REFERENCE:** Complete technical documentation in `12.0/YEAR_END_2025/` for all 7 games
 
 ---
 
@@ -92,8 +113,8 @@
 - **Discord Race:** ✅ Total races, wins, DSPOINC earned
 
 ### **Total Games Played:**
-- **Should show:** 5/5 Games Played
-- **Should NOT show:** 2/5 or 3/5 Games Played
+- **Should show:** 7/7 Games Played (6 live + 1 3D)
+- **Should NOT show:** 2/7 or 3/7 Games Played
 
 ---
 
@@ -217,7 +238,7 @@ function displayAchievements(data) {
 ## 🚀 **CURRENT STATUS: FULLY OPERATIONAL (Oct 26-27, 2025)**
 
 ### **✅ Working Systems:**
-- **Mission Status API:** ✅ Returning correct data for all 5 games
+- **Mission Status API:** ✅ Returning correct data for all 6 live games (3D game future integration)
 - **User Profile Pages:** ✅ Displaying correct mission status
 - **Database Tables:** ✅ Properly synchronized
 - **Score System:** ✅ DSPOINC rewards working correctly
