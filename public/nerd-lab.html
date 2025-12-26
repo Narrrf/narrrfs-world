@@ -234,8 +234,13 @@ require_once 'discord-invite.php';
         This page is exclusive to <strong>Holders</strong> and <strong>VIP Holders</strong>.
       </p>
       <div class="space-y-3">
-        <a href="<?php echo $discord_url; ?>" target="_blank"
+        <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
            class="block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition">
+          🔑 Login with Discord & Return
+        </a>
+        <p class="text-xs text-gray-400 mt-2 mb-2">After logging in, return to this page to access Nerd Lab.</p>
+        <a href="<?php echo $discord_url; ?>" target="_blank"
+           class="block bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition">
           🔗 Join Discord & Get NFT
         </a>
         <a href="mint.html"
@@ -599,22 +604,46 @@ require_once 'discord-invite.php';
 
         const userData = await response.json();
         
+        console.log('Access Check: Full userData:', userData);
+        
+        // Role IDs: Holder = 1402668301414563971, VIP Holder = 1332016526848692345
+        const holderRoleId = '1402668301414563971';
+        const vipHolderRoleId = '1332016526848692345';
+        
+        // Check roleIds array first (exact ID match - most reliable)
+        if (userData.roleIds && Array.isArray(userData.roleIds)) {
+          console.log('Access Check: Checking roleIds array:', userData.roleIds);
+          const hasAccessById = userData.roleIds.includes(holderRoleId) || userData.roleIds.includes(vipHolderRoleId);
+          if (hasAccessById) {
+            console.log('Access Check: ✅ Access granted by role ID');
+            return true;
+          }
+        }
+        
+        // Check roles array (name-based matching - like profile.html does)
         if (!userData.roles || !Array.isArray(userData.roles)) {
-          console.log('Access Check: No roles found');
+          console.log('Access Check: No roles array found');
           return false;
         }
 
-        // Check for Holder or VIP Holder roles
-        const hasAccess = userData.roles.some(role => {
+        console.log('Access Check: User roles array:', userData.roles);
+        
+        // Check for Holder or VIP Holder by role name (same pattern as profile.html VIP check)
+        const hasAccessByName = userData.roles.some(role => {
           const roleStr = String(role).toLowerCase();
           return roleStr.includes('holder') || 
                  roleStr.includes('vip holder') || 
                  roleStr.includes('🎴 vip holder') || 
-                 roleStr.includes('🏆 holder');
+                 roleStr.includes('🏆 holder') ||
+                 roleStr.includes('vipholder') ||
+                 roleStr === 'holder' ||
+                 roleStr === 'vip holder';
         });
 
-        console.log('Access Check: User roles:', userData.roles);
-        console.log('Access Check: Has access:', hasAccess);
+        console.log('Access Check: Has access by role name:', hasAccessByName);
+        
+        const hasAccess = hasAccessByName;
+        console.log('Access Check: Final result - Has access:', hasAccess);
 
         return hasAccess;
 
