@@ -11,7 +11,7 @@ require_once 'discord-invite.php';
   <meta name="description" content="Narrrf's World - Professional Web3 Gaming Platform. Genesis 12.0 featuring Season 6 Running & Alpha Testing Coming Soon: Level 1: The Cheese Temple ready for @holders and @vip testing in January 2026!" />
   <meta name="author" content="Narrrf Team" />
   <meta name="robots" content="index, follow" />
-  <meta name="keywords" content="Narrrf, Web3, NFT, Blockchain Gaming, Season 6, Season 6 Running, Alpha Testing, Cheese Temple, 3D Game, Phoenix Boss, Chest System, Mouse Climbing, Live Season, Boss Battles, Role-Based Gaming, Enhanced Features, Traits, $SPOINC, Hytopia, Professional Gaming Platform, Blockchain Innovation, Q1 2026" />
+  <meta name="keywords" content="Narrrf, Web3, NFT, Blockchain Gaming, Season 6, Season 6 Running, Alpha Testing, Cheese Temple, 3D Game, Phoenix Boss, Chest System, Mouse Climbing, Live Season, Boss Battles, Role-Based Gaming, Enhanced Features, Traits, $SPOINC, 3D Riddle Game, Professional Gaming Platform, Blockchain Innovation, Q1 2026" />
   <meta name="theme-color" content="#3b82f6" />
   <meta name="msapplication-TileColor" content="#3b82f6" />
   <meta name="msapplication-TileImage" content="https://narrrfs.world/img/narrrf-logo-professional.png" />
@@ -197,7 +197,9 @@ require_once 'discord-invite.php';
       --secondary-color: #3b82f6;
     }
 
-/* ❄️ CHRISTMAS SNOWFLAKE ANIMATIONS */
+/* ❄️ CHRISTMAS SNOWFLAKE ANIMATIONS - DISABLED FOR NEW YEAR 2026 */
+/* Snowflake animations removed - New Year theme active */
+/*
 @keyframes snowfall {
   0% {
     transform: translateY(-100vh) rotate(0deg);
@@ -262,72 +264,7 @@ require_once 'discord-invite.php';
 .snowflake:nth-child(5n) {
   animation-duration: 9s, 3.5s;
 }
-
-/* ❄️ CHRISTMAS SNOWFLAKE ANIMATIONS */
-@keyframes snowfall {
-  0% {
-    transform: translateY(-100vh) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(100vh) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-@keyframes snowflakeFloat {
-  0%, 100% {
-    transform: translateX(0) rotate(0deg);
-  }
-  25% {
-    transform: translateX(20px) rotate(90deg);
-  }
-  50% {
-    transform: translateX(-20px) rotate(180deg);
-  }
-  75% {
-    transform: translateX(10px) rotate(270deg);
-  }
-}
-
-.snowflake {
-  position: fixed;
-  top: -10px;
-  color: #ffffff;
-  font-size: 1em;
-  font-family: Arial, sans-serif;
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-  user-select: none;
-  pointer-events: none;
-  z-index: 1000;
-  animation: snowfall linear infinite, snowflakeFloat ease-in-out infinite;
-}
-
-.snowflake:nth-child(odd) {
-  animation-duration: 8s, 3s;
-}
-
-.snowflake:nth-child(even) {
-  animation-duration: 10s, 4s;
-}
-
-.snowflake:nth-child(3n) {
-  animation-duration: 12s, 5s;
-}
-
-.snowflake:nth-child(4n) {
-  animation-duration: 7s, 2.5s;
-}
-
-.snowflake:nth-child(5n) {
-  animation-duration: 9s, 3.5s;
-}
+*/
 
     /* 🥚 Final Easter Egg Glow */
     .egg-flash {
@@ -1297,6 +1234,7 @@ require_once 'discord-invite.php';
       <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
       <a href="partners.html" class="hover:text-pink-400">Partners</a>
       <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
+      <a href="stake-lab.html" class="hover:text-pink-400">🧊 Stake Lab</a>
       <a href="faq.html" class="hover:text-pink-400">FAQ</a>
       <button id="connect-wallet-btn" onclick="connectWallet()" class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
         🔌 Connect
@@ -1309,35 +1247,38 @@ require_once 'discord-invite.php';
   </div>
 </header>
 
-<!-- ❄️ CHRISTMAS SPECIAL - DECEMBER 2025 & ALPHA TESTING ANNOUNCEMENT -->
-<div class="relative z-30 overflow-hidden" id="christmas-banner">
-  <!-- Enhanced Christmas Background with Gold Accents -->
-  <div class="bg-gradient-to-r from-red-700 via-green-700 via-yellow-500 to-red-700 text-white text-center py-6 z-30 relative border-y-4 border-yellow-400 shadow-2xl" style="background: linear-gradient(135deg, #dc2626 0%, #16a34a 25%, #eab308 50%, #16a34a 75%, #dc2626 100%); background-size: 200% 200%; animation: gradientShift 8s ease infinite;">
-    <!-- Sparkle Overlay Effect -->
-    <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.8) 1px, transparent 1px), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.8) 1px, transparent 1px), radial-gradient(circle at 50% 20%, rgba(255,255,255,0.8) 1px, transparent 1px); background-size: 100px 100px, 150px 150px, 120px 120px; animation: sparkle 3s linear infinite;"></div>
+<!-- 🎊 NEW YEAR 2026 - SYLVESTER SPECIAL & NEW FEATURES ANNOUNCEMENT -->
+<div class="relative z-30 overflow-hidden" id="newyear-banner">
+  <!-- Enhanced New Year Background with Gold & Silver Accents -->
+  <div class="bg-gradient-to-r from-purple-900 via-indigo-900 via-blue-900 to-purple-900 text-white text-center py-6 z-30 relative border-y-4 border-yellow-400 shadow-2xl" style="background: linear-gradient(135deg, #581c87 0%, #4c1d95 25%, #1e3a8a 50%, #4c1d95 75%, #581c87 100%); background-size: 200% 200%; animation: gradientShift 8s ease infinite;">
+    <!-- Sparkle Overlay Effect (New Year Confetti Style) -->
+    <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(circle at 20% 50%, rgba(255,215,0,0.8) 2px, transparent 2px), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.8) 2px, transparent 2px), radial-gradient(circle at 50% 20%, rgba(192,192,192,0.8) 2px, transparent 2px); background-size: 100px 100px, 150px 150px, 120px 120px; animation: sparkle 3s linear infinite;"></div>
     
     <div class="relative z-10">
       <div class="mb-2">
-        <span class="text-3xl md:text-4xl font-extrabold animate-pulse drop-shadow-lg" style="text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(234,179,8,0.6);">🎄 CHRISTMAS SPECIAL • ALPHA TESTING COMING SOON! 🎄</span>
+        <span class="text-3xl md:text-4xl font-extrabold animate-pulse drop-shadow-lg" style="text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,215,0,0.6);">🎊 NEW YEAR 2026 • NEW FEATURES LAUNCHED! 🎊</span>
       </div>
       <div class="text-center mb-4">
-        <span class="text-lg md:text-xl font-bold drop-shadow-md">🚀 Level 1: The Cheese Temple • Alpha Testing January 2026 • @holders & @vip Get Ready! ✨</span>
+        <span class="text-lg md:text-xl font-bold drop-shadow-md">🧊 DSPOINC Staking System LIVE • 🚀 Alpha Testing January 2026 • @holders & @vip Get Ready! ✨</span>
       </div>
       <div class="flex flex-col md:flex-row gap-3 justify-center items-center">
-        <a href="/project-updates.html" class="bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white font-extrabold px-6 py-3 rounded-full shadow-xl transition-all duration-200 transform hover:scale-105 border-3 border-yellow-300 animate-pulse" style="box-shadow: 0 0 15px rgba(34,197,94,0.6), 0 4px 15px rgba(0,0,0,0.3);">
-          📚 Read Latest Updates • 10 Days of Development →
+        <a href="/stake-lab.html" class="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 hover:from-cyan-600 hover:via-blue-700 hover:to-indigo-800 text-white font-extrabold px-6 py-3 rounded-full shadow-xl transition-all duration-200 transform hover:scale-105 border-3 border-yellow-300 animate-pulse" style="box-shadow: 0 0 15px rgba(6,182,212,0.6), 0 4px 15px rgba(0,0,0,0.3);">
+          🧊 Freeze & Earn DSPOINC →
         </a>
-        <a href="/mint.html" class="bg-gradient-to-r from-red-600 via-red-700 to-red-800 hover:from-red-700 hover:via-red-800 hover:to-red-900 text-white font-extrabold px-6 py-3 rounded-full shadow-xl transition-all duration-200 transform hover:scale-105 border-3 border-yellow-300" style="box-shadow: 0 0 15px rgba(220,38,38,0.6), 0 4px 15px rgba(0,0,0,0.3);">
-          🎄 Mint NFT (0.45 SOL)
+        <a href="/project-updates.html" class="bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white font-extrabold px-6 py-3 rounded-full shadow-xl transition-all duration-200 transform hover:scale-105 border-3 border-yellow-300" style="box-shadow: 0 0 15px rgba(168,85,247,0.6), 0 4px 15px rgba(0,0,0,0.3);">
+          📚 Read Latest Updates →
+        </a>
+        <a href="/mint.html" class="bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 hover:from-yellow-600 hover:via-yellow-700 hover:to-yellow-800 text-gray-900 font-extrabold px-6 py-3 rounded-full shadow-xl transition-all duration-200 transform hover:scale-105 border-3 border-yellow-300" style="box-shadow: 0 0 15px rgba(234,179,8,0.6), 0 4px 15px rgba(0,0,0,0.3);">
+          🎯 Mint NFT (0.45 SOL)
         </a>
       </div>
       <div class="mt-3">
-        <span class="text-sm font-semibold drop-shadow-md">❄️ Last Bingo Event Dec 18 • 2 Active Giveaways • Blessed Christmas Time! 🎁</span>
+        <span class="text-sm font-semibold drop-shadow-md">🎉 Happy New Year 2026! • 🧊 Staking Rewards Up to 50% • 🚀 Alpha Testing Coming Soon! 🎊</span>
       </div>
     </div>
   </div>
   
-  <!-- CSS Animations for Enhanced Christmas Effect -->
+  <!-- CSS Animations for Enhanced New Year Effect -->
   <style>
     @keyframes gradientShift {
       0% { background-position: 0% 50%; }
@@ -1346,9 +1287,9 @@ require_once 'discord-invite.php';
     }
     
     @keyframes sparkle {
-      0% { opacity: 0.2; transform: translateY(0); }
-      50% { opacity: 0.5; transform: translateY(-10px); }
-      100% { opacity: 0.2; transform: translateY(0); }
+      0% { opacity: 0.2; transform: translateY(0) rotate(0deg); }
+      50% { opacity: 0.5; transform: translateY(-10px) rotate(180deg); }
+      100% { opacity: 0.2; transform: translateY(0) rotate(360deg); }
     }
     
   </style>
@@ -1415,7 +1356,7 @@ require_once 'discord-invite.php';
 <!-- 💬 Hero Copy + CTAs -->
 <div class="text-center max-w-xl mx-auto mt-10 relative z-10">
   <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900 drop-shadow-lg">
-    Narrrf's World – Genesis 12.0
+    Narrrf's World – Genesis 13.0
   </h1>
   
   <!-- 🚀 SEASON 6 RUNNING & ALPHA TESTING BANNER -->
@@ -1619,6 +1560,69 @@ require_once 'discord-invite.php';
             Web Builder 161 Group
           </a>
           <span>for the gallery space.</span>
+        </span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 🧊 DSPOINC STAKING SYSTEM - NEW FEATURE ANNOUNCEMENT -->
+<section class="relative py-16 px-6 bg-gradient-to-br from-cyan-900 via-blue-900 to-indigo-900 text-white border-t-4 border-cyan-400 border-b-4 border-blue-600 shadow-2xl">
+  <!-- Animated background accents -->
+  <div class="absolute inset-0 pointer-events-none opacity-20">
+    <div class="absolute -top-10 -left-10 w-40 h-40 rounded-full blur-3xl bg-cyan-500/60 animate-pulse"></div>
+    <div class="absolute -bottom-10 -right-10 w-48 h-48 rounded-full blur-3xl bg-blue-500/60 animate-bounce"></div>
+  </div>
+
+  <div class="max-w-6xl mx-auto relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+    <!-- Staking Preview Image/Icon -->
+    <div class="relative group rounded-2xl overflow-hidden border-4 border-cyan-400 shadow-[0_0_40px_rgba(34,211,238,0.35)] bg-gradient-to-br from-cyan-800 to-blue-900 p-8 flex items-center justify-center">
+      <div class="text-center">
+        <div class="text-8xl mb-4 animate-pulse">🧊</div>
+        <div class="inline-flex items-center gap-2 bg-cyan-600/90 px-4 py-2 rounded-full text-sm font-bold border border-cyan-300/50 shadow-lg">
+          <span>💰</span> DSPOINC Staking Preview
+        </div>
+      </div>
+      <!-- Glow overlay -->
+      <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+    </div>
+
+    <!-- Content + CTA -->
+    <div class="text-center md:text-left">
+      <h2 class="text-3xl md:text-4xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-300 to-indigo-200">
+        🧊 DSPOINC Staking System
+      </h2>
+      <p class="text-blue-100/90 leading-relaxed mb-4">
+        Freeze your DSPOINC for 1, 3, 6, 12, 24, or 36 months and earn rewards! The longer you stake, the higher your reward rate. 
+        Unstake early with a 15% penalty, or wait for completion and claim your full reward.
+      </p>
+      <div class="mb-4">
+        <p class="text-cyan-200 font-semibold text-sm mb-2">💰 Reward Rates:</p>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+          <div class="bg-cyan-800/50 px-2 py-1 rounded">1 Month: 2%</div>
+          <div class="bg-cyan-800/50 px-2 py-1 rounded">3 Months: 5%</div>
+          <div class="bg-cyan-800/50 px-2 py-1 rounded">6 Months: 10%</div>
+          <div class="bg-cyan-800/50 px-2 py-1 rounded">12 Months: 20%</div>
+          <div class="bg-cyan-800/50 px-2 py-1 rounded">24 Months: 35%</div>
+          <div class="bg-cyan-800/50 px-2 py-1 rounded">36 Months: 50%</div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+        <a href="stake-lab.html"
+           class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 hover:from-cyan-600 hover:via-blue-600 hover:to-indigo-700 text-white font-extrabold px-6 py-3 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-[1.03] border-2 border-cyan-300">
+          🧊 Enter Stake Lab
+        </a>
+        <a href="profile.html#staking" class="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-cyan-100 font-bold px-6 py-3 rounded-full border border-cyan-400/40 shadow">
+          💰 View Staking Overview
+        </a>
+      </div>
+
+      <p class="mt-3 text-xs text-blue-200/80">
+        Login with Discord required. Staked DSPOINC is frozen and cannot be spent until unstaked or completed.<br>
+        <span class="inline-flex items-center gap-1 opacity-90">
+          <span>❄️</span>
+          <span>Freeze your DSPOINC and earn passive rewards!</span>
         </span>
       </p>
     </div>
@@ -1849,7 +1853,7 @@ require_once 'discord-invite.php';
   <p class="text-md md:text-lg text-gray-700 max-w-xl mx-auto mb-4">
     Our VIP cheese has already hit the market. You're looking at a  
 <span class="font-bold text-pink-600 underline underline-offset-4 decoration-yellow-400">
-  ⏳ 10 SOL floor — untouched since mint
+  ⏳ Strong floor price — stable since mint
 </span>  
 on Magic Eden.  
 The next wave is close — don't miss the real Genesis scroll.
@@ -2038,17 +2042,17 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- ✅ Promo Section: 2nd Collection + CTA -->
 <section class="relative py-32 px-6 bg-gradient-to-br from-purple-100 via-blue-50 to-white text-center shadow-inner border-t-4 border-purple-300">
   <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-6">
-    🧠 Phase 6: Season 6 Preparation & Store Surge (December 2025)
+    🧠 Phase 6: Season 6 Freeze Coming Soon & Season 7 Preview (2026)
   </h2>
 
   <p class="text-md md:text-lg text-gray-700 max-w-xl mx-auto mb-4">
-    Season 5 has ended! Leaderboards are freezed and Season 6 is starting soon: Golden Rascals lock the 0.45 SOL redemption rate, standalone game hubs track every achievement, and Space Cheese Invaders opens its store upgrades. Redeem through the Gensuki Launchpad and keep stacking DSPOINC across the big three! 🧠🚀
+    Season 6 freeze is coming soon! Leaderboards will be locked, final rankings will be saved, and then we're preparing for the biggest reset yet: Golden Rascals lock the 0.45 SOL redemption rate, standalone game hubs track every achievement, and Space Cheese Invaders opens its store upgrades. Redeem through the Gensuki Launchpad and keep stacking DSPOINC across all games! 🧠🚀
   </p>
 
   <p class="text-md md:text-lg text-gray-700 max-w-xl mx-auto mb-4">
     Following the success of our VIP collection with its  
 <span class="font-bold text-purple-600 underline underline-offset-4 decoration-yellow-400">
-  ⏳ 10 SOL floor — untouched since mint
+  ⏳ Strong floor price — stable since mint
 </span>  
 on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese revolution!
   </p>
@@ -2063,13 +2067,13 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
 
   <!-- 🚀 Season 6 Starting Soon Preview -->
   <div class="mt-16 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-xl px-6 py-5 shadow-lg max-w-2xl mx-auto text-center">
-    <h3 class="text-xl font-bold text-blue-800 mb-2">⏸️ Season 5 Leaderboard Freezed! 🚀</h3>
+    <h3 class="text-xl font-bold text-blue-800 mb-2">🚀 Season 7 Coming in 2026! 🎯</h3>
     <p class="text-gray-700 text-sm md:text-base mb-4">
-      Season 5 has ended! 🎯 <strong>Season 5 leaderboard is freezed</strong>, <strong>final rankings locked</strong>! Season 6 is starting soon with fresh leaderboards, boss battles in all 3 games, and enhanced role-based scoring with bigger rewards! <strong>SEASON 6 IS COMING</strong> – prepare for new challenges! Found bugs? Use the bug tracker!
+      Get ready for <strong>Season 7 in 2026</strong>! 🎮 This will be the biggest season yet with <strong>more gameplay</strong>, <strong>enhanced features</strong>, and a <strong>total reset of all player achievements</strong>! Everyone starts fresh with new leaderboards, boss battles across all games, and enhanced role-based scoring with bigger rewards! <strong>SEASON 7 IS COMING</strong> – prepare for the ultimate challenge! Found bugs? Use the bug tracker!
     </p>
     <a href="profile.html"
        class="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 px-6 rounded-full shadow-md transition duration-300 transform hover:scale-105">
-      🎯 Check Final Rankings →
+      🎯 View Current Rankings →
     </a>
   </div>
 </section>
@@ -2198,7 +2202,7 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
     </div>
 
     <!-- 🧀 Enhanced Feature Grid -->
-    <div class="grid md:grid-cols-2 gap-8">
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="bg-gradient-to-br from-pink-100 to-pink-200 p-6 rounded-3xl shadow-xl border-2 border-pink-300 hover:scale-105 transition-all duration-300 transform">
         <div class="flex items-center mb-4">
           <div class="text-3xl mr-4">🎴</div>
@@ -2215,6 +2219,14 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
         <p class="text-yellow-700 font-semibold">Freeze NFTs, earn $SPOINC, swap for $DSPOINC, and unlock rewards.</p>
       </div>
       
+      <div class="bg-gradient-to-br from-cyan-100 to-cyan-200 p-6 rounded-3xl shadow-xl border-2 border-cyan-300 hover:scale-105 transition-all duration-300 transform">
+        <div class="flex items-center mb-4">
+          <div class="text-3xl mr-4">🧊</div>
+          <h3 class="text-2xl font-bold text-cyan-800">Stake DSPOINC</h3>
+        </div>
+        <p class="text-cyan-700 font-semibold">Freeze DSPOINC and earn up to 50% rewards over time. Live now!</p>
+      </div>
+      
       <div class="bg-gradient-to-br from-blue-100 to-blue-200 p-6 rounded-3xl shadow-xl border-2 border-blue-300 hover:scale-105 transition-all duration-300 transform">
         <div class="flex items-center mb-4">
           <div class="text-3xl mr-4">🃏</div>
@@ -2223,12 +2235,44 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
         <p class="text-blue-700 font-semibold">Weekly ClubGG tournaments and VIP poker events.</p>
       </div>
       
+      <div class="bg-gradient-to-br from-purple-100 to-purple-200 p-6 rounded-3xl shadow-xl border-2 border-purple-300 hover:scale-105 transition-all duration-300 transform">
+        <div class="flex items-center mb-4">
+          <div class="text-3xl mr-4">🎮</div>
+          <h3 class="text-2xl font-bold text-purple-800">Play 7 Games</h3>
+        </div>
+        <p class="text-purple-700 font-semibold">Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race, Cheese Rumble, and 3D Riddle Game!</p>
+      </div>
+      
       <div class="bg-gradient-to-br from-green-100 to-green-200 p-6 rounded-3xl shadow-xl border-2 border-green-300 hover:scale-105 transition-all duration-300 transform">
         <div class="flex items-center mb-4">
-          <div class="text-3xl mr-4">🌍</div>
-          <h3 class="text-2xl font-bold text-green-800">Build Hytopia</h3>
+          <div class="text-3xl mr-4">🧀</div>
+          <h3 class="text-2xl font-bold text-green-800">3D Riddle Game</h3>
         </div>
-        <p class="text-green-700 font-semibold">Own land, level up, and participate in the Web3 metaverse narrative.</p>
+        <p class="text-green-700 font-semibold">Explore The Cheese Temple, solve riddles, own land, and level up in our 3D adventure world.</p>
+      </div>
+      
+      <div class="bg-gradient-to-br from-orange-100 to-orange-200 p-6 rounded-3xl shadow-xl border-2 border-orange-300 hover:scale-105 transition-all duration-300 transform">
+        <div class="flex items-center mb-4">
+          <div class="text-3xl mr-4">🏆</div>
+          <h3 class="text-2xl font-bold text-orange-800">Achievements & Roles</h3>
+        </div>
+        <p class="text-orange-700 font-semibold">Unlock achievements, earn roles, compete on leaderboards, and climb the ranks!</p>
+      </div>
+      
+      <div class="bg-gradient-to-br from-indigo-100 to-indigo-200 p-6 rounded-3xl shadow-xl border-2 border-indigo-300 hover:scale-105 transition-all duration-300 transform">
+        <div class="flex items-center mb-4">
+          <div class="text-3xl mr-4">🛒</div>
+          <h3 class="text-2xl font-bold text-indigo-800">In-Game Store</h3>
+        </div>
+        <p class="text-indigo-700 font-semibold">Purchase power-ups, cosmetics, and upgrades with DSPOINC across all games.</p>
+      </div>
+      
+      <div class="bg-gradient-to-br from-rose-100 to-rose-200 p-6 rounded-3xl shadow-xl border-2 border-rose-300 hover:scale-105 transition-all duration-300 transform">
+        <div class="flex items-center mb-4">
+          <div class="text-3xl mr-4">🤝</div>
+          <h3 class="text-2xl font-bold text-rose-800">Partner Collabs</h3>
+        </div>
+        <p class="text-rose-700 font-semibold">15+ amazing partner communities and collaborations expanding the cheese-verse network!</p>
       </div>
     </div>
   </div>
@@ -2250,7 +2294,7 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
       </div>
       <div class="border-l-4 border-yellow-500 pl-6">
         <h3 class="text-xl font-bold mb-1">📅 2025 – Scaling Up</h3>
-        <p>VIP events, WL mint, staking launch, Benefit Showdowns, plot sales, Hytopia World opens.</p>
+        <p>VIP events, WL mint, staking launch, Benefit Showdowns, plot sales, 3D Riddle Game opens.</p>
       </div>
       <div class="border-l-4 border-blue-500 pl-6">
         <h3 class="text-xl font-bold mb-1">📅 2026 – Real-World Utility</h3>
@@ -2262,7 +2306,7 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
       </div>
       <div class="border-l-4 border-purple-500 pl-6">
         <h3 class="text-xl font-bold mb-1">📅 2028–2030 – Mass Adoption</h3>
-        <p>Full B2B rollout, Hytopia goes live, VIP World Events, and Narrrf's World becomes a Web3-powered company.</p>
+        <p>Full B2B rollout, 3D Riddle Game goes live, VIP World Events, and Narrrf's World becomes a Web3-powered company.</p>
       </div>
     </div>
   </div>
@@ -2271,20 +2315,31 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
 
 
 
-<!-- 👽 FINAL CHEESE EASTER EGG SCROLL – GENESIS 9 -->
-<section class="relative bg-yellow-50 py-20 px-6 mt-16 rounded-2xl shadow-xl max-w-3xl mx-auto overflow-hidden ring-2 ring-lime-400 border border-lime-300 animate-pulse hover:scale-[1.015] transition duration-300">
-  <img src="img/alien-grid-fade.png" alt="Alien Grid" class="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none z-0" />
-  <div class="relative text-center text-purple-900 z-10">
-    <h2 class="text-3xl font-extrabold text-lime-600 drop-shadow-glow mb-4 animate-glow">
-      🧪 Final Cheese Unlocked!
+<!-- 💰 Financial Transparency Banner -->
+<section class="relative bg-gradient-to-br from-yellow-50 via-purple-50 to-pink-50 py-16 px-6 mt-16 mb-24 rounded-2xl shadow-xl max-w-4xl mx-auto overflow-hidden border-2 border-purple-300 hover:shadow-2xl transition duration-300">
+  <div class="absolute inset-0 bg-gradient-to-r from-yellow-200/20 via-purple-200/20 to-pink-200/20 opacity-50 pointer-events-none"></div>
+  <div class="relative z-10 text-center">
+    <div class="flex justify-center mb-4">
+      <div class="text-5xl">💰</div>
+    </div>
+    <h2 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">
+      Financial Transparency Portal
     </h2>
-    <p class="text-base text-purple-800 max-w-md mx-auto leading-relaxed">
-      This scroll remained unclicked for over <strong class="text-yellow-700">60 days</strong>...<br>
-      Hidden behind the jumping cheese.<br>
-      <span class="font-semibold text-yellow-900">You're now part of a very small club 🧠.</span>
+    <p class="text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed mb-6">
+      Explore Narrrf's World financial structure, revenue streams, and funding distribution. 
+      See how we allocate resources across Benefit Seasons, marketing, development, and community rewards. 
+      Transparency is key to building trust in our Web3 ecosystem.
     </p>
-    <a href="/finances.html" class="inline-block mt-6 px-8 py-3 bg-lime-400 text-black font-extrabold rounded-full shadow-xl hover:bg-lime-500 ring-4 ring-lime-300 animate-pulse-glow transition duration-300">
-      🌌 Unlock Narrrf's Finances Now
+    <p class="text-sm text-gray-600 max-w-xl mx-auto mb-8">
+      Members and visitors can view our complete financial breakdown, including NFT mint revenue, 
+      staking fees, in-game purchases, partner collaborations, and future revenue projections.
+    </p>
+    <a href="finances.html" class="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-700 hover:via-pink-700 hover:to-purple-700 text-white font-bold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+      <span class="text-xl">📊</span>
+      <span>View Financial Dashboard</span>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+      </svg>
     </a>
   </div>
 </section>
@@ -2463,20 +2518,87 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
   </section>
 
 <!-- 🧀 COMING UP NEXT SECTION – DECEMBER 2025 & Q1 2026 ALPHA TESTING -->
-<!-- 🧠 Dev Note: Updated for December 18, 2025 - 10 days of intense development & Alpha Testing announcement for Q1 2026 -->
+<!-- 🧠 Dev Note: Updated for Q1 2026 Alpha Testing announcement & New Year 2026 features -->
 <section id="coming-up" class="bg-gradient-to-br from-yellow-50 to-pink-100 py-16 px-6 rounded-t-3xl shadow-inner">
   <div class="max-w-5xl mx-auto text-center">
             <h2 class="text-4xl md:text-5xl font-extrabold text-yellow-600 drop-shadow-sm mb-4">
-          🚀 Alpha Testing Coming Soon! • December 18, 2025 Update • Q1 2026 Preview
+          🚀 Alpha Testing Coming Soon! • Q1 2026 Preview
         </h2>
         <p class="text-md md:text-lg text-gray-700 max-w-2xl mx-auto mb-10">
           🎮 Season 6 is live! Level 1: The Cheese Temple (6 levels) is nearly ready for alpha testing by @holders and @vip in January 2026! 10 days of intense development delivered epic boss expansions, complete systems, and production-ready infrastructure! ✨
         </p>
 
+            <!-- 🧊 DSPOINC STAKING SYSTEM — LIVE NOW! -->
+            <div class="bg-gradient-to-r from-cyan-50 to-blue-50 border-l-4 border-cyan-500 p-6 rounded-xl shadow mb-8 text-left max-w-3xl mx-auto transition-transform duration-500 hover:scale-[1.01]">
+      <h3 class="text-xl font-bold mb-3 text-cyan-700">🧊 DSPOINC STAKING SYSTEM — LIVE NOW! (December 26, 2025)</h3>
+      <p class="text-sm text-gray-700 mb-4 italic">🎊 New Year 2026 brings the DSPOINC Staking System! Freeze your DSPOINC and earn rewards up to 50%!</p>
+      
+      <div class="space-y-3">
+        <div class="bg-cyan-50 p-3 rounded-lg border border-cyan-200">
+          <h4 class="font-bold text-cyan-700 mb-1">❄️ FREEZE & EARN SYSTEM — COMPLETE</h4>
+          <ul class="list-disc list-inside text-xs text-gray-700 ml-2 space-y-1">
+            <li>6 freeze durations: 1, 3, 6, 12, 24, 36 months</li>
+            <li>Reward rates: 2% (1 month) up to 50% (36 months)</li>
+            <li>Dedicated Stake Lab page with full staking interface</li>
+            <li>Profile page integration with staking overview</li>
+            <li>Real-time balance tracking (Total, Available, Frozen)</li>
+          </ul>
+        </div>
+
+        <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+          <h4 class="font-bold text-blue-700 mb-1">💰 REWARD SYSTEM — FLEXIBLE & POWERFUL</h4>
+          <ul class="list-disc list-inside text-xs text-gray-700 ml-2 space-y-1">
+            <li>Automatic reward calculation based on freeze duration</li>
+            <li>Manual reward claiming for completed stakes</li>
+            <li>Early unstake option with 15% penalty (85% returned)</li>
+            <li>All transactions tracked in Recent Score Changes</li>
+            <li>Frozen DSPOINC protected from spending</li>
+          </ul>
+        </div>
+
+        <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-200">
+          <h4 class="font-bold text-indigo-700 mb-1">🔧 TECHNICAL FEATURES — PRODUCTION READY</h4>
+          <ul class="list-disc list-inside text-xs text-gray-700 ml-2 space-y-1">
+            <li>6 dedicated API endpoints for staking operations</li>
+            <li>Complete database schema with transaction tracking</li>
+            <li>4-tab interface: Active, Completed, Claim Rewards, Cancelled</li>
+            <li>Real-time balance updates and transaction history</li>
+            <li>Full integration with profile page and DSPOINC Journey</li>
+          </ul>
+        </div>
+
+        <div class="bg-teal-50 p-3 rounded-lg border border-teal-200">
+          <h4 class="font-bold text-teal-700 mb-1">🎯 HOW TO USE — GET STARTED NOW!</h4>
+          <ul class="list-disc list-inside text-xs text-gray-700 ml-2 space-y-1">
+            <li>Visit <a href="stake-lab.html" class="text-teal-600 underline hover:text-teal-500">Stake Lab</a> and log in with Discord</li>
+            <li>Select amount and freeze duration (1-36 months)</li>
+            <li>Review expected reward and confirm stake</li>
+            <li>Monitor active stakes and claim rewards when ready</li>
+            <li>View staking overview on your <a href="profile.html#staking" class="text-teal-600 underline hover:text-teal-500">profile page</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-4 bg-gradient-to-r from-cyan-100 to-blue-100 p-4 rounded-lg border border-cyan-300">
+        <p class="text-sm text-cyan-800 font-semibold mb-2">🎊 New Year 2026 Special:</p>
+        <p class="text-xs text-gray-700">
+          Start the new year by maximizing your DSPOINC rewards! Freeze for 36 months to earn 50% bonus, or choose shorter durations for faster returns. All staking features are live and ready to use!
+        </p>
+        <div class="mt-3 flex gap-2">
+          <a href="stake-lab.html" class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold px-4 py-2 rounded-lg text-xs transition-all duration-200 transform hover:scale-105">
+            🧊 Visit Stake Lab →
+          </a>
+          <a href="profile.html#staking" class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold px-4 py-2 rounded-lg text-xs transition-all duration-200 transform hover:scale-105">
+            📊 View on Profile →
+          </a>
+        </div>
+      </div>
+    </div>
+
             <!-- 🧀 DECEMBER 18, 2025 - 10 DAYS OF INTENSE DEVELOPMENT -->
             <div class="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-500 p-6 rounded-xl shadow mb-8 text-left max-w-3xl mx-auto transition-transform duration-500 hover:scale-[1.01]">
       <h3 class="text-xl font-bold mb-3 text-yellow-700">🧀 DECEMBER 18, 2025 - 10 DAYS OF INTENSE DEVELOPMENT</h3>
-      <p class="text-sm text-gray-700 mb-4 italic">XMAS time arrives and we prepare to slow down the lab a little! From epic boss expansions to complete environmental systems - Level 1: The Cheese Temple is nearly ready for alpha testing!</p>
+      <p class="text-sm text-gray-700 mb-4 italic">New Year 2026 brings exciting updates! From epic boss expansions to complete environmental systems - Level 1: The Cheese Temple is nearly ready for alpha testing! Plus, our new DSPOINC Staking System is now live!</p>
       
       <div class="space-y-3">
         <div class="bg-purple-50 p-3 rounded-lg border border-purple-200">
@@ -2559,28 +2681,29 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
           <li><strong>After Alpha:</strong> Community feedback analysis, fixes, public release prep</li>
         </ul>
         <p class="mt-3 text-xs text-gray-600 italic">
-          🎄 Wishing everyone a blessed Christmas time! Get ready for the alpha test in January!
+          🎊 Happy New Year 2026! Get ready for the alpha test in January and start earning with DSPOINC Staking!
         </p>
       </div>
     </div>
 
-            <!-- 🎄 CHRISTMAS EVENTS & GIVEAWAYS -->
+            <!-- 🎁 ONGOING GIVEAWAYS & EVENTS -->
             <div class="bg-gradient-to-r from-pink-50 to-red-50 border-l-4 border-pink-500 p-6 rounded-xl shadow mb-8 text-left max-w-3xl mx-auto transition-transform duration-500 hover:scale-[1.01]">
-      <h3 class="text-xl font-bold mb-3 text-pink-700">🎄 CHRISTMAS EVENTS & GIVEAWAYS — LIVE NOW!</h3>
+      <h3 class="text-xl font-bold mb-3 text-pink-700">🎁 ONGOING GIVEAWAYS & EVENTS — LIVE NOW!</h3>
       <ul class="list-disc list-inside text-sm text-gray-800 space-y-2">
-        <li>🎁 <strong>2 Active Giveaways Running:</strong>
+        <li>🎁 <strong>Ongoing Giveaways:</strong>
           <ul class="list-disc list-inside ml-6 mt-1 space-y-1 text-xs">
-            <li><strong>Holders Vault Giveaway</strong> — Massive XMAS prices for @holders in #holders-vault</li>
-            <li><strong>Public Giveaway</strong> — Open to everyone in #giveaway 🚀</li>
+            <li><strong>Alpha Testing Giveaways</strong> — Exclusive rewards for alpha testers in our alpha channels</li>
+            <li><strong>Discord Community Giveaways</strong> — Regular giveaways in our Discord server 🚀</li>
+            <li><strong>Weekly Events</strong> — Join Friday events for chances to win DSPOINC and rewards</li>
           </ul>
         </li>
-        <li>❄️ <strong>Bingo.html Christmas Theme</strong> — Snowflakes animation + festive theming active</li>
-        <li>🎟️ <strong>Last Bingo Event</strong> — December 18, 2025 (Final event before XMAS break)</li>
-        <li>🎅 <strong>December Festivities</strong> — Ongoing Christmas celebrations across the community</li>
+        <li>🧊 <strong>DSPOINC Staking System</strong> — Freeze & earn rewards up to 50% (New Year 2026 launch)</li>
+        <li>🎟️ <strong>Bingo Events</strong> — Weekly events continue in the new year</li>
+        <li>🎊 <strong>New Year 2026</strong> — New features, new rewards, new opportunities!</li>
         <li>🧀 <strong>Cheese Rumble</strong> — Weekly Friday battle royale continues</li>
       </ul>
       <p class="mt-4 text-xs text-gray-600 italic">
-        🎄 Join the giveaways and enjoy the festive atmosphere! Last chance to participate in December events!
+        🎊 Happy New Year 2026! Join the giveaways in our Discord and alpha channels, try the new DSPOINC Staking System, and get ready for alpha testing in January!
       </p>
     </div>
 
@@ -2665,17 +2788,6 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
           <p class="text-xs text-gray-600">Hosted by Narrrf's Lab • Community games & exclusive rewards</p>
         </div>
         
-        <!-- Monthly Bingo -->
-        <div class="bg-yellow-50 p-3 rounded-lg border-2 border-yellow-500">
-          <div class="font-bold text-yellow-700 mb-1">🎲 Last Bingo Event - Dec 18th @ 8pm EST</div>
-          <p class="text-xs text-gray-600">Twitter/X Spaces LIVE (must be in Space!) • Golden Baboons + Wali DJ 🎧 • Final bingo event before XMAS break! 🎄</p>
-        </div>
-        
-        <!-- VIP Night -->
-        <div class="bg-pink-50 p-3 rounded-lg border-2 border-pink-500">
-          <div class="font-bold text-pink-700 mb-1">👑 VIP Night - Nov 28th</div>
-          <p class="text-xs text-gray-600">Exclusive VIP Holder event • Monthly tradition • Special activities & rewards</p>
-        </div>
       </div>
     </div>
     
@@ -2693,13 +2805,15 @@ on Magic Eden, we're now partnered with Gensuki for the next phase of the cheese
     </div>
     
     <div class="bg-white border-l-4 border-green-500 p-6 rounded-xl shadow mb-8">
-      <h2 class="text-xl font-semibold text-green-600">🧪 COMMUNITY TESTING - WE NEED YOU!</h2>
+      <h2 class="text-xl font-semibold text-green-600">🧪 2026 COMMUNITY TESTING - WE NEED YOU!</h2>
       <ul class="list-disc list-inside mt-2 text-sm">
-        <li>🎮 <strong>Test All 5 Games</strong> – Find bugs, report issues!</li>
+        <li>🎮 <strong>Test All 7 Games</strong> – Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race, Cheese Rumble, and 3D Riddle Game!</li>
         <li>🔌 <strong>API Testing</strong> – Try features, test workflows</li>
         <li>🐛 <strong>Fill Bug Tracker</strong> – Every bug report helps!</li>
         <li>🕶️ <strong>Join VR Gallery on Frame</strong> – Experience partners in VR!</li>
         <li>🏆 <strong>73 Achievements</strong> – Try to unlock them all!</li>
+        <li>🧊 <strong>Staking System</strong> – Test DSPOINC staking and rewards!</li>
+        <li>👑 <strong>VIP/Holder Features</strong> – Test exclusive Nerd Lab access</li>
       </ul>
     </div>
 
@@ -4286,7 +4400,9 @@ function handleHDRDragEnd() {
     }
   }
 
-  // ❄️ CHRISTMAS SNOWFLAKE EFFECT
+  // ❄️ CHRISTMAS SNOWFLAKE EFFECT - DISABLED FOR NEW YEAR 2026
+  // Snowflake animations removed - New Year theme active
+  /*
   function createSnowflakes() {
     const snowflakeContainer = document.createElement('div');
     snowflakeContainer.id = 'snowflake-container';
@@ -4318,6 +4434,7 @@ function handleHDRDragEnd() {
   document.addEventListener('DOMContentLoaded', function() {
     createSnowflakes();
   });
+  */
 </script>
 
 <!-- 🍪 Cookie Consent Banner - GDPR Compliant - FIXED OVERLAY ISSUE -->

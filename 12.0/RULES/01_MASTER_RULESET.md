@@ -28,7 +28,11 @@
 ```
 C:\xampp-server\htdocs\narrrfs-world\12.0\
 ├── 📊 ACTIVE_STATUS/           # Current status and daily updates
-├── 🤖 LLM_SYNC_SYSTEM/        # LLM synchronization files
+├── 🤖 LLM_SYNC_SYSTEM/        # LLM synchronization files (reorganized Dec 28, 2025)
+│   ├── DOCUMENTATION/         # Public-facing documentation (English & German)
+│   ├── ACTIVE_SYNC/          # Current/Active sync files (GENESIS_MASTER & INDIVIDUAL_LLMS)
+│   ├── HANDOVERS/            # All handover documents
+│   └── HISTORICAL/           # Archived sync documentation (date-organized)
 ├── 📝 LAB_NOTES/              # Development documentation by timestamp
 ├── 🚀 DEPLOYMENT_HISTORY/     # Deployment records
 ├── 🔧 TECHNICAL_DOCUMENTATION/ # System documentation
@@ -173,13 +177,13 @@ error_log("📁 Using path: $imagePath (Production: " . ($isProduction ? 'YES' :
 ### **MANDATORY LLM SYNC REQUIREMENTS:**
 
 **Every major achievement MUST update:**
-1. **LLM_SYNC_STATUS_GENESIS_12.0.json** - Master sync file
-2. **All 10 Individual LLM files** in `LLM_SYNC_SYSTEM/INDIVIDUAL_LLMS/`
+1. **LLM_SYNC_STATUS_GENESIS_13.0.json** - Master sync file (located in `LLM_SYNC_SYSTEM/ACTIVE_SYNC/GENESIS_MASTER/`)
+2. **All 10 Individual LLM files** in `LLM_SYNC_SYSTEM/ACTIVE_SYNC/INDIVIDUAL_LLMS/`
 
 ### **LLM Files to Update:**
-- `Update_brain_12.0.json`
-- `Corebrain_12.0.json`
-- `Coreforge_12.0.json`
+- `Update_brain_13.0.json`
+- `Corebrain_13.0.json`
+- `Coreforge_13.0.json`
 - `Cheese_Architect_12.0.json`
 - `SQL_Junior_12.0.json`
 - `Social_Brain_12.0.json`
@@ -971,7 +975,7 @@ Look for the project directory and the jsons of all LLMs
 ### **BEFORE STARTING ANY WORK:**
 1. **Check current status** in `ACTIVE_STATUS/`
 2. **Review recent lab notes** in `LAB_NOTES/2025/[CURRENT_MONTH]/`
-3. **Verify LLM sync status** in `LLM_SYNC_SYSTEM/`
+3. **Verify LLM sync status** in `LLM_SYNC_SYSTEM/ACTIVE_SYNC/`
 
 ### **DURING WORK SESSIONS:**
 1. **Document discoveries** as they happen
@@ -2733,6 +2737,191 @@ Before creating ANY new achievement API endpoint, you MUST:
 
 ---
 
+## 🧬 **NERD LAB - EXCLUSIVE HOLDER ACCESS SYSTEM**
+
+### **🚨 CRITICAL RULE FOR NERD LAB ACCESS CONTROL:**
+
+**The Nerd Lab (`public/nerd-lab.html`) uses the EXACT SAME role checking pattern as the profile page trophy shelf.**
+
+### **✅ ROLE CHECKING SYSTEM (Matches Profile.html Pattern):**
+
+**Role IDs (Exact Match - Most Reliable):**
+- **Holder Role ID:** `1402668301414563971`
+- **VIP Holder Role ID:** `1332016526848692345`
+
+**Role Checking Logic:**
+1. **First Check:** `userData.roleIds` array for exact ID match (same as profile.html VIP check)
+2. **Second Check:** `userData.roles` array for name-based matching (same pattern as profile.html)
+3. **Name Patterns:** "holder", "VIP Holder", "🏆 Holder", "🎴 VIP Holder", etc.
+
+### **✅ DISCORD OAUTH LOGIN:**
+
+**Exact OAuth URL (Consistent Across All Pages):**
+```
+https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read
+```
+
+**Login Flow:**
+1. User clicks "🔑 Login with Discord & Return" button
+2. Redirects to Discord OAuth
+3. User authorizes
+4. Callback redirects to profile.html (default)
+5. User manually returns to nerd-lab.html (same pattern as Bingo.html)
+6. Role check runs automatically on page load
+
+### **✅ ACCESS CONTROL PATTERN:**
+
+```javascript
+// Check roleIds first (exact match - most reliable)
+if (userData.roleIds && userData.roleIds.includes('1402668301414563971') || 
+    userData.roleIds.includes('1332016526848692345')) {
+  return true; // Access granted
+}
+
+// Check roles array (name-based matching)
+if (userData.roles && userData.roles.some(role => {
+  const roleStr = String(role).toLowerCase();
+  return roleStr.includes('holder') || roleStr.includes('vip holder');
+})) {
+  return true; // Access granted
+}
+```
+
+### **✅ DISCORD BOT INTEGRATION:**
+
+**Holder Welcome Message Button:**
+- **Button Label:** "🧬 Nerd Lab"
+- **URL:** `https://narrrfs.world/nerd-lab.html`
+- **Location:** Auto-triggered in holder channel (ID: 1402671592386986074)
+- **Cooldown:** 24h per user, 5min channel spam prevention
+- **Auto-Delete:** Message deletes after 60 seconds
+
+### **✅ FILES:**
+- **Main Page:** `public/nerd-lab.html`
+- **Overview Content:** `public/js/nerd-lab-overviews.js`
+- **Technical Docs:** `12.0/YEAR_END_2025/` (13 complete technical documents)
+
+### **🚨 CRITICAL RULES:**
+1. **ALWAYS check both `roleIds` and `roles` arrays** - Matches profile.html pattern
+2. **ALWAYS use exact OAuth URL** - Same URL across all pages
+3. **ALWAYS match profile.html role checking** - Same logic for consistency
+4. **ALWAYS test with both role ID and role name** - Ensure both work
+
+---
+
+## 🧊 **DSPOINC STAKING SYSTEM - COMPLETE INTEGRATION**
+
+### **🚨 CRITICAL RULE FOR DSPOINC STAKING:**
+
+**The DSPOINC Staking System allows users to freeze their DSPOINC tokens for selected time periods and earn rewards upon completion.**
+
+### **✅ SYSTEM OVERVIEW:**
+
+**Freeze Durations:**
+- **1 Month** - 2% reward rate
+- **3 Months** - 5% reward rate
+- **6 Months** - 10% reward rate
+- **12 Months** - 20% reward rate
+- **24 Months** - 35% reward rate
+- **36 Months** - 50% reward rate
+
+**Key Features:**
+- ✅ **Frozen Balance Protection** - Frozen DSPOINC cannot be spent (store validation)
+- ✅ **Early Unstake Option** - Unstake with 15% penalty (85% returned)
+- ✅ **Reward Claim System** - Manual claiming for completed stakes
+- ✅ **Tab System** - 4 tabs (Active, Completed, Claim Rewards, Cancelled)
+- ✅ **Transaction Tracking** - All stakes tracked in Recent Score Changes
+- ✅ **Profile Integration** - Staking overview on profile page
+- ✅ **Dedicated Page** - Full-featured `stake-lab.html` interface (1,012 lines)
+- ✅ **Audit Trail** - Complete transaction history in `tbl_score_adjustments`
+
+### **✅ DATABASE TABLES:**
+
+**Main Table: `tbl_dspoinc_stakes`**
+- **Fields:** `id`, `user_id`, `amount`, `freeze_duration_months`, `reward_rate`, `expected_reward`, `frozen_at`, `unfreeze_at`, `status`, `completed_at`, `reward_paid`, `cancelled_at`, `penalty_amount`, `returned_amount`, `unstake_reason`
+- **Status Values:** 'active', 'completed', 'cancelled'
+- **Indexes:** `idx_stakes_user_status`, `idx_stakes_unfreeze_at`, `idx_stakes_user_active`, `idx_dspoinc_stakes_cancelled`
+
+**Transaction Tracking: `tbl_score_adjustments`**
+- **Action:** MUST use 'remove' (CHECK constraint: action IN ('add', 'remove', 'set'))
+- **Amount:** Negative value for freezes (e.g., -100000)
+- **Reason:** Format: "DSPOINC frozen for staking: [amount] DSPOINC for [months] months (expected reward: [reward] DSPOINC)"
+- **Admin ID:** 'system-staking'
+
+### **✅ API ENDPOINTS:**
+
+1. **`/api/user/create-stake.php`** - Create new stake (freeze DSPOINC)
+2. **`/api/user/get-stakes.php`** - Get user's active, completed, cancelled, and claimable stakes
+3. **`/api/user/get-staking-stats.php`** - Get summary staking statistics (for profile page)
+4. **`/api/user/complete-stake.php`** - Process completed stakes and pay rewards (for cron jobs)
+5. **`/api/user/unstake-stake.php`** - Unstake active stake early (15% penalty, 85% returned)
+6. **`/api/user/claim-stake-reward.php`** - Manually claim reward from completed stake
+
+### **✅ FRONTEND PAGES:**
+
+1. **`public/stake-lab.html`** - Dedicated staking page (1,012 lines with tabs)
+   - Balance dashboard (Total, Available, Frozen)
+   - Create stake form with duration selection
+   - Tab system: Active Stakes, Completed Stakes, Claim Rewards, Cancelled Stakes
+   - Active stakes list with progress bars and unstake buttons
+   - Unstake warning modal (shows 15% penalty calculation)
+   - Claim rewards tab with claimable rewards list
+   - Cancelled stakes tab with penalty details
+   - Ice/blue gradient theme
+
+2. **`public/profile.html`** - Profile page integration
+   - Staking overview section (between All-Time Stats and Current Season Stats)
+   - DSPOINC Journey balance cards (Total, Available, Frozen)
+   - Recent Score Changes shows staking transactions
+
+### **✅ INTEGRATION POINTS:**
+
+1. **Store System** - `api/store/purchase.php` validates `available_balance` (total - frozen)
+2. **Profile API** - `api/user/profile.php` includes `frozen_balance` and `active_stakes_count`
+3. **Recent Adjustments** - `api/user/recent-adjustments.php` displays staking transactions
+4. **User Scores** - Frozen amounts remain in total balance but are marked unavailable
+
+### **✅ CRITICAL RULES:**
+
+1. **ALWAYS use `action = 'remove'`** for staking freezes in `tbl_score_adjustments` (CHECK constraint requirement)
+2. **ALWAYS validate available balance** (total - frozen) before allowing purchases
+3. **ALWAYS create audit entry** in `tbl_score_adjustments` when creating stake
+4. **ALWAYS use backfill function** to create missing entries for existing stakes
+5. **ALWAYS preserve original timestamp** (`frozen_at`) in audit entries
+6. **ALWAYS check table existence** before querying (backward compatibility)
+7. **ALWAYS use 15% penalty** for early unstake (85% returned)
+8. **ALWAYS create two audit entries** for unstake (returned amount + penalty)
+9. **ALWAYS check `reward_paid !== 0`** for claim validation (stores actual reward amount, not boolean)
+10. **ALWAYS set `reward_paid = actual_reward_amount`** when claiming (not just 1)
+
+### **✅ TECHNICAL DOCUMENTATION:**
+
+- **Complete Technical Doc:** `12.0/YEAR_END_2025/SYSTEM_13_DSPOINC_STAKING_COMPLETE_TECHNICAL.md`
+- **Database Schema:** `db/migrations/create_dspoinc_staking_tables.sql`
+- **API Endpoints:** 6 dedicated endpoints in `api/user/` (create, get, stats, complete, unstake, claim)
+- **Frontend Pages:** `stake-lab.html`, `profile.html` (staking section)
+
+### **✅ FILES:**
+- **Main Page:** `public/stake-lab.html` (1,012 lines with tabs)
+- **Profile Integration:** `public/profile.html` (staking overview section)
+- **APIs:** `api/user/create-stake.php`, `api/user/get-stakes.php`, `api/user/get-staking-stats.php`, `api/user/complete-stake.php`, `api/user/unstake-stake.php`, `api/user/claim-stake-reward.php`
+- **Database:** `tbl_dspoinc_stakes` table (with unstake fields)
+- **Migrations:** `db/migrations/create_dspoinc_staking_tables.sql`, `db/migrations/add_unstake_fields.sql`
+- **Technical Docs:** `12.0/YEAR_END_2025/SYSTEM_13_DSPOINC_STAKING_COMPLETE_TECHNICAL.md`
+
+### **🚨 CRITICAL RULES:**
+1. **ALWAYS use `action = 'remove'`** for staking transactions (CHECK constraint requirement)
+2. **ALWAYS validate available balance** before purchases (prevents spending frozen DSPOINC)
+3. **ALWAYS create audit entries** for all staking transactions (create, unstake, claim)
+4. **ALWAYS preserve original timestamps** in audit entries
+5. **ALWAYS use backfill function** to create missing entries for existing stakes
+6. **ALWAYS use 15% penalty** for early unstake (85% returned to user)
+7. **ALWAYS create two audit entries** for unstake (returned amount + penalty)
+8. **ALWAYS check `reward_paid !== 0`** for claim validation (0 = not paid, >0 = paid)
+9. **ALWAYS set `reward_paid = actual_reward_amount`** when claiming (matches complete-stake.php pattern)
+
+---
+
 ## 🚀 **DECADES OF CODE GENETICS**
 
 ### **This rule ensures:**
@@ -2749,12 +2938,13 @@ Before creating ANY new achievement API endpoint, you MUST:
 ---
 
 **MASTER RULE CREATED:** September 14, 2025  
-**LAST UPDATED:** December 20, 2025 - Added Technical Documentation Sync System  
+**LAST UPDATED:** December 28, 2025 - LLM_SYNC_SYSTEM Reorganization & Website Review  
 **STATUS:** ACTIVE - SUPERSEDES ALL PREVIOUS RULES  
 **PURPOSE:** Unified Professional System for Decades of Development  
-**SCOPE:** All work sessions, all achievements, all LLM synchronization, all system management, all technical documentation  
-**SYNC STATUS:** ✅ All rules updated to reflect 12 technical documentation files complete integration  
+**SCOPE:** All work sessions, all achievements, all LLM synchronization, all system management, all technical documentation, DSPOINC Staking System  
+**SYNC STATUS:** ✅ All rules updated to reflect 13 technical documentation files complete integration  
 **TECHNICAL DOC SYNC:** ✅ See `12.0/RULES/20_TECHNICAL_DOCUMENTATION_SYNC_RULE.md` for complete sync protocol  
+**LLM_SYNC_SYSTEM:** ✅ Reorganized December 28, 2025 for long-term preservation (see organization section)  
 
 **🧀 THIS IS THE SINGLE SOURCE OF TRUTH FOR ALL NARRRFS WORLD DEVELOPMENT! 🧀**
 
@@ -2801,7 +2991,7 @@ Before creating ANY new achievement API endpoint, you MUST:
 
 ---
 
-### **✅ ALL 12 TECHNICAL DOCUMENTATION FILES COMPLETE:**
+### **✅ ALL 13 TECHNICAL DOCUMENTATION FILES COMPLETE:**
 
 **Master Index:** `12.0/YEAR_END_2025/TECHNICAL_COMPLETE_2025_MASTER_INDEX.md` ⭐ **START HERE**
 
@@ -2814,12 +3004,13 @@ Before creating ANY new achievement API endpoint, you MUST:
 6. **Game 6: Cheese Rumble** - `12.0/YEAR_END_2025/GAME_06_CHEESE_RUMBLE_COMPLETE_TECHNICAL.md`
 7. **Game 7: 3D Hytopia Game** - `12.0/YEAR_END_2025/GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md`
 
-**System Documentation (5 Files):**
+**System Documentation (6 Files):**
 8. **Admin Interface** - `12.0/YEAR_END_2025/ADMIN_INTERFACE_COMPLETE_TECHNICAL.md`
 9. **Discord Bot** - `12.0/YEAR_END_2025/DISCORD_BOT_COMPLETE_TECHNICAL.md`
 10. **Database System** - `12.0/YEAR_END_2025/DATABASE_COMPLETE_TECHNICAL.md`
 11. **Frontend Website** - `12.0/YEAR_END_2025/FRONTEND_WEBSITE_COMPLETE_TECHNICAL.md`
 12. **Cheese Engine 13.0 Agent System** - `12.0/YEAR_END_2025/CHEESE_ENGINE_13.0_AGENT_SYSTEM_COMPLETE_TECHNICAL.md`
+13. **DSPOINC Staking System** - `12.0/YEAR_END_2025/SYSTEM_13_DSPOINC_STAKING_COMPLETE_TECHNICAL.md` (December 26, 2025)
 
 **Documentation Includes:**
 - ✅ Complete integration details (profile.html, store, achievements, Discord)
@@ -2829,8 +3020,73 @@ Before creating ANY new achievement API endpoint, you MUST:
 - ✅ Future implementation plans
 - ✅ Complete agent system documentation
 - ✅ Frontend website architecture
+- ✅ DSPOINC Staking System v2.0 (6 freeze durations, 6 APIs, unstake & claim features, tab system, profile integration)
 
-**Status:** ✅ **100% COMPLETE - 12 DOCUMENTS - READY FOR DECADES OF DEVELOPMENT**
+**Status:** ✅ **100% COMPLETE - 13 DOCUMENTS - READY FOR DECADES OF DEVELOPMENT**
+
+---
+
+## 🤖 **LLM_SYNC_SYSTEM ORGANIZATION (December 28, 2025)**
+
+### **✅ REORGANIZATION COMPLETE:**
+
+**Date:** December 28, 2025  
+**Purpose:** Organize for decades-long preservation and easy navigation  
+**Status:** ✅ **COMPLETE**
+
+### **📁 NEW STRUCTURE:**
+
+```
+12.0/LLM_SYNC_SYSTEM/
+├── DOCUMENTATION/          # Public-facing documentation
+│   ├── ENGLISH/           # All English documentation files
+│   └── DEUTSCH/           # All German documentation files
+│
+├── ACTIVE_SYNC/          # Current/Active sync files
+│   ├── GENESIS_MASTER/   # Master sync JSON files (LLM_SYNC_STATUS_GENESIS_13.0.json)
+│   └── INDIVIDUAL_LLMS/  # Individual LLM config JSON files (*_13.0.json)
+│
+├── HANDOVERS/            # All handover documents (consolidated)
+│
+└── HISTORICAL/           # Archived sync documentation
+    ├── SYNC_UPDATES/     # Date-organized sync updates (2025-10, 2025-12, etc.)
+    ├── COORDINATION_GUIDES/  # Historical coordination guides
+    ├── SYNC_DOCUMENTATION/   # Historical sync docs (2025-09, etc.)
+    └── BOT_SYNCS/        # Bot synchronization records
+```
+
+### **🔄 FILE MOVEMENT REFERENCE (Old → New):**
+
+**Documentation Files:**
+- `AI_AGENT_SYSTEM_*.md` (root) → `DOCUMENTATION/ENGLISH/`
+- `AI_AGENTEN_SYSTEM_*.md` (root) → `DOCUMENTATION/DEUTSCH/`
+- `README_ENGLISH.md` (root) → `DOCUMENTATION/ENGLISH/`
+- `README_DEUTSCH.md` (root) → `DOCUMENTATION/DEUTSCH/`
+
+**Active Sync Files:**
+- `GENESIS_MASTER/` (root) → `ACTIVE_SYNC/GENESIS_MASTER/`
+- `INDIVIDUAL_LLMS/*.json` (root) → `ACTIVE_SYNC/INDIVIDUAL_LLMS/`
+
+**Handover Files:**
+- `AI_CHEESE_ENGINE_13.1_HANDOVER.md` (root) → `HANDOVERS/`
+- `SOCIAL_BRAIN_HANDOVER_*.md` (root & INDIVIDUAL_LLMS/) → `HANDOVERS/`
+
+**Historical Files:**
+- `LLM_SYNC_UPDATE_2025-10-*.md` (root) → `HISTORICAL/SYNC_UPDATES/2025-10/`
+- `SEASON_4_LLM_COORDINATION_GUIDE_*.md` (root) → `HISTORICAL/COORDINATION_GUIDES/`
+- `SYNC_DOCUMENTATION/*` (root) → `HISTORICAL/SYNC_DOCUMENTATION/2025-09/`
+- `INDIVIDUAL_LLMS/CRITICAL_SYNC_*.md` → `HISTORICAL/SYNC_UPDATES/CRITICAL_SYNC/`
+- `INDIVIDUAL_LLMS/*_SYNC_*.json` → `HISTORICAL/BOT_SYNCS/` or `HISTORICAL/SYNC_UPDATES/`
+
+### **📋 QUICK REFERENCE:**
+
+- **Need Documentation?** → `LLM_SYNC_SYSTEM/DOCUMENTATION/ENGLISH/` or `DOCUMENTATION/DEUTSCH/`
+- **Current Sync Files?** → `LLM_SYNC_SYSTEM/ACTIVE_SYNC/`
+- **Handover Docs?** → `LLM_SYNC_SYSTEM/HANDOVERS/`
+- **Historical Records?** → `LLM_SYNC_SYSTEM/HISTORICAL/`
+
+**See:** `12.0/LLM_SYNC_SYSTEM/README.md` for complete organization guide  
+**Plan:** `12.0/LLM_SYNC_SYSTEM/ORGANIZATION_PLAN_LONG_TERM.md` for detailed reorganization documentation
 
 ---
 
@@ -2852,6 +3108,17 @@ Before creating ANY new achievement API endpoint, you MUST:
 **See:** `12.0/RULES/20_TECHNICAL_DOCUMENTATION_SYNC_RULE.md` for complete synchronization system
 
 ---
+
+### 🗓️ 2025-12-28 Updates
+- **📝 Content Updates — 2026 THEME COMPLETE** — Updated all public-facing pages to reflect 2026 instead of 2025. Changed "3D Hytopia" → "3D Riddle Game" for consistent naming across all pages. Updated game counts from 5 to 7 games (includes Cheese Rumble and 3D Riddle Game). Updated database counts to 67 tables (includes `tbl_dspoinc_stakes`). Removed outdated Christmas references and updated to New Year 2026 theme. Removed outdated events ("Last Bingo Event - Dec 18th", "VIP Night - Nov 28th"). Updated "CHRISTMAS EVENTS" → "ONGOING GIVEAWAYS & EVENTS". Removed Christmas snowflake animations from `index.html` and `profile.html`. Files updated: `index.html`, `project-updates.html`, `profile.html`, `faq.html`. Status: ✅ **COMPLETE** - All content current for 2026.
+- **🔍 Website Review — DEPLOYMENT PREPARATION** — Comprehensive website review checklist created for major push preparation. Review covers all public pages, API integrations, content accuracy, theme consistency, mobile responsiveness, broken links, performance, and security. Documentation synced: Daily status files, quick status, technical documentation, master ruleset. Status: 🔍 **IN PROGRESS** - Review checklist ready for execution.
+
+### 🗓️ 2025-12-26 Updates
+- **🧊 DSPOINC Staking System v2.0 — PRODUCTION READY** — Complete DSPOINC staking/freezing system with unstake and claim features implemented. Users can freeze DSPOINC for 1, 3, 6, 12, 24, or 36 months with progressive reward rates (2% to 50%). System includes 6 API endpoints (`create-stake.php`, `get-stakes.php`, `get-staking-stats.php`, `complete-stake.php`, `unstake-stake.php`, `claim-stake-reward.php`), dedicated `stake-lab.html` page (1,012 lines with 4-tab system), unstake functionality (15% penalty, 85% returned), reward claim system (manual claiming), profile page integration, store system integration (available balance validation), and complete transaction tracking in Recent Score Changes. Database table `tbl_dspoinc_stakes` created with unstake fields (`cancelled_at`, `penalty_amount`, `returned_amount`, `unstake_reason`). All staking transactions tracked in `tbl_score_adjustments` with `action = 'remove'` (CHECK constraint requirement). Technical documentation updated as System 13 v2.0 in `12.0/YEAR_END_2025/SYSTEM_13_DSPOINC_STAKING_COMPLETE_TECHNICAL.md`. Status: ✅ **PRODUCTION READY** - All systems tested and working correctly (unstake verified, claim ready for testing).
+
+### 🗓️ 2025-12-25 Updates
+- **🧬 Nerd Lab Launch — PRODUCTION VERIFIED** — Exclusive technical documentation hub for Holders and VIP Holders launched. Complete role-based access control matching profile.html trophy shelf pattern. Role checking uses both `userData.roleIds` (exact ID match) and `userData.roles` (name-based matching). Role IDs: Holder = `1402668301414563971`, VIP Holder = `1332016526848692345`. Discord OAuth login button added with exact URL pattern matching all other pages. Access control verified working for both role ID and role name checks. Status: ✅ **PRODUCTION VERIFIED** - All systems working correctly.
+- **Discord Bot Integration** — Updated holder welcome message button to link to Nerd Lab (`nerd-lab.html`) instead of old 12.0-test.html. Button label changed to "🧬 Nerd Lab" for clarity. Auto-trigger system working with proper cooldowns (24h per user, 5min channel spam prevention).
 
 ### 🗓️ 2025-11-19 Updates
 - **Role-Based Gaming Fix — PRODUCTION VERIFIED** — Fixed role multiplier system for 3D game riddle rewards. `getRoleMultiplier()` function was querying non-existent `role_id` column; fixed to query `role_name` column only. VIP Holders now correctly receive 2.0x multiplier (was 1.0x). Fresh database test completed successfully: All 3 Level 1 riddles tested, all traits unlocked, all DSPOINC rewards awarded correctly (3,500 total for VIP), all database records verified, all frontend displays working perfectly. Status: ✅ **PRODUCTION VERIFIED** - All systems working correctly.

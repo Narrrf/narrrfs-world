@@ -9,9 +9,10 @@ const NERD_LAB_OVERVIEWS = {
       "✅ 7 Complete Games - Fully documented and integrated (Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race, Cheese Rumble, 3D Riddle Game)",
       "✅ Admin Interface - Enterprise-level management system with 17 tabs and 90+ API endpoints",
       "✅ Discord Bot - 50+ commands for complete community management and game integration",
-      "✅ Database System - 66 tables managing all user data, scores, achievements, and system state",
-      "✅ Frontend Website - 20+ pages with complete backend integration and 50+ API connections",
+      "✅ Database System - 67 tables managing all user data, scores, achievements, and system state",
+      "✅ Frontend Website - 22+ pages with complete backend integration and 55+ API connections",
       "✅ Cheese Engine 13.0 - 12 AI agents working in harmony to maintain and develop the system",
+      "✅ DSPOINC Staking System - Complete token freezing and reward system with 6 freeze durations",
       "✅ 100+ Achievements - Comprehensive achievement systems across all games",
       "✅ Season Management - Enterprise-level season system with data preservation",
       "✅ Role-Based System - Complete multiplier and theme system for all roles",
@@ -20,10 +21,10 @@ const NERD_LAB_OVERVIEWS = {
     description: "Navigate through all technical documentation using the tabs above. Each section provides comprehensive details about our game systems, architecture, API integrations, database schemas, and implementation guides. This documentation is designed to serve developers for decades, with complete code examples and architectural explanations.",
     stats: {
       totalGames: 7,
-      totalSystems: 5,
-      totalDocuments: 12,
-      totalTables: 66,
-      totalAPIs: 90,
+      totalSystems: 6,
+      totalDocuments: 13,
+      totalTables: 67,
+      totalAPIs: 119,
       totalAchievements: 100,
       totalCodeLines: "100,000+",
       developmentYear: 2025
@@ -180,20 +181,22 @@ const NERD_LAB_OVERVIEWS = {
 
   database: {
     title: "🗄️ Database System - Complete Technical Documentation",
-    summary: "SQLite database with 66 tables managing all user data, game scores, achievements, store items, Discord events, and complete system state. The single source of truth for all Narrrf's World data.",
+    summary: "SQLite database with 67 tables managing all user data, game scores, achievements, store items, Discord events, DSPOINC staking, and complete system state. The single source of truth for all Narrrf's World data.",
     achievements: [
-      "✅ 66 Tables - Complete data structure organized into 16 categories",
-      "✅ User Management - Accounts (tbl_users), roles (tbl_user_roles), scores (tbl_user_scores)",
+      "✅ 67 Tables - Complete data structure organized into 16 categories",
+      "✅ User Management - Accounts (tbl_users), roles (tbl_user_roles), scores (tbl_user_scores), staking (tbl_dspoinc_stakes)",
       "✅ Game Data - All 7 games tracked (tbl_tetris_scores, tbl_cheese_clicks, tbl_race_participants, etc.)",
       "✅ Achievement System - All achievements stored (tbl_tetris_achievements, tbl_snake_achievements, etc.)",
       "✅ Store System - Items (tbl_store_items), inventory (tbl_user_inventory), purchases (tbl_purchase_history)",
+      "✅ DSPOINC Staking System - Complete staking/freezing system (tbl_dspoinc_stakes) with 6 freeze durations",
       "✅ Season Management - Historical data preservation (tbl_seasons, tbl_season_leaderboards)",
       "✅ Discord Events - Complete bot event tracking (tbl_giveaways, tbl_giveaway_participants, etc.)",
       "✅ Quest System - Mission definitions and claims (tbl_quests, tbl_quest_claims)",
       "✅ Bug Tracking - Complete bug report system (tbl_bug_reports, tbl_bug_comments)",
-      "✅ NFT Integration - Holder verification and collections (tbl_nft_ownership, tbl_holder_verifications)"
+      "✅ NFT Integration - Holder verification and collections (tbl_nft_ownership, tbl_holder_verifications)",
+      "✅ Audit Trail - Complete transaction tracking (tbl_score_adjustments, tbl_wallet_transactions)"
     ],
-    description: "Our database system is the foundation of Narrrf's World, storing all user data, game progress, achievements, and system state across all platforms. The database is optimized for performance with proper indexes, and all data is preserved across seasons and system updates.",
+    description: "Our database system is the foundation of Narrrf's World, storing all user data, game progress, achievements, DSPOINC staking, and system state across all platforms. The database is optimized for performance with proper indexes, and all data is preserved across seasons and system updates. The new DSPOINC Staking System (tbl_dspoinc_stakes) enables users to freeze their tokens for various durations and earn rewards.",
     techStack: "SQLite3, PHP PDO, Database migrations system",
     databaseSize: "~6.8MB (production), growing with user data",
     backupSystem: "Automated backups before deployments, manual backup tools available"
@@ -243,6 +246,37 @@ const NERD_LAB_OVERVIEWS = {
       "Discord Bot (Community Management)"
     ],
     syncFiles: "12.0/LLM_SYNC_SYSTEM/GENESIS_MASTER/LLM_SYNC_STATUS_GENESIS_12.0.json"
+  },
+
+  staking: {
+    title: "🧊 DSPOINC Staking System - Complete Technical Documentation",
+    summary: "Revolutionary DSPOINC staking/freezing system allowing users to freeze their DSPOINC tokens for selected time periods (1, 3, 6, 12, 24, 36 months) and earn progressive rewards. Frozen DSPOINC cannot be spent until the freeze period ends, ensuring long-term commitment and reward distribution.",
+    achievements: [
+      "✅ 6 Freeze Durations - 1, 3, 6, 12, 24, 36 months with progressive reward rates",
+      "✅ Progressive Reward Rates - 5% (1mo), 10% (3mo), 15% (6mo), 20% (12mo), 35% (24mo), 50% (36mo)",
+      "✅ Frozen Balance Protection - Frozen DSPOINC cannot be spent (validated in store purchases)",
+      "✅ Transaction Tracking - All stakes appear in Recent Score Changes with detailed reasons",
+      "✅ Profile Integration - Staking overview section on profile page showing Total, Available, Frozen",
+      "✅ Dedicated Staking Page - Full-featured `stake-lab.html` interface (681 lines)",
+      "✅ 4 API Endpoints - Complete backend system (`create-stake.php`, `get-stakes.php`, `get-staking-stats.php`, `complete-stake.php`)",
+      "✅ Database Integration - `tbl_dspoinc_stakes` table with complete audit trail",
+      "✅ Score Adjustments - All stakes tracked in `tbl_score_adjustments` for transparency",
+      "✅ Automatic Reward Calculation - Server-side calculation with role multiplier support (future)",
+      "✅ Persistence System - Stakes survive game restarts and sessions",
+      "✅ Complete Integration - Works seamlessly with profile, store, and balance systems"
+    ],
+    description: "The DSPOINC Staking System is a complete token freezing and reward system that allows users to commit their DSPOINC for various time periods in exchange for rewards. The system ensures frozen DSPOINC cannot be spent, provides complete transaction transparency, and integrates seamlessly with the profile page and store system. Users can view their staking statistics, active stakes, and completed stakes all in one dedicated interface.",
+    techStack: "HTML5, Tailwind CSS, Vanilla JavaScript, PHP 8.x, SQLite3, Discord OAuth 2.0",
+    fileSize: "~681 lines (stake-lab.html), ~6,663 lines (profile.html with staking section)",
+    databaseTables: ["tbl_dspoinc_stakes", "tbl_score_adjustments", "tbl_user_scores"],
+    rewardRates: {
+      "1 month": "5%",
+      "3 months": "10%",
+      "6 months": "15%",
+      "12 months": "20%",
+      "24 months": "35%",
+      "36 months": "50%"
+    }
   }
 };
 
@@ -270,6 +304,46 @@ function generateOverviewHTML(key) {
         <h2 class="text-2xl font-bold text-blue-300 mb-4">📖 Description</h2>
         <p class="text-blue-100 leading-relaxed">${overview.description}</p>
       </div>
+
+      ${overview.techStack ? `
+      <div class="mt-6 bg-purple-900/20 border border-purple-500/50 rounded-xl p-6">
+        <h2 class="text-2xl font-bold text-purple-300 mb-4">🛠️ Technology Stack</h2>
+        <p class="text-purple-100">${overview.techStack}</p>
+      </div>
+      ` : ''}
+
+      ${overview.fileSize ? `
+      <div class="mt-6 bg-indigo-900/20 border border-indigo-500/50 rounded-xl p-6">
+        <h2 class="text-2xl font-bold text-indigo-300 mb-4">📦 File Size</h2>
+        <p class="text-indigo-100">${overview.fileSize}</p>
+      </div>
+      ` : ''}
+
+      ${overview.databaseTables ? `
+      <div class="mt-6 bg-teal-900/20 border border-teal-500/50 rounded-xl p-6">
+        <h2 class="text-2xl font-bold text-teal-300 mb-4">🗄️ Database Tables</h2>
+        <ul class="space-y-2">
+          ${Array.isArray(overview.databaseTables) 
+            ? overview.databaseTables.map(table => `<li class="text-teal-100"><code>${table}</code></li>`).join('')
+            : `<li class="text-teal-100">${overview.databaseTables}</li>`
+          }
+        </ul>
+      </div>
+      ` : ''}
+
+      ${overview.rewardRates ? `
+      <div class="mt-6 bg-cyan-900/20 border border-cyan-500/50 rounded-xl p-6">
+        <h2 class="text-2xl font-bold text-cyan-300 mb-4">💰 Reward Rates</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+          ${Object.entries(overview.rewardRates).map(([duration, rate]) => `
+            <div class="bg-cyan-800/30 rounded-lg p-3 border border-cyan-400/30">
+              <div class="text-cyan-200 font-semibold">${duration}</div>
+              <div class="text-cyan-100 text-xl font-bold mt-1">${rate}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
 
       <div class="mt-8 pt-8 border-t border-yellow-400/30">
         <p class="text-gray-400 text-sm">

@@ -66,7 +66,9 @@ require_once 'discord-invite.php';
       --border-color: #374151;
     }
 
-/* ❄️ CHRISTMAS SNOWFLAKE ANIMATIONS */
+/* ❄️ CHRISTMAS SNOWFLAKE ANIMATIONS - DISABLED FOR NEW YEAR 2026 */
+/* Snowflake animations removed - New Year theme active */
+/*
 @keyframes snowfall {
   0% {
     transform: translateY(-100vh) rotate(0deg);
@@ -131,6 +133,7 @@ require_once 'discord-invite.php';
 .snowflake:nth-child(5n) {
   animation-duration: 9s, 3.5s;
 }
+*/
     
     /* 📱 Mobile Header Optimization */
     @media (max-width: 768px) {
@@ -506,6 +509,7 @@ require_once 'discord-invite.php';
       <a href="whitepaper.html" class="hover:text-yellow-400 transition-colors">Whitepaper</a>
       <a href="get-roles.html" class="hover:text-yellow-400 transition-colors">Get Roles</a>
       <a href="project-updates.html" class="hover:text-yellow-400 transition-colors">Updates</a>
+      <a href="stake-lab.html" class="hover:text-yellow-400 transition-colors">🧊 Stake Lab</a>
       <a href="faq.html" class="hover:text-yellow-400 transition-colors">FAQ</a>
       <button id="connect-wallet-btn" onclick="connectWallet()" 
         class="ml-2 mt-2 md:mt-0 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs transition-all duration-300 transform hover:scale-105">
@@ -1164,6 +1168,60 @@ document.addEventListener('DOMContentLoaded', async function() {
         </div>
       </div>
 
+      <!-- 🧊 DSPOINC STAKING SECTION -->
+      <div id="staking"></div>
+      <div class="mb-8">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-md font-semibold text-cyan-300 flex items-center gap-2">
+            <span>🧊</span>
+            <span>DSPOINC Staking</span>
+          </h3>
+          <button onclick="loadStakingStats()" 
+                  class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg border border-cyan-500 transition-all duration-300 transform hover:scale-105 cursor-pointer text-sm">
+            🔄 Refresh
+          </button>
+        </div>
+        
+        <!-- Staking Overview Cards -->
+        <div id="stakingOverview" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <!-- Will be populated by JavaScript -->
+          <div class="bg-gradient-to-br from-cyan-900/30 to-cyan-700/30 rounded-lg p-4 border border-cyan-500/30 text-center">
+            <div class="text-cyan-300 text-xs mb-1">Total Balance</div>
+            <div class="text-white font-bold text-xl">-</div>
+          </div>
+          <div class="bg-gradient-to-br from-blue-900/30 to-blue-700/30 rounded-lg p-4 border border-blue-500/30 text-center">
+            <div class="text-blue-300 text-xs mb-1">Available</div>
+            <div class="text-white font-bold text-xl">-</div>
+          </div>
+          <div class="bg-gradient-to-br from-indigo-900/30 to-indigo-700/30 rounded-lg p-4 border border-indigo-500/30 text-center">
+            <div class="text-indigo-300 text-xs mb-1">Frozen</div>
+            <div class="text-white font-bold text-xl">-</div>
+          </div>
+          <div class="bg-gradient-to-br from-purple-900/30 to-purple-700/30 rounded-lg p-4 border border-purple-500/30 text-center">
+            <div class="text-purple-300 text-xs mb-1">Active Stakes</div>
+            <div class="text-white font-bold text-xl">-</div>
+          </div>
+        </div>
+        
+        <!-- Staking Quick Info & Link -->
+        <div id="stakingQuickInfo" class="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 rounded-lg p-4 border border-cyan-500/30 mb-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-cyan-200 text-sm mb-1">
+                <span id="stakingPendingRewards" class="font-semibold">-</span> DSPOINC in pending rewards
+              </p>
+              <p class="text-gray-400 text-xs">
+                Freeze your DSPOINC for 1-36 months and earn rewards
+              </p>
+            </div>
+            <a href="stake-lab.html" 
+               class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold px-6 py-2 rounded-lg shadow-lg border border-cyan-500 transition-all duration-300 transform hover:scale-105 cursor-pointer text-sm">
+              🧊 Open Staking Lab
+            </a>
+          </div>
+        </div>
+      </div>
+
     <!-- 🎯 Game Stats Grid -->
       <div>
         <h3 class="text-md font-semibold mb-3 text-blue-300 flex items-center gap-2">
@@ -1350,9 +1408,24 @@ document.addEventListener('DOMContentLoaded', async function() {
       <img src="img/cheese-egg.png" class="w-6 h-6" alt=""> 
       Your $DSPOINC Journey
     </h2>
-    <div>
-      <span class="font-mono text-yellow-300">Total DSPOINC:</span>
-      <span id="user-dspoinc" class="font-mono text-yellow-100 text-lg">0</span>
+    
+    <!-- DSPOINC Balance Cards (Total, Available, Frozen) -->
+    <div class="grid grid-cols-3 gap-3 mb-4">
+      <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-700/30 rounded-lg p-3 border border-yellow-500/30 text-center">
+        <div class="text-yellow-300 text-xs mb-1">Total</div>
+        <div id="journey-total-balance" class="text-white font-bold text-lg">-</div>
+        <div class="text-yellow-400 text-xs">DSPOINC</div>
+      </div>
+      <div class="bg-gradient-to-br from-green-900/30 to-green-700/30 rounded-lg p-3 border border-green-500/30 text-center">
+        <div class="text-green-300 text-xs mb-1">Available</div>
+        <div id="journey-available-balance" class="text-white font-bold text-lg">-</div>
+        <div class="text-green-400 text-xs">DSPOINC</div>
+      </div>
+      <div class="bg-gradient-to-br from-blue-900/30 to-blue-700/30 rounded-lg p-3 border border-blue-500/30 text-center">
+        <div class="text-blue-300 text-xs mb-1">Frozen</div>
+        <div id="journey-frozen-balance" class="text-white font-bold text-lg">-</div>
+        <div class="text-blue-400 text-xs">DSPOINC</div>
+      </div>
     </div>
     
     <div class="relative">
@@ -1606,11 +1679,11 @@ document.addEventListener('DOMContentLoaded', async function() {
   </a> -->
 </div>
 
-  <!-- 🌀 Cheese Portal to Hytopia -->
+  <!-- 🌀 Cheese Portal to 3D Riddle Game -->
 <div class="mt-10 text-center">
-  <a href="/hytopia.html" class="group inline-block relative" title="🧀 Hytopia portal is closed... for now.">
+  <a href="/3d-riddle.html" class="group inline-block relative" title="🧀 3D Riddle Game portal is closed... for now.">
     <div class="relative p-4 rounded-full bg-yellow-300/90 hover:bg-yellow-400 transition-all duration-300 shadow-2xl animate-pulse">
-      <img src="img/cheese-portal.png" alt="Enter Hytopia" class="w-24 h-24 sm:w-32 sm:h-32 mx-auto group-hover:scale-105 transition-transform duration-300 drop-shadow-lg" />
+      <img src="img/cheese-portal.png" alt="Enter 3D Riddle Game" class="w-24 h-24 sm:w-32 sm:h-32 mx-auto group-hover:scale-105 transition-transform duration-300 drop-shadow-lg" />
       <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <div class="text-xs bg-black/80 text-yellow-300 px-3 py-1 rounded-full shadow-md animate-pulse">
           🧀 Portal Closed · Opening Soon!
@@ -1884,11 +1957,119 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
           }, 1000);
           
+          // 🧊 LOAD STAKING STATS FOR TEST USER IN LOCAL DEV
+          console.log('🧊 LOCAL DEV - Loading staking stats for test user (328601656659017732)');
+          setTimeout(async () => {
+            try {
+              // Set localStorage for test user
+              localStorage.setItem('discord_id', '328601656659017732');
+              localStorage.setItem('discord_name', 'Narrrf');
+              
+              // Load staking stats
+              await loadStakingStats();
+            } catch (stakingError) {
+              console.error('🧊 LOCAL DEV - Error loading test staking stats:', stakingError);
+            }
+          }, 1500);
+          
+          // 🎮 LOAD MISSIONS (CURRENT SEASON STATISTICS) FOR TEST USER IN LOCAL DEV
+          console.log('🎮 LOCAL DEV - Loading missions for test user (328601656659017732)');
+          setTimeout(async () => {
+            try {
+              // Set localStorage for test user (if not already set)
+              if (!localStorage.getItem('discord_id')) {
+                localStorage.setItem('discord_id', '328601656659017732');
+                localStorage.setItem('discord_name', 'Narrrf');
+              }
+              
+              // Load missions (this will also trigger loadAllTimeStats and loadStakingStats)
+              await loadGameMissions();
+            } catch (missionsError) {
+              console.error('🎮 LOCAL DEV - Error loading test missions:', missionsError);
+            }
+          }, 2000);
+          
+          // 👤 LOAD PROFILE DATA FOR TEST USER IN LOCAL DEV (username, avatar, store)
+          console.log('👤 LOCAL DEV - Loading profile data for test user (328601656659017732)');
+          setTimeout(async () => {
+            try {
+              const testUserId = '328601656659017732';
+              
+              // Load profile API and enhanced profile API with test user ID
+              const [profileRes, enhancedProfileRes] = await Promise.all([
+                fetch(`${apiBaseUrl}/api/user/profile.php`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id: testUserId })
+                }),
+                fetch(`${apiBaseUrl}/api/user/enhanced-profile.php`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id: testUserId })
+                })
+              ]);
+              
+              if (profileRes.ok) {
+                const user = await profileRes.json();
+                const enhancedData = enhancedProfileRes.ok ? await enhancedProfileRes.json() : null;
+                console.log('👤 LOCAL DEV - Profile data loaded:', user);
+                console.log('👤 LOCAL DEV - Enhanced profile data loaded:', enhancedData);
+                
+                // Set username and avatar
+                setText('username', user.discord_name || 'Narrrf');
+                setText('welcome-name', user.discord_name || 'Narrrf');
+                const avatar = document.getElementById('avatar');
+                if (avatar && user.avatar_url) {
+                  avatar.src = user.avatar_url;
+                  avatar.alt = user.discord_name || 'Narrrf';
+                  avatar.title = user.discord_name || 'Narrrf';
+                  avatar.classList.remove('cursor-pointer');
+                }
+                
+                // Set other profile data
+                setText('traits', user.traits?.join(', ') || 'No traits');
+                setText('user-roles', user.roles?.join(', ') || 'No roles');
+                setText('email', user.email || '');
+                setText('guilds', `🎯 Guilds Connected: ${user.guilds?.length || 0}`);
+                
+                // Show DSPOINC section
+                showElement('dspoincSection');
+                
+                // Display enhanced profile data (inventory and purchase history)
+                if (enhancedData && enhancedData.success) {
+                  window.enhancedProfileData = enhancedData;
+                  displayInventoryAndHistory(enhancedData);
+                }
+                
+                // Load store data with test user ID
+                await loadProfileStore(testUserId, apiBaseUrl);
+                
+                // Render trophy shelf with user roles
+                if (user.roles && Array.isArray(user.roles)) {
+                  console.log('✅ Rendering trophy shelf with user roles:', user.roles);
+                  renderTrophyShelf(user.roles);
+                }
+              } else {
+                console.warn('👤 LOCAL DEV - Profile API failed, using fallback');
+                // Fallback: Set basic info
+                setText('username', 'Narrrf');
+                setText('welcome-name', 'Narrrf');
+                await loadProfileStore(testUserId, apiBaseUrl);
+              }
+            } catch (profileError) {
+              console.error('👤 LOCAL DEV - Error loading profile data:', profileError);
+              // Fallback: Set basic info
+              setText('username', 'Narrrf');
+              setText('welcome-name', 'Narrrf');
+              await loadProfileStore('328601656659017732', apiBaseUrl);
+            }
+          }, 2500);
+          
           // 🏆 LOCAL TROPHY OVERRIDE - Create fake user object with all trophy roles
           console.log('🏠 Local environment detected - creating fake user with ALL trophy roles for testing');
           const fakeUser = {
             discord_id: '328601656659017732',
-            discord_name: 'Test User',
+            discord_name: 'Narrrf',
             roles: [
               "Alpha Caller", "Champion", "Community Member", "Crypto Corn Friends",
               "Engage", "Kaleido Friends", "Moderator", "PokerOG", "Rabbit Friends",
@@ -1898,7 +2079,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           };
           console.log('🎯 Fake user created with ALL trophy roles:', fakeUser.roles);
           
-          // Render trophy shelf with fake user roles
+          // Render trophy shelf with fake user roles (will be overridden by real profile data if available)
           if (fakeUser.roles) {
             console.log('✅ Rendering trophy shelf with fake user roles:', fakeUser.roles);
             renderTrophyShelf(fakeUser.roles);
@@ -1959,8 +2140,29 @@ document.addEventListener("DOMContentLoaded", async function () {
     setText('email', user.email || '');
     setText('guilds', `🎯 Guilds Connected: ${user.guilds?.length || 0}`);
 
+    // Update Journey balance cards if staking data is available from profile API
+    if (user.total_dspoinc !== undefined && user.frozen_dspoinc !== undefined && user.available_dspoinc !== undefined) {
+      updateJourneyBalance({
+        total_balance: user.total_dspoinc,
+        available_balance: user.available_dspoinc,
+        frozen_balance: user.frozen_dspoinc
+      });
+    }
+
     // Scores/stats (if present in JSON)
-    if (user.stats) {
+    // Use total_dspoinc from profile API (includes all scores, frozen balance is separate)
+    if (user.total_dspoinc !== undefined) {
+      setText('user-dspoinc', user.total_dspoinc.toLocaleString());
+      
+      // Update Journey balance cards if staking data is available
+      if (user.frozen_dspoinc !== undefined && user.available_dspoinc !== undefined) {
+        updateJourneyBalance({
+          total_balance: user.total_dspoinc,
+          available_balance: user.available_dspoinc,
+          frozen_balance: user.frozen_dspoinc
+        });
+      }
+    } else if (user.stats) {
       setText('user-dspoinc', user.stats.scoreAdjustments !== undefined ? user.stats.scoreAdjustments.toLocaleString() : '');
       setText('user-spoinc', user.stats.sources !== undefined ? user.stats.sources.toLocaleString() : '');
     }
@@ -2020,6 +2222,19 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
     } catch (error) {
       console.warn('Failed to load all-time stats on page load:', error);
+    }
+    
+    // 🧊 Load staking statistics automatically on page load
+    try {
+      console.log('🧊 Auto-loading staking stats for user:', user.discord_id);
+      // Ensure localStorage is set for loadStakingStats function
+      if (user.discord_id) {
+        localStorage.setItem('discord_id', user.discord_id);
+      }
+      // Call loadStakingStats function (it will handle the API call)
+      await loadStakingStats();
+    } catch (error) {
+      console.warn('Failed to load staking stats on page load:', error);
     }
 
     // Trophy pokal shelf — render immediately from roles
@@ -2793,6 +3008,14 @@ document.addEventListener('DOMContentLoaded', async function() {
   // 🎮 Load game portal stats automatically (always on localhost, only if logged in on production)
   const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   
+  // 🏠 LOCAL DEVELOPMENT: Set test user ID if not logged in
+  if (!userId && isLocalDevelopment) {
+    console.log('🏠 LOCAL DEV - No Discord ID found, using test user (328601656659017732)');
+    userId = '328601656659017732';
+    localStorage.setItem('discord_id', userId);
+    localStorage.setItem('discord_name', 'Narrrf');
+  }
+  
   if (userId || isLocalDevelopment) {
     console.log('🎮 Calling loadGamePortalStats with userId:', userId, '(isLocal:', isLocalDevelopment, ')');
     loadGamePortalStats();
@@ -2903,6 +3126,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         const emptyMsg = document.getElementById('no-score-history');
         const adjustments = Array.isArray(response.adjustments) ? response.adjustments : [];
 
+        // Log all adjustments for debugging (especially staking entries)
+        console.log('📊 All adjustments received:', adjustments);
+        const stakingEntries = adjustments.filter(a => a.action === 'stake_freeze' || (a.reason && a.reason.includes('DSPOINC frozen for staking')));
+        console.log('📊 Staking entries found:', stakingEntries);
+
         // If there are adjustments, hide the message and show the list
         if (adjustments.length > 0) {
           console.log('📊 Displaying', adjustments.length, 'recent score changes');
@@ -2910,13 +3138,15 @@ document.addEventListener('DOMContentLoaded', async function() {
             recentList.innerHTML = adjustments
               .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
               .slice(0, 10)
-              .map(a =>
-                `<li>
+              .map(a => {
+                // Format reason for staking entries
+                const reason = a.reason || a.action || 'Score adjustment';
+                return `<li>
                   <span class="font-mono">${a.timestamp ? a.timestamp.replace('T', ' ').slice(0, 19) : ''}</span>
-                  : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount}</b>
-                  <span class="italic">(${a.reason || a.action || 'Score adjustment'})</span>
-                </li>`
-              ).join('');
+                  : <b class="${a.amount > 0 ? 'text-green-400' : 'text-red-400'}">${a.amount > 0 ? '+' : ''}${a.amount.toLocaleString()}</b>
+                  <span class="italic">(${reason})</span>
+                </li>`;
+              }).join('');
           }
           if (emptyMsg) emptyMsg.style.display = "none";
         } else {
@@ -4667,6 +4897,221 @@ async function loadAllTimeStats() {
   }
 }
 
+// 🧊 Function to load staking statistics
+async function loadStakingStats() {
+  try {
+    console.log('🧊 Loading staking statistics...');
+    
+    // Get the user's Discord ID
+    let discordId = localStorage.getItem('discord_id');
+    
+    // 🏠 LOCAL DEVELOPMENT: Use test user if not logged in
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!discordId && isLocalDevelopment) {
+      console.log('🏠 LOCAL DEV - No Discord ID found, using test user (328601656659017732)');
+      discordId = '328601656659017732';
+      localStorage.setItem('discord_id', discordId);
+      localStorage.setItem('discord_name', 'Narrrf');
+    }
+    
+    // Also try to get from session if available
+    if (!discordId && window.sessionDiscordId) {
+      discordId = window.sessionDiscordId;
+      localStorage.setItem('discord_id', discordId);
+    }
+    
+    if (!discordId) {
+      console.log('🧊 No Discord ID found, cannot load staking stats');
+      displayStakingStatsError('Please log in with Discord to view staking stats');
+      return;
+    }
+    
+    console.log('🧊 Loading staking stats for Discord ID:', discordId);
+    
+    // Show loading state
+    const overviewEl = document.getElementById('stakingOverview');
+    if (overviewEl) {
+      overviewEl.innerHTML = `
+        <div class="col-span-full text-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto mb-2"></div>
+          <div class="text-cyan-300">Loading staking stats...</div>
+        </div>
+      `;
+    }
+    
+    // Environment-aware API endpoint (same pattern as loadAllTimeStats)
+    const isProduction = window.location.hostname === 'narrrfs-world.onrender.com' || window.location.hostname === 'narrrfs.world';
+    const apiBaseUrl = isProduction ? 'https://narrrfs.world' : '';
+    
+    console.log(`🌍 Environment: ${isProduction ? 'Production' : 'Local'}`);
+    console.log(`🔗 Staking Stats API URL: ${apiBaseUrl}/api/user/get-staking-stats.php`);
+    console.log(`🔗 Sending user_id: ${discordId}`);
+    
+    const response = await fetch(`${apiBaseUrl}/api/user/get-staking-stats.php`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({ user_id: discordId })
+    });
+    
+    console.log('🔗 API Response status:', response.status);
+    console.log('🔗 API Response ok:', response.ok);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('🔗 API Error response:', errorText);
+      try {
+        const errorData = JSON.parse(errorText);
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      } catch (parseError) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText.substring(0, 100)}`);
+      }
+    }
+    
+    const data = await response.json();
+    console.log('🧊 Staking stats API response:', data);
+    
+    if (data.success && data.data) {
+      console.log('🧊 Staking stats data:', data.data);
+      displayStakingStats(data.data);
+    } else {
+      console.error('🧊 API returned unsuccessful response:', data);
+      throw new Error(data.error || 'Failed to load staking stats');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error loading staking stats:', error);
+    console.error('❌ Error stack:', error.stack);
+    displayStakingStatsError(error.message);
+  }
+}
+
+// 🧊 Function to update Journey balance cards (Total, Available, Frozen)
+function updateJourneyBalance(stats) {
+  try {
+    const formatNumber = (num) => {
+      if (num === null || num === undefined || isNaN(num)) {
+        return '-';
+      }
+      return Number(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+
+    // Update Journey balance cards
+    const journeyTotal = document.getElementById('journey-total-balance');
+    const journeyAvailable = document.getElementById('journey-available-balance');
+    const journeyFrozen = document.getElementById('journey-frozen-balance');
+
+    if (journeyTotal && stats) {
+      journeyTotal.textContent = formatNumber(stats.total_balance || 0);
+    }
+    if (journeyAvailable && stats) {
+      journeyAvailable.textContent = formatNumber(stats.available_balance || 0);
+    }
+    if (journeyFrozen && stats) {
+      journeyFrozen.textContent = formatNumber(stats.frozen_balance || 0);
+    }
+  } catch (error) {
+    console.error('❌ Error updating journey balance:', error);
+  }
+}
+
+// 🧊 Function to display staking statistics
+function displayStakingStats(stats) {
+  try {
+    console.log('🧊 Displaying staking stats:', stats);
+    
+    // Also update Journey balance cards
+    updateJourneyBalance(stats);
+    
+    // Validate stats object
+    if (!stats || typeof stats !== 'object') {
+      console.error('🧊 Invalid stats object:', stats);
+      displayStakingStatsError('Invalid staking data received');
+      return;
+    }
+    
+    // Format numbers with commas
+    const formatNumber = (num) => {
+      if (num === null || num === undefined || isNaN(num)) {
+        return '0';
+      }
+      return Number(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    };
+    
+    // Extract values with safe defaults
+    const totalBalance = stats.total_balance ?? 0;
+    const availableBalance = stats.available_balance ?? 0;
+    const frozenBalance = stats.frozen_balance ?? 0;
+    const activeStakesCount = stats.active_stakes_count ?? 0;
+    const pendingRewards = stats.pending_rewards ?? 0;
+    
+    console.log('🧊 Formatted values:', {
+      totalBalance: formatNumber(totalBalance),
+      availableBalance: formatNumber(availableBalance),
+      frozenBalance: formatNumber(frozenBalance),
+      activeStakesCount: activeStakesCount,
+      pendingRewards: formatNumber(pendingRewards)
+    });
+    
+    // Update overview cards
+    const overviewEl = document.getElementById('stakingOverview');
+    if (overviewEl) {
+      overviewEl.innerHTML = `
+        <div class="bg-gradient-to-br from-cyan-900/30 to-cyan-700/30 rounded-lg p-4 border border-cyan-500/30 text-center">
+          <div class="text-cyan-300 text-xs mb-1">Total Balance</div>
+          <div class="text-white font-bold text-xl">${formatNumber(totalBalance)}</div>
+        </div>
+        <div class="bg-gradient-to-br from-blue-900/30 to-blue-700/30 rounded-lg p-4 border border-blue-500/30 text-center">
+          <div class="text-blue-300 text-xs mb-1">Available</div>
+          <div class="text-white font-bold text-xl">${formatNumber(availableBalance)}</div>
+        </div>
+        <div class="bg-gradient-to-br from-indigo-900/30 to-indigo-700/30 rounded-lg p-4 border border-indigo-500/30 text-center">
+          <div class="text-indigo-300 text-xs mb-1">Frozen</div>
+          <div class="text-white font-bold text-xl">${formatNumber(frozenBalance)}</div>
+        </div>
+        <div class="bg-gradient-to-br from-purple-900/30 to-purple-700/30 rounded-lg p-4 border border-purple-500/30 text-center">
+          <div class="text-purple-300 text-xs mb-1">Active Stakes</div>
+          <div class="text-white font-bold text-xl">${activeStakesCount}</div>
+        </div>
+      `;
+      console.log('✅ Staking overview cards updated');
+    } else {
+      console.error('❌ stakingOverview element not found');
+    }
+    
+    // Update quick info
+    const quickInfoEl = document.getElementById('stakingPendingRewards');
+    if (quickInfoEl) {
+      quickInfoEl.textContent = formatNumber(pendingRewards);
+      console.log('✅ Pending rewards updated:', formatNumber(pendingRewards));
+    } else {
+      console.warn('⚠️ stakingPendingRewards element not found');
+    }
+    
+    console.log('✅ Staking stats displayed successfully');
+  } catch (error) {
+    console.error('❌ Error displaying staking stats:', error);
+    console.error('❌ Error stack:', error.stack);
+    displayStakingStatsError(error.message);
+  }
+}
+
+// 🧊 Function to display staking error
+function displayStakingStatsError(errorMessage) {
+  const overviewEl = document.getElementById('stakingOverview');
+  if (overviewEl) {
+    overviewEl.innerHTML = `
+      <div class="col-span-full text-center py-4">
+        <div class="text-red-400 text-sm">❌ Error loading staking stats</div>
+        <div class="text-gray-400 text-xs mt-1">${errorMessage}</div>
+      </div>
+    `;
+  }
+}
+
 // 🏆 Function to display all-time statistics
 function displayAllTimeStats(stats) {
   try {
@@ -4895,6 +5340,9 @@ async function loadGameMissions() {
     
     // Also load all-time stats
     loadAllTimeStats();
+    
+    // Also load staking stats
+    loadStakingStats();
     
     // Also load game portal stats (redundant but safe)
     loadGamePortalStats();
@@ -6181,6 +6629,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
   // ❄️ CHRISTMAS SNOWFLAKE EFFECT
+  // ❄️ CHRISTMAS SNOWFLAKE EFFECT - DISABLED FOR NEW YEAR 2026
+  // Snowflake animations removed - New Year theme active
+  /*
   function createSnowflakes() {
     const snowflakeContainer = document.createElement('div');
     snowflakeContainer.id = 'snowflake-container';
@@ -6212,6 +6663,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('DOMContentLoaded', function() {
     createSnowflakes();
   });
+  */
 </script>
 
 </body>

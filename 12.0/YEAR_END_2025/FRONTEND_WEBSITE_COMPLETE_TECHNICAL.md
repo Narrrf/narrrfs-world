@@ -35,16 +35,16 @@ Narrrf's World frontend is a comprehensive web application built with:
 - **Progressive Web App** - Mobile-optimized experience
 
 ### **Frontend Statistics**
-- **Total HTML Pages:** 20+ public pages
+- **Total HTML Pages:** 22+ public pages
 - **Game Pages:** 7 game implementations
-- **API Endpoints Used:** 50+ backend API endpoints
-- **Database Tables Accessed:** 66 tables via APIs
-- **Total Frontend Code:** ~15,000+ lines
+- **API Endpoints Used:** 55+ backend API endpoints
+- **Database Tables Accessed:** 67 tables via APIs
+- **Total Frontend Code:** ~16,000+ lines
 
 ### **Key Features**
 - ✅ **User Authentication** - Discord OAuth integration
 - ✅ **Game Portal** - Centralized player profile and stats
-- ✅ **7 Live Games** - Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race, Cheese Rumble, 3D Game
+- ✅ **7 Live Games** - Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race, Cheese Rumble, 3D Riddle Game
 - ✅ **Achievement System** - Visual achievement galleries
 - ✅ **Store System** - In-game purchases and inventory
 - ✅ **Leaderboards** - Real-time rankings
@@ -58,9 +58,9 @@ Narrrf's World frontend is a comprehensive web application built with:
 
 ```
 public/
-├── 📄 HTML Pages (20+ files)
+├── 📄 HTML Pages (22+ files)
 │   ├── index.html - Landing page
-│   ├── profile.html - Game portal & player stats (6,220 lines)
+│   ├── profile.html - Game portal & player stats (6,573 lines)
 │   ├── tetris.html - Tetris game
 │   ├── snake.html - Snake game
 │   ├── space-cheese-invaders.html - Space Invaders game
@@ -77,6 +77,8 @@ public/
 │   ├── bug-tracker-collab.html - Bug tracker
 │   ├── bug-report.html - Bug reporting
 │   ├── finances.html - Financial information
+│   ├── stake-lab.html - DSPOINC staking system (681 lines)
+│   ├── nerd-lab.html - Holder-exclusive dev logs (820 lines)
 │   ├── 404.html - Error page
 │   └── Terms.html, privacy.html, privacy-policy.html - Legal pages
 │
@@ -154,31 +156,41 @@ public/
 
 #### **2. `profile.html` - Game Portal & Player Stats**
 **Purpose:** Central hub for player profile, game stats, achievements, store, and inventory  
-**Size:** 6,220 lines (largest frontend file)  
+**Size:** 6,573 lines (largest frontend file)  
 **Status:** Primary game portal page
 
 **Key Sections:**
 1. **User Profile Header** - Discord avatar, username, roles
 2. **DSPOINC Balance** - Current balance display
-3. **Game Stats** - All 7 games statistics
-4. **Achievements** - Tetris, Snake, Space Invaders, 3D Puzzles
-5. **Store Catalog** - Item browsing and purchasing
-6. **Inventory** - User item inventory
-7. **Purchase History** - Transaction history
-8. **Leaderboards** - Game rankings
-9. **Quest System** - Mission tracking
-10. **NFT Verification** - Wallet connection
+3. **DSPOINC Staking Overview** - Staking statistics and link to stake-lab.html
+4. **All-Time Statistics** - Historical game statistics
+5. **Current Season Statistics** - Season-based game stats
+6. **Game Stats** - All 7 games statistics
+7. **Achievements** - Tetris, Snake, Space Invaders, 3D Puzzles
+8. **Store Catalog** - Item browsing and purchasing
+9. **Inventory** - User item inventory
+10. **Purchase History** - Transaction history
+11. **Leaderboards** - Game rankings
+12. **Quest System** - Mission tracking
+13. **NFT Verification** - Wallet connection
+14. **Recent Score Adjustments** - Score change history
 
 **API Integrations (30+ endpoints):**
 
 **User Data:**
-- `/api/user/profile.php` - Basic user profile
+- `/api/user/profile.php` - Basic user profile (includes staking stats)
 - `/api/user/enhanced-profile.php` - Enhanced profile with inventory
 - `/api/user/details.php` - User details
 - `/api/user/score-total.php` - DSPOINC balance
 - `/api/user/recent-adjustments.php` - Score adjustment history
 - `/api/user/roles.php` - Discord roles
 - `/api/user/check-season-tester-role.php` - Role verification
+
+**Staking System:**
+- `/api/user/get-staking-stats.php` - Staking overview statistics
+- `/api/user/get-stakes.php` - Active and completed stakes
+- `/api/user/create-stake.php` - Create new DSPOINC stake
+- `/api/user/complete-stake.php` - Process completed stakes (cron/admin)
 
 **Game Stats:**
 - `/api/user/user-game-missions.php` - All 7 games mission stats
@@ -224,6 +236,7 @@ public/
 - `tbl_purchase_history` - Purchase history
 - `tbl_user_store_settings` - Game settings
 - `tbl_score_adjustments` - Score adjustments
+- `tbl_dspoinc_stakes` - DSPOINC staking records
 - `tbl_user_roles` - Discord roles
 - `tbl_quests` - Quest definitions
 - `tbl_quest_claims` - Quest claims
@@ -392,7 +405,7 @@ public/
 - See `ADMIN_INTERFACE_COMPLETE_TECHNICAL.md` for full details
 
 **Database Tables:**
-- All 66 tables accessible via admin APIs
+- All 67 tables accessible via admin APIs
 
 ---
 
@@ -527,7 +540,145 @@ public/
 
 ---
 
-#### **14. `project-updates.html` - Development Updates**
+#### **14. `stake-lab.html` - DSPOINC Staking System**
+**Purpose:** Dedicated page for DSPOINC staking/freezing system  
+**Size:** 681 lines  
+**Status:** Live - December 25, 2025
+
+**Features:**
+- **Balance Dashboard** - Total, available, and frozen DSPOINC display
+- **Create Stake Form** - Freeze DSPOINC for selected time windows (1, 3, 6, 12, 24, 36 months)
+- **Reward Calculator** - Real-time reward calculation based on duration
+- **Active Stakes List** - Display all active stakes with countdown timers
+- **Completed Stakes History** - View completed stakes and rewards
+- **Ice/Blue Gradient Theme** - Staking-themed visual design
+- **Local Development Bypass** - Test user support for local testing
+- **Discord Authentication** - Required for access
+
+**API Integrations:**
+- `/api/user/get-staking-stats.php` - Staking overview statistics
+- `/api/user/get-stakes.php` - Active and completed stakes
+- `/api/user/create-stake.php` - Create new DSPOINC stake
+- `/api/user/profile.php` - User authentication and balance
+
+**Database Tables:**
+- `tbl_dspoinc_stakes` - Staking records
+- `tbl_user_scores` - DSPOINC balance (frozen amount deducted)
+- `tbl_score_adjustments` - Audit trail for stake creation
+
+**Staking System Details:**
+- **Reward Rates:** 2% (1 month), 5% (3 months), 10% (6 months), 20% (12 months), 35% (24 months), 50% (36 months)
+- **Freeze Mechanism:** DSPOINC is deducted from available balance when stake is created
+- **Reward Payment:** Automatic reward payment when stake completes (via cron or admin)
+- **Status Tracking:** Active, completed, cancelled statuses
+- **Integration:** Linked from profile.html staking overview section
+
+**Created:** December 25, 2025
+
+---
+
+#### **15. `nerd-lab.html` - Holder-Exclusive Dev Logs**
+**Purpose:** Exclusive development logs and technical documentation for Holders and VIP Holders  
+**Size:** 820 lines  
+**Status:** Live - December 25, 2025
+
+**Features:**
+- **Role-Based Access Control** - Exclusive to Holder (ID: 1402668301414563971) and VIP Holder (ID: 1332016526848692345) roles
+- **Discord Authentication** - Discord OAuth login required
+- **Development Logs** - Technical documentation and updates
+- **Holder Community** - Exclusive content for NFT holders
+- **Access Denied Page** - Clear messaging for non-holders with Discord login option
+
+**Access Control:**
+- **Role Verification:** Checks both role IDs and role names (matches profile.html pattern)
+- **Discord OAuth:** Uses standard Discord OAuth URL for authentication
+- **Redirect Handling:** Returns to page after successful login
+
+**API Integrations:**
+- `/api/user/profile.php` - User authentication and role verification
+
+**Database Tables:**
+- `tbl_user_roles` - Role verification
+- `tbl_users` - User authentication
+
+**Integration Points:**
+- Discord bot auto-welcome message includes link to nerd-lab.html
+- Holder channel (ID: 1402671592386986074) bot integration
+
+**Created:** December 25, 2025
+
+---
+
+#### **14. `stake-lab.html` - DSPOINC Staking System**
+**Purpose:** Dedicated page for DSPOINC staking/freezing system  
+**Size:** 681 lines  
+**Status:** Live - December 25, 2025
+
+**Features:**
+- **Balance Dashboard** - Total, available, and frozen DSPOINC display
+- **Create Stake Form** - Freeze DSPOINC for selected time windows (1, 3, 6, 12, 24, 36 months)
+- **Reward Calculator** - Real-time reward calculation based on duration
+- **Active Stakes List** - Display all active stakes with countdown timers
+- **Completed Stakes History** - View completed stakes and rewards
+- **Ice/Blue Gradient Theme** - Staking-themed visual design
+- **Local Development Bypass** - Test user support for local testing
+- **Discord Authentication** - Required for access
+
+**API Integrations:**
+- `/api/user/get-staking-stats.php` - Staking overview statistics
+- `/api/user/get-stakes.php` - Active and completed stakes
+- `/api/user/create-stake.php` - Create new DSPOINC stake
+- `/api/user/profile.php` - User authentication and balance
+
+**Database Tables:**
+- `tbl_dspoinc_stakes` - Staking records
+- `tbl_user_scores` - DSPOINC balance (frozen amount deducted)
+- `tbl_score_adjustments` - Audit trail for stake creation
+
+**Staking System Details:**
+- **Reward Rates:** 2% (1 month), 5% (3 months), 10% (6 months), 20% (12 months), 35% (24 months), 50% (36 months)
+- **Freeze Mechanism:** DSPOINC is deducted from available balance when stake is created
+- **Reward Payment:** Automatic reward payment when stake completes (via cron or admin)
+- **Status Tracking:** Active, completed, cancelled statuses
+- **Integration:** Linked from profile.html staking overview section
+
+**Created:** December 25, 2025
+
+---
+
+#### **15. `nerd-lab.html` - Holder-Exclusive Dev Logs**
+**Purpose:** Exclusive development logs and technical documentation for Holders and VIP Holders  
+**Size:** 820 lines  
+**Status:** Live - December 25, 2025
+
+**Features:**
+- **Role-Based Access Control** - Exclusive to Holder (ID: 1402668301414563971) and VIP Holder (ID: 1332016526848692345) roles
+- **Discord Authentication** - Discord OAuth login required
+- **Development Logs** - Technical documentation and updates
+- **Holder Community** - Exclusive content for NFT holders
+- **Access Denied Page** - Clear messaging for non-holders with Discord login option
+
+**Access Control:**
+- **Role Verification:** Checks both role IDs and role names (matches profile.html pattern)
+- **Discord OAuth:** Uses standard Discord OAuth URL for authentication
+- **Redirect Handling:** Returns to page after successful login
+
+**API Integrations:**
+- `/api/user/profile.php` - User authentication and role verification
+
+**Database Tables:**
+- `tbl_user_roles` - Role verification
+- `tbl_users` - User authentication
+
+**Integration Points:**
+- Discord bot auto-welcome message includes link to nerd-lab.html
+- Holder channel (ID: 1402671592386986074) bot integration
+
+**Created:** December 25, 2025
+
+---
+
+#### **16. `project-updates.html` - Development Updates**
 **Purpose:** Project development news and updates
 
 **Features:**
@@ -537,7 +688,7 @@ public/
 
 ---
 
-#### **15. `faq.html` - Frequently Asked Questions**
+#### **17. `faq.html` - Frequently Asked Questions**
 **Purpose:** Common questions and answers
 
 **Features:**
@@ -547,7 +698,7 @@ public/
 
 ---
 
-#### **16. Legal Pages**
+#### **18. Legal Pages**
 - `privacy.html` - Privacy policy
 - `privacy-policy.html` - Detailed privacy policy
 - `Terms.html` - Terms of service
@@ -1026,10 +1177,10 @@ All pages use Tailwind CSS via CDN:
 - Loading spinners
 - Achievement popups
 
-**Christmas Theme** (Seasonal):
-- Snowflake animations
-- Holiday colors
-- Special effects
+**New Year 2026 Theme** (Current):
+- Confetti animations
+- Celebration gradients
+- Modern visual effects
 
 ---
 
@@ -1159,7 +1310,7 @@ Backend APIs
     ↓ Database Operations
 
 Database (SQLite3)
-    └── 66 tables accessed via APIs
+    └── 67 tables accessed via APIs
 ```
 
 ### **Frontend → Database Connection Points**
@@ -1177,8 +1328,10 @@ Database (SQLite3)
 ## ✅ **SUMMARY**
 
 The Narrrf's World frontend website provides:
-- ✅ **20+ public pages** covering all system aspects
-- ✅ **Profile.html** as central game portal (6,220 lines)
+- ✅ **22+ public pages** covering all system aspects
+- ✅ **Profile.html** as central game portal (6,573 lines)
+- ✅ **Stake-lab.html** for DSPOINC staking system (681 lines)
+- ✅ **Nerd-lab.html** for holder-exclusive content (820 lines)
 - ✅ **7 game pages** with full integration
 - ✅ **50+ API endpoints** integrated
 - ✅ **66 database tables** accessed via APIs
@@ -1193,8 +1346,30 @@ The Narrrf's World frontend website provides:
 
 ---
 
+---
+
+## 📅 **RECENT UPDATES**
+
+### **December 26, 2025 - Content Updates & 2026 Theme:**
+- ✅ Updated all public pages to reflect 2026 instead of 2025
+- ✅ Updated game counts from 5 to 7 games (includes Cheese Rumble and 3D Riddle Game)
+- ✅ Changed "3D Hytopia" → "3D Riddle Game" (consistent naming)
+- ✅ Added DSPOINC Staking System references to development and testing sections
+- ✅ Updated database count to 67 tables
+- ✅ Removed outdated Christmas references and updated to New Year 2026 theme
+- ✅ Removed outdated events ("Last Bingo Event - Dec 18th", "VIP Night - Nov 28th")
+- ✅ Updated "CHRISTMAS EVENTS" → "ONGOING GIVEAWAYS & EVENTS"
+- ✅ Removed Christmas snowflake animations from `index.html` and `profile.html`
+
+**Files Updated:**
+- `public/index.html` - New Year 2026 theme, updated content
+- `public/project-updates.html` - Updated to 2026, removed outdated content
+- `public/profile.html` - Removed Christmas animations
+
+---
+
 **Document Created:** December 20, 2025  
-**Last Updated:** December 20, 2025  
-**Version:** 1.0.0  
+**Last Updated:** December 28, 2025  
+**Version:** 1.0.1  
 **Maintainer:** Narrrf's World Development Team
 

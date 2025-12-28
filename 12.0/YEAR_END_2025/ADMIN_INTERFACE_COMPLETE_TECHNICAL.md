@@ -44,7 +44,7 @@ The Admin Interface is the central backend/frontend display system for managing 
 - ✅ **Database Management** - Backup, restore, overview tools
 
 ### **Integration Status:**
-- ✅ **All 7 Games:** Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race, Cheese Rumble, 3D Hytopia
+- ✅ **All 7 Games:** Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race, Cheese Rumble, 3D Riddle Game
 - ✅ **Profile.html:** Data sync for all games
 - ✅ **Discord Bot:** Full integration for Discord games
 - ✅ **Store System:** Complete inventory management
@@ -431,7 +431,7 @@ $participantStmt->execute([$seasonStartISO]);
 
 **CRITICAL:** Uses `tbl_cheese_rumbles` and `tbl_rumble_participants` with `user_id` field (NOT `discord_id`) and `final_position` field!
 
-### **Game 7: 3D Hytopia Game Integration**
+### **Game 7: 3D Riddle Game Integration**
 
 #### **Future Integration Plan:**
 ```php
@@ -537,7 +537,7 @@ $stmt->execute([$seasonStart]);
 - **`tbl_race_participants`** - Discord Race participants
 - **`tbl_rumble_participants`** - Cheese Rumble participants
 - **`tbl_cheese_rumbles`** - Cheese Rumble events
-- **`tbl_riddle_completions`** - 3D Hytopia riddle completions (future)
+- **`tbl_riddle_completions`** - 3D Riddle Game riddle completions (future)
 
 #### **User Management Tables:**
 - **`tbl_users`** - User accounts
@@ -941,7 +941,7 @@ async function loadAllGamesStats() {
 ## 🚀 **FUTURE IMPLEMENTATION PLANS**
 
 ### **Short-Term (Next 2-4 Weeks):**
-- [ ] **3D Hytopia Integration:** Add 3D game statistics to admin interface
+- [ ] **3D Riddle Game Integration:** Add 3D game statistics to admin interface
 - [ ] **Advanced Analytics:** Enhanced charts and graphs
 - [ ] **Real-Time Updates:** WebSocket-based real-time updates
 - [ ] **Mobile Optimization:** Responsive design improvements

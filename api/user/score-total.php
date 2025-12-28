@@ -7,12 +7,22 @@ header('Access-Control-Allow-Credentials: true');
 $dbPath = __DIR__ . '/../../db/narrrf_world.sqlite';
 $db = new PDO('sqlite:' . $dbPath);
 
+// Local development fallback
+$isLocalDevelopment = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
+                      strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
+$LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
+
 // First try to get user from session
 $user_id = $_SESSION['discord_id'] ?? '';
 
 // If not in session, try GET param as fallback
 if (!$user_id) {
     $user_id = $_GET['user_id'] ?? '';
+}
+
+// For local development, use Narrrf's account if no user_id provided
+if (!$user_id && $isLocalDevelopment) {
+    $user_id = $LOCAL_TEST_DISCORD_ID;
 }
 
 // If still no user_id, return error

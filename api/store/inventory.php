@@ -17,7 +17,17 @@ try {
     exit;
 }
 
+// Local development fallback
+$isLocalDevelopment = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
+                      strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
+$LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
+
 $user_id = $_GET['user_id'] ?? '';
+
+// For local development, use Narrrf's account if no user_id provided
+if (!$user_id && $isLocalDevelopment) {
+    $user_id = $LOCAL_TEST_DISCORD_ID;
+}
 
 if (empty($user_id)) {
     echo json_encode([

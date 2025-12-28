@@ -77,19 +77,36 @@ try {
         exit;
     }
     
-    // Check user's balance - FIXED: Use SUM(score) to match balance command behavior
+    // Check user's available balance (total - frozen stakes)
+    // Total DSPOINC from tbl_user_scores
     $stmt = $db->prepare('SELECT SUM(score) as total FROM tbl_user_scores WHERE user_id = ?');
     $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
     $result = $stmt->execute();
     $balance_result = $result->fetchArray(SQLITE3_ASSOC);
+    $total_dspoinc = $balance_result['total'] ?? 0;
     
-    $current_balance = $balance_result['total'] ?? 0;
+    // Get frozen balance from active stakes
+    $frozen_balance = 0;
+    $tableCheck = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name='tbl_dspoinc_stakes'")->fetchArray();
+    if ($tableCheck) {
+        $frozenStmt = $db->prepare("
+            SELECT COALESCE(SUM(amount), 0) AS frozen_balance
+            FROM tbl_dspoinc_stakes 
+            WHERE user_id = ? AND status = 'active'
+        ");
+        $frozenStmt->bindValue(1, $user_id, SQLITE3_TEXT);
+        $frozenResult = $frozenStmt->execute()->fetchArray(SQLITE3_ASSOC);
+        $frozen_balance = (int)($frozenResult['frozen_balance'] ?? 0);
+    }
     
-    if ($current_balance < $total_cost) {
+    // Available balance = total - frozen
+    $available_balance = $total_dspoinc - $frozen_balance;
+    
+    if ($available_balance < $total_cost) {
         $db->exec('ROLLBACK');
         echo json_encode([
             'success' => false,
-            'error' => 'Insufficient balance. You have ' . $current_balance . ' $DSPOINC, but need ' . $total_cost . ' $DSPOINC'
+            'error' => 'Insufficient available balance. You have ' . $available_balance . ' $DSPOINC available (Total: ' . $total_dspoinc . ', Frozen: ' . $frozen_balance . '), but need ' . $total_cost . ' $DSPOINC'
         ]);
         exit;
     }
@@ -140,7 +157,7 @@ try {
     $stmt->bindValue(4, $quantity, SQLITE3_INTEGER);
     $stmt->execute();
     
-    // Verify final balance for security - Use SUM(score)
+    // Verify final available balance for security (accounting for frozen stakes)
     $stmt = $db->prepare('SELECT SUM(score) as total FROM tbl_user_scores WHERE user_id = ?');
     $stmt->bindValue(1, $user_id, SQLITE3_TEXT);
     $result = $stmt->execute();

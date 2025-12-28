@@ -35,7 +35,7 @@ Narrrf's World uses **SQLite3** as the primary database system, providing:
 - **Production Ready** - Handles high concurrency and large datasets
 
 ### **Database Statistics**
-- **Total Tables:** 66 tables
+- **Total Tables:** 67 tables
 - **Database Size:** ~6.8 MB (live snapshot)
 - **Primary Key:** User identification via Discord IDs
 - **Backup Strategy:** Regular snapshots and versioned backups
@@ -156,15 +156,16 @@ const data = await response.json();
 
 ## 📊 **TABLE CATEGORIES**
 
-The 66 tables are organized into the following categories:
+The 67 tables are organized into the following categories:
 
-### **1. User Management (6 tables)**
+### **1. User Management (7 tables)**
 - `tbl_users` - Main user accounts
 - `tbl_user_roles` - Discord role assignments
 - `tbl_user_traits` - User trait assignments
 - `tbl_user_scores` - DSPOINC balance tracking
 - `tbl_score_adjustments` - Score adjustment audit trail
 - `tbl_user_season_achievements` - Season-based achievements
+- `tbl_dspoinc_stakes` - DSPOINC staking/freezing system
 
 ### **2. Game Scores (5 tables)**
 - `tbl_tetris_scores` - Tetris, Snake, Space Invaders scores
@@ -307,6 +308,38 @@ The 66 tables are organized into the following categories:
 - Admin interface "Recent Score Changes" display
 - Audit trail for all score modifications
 - User transaction history
+
+#### **`tbl_dspoinc_stakes`**
+**Purpose:** DSPOINC staking/freezing system  
+**Primary Key:** `id` (INTEGER AUTOINCREMENT)  
+**Key Fields:**
+- `user_id` - Discord user ID (matches tbl_user_scores.user_id pattern)
+- `amount` - Amount frozen (DSPOINC)
+- `freeze_duration_months` - Freeze duration (1, 3, 6, 12, 24, 36 months)
+- `reward_rate` - Reward percentage (e.g., 0.05 for 5%)
+- `expected_reward` - Calculated reward amount
+- `frozen_at` - Timestamp when stake was created
+- `unfreeze_at` - Calculated unfreeze date
+- `status` - Stake status ('active', 'completed', 'cancelled')
+- `completed_at` - Timestamp when stake was completed
+- `reward_paid` - Whether reward has been paid (0 = false, 1 = true)
+- `transaction_id` - Reference to tbl_wallet_transactions (optional)
+- `metadata` - JSON for additional data
+- `created_at` - Record creation timestamp
+- `updated_at` - Last update timestamp
+
+**Indexes:**
+- `idx_stakes_user_status` - On (user_id, status)
+- `idx_stakes_unfreeze_at` - On (unfreeze_at, status)
+- `idx_stakes_user_active` - On (user_id, status, unfreeze_at)
+
+**Usage:**
+- DSPOINC staking system (stake-lab.html)
+- Balance calculations (frozen vs available)
+- Reward tracking and payout
+- Transaction history
+
+**Created:** December 25, 2025
 
 #### **`tbl_user_roles`**
 **Purpose:** Discord role assignments  
@@ -991,8 +1024,8 @@ sqlite3 narrrf_world.sqlite < db/migrations/migration_file.sql
 ## 📊 **DATABASE STATISTICS**
 
 ### **Table Counts**
-- **Total Tables:** 66 tables
-- **User Tables:** 6 tables
+- **Total Tables:** 67 tables
+- **User Tables:** 7 tables
 - **Game Tables:** 5 tables
 - **Achievement Tables:** 3 tables
 - **Store Tables:** 4 tables
@@ -1010,7 +1043,7 @@ sqlite3 narrrf_world.sqlite < db/migrations/migration_file.sql
 ## ✅ **SUMMARY**
 
 The Narrrf's World database system provides:
-- ✅ **66 tables** covering all system aspects
+- ✅ **67 tables** covering all system aspects
 - ✅ **User-centric design** with Discord ID as primary identifier
 - ✅ **Game-agnostic structure** supporting unlimited games
 - ✅ **Complete audit trails** for all critical operations
@@ -1024,7 +1057,7 @@ The Narrrf's World database system provides:
 ---
 
 **Document Created:** December 20, 2025  
-**Last Updated:** December 20, 2025  
+**Last Updated:** December 28, 2025  
 **Version:** 1.0.0  
 **Maintainer:** Narrrf's World Development Team
 

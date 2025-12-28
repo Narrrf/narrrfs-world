@@ -1,10 +1,12 @@
 # 🧀 NARRRFS WORLD - COMPLETE TECHNICAL DOCUMENTATION 2025
 
 **Created:** December 20, 2025  
-**Status:** ✅ **COMPLETE - ALL 12 DOCUMENTS FINISHED**  
-**Purpose:** Complete technical documentation for all 7 games + Admin Interface + Discord Bot + Database System + Frontend Website + Cheese Engine 13.0 Agent System  
-**Scope:** Full integration, APIs, database, code structure, AI agent system for decades  
-**Completion:** 100% - All documentation ready for decades of development
+**Last Updated:** December 28, 2025  
+**Status:** ✅ **COMPLETE - ALL 13 DOCUMENTS FINISHED**  
+**Purpose:** Complete technical documentation for all 7 games + Admin Interface + Discord Bot + Database System + Frontend Website + Cheese Engine 13.0 Agent System + DSPOINC Staking System  
+**Scope:** Full integration, APIs, database, code structure, AI agent system, staking system for decades  
+**Completion:** 100% - All documentation ready for decades of development  
+**Recent Additions:** DSPOINC Staking System (System 13 - December 26, 2025), Nerd Lab (Holder-exclusive page)
 
 ---
 
@@ -65,7 +67,7 @@
    - Admin interface integration
    - Code examples
 
-7. **[Game 7: 3D Hytopia Game - Complete Technical Documentation](GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md)**
+7. **[Game 7: 3D Riddle Game - Complete Technical Documentation](GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md)**
    - Three.js architecture
    - Level system (6 levels)
    - Riddle system
@@ -112,7 +114,7 @@
 ### **🗄️ DATABASE SYSTEM TECHNICAL DOCUMENTATION**
 
 10. **[Database System - Complete Technical Documentation](DATABASE_COMPLETE_TECHNICAL.md)** ✅
-    - **66 Tables** - Complete database schema
+    - **67 Tables** - Complete database schema
     - **Table Categories** - Organized by system function
     - **Table Relationships** - Complete relationship mapping
     - **Field Mappings** - Critical field mapping documentation
@@ -131,16 +133,19 @@
 ### **🌐 FRONTEND WEBSITE TECHNICAL DOCUMENTATION**
 
 11. **[Frontend Website - Complete Technical Documentation](FRONTEND_WEBSITE_COMPLETE_TECHNICAL.md)** ✅
-    - **20+ Public Pages** - Complete page reference
-    - **Profile.html** - Game portal & player stats (6,220 lines)
+    - **22+ Public Pages** - Complete page reference
+    - **Profile.html** - Game portal & player stats (6,573 lines)
+    - **Stake-lab.html** - DSPOINC staking system (1,012 lines with tabs) - December 26, 2025
+    - **Nerd-lab.html** - Holder-exclusive dev logs (820 lines) - December 25, 2025
     - **Game Pages** - Tetris, Snake, Space Invaders integration
     - **Admin Interface** - Enterprise admin dashboard
-    - **50+ API Endpoints** - Complete API integration
-    - **66 Database Tables** - Accessed via APIs
+    - **55+ API Endpoints** - Complete API integration
+    - **67 Database Tables** - Accessed via APIs
     - **Authentication System** - Discord OAuth integration
     - **Mobile Optimization** - Responsive design
     - **Achievement System** - 4 achievement galleries
     - **Store System** - Full catalog and inventory
+    - **Staking System** - DSPOINC staking/freezing with rewards, unstake (15% penalty), and claim features
     - **JavaScript Architecture** - Core scripts and utilities
     - **Asset Management** - Images, sounds, textures
     - **Code Examples** - Ready to use
@@ -160,6 +165,30 @@
     - **Code Examples** - Synchronization patterns
     - **Future Evolution** - Scalability and growth potential
     - **System Statistics** - Complete system metrics
+
+### **🧊 DSPOINC STAKING SYSTEM TECHNICAL DOCUMENTATION**
+
+13. **[DSPOINC Staking System - Complete Technical Documentation](SYSTEM_13_DSPOINC_STAKING_COMPLETE_TECHNICAL.md)** ✅
+   - **6 API Endpoints** - Create, get, stats, complete, unstake, claim
+   - **Unstake System** - 15% penalty, 85% returned, complete audit trail
+   - **Reward Claim System** - Manual claiming for completed stakes
+   - **Tab System** - 4 tabs (Active, Completed, Claim Rewards, Cancelled)
+   - **Database Schema** - Complete with unstake fields
+   - **Profile Integration** - Staking overview on profile page
+   - **Store Integration** - Available balance validation
+   - **Recent Score Changes** - All transactions tracked
+   - **Code Examples** - Ready to use
+    - **6 Freeze Durations** - 1, 3, 6, 12, 24, 36 months
+    - **Progressive Reward Rates** - 5% to 50% based on duration
+    - **4 API Endpoints** - Create, get, stats, complete stakes
+    - **Dedicated Staking Page** - Full-featured `stake-lab.html` interface
+    - **Profile Integration** - Staking overview on profile page
+    - **Store Integration** - Available balance validation (excludes frozen)
+    - **Transaction Tracking** - All stakes in Recent Score Changes
+    - **Audit Trail** - Complete transaction history
+    - **Database Schema** - `tbl_dspoinc_stakes` table
+    - **Reward System** - Automatic reward calculation and payment
+    - **Code Examples** - Ready to use
 
 ---
 
@@ -197,14 +226,17 @@
 ### **Database:**
 - **Game Tables:** 7+ tables
 - **Achievement Tables:** 3 tables
-- **Total Tables:** 66 tables
+- **Total Tables:** 67 tables
 - **Table Categories:** 16 categories
+- **New Tables:** `tbl_dspoinc_stakes` (DSPOINC staking system - December 25, 2025)
 
 ### **APIs:**
 - **Game APIs:** 10+ endpoints
 - **Admin APIs:** 90+ endpoints (complete admin toolset)
-- **User APIs:** 15+ endpoints
-- **Total APIs:** 115+ endpoints documented
+- **User APIs:** 21+ endpoints (includes 6 staking APIs)
+- **Staking APIs:** `get-staking-stats.php`, `get-stakes.php`, `create-stake.php`, `complete-stake.php`, `unstake-stake.php`, `claim-stake-reward.php`
+- **Total APIs:** 121+ endpoints documented
+- **Staking System:** 6 dedicated endpoints for DSPOINC staking/freezing (create, get, stats, complete, unstake, claim)
 
 ---
 
@@ -243,7 +275,7 @@ Each game documentation includes:
 
 ## ✅ **COMPLETION STATUS**
 
-**Status:** ✅ **100% COMPLETE - ALL 12 DOCUMENTS FINISHED**
+**Status:** ✅ **100% COMPLETE - ALL 13 DOCUMENTS FINISHED**
 
 ### **Documentation Files:**
 1. ✅ **Master Index** - Complete navigation
@@ -253,21 +285,26 @@ Each game documentation includes:
 5. ✅ **Game 4: Cheese Hunt** - Complete technical documentation
 6. ✅ **Game 5: Discord Race** - Complete technical documentation
 7. ✅ **Game 6: Cheese Rumble** - Complete technical documentation
-8. ✅ **Game 7: 3D Hytopia Game** - Complete technical documentation
+8. ✅ **Game 7: 3D Riddle Game** - Complete technical documentation
 9. ✅ **Admin Interface** - Complete technical documentation
 10. ✅ **Discord Bot** - Complete technical documentation
 11. ✅ **Database System** - Complete technical documentation
 12. ✅ **Frontend Website** - Complete technical documentation
 13. ✅ **Cheese Engine 13.0 Agent System** - Complete technical documentation
+14. ✅ **System 13: DSPOINC Staking** - Complete technical documentation
 
 ### **Total Documentation:**
-- **Total Files:** 12 complete technical documents
-- **Total Lines:** ~14,000+ lines of comprehensive documentation
-- **Coverage:** All 7 games + Admin Interface + Discord Bot + Database System + Frontend Website + Cheese Engine 13.0 Agent System
-- **Integration:** Profile.html, Store, Achievements, Discord, Database, All Pages, AI Agent System - All documented
+- **Total Files:** 13 complete technical documents
+- **Total Lines:** ~16,000+ lines of comprehensive documentation
+- **Coverage:** All 7 games + Admin Interface + Discord Bot + Database System + Frontend Website + Cheese Engine 13.0 Agent System + DSPOINC Staking System
+- **Integration:** Profile.html, Store, Achievements, Discord, Database, All Pages, AI Agent System, Staking System, Nerd Lab - All documented
+- **Recent Updates:** 
+  - Content Updates 2026 Theme (December 26-28, 2025) - All pages updated to 2026, "3D Hytopia" → "3D Riddle Game" (consistent naming), "66 tables" → "67 tables", Christmas theme → New Year 2026 theme, game counts updated
+  - DSPOINC Staking System v2.0 (Unstake & Claim Features - December 26, 2025)
+  - Nerd Lab (December 25, 2025)
 - **Status:** ✅ **READY FOR DECADES OF DEVELOPMENT**
 
 ---
 
-**🧀 Complete technical documentation for all 7 games + Admin Interface + Discord Bot + Database System + Frontend Website + Cheese Engine 13.0 Agent System - Ready for decades of development! 🧀**
+**🧀 Complete technical documentation for all 7 games + Admin Interface + Discord Bot + Database System + Frontend Website + Cheese Engine 13.0 Agent System + DSPOINC Staking System - Ready for decades of development! 🧀**
 

@@ -3,8 +3,18 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../config/database.php';
 
+// Local development fallback
+$isLocalDevelopment = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
+                      strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
+$LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
+
 $userId = $_GET['user_id'] ?? '';
 $game = $_GET['game'] ?? '';
+
+// For local development, use Narrrf's account if no user_id provided
+if (!$userId && $isLocalDevelopment) {
+    $userId = $LOCAL_TEST_DISCORD_ID;
+}
 
 if (empty($userId) || empty($game)) {
     echo json_encode([

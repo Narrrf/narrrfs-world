@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<?php
+// Include Discord invite configuration
+require_once 'discord-invite.php';
+?>
+<head>
+  <!-- 🧠 Meta Essentials -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🧊 DSPOINC Staking Lab | Narrrf's World</title>
+
+  <!-- 🧀 Favicon & Metadata -->
+  <link rel="icon" type="image/png" href="favicon-phantom.png" />
+  <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
+  <meta name="theme-color" content="#0ea5e9" />
+  <meta name="description" content="Freeze your DSPOINC and earn rewards - DSPOINC Staking System for Narrrf's World" />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- 🧵 OpenGraph for Discord & Socials -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="🧊 DSPOINC Staking Lab - Narrrf's World" />
+  <meta property="og:description" content="Freeze your DSPOINC and earn rewards over time" />
+  <meta property="og:image" content="img/narrrf-logo-professional.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- 🎨 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 🔗 Discord Token of Render System -->
+  <script src="discord-config.js"></script>
+
+  <!-- 💫 Enhanced Styles -->
+  <style>
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes iceGlow {
+      0%, 100% { 
+        box-shadow: 0 0 20px rgba(14, 165, 233, 0.3), 0 0 40px rgba(14, 165, 233, 0.2);
+      }
+      50% { 
+        box-shadow: 0 0 30px rgba(14, 165, 233, 0.5), 0 0 60px rgba(14, 165, 233, 0.3);
+      }
+    }
+    
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .ice-glow {
+      animation: iceGlow 3s ease-in-out infinite;
+    }
+    
+    .animate-fade-in {
+      animation: fade-in 0.3s ease-out;
+    }
+    
+    .stake-card {
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .stake-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(14, 165, 233, 0.5);
+    }
+
+    .progress-bar {
+      transition: width 0.5s ease;
+    }
+
+    .duration-btn {
+      transition: all 0.3s ease;
+      opacity: 0.7;
+    }
+
+    .duration-btn:hover {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+
+    .duration-btn.selected {
+      opacity: 1;
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(59, 130, 246, 0.2));
+      border-color: rgba(14, 165, 233, 0.5);
+    }
+  </style>
+</head>
+
+<body class="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white font-sans min-h-screen overflow-x-hidden">
+
+  <!-- 🌟 Floating Background Elements -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute w-4 h-4 bg-blue-400/20 rounded-full blur-md float-animation" style="top:20%; left:15%; animation-delay: 0s;"></div>
+    <div class="absolute w-6 h-6 bg-cyan-400/20 rounded-full blur-lg float-animation" style="top:60%; left:80%; animation-delay: 2s;"></div>
+    <div class="absolute w-3 h-3 bg-sky-400/20 rounded-full blur-sm float-animation" style="top:40%; left:50%; animation-delay: 4s;"></div>
+    <div class="absolute w-5 h-5 bg-blue-400/20 rounded-full blur-md float-animation" style="top:70%; left:25%; animation-delay: 1s;"></div>
+  </div>
+
+  <!-- 🧊 Lab Status Badge -->
+  <div class="fixed top-4 left-4 z-50 bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-pulse border border-blue-400">
+    🧊 Staking Lab v1.0
+  </div>
+
+  <!-- 🧭 Navigation Bar (Sticky Top) -->
+  <header class="bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-blue-400/30">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="index.html" class="text-xl font-bold tracking-tight text-blue-400">🧠 Narrrf's World</a>
+
+      <!-- 🧠 Main Navigation -->
+      <nav aria-label="Main Navigation" class="space-x-4 text-sm md:text-base flex items-center">
+        <a href="index.html" class="hover:text-blue-400 transition-colors">Home</a>
+        <a href="profile.html" class="hover:text-blue-400 transition-colors">Profile</a>
+        <a href="get-roles.html" class="hover:text-blue-400 transition-colors">Get Roles</a>
+        <a href="partners.html" class="hover:text-blue-400 transition-colors">Partners</a>
+        <a href="project-updates.html" class="hover:text-blue-400 transition-colors">Updates</a>
+        <a href="faq.html" class="hover:text-blue-400 transition-colors">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 🔐 Access Control Check -->
+  <div id="access-denied" style="display: none;" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-gray-800 border-4 border-red-500 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+      <div class="text-6xl mb-4">🚫</div>
+      <h1 class="text-2xl font-bold text-red-400 mb-4">Access Denied</h1>
+      <div id="loginSection" class="mb-4">
+        <div class="mb-2 text-blue-300 font-semibold">Login with Discord and come back to this page to access the Staking Lab.</div>
+        <a href="https://discord.com/oauth2/authorize?client_id=1357927342265204858&response_type=code&redirect_uri=https%3A%2F%2Fnarrrfs.world%2Fapi%2Fauth%2Fcallback.php&scope=guilds+identify+guilds.members.read"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105">🔑 Verify and come back</a>
+      </div>
+      <div class="space-y-3 mt-6">
+        <a href="<?php echo $discord_url; ?>" target="_blank"
+           class="block bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition">
+          🔗 Join Discord
+        </a>
+        <a href="index.html"
+           class="block bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition">
+          🏠 Go Home
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🧊 Main Content (Hidden until access verified) -->
+  <div id="main-content" style="display: none;">
+
+    <!-- 🏆 Hero Section -->
+    <section class="relative z-10 py-20 px-4 md:px-6 text-center">
+      <div class="max-w-6xl mx-auto">
+        <h1 class="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-blue-400 via-cyan-400 to-sky-400 bg-clip-text text-transparent">
+          🧊 DSPOINC Staking Lab
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+          Freeze your DSPOINC for selected durations and earn rewards. The longer you stake, the higher your reward!
+        </p>
+        <div class="bg-blue-900/30 border border-blue-500/50 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
+          <p class="text-blue-100 text-sm">
+            <strong>How It Works:</strong> Freeze your DSPOINC for 1, 3, 6, 12, 24, or 36 months. After the freeze period, receive your original DSPOINC plus a reward bonus. All transactions are tracked in your DSPOINC Journey.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 📊 Balance Dashboard -->
+    <section class="relative z-10 px-4 md:px-6 pb-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-black/50 backdrop-blur-md rounded-xl p-6 border border-blue-400/30 mb-8">
+          <h2 class="text-2xl font-bold text-blue-400 mb-6">💰 Your DSPOINC Balance</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gradient-to-br from-blue-800/30 to-cyan-800/30 rounded-xl p-4 border border-blue-400/30">
+              <div class="text-sm text-blue-300 mb-1">Total Balance</div>
+              <div id="total-balance" class="text-3xl font-bold text-blue-100">0</div>
+              <div class="text-xs text-blue-400 mt-1">DSPOINC</div>
+            </div>
+            <div class="bg-gradient-to-br from-green-800/30 to-emerald-800/30 rounded-xl p-4 border border-green-400/30">
+              <div class="text-sm text-green-300 mb-1">Available</div>
+              <div id="available-balance" class="text-3xl font-bold text-green-100">0</div>
+              <div class="text-xs text-green-400 mt-1">DSPOINC</div>
+            </div>
+            <div class="bg-gradient-to-br from-cyan-800/30 to-blue-800/30 rounded-xl p-4 border border-cyan-400/30">
+              <div class="text-sm text-cyan-300 mb-1">Frozen</div>
+              <div id="frozen-balance" class="text-3xl font-bold text-cyan-100">0</div>
+              <div class="text-xs text-cyan-400 mt-1">DSPOINC</div>
+            </div>
+          </div>
+          <div class="mt-4 text-center">
+            <a href="profile.html" class="text-blue-400 hover:text-blue-300 text-sm underline">
+              View full DSPOINC Journey on Profile →
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 🧊 Create Stake Section -->
+    <section class="relative z-10 px-4 md:px-6 pb-8">
+      <div class="max-w-4xl mx-auto">
+        <div class="bg-black/50 backdrop-blur-md rounded-xl p-6 border border-blue-400/30 mb-8">
+          <h2 class="text-2xl font-bold text-blue-400 mb-6">❄️ Freeze DSPOINC</h2>
+          
+          <!-- Amount Input -->
+          <div class="mb-6">
+            <label class="block text-blue-300 font-semibold mb-2">Amount to Freeze (DSPOINC)</label>
+            <input type="number" id="stake-amount" min="100" step="100" value="1000"
+                   class="w-full bg-gray-800/50 border border-blue-400/30 rounded-lg px-4 py-3 text-white text-lg font-mono focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/50"
+                   placeholder="Enter amount (minimum 100 DSPOINC)">
+            <p class="text-xs text-gray-400 mt-1">Minimum: 100 DSPOINC</p>
+          </div>
+
+          <!-- Duration Selection -->
+          <div class="mb-6">
+            <label class="block text-blue-300 font-semibold mb-3">Freeze Duration</label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <button class="duration-btn px-4 py-3 rounded-lg border border-blue-400/30 font-semibold text-sm" data-months="1" data-rate="0.02">
+                1 Month<br><span class="text-xs text-blue-300">2% Reward</span>
+              </button>
+              <button class="duration-btn px-4 py-3 rounded-lg border border-blue-400/30 font-semibold text-sm" data-months="3" data-rate="0.05">
+                3 Months<br><span class="text-xs text-blue-300">5% Reward</span>
+              </button>
+              <button class="duration-btn px-4 py-3 rounded-lg border border-blue-400/30 font-semibold text-sm selected" data-months="6" data-rate="0.10">
+                6 Months<br><span class="text-xs text-blue-300">10% Reward</span>
+              </button>
+              <button class="duration-btn px-4 py-3 rounded-lg border border-blue-400/30 font-semibold text-sm" data-months="12" data-rate="0.20">
+                12 Months<br><span class="text-xs text-blue-300">20% Reward</span>
+              </button>
+              <button class="duration-btn px-4 py-3 rounded-lg border border-blue-400/30 font-semibold text-sm" data-months="24" data-rate="0.35">
+                24 Months<br><span class="text-xs text-blue-300">35% Reward</span>
+              </button>
+              <button class="duration-btn px-4 py-3 rounded-lg border border-blue-400/30 font-semibold text-sm" data-months="36" data-rate="0.50">
+                36 Months<br><span class="text-xs text-blue-300">50% Reward</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Reward Preview -->
+          <div class="mb-6 bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-blue-300">Expected Reward:</span>
+              <span id="expected-reward" class="text-2xl font-bold text-blue-100">0</span>
+            </div>
+            <div class="flex justify-between items-center text-sm text-blue-400">
+              <span>Total Return:</span>
+              <span id="total-return" class="font-semibold">0 DSPOINC</span>
+            </div>
+          </div>
+
+          <!-- Freeze Button -->
+          <button id="freeze-btn" 
+                  class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            ❄️ Freeze DSPOINC
+          </button>
+
+          <!-- Status Message -->
+          <div id="stake-status" class="mt-4 hidden"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 📋 Stakes Tab System -->
+    <section class="relative z-10 px-4 md:px-6 pb-16">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-black/50 backdrop-blur-md rounded-xl p-6 border border-blue-400/30">
+          <h2 class="text-2xl font-bold text-blue-400 mb-6">📊 Your Stakes</h2>
+          
+          <!-- Tab Navigation -->
+          <div class="flex space-x-4 mb-6 border-b border-blue-400/30">
+            <button class="tab-nav-btn px-6 py-3 font-semibold border-b-2 border-blue-400 text-blue-400 transition-colors" data-tab="active">
+              ❄️ Active Stakes
+            </button>
+            <button class="tab-nav-btn px-6 py-3 font-semibold text-gray-400 hover:text-blue-300 transition-colors" data-tab="completed">
+              ✅ Completed Stakes
+            </button>
+            <button class="tab-nav-btn px-6 py-3 font-semibold text-gray-400 hover:text-blue-300 transition-colors" data-tab="claim">
+              🎁 Claim Rewards
+            </button>
+            <button class="tab-nav-btn px-6 py-3 font-semibold text-gray-400 hover:text-blue-300 transition-colors" data-tab="cancelled">
+              ⚠️ Cancelled Stakes
+            </button>
+          </div>
+
+          <!-- Active Stakes Tab -->
+          <div id="tab-active" class="tab-content">
+            <div id="active-stakes-list" class="space-y-4">
+              <div class="text-center py-8 text-gray-400">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
+                <p class="mt-4">Loading active stakes...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed Stakes Tab -->
+          <div id="tab-completed" class="tab-content hidden">
+            <div id="completed-stakes-list" class="space-y-4">
+              <div class="text-center py-8 text-gray-400">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
+                <p class="mt-4">Loading completed stakes...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Claim Rewards Tab -->
+          <div id="tab-claim" class="tab-content hidden">
+            <div id="claimable-rewards-list" class="space-y-4">
+              <div class="text-center py-8 text-gray-400">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
+                <p class="mt-4">Loading claimable rewards...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cancelled Stakes Tab -->
+          <div id="tab-cancelled" class="tab-content hidden">
+            <div id="cancelled-stakes-list" class="space-y-4">
+              <div class="text-center py-8 text-gray-400">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
+                <p class="mt-4">Loading cancelled stakes...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⚠️ Unstake Warning Modal -->
+    <div id="unstake-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-gray-900 border-4 border-red-500 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+        <div class="text-6xl mb-4 text-center">⚠️</div>
+        <h3 class="text-2xl font-bold text-red-400 mb-4 text-center">Early Unstake Warning</h3>
+        <div class="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mb-6">
+          <p class="text-red-200 text-sm mb-2"><strong>⚠️ Penalty:</strong> You will lose <strong class="text-red-400">15%</strong> of your staked amount!</p>
+          <div id="unstake-details" class="text-red-200 text-sm space-y-1 mt-3">
+            <!-- Details will be populated by JavaScript -->
+          </div>
+        </div>
+        <p class="text-gray-300 mb-6 text-center">
+          Are you sure you want to unstake early? You will forfeit all rewards and receive only <strong class="text-red-400">85%</strong> of your original amount.
+        </p>
+        <div class="flex space-x-4">
+          <button id="unstake-confirm-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition">
+            Yes, Unstake (15% Penalty)
+          </button>
+          <button id="unstake-cancel-btn" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🏆 Claim Reward Confirmation Modal (Snake/Tetris Style) -->
+    <div id="claim-reward-modal" class="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-cyan-100 text-gray-900 rounded-3xl px-6 py-8 text-center shadow-2xl border-4 border-cyan-400 max-w-md w-full animate-fade-in">
+        <div class="text-6xl mb-4">🏆</div>
+        <h2 class="text-3xl font-extrabold mb-3 text-cyan-900 drop-shadow">Claim Reward</h2>
+        <p id="claim-reward-message" class="text-lg font-mono text-gray-800 mb-4">You will receive the original amount plus the reward bonus.</p>
+        <div id="claim-reward-details" class="bg-cyan-50 border-2 border-cyan-300 rounded-xl p-4 mb-6 text-left">
+          <!-- Details will be populated by JavaScript -->
+        </div>
+        <p class="text-sm text-cyan-700 font-semibold mb-6">✅ Ready to claim your reward!</p>
+        
+        <!-- PRIMARY ACTION: Claim Button -->
+        <button id="claim-confirm-btn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-colors mb-3 text-lg">
+          🏆 Claim Reward
+        </button>
+        
+        <!-- SECONDARY ACTION: Cancel -->
+        <button id="claim-cancel-btn" class="w-full bg-gray-400 hover:bg-gray-300 text-gray-800 font-semibold px-4 py-2 rounded-lg shadow transition-colors text-sm">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-blue-500/20">
+      <div class="max-w-4xl mx-auto px-6">
+        <p class="mb-4">
+          Made with 🧊 & strategy in Narrrf's Lab | 
+          <a href="<?php echo $discord_url; ?>" class="text-blue-400 hover:text-blue-300 underline transition-colors">
+            Join us on Discord
+          </a>
+        </p>
+        <p class="text-sm">
+          © 2025 Narrrf's World. Built with brain & cheese 🧠🧀
+        </p>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- 🧠 JavaScript -->
+  <script>
+    // Environment detection
+    const isProduction = window.location.hostname === 'narrrfs.world';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+
+    // Staking configuration
+    const REWARD_RATES = {
+      1: 0.02,   // 2%
+      3: 0.05,   // 5%
+      6: 0.10,   // 10%
+      12: 0.20,  // 20%
+      24: 0.35,  // 35%
+      36: 0.50   // 50%
+    };
+
+    // State
+    let selectedDuration = 6;
+    let selectedRate = 0.10;
+    let currentBalance = null;
+    let activeStakes = [];
+    let completedStakes = [];
+    let cancelledStakes = [];
+    let claimableRewards = [];
+    let currentTab = 'active';
+    let unstakeStakeId = null;
+
+    // Access Control - Check for logged in user
+    async function checkAccess() {
+      // 🧪 LOCAL DEVELOPMENT OVERRIDE - Only for narrrf user on localhost
+      if (!isProduction) {
+        const narrrfDiscordId = '328601656659017732'; // Narrrf's Discord ID
+        let localDiscordId = localStorage.getItem('discord_id');
+        
+        // If no discord_id in localStorage on localhost, set it for narrrf
+        if (!localDiscordId) {
+          console.log('🧪 Local Development: Setting narrrf Discord ID in localStorage');
+          localStorage.setItem('discord_id', narrrfDiscordId);
+          localStorage.setItem('discord_name', 'Narrrf');
+          localDiscordId = narrrfDiscordId;
+        }
+        
+        // Check if it matches narrrf's ID
+        if (localDiscordId === narrrfDiscordId) {
+          console.log('🧪 Local Development Override: Access granted for narrrf');
+          return true;
+        }
+        
+        // Also try API check for local development
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/user/profile.php`, {
+            credentials: 'include',
+            headers: { 'Accept': 'application/json' }
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            const discordId = userData.discord_id || userData.user_id || localDiscordId || '';
+            
+            if (discordId === narrrfDiscordId) {
+              localStorage.setItem('discord_id', narrrfDiscordId);
+              if (userData.discord_name) localStorage.setItem('discord_name', userData.discord_name);
+              console.log('🧪 Local Development Override: Access granted for narrrf (API check)');
+              return true;
+            }
+          }
+        } catch (error) {
+          console.log('🧪 Local Development: API check failed, granting access based on localhost');
+          if (!localDiscordId || localDiscordId === narrrfDiscordId) {
+            localStorage.setItem('discord_id', narrrfDiscordId);
+            localStorage.setItem('discord_name', 'Narrrf');
+            return true;
+          }
+        }
+      }
+
+      // Production or normal check
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/user/profile.php`, {
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) {
+          console.log('Access Check: Profile API not accessible');
+          return false;
+        }
+
+        const userData = await response.json();
+        return userData.discord_id || userData.user_id || false;
+
+      } catch (error) {
+        console.error('Access Check: Error:', error);
+        return false;
+      }
+    }
+
+    // Get user ID (from localStorage or session)
+    function getUserId() {
+      // Check localStorage first (set by local bypass or Discord login)
+      const localUserId = localStorage.getItem('discord_id');
+      if (localUserId) {
+        return localUserId;
+      }
+      // Fallback: Try to get from profile API
+      return null;
+    }
+
+    // Load staking stats
+    async function loadStakingStats() {
+      try {
+        const user_id = getUserId();
+        const response = await fetch(`${API_BASE_URL}/api/user/get-staking-stats.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user_id: user_id || undefined })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load staking stats');
+        }
+
+        const result = await response.json();
+        if (result.success && result.data) {
+          currentBalance = result.data;
+          updateBalanceDisplay();
+        }
+      } catch (error) {
+        console.error('Error loading staking stats:', error);
+      }
+    }
+
+    // Load stakes
+    async function loadStakes() {
+      try {
+        const user_id = getUserId();
+        const response = await fetch(`${API_BASE_URL}/api/user/get-stakes.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user_id: user_id || undefined, status: 'all' })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load stakes');
+        }
+
+        const result = await response.json();
+        if (result.success && result.data) {
+          activeStakes = result.data.active_stakes || [];
+          completedStakes = result.data.completed_stakes || [];
+          cancelledStakes = result.data.cancelled_stakes || [];
+          claimableRewards = result.data.claimable_rewards || [];
+          displayActiveStakes();
+          displayCompletedStakes();
+          displayCancelledStakes();
+          displayClaimableRewards();
+        }
+      } catch (error) {
+        console.error('Error loading stakes:', error);
+        document.getElementById('active-stakes-list').innerHTML = '<p class="text-red-400">Error loading stakes. Please refresh.</p>';
+        document.getElementById('completed-stakes-list').innerHTML = '<p class="text-red-400">Error loading stakes. Please refresh.</p>';
+        document.getElementById('cancelled-stakes-list').innerHTML = '<p class="text-red-400">Error loading stakes. Please refresh.</p>';
+        document.getElementById('claimable-rewards-list').innerHTML = '<p class="text-red-400">Error loading rewards. Please refresh.</p>';
+      }
+    }
+
+    // Update balance display
+    function updateBalanceDisplay() {
+      if (!currentBalance) return;
+
+      document.getElementById('total-balance').textContent = currentBalance.total_balance.toLocaleString();
+      document.getElementById('available-balance').textContent = currentBalance.available_balance.toLocaleString();
+      document.getElementById('frozen-balance').textContent = currentBalance.frozen_balance.toLocaleString();
+    }
+
+    // Update reward preview
+    function updateRewardPreview() {
+      const amount = parseInt(document.getElementById('stake-amount').value) || 0;
+      const expectedReward = Math.floor(amount * selectedRate);
+      const totalReturn = amount + expectedReward;
+
+      document.getElementById('expected-reward').textContent = expectedReward.toLocaleString();
+      document.getElementById('total-return').textContent = `${totalReturn.toLocaleString()} DSPOINC`;
+    }
+
+    // Display active stakes
+    function displayActiveStakes() {
+      const container = document.getElementById('active-stakes-list');
+      
+      if (activeStakes.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-8">No active stakes. Create your first stake above!</p>';
+        return;
+      }
+
+      container.innerHTML = activeStakes.map(stake => {
+        const stakeId = stake.stake_id || stake.id || 'N/A';
+        const frozenDate = new Date(stake.frozen_at);
+        const unfreezeDate = new Date(stake.unfreeze_at);
+        const now = new Date();
+        const totalDays = Math.ceil((unfreezeDate - frozenDate) / (1000 * 60 * 60 * 24));
+        const daysRemaining = Math.max(0, Math.ceil((unfreezeDate - now) / (1000 * 60 * 60 * 24)));
+        const progress = Math.max(0, Math.min(100, ((totalDays - daysRemaining) / totalDays) * 100));
+        const penaltyAmount = Math.floor(stake.amount * 0.15);
+        const returnedAmount = stake.amount - penaltyAmount;
+
+        return `
+          <div class="stake-card rounded-xl p-4 border border-blue-400/30">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <div class="text-lg font-bold text-blue-100">Stake #${stakeId}</div>
+                <div class="text-sm text-blue-300">Frozen: ${frozenDate.toLocaleDateString()}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-cyan-100">${stake.amount.toLocaleString()}</div>
+                <div class="text-xs text-cyan-400">DSPOINC</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-blue-300">Duration: ${stake.freeze_duration_months} months</span>
+                <span class="text-blue-300">Reward: ${stake.expected_reward.toLocaleString()} DSPOINC</span>
+              </div>
+              <div class="w-full bg-gray-700 rounded-full h-2">
+                <div class="progress-bar bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: ${progress}%"></div>
+              </div>
+              <div class="flex justify-between text-xs text-gray-400 mt-1">
+                <span>Unfreeze: ${unfreezeDate.toLocaleDateString()}</span>
+                <span>${daysRemaining} days remaining</span>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-blue-400/20">
+              <button onclick="showUnstakeModal(${stakeId}, ${stake.amount}, ${penaltyAmount}, ${returnedAmount}, ${stake.expected_reward})" 
+                      class="w-full bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-300 px-4 py-2 rounded-lg transition-all font-semibold text-sm">
+                ⚠️ Unstake Early (15% Penalty)
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Display completed stakes
+    function displayCompletedStakes() {
+      const container = document.getElementById('completed-stakes-list');
+      
+      if (completedStakes.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-8">No completed stakes yet.</p>';
+        return;
+      }
+
+      container.innerHTML = completedStakes.map(stake => {
+        const stakeId = stake.stake_id || stake.id || 'N/A';
+        const completedDate = new Date(stake.completed_at);
+        const rewardPaid = stake.reward_paid || 0;
+        return `
+          <div class="stake-card rounded-xl p-4 border border-green-400/30">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="text-lg font-bold text-green-100">Stake #${stakeId} ✅</div>
+                <div class="text-sm text-green-300">Completed: ${completedDate.toLocaleDateString()}</div>
+                <div class="text-sm text-green-300 mt-1">Duration: ${stake.freeze_duration_months} months</div>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-green-100">${stake.amount.toLocaleString()}</div>
+                <div class="text-xs text-green-400">Frozen Amount</div>
+                <div class="text-lg font-bold text-yellow-300 mt-2">+${rewardPaid.toLocaleString()}</div>
+                <div class="text-xs text-yellow-400">Reward Paid</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Display cancelled stakes
+    function displayCancelledStakes() {
+      const container = document.getElementById('cancelled-stakes-list');
+      
+      if (cancelledStakes.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-8">No cancelled stakes.</p>';
+        return;
+      }
+
+      container.innerHTML = cancelledStakes.map(stake => {
+        const stakeId = stake.stake_id || stake.id || 'N/A';
+        const cancelledDate = new Date(stake.cancelled_at);
+        const penaltyAmount = stake.penalty_amount || 0;
+        const returnedAmount = stake.returned_amount || 0;
+        return `
+          <div class="stake-card rounded-xl p-4 border border-red-400/30">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="text-lg font-bold text-red-100">Stake #${stakeId} ⚠️</div>
+                <div class="text-sm text-red-300">Cancelled: ${cancelledDate.toLocaleDateString()}</div>
+                <div class="text-sm text-red-300 mt-1">Duration: ${stake.freeze_duration_months} months (Early Unstake)</div>
+                <div class="text-xs text-red-400 mt-2">Reason: ${stake.unstake_reason || 'Early unstake by user'}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-xl font-bold text-red-100">${stake.amount.toLocaleString()}</div>
+                <div class="text-xs text-red-400">Original Amount</div>
+                <div class="text-lg font-bold text-yellow-300 mt-2">-${penaltyAmount.toLocaleString()}</div>
+                <div class="text-xs text-yellow-400">Penalty (15%)</div>
+                <div class="text-lg font-bold text-green-300 mt-2">+${returnedAmount.toLocaleString()}</div>
+                <div class="text-xs text-green-400">Returned (85%)</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Display claimable rewards
+    function displayClaimableRewards() {
+      const container = document.getElementById('claimable-rewards-list');
+      
+      if (claimableRewards.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-8">No rewards available to claim. Complete stakes to earn rewards!</p>';
+        return;
+      }
+
+      container.innerHTML = claimableRewards.map(stake => {
+        const stakeId = stake.stake_id || stake.id || 'N/A';
+        const completedDate = new Date(stake.completed_at);
+        const totalReturn = stake.amount + stake.expected_reward;
+        return `
+          <div class="stake-card rounded-xl p-4 border border-yellow-400/30">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <div class="text-lg font-bold text-yellow-100">Stake #${stakeId} 🎁</div>
+                <div class="text-sm text-yellow-300">Completed: ${completedDate.toLocaleDateString()}</div>
+                <div class="text-sm text-yellow-300 mt-1">Duration: ${stake.freeze_duration_months} months</div>
+              </div>
+              <div class="text-right">
+                <div class="text-xl font-bold text-yellow-100">${stake.amount.toLocaleString()}</div>
+                <div class="text-xs text-yellow-400">Original Amount</div>
+                <div class="text-lg font-bold text-green-300 mt-2">+${stake.expected_reward.toLocaleString()}</div>
+                <div class="text-xs text-green-400">Reward</div>
+                <div class="text-2xl font-bold text-cyan-300 mt-2">${totalReturn.toLocaleString()}</div>
+                <div class="text-xs text-cyan-400">Total Return</div>
+              </div>
+            </div>
+            <button onclick="claimReward(${stakeId})" 
+                    class="w-full bg-gradient-to-r from-yellow-600 to-green-600 hover:from-yellow-700 hover:to-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg">
+              🎁 Claim Reward (${totalReturn.toLocaleString()} DSPOINC)
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Create stake
+    async function createStake() {
+      const amount = parseInt(document.getElementById('stake-amount').value);
+      const freezeBtn = document.getElementById('freeze-btn');
+      const statusDiv = document.getElementById('stake-status');
+
+      // Validation
+      if (!amount || amount < 100) {
+        statusDiv.className = 'mt-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200';
+        statusDiv.textContent = '❌ Minimum stake amount is 100 DSPOINC';
+        statusDiv.classList.remove('hidden');
+        return;
+      }
+
+      if (!currentBalance || amount > currentBalance.available_balance) {
+        statusDiv.className = 'mt-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200';
+        statusDiv.textContent = `❌ Insufficient balance. Available: ${currentBalance.available_balance.toLocaleString()} DSPOINC`;
+        statusDiv.classList.remove('hidden');
+        return;
+      }
+
+      // Disable button
+      freezeBtn.disabled = true;
+      freezeBtn.textContent = '❄️ Freezing...';
+      statusDiv.classList.add('hidden');
+
+      try {
+        const user_id = getUserId();
+        const response = await fetch(`${API_BASE_URL}/api/user/create-stake.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            user_id: user_id || undefined,
+            amount: amount,
+            freeze_duration_months: selectedDuration
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          statusDiv.className = 'mt-4 p-4 bg-green-900/30 border border-green-500/50 rounded-lg text-green-200';
+          statusDiv.textContent = `✅ Successfully frozen ${amount.toLocaleString()} DSPOINC for ${selectedDuration} months! Expected reward: ${result.data.expected_reward.toLocaleString()} DSPOINC`;
+          statusDiv.classList.remove('hidden');
+
+          // Reset form
+          document.getElementById('stake-amount').value = '1000';
+          updateRewardPreview();
+
+          // Reload data
+          await loadStakingStats();
+          await loadStakes();
+        } else {
+          statusDiv.className = 'mt-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200';
+          statusDiv.textContent = `❌ Error: ${result.error || 'Failed to create stake'}`;
+          statusDiv.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Error creating stake:', error);
+        statusDiv.className = 'mt-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200';
+        statusDiv.textContent = `❌ Error: ${error.message}`;
+        statusDiv.classList.remove('hidden');
+      } finally {
+        freezeBtn.disabled = false;
+        freezeBtn.textContent = '❄️ Freeze DSPOINC';
+      }
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      currentTab = tabName;
+      
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+      });
+      
+      // Show selected tab
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+      
+      // Update tab buttons
+      document.querySelectorAll('.tab-nav-btn').forEach(btn => {
+        const btnTab = btn.dataset.tab;
+        if (btnTab === tabName) {
+          btn.classList.add('border-b-2', 'border-blue-400', 'text-blue-400');
+          btn.classList.remove('text-gray-400');
+        } else {
+          btn.classList.remove('border-b-2', 'border-blue-400', 'text-blue-400');
+          btn.classList.add('text-gray-400');
+        }
+      });
+    }
+
+    // Show unstake modal
+    window.showUnstakeModal = function(stakeId, originalAmount, penaltyAmount, returnedAmount, expectedReward) {
+      unstakeStakeId = stakeId;
+      const modal = document.getElementById('unstake-modal');
+      const detailsDiv = document.getElementById('unstake-details');
+      
+      detailsDiv.innerHTML = `
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span>Original Amount:</span>
+            <span class="font-bold">${originalAmount.toLocaleString()} DSPOINC</span>
+          </div>
+          <div class="flex justify-between text-red-400">
+            <span>Penalty (15%):</span>
+            <span class="font-bold">-${penaltyAmount.toLocaleString()} DSPOINC</span>
+          </div>
+          <div class="flex justify-between text-green-400">
+            <span>You Will Receive:</span>
+            <span class="font-bold">${returnedAmount.toLocaleString()} DSPOINC</span>
+          </div>
+          <div class="flex justify-between text-yellow-400 pt-2 border-t border-red-500/30">
+            <span>Forfeited Reward:</span>
+            <span class="font-bold">-${expectedReward.toLocaleString()} DSPOINC</span>
+          </div>
+        </div>
+      `;
+      
+      modal.classList.remove('hidden');
+    };
+
+    // Hide unstake modal
+    function hideUnstakeModal() {
+      document.getElementById('unstake-modal').classList.add('hidden');
+      unstakeStakeId = null;
+    }
+
+    // Unstake stake
+    async function unstakeStake() {
+      if (!unstakeStakeId) return;
+      
+      const confirmBtn = document.getElementById('unstake-confirm-btn');
+      const originalText = confirmBtn.textContent;
+      
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Processing...';
+      
+      try {
+        const user_id = getUserId();
+        const response = await fetch(`${API_BASE_URL}/api/user/unstake-stake.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            user_id: user_id || undefined,
+            stake_id: unstakeStakeId
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          hideUnstakeModal();
+          
+          // Show success message
+          const statusDiv = document.getElementById('stake-status');
+          statusDiv.className = 'mt-4 p-4 bg-green-900/30 border border-green-500/50 rounded-lg text-green-200';
+          statusDiv.textContent = `✅ Successfully unstaked! ${result.data.returned_amount.toLocaleString()} DSPOINC returned (15% penalty applied).`;
+          statusDiv.classList.remove('hidden');
+          
+          // Reload data
+          await loadStakingStats();
+          await loadStakes();
+          
+          // Switch to cancelled tab to show the unstaked stake
+          switchTab('cancelled');
+        } else {
+          alert(`❌ Error: ${result.error || 'Failed to unstake'}`);
+        }
+      } catch (error) {
+        console.error('Error unstaking stake:', error);
+        alert(`❌ Error: ${error.message}`);
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalText;
+      }
+    }
+
+    // Show claim reward modal
+    window.claimReward = function(stakeId) {
+      // Find the stake in claimableRewards array
+      const stake = claimableRewards.find(s => s.stake_id === stakeId || s.id === stakeId);
+      if (!stake) {
+        alert('❌ Stake not found');
+        return;
+      }
+
+      const originalAmount = parseInt(stake.amount) || 0;
+      const rewardAmount = parseInt(stake.expected_reward) || 0;
+      const totalReturn = originalAmount + rewardAmount;
+
+      // Populate modal
+      const modal = document.getElementById('claim-reward-modal');
+      const detailsDiv = document.getElementById('claim-reward-details');
+      const messageDiv = document.getElementById('claim-reward-message');
+      
+      messageDiv.textContent = `You will receive ${totalReturn.toLocaleString()} DSPOINC (${originalAmount.toLocaleString()} original + ${rewardAmount.toLocaleString()} reward).`;
+      
+      detailsDiv.innerHTML = `
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span class="font-semibold text-gray-700">Original Amount:</span>
+            <span class="font-bold text-cyan-900">${originalAmount.toLocaleString()} DSPOINC</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-semibold text-gray-700">Reward Bonus:</span>
+            <span class="font-bold text-green-600">+${rewardAmount.toLocaleString()} DSPOINC</span>
+          </div>
+          <div class="flex justify-between pt-2 border-t-2 border-cyan-300">
+            <span class="font-bold text-gray-800">Total Return:</span>
+            <span class="font-bold text-cyan-900 text-lg">${totalReturn.toLocaleString()} DSPOINC</span>
+          </div>
+        </div>
+      `;
+
+      // Store stake ID for confirmation
+      window.currentClaimStakeId = stakeId;
+      
+      // Show modal
+      modal.classList.remove('hidden');
+    };
+
+    // Hide claim reward modal
+    function hideClaimModal() {
+      document.getElementById('claim-reward-modal').classList.add('hidden');
+      window.currentClaimStakeId = null;
+    }
+
+    // Perform claim reward (called from modal button)
+    async function performClaimReward() {
+      const stakeId = window.currentClaimStakeId;
+      if (!stakeId) return;
+      
+      const confirmBtn = document.getElementById('claim-confirm-btn');
+      if (confirmBtn.disabled) {
+        // Already processing, prevent double-click
+        return;
+      }
+      
+      const originalText = confirmBtn.textContent;
+      
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Processing...';
+      
+      try {
+        const user_id = getUserId();
+        const response = await fetch(`${API_BASE_URL}/api/user/claim-stake-reward.php`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            user_id: user_id || undefined,
+            stake_id: stakeId
+          })
+        });
+
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('Non-JSON response from claim API:', text);
+          throw new Error('Server returned invalid response. Please check the console for details.');
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          hideClaimModal();
+          
+          // Show success message
+          const statusDiv = document.getElementById('stake-status');
+          statusDiv.className = 'mt-4 p-4 bg-green-900/30 border border-green-500/50 rounded-lg text-green-200';
+          const rewardAmount = result.data.reward_amount || result.data.claimed_reward || 0;
+          const totalReturned = result.data.total_returned || (result.data.original_amount + rewardAmount);
+          statusDiv.textContent = `✅ Successfully claimed ${rewardAmount.toLocaleString()} DSPOINC reward! Total return: ${totalReturned.toLocaleString()} DSPOINC.`;
+          statusDiv.classList.remove('hidden');
+          
+          // Reload data
+          await loadStakingStats();
+          await loadStakes();
+          
+          // Refresh claimable rewards tab
+          displayClaimableRewards();
+        } else {
+          alert(`❌ Error: ${result.error || 'Failed to claim reward'}`);
+        }
+      } catch (error) {
+        console.error('Error claiming reward:', error);
+        alert(`❌ Error: ${error.message}`);
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalText;
+      }
+    };
+
+    // Initialize page
+    async function initPage() {
+      // Check access first
+      const hasAccess = await checkAccess();
+      
+      if (!hasAccess) {
+        document.getElementById('access-denied').style.display = 'flex';
+        document.getElementById('main-content').style.display = 'none';
+        return;
+      }
+
+      // Show main content
+      document.getElementById('access-denied').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+
+      // Set up duration buttons
+      document.querySelectorAll('.duration-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedDuration = parseInt(btn.dataset.months);
+          selectedRate = parseFloat(btn.dataset.rate);
+          updateRewardPreview();
+        });
+      });
+
+      // Set up amount input
+      document.getElementById('stake-amount').addEventListener('input', updateRewardPreview);
+
+      // Set up freeze button
+      document.getElementById('freeze-btn').addEventListener('click', createStake);
+
+      // Set up tab navigation
+      document.querySelectorAll('.tab-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchTab(btn.dataset.tab);
+        });
+      });
+
+      // Set up unstake modal buttons
+      document.getElementById('unstake-confirm-btn').addEventListener('click', unstakeStake);
+      document.getElementById('unstake-cancel-btn').addEventListener('click', hideUnstakeModal);
+      
+      // Close unstake modal on background click
+      document.getElementById('unstake-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'unstake-modal') {
+          hideUnstakeModal();
+        }
+      });
+
+      // Set up claim reward modal buttons
+      document.getElementById('claim-confirm-btn').addEventListener('click', performClaimReward);
+      document.getElementById('claim-cancel-btn').addEventListener('click', hideClaimModal);
+      
+      // Close claim modal on background click
+      document.getElementById('claim-reward-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'claim-reward-modal') {
+          hideClaimModal();
+        }
+      });
+
+      // Load initial data
+      await loadStakingStats();
+      await loadStakes();
+      updateRewardPreview();
+    }
+
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', initPage);
+  </script>
+
+</body>
+</html>
+

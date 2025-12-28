@@ -2,8 +2,39 @@
 session_start();
 header('Content-Type: application/json');
 
-// Only session user can fetch profile!
+// Local development fallback
+$isLocalDevelopment = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false ||
+                      strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
+$LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
+
+// Get user_id from session, POST, GET, or JSON body
 $user_id = $_SESSION['discord_id'] ?? '';
+
+// Check if user_id is provided in POST/GET (works for both local and production)
+$request_user_id = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Try POST data first
+    $request_user_id = $_POST['user_id'] ?? '';
+    // If not in POST, try JSON body
+    if (!$request_user_id) {
+        $json_input = json_decode(file_get_contents('php://input'), true);
+        $request_user_id = $json_input['user_id'] ?? '';
+    }
+} else {
+    // GET request
+    $request_user_id = $_GET['user_id'] ?? '';
+}
+
+// Use request user_id if provided (takes priority over session)
+if ($request_user_id) {
+    $user_id = $request_user_id;
+}
+
+// For local development, use Narrrf's account if no session exists
+if (!$user_id && $isLocalDevelopment) {
+    $user_id = $LOCAL_TEST_DISCORD_ID;
+}
+
 if (!$user_id) {
     echo json_encode(['error' => 'Not logged in']);
     exit;

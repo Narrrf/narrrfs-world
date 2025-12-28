@@ -115,6 +115,66 @@ try {
     $db = new PDO("sqlite:$dbPath");
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // Backfill: Check if staking entries exist for active stakes and create missing ones
+    // This ensures staking transactions appear in Recent Score Changes
+    try {
+        $stakesCheck = $db->prepare("
+            SELECT id, amount, freeze_duration_months, expected_reward, frozen_at
+            FROM tbl_dspoinc_stakes 
+            WHERE user_id = ? AND status = 'active'
+        ");
+        $stakesCheck->execute([$user_id]);
+        $activeStakes = $stakesCheck->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($activeStakes as $stake) {
+            // Check if entry exists - match by amount AND reason pattern (to handle multiple stakes with same amount)
+            $reasonPattern = '%DSPOINC frozen for staking: ' . (int)$stake['amount'] . ' DSPOINC for ' . (int)$stake['freeze_duration_months'] . ' months%';
+            $entryCheck = $db->prepare("
+                SELECT COUNT(*) as count 
+                FROM tbl_score_adjustments 
+                WHERE user_id = ? 
+                AND action = 'remove' 
+                AND amount = ?
+                AND reason LIKE ?
+            ");
+            $entryCheck->execute([$user_id, -(int)$stake['amount'], $reasonPattern]);
+            $entryResult = $entryCheck->fetch(PDO::FETCH_ASSOC);
+            
+            if ($entryResult['count'] == 0) {
+                // Create missing entry
+                $reason = sprintf(
+                    'DSPOINC frozen for staking: %d DSPOINC for %d months (expected reward: %d DSPOINC)',
+                    (int)$stake['amount'],
+                    (int)$stake['freeze_duration_months'],
+                    (int)$stake['expected_reward']
+                );
+                
+                $backfillStmt = $db->prepare("
+                    INSERT INTO tbl_score_adjustments (user_id, admin_id, amount, action, reason, timestamp)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ");
+                
+                $backfillStmt->execute([
+                    $user_id,
+                    'system-staking',
+                    -(int)$stake['amount'],
+                    'remove', // Use 'remove' since CHECK constraint only allows 'add', 'remove', 'set'
+                    $reason,
+                    $stake['frozen_at']
+                ]);
+                
+                if ($isLocalDevelopment) {
+                    error_log("✅ Backfilled score adjustment for stake #{$stake['id']} in recent-adjustments API");
+                }
+            }
+        }
+    } catch (Exception $backfillError) {
+        // Don't fail the whole request if backfill fails
+        if ($isLocalDevelopment) {
+            error_log("⚠️ Backfill error in recent-adjustments: " . $backfillError->getMessage());
+        }
+    }
+
     $stmt = $db->prepare("
         SELECT 
             a.*,
@@ -129,6 +189,65 @@ try {
     ");
     $stmt->execute([$user_id]);
     $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Debug logging for staking entries
+    // Check for 'remove' action with staking reason (since CHECK constraint requires 'add', 'remove', or 'set')
+    $stakingEntries = array_filter($adjustments, function($a) {
+        return (($a['action'] === 'remove' || $a['action'] === 'stake_freeze' || $a['action'] === 'freeze') && 
+                isset($a['reason']) && strpos($a['reason'], 'DSPOINC frozen for staking') !== false);
+    });
+    
+    // Also check directly in database for staking entries (in case they exist but weren't returned)
+    $directStakingCheck = $db->prepare("
+        SELECT COUNT(*) as count 
+        FROM tbl_score_adjustments 
+        WHERE user_id = ? 
+        AND action = 'remove' 
+        AND reason LIKE '%DSPOINC frozen for staking%'
+    ");
+    $directStakingCheck->execute([$user_id]);
+    $directResult = $directStakingCheck->fetch(PDO::FETCH_ASSOC);
+    
+    if ($isLocalDevelopment) {
+        error_log("📊 Recent adjustments: Found " . count($adjustments) . " total entries for user " . substr($user_id, 0, 10) . "...");
+        error_log("📊 Recent adjustments: Found " . count($stakingEntries) . " staking entries in filtered results");
+        error_log("📊 Recent adjustments: Direct DB query found " . ($directResult['count'] ?? 0) . " staking entries");
+        if (count($stakingEntries) > 0) {
+            error_log("📊 Staking entries details: " . json_encode($stakingEntries, JSON_PRETTY_PRINT));
+        } else if ($directResult['count'] > 0) {
+            error_log("⚠️ WARNING: Staking entries exist in DB but weren't returned by main query!");
+            // Try to get them directly with same structure as main query
+            $directStmt = $db->prepare("
+                SELECT 
+                    a.*,
+                    u1.username as username,
+                    u2.username as admin_name
+                FROM tbl_score_adjustments a
+                LEFT JOIN tbl_users u1 ON a.user_id = u1.discord_id
+                LEFT JOIN tbl_users u2 ON a.admin_id = u2.discord_id
+                WHERE a.user_id = ? 
+                AND a.action = 'remove' 
+                AND a.reason LIKE '%DSPOINC frozen for staking%'
+                ORDER BY a.timestamp DESC
+            ");
+            $directStmt->execute([$user_id]);
+            $directEntries = $directStmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log("📊 Direct staking entries found: " . count($directEntries));
+            error_log("📊 Direct staking entries: " . json_encode($directEntries, JSON_PRETTY_PRINT));
+            
+            // Merge them into adjustments (avoid duplicates by ID)
+            $existingIds = array_column($adjustments, 'id');
+            foreach ($directEntries as $entry) {
+                if (!in_array($entry['id'], $existingIds)) {
+                    $adjustments[] = $entry;
+                }
+            }
+            // Re-sort by timestamp
+            usort($adjustments, function($a, $b) {
+                return strtotime($b['timestamp']) - strtotime($a['timestamp']);
+            });
+        }
+    }
 
     echo json_encode(['success' => true, 'adjustments' => $adjustments]);
 } catch (Exception $e) {

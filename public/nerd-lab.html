@@ -272,7 +272,7 @@ require_once 'discord-invite.php';
         </p>
         <div class="bg-green-900/30 border border-green-500/50 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
           <p class="text-green-100 text-sm">
-            <strong>2025 Complete Documentation:</strong> All 7 games + Admin Interface + Discord Bot + Database + Frontend + Cheese Engine 13.0 Agent System
+            <strong>2025 Complete Documentation:</strong> All 7 games + Admin Interface + Discord Bot + Database + Frontend + Cheese Engine 13.0 Agent System + DSPOINC Staking System
           </p>
         </div>
       </div>
@@ -334,6 +334,10 @@ require_once 'discord-invite.php';
             <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
                     data-tab="cheeseEngine">
               🧠 Cheese Engine
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="staking">
+              🧊 Stake Lab
             </button>
           </div>
         </div>
@@ -490,6 +494,17 @@ require_once 'discord-invite.php';
           </div>
         </div>
 
+        <div id="tab-staking" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="stakingContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading DSPOINC Staking System documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -530,7 +545,8 @@ require_once 'discord-invite.php';
       discordBot: 'DISCORD_BOT_COMPLETE_TECHNICAL.md',
       database: 'DATABASE_COMPLETE_TECHNICAL.md',
       frontend: 'FRONTEND_WEBSITE_COMPLETE_TECHNICAL.md',
-      cheeseEngine: 'CHEESE_ENGINE_13.0_AGENT_SYSTEM_COMPLETE_TECHNICAL.md'
+      cheeseEngine: 'CHEESE_ENGINE_13.0_AGENT_SYSTEM_COMPLETE_TECHNICAL.md',
+      staking: 'SYSTEM_13_DSPOINC_STAKING_COMPLETE_TECHNICAL.md'
     };
 
     // Content cache
@@ -778,7 +794,8 @@ require_once 'discord-invite.php';
         discordBot: '🤖 Discord Bot - Complete Technical Documentation',
         database: '🗄️ Database System - Complete Technical Documentation',
         frontend: '🌐 Frontend Website - Complete Technical Documentation',
-        cheeseEngine: '🧠 Cheese Engine 13.0 Agent System - Complete Technical Documentation'
+        cheeseEngine: '🧠 Cheese Engine 13.0 Agent System - Complete Technical Documentation',
+        staking: '🧊 DSPOINC Staking System - Complete Technical Documentation'
       };
       return titles[tabName] || tabName;
     }
