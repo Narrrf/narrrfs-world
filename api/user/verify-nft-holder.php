@@ -1,4 +1,20 @@
 <?php
+/**
+ * NFT Holder Verification API
+ * 
+ * VERIFICATION FLOW:
+ * 1. Frontend calls this API with wallet address and collection address
+ * 2. API uses get-nfts.php to verify NFT ownership (same logic as frontend display)
+ * 3. If NFTs found, grants Discord role based on collection address mapping:
+ *    - 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML' → '🏆 Holder' (role_id: 1402668301414563971)
+ *    - 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg' → '🎴 VIP Holder' (role_id: 1332016526848692345)
+ * 
+ * CRITICAL: Collection address is used to determine which role to grant
+ * - VIP NFTs (CUJH8MV...) → VIP Holder role ONLY
+ * - Genesis NFTs (AtJCkW4...) → Holder role ONLY
+ * - No cross-granting: VIP collection grants VIP role, Genesis collection grants Holder role
+ */
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -8,7 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-$dbPath = '/var/www/html/db/narrrf_world.sqlite';
+// Database path detection (local vs production)
+$isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+$dbPath = $isProduction 
+    ? '/var/www/html/db/narrrf_world.sqlite' 
+    : __DIR__ . '/../../db/narrrf_world.sqlite';
 
 try {
     $input = json_decode(file_get_contents('php://input'), true);
@@ -22,6 +42,15 @@ try {
     $collection = $input['collection'] ?? '';
     $signature = $input['signature'] ?? '';
     $message = $input['message'] ?? '';
+    $botToken = $input['bot_token'] ?? '';
+    
+    // Check if this is a Discord bot request (bypasses signature verification)
+    $isBotRequest = !empty($botToken);
+    $validBotToken = getenv('DISCORD_SECRET') ?: 'admin_quest_system'; // Use same token as grant-role.php
+    
+    if ($isBotRequest && $botToken !== $validBotToken) {
+        throw new Exception('Invalid bot token for Discord bot verification');
+    }
     
     // Validate required fields
     if (empty($userId)) {
@@ -32,22 +61,25 @@ try {
         throw new Exception('Wallet address is required');
     }
     
-    if (empty($signature)) {
-        throw new Exception('Cryptographic signature is required for security');
-    }
-    
-    if (empty($message)) {
-        throw new Exception('Signed message is required');
-    }
-    
     // Validate wallet address format
     if (!preg_match('/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $walletAddress)) {
         throw new Exception('Invalid Solana wallet address format');
     }
     
-    // Verify the signature on the server side
-    if (!verifySolanaSignature($walletAddress, $message, $signature)) {
-        throw new Exception('Invalid signature. Please sign the verification message with your wallet.');
+    // For non-bot requests, require signature verification
+    if (!$isBotRequest) {
+        if (empty($signature)) {
+            throw new Exception('Cryptographic signature is required for security');
+        }
+        
+        if (empty($message)) {
+            throw new Exception('Signed message is required');
+        }
+        
+        // Verify the signature on the server side
+        if (!verifySolanaSignature($walletAddress, $message, $signature)) {
+            throw new Exception('Invalid signature. Please sign the verification message with your wallet.');
+        }
     }
     
     $db = new PDO("sqlite:$dbPath");
@@ -123,7 +155,9 @@ try {
     $verifiedCollections = [];
 
     foreach ($collectionsToVerify as $collectionAddress => $info) {
-        $collectionCount = fetchCollectionNFTCount($walletAddress, $collectionAddress);
+        // Use the same get-nfts.php API that we fixed for proper collection matching
+        // This ensures we use the same logic that works correctly on the frontend
+        $collectionCount = fetchCollectionNFTCountViaAPI($walletAddress, $collectionAddress);
 
         $roleGranted = false;
         if ($collectionCount > 0) {
@@ -165,20 +199,21 @@ try {
 }
 
 /**
- * Fetch the number of NFTs a wallet holds for a specific collection using Helius.
+ * Fetch the number of NFTs a wallet holds for a specific collection using our fixed get-nfts.php API.
+ * This ensures we use the same collection matching logic that works correctly on the frontend.
  */
-function fetchCollectionNFTCount(string $walletAddress, string $collectionAddress): int
+function fetchCollectionNFTCountViaAPI(string $walletAddress, string $collectionAddress): int
 {
     try {
-        $apiKey = getenv('HELIUS_API_KEY') ?: ($_ENV['HELIUS_API_KEY'] ?? $_SERVER['HELIUS_API_KEY'] ?? '');
-        if (!$apiKey) {
-            throw new Exception('Helius API key is not configured.');
-        }
-
-        $url = "https://api.helius.xyz/v0/addresses/{$walletAddress}/nfts?api-key={$apiKey}";
-        $ch = curl_init($url);
+        // Use the same get-nfts.php API that we fixed for proper collection matching
+        // This ensures consistent behavior between frontend display and role granting
+        $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+        $apiBaseUrl = $isProduction ? 'https://narrrfs.world' : 'http://localhost';
+        $apiUrl = "{$apiBaseUrl}/api/wallet/get-nfts.php?wallet=" . urlencode($walletAddress) . "&collection=" . urlencode($collectionAddress);
+        
+        $ch = curl_init($apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 25);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'User-Agent: Narrrfs-World-NFT-Verification/1.0'
         ]);
@@ -189,45 +224,48 @@ function fetchCollectionNFTCount(string $walletAddress, string $collectionAddres
         curl_close($ch);
 
         if ($curlError) {
-            throw new Exception('Helius request error: ' . $curlError);
+            throw new Exception('API request error: ' . $curlError);
         }
 
         if ($httpCode !== 200) {
-            throw new Exception("Helius request failed with HTTP code {$httpCode}");
+            throw new Exception("API request failed with HTTP code {$httpCode}");
         }
 
         $data = json_decode($response, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('Invalid JSON response from Helius: ' . json_last_error_msg());
+            throw new Exception('Invalid JSON response from API: ' . json_last_error_msg());
         }
 
-        $count = 0;
-        if (is_array($data)) {
-            foreach ($data as $nft) {
-                $nftCollection = $nft['collection'] ?? $nft['collectionAddress'] ?? $nft['grouping'] ?? '';
-
-                if (is_array($nftCollection)) {
-                    foreach ($nftCollection as $group) {
-                        if (isset($group['groupKey'], $group['groupValue']) && $group['groupKey'] === 'collection') {
-                            $nftCollection = $group['groupValue'];
-                            break;
-                        }
-                    }
-                } elseif (is_array($nftCollection) && isset($nftCollection['key'])) {
-                    $nftCollection = $nftCollection['key'];
-                }
-
-                if ($nftCollection === $collectionAddress) {
-                    $count++;
-                }
+        // Use the count from the API response (already filtered by collection)
+        if (isset($data['success']) && $data['success'] && isset($data['count'])) {
+            $count = (int)$data['count'];
+            error_log("✅ Collection NFT count via API ({$collectionAddress}): {$count} NFTs found");
+            return $count;
+        } else {
+            // Fallback: count NFTs array if count field is missing
+            if (isset($data['nfts']) && is_array($data['nfts'])) {
+                $count = count($data['nfts']);
+                error_log("✅ Collection NFT count via API (fallback, {$collectionAddress}): {$count} NFTs found");
+                return $count;
             }
         }
 
-        return $count;
+        error_log("⚠️ Collection NFT count via API ({$collectionAddress}): No NFTs found or API error");
+        return 0;
     } catch (Exception $e) {
-        error_log("Collection NFT count error ({$walletAddress}, {$collectionAddress}): " . $e->getMessage());
+        error_log("❌ Collection NFT count error via API ({$walletAddress}, {$collectionAddress}): " . $e->getMessage());
         return 0;
     }
+}
+
+/**
+ * Legacy function - kept for backward compatibility but not used anymore.
+ * @deprecated Use fetchCollectionNFTCountViaAPI instead
+ */
+function fetchCollectionNFTCount(string $walletAddress, string $collectionAddress): int
+{
+    // Redirect to the new API-based function
+    return fetchCollectionNFTCountViaAPI($walletAddress, $collectionAddress);
 }
 
 /**

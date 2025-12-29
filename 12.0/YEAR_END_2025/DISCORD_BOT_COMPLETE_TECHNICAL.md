@@ -128,8 +128,8 @@ async function queryDb(query, params = []) {
 
 ### **Command Categories**
 
-#### **1. User Commands (12 Commands)**
-- `/balance` - Check $DSPOINC balance and rank
+#### **1. User Commands (13 Commands)**
+- `/balance` - Check $DSPOINC balance, staking status, and rank
 - `/dashboard` - View complete profile with stats
 - `/history` - View transaction history
 - `/inventory` - View purchased items
@@ -138,8 +138,9 @@ async function queryDb(query, params = []) {
 - `/help [category]` - Comprehensive help system
 - `/cheeseboard` - Gateway to NFT verification
 - `/leaderboard` - View top players
-- `/check-holder` - Check NFT holder status
-- `/verify-holder` - Verify NFT ownership
+- `/check-holder` - Check NFT holder status and staking info
+- `/verify-holder` - Verify NFT ownership and get roles
+- `/stake-status` - Check DSPOINC staking status and active stakes
 - `/set-twitter` - Link Twitter account
 
 #### **2. Admin Commands (19 Commands)**
@@ -545,25 +546,88 @@ const data = await response.json();
 ## 🎴 **NFT VERIFICATION SYSTEM**
 
 ### **Features**
+- **Centralized API Integration** - Uses `verify-nft-holder.php` API for consistency with website (Updated: December 29, 2025)
+- **Bot Token Authentication** - Secure bot-to-API communication bypassing signature verification
 - Wallet address validation
-- NFT ownership verification
-- Automatic Discord role granting
-- Holder status checking
-- Collection support (Genesis, VIP)
+- NFT ownership verification via Helius API (`get-nfts.php`)
+- Automatic Discord role granting via centralized API
+- Holder status checking with staking information
+- Collection support (Genesis, VIP) with proper address mapping
+- Staking integration in holder and balance commands
 - Audit logging
 
 ### **Commands**
-- `/check-holder wallet:<address>` - Check holder status
-- `/verify-holder wallet:<address> [collection:<type>]` - Verify and get roles
+- `/check-holder wallet:<address>` - Check holder status, current roles, and staking info
+- `/verify-holder wallet:<address> [collection:<type>]` - Verify NFT ownership and get Discord roles
+- `/stake-status` - View detailed DSPOINC staking status, active stakes, and ready-to-claim rewards (New: December 29, 2025)
+- `/balance` - Check $DSPOINC balance with staking breakdown (available vs staked) (Updated: December 29, 2025)
+
+### **API Integration (Updated December 29, 2025)**
+The bot now uses the centralized `verify-nft-holder.php` API endpoint for all verification operations:
+
+**Endpoint:** `POST /api/user/verify-nft-holder.php`
+
+**Bot Authentication:**
+- Uses `bot_token` parameter with `DISCORD_SECRET` from config
+- Bypasses signature verification for trusted bot requests
+- Maintains security while allowing automated role granting
+
+**Request Format:**
+```javascript
+{
+    user_id: "discord_user_id",
+    wallet_address: "solana_wallet_address",
+    collection: "collection_address_or_empty_for_all",
+    bot_token: "discord_secret_from_config"
+}
+```
+
+**Response Format:**
+```javascript
+{
+    success: true,
+    wallet: "wallet_address",
+    verified_collections: [
+        {
+            collection_address: "AtJCkW4...",
+            collection: "Narrrfs World: Genesis Genetic",
+            role: "🏆 Holder",
+            role_id: "1402668301414563971",
+            count: 5,
+            granted: true
+        }
+    ]
+}
+```
 
 ### **Role Mapping**
-- **Genesis Collection** → `🏆 Holder` role (ID: 1402668301414563971)
-- **VIP Collection** → `🎴 VIP Holder` role (ID: 1332016526848692345)
+- **Genesis Collection** (`AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML`) → `🏆 Holder` role (ID: 1402668301414563971)
+- **VIP Collection** (`CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg`) → `🎴 VIP Holder` role (ID: 1332016526848692345)
+
+### **Staking Integration**
+- **Balance Command** - Shows available vs staked DSPOINC, active stakes count, ready-to-claim rewards
+- **Check-Holder Command** - Displays staking summary when available
+- **Stake-Status Command** - Complete staking overview with active stakes list and reward details
 
 ### **Database Tables**
 - `tbl_nft_ownership` - NFT ownership records
 - `tbl_holder_verifications` - Verification records
 - `tbl_role_grants` - Role grant audit trail
+- `tbl_dspoinc_stakes` - Staking records (for staking features)
+
+### **Technical Implementation**
+**Files:**
+- `discord/commands/verify-holder.js` - Uses centralized API, no direct role granting
+- `discord/commands/check-holder.js` - Enhanced with staking information display
+- `discord/commands/stake-status.js` - New command for detailed staking status (December 29, 2025)
+- `discord/commands/balance.js` - Enhanced with staking breakdown (December 29, 2025)
+
+**Key Changes (December 29, 2025):**
+1. Replaced direct NFT fetching with centralized `verify-nft-holder.php` API
+2. Removed direct role granting - now handled by API
+3. Added bot token authentication support
+4. Integrated staking information into holder and balance commands
+5. Created dedicated `/stake-status` command for comprehensive staking overview
 
 ---
 

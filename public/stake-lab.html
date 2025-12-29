@@ -191,6 +191,35 @@ require_once 'discord-invite.php';
       </div>
     </section>
 
+    <!-- ℹ️ Important Information Banner -->
+    <section class="relative z-10 px-4 md:px-6 pb-6">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-gradient-to-r from-cyan-900/40 to-blue-900/40 border-2 border-cyan-400/50 rounded-xl p-6 mb-6 shadow-lg backdrop-blur-sm">
+          <div class="flex items-start space-x-4">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 bg-cyan-500/20 rounded-full flex items-center justify-center">
+                <span class="text-2xl">ℹ️</span>
+              </div>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-cyan-300 mb-2">📌 Important Information</h3>
+              <div class="space-y-2 text-cyan-100 text-sm md:text-base">
+                <p>
+                  <strong class="text-cyan-200">✅ No Wallet Connection Required for Staking:</strong> DSPOINC staking works directly with your Discord account. Simply log in with Discord to start staking your DSPOINC - no Solana wallet connection needed!
+                </p>
+                <p>
+                  <strong class="text-cyan-200">🎴 NFT Collection Feature:</strong> The "Your NFT Collection" section below is a <strong>separate feature</strong> that displays your Narrrf's World NFTs. This feature does <strong>not affect staking</strong> and is optional. Wallet connection is only needed if you want to view your NFT collection.
+                </p>
+                <p class="text-cyan-200/80 italic">
+                  💡 <strong>Future Development:</strong> NFT-based staking features are planned for future updates. For now, DSPOINC staking is independent of NFT ownership.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 📊 Balance Dashboard -->
     <section class="relative z-10 px-4 md:px-6 pb-8">
       <div class="max-w-7xl mx-auto">
@@ -1394,41 +1423,39 @@ require_once 'discord-invite.php';
               debug_info: data.debug_info
             });
             
-            // Check success and has_assets (same pattern as profile.html)
-            if (data.success && data.has_assets && data.count > 0) {
-              // Store full NFT data with traits (same pattern as profile.html)
-              if (data.nfts && Array.isArray(data.nfts)) {
-                console.log(`✅ Found ${data.nfts.length} NFTs from ${collectionInfo.name}`);
-                
-                // Filter out duplicates by mint address
-                const existingMints = new Set(loadedNFTs.map(n => n.mint));
-                const newNFTs = data.nfts.filter(nft => {
-                  const mint = nft.mint || '';
-                  // Skip if no mint or already exists
-                  if (!mint || existingMints.has(mint)) {
-                    return false;
-                  }
-                  existingMints.add(mint);
-                  return true;
-                });
-                
-                console.log(`📦 After deduplication: ${newNFTs.length} new NFTs from ${collectionInfo.name}`);
-                
-                // Add collection info to each NFT
-                newNFTs.forEach(nft => {
-                  nft.collectionName = collectionInfo.name;
-                  nft.collectionBadge = collectionInfo.badge;
-                  nft.collectionRole = collectionInfo.role;
-                });
-                
-                loadedNFTs.push(...newNFTs);
-              } else {
-                console.log(`⚠️ ${collectionInfo.name}: API returned success but no NFTs array (count: ${data.count || 0})`);
-              }
+            // Check success - display NFTs even if they don't have images yet (will fetch from metadataUri)
+            if (data.success && data.nfts && Array.isArray(data.nfts) && data.nfts.length > 0) {
+              console.log(`✅ Found ${data.nfts.length} NFTs from ${collectionInfo.name}`);
+              
+              // Add collection info to each NFT
+              const nftsWithCollection = data.nfts.map(nft => ({
+                ...nft,
+                collectionName: collectionInfo.name,
+                collectionBadge: collectionInfo.badge,
+                collectionRole: collectionInfo.role,
+                // Preserve the collection address from API or use the one we fetched
+                collectionAddress: nft.collection || nft.collectionAddress || collectionAddress
+              }));
+              
+              // Filter out duplicates by mint address
+              const existingMints = new Set(loadedNFTs.map(n => n.mint));
+              const newNFTs = nftsWithCollection.filter(nft => {
+                const mint = nft.mint || '';
+                // Skip if no mint or already exists
+                if (!mint || existingMints.has(mint)) {
+                  return false;
+                }
+                existingMints.add(mint);
+                return true;
+              });
+              
+              console.log(`📦 After deduplication: ${newNFTs.length} new NFTs from ${collectionInfo.name}`);
+              
+              loadedNFTs.push(...newNFTs);
             } else {
               if (!data.success) {
                 console.warn(`⚠️ API returned error for ${collectionInfo.name}:`, data.error || 'Unknown error');
-              } else if (!data.has_assets || data.count === 0) {
+              } else if (!data.nfts || data.nfts.length === 0) {
                 console.log(`ℹ️ ${collectionInfo.name}: No NFTs found in this collection (count: ${data.count || 0})`);
               }
             }
@@ -1461,66 +1488,136 @@ require_once 'discord-invite.php';
       }
     }
     
+    // Fetch metadata from URI (for images and attributes)
+    async function fetchNFTMetadata(metadataUri) {
+      if (!metadataUri) return null;
+      
+      try {
+        const response = await fetch(metadataUri);
+        if (!response.ok) return null;
+        const metadata = await response.json();
+        return metadata;
+      } catch (error) {
+        console.warn('Failed to fetch metadata from URI:', metadataUri, error);
+        return null;
+      }
+    }
+    
     // Display NFTs in gallery
-    function displayNFTs(nfts) {
+    async function displayNFTs(nfts) {
       const galleryDiv = document.getElementById('nft-gallery');
       
-      // Filter out NFTs without images before displaying
-      const validNFTs = nfts.filter(nft => {
-        // Try multiple paths for image URL
-        const hasImage = nft.image || 
-                        (nft.content && nft.content.links && nft.content.links.image) || 
-                        (nft.content && nft.content.files && nft.content.files[0] && nft.content.files[0].uri) ||
-                        (nft.content && nft.content.files && nft.content.files[0] && nft.content.files[0].cdn_uri);
-        return hasImage;
-      });
-      
-      console.log(`🖼️ Displaying ${validNFTs.length} NFTs with images (filtered from ${nfts.length} total)`);
-      
-      if (validNFTs.length === 0) {
-        galleryDiv.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><p>No NFTs with images found. The API may be using RPC fallback which doesn\'t include images.</p></div>';
+      if (nfts.length === 0) {
+        galleryDiv.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><p>No NFTs found.</p></div>';
         return;
       }
       
-      galleryDiv.innerHTML = validNFTs.map((nft, index) => {
+      console.log(`🖼️ Displaying ${nfts.length} NFTs (will fetch images from metadata URIs as needed)`);
+      
+      // Display NFTs - fetch metadata for those without images
+      const nftCards = await Promise.all(nfts.map(async (nft, index) => {
         // Try multiple paths for image URL
-        const imageUrl = nft.image || 
-                        (nft.content && nft.content.links && nft.content.links.image) || 
-                        (nft.content && nft.content.files && nft.content.files[0] && nft.content.files[0].uri) ||
-                        (nft.content && nft.content.files && nft.content.files[0] && nft.content.files[0].cdn_uri) ||
-                        '/img/nft-placeholder.png';
+        let imageUrl = nft.image || 
+                      (nft.content && nft.content.links && nft.content.links.image) || 
+                      (nft.content && nft.content.files && nft.content.files[0] && nft.content.files[0].uri) ||
+                      (nft.content && nft.content.files && nft.content.files[0] && nft.content.files[0].cdn_uri);
+        
+        let attributes = nft.attributes || [];
+        let description = nft.description || '';
+        
+        // If no image but we have metadataUri, fetch it
+        if (!imageUrl && nft.metadataUri) {
+          console.log(`🔄 Fetching metadata for ${nft.name || 'Unnamed NFT'} from: ${nft.metadataUri}`);
+          const metadata = await fetchNFTMetadata(nft.metadataUri);
+          if (metadata) {
+            imageUrl = metadata.image || metadata.imageUri || metadata.properties?.files?.[0]?.uri || '';
+            if (attributes.length === 0) {
+              attributes = metadata.attributes || metadata.properties?.attributes || [];
+            }
+            if (!description) {
+              description = metadata.description || '';
+            }
+            console.log(`✅ Metadata fetched for ${nft.name || 'Unnamed NFT'}: image=${!!imageUrl}, attributes=${attributes.length}`);
+          } else {
+            console.warn(`⚠️ Failed to fetch metadata for ${nft.name || 'Unnamed NFT'} from: ${nft.metadataUri}`);
+          }
+        }
+        
+        // Use placeholder if still no image
+        if (!imageUrl) {
+          imageUrl = '/img/nft-placeholder.png';
+        }
+        
         const nftName = nft.name || 'Unnamed NFT';
-        const attributes = nft.attributes || [];
+        
+        // Determine if this is a VIP NFT or Genesis NFT by checking collection address
+        // VIP collection: CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg
+        // Genesis collection: AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML
+        const vipCollectionAddress = 'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg';
+        const genesisCollectionAddress = 'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML';
+        
+        const nftCollection = nft.collection || nft.collectionAddress || '';
+        const isVIP = nftCollection === vipCollectionAddress || 
+                     (nft.collectionRole && nft.collectionRole.includes('VIP')) ||
+                     (nft.collectionName && nft.collectionName.includes('VIP'));
+        const isGenesis = !isVIP && (nftCollection === genesisCollectionAddress || 
+                                    (nft.collectionRole && nft.collectionRole.includes('Holder')) ||
+                                    (nft.collectionName && nft.collectionName.includes('Genesis')));
+        
+        // Debug logging (first NFT only to avoid spam)
+        if (nfts.indexOf(nft) === 0) {
+          console.log('🎨 NFT Display Debug:', {
+            name: nftName,
+            collection: nftCollection,
+            collectionAddress: nft.collectionAddress,
+            collectionName: nft.collectionName,
+            collectionRole: nft.collectionRole,
+            isVIP: isVIP,
+            isGenesis: isGenesis
+          });
+        }
+        
+        // Different styling for VIP vs Genesis
+        const cardBorderColor = isVIP ? 'border-yellow-400/50 hover:border-yellow-400/80' : 'border-blue-400/30 hover:border-blue-400/60';
+        const cardBgGradient = isVIP ? 'bg-gradient-to-br from-yellow-900/20 via-yellow-800/10 to-gray-800/50' : 'bg-gray-800/50';
+        const statusBadgeBg = isVIP ? 'bg-gradient-to-r from-yellow-600 to-yellow-500' : 'bg-gradient-to-r from-blue-600 to-blue-500';
+        const statusBadgeText = isVIP ? 'text-yellow-900 font-bold' : 'text-blue-100 font-semibold';
+        const statusIcon = isVIP ? '🎴' : '🏆';
+        const statusText = isVIP ? 'VIP Holder' : 'Holder';
         
         return `
-          <div class="nft-card bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-blue-400/30 hover:border-blue-400/60 transition-all duration-300 transform hover:scale-105">
+          <div class="nft-card ${cardBgGradient} backdrop-blur-sm rounded-xl p-4 border-2 ${cardBorderColor} transition-all duration-300 transform hover:scale-105 shadow-lg ${isVIP ? 'shadow-yellow-500/20' : 'shadow-blue-500/20'}">
             <!-- NFT Image -->
             <div class="relative mb-3 rounded-lg overflow-hidden bg-gray-700 aspect-square">
               <img src="${imageUrl}" 
                    alt="${nftName}" 
                    class="w-full h-full object-cover"
                    onerror="this.src='/img/nft-placeholder.png'">
-              <div class="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
-                ${nft.collectionBadge}
+              <!-- Collection Badge (top right) -->
+              <div class="absolute top-2 right-2 ${statusBadgeBg} ${statusBadgeText} text-xs px-2 py-1 rounded-full shadow-lg">
+                ${statusIcon}
               </div>
             </div>
             
             <!-- NFT Info -->
             <div class="mb-3">
-              <h3 class="text-lg font-bold text-blue-100 mb-1 truncate">${nftName}</h3>
-              <p class="text-xs text-blue-300 mb-2">${nft.collectionName}</p>
-              <div class="text-xs text-purple-300 font-semibold">${nft.collectionRole}</div>
+              <h3 class="text-lg font-bold ${isVIP ? 'text-yellow-100' : 'text-blue-100'} mb-1 truncate">${nftName}</h3>
+              <p class="text-xs ${isVIP ? 'text-yellow-300' : 'text-blue-300'} mb-2">${nft.collectionName || 'Unknown Collection'}</p>
+              <!-- Status Badge (VIP Holder or Holder) -->
+              <div class="inline-block ${statusBadgeBg} ${statusBadgeText} text-xs px-3 py-1 rounded-full shadow-md">
+                ${statusText}
+              </div>
             </div>
             
             <!-- Traits/Attributes -->
             ${attributes.length > 0 ? `
-              <div class="border-t border-blue-400/20 pt-3">
-                <p class="text-xs text-gray-400 mb-2 font-semibold">Traits:</p>
+              <div class="border-t ${isVIP ? 'border-yellow-400/20' : 'border-blue-400/20'} pt-3">
+                <p class="text-xs ${isVIP ? 'text-yellow-300' : 'text-gray-400'} mb-2 font-semibold">Traits:</p>
                 <div class="space-y-1 max-h-32 overflow-y-auto">
                   ${attributes.slice(0, 5).map(attr => `
-                    <div class="text-xs bg-gray-700/50 rounded px-2 py-1">
+                    <div class="text-xs ${isVIP ? 'bg-yellow-900/30' : 'bg-gray-700/50'} rounded px-2 py-1">
                       <span class="text-gray-300">${attr.trait_type || attr.type || 'Trait'}:</span>
-                      <span class="text-blue-300 font-semibold ml-1">${attr.value || 'N/A'}</span>
+                      <span class="${isVIP ? 'text-yellow-300' : 'text-blue-300'} font-semibold ml-1">${attr.value || 'N/A'}</span>
                     </div>
                   `).join('')}
                   ${attributes.length > 5 ? `<p class="text-xs text-gray-500 italic">+${attributes.length - 5} more traits</p>` : ''}
@@ -1529,14 +1626,16 @@ require_once 'discord-invite.php';
             ` : ''}
             
             <!-- Mint Address (truncated) -->
-            <div class="mt-3 pt-3 border-t border-blue-400/20">
+            <div class="mt-3 pt-3 border-t ${isVIP ? 'border-yellow-400/20' : 'border-blue-400/20'}">
               <p class="text-xs text-gray-500 font-mono truncate" title="${nft.mint}">
                 ${nft.mint ? nft.mint.substring(0, 8) + '...' + nft.mint.substring(nft.mint.length - 8) : 'Unknown'}
               </p>
             </div>
           </div>
         `;
-      }).join('');
+      }));
+      
+      galleryDiv.innerHTML = nftCards.join('');
     }
     
     // Initialize wallet connection on page load

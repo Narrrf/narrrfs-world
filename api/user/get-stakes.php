@@ -26,9 +26,9 @@ function json_response($payload, $code = 200) {
 session_start();
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
 
-$user_id = $_SESSION['discord_id'] ?? '';
+$session_user_id = $_SESSION['discord_id'] ?? '';
 
-// Check if user_id is provided in POST/GET (works for both local and production)
+// Check if user_id is provided in POST/GET (for localhost testing only)
 // Also check JSON body for POST requests
 $request_user_id = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -44,17 +44,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $request_user_id = $_GET['user_id'] ?? '';
 }
 
-// Use request user_id if provided (takes priority over session)
-if ($request_user_id) {
+// SECURITY: Determine if we're on localhost
+$isLocalhost = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || 
+               strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
+
+// SECURITY FIX: Always use session user_id in production
+// Only allow request user_id override for localhost testing
+if ($isLocalhost && $request_user_id) {
+    // Local development: Allow override for testing
     $user_id = $request_user_id;
-} else if (!$user_id) {
-    // Local development fallback: Use Narrrf's ID on localhost
-    $isLocalhost = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || 
-                   strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
-    if ($isLocalhost) {
-        $user_id = $LOCAL_TEST_DISCORD_ID;
-        error_log("🧊 Get Stakes: Using local test user (Narrrf) for localhost");
+    error_log("🧊 Get Stakes: Using request user_id for localhost testing: {$user_id}");
+} else {
+    // Production: Always use session, verify request matches session
+    $user_id = $session_user_id;
+    
+    // If request user_id provided, verify it matches session (security check)
+    if ($request_user_id && $request_user_id !== $session_user_id) {
+        error_log("🚨 SECURITY: Get Stakes - user_id mismatch. Session: {$session_user_id}, Request: {$request_user_id}");
+        json_response([
+            'success' => false,
+            'error' => 'Unauthorized: user_id mismatch'
+        ], 403);
     }
+}
+
+// Local development fallback: Use Narrrf's ID on localhost if no user_id
+if (!$user_id && $isLocalhost) {
+    $user_id = $LOCAL_TEST_DISCORD_ID;
+    error_log("🧊 Get Stakes: Using local test user (Narrrf) for localhost");
 }
 
 if (!$user_id) {

@@ -83,6 +83,9 @@ GAME_MANAGEMENT_CONSOLIDATION_PLAN.md
 env.example
 public/env-example.txt
 
+# 🔑 API Keys - Local Development Only (DO NOT COMMIT)
+api/config/helius-api-key.php
+
 # 🧪 Lab Notes and Development Documentation - Local Only
 hytopia-demo*
 hytopia-fresh*

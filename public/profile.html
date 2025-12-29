@@ -572,7 +572,30 @@ require_once 'discord-invite.php';
 
 <script>
 // Role-gate: show tester collab button when user has allowed roles
+// Load stored wallet and traits on page load
+function loadStoredWalletAndTraits() {
+  // Load wallet address
+  const storedWallet = localStorage.getItem('walletAddress');
+  if (storedWallet) {
+    updateWalletDisplay(storedWallet);
+  }
+  
+  // Load NFT traits
+  const storedTraits = localStorage.getItem('nftTraits');
+  if (storedTraits) {
+    try {
+      const traitsArray = JSON.parse(storedTraits);
+      updateTraitsDisplay(traitsArray);
+    } catch (e) {
+      console.error('Error parsing stored traits:', e);
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
+  // Load stored wallet and traits immediately
+  loadStoredWalletAndTraits();
+  
   try {
     const res = await fetch('/api/user/profile.php', { credentials: 'include' });
     if (!res.ok) return;
@@ -1349,13 +1372,71 @@ document.addEventListener('DOMContentLoaded', async function() {
         <a href="https://helius.xyz/" target="_blank" class="text-blue-300 underline hover:text-blue-200">Learn more about Helius APIs</a>
          </p>
      </div>
+
+    <!-- 🎯 IMPORTANT: When Wallet Login is Needed -->
+    <div class="bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-purple-900/40 rounded-xl p-6 mb-6 border-2 border-purple-400/50 shadow-lg">
+      <div class="flex items-start gap-3 mb-4">
+        <span class="text-2xl">🎯</span>
+        <div class="flex-1">
+          <h4 class="text-purple-200 font-bold text-lg mb-3">When Do You Need Wallet Login?</h4>
+          <div class="space-y-3 text-sm md:text-base">
+            <div class="bg-purple-800/20 rounded-lg p-3 border border-purple-500/30">
+              <p class="text-purple-100 mb-2">
+                <strong class="text-purple-300">✅ Discord Login is Enough For:</strong>
+              </p>
+              <ul class="list-disc list-inside text-purple-200 space-y-1 ml-2">
+                <li>Playing all website games (Tetris, Snake, Space Invaders, etc.)</li>
+                <li>Earning DSPOINC and competing on leaderboards</li>
+                <li>Accessing your profile and stats</li>
+                <li>Using the store and inventory system</li>
+              </ul>
+            </div>
+            <div class="bg-indigo-800/20 rounded-lg p-3 border border-indigo-500/30">
+              <p class="text-indigo-100 mb-2">
+                <strong class="text-indigo-300">🔗 Wallet Login is Required For:</strong>
+              </p>
+              <ul class="list-disc list-inside text-indigo-200 space-y-1 ml-2">
+                <li><strong>Holder Verification:</strong> Verify your NFT ownership and get Discord roles (🏆 Holder or 🎴 VIP Holder)</li>
+                <li><strong>3D Riddle Game Access:</strong> Enter the coming 3D Riddle Cheese Temple game</li>
+                <li><strong>Cheese Hunt Mode:</strong> Play the 3D Riddle Game in reward mode with your NFT traits</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🧬 What This Verification Does -->
+    <div class="bg-gradient-to-br from-cyan-900/30 via-teal-800/20 to-cyan-900/30 rounded-xl p-6 mb-6 border border-cyan-400/30">
+      <div class="flex items-start gap-3">
+        <span class="text-2xl">🧬</span>
+        <div class="flex-1">
+          <h4 class="text-cyan-200 font-bold text-lg mb-3">What This Verification Does</h4>
+          <div class="space-y-2 text-sm md:text-base text-cyan-100">
+            <p>
+              <strong class="text-cyan-300">1. Discord Role Granting:</strong> Automatically grants you the correct Discord role based on your NFT collection:
+            </p>
+            <ul class="list-disc list-inside ml-4 space-y-1 text-cyan-200">
+              <li><strong>Genesis Collection</strong> → 🏆 <strong>Holder</strong> role</li>
+              <li><strong>VIP Collection</strong> → 🎴 <strong>VIP Holder</strong> role</li>
+            </ul>
+            <p class="mt-3">
+              <strong class="text-cyan-300">2. Trait Snapshot for 3D Riddle Game:</strong> Scans and saves your NFT traits (attributes, properties, metadata) to your account. These traits will be used when you play the <strong>3D Riddle Cheese Temple</strong> game in <strong>Cheese Hunt mode</strong> (reward mode with trait-based bonuses).
+            </p>
+            <p class="mt-3 text-cyan-200/90 italic">
+              💡 <strong>Note:</strong> Your traits are securely stored and will enhance your gameplay experience in the upcoming 3D Riddle Game. Regular website games work perfectly fine with just Discord login!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <!-- Wallet Connection Status -->
     <div id="wallet-status" class="hidden bg-gradient-to-br from-green-900/30 via-green-800/20 to-green-900/30 rounded-lg p-4 mb-4 border border-green-400/30">
       <div class="text-green-400 font-semibold flex items-center gap-2">
         <span class="text-green-300">✅</span> Wallet Connected
       </div>
-      <div id="wallet-address" class="text-green-200 text-sm mt-1"></div>
+      <div id="verification-wallet-address" class="text-green-200 text-sm mt-1"></div>
     </div>
     
     <!-- Action Buttons -->
@@ -2027,10 +2108,28 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
                 
                 // Set other profile data
-                setText('traits', user.traits?.join(', ') || 'No traits');
+                // Check for stored NFT traits first, then fall back to user traits
+                const storedTraits = localStorage.getItem('nftTraits');
+                if (storedTraits) {
+                  try {
+                    const traitsArray = JSON.parse(storedTraits);
+                    updateTraitsDisplay(traitsArray);
+                  } catch (e) {
+                    setText('traits', user.traits?.join(', ') || 'No traits');
+                  }
+                } else {
+                  setText('traits', user.traits?.join(', ') || 'No traits');
+                }
+                
                 setText('user-roles', user.roles?.join(', ') || 'No roles');
                 setText('email', user.email || '');
                 setText('guilds', `🎯 Guilds Connected: ${user.guilds?.length || 0}`);
+                
+                // Check for stored wallet address
+                const storedWallet = localStorage.getItem('walletAddress');
+                if (storedWallet) {
+                  updateWalletDisplay(storedWallet);
+                }
                 
                 // Show DSPOINC section
                 showElement('dspoincSection');
@@ -2134,9 +2233,28 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (loginLink) loginLink.removeAttribute('href');
 
     // Traits, roles, and wallet
-    setText('traits', user.traits?.join(', ') || 'No traits');
+    // Check for stored NFT traits first, then fall back to user traits
+    const storedTraits = localStorage.getItem('nftTraits');
+    if (storedTraits) {
+      try {
+        const traitsArray = JSON.parse(storedTraits);
+        updateTraitsDisplay(traitsArray);
+      } catch (e) {
+        setText('traits', user.traits?.join(', ') || 'No traits');
+      }
+    } else {
+      setText('traits', user.traits?.join(', ') || 'No traits');
+    }
+    
     setText('user-roles', user.roles?.join(', ') || 'No roles');
-    setText('wallet-address', localStorage.getItem('walletAddress') || 'Wallet not linked');
+    
+    // Check for stored wallet address
+    const storedWallet = localStorage.getItem('walletAddress');
+    if (storedWallet) {
+      updateWalletDisplay(storedWallet);
+    } else {
+      setText('wallet-address', 'Wallet not linked');
+    }
     setText('email', user.email || '');
     setText('guilds', `🎯 Guilds Connected: ${user.guilds?.length || 0}`);
 
@@ -3661,9 +3779,18 @@ async function connectWallet() {
     connectedWallet = window.solana;
     connectedWalletAddress = response.publicKey.toString();
     
+    // Store wallet address in localStorage
+    localStorage.setItem('walletAddress', connectedWalletAddress);
+    
+    // Update Wallet & Traits section
+    updateWalletDisplay(connectedWalletAddress);
+    
     // Update UI
     document.getElementById('wallet-status').classList.remove('hidden');
-    document.getElementById('wallet-address').textContent = `Address: ${connectedWalletAddress.substring(0, 4)}...${connectedWalletAddress.substring(connectedWalletAddress.length - 4)}`;
+    const verificationWalletEl = document.getElementById('verification-wallet-address');
+    if (verificationWalletEl) {
+      verificationWalletEl.textContent = `Address: ${connectedWalletAddress.substring(0, 4)}...${connectedWalletAddress.substring(connectedWalletAddress.length - 4)}`;
+    }
     document.getElementById('connect-wallet-btn').classList.add('hidden');
     document.getElementById('verify-nfts-btn').classList.remove('hidden');
     
@@ -3700,6 +3827,7 @@ async function verifyNFTs() {
     };
 
     const foundNFTs = [];
+    const allNFTsWithTraits = []; // Store full NFT data with traits
     
     // Check each collection directly using searchAssets
     for (const [collectionAddress, collectionInfo] of Object.entries(ourCollections)) {
@@ -3715,6 +3843,16 @@ async function verifyNFTs() {
         
         const data = await response.json();
         
+        // Debug logging
+        console.log(`🔍 API Response for ${collectionInfo.name}:`, {
+          success: data.success,
+          count: data.count,
+          has_assets: data.has_assets,
+          method: data.method,
+          error: data.error,
+          nfts_length: data.nfts ? data.nfts.length : 0
+        });
+        
         if (!data.success) {
           console.warn(`⚠️ API error for ${collectionInfo.name}:`, data.error);
           continue; // Skip this collection and continue with others
@@ -3722,8 +3860,22 @@ async function verifyNFTs() {
 
         console.log(`✅ ${collectionInfo.name}: Found ${data.count} NFTs using ${data.method}`);
         
-        if (data.has_assets && data.count > 0) {
+        // Improved condition: Check for NFTs array (more robust than just has_assets)
+        if (data.nfts && Array.isArray(data.nfts) && data.nfts.length > 0) {
+          // Store full NFT data with traits
+          allNFTsWithTraits.push(...data.nfts);
+          
           // User has NFTs from this collection - add to found list
+          foundNFTs.push({
+            collection: collectionInfo.name,
+            role: collectionInfo.role,
+            roleId: collectionInfo.roleId,
+            count: data.count || data.nfts.length,
+            collectionAddress: collectionAddress
+          });
+        } else if (data.has_assets && data.count > 0) {
+          // Fallback: If nfts array is missing but has_assets is true, still process
+          console.warn(`⚠️ ${collectionInfo.name}: has_assets=true but nfts array missing, using count only`);
           foundNFTs.push({
             collection: collectionInfo.name,
             role: collectionInfo.role,
@@ -3737,6 +3889,11 @@ async function verifyNFTs() {
         console.warn(`⚠️ Error checking ${collectionInfo.name}:`, collectionError);
         // Continue checking other collections
       }
+    }
+    
+    // Extract and store traits from all NFTs
+    if (allNFTsWithTraits.length > 0) {
+      extractAndStoreTraits(allNFTsWithTraits);
     }
     
     // Display results
@@ -3754,6 +3911,58 @@ async function verifyNFTs() {
     showError('Failed to verify NFTs: ' + error.message);
   } finally {
     showLoading(false);
+  }
+}
+
+// Extract traits from NFT data and store them
+function extractAndStoreTraits(nfts) {
+  const allTraits = new Set();
+  
+  nfts.forEach(nft => {
+    if (nft.attributes && Array.isArray(nft.attributes)) {
+      nft.attributes.forEach(attr => {
+        // Format: "Trait Name: Value" or just "Value" if trait_type is missing
+        const traitName = attr.trait_type || attr.type || 'Trait';
+        const traitValue = attr.value || '';
+        if (traitValue) {
+          allTraits.add(`${traitName}: ${traitValue}`);
+        }
+      });
+    }
+  });
+  
+  // Store traits in localStorage
+  const traitsArray = Array.from(allTraits);
+  localStorage.setItem('nftTraits', JSON.stringify(traitsArray));
+  
+  // Update Wallet & Traits section
+  updateTraitsDisplay(traitsArray);
+  
+  console.log('🧬 Extracted traits:', traitsArray);
+}
+
+// Update wallet address display in Wallet & Traits section
+function updateWalletDisplay(walletAddress) {
+  const walletElement = document.getElementById('wallet-address');
+  if (walletElement) {
+    const truncated = `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`;
+    walletElement.innerHTML = `🔗 Linked wallet: <em class="text-sm text-green-600">${truncated}</em>`;
+  }
+}
+
+// Update traits display in Wallet & Traits section
+function updateTraitsDisplay(traits) {
+  const traitsElement = document.getElementById('traits');
+  if (traitsElement) {
+    if (traits && traits.length > 0) {
+      // Display first 5 traits, or all if less than 5
+      const displayTraits = traits.slice(0, 5);
+      const displayText = displayTraits.join(' • ');
+      const moreText = traits.length > 5 ? ` (+${traits.length - 5} more)` : '';
+      traitsElement.innerHTML = `<span class="text-green-600">${displayText}${moreText}</span>`;
+    } else {
+      traitsElement.innerHTML = '<span class="text-gray-500">No traits</span>';
+    }
   }
 }
 
@@ -3813,25 +4022,53 @@ async function verifyWithBackend(walletAddress, nfts) {
       return;
     }
     
-    // Group NFTs by collection
+    // Group collections by collection address (API expects collection address, not role name)
+    // NOTE: 'nfts' parameter is actually the foundNFTs array from verifyNFTs(), which contains collection info objects
+    // Each object has: { collection, role, roleId, count, collectionAddress }
     const nftsByCollection = {};
-    nfts.forEach(nft => {
-      if (!nftsByCollection[nft.role]) {
-        nftsByCollection[nft.role] = [];
+    nfts.forEach(collectionInfo => {
+      // Use collectionAddress as the key (this is what the API expects)
+      const collectionAddress = collectionInfo.collectionAddress;
+      
+      if (!collectionAddress) {
+        console.error('❌ Missing collectionAddress in collection info:', collectionInfo);
+        return; // Skip if no collection address
       }
-      nftsByCollection[nft.role].push(nft);
+      
+      if (!nftsByCollection[collectionAddress]) {
+        nftsByCollection[collectionAddress] = {
+          nfts: [], // API will fetch NFTs itself using collection address
+          role: collectionInfo.role,
+          roleId: collectionInfo.roleId,
+          collectionName: collectionInfo.collection,
+          collectionAddress: collectionAddress
+        };
+      }
+      // Note: We don't push individual NFTs here because the API will fetch them itself
+      // The API uses the collection address to verify ownership via get-nfts.php
     });
     
+    console.log('🔍 Grouped collections for verification:', Object.keys(nftsByCollection).map(addr => ({
+      address: addr,
+      role: nftsByCollection[addr].role,
+      roleId: nftsByCollection[addr].roleId,
+      collectionName: nftsByCollection[addr].collectionName
+    })));
+    
     // Verify each collection
-    for (const [collectionRole, collectionNFTs] of Object.entries(nftsByCollection)) {
+    for (const [collectionAddress, collectionData] of Object.entries(nftsByCollection)) {
+      console.log(`🔍 Verifying collection: ${collectionData.collectionName} (${collectionAddress})`);
+      console.log(`🔍 Expected role: ${collectionData.role} (ID: ${collectionData.roleId})`);
+      console.log(`🔍 NFTs found: ${collectionData.nfts.length}`);
+      
       const response = await fetch('/api/user/verify-nft-holder.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: userId,
           wallet_address: walletAddress,
-          nfts: collectionNFTs,
-          collection: collectionRole,
+          nfts: collectionData.nfts,
+          collection: collectionAddress, // CRITICAL: Pass collection address, not role name
           signature: signature,
           message: message
         })
@@ -3839,10 +4076,37 @@ async function verifyWithBackend(walletAddress, nfts) {
       
       const data = await response.json();
       
+      console.log(`📥 Verification response for ${collectionData.collectionName}:`, {
+        success: data.success,
+        verified_collections: data.verified_collections,
+        role_granted: data.verified_collections?.[0]?.granted,
+        role_name: data.verified_collections?.[0]?.role,
+        role_id: data.verified_collections?.[0]?.role_id,
+        count: data.verified_collections?.[0]?.count
+      });
+      
       if (data.success) {
-        showSuccess(`✅ NFT verification successful! Role granted: ${data.role_name}`);
+        // Check which role was actually granted
+        const grantedCollection = data.verified_collections?.find(c => c.granted);
+        if (grantedCollection) {
+          const expectedRole = collectionData.role;
+          const actualRole = grantedCollection.role;
+          
+          // Verify the role matches what we expect
+          if (actualRole === expectedRole) {
+            showSuccess(`✅ NFT verification successful! Role granted: ${actualRole}`);
+            console.log(`✅ Role verification correct: Expected ${expectedRole}, Got ${actualRole}`);
+          } else {
+            showError(`⚠️ Role mismatch! Expected ${expectedRole}, but got ${actualRole}. Please contact support.`);
+            console.error(`❌ Role mismatch! Expected ${expectedRole}, but got ${actualRole}`);
+          }
+        } else {
+          showError(`Verification completed but no role was granted for ${collectionData.collectionName}`);
+          console.warn(`⚠️ No role granted for ${collectionData.collectionName}`);
+        }
       } else {
-        showError(`Verification failed for ${collectionRole}: ${data.error}`);
+        showError(`Verification failed for ${collectionData.collectionName}: ${data.error}`);
+        console.error(`❌ Verification failed: ${data.error}`);
       }
     }
     
@@ -3934,9 +4198,18 @@ async function connectWallet() {
     connectedWallet = window.solana;
     connectedWalletAddress = publicKey;
     
+    // Store wallet address in localStorage
+    localStorage.setItem('walletAddress', connectedWalletAddress);
+    
+    // Update Wallet & Traits section
+    updateWalletDisplay(connectedWalletAddress);
+    
     // Update UI
     document.getElementById('wallet-status').classList.remove('hidden');
-    document.getElementById('wallet-address').textContent = `Address: ${publicKey.substring(0, 8)}...${publicKey.substring(publicKey.length - 8)}`;
+    const verificationWalletEl = document.getElementById('verification-wallet-address');
+    if (verificationWalletEl) {
+      verificationWalletEl.textContent = `Address: ${publicKey.substring(0, 8)}...${publicKey.substring(publicKey.length - 8)}`;
+    }
     document.getElementById('connect-wallet-btn').classList.add('hidden');
     document.getElementById('verify-nfts-btn').classList.remove('hidden');
     

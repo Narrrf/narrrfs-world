@@ -153,6 +153,20 @@
      - Cross-referencing guidelines
      - Maintenance workflows
 
+21. **`21_HELIUS_API_NFT_FETCHING_RULE.md`** - **🔗 HELIUS API NFT FETCHING**
+   - **Purpose:** Standardized method for fetching Solana NFTs and traits using Helius API
+   - **Critical:** Collection filtering, pagination, metadata fetching, role granting
+   - **Status:** ✅ **ACTIVE - CRITICAL PRODUCTION RULE**
+   - **Created:** December 29, 2025
+   - **Scope:** All NFT operations, all role granting, all NFT displays
+   - **Features:**
+     - Complete Helius API integration guide
+     - Collection address mapping (VIP vs Genesis)
+     - Metadata fetching from metadataUri
+     - Visual differentiation patterns
+     - Role granting based on collection address
+     - Local development config support
+
 ---
 
 ## 🚨 **CRITICAL RULE HIERARCHY**
@@ -198,7 +212,8 @@
 ├── 17_WEAPON_RENDERING_RULE.md          # 🔫 WEAPON RENDERING - FBX MODELS
 ├── 18_3D_MODEL_RENDERING_RULE.md        # 🎨 3D MODEL RENDERING - DECORATIVE MODELS
 ├── 19_CHEST_SYSTEM_RULE.md              # 🎁 CHEST SYSTEM - TREASURE CHEST IMPLEMENTATION
-└── 20_TECHNICAL_DOCUMENTATION_SYNC_RULE.md # 📚 TECHNICAL DOCUMENTATION SYNCHRONIZATION
+├── 20_TECHNICAL_DOCUMENTATION_SYNC_RULE.md # 📚 TECHNICAL DOCUMENTATION SYNCHRONIZATION
+└── 21_HELIUS_API_NFT_FETCHING_RULE.md  # 🔗 HELIUS API NFT FETCHING
 ```
 
 ---
@@ -237,11 +252,11 @@
 ---
 
 **RULES INDEX CREATED:** September 14, 2025  
-**LAST UPDATED:** December 20, 2025 - Added Technical Documentation Sync Rule  
+**LAST UPDATED:** December 29, 2025 - Added Helius API NFT Fetching Rule  
 **STATUS:** ACTIVE - COMPREHENSIVE RULES COLLECTION  
 **PURPOSE:** Centralized rules management for decades of development  
 **SCOPE:** All development sessions, all rule updates, all LLM synchronization, all technical documentation sync  
-**SYNC STATUS:** ✅ All rules updated to reflect 12 technical documentation files complete integration  
+**SYNC STATUS:** ✅ All rules updated to reflect 13 technical documentation files complete integration + Helius API NFT fetching system  
 
 ---
 

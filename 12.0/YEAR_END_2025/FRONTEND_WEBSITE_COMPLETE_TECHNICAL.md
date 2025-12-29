@@ -864,20 +864,76 @@ Profile.html is the central hub of Narrrf's World, integrating all games, system
 - Claim functionality
 - Quest progress tracking
 
-#### **9. NFT Verification**
+#### **9. NFT Verification & Holder Verify System** (Updated: December 29, 2025)
+
+**Purpose:** Complete NFT holder verification system with wallet connection, NFT display, trait extraction, and automatic Discord role granting
+
+**Location:** 
+- `profile.html` - Main holder verification interface with NFT display and trait showcase
+- `stake-lab.html` - NFT collection display for staking page
+
+**APIs:**
 ```javascript
-// APIs:
-//   /api/wallet/get-nfts.php - NFT ownership
-//   /api/user/verify-nft-holder.php - Verification
-// Database: tbl_nft_ownership, tbl_holder_verifications
+// Primary APIs:
+//   /api/wallet/get-nfts.php - NFT ownership via Helius API
+//   /api/user/verify-nft-holder.php - Verification and role granting
+// Database: tbl_nft_ownership, tbl_holder_verifications, tbl_role_grants
 ```
 
 **Features:**
-- Wallet connection
-- NFT ownership display
-- Holder verification
-- Role granting
-- Verification status
+- **Phantom Wallet Connection** - Secure Solana wallet integration
+- **Helius API Integration** - Uses `getAssetsByOwner` (DAS API) with pagination
+- **Collection Filtering** - Filters by collection address and name (Narrrf/Narrrfs)
+- **NFT Gallery Display** - Responsive grid with images, names, and traits
+- **Visual Differentiation** - VIP NFTs (golden theme) vs Genesis NFTs (blue theme)
+- **Trait Extraction** - Fetches and displays NFT metadata and attributes
+- **Holder Verification** - Cryptographic signature verification for wallet ownership
+- **Automatic Role Granting** - Grants Discord roles based on collection ownership:
+  - Genesis Collection → 🏆 Holder role (ID: 1402668301414563971)
+  - VIP Collection → 🎴 VIP Holder role (ID: 1332016526848692345)
+- **Verification Status** - Real-time status display and role confirmation
+- **Metadata Fetching** - Asynchronous loading of NFT images and attributes from `metadataUri`
+
+**Technical Implementation:**
+
+**Profile.html Holder Verify Section:**
+- Wallet connection button with Phantom integration
+- NFT verification status display
+- NFT gallery with trait showcase
+- Collection badges (VIP vs Genesis)
+- Role granting confirmation
+- "How NFT Verification Works" explanation section
+- "Powered by Helius" attribution
+
+**Stake-lab.html NFT Display:**
+- Wallet connection for NFT verification
+- NFT collection gallery with visual differentiation
+- Collection filtering (VIP and Genesis)
+- Trait display with metadata
+- "Under Cheese-struction" placeholder for future features
+
+**Collection Addresses:**
+- **Genesis Collection:** `AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML`
+- **VIP Collection:** `CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg`
+
+**Verification Flow:**
+1. User connects Phantom wallet
+2. Frontend calls `get-nfts.php` with wallet address and collection address
+3. API uses Helius `getAssetsByOwner` to fetch NFTs
+4. API filters by collection key or name (Narrrf/Narrrfs)
+5. Frontend displays NFTs with images and traits
+6. User clicks "Verify with Backend" button
+7. Frontend calls `verify-nft-holder.php` with wallet, signature, and collection
+8. Backend verifies signature and grants appropriate Discord roles
+9. Frontend displays verification success and role confirmation
+
+**Security Features:**
+- Cryptographic signature verification (Solana wallet signing)
+- Collection address validation
+- Role mapping verification (no cross-granting)
+- Audit logging of all verifications and role grants
+
+**Updated:** December 29, 2025 - Enhanced with improved Helius API integration, visual differentiation, and trait display
 
 ---
 
@@ -1369,7 +1425,7 @@ The Narrrf's World frontend website provides:
 ---
 
 **Document Created:** December 20, 2025  
-**Last Updated:** December 28, 2025  
+**Last Updated:** December 29, 2025  
 **Version:** 1.0.1  
 **Maintainer:** Narrrf's World Development Team
 
