@@ -11,8 +11,9 @@ require_once 'discord-invite.php';
   <title>🧊 DSPOINC Staking Lab | Narrrf's World</title>
 
   <!-- 🧀 Favicon & Metadata -->
-  <link rel="icon" type="image/png" href="favicon-phantom.png" />
-  <link rel="shortcut icon" type="image/png" href="favicon-phantom.png" />
+  <link rel="icon" href="favicon-phantom.png" type="image/png" />
+  <link rel="shortcut icon" href="favicon-phantom.png" type="image/png" />
+  <link rel="apple-touch-icon" href="favicon-phantom.png" />
   <meta name="theme-color" content="#0ea5e9" />
   <meta name="description" content="Freeze your DSPOINC and earn rewards - DSPOINC Staking System for Narrrf's World" />
   <meta name="robots" content="noindex, nofollow" />
@@ -100,6 +101,17 @@ require_once 'discord-invite.php';
       opacity: 1;
       background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(59, 130, 246, 0.2));
       border-color: rgba(14, 165, 233, 0.5);
+    }
+
+    .nft-card {
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    }
+    
+    .nft-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border-color: rgba(147, 51, 234, 0.5);
     }
   </style>
 </head>
@@ -387,6 +399,122 @@ require_once 'discord-invite.php';
       </div>
     </div>
 
+    <!-- 🎴 NFT Collection Display Section -->
+    <section class="relative z-10 px-4 md:px-6 pb-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-black/50 backdrop-blur-md rounded-xl p-6 border border-blue-400/30">
+          <h2 class="text-2xl font-bold text-blue-400 mb-6">🎴 Your NFT Collection</h2>
+          
+          <!-- Wallet Connection Section -->
+          <div id="wallet-connection-section" class="mb-6">
+            <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-xl p-6 border border-purple-400/30">
+              <h3 class="text-xl font-bold text-purple-300 mb-4">Connect Your Phantom Wallet</h3>
+              <p class="text-gray-300 mb-4">
+                Connect your wallet to view your Narrrfs World NFTs from our two collections: Genesis Genetic and VIP Drop.
+              </p>
+              
+              <!-- 🔍 How NFT Display Works Section -->
+              <div class="bg-gradient-to-br from-gray-800 via-purple-800/20 to-gray-700 rounded-xl p-6 mb-6 border border-purple-400/30">
+                <h4 class="text-lg font-semibold text-purple-300 mb-4 flex items-center gap-2">
+                  🔍 How NFT Display Works
+                </h4>
+                <div class="space-y-3 text-left">
+                  <div class="flex items-start gap-3">
+                    <span class="text-purple-400 font-bold text-lg">1.</span>
+                    <div>
+                      <strong class="text-purple-100">Wallet Connection:</strong> Connect your Phantom wallet securely to view your NFT collection
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <span class="text-purple-400 font-bold text-lg">2.</span>
+                    <div>
+                      <strong class="text-purple-100">Helius API Check:</strong> We use <a href="https://helius.xyz/" target="_blank" class="text-blue-400 underline hover:text-blue-300">Helius APIs</a> to efficiently search your wallet for our specific NFT collections (Genesis Genetic & VIP Drop)
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <span class="text-purple-400 font-bold text-lg">3.</span>
+                    <div>
+                      <strong class="text-purple-100">NFT Display:</strong> View all your NFTs with images, names, and traits in a beautiful gallery format
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 🔗 Powered by Helius Section -->
+              <div class="bg-gradient-to-br from-blue-900/30 via-blue-800/20 to-blue-900/30 rounded-xl p-4 mb-6 border border-blue-400/30">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-blue-400 text-lg">🔗</span>
+                  <h4 class="text-blue-300 font-semibold">Powered by Helius</h4>
+                </div>
+                <p class="text-blue-200 text-sm">
+                  We use Helius' high-performance Solana infrastructure for fast, reliable NFT verification and display. 
+                  <a href="https://helius.xyz/" target="_blank" class="text-blue-300 underline hover:text-blue-200">Learn more about Helius APIs</a>
+                </p>
+              </div>
+              
+              <!-- Connect Wallet Button -->
+              <div id="wallet-not-connected" class="text-center">
+                <button id="connect-phantom-btn" 
+                        class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                  🔗 Connect Phantom Wallet
+                </button>
+                <p class="text-xs text-gray-400 mt-2">
+                  Make sure you have <a href="https://phantom.app/" target="_blank" class="text-blue-400 underline">Phantom wallet</a> installed
+                </p>
+              </div>
+              
+              <!-- Connected Wallet Display -->
+              <div id="wallet-connected" class="hidden">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <p class="text-green-300 font-semibold">✅ Wallet Connected</p>
+                    <p id="wallet-address-display" class="text-gray-400 text-sm font-mono mt-1"></p>
+                  </div>
+                  <button id="disconnect-wallet-btn" 
+                          class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm">
+                    Disconnect
+                  </button>
+                </div>
+                <button id="fetch-nfts-btn" 
+                        class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                  🔍 Load My NFTs
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- NFT Gallery -->
+          <div id="nft-gallery-section" class="hidden">
+            <div id="nft-loading" class="text-center py-8 text-gray-400">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
+              <p class="mt-4">Loading your NFTs...</p>
+            </div>
+            
+            <div id="nft-gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <!-- NFT cards will be dynamically inserted here -->
+            </div>
+            
+            <div id="no-nfts-message" class="hidden text-center py-8 text-gray-400">
+              <p class="text-lg mb-2">No NFTs found</p>
+              <p class="text-sm">You don't own any NFTs from our collections in this wallet.</p>
+            </div>
+          </div>
+          
+          <!-- 🧀 Under Cheese-struction Message -->
+          <div class="mt-6 bg-gradient-to-br from-yellow-900/30 via-orange-900/20 to-yellow-900/30 rounded-xl p-6 border border-yellow-400/30">
+            <div class="text-center">
+              <div class="text-3xl mb-3">🧀</div>
+              <h3 class="text-xl font-bold text-yellow-300 mb-2">🚧 Under Cheese-struction</h3>
+              <p class="text-yellow-200 text-sm">
+                The NFT Collection display feature is currently being tested and improved. 
+                If you experience any issues, please report them in our Discord server.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Footer -->
     <footer class="relative z-10 text-center py-12 text-gray-400 border-t border-blue-500/20">
       <div class="max-w-4xl mx-auto px-6">
@@ -408,7 +536,7 @@ require_once 'discord-invite.php';
   <script>
     // Environment detection
     const isProduction = window.location.hostname === 'narrrfs.world';
-    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
 
     // Staking configuration
     const REWARD_RATES = {
@@ -1121,8 +1249,333 @@ require_once 'discord-invite.php';
       updateRewardPreview();
     }
 
+    // ==================== NFT COLLECTION DISPLAY ====================
+    
+    // NFT Collections Configuration
+    const NFT_COLLECTIONS = {
+      'AtJCkW4as31C7cF4zQbZdvTt488ejUuacgynZpohVmML': {
+        name: 'Narrrfs World: Genesis Genetic',
+        role: '🏆 Holder',
+        badge: '🏆'
+      },
+      'CUJH8MV68154vS8wTW15vAKxN6KazNpraFZ1FP8CVojg': {
+        name: 'Narrrf Genesis VIP Drop',
+        role: '🎴 VIP Holder',
+        badge: '🎴'
+      }
+    };
+    
+    let connectedWalletAddress = null;
+    let loadedNFTs = [];
+    let isFetchingNFTs = false; // Prevent multiple simultaneous fetches
+    
+    // Connect Phantom wallet
+    async function connectPhantomWallet() {
+      try {
+        // Check if Phantom is installed
+        if (!window.solana || !window.solana.isPhantom) {
+          alert('Phantom wallet is not installed. Please install it from https://phantom.app/');
+          return;
+        }
+
+        // Connect to wallet
+        const response = await window.solana.connect();
+        connectedWalletAddress = response.publicKey.toString();
+        
+        // Update UI
+        document.getElementById('wallet-not-connected').classList.add('hidden');
+        document.getElementById('wallet-connected').classList.remove('hidden');
+        document.getElementById('wallet-address-display').textContent = 
+          `${connectedWalletAddress.substring(0, 6)}...${connectedWalletAddress.substring(connectedWalletAddress.length - 4)}`;
+        
+        // Store in localStorage for persistence
+        localStorage.setItem('phantom_wallet_address', connectedWalletAddress);
+        
+      } catch (error) {
+        console.error('Wallet connection error:', error);
+        alert('Failed to connect wallet: ' + error.message);
+      }
+    }
+    
+    // Disconnect wallet
+    function disconnectWallet() {
+      if (window.solana && window.solana.isPhantom) {
+        window.solana.disconnect();
+      }
+      connectedWalletAddress = null;
+      localStorage.removeItem('phantom_wallet_address');
+      document.getElementById('wallet-not-connected').classList.remove('hidden');
+      document.getElementById('wallet-connected').classList.add('hidden');
+      document.getElementById('nft-gallery-section').classList.add('hidden');
+      loadedNFTs = [];
+    }
+    
+    // Fetch NFTs from both collections
+    async function fetchNFTs() {
+      if (!connectedWalletAddress) {
+        alert('Please connect your wallet first');
+        return;
+      }
+      
+      // Prevent multiple simultaneous fetches
+      if (isFetchingNFTs) {
+        console.log('⏳ NFT fetch already in progress, skipping...');
+        return;
+      }
+      
+      isFetchingNFTs = true;
+      
+      const gallerySection = document.getElementById('nft-gallery-section');
+      const loadingDiv = document.getElementById('nft-loading');
+      const galleryDiv = document.getElementById('nft-gallery');
+      const noNFTsDiv = document.getElementById('no-nfts-message');
+      
+      gallerySection.classList.remove('hidden');
+      loadingDiv.classList.remove('hidden');
+      galleryDiv.classList.add('hidden');
+      noNFTsDiv.classList.add('hidden');
+      
+      loadedNFTs = [];
+      
+      try {
+        // Fetch NFTs from both collections
+        for (const [collectionAddress, collectionInfo] of Object.entries(NFT_COLLECTIONS)) {
+          try {
+            console.log(`🔍 Fetching NFTs for ${collectionInfo.name} (${collectionAddress})...`);
+            const apiUrl = `${API_BASE_URL}/api/wallet/get-nfts.php?wallet=${connectedWalletAddress}&collection=${collectionAddress}`;
+            console.log(`📡 API URL: ${apiUrl}`);
+            
+            const response = await fetch(apiUrl);
+            
+            console.log(`📥 Response status: ${response.status} ${response.statusText}`);
+            
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error(`❌ HTTP error ${response.status} for ${collectionInfo.name}:`, errorText);
+              
+              // Try to parse as JSON to get error details
+              try {
+                const errorData = JSON.parse(errorText);
+                console.error(`❌ Error details:`, errorData);
+                if (errorData.details) {
+                  console.error(`❌ Error message: ${errorData.details}`);
+                }
+                if (errorData.file && errorData.line) {
+                  console.error(`❌ Error location: ${errorData.file}:${errorData.line}`);
+                }
+              } catch (e) {
+                // Not JSON, just log the text
+                console.error(`❌ Raw error response:`, errorText);
+              }
+              
+              continue;
+            }
+            
+            const responseText = await response.text();
+            console.log(`📄 Raw response (first 500 chars):`, responseText.substring(0, 500));
+            
+            let data;
+            try {
+              data = JSON.parse(responseText);
+            } catch (jsonError) {
+              console.error(`❌ JSON parse error for ${collectionInfo.name}:`, jsonError);
+              console.error(`❌ Response text:`, responseText);
+              continue;
+            }
+            
+            // Debug logging
+            console.log(`🔍 API Response for ${collectionInfo.name}:`, {
+              success: data.success,
+              count: data.count,
+              has_assets: data.has_assets,
+              method: data.method,
+              error: data.error,
+              nfts_length: data.nfts ? data.nfts.length : 0,
+              debug_info: data.debug_info
+            });
+            
+            if (data.success) {
+              if (data.nfts && data.nfts.length > 0) {
+                console.log(`✅ Found ${data.nfts.length} NFTs from ${collectionInfo.name}`);
+                
+                // Filter out duplicates by mint address and ensure images exist
+                const existingMints = new Set(loadedNFTs.map(n => n.mint));
+                const newNFTs = data.nfts.filter(nft => {
+                  const mint = nft.mint || '';
+                  // Skip if no mint, already exists, or no image
+                  if (!mint || existingMints.has(mint)) {
+                    return false;
+                  }
+                  // Check for image URL in multiple possible locations
+                  const hasImage = nft.image || 
+                                   nft.content?.links?.image || 
+                                   nft.content?.files?.[0]?.uri ||
+                                   nft.content?.files?.[0]?.cdn_uri;
+                  if (!hasImage) {
+                    console.warn(`⚠️ Skipping NFT ${mint.substring(0, 8)}... - no image URL`);
+                    return false;
+                  }
+                  existingMints.add(mint);
+                  return true;
+                });
+                
+                console.log(`📦 After deduplication: ${newNFTs.length} new NFTs from ${collectionInfo.name}`);
+                
+                // Add collection info to each NFT
+                newNFTs.forEach(nft => {
+                  nft.collectionName = collectionInfo.name;
+                  nft.collectionBadge = collectionInfo.badge;
+                  nft.collectionRole = collectionInfo.role;
+                });
+                
+                loadedNFTs.push(...newNFTs);
+              } else {
+                console.log(`⚠️ ${collectionInfo.name}: API returned success but no NFTs (count: ${data.count || 0})`);
+              }
+            } else {
+              console.warn(`⚠️ API returned error for ${collectionInfo.name}:`, data.error || 'Unknown error');
+              console.warn(`⚠️ Full error response:`, data);
+            }
+          } catch (error) {
+            console.error(`❌ Error fetching NFTs for ${collectionInfo.name}:`, error);
+            console.error(`❌ Error details:`, {
+              message: error.message,
+              stack: error.stack,
+              name: error.name
+            });
+          }
+        }
+        
+        // Hide loading, show results
+        loadingDiv.classList.add('hidden');
+        
+        if (loadedNFTs.length === 0) {
+          noNFTsDiv.classList.remove('hidden');
+        } else {
+          galleryDiv.classList.remove('hidden');
+          displayNFTs(loadedNFTs);
+        }
+        
+      } catch (error) {
+        console.error('Error fetching NFTs:', error);
+        loadingDiv.classList.add('hidden');
+        alert('Error loading NFTs: ' + error.message);
+      } finally {
+        isFetchingNFTs = false; // Reset flag
+      }
+    }
+    
+    // Display NFTs in gallery
+    function displayNFTs(nfts) {
+      const galleryDiv = document.getElementById('nft-gallery');
+      
+      // Filter out NFTs without images before displaying
+      const validNFTs = nfts.filter(nft => {
+        // Try multiple paths for image URL
+        const hasImage = nft.image || 
+                        (nft.content && nft.content.links && nft.content.links.image) || 
+                        (nft.content && nft.content.files && nft.content.files[0] && nft.content.files[0].uri) ||
+                        (nft.content && nft.content.files && nft.content.files[0] && nft.content.files[0].cdn_uri);
+        return hasImage;
+      });
+      
+      console.log(`🖼️ Displaying ${validNFTs.length} NFTs with images (filtered from ${nfts.length} total)`);
+      
+      if (validNFTs.length === 0) {
+        galleryDiv.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><p>No NFTs with images found. The API may be using RPC fallback which doesn\'t include images.</p></div>';
+        return;
+      }
+      
+      galleryDiv.innerHTML = validNFTs.map((nft, index) => {
+        // Try multiple paths for image URL
+        const imageUrl = nft.image || 
+                        (nft.content && nft.content.links && nft.content.links.image) || 
+                        (nft.content && nft.content.files && nft.content.files[0] && nft.content.files[0].uri) ||
+                        (nft.content && nft.content.files && nft.content.files[0] && nft.content.files[0].cdn_uri) ||
+                        '/img/nft-placeholder.png';
+        const nftName = nft.name || 'Unnamed NFT';
+        const attributes = nft.attributes || [];
+        
+        return `
+          <div class="nft-card bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-blue-400/30 hover:border-blue-400/60 transition-all duration-300 transform hover:scale-105">
+            <!-- NFT Image -->
+            <div class="relative mb-3 rounded-lg overflow-hidden bg-gray-700 aspect-square">
+              <img src="${imageUrl}" 
+                   alt="${nftName}" 
+                   class="w-full h-full object-cover"
+                   onerror="this.src='/img/nft-placeholder.png'">
+              <div class="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+                ${nft.collectionBadge}
+              </div>
+            </div>
+            
+            <!-- NFT Info -->
+            <div class="mb-3">
+              <h3 class="text-lg font-bold text-blue-100 mb-1 truncate">${nftName}</h3>
+              <p class="text-xs text-blue-300 mb-2">${nft.collectionName}</p>
+              <div class="text-xs text-purple-300 font-semibold">${nft.collectionRole}</div>
+            </div>
+            
+            <!-- Traits/Attributes -->
+            ${attributes.length > 0 ? `
+              <div class="border-t border-blue-400/20 pt-3">
+                <p class="text-xs text-gray-400 mb-2 font-semibold">Traits:</p>
+                <div class="space-y-1 max-h-32 overflow-y-auto">
+                  ${attributes.slice(0, 5).map(attr => `
+                    <div class="text-xs bg-gray-700/50 rounded px-2 py-1">
+                      <span class="text-gray-300">${attr.trait_type || attr.type || 'Trait'}:</span>
+                      <span class="text-blue-300 font-semibold ml-1">${attr.value || 'N/A'}</span>
+                    </div>
+                  `).join('')}
+                  ${attributes.length > 5 ? `<p class="text-xs text-gray-500 italic">+${attributes.length - 5} more traits</p>` : ''}
+                </div>
+              </div>
+            ` : ''}
+            
+            <!-- Mint Address (truncated) -->
+            <div class="mt-3 pt-3 border-t border-blue-400/20">
+              <p class="text-xs text-gray-500 font-mono truncate" title="${nft.mint}">
+                ${nft.mint ? nft.mint.substring(0, 8) + '...' + nft.mint.substring(nft.mint.length - 8) : 'Unknown'}
+              </p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Initialize wallet connection on page load
+    function initWalletConnection() {
+      // Check if wallet was previously connected
+      const savedAddress = localStorage.getItem('phantom_wallet_address');
+      if (savedAddress && window.solana && window.solana.isPhantom) {
+        // Try to reconnect
+        window.solana.connect()
+          .then(response => {
+            connectedWalletAddress = response.publicKey.toString();
+            if (connectedWalletAddress === savedAddress) {
+              document.getElementById('wallet-not-connected').classList.add('hidden');
+              document.getElementById('wallet-connected').classList.remove('hidden');
+              document.getElementById('wallet-address-display').textContent = 
+                `${connectedWalletAddress.substring(0, 6)}...${connectedWalletAddress.substring(connectedWalletAddress.length - 4)}`;
+            }
+          })
+          .catch(() => {
+            // Connection failed, clear saved address
+            localStorage.removeItem('phantom_wallet_address');
+          });
+      }
+      
+      // Set up event listeners
+      document.getElementById('connect-phantom-btn').addEventListener('click', connectPhantomWallet);
+      document.getElementById('disconnect-wallet-btn').addEventListener('click', disconnectWallet);
+      document.getElementById('fetch-nfts-btn').addEventListener('click', fetchNFTs);
+    }
+
     // Run on page load
-    document.addEventListener('DOMContentLoaded', initPage);
+    document.addEventListener('DOMContentLoaded', () => {
+      initPage();
+      initWalletConnection();
+    });
   </script>
 
 </body>
