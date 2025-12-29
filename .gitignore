@@ -90,6 +90,8 @@ api/config/discord-secret.php
 # 🧪 Local Test Scripts (optional - remove from .gitignore if you want to commit them)
 test-staking-api.php
 test-staking-api.js
+test-staking-get.php
+test-staking-get.js
 TEST_STAKING_API.md
 
 # 🧪 Lab Notes and Development Documentation - Local Only
