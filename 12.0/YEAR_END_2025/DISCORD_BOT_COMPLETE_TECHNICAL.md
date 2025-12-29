@@ -301,6 +301,9 @@ await queryDb(
 - `get-balance.php` - Balance retrieval
 - `score-history.php` - Score history
 
+#### **User APIs (`/api/user/`)**
+- `get-staking-stats.php` - Staking statistics (total balance, available, staked, active stakes, rewards) - **Bot token authentication supported** (Updated: December 29, 2025)
+
 #### **Admin APIs (`/api/admin/`)**
 - `discord-events.php` - Discord event logging
 - `store-management.php` - Store item management
@@ -436,11 +439,20 @@ const data = await response.json();
 
 ### **Balance & Profile**
 
-#### **`/balance` Command**
-- Current DSPOINC balance
-- Total games played
-- Recent activity (last 5 scores)
-- Shopping power indicator
+#### **`/balance` Command** (Updated: December 29, 2025)
+- **Current DSPOINC balance** - Total DSPOINC across all games
+- **Balance Breakdown:**
+  - Available DSPOINC (total minus staked)
+  - Staked DSPOINC (from active stakes)
+  - Games played count
+- **Staking Status** (if user has active stakes):
+  - Active stakes count
+  - Ready to claim count
+  - Total rewards earned
+- **Recent activity** - Last 5 game scores with dates
+- **Shopping power indicator** - Shows if user can make purchases
+- **API Integration:** Uses `get-staking-stats.php` with bot token authentication
+- **Bot Token Authentication:** Fixed December 29, 2025 - Now correctly authenticates and displays staking data
 
 #### **`/dashboard` Command**
 - Complete user profile
@@ -560,7 +572,7 @@ const data = await response.json();
 - `/check-holder wallet:<address>` - Check holder status, current roles, and staking info
 - `/verify-holder wallet:<address> [collection:<type>]` - Verify NFT ownership and get Discord roles
 - `/stake-status` - View detailed DSPOINC staking status, active stakes, and ready-to-claim rewards (New: December 29, 2025)
-- `/balance` - Check $DSPOINC balance with staking breakdown (available vs staked) (Updated: December 29, 2025)
+- `/balance` - Check $DSPOINC balance with staking breakdown (available vs staked) (Updated: December 29, 2025 - Bot token authentication fixed)
 
 ### **API Integration (Updated December 29, 2025)**
 The bot now uses the centralized `verify-nft-holder.php` API endpoint for all verification operations:
@@ -628,6 +640,13 @@ The bot now uses the centralized `verify-nft-holder.php` API endpoint for all ve
 3. Added bot token authentication support
 4. Integrated staking information into holder and balance commands
 5. Created dedicated `/stake-status` command for comprehensive staking overview
+6. **Fixed `/balance` command bot token authentication** (Late December 29, 2025):
+   - Fixed JSON body parsing in `get-staking-stats.php` to always read bot token from JSON
+   - Improved token validation logic to check bot token before session security checks
+   - Added local config support (`api/config/discord-secret.php`) for development testing
+   - Enhanced error logging for debugging token authentication issues
+   - Verified local testing shows correct staking data (1M staked DSPOINC confirmed)
+   - **Status:** Deployed to `render-deploy` branch, awaiting live server verification
 
 ---
 

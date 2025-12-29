@@ -36,8 +36,27 @@ $session_user_id = isset($_SESSION['discord_id']) ? $_SESSION['discord_id'] : ''
 
 // Check if user_id is provided in POST/GET (for localhost testing or bot requests)
 // Also check JSON body for POST requests
+// Also check Authorization header (like db-access.php and get-season-tester-eligible-players.php)
 $request_user_id = '';
 $botToken = '';
+
+// Check Authorization header first (like db-access.php does)
+$authHeader = isset($_SERVER['HTTP_AUTHORIZATION']) ? $_SERVER['HTTP_AUTHORIZATION'] : '';
+if (empty($authHeader) && function_exists('apache_request_headers')) {
+    $headers = apache_request_headers();
+    $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : (isset($headers['authorization']) ? $headers['authorization'] : '');
+}
+
+// Extract token from Authorization header (supports "Bearer TOKEN" or just "TOKEN")
+if ($authHeader) {
+    if (strpos($authHeader, 'Bearer ') === 0) {
+        $botToken = substr($authHeader, 7);
+        error_log("🧊 Staking Stats: Found bot token in Authorization header (Bearer)");
+    } else {
+        $botToken = $authHeader;
+        error_log("🧊 Staking Stats: Found bot token in Authorization header (no Bearer prefix)");
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Try POST data first (for form-encoded requests)
@@ -52,6 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Debug: Log raw input (first 200 chars only for security)
     error_log("🧊 Staking Stats: Raw input (first 200 chars): " . substr($raw_input, 0, 200));
     error_log("🧊 Staking Stats: JSON decoded: " . (is_array($json_input) ? 'YES' : 'NO'));
+    if (is_array($json_input)) {
+        error_log("🧊 Staking Stats: JSON keys: " . implode(', ', array_keys($json_input)));
+    }
     
     if (is_array($json_input)) {
         // Override with JSON values if they exist (JSON takes precedence)
@@ -60,13 +82,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if (isset($json_input['bot_token'])) {
             $botToken = $json_input['bot_token'];
+            error_log("🧊 Staking Stats: Found bot_token in JSON (length: " . strlen($botToken) . ")");
         } elseif (isset($json_input['botToken'])) {
             $botToken = $json_input['botToken'];
+            error_log("🧊 Staking Stats: Found botToken (camelCase) in JSON (length: " . strlen($botToken) . ")");
+        } else {
+            error_log("🧊 Staking Stats: ⚠️ No bot_token or botToken found in JSON!");
         }
         // Debug: Log what we extracted
-        error_log("🧊 Staking Stats: Extracted from JSON - user_id: " . ($request_user_id ?: 'EMPTY') . ", bot_token: " . (!empty($botToken) ? substr($botToken, 0, 8) . '...' : 'EMPTY'));
+        error_log("🧊 Staking Stats: Extracted from JSON - user_id: " . ($request_user_id ?: 'EMPTY') . ", bot_token: " . (!empty($botToken) ? substr($botToken, 0, 12) . '... (length: ' . strlen($botToken) . ')' : 'EMPTY'));
     } else {
         error_log("🧊 Staking Stats: JSON decode failed or not an array. Raw input length: " . strlen($raw_input));
+        if ($raw_input) {
+            error_log("🧊 Staking Stats: Raw input content: " . substr($raw_input, 0, 500));
+        }
     }
 } else {
     // GET request
@@ -78,26 +107,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 error_log("🧊 Staking Stats: Request extraction - Method: " . $_SERVER['REQUEST_METHOD'] . ", User ID: " . ($request_user_id ?: 'EMPTY') . ", Bot Token: " . (!empty($botToken) ? substr($botToken, 0, 8) . '...' : 'EMPTY'));
 
 // Check if this is a Discord bot request (bypasses session requirement)
-// Try environment variable first, then local config, then fallback
-$validBotToken = getenv('DISCORD_SECRET') ?: (isset($DISCORD_SECRET) ? $DISCORD_SECRET : 'admin_quest_system');
+// Support both DISCORD_SECRET (for bot_token in JSON) and DISCORD_BOT_SECRET (for Authorization header)
+// Match verify-nft-holder.php logic exactly for consistency, but also support Authorization header like db-access.php
+$isBotRequest = !empty($botToken);
 
-// Trim whitespace from tokens for comparison
-$botToken = trim($botToken);
-$validBotToken = trim($validBotToken);
+// Try multiple token sources (like get-season-tester-eligible-players.php does)
+$validBotToken = null;
+$tokenSource = '';
 
-$isBotRequest = !empty($botToken) && $botToken === $validBotToken; // Only true if token is provided AND valid
+if ($isBotRequest) {
+    // Check DISCORD_SECRET first (for bot_token in JSON body - like verify-holder)
+    $discordSecret = getenv('DISCORD_SECRET') ?: (isset($DISCORD_SECRET) ? $DISCORD_SECRET : null);
+    if ($discordSecret && $botToken === $discordSecret) {
+        $validBotToken = $discordSecret;
+        $tokenSource = 'DISCORD_SECRET';
+        error_log("🧊 Staking Stats: Token validated using DISCORD_SECRET");
+    } else {
+        // Check DISCORD_BOT_SECRET (for Authorization header - like db-access)
+        $discordBotSecret = getenv('DISCORD_BOT_SECRET');
+        if ($discordBotSecret && $botToken === $discordBotSecret) {
+            $validBotToken = $discordBotSecret;
+            $tokenSource = 'DISCORD_BOT_SECRET';
+            error_log("🧊 Staking Stats: Token validated using DISCORD_BOT_SECRET");
+        } else {
+            // Fallback to admin_quest_system (for local development)
+            $fallbackToken = 'admin_quest_system';
+            if ($botToken === $fallbackToken) {
+                $validBotToken = $fallbackToken;
+                $tokenSource = 'FALLBACK';
+                error_log("🧊 Staking Stats: Token validated using fallback (admin_quest_system)");
+            }
+        }
+    }
+    
+    // If token doesn't match any expected value, mark as invalid
+    if (!$validBotToken) {
+        $isBotRequest = false;
+        error_log("🧊 Staking Stats: Token provided but doesn't match any expected token");
+    }
+}
 
 // Debug logging for bot token validation (only log first few chars for security)
 error_log("🧊 Staking Stats: Bot token check - Provided: " . (!empty($botToken) ? substr($botToken, 0, 8) . '... (length: ' . strlen($botToken) . ')' : 'EMPTY') . ", Expected: " . substr($validBotToken, 0, 8) . '... (length: ' . strlen($validBotToken) . '), Match: ' . ($isBotRequest ? 'YES' : 'NO'));
+error_log("🧊 Staking Stats: Environment check - DISCORD_SECRET env var: " . (getenv('DISCORD_SECRET') ? substr(getenv('DISCORD_SECRET'), 0, 8) . '... (set, length: ' . strlen(getenv('DISCORD_SECRET')) . ')' : 'NOT SET (using fallback)'));
 
 if (!empty($botToken) && !$isBotRequest) {
-    // Bot token provided but invalid
+    // Bot token provided but invalid (same error handling as verify-nft-holder.php)
     error_log("🚨 SECURITY: Invalid bot token provided for staking stats");
     error_log("🚨 SECURITY: Token comparison failed - Provided length: " . strlen($botToken) . ", Expected length: " . strlen($validBotToken));
+    error_log("🚨 SECURITY: Provided token (first 12 chars): " . substr($botToken, 0, 12));
+    error_log("🚨 SECURITY: Expected token (first 12 chars): " . substr($validBotToken, 0, 12));
+    error_log("🚨 SECURITY: Environment variable DISCORD_SECRET is " . (getenv('DISCORD_SECRET') ? 'SET (length: ' . strlen(getenv('DISCORD_SECRET')) . ')' : 'NOT SET (using fallback: admin_quest_system)'));
+    error_log("🚨 SECURITY: Token exact match check: " . ($botToken === $validBotToken ? 'MATCH' : 'NO MATCH'));
     json_response([
         'success' => false,
         'error' => 'Invalid bot token for Discord bot requests',
-        'debug' => 'Token length mismatch or invalid token. Check server logs for details.'
+        'debug' => 'Token mismatch. Ensure DISCORD_SECRET environment variable on Render matches the bot\'s DISCORD_SECRET. Check server logs for token comparison details.'
     ], 403);
 }
 
