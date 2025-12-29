@@ -34,14 +34,23 @@ $request_user_id = '';
 $botToken = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Try POST data first
+    // Try POST data first (for form-encoded requests)
     $request_user_id = isset($_POST['user_id']) ? $_POST['user_id'] : '';
     $botToken = isset($_POST['bot_token']) ? $_POST['bot_token'] : '';
-    // If not in POST, try JSON body
-    if (!$request_user_id) {
-        $json_input = json_decode(file_get_contents('php://input'), true);
-        $request_user_id = isset($json_input['user_id']) ? $json_input['user_id'] : '';
-        $botToken = isset($json_input['bot_token']) ? $json_input['bot_token'] : (isset($json_input['botToken']) ? $json_input['botToken'] : '');
+    
+    // Always read JSON body for POST requests (JSON takes precedence)
+    // This ensures we get bot_token even if the request is JSON-encoded
+    $json_input = json_decode(file_get_contents('php://input'), true);
+    if (is_array($json_input)) {
+        // Override with JSON values if they exist (JSON takes precedence)
+        if (isset($json_input['user_id'])) {
+            $request_user_id = $json_input['user_id'];
+        }
+        if (isset($json_input['bot_token'])) {
+            $botToken = $json_input['bot_token'];
+        } elseif (isset($json_input['botToken'])) {
+            $botToken = $json_input['botToken'];
+        }
     }
 } else {
     // GET request
@@ -49,11 +58,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $botToken = isset($_GET['bot_token']) ? $_GET['bot_token'] : '';
 }
 
-// Check if this is a Discord bot request (bypasses session requirement)
-$isBotRequest = !empty($botToken);
-$validBotToken = getenv('DISCORD_SECRET') ?: 'admin_quest_system'; // Use same token as grant-role.php
+// Debug logging for request extraction
+error_log("🧊 Staking Stats: Request extraction - Method: " . $_SERVER['REQUEST_METHOD'] . ", User ID: " . ($request_user_id ?: 'EMPTY') . ", Bot Token: " . (!empty($botToken) ? substr($botToken, 0, 8) . '...' : 'EMPTY'));
 
-if ($isBotRequest && $botToken !== $validBotToken) {
+// Check if this is a Discord bot request (bypasses session requirement)
+$validBotToken = getenv('DISCORD_SECRET') ?: 'admin_quest_system'; // Use same token as grant-role.php
+$isBotRequest = !empty($botToken) && $botToken === $validBotToken; // Only true if token is provided AND valid
+
+// Debug logging for bot token validation (only log first few chars for security)
+error_log("🧊 Staking Stats: Bot token check - Provided: " . (!empty($botToken) ? substr($botToken, 0, 8) . '...' : 'EMPTY') . ", Expected: " . substr($validBotToken, 0, 8) . '..., Match: ' . ($isBotRequest ? 'YES' : 'NO'));
+
+if (!empty($botToken) && !$isBotRequest) {
+    // Bot token provided but invalid
+    error_log("🚨 SECURITY: Invalid bot token provided for staking stats");
     json_response([
         'success' => false,
         'error' => 'Invalid bot token for Discord bot requests'
@@ -66,9 +83,9 @@ $isLocalhost = strpos(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '',
 
 // SECURITY FIX: Use session user_id in production, allow bot/user_id override for bot requests or localhost
 if ($isBotRequest && $request_user_id) {
-    // Bot request: Use provided user_id (bot token already validated)
+    // Bot request with valid token: Use provided user_id (bypasses session check)
     $user_id = $request_user_id;
-    error_log("🧊 Staking Stats: Bot request - Using user_id: {$user_id}");
+    error_log("🧊 Staking Stats: Bot request (valid token) - Using user_id: {$user_id}");
 } elseif ($isLocalhost && $request_user_id) {
     // Local development: Allow override for testing
     $user_id = $request_user_id;
@@ -78,7 +95,8 @@ if ($isBotRequest && $request_user_id) {
     $user_id = $session_user_id;
     
     // If request user_id provided, verify it matches session (security check)
-    if ($request_user_id && $request_user_id !== $session_user_id) {
+    // BUT: Skip this check if it's a bot request (should have been caught above)
+    if ($request_user_id && $request_user_id !== $session_user_id && !$isBotRequest) {
         error_log("🚨 SECURITY: Get Staking Stats - user_id mismatch. Session: {$session_user_id}, Request: {$request_user_id}");
         json_response([
             'success' => false,
