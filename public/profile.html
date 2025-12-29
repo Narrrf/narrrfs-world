@@ -3830,66 +3830,116 @@ async function verifyNFTs() {
     const allNFTsWithTraits = []; // Store full NFT data with traits
     
     // Check each collection directly using searchAssets
+    console.log('🔍 [VERIFICATION] Starting NFT verification for wallet:', connectedWalletAddress);
+    console.log('🔍 [VERIFICATION] Checking', Object.keys(ourCollections).length, 'collections');
+    
     for (const [collectionAddress, collectionInfo] of Object.entries(ourCollections)) {
       try {
-        console.log(`🔍 Checking ${collectionInfo.name} collection...`);
+        console.log(`\n🔍 [VERIFICATION] Checking ${collectionInfo.name}...`);
+        console.log(`   Collection Address: ${collectionAddress}`);
+        console.log(`   Expected Role: ${collectionInfo.role} (ID: ${collectionInfo.roleId})`);
         
-        const response = await fetch(`/api/wallet/get-nfts.php?wallet=${connectedWalletAddress}&collection=${collectionAddress}`);
+        const apiUrl = `/api/wallet/get-nfts.php?wallet=${connectedWalletAddress}&collection=${collectionAddress}`;
+        console.log(`   API URL: ${apiUrl}`);
+        
+        const response = await fetch(apiUrl);
         
         if (!response.ok) {
-          console.warn(`⚠️ HTTP error ${response.status} for ${collectionInfo.name}`);
+          console.error(`❌ [VERIFICATION] HTTP error ${response.status} for ${collectionInfo.name}`);
           continue; // Skip this collection and continue with others
         }
         
         const data = await response.json();
         
-        // Debug logging
-        console.log(`🔍 API Response for ${collectionInfo.name}:`, {
+        // Detailed debug logging
+        console.log(`📥 [VERIFICATION] API Response for ${collectionInfo.name}:`, {
           success: data.success,
           count: data.count,
           has_assets: data.has_assets,
           method: data.method,
           error: data.error,
-          nfts_length: data.nfts ? data.nfts.length : 0
+          nfts_length: data.nfts ? data.nfts.length : 0,
+          collection_address: collectionAddress
         });
         
         if (!data.success) {
-          console.warn(`⚠️ API error for ${collectionInfo.name}:`, data.error);
+          console.error(`❌ [VERIFICATION] API error for ${collectionInfo.name}:`, data.error);
           continue; // Skip this collection and continue with others
         }
 
-        console.log(`✅ ${collectionInfo.name}: Found ${data.count} NFTs using ${data.method}`);
+        console.log(`✅ [VERIFICATION] ${collectionInfo.name}: Found ${data.count} NFTs using ${data.method}`);
         
         // Improved condition: Check for NFTs array (more robust than just has_assets)
         if (data.nfts && Array.isArray(data.nfts) && data.nfts.length > 0) {
+          console.log(`   ✅ NFTs array found with ${data.nfts.length} items`);
+          
+          // Log each NFT's collection address to verify filtering
+          console.log(`   📋 NFT Collection Details:`);
+          data.nfts.forEach((nft, idx) => {
+            const nftCollection = nft.collection || nft.collectionAddress || 'UNKNOWN';
+            const matches = nftCollection === collectionAddress || 
+                          (nft.collectionAddress && nft.collectionAddress === collectionAddress);
+            console.log(`      NFT ${idx + 1}: ${nft.name || 'Unnamed'}`);
+            console.log(`         Collection: ${nftCollection}`);
+            console.log(`         Matches Requested (${collectionAddress}): ${matches ? '✅ YES' : '❌ NO'}`);
+          });
+          
+          // Verify all NFTs actually belong to this collection
+          const mismatchedNFTs = data.nfts.filter(nft => {
+            const nftCollection = nft.collection || nft.collectionAddress || '';
+            return nftCollection !== collectionAddress && 
+                   (!nft.collectionAddress || nft.collectionAddress !== collectionAddress);
+          });
+          
+          if (mismatchedNFTs.length > 0) {
+            console.warn(`   ⚠️ WARNING: ${mismatchedNFTs.length} NFT(s) have incorrect collection addresses!`);
+            mismatchedNFTs.forEach((nft, idx) => {
+              console.warn(`      Mismatch ${idx + 1}: ${nft.name || 'Unnamed'}`);
+              console.warn(`         Expected: ${collectionAddress}`);
+              console.warn(`         Found: ${nft.collection || nft.collectionAddress || 'NULL'}`);
+            });
+          }
+          
           // Store full NFT data with traits
           allNFTsWithTraits.push(...data.nfts);
           
           // User has NFTs from this collection - add to found list
-          foundNFTs.push({
+          const foundNFT = {
             collection: collectionInfo.name,
             role: collectionInfo.role,
             roleId: collectionInfo.roleId,
             count: data.count || data.nfts.length,
             collectionAddress: collectionAddress
-          });
+          };
+          foundNFTs.push(foundNFT);
+          
+          console.log(`   ✅ Added to verification list:`, foundNFT);
         } else if (data.has_assets && data.count > 0) {
           // Fallback: If nfts array is missing but has_assets is true, still process
-          console.warn(`⚠️ ${collectionInfo.name}: has_assets=true but nfts array missing, using count only`);
-          foundNFTs.push({
+          console.warn(`⚠️ [VERIFICATION] ${collectionInfo.name}: has_assets=true but nfts array missing, using count only`);
+          const foundNFT = {
             collection: collectionInfo.name,
             role: collectionInfo.role,
             roleId: collectionInfo.roleId,
             count: data.count,
             collectionAddress: collectionAddress
-          });
+          };
+          foundNFTs.push(foundNFT);
+          console.log(`   ✅ Added to verification list (fallback):`, foundNFT);
+        } else {
+          console.log(`   ❌ No NFTs found for ${collectionInfo.name}`);
         }
         
       } catch (collectionError) {
-        console.warn(`⚠️ Error checking ${collectionInfo.name}:`, collectionError);
+        console.error(`❌ [VERIFICATION] Error checking ${collectionInfo.name}:`, collectionError);
         // Continue checking other collections
       }
     }
+    
+    console.log(`\n📊 [VERIFICATION] Summary: Found ${foundNFTs.length} collection(s) with NFTs`);
+    foundNFTs.forEach((nft, index) => {
+      console.log(`   ${index + 1}. ${nft.collection}: ${nft.count} NFT(s) → ${nft.role} (${nft.roleId})`);
+    });
     
     // Extract and store traits from all NFTs
     if (allNFTsWithTraits.length > 0) {
@@ -4055,63 +4105,227 @@ async function verifyWithBackend(walletAddress, nfts) {
       collectionName: nftsByCollection[addr].collectionName
     })));
     
-    // Verify each collection
+    // Verify each collection and collect all granted roles
+    console.log(`\n🔐 [BACKEND VERIFICATION] Starting backend verification for ${Object.keys(nftsByCollection).length} collection(s)`);
+    console.log(`   User ID: ${userId}`);
+    console.log(`   Wallet Address: ${walletAddress}`);
+    
+    // Track all granted roles across all collections
+    const allGrantedRoles = [];
+    const allFailedCollections = [];
+    let hasErrors = false;
+    
     for (const [collectionAddress, collectionData] of Object.entries(nftsByCollection)) {
-      console.log(`🔍 Verifying collection: ${collectionData.collectionName} (${collectionAddress})`);
-      console.log(`🔍 Expected role: ${collectionData.role} (ID: ${collectionData.roleId})`);
-      console.log(`🔍 NFTs found: ${collectionData.nfts.length}`);
+      console.log(`\n🔐 [BACKEND VERIFICATION] Verifying collection: ${collectionData.collectionName}`);
+      console.log(`   Collection Address: ${collectionAddress}`);
+      console.log(`   Expected Role: ${collectionData.role} (ID: ${collectionData.roleId})`);
+      console.log(`   NFTs found (frontend): ${collectionData.nfts.length}`);
+      
+      const requestPayload = {
+        user_id: userId,
+        wallet_address: walletAddress,
+        nfts: collectionData.nfts,
+        collection: collectionAddress, // CRITICAL: Pass collection address, not role name
+        signature: signature,
+        message: message
+      };
+      
+      console.log(`📤 [BACKEND VERIFICATION] Sending request to /api/user/verify-nft-holder.php:`, {
+        user_id: userId,
+        wallet_address: walletAddress.substring(0, 8) + '...',
+        collection: collectionAddress,
+        signature_length: signature ? signature.length : 0,
+        message: message
+      });
       
       const response = await fetch('/api/user/verify-nft-holder.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId,
-          wallet_address: walletAddress,
-          nfts: collectionData.nfts,
-          collection: collectionAddress, // CRITICAL: Pass collection address, not role name
-          signature: signature,
-          message: message
-        })
+        body: JSON.stringify(requestPayload)
       });
+      
+      console.log(`📥 [BACKEND VERIFICATION] Response status: ${response.status} ${response.statusText}`);
+      
+      // Check if response is actually JSON before parsing
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error(`❌ [BACKEND VERIFICATION] Non-JSON response received`);
+        console.error(`   Content-Type: ${contentType}`);
+        console.error(`   Response Status: ${response.status} ${response.statusText}`);
+        console.error(`   Response Text (first 1000 chars):`, text.substring(0, 1000));
+        
+        // Try to extract error message from HTML if it's a PHP error
+        const errorMatch = text.match(/<b>.*?error.*?<\/b>.*?<br.*?>(.*?)(?:<br|$)/i) || 
+                          text.match(/Fatal error:.*?in.*?on line.*?(\d+)/i) ||
+                          text.match(/Parse error:.*?in.*?on line.*?(\d+)/i);
+        
+        if (errorMatch) {
+          console.error(`   Extracted Error:`, errorMatch[0]);
+        }
+        
+        hasErrors = true;
+        allFailedCollections.push({
+          collection: collectionData.collectionName,
+          error: `Server returned non-JSON response (${contentType})`
+        });
+        continue; // Skip this collection and continue with others
+      }
       
       const data = await response.json();
       
-      console.log(`📥 Verification response for ${collectionData.collectionName}:`, {
-        success: data.success,
-        verified_collections: data.verified_collections,
-        role_granted: data.verified_collections?.[0]?.granted,
-        role_name: data.verified_collections?.[0]?.role,
-        role_id: data.verified_collections?.[0]?.role_id,
-        count: data.verified_collections?.[0]?.count
-      });
+      console.log(`📥 [BACKEND VERIFICATION] Full response for ${collectionData.collectionName}:`, data);
+      
+      if (data.verified_collections && Array.isArray(data.verified_collections)) {
+        console.log(`\n📋 [BACKEND VERIFICATION] Verified Collections Array (${data.verified_collections.length} item(s)):`);
+        data.verified_collections.forEach((vc, index) => {
+          console.log(`   📦 Collection ${index + 1}:`, {
+            collection: vc.collection,
+            collection_address: vc.collection_address,
+            role: vc.role,
+            role_id: vc.role_id,
+            count: vc.count,
+            granted: vc.granted ? '✅ YES - ROLE GRANTED' : '❌ NO - ROLE NOT GRANTED'
+          });
+          
+          if (vc.granted) {
+            console.log(`   ✅ SUCCESS: Role "${vc.role}" (ID: ${vc.role_id}) was GRANTED for ${vc.count} NFT(s) from ${vc.collection}`);
+          } else {
+            console.log(`   ⚠️ WARNING: Role "${vc.role}" (ID: ${vc.role_id}) was NOT GRANTED for ${vc.count} NFT(s) from ${vc.collection}`);
+          }
+        });
+      } else {
+        console.warn(`⚠️ [BACKEND VERIFICATION] No verified_collections array in response for ${collectionData.collectionName}`);
+      }
       
       if (data.success) {
+        console.log(`\n🔍 [BACKEND VERIFICATION] Processing successful response for ${collectionData.collectionName}`);
+        console.log(`   verified_collections array length: ${data.verified_collections?.length || 0}`);
+        console.log(`   Looking for collection with granted=true...`);
+        
         // Check which role was actually granted
         const grantedCollection = data.verified_collections?.find(c => c.granted);
+        
+        if (grantedCollection) {
+          console.log(`   ✅ Found granted collection:`, {
+            collection: grantedCollection.collection,
+            role: grantedCollection.role,
+            role_id: grantedCollection.role_id,
+            count: grantedCollection.count,
+            granted: grantedCollection.granted
+          });
+        } else {
+          console.warn(`   ⚠️ No collection with granted=true found in response`);
+          console.warn(`   Available collections:`, data.verified_collections?.map(c => ({
+            collection: c.collection,
+            role: c.role,
+            granted: c.granted
+          })));
+        }
+        
         if (grantedCollection) {
           const expectedRole = collectionData.role;
           const actualRole = grantedCollection.role;
+          const expectedRoleId = collectionData.roleId;
+          const actualRoleId = grantedCollection.role_id;
+          
+          console.log(`\n🎯 [BACKEND VERIFICATION] Role Grant Check:`);
+          console.log(`   Expected: ${expectedRole} (${expectedRoleId})`);
+          console.log(`   Actual: ${actualRole} (${actualRoleId})`);
+          console.log(`   NFTs Found: ${grantedCollection.count}`);
           
           // Verify the role matches what we expect
-          if (actualRole === expectedRole) {
-            showSuccess(`✅ NFT verification successful! Role granted: ${actualRole}`);
-            console.log(`✅ Role verification correct: Expected ${expectedRole}, Got ${actualRole}`);
+          if (actualRole === expectedRole && actualRoleId === expectedRoleId) {
+            // Add to granted roles list
+            allGrantedRoles.push({
+              role: actualRole,
+              roleId: actualRoleId,
+              collection: collectionData.collectionName,
+              count: grantedCollection.count
+            });
+            console.log(`✅ [BACKEND VERIFICATION] Role verification CORRECT: Expected ${expectedRole}, Got ${actualRole}`);
           } else {
-            showError(`⚠️ Role mismatch! Expected ${expectedRole}, but got ${actualRole}. Please contact support.`);
-            console.error(`❌ Role mismatch! Expected ${expectedRole}, but got ${actualRole}`);
+            hasErrors = true;
+            allFailedCollections.push({
+              collection: collectionData.collectionName,
+              error: `Role mismatch! Expected ${expectedRole}, but got ${actualRole}`
+            });
+            console.error(`❌ [BACKEND VERIFICATION] Role mismatch! Expected ${expectedRole} (${expectedRoleId}), but got ${actualRole} (${actualRoleId})`);
           }
         } else {
-          showError(`Verification completed but no role was granted for ${collectionData.collectionName}`);
-          console.warn(`⚠️ No role granted for ${collectionData.collectionName}`);
+          hasErrors = true;
+          allFailedCollections.push({
+            collection: collectionData.collectionName,
+            error: 'No role was granted'
+          });
+          console.warn(`⚠️ [BACKEND VERIFICATION] No role granted for ${collectionData.collectionName}`);
+          console.warn(`   Verified collections:`, data.verified_collections);
         }
       } else {
-        showError(`Verification failed for ${collectionData.collectionName}: ${data.error}`);
-        console.error(`❌ Verification failed: ${data.error}`);
+        hasErrors = true;
+        allFailedCollections.push({
+          collection: collectionData.collectionName,
+          error: data.error || 'Verification failed'
+        });
+        console.error(`❌ [BACKEND VERIFICATION] Verification failed: ${data.error}`);
       }
     }
     
-    // Refresh the page to show new roles
-    setTimeout(() => location.reload(), 2000);
+    console.log(`\n✅ [BACKEND VERIFICATION] Verification process complete`);
+    console.log(`📊 Summary: ${allGrantedRoles.length} role(s) granted, ${allFailedCollections.length} collection(s) failed`);
+    
+    // Log detailed summary of all granted roles
+    if (allGrantedRoles.length > 0) {
+      console.log(`\n🎯 [FINAL SUMMARY] Roles Granted:`);
+      allGrantedRoles.forEach((granted, index) => {
+        console.log(`   ${index + 1}. ✅ ${granted.role} (ID: ${granted.roleId})`);
+        console.log(`      Collection: ${granted.collection}`);
+        console.log(`      NFTs: ${granted.count}`);
+      });
+    } else {
+      console.warn(`\n⚠️ [FINAL SUMMARY] No roles were granted`);
+    }
+    
+    if (allFailedCollections.length > 0) {
+      console.log(`\n❌ [FINAL SUMMARY] Failed Collections:`);
+      allFailedCollections.forEach((failed, index) => {
+        console.log(`   ${index + 1}. ❌ ${failed.collection}: ${failed.error}`);
+      });
+    }
+    
+    // Display comprehensive success/error message
+    if (allGrantedRoles.length > 0) {
+      // Build success message showing all granted roles
+      let successMessage = `✅ NFT Verification Successful!\n\n`;
+      successMessage += `🎯 Discord Roles Granted:\n`;
+      
+      allGrantedRoles.forEach((granted, index) => {
+        successMessage += `   ${index + 1}. ${granted.role} (${granted.count} NFT${granted.count !== 1 ? 's' : ''} from ${granted.collection})\n`;
+      });
+      
+      successMessage += `\n✨ Your Discord roles have been updated! Check your Discord server to see your new roles.`;
+      
+      if (allFailedCollections.length > 0) {
+        successMessage += `\n\n⚠️ Note: ${allFailedCollections.length} collection(s) could not be verified.`;
+      }
+      
+      showSuccess(successMessage);
+    } else if (hasErrors) {
+      // Show error message if no roles were granted
+      let errorMessage = `❌ NFT Verification Failed\n\n`;
+      errorMessage += `The following collections could not be verified:\n`;
+      allFailedCollections.forEach((failed, index) => {
+        errorMessage += `   ${index + 1}. ${failed.collection}: ${failed.error}\n`;
+      });
+      showError(errorMessage);
+    } else {
+      showError('No roles were granted. Please ensure you own NFTs from the supported collections.');
+    }
+    
+    // Refresh the page to show new roles (only if roles were granted)
+    if (allGrantedRoles.length > 0) {
+      setTimeout(() => location.reload(), 3000);
+    }
     
   } catch (error) {
     console.error('Backend verification error:', error);
@@ -4144,14 +4358,17 @@ function showError(message) {
 function showSuccess(message) {
   // Create a temporary success message
   const successDiv = document.createElement('div');
-  successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-  successDiv.textContent = message;
+  successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-md';
+  successDiv.style.whiteSpace = 'pre-line'; // Allow newlines
+  successDiv.innerHTML = message.replace(/\n/g, '<br>'); // Convert newlines to <br> tags
   document.body.appendChild(successDiv);
   
-  // Remove after 3 seconds
+  // Remove after 5 seconds (longer for multi-line messages)
   setTimeout(() => {
-    document.body.removeChild(successDiv);
-  }, 3000);
+    if (document.body.contains(successDiv)) {
+      document.body.removeChild(successDiv);
+    }
+  }, 5000);
 }
 </script>
 

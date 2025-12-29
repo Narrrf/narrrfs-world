@@ -923,9 +923,27 @@ Profile.html is the central hub of Narrrf's World, integrating all games, system
 4. API filters by collection key or name (Narrrf/Narrrfs)
 5. Frontend displays NFTs with images and traits
 6. User clicks "Verify with Backend" button
-7. Frontend calls `verify-nft-holder.php` with wallet, signature, and collection
+7. Frontend calls `verify-nft-holder.php` with wallet, signature, and collection (for each collection separately)
 8. Backend verifies signature and grants appropriate Discord roles
-9. Frontend displays verification success and role confirmation
+9. Frontend collects all granted roles across all collections
+10. Frontend displays comprehensive success message showing ALL granted roles with NFT counts and collection names
+11. Page refreshes after 3 seconds to show updated roles in Discord
+
+**Success Message Display:**
+- **Comprehensive Multi-Role Message:** Single message displays all granted roles (Genesis + VIP)
+- **Role Details:** Shows role name, NFT count, and collection name for each granted role
+- **Format Example:**
+  ```
+  ✅ NFT Verification Successful!
+  
+  🎯 Discord Roles Granted:
+     1. 🏆 Holder (10 NFTs from Narrrfs World: Genesis Genetic)
+     2. 🎴 VIP Holder (3 NFTs from Narrrf Genesis VIP Drop)
+  
+  ✨ Your Discord roles have been updated! Check your Discord server to see your new roles.
+  ```
+- **Enhanced `showSuccess` Function:** Supports multi-line messages with proper HTML formatting
+- **Error Handling:** Tracks failed collections separately and shows partial success if some collections fail
 
 **Security Features:**
 - Cryptographic signature verification (Solana wallet signing)
@@ -933,7 +951,7 @@ Profile.html is the central hub of Narrrf's World, integrating all games, system
 - Role mapping verification (no cross-granting)
 - Audit logging of all verifications and role grants
 
-**Updated:** December 29, 2025 - Enhanced with improved Helius API integration, visual differentiation, and trait display
+**Updated:** December 29, 2025 - Enhanced with improved Helius API integration, visual differentiation, trait display, and comprehensive multi-role success message system
 
 ---
 

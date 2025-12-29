@@ -107,15 +107,35 @@ try {
                     $nftCollection = $nft['collection'] ?? $nft['collectionAddress'] ?? $nft['grouping'] ?? '';
                     $nftName = $nft['content']['metadata']['name'] ?? $nft['title'] ?? 'Unnamed NFT';
                     
-                    // Check if collection matches OR name contains "Narrrf"
-                    $matchesCollection = empty($collection) || $nftCollection === $collection || 
-                        (isset($nft['grouping']) && is_array($nft['grouping']) && 
-                         isset($nft['grouping'][0]['group_value']) && 
-                         $nft['grouping'][0]['group_value'] === $collection);
+                    // STRICT collection filtering: Only match by collection address
+                    // Check collection from multiple possible locations
+                    $actualCollection = null;
+                    if (isset($nft['grouping']) && is_array($nft['grouping'])) {
+                        foreach ($nft['grouping'] as $group) {
+                            if (isset($group['group_key']) && $group['group_key'] === 'collection') {
+                                $actualCollection = $group['group_value'] ?? null;
+                                break;
+                            }
+                        }
+                    }
+                    if (empty($actualCollection)) {
+                        $actualCollection = $nftCollection;
+                    }
                     
-                    $matchesName = $isNarrrfNFT($nftName);
+                    // CRITICAL: Only match if collection address EXACTLY matches
+                    // Do NOT use name-based matching as it causes cross-collection matches
+                    $matchesCollection = empty($collection) || 
+                        ($actualCollection && strtolower($actualCollection) === strtolower($collection));
                     
-                    if ($matchesCollection || $matchesName) {
+                    if ($matchesCollection) {
+                        error_log("✅ [get-nfts.php] Enhanced API - NFT matches collection: $nftName (Collection: $actualCollection)");
+                    } else {
+                        if (count($nfts) < 5) { // Only log first 5 to avoid spam
+                            error_log("🔍 [get-nfts.php] Enhanced API - NFT skipped: $nftName (Expected: $collection, Found: " . ($actualCollection ?? 'NULL') . ")");
+                        }
+                    }
+                    
+                    if ($matchesCollection) {
                         $formattedNft = [
                             'mint' => $nft['mint'] ?? $nft['id'] ?? '',
                             'name' => $nftName,
@@ -163,13 +183,34 @@ try {
                 if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
                     error_log("Helius Enhanced API (without collection filter) - Found " . count($data) . " total NFTs, filtering by name 'Narrrf'...");
                     
-                    // Filter by name containing "Narrrf" or "Narrrfs"
+                    // STRICT collection filtering: Filter by collection address, NOT by name
+                    // Name-based filtering causes cross-collection matches (VIP NFTs matching Genesis requests)
                     $nfts = [];
                     foreach ($data as $nft) {
                         $nftName = $nft['content']['metadata']['name'] ?? $nft['title'] ?? 'Unnamed NFT';
                         
-                        if ($isNarrrfNFT($nftName)) {
-                            $nftCollection = $nft['collection'] ?? $nft['collectionAddress'] ?? $nft['grouping'] ?? '';
+                        // Extract collection from grouping field (most reliable)
+                        $actualCollection = null;
+                        if (isset($nft['grouping']) && is_array($nft['grouping'])) {
+                            foreach ($nft['grouping'] as $group) {
+                                if (isset($group['group_key']) && $group['group_key'] === 'collection') {
+                                    $actualCollection = $group['group_value'] ?? null;
+                                    break;
+                                }
+                            }
+                        }
+                        if (empty($actualCollection)) {
+                            $actualCollection = $nft['collection'] ?? $nft['collectionAddress'] ?? null;
+                        }
+                        
+                        // CRITICAL: Only match if collection address EXACTLY matches requested collection
+                        // Do NOT use name-based matching
+                        $matchesCollection = !empty($collection) && 
+                            $actualCollection && 
+                            strtolower($actualCollection) === strtolower($collection);
+                        
+                        if ($matchesCollection) {
+                            error_log("✅ [get-nfts.php] Enhanced API (fallback) - NFT matches collection: $nftName (Collection: $actualCollection)");
                             
                             $formattedNft = [
                                 'mint' => $nft['mint'] ?? $nft['id'] ?? '',
@@ -178,15 +219,19 @@ try {
                                 'image' => $nft['content']['files'][0]['uri'] ?? $nft['content']['files'][0]['cdn_uri'] ?? '',
                                 'attributes' => $nft['content']['metadata']['attributes'] ?? [],
                                 'metadataUri' => $nft['content']['json_uri'] ?? '',
-                                'collection' => $nftCollection ?: $collection,
+                                'collection' => $actualCollection ?: $collection,
                                 'collectionAddress' => $collection
                             ];
                             
                             $nfts[] = $formattedNft;
+                        } else {
+                            if (count($nfts) < 5) { // Only log first 5 to avoid spam
+                                error_log("🔍 [get-nfts.php] Enhanced API (fallback) - NFT skipped: $nftName (Expected: $collection, Found: " . ($actualCollection ?? 'NULL') . ")");
+                            }
                         }
                     }
                     
-                    error_log("Helius Enhanced API (name filter) - Returning " . count($nfts) . " NFTs matching 'Narrrf' name");
+                    error_log("✅ [get-nfts.php] Enhanced API (fallback) - Returning " . count($nfts) . " NFTs after STRICT collection filtering");
                     
                     if (count($nfts) > 0) {
                         echo json_encode([
@@ -347,22 +392,30 @@ try {
                     }
                 }
                 
-                // Filter by collection OR name containing "Narrrf"
+                // STRICT collection filtering: Only match by collection address, NOT by name
+                // This ensures Genesis NFTs only match Genesis collection, VIP NFTs only match VIP collection
                 $matchesCollection = empty($collection) || ($collectionKey && strtolower($collectionKey) === strtolower($collection));
                 $matchesName = $isNarrrfNFT($name);
                 
                 if (!empty($collection)) {
-                    if (!$matchesCollection && !$matchesName) {
-                        // Only log first 3 mismatches to avoid spam
-                        if ($index < 3) {
-                            error_log("DEBUG: Skipping NFT #$index: $name (collection mismatch and name doesn't contain 'Narrrf'. Expected: $collection, Found: " . ($collectionKey ?? 'NULL') . ")");
+                    // CRITICAL: Only accept NFTs that match the EXACT collection address
+                    // Do NOT use name-based matching as it causes cross-collection matches
+                    if (!$matchesCollection) {
+                        // Only log first 5 mismatches to avoid spam
+                        if ($index < 5) {
+                            error_log("🔍 [get-nfts.php] Skipping NFT #$index: $name");
+                            error_log("   Expected Collection: $collection");
+                            error_log("   Found Collection Key: " . ($collectionKey ?? 'NULL'));
+                            error_log("   Matches Collection: NO");
                         }
-                        continue; // Skip this NFT - doesn't belong to requested collection and name doesn't match
+                        continue; // Skip this NFT - doesn't belong to requested collection
                     }
                     
-                    // Log if matched by name instead of collection
-                    if (!$matchesCollection && $matchesName && $index < 3) {
-                        error_log("DEBUG: NFT #$index matched by name (contains 'Narrrf'): $name");
+                    // Log successful collection match
+                    if ($index < 5) {
+                        error_log("✅ [get-nfts.php] NFT #$index matches collection: $name");
+                        error_log("   Collection Key: $collectionKey");
+                        error_log("   Requested Collection: $collection");
                     }
                 }
                 
@@ -380,7 +433,10 @@ try {
                 $nfts[] = $formattedNft;
             }
             
-            error_log("Helius getAssetsByOwner - Returning " . count($nfts) . " NFTs (ALL NFTs - NO FILTERING for debugging)");
+            error_log("✅ [get-nfts.php] getAssetsByOwner - Returning " . count($nfts) . " NFTs after STRICT collection filtering");
+            error_log("   Total assets fetched: " . count($allAssets));
+            error_log("   Requested collection: $collection");
+            error_log("   NFTs matching collection: " . count($nfts));
             
             // DEBUG: Add debug info to response
             $debugInfo = [

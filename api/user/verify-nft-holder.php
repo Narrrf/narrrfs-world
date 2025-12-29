@@ -15,17 +15,45 @@
  * - No cross-granting: VIP collection grants VIP role, Genesis collection grants Holder role
  */
 
+// Start output buffering to prevent any accidental HTML output
+ob_start();
+
+// Suppress warnings/notices from being displayed (they'll still be logged)
+// Only fatal errors will stop execution
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+// Register shutdown function to catch fatal errors and ensure JSON response
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error !== NULL && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        ob_clean();
+        header('Content-Type: application/json');
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Fatal error: ' . $error['message'],
+            'file' => basename($error['file']),
+            'line' => $error['line']
+        ]);
+        ob_end_flush();
+        exit;
+    }
+});
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    ob_end_clean();
     exit(0);
 }
 
 // Database path detection (local vs production)
-$isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+$isProduction = strpos(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '', 'narrrfs.world') !== false;
 $dbPath = $isProduction 
     ? '/var/www/html/db/narrrf_world.sqlite' 
     : __DIR__ . '/../../db/narrrf_world.sqlite';
@@ -37,12 +65,12 @@ try {
         throw new Exception('Invalid JSON input');
     }
     
-    $userId = $input['user_id'] ?? '';
-    $walletAddress = $input['wallet_address'] ?? '';
-    $collection = $input['collection'] ?? '';
-    $signature = $input['signature'] ?? '';
-    $message = $input['message'] ?? '';
-    $botToken = $input['bot_token'] ?? '';
+    $userId = isset($input['user_id']) ? $input['user_id'] : '';
+    $walletAddress = isset($input['wallet_address']) ? $input['wallet_address'] : '';
+    $collection = isset($input['collection']) ? $input['collection'] : '';
+    $signature = isset($input['signature']) ? $input['signature'] : '';
+    $message = isset($input['message']) ? $input['message'] : '';
+    $botToken = isset($input['bot_token']) ? $input['bot_token'] : '';
     
     // Check if this is a Discord bot request (bypasses signature verification)
     $isBotRequest = !empty($botToken);
@@ -154,23 +182,41 @@ try {
 
     $verifiedCollections = [];
 
+    error_log("🔍 [VERIFY-NFT-HOLDER] Starting verification for user: {$userId} (" . (isset($user['username']) ? $user['username'] : 'N/A') . ")");
+    error_log("🔍 [VERIFY-NFT-HOLDER] Wallet: {$walletAddress}");
+    error_log("🔍 [VERIFY-NFT-HOLDER] Collections to verify: " . count($collectionsToVerify));
+
     foreach ($collectionsToVerify as $collectionAddress => $info) {
+        error_log("\n🔍 [VERIFY-NFT-HOLDER] Processing collection: {$info['name']}");
+        error_log("   Collection Address: {$collectionAddress}");
+        error_log("   Expected Role: {$info['role_name']} (ID: {$info['role_id']})");
+        
         // Use the same get-nfts.php API that we fixed for proper collection matching
         // This ensures we use the same logic that works correctly on the frontend
+        error_log("   Calling fetchCollectionNFTCountViaAPI...");
         $collectionCount = fetchCollectionNFTCountViaAPI($walletAddress, $collectionAddress);
+        error_log("   ✅ NFT Count Result: {$collectionCount} NFT(s) found");
 
         $roleGranted = false;
         if ($collectionCount > 0) {
-            $roleGranted = grantDiscordRole($userId, $user['username'] ?? '', $info['role_id'], $info['role_name']);
-
-            logHolderVerification($db, $userId, $user['username'] ?? '', $walletAddress, $info['name'], $collectionCount, $roleGranted);
+            error_log("   🎯 NFTs found! Attempting to grant role: {$info['role_name']} (ID: {$info['role_id']})");
+            $roleGranted = grantDiscordRole($userId, isset($user['username']) ? $user['username'] : '', $info['role_id'], $info['role_name']);
 
             if ($roleGranted) {
-                logRoleGrant($db, $userId, $user['username'] ?? '', $info['role_id'], $info['role_name']);
+                error_log("   ✅ Role granted successfully: {$info['role_name']}");
+            } else {
+                error_log("   ❌ Role grant failed: {$info['role_name']}");
+            }
+
+            logHolderVerification($db, $userId, isset($user['username']) ? $user['username'] : '', $walletAddress, $info['name'], $collectionCount, $roleGranted);
+
+            if ($roleGranted) {
+                logRoleGrant($db, $userId, isset($user['username']) ? $user['username'] : '', $info['role_id'], $info['role_name']);
             }
         } else {
+            error_log("   ❌ No NFTs found for collection: {$info['name']}");
             // Always log verification attempts even when no NFTs were found
-            logHolderVerification($db, $userId, $user['username'] ?? '', $walletAddress, $info['name'], 0, false);
+            logHolderVerification($db, $userId, isset($user['username']) ? $user['username'] : '', $walletAddress, $info['name'], 0, false);
         }
 
         $verifiedCollections[] = [
@@ -181,21 +227,49 @@ try {
             'count' => $collectionCount,
             'granted' => $roleGranted
         ];
+        
+        error_log("   📊 Collection verification result: " . json_encode([
+            'collection' => $info['name'],
+            'count' => $collectionCount,
+            'granted' => $roleGranted ? 'YES' : 'NO'
+        ]));
     }
+    
+    error_log("\n✅ [VERIFY-NFT-HOLDER] Verification complete. Total collections verified: " . count($verifiedCollections));
 
+    ob_clean(); // Clear any output before sending JSON
     echo json_encode([
         'success' => true,
         'wallet' => $walletAddress,
         'verified_collections' => $verifiedCollections,
         'message' => 'NFT verification completed.'
     ]);
+    ob_end_flush();
+    exit;
 
 } catch (Exception $e) {
     error_log("NFT Holder Verification Error: " . $e->getMessage());
+    ob_clean(); // Clear any output before sending JSON
+    http_response_code(400);
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
     ]);
+    ob_end_flush();
+    exit;
+} catch (Error $e) {
+    // Catch fatal errors (PHP 7+)
+    error_log("NFT Holder Verification Fatal Error: " . $e->getMessage());
+    ob_clean(); // Clear any output before sending JSON
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Fatal error: ' . $e->getMessage(),
+        'file' => basename($e->getFile()),
+        'line' => $e->getLine()
+    ]);
+    ob_end_flush();
+    exit;
 }
 
 /**
@@ -205,11 +279,17 @@ try {
 function fetchCollectionNFTCountViaAPI(string $walletAddress, string $collectionAddress): int
 {
     try {
+        error_log("   🔍 [FETCH-NFT-COUNT] Calling get-nfts.php API");
+        error_log("      Wallet: {$walletAddress}");
+        error_log("      Collection: {$collectionAddress}");
+        
         // Use the same get-nfts.php API that we fixed for proper collection matching
         // This ensures consistent behavior between frontend display and role granting
-        $isProduction = strpos($_SERVER['HTTP_HOST'] ?? '', 'narrrfs.world') !== false;
+        $isProduction = strpos(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '', 'narrrfs.world') !== false;
         $apiBaseUrl = $isProduction ? 'https://narrrfs.world' : 'http://localhost';
         $apiUrl = "{$apiBaseUrl}/api/wallet/get-nfts.php?wallet=" . urlencode($walletAddress) . "&collection=" . urlencode($collectionAddress);
+        
+        error_log("      API URL: {$apiUrl}");
         
         $ch = curl_init($apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -223,37 +303,51 @@ function fetchCollectionNFTCountViaAPI(string $walletAddress, string $collection
         $curlError = curl_error($ch);
         curl_close($ch);
 
+        error_log("      HTTP Code: {$httpCode}");
+
         if ($curlError) {
+            error_log("      ❌ CURL Error: {$curlError}");
             throw new Exception('API request error: ' . $curlError);
         }
 
         if ($httpCode !== 200) {
+            error_log("      ❌ HTTP Error: {$httpCode}");
+            error_log("      Response: " . substr($response, 0, 500));
             throw new Exception("API request failed with HTTP code {$httpCode}");
         }
 
         $data = json_decode($response, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("      ❌ JSON Parse Error: " . json_last_error_msg());
             throw new Exception('Invalid JSON response from API: ' . json_last_error_msg());
         }
+
+        error_log("      ✅ API Response: " . json_encode([
+            'success' => isset($data['success']) ? $data['success'] : false,
+            'count' => isset($data['count']) ? $data['count'] : 0,
+            'has_assets' => isset($data['has_assets']) ? $data['has_assets'] : false,
+            'method' => isset($data['method']) ? $data['method'] : 'unknown',
+            'nfts_length' => isset($data['nfts']) && is_array($data['nfts']) ? count($data['nfts']) : 0
+        ]));
 
         // Use the count from the API response (already filtered by collection)
         if (isset($data['success']) && $data['success'] && isset($data['count'])) {
             $count = (int)$data['count'];
-            error_log("✅ Collection NFT count via API ({$collectionAddress}): {$count} NFTs found");
+            error_log("      ✅ Collection NFT count via API ({$collectionAddress}): {$count} NFTs found");
             return $count;
         } else {
             // Fallback: count NFTs array if count field is missing
             if (isset($data['nfts']) && is_array($data['nfts'])) {
                 $count = count($data['nfts']);
-                error_log("✅ Collection NFT count via API (fallback, {$collectionAddress}): {$count} NFTs found");
+                error_log("      ✅ Collection NFT count via API (fallback, {$collectionAddress}): {$count} NFTs found");
                 return $count;
             }
         }
 
-        error_log("⚠️ Collection NFT count via API ({$collectionAddress}): No NFTs found or API error");
+        error_log("      ⚠️ Collection NFT count via API ({$collectionAddress}): No NFTs found or API error");
         return 0;
     } catch (Exception $e) {
-        error_log("❌ Collection NFT count error via API ({$walletAddress}, {$collectionAddress}): " . $e->getMessage());
+        error_log("      ❌ Collection NFT count error via API ({$walletAddress}, {$collectionAddress}): " . $e->getMessage());
         return 0;
     }
 }
@@ -274,12 +368,20 @@ function fetchCollectionNFTCount(string $walletAddress, string $collectionAddres
 function grantDiscordRole(string $userId, string $username, string $roleId, string $roleName): bool
 {
     try {
+        error_log("   🎯 [GRANT-ROLE] Attempting to grant Discord role");
+        error_log("      User ID: {$userId}");
+        error_log("      Username: {$username}");
+        error_log("      Role: {$roleName} (ID: {$roleId})");
+        
         $discordApiUrl = 'https://narrrfs.world/api/discord/grant-role.php';
         $payload = [
             'action' => 'add_role',
             'user_id' => $userId,
             'role_id' => $roleId
         ];
+        
+        error_log("      API URL: {$discordApiUrl}");
+        error_log("      Payload: " . json_encode($payload));
 
         $ch = curl_init($discordApiUrl);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -296,24 +398,33 @@ function grantDiscordRole(string $userId, string $username, string $roleId, stri
         $curlError = curl_error($ch);
         curl_close($ch);
 
+        error_log("      HTTP Code: {$httpCode}");
+
         if ($curlError) {
+            error_log("      ❌ CURL Error: {$curlError}");
             throw new Exception('Discord role grant CURL error: ' . $curlError);
         }
 
         if ($httpCode !== 200) {
+            error_log("      ❌ HTTP Error: {$httpCode}");
+            error_log("      Response: " . substr($response, 0, 500));
             throw new Exception("Discord role grant failed with HTTP code {$httpCode}: {$response}");
         }
 
         $result = json_decode($response, true);
         $success = isset($result['success']) && $result['success'];
 
+        error_log("      API Response: " . json_encode($result));
+
         if (!$success) {
-            throw new Exception('Discord role grant failed: ' . $response);
+            error_log("      ❌ Role grant failed: " . (isset($result['error']) ? $result['error'] : 'Unknown error'));
+            throw new Exception('Discord role grant failed: ' . (isset($result['error']) ? $result['error'] : $response));
         }
 
+        error_log("      ✅ Role granted successfully!");
         return true;
     } catch (Exception $e) {
-        error_log("Failed to grant Discord role {$roleName} ({$roleId}) to {$userId} ({$username}): " . $e->getMessage());
+        error_log("      ❌ Failed to grant Discord role {$roleName} ({$roleId}) to {$userId} ({$username}): " . $e->getMessage());
         return false;
     }
 }

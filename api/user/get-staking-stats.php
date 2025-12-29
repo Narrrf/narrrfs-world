@@ -26,31 +26,50 @@ function json_response($payload, $code = 200) {
 session_start();
 $LOCAL_TEST_DISCORD_ID = '328601656659017732'; // Narrrf's Discord ID for local testing
 
-$session_user_id = $_SESSION['discord_id'] ?? '';
+$session_user_id = isset($_SESSION['discord_id']) ? $_SESSION['discord_id'] : '';
 
-// Check if user_id is provided in POST/GET (for localhost testing only)
+// Check if user_id is provided in POST/GET (for localhost testing or bot requests)
 // Also check JSON body for POST requests
 $request_user_id = '';
+$botToken = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Try POST data first
-    $request_user_id = $_POST['user_id'] ?? '';
+    $request_user_id = isset($_POST['user_id']) ? $_POST['user_id'] : '';
+    $botToken = isset($_POST['bot_token']) ? $_POST['bot_token'] : '';
     // If not in POST, try JSON body
     if (!$request_user_id) {
         $json_input = json_decode(file_get_contents('php://input'), true);
-        $request_user_id = $json_input['user_id'] ?? '';
+        $request_user_id = isset($json_input['user_id']) ? $json_input['user_id'] : '';
+        $botToken = isset($json_input['bot_token']) ? $json_input['bot_token'] : (isset($json_input['botToken']) ? $json_input['botToken'] : '');
     }
 } else {
     // GET request
-    $request_user_id = $_GET['user_id'] ?? '';
+    $request_user_id = isset($_GET['user_id']) ? $_GET['user_id'] : '';
+    $botToken = isset($_GET['bot_token']) ? $_GET['bot_token'] : '';
+}
+
+// Check if this is a Discord bot request (bypasses session requirement)
+$isBotRequest = !empty($botToken);
+$validBotToken = getenv('DISCORD_SECRET') ?: 'admin_quest_system'; // Use same token as grant-role.php
+
+if ($isBotRequest && $botToken !== $validBotToken) {
+    json_response([
+        'success' => false,
+        'error' => 'Invalid bot token for Discord bot requests'
+    ], 403);
 }
 
 // SECURITY: Determine if we're on localhost
-$isLocalhost = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || 
-               strpos($_SERVER['HTTP_HOST'] ?? '', '127.0.0.1') !== false;
+$isLocalhost = strpos(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '', 'localhost') !== false || 
+               strpos(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '', '127.0.0.1') !== false;
 
-// SECURITY FIX: Always use session user_id in production
-// Only allow request user_id override for localhost testing
-if ($isLocalhost && $request_user_id) {
+// SECURITY FIX: Use session user_id in production, allow bot/user_id override for bot requests or localhost
+if ($isBotRequest && $request_user_id) {
+    // Bot request: Use provided user_id (bot token already validated)
+    $user_id = $request_user_id;
+    error_log("🧊 Staking Stats: Bot request - Using user_id: {$user_id}");
+} elseif ($isLocalhost && $request_user_id) {
     // Local development: Allow override for testing
     $user_id = $request_user_id;
     error_log("🧊 Staking Stats: Using request user_id for localhost testing: {$user_id}");
@@ -139,15 +158,36 @@ $earnedRewardsStmt->execute([$user_id]);
 $earnedRewardsRow = $earnedRewardsStmt->fetch(PDO::FETCH_ASSOC);
 $earned_rewards = (int)($earnedRewardsRow['earned_rewards'] ?? 0);
 
+// Get ready to claim count (completed stakes with reward_paid = 0)
+$readyToClaimStmt = $pdo->prepare("
+    SELECT COUNT(*) AS ready_count 
+    FROM tbl_dspoinc_stakes 
+    WHERE user_id = ? AND status = 'completed' AND reward_paid = 0
+");
+$readyToClaimStmt->execute([$user_id]);
+$readyToClaimRow = $readyToClaimStmt->fetch(PDO::FETCH_ASSOC);
+$ready_to_claim = (int)($readyToClaimRow['ready_count'] ?? 0);
+
+// Return data in format expected by both website and Discord bot
 json_response([
     'success' => true,
+    'staking_stats' => [
+        'total_balance' => $total_balance,
+        'total_available' => $available_balance,
+        'total_staked' => $frozen_balance,
+        'active_stakes' => $active_stakes_count,
+        'ready_to_claim' => $ready_to_claim,
+        'total_rewards' => $earned_rewards,
+        'pending_rewards' => $pending_rewards
+    ],
     'data' => [
         'total_balance' => $total_balance,
         'available_balance' => $available_balance,
         'frozen_balance' => $frozen_balance,
         'active_stakes_count' => $active_stakes_count,
         'pending_rewards' => $pending_rewards,
-        'earned_rewards' => $earned_rewards
+        'earned_rewards' => $earned_rewards,
+        'ready_to_claim' => $ready_to_claim
     ]
 ]);
 
