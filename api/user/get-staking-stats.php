@@ -16,6 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../config/database.php';
 
+// Load local Discord secret config if it exists (for local development)
+$localDiscordSecretPath = __DIR__ . '/../config/discord-secret.php';
+if (file_exists($localDiscordSecretPath)) {
+    include $localDiscordSecretPath;
+}
+
 function json_response($payload, $code = 200) {
     http_response_code($code);
     echo json_encode($payload);
@@ -40,7 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Always read JSON body for POST requests (JSON takes precedence)
     // This ensures we get bot_token even if the request is JSON-encoded
-    $json_input = json_decode(file_get_contents('php://input'), true);
+    $raw_input = file_get_contents('php://input');
+    $json_input = json_decode($raw_input, true);
+    
+    // Debug: Log raw input (first 200 chars only for security)
+    error_log("🧊 Staking Stats: Raw input (first 200 chars): " . substr($raw_input, 0, 200));
+    error_log("🧊 Staking Stats: JSON decoded: " . (is_array($json_input) ? 'YES' : 'NO'));
+    
     if (is_array($json_input)) {
         // Override with JSON values if they exist (JSON takes precedence)
         if (isset($json_input['user_id'])) {
@@ -51,6 +63,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (isset($json_input['botToken'])) {
             $botToken = $json_input['botToken'];
         }
+        // Debug: Log what we extracted
+        error_log("🧊 Staking Stats: Extracted from JSON - user_id: " . ($request_user_id ?: 'EMPTY') . ", bot_token: " . (!empty($botToken) ? substr($botToken, 0, 8) . '...' : 'EMPTY'));
+    } else {
+        error_log("🧊 Staking Stats: JSON decode failed or not an array. Raw input length: " . strlen($raw_input));
     }
 } else {
     // GET request
@@ -62,18 +78,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 error_log("🧊 Staking Stats: Request extraction - Method: " . $_SERVER['REQUEST_METHOD'] . ", User ID: " . ($request_user_id ?: 'EMPTY') . ", Bot Token: " . (!empty($botToken) ? substr($botToken, 0, 8) . '...' : 'EMPTY'));
 
 // Check if this is a Discord bot request (bypasses session requirement)
-$validBotToken = getenv('DISCORD_SECRET') ?: 'admin_quest_system'; // Use same token as grant-role.php
+// Try environment variable first, then local config, then fallback
+$validBotToken = getenv('DISCORD_SECRET') ?: (isset($DISCORD_SECRET) ? $DISCORD_SECRET : 'admin_quest_system');
+
+// Trim whitespace from tokens for comparison
+$botToken = trim($botToken);
+$validBotToken = trim($validBotToken);
+
 $isBotRequest = !empty($botToken) && $botToken === $validBotToken; // Only true if token is provided AND valid
 
 // Debug logging for bot token validation (only log first few chars for security)
-error_log("🧊 Staking Stats: Bot token check - Provided: " . (!empty($botToken) ? substr($botToken, 0, 8) . '...' : 'EMPTY') . ", Expected: " . substr($validBotToken, 0, 8) . '..., Match: ' . ($isBotRequest ? 'YES' : 'NO'));
+error_log("🧊 Staking Stats: Bot token check - Provided: " . (!empty($botToken) ? substr($botToken, 0, 8) . '... (length: ' . strlen($botToken) . ')' : 'EMPTY') . ", Expected: " . substr($validBotToken, 0, 8) . '... (length: ' . strlen($validBotToken) . '), Match: ' . ($isBotRequest ? 'YES' : 'NO'));
 
 if (!empty($botToken) && !$isBotRequest) {
     // Bot token provided but invalid
     error_log("🚨 SECURITY: Invalid bot token provided for staking stats");
+    error_log("🚨 SECURITY: Token comparison failed - Provided length: " . strlen($botToken) . ", Expected length: " . strlen($validBotToken));
     json_response([
         'success' => false,
-        'error' => 'Invalid bot token for Discord bot requests'
+        'error' => 'Invalid bot token for Discord bot requests',
+        'debug' => 'Token length mismatch or invalid token. Check server logs for details.'
     ], 403);
 }
 

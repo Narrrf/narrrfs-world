@@ -85,6 +85,12 @@ public/env-example.txt
 
 # 🔑 API Keys - Local Development Only (DO NOT COMMIT)
 api/config/helius-api-key.php
+api/config/discord-secret.php
+
+# 🧪 Local Test Scripts (optional - remove from .gitignore if you want to commit them)
+test-staking-api.php
+test-staking-api.js
+TEST_STAKING_API.md
 
 # 🧪 Lab Notes and Development Documentation - Local Only
 hytopia-demo*
