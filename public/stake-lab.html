@@ -1394,25 +1394,18 @@ require_once 'discord-invite.php';
               debug_info: data.debug_info
             });
             
-            if (data.success) {
-              if (data.nfts && data.nfts.length > 0) {
+            // Check success and has_assets (same pattern as profile.html)
+            if (data.success && data.has_assets && data.count > 0) {
+              // Store full NFT data with traits (same pattern as profile.html)
+              if (data.nfts && Array.isArray(data.nfts)) {
                 console.log(`✅ Found ${data.nfts.length} NFTs from ${collectionInfo.name}`);
                 
-                // Filter out duplicates by mint address and ensure images exist
+                // Filter out duplicates by mint address
                 const existingMints = new Set(loadedNFTs.map(n => n.mint));
                 const newNFTs = data.nfts.filter(nft => {
                   const mint = nft.mint || '';
-                  // Skip if no mint, already exists, or no image
+                  // Skip if no mint or already exists
                   if (!mint || existingMints.has(mint)) {
-                    return false;
-                  }
-                  // Check for image URL in multiple possible locations
-                  const hasImage = nft.image || 
-                                   nft.content?.links?.image || 
-                                   nft.content?.files?.[0]?.uri ||
-                                   nft.content?.files?.[0]?.cdn_uri;
-                  if (!hasImage) {
-                    console.warn(`⚠️ Skipping NFT ${mint.substring(0, 8)}... - no image URL`);
                     return false;
                   }
                   existingMints.add(mint);
@@ -1430,11 +1423,14 @@ require_once 'discord-invite.php';
                 
                 loadedNFTs.push(...newNFTs);
               } else {
-                console.log(`⚠️ ${collectionInfo.name}: API returned success but no NFTs (count: ${data.count || 0})`);
+                console.log(`⚠️ ${collectionInfo.name}: API returned success but no NFTs array (count: ${data.count || 0})`);
               }
             } else {
-              console.warn(`⚠️ API returned error for ${collectionInfo.name}:`, data.error || 'Unknown error');
-              console.warn(`⚠️ Full error response:`, data);
+              if (!data.success) {
+                console.warn(`⚠️ API returned error for ${collectionInfo.name}:`, data.error || 'Unknown error');
+              } else if (!data.has_assets || data.count === 0) {
+                console.log(`ℹ️ ${collectionInfo.name}: No NFTs found in this collection (count: ${data.count || 0})`);
+              }
             }
           } catch (error) {
             console.error(`❌ Error fetching NFTs for ${collectionInfo.name}:`, error);

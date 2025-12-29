@@ -27,6 +27,22 @@ try {
     // Try multiple ways to read the environment variable
     $heliusApiKey = getenv('HELIUS_API_KEY') ?: $_ENV['HELIUS_API_KEY'] ?? $_SERVER['HELIUS_API_KEY'] ?? '';
     
+    // LOCAL DEVELOPMENT: Check for local config file (only on localhost)
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    $isLocalhost = (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false);
+    
+    if (empty($heliusApiKey) && $isLocalhost) {
+        // Try api/config/helius-api-key.php (relative to this file)
+        $localConfigPath = __DIR__ . '/../config/helius-api-key.php';
+        if (file_exists($localConfigPath)) {
+            include $localConfigPath;
+            if (isset($HELIUS_API_KEY) && $HELIUS_API_KEY !== 'YOUR_HELIUS_API_KEY_HERE' && !empty($HELIUS_API_KEY)) {
+                $heliusApiKey = $HELIUS_API_KEY;
+                error_log("✅ [get-nfts.php] Helius API key loaded from local config file");
+            }
+        }
+    }
+    
     if (!$heliusApiKey || $heliusApiKey === 'your_helius_api_key_here' || $heliusApiKey === '') {
         // Return a graceful error instead of 500
         error_log("Helius API key not configured for NFT verification - Key length: " . strlen($heliusApiKey));
@@ -208,7 +224,28 @@ try {
                 error_log("DEBUG Collection Check: Expected '$collection', Found '$nftCollection', Match: " . ($nftCollection === $collection ? 'YES' : 'NO'));
                 
                 if ($nftCollection === $collection) {
-                    $nfts[] = $nft;
+                    // Extract and format NFT data for display
+                    $formattedNft = [
+                        'mint' => $nft['mint'] ?? '',
+                        'name' => $nft['content']['metadata']['name'] ?? $nft['name'] ?? 'Unnamed NFT',
+                        'description' => $nft['content']['metadata']['description'] ?? $nft['description'] ?? '',
+                        // Extract image URL from multiple possible locations
+                        'image' => $nft['content']['links']['image'] ?? 
+                                  $nft['content']['files'][0]['uri'] ?? 
+                                  $nft['content']['files'][0]['cdn_uri'] ?? 
+                                  $nft['image'] ?? 
+                                  '',
+                        // Extract attributes/traits
+                        'attributes' => $nft['content']['metadata']['attributes'] ?? 
+                                      $nft['attributes'] ?? 
+                                      $nft['content']['metadata']['properties']['attributes'] ?? 
+                                      [],
+                        // Keep original data for reference
+                        'content' => $nft['content'] ?? null,
+                        'collection' => $nftCollection,
+                        'collectionAddress' => $collection
+                    ];
+                    $nfts[] = $formattedNft;
                 }
             }
         }
