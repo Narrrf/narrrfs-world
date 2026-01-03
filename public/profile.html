@@ -5041,6 +5041,14 @@ async function purchaseProfileStoreItem(defKey) {
     return;
   }
 
+  // 🛒 CONFIRMATION DIALOG: Ask user to confirm purchase
+  const priceText = `${formatProfileStoreNumber(item.price)} DSPOINC`;
+  const confirmMessage = `Are you sure you want to purchase "${def.title}" for ${priceText}?`;
+  
+  if (!confirm(confirmMessage)) {
+    return; // User cancelled
+  }
+
   const button = document.querySelector(`[data-profile-store-button="${defKey}"]`);
   if (button) {
     button.disabled = true;

@@ -1310,11 +1310,11 @@ function initSnake() {
     
     notification.innerHTML = `
       <div id="boss-spawn-content" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                  background: linear-gradient(45deg, rgba(148, 0, 211, 0.85), rgba(255, 215, 0, 0.85), rgba(148, 0, 211, 0.85)); 
+                  background: linear-gradient(45deg, rgba(148, 0, 211, 0.4), rgba(255, 215, 0, 0.4), rgba(148, 0, 211, 0.4)); 
                   color: white; padding: 20px 30px; border-radius: 20px; font-weight: bold; 
-                  z-index: 10000; text-align: center; box-shadow: 0 0 50px rgba(255, 215, 0, 0.7);
+                  z-index: 10000; text-align: center; box-shadow: 0 0 50px rgba(255, 215, 0, 0.4);
                   animation: bossSpawnPulse 0.5s ease-in-out infinite alternate;
-                  border: 4px solid rgba(255, 215, 0, 0.9);
+                  border: 4px solid rgba(255, 215, 0, 0.6);
                   backdrop-filter: blur(5px);
                   transition: opacity 0.3s ease-in-out;
                   opacity: 0;
@@ -1427,10 +1427,10 @@ function initSnake() {
     
     notification.innerHTML = `
       <div id="boss-victory-content" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                  background: linear-gradient(45deg, rgba(16, 185, 129, 0.85), rgba(5, 150, 105, 0.85), rgba(16, 185, 129, 0.85)); 
+                  background: linear-gradient(45deg, rgba(16, 185, 129, 0.4), rgba(5, 150, 105, 0.4), rgba(16, 185, 129, 0.4)); 
                   color: white; padding: 20px 30px; border-radius: 20px; font-weight: bold; 
-                  z-index: 10000; text-align: center; box-shadow: 0 0 50px rgba(16, 185, 129, 0.7);
-                  border: 4px solid rgba(255, 215, 0, 0.9);
+                  z-index: 10000; text-align: center; box-shadow: 0 0 50px rgba(16, 185, 129, 0.4);
+                  border: 4px solid rgba(255, 215, 0, 0.6);
                   backdrop-filter: blur(5px);
                   transition: opacity 0.3s ease-in-out;
                   opacity: 0;
@@ -1628,6 +1628,9 @@ function initSnake() {
     updateBossHUD();
     
     // 🐍 BOSS BATTLE INDICATOR (Bottom of screen - still on canvas)
+    // 🐛 TRANSPARENCY FIX: Make boss battle text more transparent to not block player view
+    ctx.save(); // Save current context state
+    ctx.globalAlpha = 0.5; // Make text 50% transparent (was 100% opaque)
     ctx.shadowBlur = 10;
     ctx.shadowColor = giantSnakeBoss.color;
     ctx.fillStyle = giantSnakeBoss.color;
@@ -1636,6 +1639,7 @@ function initSnake() {
     const isBabyBoss = giantSnakeBoss.bossNumber === 1;
     const battleText = isBabyBoss ? '🍼 BABY BOSS BATTLE 🍼' : `🐍 BOSS ${giantSnakeBoss.bossNumber} BATTLE 🐍`;
     ctx.fillText(battleText, canvas.width / 2, canvas.height - 10);
+    ctx.restore(); // Restore context state (resets globalAlpha)
     ctx.shadowBlur = 0;
     ctx.textAlign = 'left'; // Reset
   }

@@ -1162,6 +1162,19 @@
       return;
     }
 
+    const def = SNAKE_STORE_DEFS[defKey];
+    if (!def) {
+      return;
+    }
+
+    // 🛒 CONFIRMATION DIALOG: Ask user to confirm purchase
+    const priceText = `${formatSnakeStoreNumber(item.price)} DSPOINC`;
+    const confirmMessage = `Are you sure you want to purchase "${def.title}" for ${priceText}?`;
+    
+    if (!confirm(confirmMessage)) {
+      return; // User cancelled
+    }
+
     const button = document.querySelector(`[data-snake-store-button="${defKey}"]`);
     if (button) {
       button.disabled = true;
