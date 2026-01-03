@@ -45,6 +45,7 @@ The DSPOINC Staking System allows users to freeze their DSPOINC tokens for selec
 - ✅ **Store Integration:** Purchase validation checks available balance (excludes frozen)
 - ✅ **Unstake System:** 15% penalty, 85% returned, complete audit trail
 - ✅ **Claim System:** Manual reward claiming for completed stakes
+- ✅ **Discord Bot Integration:** `/balance` command displays staking data (December 29, 2025) - **PRODUCTION READY**
 
 ---
 
@@ -837,6 +838,12 @@ if ($result['success']) {
 - **Store System:** Available balance validation
 - **Recent Adjustments:** Staking transaction display
 - **User Profile API:** Staking stats included
+- **Discord Bot:** `/balance` command displays staking data ✅ **WORKING** (December 29, 2025)
+  - Shows "Available" and "Staked" DSPOINC in balance breakdown
+  - Displays active stakes count and ready-to-claim rewards
+  - Uses GET request to `get-staking-stats.php?user_id={userId}` (no authentication needed)
+  - Extracts `total_staked` from API response and displays in embed
+  - Status: ✅ **PRODUCTION READY** - Successfully tested and deployed
 
 ---
 

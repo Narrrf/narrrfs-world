@@ -322,5 +322,35 @@ ORDER BY completed_at DESC;
 
 ---
 
-_Maintained by Narrrf's Lab Tech Council — last updated 2025-11-26 (Database Documentation Added)._
+---
+
+## 🎁 **TREASURE CHESTS (December 30, 2025)**
+
+### **Chest System Integration:**
+Level 2 includes treasure chests that players can discover and open for DSPOINC rewards:
+
+- **chest_004:** Position X: 22.8, Y: 1, Z: 589 - **150 DSPOINC reward**
+- **chest_005:** Position X: 9.72, Y: 1, Z: 648 - **200 DSPOINC reward**
+
+### **Chest Features:**
+- ✅ **Visible and Working** - Chests properly positioned at ground level (Y: 1.0)
+- ✅ **Interaction System** - Press [E] to open when nearby
+- ✅ **Rewards** - DSPOINC rewards awarded via API integration
+- ✅ **Persistence** - Opened chests saved to database, cannot be opened twice
+- ✅ **Visual Effects** - Sparkling particles and glow on opening
+- ✅ **Sound Effects** - Opening sound plays when chest opens
+- ✅ **Grass Exclusion** - No grass renders under chests (automatic exclusion zone registration)
+
+### **Technical Notes:**
+- Chests created via `createLevel2Chests()` function in `main.js`
+- Uses standardized `chest2` model (has animation support)
+- Fixed bounding box Y position calculation bug (December 30, 2025) - handles models with unusual origin offsets
+- Chests automatically register with grass exclusion zone system
+- All chests follow Level 1 chest pattern for consistency
+
+**Last Updated:** December 30, 2025 - Chests 4 and 5 implemented and verified working
+
+---
+
+_Maintained by Narrrf's Lab Tech Council — last updated 2025-12-30 (Treasure Chests Added)._
 

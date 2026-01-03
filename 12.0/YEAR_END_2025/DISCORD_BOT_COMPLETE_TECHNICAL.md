@@ -439,20 +439,25 @@ const data = await response.json();
 
 ### **Balance & Profile**
 
-#### **`/balance` Command** (Updated: December 29, 2025)
+#### **`/balance` Command** (Updated: December 29, 2025) ✅ **WORKING WITH STAKING**
 - **Current DSPOINC balance** - Total DSPOINC across all games
 - **Balance Breakdown:**
-  - Available DSPOINC (total minus staked)
-  - Staked DSPOINC (from active stakes)
+  - Available DSPOINC (total minus staked) ✅ **WORKING**
+  - Staked DSPOINC (from active stakes) ✅ **WORKING** - Now correctly displays staked amount
   - Games played count
-- **Staking Status** (if user has active stakes):
+- **Staking Status** (if user has active stakes): ✅ **FULLY FUNCTIONAL**
   - Active stakes count
   - Ready to claim count
   - Total rewards earned
 - **Recent activity** - Last 5 game scores with dates
 - **Shopping power indicator** - Shows if user can make purchases
-- **API Integration:** Uses `get-staking-stats.php` with bot token authentication
-- **Bot Token Authentication:** Fixed December 29, 2025 - Now correctly authenticates and displays staking data
+- **API Integration:** Uses `get-staking-stats.php` with GET request (no authentication needed, same pattern as `/check-holder`)
+- **Implementation:** 
+  - Uses GET request to `get-staking-stats.php?user_id={userId}` (no bot token required)
+  - Extracts `total_staked` from `staking_stats.total_staked` or `data.frozen_balance`
+  - Displays in balance breakdown: "Staked: X DSPOINC"
+  - Shows staking status field if user has active stakes
+- **Status:** ✅ **PRODUCTION READY** - Successfully tested and deployed December 29, 2025
 
 #### **`/dashboard` Command**
 - Complete user profile

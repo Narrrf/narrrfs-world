@@ -1,7 +1,7 @@
 # 🎁 Hytopia Chest System Implementation Rules
 
-**Last Updated:** December 15, 2025  
-**Status:** ✅ **PRODUCTION READY - STANDARDIZED - COLLISION & PERSISTENCE WORKING**
+**Last Updated:** December 30, 2025  
+**Status:** ✅ **PRODUCTION READY - STANDARDIZED - COLLISION & PERSISTENCE WORKING - MULTI-LEVEL SUPPORT**
 
 ---
 
@@ -60,9 +60,16 @@ chestSystem.addChest(LEVEL_IDS.LEVEL1, {
 - Example: `spawnX - 5, spawnZ + 10`
 
 **Y Coordinate:**
-- **ALWAYS use `1.0`** (matches bear trap Y position)
-- This ensures chests sit correctly on the ground
-- Example: `new THREE.Vector3(x, 1.0, z)`
+- **Level 1, 2:** Use `1.0` (standard ground level, matches bear trap Y position)
+- **Level 3:** Use `spawnY` (spawn position Y from level3Config.spawnPosition.y - same approach as Level 5)
+- **Level 4, 6:** Use `0.0` (Level 4/6 ground is at Y: 0, floor at Y: 0)
+- **Level 5:** Use `spawnY` (dynamic ground detection via raycast - chest Y uses spawn position Y (level5State.spawnPosition.y))
+- This ensures chests sit correctly on the ground for each level
+- Example Level 1/2: `new THREE.Vector3(x, 1.0, z)`
+- Example Level 3: `new THREE.Vector3(x, spawnY, z)` where `spawnY = level3Config.spawnPosition.y`
+- Example Level 4/6: `new THREE.Vector3(x, 0.0, z)`
+- Example Level 5: `new THREE.Vector3(x, spawnY, z)` where `spawnY = level5State.spawnPosition.y`
+- **Note:** Level 3 now uses spawn position Y (same approach as Level 5) - uses level3Config.spawnPosition.y
 
 ### **Step 3: Chest ID Naming Convention**
 
@@ -105,6 +112,31 @@ chestSystem.addChest(LEVEL_IDS.LEVEL1, {
 - `'CHEESE_TEMPLE_LEVEL1'`
 - `'CHEESE_TEMPLE_LEVEL2'`
 - `'CHEESE_TEMPLE_LEVEL3'`
+
+### **Step 6: Current Chest Inventory (December 30, 2025)**
+
+**Level 1 Chests:**
+- chest_001: X: 10, Y: 1, Z: 10 - 100 DSPOINC
+- chest_002: X: 20, Y: 1, Z: 20 - 120 DSPOINC
+- chest_003: X: 30, Y: 1, Z: 30 - 150 DSPOINC (elevated)
+
+**Level 2 Chests:**
+- chest_004: X: 22.8, Y: 1, Z: 589 - 150 DSPOINC
+- chest_005: X: 9.72, Y: 1, Z: 648 - 200 DSPOINC
+
+**Level 3 Chests:**
+- chest_006: X: 77, Y: spawnY (spawn position Y), Z: 724 - 180 DSPOINC (Note: Level 3 uses spawn position Y, same approach as Level 5)
+- chest_007: X: 55, Y: spawnY (spawn position Y), Z: 805 - 200 DSPOINC (Note: Level 3 uses spawn position Y, same approach as Level 5)
+
+**Level 4 Chests:**
+- chest_008: X: 75, Y: 0, Z: 923 - 220 DSPOINC (Note: Level 4 uses Y: 0.0, not Y: 1.0)
+- chest_009: X: 54, Y: 0, Z: 1050 - 250 DSPOINC (Note: Level 4 uses Y: 0.0, not Y: 1.0)
+
+**Level 5 Chests:**
+- chest_010: X: 33, Y: 1, Z: -41 - 280 DSPOINC (Note: Level 5 uses dynamic ground detection via raycast, chest Y uses spawn position Y)
+
+**Level 6 Chests:**
+- chest_011: X: 79, Y: 0, Z: -98 - 300 DSPOINC (Note: Level 6 uses Y: 0.0, same as Level 3/4)
 
 ---
 
@@ -324,16 +356,22 @@ Players cannot walk through chests - collision detection prevents it:
 
 ### **✅ DO:**
 - ✅ Always use `type: 'chest2'` (standardized, has animation)
-- ✅ Always use `Y position: 1.0` (matches bear trap)
+- ✅ Always use correct Y position for level:
+  - Level 1, 2: `Y position: 1.0` (standard ground level)
+  - Level 3: `Y position: spawnY` (use level3Config.spawnPosition.y - same approach as Level 5)
+  - Level 4, 6: `Y position: 0.0` (Level 4/6 ground level, floor at Y: 0)
+  - Level 5: `Y position: spawnY` (use level5State.spawnPosition.y - dynamic ground detection)
 - ✅ Always use unique chest IDs (chest_001, chest_002, etc.)
 - ✅ Always use correct levelId format (CHEESE_TEMPLE_LEVELX)
 - ✅ Use sequential numbering for chest IDs
 - ✅ Test chest opening animation works
 - ✅ Verify closed state is hidden after opening
+- ✅ Check level's ground height before positioning chests
 
 ### **❌ DON'T:**
 - ❌ Don't use `type: 'chest1'` (deprecated, auto-converts to chest2)
-- ❌ Don't use Y position other than 1.0 (will be underground or floating)
+- ❌ Don't use wrong Y position for level (Level 1/2 use 1.0, Level 3 uses spawnY, Level 4/6 use 0.0, Level 5 uses spawnY)
+- ❌ Don't assume all levels use Y: 1.0 (Level 3 uses spawnY, Level 4/6 use Y: 0.0, Level 5 uses dynamic detection)
 - ❌ Don't use duplicate chest IDs (will cause conflicts)
 - ❌ Don't forget to set levelId (required for API)
 - ❌ Don't skip testing (verify animation and state switching)
@@ -468,12 +506,24 @@ await chestSystem.loadOpenedChests(discordId, API_BASE_URL);
 When creating hundreds of chests:
 
 1. **Use consistent naming:** chest_001, chest_002, chest_003, etc.
-2. **Use consistent Y position:** Always 1.0
+2. **Use consistent Y position:** 
+   - Level 1 & 2: Always 1.0
+   - Level 3: Always 0.0 (ground level differs)
+   - Check level's ground height before positioning
 3. **Use consistent type:** Always 'chest2'
 4. **Use consistent levelId format:** CHEESE_TEMPLE_LEVELX
 5. **Test each chest:** Verify animation and state switching work
 6. **Document positions:** Keep track of where chests are placed
 7. **Balance rewards:** Vary reward amounts based on difficulty
+
+### **Level-Specific Ground Heights (December 30, 2025):**
+- **Level 1:** Y: 1.0 (standard ground level)
+- **Level 2:** Y: 1.0 (standard ground level)
+- **Level 3:** spawnY (spawn position Y from level3Config.spawnPosition.y - same approach as Level 5)
+- **Level 4:** Y: 0.0 (floor at Y: 0 - use 0.0 for chests)
+- **Level 5:** Dynamic ground detection via raycast (chest Y uses spawn position Y from level5State.spawnPosition.y)
+- **Level 6:** Y: 0.0 (ground plane at Y: 0 - use 0.0 for chests)
+- **Level 7+:** Check level configuration for ground height
 
 ---
 

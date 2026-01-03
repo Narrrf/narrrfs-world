@@ -80,7 +80,7 @@ try {
     // 🔍 Automatically detect current season from tbl_seasons table (where is_active = 1)
     $seasonDetectStmt = $db->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY start_date DESC LIMIT 1");
     $seasonDetectStmt->execute();
-    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'Season 5'; // Fallback to Season 5
+    $currentSeason = $seasonDetectStmt->fetchColumn() ?: 'Season 7'; // Fallback to Season 7
     
     error_log("🔍 Current season detected: $currentSeason");
 

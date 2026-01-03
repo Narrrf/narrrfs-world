@@ -42,7 +42,7 @@ try {
     $stmt = $pdo->prepare("SELECT season_name FROM tbl_seasons WHERE is_active = 1 ORDER BY season_id DESC LIMIT 1");
     $stmt->execute();
     $current_season_result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $current_season = $current_season_result['season_name'] ?? 'Season 5';
+    $current_season = $current_season_result['season_name'] ?? 'Season 7';
 
     // Determine which season to show
     if ($season === 'current') {

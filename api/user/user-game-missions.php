@@ -146,7 +146,7 @@ try {
     }
 
     // Get current active season from database
-    $currentSeason = 'Season 5'; // Default fallback
+    $currentSeason = 'Season 7'; // Default fallback
     $currentSeasonStart = null;
     $currentSeasonEnd = null;
     try {
@@ -163,8 +163,16 @@ try {
     }
 
     if (!$currentSeasonStart) {
-        // Fallback: assume current season started 30 days ago to keep stats reasonable
-        $currentSeasonStart = date('Y-m-d H:i:s', strtotime('-30 days'));
+        // Fallback: assume current season started today (should not happen if database is correct)
+        $currentSeasonStart = date('Y-m-d 00:00:00');
+    }
+    
+    // Ensure we're using the exact start time (00:00:00) for strict filtering
+    // This prevents including data from the same day but before the season officially started
+    if ($currentSeasonStart && strpos($currentSeasonStart, ' ') !== false) {
+        // Extract just the date part and set to 00:00:00 to ensure strict filtering
+        $datePart = explode(' ', $currentSeasonStart)[0];
+        $currentSeasonStart = $datePart . ' 00:00:00';
     }
 
     // Initialize response data structure
@@ -259,18 +267,8 @@ try {
         }
         
         if (!$tetrisData || (int)$tetrisData['total_games'] === 0) {
-            error_log("⚠️ TETRIS: No Season $currentSeason data for $discordId, loading all-time totals");
-            $fallbackStmt = $db->prepare("
-                SELECT 
-                    COUNT(*) as total_games,
-                    MAX(score) as best_score,
-                    SUM(score) as total_score,
-                    MAX(timestamp) as last_played
-                FROM tbl_tetris_scores 
-                WHERE discord_id = ? AND game = 'tetris'
-            ");
-            $fallbackStmt->execute([$discordId]);
-            $tetrisData = $fallbackStmt->fetch(PDO::FETCH_ASSOC);
+            error_log("⚠️ TETRIS: No Season $currentSeason data for $discordId, showing 0 (current season only)");
+            $tetrisData = null; // Don't fallback to all-time for current season stats
         }
         
         if ($tetrisData && (int)$tetrisData['total_games'] > 0) {
@@ -321,20 +319,10 @@ try {
                 break;
             }
         }
-
+        
         if (!$snakeData || (int)$snakeData['total_games'] === 0) {
-            error_log("⚠️ SNAKE: No Season $currentSeason data for $discordId, loading all-time totals");
-            $fallbackStmt = $db->prepare("
-                SELECT 
-                    COUNT(*) as total_games,
-                    MAX(score) as best_score,
-                    SUM(score) as total_score,
-                    MAX(timestamp) as last_played
-                FROM tbl_tetris_scores 
-                WHERE discord_id = ? AND game = 'snake'
-            ");
-            $fallbackStmt->execute([$discordId]);
-            $snakeData = $fallbackStmt->fetch(PDO::FETCH_ASSOC);
+            error_log("⚠️ SNAKE: No Season $currentSeason data for $discordId, showing 0 (current season only)");
+            $snakeData = null; // Don't fallback to all-time for current season stats
         }
         
         if ($snakeData && (int)$snakeData['total_games'] > 0) {
@@ -387,18 +375,8 @@ try {
         }
         
         if (!$spaceData || (int)$spaceData['total_games'] === 0) {
-            error_log("⚠️ SPACE INVADERS: No Season $currentSeason data for $discordId, loading all-time totals");
-            $fallbackStmt = $db->prepare("
-                SELECT 
-                    COUNT(*) as total_games,
-                    MAX(score) as best_score,
-                    SUM(score) as total_score,
-                    MAX(timestamp) as last_played
-                FROM tbl_tetris_scores 
-                WHERE discord_id = ? AND game = 'space_invaders'
-            ");
-            $fallbackStmt->execute([$discordId]);
-            $spaceData = $fallbackStmt->fetch(PDO::FETCH_ASSOC);
+            error_log("⚠️ SPACE INVADERS: No Season $currentSeason data for $discordId, showing 0 (current season only)");
+            $spaceData = null; // Don't fallback to all-time for current season stats
         }
         
         if ($spaceData && (int)$spaceData['total_games'] > 0) {
@@ -492,6 +470,7 @@ try {
         ];
 
         foreach ($raceSeasonFilters as $filter) {
+            // Only match by season column - NO timestamp fallback for current season stats
             $stmt = $db->prepare("
                 SELECT 
                     COUNT(*) as total_races,
@@ -502,20 +481,11 @@ try {
                     SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
                 FROM tbl_race_participants 
                 WHERE user_id = ?
-                AND (
-                    " . $filter['condition'] . "
-                    OR (
-                        COALESCE(joined_at, start_time, updated_at, finished_at) >= ?
-                        AND (? IS NULL OR COALESCE(joined_at, start_time, updated_at, finished_at) < ?)
-                    )
-                )
+                AND " . $filter['condition'] . "
             ");
             $stmt->execute([
                 $discordId,
-                $currentSeason,
-                $currentSeasonStart,
-                $currentSeasonEnd,
-                $currentSeasonEnd
+                $currentSeason
             ]);
             $raceData = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -569,7 +539,14 @@ try {
         // Query for Cheese Rumble stats - try season first, then fallback to all-time
         $rumbleData = null;
         
-        // Try current season first
+        // Try current season first - use timestamp filtering but ONLY for Season 7 range
+        // Cheese Rumbles don't have season column, so we use timestamp filtering
+        // CRITICAL: Only include rumbles created AFTER Season 7 officially started
+        // EXCLUDE data from the season start date itself (2026-01-02) - only count data from next day onwards
+        // This ensures we don't count data created on the same day as season start (before reset was executed)
+        $seasonStartDate = explode(' ', $currentSeasonStart)[0]; // Get just the date part (2026-01-02)
+        $seasonStartNextDay = date('Y-m-d 00:00:00', strtotime($seasonStartDate . ' +1 day')); // Next day (2026-01-03 00:00:00)
+        
         $stmt = $db->prepare("
             SELECT 
                 COUNT(*) as total_rumbles,
@@ -581,34 +558,20 @@ try {
             FROM tbl_rumble_participants rp
             JOIN tbl_cheese_rumbles cr ON rp.rumble_id = cr.rumble_id
             WHERE rp.user_id = ?
-            AND (
-                cr.created_at >= ? 
-                AND cr.created_at < ?
-            )
+            AND datetime(replace(replace(cr.created_at, 'T', ' '), 'Z', '')) >= datetime(?)
+            AND datetime(replace(replace(cr.created_at, 'T', ' '), 'Z', '')) < datetime(?)
         ");
         $stmt->execute([
             $discordId,
-            $currentSeasonStart,
+            $seasonStartNextDay, // Start from next day after season start
             $currentSeasonEnd
         ]);
         $rumbleData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Fallback to all-time if no season data
+        // Don't fallback to all-time for current season stats - show 0 if no season data
         if (!$rumbleData || (int)$rumbleData['total_rumbles'] === 0) {
-            error_log("ℹ️ CHEESE RUMBLE: No Season $currentSeason data for $discordId, loading all-time totals");
-            $fallbackStmt = $db->prepare("
-                SELECT 
-                    COUNT(*) as total_rumbles,
-                    COUNT(CASE WHEN status = 'winner' OR final_position = 1 THEN 1 END) as wins,
-                    COUNT(CASE WHEN final_position <= 3 AND final_position IS NOT NULL THEN 1 END) as podiums,
-                    MIN(final_position) as best_position,
-                    SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned,
-                    MAX(COALESCE(joined_at, updated_at)) as last_played
-                FROM tbl_rumble_participants 
-                WHERE user_id = ?
-            ");
-            $fallbackStmt->execute([$discordId]);
-            $rumbleData = $fallbackStmt->fetch(PDO::FETCH_ASSOC);
+            error_log("ℹ️ CHEESE RUMBLE: No Season $currentSeason data for $discordId, showing 0 (current season only)");
+            $rumbleData = null; // Don't fallback to all-time for current season stats
         }
         
         if ($rumbleData && (int)$rumbleData['total_rumbles'] > 0) {

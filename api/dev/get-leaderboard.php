@@ -18,7 +18,7 @@ try {
         LIMIT 1
     ");
     $seasonStmt->execute();
-    $currentSeason = $seasonStmt->fetchColumn() ?: 'Season 6'; // Fallback to Season 6
+    $currentSeason = $seasonStmt->fetchColumn() ?: 'Season 7'; // Fallback to Season 7
     
     // 🔍 Get the previous season (for frozen leaderboard fallback)
     $prevSeasonStmt = $db->prepare("
@@ -29,7 +29,7 @@ try {
         LIMIT 1
     ");
     $prevSeasonStmt->execute();
-    $previousSeason = $prevSeasonStmt->fetchColumn() ?: 'Season 5'; // Fallback to Season 5
+    $previousSeason = $prevSeasonStmt->fetchColumn() ?: 'Season 6'; // Fallback to Season 6
     
     // Log for debugging
     error_log("Current season: $currentSeason, Previous season: $previousSeason");
