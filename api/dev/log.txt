@@ -2812,3 +2812,10 @@
     "discord_name": "narrrf",
     "game": "snake"
 }
+{
+    "wallet": "328601656659017732",
+    "score": 4,
+    "discord_id": "328601656659017732",
+    "discord_name": "narrrf",
+    "game": "tetris"
+}

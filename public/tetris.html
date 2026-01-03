@@ -51,7 +51,7 @@
       animation: fade-in 0.3s ease-out;
     }
     
-    /* 🚀 ROLE-BASED TETRIS THEMES - Season 6 Feature */
+    /* 🚀 ROLE-BASED TETRIS THEMES - Season 7 Feature */
     #tetris-canvas.golden {
       box-shadow: 0 0 30px rgba(255, 215, 0, 0.8) !important;
       border: 4px solid #FFD700 !important;
@@ -122,18 +122,34 @@
     }
     
     /* 🐛 BUG #322 FIX: Boss HUD responsive styles (matching Snake) */
+    /* 🐛 BUG #401 FIX: Boss HUD positioned absolutely - doesn't affect canvas layout */
     #tetris-boss-hud-container {
       animation: fadeInDown 0.3s ease-out;
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 120px; /* 🐛 BUG #401 FIX: Extra space to clear "Next Block" preview (80px canvas + 40px spacing) */
+      z-index: 10;  /* Above canvas, but below buttons */
+    }
+    
+    /* 🐛 BUG #401 FIX: Game control buttons always visible above boss HUD */
+    #start-tetris-btn,
+    #pause-tetris-btn {
+      position: relative;
+      z-index: 20;  /* Higher than boss HUD (z-index: 10) */
     }
     
     @keyframes fadeInDown {
       from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateX(-50%) translateY(-10px);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(-50%) translateY(0);
       }
     }
     
@@ -150,6 +166,7 @@
       
       #tetris-boss-hp-bar {
         padding: 8px 10px;
+        font-size: 0.85em;
       }
       
       #tetris-boss-name,
@@ -162,9 +179,22 @@
       }
     }
     
+    /* Desktop boss HUD */
+    @media (min-width: 769px) {
+      #tetris-boss-hud-container {
+        max-width: 400px;
+      }
+    }
+    
     /* Ensure HUD is always visible and properly styled */
     #tetris-boss-hud-container:not(.hidden) {
       display: block;
+      pointer-events: auto; /* Allow interaction when visible */
+    }
+    
+    /* 🐛 BUG #401 FIX: Prevent boss HUD from blocking input when hidden */
+    #tetris-boss-hud-container.hidden {
+      pointer-events: none; /* Don't block input when hidden */
     }
 
   </style>
@@ -188,16 +218,16 @@
   </div>
 </header>
 
-<!-- 🎉 SEASON 6 NOW LIVE BANNER -->
+<!-- 🎉 SEASON 7 RUNNING BANNER -->
 <div class="max-w-6xl w-full mx-auto px-4 mt-6">
-  <div class="bg-gradient-to-r from-green-600 via-blue-600 to-purple-500 text-white py-3 px-6 rounded-xl shadow-2xl border-2 border-yellow-400/50 animate-pulse">
+  <div class="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-500 text-white py-3 px-6 rounded-xl shadow-2xl border-2 border-green-400/50 animate-pulse">
     <div class="flex items-center justify-center space-x-3">
-      <span class="text-2xl">🏆</span>
+      <span class="text-2xl">🎮</span>
       <div class="text-center">
-        <p class="font-bold text-lg tracking-wide">🎉 SEASON 6 NOW LIVE! 🚀</p>
-        <p class="text-xs text-yellow-200">9-Boss System • Giant Blocks • Frozen Blocks • Fresh Leaderboards!</p>
+        <p class="font-bold text-lg tracking-wide">🎮 SEASON 7 RUNNING! 🎮</p>
+        <p class="text-xs text-yellow-200">9-Boss System • Giant Blocks • Frozen Blocks • Active Leaderboards!</p>
       </div>
-      <span class="text-2xl">🏆</span>
+      <span class="text-2xl">🎮</span>
     </div>
   </div>
 </div>
@@ -225,10 +255,10 @@
 
     <h2 class="text-center text-3xl font-extrabold mb-4 text-yellow-100 drop-shadow-lg tracking-wide">CHEESE TETRIS</h2>
     
-    <!-- 🎉 Season 6 Active Indicator -->
+    <!-- 🎉 Season 7 Active Indicator -->
     <div class="text-center mb-4">
       <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300 animate-pulse">
-        🏆 Season 6 NOW LIVE!
+        🎮 Season 7 RUNNING!
       </div>
     </div>
     
@@ -244,23 +274,6 @@
       <p class="text-xs text-gray-400">💡 Press 'P' to pause during gameplay</p>
     </div>
     
-    <!-- 🐛 BUG #322 FIX: Boss HUD outside game container (like Snake) -->
-    <div id="tetris-boss-hud-container" class="hidden w-full max-w-md mx-auto mb-3">
-      <!-- Boss HP Bar -->
-      <div id="tetris-boss-hp-bar" class="bg-black/85 rounded-lg border-2 border-yellow-400 p-3 shadow-lg">
-        <div class="text-center mb-2">
-          <span id="tetris-boss-name" class="text-white font-bold text-sm"></span>
-        </div>
-        <div class="flex items-center justify-between gap-2">
-          <span class="text-white font-bold text-xs whitespace-nowrap">📊 Progress:</span>
-          <div class="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden">
-            <div id="tetris-boss-hp-fill" class="h-full transition-all duration-300 rounded-full" style="width: 0%;"></div>
-          </div>
-          <span id="tetris-boss-lines-text" class="text-white font-bold text-xs whitespace-nowrap ml-2">0/0</span>
-        </div>
-      </div>
-    </div>
-    
     <!-- 🔮 Next Block Preview -->
     <div class="text-center mb-4">
       <p class="text-yellow-300 text-sm mb-2">Next Block:</p>
@@ -269,6 +282,22 @@
     
     <div class="flex justify-center items-center mb-4">
       <div class="relative inline-block">
+        <!-- 🐛 BUG #401 FIX: Boss HUD container positioned absolutely above canvas (doesn't shift canvas position) -->
+        <div id="tetris-boss-hud-container" class="hidden w-full space-y-2">
+          <!-- Boss HP Bar -->
+          <div id="tetris-boss-hp-bar" class="bg-black/85 rounded-lg border-2 border-yellow-400 p-3 shadow-lg">
+            <div class="text-center mb-2">
+              <span id="tetris-boss-name" class="text-white font-bold text-sm"></span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-white font-bold text-xs whitespace-nowrap">📊 Progress:</span>
+              <div class="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden">
+                <div id="tetris-boss-hp-fill" class="h-full transition-all duration-300 rounded-full" style="width: 0%;"></div>
+              </div>
+              <span id="tetris-boss-lines-text" class="text-white font-bold text-xs whitespace-nowrap ml-2">0/0</span>
+            </div>
+          </div>
+        </div>
         <canvas id="tetris-canvas" width="200" height="400" class="bg-gray-900 border-4 border-yellow-400 block rounded-lg shadow-lg" style="width: 100%; max-width: 400px; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: -moz-crisp-edges;"></canvas>
 
       <!-- 🚨 Tetris Countdown Overlay -->
@@ -598,7 +627,7 @@
   <div class="bg-gradient-to-r from-gray-800/90 to-gray-700/90 rounded-2xl border border-yellow-400/30 p-6 shadow-xl">
     <div class="text-center mb-6">
       <h3 class="text-2xl font-bold text-yellow-300 mb-2">🧩 Your Cheese Tetris Stats</h3>
-      <p class="text-gray-400 text-sm">Review your Season 6 progress, achievements, and prep for the upcoming Tetris store</p>
+      <p class="text-gray-400 text-sm">Review your Season 7 progress, achievements, and prep for the upcoming Tetris store</p>
     </div>
 
     <div id="tetris-user-stats-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

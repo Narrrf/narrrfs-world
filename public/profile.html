@@ -10,7 +10,7 @@ require_once 'discord-invite.php';
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🧀 Your Narrrf Profile - Season 6 FROZEN ⏸️ • Season 7 LOADING 🎮</title>
+  <title>🧀 Your Narrrf Profile - Season 7 RUNNING 🎮</title>
   <script>
     window.sessionDiscordId = "<?= htmlspecialchars($discordId) ?>";
     document.addEventListener("DOMContentLoaded", async () => {
@@ -497,10 +497,10 @@ require_once 'discord-invite.php';
 <header class="mobile-header bg-black/90 backdrop-blur-md text-white py-4 px-6 shadow-xl sticky top-0 z-40 border-b border-yellow-400/30">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <div>
-      <h1 class="text-xl font-bold tracking-wide text-blue-400">🚀 Narrrf's World – ⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮</h1>
+      <h1 class="text-xl font-bold tracking-wide text-green-400">🚀 Narrrf's World – 🎮 Season 7 RUNNING 🎮</h1>
       <!-- 🚀 SEASON STATUS MESSAGE -->
       <div class="season-info text-xs text-blue-300 animate-pulse mt-1">
-        ⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • Get ready for the new season! • 🐛 Bug Tracker Ready!
+        🎮 Season 7 RUNNING 🎮 • Play now and compete! • 🐛 Bug Tracker Ready!
       </div>
     </div>
     <nav class="mobile-hide-nav space-x-4 text-sm md:text-base flex items-center">
@@ -557,16 +557,16 @@ require_once 'discord-invite.php';
 <!-- 🚀 SEASON STATUS BANNER - Dynamic Based on Leaderboard Status -->
 <div id="season-status-banner" class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white text-center py-4 z-30 relative animate-pulse mb-6">
   <div class="mb-2">
-    <span id="season-status-main" class="text-blue-300 text-lg font-bold animate-pulse">⏸️ SEASON 6 FROZEN ⏸️</span>
+    <span id="season-status-main" class="text-green-300 text-lg font-bold animate-pulse">🎮 SEASON 7 RUNNING 🎮</span>
   </div>
   <div class="text-center">
-    <span id="season6-coming-status" class="text-green-300 text-2xl font-bold animate-bounce">🎮 SEASON 7 LOADING 🎮</span>
+    <span id="season6-coming-status" class="text-green-300 text-2xl font-bold animate-bounce">🎮 SEASON 7 ACTIVE 🎮</span>
   </div>
   <div class="mt-2">
     <span id="season-status-subtitle" class="text-blue-200 text-sm">⏸️ Season 6 leaderboards frozen • 🎮 Season 7 starting soon!</span>
   </div>
   <div class="mt-1">
-    <span id="season-status-details" class="text-white text-xs">⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • Get ready for fresh competition!</span>
+    <span id="season-status-details" class="text-white text-xs">🎮 Season 7 RUNNING 🎮 • Play now and compete for the top spots!</span>
   </div>
 </div>
 
@@ -576,12 +576,19 @@ require_once 'discord-invite.php';
 function loadStoredWalletAndTraits() {
   // Load wallet address
   const storedWallet = localStorage.getItem('walletAddress');
+  const storedTraits = localStorage.getItem('nftTraits');
+  
   if (storedWallet) {
     updateWalletDisplay(storedWallet);
+  } else if (storedTraits) {
+    // If traits exist but wallet address not in localStorage, wallet was connected
+    const walletElement = document.getElementById('wallet-address');
+    if (walletElement) {
+      walletElement.innerHTML = '🔗 Wallet linked (traits verified)';
+    }
   }
   
   // Load NFT traits
-  const storedTraits = localStorage.getItem('nftTraits');
   if (storedTraits) {
     try {
       const traitsArray = JSON.parse(storedTraits);
@@ -719,18 +726,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         🎯 Mint Now 🔥
       </a>
       <div class="mt-2 text-green-400 font-semibold">🔥 Mint is LIVE! Get your Narrrf's Genesis NFT!</div>
-      <div id="mint-season-status" class="text-gray-400 text-sm">⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮</div>
+      <div id="mint-season-status" class="text-gray-400 text-sm">🎮 Season 7 RUNNING 🎮</div>
     </div>
 
-    <!-- 🧀 12.0 Management Button (for authorized users) -->
+    <!-- 🧀 Nerd Lab Button (for authorized users) -->
     <div id="management-button-container" class="mt-4 hidden">
-      <a href="12-0-test.html" 
+      <a href="nerd-lab.html" 
          target="_blank"
          class="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 py-3 rounded-lg shadow-lg border-2 border-blue-500 transition-all duration-300 transform hover:scale-105">
-        🧀 12.0 Management System
+        🧠 Nerd Lab
       </a>
-      <div class="mt-2 text-blue-400 font-semibold">📊 Project Updates & Status Files</div>
-      <div class="text-gray-400 text-sm">Access development documentation and project status</div>
+      <div class="mt-2 text-blue-400 font-semibold">📊 Technical Documentation & System Overview</div>
+      <div class="text-gray-400 text-sm">Access development documentation and technical insights</div>
     </div>
 
     <!-- 🧪 Traits + Wallet View -->
@@ -739,33 +746,33 @@ document.addEventListener('DOMContentLoaded', async function() {
       
       <!-- 🚀 Season Status Banner (Dynamic) -->
       <div id="wallet-season-banner" class="mb-3 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center">
-        <span class="text-green-800 font-semibold text-sm">⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮</span>
+        <span class="text-green-800 font-semibold text-sm">🎮 Season 7 RUNNING 🎮</span>
       </div>
       
       <p id="wallet-address">🔗 Linked wallet: <em class="text-sm text-green-600">TestWallet123456789XYZ</em></p>
       <p>🧬 Traits: <span id="traits" class="text-green-600">Season Tester • Cheese Master • Game Champion</span></p>
       
       <!-- 🚀 Season Status Features -->
-      <div class="mt-3 text-xs text-gray-600 bg-blue-50 rounded p-2 border border-blue-200">
-        <strong>⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮</strong><br>
-        • ⏸️ Season 6 FROZEN - Leaderboards locked, final rankings saved!<br>
-        • 🎮 Season 7 LOADING - Get ready for fresh leaderboards and new competition!<br>
+      <div class="mt-3 text-xs text-gray-600 bg-green-50 rounded p-2 border border-green-200">
+        <strong>🎮 Season 7 RUNNING 🎮</strong><br>
+        • 🎮 Season 7 is LIVE! • Play now and compete for the top spots!<br>
+        • Fresh leaderboards active! • Compete now and earn DSPOINC!<br>
         • Boss Battles: Tetris (9 Bosses), Snake (9 Bosses), Space Invaders (Giant Boss)<br>
         • Enhanced Role-Based Gaming (VIP 2.0x, Holder 1.5x, Season Tester 1.3x)<br>
-        • Fresh Leaderboards Coming: Compete for top spots and earn DSPOINC!
+        • Active Leaderboards: Compete for top spots and earn DSPOINC!
       </div>
     </div>
 
     <!-- 🚀 SEASON STATUS BANNER (Dynamic) -->
     <div id="main-season-banner" class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white p-4 rounded-xl shadow-lg border-4 border-green-300 mb-6 text-center animate-pulse">
-      <div id="main-season-title" class="text-lg font-bold mb-2">⏸️ SEASON 6 FROZEN ⏸️ • 🎮 SEASON 7 LOADING 🎮</div>
-      <div id="main-season-subtitle" class="text-sm mb-2 font-semibold">⏸️ Season 6 leaderboards frozen • 🎮 Season 7 starting soon! • Get ready!</div>
-      <div id="main-season-details" class="text-xs mb-2 text-blue-100 italic font-bold">⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • Fresh competition coming! 🎯</div>
+      <div id="main-season-title" class="text-lg font-bold mb-2">🎮 SEASON 7 RUNNING 🎮</div>
+      <div id="main-season-subtitle" class="text-sm mb-2 font-semibold">🎮 Season 7 is LIVE! • Play now and compete! • Leaderboards active!</div>
+      <div id="main-season-details" class="text-xs mb-2 text-green-100 italic font-bold">🎮 Season 7 RUNNING 🎮 • Fresh competition is here! • Compete now! 🎯</div>
       <div id="main-season-cta" class="text-2xl font-bold text-yellow-300 mb-2 border-2 border-yellow-300 inline-block px-4 py-1 rounded-full">
-        ⏸️ SEASON 6 FROZEN ⏸️ • 🎮 SEASON 7 LOADING 🎮
+        🎮 SEASON 7 RUNNING! 🎮
       </div>
       <div id="main-season-features" class="text-xs mt-2 text-white">
-        ⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • 6 Games Available • Boss Battles • Fresh Leaderboards Coming • Achievements System • Bug Tracker Ready!
+        🎮 Season 7 RUNNING 🎮 • 6 Games Available • Boss Battles • Active Leaderboards • Achievements System • Bug Tracker Ready!
       </div>
     </div>
 
@@ -774,8 +781,8 @@ document.addEventListener('DOMContentLoaded', async function() {
       <h2 class="font-semibold text-lg mb-4 text-purple-300">🛍️ Store Activity</h2>
       
       <!-- 🚀 Season Store Banner -->
-      <div class="mb-4 bg-gradient-to-r from-blue-200 to-indigo-200 border border-blue-400 rounded-lg p-2 text-center">
-        <span class="text-blue-800 font-semibold text-sm">⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 - Get ready for the new season!</span>
+      <div class="mb-4 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center">
+        <span class="text-green-800 font-semibold text-sm">🎮 Season 7 RUNNING 🎮 - Play now and compete!</span>
       </div>
       
       <!-- 📦 Inventory Summary -->
@@ -1541,7 +1548,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 <section class="max-w-6xl w-full mx-auto px-4 mt-12 relative z-10">
   <div class="text-center mb-8">
     <h2 class="text-3xl font-bold text-yellow-300 mb-2">🎮 Play Your Games</h2>
-    <p class="text-gray-400">Click any game to start playing • ⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮</p>
+    <p class="text-gray-400">Click any game to start playing • 🎮 Season 7 RUNNING 🎮</p>
   </div>
   
   <div class="flex flex-col gap-4">
@@ -1576,7 +1583,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         <div class="mt-3 text-center">
           <span class="inline-block px-3 py-1 bg-yellow-400/20 border border-yellow-400/50 rounded-full text-xs text-yellow-300 font-semibold">
-            ⭐ Season 6 Boss Mode (Freezed) • Total Rewards: 3,550 DSPOINC
+            🎮 Season 7 RUNNING 🎮 • Total Rewards: 3,550 DSPOINC
           </span>
         </div>
       </div>
@@ -1613,7 +1620,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         <div class="mt-3 text-center">
           <span class="inline-block px-3 py-1 bg-green-400/20 border border-green-400/50 rounded-full text-xs text-green-300 font-semibold">
-            ⏸️ Season 6 Leaderboard Freezed! • Total Rewards: 1,930 DSPOINC
+            🎮 Season 7 RUNNING 🎮 • Total Rewards: 1,930 DSPOINC
           </span>
         </div>
       </div>
@@ -1650,7 +1657,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         <div class="mt-3 text-center">
           <span class="inline-block px-3 py-1 bg-green-400/20 border border-green-400/50 rounded-full text-xs text-green-300 font-semibold">
-            ⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • Progressive Boss Rewards
+            🎮 Season 7 RUNNING 🎮 • Progressive Boss Rewards
           </span>
         </div>
       </div>
@@ -1668,39 +1675,39 @@ document.addEventListener('DOMContentLoaded', async function() {
 <!-- 🧀 Discord Login Button - MOVED TO TOP NAVIGATION AREA -->
 
 <!-- 🎮 Season Status Notification -->
-<div id="season6Active" class="max-w-6xl mx-auto bg-gradient-to-r from-blue-500/30 via-indigo-500/30 to-purple-500/30 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-lg ring-2 ring-blue-400/50 mt-6 relative z-10 border-2 border-blue-400/40">
+<div id="season6Active" class="max-w-6xl mx-auto bg-gradient-to-r from-green-500/30 via-emerald-500/30 to-teal-500/30 backdrop-blur-md text-white py-4 px-6 rounded-2xl shadow-lg ring-2 ring-green-400/50 mt-6 relative z-10 border-2 border-green-400/40">
   <div class="flex items-center justify-center gap-3 mb-2">
-    <span class="text-2xl">⏸️</span>
-    <h3 class="text-lg font-bold text-blue-200">Season 6 is FROZEN!</h3>
+    <span class="text-2xl">🎮</span>
+    <h3 class="text-lg font-bold text-green-200">Season 7 is RUNNING!</h3>
     <span class="text-2xl">🎮</span>
   </div>
   <div class="text-center">
-    <p class="text-sm text-blue-200 mb-2 font-semibold">⏸️ Season 6 FROZEN • Leaderboards locked, final rankings saved!</p>
-    <p class="text-xs text-green-200 mb-2 italic">🎮 Season 7 LOADING! • Fresh leaderboards coming soon! • Get ready for new competition! 🎯</p>
+    <p class="text-sm text-green-200 mb-2 font-semibold">🎮 Season 7 RUNNING • Leaderboards active! • Play now and compete!</p>
+    <p class="text-xs text-yellow-200 mb-2 italic">🎮 Season 7 is LIVE! • Fresh leaderboards active! • Compete for top spots! 🎯</p>
     <div class="text-lg font-mono font-bold text-green-300 mb-2 border-2 border-green-300 inline-block px-4 py-1 rounded-full">
-      🎮 SEASON 7 LOADING! 🎮
+      🎮 SEASON 7 RUNNING! 🎮
     </div>
-    <p class="text-xs text-white mt-2 italic">⏸️ Season 6: FROZEN ⏸️ • 🎮 Season 7: LOADING 🎮 • Get ready for fresh competition! 🏆</p>
+    <p class="text-xs text-white mt-2 italic">🎮 Season 7: RUNNING 🎮 • Play now and compete for the top spots! 🏆</p>
   </div>
 </div>
 
 <!-- 🎮 Season Status Banner -->
 <div class="max-w-6xl mx-auto mt-10 mb-4">
-  <div class="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white rounded-2xl p-6 shadow-2xl border-4 border-blue-400 animate-pulse">
+  <div class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white rounded-2xl p-6 shadow-2xl border-4 border-green-400 animate-pulse">
     <div class="text-center">
-      <div class="text-2xl font-extrabold mb-2">⏸️ SEASON 6 FROZEN ⏸️ • 🎮 SEASON 7 LOADING 🎮</div>
-      <div class="text-sm font-semibold mb-3">⏸️ Season 6 leaderboards frozen • 🎮 Season 7 starting soon!</div>
-      <div class="bg-gray-900 text-blue-300 inline-block px-4 py-2 rounded-full text-xs font-bold border-2 border-blue-300">
-        🏆 SEASON 6 LEADERBOARDS - FROZEN ⏸️ • SEASON 7 COMING SOON 🎮 🏆
+      <div class="text-2xl font-extrabold mb-2">🎮 SEASON 7 RUNNING 🎮</div>
+      <div class="text-sm font-semibold mb-3">🎮 Season 7 is LIVE! • Play now and compete! • Leaderboards active!</div>
+      <div class="bg-gray-900 text-green-300 inline-block px-4 py-2 rounded-full text-xs font-bold border-2 border-green-300">
+        🏆 SEASON 7 LEADERBOARDS - ACTIVE 🎮 • PLAY NOW 🎮 🏆
       </div>
-      <div class="text-xs mt-3 font-bold text-yellow-100">⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • Get ready for fresh competition! 🎯</div>
+      <div class="text-xs mt-3 font-bold text-yellow-100">🎮 Season 7 RUNNING 🎮 • Fresh competition is here! • Compete now! 🎯</div>
     </div>
   </div>
 </div>
 
 <!-- 🏆 Leaderboard Section - Dynamic Season Status -->
 <section id="leaderboard" class="max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-green-400/50 mt-2 relative z-10 border-2 border-green-400/50">
-  <h3 id="leaderboard-title" class="text-center text-xl font-bold">⏸️ Season 6 Leaderboard - FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮</h3>
+  <h3 id="leaderboard-title" class="text-center text-xl font-bold">🎮 Season 7 Leaderboard - ACTIVE 🎮</h3>
   <div id="leaderboard-subtitle" class="text-center text-xs text-blue-300 mb-4 font-semibold">⏸️ Season 6 leaderboards frozen • 🎮 Season 7 starting soon! • Get ready for fresh competition!</div>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
     <div>
@@ -2125,10 +2132,16 @@ document.addEventListener("DOMContentLoaded", async function () {
                 setText('email', user.email || '');
                 setText('guilds', `🎯 Guilds Connected: ${user.guilds?.length || 0}`);
                 
-                // Check for stored wallet address
+                // Check for stored wallet address OR NFT traits (traits indicate wallet was connected)
                 const storedWallet = localStorage.getItem('walletAddress');
                 if (storedWallet) {
                   updateWalletDisplay(storedWallet);
+                } else if (storedTraits) {
+                  // Traits exist, so wallet was connected
+                  const walletElement = document.getElementById('wallet-address');
+                  if (walletElement) {
+                    walletElement.innerHTML = '🔗 Wallet linked (traits verified)';
+                  }
                 }
                 
                 // Show DSPOINC section
@@ -2248,10 +2261,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     
     setText('user-roles', user.roles?.join(', ') || 'No roles');
     
-    // Check for stored wallet address
+    // Check for stored wallet address OR NFT traits (traits indicate wallet was connected)
     const storedWallet = localStorage.getItem('walletAddress');
     if (storedWallet) {
       updateWalletDisplay(storedWallet);
+    } else if (storedTraits) {
+      // If traits exist but wallet address not in localStorage, wallet was connected but address might be lost
+      // Check if wallet element already has a connected wallet displayed
+      const walletElement = document.getElementById('wallet-address');
+      if (walletElement && !walletElement.textContent.includes('Linked wallet')) {
+        // Traits exist, so wallet was connected - show as linked
+        setText('wallet-address', '🔗 Wallet linked (traits verified)');
+      }
     } else {
       setText('wallet-address', 'Wallet not linked');
     }
@@ -2342,17 +2363,21 @@ document.addEventListener("DOMContentLoaded", async function () {
       console.warn('Failed to load all-time stats on page load:', error);
     }
     
-    // 🧊 Load staking statistics automatically on page load
-    try {
-      console.log('🧊 Auto-loading staking stats for user:', user.discord_id);
-      // Ensure localStorage is set for loadStakingStats function
-      if (user.discord_id) {
+    // 🧊 Load staking statistics automatically on page load (only if user is logged in)
+    if (user.discord_id) {
+      try {
+        console.log('🧊 Auto-loading staking stats for user:', user.discord_id);
+        // Ensure localStorage is set for loadStakingStats function
         localStorage.setItem('discord_id', user.discord_id);
+        // Call loadStakingStats function (it will handle the API call)
+        await loadStakingStats();
+      } catch (error) {
+        console.warn('Failed to load staking stats on page load:', error);
       }
-      // Call loadStakingStats function (it will handle the API call)
-      await loadStakingStats();
-    } catch (error) {
-      console.warn('Failed to load staking stats on page load:', error);
+    } else {
+      console.log('🧊 User not logged in - skipping staking stats load');
+      // Show error message in staking section
+      displayStakingStatsError('Please log in with Discord to view staking stats');
     }
 
     // Trophy pokal shelf — render immediately from roles
@@ -3428,10 +3453,10 @@ window.claimQuest = async function(questId, btn) {
   }
 };
 
-// 🎮 SEASON STATUS - Season 6 FROZEN, Season 7 LOADING
+// 🎮 SEASON STATUS - Season 7 RUNNING
 function showSeason6Active() {
-  // Season 6 is frozen, Season 7 is loading
-  console.log('⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 - Get ready for the new season!');
+  // Season 7 is running/active
+  console.log('🎮 Season 7 RUNNING 🎮 - Play now and compete!');
 }
 
 // 🏆 Load Leaderboard and Update Season Status Dynamically
@@ -3555,51 +3580,51 @@ async function loadLeaderboard() {
         leaderboardSection.className = 'max-w-6xl mx-auto bg-black/30 backdrop-blur-md text-yellow-300 py-6 px-4 rounded-3xl shadow-lg ring-4 ring-green-400/50 mt-2 relative z-10 border-2 border-green-400/50';
       }
       
-      // Update season status banner (active)
+      // Update season status banner (active - Season 7 RUNNING)
       if (seasonBanner) {
         seasonBanner.className = 'bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 text-white text-center py-4 z-30 relative animate-pulse mb-6';
       }
       if (seasonStatusMain) {
-        seasonStatusMain.textContent = '⏸️ SEASON 6 FROZEN ⏸️';
+        seasonStatusMain.textContent = '🎮 SEASON 7 RUNNING 🎮';
       }
       if (season6ComingStatus) {
-        season6ComingStatus.textContent = '🎮 SEASON 7 LOADING 🎮';
+        season6ComingStatus.textContent = '🎮 SEASON 7 ACTIVE 🎮';
       }
       if (seasonStatusSubtitle) {
-        seasonStatusSubtitle.textContent = '⏸️ Season 6 leaderboards frozen • 🎮 Season 7 starting soon!';
+        seasonStatusSubtitle.textContent = '🎮 Season 7 is LIVE! • Play now and compete for the top spots!';
       }
       if (seasonStatusDetails) {
-        seasonStatusDetails.textContent = '⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • Get ready for fresh competition!';
+        seasonStatusDetails.textContent = '🎮 Season 7 RUNNING 🎮 • Fresh leaderboards active! • Compete now! 🏆';
       }
       
-      // Update main season banner (active)
+      // Update main season banner (active - Season 7 RUNNING)
       if (mainSeasonBanner) {
         mainSeasonBanner.className = 'bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white p-4 rounded-xl shadow-lg border-4 border-green-300 mb-6 text-center animate-pulse';
       }
       if (mainSeasonTitle) {
-        mainSeasonTitle.textContent = '⏸️ SEASON 6 FROZEN ⏸️ • 🎮 SEASON 7 LOADING 🎮';
+        mainSeasonTitle.textContent = '🎮 SEASON 7 RUNNING 🎮';
       }
       if (mainSeasonSubtitle) {
-        mainSeasonSubtitle.textContent = '⏸️ Season 6 leaderboards frozen • 🎮 Season 7 starting soon! • Get ready!';
+        mainSeasonSubtitle.textContent = '🎮 Season 7 is LIVE! • Play now and compete! • Leaderboards active!';
       }
       if (mainSeasonDetails) {
-        mainSeasonDetails.textContent = '⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • Fresh competition coming! 🎯';
+        mainSeasonDetails.textContent = '🎮 Season 7 RUNNING 🎮 • Fresh competition is here! • Compete now! 🎯';
       }
       if (mainSeasonCta) {
-        mainSeasonCta.textContent = '🎮 SEASON 7 LOADING! 🎮';
+        mainSeasonCta.textContent = '🎮 SEASON 7 RUNNING! 🎮';
       }
       if (mainSeasonFeatures) {
-        mainSeasonFeatures.textContent = '⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮 • 6 Games Available • Boss Battles • Fresh Leaderboards Coming • Achievements System • Bug Tracker Ready!';
+        mainSeasonFeatures.textContent = '🎮 Season 7 RUNNING 🎮 • 6 Games Available • Boss Battles • Active Leaderboards • Achievements System • Bug Tracker Ready!';
       }
       
-      // Update wallet/mint banners (active)
+      // Update wallet/mint banners (active - Season 7 RUNNING)
       if (walletSeasonBanner) {
         walletSeasonBanner.className = 'mb-3 bg-gradient-to-r from-green-200 to-emerald-200 border border-green-400 rounded-lg p-2 text-center';
-        walletSeasonBanner.querySelector('span').textContent = '⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮';
-        walletSeasonBanner.querySelector('span').className = 'text-blue-800 font-semibold text-sm';
+        walletSeasonBanner.querySelector('span').textContent = '🎮 Season 7 RUNNING 🎮';
+        walletSeasonBanner.querySelector('span').className = 'text-green-800 font-semibold text-sm';
       }
       if (mintSeasonStatus) {
-        mintSeasonStatus.textContent = '⏸️ Season 6 FROZEN ⏸️ • 🎮 Season 7 LOADING 🎮';
+        mintSeasonStatus.textContent = '🎮 Season 7 RUNNING 🎮';
       }
     }
     
@@ -5395,19 +5420,21 @@ async function loadStakingStats() {
     // Get the user's Discord ID
     let discordId = localStorage.getItem('discord_id');
     
-    // 🏠 LOCAL DEVELOPMENT: Use test user if not logged in
-    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    if (!discordId && isLocalDevelopment) {
-      console.log('🏠 LOCAL DEV - No Discord ID found, using test user (328601656659017732)');
-      discordId = '328601656659017732';
-      localStorage.setItem('discord_id', discordId);
-      localStorage.setItem('discord_name', 'Narrrf');
-    }
-    
     // Also try to get from session if available
     if (!discordId && window.sessionDiscordId) {
       discordId = window.sessionDiscordId;
       localStorage.setItem('discord_id', discordId);
+    }
+    
+    // 🐛 FIX: Only use local dev fallback if explicitly in local dev AND no user is logged in
+    // This prevents showing staking stats when user is not logged in
+    const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!discordId && isLocalDevelopment) {
+      // Check if we're actually in a logged-in state by checking if profile API would succeed
+      // For now, only use test user if explicitly needed (not for auto-load)
+      console.log('🧊 LOCAL DEV - No Discord ID found, cannot load staking stats without login');
+      displayStakingStatsError('Please log in with Discord to view staking stats');
+      return;
     }
     
     if (!discordId) {

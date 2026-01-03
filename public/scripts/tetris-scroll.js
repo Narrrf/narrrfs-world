@@ -2102,32 +2102,49 @@ document.addEventListener("keydown", e => {
     return;
   }
   
-  if (isTetrisPaused) return; // Prevent movement while paused
+  // 🐛 BUG #401 FIX: Check if game is paused or functions not available
+  if (isTetrisPaused) {
+    console.log('⏸️ Tetris is paused - input blocked');
+    return; // Prevent movement while paused
+  }
+  
+  // 🐛 BUG #401 FIX: Verify game functions are available before handling input
+  if (typeof window.tetrisCollide !== 'function' || typeof window.tetrisCurrent === 'undefined' || !window.tetrisCurrent || !window.tetrisCurrent.shape) {
+    console.log('⚠️ Tetris game functions not ready:', {
+      collide: typeof window.tetrisCollide,
+      current: typeof window.tetrisCurrent,
+      shape: window.tetrisCurrent?.shape
+    });
+    return; // Game not ready yet
+  }
 
   switch (e.key) {
     case "ArrowLeft":
     case "a":
-      if (typeof window.tetrisCollide === 'function' && typeof window.tetrisCurrent !== 'undefined' && window.tetrisCurrent.shape) {
-        if (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col - 1)) {
-          window.tetrisCurrent.col--;
+      e.preventDefault();
+      if (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col - 1)) {
+        window.tetrisCurrent.col--;
+        if (typeof window.tetrisDraw === 'function') {
           window.tetrisDraw();
         }
       }
       break;
     case "ArrowRight":
     case "d":
-      if (typeof window.tetrisCollide === 'function' && typeof window.tetrisCurrent !== 'undefined' && window.tetrisCurrent.shape) {
-        if (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col + 1)) {
-          window.tetrisCurrent.col++;
+      e.preventDefault();
+      if (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row, window.tetrisCurrent.col + 1)) {
+        window.tetrisCurrent.col++;
+        if (typeof window.tetrisDraw === 'function') {
           window.tetrisDraw();
         }
       }
       break;
     case "ArrowDown":
     case "s":
-      if (typeof window.tetrisCollide === 'function' && typeof window.tetrisCurrent !== 'undefined' && window.tetrisCurrent.shape) {
-        if (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row + 1, window.tetrisCurrent.col)) {
-          window.tetrisCurrent.row++;
+      e.preventDefault();
+      if (!window.tetrisCollide(window.tetrisCurrent.shape, window.tetrisCurrent.row + 1, window.tetrisCurrent.col)) {
+        window.tetrisCurrent.row++;
+        if (typeof window.tetrisDraw === 'function') {
           window.tetrisDraw();
         }
       }
@@ -2135,9 +2152,12 @@ document.addEventListener("keydown", e => {
     case "ArrowUp":
     case "w":
     case " ":
+      e.preventDefault();
       if (typeof window.tetrisRotatePiece === 'function') {
         window.tetrisRotatePiece();
-        window.tetrisDraw();
+        if (typeof window.tetrisDraw === 'function') {
+          window.tetrisDraw();
+        }
       }
       break;
   }
