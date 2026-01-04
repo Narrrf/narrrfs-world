@@ -529,7 +529,7 @@ require_once 'discord-invite.php';
     <div class="text-center mb-3">
       <span class="text-yellow-300 text-sm font-semibold">🎮 QUICK ACCESS TO GAMES 🎮</span>
     </div>
-    <div class="grid grid-cols-3 gap-3 max-w-2xl mx-auto">
+    <div class="grid grid-cols-4 gap-3 max-w-3xl mx-auto">
       <!-- 🧩 Tetris -->
       <a href="tetris.html" class="group bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl p-4 border-2 border-purple-400 hover:border-yellow-400 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 cursor-pointer">
         <div class="text-3xl mb-2 group-hover:animate-bounce">🧩</div>
@@ -550,6 +550,15 @@ require_once 'discord-invite.php';
         <h3 class="text-sm font-bold mb-1">Space Invaders</h3>
         <p class="text-xs text-pink-200">Defend cheese!</p>
       </a>
+
+      <!-- 🎁 Lootbox -->
+      <button onclick="scrollToChestSection()" class="group bg-gradient-to-br from-amber-600 to-orange-600 rounded-xl p-4 border-2 border-amber-400 hover:border-yellow-400 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-amber-500/50 cursor-pointer">
+        <div class="flex justify-center mb-2 group-hover:animate-bounce">
+          <img src="img/chests/chest-closed.png" alt="Lootbox" class="w-16 h-16 object-contain">
+        </div>
+        <h3 class="text-sm font-bold mb-1">Lootbox</h3>
+        <p class="text-xs text-amber-200">Open chest!</p>
+      </button>
     </div>
   </div>
 </div>
@@ -1541,8 +1550,47 @@ document.addEventListener('DOMContentLoaded', async function() {
   </div>
 </div>
 
-
-
+<!-- 🎁 PROFILE CHEST LOOTBOX SECTION -->
+<div id="profile-chest-section" class="max-w-4xl w-full mx-auto px-4 mt-12 mb-8 relative z-10 hidden">
+  <div class="bg-gradient-to-br from-amber-900/40 via-yellow-900/30 to-orange-900/40 rounded-2xl shadow-2xl p-8 border-2 border-amber-500/50 ring-2 ring-amber-400/20">
+    <h2 class="text-2xl font-bold text-yellow-300 mb-4 text-center flex items-center justify-center gap-3">
+      <span>🎁</span>
+      <span>Treasure Chest Lootbox</span>
+      <span>🎁</span>
+    </h2>
+    <p class="text-center text-gray-300 text-sm mb-6">Click the chest to open and receive a random DSPOINC reward!</p>
+    
+    <!-- Chest Container -->
+    <div class="flex flex-col items-center justify-center">
+      <div id="profile-chest-container" class="relative cursor-pointer transform transition-transform hover:scale-110" onclick="openProfileChest()">
+        <!-- Chest Image (switches from closed to opened) -->
+        <div id="profile-chest-base" class="relative">
+          <img id="profile-chest-image" src="img/chests/chest-closed.png" alt="Treasure Chest" class="w-48 h-auto object-contain">
+          
+          <!-- Sparkle Particles Container -->
+          <div id="profile-chest-particles" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+          
+          <!-- Glow Effect -->
+          <div id="profile-chest-glow" class="absolute inset-0 opacity-0 transition-opacity duration-500 bg-gradient-to-r from-yellow-400/0 via-yellow-400/30 to-yellow-400/0 rounded-lg"></div>
+        </div>
+        
+        <!-- Reward Display (shown after opening) -->
+        <div id="profile-chest-reward" class="mt-6 text-center hidden">
+          <div class="text-4xl mb-2">🎉</div>
+          <div class="text-2xl font-bold text-yellow-300 mb-1">
+            <span id="profile-chest-reward-amount">0</span> DSPOINC
+          </div>
+          <div class="text-sm text-gray-400">Added to your balance!</div>
+        </div>
+        
+        <!-- Status Text -->
+        <div id="profile-chest-status" class="mt-4 text-center text-sm text-gray-400">
+          Click to open
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- 🎮 GAME PORTAL - Clean Link Cards -->
 <section class="max-w-6xl w-full mx-auto px-4 mt-12 relative z-10">
@@ -2013,6 +2061,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         hideElement('goldenCheeseGate');
         hideElement('noCheeseJoke');
         hideElement('dspoincSection');
+        hideElement('profile-chest-section');
 
         // 🧀 Local bypass for 12.0 Management button - show it even when not logged in
         let isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -2146,6 +2195,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 
                 // Show DSPOINC section
                 showElement('dspoincSection');
+                showElement('profile-chest-section');
                 
                 // Display enhanced profile data (inventory and purchase history)
                 if (enhancedData && enhancedData.success) {
@@ -2445,6 +2495,7 @@ document.addEventListener("DOMContentLoaded", async function () {
      // ✅ Show DSPOINC section if user is logged in
      if (user.discord_id) {
        showElement('dspoincSection');
+       showElement('profile-chest-section');
        showElement('debugSection');
        showElement('missionsSection');
      } else {
@@ -7152,6 +7203,558 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 });
+
+  // 🎁 PROFILE CHEST LOOTBOX SYSTEM
+  // ============================================================================
+  // Chest/lootbox system for profile page - matches game chest animations
+  // ============================================================================
+  
+  // CONFIGURATION - Load from localStorage or use defaults
+  // Default values: 1-250 DSPOINC, 24h daily cooldown
+  function getProfileChestConfig() {
+    try {
+      const stored = localStorage.getItem('profile_chest_config');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return {
+          rewardMin: parsed.rewardMin || 1,
+          rewardMax: parsed.rewardMax || 250,
+          cooldownType: parsed.cooldownType || 'daily',
+          cooldownHours: parsed.cooldownHours || 24,
+        };
+      }
+    } catch (error) {
+      console.error('❌ [PROFILE CHEST] Error loading config from localStorage:', error);
+    }
+    // Fallback to defaults
+    return {
+      rewardMin: 1,        // Default: Minimum reward amount
+      rewardMax: 250,      // Default: Maximum reward amount
+      cooldownType: 'daily', // Default: 24h per Discord session
+      cooldownHours: 24,    // Default: 24 hours cooldown
+    };
+  }
+  
+  // Initialize config (will be updated via storage events)
+  let PROFILE_CHEST_CONFIG = getProfileChestConfig();
+  
+  let profileChestOpened = false;
+  let profileChestOpening = false;
+  
+  // Generate session ID for chest rewards
+  const profileChestSessionId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `profile-chest-${Date.now()}`;
+  
+  // CSS for chest animations
+  const chestStyle = document.createElement('style');
+  chestStyle.textContent = `
+    @keyframes chestGlow {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.1); }
+    }
+    
+    @keyframes particleFloat {
+      0% {
+        opacity: 1;
+        transform: translateY(0) translateX(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-100px) translateX(var(--particle-x, 0)) scale(0);
+      }
+    }
+    
+    @keyframes rewardPop {
+      0% { transform: scale(0) rotate(0deg); opacity: 0; }
+      50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+      100% { transform: scale(1) rotate(360deg); opacity: 1; }
+    }
+    
+    #profile-chest-glow.active {
+      animation: chestGlow 1s ease-in-out infinite;
+    }
+    
+    #profile-chest-reward.show {
+      animation: rewardPop 0.8s ease-out forwards;
+    }
+    
+    .chest-particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: radial-gradient(circle, #FFD700, #FFA500);
+      border-radius: 50%;
+      pointer-events: none;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    }
+  `;
+  document.head.appendChild(chestStyle);
+  
+  /**
+   * Create sparkle particles for chest opening animation
+   */
+  function createChestParticles() {
+    const particlesContainer = document.getElementById('profile-chest-particles');
+    if (!particlesContainer) return;
+    
+    // Clear existing particles
+    particlesContainer.innerHTML = '';
+    
+    // Create 20 particles
+    for (let i = 0; i < 20; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'chest-particle';
+      
+      // Random starting position
+      const startX = Math.random() * 100;
+      const startY = Math.random() * 100;
+      particle.style.left = startX + '%';
+      particle.style.bottom = startY + '%';
+      
+      // Random horizontal drift
+      const driftX = (Math.random() - 0.5) * 200;
+      particle.style.setProperty('--particle-x', driftX + 'px');
+      
+      // Random animation duration
+      const duration = 1 + Math.random() * 1.5;
+      particle.style.animation = `particleFloat ${duration}s ease-out forwards`;
+      particle.style.animationDelay = Math.random() * 0.3 + 's';
+      
+      particlesContainer.appendChild(particle);
+      
+      // Remove particle after animation
+      setTimeout(() => {
+        if (particle.parentNode) {
+          particle.parentNode.removeChild(particle);
+        }
+      }, (duration + 0.3) * 1000);
+    }
+  }
+  
+  /**
+   * Scroll to chest section (called from Quick Access button)
+   */
+  function scrollToChestSection() {
+    const chestSection = document.getElementById('profile-chest-section');
+    if (chestSection) {
+      // Ensure section is visible (in case it's hidden)
+      chestSection.classList.remove('hidden');
+      
+      // Smooth scroll to chest section
+      chestSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      console.warn('⚠️ [PROFILE] Chest section not found');
+    }
+  }
+
+  /**
+   * Open profile chest and award DSPOINC reward
+   */
+  async function openProfileChest() {
+    // Prevent multiple clicks
+    if (profileChestOpening) {
+      return;
+    }
+    
+    // Check cooldown (based on configuration)
+    const isOnCooldown = await checkChestCooldown();
+    if (isOnCooldown) {
+      const statusEl = document.getElementById('profile-chest-status');
+      if (statusEl) {
+        const status = await getChestCooldownStatus();
+        statusEl.textContent = status;
+        statusEl.className = 'mt-4 text-center text-sm text-yellow-400';
+      }
+      return;
+    }
+    
+    // Check if user is logged in
+    const discordId = window.sessionDiscordId || localStorage.getItem('discord_id');
+    if (!discordId) {
+      alert('Please log in with Discord to open the chest!');
+      return;
+    }
+    
+    profileChestOpening = true;
+    const statusEl = document.getElementById('profile-chest-status');
+    if (statusEl) {
+      statusEl.textContent = 'Opening...';
+    }
+    
+    // Get user's display name if available
+    const userDisplayName = document.querySelector('[data-discord-name]')?.getAttribute('data-discord-name') || null;
+    
+    // Generate random reward amount (using configured range)
+    const rewardRange = PROFILE_CHEST_CONFIG.rewardMax - PROFILE_CHEST_CONFIG.rewardMin + 1;
+    const rewardAmount = Math.floor(Math.random() * rewardRange) + PROFILE_CHEST_CONFIG.rewardMin;
+    
+    try {
+      // 1. Start opening animation
+      const chestImageEl = document.getElementById('profile-chest-image');
+      const glowEl = document.getElementById('profile-chest-glow');
+      
+      // Switch to opened chest image after a short delay (for animation effect)
+      if (chestImageEl) {
+        setTimeout(() => {
+          chestImageEl.src = 'img/chests/chest-opened.png';
+          chestImageEl.style.transition = 'opacity 0.3s';
+        }, 500); // Halfway through the opening animation
+      }
+      
+      if (glowEl) {
+        glowEl.classList.add('active');
+        glowEl.style.opacity = '0.6';
+      }
+      
+      // Create particles
+      createChestParticles();
+      
+      // Play sound effect (if available)
+      // Helper function for fallback beep sound
+      const playBeepSound = () => {
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          oscillator.frequency.value = 800;
+          oscillator.type = 'sine';
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.5);
+        } catch (e) {
+          console.warn('⚠️ [PROFILE CHEST] Fallback beep sound not available:', e);
+        }
+      };
+
+      try {
+        // Play chest opening sound - using chest.mp3 from SFX folder
+        const audioPath = 'sounds/SFX/chest.mp3'; // Relative path (works both locally and in production)
+        console.log(`🔊 [PROFILE CHEST] Attempting to play sound from: ${audioPath}`);
+        
+        const audio = new Audio(audioPath);
+        audio.volume = 0.5;
+
+        // Wait for audio to load before playing
+        audio.addEventListener('canplaythrough', () => {
+          console.log(`🔊 [PROFILE CHEST] Audio file loaded successfully: ${audioPath}`);
+          audio.play().then(() => {
+            console.log(`✅ [PROFILE CHEST] Sound playback started: ${audioPath}`);
+          }).catch(playErr => {
+            console.warn(`⚠️ [PROFILE CHEST] Failed to play sound after loading:`, playErr);
+            playBeepSound(); // Fallback beep
+          });
+        }, { once: true });
+
+        audio.addEventListener('error', (e) => {
+          console.error(`❌ [PROFILE CHEST] Error loading audio file ${audioPath}:`, e);
+          playBeepSound(); // Fallback beep
+        }, { once: true });
+
+        // Attempt to load the audio
+        audio.load();
+      } catch (error) {
+        console.error(`❌ [PROFILE CHEST] Failed to create Audio object:`, error);
+        playBeepSound(); // Fallback beep
+      }
+      
+      // 2. Wait for animation to complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 3. Call API to award reward
+      const apiBaseUrl = window.location.origin;
+      const payload = {
+        discord_id: discordId,
+        discord_name: userDisplayName,
+        riddle_id: 'CHEST_PROFILE_LOOTBOX',
+        level_id: 'PROFILE_PAGE',
+        base_reward: rewardAmount,
+        session_id: profileChestSessionId
+      };
+      
+      console.log('🎁 [PROFILE CHEST] Awarding reward:', payload);
+      
+      const response = await fetch(`${apiBaseUrl}/api/dev/riddle-reward.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await response.json().catch(() => ({ success: false, error: "Invalid JSON" }));
+      
+      if (response.ok && result.success) {
+        // 4. Show reward display
+        const rewardEl = document.getElementById('profile-chest-reward');
+        const rewardAmountEl = document.getElementById('profile-chest-reward-amount');
+        
+        if (rewardAmountEl) {
+          rewardAmountEl.textContent = rewardAmount.toLocaleString();
+        }
+        if (rewardEl) {
+          rewardEl.classList.remove('hidden');
+          rewardEl.classList.add('show');
+        }
+        if (statusEl) {
+          statusEl.textContent = 'Chest opened!';
+          statusEl.className = 'mt-4 text-center text-sm text-green-400';
+        }
+        
+        // 5. Update DSPOINC balance display
+        await updateProfileBalanceAfterChest(rewardAmount);
+        
+        // 6. Mark as opened and save timestamp (for cooldown)
+        saveChestOpenedTimestamp();
+        profileChestOpened = true;
+        
+        const containerEl = document.getElementById('profile-chest-container');
+        if (containerEl && PROFILE_CHEST_CONFIG.cooldownType !== 'none') {
+          containerEl.style.cursor = 'not-allowed';
+          containerEl.style.opacity = '0.7';
+        }
+        
+        console.log('✅ [PROFILE CHEST] Reward awarded successfully:', result);
+      } else {
+        throw new Error(result.error || 'Failed to award reward');
+      }
+    } catch (error) {
+      console.error('❌ [PROFILE CHEST] Error opening chest:', error);
+      
+      // Reset chest image on error (switch back to closed)
+      const chestImageEl = document.getElementById('profile-chest-image');
+      if (chestImageEl) {
+        chestImageEl.src = 'img/chests/chest-closed.png';
+      }
+      
+      if (statusEl) {
+        statusEl.textContent = 'Error opening chest. Please try again.';
+        statusEl.className = 'mt-4 text-center text-sm text-red-400';
+      }
+      
+      alert('Failed to open chest. Please try again later.');
+    } finally {
+      profileChestOpening = false;
+    }
+  }
+  
+  /**
+   * Update DSPOINC balance display after chest opening
+   */
+  async function updateProfileBalanceAfterChest(rewardAmount) {
+    try {
+      const apiBaseUrl = window.location.origin;
+      
+      // Fetch updated profile data
+      const response = await fetch(`${apiBaseUrl}/api/user/profile.php`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const user = await response.json();
+        
+        // Update total DSPOINC display
+        if (user.total_dspoinc !== undefined) {
+          const dspoincEl = document.getElementById('user-dspoinc');
+          if (dspoincEl) {
+            dspoincEl.textContent = user.total_dspoinc.toLocaleString();
+          }
+          
+          // Update Journey balance cards
+          if (user.frozen_dspoinc !== undefined && user.available_dspoinc !== undefined) {
+            if (typeof updateJourneyBalance === 'function') {
+              updateJourneyBalance({
+                total_balance: user.total_dspoinc,
+                available_balance: user.available_dspoinc,
+                frozen_balance: user.frozen_dspoinc
+              });
+            }
+          }
+        }
+        
+        console.log('✅ [PROFILE CHEST] Balance updated:', user.total_dspoinc);
+      }
+    } catch (error) {
+      console.error('❌ [PROFILE CHEST] Error updating balance:', error);
+    }
+  }
+  
+  /**
+   * Check if chest cooldown is active (based on configuration)
+   * @returns {Promise<boolean>} True if cooldown is active (cannot open), false if can open
+   */
+  async function checkChestCooldown() {
+    const config = PROFILE_CHEST_CONFIG;
+    
+    if (config.cooldownType === 'none') {
+      return false; // No cooldown, can always open
+    }
+    
+    if (config.cooldownType === 'session') {
+      return profileChestOpened; // Session-based (already opened this session)
+    }
+    
+    // For 'daily' or 'hourly' cooldowns, check localStorage
+    const storageKey = 'profile_chest_last_opened';
+    const lastOpenedStr = localStorage.getItem(storageKey);
+    
+    if (!lastOpenedStr) {
+      return false; // Never opened, can open
+    }
+    
+    try {
+      const lastOpened = parseInt(lastOpenedStr, 10);
+      const now = Date.now();
+      const cooldownMs = config.cooldownHours * 60 * 60 * 1000; // Convert hours to milliseconds
+      const timeSinceLastOpened = now - lastOpened;
+      
+      if (timeSinceLastOpened < cooldownMs) {
+        // Cooldown still active
+        const hoursRemaining = ((cooldownMs - timeSinceLastOpened) / (60 * 60 * 1000)).toFixed(1);
+        console.log(`⏰ [PROFILE CHEST] Cooldown active - ${hoursRemaining} hours remaining`);
+        return true;
+      } else {
+        // Cooldown expired, can open again
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ [PROFILE CHEST] Error checking cooldown:', error);
+      return false; // On error, allow opening
+    }
+  }
+  
+  /**
+   * Save chest opening timestamp (for cooldown tracking)
+   */
+  function saveChestOpenedTimestamp() {
+    const config = PROFILE_CHEST_CONFIG;
+    
+    if (config.cooldownType === 'session') {
+      profileChestOpened = true; // Session-based, just set flag
+      return;
+    }
+    
+    if (config.cooldownType === 'daily' || config.cooldownType === 'hourly') {
+      // Save timestamp to localStorage
+      localStorage.setItem('profile_chest_last_opened', Date.now().toString());
+    }
+  }
+  
+  /**
+   * Get cooldown status message (for UI display)
+   * @returns {Promise<string>} Status message
+   */
+  async function getChestCooldownStatus() {
+    const config = PROFILE_CHEST_CONFIG;
+    
+    if (config.cooldownType === 'none') {
+      return 'Click to open';
+    }
+    
+    if (config.cooldownType === 'session') {
+      return profileChestOpened ? 'Already opened (refresh page to open again)' : 'Click to open';
+    }
+    
+    // For 'daily' or 'hourly', check time remaining
+    const storageKey = 'profile_chest_last_opened';
+    const lastOpenedStr = localStorage.getItem(storageKey);
+    
+    if (!lastOpenedStr) {
+      return 'Click to open';
+    }
+    
+    try {
+      const lastOpened = parseInt(lastOpenedStr, 10);
+      const now = Date.now();
+      const cooldownMs = config.cooldownHours * 60 * 60 * 1000;
+      const timeSinceLastOpened = now - lastOpened;
+      
+      if (timeSinceLastOpened < cooldownMs) {
+        const hoursRemaining = ((cooldownMs - timeSinceLastOpened) / (60 * 60 * 1000));
+        if (hoursRemaining >= 1) {
+          return `Available in ${hoursRemaining.toFixed(1)} hours`;
+        } else {
+          const minutesRemaining = ((cooldownMs - timeSinceLastOpened) / (60 * 1000));
+          return `Available in ${Math.ceil(minutesRemaining)} minutes`;
+        }
+      } else {
+        return 'Click to open';
+      }
+    } catch (error) {
+      return 'Click to open';
+    }
+  }
+  
+  /**
+   * Update chest status display
+   */
+  async function updateChestStatusDisplay() {
+    const statusEl = document.getElementById('profile-chest-status');
+    const chestImageEl = document.getElementById('profile-chest-image');
+    
+    if (statusEl) {
+      const status = await getChestCooldownStatus();
+      statusEl.textContent = status;
+      
+      // Disable chest if cooldown is active
+      const isOnCooldown = await checkChestCooldown();
+      if (isOnCooldown) {
+        profileChestOpened = true;
+        const containerEl = document.getElementById('profile-chest-container');
+        if (containerEl) {
+          containerEl.style.cursor = 'not-allowed';
+          containerEl.style.opacity = '0.7';
+        }
+        // Show opened chest image when on cooldown
+        if (chestImageEl) {
+          chestImageEl.src = 'img/chests/chest-opened.png';
+        }
+      } else {
+        profileChestOpened = false;
+        const containerEl = document.getElementById('profile-chest-container');
+        if (containerEl) {
+          containerEl.style.cursor = 'pointer';
+          containerEl.style.opacity = '1';
+        }
+        // Show closed chest image when available
+        if (chestImageEl) {
+          chestImageEl.src = 'img/chests/chest-closed.png';
+        }
+      }
+    }
+  }
+  
+  // Update status text on page load
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Load initial config
+    PROFILE_CHEST_CONFIG = getProfileChestConfig();
+    
+    // Update status display
+    await updateChestStatusDisplay();
+    
+    // Listen for config changes from admin interface (cross-tab updates)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'profile_chest_config') {
+        // Reload config
+        PROFILE_CHEST_CONFIG = getProfileChestConfig();
+        console.log('✅ [PROFILE CHEST] Config updated from admin interface (cross-tab):', PROFILE_CHEST_CONFIG);
+        
+        // Update status display
+        updateChestStatusDisplay();
+      }
+    });
+    
+    // Also listen for same-window updates (custom event from admin interface)
+    window.addEventListener('profileChestConfigUpdated', () => {
+      PROFILE_CHEST_CONFIG = getProfileChestConfig();
+      console.log('✅ [PROFILE CHEST] Config updated from admin interface (same-window):', PROFILE_CHEST_CONFIG);
+      
+      // Update status display
+      updateChestStatusDisplay();
+    });
+  });
 
   // ❄️ CHRISTMAS SNOWFLAKE EFFECT
   // ❄️ CHRISTMAS SNOWFLAKE EFFECT - DISABLED FOR NEW YEAR 2026

@@ -75,12 +75,17 @@
 - `public/tetris.html` - Bug #401 fixes, purchase confirmation
 - `public/snake.html` - Purchase confirmation
 - `public/space-cheese-invaders.html` - Purchase confirmation
-- `public/profile.html` - Nerd Lab link, wallet status, staking auth, purchase confirmation
-- `public/index.html` - Season 7 button text fix
+- `public/profile.html` - Nerd Lab link, wallet status, staking auth, purchase confirmation, profile lootbox system
+- `public/index.html` - Season 7 button text fix, chest link card in hero section
+- `public/admin-interface.html` - Profile Lootbox settings tab
 
 ### **Script Files:**
 - `public/scripts/tetris-scroll.js` - Keyboard input fixes
 - `public/scripts/snake-scroll.js` - Boss notification transparency
+
+### **Three.js Game Files:**
+- `three.js/gui-system.js` - Main menu implementation
+- `three.js/main.js` - Main menu integration
 
 ---
 
@@ -147,6 +152,65 @@
 
 ---
 
+## 🎯 **NEXT SESSION - THREE.JS GUI WORK**
+
+### **Session 2: Three.js Game GUI Improvements & System Tweaks**
+
+**Focus Areas:**
+1. **GUI System Improvements:** Review and enhance three.js game GUI system (`gui-system.js`)
+2. **System Tweaks:** Apply system improvements and optimizations
+3. **UI/UX Enhancements:** Improve in-game interface elements
+
+**Status:** ✅ **COMPLETE**
+
+---
+
+### **6. Main Menu Implementation** ✅
+- **Feature:** Created main menu (welcome screen) that appears when game loads
+- **Implementation:**
+  - Added `showMainMenu()` and `hideMainMenu()` methods to GUI system
+  - Created main menu with title "Welcome to Narrrf's World 3D Riddle Game"
+  - Added three buttons: "New Game", "Options", "Exit"
+  - Styled to match existing character selection menu (dark theme with golden accents)
+- **User Flow:**
+  - Game loads → Main menu appears
+  - Click "New Game" → Character selection menu appears
+  - Click "Options" → Options menu appears
+  - Click "Exit" → Navigates back to profile page
+- **Files Modified:**
+  - `three.js/gui-system.js` - Added main menu creation and management
+  - `three.js/main.js` - Added showMainMenu() function, integrated with GUI system initialization
+- **Result:** Professional welcome screen matching common game menu patterns
+- **Status:** ✅ Working - Main menu displays correctly after GUI system initialization
+
+### **7. Profile Lootbox System Integration** ✅
+- **Feature:** Interactive treasure chest lootbox on profile.html with DSPOINC rewards
+- **Implementation:**
+  - Added chest UI section at bottom of profile page with opening animations
+  - Integrated with `/api/dev/riddle-reward.php` API for DSPOINC rewards
+  - Implemented client-side cooldown system (session/daily/hourly/none) with localStorage
+  - Added image-based chest UI (chest-closed.png / chest-opened.png)
+  - Integrated chest opening sound (chest.mp3) with robust loading
+  - Added "Lootbox" button to Quick Access to Games section (scrolls to chest)
+  - Added chest link card to index.html hero section
+- **Admin Integration:**
+  - Created new "Profile Lootbox" tab in admin interface
+  - Dynamic configuration: reward range (min/max), cooldown type, cooldown hours
+  - Instant updates: Changes sync to profile.html via localStorage events
+  - Default values: 1-250 DSPOINC, 24-hour daily cooldown
+- **User Flow:**
+  - User clicks chest → Animation plays (lid opens, particles, glow)
+  - Sound plays (chest.mp3) → API call awards DSPOINC
+  - Balance updates automatically → Chest marked as opened (cooldown active)
+- **Files Modified:**
+  - `public/profile.html` - Chest UI, animations, API integration, cooldown logic
+  - `public/admin-interface.html` - Profile Lootbox settings tab
+  - `public/index.html` - Chest link card in hero section
+- **Result:** Complete lootbox system with admin controls, working animations, sound, and rewards
+- **Status:** ✅ Working - All features tested and operational (local and production ready)
+
+---
+
 ## 🎯 **NEXT STEPS (Future Sessions)**
 
 1. **Monitor:** Watch for any issues with new fixes
@@ -155,5 +219,5 @@
 
 ---
 
-**Status:** ✅ **ALL BUGS FIXED - UX IMPROVEMENTS COMPLETE - READY FOR DEPLOYMENT**
+**Status:** ✅ **ALL BUGS FIXED - UX IMPROVEMENTS COMPLETE - THREE.JS GUI MAIN MENU COMPLETE - PROFILE LOOTBOX SYSTEM COMPLETE**
 

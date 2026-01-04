@@ -1484,6 +1484,7 @@
         <button class="tab-btn px-4 py-2 rounded" data-tab="securityCrawler">🔒 Security Crawler</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="twelveZeroManagement">📁 12.0 Management</button>
         <button class="tab-btn px-4 py-2 rounded" data-tab="partners">🤝 Partners</button>
+        <button class="tab-btn px-4 py-2 rounded" data-tab="profileChest">🎁 Profile Chest Config</button>
       </div>
       
       <!-- Quick Actions Section -->
@@ -2400,7 +2401,117 @@
         </div>
       </div>
     </div>
-
+    
+    <!-- Profile Chest Configuration Tab -->
+    <div class="admin-card mb-6" id="profileChestTab" style="display: none;">
+      <h2 class="text-xl font-semibold mb-4">🎁 Profile Chest Configuration</h2>
+      
+      <!-- Current Configuration Display -->
+      <div class="bg-gradient-to-r from-amber-900/40 to-yellow-900/40 p-4 rounded-lg mb-6 border-2 border-amber-500/50">
+        <h3 class="text-lg font-semibold mb-3 text-yellow-300">📊 Current Configuration</h3>
+        <div id="profileChestCurrentConfig" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-200">
+          <div>
+            <span class="text-yellow-400 font-semibold">Reward Range:</span>
+            <span id="currentRewardRange" class="ml-2">Loading...</span>
+          </div>
+          <div>
+            <span class="text-yellow-400 font-semibold">Cooldown:</span>
+            <span id="currentCooldown" class="ml-2">Loading...</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Configuration Form -->
+      <div class="bg-gray-800 bg-opacity-50 p-6 rounded-lg mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-cyan-300">⚙️ Configuration Settings</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Reward Range -->
+          <div>
+            <label class="block text-gray-300 mb-2 font-semibold">💰 Reward Range (DSPOINC)</label>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Minimum</label>
+                <input type="number" id="profileChestRewardMin" min="1" max="10000" value="1" 
+                       class="w-full px-3 py-2 rounded text-gray-800 bg-white border border-gray-300 focus:border-blue-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Maximum</label>
+                <input type="number" id="profileChestRewardMax" min="1" max="10000" value="250" 
+                       class="w-full px-3 py-2 rounded text-gray-800 bg-white border border-gray-300 focus:border-blue-500 focus:outline-none">
+              </div>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">Players receive a random amount between min and max (inclusive)</p>
+          </div>
+          
+          <!-- Cooldown Settings -->
+          <div>
+            <label class="block text-gray-300 mb-2 font-semibold">⏰ Cooldown Settings</label>
+            <div class="mb-3">
+              <label class="block text-sm text-gray-400 mb-1">Cooldown Type</label>
+              <select id="profileChestCooldownType" 
+                      class="w-full px-3 py-2 rounded text-gray-800 bg-white border border-gray-300 focus:border-blue-500 focus:outline-none"
+                      onchange="updateCooldownHoursVisibility()">
+                <option value="session">Session (once per page load)</option>
+                <option value="daily" selected>Daily (24h per Discord session)</option>
+                <option value="hourly">Hourly (custom hours)</option>
+                <option value="none">None (unlimited)</option>
+              </select>
+            </div>
+            <div id="cooldownHoursContainer">
+              <label class="block text-sm text-gray-400 mb-1">Cooldown Duration (hours)</label>
+              <input type="number" id="profileChestCooldownHours" min="0.1" max="168" step="0.1" value="24" 
+                     class="w-full px-3 py-2 rounded text-gray-800 bg-white border border-gray-300 focus:border-blue-500 focus:outline-none">
+              <p class="text-xs text-gray-400 mt-1">Range: 0.1 - 168 hours (7 days max)</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 mt-6">
+          <button onclick="saveProfileChestConfig()" 
+                  class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+            💾 Save Configuration
+          </button>
+          <button onclick="resetProfileChestConfig()" 
+                  class="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+            🔄 Reset to Defaults
+          </button>
+        </div>
+        
+        <!-- Status Message -->
+        <div id="profileChestStatusMessage" class="mt-4 p-3 rounded-lg hidden"></div>
+      </div>
+      
+      <!-- Help Section -->
+      <div class="bg-gradient-to-r from-blue-900/40 to-indigo-900/40 p-6 rounded-lg border-2 border-blue-500/50">
+        <h3 class="text-lg font-semibold mb-4 text-blue-300">❓ Help & Documentation</h3>
+        
+        <div class="space-y-4 text-gray-200">
+          <div>
+            <h4 class="font-semibold text-yellow-400 mb-2">💰 Reward Range</h4>
+            <p class="text-sm">Players receive a random DSPOINC amount between the minimum and maximum values (inclusive).</p>
+            <p class="text-sm mt-1"><strong>Example:</strong> Min: 1, Max: 250 → Players get 1-250 DSPOINC randomly</p>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold text-yellow-400 mb-2">⏰ Cooldown Types</h4>
+            <ul class="text-sm space-y-1 ml-4 list-disc">
+              <li><strong>Session:</strong> Once per page load (resets when user refreshes page)</li>
+              <li><strong>Daily:</strong> Once per 24 hours (or custom hours) - Recommended for Discord sessions</li>
+              <li><strong>Hourly:</strong> Once per hour (or custom hours)</li>
+              <li><strong>None:</strong> Unlimited - Players can open chest multiple times</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold text-yellow-400 mb-2">⚡ Instant Updates</h4>
+            <p class="text-sm">Changes are saved to localStorage and apply instantly to the profile page. No page refresh needed!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <!-- Quest System Tab -->
     <div class="admin-card mb-6" id="questsTab" style="display: none;">
       <h2 class="text-xl font-semibold mb-4">🏆 Quest System</h2>
@@ -6085,6 +6196,11 @@
             // Store - Always refresh store items
             loadStoreItems();
             addLog('🏪 Store tab auto-loaded');
+            
+          } else if (tabName === 'profileChest') {
+            // Profile Chest Config - Load configuration
+            loadProfileChestConfig();
+            addLog('🎁 Profile chest config tab loaded');
             
           } else if (tabName === 'quests') {
             // Quests - Always refresh quest data and claims
@@ -10356,6 +10472,264 @@
       }
     }
 
+    // ============================================================================
+    // 🎁 PROFILE CHEST CONFIGURATION FUNCTIONS
+    // ============================================================================
+    
+    /**
+     * Load profile chest configuration from localStorage or use defaults
+     * @returns {Object} Configuration object
+     */
+    function getProfileChestConfigDefaults() {
+      return {
+        rewardMin: 1,
+        rewardMax: 250,
+        cooldownType: 'daily',
+        cooldownHours: 24,
+      };
+    }
+    
+    /**
+     * Load profile chest configuration
+     */
+    function loadProfileChestConfig() {
+      try {
+        const stored = localStorage.getItem('profile_chest_config');
+        let config;
+        
+        if (stored) {
+          config = JSON.parse(stored);
+        } else {
+          config = getProfileChestConfigDefaults();
+        }
+        
+        // Populate form fields
+        document.getElementById('profileChestRewardMin').value = config.rewardMin || 1;
+        document.getElementById('profileChestRewardMax').value = config.rewardMax || 250;
+        document.getElementById('profileChestCooldownType').value = config.cooldownType || 'daily';
+        document.getElementById('profileChestCooldownHours').value = config.cooldownHours || 24;
+        
+        // Update visibility of cooldown hours field
+        updateCooldownHoursVisibility();
+        
+        // Update current configuration display
+        updateProfileChestConfigDisplay(config);
+        
+        console.log('✅ [PROFILE CHEST] Configuration loaded:', config);
+      } catch (error) {
+        console.error('❌ [PROFILE CHEST] Error loading configuration:', error);
+        showProfileChestStatus('Error loading configuration', 'error');
+      }
+    }
+    
+    /**
+     * Update current configuration display
+     */
+    function updateProfileChestConfigDisplay(config) {
+      const rewardRangeEl = document.getElementById('currentRewardRange');
+      const cooldownEl = document.getElementById('currentCooldown');
+      
+      if (rewardRangeEl) {
+        rewardRangeEl.textContent = `${config.rewardMin} - ${config.rewardMax} DSPOINC`;
+      }
+      
+      if (cooldownEl) {
+        let cooldownText = '';
+        switch (config.cooldownType) {
+          case 'session':
+            cooldownText = 'Session (once per page load)';
+            break;
+          case 'daily':
+            cooldownText = `Daily (${config.cooldownHours}h per Discord session)`;
+            break;
+          case 'hourly':
+            cooldownText = `Hourly (${config.cooldownHours}h)`;
+            break;
+          case 'none':
+            cooldownText = 'None (unlimited)';
+            break;
+          default:
+            cooldownText = 'Unknown';
+        }
+        cooldownEl.textContent = cooldownText;
+      }
+    }
+    
+    /**
+     * Update cooldown hours field visibility based on cooldown type
+     */
+    function updateCooldownHoursVisibility() {
+      const cooldownType = document.getElementById('profileChestCooldownType').value;
+      const hoursContainer = document.getElementById('cooldownHoursContainer');
+      
+      if (hoursContainer) {
+        if (cooldownType === 'session' || cooldownType === 'none') {
+          hoursContainer.style.display = 'none';
+        } else {
+          hoursContainer.style.display = 'block';
+        }
+      }
+    }
+    
+    /**
+     * Validate profile chest configuration
+     * @param {Object} config - Configuration to validate
+     * @returns {Object} { valid: boolean, errors: string[] }
+     */
+    function validateProfileChestConfig(config) {
+      const errors = [];
+      
+      // Validate reward range
+      if (config.rewardMin < 1 || config.rewardMin > 10000) {
+        errors.push('Reward minimum must be between 1 and 10000');
+      }
+      if (config.rewardMax < 1 || config.rewardMax > 10000) {
+        errors.push('Reward maximum must be between 1 and 10000');
+      }
+      if (config.rewardMin > config.rewardMax) {
+        errors.push('Reward minimum cannot be greater than maximum');
+      }
+      
+      // Validate cooldown type
+      const validCooldownTypes = ['session', 'daily', 'hourly', 'none'];
+      if (!validCooldownTypes.includes(config.cooldownType)) {
+        errors.push('Invalid cooldown type');
+      }
+      
+      // Validate cooldown hours
+      if (config.cooldownType === 'daily' || config.cooldownType === 'hourly') {
+        if (config.cooldownHours < 0.1 || config.cooldownHours > 168) {
+          errors.push('Cooldown hours must be between 0.1 and 168 (7 days max)');
+        }
+      }
+      
+      return {
+        valid: errors.length === 0,
+        errors: errors
+      };
+    }
+    
+    /**
+     * Save profile chest configuration
+     */
+    function saveProfileChestConfig() {
+      try {
+        // Get form values
+        const config = {
+          rewardMin: parseInt(document.getElementById('profileChestRewardMin').value, 10),
+          rewardMax: parseInt(document.getElementById('profileChestRewardMax').value, 10),
+          cooldownType: document.getElementById('profileChestCooldownType').value,
+          cooldownHours: parseFloat(document.getElementById('profileChestCooldownHours').value),
+          lastUpdated: new Date().toISOString(),
+        };
+        
+        // Validate
+        const validation = validateProfileChestConfig(config);
+        if (!validation.valid) {
+          showProfileChestStatus('Validation errors: ' + validation.errors.join(', '), 'error');
+          return;
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('profile_chest_config', JSON.stringify(config));
+        
+        // Update display
+        updateProfileChestConfigDisplay(config);
+        
+        // Show success message
+        showProfileChestStatus('✅ Configuration saved successfully! Changes apply instantly to profile page.', 'success');
+        
+        // Trigger custom event for same-window updates (profile.html)
+        window.dispatchEvent(new CustomEvent('profileChestConfigUpdated'));
+        
+        // Also trigger storage event (for cross-tab updates)
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'profile_chest_config',
+          newValue: JSON.stringify(config),
+          storageArea: localStorage
+        }));
+        
+        console.log('✅ [PROFILE CHEST] Configuration saved:', config);
+        addLog('🎁 Profile chest configuration saved: ' + JSON.stringify(config));
+      } catch (error) {
+        console.error('❌ [PROFILE CHEST] Error saving configuration:', error);
+        showProfileChestStatus('Error saving configuration: ' + error.message, 'error');
+      }
+    }
+    
+    /**
+     * Reset profile chest configuration to defaults
+     */
+    function resetProfileChestConfig() {
+      if (!confirm('Are you sure you want to reset to default values?\n\nDefault: 1-250 DSPOINC, 24h daily cooldown')) {
+        return;
+      }
+      
+      try {
+        // Clear localStorage
+        localStorage.removeItem('profile_chest_config');
+        
+        // Load defaults
+        const defaults = getProfileChestConfigDefaults();
+        
+        // Populate form with defaults
+        document.getElementById('profileChestRewardMin').value = defaults.rewardMin;
+        document.getElementById('profileChestRewardMax').value = defaults.rewardMax;
+        document.getElementById('profileChestCooldownType').value = defaults.cooldownType;
+        document.getElementById('profileChestCooldownHours').value = defaults.cooldownHours;
+        
+        // Update visibility
+        updateCooldownHoursVisibility();
+        
+        // Update display
+        updateProfileChestConfigDisplay(defaults);
+        
+        // Show success message
+        showProfileChestStatus('✅ Configuration reset to defaults!', 'success');
+        
+        // Trigger update events
+        window.dispatchEvent(new CustomEvent('profileChestConfigUpdated'));
+        
+        console.log('✅ [PROFILE CHEST] Configuration reset to defaults');
+        addLog('🎁 Profile chest configuration reset to defaults');
+      } catch (error) {
+        console.error('❌ [PROFILE CHEST] Error resetting configuration:', error);
+        showProfileChestStatus('Error resetting configuration: ' + error.message, 'error');
+      }
+    }
+    
+    /**
+     * Show status message
+     */
+    function showProfileChestStatus(message, type = 'info') {
+      const statusEl = document.getElementById('profileChestStatusMessage');
+      if (!statusEl) return;
+      
+      statusEl.textContent = message;
+      statusEl.className = 'mt-4 p-3 rounded-lg';
+      statusEl.classList.remove('hidden');
+      
+      // Set color based on type
+      if (type === 'success') {
+        statusEl.classList.add('bg-green-900', 'bg-opacity-50', 'border', 'border-green-500', 'text-green-200');
+      } else if (type === 'error') {
+        statusEl.classList.add('bg-red-900', 'bg-opacity-50', 'border', 'border-red-500', 'text-red-200');
+      } else {
+        statusEl.classList.add('bg-blue-900', 'bg-opacity-50', 'border', 'border-blue-500', 'text-blue-200');
+      }
+      
+      // Auto-hide after 5 seconds for success messages
+      if (type === 'success') {
+        setTimeout(() => {
+          statusEl.classList.add('hidden');
+        }, 5000);
+      }
+    }
+    
+    // ============================================================================
+    // END PROFILE CHEST CONFIGURATION FUNCTIONS
+    // ============================================================================
+    
     // Store Management Functions - Duplicate removed, using the working version above
 
     async function createStoreItem() {
