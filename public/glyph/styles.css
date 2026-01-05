@@ -1,0 +1,466 @@
+/*
+Glyph Memory — Phase 1 CSS
+- Focus: clean layout + responsiveness
+- Visual identity/polish comes later
+*/
+
+:root {
+  --bg: #0c0c0c;
+  --panel: rgba(12, 12, 12, 0.72);
+  --panelBorder: rgba(255, 215, 0, 0.22);
+  --text: #f3f3f3;
+  --muted: rgba(243, 243, 243, 0.75);
+  --gold: #ffd700;
+  --teal: #00ced1;
+  --shadow: 0 18px 40px rgba(0,0,0,0.55);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.app {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 10%, rgba(0, 206, 209, 0.18), transparent 40%),
+              radial-gradient(circle at 80% 90%, rgba(255, 215, 0, 0.14), transparent 42%),
+              linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.75));
+  transform: scale(1.02);
+  filter: saturate(1.05);
+  z-index: 0;
+}
+
+.view {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: none;
+  padding: 24px 16px;
+}
+
+.view--active { display: grid; }
+
+/* Menu centers content */
+#menuView.view--active {
+  place-items: center;
+}
+
+.panel {
+  width: min(520px, 92vw);
+  padding: 22px;
+  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--panelBorder);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.panel__header {
+  margin-bottom: 18px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(28px, 4.2vw, 40px);
+  letter-spacing: 0.5px;
+}
+
+.title--sm {
+  font-size: clamp(20px, 3vw, 26px);
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.controls {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.controls--row {
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.select {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.35);
+  color: var(--text);
+  outline: none;
+}
+
+.btn {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.35);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+
+.btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.28); }
+.btn:active { transform: translateY(0px); }
+
+.btn--primary {
+  border-color: rgba(255, 215, 0, 0.35);
+  background: rgba(255, 215, 0, 0.12);
+}
+
+.btn--ghost {
+  border-color: rgba(255, 215, 0, 0.22);
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  color: rgba(243,243,243,0.7);
+  font-size: 13px;
+}
+
+.hint__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(0, 206, 209, 0.7);
+  box-shadow: 0 0 18px rgba(0, 206, 209, 0.35);
+}
+
+/* Best time line on menu */
+.bestLine {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.28);
+}
+
+.bestLine__label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.bestLine__value {
+  font-size: 14px;
+  letter-spacing: 0.4px;
+}
+
+/* Game view layout */
+#gameView.view--active {
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
+}
+
+.topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.topbar__right {
+  display: flex;
+  gap: 10px;
+}
+
+.stat {
+  display: grid;
+  gap: 4px;
+}
+
+.stat__label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stat__value {
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+.boardWrap {
+  display: grid;
+  place-items: center;
+  padding-bottom: 18px;
+}
+
+.board {
+  align-content: center;
+  width: min(1400px, 96vw);
+  display: grid;
+  gap: 22px;
+  margin: 0 auto;
+  padding: 24px;
+  grid-auto-rows: clamp(140px, 18vh, 200px);
+  justify-content: center;
+}
+
+/* Cards */
+.card {
+  position: relative;
+  height: 100%;
+border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.35);
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  transform: translateZ(0);
+}
+
+.card[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.cardInner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.cardFront img {
+  display: block;
+  width: 85%;
+  height: 85%;
+  object-fit: contain;
+  object-position: center;
+  justify-self: center;
+  align-self: center;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55));
+}
+
+/* Simple flip states (Phase 1) */
+.cardFront {
+  place-items: center; opacity: 0; }
+.card.is-flipped .cardFront { opacity: 1; }
+.card.is-flipped .cardBack { opacity: 0; }
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,0.55);
+  z-index: 20;
+}
+
+.panel--overlay {
+  width: min(520px, 92vw);
+}
+
+.newBest {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  border: 1px solid rgba(0, 206, 209, 0.45);
+  background: rgba(0, 206, 209, 0.12);
+  color: rgba(0, 206, 209, 0.95);
+}
+
+/* Small screens */
+@media (max-width: 520px) {
+  .controls--row {
+    grid-auto-flow: row;
+  }
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .topbar__right {
+    justify-content: stretch;
+  }
+  .topbar__right .btn {
+    width: 100%;
+  }
+}
+
+
+/* Ensure the HTML 'hidden' attribute actually hides overlays (override .overlay display) */
+.overlay[hidden] { display: none !important; }
+
+/* Prevent dragging glyph images (no cheat drag-preview) */
+.card img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+
+/* Fallback styling if a glyph image is missing */
+.cardFront.missing {
+  color: rgba(255, 215, 0, 0.85);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+/* Card back icon (polished) */
+.cardBack{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  /* deep glass */
+  background:
+    radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 35%, rgba(0,0,0,.18) 100%),
+    linear-gradient(135deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.10) 45%, rgba(0,0,0,.24) 100%);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.06),
+    inset 0 -12px 24px rgba(0,0,0,.18);
+}
+
+/* slow moving sheen */
+.cardBack::before{
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.18) 48%, transparent 60%);
+  transform: translateX(-35%) rotate(12deg);
+  opacity: .45;
+  pointer-events: none;
+  animation: backSheen 6.5s ease-in-out infinite;
+}
+
+@keyframes backSheen{
+  0%   { transform: translateX(-45%) rotate(12deg); opacity: .28; }
+  45%  { opacity: .55; }
+  100% { transform: translateX(45%) rotate(12deg); opacity: .28; }
+}
+
+/* vignette + micro pattern */
+.cardBack::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: 18px;
+  background:
+    radial-gradient(80% 80% at 50% 50%, transparent 55%, rgba(0,0,0,.22) 100%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 2px, rgba(255,255,255,0) 2px 8px);
+  mix-blend-mode: overlay;
+  opacity: .35;
+  pointer-events:none;
+}
+
+.backIcon{
+  position: relative;
+  width: clamp(44px, 18%, 72px);
+  aspect-ratio: 1 / 1;
+  transform: rotate(45deg);
+  border-radius: 10px;
+  z-index: 2;
+
+  border: 2px solid rgba(212, 175, 55, .55);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.25),
+    0 0 18px rgba(212, 175, 55, .16);
+
+  background:
+    radial-gradient(120% 120% at 30% 30%, rgba(0,255,210,.14) 0%, rgba(0,0,0,0) 55%),
+    linear-gradient(135deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,.12) 100%);
+}
+
+.backIcon::before{
+  content:"";
+  position:absolute;
+  inset: 22%;
+  border-radius: 6px;
+  border: 1px solid rgba(0,255,210,.22);
+  box-shadow: 0 0 10px rgba(0,255,210,.10);
+}
+
+.backIcon::after{
+  content:"";
+  position:absolute;
+  inset: -6px;
+  border-radius: 14px;
+  background: radial-gradient(closest-side, rgba(212,175,55,.12), transparent 70%);
+  opacity: .85;
+  pointer-events:none;
+}
+
+.backDots{
+  position: absolute;
+  inset: clamp(10px, 10%, 18px);
+  border-radius: 14px;
+  opacity: .40;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(212,175,55,.55) 0 1px, transparent 2px),
+    radial-gradient(circle at 85% 25%, rgba(0,255,210,.40) 0 1px, transparent 2px),
+    radial-gradient(circle at 25% 85%, rgba(212,175,55,.45) 0 1px, transparent 2px),
+    radial-gradient(circle at 80% 80%, rgba(0,255,210,.35) 0 1px, transparent 2px);
+  filter: blur(.2px);
+}
+
+/* hover polish */
+@media (hover: hover) and (pointer: fine){
+  .card:not(.matched):not(.is-flipped):hover{
+    transform: translateY(-2px);
+    box-shadow:
+      0 18px 45px rgba(0,0,0,.35),
+      inset 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .card:not(.matched):not(.is-flipped):hover .backIcon{
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,.25),
+      0 0 22px rgba(212, 175, 55, .22);
+    border-color: rgba(212, 175, 55, .70);
+  }
+}
+
+/* tactile press */
+.card:active{
+  transform: translateY(0px) scale(.985);
+}
+

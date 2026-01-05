@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5.0, user-scalable=yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Glyph Memory - Narrrf's World</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" class="app">
+    <!-- Background layer (optional image) -->
+    <div id="bg" class="bg" aria-hidden="true"></div>
+
+    <!-- MAIN MENU -->
+    <main id="menuView" class="view view--active" role="main">
+      <section class="panel" aria-label="Main menu">
+        <div class="panel__header">
+          <h1 class="title">Glyph Memory</h1>
+          <p class="subtitle">Match the hidden glyph pairs.</p>
+        </div>
+
+        <div class="controls">
+          <label class="label" for="difficultySelect">Select Difficulty</label>
+          <select id="difficultySelect" class="select">
+            <option value="easy">Easy (6 pairs)</option>
+            <option value="medium">Medium (8 pairs)</option>
+            <option value="hard">Hard (12 pairs)</option>
+          </select>
+
+          <div class="bestLine" aria-label="Best time">
+            <span class="bestLine__label">Best</span>
+            <span id="menuBestTime" class="bestLine__value">—</span>
+          </div>
+
+          <button id="startBtn" class="btn btn--primary" type="button">Start Game</button>
+        </div>
+
+        <div class="hint">
+          <span class="hint__dot"></span>
+          <span>Tip: Try to beat your own time.</span>
+        </div>
+      </section>
+    </main>
+
+    <!-- GAME VIEW -->
+    <main id="gameView" class="view" role="main">
+      <header class="topbar" aria-label="Game top bar">
+        <div class="topbar__left">
+          <div class="stat">
+            <span class="stat__label">Time</span>
+            <span id="timer" class="stat__value">00:00</span>
+          </div>
+
+          <div class="stat">
+            <span class="stat__label">Best</span>
+            <span id="bestTime" class="stat__value">—</span>
+          </div>
+        </div>
+
+        <div class="topbar__right">
+          <button id="restartBtn" class="btn" type="button">Restart</button>
+          <button id="menuBtn" class="btn btn--ghost" type="button">Main Menu</button>
+        </div>
+      </header>
+
+      <section class="boardWrap" aria-label="Game board">
+        <div id="board" class="board" role="grid" aria-label="Card grid"></div>
+      </section>
+    </main>
+
+    <!-- WIN OVERLAY -->
+    <div id="winOverlay" class="overlay" role="dialog" aria-modal="true" aria-label="Win screen" hidden>
+      <div class="panel panel--overlay">
+        <h2 class="title title--sm">You've matched all the glyphs!</h2>
+        <p class="subtitle">Time: <strong id="finalTime">00:00</strong></p>
+        <p class="subtitle">Best: <strong id="overlayBestTime">—</strong> <span id="newBestBadge" class="newBest" hidden>NEW BEST</span></p>
+
+        <div class="controls controls--row">
+          <button id="playAgainBtn" class="btn btn--primary" type="button">Play Again</button>
+          <button id="backToMenuBtn" class="btn" type="button">Back to Menu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
+
