@@ -7565,8 +7565,8 @@ function startGame(startLevelId = null) {
     warpToLevelWithLoading(LEVEL_IDS.LEVEL1, "Level 1", async () => {
     return new Promise((resolve, reject) => {
   // Load level after character selection
-  console.log("🚀 [DEBUG] Starting game, fetching level1.json from /public/three.js/public/models/cheese-temple/level1.json");
-  fetch("/public/three.js/public/models/cheese-temple/level1.json")
+  console.log("🚀 [DEBUG] Starting game, fetching level1.json from /three.js/public/models/cheese-temple/level1.json");
+  fetch("/three.js/public/models/cheese-temple/level1.json")
     .then((res) => {
       if (!res.ok) {
         console.error(`❌ [ERROR] Failed to fetch level1.json: HTTP ${res.status} ${res.statusText}`);
@@ -7580,7 +7580,7 @@ function startGame(startLevelId = null) {
       console.error("🔍 [DEBUG] Error details:", {
         message: error.message,
         stack: error.stack,
-        url: "./public/models/cheese-temple/level1.json",
+        url: "/three.js/public/models/cheese-temple/level1.json",
         hostname: window.location.hostname,
         port: window.location.port,
         protocol: window.location.protocol
