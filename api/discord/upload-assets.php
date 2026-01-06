@@ -43,9 +43,24 @@ if (empty($valid_tokens) || !in_array($auth_token, $valid_tokens)) {
 }
 
 // --- VALIDATE FILE UPLOAD ---
-if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+if (!isset($_FILES['file'])) {
     http_response_code(400);
-    outputJson(['success' => false, 'error' => 'No file uploaded or upload error']);
+    outputJson(['success' => false, 'error' => 'No file uploaded - $_FILES[file] not set', 'debug' => ['files' => array_keys($_FILES), 'post' => array_keys($_POST)]]);
+}
+
+if ($_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+    $errorMessages = [
+        UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize',
+        UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE',
+        UPLOAD_ERR_PARTIAL => 'File was only partially uploaded',
+        UPLOAD_ERR_NO_FILE => 'No file was uploaded',
+        UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder',
+        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+        UPLOAD_ERR_EXTENSION => 'File upload stopped by extension'
+    ];
+    $errorMsg = $errorMessages[$_FILES['file']['error']] ?? 'Unknown upload error: ' . $_FILES['file']['error'];
+    http_response_code(400);
+    outputJson(['success' => false, 'error' => $errorMsg, 'error_code' => $_FILES['file']['error']]);
 }
 
 $uploadedFile = $_FILES['file'];
