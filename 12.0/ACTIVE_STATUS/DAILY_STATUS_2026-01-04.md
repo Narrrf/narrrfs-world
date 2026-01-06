@@ -1,8 +1,9 @@
 # 🧀 NARRRFS WORLD 12.0 - DAILY STATUS REPORT
 
-**Date:** January 4, 2026 (Sunday)  
-**Status:** ✅ **GAME 8: GLYPH MEMORY DEPLOYED & DOCUMENTED + SKY SYSTEM & DEBUG HELPERS IMPLEMENTED**  
-**Year:** 2026 - Post-Season 7 Reset Development Session
+**Date:** January 4-6, 2026 (Sunday-Tuesday)  
+**Status:** ✅ **THREE.JS GAME DEPLOYED TO PRODUCTION + ASSET UPLOAD SYSTEM COMPLETE**  
+**Year:** 2026 - Post-Season 7 Reset Development Session  
+**Latest:** January 6, 2026 - Three.js game now online playable, investigating path issues
 
 ---
 
@@ -250,7 +251,33 @@
 - **Note:** Level 5 completion screen not yet implemented - Level 5 riddles need to be created first to establish completion logic
 - **Result:** Consistent, immersive Cheese Temple background across all menus and completion screens
 
-### **11. Level 5 Ground Collision Fix** ✅ (January 4, 2026)
+### **11. Profile Lootbox 24h Cooldown Fix** ✅ (January 4, 2026)
+- **Issue:** Users couldn't claim profile lootbox after 24 hours - API returned 409 Conflict error saying "Riddle already completed"
+- **Root Cause:** Backend API (`riddle-reward.php`) treated profile lootbox as one-time riddle completion with UNIQUE constraint on `(discord_id, riddle_id)`, preventing repeat claims even after cooldown expired
+- **Solution:** Modified API to detect profile lootbox (`CHEST_PROFILE_LOOTBOX`) and allow daily claims:
+  - **Backend Changes (`api/dev/riddle-reward.php`):**
+    - Added special handling for `CHEST_PROFILE_LOOTBOX` riddle ID
+    - Checks `completed_at` timestamp from database
+    - Calculates hours since last claim
+    - If 24 hours have passed: Deletes old record and allows new claim
+    - If still on cooldown: Returns detailed cooldown error with hours remaining
+  - **Frontend Changes (`public/profile.html`):**
+    - Added specific handling for 409 Conflict responses from API
+    - Displays cooldown message with hours/minutes remaining
+    - Shows user-friendly alert with cooldown information
+    - Updates status text with remaining time
+- **Result:** Users can now claim profile lootbox every 24 hours indefinitely - system works forever with daily cooldown
+- **Current Status:**
+  - ✅ Backend enforces 24-hour cooldown (hardcoded for now)
+  - ✅ Frontend respects admin config for UI/display (`cooldownHours` from admin interface)
+  - ✅ System allows infinite daily claims (no limit on total claims)
+  - ⏳ Future enhancement: Make backend cooldown configurable via admin interface
+- **Files Modified:**
+  - `api/dev/riddle-reward.php` - Added profile lootbox daily claim logic
+  - `public/profile.html` - Added 409 Conflict error handling with cooldown display
+- **Testing:** Ready for user testing - first claim works, subsequent claims after 24 hours should now work correctly
+
+### **12. Level 5 Ground Collision Fix** ✅ (January 4, 2026)
 - **Issue:** Level 5 ground collision was not working - player had no ground in GOD mode and fell through ground in normal mode
 - **Root Cause:** Global `collisionMesh` variable was not being set to Level 5's collision mesh when warping to an already-built Level 5
 - **Solution:** Added code in `warpToLevel5()` to ensure Level 5's collision mesh is properly set:

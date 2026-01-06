@@ -7517,6 +7517,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         console.log('✅ [PROFILE CHEST] Reward awarded successfully:', result);
+      } else if (response.status === 409 && result.already_completed) {
+        // Handle cooldown error from API (409 Conflict)
+        const cooldownMessage = result.cooldown_message || result.error || 'Chest is on cooldown';
+        const hoursRemaining = result.hours_remaining || 0;
+        
+        console.warn('⏰ [PROFILE CHEST] Chest on cooldown:', cooldownMessage);
+        
+        // Update status with cooldown message
+        if (statusEl) {
+          if (hoursRemaining > 0) {
+            if (hoursRemaining >= 1) {
+              statusEl.textContent = `Available in ${hoursRemaining.toFixed(1)} hours`;
+            } else {
+              const minutesRemaining = Math.ceil(hoursRemaining * 60);
+              statusEl.textContent = `Available in ${minutesRemaining} minutes`;
+            }
+          } else {
+            statusEl.textContent = cooldownMessage;
+          }
+          statusEl.className = 'mt-4 text-center text-sm text-yellow-400';
+        }
+        
+        // Reset chest image to closed (since it was already opened)
+        const chestImageEl = document.getElementById('profile-chest-image');
+        if (chestImageEl) {
+          chestImageEl.src = 'img/chests/chest-opened.png'; // Show as opened since it's on cooldown
+        }
+        
+        // Update localStorage timestamp to match server (if available)
+        if (result.previous_reward) {
+          // Don't update timestamp - keep client-side cooldown in sync
+          // The server will handle the actual cooldown
+        }
+        
+        // Show user-friendly alert
+        alert(cooldownMessage);
       } else {
         throw new Error(result.error || 'Failed to award reward');
       }

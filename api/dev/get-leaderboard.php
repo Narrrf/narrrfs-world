@@ -113,6 +113,51 @@ try {
         $entry['score'] = round($entry['score']);
     }
     
+    // 🧩 Get Glyph Memory leaderboard (all-time, per difficulty)
+    function getGlyphMemoryLeaderboard($db) {
+        $difficulties = ['easy', 'medium', 'hard'];
+        $result = [];
+        
+        foreach ($difficulties as $difficulty) {
+            // Get best time per player for this difficulty (all-time, no season filter)
+            $stmt = $db->prepare("
+                SELECT 
+                    discord_id,
+                    COALESCE(discord_name, 'Guest') as discord_name,
+                    difficulty,
+                    MIN(time_ms) as best_time_ms,
+                    MIN(timestamp) as timestamp
+                FROM tbl_glyph_memory_scores 
+                WHERE difficulty = ?
+                GROUP BY discord_id, discord_name, difficulty
+                ORDER BY best_time_ms ASC, timestamp ASC
+                LIMIT 10
+            ");
+            $stmt->execute([$difficulty]);
+            $scores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Format time_ms as MM:SS
+            foreach ($scores as &$entry) {
+                $totalSec = floor($entry['best_time_ms'] / 1000);
+                $min = floor($totalSec / 60);
+                $sec = $totalSec % 60;
+                $entry['best_time_formatted'] = sprintf("%02d:%02d", $min, $sec);
+            }
+            
+            $result[$difficulty] = $scores;
+        }
+        
+        return $result;
+    }
+    
+    $glyphMemoryLeaderboard = [];
+    // Check if table exists before querying
+    $tableCheck = $db->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tbl_glyph_memory_scores'");
+    $tableCheck->execute();
+    if ($tableCheck->fetch()) {
+        $glyphMemoryLeaderboard = getGlyphMemoryLeaderboard($db);
+    }
+    
     // Determine which season is being displayed
     $displaySeason = $useFrozenLeaderboard ? $previousSeason : $currentSeason;
     $isFrozen = $useFrozenLeaderboard;
@@ -124,7 +169,8 @@ try {
         'is_frozen' => $isFrozen,
         'tetris' => $tetrisResult['leaderboard'],
         'snake' => $snakeResult['leaderboard'],
-        'space_invaders' => $spaceInvadersResult['leaderboard']
+        'space_invaders' => $spaceInvadersResult['leaderboard'],
+        'glyph_memory' => $glyphMemoryLeaderboard
     ]);
     
 } catch (Exception $e) {

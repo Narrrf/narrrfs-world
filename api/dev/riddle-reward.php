@@ -204,17 +204,46 @@ function getRoleMultiplier(PDO $pdo, $discordId, $ROLE_MULTIPLIERS_BY_ID, $ROLE_
 }
 
 // Check if riddle already completed (prevent duplicate rewards)
-$checkStmt = $pdo->prepare("SELECT id, total_reward FROM tbl_riddle_completions WHERE discord_id = ? AND riddle_id = ?");
+// SPECIAL HANDLING: Profile lootbox allows daily claims (24h cooldown)
+$isProfileLootbox = ($riddleIdSanitized === 'CHEST_PROFILE_LOOTBOX');
+$checkStmt = $pdo->prepare("SELECT id, total_reward, completed_at FROM tbl_riddle_completions WHERE discord_id = ? AND riddle_id = ?");
 $checkStmt->execute([$discordId, $riddleIdSanitized]);
 $existingCompletion = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
 if ($existingCompletion) {
-    json_response([
-        'success' => false,
-        'error' => 'Riddle already completed',
-        'already_completed' => true,
-        'previous_reward' => (int)$existingCompletion['total_reward']
-    ], 409); // 409 Conflict
+    // For profile lootbox, check if 24 hours have passed since last claim
+    if ($isProfileLootbox) {
+        $lastCompleted = strtotime($existingCompletion['completed_at']);
+        $now = time();
+        $hoursSinceLastClaim = ($now - $lastCompleted) / 3600; // Convert seconds to hours
+        
+        if ($hoursSinceLastClaim >= 24) {
+            // 24 hours have passed, allow new claim - delete old record
+            $deleteStmt = $pdo->prepare("DELETE FROM tbl_riddle_completions WHERE discord_id = ? AND riddle_id = ?");
+            $deleteStmt->execute([$discordId, $riddleIdSanitized]);
+            error_log("✅ [RIDDLE REWARD] Profile lootbox cooldown expired - deleted old record for user $discordId");
+            // Continue to process new claim
+        } else {
+            // Still on cooldown
+            $hoursRemaining = 24 - $hoursSinceLastClaim;
+            json_response([
+                'success' => false,
+                'error' => 'Profile lootbox on cooldown',
+                'already_completed' => true,
+                'previous_reward' => (int)$existingCompletion['total_reward'],
+                'hours_remaining' => round($hoursRemaining, 1),
+                'cooldown_message' => "Please wait " . round($hoursRemaining, 1) . " more hours before opening again"
+            ], 409); // 409 Conflict
+        }
+    } else {
+        // Regular riddle - one-time only
+        json_response([
+            'success' => false,
+            'error' => 'Riddle already completed',
+            'already_completed' => true,
+            'previous_reward' => (int)$existingCompletion['total_reward']
+        ], 409); // 409 Conflict
+    }
 }
 
 list($multiplier, $multiplierSource) = getRoleMultiplier($pdo, $discordId, $ROLE_MULTIPLIERS_BY_ID, $ROLE_PRIORITY, $ROLE_MULTIPLIERS_BY_NAME);

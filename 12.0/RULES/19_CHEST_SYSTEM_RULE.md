@@ -551,3 +551,32 @@ When creating hundreds of chests:
 ---
 
 **STATUS:** ✅ **PRODUCTION READY - ALL CHESTS USE CHEST2 - ANIMATION, COLLISION & PERSISTENCE WORKING PERFECTLY**
+
+---
+
+## 🎁 **PROFILE LOOTBOX SYSTEM (January 4, 2026)**
+
+### **Profile Lootbox Daily Claim Fix**
+
+**Issue:** Users couldn't claim profile lootbox after 24 hours - API returned 409 Conflict error.
+
+**Root Cause:** Backend API treated profile lootbox as one-time riddle completion, preventing repeat claims.
+
+**Solution:** Modified `api/dev/riddle-reward.php` to allow daily claims for profile lootbox:
+- Detects `CHEST_PROFILE_LOOTBOX` riddle ID
+- Checks `completed_at` timestamp from database
+- If 24 hours have passed: Deletes old record and allows new claim
+- If still on cooldown: Returns detailed cooldown error with hours remaining
+
+**Result:** Users can claim profile lootbox every 24 hours indefinitely.
+
+**Current Implementation:**
+- ✅ Backend enforces 24-hour cooldown (hardcoded)
+- ✅ Frontend respects admin config for UI/display
+- ✅ System allows infinite daily claims (no limit)
+
+**Files Modified:**
+- `api/dev/riddle-reward.php` - Added profile lootbox daily claim logic
+- `public/profile.html` - Added 409 Conflict error handling
+
+**Status:** ✅ **FIXED - PRODUCTION READY**

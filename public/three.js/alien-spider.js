@@ -199,15 +199,15 @@ export class AlienSpiderBoss {
       damage: ['Damage_taken']
     };
     
-    // Animation file paths (FBX files)
+    // Animation file paths (FBX files) - Use absolute paths from web root
     this.animationPaths = {
-      idle_1: "./public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Idle_1.fbx",
-      idle_2: "./public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Idle_2.fbx",
-      walk: "./public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Walk.fbx",
-      run: "./public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Run.fbx",
-      attack_1: "./public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Attack_1.fbx",
-      attack_2: "./public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Attack_2.fbx",
-      damage: "./public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Damage_taken.fbx"
+      idle_1: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Idle_1.fbx",
+      idle_2: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Idle_2.fbx",
+      walk: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Walk.fbx",
+      run: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Run.fbx",
+      attack_1: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Attack_1.fbx",
+      attack_2: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Attack_2.fbx",
+      damage: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Damage_taken.fbx"
     };
     
     // Texture loaders - TGALoader for TGA files, TextureLoader for other formats
@@ -238,7 +238,7 @@ export class AlienSpiderBoss {
     this.textureVariation = variationName;
     console.log(`🕷️ [ALIEN_SPIDER] Applying texture variation: ${variationName}`);
     
-    const basePath = "./public/textures/3d models/Alien Spider 1/AFC_03/";
+    const basePath = "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/";
     
     // Determine which color texture to use based on variation
     let colorTextureFile = 'AFC_03_color.tga'; // Default
@@ -338,7 +338,7 @@ export class AlienSpiderBoss {
     
     console.log(`🕷️ [ALIEN_SPIDER] Applying textures (brightness: ${this.brightness}x, variation: ${this.textureVariation})`);
     
-    const basePath = "./public/textures/3d models/Alien Spider 1/AFC_03/";
+    const basePath = "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/";
     
     // Load and apply textures to all meshes
     this.model.traverse((child) => {
@@ -555,7 +555,7 @@ export class AlienSpiderBoss {
       const loader = new FBXLoader(this.loadingManager);
       
       // Set resource path so FBXLoader knows where to find textures
-      const basePath = "./public/textures/3d models/Alien Spider 1/AFC_03/";
+      const basePath = "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/";
       loader.setResourcePath(basePath);
       
       loader.load(
@@ -743,7 +743,7 @@ export class AlienSpiderBoss {
   async loadAllAnimations() {
     // Use LoadingManager with TGA handler for animation files too (in case they have textures)
     const loader = new FBXLoader(this.loadingManager);
-    const basePath = "./public/textures/3d models/Alien Spider 1/AFC_03/";
+    const basePath = "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/";
     loader.setResourcePath(basePath);
     
     const animationPromises = [];

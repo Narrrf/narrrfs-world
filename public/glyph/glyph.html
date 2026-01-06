@@ -20,6 +20,9 @@
         <div class="panel__header">
           <h1 class="title">Glyph Memory</h1>
           <p class="subtitle">Match the hidden glyph pairs.</p>
+          <div id="userDisplay" class="user-display">
+            <span id="userName">Guest</span>
+          </div>
         </div>
 
         <div class="controls">
@@ -36,6 +39,21 @@
           </div>
 
           <button id="startBtn" class="btn btn--primary" type="button">Start Game</button>
+        </div>
+
+        <!-- 🏆 Leaderboard Section -->
+        <div id="leaderboardSection" class="leaderboard-section">
+          <h3 class="leaderboard-title">🏆 Leaderboard</h3>
+          <div class="leaderboard-tabs">
+            <button class="tab-btn active" data-difficulty="easy">Easy</button>
+            <button class="tab-btn" data-difficulty="medium">Medium</button>
+            <button class="tab-btn" data-difficulty="hard">Hard</button>
+          </div>
+          <div id="leaderboardList" class="leaderboard-list">
+            <!-- Leaderboard entries will be inserted here -->
+          </div>
+          <div id="leaderboardLoading" class="leaderboard-loading" hidden>Loading...</div>
+          <div id="leaderboardError" class="leaderboard-error" hidden>Failed to load leaderboard</div>
         </div>
 
         <div class="hint">

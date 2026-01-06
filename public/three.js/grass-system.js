@@ -990,8 +990,8 @@ export class GrassSystem {
         onLoad(); // Continue anyway with fallback
       };
       
-      // Load grass texture - use public/textures path for three.js folder structure
-      const grassPath = '/public./public/textures/grass/grass.jpg';
+      // Load grass texture - use absolute path from web root
+      const grassPath = '/public/three.js/public/textures/grass/grass.jpg';
       this.grassTexture = loader.load(
         grassPath,
         (texture) => {
@@ -1026,8 +1026,8 @@ export class GrassSystem {
         }
       );
       
-      // Load cloud texture - use public/textures path for three.js folder structure
-      const cloudPath = '/public./public/textures/grass/cloud.jpg';
+      // Load cloud texture - use absolute path from web root
+      const cloudPath = '/public/three.js/public/textures/grass/cloud.jpg';
       this.cloudTexture = loader.load(
         cloudPath,
         (texture) => {
@@ -1041,7 +1041,7 @@ export class GrassSystem {
         (error) => {
           console.error(`❌ [GRASS] Failed to load cloud texture from ${cloudPath}:`, error);
           console.error(`🔍 [GRASS] Full URL attempted: ${window.location.origin}${cloudPath}`);
-          // Try alternative path without /public
+          // Try alternative relative path as fallback
           const altPath = './public/textures/grass/cloud.jpg';
           console.log(`🔄 [GRASS] Trying alternative path: ${altPath}`);
           this.cloudTexture = loader.load(

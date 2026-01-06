@@ -19,6 +19,40 @@
 - **Scene Integration** - Adding to scene with proper settings
 - **State Management** - Tracking models in level state
 - **Error Handling** - Robust error logging and fallbacks
+- **Path Normalization** - Absolute paths from web root (CRITICAL for production)
+
+---
+
+## 🚨 **CRITICAL: ASSET PATH REQUIREMENTS (January 6, 2026)**
+
+### **MANDATORY PATH FORMAT:**
+
+**❌ WRONG - Relative Paths (Resolve Incorrectly in Production):**
+```javascript
+const modelPath = "./public/textures/3d models/chest2/Chest2.glb";
+const modelPath = "/textures/3d models/tree-with-arms/tree-with-arms.glb";
+```
+
+**✅ CORRECT - Absolute Paths from Web Root:**
+```javascript
+const modelPath = "/public/three.js/public/textures/3d models/chest2/Chest2.glb";
+const modelPath = "/public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb";
+```
+
+### **Why Absolute Paths Are Required:**
+
+- **HTML Location:** `/public/three.js/3d-riddle-game.html`
+- **Relative Path Issue:** `./public/...` resolves relative to HTML location, causing 404 errors in production
+- **Solution:** Use absolute paths (`/public/three.js/public/...`) that work consistently in both local and production
+
+### **Path Normalization:**
+
+The `normalizeAssetPath()` function in `main.js` automatically converts relative paths to absolute, but **new code should always use absolute paths directly**.
+
+**Status:** ✅ **MANDATORY - ALL MODEL PATHS MUST BE ABSOLUTE** (January 6, 2026)  
+**Related Rules:** `11_THREE_JS_RULE.md` §14, `10_FILE_PATH_LOCAL_VS_PRODUCTION_RULE.md` (JavaScript section)
+
+---
 
 ---
 
@@ -60,8 +94,8 @@ function createLevel1Tree(spawnData, blockSize) {
   
   console.log("🌳 [LEVEL 1] Creating tree at:", level1State.treePosition);
   
-  // Model path (GLB/GLTF/FBX)
-  const modelPath = "/textures/3d models/tree-with-arms/tree-with-arms.glb";
+  // Model path (GLB/GLTF/FBX) - CRITICAL: Use absolute path from web root
+  const modelPath = "/public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb";
   
   // Load model using loadModel() function
   loadModel(modelPath)
@@ -268,8 +302,8 @@ model.traverse((child) => {
 #### **MANDATORY FBX Loading Pattern:**
 
 ```javascript
-// Load FBX model (e.g., bear trap, weapons, survival pack items)
-const modelPath = "/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx";
+// Load FBX model (e.g., bear trap, weapons, survival pack items) - CRITICAL: Use absolute path from web root
+const modelPath = "/public/three.js/public/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx";
 
 loadModel(modelPath)
   .then((result) => {
@@ -589,14 +623,14 @@ function processWeaponMaterial(material) {
 #### **✅ FBX Example: Bear Trap (Level 1)**
 ```javascript
 // See: createLevel1BearTrap() in main.js
-// Path: /textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx
+// Path: /public/three.js/public/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx
 // Status: ✅ WORKING - Uses FBX pattern with cloning and material processing
 ```
 
 #### **✅ GLB Example: Tree (Level 1)**
 ```javascript
 // See: createLevel1Tree() in main.js
-// Path: /textures/3d models/tree-with-arms/tree-with-arms.glb
+// Path: /public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb
 // Status: ✅ WORKING - Uses GLB pattern with optional material processing
 ```
 
@@ -689,7 +723,7 @@ function createLevel1Trees(spawnData, blockSize) {
     // ... more positions
   ];
   
-  const modelPath = "/textures/3d models/tree-with-arms/tree-with-arms.glb";
+  const modelPath = "/public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb";
   
   // Load model once, then clone for each position
   loadModel(modelPath)
@@ -807,13 +841,17 @@ three.js/public/textures/3d models/
 │   └── [model files]
 ```
 
-### **Model Path Format:**
+### **Model Path Format (CRITICAL: Use Absolute Paths):**
 ```javascript
-// GLB/GLTF models
-const modelPath = "/textures/3d models/tree-with-arms/tree-with-arms.glb";
+// GLB/GLTF models - CRITICAL: Use absolute path from web root
+const modelPath = "/public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb";
 
-// FBX models
-const modelPath = "/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx";
+// FBX models - CRITICAL: Use absolute path from web root
+const modelPath = "/public/three.js/public/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx";
+
+// ❌ WRONG: Relative paths resolve incorrectly in production
+// const modelPath = "./public/textures/3d models/tree-with-arms/tree-with-arms.glb";
+// const modelPath = "/textures/3d models/tree-with-arms/tree-with-arms.glb";
 ```
 
 ---
@@ -865,7 +903,7 @@ const modelPath = "/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx";
 ### **✅ TREE 1: Tree with Arms (Large Decorative Tree)**
 
 **Status:** ✅ **PRODUCTION READY - WORKING PERFECTLY**  
-**Model:** `/textures/3d models/tree-with-arms/tree-with-arms.glb`  
+**Model:** `/public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb`  
 **Scale:** 9.0 units (large tree)  
 **Position:** Left of spawn, forward area
 
@@ -903,8 +941,8 @@ function createLevel1Tree(spawnData, blockSize) {
   
   console.log("🌳 [LEVEL 1] Creating tree at:", level1State.treePosition);
   
-  // Load tree model (GLB format)
-  const treePath = "/textures/3d models/tree-with-arms/tree-with-arms.glb";
+  // Load tree model (GLB format) - CRITICAL: Use absolute path from web root
+  const treePath = "/public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb";
   
   loadModel(treePath)
     .then((gltf) => {
@@ -996,7 +1034,7 @@ function createLevel1Tree(spawnData, blockSize) {
 ### **✅ TREE 2: Tree with Arms (Large Decorative Tree - Variant)**
 
 **Status:** ✅ **PRODUCTION READY - WORKING PERFECTLY**  
-**Model:** `/textures/3d models/tree-with-arms/tree-with-arms.glb` (cloned)  
+**Model:** `/public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb` (cloned)  
 **Scale:** 10.0 units (larger than Tree 1)  
 **Position:** Left front of spawn, back area  
 **Rotation:** 45 degrees (for variety)
@@ -1031,8 +1069,8 @@ function createLevel1Tree2(spawnData, blockSize) {
   
   console.log("🌳 [LEVEL 1] Creating second tree at:", level1State.tree2Position);
   
-  // Load tree model (GLB format) - same model as first tree
-  const treePath = "/textures/3d models/tree-with-arms/tree-with-arms.glb";
+  // Load tree model (GLB format) - same model as first tree - CRITICAL: Use absolute path from web root
+  const treePath = "/public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb";
   
   loadModel(treePath)
     .then((gltf) => {

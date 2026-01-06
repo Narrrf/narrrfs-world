@@ -683,6 +683,137 @@ if (currentLevel === 6) {
 
 ---
 
+## 🚨 **PRODUCTION ASSET DEPLOYMENT (January 4, 2026) - UPDATED WITH /data/ PERSISTENT STORAGE**
+
+### **CRITICAL: Assets NOT in Git - Must Upload Manually to Render**
+
+**Status:** ⚠️ **ASSETS MISSING ON PRODUCTION** - Must be uploaded via SCP/SFTP to `/data/` (persistent storage)
+
+**Reason:** Large asset files (3.6GB+) were removed from Git tracking to keep repository size manageable. Assets must be uploaded directly to Render.
+
+**CRITICAL:** Assets must be stored in `/data/` (persistent, survives deployments) NOT `/var/www/html/` (gets wiped on each Git push). Use symlinks from `/var/www/html/` to `/data/` for web server access.
+
+### **Assets That Must Be Uploaded:**
+
+#### **1. 3D Models Directory:**
+**Persistent Storage Path:** `/data/public/three.js/public/textures/3d models/`  
+**Web Access Path (via symlink):** `/var/www/html/public/three.js/public/textures/3d models/`
+
+**Critical Models:**
+- ✅ `chest1/` - Chest model 1 (GLB + TGA textures)
+- ✅ `chest2/` - Chest model 2 (GLB + TGA textures) - **REQUIRED FOR CHEST SYSTEM**
+- ✅ `Survival Pack/` - Bear traps, torches, survival items (FBX/OBJ)
+- ✅ `phoenix2/` - Dragon boss textures (Black/Blue/Brown/Eye/Gold/Green/Red/White variants)
+- ✅ `secret door medieval/` - Secret door model (GLB)
+- ✅ `tree-with-arms/` - Tree model (GLB) - **REQUIRED FOR LEVEL 1**
+- ✅ `tree dead lians/` - Dead tree model (GLB)
+- ✅ All other 3D model subdirectories
+
+**Local Source:** `C:\xampp-server\htdocs\narrrfs-world\public\three.js\public\textures\3d models\`
+
+#### **2. Sounds Directory:**
+**Persistent Storage Path:** `/data/public/three.js/public/sounds/`  
+**Web Access Path (via symlink):** `/var/www/html/public/three.js/public/sounds/`
+
+**Critical Sounds:**
+- ✅ Footstep sounds
+- ✅ Jump sounds
+- ✅ Chest opening sounds (`chest.mp3`)
+- ✅ Weapon shooting sounds
+- ✅ Boss sounds
+- ✅ All SFX files (`.mp3`, `.wav`, `.ogg`)
+
+**Local Source:** `C:\xampp-server\htdocs\narrrfs-world\public\three.js\public\sounds\`
+
+#### **3. Audio Directory (If Exists):**
+**Persistent Storage Path:** `/data/public/three.js/public/audio/`  
+**Web Access Path (via symlink):** `/var/www/html/public/three.js/public/audio/`
+
+**Local Source:** `C:\xampp-server\htdocs\narrrfs-world\public\three.js\public\audio\`
+
+### **Setup Instructions (In Render Shell - Do This First):**
+
+**1. Create Persistent Directories:**
+```bash
+mkdir -p /data/public/three.js/public/textures/3d\ models/
+mkdir -p /data/public/three.js/public/sounds/
+mkdir -p /data/public/three.js/public/audio/
+chmod -R 755 /data/public/three.js/public/
+chown -R www-data:www-data /data/public/three.js/public/
+```
+
+**2. Create Symlinks (So Web Server Can Access):**
+```bash
+# Remove old directories if they exist
+rm -rf /var/www/html/public/three.js/public/textures/3d\ models/
+rm -rf /var/www/html/public/three.js/public/sounds/
+rm -rf /var/www/html/public/three.js/public/audio/
+
+# Create parent directories
+mkdir -p /var/www/html/public/three.js/public/textures/
+mkdir -p /var/www/html/public/three.js/public/
+
+# Create symlinks
+ln -s /data/public/three.js/public/textures/3d\ models /var/www/html/public/three.js/public/textures/3d\ models
+ln -s /data/public/three.js/public/sounds /var/www/html/public/three.js/public/sounds
+ln -s /data/public/three.js/public/audio /var/www/html/public/three.js/public/audio
+```
+
+### **Upload Instructions (From Local Windows Machine):**
+
+**CRITICAL: Upload to `/data/` NOT `/var/www/html/`!**
+
+```powershell
+cd C:\xampp-server\htdocs\narrrfs-world
+
+# Upload 3D models to /data/ (PERSISTENT - survives deployments)
+scp -r "public\three.js\public\textures\3d models" root@srv-cvvqcabe5dus73chvrgg-84f5856ddd-k7dv2.onrender.com:/data/public/three.js/public/textures/
+
+# Upload sounds to /data/ (PERSISTENT)
+scp -r "public\three.js\public\sounds" root@srv-cvvqcabe5dus73chvrgg-84f5856ddd-k7dv2.onrender.com:/data/public/three.js/public/
+
+# Upload audio to /data/ (PERSISTENT)
+scp -r "public\three.js\public\audio" root@srv-cvvqcabe5dus73chvrgg-84f5856ddd-k7dv2.onrender.com:/data/public/three.js/public/
+```
+
+**Render Hostname:** `srv-cvvqcabe5dus73chvrgg-84f5856ddd-k7dv2.onrender.com`
+
+**Complete Guide:** See `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/RENDER_PERSISTENT_ASSETS_SOLUTION.md`
+
+### **Verification Commands (In Render Shell):**
+```bash
+# Check persistent storage (/data/)
+ls /data/public/three.js/public/textures/3d\ models/
+ls /data/public/three.js/public/sounds/
+
+# Check symlinks work (web access)
+ls /var/www/html/public/three.js/public/textures/3d\ models/
+ls /var/www/html/public/three.js/public/sounds/
+
+# Check critical files (via symlink)
+ls /var/www/html/public/three.js/public/textures/3d\ models/chest2/Chest2.glb
+ls /var/www/html/public/three.js/public/textures/3d\ models/tree-with-arms/tree-with-arms.glb
+
+# Fix permissions if needed
+chmod -R 755 /var/www/html/public/three.js/public/
+chown -R www-data:www-data /var/www/html/public/three.js/public/
+```
+
+### **Related Documentation:**
+- **Rule:** `12.0/RULES/11_THREE_JS_RULE.md` §13 (Production Asset Upload Checklist)
+- **Lab Note:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/THREE_JS_ASSET_UPLOAD_GAP.md`
+- **Upload Guide:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/RENDER_ASSET_UPLOAD_GUIDE.md`
+- **Quick Commands:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/QUICK_UPLOAD_COMMANDS.md`
+
+### **Important Notes:**
+- ⚠️ **Assets are NOT in Git** - They're excluded via `.gitignore`
+- ⚠️ **Must upload manually** - Use SCP/SFTP from local machine
+- ⚠️ **Upload required for each deployment** - Assets don't deploy via Git
+- ✅ **Directories created** - Ready for upload (January 4, 2026)
+- ✅ **Permissions set** - Directories have correct permissions
+
+---
+
 ## 🚀 **FUTURE IMPLEMENTATION PLANS**
 
 ### **Short-Term (Next 2-4 Weeks):**

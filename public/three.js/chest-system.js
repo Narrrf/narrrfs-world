@@ -1460,7 +1460,7 @@ class Chest {
       if (this.type === 'chest2' && modelPath && modelPath.includes('Chest2.glb')) {
         console.log(`🔄 [CHEST] ${this.id} failed with capital C, trying lowercase...`);
         try {
-          const lowercasePath = "./public/textures/3d models/chest2/chest2.glb";
+          const lowercasePath = "/public/three.js/public/textures/3d models/chest2/chest2.glb";
           const gltf = await this.loadModel(lowercasePath);
           const chest = gltf.scene;
           

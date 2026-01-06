@@ -8,6 +8,14 @@ ini_set('display_errors', 0);
 // Set proper headers for JSON response
 header('Content-Type: application/json');
 
+// Helper function for formatting time (for glyph memory)
+function formatTimeMs($ms) {
+    $totalSec = floor($ms / 1000);
+    $min = floor($totalSec / 60);
+    $sec = $totalSec % 60;
+    return sprintf("%02d:%02d", $min, $sec);
+}
+
 // Wrap everything in try-catch to ensure clean JSON output
 try {
     // Error handling for local testing
@@ -69,11 +77,29 @@ try {
     $discord_id = $data['discord_id'] ?? null;
     $discord_name = $data['discord_name'] ?? null;
     $game = $data['game'] ?? 'tetris'; // default to tetris if not specified
+    
+    // 🧩 Glyph Memory specific fields
+    $difficulty = $data['difficulty'] ?? null;
+    $time_ms = $data['time_ms'] ?? null;
+    $pairs_matched = $data['pairs_matched'] ?? null;
 
-    if (!$wallet || !$raw_score || !$game) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Missing wallet, score or game']);
-        exit;
+    // 🧩 Glyph Memory doesn't require wallet (time-based scoring, not DSPOINC-based)
+    if ($game === 'glyph_memory') {
+        if (!$discord_id || !$time_ms || !$difficulty || !$pairs_matched) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Missing discord_id, time_ms, difficulty, or pairs_matched for glyph_memory']);
+            exit;
+        }
+        // Use empty wallet for glyph memory (not DSPOINC-based)
+        $wallet = $wallet ?? '';
+        $raw_score = $time_ms; // Use time_ms as raw_score for consistency
+    } else {
+        // Other games require wallet and score
+        if (!$wallet || !$raw_score || !$game) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Missing wallet, score or game']);
+            exit;
+        }
     }
 
     // 🎮 Get current active season and settings
@@ -154,6 +180,13 @@ try {
         $original_dspoinc = $raw_score; // Store original for logging
         $dspoinc_score = floor($raw_score / 10); // 10:1 conversion (2,000 → 200)
         error_log("🎯 Space Invaders 10:1 conversion: {$original_dspoinc} DSPOINC → {$dspoinc_score} DSPOINC (saved)");
+    } elseif ($game === 'glyph_memory') {
+        // 🧩 Glyph Memory: Time-based scoring (no DSPOINC rewards yet - future feature)
+        // Store time_ms directly (lower is better)
+        $pointsPerUnit = 0; // No DSPOINC conversion for time-based scoring
+        $unit = 'milliseconds';
+        $dspoinc_score = 0; // No DSPOINC rewards for glyph memory (yet)
+        error_log("🧩 Glyph Memory score: difficulty=$difficulty, time_ms=$time_ms, pairs=$pairs_matched");
     } else {
         $pointsPerUnit = 10; // Default fallback
         $unit = 'units';
@@ -188,7 +221,31 @@ try {
 
     // 💾 Save to DB with DSPOINC score (always save, not just high scores)
     try {
-        if ($game === 'tetris') {
+        if ($game === 'glyph_memory') {
+            // 🧩 Glyph Memory scores go to dedicated glyph_memory table
+            // Check if table exists first
+            $tableCheck = $db->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tbl_glyph_memory_scores'");
+            $tableCheck->execute();
+            if (!$tableCheck->fetch()) {
+                error_log("⚠️ tbl_glyph_memory_scores table does not exist - please run migration: db/migrations/create_glyph_memory_scores_table.sql");
+                throw new Exception("Glyph Memory scores table not found - migration required");
+            }
+            
+            $stmt = $db->prepare("
+              INSERT INTO tbl_glyph_memory_scores (discord_id, discord_name, difficulty, time_ms, pairs_matched, season)
+              VALUES (:discord_id, :discord_name, :difficulty, :time_ms, :pairs_matched, :season)
+            ");
+
+            $stmt->bindValue(':discord_id', $discord_id);
+            $stmt->bindValue(':discord_name', $discord_name);
+            $stmt->bindValue(':difficulty', $difficulty);
+            $stmt->bindValue(':time_ms', $time_ms, PDO::PARAM_INT);
+            $stmt->bindValue(':pairs_matched', $pairs_matched, PDO::PARAM_INT);
+            $stmt->bindValue(':season', $currentSeason);
+            $stmt->execute();
+            
+            error_log("🧩 Glyph Memory score inserted: difficulty=$difficulty, time_ms=$time_ms, pairs=$pairs_matched for user $discord_id in season $currentSeason");
+        } elseif ($game === 'tetris') {
             // Tetris scores go to dedicated tetris table
             $stmt = $db->prepare("
               INSERT INTO tbl_tetris_scores (wallet, score, discord_id, discord_name, game, season)
@@ -228,49 +285,52 @@ try {
     }
 
     // 🎯 Add score to user's DSPOINC balance (ALWAYS add, not just high scores)
-    try {
-        // Insert new record for this game score
-        $insertStmt = $db->prepare("
-            INSERT INTO tbl_user_scores (user_id, score, game, source, season) 
-            VALUES (?, ?, ?, ?, ?)
-        ");
-        $insertStmt->bindValue(1, $discord_id);
-        $insertStmt->bindValue(2, round($dspoinc_score), PDO::PARAM_INT);
-        $insertStmt->bindValue(3, $game);
-        $insertStmt->bindValue(4, 'game_score');
-        $insertStmt->bindValue(5, $currentSeason);
-        $insertStmt->execute();
-        
-        error_log("User score inserted: " . round($dspoinc_score) . " DSPOINC for user $discord_id in game $game (season: $currentSeason)");
-        
-        // 🎯 Create score adjustment entry for tracking
-        $adjustmentStmt = $db->prepare("
-            INSERT INTO tbl_score_adjustments (user_id, admin_id, amount, action, reason) 
-            VALUES (?, ?, ?, ?, ?)
-        ");
-        $adjustmentStmt->bindValue(1, $discord_id);
-        $adjustmentStmt->bindValue(2, 'system'); // System-generated adjustment
-        $adjustmentStmt->bindValue(3, round($dspoinc_score), PDO::PARAM_INT);
-        $adjustmentStmt->bindValue(4, 'add'); // Changed from 'game_score' to 'add' to match table constraint
-        
-        // Generate appropriate reason message based on game type
-        if ($game === 'tetris') {
-            $reason = "$game game score: $dspoinc_score DSPOINC (frontend calculated)";
-        } elseif ($game === 'snake') {
-            $reason = "$game game score: $raw_score cheese = $dspoinc_score DSPOINC";
-        } elseif ($game === 'space_invaders') {
-            $reason = "$game game score: $raw_score invaders = $dspoinc_score DSPOINC";
-        } else {
-            $reason = "$game game score: $raw_score $unit = $dspoinc_score DSPOINC";
+    // 🧩 Skip DSPOINC updates for glyph_memory (time-based, no DSPOINC rewards yet)
+    if ($game !== 'glyph_memory') {
+        try {
+            // Insert new record for this game score
+            $insertStmt = $db->prepare("
+                INSERT INTO tbl_user_scores (user_id, score, game, source, season) 
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $insertStmt->bindValue(1, $discord_id);
+            $insertStmt->bindValue(2, round($dspoinc_score), PDO::PARAM_INT);
+            $insertStmt->bindValue(3, $game);
+            $insertStmt->bindValue(4, 'game_score');
+            $insertStmt->bindValue(5, $currentSeason);
+            $insertStmt->execute();
+            
+            error_log("User score inserted: " . round($dspoinc_score) . " DSPOINC for user $discord_id in game $game (season: $currentSeason)");
+            
+            // 🎯 Create score adjustment entry for tracking
+            $adjustmentStmt = $db->prepare("
+                INSERT INTO tbl_score_adjustments (user_id, admin_id, amount, action, reason) 
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $adjustmentStmt->bindValue(1, $discord_id);
+            $adjustmentStmt->bindValue(2, 'system'); // System-generated adjustment
+            $adjustmentStmt->bindValue(3, round($dspoinc_score), PDO::PARAM_INT);
+            $adjustmentStmt->bindValue(4, 'add'); // Changed from 'game_score' to 'add' to match table constraint
+            
+            // Generate appropriate reason message based on game type
+            if ($game === 'tetris') {
+                $reason = "$game game score: $dspoinc_score DSPOINC (frontend calculated)";
+            } elseif ($game === 'snake') {
+                $reason = "$game game score: $raw_score cheese = $dspoinc_score DSPOINC";
+            } elseif ($game === 'space_invaders') {
+                $reason = "$game game score: $raw_score invaders = $dspoinc_score DSPOINC";
+            } else {
+                $reason = "$game game score: $raw_score $unit = $dspoinc_score DSPOINC";
+            }
+            
+            $adjustmentStmt->bindValue(5, $reason);
+            $adjustmentStmt->execute();
+            
+            error_log("Score adjustment inserted: " . round($dspoinc_score) . " DSPOINC for user $discord_id - $reason");
+            
+        } catch (Exception $e) {
+            error_log("Error updating user scores: " . $e->getMessage());
         }
-        
-        $adjustmentStmt->bindValue(5, $reason);
-        $adjustmentStmt->execute();
-        
-        error_log("Score adjustment inserted: " . round($dspoinc_score) . " DSPOINC for user $discord_id - $reason");
-        
-    } catch (Exception $e) {
-        error_log("Error updating user scores: " . $e->getMessage());
     }
 
     // 🏆 Check for WL Role Eligibility (use DSPOINC score for threshold check)
@@ -280,7 +340,10 @@ try {
     $conversion_rate = "1:$pointsPerUnit";
 
     // Generate appropriate message based on game type
-    if ($game === 'tetris') {
+    if ($game === 'glyph_memory') {
+        $timeFormatted = formatTimeMs($time_ms);
+        $message = "🧩 Glyph Memory score saved: difficulty=$difficulty, time=$timeFormatted ($time_ms ms), pairs=$pairs_matched";
+    } elseif ($game === 'tetris') {
         $message = "Score saved for $game: " . round($dspoinc_score) . " DSPOINC (frontend calculated)";
     } elseif ($game === 'snake') {
         $message = "Score saved for $game: $raw_score cheese = " . round($dspoinc_score) . " DSPOINC ($conversion_rate)";
@@ -295,17 +358,30 @@ try {
         $message .= " (capped at max score: $max_score DSPOINC)";
     }
 
-    echo json_encode([
+    // Build response based on game type
+    $response = [
         'success' => true, 
         'message' => $message,
-        'raw_score' => $raw_score,
-        'dspoinc_score' => round($dspoinc_score),
-        'conversion_rate' => $conversion_rate,
-        'score_capped' => $score_capped,
-        'max_score' => $max_score,
-        'season' => $currentSeason,
-        'wl_check' => $wl_result
-    ]);
+        'season' => $currentSeason
+    ];
+    
+    if ($game === 'glyph_memory') {
+        // Glyph Memory specific response
+        $response['difficulty'] = $difficulty;
+        $response['time_ms'] = $time_ms;
+        $response['time_formatted'] = formatTimeMs($time_ms);
+        $response['pairs_matched'] = $pairs_matched;
+    } else {
+        // Other games response
+        $response['raw_score'] = $raw_score;
+        $response['dspoinc_score'] = round($dspoinc_score);
+        $response['conversion_rate'] = $conversion_rate;
+        $response['score_capped'] = $score_capped;
+        $response['max_score'] = $max_score;
+        $response['wl_check'] = $wl_result;
+    }
+    
+    echo json_encode($response);
 
 } catch (Exception $e) {
     // Log the exception for debugging purposes

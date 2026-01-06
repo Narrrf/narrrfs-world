@@ -56,6 +56,10 @@ Glyph Memory — Phase 1 JS
   const restartBtn = document.getElementById('restartBtn');
   const menuBtn = document.getElementById('menuBtn');
 
+  // User display elements
+  const userDisplayEl = document.getElementById('userDisplay');
+  const userNameEl = document.getElementById('userName');
+
   const winOverlay = document.getElementById('winOverlay');
   const finalTimeEl = document.getElementById('finalTime');
   const overlayBestTimeEl = document.getElementById('overlayBestTime');
@@ -465,9 +469,53 @@ Glyph Memory — Phase 1 JS
       if (isNewBest) setBestTime(activeDifficulty, elapsed);
       updateBestTimeUI(activeDifficulty);
 
+      // 🧩 Save score to database if Discord is logged in
+      saveGlyphScore(activeDifficulty, elapsed, totalPairs);
+
       if (newBestBadgeEl) newBestBadgeEl.hidden = !isNewBest;
 
       winOverlay.hidden = false;
+    }
+  }
+
+  // 🧩 Save Glyph Memory score to database (if Discord logged in)
+  async function saveGlyphScore(difficulty, timeMs, pairsMatched) {
+    // Check if Discord is logged in
+    const discordId = localStorage.getItem("discord_id");
+    const discordName = localStorage.getItem("discord_name");
+    
+    if (!discordId) {
+      // Not logged in - use localStorage only (existing behavior)
+      console.log("🧩 Not logged in - score saved to localStorage only");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/dev/save-score.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          game: 'glyph_memory',
+          discord_id: discordId,
+          discord_name: discordName || "Player",
+          difficulty: difficulty,
+          time_ms: timeMs,
+          pairs_matched: pairsMatched,
+          wallet: '' // Not required for glyph memory
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        console.log("✅ Glyph Memory score saved to database:", data.message);
+        // Refresh leaderboard after saving score
+        fetchLeaderboard();
+      } else {
+        console.warn("⚠️ Failed to save Glyph Memory score:", data.error);
+      }
+    } catch (error) {
+      console.error("❌ Error saving Glyph Memory score:", error);
+      // Don't show error to user - localStorage fallback already saved the best time
     }
   }
 
@@ -536,11 +584,158 @@ Glyph Memory — Phase 1 JS
     }
   });
 
+  // ------- USER DISPLAY -------
+  function updateUserDisplay() {
+    try {
+      const discordId = localStorage.getItem('discord_id');
+      const discordName = localStorage.getItem('discord_name');
+      
+      if (userDisplayEl && userNameEl) {
+        if (discordId && discordName) {
+          // User is logged in with Discord
+          userNameEl.textContent = `👤 ${discordName}`;
+          userDisplayEl.style.display = 'block';
+        } else {
+          // Check for local bypass user (for local development)
+          const isLocal = window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1' || 
+                        window.location.hostname === '';
+          
+          if (isLocal) {
+            // Show local bypass user for local testing
+            userNameEl.textContent = '👤 Local Bypass User';
+            userDisplayEl.style.display = 'block';
+          } else {
+            // Not logged in - hide user display
+            userDisplayEl.style.display = 'none';
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error updating user display:', error);
+    }
+  }
+
+  // ------- LEADERBOARD -------
+  const leaderboardSection = document.getElementById('leaderboardSection');
+  const leaderboardList = document.getElementById('leaderboardList');
+  const leaderboardLoading = document.getElementById('leaderboardLoading');
+  const leaderboardError = document.getElementById('leaderboardError');
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  let currentLeaderboardDifficulty = 'easy';
+  let leaderboardData = null;
+
+  // Format date for display
+  function formatDate(dateString) {
+    if (!dateString) return '—';
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays}d ago`;
+      
+      // Format as MM/DD or DD/MM depending on locale
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${month}/${day}`;
+    } catch {
+      return '—';
+    }
+  }
+
+  // Fetch leaderboard from API
+  async function fetchLeaderboard() {
+    if (!leaderboardSection || !leaderboardList) return;
+    
+    try {
+      // Show loading state
+      leaderboardList.hidden = true;
+      leaderboardError.hidden = true;
+      leaderboardLoading.hidden = false;
+      
+      const response = await fetch('/api/dev/get-leaderboard.php');
+      const data = await response.json();
+      
+      if (data.success && data.glyph_memory) {
+        leaderboardData = data.glyph_memory;
+        displayLeaderboard(currentLeaderboardDifficulty);
+      } else {
+        showLeaderboardError();
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      showLeaderboardError();
+    } finally {
+      leaderboardLoading.hidden = true;
+    }
+  }
+
+  // Display leaderboard entries
+  function displayLeaderboard(difficulty) {
+    if (!leaderboardList || !leaderboardData) return;
+    
+    leaderboardList.hidden = false;
+    leaderboardError.hidden = true;
+    leaderboardList.innerHTML = '';
+    
+    const entries = leaderboardData[difficulty] || [];
+    
+    if (entries.length === 0) {
+      leaderboardList.innerHTML = '<div class="leaderboard-empty">No scores yet. Be the first!</div>';
+      return;
+    }
+    
+    entries.forEach((entry, index) => {
+      const entryEl = document.createElement('div');
+      entryEl.className = 'leaderboard-entry';
+      entryEl.innerHTML = `
+        <span class="leaderboard-rank">${index + 1}</span>
+        <span class="leaderboard-name">${entry.discord_name || 'Guest'}</span>
+        <span class="leaderboard-time">${entry.best_time_formatted || formatTime(entry.best_time_ms)}</span>
+        <span class="leaderboard-date">${formatDate(entry.timestamp)}</span>
+      `;
+      leaderboardList.appendChild(entryEl);
+    });
+  }
+
+  // Show error state
+  function showLeaderboardError() {
+    if (!leaderboardList || !leaderboardError) return;
+    leaderboardList.hidden = true;
+    leaderboardError.hidden = false;
+  }
+
+  // Handle tab switching
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const difficulty = btn.getAttribute('data-difficulty');
+      if (!difficulty) return;
+      
+      // Update active tab
+      tabButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Update displayed leaderboard
+      currentLeaderboardDifficulty = difficulty;
+      if (leaderboardData) {
+        displayLeaderboard(difficulty);
+      } else {
+        fetchLeaderboard();
+      }
+    });
+  });
+
   // ------- INIT -------
   // Ensure overlay is hidden on load
   winOverlay.hidden = true;
   if (newBestBadgeEl) newBestBadgeEl.hidden = true;
   updateBestTimeUI(difficultySelect.value || activeDifficulty);
+  updateUserDisplay(); // Show user info on load
+  fetchLeaderboard(); // Load leaderboard on page load
   showView('menu');
 })();
 

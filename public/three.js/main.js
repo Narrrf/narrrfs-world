@@ -2925,7 +2925,7 @@ function loadCharacterAudio() {
 
   // SF13 Triple-Shot Sound (SF13-Gun-future.mp3)
   audioLoader.load(
-    "./public/sounds/SFX/SF13-Gun-future.mp3",
+    "/public/three.js/public/sounds/SFX/SF13-Gun-future.mp3",
     (buffer) => {
       level4SF13ShootSound = new THREE.Audio(audioListener);
       level4SF13ShootSound.setBuffer(buffer);
@@ -2942,7 +2942,7 @@ function loadCharacterAudio() {
 
   // Bear Trap Sound (bear-trap-103800.mp3)
   audioLoader.load(
-    "./public/sounds/SFX/bear-trap-103800.mp3",
+    "/public/three.js/public/sounds/SFX/bear-trap-103800.mp3",
     (buffer) => {
       bearTrapSound = new THREE.Audio(audioListener);
       bearTrapSound.setBuffer(buffer);
@@ -2959,7 +2959,7 @@ function loadCharacterAudio() {
 
   // Hidden Slever Riddle Sound (hidden-slever.mp3)
   audioLoader.load(
-    "./public/sounds/SFX/hidden-slever.mp3",
+    "/public/three.js/public/sounds/SFX/hidden-slever.mp3",
     (buffer) => {
       hiddenSleverSound = new THREE.Audio(audioListener);
       hiddenSleverSound.setBuffer(buffer);
@@ -4865,12 +4865,14 @@ function loadTexture(path) {
     }
   }
   
-  console.log(`📦 [TEXTURE] Loading texture: ${path}`);
-  const fullUrl = `${window.location.origin}${path}`;
+  // Normalize path to absolute from web root
+  const normalizedPath = normalizeAssetPath(path);
+  console.log(`📦 [TEXTURE] Loading texture: ${path} (normalized: ${normalizedPath})`);
+  const fullUrl = `${window.location.origin}${normalizedPath}`;
   console.log(`📦 [TEXTURE] Full URL: ${fullUrl}`);
   
   const texture = textureLoader.load(
-    path,
+    normalizedPath,
     (loadedTexture) => {
       console.log(`✅ [TEXTURE] Successfully loaded: ${path}`, {
         width: loadedTexture.image?.width,
@@ -4944,9 +4946,32 @@ function loadTexture(path) {
   return texture;
 }
 
+/**
+ * Path Normalization Function
+ * Converts relative paths (./public/...) to absolute paths (/public/three.js/public/...)
+ * This ensures paths work correctly in production where HTML is at /public/three.js/3d-riddle-game.html
+ */
+function normalizeAssetPath(path) {
+  if (!path) return path;
+  // If already absolute (starts with /), return as-is
+  if (path.startsWith('/')) return path;
+  // If relative path starts with ./public/, convert to absolute
+  if (path.startsWith('./public/')) {
+    return '/public/three.js' + path.substring(1); // Remove leading . to get /public/...
+  }
+  // If relative path starts with public/, add /public/three.js prefix
+  if (path.startsWith('public/')) {
+    return '/public/three.js/' + path;
+  }
+  // Otherwise return as-is (might be a URL or already correct)
+  return path;
+}
+
 // Load GLTF/GLB model
 function loadModel(path) {
-  const lowerPath = path.toLowerCase();
+  // Normalize path to absolute from web root
+  const normalizedPath = normalizeAssetPath(path);
+  const lowerPath = normalizedPath.toLowerCase();
   const isFBX = lowerPath.endsWith(".fbx");
   return new Promise((resolve, reject) => {
     if (modelCache.has(path)) {
@@ -5035,12 +5060,12 @@ let playerModelModule = null;
 const CHARACTER_OPTIONS = {
   2: {
     name: "Mouse",
-    path: "./public/textures/3d models/Mouse/glb/glb/character/character.glb",
+    path: "/public/three.js/public/textures/3d models/Mouse/glb/glb/character/character.glb",
     description: "Mouse Character"
   },
   3: {
     name: "Animation Library",
-    path: "./public/textures/3d models/Animation Libary/Animation Library[Standard]/Godot/AnimationLibrary_Godot_Standard.glb",
+    path: "/public/three.js/public/textures/3d models/Animation Libary/Animation Library[Standard]/Godot/AnimationLibrary_Godot_Standard.glb",
     description: "Animation Library [Standard]"
   }
 };
@@ -5493,7 +5518,7 @@ async function createNPCMonster(spawnData, blockSize) {
     console.log("🐉 [NPC] Creating monster NPC...");
     
     // Load monster model (use Bunny for now, can be changed later)
-    const monsterModelPath = "./public/textures/3d models/Monster 1/Big/glTF/Bunny.gltf";
+    const monsterModelPath = "/public/three.js/public/textures/3d models/Monster 1/Big/glTF/Bunny.gltf";
     const gltf = await loadModel(monsterModelPath);
     
     // Clone the scene for the NPC
@@ -7540,8 +7565,8 @@ function startGame(startLevelId = null) {
     warpToLevelWithLoading(LEVEL_IDS.LEVEL1, "Level 1", async () => {
     return new Promise((resolve, reject) => {
   // Load level after character selection
-  console.log("🚀 [DEBUG] Starting game, fetching level1.json from ./public/models/cheese-temple/level1.json");
-  fetch("./public/models/cheese-temple/level1.json")
+  console.log("🚀 [DEBUG] Starting game, fetching level1.json from /public/three.js/public/models/cheese-temple/level1.json");
+  fetch("/public/three.js/public/models/cheese-temple/level1.json")
     .then((res) => {
       if (!res.ok) {
         console.error(`❌ [ERROR] Failed to fetch level1.json: HTTP ${res.status} ${res.statusText}`);
@@ -32406,8 +32431,8 @@ function createLevel1BearTrap(spawnData, blockSize) {
   });
   
   // Load open bear trap model (SP08)
-  const openTrapPath = "./public/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx";
-  const closedTrapPath = "./public/textures/3d models/Survival Pack/FBX/BearTrap_Closed.fbx";
+  const openTrapPath = "/public/three.js/public/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx";
+  const closedTrapPath = "/public/three.js/public/textures/3d models/Survival Pack/FBX/BearTrap_Closed.fbx";
   
   loadModel(openTrapPath)
     .then((result) => {
@@ -33970,7 +33995,7 @@ function createLevel1Tree(spawnData, blockSize) {
   console.log("🌳 [LEVEL 1] Creating tree at:", level1State.treePosition);
   
   // Load tree model (GLB format)
-  const treePath = "./public/textures/3d models/tree-with-arms/tree-with-arms.glb";
+  const treePath = "/public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb";
   
   loadModel(treePath)
     .then((gltf) => {
@@ -34202,7 +34227,7 @@ function createLevel1Tree3(spawnData, blockSize) {
   console.log("🌳 [LEVEL 1] Creating third tree (dead lians) at:", level1State.tree3Position);
   
   // Load tree model (GLB format) - tree dead lians model
-  const treePath = "./public/textures/3d models/tree dead lians/tree dead lians.glb";
+  const treePath = "/public/three.js/public/textures/3d models/tree dead lians/tree dead lians.glb";
   
   loadModel(treePath)
     .then((gltf) => {
@@ -34313,7 +34338,7 @@ function createLevel1Tree4(spawnData, blockSize) {
   console.log("🌳 [LEVEL 1] Creating fourth tree (dead lians) at:", level1State.tree4Position);
   
   // Load tree model (GLB format) - tree dead lians model
-  const treePath = "./public/textures/3d models/tree dead lians/tree dead lians.glb";
+  const treePath = "/public/three.js/public/textures/3d models/tree dead lians/tree dead lians.glb";
   
   loadModel(treePath)
     .then((gltf) => {
@@ -34409,7 +34434,7 @@ function createLevel1Butterfly(spawnData, blockSize) {
   console.log("🦋 [LEVEL 1] Creating butterfly at center of field...");
   
   // Load butterfly model
-  const butterflyModelPath = "./public/textures/3d models/Butterfly1/butterfly.glb";
+  const butterflyModelPath = "/public/three.js/public/textures/3d models/Butterfly1/butterfly.glb";
   
   loadModel(butterflyModelPath)
     .then((gltf) => {
@@ -34580,7 +34605,7 @@ function createLevel1Plant(spawnData, blockSize) {
   console.log("🌿 [LEVEL 1] Creating Phormium plant at:", level1State.plantPosition);
   
   // Load Phormium FBX plant model
-  const plantPath = "./public/textures/plants/Phormium_FBX/phormium_tenax_1.fbx";
+  const plantPath = "/public/three.js/public/textures/plants/Phormium_FBX/phormium_tenax_1.fbx";
   
   loadModel(plantPath)
     .then((modelData) => {
@@ -34769,7 +34794,7 @@ function createLevel1Plant2(spawnData, blockSize) {
   console.log("🌿 [LEVEL 1] Creating Phormium plant 2 (smaller) at:", level1State.plant2Position);
   
   // Load Phormium FBX plant model (same model, different scale)
-  const plantPath = "./public/textures/plants/Phormium_FBX/phormium_tenax_1.fbx";
+  const plantPath = "/public/three.js/public/textures/plants/Phormium_FBX/phormium_tenax_1.fbx";
   
   loadModel(plantPath)
     .then((modelData) => {

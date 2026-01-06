@@ -400,3 +400,99 @@ Does your code perform file operations?
 
 **🧀 NEVER MAKE THE /public/ PATH MISTAKE AGAIN! 🧀**
 
+---
+
+## 🌐 **JAVASCRIPT/FRONTEND PATH HANDLING (January 6, 2026)**
+
+### **CRITICAL: Three.js Game Asset Paths**
+
+**Context:** The three.js game HTML is located at `/public/three.js/3d-riddle-game.html`, which means relative paths resolve differently than expected in production.
+
+### **Path Resolution Issue:**
+
+**Problem:**
+- HTML file location: `/public/three.js/3d-riddle-game.html`
+- Relative path: `./public/textures/...` resolves to `/public/three.js/public/textures/...` (correct)
+- BUT: Browser requests go to wrong URL: `https://narrrfs.world/three.js/public/...` (missing `/public/` prefix)
+
+**Solution:**
+- **ALWAYS use absolute paths** from web root: `/public/three.js/public/textures/...`
+- Path normalization function automatically converts relative paths to absolute
+
+### **JavaScript Path Pattern:**
+
+```javascript
+// ❌ WRONG: Relative paths (resolve incorrectly in production)
+const modelPath = "./public/textures/3d models/chest2/Chest2.glb";
+const audioPath = "./public/sounds/music/level1.mp3";
+
+// ✅ CORRECT: Absolute paths from web root
+const modelPath = "/public/three.js/public/textures/3d models/chest2/Chest2.glb";
+const audioPath = "/public/three.js/public/sounds/music/level1.mp3";
+```
+
+### **Path Normalization Function:**
+
+The `normalizeAssetPath()` function in `main.js` automatically converts relative paths to absolute:
+
+```javascript
+function normalizeAssetPath(path) {
+  if (!path) return path;
+  // If already absolute (starts with /), return as-is
+  if (path.startsWith('/')) return path;
+  // If relative path starts with ./public/, convert to absolute
+  if (path.startsWith('./public/')) {
+    return '/public/three.js' + path.substring(1); // Remove leading . to get /public/...
+  }
+  // If relative path starts with public/, add /public/three.js prefix
+  if (path.startsWith('public/')) {
+    return '/public/three.js/' + path;
+  }
+  // Otherwise return as-is (might be a URL or already correct)
+  return path;
+}
+```
+
+### **Automatic Normalization:**
+
+The `loadTexture()` and `loadModel()` functions automatically normalize paths:
+
+```javascript
+function loadTexture(path) {
+  const normalizedPath = normalizeAssetPath(path);
+  // ... load texture using normalizedPath
+}
+
+function loadModel(path) {
+  const normalizedPath = normalizeAssetPath(path);
+  // ... load model using normalizedPath
+}
+```
+
+### **Rule for JavaScript Asset Paths:**
+
+- **✅ ALWAYS use absolute paths** (`/public/three.js/public/...`) for all three.js game assets
+- **✅ Normalization function provides backward compatibility** for relative paths
+- **✅ New code should use absolute paths** - don't rely on normalization
+- **✅ Test in production** - verify no 404 errors in browser console
+
+### **Files Using This Pattern:**
+
+- `config-system.js` - Audio and music paths
+- `main.js` - Model, texture, and audio paths
+- `grass-system.js` - Grass and cloud texture paths
+- `chest-system.js` - Chest model paths
+- `alien-spider.js` - Animation and texture paths
+- `phoenix2.js` - Model and texture paths (if applicable)
+
+### **Verification:**
+
+After deployment:
+- ✅ Check browser console for 404 errors
+- ✅ Verify all assets load correctly
+- ✅ Test game functionality (models, sounds, textures)
+- ✅ No path-related errors in console
+
+**Status:** ✅ **ACTIVE - CRITICAL FOR THREE.JS GAME** (January 6, 2026)  
+**Related Rules:** `11_THREE_JS_RULE.md` §14, `18_3D_MODEL_RENDERING_RULE.md`
+

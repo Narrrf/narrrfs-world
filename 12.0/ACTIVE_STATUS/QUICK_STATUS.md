@@ -64,6 +64,9 @@
 - ✅ Index.html: Fixed "SEASON 7 COMING SOON" button text
 - ✅ Snake Boss Notifications: Made overlays more transparent (85% → 40% opacity)
 
+**Bug Fixes (January 4, 2026):**
+- ✅ Profile Lootbox 24h Cooldown Fix: Fixed issue where users couldn't claim lootbox after 24 hours - Backend now deletes old record and allows new claim after cooldown period expires - Users can claim every 24 hours indefinitely - Frontend respects admin config for UI, backend enforces 24h cooldown (hardcoded for now)
+
 **UX Improvements (January 3, 2026):**
 - ✅ Purchase Confirmations: Added to all 4 stores (Tetris, Snake, Space Invaders, Profile)
 - ✅ Boss Notification Transparency: Reduced opacity for better gameplay visibility
