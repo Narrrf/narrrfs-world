@@ -63,8 +63,13 @@
     - **Status:** ✅ **ACTIVE - CRITICAL DEPLOYMENT RULE**
 
 11. **`11_THREE_JS_RULE.md`** - **THREE.JS DEVELOPMENT**
-    - **Purpose:** Three.js game development guidelines
-    - **Status:** ✅ **ACTIVE**
+    - **Purpose:** Three.js game development guidelines, including **critical production asset upload requirements**
+    - **Status:** ✅ **ACTIVE - UPDATED WITH API UPLOAD SYSTEM (January 6, 2026)**
+    - **Updated:** 
+      - January 4, 2026 - Added Production Asset Upload Checklist (§13)
+      - January 6, 2026 - Updated with API upload system and 512MB file limit
+    - **Critical:** Large assets (3D models, sounds) must be uploaded via API to `/data/` persistent storage (not in Git)
+    - **Upload Method:** API endpoint with Discord bot authentication (see `22_ASSET_UPLOAD_API_RULE.md`)
 
 12. **`12_UNIVERSAL_LEVEL_REQUIREMENTS_RULE.md`** - **🎮 LEVEL CONSISTENCY**
     - **Purpose:** Ensures all levels have identical GOD Mode, sound, and controls
@@ -166,6 +171,23 @@
      - Visual differentiation patterns
      - Role granting based on collection address
      - Local development config support
+
+22. **`22_ASSET_UPLOAD_API_RULE.md`** - **🚀 ASSET UPLOAD API - THREE.JS & GLYPH GAME**
+   - **Purpose:** Standardized API-based asset upload system for large game assets (three.js and glyph game)
+   - **Critical:** Persistent storage in `/data/`, API upload endpoint, symlink management, 512MB file limit
+   - **Status:** ✅ **ACTIVE - MANDATORY FOR ALL ASSET DEPLOYMENTS**
+   - **Created:** January 6, 2026
+   - **Scope:** All three.js assets (3D models, textures, sounds, audio), all glyph game assets
+   - **Features:**
+     - API upload endpoint with Discord bot authentication
+     - Persistent storage in `/data/` (survives deployments)
+     - Symlink management (recreate after each deployment)
+     - Support for files up to 512MB
+     - Automated PowerShell upload script
+     - Complete verification protocols
+   - **Upload Method:** `https://narrrfs.world/api/discord/upload-assets.php`
+   - **Storage:** `/data/public/three.js/public/` and `/data/public/glyph/`
+   - **Reference:** See `11_THREE_JS_RULE.md` §13 for detailed asset upload checklist
 
 ---
 

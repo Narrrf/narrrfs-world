@@ -89,3 +89,43 @@ Sign when applied: 🧀 three.js rule applied
     - **Status:** 📋 **PLANNED** (December 13, 2025)
     - **Reference:** [Making Grass with Triangles in GLSL using Three.js](https://medium.com/antaeus-ar/making-grass-with-triangles-in-glsl-using-three-js-e106771a71ff)
     - **Documentation:** See `12.0/TECHNICAL_DOCUMENTATION/GRASS_BLADE_LENGTH_INTEGRATION_PLAN.md` for complete implementation plan
+
+13. **Production Asset Upload System (January 6, 2026) - API UPLOAD WITH /data/ PERSISTENT STORAGE**
+    - **Context:** Large three.js and glyph game assets were removed from git tracking to fix a 3.6GB commit. These assets must be present on Render but are not in git.
+    - **CRITICAL:** Assets must be stored in `/data/` (persistent storage) NOT `/var/www/html/` (gets wiped on deployments).
+    - **Storage Strategy:** 
+      - **Persistent Storage:** `/data/public/three.js/public/` and `/data/public/glyph/` (survives deployments, like database)
+      - **Web Access:** Symlinks from `/var/www/html/public/three.js/public/` and `/var/www/html/public/glyph/` to `/data/` (web server can access)
+      - **Upload Target:** Always upload to `/data/` (NOT `/var/www/html/`)
+    - **API Upload Endpoint:** `https://narrrfs.world/api/discord/upload-assets.php`
+      - **Authentication:** Uses Discord bot secret (`DISCORD_BOT_SECRET` or `DISCORD_SECRET`)
+      - **Method:** POST with `file` and `target_path` parameters
+      - **Upload Limit:** 512MB per file (configured via `.htaccess` and PHP `ini_set()`)
+      - **Timeout:** 30 minutes for large files
+    - **Upload Targets on Render (PERSISTENT - /data/):**  
+      - `/data/public/three.js/public/textures/3d models/` (all GLB/GLTF/FBX + textures)
+      - `/data/public/three.js/public/sounds/` (all SFX files)
+      - `/data/public/three.js/public/audio/` (all audio files)
+      - `/data/public/glyph/` (glyph game assets, if applicable)
+    - **Symlink Setup (Required After Each Deployment):** After uploading to `/data/`, create symlinks in `/var/www/html/` so web server can access:
+      ```bash
+      # Three.js assets
+      ln -s /data/public/three.js/public/textures/3d\ models /var/www/html/public/three.js/public/textures/3d\ models
+      ln -s /data/public/three.js/public/sounds /var/www/html/public/three.js/public/sounds
+      ln -s /data/public/three.js/public/audio /var/www/html/public/three.js/public/audio
+      
+      # Glyph game assets (if applicable)
+      ln -s /data/public/glyph /var/www/html/public/glyph
+      ```
+      **Note:** Symlinks are wiped on deployment - must be recreated after each Git push. See `RECREATE_SYMLINKS.sh` for automation.
+    - **Upload Methods:**
+      - **✅ RECOMMENDED: API Upload (PowerShell Script):** Use `UPLOAD_ASSETS_VIA_API.ps1` script with Discord bot secret
+      - **Alternative: Manual curl commands** (see `QUICK_START_API_UPLOAD.md`)
+      - **Alternative: Render Shell SCP/SFTP** (if API unavailable)
+    - **Rule:** NEVER re-add these assets to git; deploy to Render via API/SCP/SFTP to `/data/` following `10_FILE_PATH_LOCAL_VS_PRODUCTION_RULE.md`. Keep `.gitignore` entries intact.
+    - **Tech docs:** Cross-check required assets per level in `12.0/YEAR_END_2025/GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md` and `GAME_08_GLYPH_MEMORY_COMPLETE_TECHNICAL.md`. Confirm uploads after each deploy.
+    - **Verification:** On Render, list `/data/public/three.js/public/` and `/data/public/glyph/` directories. Verify symlinks work: `ls /var/www/html/public/three.js/public/textures/3d\ models/` should show files (via symlink).
+    - **References:** 
+      - `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/RENDER_PERSISTENT_ASSETS_SOLUTION.md` - Complete setup instructions
+      - `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/LARGE_FILE_UPLOAD_SETUP.md` - API upload guide
+      - `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/UPLOAD_ASSETS_VIA_API.ps1` - Automated upload script
