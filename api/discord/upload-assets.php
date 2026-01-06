@@ -3,6 +3,14 @@
 // Allows Discord bot or authenticated requests to upload assets to /data/ (persistent storage)
 // Date: January 4, 2026
 
+// Increase PHP upload limits for large asset uploads (up to 500MB)
+// Fallback if .htaccess doesn't work
+@ini_set('upload_max_filesize', '512M');
+@ini_set('post_max_size', '600M');
+@ini_set('max_execution_time', '1800'); // 30 minutes for large uploads
+@ini_set('max_input_time', '1800');
+@ini_set('memory_limit', '1024M');
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');

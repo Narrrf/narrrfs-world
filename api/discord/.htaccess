@@ -1,6 +1,7 @@
-# Increase PHP upload limits for asset uploads
-php_value upload_max_filesize 50M
-php_value post_max_size 100M
-php_value max_execution_time 300
-php_value max_input_time 300
+# Increase PHP upload limits for large asset uploads (up to 500MB)
+php_value upload_max_filesize 512M
+php_value post_max_size 600M
+php_value max_execution_time 1800
+php_value max_input_time 1800
+php_value memory_limit 1024M
 
