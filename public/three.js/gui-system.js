@@ -2016,7 +2016,7 @@ export class GUISystem {
     Object.assign(this.level1CompletionScreen.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/public/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/three.js/public/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2097,7 +2097,7 @@ export class GUISystem {
     Object.assign(this.level2CompletionScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/public/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/three.js/public/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2188,7 +2188,7 @@ export class GUISystem {
     Object.assign(this.level3CompletionScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/public/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/three.js/public/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2311,7 +2311,7 @@ export class GUISystem {
     Object.assign(this.level4CompletionScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/public/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/three.js/public/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2405,7 +2405,7 @@ export class GUISystem {
     Object.assign(this.levelSelectorScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/public/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/three.js/public/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2604,7 +2604,7 @@ export class GUISystem {
     Object.assign(this.mainMenu.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "24px",
-      backgroundImage: "url('/public/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/three.js/public/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2727,7 +2727,7 @@ export class GUISystem {
     Object.assign(this.characterSelectionMenu.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/public/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/three.js/public/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -3352,7 +3352,7 @@ export class GUISystem {
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: url('/public/textures/backgrounds/cheesetemple1.png');
+      background-image: url('/three.js/public/textures/backgrounds/cheesetemple1.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;

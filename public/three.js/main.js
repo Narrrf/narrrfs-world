@@ -2994,7 +2994,7 @@ function loadCharacterAudio() {
 
   // SF13 Triple-Shot Sound (SF13-Gun-future.mp3)
   audioLoader.load(
-    "/public/sounds/SFX/SF13-Gun-future.mp3",
+    "/three.js/public/sounds/SFX/SF13-Gun-future.mp3",
     (buffer) => {
       level4SF13ShootSound = new THREE.Audio(audioListener);
       level4SF13ShootSound.setBuffer(buffer);
@@ -3011,7 +3011,7 @@ function loadCharacterAudio() {
 
   // Bear Trap Sound (bear-trap-103800.mp3)
   audioLoader.load(
-    "/public/sounds/SFX/bear-trap-103800.mp3",
+    "/three.js/public/sounds/SFX/bear-trap-103800.mp3",
     (buffer) => {
       bearTrapSound = new THREE.Audio(audioListener);
       bearTrapSound.setBuffer(buffer);
@@ -3028,7 +3028,7 @@ function loadCharacterAudio() {
 
   // Hidden Slever Riddle Sound (hidden-slever.mp3)
   audioLoader.load(
-    "/public/sounds/SFX/hidden-slever.mp3",
+    "/three.js/public/sounds/SFX/hidden-slever.mp3",
     (buffer) => {
       hiddenSleverSound = new THREE.Audio(audioListener);
       hiddenSleverSound.setBuffer(buffer);
@@ -7642,30 +7642,38 @@ function startGame(startLevelId = null) {
     warpToLevelWithLoading(LEVEL_IDS.LEVEL1, "Level 1", async () => {
     return new Promise((resolve, reject) => {
   // Load level after character selection
-  console.log("🚀 [DEBUG] Starting game, fetching level1.json from /public/models/cheese-temple/level1.json");
-  fetch(resolveAssetPath("/public/models/cheese-temple/level1.json"))
-    .then((res) => {
-      if (!res.ok) {
-        console.error(`❌ [ERROR] Failed to fetch level1.json: HTTP ${res.status} ${res.statusText}`);
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
-      console.log("✅ [DEBUG] level1.json fetched successfully");
-      return res.json();
-    })
-    .catch((error) => {
-      console.error("❌ [ERROR] Failed to load level1.json:", error);
-      console.error("🔍 [DEBUG] Error details:", {
-        message: error.message,
-        stack: error.stack,
-        url: "/public/models/cheese-temple/level1.json",
-        hostname: window.location.hostname,
-        port: window.location.port,
-        protocol: window.location.protocol
-      });
-      alert(`Failed to load level data. Please ensure the Vite dev server is running on port 5173.\n\nError: ${error.message}\n\nCheck the console for details.`);
-          reject(error);
-    })
-    .then(async (mapData) => {
+  // CRITICAL: Level 1 uses embedded level data (no external JSON file)
+  // This is the standard pattern - all level data is defined in code
+  console.log("🚀 [DEBUG] Starting Level 1 with embedded level data");
+  
+  // Level 1 embedded data (standard spawn and block configuration)
+  const level1Data = {
+    size: 120, // Map size (120x120 blocks)
+    spawn: { x: 60, y: 0, z: 15 }, // Player spawn position
+    blockTypes: [
+      { id: 1, texture: "blocks/grass.png", emissive: false },
+      { id: 2, texture: "blocks/stone.png", emissive: false },
+      { id: 3, texture: "blocks/cheese-stone.png", emissive: true },
+      { id: 4, texture: "blocks/oak-planks.png", emissive: false },
+      { id: 5, texture: "blocks/yellow-cheese.png", emissive: true },
+      { id: 6, texture: "blocks/lava.png", emissive: true },
+      { id: 7, texture: "blocks/slever2.png", emissive: false }
+    ],
+    blocks: [
+      // Ground plane (120x120 blocks at y=0)
+      ...Array.from({ length: 120 * 120 }, (_, i) => ({
+        id: 1, // Grass texture
+        x: i % 120,
+        y: 0,
+        z: Math.floor(i / 120)
+      }))
+    ]
+  };
+  
+  // Process level data immediately (no async fetch needed)
+  (async () => {
+    try {
+      const mapData = level1Data;
       // CRITICAL: Wait for ALL operations to complete before resolving
       // This ensures loading screen shows 100% only when everything is actually loaded
       try {
@@ -9302,7 +9310,7 @@ function getPauseMenu() {
       justifyContent: "center",
       flexDirection: "column",
       gap: "18px",
-      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/three.js/public/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -9749,7 +9757,7 @@ function getOptionsMenu() {
       justifyContent: "center",
       flexDirection: "column",
       gap: "18px",
-      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/three.js/public/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
