@@ -91,7 +91,7 @@
  * 
  * 6. AudioSystem (audio-system.js) - ✅ STABLE - PRODUCTION READY
  *    Purpose: Complete audio management (background music, sound effects)
- *    Loads: MP3/OGG/WAV audio files from ./public/sounds/ and ./public/audio/ directories
+ *    Loads: MP3/OGG/WAV audio files from /sounds/ and /audio/ directories
  *    Initialized: Once at game start via initialize()
  *    Updated: Event-driven (plays sounds on demand)
  *    Key Functions: loadBackgroundMusic(), playJumpSound(), setBackgroundMusicEnabled()
@@ -103,7 +103,7 @@
  * 
  * 7. WeaponSystem (weapon-system.js) - ✅ STABLE - PRODUCTION READY
  *    Purpose: Weapon loading, shooting, inventory management
- *    Loads: FBX weapon models from ./public/textures/3d models/Fire Weapons 1/FBX/
+ *    Loads: FBX weapon models from /textures/3d models/Fire Weapons 1/FBX/
  *    Active: Levels 4, 5, 6
  *    Initialized: Once at game start
  *    Updated: Every frame via update(delta)
@@ -695,6 +695,63 @@ const API_BASE_URL = isProduction ? "https://narrrfs.world" : "http://localhost"
 const PROFILE_URL = isProduction
   ? "https://narrrfs.world/profile.html"
   : "http://localhost/public/profile.html";
+
+/**
+ * Resolve asset path for production vs local development
+ * CRITICAL FIX (January 6, 2026): Path normalization to /public/three.js/public/... format
+ * 
+ * Problem: Paths like "/textures/..." or "/public/textures/..." don't work in production
+ * Solution: Normalize all paths to "/public/three.js/public/..." format
+ * 
+ * Production:
+ * - HTML location: /three.js/3d-riddle-game.html
+ * - Assets location: /public/three.js/public/... (via symlinks from /data/)
+ * - Paths must be absolute from web root: /public/three.js/public/...
+ * 
+ * Local:
+ * - HTML location: /public/three.js/3d-riddle-game.html
+ * - Assets location: /public/three.js/public/...
+ * - Can use same absolute paths from root
+ */
+function resolveAssetPath(path) {
+  // CRITICAL: Following 11_THREE_JS_RULE.md §14 and 10_FILE_PATH_LOCAL_VS_PRODUCTION_RULE.md §14
+  // HTML location: /public/three.js/3d-riddle-game.html
+  // Assets MUST use absolute paths: /public/three.js/public/... (from web root)
+  
+  // CRITICAL FIX: Check if path is already in the correct format to avoid double-prefixing
+  // If path already starts with /public/three.js/public/, return it as-is (may already be resolved)
+  if (path.startsWith('/public/three.js/public/') || path.startsWith('http://') || path.startsWith('https://')) {
+    // Path is already resolved - return as-is
+    return path;
+  }
+  
+  // Remove leading ./ if present
+  let cleanPath = path.replace(/^\.\//, '');
+  
+  // Remove leading / if present (we'll add it back consistently)
+  cleanPath = cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath;
+  
+  // Remove "public/" prefix if present (we'll add it back in correct structure)
+  if (cleanPath.startsWith('public/')) {
+    cleanPath = cleanPath.substring(7); // Remove "public/" (7 characters)
+  }
+  
+  // CRITICAL: Path structure is /public/three.js/public/... (absolute from web root)
+  // This is the same for both local and production per the rules
+  const normalizedPath = `/public/three.js/public/${cleanPath}`;
+  
+  if (isProduction) {
+    // Production: Return absolute URL
+    return `${window.location.origin}${normalizedPath}`;
+  } else {
+    // Local: Also use absolute path (works with XAMPP)
+    // Alternative: Could use relative path ./public/... but absolute is safer per rules
+    return normalizedPath;
+  }
+}
+
+// Make resolveAssetPath globally available for other modules
+window.resolveAssetPath = resolveAssetPath;
 const SOUND_FX_STORAGE_KEY = "cheese_temple_sound_fx_enabled";
 const BACKGROUND_MUSIC_STORAGE_KEY = "cheese_temple_background_music_enabled";
 const BACKGROUND_MUSIC_VOLUME_STORAGE_KEY = "cheese_temple_background_music_volume";
@@ -877,7 +934,7 @@ const LEVEL_IDS = {
 /**
  * Level Map Configuration
  * Specify GLTF map file for each level (optional - if not specified, uses default ground plane)
- * Maps are loaded from: ./public/textures/3d models/Maps/
+ * Maps are loaded from: /textures/3d models/Maps/
  */
 const LEVEL_MAP_CONFIG = {
   [LEVEL_IDS.LEVEL1]: null, // No map - uses default ground
@@ -1094,13 +1151,14 @@ const levelEnvironments = {
 };
 
 // Initialize Background Music Paths after LEVEL_IDS is defined
+// FIXED (January 6, 2026): Use absolute paths from root
 BACKGROUND_MUSIC_PATHS = {
-  [LEVEL_IDS.LEVEL1]: "./public/sounds/music/level1.mp3",
-  [LEVEL_IDS.LEVEL2]: "./public/sounds/music/level2.mp3",
-  [LEVEL_IDS.LEVEL3]: "./public/sounds/music/level3.mp3",
-  [LEVEL_IDS.LEVEL4]: "./public/sounds/music/level4.mp3",
-  [LEVEL_IDS.LEVEL5]: "./public/sounds/music/level5.mp3", // Use level5.mp3 if available, otherwise will fallback
-  [LEVEL_IDS.LEVEL6]: "./public/sounds/music/level6.mp3" // Level 6 boss fight music
+  [LEVEL_IDS.LEVEL1]: "/public/sounds/music/level1.mp3",
+  [LEVEL_IDS.LEVEL2]: "/public/sounds/music/level2.mp3",
+  [LEVEL_IDS.LEVEL3]: "/public/sounds/music/level3.mp3",
+  [LEVEL_IDS.LEVEL4]: "/public/sounds/music/level4.mp3",
+  [LEVEL_IDS.LEVEL5]: "/public/sounds/music/level5.mp3", // Use level5.mp3 if available, otherwise will fallback
+  [LEVEL_IDS.LEVEL6]: "/public/sounds/music/level6.mp3" // Level 6 boss fight music
 };
 
 // 🌌 SKY SYSTEM SAVE/LOAD FUNCTIONS
@@ -1761,15 +1819,17 @@ scene.add(camera);
 const audioListener = new THREE.AudioListener();
 camera.add(audioListener);
 const audioLoader = new THREE.AudioLoader();
-const CHARACTER_FOOTSTEP_AUDIO = "./public/audio/character/footstep_cheese.ogg";
-const CHARACTER_JUMP_AUDIO = "./public/audio/character/jump_cheese.ogg";
-const CHEESE_PLATFORM_AUDIO = "./public/audio/gameplay/cheese_platform_active.ogg";
-const CHEESE_AIM_CLEAR_AUDIO = "./public/audio/gameplay/cheese_aim_clear.wav";
-const LEVER_AUDIO = "./public/audio/gameplay/slever.ogg";
-const BLOCK_MOVED_AUDIO = "./public/audio/gameplay/block_moved_correct.ogg";
-const LEVEL_UP_AUDIO = "./public/audio/gameplay/LEVEL%20UP!.wav";
-const LEVEL4_SHOOT_AUDIO = "./public/sounds/invaders/weapons/normal_shoot.wav";
-const LEVEL4_SF13_SHOOT_AUDIO = "./public/sounds/invaders/weapons/normal_shoot.wav"; // SF13 uses same sound (triple burst)
+// FIXED (January 6, 2026): Use absolute paths from root - Three.js loaders resolve from HTML location
+// HTML is at /three.js/3d-riddle-game.html, so absolute paths from root work correctly
+const CHARACTER_FOOTSTEP_AUDIO = "/public/audio/character/footstep_cheese.ogg";
+const CHARACTER_JUMP_AUDIO = "/public/audio/character/jump_cheese.ogg";
+const CHEESE_PLATFORM_AUDIO = "/public/audio/gameplay/cheese_platform_active.ogg";
+const CHEESE_AIM_CLEAR_AUDIO = "/public/audio/gameplay/cheese_aim_clear.wav";
+const LEVER_AUDIO = "/public/audio/gameplay/slever.ogg";
+const BLOCK_MOVED_AUDIO = "/public/audio/gameplay/block_moved_correct.ogg";
+const LEVEL_UP_AUDIO = "/public/audio/gameplay/LEVEL%20UP!.wav";
+const LEVEL4_SHOOT_AUDIO = "/public/sounds/invaders/weapons/normal_shoot.wav";
+const LEVEL4_SF13_SHOOT_AUDIO = "/public/sounds/invaders/weapons/normal_shoot.wav"; // SF13 uses same sound (triple burst)
 const SHOW_LEVEL2_ANCHOR_LABELS = true;
 
 const level2Config = {
@@ -1831,58 +1891,58 @@ const LEVEL2_BASE_SHELF_SEGMENTS = 6;
 const LEVEL2_EXTRA_SHELF_SEGMENTS = 3;
 const LEVEL2_TOTAL_SHELF_SEGMENTS = LEVEL2_BASE_SHELF_SEGMENTS + LEVEL2_EXTRA_SHELF_SEGMENTS;
 const LEVEL2_MONSTER_PREVIEWS = [
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/GreenBlob.gltf", shelfNumber: 1, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/PinkBlob.gltf", shelfNumber: 2 },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Frog.gltf", shelfNumber: 3, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Bunny.gltf", shelfNumber: 4 },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Orc.gltf", shelfNumber: 5, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Monkroose.gltf", shelfNumber: 6 },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Cactoro.gltf", shelfNumber: 7, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf", shelfNumber: 8 },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Dino.gltf", shelfNumber: 9, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Ninja.gltf", shelfNumber: 10 },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/MushroomKing.gltf", shelfNumber: 11, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Tribal.gltf", shelfNumber: 12 },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Alien.gltf", shelfNumber: 13 },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Cat.gltf", shelfNumber: 14, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Birb.gltf", shelfNumber: 15 },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Chicken.gltf", shelfNumber: 16, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Yeti.gltf", shelfNumber: 17 },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Dog.gltf", shelfNumber: 18, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Fish.gltf", shelfNumber: 19 },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/GreenSpikyBlob.gltf", shelfNumber: 20, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Cactoro.gltf", shelfNumber: 21 },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Wizard.gltf", shelfNumber: 22, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Orc_Skull.gltf", shelfNumber: 23 },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Mushnub.gltf", shelfNumber: 24, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Alien.gltf", shelfNumber: 25, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Orc.gltf", shelfNumber: 26 },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Fish.gltf", shelfNumber: 27, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Mushnub_Evolved.gltf", shelfNumber: 28 },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Ninja.gltf", shelfNumber: 29, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Pigeon.gltf", shelfNumber: 30 },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Alpaking.gltf", shelfNumber: 31 },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Armabee.gltf", shelfNumber: 32, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Dragon.gltf", shelfNumber: 33 },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Ghost.gltf", shelfNumber: 34, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Glub.gltf", shelfNumber: 35 },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Goleling.gltf", shelfNumber: 36, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Birb.gltf", shelfNumber: 37, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Cactoro.gltf", shelfNumber: 38 },
-  { path: "./public/textures/3d models/Monster 1/Blob/glTF/Yeti.gltf", shelfNumber: 39, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Alpaking_Evolved.gltf", shelfNumber: 40 },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Armabee_Evolved.gltf", shelfNumber: 41, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Dragon_Evolved.gltf", shelfNumber: 42 },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Demon.gltf", shelfNumber: 43, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Ghost_Skull.gltf", shelfNumber: 44 },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Glub_Evolved.gltf", shelfNumber: 45, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Goleling_Evolved.gltf", shelfNumber: 46 },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Hywirl.gltf", shelfNumber: 47, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Pigeon.gltf", shelfNumber: 48 },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Squidle.gltf", shelfNumber: 49, rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Flying/glTF/Tribal.gltf", shelfNumber: 50 },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Demon.gltf", bonusLabel: "B1", rotationOffset: Math.PI },
-  { path: "./public/textures/3d models/Monster 1/Big/glTF/Tribal.gltf", bonusLabel: "B2", rotationOffset: Math.PI }
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/GreenBlob.gltf", shelfNumber: 1, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/PinkBlob.gltf", shelfNumber: 2 },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Frog.gltf", shelfNumber: 3, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Bunny.gltf", shelfNumber: 4 },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Orc.gltf", shelfNumber: 5, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Monkroose.gltf", shelfNumber: 6 },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Cactoro.gltf", shelfNumber: 7, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf", shelfNumber: 8 },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Dino.gltf", shelfNumber: 9, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Ninja.gltf", shelfNumber: 10 },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/MushroomKing.gltf", shelfNumber: 11, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Tribal.gltf", shelfNumber: 12 },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Alien.gltf", shelfNumber: 13 },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Cat.gltf", shelfNumber: 14, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Birb.gltf", shelfNumber: 15 },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Chicken.gltf", shelfNumber: 16, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Yeti.gltf", shelfNumber: 17 },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Dog.gltf", shelfNumber: 18, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Fish.gltf", shelfNumber: 19 },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/GreenSpikyBlob.gltf", shelfNumber: 20, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Cactoro.gltf", shelfNumber: 21 },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Wizard.gltf", shelfNumber: 22, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Orc_Skull.gltf", shelfNumber: 23 },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Mushnub.gltf", shelfNumber: 24, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Alien.gltf", shelfNumber: 25, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Orc.gltf", shelfNumber: 26 },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Fish.gltf", shelfNumber: 27, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Mushnub_Evolved.gltf", shelfNumber: 28 },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Ninja.gltf", shelfNumber: 29, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Pigeon.gltf", shelfNumber: 30 },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Alpaking.gltf", shelfNumber: 31 },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Armabee.gltf", shelfNumber: 32, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Dragon.gltf", shelfNumber: 33 },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Ghost.gltf", shelfNumber: 34, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Glub.gltf", shelfNumber: 35 },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Goleling.gltf", shelfNumber: 36, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Birb.gltf", shelfNumber: 37, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Cactoro.gltf", shelfNumber: 38 },
+  { path: "/public/textures/3d models/Monster 1/Blob/glTF/Yeti.gltf", shelfNumber: 39, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Alpaking_Evolved.gltf", shelfNumber: 40 },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Armabee_Evolved.gltf", shelfNumber: 41, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Dragon_Evolved.gltf", shelfNumber: 42 },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Demon.gltf", shelfNumber: 43, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Ghost_Skull.gltf", shelfNumber: 44 },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Glub_Evolved.gltf", shelfNumber: 45, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Goleling_Evolved.gltf", shelfNumber: 46 },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Hywirl.gltf", shelfNumber: 47, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Pigeon.gltf", shelfNumber: 48 },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Squidle.gltf", shelfNumber: 49, rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Flying/glTF/Tribal.gltf", shelfNumber: 50 },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Demon.gltf", bonusLabel: "B1", rotationOffset: Math.PI },
+  { path: "/public/textures/3d models/Monster 1/Big/glTF/Tribal.gltf", bonusLabel: "B2", rotationOffset: Math.PI }
 ];
 const LEVEL2_BONUS_PAD_TARGETS = [
   { padIndex: 2, label: "B1" },
@@ -1892,7 +1952,7 @@ const LEVEL2_WEAPON_LIBRARY = [
   {
     id: "W1",
     name: "AR Mk I",
-    assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_1.fbx",
+    assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_1.fbx",
     weaponShelfNumber: 1, // First weapon shelf
     category: "assault_rifle",
     rotation: { x: 0, y: Math.PI / 2, z: 0 },
@@ -1901,7 +1961,7 @@ const LEVEL2_WEAPON_LIBRARY = [
   {
     id: "W2",
     name: "Sniper Mk I",
-    assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_1.fbx",
+    assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_1.fbx",
     weaponShelfNumber: 2, // Second weapon shelf
     category: "sniper",
     rotation: { x: 0, y: Math.PI / 2, z: 0 },
@@ -1910,7 +1970,7 @@ const LEVEL2_WEAPON_LIBRARY = [
   {
     id: "W3",
     name: "Shotgun Mk I",
-    assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Shotgun_1.fbx",
+    assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Shotgun_1.fbx",
     weaponShelfNumber: 3, // Third weapon shelf
     category: "shotgun",
     rotation: { x: 0, y: Math.PI / 2, z: 0 },
@@ -1960,46 +2020,46 @@ const LEVEL2_ACCESSORY_ROW_CONFIG = {
   labelHeight: 0.7
 };
 const LEVEL2_PRIMARY_WEAPON_SLOTS = [
-  { slot: 1, name: "Assault Rifle Mk I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_1.fbx", category: "assault_rifle" },
-  { slot: 2, name: "Assault Rifle Mk II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_2.fbx", category: "assault_rifle" },
-  { slot: 3, name: "Assault Rifle Mk III", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_3.fbx", category: "assault_rifle" },
-  { slot: 4, name: "Assault Rifle Mk IV", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_4.fbx", category: "assault_rifle" },
-  { slot: 5, name: "Assault Rifle Mk V", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_5.fbx", category: "assault_rifle" },
-  { slot: 6, name: "Assault Rifle 2 Mk I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle2_1.fbx", category: "assault_rifle" },
-  { slot: 7, name: "Assault Rifle 2 Mk II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle2_2.fbx", category: "assault_rifle" },
-  { slot: 8, name: "Assault Rifle 2 Mk III", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle2_3.fbx", category: "assault_rifle" },
-  { slot: 9, name: "Assault Rifle 2 Mk IV", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle2_4.fbx", category: "assault_rifle" },
-  { slot: 10, name: "Bullpup Mk I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Bullpup_1.fbx", category: "bullpup" },
-  { slot: 11, name: "Bullpup Mk II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Bullpup_2.fbx", category: "bullpup" },
-  { slot: 12, name: "Bullpup Mk III", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Bullpup_3.fbx", category: "bullpup" },
-  { slot: 13, name: "Submachine Gun Mk I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SubmachineGun_1.fbx", category: "smg" },
-  { slot: 14, name: "Submachine Gun Mk II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SubmachineGun_2.fbx", category: "smg" },
-  { slot: 15, name: "Submachine Gun Mk III", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SubmachineGun_3.fbx", category: "smg" },
-  { slot: 16, name: "Submachine Gun Mk IV", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SubmachineGun_4.fbx", category: "smg" },
-  { slot: 17, name: "Submachine Gun Mk V", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SubmachineGun_5.fbx", category: "smg" },
-  { slot: 18, name: "Shotgun Mk I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Shotgun_1.fbx", category: "shotgun" },
-  { slot: 19, name: "Shotgun Mk II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Shotgun_2.fbx", category: "shotgun" },
-  { slot: 20, name: "Shotgun Mk III", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Shotgun_3.fbx", category: "shotgun" },
-  { slot: 21, name: "Shotgun Mk IV", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Shotgun_4.fbx", category: "shotgun" },
-  { slot: 22, name: "Shotgun Short Stock", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Shotgun_ShortStock.fbx", category: "shotgun" },
-  { slot: 23, name: "Shotgun Sawed-Off", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Shotgun_SawedOff.fbx", category: "shotgun" },
-  { slot: 24, name: "Sniper Rifle Mk I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_1.fbx", category: "sniper" },
-  { slot: 25, name: "Sniper Rifle Mk II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_2.fbx", category: "sniper" },
-  { slot: 26, name: "Sniper Rifle Mk III", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_3.fbx", category: "sniper" },
-  { slot: 27, name: "Sniper Rifle Mk IV", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_4.fbx", category: "sniper" },
-  { slot: 28, name: "Sniper Rifle Mk V", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_5.fbx", category: "sniper" },
-  { slot: 29, name: "Sniper Rifle Mk VI", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_6.fbx", category: "sniper" },
-  { slot: 30, name: "Pistol Mk I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx", category: "pistol" },
-  { slot: 31, name: "Pistol Mk II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Pistol_2.fbx", category: "pistol" },
-  { slot: 32, name: "Pistol Mk III", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Pistol_3.fbx", category: "pistol" },
-  { slot: 33, name: "Pistol Mk IV", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Pistol_4.fbx", category: "pistol" },
-  { slot: 34, name: "Pistol Mk V", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Pistol_5.fbx", category: "pistol" },
-  { slot: 35, name: "Pistol Mk VI", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Pistol_6.fbx", category: "pistol" },
-  { slot: 36, name: "Revolver Mk I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Revolver_1.fbx", category: "revolver" },
-  { slot: 37, name: "Revolver Mk II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Revolver_2.fbx", category: "revolver" },
-  { slot: 38, name: "Revolver Mk III", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Revolver_3.fbx", category: "revolver" },
-  { slot: 39, name: "Revolver Mk IV", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Revolver_4.fbx", category: "revolver" },
-  { slot: 40, name: "Revolver Mk V", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Revolver_5.fbx", category: "revolver" }
+  { slot: 1, name: "Assault Rifle Mk I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_1.fbx", category: "assault_rifle" },
+  { slot: 2, name: "Assault Rifle Mk II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_2.fbx", category: "assault_rifle" },
+  { slot: 3, name: "Assault Rifle Mk III", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_3.fbx", category: "assault_rifle" },
+  { slot: 4, name: "Assault Rifle Mk IV", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_4.fbx", category: "assault_rifle" },
+  { slot: 5, name: "Assault Rifle Mk V", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle_5.fbx", category: "assault_rifle" },
+  { slot: 6, name: "Assault Rifle 2 Mk I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle2_1.fbx", category: "assault_rifle" },
+  { slot: 7, name: "Assault Rifle 2 Mk II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle2_2.fbx", category: "assault_rifle" },
+  { slot: 8, name: "Assault Rifle 2 Mk III", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle2_3.fbx", category: "assault_rifle" },
+  { slot: 9, name: "Assault Rifle 2 Mk IV", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/AssaultRifle2_4.fbx", category: "assault_rifle" },
+  { slot: 10, name: "Bullpup Mk I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Bullpup_1.fbx", category: "bullpup" },
+  { slot: 11, name: "Bullpup Mk II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Bullpup_2.fbx", category: "bullpup" },
+  { slot: 12, name: "Bullpup Mk III", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Bullpup_3.fbx", category: "bullpup" },
+  { slot: 13, name: "Submachine Gun Mk I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SubmachineGun_1.fbx", category: "smg" },
+  { slot: 14, name: "Submachine Gun Mk II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SubmachineGun_2.fbx", category: "smg" },
+  { slot: 15, name: "Submachine Gun Mk III", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SubmachineGun_3.fbx", category: "smg" },
+  { slot: 16, name: "Submachine Gun Mk IV", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SubmachineGun_4.fbx", category: "smg" },
+  { slot: 17, name: "Submachine Gun Mk V", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SubmachineGun_5.fbx", category: "smg" },
+  { slot: 18, name: "Shotgun Mk I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Shotgun_1.fbx", category: "shotgun" },
+  { slot: 19, name: "Shotgun Mk II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Shotgun_2.fbx", category: "shotgun" },
+  { slot: 20, name: "Shotgun Mk III", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Shotgun_3.fbx", category: "shotgun" },
+  { slot: 21, name: "Shotgun Mk IV", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Shotgun_4.fbx", category: "shotgun" },
+  { slot: 22, name: "Shotgun Short Stock", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Shotgun_ShortStock.fbx", category: "shotgun" },
+  { slot: 23, name: "Shotgun Sawed-Off", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Shotgun_SawedOff.fbx", category: "shotgun" },
+  { slot: 24, name: "Sniper Rifle Mk I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_1.fbx", category: "sniper" },
+  { slot: 25, name: "Sniper Rifle Mk II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_2.fbx", category: "sniper" },
+  { slot: 26, name: "Sniper Rifle Mk III", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_3.fbx", category: "sniper" },
+  { slot: 27, name: "Sniper Rifle Mk IV", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_4.fbx", category: "sniper" },
+  { slot: 28, name: "Sniper Rifle Mk V", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_5.fbx", category: "sniper" },
+  { slot: 29, name: "Sniper Rifle Mk VI", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/SniperRifle_6.fbx", category: "sniper" },
+  { slot: 30, name: "Pistol Mk I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx", category: "pistol" },
+  { slot: 31, name: "Pistol Mk II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Pistol_2.fbx", category: "pistol" },
+  { slot: 32, name: "Pistol Mk III", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Pistol_3.fbx", category: "pistol" },
+  { slot: 33, name: "Pistol Mk IV", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Pistol_4.fbx", category: "pistol" },
+  { slot: 34, name: "Pistol Mk V", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Pistol_5.fbx", category: "pistol" },
+  { slot: 35, name: "Pistol Mk VI", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Pistol_6.fbx", category: "pistol" },
+  { slot: 36, name: "Revolver Mk I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Revolver_1.fbx", category: "revolver" },
+  { slot: 37, name: "Revolver Mk II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Revolver_2.fbx", category: "revolver" },
+  { slot: 38, name: "Revolver Mk III", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Revolver_3.fbx", category: "revolver" },
+  { slot: 39, name: "Revolver Mk IV", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Revolver_4.fbx", category: "revolver" },
+  { slot: 40, name: "Revolver Mk V", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Revolver_5.fbx", category: "revolver" }
 ];
 const PRIMARY_RING_DEFAULT_TRANSFORM = {
   scale: 0.006,
@@ -2016,20 +2076,20 @@ const PRIMARY_RING_CATEGORY_TRANSFORMS = {
   revolver: { scale: 0.0048, offsetY: 0.52, rotationY: Math.PI }
 };
 const LEVEL2_ACCESSORY_SLOTS = [
-  { slot: "A01", name: "Bayonet I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Bayonet.fbx", type: "bayonet" },
-  { slot: "A02", name: "Bayonet II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Bayonet_2.fbx", type: "bayonet" },
-  { slot: "A03", name: "Bipod", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Bipod.fbx", type: "bipod" },
-  { slot: "A04", name: "Flashlight", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Flashlight.fbx", type: "flashlight" },
-  { slot: "A05", name: "Grip", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Grip.fbx", type: "grip" },
-  { slot: "A06", name: "Scope Mk I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Scope_1.fbx", type: "scope" },
-  { slot: "A07", name: "Scope Mk II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Scope_2.fbx", type: "scope" },
-  { slot: "A08", name: "Scope Mk III", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Scope_3.fbx", type: "scope" },
-  { slot: "A09", name: "Silencer Mk I", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Silencer_1.fbx", type: "silencer" },
-  { slot: "A10", name: "Silencer Mk II", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Silencer_2.fbx", type: "silencer" },
-  { slot: "A11", name: "Silencer Mk III", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Silencer_3.fbx", type: "silencer" },
-  { slot: "A12", name: "Silencer Long", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Silencer_long.fbx", type: "silencer" },
-  { slot: "A13", name: "Silencer Short", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Silencer_Short.fbx", type: "silencer" },
-  { slot: "A14", name: "Modular Stock", assetPath: "./public/textures/3d models/Fire Weapons 1/FBX/Accessories/Stock.fbx", type: "stock" }
+  { slot: "A01", name: "Bayonet I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Bayonet.fbx", type: "bayonet" },
+  { slot: "A02", name: "Bayonet II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Bayonet_2.fbx", type: "bayonet" },
+  { slot: "A03", name: "Bipod", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Bipod.fbx", type: "bipod" },
+  { slot: "A04", name: "Flashlight", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Flashlight.fbx", type: "flashlight" },
+  { slot: "A05", name: "Grip", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Grip.fbx", type: "grip" },
+  { slot: "A06", name: "Scope Mk I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Scope_1.fbx", type: "scope" },
+  { slot: "A07", name: "Scope Mk II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Scope_2.fbx", type: "scope" },
+  { slot: "A08", name: "Scope Mk III", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Scope_3.fbx", type: "scope" },
+  { slot: "A09", name: "Silencer Mk I", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Silencer_1.fbx", type: "silencer" },
+  { slot: "A10", name: "Silencer Mk II", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Silencer_2.fbx", type: "silencer" },
+  { slot: "A11", name: "Silencer Mk III", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Silencer_3.fbx", type: "silencer" },
+  { slot: "A12", name: "Silencer Long", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Silencer_long.fbx", type: "silencer" },
+  { slot: "A13", name: "Silencer Short", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Silencer_Short.fbx", type: "silencer" },
+  { slot: "A14", name: "Modular Stock", assetPath: "/public/textures/3d models/Fire Weapons 1/FBX/Accessories/Stock.fbx", type: "stock" }
 ];
 const LEVEL2_ACCESSORY_TRANSFORM_DEFAULT = {
   scale: 0.0036,
@@ -2055,59 +2115,59 @@ const LEVEL2_SURVIVAL_PACK_ROW_CONFIG = {
   labelHeight: 0.95
 };
 const LEVEL2_SURVIVAL_PACK_SLOTS = [
-  { slot: "SP01", name: "Axe (Small)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Axe_Small.fbx", type: "axe" },
-  { slot: "SP02", name: "Axe", assetPath: "./public/textures/3d models/Survival Pack/FBX/Axe.fbx", type: "axe" },
-  { slot: "SP03", name: "Backpack", assetPath: "./public/textures/3d models/Survival Pack/FBX/Backpack.fbx", type: "supply" },
-  { slot: "SP04", name: "Bandages", assetPath: "./public/textures/3d models/Survival Pack/FBX/Bandages.fbx", type: "medical" },
-  { slot: "SP05", name: "Battery (Big)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Battery_Big.fbx", type: "device" },
-  { slot: "SP06", name: "Battery (Small)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Battery_Small.fbx", type: "device" },
-  { slot: "SP07", name: "Bear Trap (Closed)", assetPath: "./public/textures/3d models/Survival Pack/FBX/BearTrap_Closed.fbx", type: "trap" },
-  { slot: "SP08", name: "Bear Trap (Open)", assetPath: "./public/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx", type: "trap" },
-  { slot: "SP09", name: "Bonfire (Lit)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Bonfire_Fire.fbx", type: "camp_fire" },
-  { slot: "SP10", name: "Bonfire (Cold)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Bonfire.fbx", type: "camp" },
-  { slot: "SP11", name: "Can (Broken)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Can_Broken.fbx", type: "container" },
-  { slot: "SP12", name: "Can (Closed)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Can_Closed.fbx", type: "container" },
-  { slot: "SP13", name: "Can (Open)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Can_Open.fbx", type: "container" },
-  { slot: "SP14", name: "Can (Red)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Can_Red.fbx", type: "container" },
-  { slot: "SP15", name: "Compass (Closed)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Compass_Closed.fbx", type: "gadget" },
-  { slot: "SP16", name: "Compass (Open)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Compass_Open.fbx", type: "gadget" },
-  { slot: "SP17", name: "First Aid (Hard)", assetPath: "./public/textures/3d models/Survival Pack/FBX/FirstAidKit_Hard.fbx", type: "medical" },
-  { slot: "SP18", name: "First Aid Kit", assetPath: "./public/textures/3d models/Survival Pack/FBX/FirstAidKit.fbx", type: "medical" },
-  { slot: "SP19", name: "Flare Gun", assetPath: "./public/textures/3d models/Survival Pack/FBX/FlareGun.fbx", type: "weapon" },
-  { slot: "SP20", name: "Gas Can", assetPath: "./public/textures/3d models/Survival Pack/FBX/GasCan.fbx", type: "container_large" },
-  { slot: "SP21", name: "Knife", assetPath: "./public/textures/3d models/Survival Pack/FBX/Knife.fbx", type: "weapon_small" },
-  { slot: "SP22", name: "Match (Burnt)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Match_Burnt.fbx", type: "small_prop" },
-  { slot: "SP23", name: "Match (Fire)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Match_Fire.fbx", type: "small_prop" },
-  { slot: "SP24", name: "Match", assetPath: "./public/textures/3d models/Survival Pack/FBX/Match.fbx", type: "small_prop" },
-  { slot: "SP25", name: "Matchbox", assetPath: "./public/textures/3d models/Survival Pack/FBX/Matchbox.fbx", type: "small_prop" },
-  { slot: "SP26", name: "Pan (Small)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Pan_Small.fbx", type: "cookware" },
-  { slot: "SP27", name: "Pan", assetPath: "./public/textures/3d models/Survival Pack/FBX/Pan.fbx", type: "cookware" },
-  { slot: "SP28", name: "Phone", assetPath: "./public/textures/3d models/Survival Pack/FBX/Phone.fbx", type: "gadget" },
-  { slot: "SP29", name: "Pistol I", assetPath: "./public/textures/3d models/Survival Pack/FBX/Pistol_1.fbx", type: "weapon" },
-  { slot: "SP30", name: "Pistol II", assetPath: "./public/textures/3d models/Survival Pack/FBX/Pistol_2.fbx", type: "weapon" },
-  { slot: "SP31", name: "Pot (Small)", assetPath: "./public/textures/3d models/Survival Pack/FBX/Pot_Small.fbx", type: "cookware" },
-  { slot: "SP32", name: "Pot", assetPath: "./public/textures/3d models/Survival Pack/FBX/Pot.fbx", type: "cookware" },
-  { slot: "SP33", name: "Propane Tank", assetPath: "./public/textures/3d models/Survival Pack/FBX/PropaneTank.fbx", type: "container_large" },
-  { slot: "SP34", name: "Radio", assetPath: "./public/textures/3d models/Survival Pack/FBX/Radio.fbx", type: "gadget" },
-  { slot: "SP35", name: "Raft Paddle", assetPath: "./public/textures/3d models/Survival Pack/FBX/Raft_Paddle.fbx", type: "tool_long" },
-  { slot: "SP36", name: "Raft", assetPath: "./public/textures/3d models/Survival Pack/FBX/Raft.fbx", type: "vehicle" },
-  { slot: "SP37", name: "Revolver I", assetPath: "./public/textures/3d models/Survival Pack/FBX/Revolver_1.fbx", type: "weapon" },
-  { slot: "SP38", name: "Revolver II", assetPath: "./public/textures/3d models/Survival Pack/FBX/Revolver_2.fbx", type: "weapon" },
-  { slot: "SP39", name: "Revolver III", assetPath: "./public/textures/3d models/Survival Pack/FBX/Revolver_3.fbx", type: "weapon" },
-  { slot: "SP40", name: "Shotgun I", assetPath: "./public/textures/3d models/Survival Pack/FBX/Shotgun_1.fbx", type: "weapon_long" },
-  { slot: "SP41", name: "Shotgun II", assetPath: "./public/textures/3d models/Survival Pack/FBX/Shotgun_2.fbx", type: "weapon_long" },
-  { slot: "SP42", name: "Shotgun Sawed-Off", assetPath: "./public/textures/3d models/Survival Pack/FBX/Shotgun_SawedOff.fbx", type: "weapon_long" },
-  { slot: "SP43", name: "Shotgun Short Stock", assetPath: "./public/textures/3d models/Survival Pack/FBX/Shotgun_ShortStock.fbx", type: "weapon_long" },
-  { slot: "SP44", name: "Shovel", assetPath: "./public/textures/3d models/Survival Pack/FBX/Shovel.fbx", type: "tool_long" },
-  { slot: "SP45", name: "Tent", assetPath: "./public/textures/3d models/Survival Pack/FBX/Tent.fbx", type: "camp_large" },
-  { slot: "SP46", name: "Torch", assetPath: "./public/textures/3d models/Survival Pack/FBX/Torch.fbx", type: "camp" },
-  { slot: "SP47", name: "Trash Can", assetPath: "./public/textures/3d models/Survival Pack/FBX/Trashcan.fbx", type: "container_large" },
-  { slot: "SP48", name: "Water Bottle I", assetPath: "./public/textures/3d models/Survival Pack/FBX/WaterBottle_1.fbx", type: "small_prop" },
-  { slot: "SP49", name: "Water Bottle II", assetPath: "./public/textures/3d models/Survival Pack/FBX/WaterBottle_2.fbx", type: "small_prop" },
-  { slot: "SP50", name: "Water Bottle III", assetPath: "./public/textures/3d models/Survival Pack/FBX/WaterBottle_3.fbx", type: "small_prop" },
-  { slot: "SP51", name: "Wooden Torch (Fire)", assetPath: "./public/textures/3d models/Survival Pack/FBX/WoodenTorch_Fire.fbx", type: "camp_fire" },
-  { slot: "SP52", name: "Wooden Torch", assetPath: "./public/textures/3d models/Survival Pack/FBX/WoodenTorch.fbx", type: "camp" },
-  { slot: "SP53", name: "Wood Log", assetPath: "./public/textures/3d models/Survival Pack/FBX/WoodLog.fbx", type: "camp" }
+  { slot: "SP01", name: "Axe (Small)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Axe_Small.fbx", type: "axe" },
+  { slot: "SP02", name: "Axe", assetPath: "/public/textures/3d models/Survival Pack/FBX/Axe.fbx", type: "axe" },
+  { slot: "SP03", name: "Backpack", assetPath: "/public/textures/3d models/Survival Pack/FBX/Backpack.fbx", type: "supply" },
+  { slot: "SP04", name: "Bandages", assetPath: "/public/textures/3d models/Survival Pack/FBX/Bandages.fbx", type: "medical" },
+  { slot: "SP05", name: "Battery (Big)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Battery_Big.fbx", type: "device" },
+  { slot: "SP06", name: "Battery (Small)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Battery_Small.fbx", type: "device" },
+  { slot: "SP07", name: "Bear Trap (Closed)", assetPath: "/public/textures/3d models/Survival Pack/FBX/BearTrap_Closed.fbx", type: "trap" },
+  { slot: "SP08", name: "Bear Trap (Open)", assetPath: "/public/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx", type: "trap" },
+  { slot: "SP09", name: "Bonfire (Lit)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Bonfire_Fire.fbx", type: "camp_fire" },
+  { slot: "SP10", name: "Bonfire (Cold)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Bonfire.fbx", type: "camp" },
+  { slot: "SP11", name: "Can (Broken)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Can_Broken.fbx", type: "container" },
+  { slot: "SP12", name: "Can (Closed)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Can_Closed.fbx", type: "container" },
+  { slot: "SP13", name: "Can (Open)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Can_Open.fbx", type: "container" },
+  { slot: "SP14", name: "Can (Red)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Can_Red.fbx", type: "container" },
+  { slot: "SP15", name: "Compass (Closed)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Compass_Closed.fbx", type: "gadget" },
+  { slot: "SP16", name: "Compass (Open)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Compass_Open.fbx", type: "gadget" },
+  { slot: "SP17", name: "First Aid (Hard)", assetPath: "/public/textures/3d models/Survival Pack/FBX/FirstAidKit_Hard.fbx", type: "medical" },
+  { slot: "SP18", name: "First Aid Kit", assetPath: "/public/textures/3d models/Survival Pack/FBX/FirstAidKit.fbx", type: "medical" },
+  { slot: "SP19", name: "Flare Gun", assetPath: "/public/textures/3d models/Survival Pack/FBX/FlareGun.fbx", type: "weapon" },
+  { slot: "SP20", name: "Gas Can", assetPath: "/public/textures/3d models/Survival Pack/FBX/GasCan.fbx", type: "container_large" },
+  { slot: "SP21", name: "Knife", assetPath: "/public/textures/3d models/Survival Pack/FBX/Knife.fbx", type: "weapon_small" },
+  { slot: "SP22", name: "Match (Burnt)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Match_Burnt.fbx", type: "small_prop" },
+  { slot: "SP23", name: "Match (Fire)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Match_Fire.fbx", type: "small_prop" },
+  { slot: "SP24", name: "Match", assetPath: "/public/textures/3d models/Survival Pack/FBX/Match.fbx", type: "small_prop" },
+  { slot: "SP25", name: "Matchbox", assetPath: "/public/textures/3d models/Survival Pack/FBX/Matchbox.fbx", type: "small_prop" },
+  { slot: "SP26", name: "Pan (Small)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Pan_Small.fbx", type: "cookware" },
+  { slot: "SP27", name: "Pan", assetPath: "/public/textures/3d models/Survival Pack/FBX/Pan.fbx", type: "cookware" },
+  { slot: "SP28", name: "Phone", assetPath: "/public/textures/3d models/Survival Pack/FBX/Phone.fbx", type: "gadget" },
+  { slot: "SP29", name: "Pistol I", assetPath: "/public/textures/3d models/Survival Pack/FBX/Pistol_1.fbx", type: "weapon" },
+  { slot: "SP30", name: "Pistol II", assetPath: "/public/textures/3d models/Survival Pack/FBX/Pistol_2.fbx", type: "weapon" },
+  { slot: "SP31", name: "Pot (Small)", assetPath: "/public/textures/3d models/Survival Pack/FBX/Pot_Small.fbx", type: "cookware" },
+  { slot: "SP32", name: "Pot", assetPath: "/public/textures/3d models/Survival Pack/FBX/Pot.fbx", type: "cookware" },
+  { slot: "SP33", name: "Propane Tank", assetPath: "/public/textures/3d models/Survival Pack/FBX/PropaneTank.fbx", type: "container_large" },
+  { slot: "SP34", name: "Radio", assetPath: "/public/textures/3d models/Survival Pack/FBX/Radio.fbx", type: "gadget" },
+  { slot: "SP35", name: "Raft Paddle", assetPath: "/public/textures/3d models/Survival Pack/FBX/Raft_Paddle.fbx", type: "tool_long" },
+  { slot: "SP36", name: "Raft", assetPath: "/public/textures/3d models/Survival Pack/FBX/Raft.fbx", type: "vehicle" },
+  { slot: "SP37", name: "Revolver I", assetPath: "/public/textures/3d models/Survival Pack/FBX/Revolver_1.fbx", type: "weapon" },
+  { slot: "SP38", name: "Revolver II", assetPath: "/public/textures/3d models/Survival Pack/FBX/Revolver_2.fbx", type: "weapon" },
+  { slot: "SP39", name: "Revolver III", assetPath: "/public/textures/3d models/Survival Pack/FBX/Revolver_3.fbx", type: "weapon" },
+  { slot: "SP40", name: "Shotgun I", assetPath: "/public/textures/3d models/Survival Pack/FBX/Shotgun_1.fbx", type: "weapon_long" },
+  { slot: "SP41", name: "Shotgun II", assetPath: "/public/textures/3d models/Survival Pack/FBX/Shotgun_2.fbx", type: "weapon_long" },
+  { slot: "SP42", name: "Shotgun Sawed-Off", assetPath: "/public/textures/3d models/Survival Pack/FBX/Shotgun_SawedOff.fbx", type: "weapon_long" },
+  { slot: "SP43", name: "Shotgun Short Stock", assetPath: "/public/textures/3d models/Survival Pack/FBX/Shotgun_ShortStock.fbx", type: "weapon_long" },
+  { slot: "SP44", name: "Shovel", assetPath: "/public/textures/3d models/Survival Pack/FBX/Shovel.fbx", type: "tool_long" },
+  { slot: "SP45", name: "Tent", assetPath: "/public/textures/3d models/Survival Pack/FBX/Tent.fbx", type: "camp_large" },
+  { slot: "SP46", name: "Torch", assetPath: "/public/textures/3d models/Survival Pack/FBX/Torch.fbx", type: "camp" },
+  { slot: "SP47", name: "Trash Can", assetPath: "/public/textures/3d models/Survival Pack/FBX/Trashcan.fbx", type: "container_large" },
+  { slot: "SP48", name: "Water Bottle I", assetPath: "/public/textures/3d models/Survival Pack/FBX/WaterBottle_1.fbx", type: "small_prop" },
+  { slot: "SP49", name: "Water Bottle II", assetPath: "/public/textures/3d models/Survival Pack/FBX/WaterBottle_2.fbx", type: "small_prop" },
+  { slot: "SP50", name: "Water Bottle III", assetPath: "/public/textures/3d models/Survival Pack/FBX/WaterBottle_3.fbx", type: "small_prop" },
+  { slot: "SP51", name: "Wooden Torch (Fire)", assetPath: "/public/textures/3d models/Survival Pack/FBX/WoodenTorch_Fire.fbx", type: "camp_fire" },
+  { slot: "SP52", name: "Wooden Torch", assetPath: "/public/textures/3d models/Survival Pack/FBX/WoodenTorch.fbx", type: "camp" },
+  { slot: "SP53", name: "Wood Log", assetPath: "/public/textures/3d models/Survival Pack/FBX/WoodLog.fbx", type: "camp" }
 ];
 const LEVEL2_SURVIVAL_PACK_TRANSFORM_DEFAULT = {
   scale: 0.0052,
@@ -2143,30 +2203,30 @@ const LEVEL2_OLD_SCHOOL_ROW_CONFIG = {
   labelHeight: 0.85
 };
 const LEVEL2_OLD_SCHOOL_SLOTS = [
-  { slot: "OS01", name: "Sword", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Sword.fbx", type: "sword" },
-  { slot: "OS02", name: "Sword II", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Sword_2.fbx", type: "sword" },
-  { slot: "OS03", name: "Greatsword", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Sword_Big.fbx", type: "sword" },
-  { slot: "OS04", name: "Golden Sword", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Sword_Golden.fbx", type: "sword" },
-  { slot: "OS05", name: "Claymore", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Claymore.fbx", type: "sword" },
-  { slot: "OS06", name: "Axe", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Axe.fbx", type: "axe" },
-  { slot: "OS07", name: "Axe (Small)", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Axe_Small.fbx", type: "axe" },
-  { slot: "OS08", name: "Double Axe", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Axe_Double.fbx", type: "axe" },
-  { slot: "OS09", name: "Hammer", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Hammer_Small.fbx", type: "hammer" },
-  { slot: "OS10", name: "War Hammer", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Hammer_Double.fbx", type: "hammer" },
-  { slot: "OS11", name: "Dagger", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Dagger.fbx", type: "dagger" },
-  { slot: "OS12", name: "Stiletto", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Dagger_2.fbx", type: "dagger" },
-  { slot: "OS13", name: "Bow", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Bow_Wooden.fbx", type: "bow" },
-  { slot: "OS14", name: "Hunter Bow", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Bow_Wooden2.fbx", type: "bow" },
-  { slot: "OS15", name: "Golden Bow", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Bow_Golden.fbx", type: "bow" },
-  { slot: "OS16", name: "Evil Bow", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Bow_Evil.fbx", type: "bow" },
-  { slot: "OS17", name: "Round Shield", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Shield_Round.fbx", type: "shield_round" },
-  { slot: "OS18", name: "Round Shield II", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Shield_Round_2.fbx", type: "shield_round" },
-  { slot: "OS19", name: "Heater Shield", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Shield_Heater.fbx", type: "shield_heater" },
-  { slot: "OS20", name: "Heater Shield II", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Shield_Heater_2.fbx", type: "shield_heater" },
-  { slot: "OS21", name: "Celtic Shield", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Shield_Celtic_Golden.fbx", type: "shield_round" },
-  { slot: "OS22", name: "Spear", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Spear.fbx", type: "spear" },
-  { slot: "OS23", name: "Scythe", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Scythe.fbx", type: "scythe" },
-  { slot: "OS24", name: "Arrow", assetPath: "./public/textures/3d models/Old School Weapons/FBX/Arrow.fbx", type: "arrow" }
+  { slot: "OS01", name: "Sword", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Sword.fbx", type: "sword" },
+  { slot: "OS02", name: "Sword II", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Sword_2.fbx", type: "sword" },
+  { slot: "OS03", name: "Greatsword", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Sword_Big.fbx", type: "sword" },
+  { slot: "OS04", name: "Golden Sword", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Sword_Golden.fbx", type: "sword" },
+  { slot: "OS05", name: "Claymore", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Claymore.fbx", type: "sword" },
+  { slot: "OS06", name: "Axe", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Axe.fbx", type: "axe" },
+  { slot: "OS07", name: "Axe (Small)", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Axe_Small.fbx", type: "axe" },
+  { slot: "OS08", name: "Double Axe", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Axe_Double.fbx", type: "axe" },
+  { slot: "OS09", name: "Hammer", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Hammer_Small.fbx", type: "hammer" },
+  { slot: "OS10", name: "War Hammer", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Hammer_Double.fbx", type: "hammer" },
+  { slot: "OS11", name: "Dagger", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Dagger.fbx", type: "dagger" },
+  { slot: "OS12", name: "Stiletto", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Dagger_2.fbx", type: "dagger" },
+  { slot: "OS13", name: "Bow", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Bow_Wooden.fbx", type: "bow" },
+  { slot: "OS14", name: "Hunter Bow", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Bow_Wooden2.fbx", type: "bow" },
+  { slot: "OS15", name: "Golden Bow", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Bow_Golden.fbx", type: "bow" },
+  { slot: "OS16", name: "Evil Bow", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Bow_Evil.fbx", type: "bow" },
+  { slot: "OS17", name: "Round Shield", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Shield_Round.fbx", type: "shield_round" },
+  { slot: "OS18", name: "Round Shield II", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Shield_Round_2.fbx", type: "shield_round" },
+  { slot: "OS19", name: "Heater Shield", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Shield_Heater.fbx", type: "shield_heater" },
+  { slot: "OS20", name: "Heater Shield II", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Shield_Heater_2.fbx", type: "shield_heater" },
+  { slot: "OS21", name: "Celtic Shield", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Shield_Celtic_Golden.fbx", type: "shield_round" },
+  { slot: "OS22", name: "Spear", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Spear.fbx", type: "spear" },
+  { slot: "OS23", name: "Scythe", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Scythe.fbx", type: "scythe" },
+  { slot: "OS24", name: "Arrow", assetPath: "/public/textures/3d models/Old School Weapons/FBX/Arrow.fbx", type: "arrow" }
 ];
 const LEVEL2_OLD_SCHOOL_TRANSFORM_DEFAULT = {
   scale: 0.0048,
@@ -2197,26 +2257,26 @@ const LEVEL2_SCIFI_ROW_CONFIG = {
 };
 
 const LEVEL2_SCIFI_SLOTS = [
-  { slot: "SF01", name: "Assault Rifle 1", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_1.fbx", type: "ar" },
-  { slot: "SF02", name: "Assault Rifle 2", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_2.fbx", type: "ar" },
-  { slot: "SF03", name: "Assault Rifle 3", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_3.fbx", type: "ar" },
-  { slot: "SF04", name: "Assault Rifle 4", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_4.fbx", type: "ar" },
-  { slot: "SF05", name: "Assault Rifle 5", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_5.fbx", type: "ar" },
-  { slot: "SF06", name: "Assault Rifle 6", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_6.fbx", type: "ar" },
-  { slot: "SF07", name: "Crossbow 1", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Crossbow_1.fbx", type: "crossbow" },
-  { slot: "SF08", name: "Crossbow 2", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Crossbow_2.fbx", type: "crossbow" },
-  { slot: "SF09", name: "Grenade Launcher", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Grenade.fbx", type: "grenade" },
-  { slot: "SF10", name: "Grenade Launcher 1", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Grenade_1.fbx", type: "grenade" },
-  { slot: "SF11", name: "Grenade Launcher 2", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Grenade_2.fbx", type: "grenade" },
-  { slot: "SF12", name: "Grenade Launcher 3", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Grenade_3.fbx", type: "grenade" },
-  { slot: "SF13", name: "Pistol 1", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Pistol_1.fbx", type: "pistol" },
-  { slot: "SF14", name: "Pistol 2", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Pistol_2.fbx", type: "pistol" },
-  { slot: "SF15", name: "Pistol 3", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Pistol_3.fbx", type: "pistol" },
-  { slot: "SF16", name: "SMG 1", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/SMG_1.fbx", type: "smg" },
-  { slot: "SF17", name: "SMG 2", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/SMG_2.fbx", type: "smg" },
-  { slot: "SF18", name: "Sniper Rifle 1", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Sniper_1.fbx", type: "sniper" },
-  { slot: "SF19", name: "Sniper Rifle 2", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Sniper_2.fbx", type: "sniper" },
-  { slot: "SF20", name: "Sniper Rifle 3", assetPath: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Sniper_3.fbx", type: "sniper" }
+  { slot: "SF01", name: "Assault Rifle 1", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_1.fbx", type: "ar" },
+  { slot: "SF02", name: "Assault Rifle 2", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_2.fbx", type: "ar" },
+  { slot: "SF03", name: "Assault Rifle 3", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_3.fbx", type: "ar" },
+  { slot: "SF04", name: "Assault Rifle 4", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_4.fbx", type: "ar" },
+  { slot: "SF05", name: "Assault Rifle 5", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_5.fbx", type: "ar" },
+  { slot: "SF06", name: "Assault Rifle 6", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/AR_6.fbx", type: "ar" },
+  { slot: "SF07", name: "Crossbow 1", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Crossbow_1.fbx", type: "crossbow" },
+  { slot: "SF08", name: "Crossbow 2", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Crossbow_2.fbx", type: "crossbow" },
+  { slot: "SF09", name: "Grenade Launcher", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Grenade.fbx", type: "grenade" },
+  { slot: "SF10", name: "Grenade Launcher 1", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Grenade_1.fbx", type: "grenade" },
+  { slot: "SF11", name: "Grenade Launcher 2", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Grenade_2.fbx", type: "grenade" },
+  { slot: "SF12", name: "Grenade Launcher 3", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Grenade_3.fbx", type: "grenade" },
+  { slot: "SF13", name: "Pistol 1", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Pistol_1.fbx", type: "pistol" },
+  { slot: "SF14", name: "Pistol 2", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Pistol_2.fbx", type: "pistol" },
+  { slot: "SF15", name: "Pistol 3", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Pistol_3.fbx", type: "pistol" },
+  { slot: "SF16", name: "SMG 1", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/SMG_1.fbx", type: "smg" },
+  { slot: "SF17", name: "SMG 2", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/SMG_2.fbx", type: "smg" },
+  { slot: "SF18", name: "Sniper Rifle 1", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Sniper_1.fbx", type: "sniper" },
+  { slot: "SF19", name: "Sniper Rifle 2", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Sniper_2.fbx", type: "sniper" },
+  { slot: "SF20", name: "Sniper Rifle 3", assetPath: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Sniper_3.fbx", type: "sniper" }
 ];
 
 const LEVEL2_SCIFI_TRANSFORM_DEFAULT = {
@@ -2557,18 +2617,18 @@ const LEVEL4_MONSTER_WAVE_COUNTDOWN = 3; // 3 seconds between waves
 const LEVEL4_FINAL_MONSTER_WAVE_HEALTH = 2; // Final wave: 2 hits per monster
 const LEVEL4_MONSTER_PROJECTILE_SPEED = 12; // Projectile speed for final wave
 const LEVEL4_MONSTER_PROJECTILE_COOLDOWN = 3000; // 3 seconds between shots per monster
-const LEVEL4_WEAPON_PATH = "./public/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx";
+const LEVEL4_WEAPON_PATH = "/public/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx";
 
 // Level 4 Weapon Slot System (Keys 1-9)
 const LEVEL4_WEAPON_SLOTS = {
   1: {
     name: "Pistol Mk I",
-    path: "./public/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx",
+    path: "/public/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx",
     type: "pistol"
   },
   2: {
     name: "Sci-Fi Pistol 1",
-    path: "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Pistol_1.fbx",
+    path: "/public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Pistol_1.fbx",
     type: "pistol"
   }
   // Future slots 3-9 can be added here
@@ -2578,70 +2638,70 @@ const LEVEL4_WEAPON_SLOTS = {
 const LEVEL4_MONSTER_WAVE_QUEUE = [
   // Wave 1: Big monsters (easy) - 120% size - USING PROVEN LEVEL 3 MONSTERS
   [
-    "./public/textures/3d models/Monster 1/Big/glTF/Demon.gltf",    // ✅ WORKING in Level 3
-    "./public/textures/3d models/Monster 1/Big/glTF/Frog.gltf",    // ✅ WORKING in Level 3
-    "./public/textures/3d models/Monster 1/Big/glTF/Orc.gltf"      // ✅ WORKING in Level 3
+    "/public/textures/3d models/Monster 1/Big/glTF/Demon.gltf",    // ✅ WORKING in Level 3
+    "/public/textures/3d models/Monster 1/Big/glTF/Frog.gltf",    // ✅ WORKING in Level 3
+    "/public/textures/3d models/Monster 1/Big/glTF/Orc.gltf"      // ✅ WORKING in Level 3
   ],
   // Wave 2: Big monsters (easy) - 120% size
   [
-    "./public/textures/3d models/Monster 1/Big/glTF/Orc_Skull.gltf",
-    "./public/textures/3d models/Monster 1/Big/glTF/Birb.gltf",
-    "./public/textures/3d models/Monster 1/Big/glTF/Fish.gltf"
+    "/public/textures/3d models/Monster 1/Big/glTF/Orc_Skull.gltf",
+    "/public/textures/3d models/Monster 1/Big/glTF/Birb.gltf",
+    "/public/textures/3d models/Monster 1/Big/glTF/Fish.gltf"
   ],
   // Wave 3: Mixed Big + Blob - 110% base with variation (130%/100%/90%)
   [
-    "./public/textures/3d models/Monster 1/Big/glTF/Cactoro.gltf",
-    "./public/textures/3d models/Monster 1/Blob/glTF/GreenBlob.gltf",
-    "./public/textures/3d models/Monster 1/Blob/glTF/PinkBlob.gltf"
+    "/public/textures/3d models/Monster 1/Big/glTF/Cactoro.gltf",
+    "/public/textures/3d models/Monster 1/Blob/glTF/GreenBlob.gltf",
+    "/public/textures/3d models/Monster 1/Blob/glTF/PinkBlob.gltf"
   ],
   // Wave 4: Mixed Big + Blob - 110% base with variation
   // NOTE: Using different Level 3 proven models to avoid skeleton issues with Orc/Frog/Demon when cloned
   [
-    "./public/textures/3d models/Monster 1/Big/glTF/Dino.gltf",        // ✅ WORKING in Level 3 Step 1
-    "./public/textures/3d models/Monster 1/Big/glTF/Ninja.gltf",       // ✅ WORKING in Level 3 Step 1
-    "./public/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf"    // ✅ WORKING in Level 3 Step 2
+    "/public/textures/3d models/Monster 1/Big/glTF/Dino.gltf",        // ✅ WORKING in Level 3 Step 1
+    "/public/textures/3d models/Monster 1/Big/glTF/Ninja.gltf",       // ✅ WORKING in Level 3 Step 1
+    "/public/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf"    // ✅ WORKING in Level 3 Step 2
   ],
   // Wave 5: Blob monsters - 100% base with variation (110%/100%/90%)
   [
-    "./public/textures/3d models/Monster 1/Blob/glTF/Dog.gltf",
-    "./public/textures/3d models/Monster 1/Blob/glTF/GreenSpikyBlob.gltf",
-    "./public/textures/3d models/Monster 1/Blob/glTF/Wizard.gltf"
+    "/public/textures/3d models/Monster 1/Blob/glTF/Dog.gltf",
+    "/public/textures/3d models/Monster 1/Blob/glTF/GreenSpikyBlob.gltf",
+    "/public/textures/3d models/Monster 1/Blob/glTF/Wizard.gltf"
   ],
   // Wave 6: Blob monsters - 100% base with variation
   [
-    "./public/textures/3d models/Monster 1/Blob/glTF/Mushnub.gltf",
-    "./public/textures/3d models/Monster 1/Blob/glTF/Mushnub_Evolved.gltf",
-    "./public/textures/3d models/Monster 1/Blob/glTF/Alien.gltf"
+    "/public/textures/3d models/Monster 1/Blob/glTF/Mushnub.gltf",
+    "/public/textures/3d models/Monster 1/Blob/glTF/Mushnub_Evolved.gltf",
+    "/public/textures/3d models/Monster 1/Blob/glTF/Alien.gltf"
   ],
   // Wave 7: Advanced Blob - 85% base with variation (95%/85%/75%)
   [
-    "./public/textures/3d models/Monster 1/Blob/glTF/Orc.gltf",
-    "./public/textures/3d models/Monster 1/Blob/glTF/Fish.gltf",
-    "./public/textures/3d models/Monster 1/Blob/glTF/Ninja.gltf"
+    "/public/textures/3d models/Monster 1/Blob/glTF/Orc.gltf",
+    "/public/textures/3d models/Monster 1/Blob/glTF/Fish.gltf",
+    "/public/textures/3d models/Monster 1/Blob/glTF/Ninja.gltf"
   ],
   // Wave 8: Advanced Blob - 85% base with variation
   [
-    "./public/textures/3d models/Monster 1/Blob/glTF/Pigeon.gltf",
-    "./public/textures/3d models/Monster 1/Blob/glTF/Yeti.gltf",
-    "./public/textures/3d models/Monster 1/Blob/glTF/Cactoro.gltf"
+    "/public/textures/3d models/Monster 1/Blob/glTF/Pigeon.gltf",
+    "/public/textures/3d models/Monster 1/Blob/glTF/Yeti.gltf",
+    "/public/textures/3d models/Monster 1/Blob/glTF/Cactoro.gltf"
   ],
   // Wave 9: Flying monsters - 150% HUGE
   [
-    "./public/textures/3d models/Monster 1/Flying/glTF/Alpaking.gltf",
-    "./public/textures/3d models/Monster 1/Flying/glTF/Armabee.gltf",
-    "./public/textures/3d models/Monster 1/Flying/glTF/Dragon.gltf"
+    "/public/textures/3d models/Monster 1/Flying/glTF/Alpaking.gltf",
+    "/public/textures/3d models/Monster 1/Flying/glTF/Armabee.gltf",
+    "/public/textures/3d models/Monster 1/Flying/glTF/Dragon.gltf"
   ],
   // Wave 10: Flying monsters - 150% HUGE
   [
-    "./public/textures/3d models/Monster 1/Flying/glTF/Ghost.gltf",
-    "./public/textures/3d models/Monster 1/Flying/glTF/Glub.gltf",
-    "./public/textures/3d models/Monster 1/Flying/glTF/Goleling.gltf"
+    "/public/textures/3d models/Monster 1/Flying/glTF/Ghost.gltf",
+    "/public/textures/3d models/Monster 1/Flying/glTF/Glub.gltf",
+    "/public/textures/3d models/Monster 1/Flying/glTF/Goleling.gltf"
   ],
   // Final Wave: Evolved Flying monsters - 180% MASSIVE, can shoot, 2 hits each
   [
-    "./public/textures/3d models/Monster 1/Flying/glTF/Alpaking_Evolved.gltf",
-    "./public/textures/3d models/Monster 1/Flying/glTF/Armabee_Evolved.gltf",
-    "./public/textures/3d models/Monster 1/Flying/glTF/Dragon_Evolved.gltf"
+    "/public/textures/3d models/Monster 1/Flying/glTF/Alpaking_Evolved.gltf",
+    "/public/textures/3d models/Monster 1/Flying/glTF/Armabee_Evolved.gltf",
+    "/public/textures/3d models/Monster 1/Flying/glTF/Dragon_Evolved.gltf"
   ]
 ];
 
@@ -2662,19 +2722,19 @@ const LEVEL5_TOTAL_MONSTERS = 10; // 10 monsters total (2 waves × 5 monsters)
 const LEVEL5_MONSTER_WAVE_QUEUE = [
   // Wave 1: Big monsters (120% size) - USING PROVEN LEVEL 3/4 MONSTERS
   [
-    "./public/textures/3d models/Monster 1/Big/glTF/Demon.gltf",    // ✅ WORKING in Level 3/4
-    "./public/textures/3d models/Monster 1/Big/glTF/Frog.gltf",    // ✅ WORKING in Level 3/4
-    "./public/textures/3d models/Monster 1/Big/glTF/Orc.gltf",     // ✅ WORKING in Level 3/4
-    "./public/textures/3d models/Monster 1/Big/glTF/Dino.gltf",    // ✅ WORKING in Level 3
-    "./public/textures/3d models/Monster 1/Big/glTF/Ninja.gltf"    // ✅ WORKING in Level 3
+    "/public/textures/3d models/Monster 1/Big/glTF/Demon.gltf",    // ✅ WORKING in Level 3/4
+    "/public/textures/3d models/Monster 1/Big/glTF/Frog.gltf",    // ✅ WORKING in Level 3/4
+    "/public/textures/3d models/Monster 1/Big/glTF/Orc.gltf",     // ✅ WORKING in Level 3/4
+    "/public/textures/3d models/Monster 1/Big/glTF/Dino.gltf",    // ✅ WORKING in Level 3
+    "/public/textures/3d models/Monster 1/Big/glTF/Ninja.gltf"    // ✅ WORKING in Level 3
   ],
   // Wave 2: Big monsters (120% size) - Different monsters for variety
   [
-    "./public/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf",     // ✅ WORKING in Level 3 Step 2
-    "./public/textures/3d models/Monster 1/Big/glTF/MushroomKing.gltf",  // ✅ WORKING in Level 3 Step 2
-    "./public/textures/3d models/Monster 1/Big/glTF/Tribal.gltf",        // ✅ WORKING in Level 3 Step 2
-    "./public/textures/3d models/Monster 1/Big/glTF/Alien.gltf",         // ✅ WORKING in Level 3 Step 2
-    "./public/textures/3d models/Monster 1/Big/glTF/Yeti.gltf"           // ✅ WORKING in Level 3 Step 2
+    "/public/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf",     // ✅ WORKING in Level 3 Step 2
+    "/public/textures/3d models/Monster 1/Big/glTF/MushroomKing.gltf",  // ✅ WORKING in Level 3 Step 2
+    "/public/textures/3d models/Monster 1/Big/glTF/Tribal.gltf",        // ✅ WORKING in Level 3 Step 2
+    "/public/textures/3d models/Monster 1/Big/glTF/Alien.gltf",         // ✅ WORKING in Level 3 Step 2
+    "/public/textures/3d models/Monster 1/Big/glTF/Yeti.gltf"           // ✅ WORKING in Level 3 Step 2
   ]
 ];
 
@@ -2734,18 +2794,18 @@ const LEVEL3_CAPTURE_DISTANCE = 2.5; // Distance to catch monster
 const LEVEL3_STEP1_TRAIT = "CHEESE_TEMPLE_LEVEL3_STEP1";
 const LEVEL3_STEP2_TRAIT = "CHEESE_TEMPLE_LEVEL3_STEP2";
 const LEVEL3_MONSTER_QUEUE_STEP1 = [
-  "./public/textures/3d models/Monster 1/Big/glTF/Demon.gltf", // Monster 1: Demon
-  "./public/textures/3d models/Monster 1/Big/glTF/Frog.gltf",   // Monster 2: Frog
-  "./public/textures/3d models/Monster 1/Big/glTF/Orc.gltf",   // Monster 3: Orc
-  "./public/textures/3d models/Monster 1/Big/glTF/Dino.gltf",  // Monster 4: Dino
-  "./public/textures/3d models/Monster 1/Big/glTF/Ninja.gltf"  // Monster 5: Ninja
+  "/textures/3d models/Monster 1/Big/glTF/Demon.gltf", // Monster 1: Demon
+  "/textures/3d models/Monster 1/Big/glTF/Frog.gltf",   // Monster 2: Frog
+  "/textures/3d models/Monster 1/Big/glTF/Orc.gltf",   // Monster 3: Orc
+  "/textures/3d models/Monster 1/Big/glTF/Dino.gltf",  // Monster 4: Dino
+  "/textures/3d models/Monster 1/Big/glTF/Ninja.gltf"  // Monster 5: Ninja
 ];
 const LEVEL3_MONSTER_QUEUE_STEP2 = [
-  "./public/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf", // Monster 6: Blue Demon
-  "./public/textures/3d models/Monster 1/Big/glTF/MushroomKing.gltf", // Monster 7: Mushroom King
-  "./public/textures/3d models/Monster 1/Big/glTF/Tribal.gltf", // Monster 8: Tribal
-  "./public/textures/3d models/Monster 1/Big/glTF/Alien.gltf", // Monster 9: Alien
-  "./public/textures/3d models/Monster 1/Big/glTF/Yeti.gltf"  // Monster 10: Yeti
+  "/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf", // Monster 6: Blue Demon
+  "/textures/3d models/Monster 1/Big/glTF/MushroomKing.gltf", // Monster 7: Mushroom King
+  "/textures/3d models/Monster 1/Big/glTF/Tribal.gltf", // Monster 8: Tribal
+  "/textures/3d models/Monster 1/Big/glTF/Alien.gltf", // Monster 9: Alien
+  "/textures/3d models/Monster 1/Big/glTF/Yeti.gltf"  // Monster 10: Yeti
 ];
 const LEVEL3_MONSTERS_PER_STEP = 5;
 const LEVEL3_DSPOINC_PER_MONSTER = 50;
@@ -2756,22 +2816,22 @@ const LEVEL3_MONSTER_SCALE_INCREMENT = 0.2 * 3; // 0.6 (3x original increment)
 // Models used in gameplay (inventory items) - these get green glow in Level 2
 const GAMEPLAY_INVENTORY_MODELS = [
   // Level 3 monsters
-  "./public/textures/3d models/Monster 1/Big/glTF/Demon.gltf",
-  "./public/textures/3d models/Monster 1/Big/glTF/Frog.gltf",
-  "./public/textures/3d models/Monster 1/Big/glTF/Orc.gltf",
-  "./public/textures/3d models/Monster 1/Big/glTF/Dino.gltf",
-  "./public/textures/3d models/Monster 1/Big/glTF/Ninja.gltf",
-  "./public/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf",
-  "./public/textures/3d models/Monster 1/Big/glTF/MushroomKing.gltf",
-  "./public/textures/3d models/Monster 1/Big/glTF/Tribal.gltf",
-  "./public/textures/3d models/Monster 1/Big/glTF/Alien.gltf",
-  "./public/textures/3d models/Monster 1/Big/glTF/Yeti.gltf",
+  "/textures/3d models/Monster 1/Big/glTF/Demon.gltf",
+  "/textures/3d models/Monster 1/Big/glTF/Frog.gltf",
+  "/textures/3d models/Monster 1/Big/glTF/Orc.gltf",
+  "/textures/3d models/Monster 1/Big/glTF/Dino.gltf",
+  "/textures/3d models/Monster 1/Big/glTF/Ninja.gltf",
+  "/textures/3d models/Monster 1/Big/glTF/BlueDemon.gltf",
+  "/textures/3d models/Monster 1/Big/glTF/MushroomKing.gltf",
+  "/textures/3d models/Monster 1/Big/glTF/Tribal.gltf",
+  "/textures/3d models/Monster 1/Big/glTF/Alien.gltf",
+  "/textures/3d models/Monster 1/Big/glTF/Yeti.gltf",
   // Level 4 weapons
-  "./public/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx",
-  "./public/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Pistol_1.fbx", // SF13 - Sci-Fi Pistol 1 (Slot 2)
+  "/textures/3d models/Fire Weapons 1/FBX/Pistol_1.fbx",
+  "/textures/3d models/Sci-Fi Modular Gun Pack/Guns/FBX/Pistol_1.fbx", // SF13 - Sci-Fi Pistol 1 (Slot 2)
   // Level 1 bear traps (deadly traps - used in gameplay)
-  "./public/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx", // SP08 - Bear trap open state
-  "./public/textures/3d models/Survival Pack/FBX/BearTrap_Closed.fbx" // SP07 - Bear trap closed state
+  "/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx", // SP08 - Bear trap open state
+  "/textures/3d models/Survival Pack/FBX/BearTrap_Closed.fbx" // SP07 - Bear trap closed state
 ];
 let footstepSound = null;
 let jumpSound = null;
@@ -2800,8 +2860,10 @@ let riddleProgressUI = null;
 let level2InspectionHud = null;
 
 function loadCharacterAudio() {
+  // FIXED (January 6, 2026): Resolve all audio paths for production
+  const footstepPath = resolveAssetPath(CHARACTER_FOOTSTEP_AUDIO);
   audioLoader.load(
-    CHARACTER_FOOTSTEP_AUDIO,
+    footstepPath,
     (buffer) => {
       footstepSound = new THREE.Audio(audioListener);
       footstepSound.setBuffer(buffer);
@@ -2816,8 +2878,9 @@ function loadCharacterAudio() {
     }
   );
 
+  const jumpPath = resolveAssetPath(CHARACTER_JUMP_AUDIO);
   audioLoader.load(
-    CHARACTER_JUMP_AUDIO,
+    jumpPath,
     (buffer) => {
       jumpSound = new THREE.Audio(audioListener);
       jumpSound.setBuffer(buffer);
@@ -2831,8 +2894,9 @@ function loadCharacterAudio() {
     }
   );
 
+  const platformPath = resolveAssetPath(CHEESE_PLATFORM_AUDIO);
   audioLoader.load(
-    CHEESE_PLATFORM_AUDIO,
+    platformPath,
     (buffer) => {
       cheesePlatformSound = new THREE.Audio(audioListener);
       cheesePlatformSound.setBuffer(buffer);
@@ -2846,8 +2910,9 @@ function loadCharacterAudio() {
     }
   );
 
+  const aimClearPath = resolveAssetPath(CHEESE_AIM_CLEAR_AUDIO);
   audioLoader.load(
-    CHEESE_AIM_CLEAR_AUDIO,
+    aimClearPath,
     (buffer) => {
       cheeseAimClearSound = new THREE.Audio(audioListener);
       cheeseAimClearSound.setBuffer(buffer);
@@ -2861,8 +2926,9 @@ function loadCharacterAudio() {
     }
   );
 
+  const leverPath = resolveAssetPath(LEVER_AUDIO);
   audioLoader.load(
-    LEVER_AUDIO,
+    leverPath,
     (buffer) => {
       leverSound = new THREE.Audio(audioListener);
       leverSound.setBuffer(buffer);
@@ -2876,8 +2942,9 @@ function loadCharacterAudio() {
     }
   );
 
+  const blockMovedPath = resolveAssetPath(BLOCK_MOVED_AUDIO);
   audioLoader.load(
-    BLOCK_MOVED_AUDIO,
+    blockMovedPath,
     (buffer) => {
       blockMovedSound = new THREE.Audio(audioListener);
       blockMovedSound.setBuffer(buffer);
@@ -2891,8 +2958,9 @@ function loadCharacterAudio() {
     }
   );
 
+  const levelUpPath = resolveAssetPath(LEVEL_UP_AUDIO);
   audioLoader.load(
-    LEVEL_UP_AUDIO,
+    levelUpPath,
     (buffer) => {
       levelUpSound = new THREE.Audio(audioListener);
       levelUpSound.setBuffer(buffer);
@@ -2907,8 +2975,9 @@ function loadCharacterAudio() {
   );
 
   // Level 4 Shooting Sound (Space Invaders normal_shoot.wav)
+  const level4ShootPath = resolveAssetPath(LEVEL4_SHOOT_AUDIO);
   audioLoader.load(
-    LEVEL4_SHOOT_AUDIO,
+    level4ShootPath,
     (buffer) => {
       level4ShootSound = new THREE.Audio(audioListener);
       level4ShootSound.setBuffer(buffer);
@@ -2925,7 +2994,7 @@ function loadCharacterAudio() {
 
   // SF13 Triple-Shot Sound (SF13-Gun-future.mp3)
   audioLoader.load(
-    "/public/three.js/public/sounds/SFX/SF13-Gun-future.mp3",
+    "/public/sounds/SFX/SF13-Gun-future.mp3",
     (buffer) => {
       level4SF13ShootSound = new THREE.Audio(audioListener);
       level4SF13ShootSound.setBuffer(buffer);
@@ -2942,7 +3011,7 @@ function loadCharacterAudio() {
 
   // Bear Trap Sound (bear-trap-103800.mp3)
   audioLoader.load(
-    "/public/three.js/public/sounds/SFX/bear-trap-103800.mp3",
+    "/public/sounds/SFX/bear-trap-103800.mp3",
     (buffer) => {
       bearTrapSound = new THREE.Audio(audioListener);
       bearTrapSound.setBuffer(buffer);
@@ -2959,7 +3028,7 @@ function loadCharacterAudio() {
 
   // Hidden Slever Riddle Sound (hidden-slever.mp3)
   audioLoader.load(
-    "/public/three.js/public/sounds/SFX/hidden-slever.mp3",
+    "/public/sounds/SFX/hidden-slever.mp3",
     (buffer) => {
       hiddenSleverSound = new THREE.Audio(audioListener);
       hiddenSleverSound.setBuffer(buffer);
@@ -2971,7 +3040,7 @@ function loadCharacterAudio() {
     undefined,
     (error) => {
       console.error("❌ [AUDIO] Failed to load hidden slever riddle sound:", error);
-      console.error("❌ [AUDIO] Sound path attempted: ./public/sounds/SFX/hidden-slever.mp3");
+      console.error("❌ [AUDIO] Sound path attempted: /sounds/SFX/hidden-slever.mp3");
       hiddenSleverAudioReady = false;
     }
   );
@@ -3211,6 +3280,9 @@ function loadBackgroundMusic(levelId) {
     return null;
   }
 
+  // FIXED (January 6, 2026): Resolve path correctly for production
+  const resolvedMusicPath = resolveAssetPath(musicPath);
+
   // Return existing music object if already loaded
   if (backgroundMusicObjects[levelId]) {
     return backgroundMusicObjects[levelId];
@@ -3223,7 +3295,7 @@ function loadBackgroundMusic(levelId) {
   backgroundMusicObjects[levelId] = music;
 
   audioLoader.load(
-    musicPath,
+    resolvedMusicPath,
     (buffer) => {
       music.setBuffer(buffer);
       music.setLoop(true); // Loop the music
@@ -4110,8 +4182,8 @@ function createLevel4CheeseBullet(startPos, direction, targetPos) {
   const bulletGeometry = new THREE.SphereGeometry(LEVEL4_BULLET_SIZE, 8, 8);
   
   // Try to load cheese-bullet-small.png first, fallback to yellow-cheese.png
-  const primaryTexturePath = "./public/textures/blocks/cheese-bullet-small.png";
-  const fallbackTexturePath = "./public/textures/blocks/yellow-cheese.png";
+  const primaryTexturePath = "/textures/blocks/cheese-bullet-small.png";
+  const fallbackTexturePath = "/textures/blocks/yellow-cheese.png";
   
   // Check if primary texture is already in cache and loaded
   let cheeseTexture = null;
@@ -4810,6 +4882,20 @@ document.addEventListener("pointerlockchange", () => {
   }
 });
 
+// V key handler for camera mode switching
+document.addEventListener("keydown", (event) => {
+  if (event.code === "KeyV" && !event.repeat && !isGamePaused) {
+    // Cycle camera mode: 0 (first-person) -> 1 (third-person) -> 2 (joystick view) -> 0
+    const nextMode = (cameraMode + 1) % 3;
+    if (typeof setCameraMode === 'function') {
+      setCameraMode(nextMode);
+    } else if (playerControls && typeof playerControls.setCameraMode === 'function') {
+      playerControls.setCameraMode(nextMode);
+    }
+    return;
+  }
+});
+
 scene.add(new THREE.AmbientLight(0xffffff, 0.35));
 
 const sun = new THREE.DirectionalLight(0xfff5da, 1.1);
@@ -4857,28 +4943,31 @@ const textureCache = new Map();
 const modelCache = new Map();
 
 function loadTexture(path) {
-  if (textureCache.has(path)) {
-    const cached = textureCache.get(path);
+  // FIXED (January 6, 2026): Resolve path correctly for production
+  const resolvedPath = resolveAssetPath(path);
+  
+  if (textureCache.has(resolvedPath)) {
+    const cached = textureCache.get(resolvedPath);
     // Verify cached texture is still valid
     if (cached && cached.image && cached.image.complete && cached.image.width > 0) {
       return cached;
     }
   }
   
-  // Normalize path to absolute from web root
-  const normalizedPath = normalizeAssetPath(path);
-  console.log(`📦 [TEXTURE] Loading texture: ${path} (normalized: ${normalizedPath})`);
-  const fullUrl = `${window.location.origin}${normalizedPath}`;
-  console.log(`📦 [TEXTURE] Full URL: ${fullUrl}`);
+  console.log(`📦 [TEXTURE] Loading texture: ${path} -> ${resolvedPath}`);
   
+  // For Three.js TextureLoader, use resolvedPath directly
+  // - Production: resolvedPath is full URL (http://...)
+  // - Local: resolvedPath is relative path (./public/...) which resolves from HTML location
+  // Three.js will handle the path resolution correctly
   const texture = textureLoader.load(
-    normalizedPath,
+    resolvedPath,
     (loadedTexture) => {
       console.log(`✅ [TEXTURE] Successfully loaded: ${path}`, {
         width: loadedTexture.image?.width,
         height: loadedTexture.image?.height,
         image: loadedTexture.image ? "✅ Has image" : "❌ No image",
-        url: fullUrl
+        resolvedPath: resolvedPath
       });
       loadedTexture.needsUpdate = true;
     },
@@ -4891,9 +4980,15 @@ function loadTexture(path) {
     },
     (error) => {
       console.error(`❌ [TEXTURE] Failed to load texture: ${path}`, error);
-      console.error(`❌ [TEXTURE] Full URL attempted: ${fullUrl}`);
-      console.error(`❌ [TEXTURE] Expected file location: three.js/public${path}`);
-      console.error(`❌ [TEXTURE] Error details:`, error);
+      console.error(`❌ [TEXTURE] Resolved path: ${resolvedPath}`);
+      console.error(`❌ [TEXTURE] HTML location: ${window.location.href}`);
+      if (error && error.message) {
+        console.error(`❌ [TEXTURE] Error message: ${error.message}`);
+      } else if (error && typeof error === 'object') {
+        console.error(`❌ [TEXTURE] Error details:`, error);
+      } else {
+        console.error(`❌ [TEXTURE] Error:`, String(error));
+      }
       
       // Create a fallback colored texture so materials don't break
       const fallbackTexture = new THREE.DataTexture(
@@ -4907,14 +5002,14 @@ function loadTexture(path) {
       fallbackTexture.needsUpdate = true;
       
       // Replace in cache with fallback
-      textureCache.set(path, fallbackTexture);
+      textureCache.set(resolvedPath, fallbackTexture);
       
       // Update the texture object that was already created
       if (texture) {
         try {
           texture.image = fallbackTexture.image;
           texture.needsUpdate = true;
-          console.warn(`⚠️ [TEXTURE] Using fallback texture for: ${path}`);
+          console.warn(`⚠️ [TEXTURE] Using fallback texture for: ${path} (resolved: ${resolvedPath})`);
         } catch (e) {
           console.error(`❌ [TEXTURE] Failed to set fallback:`, e);
         }
@@ -4925,11 +5020,12 @@ function loadTexture(path) {
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
   texture.magFilter = THREE.NearestFilter;
   texture.minFilter = THREE.NearestFilter;
-  textureCache.set(path, texture);
+  // FIXED: Cache using resolvedPath, not original path
+  textureCache.set(resolvedPath, texture);
   
   // Verify texture after a delay to catch loading issues
   setTimeout(() => {
-    const cached = textureCache.get(path);
+    const cached = textureCache.get(resolvedPath);
     if (cached && cached.image && cached.image.complete && cached.image.width > 0) {
       console.log(`✅ [TEXTURE] Texture verified loaded: ${path} (${cached.image.width}x${cached.image.height})`);
     } else {
@@ -4938,7 +5034,7 @@ function loadTexture(path) {
         complete: cached?.image?.complete,
         width: cached?.image?.width,
         height: cached?.image?.height,
-        url: fullUrl
+        resolvedPath: resolvedPath
       });
     }
   }, 1000);
@@ -4946,36 +5042,15 @@ function loadTexture(path) {
   return texture;
 }
 
-/**
- * Path Normalization Function
- * Converts relative paths (./public/...) to absolute paths (/public/three.js/public/...)
- * This ensures paths work correctly in production where HTML is at /public/three.js/3d-riddle-game.html
- */
-function normalizeAssetPath(path) {
-  if (!path) return path;
-  // If already absolute (starts with /), return as-is
-  if (path.startsWith('/')) return path;
-  // If relative path starts with ./public/, convert to absolute
-  if (path.startsWith('./public/')) {
-    return '/public/three.js' + path.substring(1); // Remove leading . to get /public/...
-  }
-  // If relative path starts with public/, add /public/three.js prefix
-  if (path.startsWith('public/')) {
-    return '/public/three.js/' + path;
-  }
-  // Otherwise return as-is (might be a URL or already correct)
-  return path;
-}
-
 // Load GLTF/GLB model
 function loadModel(path) {
-  // Normalize path to absolute from web root
-  const normalizedPath = normalizeAssetPath(path);
-  const lowerPath = normalizedPath.toLowerCase();
+  // FIXED (January 6, 2026): Resolve path correctly for production
+  const resolvedPath = resolveAssetPath(path);
+  const lowerPath = resolvedPath.toLowerCase();
   const isFBX = lowerPath.endsWith(".fbx");
   return new Promise((resolve, reject) => {
-    if (modelCache.has(path)) {
-      const cached = modelCache.get(path);
+    if (modelCache.has(resolvedPath)) {
+      const cached = modelCache.get(resolvedPath);
       if (cached.isFBX) {
         const clonedScene = cached.scene.clone(true);
         resolve({
@@ -4999,24 +5074,24 @@ function loadModel(path) {
     const onProgress = (progress) => {
       if (progress.lengthComputable) {
         const percentComplete = (progress.loaded / progress.total) * 100;
-        console.log("📦 [MODEL] Loading:", path, `${percentComplete.toFixed(1)}%`);
+        console.log("📦 [MODEL] Loading:", path, `-> ${resolvedPath}`, `${percentComplete.toFixed(1)}%`);
       }
     };
 
     if (isFBX) {
       fbxLoader.load(
-        path,
+        resolvedPath,
         (fbx) => {
-          console.log("✅ [MODEL] FBX loaded:", path, {
+          console.log("✅ [MODEL] FBX loaded:", path, `-> ${resolvedPath}`, {
             children: fbx.children.length
           });
           const payload = { scene: fbx, animations: fbx.animations || [], isFBX: true };
-          modelCache.set(path, payload);
+          modelCache.set(resolvedPath, payload);
           resolve(payload);
         },
         onProgress,
         (error) => {
-          console.error("❌ [MODEL] Error loading FBX:", path, error);
+          console.error("❌ [MODEL] Error loading FBX:", path, `-> ${resolvedPath}`, error);
           reject(error);
         }
       );
@@ -5024,19 +5099,19 @@ function loadModel(path) {
     }
     
     gltfLoader.load(
-      path,
+      resolvedPath,
       (gltf) => {
-        console.log("✅ [MODEL] Model loaded:", path, {
+        console.log("✅ [MODEL] Model loaded:", path, `-> ${resolvedPath}`, {
           scene: gltf.scene,
           animations: gltf.animations?.length || 0,
           meshes: gltf.scene.children.length
         });
-        modelCache.set(path, gltf);
+        modelCache.set(resolvedPath, gltf);
         resolve(gltf);
       },
       onProgress,
       (error) => {
-        console.error("❌ [MODEL] Error loading model:", path, error);
+        console.error("❌ [MODEL] Error loading model:", path, `-> ${resolvedPath}`, error);
         reject(error);
       }
     );
@@ -5060,12 +5135,12 @@ let playerModelModule = null;
 const CHARACTER_OPTIONS = {
   2: {
     name: "Mouse",
-    path: "/public/three.js/public/textures/3d models/Mouse/glb/glb/character/character.glb",
+    path: "/textures/3d models/Mouse/glb/glb/character/character.glb",
     description: "Mouse Character"
   },
   3: {
     name: "Animation Library",
-    path: "/public/three.js/public/textures/3d models/Animation Libary/Animation Library[Standard]/Godot/AnimationLibrary_Godot_Standard.glb",
+    path: "/textures/3d models/Animation Libary/Animation Library[Standard]/Godot/AnimationLibrary_Godot_Standard.glb",
     description: "Animation Library [Standard]"
   }
 };
@@ -5390,12 +5465,12 @@ async function loadMouseCharacterAnimations() {
     
     // Mouse animation files mapping
     const mouseAnimations = {
-      'idle': './public/textures/3d models/Mouse/glb/glb/animation/idle.glb',
-      'run': './public/textures/3d models/Mouse/glb/glb/animation/run.glb',
-      'jump': './public/textures/3d models/Mouse/glb/glb/animation/jump.glb',
-      'climb': './public/textures/3d models/Mouse/glb/glb/animation/climb.glb',
-      'death': './public/textures/3d models/Mouse/glb/glb/animation/death.glb',
-      'somersoult': './public/textures/3d models/Mouse/glb/glb/animation/somersoult.glb'
+      'idle': '/textures/3d models/Mouse/glb/glb/animation/idle.glb',
+      'run': '/textures/3d models/Mouse/glb/glb/animation/run.glb',
+      'jump': '/textures/3d models/Mouse/glb/glb/animation/jump.glb',
+      'climb': '/textures/3d models/Mouse/glb/glb/animation/climb.glb',
+      'death': '/textures/3d models/Mouse/glb/glb/animation/death.glb',
+      'somersoult': '/textures/3d models/Mouse/glb/glb/animation/somersoult.glb'
     };
     
     // Create mixer for Mouse character
@@ -5518,7 +5593,7 @@ async function createNPCMonster(spawnData, blockSize) {
     console.log("🐉 [NPC] Creating monster NPC...");
     
     // Load monster model (use Bunny for now, can be changed later)
-    const monsterModelPath = "/public/three.js/public/textures/3d models/Monster 1/Big/glTF/Bunny.gltf";
+    const monsterModelPath = "/textures/3d models/Monster 1/Big/glTF/Bunny.gltf";
     const gltf = await loadModel(monsterModelPath);
     
     // Clone the scene for the NPC
@@ -7452,7 +7527,9 @@ async function warpToLevelWithLoading(levelId, levelName, warpFunction) {
       guiSystem.hideLoadingScreen();
     }
     
-    alert(`Failed to load ${levelName}. Please try again.\n\nError: ${error.message}`);
+    // Fix: Handle error object properly - error might not be an Error instance
+    const errorMessage = error instanceof Error ? error.message : (typeof error === 'string' ? error : String(error));
+    alert(`Failed to load ${levelName}. Please try again.\n\nError: ${errorMessage}`);
     throw error;
   }
 }
@@ -7530,7 +7607,7 @@ function startGame(startLevelId = null) {
           await yieldToBrowser();
           
           // Phase 2: Load Level 1 temporarily (required for game state)
-          const level1Data = await fetch("./public/models/cheese-temple/level1.json").then(res => res.json());
+          const level1Data = await fetch(resolveAssetPath("/public/models/cheese-temple/level1.json")).then(res => res.json());
           buildLevel(level1Data);
           await yieldToBrowser();
           
@@ -7545,7 +7622,7 @@ function startGame(startLevelId = null) {
           console.error(`❌ [GAME START] Error starting game for ${targetLevelName}:`, error);
           // Fallback to Level 1
           console.log("⚠️ [GAME START] Falling back to Level 1");
-          const level1Data = await fetch("./public/models/cheese-temple/level1.json").then(res => res.json());
+          const level1Data = await fetch(resolveAssetPath("/public/models/cheese-temple/level1.json")).then(res => res.json());
           buildLevel(level1Data);
           await applyLevelEnvironment(LEVEL_IDS.LEVEL1);
           await loadPlayerCharacter();
@@ -7565,8 +7642,8 @@ function startGame(startLevelId = null) {
     warpToLevelWithLoading(LEVEL_IDS.LEVEL1, "Level 1", async () => {
     return new Promise((resolve, reject) => {
   // Load level after character selection
-  console.log("🚀 [DEBUG] Starting game, fetching level1.json from /three.js/public/models/cheese-temple/level1.json");
-  fetch("/three.js/public/models/cheese-temple/level1.json")
+  console.log("🚀 [DEBUG] Starting game, fetching level1.json from /public/models/cheese-temple/level1.json");
+  fetch(resolveAssetPath("/public/models/cheese-temple/level1.json"))
     .then((res) => {
       if (!res.ok) {
         console.error(`❌ [ERROR] Failed to fetch level1.json: HTTP ${res.status} ${res.statusText}`);
@@ -7580,7 +7657,7 @@ function startGame(startLevelId = null) {
       console.error("🔍 [DEBUG] Error details:", {
         message: error.message,
         stack: error.stack,
-        url: "/three.js/public/models/cheese-temple/level1.json",
+        url: "/public/models/cheese-temple/level1.json",
         hostname: window.location.hostname,
         port: window.location.port,
         protocol: window.location.protocol
@@ -9090,8 +9167,8 @@ function initializeWeaponSystem() {
       weaponSlots: LEVEL4_WEAPON_SLOTS || {},
       weaponTransforms: LEVEL4_WEAPON_TRANSFORMS || {},
       shootRange: LEVEL4_SHOOT_RANGE || 200,
-      shootAudioPath: LEVEL4_SHOOT_AUDIO || "",
-      tripleShotAudioPath: LEVEL4_SF13_SHOOT_AUDIO || "",
+      shootAudioPath: resolveAssetPath(LEVEL4_SHOOT_AUDIO || ""),
+      tripleShotAudioPath: resolveAssetPath(LEVEL4_SHOOT_AUDIO || ""), // SF13 uses same sound
       bulletSize: LEVEL4_BULLET_SIZE || 0.15, // Use 0.15 (visible size) instead of 0.05
       bulletSpeed: LEVEL4_BULLET_SPEED || 100,
       bulletLifetime: LEVEL4_BULLET_LIFETIME || 2.0,
@@ -9225,7 +9302,7 @@ function getPauseMenu() {
       justifyContent: "center",
       flexDirection: "column",
       gap: "18px",
-      backgroundImage: "url('./public/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -9672,7 +9749,7 @@ function getOptionsMenu() {
       justifyContent: "center",
       flexDirection: "column",
       gap: "18px",
-      backgroundImage: "url('./public/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -11366,7 +11443,7 @@ function getOptionsMenu() {
     const undergroundTextureInput = document.createElement("input");
     undergroundTextureInput.type = "text";
     undergroundTextureInput.id = "groundUndergroundTexturePath";
-    undergroundTextureInput.placeholder = "./public/textures/blocks/lava.png";
+    undergroundTextureInput.placeholder = "/textures/blocks/lava.png";
     undergroundTextureInput.style.width = "100%";
     undergroundTextureInput.style.padding = "6px";
     undergroundTextureInput.style.border = "1px solid #444";
@@ -15103,7 +15180,7 @@ function buildLevel(mapData) {
     if (!blockType || list.length === 0) return;
 
     const materialOptions = blockType.texture
-      ? { map: loadTexture(`./public/textures/${blockType.texture}`) }
+      ? { map: loadTexture(resolveAssetPath(`textures/${blockType.texture}`)) }
       : { color: 0xf5d36b };
     const material = new THREE.MeshLambertMaterial(materialOptions);
     if (blockType.emissive) {
@@ -15206,7 +15283,7 @@ function buildLevel(mapData) {
     }
     
     // Create new cheese entity for Level 1
-    const cheeseTexture = loadTexture("./public/textures/blocks/cheese-stone.png");
+    const cheeseTexture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
     const center = new THREE.Vector3(
       mapData.spawn.x * blockSize + blockSize / 2,
       playerCollider.end.y - 0.5,
@@ -15274,15 +15351,20 @@ function buildLevel(mapData) {
       // Mark Level 1 collision mesh for easy identification
       if (isLevel1) {
         collisionMesh.name = 'level1_collision_mesh';
-        console.log("✅ [LEVEL 1] Collision mesh created:", {
+      }
+      // CRITICAL: Add to scene BEFORE logging to ensure it's available for collision checks
+      scene.add(collisionMesh);
+      // Verify it's in the scene after adding
+      if (isLevel1) {
+        console.log("✅ [LEVEL 1] Collision mesh created and added to scene:", {
           hasGeometry: !!collisionMesh.geometry,
           hasBoundsTree: !!collisionMesh.geometry?.boundsTree,
           geometryVertices: collisionMesh.geometry?.attributes?.position?.count || 0,
           inScene: scene.children.includes(collisionMesh),
-          meshName: collisionMesh.name
+          meshName: collisionMesh.name,
+          sceneChildrenCount: scene.children.length
         });
       }
-      scene.add(collisionMesh);
     }
   } else {
     console.warn("⚠️ [BUILD LEVEL] No collision positions found - collision mesh will not be created!");
@@ -15303,6 +15385,7 @@ function buildLevel(mapData) {
   
   // Create unlockable block for riddle (will be shown after step 1)
   if (mapData.spawn && !riddleState.unlockableBlock) {
+    if (typeof createUnlockableBlock === 'function') {
     createUnlockableBlock(mapData.spawn, blockSize);
     // CRITICAL FIX: Ensure unlockable block is visible at Level 1 start
     // The block should be visible so players can find it, then use it after completing step 1
@@ -15312,6 +15395,9 @@ function buildLevel(mapData) {
         position: riddleState.unlockableBlock.position,
         visible: riddleState.unlockableBlock.visible
       });
+      }
+    } else {
+      console.warn("⚠️ [RIDDLE] createUnlockableBlock function not available yet");
     }
   } else if (riddleState.unlockableBlock) {
     // If block already exists (from previous level), ensure it's visible
@@ -15324,52 +15410,92 @@ function buildLevel(mapData) {
   
   // Create blinking oak stone for Riddle #2 (only if Riddle #1 is complete)
   if (mapData.spawn && !riddleState.riddle2.oakStone) {
+    if (typeof createRiddle2OakStone === 'function') {
     createRiddle2OakStone(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [RIDDLE] createRiddle2OakStone function not available yet");
+    }
   }
   
   // Create lever for Riddle #3 (always create, but hidden until Riddle #2 is complete)
   if (mapData.spawn && !riddleState.riddle3.lever) {
+    if (typeof createRiddle3Lever === 'function') {
     createRiddle3Lever(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [RIDDLE] createRiddle3Lever function not available yet");
+    }
   }
   
   // Create bear trap in Level 1 (deadly trap - switches from open to closed when stepped on)
   if (mapData.spawn && !level1State.bearTrap) {
+    if (typeof createLevel1BearTrap === 'function') {
     createLevel1BearTrap(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [LEVEL 1] createLevel1BearTrap function not available yet");
+    }
   }
   
   // Create tree in Level 1 (huge tree with arms - decorative element)
   if (mapData.spawn && !level1State.tree) {
+    if (typeof createLevel1Tree === 'function') {
     createLevel1Tree(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [LEVEL 1] createLevel1Tree function not available yet");
+    }
   }
   
   // Create second tree in Level 1 (left front of spawn, more in back area)
   if (mapData.spawn && !level1State.tree2) {
+    if (typeof createLevel1Tree2 === 'function') {
     createLevel1Tree2(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [LEVEL 1] createLevel1Tree2 function not available yet");
+    }
   }
   
   // Create third tree in Level 1 (tree dead lians - left of spawn)
   if (mapData.spawn && !level1State.tree3) {
+    if (typeof createLevel1Tree3 === 'function') {
     createLevel1Tree3(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [LEVEL 1] createLevel1Tree3 function not available yet");
+    }
   }
   
   // Create fourth tree in Level 1 (tree dead lians - back left area)
   if (mapData.spawn && !level1State.tree4) {
+    if (typeof createLevel1Tree4 === 'function') {
     createLevel1Tree4(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [LEVEL 1] createLevel1Tree4 function not available yet");
+    }
   }
   
   // Create butterfly in Level 1 (flying butterfly at position 67, 2, 100)
   if (mapData.spawn && !level1State.butterfly) {
+    if (typeof createLevel1Butterfly === 'function') {
     createLevel1Butterfly(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [LEVEL 1] createLevel1Butterfly function not available yet");
+    }
   }
   
   // Create Phormium plant 1 in Level 1 (decorative plant at position 40, 1, 100)
   if (mapData.spawn && !level1State.plant) {
+    if (typeof createLevel1Plant === 'function') {
     createLevel1Plant(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [LEVEL 1] createLevel1Plant function not available yet");
+    }
   }
   
   // Create Phormium plant 2 in Level 1 (smaller plant at position 71, 1, 91)
   if (mapData.spawn && !level1State.plant2) {
+    if (typeof createLevel1Plant2 === 'function') {
     createLevel1Plant2(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [LEVEL 1] createLevel1Plant2 function not available yet");
+    }
   }
   
   // 🎁 Create chests in Level 1 (3 treasure chests with DSPOINC rewards)
@@ -15402,7 +15528,11 @@ function buildLevel(mapData) {
       
       // Always create chests when building Level 1 (they were just cleared by cleanupAllLevels or previous build)
       console.log("🎁 [LEVEL 1] Creating chests (always recreate to ensure proper loading)...");
+      if (typeof createLevel1Chests === 'function') {
       createLevel1Chests(mapData.spawn, blockSize);
+      } else {
+        console.warn("⚠️ [LEVEL 1] createLevel1Chests function not available yet");
+      }
       
       // CRITICAL: Multiple verification passes to ensure chests load correctly
       // Pass 1: After 500ms - Check if chests are loading
@@ -15463,29 +15593,49 @@ function buildLevel(mapData) {
       
       // Pass 2: After 1000ms - Use the verification function
       setTimeout(() => {
+        if (typeof verifyAndFixLevel1ChestPositions === 'function') {
         verifyAndFixLevel1ChestPositions();
+        } else {
+          console.warn("⚠️ [LEVEL 1] verifyAndFixLevel1ChestPositions function not available yet");
+        }
       }, 1000); // Wait longer for chests to load (1000ms should be enough)
       
       // Pass 3: After 2000ms - Final verification pass
       setTimeout(() => {
+        if (typeof verifyAndFixLevel1ChestPositions === 'function') {
         verifyAndFixLevel1ChestPositions();
+        } else {
+          console.warn("⚠️ [LEVEL 1] verifyAndFixLevel1ChestPositions function not available yet");
+        }
       }, 2000); // Final check after all async operations complete
     }, 100); // Increased delay to ensure cleanup completes
   }
   
   // Create 3 levers for Riddle #4 (Hidden Secret Riddle)
   if (mapData.spawn && riddleState.riddle4 && !riddleState.riddle4.lever1) {
+    if (typeof createRiddle4Levers === 'function') {
     createRiddle4Levers(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [RIDDLE] createRiddle4Levers function not available yet");
+    }
   }
   
   // Create movable block for Riddle #3 (only if lever is pressed)
   if (mapData.spawn && !riddleState.riddle3.movableBlock && riddleState.riddle3.step1Complete) {
+    if (typeof createRiddle3MovableBlock === 'function') {
     createRiddle3MovableBlock(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [RIDDLE] createRiddle3MovableBlock function not available yet");
+    }
   }
   
   // Create oak block for Riddle #3 (only if lever is pressed)
   if (mapData.spawn && !riddleState.riddle3.oakBlock && riddleState.riddle3.step1Complete) {
+    if (typeof createRiddle3OakBlock === 'function') {
     createRiddle3OakBlock(mapData.spawn, blockSize);
+    } else {
+      console.warn("⚠️ [RIDDLE] createRiddle3OakBlock function not available yet");
+    }
   }
   
   // Create portal for Riddle #3 (only if Step 2 is complete)
@@ -16625,7 +16775,7 @@ function createLevel3MovingWalls() {
     const wallColor = wallColors[index] || 0x1d2338;
     
     // Load texture for water effect (each wall gets its own texture instance)
-    const texture = loadTexture("./public/textures/blocks/cheese-stone.png");
+    const texture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(2, 2); // Repeat texture for better effect
@@ -17482,7 +17632,7 @@ function createLevel3TriggerBlock() {
   const blockSize = 1;
   const geometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
   // Use normal cheese-stone.png texture (not yellow-cheese.png)
-  const texture = loadTexture("./public/textures/blocks/cheese-stone.png");
+  const texture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
   // Use MeshLambertMaterial like Level 2 trigger block (but without yellow emissive)
   const material = new THREE.MeshLambertMaterial({
     map: texture,
@@ -18194,7 +18344,7 @@ function buildLevel4FirstShotArena() {
   // Cheese stone floor (160x160) - Fixed flickering with polygonOffset and slight elevation
   // 🚨 CRITICAL FIX: Make material unlit to prevent color fluctuation from lighting changes
   // Set emissive to match texture color and high emissiveIntensity so it doesn't respond to light
-  const cheeseTexture = loadTexture("./public/textures/blocks/cheese-stone.png");
+  const cheeseTexture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
   const floorGeometry = new THREE.PlaneGeometry(size, size);
     // FIXED (December 16, 2025): Underground flickering issue resolved
     // Uses emissive material to reduce lighting influence on textured floor
@@ -18273,7 +18423,7 @@ async function buildLevel5TheWalk() {
     const loader = new GLTFLoader();
     const gltf = await new Promise((resolve, reject) => {
       loader.load(
-        "./public/textures/3d models/Maps/klagenfurt.gltf",
+        "/textures/3d models/Maps/klagenfurt.gltf",
         (gltf) => {
           console.log("✅ [LEVEL 5] GLTF file loaded successfully");
           resolve(gltf);
@@ -18454,7 +18604,7 @@ async function buildLevel5TheWalk() {
     // Create huge cheese walls around the play zone (borders on all 4 sides)
     console.log("🧀 [LEVEL 5] Creating cheese border walls around the play zone...");
     try {
-      const cheeseTexture = loadTexture("./public/textures/blocks/cheese-stone.png");
+      const cheeseTexture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
       
       // Calculate wall dimensions based on map bounds
       // Walls should directly border the map with no gap
@@ -19004,7 +19154,7 @@ function createLevel5TriggerBlock() {
   const blockSize = 1;
   const geometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
   // Use normal cheese-stone.png texture
-  const texture = loadTexture("./public/textures/blocks/cheese-stone.png");
+  const texture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
   // Use MeshLambertMaterial like Level 2/3/4 trigger block
   const material = new THREE.MeshLambertMaterial({
     map: texture,
@@ -19721,7 +19871,7 @@ async function buildLevel6PhoenixArena() {
   
   // Legacy: If ground system didn't load map AND groundType is 'gltf', try loading directly (fallback)
   const mapFileName = LEVEL_MAP_CONFIG[LEVEL_IDS.LEVEL6];
-  const mapPath = mapFileName ? `./public/textures/3d models/Maps/${mapFileName}` : null;
+  const mapPath = mapFileName ? `/textures/3d models/Maps/${mapFileName}` : null;
   
   if (!mapLoaded && mapPath && shouldLoadGLTF) {
     console.log("🗺️ [LEVEL 6] Ground type is 'gltf', attempting to load GLTF map directly...");
@@ -20218,7 +20368,7 @@ function spawnLevel4Cheeses(count = null) {
   
   if (maxNeeded <= 0) return;
 
-  const cheeseTexture = loadTexture("./public/textures/blocks/cheese-stone.png");
+  const cheeseTexture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
   const arenaCenter = level4Config.origin.clone();
   arenaCenter.y = 1;
   
@@ -20339,7 +20489,7 @@ function createLevel4TriggerBlock() {
   const blockSize = 1;
   const geometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
   // Use normal cheese-stone.png texture
-  const texture = loadTexture("./public/textures/blocks/cheese-stone.png");
+  const texture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
   // Use MeshLambertMaterial like Level 2/3 trigger block
   const material = new THREE.MeshLambertMaterial({
     map: texture,
@@ -21396,7 +21546,7 @@ function captureLevel4Cheese(cheeseIndex) {
 // Cheese explosion effect (cartoon/arcade style)
 function createCheeseExplosionEffect(position) {
   const particleCount = 12;
-  const cheeseTexture = loadTexture("./public/textures/blocks/cheese-stone.png");
+  const cheeseTexture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
   
   for (let i = 0; i < particleCount; i++) {
     const particle = new THREE.Mesh(
@@ -23994,10 +24144,11 @@ async function warpToLevel6() {
     
     // Load Phoenix boss model
     // Model: Fantasy Fire Dragon (CGTrader) - Dragons1.glb
-    // Location: ./public/textures/3d models/phoenix2/Dragons1.glb
+    // Location: /public/textures/3d models/phoenix2/Dragons1.glb
     // - GLB format with 70+ embedded animations
     // - 7 skin variations, PBR materials
-    const modelPath = "./public/textures/3d models/phoenix2/Dragons1.glb";
+    // FIXED (January 6, 2026): Resolve path for production
+    const modelPath = resolveAssetPath("/public/textures/3d models/phoenix2/Dragons1.glb");
     
     console.log("🔥 [LEVEL 6] Loading Dragon GLB model from:", modelPath);
     
@@ -24116,7 +24267,8 @@ async function warpToLevel6() {
     }
     
     // Load Spider model
-    const spiderModelPath = "./public/textures/3d models/Alien Spider 1/AFC_03/AFC_03.fbx";
+    // FIXED (January 6, 2026): Resolve path for production
+    const spiderModelPath = resolveAssetPath("/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03.fbx");
     console.log("🕷️ [LEVEL 6] Loading Alien Spider FBX model from:", spiderModelPath);
     
     await alienSpiderBoss.loadModel(spiderModelPath);
@@ -24389,7 +24541,7 @@ function activateLevel3Portal() {
   
   // Create portal if it doesn't exist
   if (!level3State.portal) {
-    const portalTexture = loadTexture("./public/textures/blocks/Portal1.png");
+    const portalTexture = loadTexture(resolveAssetPath("textures/blocks/Portal1.png"));
     // Make portal bigger for easier visibility and entry
     const portalGeometry = new THREE.PlaneGeometry(6, 8);
     // Use MeshLambertMaterial like Level 1 portal (no blue emissive - shows original texture)
@@ -24940,7 +25092,7 @@ async function warpToLevel3() {
 function createLevel2TriggerBlock() {
     const blockSize = 1;
   const geometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-  const texture = loadTexture("./public/textures/blocks/yellow-cheese.png");
+  const texture = loadTexture(resolveAssetPath("textures/blocks/yellow-cheese.png"));
   const material = new THREE.MeshLambertMaterial({
     map: texture,
     emissive: new THREE.Color(0xffe066),
@@ -24978,5577 +25130,551 @@ function createLevel2TriggerBlock() {
   level2RiddleState.triggerBlockVisual = visualStone;
   level2RiddleState.triggerBlockTargetY = visualStone.position.y;
   
-  console.log("🧩 [LEVEL 2] Trigger block created at:", {
-    x: block.position.x.toFixed(2),
-    y: block.position.y.toFixed(2),
-    z: block.position.z.toFixed(2),
-    blockTopY: (block.position.y + blockHeight / 2).toFixed(2),
-    floorY: floorY.toFixed(2),
-    playerFeetY: (floorY + PLAYER_RADIUS).toFixed(2)
-  });
+  console.log("✅ [LEVEL 2] Trigger block and visual stone created");
 }
 
-function createLevel2Lever() {
-  const leverGeometry = new THREE.BoxGeometry(0.8, 0.5, 0.3);
-  const leverTextureOff = loadTexture("./public/textures/blocks/slever1.png");
-  const leverMaterial = new THREE.MeshLambertMaterial({
-    map: leverTextureOff
-  });
-  const { leverFinalZ } = getLevel2GalleryLayout();
-  const lever = new THREE.Mesh(leverGeometry, leverMaterial);
-  lever.position.set(level2Config.origin.x, level2Config.origin.y + 2.4, leverFinalZ);
-  lever.visible = false;
-  lever.castShadow = false;
-  lever.receiveShadow = false;
-  lever.userData.textureOff = leverTextureOff;
-  lever.userData.textureOn = loadTexture("./public/textures/blocks/slever2.png");
-  lever.userData.leverState = "off";
-  level2State.group.add(lever);
-  level2RiddleState.lever = lever;
-}
+// ============================================================================
+// MISSING FUNCTIONS FROM DEV VERSION (January 6, 2026)
+// These functions were missing from public version - copied from dev version
+// All paths updated to use resolveAssetPath for production compatibility
+// ============================================================================
 
-function loadLevel2PreviewModels() {
-  if (!level2State.built || level2State.previewsSpawned) return;
-  if (!LEVEL2_MONSTER_PREVIEWS.length) {
-    console.log("🧪 [LEVEL 2] Preview list empty – shelves only labeled.");
-    level2State.previewsSpawned = true;
-    return;
+function createLevel1BearTrap(spawnData, blockSize) {
+  // Place trap at a visible location in Level 1 (near spawn area for visibility)
+  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
+  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
+  const trapX = spawnX + 5;
+  const trapZ = spawnZ + 10;
+  const trapY = 1.0;
+  
+  if (level1State.bearTrap && level1State.bearTrap.parent) {
+    scene.remove(level1State.bearTrap);
+    level1State.bearTrap = null;
   }
-  const shelfAnchors = level2State.previewAnchors.filter((entry) => entry.type === "shelf");
-  const bonusAnchors = level2State.previewAnchors.filter((entry) => entry.type === "bonus");
-  if (shelfAnchors.length === 0 && bonusAnchors.length === 0) {
-    console.warn("🧪 [LEVEL 2] No anchors available for monster statues.");
-    return;
-  }
-  level2State.previewsSpawned = true;
-  LEVEL2_MONSTER_PREVIEWS.forEach((preview) => {
-    let anchor = null;
-    if (typeof preview.shelfNumber === "number") {
-      anchor = shelfAnchors.find((entry) => entry.shelfNumber === preview.shelfNumber);
-    } else if (preview.bonusLabel) {
-      anchor = bonusAnchors.find((entry) => entry.label === preview.bonusLabel);
-    }
-    if (!anchor) {
-      console.warn("🧪 [LEVEL 2] Anchor not found for preview", preview);
-      return;
-    }
-    const modelPath = preview.path;
-    
-    // CRITICAL: Check if this model was already loaded and added to the scene
-    // Prevent duplicate loading by checking if a statue with this path already exists
-    const existingStatue = level2State.group.children.find(child => 
-      child.userData && child.userData.modelPath === modelPath && child.userData.isLevel2Preview
-    );
-    if (existingStatue) {
-      // Model already exists, skip loading
-      if (DEBUG_SETTINGS.logLevel2Previews) {
-        console.log("⏭️ [LEVEL 2] Skipping duplicate monster preview:", modelPath);
-      }
-      return;
-    }
-    
-    loadModel(modelPath)
-      .then(({ scene }) => {
-        const statue = scene;
-        // Check if this model is used in gameplay (inventory item)
-        const isInventoryItem = GAMEPLAY_INVENTORY_MODELS.some(invPath => {
-          const invFileName = invPath.split('/').pop();
-          const modelFileName = modelPath.split('/').pop();
-          return modelPath === invPath || modelFileName === invFileName;
-        });
-        
-        statue.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = false;
-            child.receiveShadow = false;
-            // CRITICAL PERFORMANCE: Enable frustum culling for monster statues (major FPS improvement!)
-            // Statues are on pedestals and only need to render when in view
-            child.frustumCulled = true;
-            // CRITICAL PERFORMANCE: Material cloning is expensive - only clone if we need to modify
-            // For non-inventory items, we can modify the material directly (no clone needed)
-            if (child.material) {
-              if (isInventoryItem) {
-                // Clone only for inventory items (they need green glow)
-                child.material = child.material.clone();
-                child.material.emissive = new THREE.Color(0x00ff00); // Green
-                child.material.emissiveIntensity = 0.8; // Strong green glow
-                child.material.needsUpdate = true;
-              } else {
-                // For non-inventory items, modify emissiveIntensity directly (no clone)
-                // This avoids expensive material cloning for the majority of models
-                if (!child.material.emissive) child.material.emissive = new THREE.Color(0x000000);
-                child.material.emissiveIntensity = 0.15;
-                child.material.needsUpdate = true;
-              }
-            }
-          }
-        });
-        const scaleFactor = 0.4;
-        statue.scale.set(scaleFactor, scaleFactor, scaleFactor);
-        statue.position.copy(anchor.position);
-        statue.position.y += 1.2;
-        const facingRightAisle = anchor.position.x > level2Config.origin.x;
-        let rotation = facingRightAisle ? -Math.PI / 2 : Math.PI / 2;
-        if (preview.rotationOffset) {
-          rotation += preview.rotationOffset;
-        }
-        statue.rotation.y = rotation;
-        statue.userData.isLevel2Preview = true;
-        statue.userData.modelPath = modelPath; // Store path for duplicate detection
-        // CRITICAL PERFORMANCE: Enable frustum culling for the entire statue group
-        statue.frustumCulled = true;
-        
-        // CRITICAL: Double-check model isn't already in the scene before adding
-        if (!level2State.group.children.includes(statue)) {
-          level2State.group.add(statue);
-          // 🚨 PERFORMANCE: Store reference in previewModels array for fast distance checking
-          level2State.previewModels.push(statue);
-        } else {
-          console.warn("⚠️ [LEVEL 2] Attempted to add duplicate statue:", modelPath);
-          return;
-        }
-        // CRITICAL: Disabled debug logging for performance (was causing FPS drops)
-        // Only log when DEBUG_SETTINGS.logLevel2Previews is true
-        if (DEBUG_SETTINGS.logLevel2Previews) {
-          console.log("🧪 [LEVEL 2] Monster preview statue spawned.", {
-            model: modelPath,
-            anchor: anchor.position
-          });
-        }
-      })
-      .catch((error) => {
-        console.error("❌ [LEVEL 2] Failed to load monster preview:", error);
-      });
-  });
-}
-
-function createLevel2AnchorLabels() {
-  // Clear existing labels
-  if (level2State.anchorLabels && level2State.anchorLabels.length > 0) {
-    level2State.anchorLabels.forEach((label) => {
-      if (label.material && label.material.map) {
-        label.material.map.dispose();
-      }
-      if (label.material) {
-        label.material.dispose();
-      }
-      level2State.group.remove(label);
-    });
-    level2State.anchorLabels.length = 0;
-  }
-  const createLabelSprite = (text, anchor) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 128;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "rgba(255, 224, 102, 0.65)";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-    ctx.fillStyle = "#ffe066";
-    ctx.font = "bold 22px 'Montserrat', Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
-    const sprite = new THREE.Sprite(material);
-    sprite.scale.set(0.8, 0.4, 1);
-    sprite.position.copy(anchor.position);
-    sprite.position.y += 3.0;
-    level2State.group.add(sprite);
-    level2State.anchorLabels.push(sprite);
-  };
-
-  const shelfAnchors = level2State.previewAnchors.filter((entry) => entry.type === "shelf");
-  shelfAnchors.forEach((anchor, index) => {
-    const labelNumber = anchor.shelfNumber || index + 1;
-    createLabelSprite(`Shelf ${labelNumber}`, anchor);
-  });
-
-  const bonusAnchors = level2State.previewAnchors.filter((entry) => entry.type === "bonus");
-  bonusAnchors.forEach((anchor) => {
-    const labelText = anchor.label ? `Shelf ${anchor.label}` : "Bonus";
-    createLabelSprite(labelText, anchor);
-  });
-
-  console.log(
-    "🧪 [LEVEL 2] Anchors labeled:",
-    shelfAnchors.length,
-    "shelves,",
-    bonusAnchors.length,
-    "bonus pads"
-  );
-}
-
-function createPrimaryWeaponRows() {
-  if (!LEVEL2_PRIMARY_WEAPON_SLOTS.length) return;
-  // CRITICAL: Check if models are already loaded, not just pedestals (prevents duplicate loading)
-  if (level2State.primaryWeaponModels && level2State.primaryWeaponModels.length > 0) {
-    if (DEBUG_SETTINGS.logLevel2Weapons) {
-      console.log("⏭️ [LEVEL 2] Skipping createPrimaryWeaponRows - models already loaded:", level2State.primaryWeaponModels.length);
-    }
-    return;
-  }
-  if (level2State.primaryWeaponPedestals && level2State.primaryWeaponPedestals.length > 0) return;
-
-  const origin = level2Config.origin;
-  const centerZ = origin.z + 11;
-  const {
-    lanesPerSide,
-    baseOffsetX,
-    laneSpacing,
-    laneOffsets,
-    positionsPerLane,
-    startOffsetZ,
-    forwardSpacing,
-    pedestalHeight,
-    labelHeight
-  } = LEVEL2_WEAPON_ROW_CONFIG;
-
-  // CRITICAL: Only initialize arrays if they don't exist (prevents clearing already-loaded models)
-  if (!level2State.primaryWeaponPedestals) level2State.primaryWeaponPedestals = [];
-  if (!level2State.primaryWeaponLabels) level2State.primaryWeaponLabels = [];
-  if (!level2State.primaryWeaponModels) level2State.primaryWeaponModels = [];
-
-  const pedestalGeometry = new THREE.BoxGeometry(1.2, 0.35, 1.2);
-  const pedestalMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfefefe, emissiveIntensity: 0.13 });
-
-  const createLabelSprite = (text) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 64;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "rgba(255, 224, 102, 0.6)";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-    ctx.fillStyle = "#ffe066";
-    ctx.font = "bold 22px 'Montserrat', Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    return new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-  };
-
-  const placeSlot = (x, z, slotData, faceLeft) => {
-    const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
-    pedestal.position.set(x, origin.y + pedestalHeight, z);
-    pedestal.castShadow = false;
-    pedestal.receiveShadow = false;
-    level2State.group.add(pedestal);
-    level2State.primaryWeaponPedestals.push(pedestal);
-
-    const label = createLabelSprite(slotData.slot.toString().padStart(2, "0"));
-    label.position.copy(pedestal.position);
-    label.position.y += labelHeight + 0.6;
-    label.scale.set(0.6, 0.3, 1);
-    level2State.group.add(label);
-    level2State.primaryWeaponLabels.push(label);
-
-    // CRITICAL: Check if this weapon model was already loaded and added to the scene
-    // Prevent duplicate loading by checking if a weapon with this assetPath already exists
-    const existingWeapon = level2State.primaryWeaponModels.find(model => 
-      model.userData && model.userData.assetPath === slotData.assetPath && model.userData.slot === slotData.slot
-    );
-    if (existingWeapon) {
-      // Model already exists, skip loading
-      if (DEBUG_SETTINGS.logLevel2Weapons) {
-        console.log("⏭️ [LEVEL 2] Skipping duplicate primary weapon:", slotData.slot, slotData.assetPath);
-      }
-      return;
-    }
-
-    loadModel(slotData.assetPath)
-      .then((result) => {
-        // CRITICAL: FBX models need to be cloned to ensure proper rendering
-        // For FBX: result = { scene: fbx, animations: [], isFBX: true }
-        // For GLTF: result = { scene: gltf.scene, animations: [], ... }
-        const loadedScene = result.scene || result;
-        const scene = result.isFBX ? loadedScene.clone(true) : loadedScene;
-        const transform = getWeaponRowTransform(slotData.category);
-        // Check if this weapon is used in gameplay (inventory item)
-        const isInventoryItem = GAMEPLAY_INVENTORY_MODELS.some(invPath => {
-          const invFileName = invPath.split('/').pop();
-          const slotFileName = slotData.assetPath.split('/').pop();
-          const matches = slotData.assetPath === invPath || slotFileName === invFileName;
-          if (matches) {
-            // PERFORMANCE: Reduced logging - only log first few models
-            if (slotData.slot <= 3) {
-              console.log("🔍 [LEVEL 2] Inventory item detected:", slotData.slot, slotData.name);
-            }
-          }
-          return matches;
-        });
-        
-        // CRITICAL: Ensure all meshes are visible and materials are updated
-        // PERFORMANCE: Reduced logging - only log errors and summary
-        let meshCount = 0;
-        let materialCount = 0;
-        scene.traverse((child) => {
-          if (child.isMesh) {
-            meshCount++;
-            child.castShadow = false;
-            child.receiveShadow = false;
-            child.visible = true; // CRITICAL: Ensure mesh is visible
-            // PERFORMANCE: Re-enable frustum culling for Level 2 models (they're on pedestals, visible when in view)
-            child.frustumCulled = true; // Enable frustum culling for performance
-            
-            // CRITICAL: Always process materials - create default if missing
-            if (!child.material) {
-              // No material - create a visible default material
-              child.material = new THREE.MeshStandardMaterial({
-                color: 0x888888, // Medium gray for visibility
-                metalness: 0.35,
-                roughness: 0.45,
-                side: THREE.DoubleSide
-              });
-              child.material.needsUpdate = true;
-              materialCount++;
-              // PERFORMANCE: Only log if there's an issue (missing material is unusual)
-              console.warn("⚠️ [LEVEL 2] Created default material for weapon mesh:", slotData.slot, child.name);
-            } else {
-              // Process existing materials
-              materialCount++;
-              const processedMaterial = processWeaponMaterial(child.material);
-              child.material = processedMaterial;
-              
-              // CRITICAL: Always ensure material is updated and visible
-              const materials = Array.isArray(processedMaterial) ? processedMaterial : [processedMaterial];
-              materials.forEach((mat) => {
-                if (mat && mat.isMaterial) {
-                  mat.needsUpdate = true; // CRITICAL: Always update material
-                  mat.side = THREE.DoubleSide; // Ensure double-sided
-                  // Brighten material if too dark
-                  if (mat.color) {
-                    const brightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
-                    if (brightness < 0.2) {
-                      mat.color.setRGB(
-                        Math.min(1.0, mat.color.r * 2.0),
-                        Math.min(1.0, mat.color.g * 2.0),
-                        Math.min(1.0, mat.color.b * 2.0)
-                      );
-                    }
-                  }
-                }
-              });
-              
-              // Green glow for inventory items used in gameplay
-              if (isInventoryItem) {
-                materials.forEach((mat) => {
-                  if (mat && mat.isMaterial) {
-                    // Apply green glow AFTER material processing to ensure it's not overwritten
-                    mat.emissive = new THREE.Color(0x00ff00); // Green
-                    mat.emissiveIntensity = 0.8; // Strong green glow
-                    mat.emissiveMap = null; // Clear any emissive map that might interfere
-                    mat.needsUpdate = true;
-                  }
-                });
-              }
-            }
-          }
-        });
-        
-        // PERFORMANCE: Only log summary for first few models, then reduce logging
-        if (slotData.slot <= 3) {
-          // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-          // Only log when DEBUG_SETTINGS.logLevel2Weapons is true
-          if (DEBUG_SETTINGS.logLevel2Weapons) {
-            console.log("🔫 [LEVEL 2] Weapon loaded:", slotData.slot, slotData.name, {
-              meshes: meshCount,
-              materials: materialCount
+  
+  level1State.bearTrapPosition = new THREE.Vector3(trapX, trapY, trapZ);
+  level1State.bearTrapTriggered = false;
+  
+  console.log("🐻 [LEVEL 1] Creating bear trap at:", level1State.bearTrapPosition);
+  
+  // Load open bear trap model - use resolveAssetPath for production
+  const openTrapPath = resolveAssetPath("textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx");
+  const closedTrapPath = resolveAssetPath("textures/3d models/Survival Pack/FBX/BearTrap_Closed.fbx");
+  
+  loadModel(openTrapPath)
+    .then((result) => {
+      const loadedScene = result.scene || result;
+      const trap = result.isFBX ? loadedScene.clone(true) : loadedScene;
+      
+      const transform = getAccessoryTransform("trap");
+      
+      trap.position.copy(level1State.bearTrapPosition);
+      trap.position.y = level1State.bearTrapPosition.y;
+      trap.scale.setScalar(0.008);
+      trap.rotation.y = transform.rotationY || 0;
+      
+      trap.userData.isOpen = true;
+      trap.userData.openPath = openTrapPath;
+      trap.userData.closedPath = closedTrapPath;
+      
+      trap.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          child.visible = true;
+          child.frustumCulled = false;
+          
+          if (!child.material) {
+            child.material = new THREE.MeshStandardMaterial({
+              color: 0x888888,
+              metalness: 0.35,
+              roughness: 0.45,
+              side: THREE.DoubleSide
             });
-          }
-        }
-        const rotationY = transform.rotationY ?? (faceLeft ? Math.PI / 2 : -Math.PI / 2);
-        scene.scale.setScalar(transform.scale);
-        scene.rotation.set(0, rotationY, 0);
-        scene.position.copy(pedestal.position).add(new THREE.Vector3(0, transform.offsetY, 0));
-        scene.visible = true;
-        // PERFORMANCE: Re-enable frustum culling for Level 2 models (they're on pedestals, visible when in view)
-        scene.frustumCulled = true; // Enable frustum culling for performance
-        scene.updateMatrixWorld(true);
-        
-        // CRITICAL: Double-check model isn't already in the scene before adding
-        if (!level2State.group.children.includes(scene) && !level2State.primaryWeaponModels.includes(scene)) {
-          level2State.group.add(scene);
-          level2State.primaryWeaponModels.push(scene);
-        } else {
-          console.warn("⚠️ [LEVEL 2] Attempted to add duplicate primary weapon:", slotData.slot, slotData.assetPath);
-          return;
-        }
-        
-        // CRITICAL: Ensure group is visible when adding models (if we're in Level 2)
-        if (currentLevel === LEVEL_IDS.LEVEL2) {
-          level2State.group.visible = true;
-        }
-        
-        // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-        // Only log when DEBUG_SETTINGS.logLevel2Weapons is true
-        if (DEBUG_SETTINGS.logLevel2Weapons) {
-          console.log("🔫 [LEVEL 2] Weapon row slot loaded:", slotData.slot, slotData.name, {
-            visible: scene.visible,
-            frustumCulled: scene.frustumCulled,
-            inGroup: level2State.group.children.includes(scene),
-            groupVisible: level2State.group.visible,
-            currentLevel: currentLevel
-          });
-        }
-      })
-      .catch((error) => {
-        console.error("❌ [LEVEL 2] Failed to load weapon row slot:", slotData.assetPath, error);
-      });
-  };
-
-  let slotIndex = 0;
-  const placeSide = (direction) => {
-    for (let lane = 0; lane < lanesPerSide; lane++) {
-      const laneOffset =
-        Array.isArray(laneOffsets) && typeof laneOffsets[lane] === "number"
-          ? laneOffsets[lane]
-          : baseOffsetX + lane * laneSpacing;
-      const x = origin.x + direction * laneOffset;
-      for (let pos = 0; pos < positionsPerLane && slotIndex < LEVEL2_PRIMARY_WEAPON_SLOTS.length; pos++) {
-        const z = centerZ + startOffsetZ + pos * forwardSpacing;
-        const slotData = LEVEL2_PRIMARY_WEAPON_SLOTS[slotIndex++];
-        placeSlot(x, z, slotData, direction < 0);
-      }
-    }
-  };
-
-  placeSide(-1);
-  placeSide(1);
-
-  console.log("🛡️ [LEVEL 2] Primary weapon rows created:", {
-    pedestals: level2State.primaryWeaponPedestals.length
-  });
-}
-
-function createAccessoryCorridor() {
-  if (!LEVEL2_ACCESSORY_SLOTS.length) return;
-  // CRITICAL: Check if models are already loaded, not just pedestals (prevents duplicate loading)
-  if (level2State.accessoryModels && level2State.accessoryModels.length > 0) {
-    if (DEBUG_SETTINGS.logLevel2Weapons) {
-      console.log("⏭️ [LEVEL 2] Skipping createAccessoryCorridor - models already loaded:", level2State.accessoryModels.length);
-    }
-    return;
-  }
-  if (level2State.accessoryPedestals && level2State.accessoryPedestals.length > 0) return;
-  const origin = level2Config.origin;
-  const {
-    laneOffsets,
-    positionsPerLane,
-    startOffsetZ,
-    forwardSpacing,
-    pedestalHeight,
-    labelHeight
-  } = LEVEL2_ACCESSORY_ROW_CONFIG;
-
-  // CRITICAL: Only initialize arrays if they don't exist (prevents clearing already-loaded models)
-  if (!level2State.accessoryPedestals) level2State.accessoryPedestals = [];
-  if (!level2State.accessoryLabels) level2State.accessoryLabels = [];
-  if (!level2State.accessoryModels) level2State.accessoryModels = [];
-
-  const pedestalGeometry = new THREE.BoxGeometry(0.95, 0.28, 0.95);
-  const pedestalMaterial = new THREE.MeshStandardMaterial({
-    color: 0xf7f5f5,
-    emissive: 0xffffff,
-    emissiveIntensity: 0.1
-  });
-
-  const createLabelSprite = (text) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 64;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "rgba(255, 224, 102, 0.5)";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-    ctx.fillStyle = "#ffe066";
-    ctx.font = "bold 20px 'Montserrat', Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    return new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-  };
-
-  const placeSlot = (x, z, slotData, faceLeft) => {
-    const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
-    pedestal.position.set(x, origin.y + pedestalHeight, z);
-    pedestal.castShadow = false;
-    pedestal.receiveShadow = false;
-    level2State.group.add(pedestal);
-    level2State.accessoryPedestals.push(pedestal);
-
-    const label = createLabelSprite(slotData.slot);
-    label.position.copy(pedestal.position);
-    label.position.y += labelHeight + 0.5;
-    label.scale.set(0.5, 0.25, 1);
-    level2State.group.add(label);
-    level2State.accessoryLabels.push(label);
-
-    loadModel(slotData.assetPath)
-      .then((result) => {
-        // CRITICAL: FBX models need to be cloned to ensure proper rendering
-        const loadedScene = result.scene || result;
-        const scene = result.isFBX ? loadedScene.clone(true) : loadedScene;
-        const transform = getAccessoryTransform(slotData.type);
-        // Check if this accessory is used in gameplay (inventory item)
-        const isInventoryItem = GAMEPLAY_INVENTORY_MODELS.some(invPath => {
-          const invFileName = invPath.split('/').pop();
-          const slotFileName = slotData.assetPath.split('/').pop();
-          return slotData.assetPath === invPath || slotFileName === invFileName;
-        });
-        
-        // CRITICAL: Ensure all meshes are visible and materials are updated
-        scene.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = false;
-            child.receiveShadow = false;
-            child.visible = true; // CRITICAL: Ensure mesh is visible
-            // PERFORMANCE: Re-enable frustum culling for Level 2 models (they're on pedestals, visible when in view)
-            child.frustumCulled = true; // Enable frustum culling for performance
-            
-            // CRITICAL: Always process materials - create default if missing
-            if (!child.material) {
-              child.material = new THREE.MeshStandardMaterial({
-                color: 0x888888,
-                metalness: 0.35,
-                roughness: 0.45,
-                side: THREE.DoubleSide
+            child.material.needsUpdate = true;
+          } else {
+            if (Array.isArray(child.material)) {
+              child.material = child.material.map(mat => {
+                const processed = processWeaponMaterial(mat);
+                if (processed) {
+                  processed.needsUpdate = true;
+                  processed.side = THREE.DoubleSide;
+                }
+                return processed;
               });
-              child.material.needsUpdate = true;
             } else {
-              const processedMaterial = processWeaponMaterial(child.material);
-              child.material = processedMaterial;
-              const materials = Array.isArray(processedMaterial) ? processedMaterial : [processedMaterial];
-              materials.forEach((mat) => {
-                if (mat && mat.isMaterial) {
-                  mat.needsUpdate = true;
-                  mat.side = THREE.DoubleSide;
-                  if (mat.color) {
-                    const brightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
-                    if (brightness < 0.2) {
-                      mat.color.setRGB(
-                        Math.min(1.0, mat.color.r * 2.0),
-                        Math.min(1.0, mat.color.g * 2.0),
-                        Math.min(1.0, mat.color.b * 2.0)
-                      );
-                    }
-                  }
-                }
-              });
-              if (isInventoryItem) {
-                materials.forEach((mat) => {
-                  if (mat && mat.isMaterial) {
-                    mat.emissive = new THREE.Color(0x00ff00);
-                    mat.emissiveIntensity = 0.8;
-                    mat.emissiveMap = null;
-                    mat.needsUpdate = true;
-                  }
-                });
-              }
-            }
-          }
-        });
-        const rotationY = transform.rotationY ?? (faceLeft ? Math.PI / 2 : -Math.PI / 2);
-        scene.scale.setScalar(transform.scale);
-        scene.rotation.set(0, rotationY, 0);
-        scene.position.copy(pedestal.position).add(new THREE.Vector3(0, transform.offsetY, 0));
-        scene.visible = true;
-        // PERFORMANCE: Re-enable frustum culling for Level 2 models (they're on pedestals, visible when in view)
-        scene.frustumCulled = true; // Enable frustum culling for performance
-        scene.updateMatrixWorld(true);
-        level2State.group.add(scene);
-        level2State.accessoryModels.push(scene);
-        
-        // CRITICAL: Ensure group is visible when adding models (if we're in Level 2)
-        if (currentLevel === LEVEL_IDS.LEVEL2) {
-          level2State.group.visible = true;
-        }
-        
-        // PERFORMANCE: Reduced logging - only log first few models
-        if (slotData.slot <= 3) {
-          // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-          if (DEBUG_SETTINGS.logLevel2Weapons) {
-            console.log("🧩 [LEVEL 2] Accessory loaded:", slotData.slot, slotData.name);
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("❌ [LEVEL 2] Failed to load accessory slot:", slotData.assetPath, error);
-      });
-  };
-
-  const perLane = positionsPerLane || Math.ceil(LEVEL2_ACCESSORY_SLOTS.length / laneOffsets.length);
-  let slotIndex = 0;
-  laneOffsets.forEach((offset, laneIdx) => {
-    const x = origin.x + offset;
-    const faceLeft = offset > 0;
-    for (let i = 0; i < perLane && slotIndex < LEVEL2_ACCESSORY_SLOTS.length; i++) {
-      const z = origin.z + startOffsetZ + i * forwardSpacing;
-      const slotData = LEVEL2_ACCESSORY_SLOTS[slotIndex++];
-      placeSlot(x, z, slotData, faceLeft);
-    }
-  });
-
-  const minX = origin.x + Math.min(...laneOffsets) - 1.2;
-  const maxX = origin.x + Math.max(...laneOffsets) + 1.2;
-  const minZ = origin.z + startOffsetZ - 1.5;
-  const maxZ = origin.z + startOffsetZ + perLane * forwardSpacing + 1.5;
-  addLevel2InspectionZone("accessory_corridor", "Accessory Corridor", { minX, maxX, minZ, maxZ });
-}
-
-function createSurvivalPackRows() {
-  if (!LEVEL2_SURVIVAL_PACK_SLOTS.length) return;
-  // CRITICAL: Check if models are already loaded, not just pedestals (prevents duplicate loading)
-  if (level2State.survivalModels && level2State.survivalModels.length > 0) {
-    if (DEBUG_SETTINGS.logLevel2Weapons) {
-      console.log("⏭️ [LEVEL 2] Skipping createSurvivalPackRows - models already loaded:", level2State.survivalModels.length);
-    }
-    return;
-  }
-  if (level2State.survivalPedestals && level2State.survivalPedestals.length > 0) return;
-
-  const origin = level2Config.origin;
-  const {
-    laneOffsets,
-    positionsPerLane,
-    startOffsetZ,
-    forwardSpacing,
-    pedestalHeight,
-    labelHeight
-  } = LEVEL2_SURVIVAL_PACK_ROW_CONFIG;
-
-  // CRITICAL: Only initialize arrays if they don't exist (prevents clearing already-loaded models)
-  if (!level2State.survivalPedestals) level2State.survivalPedestals = [];
-  if (!level2State.survivalLabels) level2State.survivalLabels = [];
-  if (!level2State.survivalModels) level2State.survivalModels = [];
-
-  const pedestalGeometry = new THREE.BoxGeometry(1.25, 0.34, 1.25);
-  const pedestalMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    emissive: 0xfefefe,
-    emissiveIntensity: 0.14
-  });
-
-  const createLabelSprite = (text) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 64;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "rgba(255, 224, 102, 0.55)";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-    ctx.fillStyle = "#ffe066";
-    ctx.font = "bold 22px 'Montserrat', Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    return new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-  };
-
-  const placeSlot = (x, z, slotData, faceLeft) => {
-    const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
-    pedestal.position.set(x, origin.y + pedestalHeight, z);
-    pedestal.castShadow = false;
-    pedestal.receiveShadow = false;
-    level2State.group.add(pedestal);
-    level2State.survivalPedestals.push(pedestal);
-
-    const label = createLabelSprite(slotData.slot);
-    label.position.copy(pedestal.position);
-    label.position.y += labelHeight + 0.55;
-    label.scale.set(0.6, 0.3, 1);
-    level2State.group.add(label);
-    level2State.survivalLabels.push(label);
-
-    loadModel(slotData.assetPath)
-      .then((result) => {
-        // CRITICAL: FBX models need to be cloned to ensure proper rendering
-        const loadedScene = result.scene || result;
-        const scene = result.isFBX ? loadedScene.clone(true) : loadedScene;
-        const transform = getSurvivalPackTransform(slotData.type);
-        // Check if this survival pack item is used in gameplay (inventory item)
-        const isInventoryItem = GAMEPLAY_INVENTORY_MODELS.some(invPath => {
-          const invFileName = invPath.split('/').pop();
-          const slotFileName = slotData.assetPath.split('/').pop();
-          return slotData.assetPath === invPath || slotFileName === invFileName;
-        });
-        
-        // CRITICAL: Ensure all meshes are visible and materials are updated
-        scene.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = false;
-            child.receiveShadow = false;
-            child.visible = true; // CRITICAL: Ensure mesh is visible
-            // PERFORMANCE: Re-enable frustum culling for Level 2 models (they're on pedestals, visible when in view)
-            child.frustumCulled = true; // Enable frustum culling for performance
-            
-            // CRITICAL: Always process materials - create default if missing
-            if (!child.material) {
-              child.material = new THREE.MeshStandardMaterial({
-                color: 0x888888,
-                metalness: 0.35,
-                roughness: 0.45,
-                side: THREE.DoubleSide
-              });
-              child.material.needsUpdate = true;
-            } else {
-              const processedMaterial = processWeaponMaterial(child.material);
-              child.material = processedMaterial;
-              const materials = Array.isArray(processedMaterial) ? processedMaterial : [processedMaterial];
-              materials.forEach((mat) => {
-                if (mat && mat.isMaterial) {
-                  mat.needsUpdate = true;
-                  mat.side = THREE.DoubleSide;
-                  if (mat.color) {
-                    const brightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
-                    if (brightness < 0.2) {
-                      mat.color.setRGB(
-                        Math.min(1.0, mat.color.r * 2.0),
-                        Math.min(1.0, mat.color.g * 2.0),
-                        Math.min(1.0, mat.color.b * 2.0)
-                      );
-                    }
-                  }
-                }
-              });
-              if (isInventoryItem) {
-                materials.forEach((mat) => {
-                  if (mat && mat.isMaterial) {
-                    mat.emissive = new THREE.Color(0x00ff00);
-                    mat.emissiveIntensity = 0.8;
-                    mat.emissiveMap = null;
-                    mat.needsUpdate = true;
-                  }
-                });
-              }
-            }
-          }
-        });
-        const rotationY = transform.rotationY ?? (faceLeft ? Math.PI / 2 : -Math.PI / 2);
-        scene.scale.setScalar(transform.scale);
-        scene.rotation.set(0, rotationY, 0);
-        scene.position.copy(pedestal.position).add(new THREE.Vector3(0, transform.offsetY, 0));
-        scene.visible = true;
-        // PERFORMANCE: Re-enable frustum culling for Level 2 models (they're on pedestals, visible when in view)
-        scene.frustumCulled = true; // Enable frustum culling for performance
-        scene.updateMatrixWorld(true);
-        level2State.group.add(scene);
-        level2State.survivalModels.push(scene);
-        
-        // CRITICAL: Ensure group is visible when adding models (if we're in Level 2)
-        if (currentLevel === LEVEL_IDS.LEVEL2) {
-          level2State.group.visible = true;
-        }
-        
-        // Store bear trap (SP08) position for collision detection
-        if (slotData.slot === "SP08" && slotData.type === "trap") {
-          // Store trap position at the actual model position (on pedestal)
-          // The scene.position already includes pedestal position + offsetY
-          level2State.bearTrapPosition = new THREE.Vector3(scene.position.x, scene.position.y, scene.position.z);
-          level2State.bearTrap = scene; // Store the model for switching
-          level2State.bearTrap.userData.isOpen = true;
-          level2State.bearTrap.userData.openPath = slotData.assetPath;
-          // Find SP07 (closed trap) path
-          const closedTrapData = LEVEL2_SURVIVAL_PACK_SLOTS.find(s => s.slot === "SP07" && s.type === "trap");
-          if (closedTrapData) {
-            level2State.bearTrap.userData.closedPath = closedTrapData.assetPath;
-          }
-          console.log("🐻 [LEVEL 2] Bear trap (SP08) position stored:", {
-            position: level2State.bearTrapPosition,
-            modelPosition: scene.position,
-            closedPath: level2State.bearTrap.userData.closedPath,
-            pedestalPos: pedestal.position,
-            visible: scene.visible,
-            frustumCulled: scene.frustumCulled
-          });
-        }
-        
-        // PERFORMANCE: Reduced logging - only log first few models
-        if (slotData.slot === "SP01" || slotData.slot === "SP02" || slotData.slot === "SP03") {
-          // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-          if (DEBUG_SETTINGS.logLevel2Weapons) {
-            console.log("🧳 [LEVEL 2] Survival Pack loaded:", slotData.slot, slotData.name);
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("❌ [LEVEL 2] Failed to load survival pack slot:", slotData.assetPath, error);
-      });
-  };
-
-  let slotIndex = 0;
-  laneOffsets.forEach((offset) => {
-    const x = origin.x + offset;
-    const faceLeft = offset > 0;
-    for (let i = 0; i < positionsPerLane && slotIndex < LEVEL2_SURVIVAL_PACK_SLOTS.length; i++) {
-      const z = origin.z + startOffsetZ + i * forwardSpacing;
-      const slotData = LEVEL2_SURVIVAL_PACK_SLOTS[slotIndex++];
-      placeSlot(x, z, slotData, faceLeft);
-    }
-  });
-
-  const laneXs = laneOffsets.map((offset) => origin.x + offset);
-  const minX = Math.min(...laneXs) - 1.5;
-  const maxX = Math.max(...laneXs) + 1.5;
-  const rowsPerLane = Math.ceil(LEVEL2_SURVIVAL_PACK_SLOTS.length / laneOffsets.length);
-  const minZ = origin.z + startOffsetZ - 1.5;
-  const maxZ = origin.z + startOffsetZ + rowsPerLane * forwardSpacing + 1.5;
-  addLevel2InspectionZone("survival_pack_rows", "Survival Pack Archive", { minX, maxX, minZ, maxZ });
-}
-
-function createOldSchoolArmory() {
-  if (!LEVEL2_OLD_SCHOOL_SLOTS.length) return;
-  // CRITICAL: Check if models are already loaded, not just pedestals (prevents duplicate loading)
-  if (level2State.oldSchoolModels && level2State.oldSchoolModels.length > 0) {
-    if (DEBUG_SETTINGS.logLevel2Weapons) {
-      console.log("⏭️ [LEVEL 2] Skipping createOldSchoolArmory - models already loaded:", level2State.oldSchoolModels.length);
-    }
-    return;
-  }
-  if (level2State.oldSchoolPedestals && level2State.oldSchoolPedestals.length > 0) return;
-
-  const origin = level2Config.origin;
-  const {
-    laneOffsets,
-    positionsPerLane,
-    startOffsetZ,
-    forwardSpacing,
-    pedestalHeight,
-    labelHeight
-  } = LEVEL2_OLD_SCHOOL_ROW_CONFIG;
-
-  // CRITICAL: Only initialize arrays if they don't exist (prevents clearing already-loaded models)
-  if (!level2State.oldSchoolPedestals) level2State.oldSchoolPedestals = [];
-  if (!level2State.oldSchoolLabels) level2State.oldSchoolLabels = [];
-  if (!level2State.oldSchoolModels) level2State.oldSchoolModels = [];
-
-  const pedestalGeometry = new THREE.BoxGeometry(1.05, 0.3, 1.05);
-  const pedestalMaterial = new THREE.MeshStandardMaterial({
-    color: 0xfefefe,
-    emissive: 0xffffff,
-    emissiveIntensity: 0.12
-  });
-
-  const createLabelSprite = (text) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 64;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "rgba(255, 224, 102, 0.55)";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-    ctx.fillStyle = "#ffe066";
-    ctx.font = "bold 20px 'Montserrat', Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    return new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-  };
-
-  const placeSlot = (x, z, slotData, faceLeft) => {
-    const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
-    pedestal.position.set(x, origin.y + pedestalHeight, z);
-    pedestal.castShadow = false;
-    pedestal.receiveShadow = false;
-    level2State.group.add(pedestal);
-    level2State.oldSchoolPedestals.push(pedestal);
-
-    const label = createLabelSprite(slotData.slot);
-    label.position.copy(pedestal.position);
-    label.position.y += labelHeight + 0.45;
-    label.scale.set(0.5, 0.25, 1);
-    level2State.group.add(label);
-    level2State.oldSchoolLabels.push(label);
-
-    loadModel(slotData.assetPath)
-      .then((result) => {
-        // CRITICAL: FBX models need to be cloned to ensure proper rendering
-        const loadedScene = result.scene || result;
-        const scene = result.isFBX ? loadedScene.clone(true) : loadedScene;
-        const transform = getOldSchoolTransform(slotData.type);
-        // Check if this old school weapon is used in gameplay (inventory item)
-        const isInventoryItem = GAMEPLAY_INVENTORY_MODELS.some(invPath => {
-          const invFileName = invPath.split('/').pop();
-          const slotFileName = slotData.assetPath.split('/').pop();
-          return slotData.assetPath === invPath || slotFileName === invFileName;
-        });
-        
-        // CRITICAL: Ensure all meshes are visible and materials are updated
-        scene.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = false;
-            child.receiveShadow = false;
-            child.visible = true; // CRITICAL: Ensure mesh is visible
-            // PERFORMANCE: Re-enable frustum culling for Level 2 models (they're on pedestals, visible when in view)
-            child.frustumCulled = true; // Enable frustum culling for performance
-            
-            // CRITICAL: Always process materials - create default if missing
-            if (!child.material) {
-              child.material = new THREE.MeshStandardMaterial({
-                color: 0x888888,
-                metalness: 0.35,
-                roughness: 0.45,
-                side: THREE.DoubleSide
-              });
-              child.material.needsUpdate = true;
-            } else {
-              const processedMaterial = processWeaponMaterial(child.material);
-              child.material = processedMaterial;
-              const materials = Array.isArray(processedMaterial) ? processedMaterial : [processedMaterial];
-              materials.forEach((mat) => {
-                if (mat && mat.isMaterial) {
-                  mat.needsUpdate = true;
-                  mat.side = THREE.DoubleSide;
-                  if (mat.color) {
-                    const brightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
-                    if (brightness < 0.2) {
-                      mat.color.setRGB(
-                        Math.min(1.0, mat.color.r * 2.0),
-                        Math.min(1.0, mat.color.g * 2.0),
-                        Math.min(1.0, mat.color.b * 2.0)
-                      );
-                    }
-                  }
-                }
-              });
-              if (isInventoryItem) {
-                materials.forEach((mat) => {
-                  if (mat && mat.isMaterial) {
-                    mat.emissive = new THREE.Color(0x00ff00);
-                    mat.emissiveIntensity = 0.8;
-                    mat.emissiveMap = null;
-                    mat.needsUpdate = true;
-                  }
-                });
-              }
-            }
-          }
-        });
-        const rotationY = transform.rotationY ?? (faceLeft ? Math.PI / 2 : -Math.PI / 2);
-        scene.scale.setScalar(transform.scale);
-        scene.rotation.set(0, rotationY, 0);
-        scene.position.copy(pedestal.position).add(new THREE.Vector3(0, transform.offsetY, 0));
-        scene.visible = true;
-        // PERFORMANCE: Re-enable frustum culling for Level 2 models (they're on pedestals, visible when in view)
-        scene.frustumCulled = true; // Enable frustum culling for performance
-        scene.updateMatrixWorld(true);
-        level2State.group.add(scene);
-        level2State.oldSchoolModels.push(scene);
-        
-        // CRITICAL: Ensure group is visible when adding models (if we're in Level 2)
-        if (currentLevel === LEVEL_IDS.LEVEL2) {
-          level2State.group.visible = true;
-        }
-        
-        // PERFORMANCE: Reduced logging - only log first few models
-        if (slotData.slot <= 3) {
-          // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-          if (DEBUG_SETTINGS.logLevel2Weapons) {
-            console.log("⚔️ [LEVEL 2] Old School loaded:", slotData.slot, slotData.name);
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("❌ [LEVEL 2] Failed to load old school slot:", slotData.assetPath, error);
-      });
-  };
-
-  let slotIndex = 0;
-  laneOffsets.forEach((offset) => {
-    const x = origin.x + offset;
-    const faceLeft = offset < 0;
-    for (let i = 0; i < positionsPerLane && slotIndex < LEVEL2_OLD_SCHOOL_SLOTS.length; i++) {
-      const z = origin.z + startOffsetZ + i * forwardSpacing;
-      const slotData = LEVEL2_OLD_SCHOOL_SLOTS[slotIndex++];
-      placeSlot(x, z, slotData, faceLeft);
-    }
-  });
-
-  const xs = laneOffsets.map((offset) => origin.x + offset);
-  const minX = Math.min(...xs) - 1.2;
-  const maxX = Math.max(...xs) + 1.2;
-  const rows = Math.ceil(LEVEL2_OLD_SCHOOL_SLOTS.length / laneOffsets.length);
-  const minZ = origin.z + startOffsetZ - 1.2;
-  const maxZ = origin.z + startOffsetZ + rows * forwardSpacing + 1.2;
-  addLevel2InspectionZone("old_school_armory", "Old School Armory", { minX, maxX, minZ, maxZ });
-}
-
-function createSciFiGunRows() {
-  if (!LEVEL2_SCIFI_SLOTS.length) return;
-  // CRITICAL: Check if models are already loaded, not just pedestals (prevents duplicate loading)
-  if (level2State.sciFiModels && level2State.sciFiModels.length > 0) {
-    if (DEBUG_SETTINGS.logLevel2Weapons) {
-      console.log("⏭️ [LEVEL 2] Skipping createSciFiGunRows - models already loaded:", level2State.sciFiModels.length);
-    }
-    return;
-  }
-  if (level2State.sciFiPedestals && level2State.sciFiPedestals.length > 0) return;
-
-  const origin = level2Config.origin;
-  const {
-    laneOffsets,
-    positionsPerLane,
-    startOffsetZ,
-    forwardSpacing,
-    pedestalHeight,
-    labelHeight
-  } = LEVEL2_SCIFI_ROW_CONFIG;
-
-  // CRITICAL: Only initialize arrays if they don't exist (prevents clearing already-loaded models)
-  if (!level2State.sciFiPedestals) level2State.sciFiPedestals = [];
-  if (!level2State.sciFiLabels) level2State.sciFiLabels = [];
-  if (!level2State.sciFiModels) level2State.sciFiModels = [];
-
-  const pedestalGeometry = new THREE.BoxGeometry(1.05, 0.3, 1.05);
-  const pedestalMaterial = new THREE.MeshStandardMaterial({
-    color: 0xfefefe,
-    emissive: 0xffffff,
-    emissiveIntensity: 0.12
-  });
-
-  const createLabelSprite = (text) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 64;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "rgba(255, 224, 102, 0.55)";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-    ctx.fillStyle = "#ffe066";
-    ctx.font = "bold 20px 'Montserrat', Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    return new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-  };
-
-  const placeSlot = (x, z, slotData, faceLeft) => {
-    const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
-    pedestal.position.set(x, origin.y + pedestalHeight, z);
-    pedestal.castShadow = false;
-    pedestal.receiveShadow = false;
-    level2State.group.add(pedestal);
-    level2State.sciFiPedestals.push(pedestal);
-
-    const label = createLabelSprite(slotData.slot);
-    label.position.copy(pedestal.position);
-    label.position.y += labelHeight + 0.45;
-    label.scale.set(0.5, 0.25, 1);
-    level2State.group.add(label);
-    level2State.sciFiLabels.push(label);
-
-    loadModel(slotData.assetPath)
-      .then((result) => {
-        // CRITICAL: FBX models need to be cloned to ensure proper rendering
-        const loadedScene = result.scene || result;
-        const scene = result.isFBX ? loadedScene.clone(true) : loadedScene;
-        const transform = getSciFiTransform(slotData.type);
-        // Check if this Sci-Fi gun is used in gameplay (inventory item)
-        const isInventoryItem = GAMEPLAY_INVENTORY_MODELS.some(invPath => {
-          const invFileName = invPath.split('/').pop();
-          const slotFileName = slotData.assetPath.split('/').pop();
-          const matches = slotData.assetPath === invPath || slotFileName === invFileName;
-          // PERFORMANCE: Reduced logging - only log if it's one of the first few items
-          if (matches && (slotData.slot <= 3)) {
-            console.log("🔍 [LEVEL 2] Inventory item detected:", slotData.slot, slotData.name);
-          }
-          return matches;
-        });
-        
-        // CRITICAL: Ensure all meshes are visible and materials are updated
-        scene.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = false;
-            child.receiveShadow = false;
-            child.visible = true; // CRITICAL: Ensure mesh is visible
-            // PERFORMANCE: Re-enable frustum culling for Level 2 models (they're on pedestals, visible when in view)
-            child.frustumCulled = true; // Enable frustum culling for performance
-            
-            // CRITICAL: Always process materials - create default if missing
-            if (!child.material) {
-              child.material = new THREE.MeshStandardMaterial({
-                color: 0x888888,
-                metalness: 0.35,
-                roughness: 0.45,
-                side: THREE.DoubleSide
-              });
-              child.material.needsUpdate = true;
-            } else {
-              const processedMaterial = processWeaponMaterial(child.material);
-              child.material = processedMaterial;
-              const materials = Array.isArray(processedMaterial) ? processedMaterial : [processedMaterial];
-              materials.forEach((mat) => {
-                if (mat && mat.isMaterial) {
-                  mat.needsUpdate = true;
-                  mat.side = THREE.DoubleSide;
-                  if (mat.color) {
-                    const brightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
-                    if (brightness < 0.2) {
-                      mat.color.setRGB(
-                        Math.min(1.0, mat.color.r * 2.0),
-                        Math.min(1.0, mat.color.g * 2.0),
-                        Math.min(1.0, mat.color.b * 2.0)
-                      );
-                    }
-                  }
-                }
-              });
-              if (isInventoryItem) {
-                materials.forEach((mat) => {
-                  if (mat && mat.isMaterial) {
-                    mat.emissive = new THREE.Color(0x00ff00);
-                    mat.emissiveIntensity = 0.8;
-                    mat.emissiveMap = null;
-                    mat.needsUpdate = true;
-                  }
-                });
-                // PERFORMANCE: Reduced logging - only log first few models
-                if (slotData.slot <= 3) {
-                  console.log("✅ [LEVEL 2] Green glow applied:", slotData.slot, slotData.name);
-                }
-              }
-            }
-          }
-        });
-        const rotationY = transform.rotationY ?? (faceLeft ? Math.PI / 2 : -Math.PI / 2);
-        scene.scale.setScalar(transform.scale);
-        scene.rotation.set(0, rotationY, 0);
-        scene.position.copy(pedestal.position).add(new THREE.Vector3(0, transform.offsetY, 0));
-        scene.visible = true;
-        // PERFORMANCE: Re-enable frustum culling for Level 2 models (they're on pedestals, visible when in view)
-        scene.frustumCulled = true; // Enable frustum culling for performance
-        scene.updateMatrixWorld(true);
-        level2State.group.add(scene);
-        level2State.sciFiModels.push(scene);
-        
-        // CRITICAL: Ensure group is visible when adding models (if we're in Level 2)
-        if (currentLevel === LEVEL_IDS.LEVEL2) {
-          level2State.group.visible = true;
-        }
-        
-        // PERFORMANCE: Reduced logging - only log first few models
-        if (slotData.slot <= 3) {
-          // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-          if (DEBUG_SETTINGS.logLevel2Weapons) {
-            console.log("🔫 [LEVEL 2] Sci-Fi loaded:", slotData.slot, slotData.name);
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("❌ [LEVEL 2] Failed to load Sci-Fi gun slot:", slotData.assetPath, error);
-      });
-  };
-
-  let slotIndex = 0;
-  laneOffsets.forEach((offset) => {
-    const x = origin.x + offset;
-    const faceLeft = offset < 0;
-    for (let i = 0; i < positionsPerLane && slotIndex < LEVEL2_SCIFI_SLOTS.length; i++) {
-      const z = origin.z + startOffsetZ + i * forwardSpacing;
-      const slotData = LEVEL2_SCIFI_SLOTS[slotIndex++];
-      placeSlot(x, z, slotData, faceLeft);
-    }
-  });
-
-  const xs = laneOffsets.map((offset) => origin.x + offset);
-  const minX = Math.min(...xs) - 1.2;
-  const maxX = Math.max(...xs) + 1.2;
-  const rows = Math.ceil(LEVEL2_SCIFI_SLOTS.length / laneOffsets.length);
-  const minZ = origin.z + startOffsetZ - 1.2;
-  const maxZ = origin.z + startOffsetZ + rows * forwardSpacing + 1.2;
-  addLevel2InspectionZone("scifi_gun_rows", "Sci-Fi Gun Collection", { minX, maxX, minZ, maxZ });
-}
-
-function getWeaponRowTransform(category) {
-  const overrides = category ? PRIMARY_RING_CATEGORY_TRANSFORMS[category] : null;
-  return {
-    scale: overrides?.scale ?? PRIMARY_RING_DEFAULT_TRANSFORM.scale,
-    offsetY: overrides?.offsetY ?? PRIMARY_RING_DEFAULT_TRANSFORM.offsetY,
-    rotationY: overrides?.rotationY ?? PRIMARY_RING_DEFAULT_TRANSFORM.rotationY
-  };
-}
-
-function getAccessoryTransform(type) {
-  const overrides = type ? LEVEL2_ACCESSORY_TRANSFORM_OVERRIDES[type] : null;
-  return {
-    scale: overrides?.scale ?? LEVEL2_ACCESSORY_TRANSFORM_DEFAULT.scale,
-    offsetY: overrides?.offsetY ?? LEVEL2_ACCESSORY_TRANSFORM_DEFAULT.offsetY,
-    rotationY: overrides?.rotationY ?? LEVEL2_ACCESSORY_TRANSFORM_DEFAULT.rotationY
-  };
-}
-function getSurvivalPackTransform(type) {
-  const overrides = type ? LEVEL2_SURVIVAL_PACK_TRANSFORM_OVERRIDES[type] : null;
-  return {
-    scale: overrides?.scale ?? LEVEL2_SURVIVAL_PACK_TRANSFORM_DEFAULT.scale,
-    offsetY: overrides?.offsetY ?? LEVEL2_SURVIVAL_PACK_TRANSFORM_DEFAULT.offsetY,
-    rotationY: overrides?.rotationY ?? LEVEL2_SURVIVAL_PACK_TRANSFORM_DEFAULT.rotationY
-  };
-}
-function getOldSchoolTransform(type) {
-  const overrides = type ? LEVEL2_OLD_SCHOOL_TRANSFORM_OVERRIDES[type] : null;
-  return {
-    scale: overrides?.scale ?? LEVEL2_OLD_SCHOOL_TRANSFORM_DEFAULT.scale,
-    offsetY: overrides?.offsetY ?? LEVEL2_OLD_SCHOOL_TRANSFORM_DEFAULT.offsetY,
-    rotationY: overrides?.rotationY ?? LEVEL2_OLD_SCHOOL_TRANSFORM_DEFAULT.rotationY
-  };
-}
-
-function getSciFiTransform(type) {
-  const overrides = type ? LEVEL2_SCIFI_TRANSFORM_OVERRIDES[type] : null;
-  return {
-    scale: overrides?.scale ?? LEVEL2_SCIFI_TRANSFORM_DEFAULT.scale,
-    offsetY: overrides?.offsetY ?? LEVEL2_SCIFI_TRANSFORM_DEFAULT.offsetY,
-    rotationY: overrides?.rotationY ?? LEVEL2_SCIFI_TRANSFORM_DEFAULT.rotationY
-  };
-}
-
-function addLevel2InspectionZone(id, label, bounds) {
-  level2State.inspectionZones.push({
-    id,
-    label,
-    bounds,
-    visited: false
-  });
-}
-
-function resetLevel2Progress() {
-  level2State.inspectionZones.forEach((zone) => {
-    zone.visited = false;
-  });
-  level2State.portalActive = false;
-  level2State.completionScreenShown = false;
-  level2State.introShown = false;
-  level2State.step1IntroShown = false;
-
-  if (level2State.portal) {
-    level2State.portal.visible = false;
-  }
-
-  hideLevel2CompletionScreen(false);
-  hideLevel2InspectionHud();
-  if (level2State.introToastElement && document.body.contains(level2State.introToastElement)) {
-    document.body.removeChild(level2State.introToastElement);
-  }
-  level2State.introToastElement = null;
-  
-  // Reset bear trap state and restore open model if it was closed
-  level2State.bearTrapTriggered = false;
-  level2State.bearTrapDeathActive = false;
-  
-  // If bear trap was closed (triggered), restore it to open state
-  if (level2State.bearTrap && level2State.bearTrap.userData) {
-    const isOpen = level2State.bearTrap.userData.isOpen;
-    const openPath = level2State.bearTrap.userData.openPath;
-    
-    if (!isOpen && openPath) {
-      // Trap is closed, restore open model
-      console.log("🔄 [LEVEL 2] Restoring bear trap to open state...");
-      const closedTrap = level2State.bearTrap;
-      const trapPosition = level2State.bearTrap.position.clone();
-      const trapRotation = level2State.bearTrap.rotation.clone();
-      const trapScale = level2State.bearTrap.scale.x;
-      
-      // Remove closed trap
-      if (closedTrap.parent) {
-        closedTrap.parent.remove(closedTrap);
-      }
-      
-      // Reload open trap model
-      loadModel(openPath)
-        .then(({ scene: openTrap }) => {
-          // Get transform from Survival Pack
-          const transform = getSurvivalPackTransform("trap");
-          
-          // Restore position, rotation, and scale
-          openTrap.position.copy(trapPosition);
-          openTrap.scale.setScalar(trapScale);
-          openTrap.rotation.copy(trapRotation);
-          
-          // Process materials and restore green glow
-          openTrap.traverse((child) => {
-            if (child.isMesh) {
-              child.castShadow = false;
-              child.receiveShadow = false;
               child.material = processWeaponMaterial(child.material);
-              // Restore green glow for inventory items
               if (child.material) {
-                child.material.emissive = new THREE.Color(0x00ff00); // Green
-                child.material.emissiveIntensity = 0.8; // Strong green glow
                 child.material.needsUpdate = true;
+                child.material.side = THREE.DoubleSide;
               }
             }
-          });
-          
-          openTrap.visible = true;
-          openTrap.updateMatrixWorld(true);
-          level2State.group.add(openTrap);
-          level2State.bearTrap = openTrap;
-          level2State.bearTrap.userData.isOpen = true;
-          level2State.bearTrap.userData.openPath = openPath;
-          
-          // Restore closed path if it was stored
-          const closedTrapData = LEVEL2_SURVIVAL_PACK_SLOTS.find(s => s.slot === "SP07" && s.type === "trap");
-          if (closedTrapData) {
-            level2State.bearTrap.userData.closedPath = closedTrapData.assetPath;
           }
-          
-          // Restore position for collision detection
-          level2State.bearTrapPosition = new THREE.Vector3(openTrap.position.x, openTrap.position.y, openTrap.position.z);
-          
-          console.log("✅ [LEVEL 2] Bear trap restored to open state");
-        })
-        .catch((error) => {
-          console.error("❌ [LEVEL 2] Failed to restore open bear trap model:", error);
-        });
-    } else if (isOpen) {
-      // Trap is already open, just ensure position is stored
-      if (level2State.bearTrap.position) {
-        level2State.bearTrapPosition = new THREE.Vector3(
-          level2State.bearTrap.position.x,
-          level2State.bearTrap.position.y,
-          level2State.bearTrap.position.z
-        );
-      }
-    }
-  }
-  
-  resetLevel2RiddleState();
-}
-
-function isPointInsideBounds(point, bounds) {
-  return (
-    point.x >= bounds.minX &&
-    point.x <= bounds.maxX &&
-    point.z >= bounds.minZ &&
-    point.z <= bounds.maxZ
-  );
-}
-
-function resetLevel2RiddleState() {
-  level2RiddleState.step0Complete = false;
-  level2RiddleState.step0StandingSoundPlayed = false;
-  level2RiddleState.triggerBlockTimer = 0;
-  if (level2RiddleState.triggerBlock) {
-    level2RiddleState.triggerBlock.visible = false;
-  }
-  if (level2RiddleState.triggerBlockVisual) {
-    level2RiddleState.triggerBlockVisual.visible = true;
-    const restY = level2RiddleState.triggerBlockVisual.userData?.restY ?? level2RiddleState.triggerBlockVisual.position.y;
-    level2RiddleState.triggerBlockVisual.position.y = restY;
-    level2RiddleState.triggerBlockTargetY = restY;
-  } else {
-    level2RiddleState.triggerBlockTargetY = 0;
-  }
-  level2RiddleState.leverPressed = false;
-  level2RiddleState.leverHintShown = false;
-  level2RiddleState.galleryUnlocked = false;
-  if (level2RiddleState.lever) {
-    level2RiddleState.lever.visible = false;
-    setLevel2LeverState(false);
-  }
-  clearLevel2WeaponDisplays();
-  level2RiddleState.step0TraitUnlocked = false;
-  level2RiddleState.step1TraitUnlocked = false;
-  level2RiddleState.step2TraitUnlocked = false;
-  level2RiddleState.step2Complete = false;
-}
-
-// 🚀 LEVEL 2 PERFORMANCE OPTIMIZATIONS (December 16, 2025):
-// - Frustum culling enabled for all monster preview statues (40+ models)
-// - Frustum culling enabled for all weapon models (100+ models)
-// - Debug logging disabled by default (was causing massive FPS drops)
-// - Climb check optimized (only checks collisionMesh, not 144+ scene objects)
-// - All excessive console.log statements disabled via DEBUG_SETTINGS flags
-// Expected FPS improvement: 10-20 FPS → 60 FPS (or close to it)
-function updateLevel2(delta) {
-  if (!level2State.built || currentLevel !== LEVEL_IDS.LEVEL2) return;
-  
-  // 🚨 CRITICAL PERFORMANCE FIX (December 30, 2025): EXTREME distance-based culling for static models
-  // Models are static (only load once), but we need to hide MOST models to get acceptable FPS
-  // Only render models within 25 units - this dramatically reduces draw calls from 70+ to ~5-15 visible models
-  // Run IMMEDIATELY on first frame, then check every 2 seconds - models are static so they don't need frequent visibility updates
-  // 🚨 FIX: Initialize timer properly - use flag to track first run instead of negative values
-  if (level2State.lastDistanceCheck === undefined) {
-    level2State.lastDistanceCheck = 0; // Start at 0 for first check
-    level2State.distanceCheckFirstRun = true; // Flag for first run
-  }
-  
-  // Run cull on first frame OR every 2 seconds
-  const shouldRunCull = level2State.distanceCheckFirstRun || level2State.lastDistanceCheck >= 2.0;
-  
-  if (shouldRunCull) {
-    if (level2State.distanceCheckFirstRun) {
-      level2State.distanceCheckFirstRun = false; // Clear flag after first run
-    }
-    if (level2State.lastDistanceCheck >= 2.0) {
-      level2State.lastDistanceCheck = 0; // Reset timer
-    }
-    
-    const maxRenderDistanceSquared = 25 * 25; // EXTREME culling - only 25 units
-    const cameraPosition = camera.position;
-    
-    // Use previewModels array (much faster than traversal) - only check preview models
-    const previewModels = level2State.previewModels;
-    for (let i = 0; i < previewModels.length; i++) {
-      const model = previewModels[i];
-      if (model && model.position) {
-        const dx = model.position.x - cameraPosition.x;
-        const dy = model.position.y - cameraPosition.y;
-        const dz = model.position.z - cameraPosition.z;
-        const distanceSquared = dx * dx + dy * dy + dz * dz;
-        // Hide models beyond distance - frustum culling will handle the rest
-        model.visible = distanceSquared <= maxRenderDistanceSquared;
-      }
-    }
-    
-    // Also cull weapon models (they're static too)
-    const weaponModelArrays = [
-      level2State.primaryWeaponModels || [],
-      level2State.accessoryModels || [],
-      level2State.sciFiModels || [],
-      level2State.survivalModels || [],
-      level2State.oldSchoolModels || []
-    ];
-    
-    for (let arrIdx = 0; arrIdx < weaponModelArrays.length; arrIdx++) {
-      const models = weaponModelArrays[arrIdx];
-      for (let i = 0; i < models.length; i++) {
-        const model = models[i];
-        if (model && model.position) {
-          const dx = model.position.x - cameraPosition.x;
-          const dy = model.position.y - cameraPosition.y;
-          const dz = model.position.z - cameraPosition.z;
-          const distanceSquared = dx * dx + dy * dy + dz * dz;
-          model.visible = distanceSquared <= maxRenderDistanceSquared;
         }
-      }
-    }
-  }
-  
-  // Always increment timer (only runs cull when needed)
-  level2State.lastDistanceCheck += delta;
-  
-  updateLevel2Step0(delta);
-  
-  // Check bear trap collision (deadly trap) - always check, even before Step 0
-  // The trap should work regardless of riddle progress
-  if (level2State.bearTrap && !level2State.bearTrapTriggered) {
-    checkLevel2BearTrapCollision();
-  }
-  
-  if (!level2RiddleState.step0Complete) {
-    return;
-  }
-  if (level2RiddleState.lever && !level2RiddleState.lever.visible) {
-    level2RiddleState.lever.visible = true;
-    if (!level2RiddleState.leverHintShown) {
-      showLevel2LeverToast("A lever appeared at the far wall. Pull it.");
-      level2RiddleState.leverHintShown = true;
-    }
-  }
-  
-  const playerCenter = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-  let newlyVisited = false;
-  for (const zone of level2State.inspectionZones) {
-    if (!zone.visited && isPointInsideBounds(playerCenter, zone.bounds)) {
-      zone.visited = true;
-      newlyVisited = true;
-      // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-      if (DEBUG_SETTINGS.logLevel2Zones) {
-        console.log(`🧱 [LEVEL 2] ${zone.label} inspected.`);
-      }
-    }
-  }
-
-  // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-  if (newlyVisited && DEBUG_SETTINGS.logLevel2Zones) {
-    const visitedCount = level2State.inspectionZones.filter((zone) => zone.visited).length;
-    console.log(`🧱 [LEVEL 2] Rows inspected: ${visitedCount}/${level2State.inspectionZones.length}`);
-  }
-
-  updateLevel2InspectionHud();
-
-  const allZonesVisited = level2State.inspectionZones.length > 0 &&
-    level2State.inspectionZones.every((zone) => zone.visited);
-
-  if (allZonesVisited && !level2RiddleState.step2Complete) {
-    completeLevel2Step2();
-  }
-
-  if (level2RiddleState.step2Complete && !level2State.portalActive) {
-    activateLevel2Portal();
-  }
-
-  if (level2State.portalActive && level2State.portal) {
-    handleLevel2PortalProximity(playerCenter, delta);
-  }
+      });
+      
+      trap.frustumCulled = false;
+      trap.visible = true;
+      trap.updateMatrixWorld(true);
+      
+      scene.add(trap);
+      level1State.bearTrap = trap;
+      
+      console.log("✅ [LEVEL 1] Bear trap created (open state) at:", trap.position);
+    })
+    .catch((error) => {
+      console.error("❌ [LEVEL 1] Failed to load bear trap model:", error);
+      level1State.bearTrap = null;
+      level1State.bearTrapPosition = null;
+    });
 }
 
-function restartLevel2() {
-  // CRITICAL: Cleanup ALL levels first to ensure clean state
-  cleanupAllLevels();
-  
-  // CRITICAL: Hide Level 1 instanced meshes (they're added directly to scene, not in a group)
-  // This prevents Level 1 blocks from being visible in the distance
-  scene.children.forEach(child => {
-    if (child instanceof THREE.InstancedMesh && child !== collisionMesh) {
-      child.visible = false;
-    }
-  });
-  
-  if (!level2State.built) {
-    buildLevel2WhiteRoom();
-  }
-  resetLevel2Progress();
-  currentLevel = LEVEL_IDS.LEVEL2;
-  
-  // CRITICAL: Ensure group is in scene before making it visible
-  if (!scene.children.includes(level2State.group)) {
-    scene.add(level2State.group);
-    console.log("✅ [LEVEL 2] Added level2State.group to scene during restart");
-  }
-  
-  level2State.group.visible = true;
-  applyLevelEnvironment(LEVEL_IDS.LEVEL2);
-  setPlayerFeetPosition(level2Config.spawnPosition.clone());
-  // Reset camera to first-person view (no weapon, no joysticks)
-  setCameraMode(0); // 0 = first-person
-  ensureBackgroundMusicForCurrentLevel(true);
-  showLevel2IntroToast();
-  
-  // CRITICAL: Restore game state after restart
-  restoreGameStateAfterWarp();
-  
-  console.log("🔄 [LEVEL 2] Restarted The Spawn from the beginning.");
-}
-
-function completeLevel2Step2() {
-  if (level2RiddleState.step2Complete) return;
-  level2RiddleState.step2Complete = true;
-  hideLevel2InspectionHud();
-  if (!level2RiddleState.step2TraitUnlocked) {
-    unlockLevel2Trait(LEVEL2_STEP2_TRAIT, "Level 2 Step 2");
-  }
-  awardLevel2DspoincReward("CHEESE_TEMPLE_LEVEL2_STEP2", 120, "Level 2 Step 2");
-  showLevel2PortalHint();
-  console.log("🧩 [LEVEL 2] Step 2 complete — all galleries inspected.");
-  activateLevel2Portal();
-}
-
-function activateLevel2Portal() {
-  if (level2State.portalActive) return;
-  level2State.portalActive = true;
-  if (!level2State.portal) {
-    level2State.portal = createLevel2Portal();
-  }
-  level2State.portal.visible = true;
-  console.log("🚪 [LEVEL 2] Exit portal activated. Proceed to the back wall.");
-}
-
-function createLevel2Portal() {
-  const position = level2Config.portalPosition.clone();
-  const portal = createPortalMesh({
-    position,
-    width: RIDDLE3_PORTAL_SCALE,
-    height: RIDDLE3_PORTAL_SCALE,
-    depth: 2,
-    rotationY: Math.PI,
-    parent: level2State.group,
-    visible: false
-  });
-  portal.userData.levelId = "CHEESE_TEMPLE_LEVEL_2";
-  return portal;
-}
-
-function handleLevel2PortalProximity(playerPos, delta) {
-  if (!level2State.portal) return;
-  const portalPos = level2State.portal.position;
-  const horizontalDistance = Math.sqrt(
-    Math.pow(playerPos.x - portalPos.x, 2) + Math.pow(playerPos.z - portalPos.z, 2)
-  );
-  const verticalDistance = Math.abs(playerPos.y - portalPos.y);
-  const canEnter =
-    horizontalDistance < RIDDLE3_PORTAL_ENTER_DISTANCE && verticalDistance < 3.0;
-
-  const suctionRadius = 6.0;
-  const suctionStrength = 16.0;
-  if (!canEnter && horizontalDistance < suctionRadius) {
-    const pullDir = new THREE.Vector3().subVectors(portalPos, playerPos);
-    pullDir.y = 0;
-    if (pullDir.lengthSq() > 0.0001) {
-      pullDir.normalize();
-      playerVelocity.addScaledVector(pullDir, suctionStrength * delta);
-    }
-  }
-
-  if (canEnter) {
-    showLevel2CompletionScreen();
-  }
-}
-
-function showLevel2CompletionScreen() {
-  // Use GUI System if available
-  if (guiSystem && typeof guiSystem.showLevel2CompletionScreen === 'function') {
-    guiSystem.showLevel2CompletionScreen();
+function createLevel1Chests(spawnData, blockSize) {
+  if (!chestSystem) {
+    console.warn("⚠️ [LEVEL 1] Chest system not initialized");
     return;
   }
   
-  // Legacy fallback
-  if (level2State.completionScreenShown) return;
-  hideLevel2CompletionScreen(false);
-  level2State.completionScreenShown = true;
-  // Play level up sound (same as Level 1)
-  playLevelUpSound();
-  if (!isGamePaused) {
-    togglePause(true);
-  }
-  level2CompletionScreen = document.createElement("div");
-  Object.assign(level2CompletionScreen.style, {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "column",
-    gap: "18px",
-    background: "rgba(5, 7, 16, 0.95)",
-    backdropFilter: "blur(8px)",
-    zIndex: "1004",
-    color: "#fef3c7",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    pointerEvents: "auto",
-    cursor: "default"
-  });
-
-  const panel = document.createElement("div");
-  Object.assign(panel.style, {
-    background: "linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    borderRadius: "16px",
-    padding: "40px 48px",
-    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 224, 102, 0.3)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    minWidth: "320px",
-    maxWidth: "90vw",
-    textAlign: "center"
-  });
-
-  const title = document.createElement("div");
-  title.textContent = "🎉 LEVEL 2 COMPLETE! 🎉";
-  Object.assign(title.style, {
-    fontSize: "clamp(24px, 5vw, 32px)",
-    fontWeight: "700",
-    color: "#ffe066",
-    marginBottom: "12px",
-    textShadow: "0 0 20px rgba(255, 224, 102, 0.6)"
-  });
-  panel.appendChild(title);
-
-  const subtitle = document.createElement("div");
-  subtitle.textContent = "The Spawn - Level 2";
-  Object.assign(subtitle.style, {
-    fontSize: "clamp(14px, 3vw, 18px)",
-    color: "#cbd5f5",
-    marginBottom: "24px"
-  });
-  panel.appendChild(subtitle);
-
-  const message = document.createElement("div");
-  message.textContent = "All weapons and monsters logged. The portal hums with energy.";
-  Object.assign(message.style, {
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    color: "#e2e8f0",
-    marginBottom: "32px",
-    lineHeight: "1.6",
-    maxWidth: "480px"
-  });
-  panel.appendChild(message);
-
-  const buttonContainer = document.createElement("div");
-  Object.assign(buttonContainer.style, {
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-    width: "100%"
-  });
-
-  const nextBtn = document.createElement("button");
-  nextBtn.textContent = "🚀 Proceed to Level 3";
-  Object.assign(nextBtn.style, {
-    padding: "14px 24px",
-    borderRadius: "10px",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    background: "rgba(255, 224, 102, 0.15)",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s",
-    textShadow: "0 0 10px rgba(255, 224, 102, 0.5)"
-  });
-  nextBtn.addEventListener("mouseenter", () => {
-    nextBtn.style.background = "rgba(255, 224, 102, 0.3)";
-    nextBtn.style.borderColor = "rgba(255, 224, 102, 0.8)";
-    nextBtn.style.transform = "scale(1.05)";
-  });
-  nextBtn.addEventListener("mouseleave", () => {
-    nextBtn.style.background = "rgba(255, 224, 102, 0.15)";
-    nextBtn.style.borderColor = "rgba(255, 224, 102, 0.5)";
-    nextBtn.style.transform = "scale(1)";
-  });
-  nextBtn.addEventListener("click", () => {
-    hideLevel2CompletionScreen(false);
-    warpToLevel3();
-  });
-  buttonContainer.appendChild(nextBtn);
-
-  const restartBtn = document.createElement("button");
-  restartBtn.textContent = "↩ Back to Level 1";
-  Object.assign(restartBtn.style, {
-    padding: "14px 24px",
-    borderRadius: "10px",
-    border: "2px solid rgba(203, 213, 245, 0.4)",
-    background: "rgba(203, 213, 245, 0.1)",
-    color: "#cbd5f5",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s"
-  });
-  restartBtn.addEventListener("mouseenter", () => {
-    restartBtn.style.background = "rgba(203, 213, 245, 0.2)";
-    restartBtn.style.borderColor = "rgba(203, 213, 245, 0.6)";
-    restartBtn.style.transform = "scale(1.05)";
-  });
-  restartBtn.addEventListener("mouseleave", () => {
-    restartBtn.style.background = "rgba(203, 213, 245, 0.1)";
-    restartBtn.style.borderColor = "rgba(203, 213, 245, 0.4)";
-    restartBtn.style.transform = "scale(1)";
-  });
-  restartBtn.addEventListener("click", () => {
-    hideLevel2CompletionScreen(false);
-    restartLevel1();
-  });
-  buttonContainer.appendChild(restartBtn);
-
-  const stayBtn = document.createElement("button");
-  stayBtn.textContent = "🧀 Stay in Level 2";
-  Object.assign(stayBtn.style, {
-    padding: "14px 24px",
-    borderRadius: "10px",
-    border: "2px solid rgba(148, 163, 184, 0.4)",
-    background: "rgba(148, 163, 184, 0.1)",
-    color: "#e2e8f0",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s"
-  });
-  stayBtn.addEventListener("mouseenter", () => {
-    stayBtn.style.background = "rgba(148, 163, 184, 0.2)";
-    stayBtn.style.borderColor = "rgba(148, 163, 184, 0.7)";
-    stayBtn.style.transform = "scale(1.05)";
-  });
-  stayBtn.addEventListener("mouseleave", () => {
-    stayBtn.style.background = "rgba(148, 163, 184, 0.1)";
-    stayBtn.style.borderColor = "rgba(148, 163, 184, 0.4)";
-    stayBtn.style.transform = "scale(1)";
-  });
-  stayBtn.addEventListener("click", () => {
-    hideLevel2CompletionScreen(false);
-    restartLevel2();
-  });
-  buttonContainer.appendChild(stayBtn);
-
-  panel.appendChild(buttonContainer);
-  level2CompletionScreen.appendChild(panel);
-  document.body.appendChild(level2CompletionScreen);
-}
-
-function hideLevel2CompletionScreen(resumeGame = true) {
-  if (level2CompletionScreen && document.body.contains(level2CompletionScreen)) {
-    document.body.removeChild(level2CompletionScreen);
-  }
-  level2CompletionScreen = null;
-  level2State.completionScreenShown = false;
-  if (resumeGame && isGamePaused) {
-    togglePause(false);
-  }
-}
-
-function showRiddleToast(message, options = {}) {
-  // Use GUI System if available, otherwise fallback to legacy implementation
-  if (guiSystem && typeof guiSystem.showToast === 'function') {
-    return guiSystem.showToast(message, options);
-  }
+  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
+  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
+  const chestY = 1.0;
   
-  // Legacy fallback implementation (for backwards compatibility during initialization)
-  const { id = null, duration = 5500 } = options;
-  if (id && activeRiddleToasts.has(id)) {
-    const existing = activeRiddleToasts.get(id);
-    if (existing && document.body.contains(existing)) {
-      document.body.removeChild(existing);
-    }
-    activeRiddleToasts.delete(id);
-  }
-  const toast = document.createElement("div");
-  toast.textContent = message;
-  Object.assign(toast.style, {
-    position: "fixed",
-    top: "32px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    padding: "18px 32px",
-    borderRadius: "16px",
-    background: "rgba(15, 23, 42, 0.92)",
-    border: "1px solid rgba(255, 224, 102, 0.35)",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "15px",
-    fontWeight: "600",
-    zIndex: "100001",
-    boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
-    letterSpacing: "0.4px",
-    textTransform: "uppercase",
-    textAlign: "center",
-    pointerEvents: "none"
+  console.log("🎁 [LEVEL 1] Creating chests...");
+  
+  const chest1X = spawnX - 5;
+  const chest1Z = spawnZ + 10;
+  const chest1Position = new THREE.Vector3(chest1X, chestY, chest1Z);
+  
+  chestSystem.addChest(LEVEL_IDS.LEVEL1, {
+    id: 'chest_001',
+    type: 'chest2',
+    position: chest1Position,
+    dspoincAmount: 100,
+    levelId: 'CHEESE_TEMPLE_LEVEL1'
   });
-  document.body.appendChild(toast);
-  if (id) {
-    activeRiddleToasts.set(id, toast);
-  }
+  
   setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.transition = "opacity 0.6s ease-out";
+    const chest2X = 35;
+    const chest2Z = 50;
+    const chest2Y = chestY;
+    const chest2Position = new THREE.Vector3(chest2X, chest2Y, chest2Z);
+    
+    chestSystem.addChest(LEVEL_IDS.LEVEL1, {
+      id: 'chest_002',
+      type: 'chest2',
+      position: chest2Position,
+      dspoincAmount: 250,
+      levelId: 'CHEESE_TEMPLE_LEVEL1'
+    });
+    
     setTimeout(() => {
-      if (document.body.contains(toast)) {
-        document.body.removeChild(toast);
-      }
-      if (id && activeRiddleToasts.get(id) === toast) {
-        activeRiddleToasts.delete(id);
-      }
-    }, 600);
-  }, duration);
-  return toast;
-}
-
-function showLevel2IntroToast() {
-  if (level2State.introShown) return;
-  level2State.introShown = true;
-  if (level2State.introToastElement && document.body.contains(level2State.introToastElement)) {
-    document.body.removeChild(level2State.introToastElement);
-  }
-  level2State.introToastElement = showRiddleToast(
-    "The Spawn — The room is silent. Something waits underfoot.",
-    { id: "level2_intro", duration: 6000 }
-  );
-}
-
-function showLevel2Step1Intro() {
-  if (level2State.step1IntroShown) return;
-  level2State.step1IntroShown = true;
-  showRiddleToast("Cheese stone awakened — pull the rear lever to unlock the gallery.", {
-    id: "level2_step0_hint",
-    duration: 6000
-  });
-}
-
-function showLevel2LeverHint() {
-  showRiddleToast("Lever activated — inspect every weapon & accessory row.", {
-    id: "level2_step1_hint",
-    duration: 6000
-  });
-}
-
-function showLevel2PortalHint() {
-  showRiddleToast("All displays logged — portal unlocked at the back wall.", {
-    id: "level2_step2_hint",
-    duration: 6000
-  });
-}
-
-function ensureLevel2InspectionHud() {
-  // Use GUI System if available
-  if (guiSystem && typeof guiSystem.ensureLevel2InspectionHud === 'function') {
-    return guiSystem.ensureLevel2InspectionHud();
-  }
-  
-  // Legacy fallback
-  if (level2InspectionHud) return level2InspectionHud;
-  level2InspectionHud = document.createElement("div");
-  level2InspectionHud.id = "level2InspectionHud";
-  Object.assign(level2InspectionHud.style, {
-    position: "fixed",
-    top: "28px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    minWidth: "320px",
-    maxWidth: "80vw",
-    padding: "14px 20px",
-    borderRadius: "12px",
-    background: "rgba(15, 23, 42, 0.92)",
-    border: "1px solid rgba(255, 224, 102, 0.4)",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "14px",
-    boxShadow: "0 12px 30px rgba(0, 0, 0, 0.35)",
-    zIndex: "100002",
-    display: "none",
-    flexDirection: "column",
-    gap: "6px",
-    textAlign: "center"
-  });
-  const title = document.createElement("div");
-  title.id = "level2InspectionHudTitle";
-  title.style.fontWeight = "700";
-  title.style.letterSpacing = "0.5px";
-  level2InspectionHud.appendChild(title);
-
-  const progressLine = document.createElement("div");
-  progressLine.id = "level2InspectionHudProgress";
-  progressLine.style.fontSize = "13px";
-  progressLine.style.color = "#fef9c3";
-  level2InspectionHud.appendChild(progressLine);
-
-  const remainingLine = document.createElement("div");
-  remainingLine.id = "level2InspectionHudRemaining";
-  remainingLine.style.fontSize = "12px";
-  remainingLine.style.color = "rgba(255, 224, 102, 0.85)";
-  level2InspectionHud.appendChild(remainingLine);
-
-  document.body.appendChild(level2InspectionHud);
-  return level2InspectionHud;
-}
-
-function updateLevel2InspectionHud() {
-  // Use GUI System if available
-  if (guiSystem && typeof guiSystem.updateLevel2InspectionHud === 'function') {
-    guiSystem.updateLevel2InspectionHud();
-    return;
-  }
-  
-  // Legacy fallback
-  if (!level2RiddleState.step0Complete || !level2RiddleState.leverPressed) {
-    hideLevel2InspectionHud();
-    return;
-  }
-  if (level2State.portalActive || level2State.completionScreenShown) {
-    hideLevel2InspectionHud();
-    return;
-  }
-  const totalZones = level2State.inspectionZones.length;
-  if (!totalZones) {
-    hideLevel2InspectionHud();
-    return;
-  }
-  const visitedCount = level2State.inspectionZones.filter((zone) => zone.visited).length;
-  const remainingLabels = level2State.inspectionZones
-    .filter((zone) => !zone.visited)
-    .map((zone) => zone.label);
-
-  const hud = ensureLevel2InspectionHud();
-  const title = hud.querySelector("#level2InspectionHudTitle");
-  const progress = hud.querySelector("#level2InspectionHudProgress");
-  const remaining = hud.querySelector("#level2InspectionHudRemaining");
-
-  if (title) {
-    title.textContent = "Step 2 — Inspect Every Display";
-  }
-  if (progress) {
-    progress.textContent = `${visitedCount} / ${totalZones} galleries logged`;
-  }
-  if (remaining) {
-    remaining.textContent =
-      remainingLabels.length === 0
-        ? "All aisles documented — portal manifesting..."
-        : `Still missing: ${remainingLabels.join(", ")}`;
-  }
-  hud.style.display = "flex";
-}
-
-function hideLevel2InspectionHud(removeFromDom = false) {
-  // Use GUI System if available
-  if (guiSystem && typeof guiSystem.hideLevel2InspectionHud === 'function') {
-    guiSystem.hideLevel2InspectionHud(removeFromDom);
-    return;
-  }
-  
-  // Legacy fallback
-  if (!level2InspectionHud) return;
-  if (removeFromDom && document.body.contains(level2InspectionHud)) {
-    document.body.removeChild(level2InspectionHud);
-    level2InspectionHud = null;
-    return;
-  }
-  level2InspectionHud.style.display = "none";
-}
-
-function updateLevel2Step0(delta) {
-  const isStandingOnTrigger = checkLevel2TriggerBlockStanding();
-  
-  if (isStandingOnTrigger) {
-    if (!level2RiddleState.step0StandingSoundPlayed) {
-      playCheesePlatformSound();
-      level2RiddleState.step0StandingSoundPlayed = true;
-    }
-    level2RiddleState.triggerBlockTimer += delta;
-    if (level2RiddleState.triggerBlockTimer >= RIDDLE_AIM_TIME && !level2RiddleState.step0Complete) {
-      level2RiddleState.step0Complete = true;
-      level2RiddleState.triggerBlockTimer = RIDDLE_AIM_TIME;
-      if (level2RiddleState.triggerBlock) {
-        level2RiddleState.triggerBlock.visible = false;
-      }
-      if (level2RiddleState.triggerBlockVisual) {
-        level2RiddleState.triggerBlockVisual.visible = false;
-      }
-      showLevel2Step1Intro();
-      if (!level2RiddleState.step0TraitUnlocked) {
-        unlockLevel2Trait(LEVEL2_STEP0_TRAIT, "Level 2 Step 0");
-      }
-      awardLevel2DspoincReward("CHEESE_TEMPLE_LEVEL2_STEP0", 100, "Level 2 Step 0");
-      console.log("🧩 [LEVEL 2] Step 0 complete! Riddle hunt unlocked.");
-    }
-    } else {
-    level2RiddleState.triggerBlockTimer = Math.max(0, level2RiddleState.triggerBlockTimer - delta * 0.5);
-    level2RiddleState.step0StandingSoundPlayed = false;
-  }
-  const targetY = isStandingOnTrigger && level2RiddleState.triggerBlockVisual
-    ? level2RiddleState.triggerBlockVisual.userData?.pressedY ?? level2RiddleState.triggerBlockVisual.position.y
-    : level2RiddleState.triggerBlockVisual?.userData?.restY ?? level2RiddleState.triggerBlockVisual?.position.y;
-  level2RiddleState.triggerBlockTargetY = targetY;
-  updateLevel2TriggerBlockVisual(delta);
-}
-
-function updateLevel2TriggerBlockVisual(delta) {
-  const visual = level2RiddleState.triggerBlockVisual;
-  if (!visual || !visual.visible) return;
-  const targetY = level2RiddleState.triggerBlockTargetY ?? visual.position.y;
-  const speed = visual.userData?.lerpSpeed ?? 6;
-  const t = Math.min(1, delta * speed);
-  const newY = THREE.MathUtils.lerp(visual.position.y, targetY, t);
-  visual.position.y = newY;
-}
-
-async function warpToLevel2() {
-  if (currentLevel === LEVEL_IDS.LEVEL2) return;
-  
-  await warpToLevelWithLoading(LEVEL_IDS.LEVEL2, "Level 2", async () => {
-  // CRITICAL: Cleanup ALL levels first to ensure clean state
-  cleanupAllLevels();
-  
-  // CRITICAL: Hide Level 1 instanced meshes (they're added directly to scene, not in a group)
-  // This prevents Level 1 blocks from being visible in the distance
-  scene.children.forEach(child => {
-    if (child instanceof THREE.InstancedMesh && child !== collisionMesh) {
-      child.visible = false;
-    }
-  });
-  
-  // CRITICAL: Build level if not built (January 4, 2026)
-  // Do this FIRST before creating chests to ensure level is ready
-  if (!level2State.built) {
-    buildLevel2WhiteRoom();
-    // Small delay to ensure level build completes before creating chests
-    await new Promise(resolve => setTimeout(resolve, 50));
-  }
-  
-  // CRITICAL: ALWAYS create chests for Level 2, regardless of whether level was just built or already existed (January 4, 2026)
-  // cleanupAllLevels() clears all chests, so we must ALWAYS recreate them when warping to Level 2
-  // This ensures chests are ALWAYS present, whether it's first load or warp back from another level
-  console.log("🎁 [LEVEL 2] Ensuring chests are created (always recreate after cleanupAllLevels)...");
-  
-  // Load opened chests from database before creating chests
-  if (resolvedDiscordId && chestSystem) {
-    console.log("📥 [LEVEL 2] Loading opened chests from database...");
-    try {
-      await chestSystem.loadOpenedChests(resolvedDiscordId, API_BASE_URL);
-    } catch (error) {
-      console.error("❌ [LEVEL 2] Error loading opened chests, continuing anyway:", error);
-    }
-  }
-  
-  // Create chests - this function clears existing chests first, so it's safe to call multiple times
-  createLevel2Chests();
-  
-  // CRITICAL: Verify chests were created (with retry if missing) (January 4, 2026)
-  await new Promise(resolve => setTimeout(resolve, 200)); // Wait for chests to start loading
-  const level2Chests = chestSystem ? chestSystem.getChestsForLevel(LEVEL_IDS.LEVEL2) : null;
-  if (!level2Chests || level2Chests.size === 0) {
-    console.warn("⚠️ [LEVEL 2] Chests not found after creation, retrying...");
-    // Retry creating chests
-    if (chestSystem) {
-      createLevel2Chests();
-    }
-  } else {
-    console.log(`✅ [LEVEL 2] Chests verified: ${level2Chests.size} chest(s) found`);
-    // Log chest IDs for debugging
-    const chestIds = Array.from(level2Chests.keys());
-    console.log(`🎁 [LEVEL 2] Chest IDs:`, chestIds);
-  }
-  
-  // CRITICAL: Ensure weapon system is hidden for Level 2 (Level 2 doesn't have weapons) (January 4, 2026)
-  if (weaponSystem && weaponSystem.weaponViewmodel) {
-    weaponSystem.weaponViewmodel.visible = false;
-    if (camera && camera.children.includes(weaponSystem.weaponViewmodel)) {
-      camera.remove(weaponSystem.weaponViewmodel);
-      console.log("🔫 [LEVEL 2] Removed weapon system weaponViewmodel (Level 2 doesn't have weapons)");
-    }
-  }
-  
-  resetLevel2Progress();
-  currentLevel = LEVEL_IDS.LEVEL2;
-  
-  // CRITICAL: Ensure group is in scene before making it visible
-  if (!scene.children.includes(level2State.group)) {
-    scene.add(level2State.group);
-    console.log("✅ [LEVEL 2] Added level2State.group to scene during warp");
-  }
-  
-  level2State.group.visible = true;
-  
-  // 🚨 CRITICAL PERFORMANCE FIX: Ensure collision mesh is hidden for Level 2
-  // Level 2 uses simple math-based collision detection, not the collision mesh
-  // The collision mesh from Level 1 has 2.9M vertices and should NOT be processed in Level 2
-  if (collisionMesh) {
-    collisionMesh.visible = false; // Already invisible, but ensure it's set
-    // Note: We keep it in scene for Level 1, but it won't be rendered or processed in Level 2
-  }
-  
-  // 🚨 CRITICAL PERFORMANCE FIX: Disable shadows for Level 2 (major FPS improvement!)
-  // Level 2 has 100+ preview models - shadows cause massive performance issues
-  // Save previous shadow state to restore when leaving Level 2
-  if (!level2State.shadowMapWasEnabled) {
-    level2State.shadowMapWasEnabled = renderer.shadowMap.enabled;
-  }
-  renderer.shadowMap.enabled = false;
-  console.log("⚡ [LEVEL 2] Shadows disabled for performance (was:", level2State.shadowMapWasEnabled, ")");
-  
-  // CRITICAL: Await environment initialization (grass + sky systems)
-  await applyLevelEnvironment(LEVEL_IDS.LEVEL2);
-  
-  // CRITICAL: Ensure sky system is visible after environment is applied
-  if (skySystem) {
-    skySystem.setVisible(true);
-    console.log("🌌 [LEVEL 2] Sky system visibility ensured");
-  }
-  
-  // CRITICAL: Initialize shadow camera helper if enabled (January 4, 2026)
-  // This ensures the helper works correctly when warping to Level 2 without needing to toggle
-  setTimeout(() => {
-    initializeShadowCameraHelperAtLevelStart();
-  }, 100); // Small delay to ensure sky system is fully initialized
-  
-  // Reset camera to first-person view (no weapon, no joysticks)
-  setCameraMode(0); // 0 = first-person
-  
-  // Debug mode: Start at end of floor with gallery unlocked (for testing weapons)
-  if (DEBUG_LEVEL2_GALLERY_START) {
-    // Auto-complete Step 0 and Step 1
-    level2RiddleState.step0Complete = true;
-    level2RiddleState.leverPressed = true;
-    if (level2RiddleState.lever) {
-      level2RiddleState.lever.visible = false;
-      setLevel2LeverState(true);
-    }
-    // Unlock gallery and spawn weapons
-    unlockLevel2WeaponGallery();
-    console.log("🧪 [DEBUG] Level 2 started with gallery unlocked - player at end of floor.");
-  } else {
-    // Normal spawn position
-    setPlayerFeetPosition(level2Config.spawnPosition.clone());
-    showLevel2IntroToast();
-    console.log("🚀 [LEVEL 2] Entered THE SPAWN. Inspect all rows to unlock the next portal.");
-  }
-  ensureBackgroundMusicForCurrentLevel(true);
-  });
-}
-
-let currentRiddleTarget = 1;
-let currentLevel2Step = 0;
-let currentLevel3Step = 0;
-let currentLevel4Step = 0;
-
-function cycleRiddleJump() {
-  if (currentLevel === LEVEL_IDS.LEVEL2) {
-    cycleLevel2Step();
-  } else if (currentLevel === LEVEL_IDS.LEVEL3) {
-    cycleLevel3Step();
-  } else if (currentLevel === LEVEL_IDS.LEVEL4) {
-    cycleLevel4Step();
-  } else {
-    // Level 1: cycle through riddles (1 → 2 → 3 → Complete Riddle 3 Steps → Portal)
-    if (currentRiddleTarget === 3) {
-      // Already on Riddle 3 - progressively complete steps
-      ensureRiddle3Assets();
-      const r3 = riddleState.riddle3;
+      const chest3X = 82;
+      const chest3Z = 39;
+      const chest3Y = 29;
+      const chest3Position = new THREE.Vector3(chest3X, chest3Y, chest3Z);
       
-      if (!r3.step1Complete) {
-        // Step 1: Press lever to activate movable block puzzle
-        r3.step1Complete = true;
-        if (r3.lever) {
-          setLeverState(true); // Press lever (ON) - works directly on r3.lever
-          r3.lever.visible = true; // Ensure lever is visible
-        }
-        // Create and show movable block and oak block if they don't exist
-        if (!r3.movableBlock || !r3.oakBlock) {
-          const spawnData = riddleState.unlockableBlock ? {
-            x: Math.floor(riddleState.unlockableBlock.position.x),
-            y: Math.floor(riddleState.unlockableBlock.position.y),
-            z: Math.floor(riddleState.unlockableBlock.position.z)
-          } : { x: 60, y: 1, z: 15 };
-          const blockSize = 1;
-          if (!r3.movableBlock) createRiddle3MovableBlock(spawnData, blockSize);
-          if (!r3.oakBlock) createRiddle3OakBlock(spawnData, blockSize);
-        }
-        if (r3.movableBlock) {
-          r3.movableBlock.visible = true;
-          if (r3.movableBlockOriginalPosition) {
-            r3.movableBlock.position.copy(r3.movableBlockOriginalPosition);
-            r3.movableBlock.updateMatrixWorld(true);
-          }
-        }
-        if (r3.oakBlock) r3.oakBlock.visible = true;
-        console.log("🧩 [LEVEL 1] G key - Riddle 3 Step 1 complete (lever pressed)");
-      } else if (!r3.step2Complete) {
-        // Step 2: Complete movable block puzzle (move to oak block)
-        r3.step2Complete = true;
-        // Create portal if it doesn't exist
-        if (!r3.portal) {
-          const spawnData = riddleState.unlockableBlock ? {
-            x: Math.floor(riddleState.unlockableBlock.position.x),
-            y: Math.floor(riddleState.unlockableBlock.position.y),
-            z: Math.floor(riddleState.unlockableBlock.position.z)
-          } : { x: 60, y: 1, z: 15 };
-          const blockSize = 1;
-          createRiddle3Portal(spawnData, blockSize);
-        }
-        // Move movable block to oak block position (simulate puzzle completion)
-        if (r3.movableBlock && r3.oakBlock) {
-          r3.movableBlock.position.copy(r3.oakBlock.position);
-          r3.movableBlock.position.y = r3.oakBlock.position.y + 0.5;
-          r3.movableBlock.updateMatrixWorld(true);
-        }
-        if (r3.portal) r3.portal.visible = true;
-        console.log("🧩 [LEVEL 1] G key - Riddle 3 Step 2 complete (portal activated)");
-      } else if (!r3.step3Complete) {
-        // Step 3: Complete riddle 3 (enter portal - triggers Level 1 completion)
-        completeRiddle3();
-        console.log("🧩 [LEVEL 1] G key - Riddle 3 Step 3 complete (Level 1 complete!)");
-      } else {
-        // Riddle 3 already complete - cycle back to Riddle 1
-        currentRiddleTarget = 1;
-        jumpToRiddle(1);
-        console.log("🧩 [LEVEL 1] G key - Riddle 3 complete, cycling back to Riddle 1");
-      }
-    } else {
-      // Cycle to next riddle
-      currentRiddleTarget = Math.min(currentRiddleTarget + 1, 3);
-      console.log(`🧩 [DEBUG] GOD Mode cycle → Riddle #${currentRiddleTarget}`);
-      jumpToRiddle(currentRiddleTarget);
-    }
-  }
-}
-
-/**
- * 🐉 Cycle through Phoenix boss behaviors (GOD Mode - B key)
- * 
- * 📝 UPDATED: December 18, 2025 - Now includes 14 patterns (was 9)
- * 
- * Cycles through all 14 behaviors in order:
- * 
- * ORIGINAL PATTERNS (1-9):
- * 1. 🔄 Flying Circle (Standard circular flight)
- * 2. ✈️ Flying Hover (Hover in place)
- * 3. 🛸 Flying Patrol (Figure-8 pattern)
- * 4. 😴 Ground Sleeping (Sleep cycle)
- * 5. 🧍 Ground Idle (Standing idle)
- * 6. 🚶 Ground Walking (Walk back and forth)
- * 7. ⚔️ Ground Attacking (Ground attack combo)
- * 8. 😡 Ground Rage (Rage cycles)
- * 9. 🎯 Combat Preparation (Land/Takeoff cycle)
- * 
- * NEW PATTERNS (10-14):
- * 10. 💀 Ground Death (Death sequence)
- * 11. 🏃 Ground Running (Fast running movement)
- * 12. 🌅 Ground Awakening (Dramatic wake up sequence)
- * 13. 🎯 Flying Dive Attack (Dive bomb from sky)
- * 14. 💥 Ground Ultimate Combo (Epic 5-hit combo)
- * 
- * Usage: Press B key in Level 6 (God Mode must be enabled)
- */
-function cyclePhoenixBehavior() {
-  if (!phoenixBoss) {
-    console.warn("🐉 [DEBUG] Phoenix boss not initialized - cannot cycle behaviors.");
-    return;
-  }
-
-  // Define all 15 behaviors in order (9 original + 6 new)
-  // 📝 UPDATED: December 18, 2025 - Added 6 new behavior patterns
-  const behaviors = [
-    'flying_circle',        // 0: 🔄 Flying Circle (Standard)
-    'flying_hover',         // 1: ✈️ Flying Hover (In Place)
-    'flying_patrol',        // 2: 🛸 Flying Patrol (Figure-8)
-    'ground_sleeping',      // 3: 😴 Ground Sleeping
-    'ground_idle',          // 4: 🧍 Ground Idle (Standing)
-    'ground_walking',       // 5: 🚶 Ground Walking
-    'ground_attacking',     // 6: ⚔️ Ground Attacking
-    'ground_rage',          // 7: 😡 Ground Rage
-    'combat_preparation',   // 8: 🎯 Combat Preparation (Land/Takeoff Cycle)
-    // NEW PATTERNS (December 18, 2025)
-    'ground_death',         // 9: 💀 Ground Death (Death sequence)
-    'ground_running',       // 10: 🏃 Ground Running (Fast movement)
-    'ground_awakening',     // 11: 🌅 Ground Awakening (Wake up sequence)
-    'flying_dive_attack',   // 12: 🎯 Flying Dive Attack (Dive bomb)
-    'ground_ultimate_combo',// 13: 💥 Ground Ultimate Combo (5-hit combo)
-    'player_hunt_combo'     // 14: 🎯 Player Hunt Combo (AI attack) ⭐ NEW!
-  ];
-
-  // Behavior display names for console logging
-  const behaviorNames = [
-    '🔄 Flying Circle',
-    '✈️ Flying Hover',
-    '🛸 Flying Patrol',
-    '😴 Ground Sleeping',
-    '🧍 Ground Idle',
-    '🚶 Ground Walking',
-    '⚔️ Ground Attacking',
-    '😡 Ground Rage',
-    '🎯 Combat Preparation',
-    // NEW (December 18, 2025)
-    '💀 Ground Death',
-    '🏃 Ground Running',
-    '🌅 Ground Awakening',
-    '🎯 Flying Dive Attack',
-    '💥 Ground Ultimate Combo',
-    '🎯 Player Hunt Combo' // ⭐ NEW!
-  ];
-
-  // Get current behavior from phoenixBoss
-  const currentBehavior = phoenixBoss.behaviorMode || 'flying_circle';
-  
-  // Find current behavior index
-  const currentIndex = behaviors.indexOf(currentBehavior);
-  
-  // If behavior not found, default to 0
-  const startIndex = currentIndex >= 0 ? currentIndex : 0;
-  
-  // Cycle to next behavior (wrap around to 0 after last)
-  const nextIndex = (startIndex + 1) % behaviors.length;
-  const nextBehavior = behaviors[nextIndex];
-  const nextBehaviorName = behaviorNames[nextIndex];
-  
-  // Set new behavior
-  phoenixBoss.setBehaviorMode(nextBehavior);
-  
-  console.log(`🐉 [DEBUG] GOD Mode Phoenix Behavior Cycle: ${behaviorNames[startIndex]} → ${nextBehaviorName} (${nextIndex + 1}/15)`);
-  
-  // Update on-screen behavior display (dev testing)
-  if (guiSystem && typeof guiSystem.updatePhoenixBehaviorDisplay === 'function') {
-    guiSystem.updatePhoenixBehaviorDisplay(nextBehaviorName, nextIndex + 1);
-  }
-  
-  // Show notification to user
-  if (guiSystem && typeof guiSystem.showNotification === 'function') {
-    guiSystem.showNotification(`🐉 Phoenix Behavior: ${nextBehaviorName}`, 2000);
-  }
-}
-
-/**
- * 🕷️ Cycle through Alien Spider boss behaviors (GOD Mode - N key)
- * 
- * Cycles through all 7 behaviors in order:
- * 
- * PATTERNS (1-7):
- * 1. 🕷️ Idle 1 (Standing idle animation 1)
- * 2. 🕷️ Idle 2 (Standing idle animation 2)
- * 3. 🚶 Walk Patrol (Walking in circle)
- * 4. 🏃 Run Patrol (Running in circle)
- * 5. ⚔️ Attack 1 (Melee attack)
- * 6. 🎯 Attack 2 (Jump attack)
- * 7. 💥 Damage Reaction (Hit reaction)
- * 
- * Usage: Press N key in Level 6 (God Mode must be enabled)
- */
-function cycleAlienSpiderBehavior() {
-  if (!alienSpiderBoss) {
-    console.warn("🕷️ [DEBUG] Alien Spider boss not initialized - cannot cycle behaviors.");
-    return;
-  }
-
-  // Define all 7 behaviors in order
-  const behaviors = [
-    'idle_1',           // 0: 🕷️ Idle 1
-    'idle_2',           // 1: 🕷️ Idle 2
-    'walk_patrol',      // 2: 🚶 Walk Patrol
-    'run_patrol',       // 3: 🏃 Run Patrol
-    'attack_1',         // 4: ⚔️ Attack 1
-    'attack_2',         // 5: 🎯 Attack 2
-    'damage_reaction'   // 6: 💥 Damage Reaction
-  ];
-
-  // Behavior display names for console logging
-  const behaviorNames = [
-    '🕷️ Idle 1',
-    '🕷️ Idle 2',
-    '🚶 Walk Patrol',
-    '🏃 Run Patrol',
-    '⚔️ Attack 1',
-    '🎯 Attack 2',
-    '💥 Damage Reaction'
-  ];
-
-  // Get current behavior from alienSpiderBoss
-  const currentBehavior = alienSpiderBoss.behaviorMode || 'idle_1';
-  
-  // Find current behavior index
-  const currentIndex = behaviors.indexOf(currentBehavior);
-  
-  // If behavior not found, default to 0
-  const startIndex = currentIndex >= 0 ? currentIndex : 0;
-  
-  // Cycle to next behavior (wrap around to 0 after last)
-  const nextIndex = (startIndex + 1) % behaviors.length;
-  const nextBehavior = behaviors[nextIndex];
-  const nextBehaviorName = behaviorNames[nextIndex];
-  
-  // Set new behavior
-  alienSpiderBoss.setBehaviorMode(nextBehavior);
-  
-  console.log(`🕷️ [DEBUG] GOD Mode Alien Spider Behavior Cycle: ${behaviorNames[startIndex]} → ${nextBehaviorName} (${nextIndex + 1}/7)`);
-  
-  // Show notification to user
-  if (guiSystem && typeof guiSystem.showNotification === 'function') {
-    guiSystem.showNotification(`🕷️ Spider Behavior: ${nextBehaviorName}`, 2000);
-  }
-}
-
-function cycleLevel2Step() {
-  currentLevel2Step = (currentLevel2Step + 1) % 3; // Cycle: 0 → 1 → 2 → 0
-  console.log(`🧩 [DEBUG] GOD Mode Level 2 → Step ${currentLevel2Step}`);
-  
-  if (currentLevel2Step === 0) {
-    // Step 0: Reset to beginning
-    resetLevel2Progress();
-    if (level2RiddleState.triggerBlock) {
-      level2RiddleState.triggerBlock.visible = false;
-    }
-    if (level2RiddleState.triggerBlockVisual) {
-      level2RiddleState.triggerBlockVisual.visible = true;
-    }
-    level2RiddleState.leverPressed = false;
-    level2RiddleState.galleryUnlocked = false;
-    level2RiddleState.step2Complete = false;
-    // Hide all weapon displays
-    level2State.primaryWeaponModels.forEach((weapon) => {
-      if (weapon && weapon.mesh) weapon.mesh.visible = false;
-    });
-    level2State.accessoryModels.forEach((accessory) => {
-      if (accessory && accessory.mesh) accessory.mesh.visible = false;
-    });
-    level2State.survivalModels.forEach((survival) => {
-      if (survival && survival.mesh) survival.mesh.visible = false;
-    });
-    level2State.oldSchoolModels.forEach((oldSchool) => {
-      if (oldSchool && oldSchool.mesh) oldSchool.mesh.visible = false;
-    });
-    level2State.sciFiModels.forEach((sciFi) => {
-      if (sciFi && sciFi.mesh) sciFi.mesh.visible = false;
-    });
-    // Reset inspection zones
-    if (level2State.inspectionZones) {
-      level2State.inspectionZones.forEach((zone) => {
-        zone.visited = false;
+      chestSystem.addChest(LEVEL_IDS.LEVEL1, {
+        id: 'chest_003',
+        type: 'chest2',
+        position: chest3Position,
+        dspoincAmount: 500,
+        levelId: 'CHEESE_TEMPLE_LEVEL1'
       });
-    }
-    console.log("🧩 [LEVEL 2] Reset to Step 0 - Find the cheese stone");
-  } else if (currentLevel2Step === 1) {
-    // Step 1: Complete Step 0, show lever
-    level2RiddleState.step0Complete = true;
-    level2RiddleState.triggerBlockTimer = RIDDLE_AIM_TIME;
-    if (level2RiddleState.triggerBlock) {
-      level2RiddleState.triggerBlock.visible = false;
-    }
-    if (level2RiddleState.triggerBlockVisual) {
-      level2RiddleState.triggerBlockVisual.visible = false;
-    }
-    if (level2RiddleState.lever) {
-      level2RiddleState.lever.visible = true;
-    }
-    
-    // CRITICAL: Unlock Step 0 trait if not already unlocked
-    if (!level2RiddleState.step0TraitUnlocked) {
-      unlockLevel2Trait(LEVEL2_STEP0_TRAIT, "Level 2 Step 0");
-      level2RiddleState.step0TraitUnlocked = true;
-      awardLevel2DspoincReward("CHEESE_TEMPLE_LEVEL2_STEP0", 100, "Level 2 Step 0");
-    }
-    
-    console.log("🧩 [LEVEL 2] Jumped to Step 1 - Pull the lever");
-  } else if (currentLevel2Step === 2) {
-    // Step 2: Complete Step 0 and 1, unlock gallery, show inspection zones
-    level2RiddleState.step0Complete = true;
-    level2RiddleState.triggerBlockTimer = RIDDLE_AIM_TIME;
-    level2RiddleState.leverPressed = true;
-    level2RiddleState.galleryUnlocked = true;
-    if (level2RiddleState.triggerBlock) {
-      level2RiddleState.triggerBlock.visible = false;
-    }
-    if (level2RiddleState.triggerBlockVisual) {
-      level2RiddleState.triggerBlockVisual.visible = false;
-    }
-    if (level2RiddleState.lever) {
-      level2RiddleState.lever.visible = true;
-    }
-    // Unlock weapon displays
-    level2State.primaryWeaponModels.forEach((weapon) => {
-      if (weapon && weapon.mesh) weapon.mesh.visible = true;
-    });
-    level2State.accessoryModels.forEach((accessory) => {
-      if (accessory && accessory.mesh) accessory.mesh.visible = true;
-    });
-    level2State.survivalModels.forEach((survival) => {
-      if (survival && survival.mesh) survival.mesh.visible = true;
-    });
-    level2State.oldSchoolModels.forEach((oldSchool) => {
-      if (oldSchool && oldSchool.mesh) oldSchool.mesh.visible = true;
-    });
-    level2State.sciFiModels.forEach((sciFi) => {
-      if (sciFi && sciFi.mesh) sciFi.mesh.visible = true;
-    });
-    
-    // CRITICAL: Unlock Step 0 and Step 1 traits if not already unlocked
-    if (!level2RiddleState.step0TraitUnlocked) {
-      unlockLevel2Trait(LEVEL2_STEP0_TRAIT, "Level 2 Step 0");
-      level2RiddleState.step0TraitUnlocked = true;
-      awardLevel2DspoincReward("CHEESE_TEMPLE_LEVEL2_STEP0", 100, "Level 2 Step 0");
-    }
-    if (!level2RiddleState.step1TraitUnlocked) {
-      unlockLevel2Trait(LEVEL2_STEP1_TRAIT, "Level 2 Step 1");
-      level2RiddleState.step1TraitUnlocked = true;
-      awardLevel2DspoincReward("CHEESE_TEMPLE_LEVEL2_STEP1", 110, "Level 2 Step 1");
-    }
-    
-    // CRITICAL: Mark all inspection zones as visited to complete Step 2
-    if (level2State.inspectionZones) {
-      level2State.inspectionZones.forEach((zone) => {
-        zone.visited = true;
-      });
-    }
-    
-    // CRITICAL: Complete Step 2 and activate portal
-    if (!level2RiddleState.step2Complete) {
-      completeLevel2Step2(); // This unlocks trait, awards DSPOINC, and activates portal
-    } else if (!level2State.portalActive) {
-      activateLevel2Portal(); // Ensure portal is active
-    }
-    
-    console.log("🧩 [LEVEL 2] Jumped to Step 2 - All displays inspected, portal activated");
-  }
-}
-
-function cycleLevel3Step() {
-  currentLevel3Step = (currentLevel3Step + 1) % 4; // Cycle: 0 → 1 → 2 → 3 → 0
-  console.log(`🧩 [DEBUG] GOD Mode Level 3 → Step ${currentLevel3Step}`);
-  
-  if (currentLevel3Step === 0) {
-    // Step 0: Reset to beginning
-    resetLevel3Progress();
-    console.log("🧩 [LEVEL 3] Reset to Step 0 - Find the cheese stone");
-  } else if (currentLevel3Step === 1) {
-    // Step 1: Complete Step 0, start Step 1 (first 5 monsters)
-    level3RiddleState.step0Complete = true;
-    level3RiddleState.currentStep = 1;
-    level3RiddleState.currentMonsterIndex = 0;
-    level3RiddleState.triggerBlockTimer = RIDDLE_AIM_TIME;
-    if (level3RiddleState.triggerBlock) {
-      level3RiddleState.triggerBlock.visible = false;
-    }
-    if (level3RiddleState.triggerBlockVisual) {
-      level3RiddleState.triggerBlockVisual.visible = false;
-    }
-    
-    // CRITICAL: Unlock Step 0 trait if not already unlocked
-    if (!level3RiddleState.step0TraitUnlocked) {
-      unlockLevel3Trait(LEVEL3_STEP0_TRAIT, "Level 3 Step 0");
-      level3RiddleState.step0TraitUnlocked = true;
-      awardLevel3DspoincReward("CHEESE_TEMPLE_LEVEL3_STEP0", 100, "Level 3 Step 0");
-    }
-    
-    // CRITICAL: Ensure group is in scene and visible before spawning
-    if (level3State.group && !scene.children.includes(level3State.group)) {
-      scene.add(level3State.group);
-      console.log("✅ [LEVEL 3] Added level3State.group to scene during G key jump");
-    }
-    if (level3State.group) {
-      level3State.group.visible = true;
-    }
-    
-    if (LEVEL3_MONSTER_QUEUE_STEP1.length > 0) {
-      console.log(`🏹 [LEVEL 3] G key jump - Calling spawnLevel3Monster with: ${LEVEL3_MONSTER_QUEUE_STEP1[0]}`);
-      spawnLevel3Monster(LEVEL3_MONSTER_QUEUE_STEP1[0]).catch((error) => {
-        console.error("❌ [LEVEL 3] Failed to spawn monster during G key jump:", error);
-      });
-    }
-    console.log("🧩 [LEVEL 3] Jumped to Step 1 - Hunt first 5 monsters");
-  } else if (currentLevel3Step === 2) {
-    // Step 2: Complete Step 1, start Step 2 (second 5 monsters)
-    level3RiddleState.step0Complete = true;
-    level3RiddleState.currentStep = 2;
-    level3RiddleState.currentMonsterIndex = 0;
-    level3RiddleState.monstersCaught = LEVEL3_MONSTERS_PER_STEP; // Mark Step 1 complete
-    
-    // CRITICAL: Unlock Step 1 trait if not already unlocked
-    if (!level3RiddleState.step1TraitUnlocked) {
-      unlockLevel3Step1Trait();
-      level3RiddleState.step1TraitUnlocked = true;
-    }
-    
-    if (LEVEL3_MONSTER_QUEUE_STEP2.length > 0) {
-      spawnLevel3Monster(LEVEL3_MONSTER_QUEUE_STEP2[0]);
-    }
-    console.log("🧩 [LEVEL 3] Jumped to Step 2 - Hunt second 5 monsters");
-  } else if (currentLevel3Step === 3) {
-    // Step 3: Complete Step 2, activate portal
-    level3RiddleState.step0Complete = true;
-    level3RiddleState.currentStep = 3;
-    level3RiddleState.monstersCaught = LEVEL3_MONSTERS_PER_STEP * 2; // Mark Step 2 complete
-    
-    // CRITICAL: Unlock Step 0, Step 1, and Step 2 traits if not already unlocked
-    if (!level3RiddleState.step0TraitUnlocked) {
-      unlockLevel3Trait(LEVEL3_STEP0_TRAIT, "Level 3 Step 0");
-      level3RiddleState.step0TraitUnlocked = true;
-      awardLevel3DspoincReward("CHEESE_TEMPLE_LEVEL3_STEP0", 100, "Level 3 Step 0");
-    }
-    if (!level3RiddleState.step1TraitUnlocked) {
-      unlockLevel3Step1Trait();
-      level3RiddleState.step1TraitUnlocked = true;
-    }
-    if (!level3RiddleState.step2TraitUnlocked) {
-      unlockLevel3Step2Trait();
-      level3RiddleState.step2TraitUnlocked = true;
-    }
-    
-    activateLevel3Portal();
-    console.log("🧩 [LEVEL 3] Jumped to Step 3 - Portal activated, all steps complete");
-  }
-}
-
-// NEW: Jump to a specific monster wave (when already in Step 2)
-function jumpToLevel4MonsterWave(waveNumber) {
-  if (!level4RiddleState.step2Active) {
-    console.warn("⚠️ [LEVEL 4] Cannot jump to monster wave - Step 2 (monster waves) not active");
-    return;
-  }
-  
-  if (waveNumber < 1 || waveNumber > LEVEL4_MONSTER_WAVES_COUNT + 1) {
-    console.error("❌ [LEVEL 4] Invalid monster wave number:", waveNumber);
-    return;
-  }
-  
-  // Clear current monsters
-  level4State.monsters.forEach((monster) => {
-    if (monster.mesh && monster.mesh.parent) {
-      monster.mesh.parent.remove(monster.mesh);
-    }
-    if (monster.mixer) {
-      monster.mixer.stopAllAction();
-    }
-  });
-  level4State.monsters = [];
-  
-  // Set the wave number
-  level4RiddleState.currentMonsterWave = waveNumber;
-  level4RiddleState.monstersDefeated = (waveNumber - 1) * LEVEL4_MONSTERS_PER_WAVE;
-  level4RiddleState.monstersInCurrentWave = 0;
-  
-  // Spawn the wave
-  console.log(`🧩 [LEVEL 4] Jumping to Monster Wave ${waveNumber}`);
-  spawnMonsterWave(waveNumber).then(() => {
-    console.log(`✅ [LEVEL 4] Jumped to Monster Wave ${waveNumber} - Monsters spawned`);
-  }).catch((error) => {
-    console.error(`❌ [LEVEL 4] Failed to spawn Monster Wave ${waveNumber}:`, error);
-  });
-}
-
-async function cycleLevel4Step() {
-  // If we're already in Step 2 (monster waves), cycle through monster waves instead
-  if (currentLevel4Step === 2 && level4RiddleState.step2Active) {
-    const nextWave = (level4RiddleState.currentMonsterWave % (LEVEL4_MONSTER_WAVES_COUNT + 1)) + 1;
-    const waveText = nextWave > LEVEL4_MONSTER_WAVES_COUNT ? "FINAL BOSS WAVE" : `MONSTER WAVE ${nextWave}`;
-    console.log(`🧩 [DEBUG] GOD Mode Level 4 → Cycling to ${waveText}`);
-    jumpToLevel4MonsterWave(nextWave);
-    return;
-  }
-  
-  currentLevel4Step = (currentLevel4Step + 1) % 4; // Cycle: 0 → 1 → 2 → 3 → 0
-  console.log(`🧩 [DEBUG] GOD Mode Level 4 → Step ${currentLevel4Step}`);
-  
-  if (currentLevel4Step === 0) {
-    // Step 0: Reset to beginning
-    // CRITICAL: Don't reset weapon system if weapons are already loaded and working
-    // Only reset riddle state, not weapon system
-    level4RiddleState.step0Complete = false;
-    level4RiddleState.step1Active = false;
-    level4RiddleState.step2Active = false;
-    level4RiddleState.cheesesCaught = 0;
-    level4RiddleState.monstersDefeated = 0;
-    level4RiddleState.currentMonsterWave = 1;
-    level4RiddleState.monstersInCurrentWave = 0;
-    
-    // Reset trigger block visibility
-    if (level4RiddleState.triggerBlock) {
-      level4RiddleState.triggerBlock.visible = true;
-    }
-    if (level4RiddleState.triggerBlockVisual) {
-      level4RiddleState.triggerBlockVisual.visible = true;
-    }
-    
-    // Clear cheeses and monsters but keep weapons loaded
-    level4State.cheeses = [];
-    if (level4State.monsters) {
-      level4State.monsters.forEach(monster => {
-        if (monster && monster.mesh) {
-          if (monster.mesh.parent) {
-            monster.mesh.parent.remove(monster.mesh);
-          }
-          if (monster.mesh.geometry) monster.mesh.geometry.dispose();
-          if (monster.mesh.material) {
-            if (Array.isArray(monster.mesh.material)) {
-              monster.mesh.material.forEach(mat => mat.dispose());
-            } else {
-              monster.mesh.material.dispose();
-            }
-          }
-        }
-      });
-      level4State.monsters = [];
-    }
-    
-    // Clean up bullets but don't reset weapon system
-    if (weaponSystem && typeof weaponSystem.cleanupBullets === 'function') {
-      weaponSystem.cleanupBullets();
-    }
-    
-    // Reset heat but keep weapons loaded
-    level4State.weaponHeat = 0;
-    level4State.isOverheated = false;
-    level4State.lastOverheatTime = 0;
-    level4State.tripleShotActive = false;
-    level4State.tripleShotBulletsRemaining = 0;
-    
-    // Hide portal
-    if (level4State.portal) {
-      level4State.portal.visible = false;
-    }
-    level4State.portalActive = false;
-    level4State.completionScreenShown = false;
-    
-    // Hide HUD
-    if (level4ProgressHUD) {
-      level4ProgressHUD.style.display = "none";
-    }
-    
-    console.log("🧩 [LEVEL 4] Reset to Step 0 - Find the cheese stone (weapons remain loaded)");
-  } else if (currentLevel4Step === 1) {
-    // Step 1: Complete Step 0, start Step 1 (cheese waves)
-    level4RiddleState.step0Complete = true;
-    level4RiddleState.step1Active = true;
-    level4RiddleState.triggerBlockTimer = RIDDLE_AIM_TIME;
-    if (level4RiddleState.triggerBlock) {
-      level4RiddleState.triggerBlock.visible = false;
-    }
-    if (level4RiddleState.triggerBlockVisual) {
-      level4RiddleState.triggerBlockVisual.visible = false;
-    }
-    
-    // CRITICAL: Force first-person mode for weapon system to work
-    if (!isFirstPerson()) {
-      console.log("🎮 [GOD MODE] Switching to first-person mode for Step 1...");
-      setCameraMode('first-person');
-      // Wait a frame for camera mode to apply
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-    
-    // CRITICAL: Create/update HUD for Step 1
-    if (!level4ProgressHUD) {
-      createLevel4ProgressHUD();
-    }
-    updateLevel4WeaponHUD();
-    
-    // CRITICAL: Ensure weapons are loaded (they should already be loaded at Level 4 start)
-    // If weapons aren't loaded yet, load them now
-        if (weaponSystem && typeof weaponSystem.loadWeapon === 'function') {
-      // CRITICAL: Check if weapon is properly loaded and attached
-      const hasWeapon = weaponSystem.weaponViewmodel !== null && 
-                       weaponSystem.camera && 
-                       weaponSystem.camera.children.includes(weaponSystem.weaponViewmodel) &&
-                       weaponSystem.weaponViewmodel.visible === true;
-      
-      if (!hasWeapon) {
-        // CRITICAL: Remove any orphaned weapon objects first
-        if (weaponSystem.weaponViewmodel) {
-          weaponSystem.removeWeapon();
-        }
-        
-        // Load slot 1 (active weapon) - CRITICAL: Use await to ensure it loads
-        console.log("🔫 [GOD MODE] Weapon not loaded or not attached, loading weapon slot 1 (active)...");
-        try {
-          const loadedWeapon = await weaponSystem.loadWeapon(1, null, false); // false = active weapon
-          if (loadedWeapon) {
-            // CRITICAL: Verify weapon is properly attached and visible
-            if (weaponSystem.camera && weaponSystem.camera.children.includes(loadedWeapon)) {
-              loadedWeapon.visible = true;
-              loadedWeapon.traverse((child) => {
-                if (child.isMesh) {
-                  child.visible = true;
-                }
-              });
-              console.log("✅ [GOD MODE] Weapon slot 1 loaded and verified");
-            } else {
-              console.error("❌ [GOD MODE] Weapon loaded but not attached to camera!");
-            }
-          } else {
-            console.error("❌ [GOD MODE] Weapon load returned null");
-          }
-        } catch (err) {
-          console.error("❌ [GOD MODE] Failed to load weapon slot 1:", err);
-        }
-      } else {
-        // CRITICAL: Ensure weapon is visible even if already loaded
-        if (weaponSystem.weaponViewmodel) {
-          weaponSystem.weaponViewmodel.visible = true;
-          weaponSystem.weaponViewmodel.traverse((child) => {
-            if (child.isMesh) {
-              child.visible = true;
-            }
-          });
-        }
-        console.log("✅ [GOD MODE] Weapon already loaded from Level 4 start, ensuring visibility");
-      }
-      
-      // Ensure slot 2 is preloaded (check if it's cached)
-      if (!weaponSystem.weapons || !weaponSystem.weapons[2]) {
-        console.log("🔫 [GOD MODE] Preloading weapon slot 2 (SF13)...");
-        weaponSystem.loadWeapon(2, null, true).then((weapon) => { // true = preload only
-          if (weapon) {
-            console.log("✅ [GOD MODE] Weapon slot 2 preloaded successfully (cached, not attached)");
-          } else {
-            console.warn("⚠️ [GOD MODE] Weapon slot 2 preload returned null");
-          }
-        }).catch(err => {
-          console.error("❌ [GOD MODE] Failed to preload weapon slot 2:", err);
-        });
-      } else {
-        console.log("✅ [GOD MODE] Weapon slot 2 already preloaded");
-      }
-        } else if (typeof loadLevel4WeaponViewmodel === 'function') {
-      // Legacy fallback
-      const hasWeapon = level4State.weaponViewmodel !== null;
-      if (!hasWeapon) {
-        await loadLevel4WeaponViewmodel(null, 1);
-        // Preload slot 2
-        loadLevel4WeaponViewmodel(null, 2).catch(err => {
-          console.warn("⚠️ [GOD MODE] Failed to preload weapon slot 2:", err);
-        });
-      }
-    }
-    
-    // CRITICAL: Request pointer lock for shooting (if not already locked and not in joystick view)
-    if (playerControls && !playerControls.getPointerLockControls().isLocked && !isJoystickView() && !isGamePaused) {
-      try {
-        playerControls.getPointerLockControls().lock();
-        console.log("🎯 [GOD MODE] Pointer lock automatically requested for Step 1");
-      } catch (err) {
-        console.warn("⚠️ [GOD MODE] Failed to request pointer lock:", err);
-      }
-    }
-    
-    spawnLevel4Cheeses();
-    console.log("🧩 [LEVEL 4] Jumped to Step 1 - Cheese waves (weapons loaded, ready to shoot)");
-  } else if (currentLevel4Step === 2) {
-    // Step 2: Complete Step 0 and Step 1, start Step 2 (monster waves)
-    level4RiddleState.step0Complete = true;
-    level4RiddleState.step1Active = false;
-    level4RiddleState.cheesesCaught = LEVEL4_CHEESES_TO_CATCH; // Mark all cheeses as caught
-    
-    // CRITICAL: Unlock Step 0 trait if not already unlocked
-    if (!level4RiddleState.step0TraitUnlocked) {
-      unlockLevel4Trait(LEVEL4_STEP0_TRAIT, "Level 4 Step 0");
-      level4RiddleState.step0TraitUnlocked = true;
-      awardLevel4DspoincReward("CHEESE_TEMPLE_LEVEL4_STEP0", 100, "Level 4 Step 0");
-    }
-    
-    // CRITICAL: Unlock Step 1 trait if not already unlocked
-    if (!level4RiddleState.step1TraitUnlocked) {
-      unlockLevel4Trait(LEVEL4_STEP1_TRAIT, "Level 4 Step 1 - Cheese Waves");
-      level4RiddleState.step1TraitUnlocked = true;
-    }
-    level4RiddleState.triggerBlockTimer = RIDDLE_AIM_TIME;
-    if (level4RiddleState.triggerBlock) {
-      level4RiddleState.triggerBlock.visible = false;
-    }
-    if (level4RiddleState.triggerBlockVisual) {
-      level4RiddleState.triggerBlockVisual.visible = false;
-    }
-    // Clear any remaining cheeses
-    level4State.cheeses.forEach((cheese) => {
-      if (cheese.mesh && cheese.mesh.parent) {
-        cheese.mesh.parent.remove(cheese.mesh);
-      }
-    });
-    level4State.cheeses = [];
-    
-    // Create HUD for monster waves if it doesn't exist
-    if (!level4ProgressHUD) {
-      createLevel4ProgressHUD();
-    }
-    
-    // Start monster waves properly
-    level4RiddleState.currentMonsterWave = 1;
-    level4RiddleState.monstersDefeated = 0;
-    level4RiddleState.monstersInCurrentWave = 0;
-    level4RiddleState.step2Active = true;
-    
-    // CRITICAL: Ensure Step 1 is deactivated to avoid interference
-    level4RiddleState.step1Active = false;
-    console.log("🔧 [LEVEL 4] Step 1 deactivated, Step 2 activated for monster waves");
-    
-    // Load weapon for monster waves (async, but don't block)
-    (async () => {
-      if (isFirstPerson()) {
-        const hasWeapon = weaponSystem ? (weaponSystem.weaponViewmodel !== null) : (level4State.weaponViewmodel !== null);
-        if (!hasWeapon) {
-          console.log("🔫 [LEVEL 4] Loading weapon for monster waves...");
-          try {
-            if (weaponSystem && typeof weaponSystem.loadWeapon === 'function') {
-              await weaponSystem.loadWeapon(1);
-            } else if (typeof loadLevel4WeaponViewmodel === 'function') {
-              await loadLevel4WeaponViewmodel(null, 1); // Legacy fallback
-            }
-            const weaponLoaded = weaponSystem ? (weaponSystem.weaponViewmodel !== null) : (level4State.weaponViewmodel !== null);
-            if (weaponLoaded) {
-              level4State.weaponViewmodel.visible = true;
-              console.log("🔫 [LEVEL 4] ✅ Weapon loaded and visible for monster waves");
-            } else {
-              console.warn("⚠️ [LEVEL 4] Weapon viewmodel is null after loading");
-            }
-          } catch (error) {
-            console.error("❌ [LEVEL 4] Failed to load weapon for monster waves:", error);
-          }
-        } else {
-          level4State.weaponViewmodel.visible = true;
-          console.log("🔫 [LEVEL 4] Weapon already loaded, made visible for monster waves");
-        }
-      } else {
-        console.log("🔫 [LEVEL 4] Not in first-person view, weapon not needed");
-      }
-    })();
-    
-    // Request pointer lock for shooting
-    if (playerControls && !playerControls.getPointerLockControls().isLocked && !isJoystickView() && !isGamePaused) {
-      try {
-        playerControls.getPointerLockControls().lock();
-        console.log("🎯 [LEVEL 4] Pointer lock requested for monster waves");
-      } catch (e) {
-        console.log("🎯 [LEVEL 4] Pointer lock request failed:", e);
-      }
-    }
-    
-    // Ensure Level 4 group is visible (should already be, but double-check)
-    if (level4State.group) {
-      level4State.group.visible = true;
-      console.log("✅ [LEVEL 4] Level 4 group is visible");
-    }
-    
-    // CRITICAL: Clear any remaining cheeses from Step 1 to avoid interference
-    level4State.cheeses.forEach((cheese) => {
-      if (cheese.mesh && cheese.mesh.parent) {
-        cheese.mesh.parent.remove(cheese.mesh);
-      }
-    });
-    level4State.cheeses = [];
-    
-    // Spawn monsters directly (no countdown when using G key)
-    console.log("🐉 [LEVEL 4] Starting monster spawn for wave", level4RiddleState.currentMonsterWave);
-    spawnMonsterWave(level4RiddleState.currentMonsterWave).then(() => {
-      console.log("✅ [LEVEL 4] Jumped to Step 2 - Monster waves - Monsters spawned successfully");
-      // Verify monsters are actually in the scene and visible
-      console.log("🐉 [LEVEL 4] Monster spawn verification:", {
-        monstersCount: level4State.monsters.length,
-        monsters: level4State.monsters.map((m, i) => ({
-          index: i,
-          name: m.path.split('/').pop(),
-          visible: m.mesh?.visible,
-          position: m.mesh?.position.toArray().map(n => n.toFixed(2)),
-          inScene: level4State.group.children.includes(m.mesh)
-        }))
-      });
-      
-      if (level4State.monsters.length === 0) {
-        console.error("❌ [LEVEL 4] WARNING: No monsters spawned even though function completed!");
-      }
-    }).catch((error) => {
-      console.error("❌ [LEVEL 4] Failed to spawn monsters:", error);
-    });
-    
-    console.log("🧩 [LEVEL 4] Jumped to Step 2 - Monster waves (spawning in background)");
-  } else if (currentLevel4Step === 3) {
-    // Step 3: Complete Step 0, Step 1, and Step 2, activate portal
-    level4RiddleState.step0Complete = true;
-    level4RiddleState.step1Active = false;
-    level4RiddleState.step2Active = false;
-    level4RiddleState.step2Complete = true;
-    level4RiddleState.cheesesCaught = LEVEL4_CHEESES_TO_CATCH;
-    level4RiddleState.monstersDefeated = LEVEL4_TOTAL_MONSTERS;
-    level4RiddleState.triggerBlockTimer = RIDDLE_AIM_TIME;
-    if (level4RiddleState.triggerBlock) {
-      level4RiddleState.triggerBlock.visible = false;
-    }
-    if (level4RiddleState.triggerBlockVisual) {
-      level4RiddleState.triggerBlockVisual.visible = false;
-    }
-    
-    // CRITICAL: Unlock Step 0 trait if not already unlocked
-    if (!level4RiddleState.step0TraitUnlocked) {
-      unlockLevel4Trait(LEVEL4_STEP0_TRAIT, "Level 4 Step 0");
-      level4RiddleState.step0TraitUnlocked = true;
-      awardLevel4DspoincReward("CHEESE_TEMPLE_LEVEL4_STEP0", 100, "Level 4 Step 0");
-    }
-    
-    // CRITICAL: Unlock Step 1 trait if not already unlocked
-    if (!level4RiddleState.step1TraitUnlocked) {
-      unlockLevel4Trait(LEVEL4_STEP1_TRAIT, "Level 4 Step 1 - Cheese Waves");
-      level4RiddleState.step1TraitUnlocked = true;
-    }
-    
-    // CRITICAL: Unlock Step 2 trait if not already unlocked
-    if (!level4RiddleState.step2TraitUnlocked) {
-      unlockLevel4Trait(LEVEL4_STEP2_TRAIT, "Level 4 Step 2 - Monster Waves");
-      level4RiddleState.step2TraitUnlocked = true;
-    }
-    
-    // Clear any remaining cheeses and monsters
-    level4State.cheeses.forEach((cheese) => {
-      if (cheese.mesh && cheese.mesh.parent) {
-        cheese.mesh.parent.remove(cheese.mesh);
-      }
-    });
-    level4State.cheeses = [];
-    level4State.monsters.forEach((monster) => {
-      if (monster.mesh && monster.mesh.parent) {
-        monster.mesh.parent.remove(monster.mesh);
-      }
-      if (monster.mixer) {
-        monster.mixer.stopAllAction();
-      }
-    });
-    level4State.monsters = [];
-    
-    // Create and show portal
-    if (!level4State.portal) {
-      level4State.portal = createLevel4Portal();
-    }
-    level4State.portal.visible = true;
-    level4State.portalActive = true;
-    
-    // CRITICAL: Award Step 3 DSPOINC reward (portal entry)
-    awardLevel4DspoincReward("CHEESE_TEMPLE_LEVEL4_STEP3", 200, "Level 4 Step 3 - Portal Entry");
-    
-    console.log("🧩 [LEVEL 4] Jumped to Step 3 - Portal activated, all steps complete");
-  }
-}
-
-function resetMeshToOriginalPosition(mesh, originalPosition) {
-  if (mesh && originalPosition) {
-    mesh.position.copy(originalPosition);
-    mesh.updateMatrixWorld(true);
-  }
-}
-
-function ensureRiddle3Assets() {
-  const spawnData = riddleState.unlockableBlock ? {
-    x: Math.floor(riddleState.unlockableBlock.position.x),
-    y: Math.floor(riddleState.unlockableBlock.position.y),
-    z: Math.floor(riddleState.unlockableBlock.position.z)
-  } : { x: 60, y: 1, z: 15 };
-  const blockSize = 1;
-
-  if (!riddleState.riddle3.lever) {
-    createRiddle3Lever(spawnData, blockSize);
-  }
-  if (!riddleState.riddle3.movableBlock) {
-    createRiddle3MovableBlock(spawnData, blockSize);
-  }
-  if (!riddleState.riddle3.oakBlock) {
-    createRiddle3OakBlock(spawnData, blockSize);
-  }
-  if (!riddleState.riddle3.portal) {
-    createRiddle3Portal(spawnData, blockSize);
-  }
-}
-
-function setLeverState(isOn) {
-  const lever = riddleState.riddle3.lever;
-  if (!lever || !lever.material) return;
-  lever.userData.leverState = isOn ? 'on' : 'off';
-  const texture = isOn ? lever.userData.textureOn : lever.userData.textureOff;
-  if (texture) {
-    lever.material.map = texture;
-    lever.material.needsUpdate = true;
-  }
-}
-
-function resetRiddle3State(hideLever) {
-  const r3 = riddleState.riddle3;
-  r3.step1Complete = false;
-  r3.step2Complete = false;
-  r3.step3Complete = false;
-  r3.leverPressed = false;
-  if (r3.lever) {
-    setLeverState(false);
-    r3.lever.visible = !hideLever;
-  }
-  if (r3.movableBlock) {
-    resetMeshToOriginalPosition(r3.movableBlock, r3.movableBlockOriginalPosition);
-    r3.movableBlock.visible = !hideLever;
-    if (r3.movableBlockVelocity) {
-      r3.movableBlockVelocity.set(0, 0, 0);
-    }
-  }
-  if (r3.oakBlock) {
-    r3.oakBlock.visible = !hideLever;
-  }
-  if (r3.portal) {
-    r3.portal.visible = false;
-  }
-}
-
-let levelSelectorScreen = null;
-
-function showLevelSelector() {
-  // Use GUI System if available
-  if (guiSystem && typeof guiSystem.showLevelSelector === 'function') {
-    guiSystem.showLevelSelector();
-    return;
-  }
-  
-  // Legacy fallback
-  if (levelSelectorScreen && document.body.contains(levelSelectorScreen)) {
-    hideLevelSelector();
-    return;
-  }
-  
-  if (!isGamePaused) {
-    togglePause(true);
-  }
-  
-  levelSelectorScreen = document.createElement("div");
-  Object.assign(levelSelectorScreen.style, {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "column",
-    gap: "18px",
-    background: "rgba(5, 7, 16, 0.95)",
-    backdropFilter: "blur(8px)",
-    zIndex: "10005", // Higher z-index to ensure it appears above all other UI elements
-    color: "#fef3c7",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    pointerEvents: "auto",
-    cursor: "default"
-  });
-
-  const panel = document.createElement("div");
-  Object.assign(panel.style, {
-    background: "linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    borderRadius: "16px",
-    padding: "40px 48px",
-    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 224, 102, 0.3)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    minWidth: "400px",
-    maxWidth: "90vw",
-    textAlign: "center"
-  });
-
-  const title = document.createElement("div");
-  title.textContent = "🎮 LEVEL SELECTOR (GOD MODE)";
-  Object.assign(title.style, {
-    fontSize: "clamp(24px, 5vw, 32px)",
-    fontWeight: "700",
-    color: "#ffe066",
-    marginBottom: "12px",
-    textShadow: "0 0 20px rgba(255, 224, 102, 0.6)"
-  });
-  panel.appendChild(title);
-
-  const subtitle = document.createElement("div");
-  subtitle.textContent = "Press L to toggle this menu";
-  Object.assign(subtitle.style, {
-    fontSize: "clamp(14px, 3vw, 18px)",
-    color: "#cbd5f5",
-    marginBottom: "32px"
-  });
-  panel.appendChild(subtitle);
-
-  const buttonContainer = document.createElement("div");
-  Object.assign(buttonContainer.style, {
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-    width: "100%"
-  });
-
-  // Level 1 Button
-  const level1Btn = document.createElement("button");
-  level1Btn.textContent = "🧀 Level 1 - Cheese Temple";
-  Object.assign(level1Btn.style, {
-    padding: "16px 24px",
-    borderRadius: "10px",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    background: currentLevel === LEVEL_IDS.LEVEL1 ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 224, 102, 0.15)",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s",
-    textShadow: "0 0 10px rgba(255, 224, 102, 0.5)"
-  });
-  level1Btn.addEventListener("mouseenter", () => {
-    level1Btn.style.background = "rgba(255, 224, 102, 0.3)";
-    level1Btn.style.borderColor = "rgba(255, 224, 102, 0.8)";
-    level1Btn.style.transform = "scale(1.05)";
-  });
-  level1Btn.addEventListener("mouseleave", () => {
-    level1Btn.style.background = currentLevel === LEVEL_IDS.LEVEL1 ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 224, 102, 0.15)";
-    level1Btn.style.borderColor = "rgba(255, 224, 102, 0.5)";
-    level1Btn.style.transform = "scale(1)";
-  });
-  level1Btn.addEventListener("click", () => {
-    hideLevelSelector();
-    if (currentLevel !== LEVEL_IDS.LEVEL1) {
-      warpToLevel1(); // Use warpToLevel1() for consistent initialization
-    }
-  });
-  buttonContainer.appendChild(level1Btn);
-
-  // Level 2 Button
-  const level2Btn = document.createElement("button");
-  level2Btn.textContent = "🏛️ Level 2 - The Spawn (Matrix Construct)";
-  Object.assign(level2Btn.style, {
-    padding: "16px 24px",
-    borderRadius: "10px",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    background: currentLevel === LEVEL_IDS.LEVEL2 ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 224, 102, 0.15)",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s",
-    textShadow: "0 0 10px rgba(255, 224, 102, 0.5)"
-  });
-  level2Btn.addEventListener("mouseenter", () => {
-    level2Btn.style.background = "rgba(255, 224, 102, 0.3)";
-    level2Btn.style.borderColor = "rgba(255, 224, 102, 0.8)";
-    level2Btn.style.transform = "scale(1.05)";
-  });
-  level2Btn.addEventListener("mouseleave", () => {
-    level2Btn.style.background = currentLevel === LEVEL_IDS.LEVEL2 ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 224, 102, 0.15)";
-    level2Btn.style.borderColor = "rgba(255, 224, 102, 0.5)";
-    level2Btn.style.transform = "scale(1)";
-  });
-  level2Btn.addEventListener("click", () => {
-    hideLevelSelector();
-    if (currentLevel !== LEVEL_IDS.LEVEL2) {
-      warpToLevel2();
-    }
-  });
-  buttonContainer.appendChild(level2Btn);
-
-  // Level 3 Button
-  const level3Btn = document.createElement("button");
-  level3Btn.textContent = "🏹 Level 3 - The Hunt (Monster Arena)";
-  Object.assign(level3Btn.style, {
-    padding: "16px 24px",
-    borderRadius: "10px",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    background: currentLevel === LEVEL_IDS.LEVEL3 ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 224, 102, 0.15)",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s",
-    textShadow: "0 0 10px rgba(255, 224, 102, 0.5)"
-  });
-  level3Btn.addEventListener("mouseenter", () => {
-    level3Btn.style.background = "rgba(255, 224, 102, 0.3)";
-    level3Btn.style.borderColor = "rgba(255, 224, 102, 0.8)";
-    level3Btn.style.transform = "scale(1.05)";
-  });
-  level3Btn.addEventListener("mouseleave", () => {
-    level3Btn.style.background = currentLevel === LEVEL_IDS.LEVEL3 ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 224, 102, 0.15)";
-    level3Btn.style.borderColor = "rgba(255, 224, 102, 0.5)";
-    level3Btn.style.transform = "scale(1)";
-  });
-  level3Btn.addEventListener("click", () => {
-    hideLevelSelector();
-    if (currentLevel !== LEVEL_IDS.LEVEL3) {
-      warpToLevel3();
-    }
-  });
-  buttonContainer.appendChild(level3Btn);
-
-  // Level 4 Button
-  const level4Btn = document.createElement("button");
-  level4Btn.textContent = "🎯 Level 4 - The First Shot";
-  Object.assign(level4Btn.style, {
-    background: currentLevel === LEVEL_IDS.LEVEL4 ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 224, 102, 0.15)",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    borderRadius: "8px",
-    padding: "12px 20px",
-    margin: "8px",
-    color: "#fff",
-    fontSize: "16px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    fontFamily: "'Courier New', monospace"
-  });
-  level4Btn.addEventListener("mouseenter", () => {
-    level4Btn.style.background = "rgba(255, 224, 102, 0.3)";
-    level4Btn.style.borderColor = "rgba(255, 224, 102, 0.8)";
-    level4Btn.style.transform = "scale(1.05)";
-  });
-  level4Btn.addEventListener("mouseleave", () => {
-    level4Btn.style.background = currentLevel === LEVEL_IDS.LEVEL4 ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 224, 102, 0.15)";
-    level4Btn.style.borderColor = "rgba(255, 224, 102, 0.5)";
-    level4Btn.style.transform = "scale(1)";
-  });
-  level4Btn.addEventListener("click", () => {
-    hideLevelSelector();
-    if (currentLevel !== LEVEL_IDS.LEVEL4) {
-      warpToLevel4();
-    }
-  });
-  buttonContainer.appendChild(level4Btn);
-
-  // Level 5 Button
-  const level5Btn = document.createElement("button");
-  level5Btn.textContent = "🚶 Level 5 - The Walk";
-  Object.assign(level5Btn.style, {
-    padding: "16px 24px",
-    borderRadius: "10px",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    background: currentLevel === LEVEL_IDS.LEVEL5 ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 224, 102, 0.15)",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s",
-    textShadow: "0 0 10px rgba(255, 224, 102, 0.5)"
-  });
-  level5Btn.addEventListener("mouseenter", () => {
-    level5Btn.style.background = "rgba(255, 224, 102, 0.3)";
-    level5Btn.style.borderColor = "rgba(255, 224, 102, 0.8)";
-    level5Btn.style.transform = "scale(1.05)";
-  });
-  level5Btn.addEventListener("mouseleave", () => {
-    level5Btn.style.background = currentLevel === LEVEL_IDS.LEVEL5 ? "rgba(255, 224, 102, 0.3)" : "rgba(255, 224, 102, 0.15)";
-    level5Btn.style.borderColor = "rgba(255, 224, 102, 0.5)";
-    level5Btn.style.transform = "scale(1)";
-  });
-  level5Btn.addEventListener("click", () => {
-    hideLevelSelector();
-    if (currentLevel !== LEVEL_IDS.LEVEL5) {
-      warpToLevel5();
-    }
-  });
-  buttonContainer.appendChild(level5Btn);
-
-  // Close button
-  const closeBtn = document.createElement("button");
-  closeBtn.textContent = "✕ Close";
-  Object.assign(closeBtn.style, {
-    padding: "12px 24px",
-    borderRadius: "10px",
-    border: "2px solid rgba(148, 163, 184, 0.5)",
-    background: "rgba(148, 163, 184, 0.15)",
-    color: "#cbd5f5",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "clamp(13px, 2vw, 15px)",
-    fontWeight: "500",
-    cursor: "pointer",
-    transition: "all 0.3s",
-    marginTop: "8px"
-  });
-  closeBtn.addEventListener("mouseenter", () => {
-    closeBtn.style.background = "rgba(148, 163, 184, 0.3)";
-    closeBtn.style.borderColor = "rgba(148, 163, 184, 0.8)";
-    closeBtn.style.transform = "scale(1.05)";
-  });
-  closeBtn.addEventListener("mouseleave", () => {
-    closeBtn.style.background = "rgba(148, 163, 184, 0.15)";
-    closeBtn.style.borderColor = "rgba(148, 163, 184, 0.5)";
-    closeBtn.style.transform = "scale(1)";
-  });
-  closeBtn.addEventListener("click", () => {
-    hideLevelSelector();
-  });
-  buttonContainer.appendChild(closeBtn);
-
-  panel.appendChild(buttonContainer);
-  levelSelectorScreen.appendChild(panel);
-  document.body.appendChild(levelSelectorScreen);
-  
-  console.log("🎮 [GOD MODE] Level selector opened");
-}
-
-function hideLevelSelector() {
-  // Use GUI System if available
-  if (guiSystem && typeof guiSystem.hideLevelSelector === 'function') {
-    guiSystem.hideLevelSelector();
-    return;
-  }
-  
-  // Legacy fallback
-  if (levelSelectorScreen && document.body.contains(levelSelectorScreen)) {
-    document.body.removeChild(levelSelectorScreen);
-    levelSelectorScreen = null;
-    if (isGamePaused && !pauseMenu) {
-      togglePause(false);
-    }
-    ensureBackgroundMusicForCurrentLevel();
-    console.log("🎮 [GOD MODE] Level selector closed");
-  }
-}
-
-document.addEventListener("keydown", (event) => {
-  // 🧪 DEBUG: GOD mode riddle cycle (press G to jump 1→2→3→1…)
-  if (event.key === 'g' || event.key === 'G') {
-    if (godMode) {
-      cycleRiddleJump();
-    } else {
-      console.warn("🧪 [DEBUG] Riddle jump ignored - enable GOD Mode to use the G shortcut.");
-    }
-      event.preventDefault();
-      return;
-  }
-  // 🐉 GOD mode Phoenix behavior cycle (press B to cycle through behaviors) - LEVEL 6 ONLY
-  if (event.key === 'b' || event.key === 'B') {
-    if (godMode) {
-      if (currentLevel === LEVEL_IDS.LEVEL6) {
-        cyclePhoenixBehavior();
-      } else {
-        console.warn("🐉 [DEBUG] Phoenix behavior cycle ignored - must be in Level 6 to use the B shortcut.");
-      }
-    } else {
-      console.warn("🐉 [DEBUG] Phoenix behavior cycle ignored - enable GOD Mode to use the B shortcut.");
-    }
-      event.preventDefault();
-      return;
-  }
-  // 🕷️ GOD mode Alien Spider behavior cycle (press N to cycle through behaviors) - LEVEL 6 ONLY
-  if (event.key === 'n' || event.key === 'N') {
-    if (godMode) {
-      if (currentLevel === LEVEL_IDS.LEVEL6) {
-        cycleAlienSpiderBehavior();
-      } else {
-        console.warn("🕷️ [DEBUG] Alien Spider behavior cycle ignored - must be in Level 6 to use the N shortcut.");
-      }
-    } else {
-      console.warn("🕷️ [DEBUG] Alien Spider behavior cycle ignored - enable GOD Mode to use the N shortcut.");
-    }
-      event.preventDefault();
-      return;
-  }
-  // 🎮 GOD mode level selector (press L to open level menu) - WORKS IN ALL LEVELS
-  if (event.key === 'l' || event.key === 'L') {
-    if (godMode) {
-      showLevelSelector();
-      event.preventDefault();
-      event.stopPropagation(); // Prevent event from bubbling to other handlers
-      return;
-    } else {
-      console.warn("🧪 [DEBUG] Level selector ignored - enable GOD Mode to use the L shortcut.");
-      event.preventDefault(); // Prevent default even when godMode is off
-      return;
-    }
-  }
-  if (event.code === "KeyP" || event.code === "Escape") {
-    // Close level selector if open
-    if (levelSelectorScreen && document.body.contains(levelSelectorScreen)) {
-      hideLevelSelector();
-      event.preventDefault();
-      return;
-    }
-    togglePause();
-    return;
-  }
-  
-  // Toggle camera mode with 'V' key (cycles: 1st -> 3rd -> Joystick -> 1st)
-  if (event.code === "KeyV" && !event.repeat) {
-    const nextMode = (cameraMode + 1) % 3; // Cycle: 0 -> 1 -> 2 -> 0
-    setCameraMode(nextMode);
-    return;
-  }
-
-  // Weapon switching for Level 4 (number keys 1-9) - works in both cheese and monster waves
-  if (currentLevel === LEVEL_IDS.LEVEL4 && (level4RiddleState.step1Active || level4RiddleState.step2Active) && !isGamePaused) {
-    const numKey = parseInt(event.key);
-    if (!isNaN(numKey) && numKey >= 1 && numKey <= 9) {
-      if (LEVEL4_WEAPON_SLOTS[numKey]) {
-        // CRITICAL: Use weapon system's current slot, not legacy state
-        const currentSlot = weaponSystem ? weaponSystem.getCurrentSlot() : level4State.currentWeaponSlot;
-        if (currentSlot !== numKey) {
-          console.log(`🔫 [LEVEL 4] Switching to weapon slot: ${numKey} (current: ${currentSlot})`);
-          if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-            weaponSystem.switchWeapon(numKey).then(() => {
-              updateLevel4ProgressHUD(); // Update HUD after switch completes
-            }).catch(err => {
-              console.error("❌ [LEVEL 4] Failed to switch weapon:", err);
-            });
-        } else if (typeof switchLevel4WeaponSlot === 'function') {
-          switchLevel4WeaponSlot(numKey); // Legacy fallback
-          updateLevel4ProgressHUD(); // Update HUD to show new weapon
-          }
-        } else {
-          console.log(`🔫 [LEVEL 4] Weapon slot ${numKey} already active.`);
-        }
-        event.preventDefault();
-        return;
-      }
-    }
-  }
-
-  // 🎮 CRITICAL: If PlayerControls module is active, delegate WASD/movement keys to it
-  // This prevents conflicts between old global handlers and new module system
-  if (playerControls) {
-    // Delegate movement keys to PlayerControls module
-    if (event.code === "KeyW" || event.code === "ArrowUp" || 
-        event.code === "KeyS" || event.code === "ArrowDown" ||
-        event.code === "KeyA" || event.code === "ArrowLeft" ||
-        event.code === "KeyD" || event.code === "ArrowRight" ||
-        event.code === "ShiftLeft" || event.code === "ShiftRight" ||
-        event.code === "Space") {
-      playerControls.handleKeyDown(event);
-      return; // Let PlayerControls handle it
-    }
-  }
-
-  if (isGamePaused) return;
-
-  switch (event.code) {
-    case "KeyW":
-    case "ArrowUp":
-      keyboardMovement.forward = true;
-      updateAggregatedMovement();
-      break;
-    case "KeyS":
-    case "ArrowDown":
-      keyboardMovement.backward = true;
-      updateAggregatedMovement();
-      break;
-    case "KeyA":
-    case "ArrowLeft":
-      keyboardMovement.left = true;
-      updateAggregatedMovement();
-      break;
-    case "KeyD":
-    case "ArrowRight":
-      keyboardMovement.right = true;
-      updateAggregatedMovement();
-      break;
-    case "ShiftLeft":
-    case "ShiftRight":
-      if (godMode) {
-        // 🚀 GOD MODE: Shift = Fly down (hold to fly down continuously)
-        keyboardMovement.flyDown = true;
-        keyboardMovement.sprint = false; // Disable sprint in GOD mode
-        updateAggregatedMovement();
-        event.preventDefault(); // Prevent default browser behavior
-      } else {
-        // Normal mode: Shift = Sprint
-        keyboardMovement.sprint = true;
-        keyboardMovement.flyDown = false; // Ensure fly down is off in normal mode
-        updateAggregatedMovement();
-      }
-      break;
-    case "Space":
-      if (godMode) {
-        // 🚀 GOD MODE: Space = Fly up (hold to fly continuously)
-        // Allow setting flyUp even on repeat events so holding Space works properly
-        keyboardMovement.flyUp = true;
-        updateAggregatedMovement();
-        console.log("🚀 [GOD MODE] Space pressed - flyUp set to true", {
-          keyboardMovement_flyUp: keyboardMovement.flyUp,
-          movement_flyUp: movement.flyUp,
-          godMode: godMode
-        });
-        event.preventDefault(); // Prevent default browser behavior (scrolling)
-      } else {
-        // Normal mode: Space = Jump (only when on ground, no repeat)
-        if (!event.repeat && onGround) {
-          // Level 5 has super jump mode (5x higher than normal)
-          const isLevel5 = currentLevel === LEVEL_IDS.LEVEL5;
-          // 🧗 CLIMBING: Exit climb mode when jump is pressed
-          if (isClimbing) {
-            isClimbing = false;
-            climbSurfaceNormal = null;
-          }
-          
-          const jumpHeight = isLevel5 ? 75 : 15; // Super jump in Level 5 (5x = 75), normal jump elsewhere (15)
-          playerVelocity.y = jumpHeight;
-          playJumpSound();
-          
-          if (isLevel5) {
-            console.log("🚀 [LEVEL 5] Super jump activated!");
-          }
-        }
-        keyboardMovement.flyUp = false; // Ensure fly up is off in normal mode
-        updateAggregatedMovement();
-      }
-      break;
-    case "KeyE":
-      if (!event.repeat) {
-        if (currentLevel === LEVEL_IDS.LEVEL2 && handleLevel2LeverClick()) {
-          break;
-        }
-        if (riddleState.riddle2.step2Complete && !riddleState.riddle3.step1Complete) {
-        handleRiddle3LeverClick();
-        }
-        // Handle Riddle #4 (Hidden Secret) lever clicks - always available
-        if (currentLevel === LEVEL_IDS.LEVEL1) {
-          handleRiddle4LeverClick();
-        }
-      }
-      break;
-    // Level 4, Level 5 & Level 6 Weapon Switching (Keys 1-9)
-    case "Digit1":
-    case "Numpad1":
-      if ((currentLevel === LEVEL_IDS.LEVEL4 || currentLevel === LEVEL_IDS.LEVEL5 || currentLevel === LEVEL_IDS.LEVEL6) && !event.repeat) {
-        if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-          weaponSystem.switchWeapon(1).then(() => {
-            if (currentLevel === LEVEL_IDS.LEVEL4 && typeof updateLevel4ProgressHUD === 'function') {
-              updateLevel4ProgressHUD(); // Update HUD after switch completes
-            }
-          }).catch(err => {
-            console.error("❌ [WEAPON] Failed to switch weapon:", err);
-          });
-        } else if (currentLevel === LEVEL_IDS.LEVEL4 && typeof switchLevel4WeaponSlot === 'function') {
-          switchLevel4WeaponSlot(1); // Legacy fallback
-        }
-        event.preventDefault();
-      }
-      break;
-    case "Digit2":
-    case "Numpad2":
-      if ((currentLevel === LEVEL_IDS.LEVEL4 || currentLevel === LEVEL_IDS.LEVEL5 || currentLevel === LEVEL_IDS.LEVEL6) && !event.repeat) {
-        if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-          weaponSystem.switchWeapon(2).then(() => {
-            if (currentLevel === LEVEL_IDS.LEVEL4 && typeof updateLevel4ProgressHUD === 'function') {
-              updateLevel4ProgressHUD(); // Update HUD after switch completes
-            }
-          }).catch(err => {
-            console.error("❌ [WEAPON] Failed to switch weapon:", err);
-          });
-        } else if (currentLevel === LEVEL_IDS.LEVEL4 && typeof switchLevel4WeaponSlot === 'function') {
-          switchLevel4WeaponSlot(2); // Legacy fallback
-        }
-        event.preventDefault();
-      }
-      break;
-    case "Digit3":
-    case "Numpad3":
-      if ((currentLevel === LEVEL_IDS.LEVEL4 || currentLevel === LEVEL_IDS.LEVEL5 || currentLevel === LEVEL_IDS.LEVEL6) && !event.repeat) {
-        if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-          weaponSystem.switchWeapon(3);
-        } else if (typeof switchLevel4WeaponSlot === 'function') {
-          switchLevel4WeaponSlot(3); // Legacy fallback
-        }
-        event.preventDefault();
-      }
-      break;
-    case "Digit4":
-    case "Numpad4":
-      if ((currentLevel === LEVEL_IDS.LEVEL4 || currentLevel === LEVEL_IDS.LEVEL5 || currentLevel === LEVEL_IDS.LEVEL6) && !event.repeat) {
-        if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-          weaponSystem.switchWeapon(4);
-        } else if (typeof switchLevel4WeaponSlot === 'function') {
-          switchLevel4WeaponSlot(4); // Legacy fallback
-        }
-        event.preventDefault();
-      }
-      break;
-    case "Digit5":
-    case "Numpad5":
-      if ((currentLevel === LEVEL_IDS.LEVEL4 || currentLevel === LEVEL_IDS.LEVEL5 || currentLevel === LEVEL_IDS.LEVEL6) && !event.repeat) {
-        if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-          weaponSystem.switchWeapon(5);
-        } else if (typeof switchLevel4WeaponSlot === 'function') {
-          switchLevel4WeaponSlot(5); // Legacy fallback
-        }
-        event.preventDefault();
-      }
-      break;
-    case "Digit6":
-    case "Numpad6":
-      if ((currentLevel === LEVEL_IDS.LEVEL4 || currentLevel === LEVEL_IDS.LEVEL5 || currentLevel === LEVEL_IDS.LEVEL6) && !event.repeat) {
-        if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-          weaponSystem.switchWeapon(6);
-        } else if (typeof switchLevel4WeaponSlot === 'function') {
-          switchLevel4WeaponSlot(6); // Legacy fallback
-        }
-        event.preventDefault();
-      }
-      break;
-    case "Digit7":
-    case "Numpad7":
-      if ((currentLevel === LEVEL_IDS.LEVEL4 || currentLevel === LEVEL_IDS.LEVEL5 || currentLevel === LEVEL_IDS.LEVEL6) && !event.repeat) {
-        if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-          weaponSystem.switchWeapon(7);
-        } else if (typeof switchLevel4WeaponSlot === 'function') {
-          switchLevel4WeaponSlot(7); // Legacy fallback
-        }
-        event.preventDefault();
-      }
-      break;
-    case "Digit8":
-    case "Numpad8":
-      if ((currentLevel === LEVEL_IDS.LEVEL4 || currentLevel === LEVEL_IDS.LEVEL5 || currentLevel === LEVEL_IDS.LEVEL6) && !event.repeat) {
-        if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-          weaponSystem.switchWeapon(8);
-        } else if (typeof switchLevel4WeaponSlot === 'function') {
-          switchLevel4WeaponSlot(8); // Legacy fallback
-        }
-        event.preventDefault();
-      }
-      break;
-    case "Digit9":
-    case "Numpad9":
-      if ((currentLevel === LEVEL_IDS.LEVEL4 || currentLevel === LEVEL_IDS.LEVEL5 || currentLevel === LEVEL_IDS.LEVEL6) && !event.repeat) {
-        if (weaponSystem && typeof weaponSystem.switchWeapon === 'function') {
-          weaponSystem.switchWeapon(9);
-        } else if (typeof switchLevel4WeaponSlot === 'function') {
-          switchLevel4WeaponSlot(9); // Legacy fallback
-        }
-        event.preventDefault();
-      }
-      break;
-    default:
-      break;
-  }
-});
-
-document.addEventListener("keyup", (event) => {
-  // 🎮 CRITICAL: If PlayerControls module is active, delegate WASD/movement keys to it
-  // This prevents conflicts between old global handlers and new module system
-  if (playerControls) {
-    // Delegate movement keys to PlayerControls module
-    if (event.code === "KeyW" || event.code === "ArrowUp" || 
-        event.code === "KeyS" || event.code === "ArrowDown" ||
-        event.code === "KeyA" || event.code === "ArrowLeft" ||
-        event.code === "KeyD" || event.code === "ArrowRight" ||
-        event.code === "ShiftLeft" || event.code === "ShiftRight" ||
-        event.code === "Space") {
-      playerControls.handleKeyUp(event);
-      return; // Let PlayerControls handle it
-    }
-  }
-
-  switch (event.code) {
-    case "KeyW":
-    case "ArrowUp":
-      keyboardMovement.forward = false;
-      updateAggregatedMovement();
-      break;
-    case "KeyS":
-    case "ArrowDown":
-      keyboardMovement.backward = false;
-      updateAggregatedMovement();
-      break;
-    case "KeyA":
-    case "ArrowLeft":
-      keyboardMovement.left = false;
-      updateAggregatedMovement();
-      break;
-    case "KeyD":
-    case "ArrowRight":
-      keyboardMovement.right = false;
-      updateAggregatedMovement();
-      break;
-    case "ShiftLeft":
-    case "ShiftRight":
-      if (godMode) {
-        // 🚀 GOD MODE: Shift = Fly down (release)
-        keyboardMovement.flyDown = false;
-      } else {
-        // Normal mode: Shift = Sprint (release)
-        keyboardMovement.sprint = false;
-        keyboardMovement.flyDown = false; // Ensure fly down is off
-      }
-      updateAggregatedMovement();
-      break;
-    case "Space":
-      if (godMode) {
-        // 🚀 GOD MODE: Space = Fly up (release)
-        keyboardMovement.flyUp = false;
-        updateAggregatedMovement();
-        console.log("🚀 [GOD MODE] Space released - flyUp set to false", {
-          keyboardMovement_flyUp: keyboardMovement.flyUp,
-          movement_flyUp: movement.flyUp
-        });
-      } else {
-        // Normal mode: Ensure fly up is off
-        keyboardMovement.flyUp = false;
-        updateAggregatedMovement();
-      }
-      break;
-    default:
-      break;
-  }
-});
-
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  // Use same pixel ratio calculation as initial setup
-  const pixelRatio = isMobile ? 1 : Math.min(2.0, window.devicePixelRatio || 1);
-  renderer.setPixelRatio(pixelRatio);
-  console.log(`🖥️ [RENDERER] Resized to: ${window.innerWidth}x${window.innerHeight}, pixel ratio: ${pixelRatio}`);
-});
-
-// Declare crosshairElement early to avoid TDZ errors (initialized later after createCrosshair is defined)
-let crosshairElement = null;
-
-function animate() {
-  requestAnimationFrame(animate);
-
-  if (stats) stats.begin();
-
-  const delta = Math.min(clock.getDelta(), 0.1);
-  
-  // CRITICAL: Skip frame if delta is too large (prevents huge jumps during frame drops)
-  // This prevents performance issues when FPS drops below 10
-  if (delta > 0.2) {
-    if (stats) stats.end();
-    return; // Skip this frame if delta is too large
-  }
-  
-  // Debug: Confirm animate loop is running (only log once at startup - disabled by default)
-  // Uncomment to enable startup logging:
-  /*
-  if (!window.animateLoopConfirmed) {
-    console.log("✅ [ANIMATE] Animate loop is running", {
-      isGamePaused: isGamePaused,
-      controlsLocked: playerControls ? playerControls.getPointerLockControls().isLocked : false,
-      isFirstPerson: isFirstPerson()
-    });
-    window.animateLoopConfirmed = true;
-  }
-  */
-
-  // 🎮 UPDATE PLAYER CONTROLS MODULE
-  if (playerControls) {
-    playerControls.update(delta);
-  }
-  
-  // CRITICAL: Update animation mixers even when paused (for death animations)
-  // Death animations need to continue playing even after game pause
-  // This must happen BEFORE the pause check so animations continue during death sequence
-  
-  // Update PlayerModel module mixer (if using new module)
-  if (playerModelModule && playerModelModule.isLoaded()) {
-    playerModelModule.update(delta);
-  }
-  
-  // Update GUI System
-  if (guiSystem) {
-    guiSystem.update(delta);
-  }
-  
-  // Update legacy mixer (if using legacy system) - CRITICAL for death animations
-  // This ensures death animations continue even when game is paused
-  if (playerCharacterMixer && (useGLTFCharacter || window.currentCharacterAnimation === 'death')) {
-    try {
-      const animationDelta = Math.min(delta, 0.1); // Clamp for stability
-      playerCharacterMixer.update(animationDelta);
-    } catch (error) {
-      // Silent fail - don't spam console if mixer update fails
-    }
-  }
-
-  if (!isGamePaused) {
-    // 🚀 GOD MODE: No gravity when flying, double speed
-    // 🧗 CLIMBING: No gravity when climbing (already handled above)
-    if (isClimbing) {
-      // No gravity when climbing - vertical movement handled by climb logic
-      // playerVelocity.y is already set by climb movement above
-    } else if (!godMode) {
-      // Normal mode: Apply gravity
-    playerVelocity.y -= 30 * delta;
-    } else {
-      // GOD MODE: Fly up/down controls
-      // 🎮 Use movement from Player Controls Module (if available) or fallback to global movement
-      const currentMovement = playerControls ? playerControls.getMovementState() : movement;
-      const flySpeed = 20; // Fly speed
-      if (currentMovement.flyUp) {
-        const previousY = playerVelocity.y;
-        playerVelocity.y += flySpeed * delta;
-        // CRITICAL: Disabled debug logging for performance (was causing FPS drops)
-        // Debug logging (only log occasionally to avoid spam) - DISABLED FOR PERFORMANCE
-        if (false && Math.random() < 0.01) { // DISABLED: 1% chance to log
-          console.log("🚀 [GOD MODE] Flying up", {
-            flyUp: currentMovement.flyUp,
-            flyDown: currentMovement.flyDown,
-            velocityY_before: previousY.toFixed(2),
-            velocityY_after: playerVelocity.y.toFixed(2),
-            delta: delta.toFixed(4),
-            flySpeed: flySpeed
-          });
-        }
-      }
-      if (currentMovement.flyDown) {
-        playerVelocity.y -= flySpeed * delta;
-      }
-      // Apply slight damping to vertical velocity when flying (smoother control)
-      if (!currentMovement.flyUp && !currentMovement.flyDown) {
-        playerVelocity.y *= Math.exp(-8 * delta);
-      }
-    }
-
-    // Apply damping to horizontal movement (X and Z only)
-    // In God Mode, don't damp Y velocity when actively flying
-    // 🎮 Use movement from Player Controls Module (if available) or fallback to global movement
-    const currentMovement = playerControls ? playerControls.getMovementState() : movement;
-    const damping = Math.exp(-4 * delta) - 1;
-    if (godMode && (currentMovement.flyUp || currentMovement.flyDown)) {
-      // God Mode + Flying: Only damp horizontal velocity (X, Z), preserve Y velocity
-      const yVelocity = playerVelocity.y; // Save Y velocity
-      playerVelocity.addScaledVector(playerVelocity, damping);
-      playerVelocity.y = yVelocity; // Restore Y velocity (no damping on Y when flying)
-    } else {
-      // Normal mode or God Mode not flying: Damp all velocity components
-      playerVelocity.addScaledVector(playerVelocity, damping);
-    }
-
-    // 🧗 CLIMBING: Check if player can climb (BEFORE movement calculation)
-    // Must check before movement to enable climbing instead of normal movement
-    // CRITICAL FIX: Multiple detection methods to ensure Mouse character is recognized
-    let isMouseCharacter = false;
-    
-    // Method 1: Check playerModelModule method
-    if (playerModelModule && 
-        typeof playerModelModule.isLoaded === 'function' && 
-        playerModelModule.isLoaded() && 
-        typeof playerModelModule.isMouseCharacter === 'function') {
-      isMouseCharacter = playerModelModule.isMouseCharacter() === true;
-    }
-    
-    // Method 2: Fallback - Check characterType property directly
-    if (!isMouseCharacter && playerModelModule && playerModelModule.characterType === 'mouse') {
-      isMouseCharacter = true;
-    }
-    
-    // Method 3: Fallback - Check model userData
-    if (!isMouseCharacter && playerCharacterModel && playerCharacterModel.userData && playerCharacterModel.userData.isMouseCharacter) {
-      isMouseCharacter = true;
-    }
-    
-    // Method 4: Fallback - Check selectedCharacterPath for Mouse
-    if (!isMouseCharacter && selectedCharacterPath && selectedCharacterPath.toLowerCase().includes('mouse')) {
-      isMouseCharacter = true;
-    }
-    
-    // CRITICAL FIX: Use playerControls.getMovementState() (same as animation system) instead of global movement
-    const movementForClimb = playerControls ? playerControls.getMovementState() : movement;
-    const hasMovementInput = (movementForClimb.forward || movementForClimb.backward || movementForClimb.left || movementForClimb.right);
-    
-    // 🚨 CRITICAL: Only check for climbing if player has movement input
-    // Prevents detecting ground when player spawns (no movement = no climb check)
-    if (!hasMovementInput) {
-      // If no movement input and not already climbing, exit climb mode
-      if (isClimbing) {
-        isClimbing = false;
-        console.log("🧗 [CLIMB] Exited climb mode: No movement input");
-      }
-      // Skip climb check entirely when no movement input
-      // Don't check canClimb or update isClimbing state
-    }
-    
-    // CRITICAL DEBUG: ALWAYS log to confirm this code path is executing (log every 60 frames to avoid spam)
-    // This will help us see if the code is running at all
-    // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-    // Debug logging was running every frame when moving, causing massive performance issues
-    // Enable only when DEBUG_SETTINGS.logClimbDebug is true
-    if (DEBUG_SETTINGS.logClimbDebug) {
-      if (!window.climbDebugCounter) window.climbDebugCounter = 0;
-      window.climbDebugCounter++;
-      if (window.climbDebugCounter % 300 === 0) { // Only every 300 frames (5 seconds at 60fps) when enabled
-        const hasPlayerModelModule = !!playerModelModule;
-        const hasIsLoadedMethod = playerModelModule && typeof playerModelModule.isLoaded === 'function';
-        const isLoadedResult = hasIsLoadedMethod ? playerModelModule.isLoaded() : 'method_not_found';
-        const hasIsMouseCharacterMethod = playerModelModule && typeof playerModelModule.isMouseCharacter === 'function';
-        const isMouseCharacterResult = hasIsMouseCharacterMethod ? playerModelModule.isMouseCharacter() : 'method_not_found';
-        const characterType = playerModelModule ? playerModelModule.characterType : 'no_module';
-        const modelUserData = playerModelModule && playerModelModule.model ? playerModelModule.model.userData : null;
-        
-        console.log("🧗 [CLIMB DEBUG] Code executing:", {
-          frameCount: window.climbDebugCounter,
-          isMouseCharacter: isMouseCharacter,
-          hasMovementInput: hasMovementInput,
-          movementState: {
-            forward: movementForClimb.forward,
-            backward: movementForClimb.backward,
-            left: movementForClimb.left,
-            right: movementForClimb.right
-          },
-          hasCollisionMesh: !!collisionMesh,
-          hasGeometry: !!(collisionMesh && collisionMesh.geometry),
-          hasBoundsTree: !!(collisionMesh && collisionMesh.geometry && collisionMesh.geometry.boundsTree),
-          hasPlayerModelModule: hasPlayerModelModule,
-          hasIsLoadedMethod: hasIsLoadedMethod,
-          isLoadedResult: isLoadedResult,
-          hasIsMouseCharacterMethod: hasIsMouseCharacterMethod,
-          isMouseCharacterResult: isMouseCharacterResult,
-          characterType: characterType,
-          modelUserData: modelUserData,
-          isGamePaused: isGamePaused
-        });
-      }
-    }
-    
-    // Check climb state (Mouse character or Animation Library)
-    // 🚨 CRITICAL: Check when moving OR when already climbing (to maintain climb mode)
-    // Prevents detecting ground on spawn, but maintains climb when already on wall
-    let climbCheck = null;
-    
-    // Check if character can climb (Mouse or Animation Library)
-    const canCharacterClimb = isMouseCharacter || (playerModelModule && playerModelModule.characterType === 'animation_library');
-    
-    if (canCharacterClimb && (hasMovementInput || isClimbing) && collisionMesh && collisionMesh.geometry && collisionMesh.geometry.boundsTree) {
-      climbCheck = checkCanClimb();
-      
-      // CRITICAL: Disabled debug logging for performance (was causing FPS drops)
-      // Only log when DEBUG_SETTINGS.logClimbChecks is true
-      if (DEBUG_SETTINGS.logClimbChecks && hasMovementInput && Math.random() < 0.01) { // 1% chance when enabled
-        console.log("🧗 [CLIMB] Climb check result:", {
-          canClimb: climbCheck.canClimb,
-          distance: climbCheck.distance?.toFixed(3),
-          normal: climbCheck.surfaceNormal ? {
-            x: climbCheck.surfaceNormal.x.toFixed(2),
-            y: climbCheck.surfaceNormal.y.toFixed(2),
-            z: climbCheck.surfaceNormal.z.toFixed(2)
-          } : null,
-          isMouseCharacter: isMouseCharacter,
-          hasMovementInput: hasMovementInput
-        });
-      }
-    }
-    // CRITICAL PERFORMANCE FIX: Disabled debug logging for Level 2 and all levels
-    // This was logging every frame when player moved, causing massive FPS drops (1 FPS)
-    // Enable only when specifically debugging climbing issues by uncommenting below
-    /*
-    else if (hasMovementInput && DEBUG_SETTINGS.logClimbDebug) {
-      // Only log when DEBUG_SETTINGS.logClimbDebug is true (disabled by default)
-      console.log("🧗 [CLIMB] ❌ Climb check NOT RUNNING:", {
-        isMouseCharacter: isMouseCharacter,
-        hasCollisionMesh: !!collisionMesh,
-        hasGeometry: !!(collisionMesh && collisionMesh.geometry),
-        hasBoundsTree: !!(collisionMesh && collisionMesh.geometry && collisionMesh.geometry.boundsTree),
-        hasMovementInput: hasMovementInput,
-        reason: !isMouseCharacter ? "Not Mouse character" : 
-                !collisionMesh ? "No collision mesh" :
-                !collisionMesh.geometry ? "No geometry" :
-                !collisionMesh.geometry.boundsTree ? "No boundsTree" : "Unknown"
-      });
-    }
-    */
-    
-    // Update climb state (exit on jump, enter if can climb, exit if cannot)
-    if (isClimbing && playerVelocity.y > 2.0) {
-      // Player jumped while climbing - exit climb mode
-      isClimbing = false;
-      climbSurfaceNormal = null;
-      if (Math.random() < 0.5) {
-        console.log("🧗 [CLIMB] Exited climb mode - player jumped");
-      }
-    } else if (climbCheck && climbCheck.canClimb) {
-      // Can climb - enter climb mode (even without input - stay on wall)
-      // Note: Level 1 restriction already checked in checkCanClimb() - only collisionMesh allowed
-      if (!isClimbing) {
-        console.log("🧗 [CLIMB] ✅ Entered climb mode!", {
-          distance: climbCheck.distance?.toFixed(3),
-          normal: climbCheck.surfaceNormal ? {
-            x: climbCheck.surfaceNormal.x.toFixed(2),
-            y: climbCheck.surfaceNormal.y.toFixed(2),
-            z: climbCheck.surfaceNormal.z.toFixed(2)
-          } : null,
-          hasMovementInput: hasMovementInput,
-          objectName: climbCheck.objectName || 'unknown'
-        });
-      }
-      isClimbing = true;
-      climbSurfaceNormal = climbCheck.surfaceNormal;
-    } else if (isClimbing && (!climbCheck || !climbCheck.canClimb || !hasMovementInput)) {
-      // Exit climb mode if no climbable surface or no input (only if already climbing)
-      console.log("🧗 [CLIMB] Exited climb mode:", {
-        hasClimbCheck: !!climbCheck,
-        canClimb: climbCheck?.canClimb,
-        hasMovementInput: hasMovementInput
-      });
-      isClimbing = false;
-      climbSurfaceNormal = null;
-    }
-    
-    playerDirection.set(0, 0, 0);
-    
-    // Block player movement if bear trap is triggered (during death delay)
-    if (level1State.bearTrapTriggered && currentLevel === LEVEL_IDS.LEVEL1) {
-      // Player is trapped - block all movement
-      playerVelocity.x = 0;
-      playerVelocity.z = 0;
-      // Don't process input - player is stuck in trap
-    } else if (level2State.bearTrapTriggered && currentLevel === LEVEL_IDS.LEVEL2) {
-      // Player is trapped in Level 2 bear trap - block all movement
-      playerVelocity.x = 0;
-      playerVelocity.z = 0;
-      // Don't process input - player is stuck in trap
-    } else {
-      // 🎮 Use movement from Player Controls Module (if available) or fallback to global movement
-      const currentMovement = playerControls ? playerControls.getMovementState() : movement;
-      // Use joystick input on mobile or desktop test mode, keyboard otherwise
-      const useJoystick = (isMobileLandscape || window.enableDesktopJoysticks) && joystickActive;
-      if (useJoystick) {
-        playerDirection.x = joystickDirection.x;
-        playerDirection.z = -joystickDirection.y; // Invert Y for forward/back
-      } else {
-        // Keyboard input (WASD or Arrow keys) - from Player Controls Module
-        if (currentMovement.forward) playerDirection.z += 1;
-        if (currentMovement.backward) playerDirection.z -= 1;
-        if (currentMovement.left) playerDirection.x -= 1;
-        if (currentMovement.right) playerDirection.x += 1;
-      }
-    }
-
-    // Debug: Log movement state (disabled by default - enable only for debugging)
-    // Uncomment the following block to enable movement debugging:
-    /*
-    if (Math.random() < 0.01) { // 1% chance per frame
-      console.log("🎮 [MOVEMENT DEBUG]", {
-        forward: movement.forward,
-        backward: movement.backward,
-        left: movement.left,
-        right: movement.right,
-        sprint: movement.sprint,
-        playerDirection: { x: playerDirection.x.toFixed(2), z: playerDirection.z.toFixed(2) },
-        playerVelocity: { x: playerVelocity.x.toFixed(2), y: playerVelocity.y.toFixed(2), z: playerVelocity.z.toFixed(2) },
-        isGamePaused: isGamePaused,
-        controlsLocked: playerControls ? playerControls.getPointerLockControls().isLocked : false,
-        isFirstPerson: isFirstPerson(),
-        useJoystick: useJoystick,
-        joystickActive: joystickActive
-      });
-    }
-    */
-
-    if (playerDirection.lengthSq() > 0) {
-      playerDirection.normalize();
-      // 🎮 Use direction vectors from Player Controls Module (if available) or fallback to global functions
-      const forward = playerControls ? playerControls.getForwardVector() : getForwardVector();
-      const side = playerControls ? playerControls.getSideVector() : getSideVector();
-      // 🎮 Use movement from Player Controls Module (if available) or fallback to global movement
-      const currentMovement = playerControls ? playerControls.getMovementState() : movement;
-      
-      // 🧗 CLIMBING MODE: Handle vertical climbing movement
-      if (isClimbing && climbSurfaceNormal) {
-        // Climbing speed (slower than normal movement for better control)
-        const climbSpeed = 48; // Half of normal walk speed for climbing
-        const godClimbSpeed = godMode ? climbSpeed * 2 : climbSpeed;
-        
-        // Calculate wall-aligned movement directions
-        // Forward direction along wall surface (perpendicular to wall normal)
-        const wallRight = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), climbSurfaceNormal).normalize();
-        // If wallRight is invalid (parallel to up), use camera forward projected onto wall
-        if (!isFinite(wallRight.x) || wallRight.lengthSq() < 0.1) {
-          const projectedForward = forward.clone().sub(climbSurfaceNormal.clone().multiplyScalar(forward.dot(climbSurfaceNormal))).normalize();
-          if (projectedForward.lengthSq() > 0.1) {
-            wallRight.crossVectors(projectedForward, new THREE.Vector3(0, 1, 0)).normalize();
-          } else {
-            wallRight.set(1, 0, 0); // Fallback
-          }
-        }
-        const wallForward = new THREE.Vector3().crossVectors(climbSurfaceNormal, wallRight).normalize();
-        
-        // Apply horizontal movement along wall surface
-        playerVelocity.addScaledVector(wallForward, playerDirection.z * climbSpeed * 0.5 * delta);
-        playerVelocity.addScaledVector(wallRight, playerDirection.x * climbSpeed * 0.5 * delta);
-        
-        // Vertical climbing movement (up/down based on forward input)
-        // Forward input (W) = climb up, backward input (S) = climb down
-        if (playerDirection.z > 0.1) { // Moving forward = climb up
-          playerVelocity.y = godClimbSpeed * 0.6; // Climb up
-        } else if (playerDirection.z < -0.1) { // Moving backward = climb down
-          playerVelocity.y = -godClimbSpeed * 0.4; // Climb down slower
-        } else {
-          // No vertical input - hold position (zero vertical velocity when climbing)
-          playerVelocity.y = 0; // Hold position when not moving up/down
-        }
-        
-        // 🚨 CRITICAL: Position player against wall (maintain proper distance from wall surface)
-        // Calculate player position relative to wall
-        const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-        const playerToWall = new THREE.Vector3();
-        
-        // Raycast to find current distance to wall
-        const raycaster = new THREE.Raycaster();
-        const wallDirection = climbSurfaceNormal.clone().negate(); // Point toward wall
-        raycaster.set(playerPos, wallDirection);
-        raycaster.far = 2.0;
-        raycaster.near = 0.0;
-        
-        if (collisionMesh && collisionMesh.geometry && collisionMesh.geometry.boundsTree) {
-          const hits = raycaster.intersectObject(collisionMesh, false);
-          if (hits.length > 0) {
-            const hit = hits[0];
-            const targetDistance = 0.5; // Desired distance from wall (half a unit)
-            const currentDistance = hit.distance;
-            const distanceDiff = currentDistance - targetDistance;
-            
-            // If too close or too far, adjust position toward target distance
-            if (Math.abs(distanceDiff) > 0.05) {
-              const adjustment = wallDirection.clone().multiplyScalar(distanceDiff * 0.1); // Smooth adjustment
-              playerVelocity.addScaledVector(climbSurfaceNormal, -adjustment.length());
-              
-              // Also directly adjust position for immediate feedback
-              const directAdjust = wallDirection.clone().multiplyScalar(distanceDiff * 0.5);
-              playerCollider.start.add(directAdjust);
-              playerCollider.end.add(directAdjust);
-            }
-          }
-        }
-      } else {
-        // Normal movement (not climbing)
-        // 🚀 MOVEMENT SPEED SYNC: Normal mode = old god mode speed, God mode = 2x normal
-        // Normal player speed: 96 walk, 168 sprint (same as old god mode speed)
-        // God mode speed: 192 walk, 336 sprint (2x normal)
-        const baseSpeed = currentMovement.sprint ? 168 : 96; // Normal mode uses old god mode speed
-        const speed = godMode ? baseSpeed * 2 : baseSpeed; // God mode is 2x faster than normal
-        playerVelocity.addScaledVector(forward, playerDirection.z * speed * delta);
-        playerVelocity.addScaledVector(side, playerDirection.x * speed * delta);
-      }
-      
-      // Debug: Log when movement is applied (disabled by default)
-      // Uncomment to enable movement logging:
-      /*
-      if (Math.random() < 0.05) { // 5% chance per frame when moving
-        console.log("🎮 [MOVEMENT] Applying movement:", {
-          speed: speed.toFixed(2),
-          playerDirection: { x: playerDirection.x.toFixed(2), z: playerDirection.z.toFixed(2) }
-        });
-      }
-      */
-    }
-
-    // Check for wall collisions BEFORE moving
-    const deltaPosition = scratchVector1.copy(playerVelocity).multiplyScalar(delta);
-    const horizontalMove = new THREE.Vector3(deltaPosition.x, 0, deltaPosition.z);
-    
-    // Debug: Log movement before collision check (disabled by default)
-    // Uncomment to enable collision debugging:
-    /*
-    if (Math.random() < 0.02) { // 2% chance per frame
-      console.log("🎮 [COLLISION] Pre-collision check:", {
-        horizontalMove: { x: horizontalMove.x.toFixed(3), z: horizontalMove.z.toFixed(3) },
-        collisionMesh: !!collisionMesh,
-        collisionMeshBoundsTree: !!collisionMesh?.geometry?.boundsTree
-      });
-    }
-    */
-    
-    // Collision detection: Check for walls before moving
-    // Only check collisions if collision mesh exists and has geometry
-    // 🧗 CLIMBING: Always check collisions to detect climbable walls (even when already climbing to maintain state)
-    // Get Mouse character status for climb detection
-    // CRITICAL FIX: Multiple detection methods to ensure Mouse character is recognized
-    let isMouseCharacterForClimb = false;
-    
-    // Method 1: Check playerModelModule method
-    if (playerModelModule && 
-        typeof playerModelModule.isLoaded === 'function' && 
-        playerModelModule.isLoaded() && 
-        typeof playerModelModule.isMouseCharacter === 'function') {
-      isMouseCharacterForClimb = playerModelModule.isMouseCharacter() === true;
-    }
-    
-    // Method 2: Fallback - Check characterType property directly
-    if (!isMouseCharacterForClimb && playerModelModule && playerModelModule.characterType === 'mouse') {
-      isMouseCharacterForClimb = true;
-    }
-    
-    // Method 3: Fallback - Check model userData
-    if (!isMouseCharacterForClimb && playerCharacterModel && playerCharacterModel.userData && playerCharacterModel.userData.isMouseCharacter) {
-      isMouseCharacterForClimb = true;
-    }
-    
-    // Method 4: Fallback - Check selectedCharacterPath for Mouse
-    if (!isMouseCharacterForClimb && typeof selectedCharacterPath !== 'undefined' && selectedCharacterPath && selectedCharacterPath.toLowerCase().includes('mouse')) {
-      isMouseCharacterForClimb = true;
-    }
-    
-    // CRITICAL: Use currentMovement (from playerControls) instead of global movement variable
-    const movementForCollision = playerControls ? playerControls.getMovementState() : movement;
-    const hasMovementInputForClimb = (movementForCollision.forward || movementForCollision.backward || movementForCollision.left || movementForCollision.right);
-    
-    // CRITICAL: Always check collisions (remove !isClimbing condition) so wall detection works for climbing
-    if (horizontalMove.lengthSq() > 0.0001 && collisionMesh && collisionMesh.geometry && collisionMesh.geometry.boundsTree) {
-      // CRITICAL: Disabled debug logging for performance (was causing FPS drops)
-      // Only log when DEBUG_SETTINGS.logCollisionChecks is true
-      if (DEBUG_SETTINGS.logCollisionChecks && isMouseCharacterForClimb && hasMovementInputForClimb && Math.random() < 0.01) {
-        console.log("🧗 [CLIMB] 🔍 Collision check running:", {
-          horizontalMoveLength: horizontalMove.length().toFixed(3),
-          hasCollisionMesh: !!collisionMesh,
-          hasBoundsTree: !!collisionMesh.geometry.boundsTree,
-          isMouseCharacter: isMouseCharacterForClimb,
-          hasMovementInput: hasMovementInputForClimb,
-          isClimbing: isClimbing
-        });
-      }
-      
-      const raycaster = new THREE.Raycaster();
-      const moveDir = horizontalMove.clone().normalize();
-      const playerRadius = 0.35;
-      const moveDistance = horizontalMove.length();
-      const checkDistance = moveDistance + playerRadius + 0.1;
-      
-      // Optimized: Check only 3 key points (top, middle, bottom) at capsule edges
-      // Use the actual capsule center (lerp between start and end)
-      const capsuleCenter = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-      const capsuleHeight = playerCollider.end.y - playerCollider.start.y;
-      const checkPoints = [
-        // Bottom center (feet level) - at capsule edge in movement direction
-        new THREE.Vector3(capsuleCenter.x, playerCollider.start.y, capsuleCenter.z),
-        // Middle center (torso level) - at capsule edge in movement direction
-        new THREE.Vector3(capsuleCenter.x, playerCollider.start.y + capsuleHeight * 0.5, capsuleCenter.z),
-        // Top center (head level) - at capsule edge in movement direction
-        new THREE.Vector3(capsuleCenter.x, playerCollider.end.y, capsuleCenter.z)
-      ];
-      
-      // Add offset in movement direction to check capsule edge (forward edge)
-      const edgeOffset = moveDir.clone().multiplyScalar(playerRadius);
-      for (let i = 0; i < checkPoints.length; i++) {
-        checkPoints[i].add(edgeOffset);
-      }
-      
-      let wallBlocked = false;
-      let closestHitDistance = Infinity;
-      let wallHit = null; // Store hit info for climb detection
-      
-      // Only check collision mesh (faster than checking all scene objects)
-      for (const checkPoint of checkPoints) {
-        // Offset the ray start slightly forward to avoid self-intersection
-        const rayStart = checkPoint.clone().add(moveDir.clone().multiplyScalar(0.01));
-        raycaster.set(rayStart, moveDir);
-        raycaster.far = checkDistance;
-        raycaster.near = 0;
-        
-        try {
-        const wallHits = raycaster.intersectObject(collisionMesh, false);
-        if (wallHits.length > 0) {
-          const hit = wallHits[0];
-          const hitDistance = hit.distance;
-            // Check if wall is blocking movement (with small buffer to prevent clipping)
-            const blockingDistance = moveDistance + playerRadius + 0.1; // Small buffer for safety
-            if (hitDistance < blockingDistance) {
-            wallBlocked = true;
-            if (hitDistance < closestHitDistance) {
-              closestHitDistance = hitDistance;
-              wallHit = hit; // Store closest hit for climb detection
-            }
-              // Continue checking other points to find the closest wall
-              // (Don't break early - check all points for better accuracy)
-            }
-          }
-        } catch (collisionError) {
-          // Collision check error - log but don't block movement
-          console.error("❌ [COLLISION] Error checking collision:", collisionError);
-          // Don't block movement if collision check fails
-          wallBlocked = false;
-          break;
-        }
-      }
-      
-      // CRITICAL: Disabled debug logging for performance (was causing FPS drops)
-      // Only log when DEBUG_SETTINGS.logCollisionChecks is true
-      if (DEBUG_SETTINGS.logCollisionChecks && wallBlocked && hasMovementInputForClimb && Math.random() < 0.01) {
-        console.log("🧗 [CLIMB] 🔍 Collision check complete:", {
-          wallBlocked: wallBlocked,
-          hasWallHit: !!wallHit,
-          closestHitDistance: closestHitDistance !== Infinity ? closestHitDistance.toFixed(3) : "none",
-          isMouseCharacter: isMouseCharacterForClimb,
-          hasMovementInput: hasMovementInputForClimb,
-          horizontalMoveLength: horizontalMove.length().toFixed(3),
-          willCheckClimb: wallBlocked && wallHit && isMouseCharacterForClimb && hasMovementInputForClimb,
-          hasPlayerModelModule: !!playerModelModule,
-          playerModelCharacterType: playerModelModule ? playerModelModule.characterType : 'no_module',
-          playerModelLoaded: playerModelModule ? (typeof playerModelModule.isLoaded === 'function' ? playerModelModule.isLoaded() : 'no_method') : false,
-          modelUserData: playerCharacterModel ? playerCharacterModel.userData : null,
-          selectedCharacterPath: typeof selectedCharacterPath !== 'undefined' ? selectedCharacterPath : 'undefined'
-        });
-      }
-      
-      // 🧗 CLIMBING: If wall detected, check if it's climbable (use fallback detection if needed)
-      // CRITICAL: Always check wall verticality when wall is blocked, then verify Mouse character with fallbacks
-      if (wallBlocked && wallHit && hasMovementInputForClimb) {
-        // Check if the wall is vertical (climbable)
-        let wallNormal;
-        if (wallHit.face && wallHit.face.normal) {
-          wallNormal = wallHit.face.normal.clone();
-          // Transform to world space
-          if (wallHit.object && wallHit.object.matrixWorld) {
-            wallNormal.transformDirection(wallHit.object.matrixWorld);
-            wallNormal.normalize();
-          }
-        } else {
-          wallNormal = new THREE.Vector3(0, 1, 0); // Default to up (not vertical)
-        }
-        
-        // Surface is vertical if normal.y is close to 0 (pointing horizontally)
-        const isVertical = Math.abs(wallNormal.y) < 0.707;
-        
-        // CRITICAL: Re-check if character can climb (Mouse or Animation Library) with all fallback methods when wall is detected
-        // This ensures we catch the character even if initial detection failed
-        let canClimbWall = isMouseCharacterForClimb;
-        if (!canClimbWall) {
-          // Fallback check - use same multi-method detection for Mouse
-          if (playerModelModule && playerModelModule.characterType === 'mouse') {
-            canClimbWall = true;
-          } else if (playerCharacterModel && playerCharacterModel.userData && playerCharacterModel.userData.isMouseCharacter) {
-            canClimbWall = true;
-          } else if (typeof selectedCharacterPath !== 'undefined' && selectedCharacterPath && selectedCharacterPath.toLowerCase().includes('mouse')) {
-            canClimbWall = true;
-          } else if (playerModelModule && playerModelModule.characterType === 'animation_library') {
-            // Animation Library can also climb
-            canClimbWall = true;
-          }
-        }
-        
-        // CRITICAL: Disabled debug logging for performance (was causing FPS drops)
-        // Only log when DEBUG_SETTINGS.logCollisionChecks is true
-        if (DEBUG_SETTINGS.logCollisionChecks && Math.random() < 0.01) {
-          console.log("🧗 [CLIMB] 🔍 Wall collision detected - checking if climbable:", {
-            wallBlocked: wallBlocked,
-            hasWallHit: !!wallHit,
-            distance: closestHitDistance.toFixed(3),
-            normalY: wallNormal.y.toFixed(3),
-            isVertical: isVertical,
-            normal: { x: wallNormal.x.toFixed(2), y: wallNormal.y.toFixed(2), z: wallNormal.z.toFixed(2) },
-            isClimbing: isClimbing,
-            canClimb: isVertical && closestHitDistance < 1.5 && canClimbWall,
-            canClimbWall: canClimbWall,
-            isMouseCharacterForClimb_original: isMouseCharacterForClimb,
-            characterType: playerModelModule ? playerModelModule.characterType : 'unknown',
-            hasMovementInput: hasMovementInputForClimb,
-            threshold: "normalY < 0.707, distance < 1.5"
-          });
-        }
-        
-        // CRITICAL: Check if wall is climbable AND character can climb (Mouse or Animation Library)
-        // 🚨 CRITICAL FIX: Also check distance >= 0.1 to avoid self-intersection
-        if (isVertical && closestHitDistance < 1.5 && closestHitDistance >= 0.1 && canClimbWall) {
-          // This is a climbable wall - enter/maintain climb mode
-          // Stay in climb mode as long as wall is detected (even without movement input)
-          // CRITICAL: Disabled debug logging for performance (was causing FPS drops)
-          if (!isClimbing && DEBUG_SETTINGS.logClimbChecks) {
-            console.log("🧗 [CLIMB] ✅ Wall detected - Entering climb mode!", {
-              distance: closestHitDistance.toFixed(3),
-              normalY: wallNormal.y.toFixed(3),
-              normal: { x: wallNormal.x.toFixed(2), y: wallNormal.y.toFixed(2), z: wallNormal.z.toFixed(2) },
-              canClimbWall: canClimbWall,
-              characterType: playerModelModule ? playerModelModule.characterType : 'unknown',
-              hasMovementInput: hasMovementInputForClimb
-            });
-          }
-          isClimbing = true;
-          climbSurfaceNormal = wallNormal;
-          // Don't block movement - allow climbing
-        } else if (!isClimbing) {
-          // Not a climbable wall - block movement normally (only if not already climbing)
-          // CRITICAL: Disabled debug logging for performance (was causing FPS drops)
-          if (DEBUG_SETTINGS.logClimbChecks && canClimbWall && hasMovementInputForClimb && Math.random() < 0.01) {
-            console.log("🧗 [CLIMB] Wall not climbable:", {
-              isVertical: isVertical,
-              distance: closestHitDistance.toFixed(3),
-              normalY: wallNormal.y.toFixed(3),
-              canClimbWall: canClimbWall,
-              characterType: playerModelModule ? playerModelModule.characterType : 'unknown',
-              reason: !isVertical ? "Not vertical (normalY too high)" : 
-                      closestHitDistance >= 1.5 ? "Too far away" : 
-                      !canClimbWall ? "Character cannot climb" : "Unknown"
-            });
-          }
-          // Not a climbable wall - block movement normally (only if not already climbing)
-          if (DEBUG_SETTINGS.logCollisionChecks && isMouseCharacterForClimb && hasMovementInputForClimb && Math.random() < 0.01) {
-            console.log("🧗 [CLIMB] Wall not climbable:", {
-              isVertical: isVertical,
-              distance: closestHitDistance.toFixed(3),
-              normalY: wallNormal.y.toFixed(3),
-              reason: !isVertical ? "Not vertical (normalY too high)" : "Too far away"
-            });
-          }
-          playerVelocity.x = 0;
-          playerVelocity.z = 0;
-          deltaPosition.x = 0;
-          deltaPosition.z = 0;
-        }
-      } else if (wallBlocked) {
-        // Normal wall collision - block movement (not climbing or not Mouse character)
-        // Completely stop ALL horizontal movement when hitting a wall
-        playerVelocity.x = 0;
-        playerVelocity.z = 0;
-        deltaPosition.x = 0;
-        deltaPosition.z = 0;
-        
-        // Push player back if they're too close to the wall (prevent clipping)
-        // BUT: Don't push back if climbing (let climb system handle positioning)
-        if (!isClimbing) {
-          const minSafeDistance = playerRadius + 0.1; // Minimum safe distance from wall
-          if (closestHitDistance < minSafeDistance) {
-            const pushBackDistance = minSafeDistance - closestHitDistance;
-            const pushBack = moveDir.clone().multiplyScalar(pushBackDistance);
-            playerCollider.start.sub(pushBack);
-            playerCollider.end.sub(pushBack);
-            
-            // Debug: Log when player is pushed back (only occasionally)
-            if (Math.random() < 0.01) { // 1% chance per frame when pushed back
-              console.log("🚧 [COLLISION] Pushing player back from wall:", {
-                closestHitDistance: closestHitDistance.toFixed(3),
-                minSafeDistance: minSafeDistance.toFixed(3),
-                pushBackDistance: pushBackDistance.toFixed(3)
-              });
-            }
-          }
-        }
-      }
-    } else {
-      // Collision mesh not ready - log warning only once
-      if (horizontalMove.lengthSq() > 0.0001 && !window.collisionMeshWarningShown) {
-        console.warn("⚠️ [COLLISION] Collision check skipped - collision mesh not ready:", {
-          hasCollisionMesh: !!collisionMesh,
-          hasGeometry: !!collisionMesh?.geometry,
-          hasBoundsTree: !!collisionMesh?.geometry?.boundsTree
-        });
-        window.collisionMeshWarningShown = true; // Only show warning once
-      }
-    }
-    
-    // Always apply movement (even if collision mesh isn't ready)
-    // 🧗 CLIMBING: When climbing, allow vertical movement without gravity affecting it
-    playerCollider.translate(deltaPosition);
-    playerCollisions();
-    
-    // 🧗 CLIMBING: After collision check, re-check climb state to exit if no longer climbing
-    if (isClimbing) {
-      // Check if character can still climb (works for both Mouse and Animation Library)
-      const postClimbCheck = checkCanClimb();
-      if (!postClimbCheck || !postClimbCheck.canClimb || !hasMovementInput) {
-        // No longer can climb - exit climb mode
-        isClimbing = false;
-        climbSurfaceNormal = null;
-      }
-    }
-    
-    // Update player model position
-    if (playerModel) {
-      const playerCenter = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-      playerModel.position.copy(playerCenter);
-    }
-    
-    // Update controls only in first-person mode
-    // NOTE: Controls update is now handled by playerControls.update(delta) at line 18071
-    // This old update call is no longer needed
-    
-    updateCameraPosition(delta);
-
-    // Check chest collision for all levels (universal collision check)
-    checkChestCollision();
-    
-    if (currentLevel === LEVEL_IDS.LEVEL1) {
-    // Check bear trap collision (deadly trap)
-    if (level1State.bearTrap && !level1State.bearTrapTriggered) {
-      checkLevel1BearTrapCollision();
-      checkLevel1TreeCollision(); // Check collision with trees
-    }
-    
-    
-    if (floatingCheese) {
-      const playerPosition = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-      floatingCheese.update(delta, playerPosition, awardCheesePoints);
-      if (typeof updateCrosshairAim === 'function') {
-      const aimingState = updateCrosshairAim(floatingCheese);
-        if (aimingState && typeof updateRiddleAiming === 'function') {
-        updateRiddleAiming(delta, aimingState.aimingAtCheese, aimingState.aimingAtBlock);
-        if (riddleState.step2Complete) {
-          updateRiddle2(delta, aimingState.aimingAtCheese);
-        }
-        } else if (typeof updateRiddleAiming === 'function') {
-          updateRiddleAiming(delta, false, false);
-          if (riddleState.step2Complete) {
-            updateRiddle2(delta, false);
-          }
-        }
-      } else if (typeof updateRiddleAiming === 'function') {
-        updateRiddleAiming(delta, false, false);
-        if (riddleState.step2Complete) {
-          updateRiddle2(delta, false);
-        }
-      }
-      if (riddleState.riddle2.step2Complete) {
-        updateRiddle3(delta);
-      }
-      } else {
-        if (typeof updateRiddleAiming === 'function') {
-        updateRiddleAiming(delta, false, false);
-        if (riddleState.step2Complete) {
-          updateRiddle2(delta, false);
-          }
-        }
-        if (riddleState.riddle2.step2Complete) {
-          updateRiddle3(delta);
-        }
-      }
-    } else if (currentLevel === LEVEL_IDS.LEVEL2) {
-      updateLevel2(delta);
-    } else if (currentLevel === LEVEL_IDS.LEVEL3) {
-      updateLevel3(delta);
-    } else if (currentLevel === LEVEL_IDS.LEVEL4) {
-      updateLevel4(delta);
-    } else if (currentLevel === LEVEL_IDS.LEVEL5) {
-      updateLevel5(delta);
-    } else if (currentLevel === LEVEL_IDS.LEVEL6) {
-      updateLevel6(delta);
-    }
-    
-    // 🐭 UNIVERSAL CHARACTER RENDERING - Works for ALL levels (1, 2, 3, 4, and all future levels)
-    // Update player character (position, rotation, animations) - moved outside all level-specific checks
-    // This ensures character updates even if level-specific objects don't exist
-    // STANDARD RULE: See MOUSE_CHARACTER_RENDERING_STANDARD.md for implementation details
-    
-    // CRITICAL: Update PlayerModel module mixer if available (for death animations, etc.)
-    if (playerModelModule && playerModelModule.isLoaded()) {
-      playerModelModule.update(delta);
-    }
-    
-    // Also update legacy system for backward compatibility
-    updatePlayerCharacter(delta);
-    
-    // Update NPC monster
-    updateNPCMonster(delta);
-    
-    // 🦋 Update Level 1 butterfly animation
-    if (currentLevel === LEVEL_IDS.LEVEL1 && level1State.butterfly) {
-      updateLevel1Butterfly(delta);
-    }
-    
-    updateFootstepSoundState();
-      
-      // Debug: Ensure trigger block stays visible and add pulsing effect
-      if (riddleState.triggerBlock && !riddleState.step0Complete) {
-        // Always force visibility
-        riddleState.triggerBlock.visible = true;
-        riddleState.triggerBlock.frustumCulled = false;
-        
-        // Make sure it's in the scene
-        if (!scene.children.includes(riddleState.triggerBlock)) {
-          console.warn("🧩 [RIDDLE DEBUG] Trigger block was removed from scene! Re-adding...");
-          scene.add(riddleState.triggerBlock);
-        }
-        
-        // Add pulsing glow effect - subtle so texture is still visible
-        const time = Date.now() * 0.001;
-        const pulse = 0.5 + 0.5 * Math.sin(time * 2); // Faster, more noticeable pulse
-        if (riddleState.triggerBlock.material) {
-          // FIX: Set emissive color to yellow/gold for pulsing, but keep intensity low so texture shows through
-          riddleState.triggerBlock.material.emissive = new THREE.Color(0xffe066); // Golden glow
-          riddleState.triggerBlock.material.emissiveIntensity = 0.3 + pulse * 0.2; // Pulse between 0.3 and 0.5 (subtle - texture visible)
-        }
-        
-        // No debug markers - block is hidden and must be discovered through exploration
-    }
-  } else {
-    stopFootstepSound();
-  }
-
-  // 🌌 SKY SYSTEM UPDATE - Update sky system if active (before render)
-  if (skySystem && !isGamePaused) {
-    const playerPosition = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-    skySystem.update(delta, playerPosition, camera);
-  }
-  
-  // 🔧 DEBUG HELPERS UPDATE (January 4, 2026)
-  // NOTE: Player axes helper position is NOT updated every frame - it stays at the position where it was enabled
-  // This allows users to see where they were when they turned on the debug option
-  
-  // Update shadow camera helper if visible (January 4, 2026)
-  // The shadow camera helper needs to update every frame to follow the sun's movement
-  // CRITICAL: Update both world matrix AND projection matrix to follow dynamic sun/moon movement
-  // The shadow camera is attached to the sun, so it moves with the sun as it rotates around the scene
-  if (shadowCameraHelper && skySystem && skySystem.skybox && skySystem.skybox.sun) {
-    try {
-      // Ensure shadow camera matrices are up to date before updating helper
-      const shadowCamera = skySystem.skybox.sun.shadow.camera;
-      
-      // CRITICAL: The sun's position is updated by skySystem.update(), so we need to ensure
-      // the sun's matrix hierarchy is fully updated before updating the shadow camera
-      // The shadow camera follows the sun's position and looks at the sun's target
-      
-      // Update sun's target matrix (shadow center position)
-      if (skySystem.skybox.sun.target) {
-        skySystem.skybox.sun.target.updateMatrixWorld(true);
-      }
-      
-      // Update sun's matrix hierarchy
-      if (skySystem.skybox.sun.parent) {
-        skySystem.skybox.sun.parent.updateMatrixWorld(true);
-      }
-      skySystem.skybox.sun.updateMatrixWorld(true);
-      
-      // CRITICAL: For DirectionalLight, the shadow camera is positioned at the sun's position
-      // and oriented to look at the sun's target. Three.js handles this automatically,
-      // but we need to ensure the shadow camera's matrix reflects the current sun/target positions.
-      
-      // CRITICAL: The shadow camera's position is set to the sun's world position
-      // and it automatically looks at the sun's target. We need to ensure both are updated.
-      
-      // CRITICAL: For DirectionalLight shadows in Three.js, the shadow camera's orientation
-      // is automatically calculated based on the light's position and target during rendering.
-      // However, we need to manually ensure the shadow camera's matrix is updated for the helper.
-      
-      // The shadow camera's position is the sun's world position, and it looks at the sun's target.
-      // We need to ensure the shadow camera's world matrix reflects the sun's current position
-      // and the target's current position.
-      
-      // CRITICAL: For DirectionalLight, Three.js manages the shadow camera automatically.
-      // The shadow camera's position is derived from the light's position, and its orientation
-      // is calculated to look at the light's target. However, we need to ensure the shadow camera's
-      // world matrix is updated to reflect the sun's current position.
-      
-      // The shadow camera is positioned at the sun's world position and automatically looks at the target.
-      // We just need to ensure the sun's position and target are updated, then update the shadow camera's matrix.
-      
-      // CRITICAL: For DirectionalLight shadows, Three.js calculates the shadow camera's
-      // position and orientation internally. The shadow camera is positioned at the light's
-      // world position and automatically looks at the light's target (shadow center).
-      // However, when shadows are disabled (Level 2), Three.js might not update the shadow
-      // camera automatically, so we need to ensure it's updated manually for the helper.
-      
-      // The shadow camera's world position should match the sun's world position
-      // Get sun's world position
-      const sunWorldPosition = new THREE.Vector3();
-      skySystem.skybox.sun.getWorldPosition(sunWorldPosition);
-      
-      // Set shadow camera position to match sun's world position
-      shadowCamera.position.copy(sunWorldPosition);
-      
-      // Make shadow camera look at the sun's target (shadow center)
-      if (skySystem.skybox.sun.target) {
-        const targetWorldPosition = new THREE.Vector3();
-        skySystem.skybox.sun.target.getWorldPosition(targetWorldPosition);
-        shadowCamera.lookAt(targetWorldPosition);
-      }
-      
-      // Update shadow camera world matrix (position/rotation changes as sun moves)
-      // This must happen AFTER setting position and lookAt
-      shadowCamera.updateMatrixWorld(true);
-      
-      // Update projection matrix (frustum properties might change, though they usually don't)
-      shadowCamera.updateProjectionMatrix();
-      
-      // Update helper visualization to match current shadow camera state
-      // CameraHelper.update() uses the camera's matrixWorld to draw the frustum
-      // This will redraw the frustum at the shadow camera's current position/orientation
-      shadowCameraHelper.update();
-    } catch (error) {
-      // Silent error handling to prevent console spam if shadow camera is temporarily unavailable
-      // This can happen during level transitions when sky system is being reinitialized
-      if (Math.random() < 0.01) { // Log 1% of errors to avoid spam
-        console.warn("⚠️ [DEBUG] Shadow camera helper update error:", error);
-      }
-    }
-  }
-  
-  // Update world axes helper position if level changed (reposition at new level center)
-  if (worldAxesHelper) {
-    const levelCenter = getLevelCenter(currentLevel);
-    if (!worldAxesHelper.position.equals(levelCenter)) {
-      worldAxesHelper.position.copy(levelCenter);
-    }
-  }
-  
-  // Ensure world axes helper is visible (check if it exists and is in scene)
-  if (worldAxesHelper && !scene.children.includes(worldAxesHelper)) {
-    console.warn("⚠️ [DEBUG] World axes helper not in scene, re-adding...");
-    scene.add(worldAxesHelper);
-  }
-  
-  // Ensure player axes helper is visible (check if it exists and is in scene)
-  if (playerAxesHelper && !scene.children.includes(playerAxesHelper)) {
-    console.warn("⚠️ [DEBUG] Player axes helper not in scene, re-adding...");
-    scene.add(playerAxesHelper);
-  }
-  
-  // 🌱 GRASS SYSTEM UPDATE - Update grass system if active (before render)
-  // 🚨 CRITICAL PERFORMANCE FIX: Throttle grass updates in Level 3 to prevent blocking
-  // Level 3 has 286,000 grass blades - updating every frame causes 2-second freezes when moving
-  if (grassSystem && !isGamePaused) {
-    if (currentLevel === LEVEL_IDS.LEVEL3) {
-      // Throttle Level 3 grass updates - only update every 2 frames (~30 times per second at 60fps)
-      // This reduces CPU/GPU load by 50% while maintaining smooth grass animation
-      // Without this, grass update blocks the main thread causing 2-second freezes during movement
-      if (!level3State.lastGrassUpdate) level3State.lastGrassUpdate = 0;
-      level3State.lastGrassUpdate += delta;
-      if (level3State.lastGrassUpdate >= 0.033) { // Every ~2 frames at 60fps (33ms)
-        level3State.lastGrassUpdate = 0;
-        grassSystem.update(delta, camera);
-      }
-    } else {
-      // Other levels: Update every frame as normal
-      grassSystem.update(delta, camera);
-    }
-  }
-  
-  // 🎁 CHEST SYSTEM UPDATE - Update chest system if active level has chests
-  if (chestSystem && currentLevel && !isGamePaused) {
-    const playerPos = new THREE.Vector3().lerpVectors(
-      playerCollider.start,
-      playerCollider.end,
-      0.5
-    );
-    // Update chest system and get nearest interactable chest
-    nearestInteractableChest = chestSystem.update(currentLevel, playerPos, delta);
-    
-    // Show/hide interaction prompt based on nearest chest
-    if (guiSystem) {
-      if (nearestInteractableChest && !nearestInteractableChest.opened) {
-        guiSystem.showInteractionPrompt("Press [E] to Open");
-      } else {
-        guiSystem.hideInteractionPrompt();
-      }
-    }
-  } else {
-    // No chest system or game paused - hide prompt
-    nearestInteractableChest = null;
-    if (guiSystem) {
-      guiSystem.hideInteractionPrompt();
-    }
-  }
-  
-  // CRITICAL: Wrap render in try-catch to prevent skeleton errors from crashing the game
-  try {
-    renderer.render(scene, camera);
-  } catch (renderError) {
-    // If render error is related to skeleton, try to fix it
-    if (renderError.message && renderError.message.includes('skeleton') || renderError.message.includes('null')) {
-      console.error(`❌ [RENDER] Skeleton error during rendering - attempting to fix all monsters:`, renderError);
-      // Fix all monsters with broken skeletons
-      if (level4State.monsters) {
-        level4State.monsters.forEach((monster, idx) => {
-          if (monster && monster.mesh) {
-            monster.mesh.traverse((child) => {
-              if (child.isMesh && child.isSkinnedMesh && (!child.skeleton || !child.skeleton.bones)) {
-                console.warn(`⚠️ [RENDER] Emergency fix: Converting broken skeleton for monster ${idx}`);
-                child.isSkinnedMesh = false;
-                if (child.skeleton) delete child.skeleton;
-                if (child.bindMatrix) delete child.bindMatrix;
-                if (child.skinWeights) delete child.skinWeights;
-                if (child.skinIndices) delete child.skinIndices;
-              }
-            });
-          }
-        });
-      }
-      // Try to render again (might still fail, but won't crash)
-      try {
-        renderer.render(scene, camera);
-      } catch (retryError) {
-        console.error(`❌ [RENDER] Render retry failed:`, retryError);
-        // Continue - don't crash the game
-      }
-    } else {
-      // Non-skeleton error - log but don't crash
-      console.error(`❌ [RENDER] Render error:`, renderError);
-    }
-  }
-
-  if (stats) stats.end();
-}
-
-animate();
-
-const createCrosshair = () => {
-  let crosshair = document.getElementById('crosshair');
-  if (crosshair) return crosshair;
-  crosshair = document.createElement('div');
-  crosshair.id = 'crosshair';
-  crosshair.style.position = 'fixed';
-  crosshair.style.top = '50%';
-  crosshair.style.left = '50%';
-  crosshair.style.transform = 'translate(-50%, -50%)';
-  crosshair.style.width = '16px';
-  crosshair.style.height = '16px';
-  crosshair.style.pointerEvents = 'none';
-  crosshair.style.zIndex = '1000';
-
-  const createLine = (width, height) => {
-    const line = document.createElement('div');
-    line.style.position = 'absolute';
-    line.style.background = 'rgba(255, 255, 255, 0.9)';
-    line.style.width = width;
-    line.style.height = height;
-    line.style.left = '50%';
-    line.style.top = '50%';
-    line.style.transform = 'translate(-50%, -50%)';
-    line.style.borderRadius = '1px';
-    line.style.transition = 'background-color 0.1s, box-shadow 0.1s'; // Smooth color transitions
-    return line;
-  };
-
-  const horizontal = createLine('16px', '2px');
-  const vertical = createLine('2px', '16px');
-
-  crosshair.appendChild(horizontal);
-  crosshair.appendChild(vertical);
-  document.body.appendChild(crosshair);
-  return crosshair;
-};
-
-// Initialize crosshair element (declared early to avoid TDZ, initialized here after function is defined)
-crosshairElement = createCrosshair();
-
-// Mobile Joystick (for landscape mode or desktop testing)
-function createMobileJoystick() {
-  const shouldShow = (isMobileLandscape || window.enableDesktopJoysticks) && !mobileJoystick;
-  if (!shouldShow) return;
-  
-  const joystickContainer = document.createElement("div");
-  Object.assign(joystickContainer.style, {
-    position: "fixed",
-    bottom: "30px",
-    left: "30px",
-    width: "120px",
-    height: "120px",
-    zIndex: "999",
-    pointerEvents: "auto",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center"
-  });
-
-  const joystickBase = document.createElement("div");
-  Object.assign(joystickBase.style, {
-    width: "100px",
-    height: "100px",
-    borderRadius: "50%",
-    background: "rgba(15, 23, 42, 0.7)",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    position: "relative",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)"
-  });
-
-  const joystickHandle = document.createElement("div");
-  Object.assign(joystickHandle.style, {
-    width: "50px",
-    height: "50px",
-    borderRadius: "50%",
-    background: "linear-gradient(135deg, #ffe066, #facc15)",
-    border: "2px solid rgba(255, 255, 255, 0.3)",
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    transition: "transform 0.1s ease-out",
-    boxShadow: "0 2px 8px rgba(250, 204, 21, 0.4)",
-    cursor: "grab"
-  });
-
-  joystickBase.appendChild(joystickHandle);
-  joystickContainer.appendChild(joystickBase);
-  document.body.appendChild(joystickContainer);
-
-  const maxDistance = 25; // Max distance from center
-  let currentTouch = null;
-
-  function getBaseCenter() {
-    const baseRect = joystickBase.getBoundingClientRect();
-    return {
-      x: baseRect.left + baseRect.width / 2,
-      y: baseRect.top + baseRect.height / 2
-    };
-  }
-
-  function updateJoystick(clientX, clientY) {
-    const center = getBaseCenter();
-    const deltaX = clientX - center.x;
-    const deltaY = clientY - center.y;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    
-    if (distance > maxDistance) {
-      const angle = Math.atan2(deltaY, deltaX);
-      joystickDirection.x = Math.cos(angle);
-      joystickDirection.y = Math.sin(angle);
-      joystickHandle.style.transform = `translate(calc(-50% + ${Math.cos(angle) * maxDistance}px), calc(-50% + ${Math.sin(angle) * maxDistance}px))`;
-    } else {
-      joystickDirection.x = deltaX / maxDistance;
-      joystickDirection.y = deltaY / maxDistance;
-      joystickHandle.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-    }
-    joystickActive = true;
-    refreshJoystickMovementFlags();
-  }
-
-  function resetJoystick() {
-    joystickDirection.x = 0;
-    joystickDirection.y = 0;
-    joystickHandle.style.transform = "translate(-50%, -50%)";
-    joystickActive = false;
-    currentTouch = null;
-    refreshJoystickMovementFlags();
-  }
-
-  // Support both touch and mouse for desktop testing
-  let isDragging = false;
-
-  function handleStart(clientX, clientY) {
-    isDragging = true;
-    updateJoystick(clientX, clientY);
-  }
-
-  function handleMove(clientX, clientY) {
-    if (isDragging) {
-      updateJoystick(clientX, clientY);
-    }
-  }
-
-  function handleEnd() {
-    isDragging = false;
-    resetJoystick();
-    // Ensure cursor is visible after joystick drag ends (especially in joystick view mode)
-    if (isJoystickView()) {
-      document.body.style.cursor = "default";
-    }
-  }
-
-  // Touch events
-  joystickContainer.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    currentTouch = touch.identifier;
-    handleStart(touch.clientX, touch.clientY);
-  });
-
-  joystickContainer.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    if (currentTouch !== null) {
-      const touch = Array.from(e.touches).find(t => t.identifier === currentTouch);
-      if (touch) {
-        handleMove(touch.clientX, touch.clientY);
-      }
-    }
-  });
-
-  joystickContainer.addEventListener("touchend", (e) => {
-    e.preventDefault();
-    handleEnd();
-  });
-
-  joystickContainer.addEventListener("touchcancel", (e) => {
-    e.preventDefault();
-    handleEnd();
-  });
-
-  // Mouse events for desktop testing (with global drag support)
-  const globalMouseMove = (e) => {
-    if (isDragging) {
-      e.preventDefault();
-      handleMove(e.clientX, e.clientY);
-    }
-  };
-
-  const globalMouseUp = (e) => {
-    if (isDragging) {
-      e.preventDefault();
-      handleEnd();
-      document.removeEventListener("mousemove", globalMouseMove);
-      document.removeEventListener("mouseup", globalMouseUp);
-      // Ensure cursor is visible after joystick drag ends (especially in joystick view mode)
-      if (isJoystickView()) {
-        document.body.style.cursor = "default";
-      }
-    }
-  };
-
-  joystickContainer.addEventListener("mousedown", (e) => {
-    e.preventDefault();
-    handleStart(e.clientX, e.clientY);
-    document.addEventListener("mousemove", globalMouseMove);
-    document.addEventListener("mouseup", globalMouseUp);
-  });
-
-  joystickContainer.addEventListener("mouseleave", (e) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    handleEnd();
-    document.removeEventListener("mousemove", globalMouseMove);
-    document.removeEventListener("mouseup", globalMouseUp);
-    // Ensure cursor is visible after joystick drag ends (especially in joystick view mode)
-    if (isJoystickView()) {
-      document.body.style.cursor = "default";
-    }
-  });
-
-  mobileJoystick = joystickContainer;
-  return joystickContainer;
-}
-
-// Mobile Camera Control Joystick (right side, for third-person camera rotation only)
-function createMobileCameraJoystick() {
-  const shouldShow = (isMobileLandscape || window.enableDesktopJoysticks) && !mobileCameraJoystick;
-  if (!shouldShow) return;
-  
-  // Only show in third-person or joystick view mode
-  if (isFirstPerson()) return;
-  
-  const joystickContainer = document.createElement("div");
-  Object.assign(joystickContainer.style, {
-    position: "fixed",
-    bottom: "30px",
-    right: "30px",
-    width: "120px",
-    height: "120px",
-    zIndex: "999",
-    pointerEvents: "auto",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center"
-  });
-
-  const joystickBase = document.createElement("div");
-  Object.assign(joystickBase.style, {
-    width: "100px",
-    height: "100px",
-    borderRadius: "50%",
-    background: "rgba(15, 23, 42, 0.7)",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    position: "relative",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)"
-  });
-
-  const joystickHandle = document.createElement("div");
-  Object.assign(joystickHandle.style, {
-    width: "50px",
-    height: "50px",
-    borderRadius: "50%",
-    background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
-    border: "2px solid rgba(255, 255, 255, 0.3)",
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    transition: "transform 0.1s ease-out",
-    boxShadow: "0 2px 8px rgba(251, 191, 36, 0.4)",
-    cursor: "grab"
-  });
-
-  joystickBase.appendChild(joystickHandle);
-  joystickContainer.appendChild(joystickBase);
-  document.body.appendChild(joystickContainer);
-
-  const maxDistance = 25;
-  let currentTouch = null;
-
-  function getBaseCenter() {
-    const baseRect = joystickBase.getBoundingClientRect();
-    return {
-      x: baseRect.left + baseRect.width / 2,
-      y: baseRect.top + baseRect.height / 2
-    };
-  }
-
-  function updateJoystick(clientX, clientY) {
-    const center = getBaseCenter();
-    const deltaX = clientX - center.x;
-    const deltaY = clientY - center.y;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    
-    if (distance > maxDistance) {
-      const angle = Math.atan2(deltaY, deltaX);
-      cameraJoystickDirection.x = Math.cos(angle);
-      cameraJoystickDirection.y = Math.sin(angle);
-      joystickHandle.style.transform = `translate(calc(-50% + ${Math.cos(angle) * maxDistance}px), calc(-50% + ${Math.sin(angle) * maxDistance}px))`;
-    } else {
-      cameraJoystickDirection.x = deltaX / maxDistance;
-      cameraJoystickDirection.y = deltaY / maxDistance;
-      joystickHandle.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-    }
-    cameraJoystickActive = true;
-  }
-
-  function resetJoystick() {
-    cameraJoystickDirection.x = 0;
-    cameraJoystickDirection.y = 0;
-    joystickHandle.style.transform = "translate(-50%, -50%)";
-    cameraJoystickActive = false;
-    currentTouch = null;
-  }
-
-  // Support both touch and mouse for desktop testing
-  let isDragging = false;
-
-  function handleStart(clientX, clientY) {
-    isDragging = true;
-    updateJoystick(clientX, clientY);
-  }
-
-  function handleMove(clientX, clientY) {
-    if (isDragging) {
-      updateJoystick(clientX, clientY);
-    }
-  }
-
-  function handleEnd() {
-    isDragging = false;
-    resetJoystick();
-    // Ensure cursor is visible after joystick drag ends (especially in joystick view mode)
-    if (isJoystickView()) {
-      document.body.style.cursor = "default";
-    }
-  }
-
-  // Touch events
-  joystickContainer.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    currentTouch = touch.identifier;
-    handleStart(touch.clientX, touch.clientY);
-  });
-
-  joystickContainer.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    if (currentTouch !== null) {
-      const touch = Array.from(e.touches).find(t => t.identifier === currentTouch);
-      if (touch) {
-        handleMove(touch.clientX, touch.clientY);
-      }
-    }
-  });
-
-  joystickContainer.addEventListener("touchend", (e) => {
-    e.preventDefault();
-    handleEnd();
-  });
-
-  joystickContainer.addEventListener("touchcancel", (e) => {
-    e.preventDefault();
-    handleEnd();
-  });
-
-  // Mouse events for desktop testing
-  const globalMouseMove = (e) => {
-    if (isDragging) {
-      e.preventDefault();
-      handleMove(e.clientX, e.clientY);
-    }
-  };
-
-  const globalMouseUp = (e) => {
-    if (isDragging) {
-      e.preventDefault();
-      handleEnd();
-      document.removeEventListener("mousemove", globalMouseMove);
-      document.removeEventListener("mouseup", globalMouseUp);
-      // Ensure cursor is visible after joystick drag ends (especially in joystick view mode)
-      if (isJoystickView()) {
-        document.body.style.cursor = "default";
-      }
-    }
-  };
-
-  joystickContainer.addEventListener("mousedown", (e) => {
-    e.preventDefault();
-    handleStart(e.clientX, e.clientY);
-    document.addEventListener("mousemove", globalMouseMove);
-    document.addEventListener("mouseup", globalMouseUp);
-  });
-
-  joystickContainer.addEventListener("mouseleave", (e) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    handleEnd();
-    document.removeEventListener("mousemove", globalMouseMove);
-    document.removeEventListener("mouseup", globalMouseUp);
-    // Ensure cursor is visible after joystick drag ends (especially in joystick view mode)
-    if (isJoystickView()) {
-      document.body.style.cursor = "default";
-    }
-  });
-
-  mobileCameraJoystick = joystickContainer;
-  return joystickContainer;
-}
-
-// Initialize mobile joysticks if in landscape mode or desktop testing enabled
-function checkAndCreateJoystick() {
-  const newIsLandscape = isMobile && window.innerWidth > window.innerHeight;
-  const forceLandscape = window.forceLandscapeMode || false;
-  const desktopTestEnabled = window.enableDesktopJoysticks || false;
-  const joystickViewMode = isJoystickView();
-  const shouldShow = newIsLandscape || forceLandscape || desktopTestEnabled || joystickViewMode;
-  
-  if (shouldShow) {
-    // Create movement joystick if needed
-    if (!mobileJoystick) {
-      createMobileJoystick();
-    }
-    // Create camera joystick if needed (only in third-person or joystick view)
-    if (!mobileCameraJoystick && !isFirstPerson()) {
-      createMobileCameraJoystick();
-    }
-    // Update visibility based on camera mode and pause state
-    if (mobileJoystick) {
-      mobileJoystick.style.display = (isGamePaused) ? "none" : "flex";
-    }
-    if (mobileCameraJoystick) {
-      mobileCameraJoystick.style.display = (isFirstPerson() || isGamePaused) ? "none" : "flex";
-    }
-  } else {
-    // Only remove if not in joystick view mode (which always needs joysticks)
-    if (!joystickViewMode) {
-      if (mobileJoystick) {
-        mobileJoystick.remove();
-        mobileJoystick = null;
-        joystickActive = false;
-      }
-      if (mobileCameraJoystick) {
-        mobileCameraJoystick.remove();
-        mobileCameraJoystick = null;
-        cameraJoystickActive = false;
-      }
-    }
-  }
-}
-
-// Check on load
-checkAndCreateJoystick();
-
-// Update joystick on orientation/resize change
-window.addEventListener("orientationchange", () => {
-  setTimeout(() => {
-    checkAndCreateJoystick();
-    // Update landscape buttons if options menu is open
-    if (optionsMenu && isMobile) {
-      updateLandscapeButtons();
-    }
-  }, 100);
-});
-
-// Listen for screen orientation changes (more reliable than orientationchange event)
-if (screen.orientation && screen.orientation.addEventListener) {
-  screen.orientation.addEventListener("change", () => {
-    setTimeout(() => {
-      checkAndCreateJoystick();
-      // Update landscape buttons if options menu is open
-      if (optionsMenu && isMobile) {
-        updateLandscapeButtons();
-      }
     }, 100);
-  });
+  }, 50);
 }
 
-window.addEventListener("resize", () => {
-  if (isMobile) {
-    checkAndCreateJoystick();
-  }
-});
-
-// Update crosshair based on what player is aiming at (works in both first-person and third-person)
-function updateCrosshairAim(cheese) {
-  if (!crosshairElement) return { aimingAtCheese: false, aimingAtBlock: false };
+function createLevel1Tree(spawnData, blockSize) {
+  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
+  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
+  const treeX = spawnX - 10;
+  const treeZ = spawnZ + 20;
+  const floorTopY = 0 * blockSize + blockSize;
+  const treeY = floorTopY;
   
-  // Raycast from camera center to see what player is aiming at (FPS-style)
-  const raycaster = new THREE.Raycaster();
-  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); // Center of screen (crosshair position)
-  raycaster.far = 200; // Increased range for better detection (was 100)
+  level1State.treePosition = new THREE.Vector3(treeX, treeY, treeZ);
   
-  // STEP 1: Check if aiming at cheese entity (STRICT - only counts when crosshair is directly on moving cheese)
-  let cheeseIntersects = [];
-  let aimingAtCheese = false;
+  console.log("🌳 [LEVEL 1] Creating tree at:", level1State.treePosition);
   
-  // Riddle #1 Step 1: Aim at cheese (only if Step 0 is complete and Step 1 is not complete)
-  if (cheese && cheese.mesh && riddleState.step0Complete && !riddleState.step1Complete) {
-    // STRICT: Direct raycast intersection ONLY - must hit the actual cheese mesh pixels
-    // No fallback tolerance - crosshair must be directly on the moving cheese entity
-    cheeseIntersects = raycaster.intersectObject(cheese.mesh, true);
-    
-    // NO FALLBACK: Removed distance/angle fallback check
-    // Step 1 now requires EXACT raycast hit on the cheese mesh - same strictness as Step 2
-    // If crosshair moves even 1 pixel off the moving cheese entity, aimingAtCheese becomes false immediately
-    aimingAtCheese = cheeseIntersects.length > 0 && cheeseIntersects[0].distance < 50;
-  }
+  const treePath = resolveAssetPath("textures/3d models/tree-with-arms/tree-with-arms.glb");
   
-  // Riddle #2 Step 2: Aim at cheese (only if Riddle #1 is complete and Riddle #2 Step 1 is complete)
-  // Check separately - don't interfere with Riddle #1 detection
-  if (cheese && cheese.mesh && riddleState.step2Complete && riddleState.riddle2.step1Complete && !riddleState.riddle2.step2Complete) {
-    // Check if aiming at cheese for Riddle #2 (same strict detection as Riddle #1)
-    const riddle2CheeseIntersects = raycaster.intersectObject(cheese.mesh, true);
-    if (riddle2CheeseIntersects.length > 0 && riddle2CheeseIntersects[0].distance < 50) {
-        aimingAtCheese = true;
-    }
-  }
-  
-  // STEP 2: Check if aiming at unlockable block (ULTRA-STRICT - like Step 1 cheese detection)
-  let blockIntersects = [];
-  let aimingAtBlock = false;
-  
-  if (riddleState.unlockableBlock && riddleState.step1Complete && riddleState.unlockableBlock.visible && !riddleState.step2Complete) {
-    // Ensure block is in scene and has proper matrix
-    if (!scene.children.includes(riddleState.unlockableBlock)) {
-      scene.add(riddleState.unlockableBlock);
-    }
-    riddleState.unlockableBlock.updateMatrixWorld(true);
-    
-    // ULTRA-STRICT: Direct raycast intersection ONLY (same method as Step 1 cheese)
-    // Player must keep crosshair EXACTLY on the block - any pixel deviation = timer decay
-    blockIntersects = raycaster.intersectObject(riddleState.unlockableBlock, true);
-    
-    // ULTRA-STRICT: Only count if we have a valid raycast intersection
-    // Same distance check as Step 1 (50 units) but NO fallback - must be exact hit
-    // If crosshair moves even 1 pixel off the block, aimingAtBlock becomes false immediately
-    aimingAtBlock = blockIntersects.length > 0 && blockIntersects[0].distance < 50;
-    
-    // NO FALLBACK: Unlike Step 1, Step 2 has NO distance/angle fallback check
-    // This makes it trickier - player must maintain perfect crosshair alignment
-  }
-  
-  // Change crosshair color if aiming at cheese or unlockable block
-  const horizontal = crosshairElement.querySelector('div:first-child');
-  const vertical = crosshairElement.querySelector('div:last-child');
-  
-  // Debug logging for Step 1 (cheese aiming) - only log occasionally
-  if (riddleState.step0Complete && !riddleState.step1Complete && Math.random() < 0.02) {
-    console.log("🧩 [RIDDLE DEBUG] Step 1 (cheese) aiming check:", {
-      cheeseExists: !!(cheese && cheese.mesh),
-      cheesePosition: cheese?.mesh?.position ? {
-        x: cheese.mesh.position.x.toFixed(2),
-        y: cheese.mesh.position.y.toFixed(2),
-        z: cheese.mesh.position.z.toFixed(2)
-      } : 'N/A',
-      intersectsCount: cheeseIntersects.length,
-      distance: cheeseIntersects.length > 0 ? cheeseIntersects[0].distance.toFixed(2) : 'N/A',
-      aimingAtCheese: aimingAtCheese,
-      cheeseAimTimer: riddleState.cheeseAimTimer.toFixed(2),
-      cameraPosition: {
-        x: camera.position.x.toFixed(2),
-        y: camera.position.y.toFixed(2),
-        z: camera.position.z.toFixed(2)
-      }
+  loadModel(treePath)
+    .then((gltf) => {
+      const tree = gltf.scene;
+      
+      const box = new THREE.Box3().setFromObject(tree);
+      const size = box.getSize(new THREE.Vector3());
+      
+      tree.position.set(treeX, treeY, treeZ);
+      tree.scale.setScalar(9.0);
+      tree.rotation.y = 0;
+      
+      tree.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material = child.material.map(mat => processWeaponMaterial(mat));
+            } else {
+              child.material = processWeaponMaterial(child.material);
+            }
+          }
+        }
+      });
+      
+      tree.visible = true;
+      tree.frustumCulled = false;
+      tree.updateMatrixWorld(true);
+      
+      scene.add(tree);
+      level1State.tree = tree;
+      
+      tree.userData.collisionRadius = Math.max(size.x, size.z) * 0.5;
+      tree.userData.collisionPosition = new THREE.Vector3(treeX, treeY, treeZ);
+      
+      console.log("✅ [LEVEL 1] Tree created successfully");
+    })
+    .catch((error) => {
+      console.error("❌ [LEVEL 1] Failed to load tree model:", error);
     });
-  }
-  
-  // Debug logging for Step 2 (block aiming) - only log occasionally
-  if (riddleState.step1Complete && !riddleState.step2Complete && Math.random() < 0.02) {
-    console.log("🧩 [RIDDLE DEBUG] Step 2 (block) aiming check:", {
-      blockExists: !!riddleState.unlockableBlock,
-      blockVisible: riddleState.unlockableBlock?.visible,
-      blockInScene: riddleState.unlockableBlock ? scene.children.includes(riddleState.unlockableBlock) : false,
-      blockPosition: riddleState.unlockableBlock?.position ? {
-        x: riddleState.unlockableBlock.position.x.toFixed(2),
-        y: riddleState.unlockableBlock.position.y.toFixed(2),
-        z: riddleState.unlockableBlock.position.z.toFixed(2)
-      } : 'N/A',
-      intersectsCount: blockIntersects.length,
-      distance: blockIntersects.length > 0 ? blockIntersects[0].distance.toFixed(2) : 'N/A',
-      aimingAtBlock: aimingAtBlock,
-      blockAimTimer: riddleState.blockAimTimer.toFixed(2),
-      cameraPosition: {
-        x: camera.position.x.toFixed(2),
-        y: camera.position.y.toFixed(2),
-        z: camera.position.z.toFixed(2)
-      }
-    });
-  }
-  
-  if (aimingAtCheese || aimingAtBlock) {
-    // Aiming at target - make crosshair more visible (yellow/gold)
-    if (horizontal && vertical) {
-      horizontal.style.backgroundColor = '#fbbf24';
-      vertical.style.backgroundColor = '#fbbf24';
-      horizontal.style.boxShadow = '0 0 6px #fbbf24, 0 0 12px rgba(251, 191, 36, 0.5)';
-      vertical.style.boxShadow = '0 0 6px #fbbf24, 0 0 12px rgba(251, 191, 36, 0.5)';
-    }
-  } else {
-    // Not aiming at target - default white
-    if (horizontal && vertical) {
-      horizontal.style.backgroundColor = '#ffffff';
-      vertical.style.backgroundColor = '#ffffff';
-      horizontal.style.boxShadow = 'none';
-      vertical.style.boxShadow = 'none';
-    }
-  }
-  
-  // Return aiming state for riddle timer (delta will be passed separately)
-  return { aimingAtCheese, aimingAtBlock };
 }
 
-// Create the hidden trigger block in the back of the game field (Step 0 discovery)
+function createLevel1Tree2(spawnData, blockSize) {
+  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
+  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
+  const treeX = spawnX + 15;
+  const treeZ = spawnZ + 30;
+  const treeY = 1.0;
+  
+  level1State.tree2Position = new THREE.Vector3(treeX, treeY, treeZ);
+  const treePath = resolveAssetPath("textures/3d models/tree-with-arms/tree-with-arms.glb");
+  
+  loadModel(treePath)
+    .then((gltf) => {
+      const tree = gltf.scene;
+      tree.position.set(treeX, treeY, treeZ);
+      tree.scale.setScalar(9.0);
+      tree.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material = child.material.map(mat => processWeaponMaterial(mat));
+            } else {
+              child.material = processWeaponMaterial(child.material);
+            }
+          }
+        }
+      });
+      tree.visible = true;
+      tree.frustumCulled = false;
+      scene.add(tree);
+      level1State.tree2 = tree;
+      const box = new THREE.Box3().setFromObject(tree);
+      const size = box.getSize(new THREE.Vector3());
+      tree.userData.collisionRadius = Math.max(size.x, size.z) * 0.5;
+      tree.userData.collisionPosition = new THREE.Vector3(treeX, treeY, treeZ);
+    })
+    .catch((error) => {
+      console.error("❌ [LEVEL 1] Failed to load tree2 model:", error);
+    });
+}
+
+function createLevel1Tree3(spawnData, blockSize) {
+  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
+  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
+  const treeX = spawnX - 20;
+  const treeZ = spawnZ + 40;
+  const treeY = 1.0;
+  
+  level1State.tree3Position = new THREE.Vector3(treeX, treeY, treeZ);
+  const treePath = resolveAssetPath("textures/3d models/tree-with-arms/tree-with-arms.glb");
+  
+  loadModel(treePath)
+    .then((gltf) => {
+      const tree = gltf.scene;
+      tree.position.set(treeX, treeY, treeZ);
+      tree.scale.setScalar(9.0);
+      tree.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material = child.material.map(mat => processWeaponMaterial(mat));
+            } else {
+              child.material = processWeaponMaterial(child.material);
+            }
+          }
+        }
+      });
+      tree.visible = true;
+      tree.frustumCulled = false;
+      scene.add(tree);
+      level1State.tree3 = tree;
+      const box = new THREE.Box3().setFromObject(tree);
+      const size = box.getSize(new THREE.Vector3());
+      tree.userData.collisionRadius = Math.max(size.x, size.z) * 0.5;
+      tree.userData.collisionPosition = new THREE.Vector3(treeX, treeY, treeZ);
+    })
+    .catch((error) => {
+      console.error("❌ [LEVEL 1] Failed to load tree3 model:", error);
+    });
+}
+
+function createLevel1Tree4(spawnData, blockSize) {
+  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
+  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
+  const treeX = spawnX + 25;
+  const treeZ = spawnZ + 50;
+  const treeY = 1.0;
+  
+  level1State.tree4Position = new THREE.Vector3(treeX, treeY, treeZ);
+  const treePath = resolveAssetPath("textures/3d models/tree-with-arms/tree-with-arms.glb");
+  
+  loadModel(treePath)
+    .then((gltf) => {
+      const tree = gltf.scene;
+      tree.position.set(treeX, treeY, treeZ);
+      tree.scale.setScalar(9.0);
+      tree.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material = child.material.map(mat => processWeaponMaterial(mat));
+            } else {
+              child.material = processWeaponMaterial(child.material);
+            }
+          }
+        }
+      });
+      tree.visible = true;
+      tree.frustumCulled = false;
+      scene.add(tree);
+      level1State.tree4 = tree;
+      const box = new THREE.Box3().setFromObject(tree);
+      const size = box.getSize(new THREE.Vector3());
+      tree.userData.collisionRadius = Math.max(size.x, size.z) * 0.5;
+      tree.userData.collisionPosition = new THREE.Vector3(treeX, treeY, treeZ);
+    })
+    .catch((error) => {
+      console.error("❌ [LEVEL 1] Failed to load tree4 model:", error);
+    });
+}
+
+function createLevel1Butterfly(spawnData, blockSize) {
+  console.log("🦋 [LEVEL 1] Creating butterfly at center of field...");
+  
+  const butterflyModelPath = resolveAssetPath("textures/3d models/Butterfly1/butterfly.glb");
+  
+  loadModel(butterflyModelPath)
+    .then((gltf) => {
+      const butterfly = gltf.scene.clone(true);
+      
+      const butterflyBox = new THREE.Box3().setFromObject(butterfly);
+      const butterflySize = butterflyBox.getSize(new THREE.Vector3());
+      
+      butterfly.scale.set(1.0, 1.0, 1.0);
+      butterfly.position.set(butterflyCenterX, butterflyCenterY, butterflyCenterZ);
+      
+      butterflyWingMeshes = [];
+      butterfly.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          child.frustumCulled = false;
+          
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material = child.material.map(mat => processWeaponMaterial(mat));
+            } else {
+              child.material = processWeaponMaterial(child.material);
+            }
+          }
+          
+          const meshName = child.name.toLowerCase();
+          if (meshName.includes('wing') || meshName.includes('flap')) {
+            butterflyWingMeshes.push(child);
+          }
+        }
+      });
+      
+      if (butterflyWingMeshes.length === 0) {
+        const allMeshes = [];
+        butterfly.traverse((child) => {
+          if (child.isMesh) allMeshes.push(child);
+        });
+        butterflyWingMeshes = allMeshes;
+      }
+      
+      if (gltf.animations && gltf.animations.length > 0) {
+        level1State.butterflyMixer = new THREE.AnimationMixer(butterfly);
+        gltf.animations.forEach((clip) => {
+          const action = level1State.butterflyMixer.clipAction(clip);
+          action.setLoop(THREE.LoopRepeat, Infinity);
+          action.play();
+        });
+      }
+      
+      butterfly.visible = true;
+      butterfly.updateMatrixWorld(true);
+      scene.add(butterfly);
+      level1State.butterfly = butterfly;
+      
+      butterflyAngle = 0;
+      butterflyUnpredictability = 0;
+      butterflyUnpredictabilityTimer = 0;
+      butterflyCurrentSpeed = 0.25;
+      butterflyTargetSpeed = 0.25;
+      level1State.butterfly.userData.prevPosition = new THREE.Vector3(butterflyCenterX, butterflyCenterY, butterflyCenterZ);
+      
+      console.log("✅ [LEVEL 1] Butterfly created successfully");
+    })
+    .catch((error) => {
+      console.error("❌ [LEVEL 1] Failed to load butterfly model:", error);
+    });
+}
+
+function createLevel1Plant(spawnData, blockSize) {
+  const plantX = 40;
+  const plantY = 1;
+  const plantZ = 100;
+  
+  level1State.plantPosition = new THREE.Vector3(plantX, plantY, plantZ);
+  
+  console.log("🌿 [LEVEL 1] Creating Phormium plant at:", level1State.plantPosition);
+  
+  const plantPath = resolveAssetPath("textures/plants/Phormium_FBX/phormium_tenax_1.fbx");
+  
+  loadModel(plantPath)
+    .then((modelData) => {
+      const plant = modelData.scene;
+      
+      plant.position.set(plantX, plantY, plantZ);
+      plant.scale.setScalar(0.015);
+      plant.rotation.y = 0;
+      
+      plant.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            const originalMat = child.material;
+            const plantMaterial = new THREE.MeshStandardMaterial({
+              color: 0xffffff,
+              map: originalMat.map || null,
+              metalness: 0.0,
+              roughness: 0.8,
+              side: THREE.DoubleSide,
+              transparent: false,
+              opacity: 1.0,
+              emissive: 0x1a3810,
+              emissiveIntensity: 0.3
+            });
+            
+            if (!originalMat.map) {
+              plantMaterial.color.setHex(0x3a7a2a);
+            }
+            
+            child.material = plantMaterial;
+          }
+        }
+      });
+      
+      plant.visible = true;
+      plant.frustumCulled = false;
+      plant.updateMatrixWorld(true);
+      
+      scene.add(plant);
+      level1State.plant = plant;
+      
+      plant.userData.collision = {
+        enabled: true,
+        radius: 1.5,
+        position: new THREE.Vector3(plantX, plantY, plantZ)
+      };
+      
+      console.log("✅ [LEVEL 1] Phormium plant created successfully");
+    })
+    .catch((error) => {
+      console.error("❌ [LEVEL 1] Failed to load plant model:", error);
+    });
+}
+
+function createLevel1Plant2(spawnData, blockSize) {
+  const plantX = 71;
+  const plantY = 1;
+  const plantZ = 91;
+  
+  level1State.plant2Position = new THREE.Vector3(plantX, plantY, plantZ);
+  
+  console.log("🌿 [LEVEL 1] Creating Phormium plant 2 (smaller) at:", level1State.plant2Position);
+  
+  const plantPath = resolveAssetPath("textures/plants/Phormium_FBX/phormium_tenax_1.fbx");
+  
+  loadModel(plantPath)
+    .then((modelData) => {
+      const plant = modelData.scene;
+      
+      plant.position.set(plantX, plantY, plantZ);
+      plant.scale.setScalar(0.0075);
+      plant.rotation.y = 0;
+      
+      plant.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            const originalMat = child.material;
+            const plantMaterial = new THREE.MeshStandardMaterial({
+              color: 0xffffff,
+              map: originalMat.map || null,
+              metalness: 0.0,
+              roughness: 0.8,
+              side: THREE.DoubleSide,
+              transparent: false,
+              opacity: 1.0,
+              emissive: 0x1a3810,
+              emissiveIntensity: 0.3
+            });
+            
+            if (!originalMat.map) {
+              plantMaterial.color.setHex(0x3a7a2a);
+            }
+            
+            child.material = plantMaterial;
+          }
+        }
+      });
+      
+      plant.visible = true;
+      plant.frustumCulled = false;
+      plant.updateMatrixWorld(true);
+      
+      scene.add(plant);
+      level1State.plant2 = plant;
+      
+      plant.userData.collision = {
+        enabled: true,
+        radius: 0.8,
+        position: new THREE.Vector3(plantX, plantY, plantZ)
+      };
+      
+      console.log("✅ [LEVEL 1] Phormium plant 2 created successfully");
+    })
+    .catch((error) => {
+      console.error("❌ [LEVEL 1] Failed to load plant 2 model:", error);
+    });
+}
+
+// ============================================================================
+// RIDDLE FUNCTIONS - Level 1 Riddle System
+// ============================================================================
+
 function createTriggerBlock(mapData, blockSize) {
   console.log("🧩 [RIDDLE] createTriggerBlock called with blockSize:", blockSize);
   
@@ -30579,8 +25705,8 @@ function createTriggerBlock(mapData, blockSize) {
   
   const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
   
-  // Load yellow-cheese.png texture using the loadTexture helper (same as floating cheese)
-  const blockTexture = loadTexture("./public/textures/blocks/yellow-cheese.png");
+  // FIXED: Use resolveAssetPath for texture loading
+  const blockTexture = loadTexture(resolveAssetPath("textures/blocks/yellow-cheese.png"));
   console.log("🧩 [RIDDLE] Loading yellow-cheese.png texture:", blockTexture ? "✅ Loaded" : "❌ Failed");
   
   // Use yellow-cheese texture - show texture correctly without yellow overlay
@@ -30737,23 +25863,8 @@ function createTriggerBlock(mapData, blockSize) {
     "Distance from spawn": `~${Math.sqrt(Math.pow(20-60, 2) + Math.pow(100-15, 2)).toFixed(1)} units`,
     "Location": "Far corner area, behind centered platform, hidden in corner"
   });
-  
-  // HIDDEN: No visual markers - players must explore to find it
-  // The block itself has a subtle golden glow that makes it discoverable when nearby
-  // but not obvious from a distance
-  
-  // Make the block MASSIVELY visible - large size with BRIGHT glow
-  block.scale.set(1.5, 1.5, 1.5); // 50% larger - very visible
-  // FIX: Don't set emissive intensity here - texture should show correctly
-  // Emissive will be set dynamically during pulsing (in animate loop)
-  block.material.emissiveIntensity = 0.0; // Start with no glow - texture shows correctly
-  
-  console.log("🧩 [RIDDLE] Hidden trigger block created at:", { x: triggerX, y: triggerY, z: triggerZ, "Level size": "120x120", "Within bounds": triggerX < 120 && triggerZ < 120 });
-  console.log("🧩 [RIDDLE] Location: Far corner behind centered platform (x: 20, z: 100) - requires significant exploration!");
-  console.log("🧩 [RIDDLE] Block is 1.5x larger with yellow-cheese.png texture and emissive intensity 1.5+ (pulsing 1.2-2.0) - discoverable when nearby!");
 }
 
-// Create the unlockable block - HIDDEN LOCATION (not in the middle, hidden somewhere else)
 function createUnlockableBlock(spawnData, blockSize) {
   // Position: HIDDEN LOCATION - far from spawn and center, players must explore to find it
   // Place it at x: 100, z: 100 (far from spawn, different from trigger block at 110, 110)
@@ -30770,7 +25881,8 @@ function createUnlockableBlock(spawnData, blockSize) {
   });
   
   const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-  const blockTexture = loadTexture("./public/textures/blocks/cheese-stone.png");
+  // FIXED: Use resolveAssetPath for texture loading
+  const blockTexture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
   const blockMaterial = new THREE.MeshLambertMaterial({ 
     map: blockTexture,
     // FIX: Remove emissive to show texture correctly (no yellow overlay)
@@ -30833,7 +25945,8 @@ function createRiddle2OakStone(spawnData, blockSize) {
   });
   
   const oakGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-  const oakTexture = loadTexture("./public/textures/blocks/oak-planks.png");
+  // FIXED: Use resolveAssetPath for texture loading
+  const oakTexture = loadTexture(resolveAssetPath("textures/blocks/oak-planks.png"));
   const oakMaterial = new THREE.MeshLambertMaterial({ 
     map: oakTexture,
     // FIX: Remove emissive to show texture correctly (emissive will be added dynamically for blinking)
@@ -30883,7 +25996,8 @@ function createRiddle3Lever(spawnData, blockSize) {
   });
   
   const leverGeometry = new THREE.BoxGeometry(blockSize * 0.8, blockSize * 0.6, blockSize * 0.3); // Flattened against wall
-  const leverTextureOff = loadTexture("./public/textures/blocks/slever1.png");
+  // FIXED: Use resolveAssetPath for texture loading
+  const leverTextureOff = loadTexture(resolveAssetPath("textures/blocks/slever1.png"));
   const leverMaterial = new THREE.MeshLambertMaterial({ 
     map: leverTextureOff,
     // FIX: Remove emissive to show texture correctly (emissive will be added dynamically when lever is on)
@@ -30906,7 +26020,8 @@ function createRiddle3Lever(spawnData, blockSize) {
   
   // Store off and on textures
   lever.userData.textureOff = leverTextureOff;
-  lever.userData.textureOn = loadTexture("./public/textures/blocks/slever2.png");
+  // FIXED: Use resolveAssetPath for texture loading
+  lever.userData.textureOn = loadTexture(resolveAssetPath("textures/blocks/slever2.png"));
   
   // Ensure matrix is updated
   lever.matrixAutoUpdate = true;
@@ -30965,7 +26080,8 @@ function createRiddle4Levers(spawnData, blockSize) {
 function createRiddle4Lever(x, y, z, blockSize, leverNumber) {
   // Lever geometry: width 0.8, height 0.6, depth 0.3 (flattened against wall)
   const leverGeometry = new THREE.BoxGeometry(blockSize * 0.8, blockSize * 0.6, blockSize * 0.3);
-  const leverTextureOff = loadTexture("./public/textures/blocks/slever1.png");
+  // FIXED: Use resolveAssetPath for texture loading
+  const leverTextureOff = loadTexture(resolveAssetPath("textures/blocks/slever1.png"));
   const leverMaterial = new THREE.MeshLambertMaterial({ 
     map: leverTextureOff,
     emissive: new THREE.Color(0x000000), // Black (no base glow)
@@ -30991,7 +26107,8 @@ function createRiddle4Lever(x, y, z, blockSize, leverNumber) {
   
   // Store off and on textures
   lever.userData.textureOff = leverTextureOff;
-  lever.userData.textureOn = loadTexture("./public/textures/blocks/slever2.png");
+  // FIXED: Use resolveAssetPath for texture loading
+  lever.userData.textureOn = loadTexture(resolveAssetPath("textures/blocks/slever2.png"));
   
   // Ensure matrix is updated
   lever.matrixAutoUpdate = true;
@@ -31009,1667 +26126,6 @@ function createRiddle4Lever(x, y, z, blockSize, leverNumber) {
   return lever;
 }
 
-// Create movable block for Riddle #3
-function createRiddle3MovableBlock(spawnData, blockSize) {
-  // Position: Near spawn, offset from unlockable block (so it doesn't overlap)
-  // Place it at spawn position but offset by 5 blocks in X direction
-  const blockX = (spawnData.x + 5) * blockSize + blockSize / 2; // 5 blocks to the right of spawn
-  const blockY = 1 * blockSize + blockSize / 2; // Ground level (y: 1.5)
-  const blockZ = spawnData.z * blockSize + blockSize / 2; // Same Z as spawn
-  
-  console.log("🧩 [RIDDLE #3] Creating movable block:", {
-    spawnData: { x: spawnData.x, y: spawnData.y, z: spawnData.z },
-    calculatedPosition: { x: blockX, y: blockY, z: blockZ },
-    blockSize: blockSize
-  });
-  
-  // Reuse cheese stone texture or use different texture
-  const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-  const blockTexture = loadTexture("./public/textures/blocks/cheese-stone.png");
-  const blockMaterial = new THREE.MeshLambertMaterial({ 
-    map: blockTexture,
-    // FIX: Remove emissive to show texture correctly (no yellow overlay)
-    emissive: new THREE.Color(0x000000), // Black (no glow)
-    emissiveIntensity: 0.0, // No emissive glow - show texture as-is
-    transparent: false
-  });
-  
-  const block = new THREE.Mesh(blockGeometry, blockMaterial);
-  block.position.set(blockX, blockY, blockZ);
-  block.visible = false; // Hidden until lever is pressed (Step 1 complete)
-  block.castShadow = false;
-  block.receiveShadow = false;
-  
-  // Add userData for Riddle #3
-  block.userData.isRiddleBlock = true;
-  block.userData.isRiddle3MovableBlock = true;
-  block.userData.riddleId = 'CHEESE_TEMPLE_RIDDLE_03';
-  block.userData.isMovable = true;
-  block.userData.isRiddle3Movable = true;
-  
-  // Store original position
-  riddleState.riddle3.movableBlockOriginalPosition = new THREE.Vector3(blockX, blockY, blockZ);
-  
-  // Initialize velocity to zero (important for physics)
-  riddleState.riddle3.movableBlockVelocity.set(0, 0, 0);
-  
-  // Ensure matrix is updated
-  block.matrixAutoUpdate = true;
-  block.updateMatrix();
-  block.updateMatrixWorld(true);
-  
-  scene.add(block);
-  riddleState.riddle3.movableBlock = block;
-  
-  console.log("🧩 [RIDDLE #3] Movable block created and added to scene:", {
-    position: { x: blockX.toFixed(2), y: blockY.toFixed(2), z: blockZ.toFixed(2) },
-    inScene: scene.children.includes(block),
-    visible: block.visible,
-    velocity: { x: riddleState.riddle3.movableBlockVelocity.x.toFixed(3), y: riddleState.riddle3.movableBlockVelocity.y.toFixed(3), z: riddleState.riddle3.movableBlockVelocity.z.toFixed(3) },
-    step1Complete: riddleState.riddle3.step1Complete,
-    step2Complete: riddleState.riddle3.step2Complete
-  });
-}
-
-// Create oak block for Riddle #3
-function createRiddle3OakBlock(spawnData, blockSize) {
-  // Position: Middle platform, offset from spawn (different location from Riddle #2 oak stone)
-  // Place it at spawn position but offset by 7 blocks in X direction (further than Riddle #2)
-  const oakX = (spawnData.x + 7) * blockSize + blockSize / 2; // 7 blocks to the right of spawn
-  const oakY = 1 * blockSize + blockSize / 2; // Ground level (y: 1.5)
-  const oakZ = spawnData.z * blockSize + blockSize / 2; // Same Z as spawn
-  
-  console.log("🧩 [RIDDLE #3] Creating oak block:", {
-    spawnData: { x: spawnData.x, y: spawnData.y, z: spawnData.z },
-    calculatedPosition: { x: oakX, y: oakY, z: oakZ },
-    blockSize: blockSize
-  });
-  
-  const oakGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-  const oakTexture = loadTexture("./public/textures/blocks/oak-planks.png");
-  const oakMaterial = new THREE.MeshLambertMaterial({ 
-    map: oakTexture,
-    // FIX: Remove emissive to show texture correctly (emissive will be added dynamically after Step 2 completion)
-    emissive: new THREE.Color(0x000000), // Black (no base glow)
-    emissiveIntensity: 0.0, // Start with no glow (will glow dynamically after Step 2 completion)
-    transparent: false
-  });
-  
-  const oakBlock = new THREE.Mesh(oakGeometry, oakMaterial);
-  oakBlock.position.set(oakX, oakY, oakZ);
-  oakBlock.visible = false; // Hidden until lever is pressed (Step 1 complete)
-  oakBlock.castShadow = false;
-  oakBlock.receiveShadow = false;
-  
-  // Add userData for Riddle #3
-  oakBlock.userData.isRiddleBlock = true;
-  oakBlock.userData.isRiddle3OakBlock = true;
-  oakBlock.userData.riddleId = 'CHEESE_TEMPLE_RIDDLE_03';
-  
-  // Ensure matrix is updated
-  oakBlock.matrixAutoUpdate = true;
-  oakBlock.updateMatrix();
-  oakBlock.updateMatrixWorld(true);
-  
-  scene.add(oakBlock);
-  riddleState.riddle3.oakBlock = oakBlock;
-  
-  console.log("🧩 [RIDDLE #3] Oak block created and added to scene:", {
-    position: { x: oakX.toFixed(2), y: oakY.toFixed(2), z: oakZ.toFixed(2) },
-    inScene: scene.children.includes(oakBlock),
-    visible: oakBlock.visible
-  });
-}
-
-// Create portal for Riddle #3
-function createPortalMesh({ position, width, height, depth = 2, rotationY = Math.PI, parent = scene, visible = false }) {
-  const portalGeometry = new THREE.BoxGeometry(width, height, depth);
-  const portalTexture = loadTexture("./public/textures/blocks/Portal1.png");
-  const portalMaterial = new THREE.MeshLambertMaterial({ 
-    map: portalTexture,
-    emissive: new THREE.Color(0x000000),
-    emissiveIntensity: 0.0,
-    transparent: false,
-    side: THREE.DoubleSide
-  });
-  const portal = new THREE.Mesh(portalGeometry, portalMaterial);
-  portal.position.copy(position);
-  portal.rotation.y = rotationY;
-  portal.visible = visible;
-  portal.castShadow = false;
-  portal.receiveShadow = false;
-  portal.renderOrder = 999;
-  parent.add(portal);
-  portal.updateMatrixWorld(true);
-  return portal;
-}
-
-function createRiddle3Portal(spawnData, blockSize) {
-  const mapSize = 120;
-  const portalX = (mapSize / 2) * blockSize;
-  const portalY = 5 * blockSize;
-  const portalZ = 10 * blockSize;
-  
-  console.log("🧩 [RIDDLE #3] Creating huge portal in front of NORTH WALL:", {
-    spawnData: { x: spawnData.x, y: spawnData.y, z: spawnData.z },
-    calculatedPosition: { x: portalX, y: portalY, z: portalZ },
-    blockSize,
-    mapSize,
-    scale: RIDDLE3_PORTAL_SCALE
-  });
-  
-  const portal = createPortalMesh({
-    position: new THREE.Vector3(portalX, portalY, portalZ),
-    width: blockSize * RIDDLE3_PORTAL_SCALE,
-    height: blockSize * RIDDLE3_PORTAL_SCALE,
-    depth: blockSize * 2.0,
-    rotationY: Math.PI,
-    parent: scene,
-    visible: false
-  });
-  
-  portal.userData.isRiddleBlock = true;
-  portal.userData.isRiddle3Portal = true;
-  portal.userData.riddleId = 'CHEESE_TEMPLE_RIDDLE_03';
-  riddleState.riddle3.portal = portal;
-  console.log("🧩 [RIDDLE #3] Huge portal created and added to scene:", {
-    position: { x: portalX.toFixed(2), y: portalY.toFixed(2), z: portalZ.toFixed(2) },
-    scale: RIDDLE3_PORTAL_SCALE,
-    inScene: scene.children.includes(portal)
-  });
-}
-
-// Check if player is standing on the trigger block (Step 0)
-function checkTriggerBlockStanding() {
-  if (!riddleState.triggerBlock || riddleState.step0Complete) {
-    return false;
-  }
-  return isPlayerStandingOnBlock(riddleState.triggerBlock);
-}
-
-// Update riddle aiming timers
-let riddleProgressUIWarningLogged = false;
-
-function invokeRiddleProgressUIUpdate(context = "general") {
-  // Throttle UI updates to prevent performance issues
-  // Safety check: Initialize if not already initialized (shouldn't happen with var, but safety first)
-  if (typeof lastRiddleUIUpdateTime === 'undefined') {
-    lastRiddleUIUpdateTime = 0;
-  }
-  
-  const now = performance.now();
-  if (now - lastRiddleUIUpdateTime < RIDDLE_UI_UPDATE_INTERVAL) {
-    return; // Skip this update - too soon since last update
-  }
-  lastRiddleUIUpdateTime = now;
-  
-  let uiFn = null;
-
-  if (typeof updateRiddleProgressUI === "function") {
-    uiFn = updateRiddleProgressUI;
-  } else if (typeof window !== "undefined" && typeof window.updateRiddleProgressUI === "function") {
-    uiFn = window.updateRiddleProgressUI;
-  }
-
-  if (uiFn) {
-    try {
-      uiFn();
-    } catch (error) {
-      console.error(`🧩 [RIDDLE UI] Failed to update progress UI (${context})`, error);
-    }
-  } else if (!riddleProgressUIWarningLogged) {
-    console.warn("🧩 [RIDDLE UI] Progress UI not initialized yet. Skipping update calls to prevent crashes.");
-    riddleProgressUIWarningLogged = true;
-  }
-}
-
-function updateRiddleAiming(delta, aimingAtCheese, aimingAtBlock) {
-  if (!isGamePaused) {
-    // Step 0: Stand on hidden trigger block for 10 seconds
-    if (!riddleState.step0Complete) {
-      const isStandingOnTrigger = checkTriggerBlockStanding();
-      if (isStandingOnTrigger) {
-        if (!riddleState.step0StandingSoundPlayed) {
-          playCheesePlatformSound();
-          riddleState.step0StandingSoundPlayed = true;
-        }
-        riddleState.triggerBlockTimer += delta;
-        if (riddleState.triggerBlockTimer >= RIDDLE_AIM_TIME) {
-          riddleState.step0Complete = true;
-          riddleState.triggerBlockTimer = RIDDLE_AIM_TIME;
-          if (riddleState.triggerBlock) {
-            riddleState.triggerBlock.visible = false;
-          }
-          if (riddleState.triggerBlockVisual) {
-            riddleState.triggerBlockVisual.visible = false;
-          }
-          console.log("🧩 [RIDDLE] Step 0 complete! Riddle hint unlocked!");
-        }
-      } else {
-        // Decay timer if not standing on block
-        riddleState.triggerBlockTimer = Math.max(0, riddleState.triggerBlockTimer - delta * 0.5);
-        riddleState.step0StandingSoundPlayed = false;
-      }
-      
-      // Update visual block target Y based on standing state (same pattern as Level 2, 3, 4)
-      if (riddleState.triggerBlockVisual) {
-        const targetY = isStandingOnTrigger && riddleState.triggerBlockVisual
-          ? riddleState.triggerBlockVisual.userData?.pressedY ?? riddleState.triggerBlockVisual.position.y
-          : riddleState.triggerBlockVisual?.userData?.restY ?? riddleState.triggerBlockVisual?.position.y;
-        riddleState.triggerBlockTargetY = targetY;
-        
-        // Debug logging when standing state changes
-        if (isStandingOnTrigger && Math.random() < 0.1) { // 10% chance per frame when standing
-          console.log("🧩 [RIDDLE] Standing on trigger block - target Y set to pressed:", {
-            isStanding: isStandingOnTrigger,
-            currentY: riddleState.triggerBlockVisual.position.y.toFixed(3),
-            targetY: targetY.toFixed(3),
-            restY: riddleState.triggerBlockVisual.userData?.restY?.toFixed(3),
-            pressedY: riddleState.triggerBlockVisual.userData?.pressedY?.toFixed(3)
-          });
-        }
-      } else {
-        // Debug: Visual block not created yet
-        if (Math.random() < 0.01) { // 1% chance per frame
-          console.warn("🧩 [RIDDLE] Trigger block visual not created yet!");
-        }
-      }
-    }
-    
-    // Step 1: Aim at cheese for 10 seconds (only after Step 0 is complete)
-    if (riddleState.step0Complete && !riddleState.step1Complete && aimingAtCheese) {
-      riddleState.cheeseAimTimer += delta;
-      if (riddleState.cheeseAimTimer >= RIDDLE_AIM_TIME) {
-        riddleState.step1Complete = true;
-        riddleState.cheeseAimTimer = RIDDLE_AIM_TIME;
-        playCheeseAimClearSound();
-        triggerCheeseAimCelebration();
-        unlockRiddleBlock();
-        console.log("🧩 [RIDDLE] Step 1 complete! Block unlocked!");
-      }
-    } else if (riddleState.step0Complete && !riddleState.step1Complete && !aimingAtCheese) {
-      // Reset timer if not aiming
-      riddleState.cheeseAimTimer = Math.max(0, riddleState.cheeseAimTimer - delta * 0.5); // Decay timer
-    }
-    
-    // Step 2: Aim at unlockable block for 10 seconds (ULTRA-STRICT - like Step 1)
-    // Timer ONLY counts when crosshair is EXACTLY on block - any pixel deviation = immediate decay
-    if (riddleState.step1Complete && !riddleState.step2Complete) {
-      if (aimingAtBlock) {
-        // Only increment when crosshair is EXACTLY on the unlockable block
-        riddleState.blockAimTimer += delta;
-        if (riddleState.blockAimTimer >= RIDDLE_AIM_TIME) {
-          riddleState.step2Complete = true;
-          riddleState.blockAimTimer = RIDDLE_AIM_TIME;
-          playCheeseAimClearSound();
-          triggerCheeseAimCelebration(riddleState.unlockableBlock);
-          completeRiddle();
-          console.log("🧩 [RIDDLE] Step 2 complete! Riddle solved!");
-        }
-      } else {
-        // IMMEDIATE DECAY: Timer decays immediately when crosshair moves off block (even 1 pixel)
-        // Same decay rate as Step 1 (0.5) but applied immediately - no tolerance
-        // If player loses the block by ANY amount, timer starts decaying right away
-        riddleState.blockAimTimer = Math.max(0, riddleState.blockAimTimer - delta * 0.5);
-        
-        // Reset to 0 if timer drops very low (prevents partial progress)
-        if (riddleState.blockAimTimer <= 0.1) {
-          riddleState.blockAimTimer = 0;
-        }
-      }
-    }
-  }
-  
-  // Update trigger block visual animation (same pattern as Level 2, 3, 4)
-  updateRiddleTriggerBlockVisual(delta);
-  
-  // Update progress UI
-  invokeRiddleProgressUIUpdate("updateRiddleAiming");
-}
-
-// Update Level 1 trigger block visual animation (same pattern as Level 2, 3, 4)
-function updateRiddleTriggerBlockVisual(delta) {
-  const visual = riddleState.triggerBlockVisual;
-  if (!visual) {
-    // Visual block not created yet - this is OK during initial load
-    return;
-  }
-  if (!visual.visible) {
-    // Visual block is hidden (step 0 complete) - don't animate
-    return;
-  }
-  const targetY = riddleState.triggerBlockTargetY ?? visual.position.y;
-  const speed = visual.userData?.lerpSpeed ?? 6;
-  const t = Math.min(1, delta * speed);
-  const newY = THREE.MathUtils.lerp(visual.position.y, targetY, t);
-  visual.position.y = newY;
-  
-  // Debug logging (only log occasionally to avoid spam)
-  if (Math.random() < 0.01) { // 1% chance per frame
-    console.log("🧩 [RIDDLE] Trigger block visual animation:", {
-      visualExists: !!visual,
-      visualVisible: visual.visible,
-      currentY: visual.position.y.toFixed(3),
-      targetY: targetY.toFixed(3),
-      restY: visual.userData?.restY?.toFixed(3),
-      pressedY: visual.userData?.pressedY?.toFixed(3),
-      lerpSpeed: speed
-    });
-  }
-}
-
-// Update Riddle #2: Blinking oak stone, movable block physics, proximity detection
-function updateRiddle2(delta, aimingAtCheese) {
-  if (!isGamePaused && riddleState.step2Complete) { // Only active after Riddle #1 is complete
-    const r2 = riddleState.riddle2;
-    
-    // Make oak stone visible after Riddle #1 is complete
-    if (r2.oakStone && !r2.oakStone.visible) {
-      r2.oakStone.visible = true;
-      console.log("🧩 [RIDDLE #2] Oak stone is now visible!");
-    }
-    
-    // Make lever visible for Riddle #3 after Riddle #2 is complete
-    if (r2.step2Complete && riddleState.riddle3.lever && !riddleState.riddle3.lever.visible) {
-      riddleState.riddle3.lever.visible = true;
-      console.log("🧩 [RIDDLE #3] Lever is now visible after Riddle #2 completion!");
-    }
-    
-    // Update progress UI for Riddle #2
-    invokeRiddleProgressUIUpdate("updateRiddle2");
-    
-    // Update blinking oak stone (blinks every 15 seconds for 2 seconds)
-    if (r2.oakStone && r2.oakStone.material && r2.oakStone.visible) {
-      r2.oakStoneBlinkTimer += delta;
-      if (r2.oakStoneBlinkTimer >= RIDDLE2_OAK_STONE_BLINK_INTERVAL) {
-        r2.oakStoneBlinkTimer = 0; // Reset timer
-      }
-      
-      // Blink for 2 seconds every 15 seconds
-      const timeInCycle = r2.oakStoneBlinkTimer;
-      const isBlinking = timeInCycle <= RIDDLE2_OAK_STONE_BLINK_DURATION;
-      
-      if (isBlinking) {
-        // Blinking: increase emissive intensity (0.0 to 1.0, pulsing)
-        const blinkProgress = timeInCycle / RIDDLE2_OAK_STONE_BLINK_DURATION;
-        const intensity = 0.5 + 0.5 * Math.sin(blinkProgress * Math.PI * 4); // Pulsing effect (4 pulses per blink)
-        // FIX: Set emissive color for blinking, but keep intensity low so texture shows through
-        r2.oakStone.material.emissive = new THREE.Color(0xffe066); // Golden glow
-        r2.oakStone.material.emissiveIntensity = intensity * 0.3; // Reduce intensity so texture is visible (max 0.3)
-      } else {
-        // Not blinking: no glow
-        r2.oakStone.material.emissiveIntensity = 0.0;
-      }
-    }
-    
-    // Update movable unlockable block physics (only if Riddle #1 is complete and block is visible)
-    if (riddleState.unlockableBlock && riddleState.unlockableBlock.visible && !r2.step1Complete) {
-      // Check if player is near the block (for pushing)
-      const blockPos = riddleState.unlockableBlock.position;
-      const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-      const distanceToBlock = playerPos.distanceTo(blockPos);
-      const pushDistance = 2.0; // Push distance threshold (increased from 1.5 to 2.0)
-      
-      // Debug: Log block state when player is near (more frequent)
-      if (distanceToBlock < pushDistance && (Math.random() < 0.1)) { // 10% chance per frame when near block
-        console.log("🧩 [RIDDLE #2 DEBUG] Block physics (near block):", {
-          blockVisible: riddleState.unlockableBlock.visible,
-          blockPosition: { x: blockPos.x.toFixed(2), y: blockPos.y.toFixed(2), z: blockPos.z.toFixed(2) },
-          playerPosition: { x: playerPos.x.toFixed(2), y: playerPos.y.toFixed(2), z: playerPos.z.toFixed(2) },
-          distanceToBlock: distanceToBlock.toFixed(2),
-          pushDistance: pushDistance,
-          blockVelocity: { x: r2.unlockableBlockVelocity.x.toFixed(3), y: r2.unlockableBlockVelocity.y.toFixed(3), z: r2.unlockableBlockVelocity.z.toFixed(3) },
-          velocityLength: r2.unlockableBlockVelocity.length().toFixed(3),
-          playerMoving: movement.forward || movement.backward || movement.left || movement.right,
-          movementState: { forward: movement.forward, backward: movement.backward, left: movement.left, right: movement.right },
-          step1Complete: r2.step1Complete,
-          step2Complete: riddleState.step2Complete
-        });
-      }
-      
-      if (distanceToBlock < pushDistance) {
-        // Player is near block - apply push force based on player movement
-        // Get player movement direction (from player movement input, not velocity)
-        const playerMovement = new THREE.Vector3();
-        if (movement.forward) playerMovement.z += 1;
-        if (movement.backward) playerMovement.z -= 1;
-        if (movement.left) playerMovement.x -= 1;
-        if (movement.right) playerMovement.x += 1;
-        
-        // Calculate direction from player to block (used for fallback push)
-        const toBlock = new THREE.Vector3().subVectors(blockPos, playerPos);
-        toBlock.y = 0; // Only horizontal
-        const distanceToBlockNorm = toBlock.length();
-        
-        // Only proceed if player has movement input OR is very close to block (allow pushing by proximity)
-        const hasMovementInput = playerMovement.lengthSq() > 0.01;
-        const isVeryClose = distanceToBlockNorm < 1.0; // Within 1 unit = touching or very close
-        
-        if (hasMovementInput || isVeryClose) {
-          let pushDirection = new THREE.Vector3();
-          let useFallback = false;
-          
-          // Try to calculate world movement direction (preferred method)
-          if (hasMovementInput) {
-            playerMovement.normalize();
-            
-            try {
-              // Get forward and side vectors (same as player movement)
-              const forward = getForwardVector();
-              const side = getSideVector();
-              
-              // Calculate actual movement direction in world space
-              const worldMoveDir = new THREE.Vector3();
-              worldMoveDir.addScaledVector(forward, playerMovement.z);
-              worldMoveDir.addScaledVector(side, playerMovement.x);
-              worldMoveDir.y = 0; // Only horizontal
-              
-              // Only use world movement direction if it's valid
-              if (worldMoveDir.lengthSq() > 0.01) {
-                worldMoveDir.normalize();
-                
-                // Primary push: block moves in player's movement direction
-                pushDirection.copy(worldMoveDir);
-                
-                // Secondary push: add component from player to block (so block moves away from player)
-                if (distanceToBlockNorm > 0.01) {
-                  const toBlockNorm = toBlock.clone().normalize();
-                  pushDirection.addScaledVector(toBlockNorm, 0.3);
-                }
-                pushDirection.y = 0;
-              } else {
-                // World movement direction is invalid - use fallback
-                useFallback = true;
-              }
-            } catch (error) {
-              // Error calculating world movement direction - use fallback
-              console.warn("🧩 [RIDDLE #2] Error calculating world movement direction, using fallback:", error);
-              useFallback = true;
-            }
-          } else {
-            // No movement input but very close - use fallback push
-            useFallback = true;
-          }
-          
-          // Fallback: Push block away from player (works even without movement input when very close)
-          if (useFallback && distanceToBlockNorm > 0.01) {
-            pushDirection.copy(toBlock).normalize();
-            pushDirection.y = 0;
-          }
-          
-          // Apply push if we have a valid direction
-          if (pushDirection.lengthSq() > 0.01) {
-            pushDirection.normalize();
-            
-            // Apply push force (stronger when player is closer, and stronger overall)
-            const pushStrength = Math.max(0, 1 - (distanceToBlockNorm / pushDistance)); // 1.0 when touching, 0.0 when at max distance
-            const pushForce = 30.0 * pushStrength; // Increased from 25.0 to 30.0 for even stronger push (works in normal mode)
-            
-            const pushVector = pushDirection.clone().multiplyScalar(pushForce * delta);
-            r2.unlockableBlockVelocity.add(pushVector);
-            
-            // Debug: Log when significant push is applied (occasionally)
-            if (pushVector.length() > 0.05 && Math.random() < 0.15) { // 15% chance when pushing significantly
-              console.log("🧩 [RIDDLE #2] Push applied:", {
-                method: useFallback ? "fallback" : "world-movement",
-                pushForce: pushForce.toFixed(2),
-                pushStrength: pushStrength.toFixed(2),
-                pushVector: { x: pushVector.x.toFixed(3), y: pushVector.y.toFixed(3), z: pushVector.z.toFixed(3) },
-                pushDirection: { x: pushDirection.x.toFixed(2), y: pushDirection.y.toFixed(2), z: pushDirection.z.toFixed(2) },
-                velocityAfter: r2.unlockableBlockVelocity.length().toFixed(3),
-                distanceToBlock: distanceToBlockNorm.toFixed(2),
-                hasMovementInput: hasMovementInput,
-                isVeryClose: isVeryClose
-              });
-            }
-          } else if (hasMovementInput && Math.random() < 0.05) {
-            // Debug: Log when push fails (occasionally)
-            console.warn("🧩 [RIDDLE #2] Push failed - invalid push direction:", {
-              playerMovement: { x: playerMovement.x.toFixed(2), z: playerMovement.z.toFixed(2) },
-              distanceToBlock: distanceToBlockNorm.toFixed(2),
-              pushDirectionLength: pushDirection.lengthSq().toFixed(3)
-            });
-          }
-        }
-      }
-      
-      // Apply friction to block velocity (slow it down)
-      // Reduced friction for more responsive movement (0.95 = 5% reduction per frame, was 0.92 = 8%)
-      const friction = 0.95; // Friction multiplier (higher = less friction, 0.95 = very low friction)
-      r2.unlockableBlockVelocity.multiplyScalar(Math.pow(friction, delta * 60)); // Frame-rate independent friction
-      
-      // Apply velocity to block position (with simplified collision/bounds checking)
-      // Lower threshold for movement (was 0.01, now 0.001) to allow smaller movements
-      if (r2.unlockableBlockVelocity.lengthSq() > 0.001) {
-        // Calculate next position
-        const nextPosition = riddleState.unlockableBlock.position.clone();
-        const moveDelta = r2.unlockableBlockVelocity.clone().multiplyScalar(delta);
-        nextPosition.add(moveDelta);
-        
-        // Debug: Log block movement (occasionally)
-        if (moveDelta.length() > 0.01 && Math.random() < 0.05) { // 5% chance when moving
-          console.log("🧩 [RIDDLE #2] Block moving:", {
-            velocity: { x: r2.unlockableBlockVelocity.x.toFixed(3), y: r2.unlockableBlockVelocity.y.toFixed(3), z: r2.unlockableBlockVelocity.z.toFixed(3) },
-            velocityLength: r2.unlockableBlockVelocity.length().toFixed(3),
-            moveDelta: { x: moveDelta.x.toFixed(3), y: moveDelta.y.toFixed(3), z: moveDelta.z.toFixed(3) },
-            oldPosition: { x: riddleState.unlockableBlock.position.x.toFixed(2), y: riddleState.unlockableBlock.position.y.toFixed(2), z: riddleState.unlockableBlock.position.z.toFixed(2) },
-            newPosition: { x: nextPosition.x.toFixed(2), y: nextPosition.y.toFixed(2), z: nextPosition.z.toFixed(2) }
-          });
-        }
-        
-        // Clamp block Y position (prevent falling below ground)
-        if (nextPosition.y < 1.5) {
-          nextPosition.y = 1.5;
-          r2.unlockableBlockVelocity.y = 0;
-        }
-        
-        // Clamp block to reasonable level bounds (level is 120x120, spawn at ~60,60)
-        // Allow block to move within -10 to 130 range (20 units buffer on each side)
-        const minX = -10;
-        const maxX = 130;
-        const minZ = -10;
-        const maxZ = 130;
-        
-        // Stop horizontal movement if block hits bounds
-        if (nextPosition.x < minX) {
-          nextPosition.x = minX;
-          r2.unlockableBlockVelocity.x = 0;
-        } else if (nextPosition.x > maxX) {
-          nextPosition.x = maxX;
-          r2.unlockableBlockVelocity.x = 0;
-        }
-        
-        if (nextPosition.z < minZ) {
-          nextPosition.z = minZ;
-          r2.unlockableBlockVelocity.z = 0;
-        } else if (nextPosition.z > maxZ) {
-          nextPosition.z = maxZ;
-          r2.unlockableBlockVelocity.z = 0;
-        }
-        
-        // CRITICAL: Prevent player from entering the block - push player away if too close
-        const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-        const blockPos = riddleState.unlockableBlock.position;
-        const playerToBlock = new THREE.Vector3().subVectors(blockPos, playerPos);
-        playerToBlock.y = 0; // Only horizontal
-        const playerBlockDistance = playerToBlock.length();
-        const blockRadius = 0.6; // Block is 1x1, so radius is 0.5, add small buffer
-        const minPlayerDistance = blockRadius + 0.4; // Minimum distance between player and block center
-        
-        // If player is too close to block, push player away
-        if (playerBlockDistance < minPlayerDistance && playerBlockDistance > 0.01) {
-          const pushDistance = minPlayerDistance - playerBlockDistance;
-          const pushDirection = playerToBlock.clone().normalize().negate(); // Push player away from block
-          const pushVector = pushDirection.multiplyScalar(pushDistance);
-          
-          // Apply push to player collider
-          playerCollider.start.add(pushVector);
-          playerCollider.end.add(pushVector);
-          
-          // Debug: Log when player is pushed away (occasionally)
-          if (Math.random() < 0.05) {
-            console.log("🧩 [RIDDLE #2] Pushing player away from block:", {
-              playerBlockDistance: playerBlockDistance.toFixed(3),
-              minPlayerDistance: minPlayerDistance.toFixed(3),
-              pushDistance: pushDistance.toFixed(3)
-            });
-          }
-        }
-        
-        // Apply movement
-        riddleState.unlockableBlock.position.copy(nextPosition);
-        
-        // Update block matrix for raycasting
-        riddleState.unlockableBlock.updateMatrix();
-        riddleState.unlockableBlock.updateMatrixWorld(true);
-      }
-      
-      // Check proximity to oak stone (Step 1 completion)
-      if (r2.oakStone && !r2.step1Complete) {
-        const blockPos = riddleState.unlockableBlock.position;
-        const oakPos = r2.oakStone.position;
-        const distance = blockPos.distanceTo(oakPos);
-        
-        // Check if block is on oak stone (within threshold)
-        if (distance < RIDDLE2_PROXIMITY_THRESHOLD) {
-          // Block is on oak stone - complete Step 1
-          // OPTIMIZATION: Use requestAnimationFrame to defer heavy operations and prevent lag
-          if (!r2.step1Complete) {
-            r2.step1Complete = true;
-            console.log("🧩 [RIDDLE #2] Step 1 complete! Cheese stone moved to oak stone!");
-            playBlockMovedSound();
-            
-            // Lock block in place (stop movement) - immediate
-            r2.unlockableBlockVelocity.set(0, 0, 0);
-            
-            // Snap block to oak stone position (exact alignment) - immediate
-            riddleState.unlockableBlock.position.copy(oakPos);
-            riddleState.unlockableBlock.updateMatrix();
-            riddleState.unlockableBlock.updateMatrixWorld(true);
-            
-            // Defer material updates to next frame to prevent lag
-            requestAnimationFrame(() => {
-              // Make oak stone glow permanently (completion indicator)
-              if (r2.oakStone && r2.oakStone.material) {
-                r2.oakStone.material.emissive = new THREE.Color(0xffe066); // Golden glow
-                r2.oakStone.material.emissiveIntensity = 0.3; // Reduced intensity so texture is visible
-              }
-            });
-          }
-        }
-      }
-    }
-    
-    // Step 2: Aim at cheese (similar to Riddle #1 Step 1)
-    if (r2.step1Complete && !r2.step2Complete && aimingAtCheese) {
-      r2.cheeseAimTimer += delta;
-      if (r2.cheeseAimTimer >= RIDDLE_AIM_TIME) {
-        r2.step2Complete = true;
-        r2.cheeseAimTimer = RIDDLE_AIM_TIME;
-        playCheeseAimClearSound();
-        triggerCheeseAimCelebration();
-        console.log("🧩 [RIDDLE #2] Step 2 complete! Cheese hunted!");
-        completeRiddle2();
-      }
-    } else if (r2.step1Complete && !r2.step2Complete && !aimingAtCheese) {
-      // Decay timer if not aiming at cheese
-      r2.cheeseAimTimer = Math.max(0, r2.cheeseAimTimer - delta * 0.5);
-    }
-  }
-}
-
-// Handle Riddle #3 lever click (E key)
-function handleRiddle3LeverClick() {
-  const r3 = riddleState.riddle3;
-  
-  // Check if lever exists and is visible
-  if (!r3.lever || !r3.lever.visible || r3.step1Complete) {
-    return; // Lever doesn't exist, not visible, or already pressed
-  }
-  
-  // Check if player is within click distance of lever
-  const leverPos = r3.lever.position;
-  const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-  const distanceToLever = playerPos.distanceTo(leverPos);
-  
-  if (distanceToLever > RIDDLE3_LEVER_CLICK_DISTANCE) {
-    console.log("🧩 [RIDDLE #3] Player too far from lever:", {
-      distance: distanceToLever.toFixed(2),
-      required: RIDDLE3_LEVER_CLICK_DISTANCE
-    });
-    return; // Player too far from lever
-  }
-  
-  // Lever clicked! Switch state from off to on
-  r3.leverPressed = true;
-  r3.step1Complete = true;
-  r3.lever.userData.leverState = 'on';
-  playLeverSound();
-  
-  // Switch lever texture from off to on
-  if (r3.lever.userData.textureOn) {
-    r3.lever.material.map = r3.lever.userData.textureOn;
-    // FIX: Set emissive color for lever glow, but keep intensity low so texture shows through
-    r3.lever.material.emissive = new THREE.Color(0x00ff00); // Green glow when on
-    r3.lever.material.emissiveIntensity = 0.3; // Reduced intensity so texture is visible
-    r3.lever.material.needsUpdate = true;
-  }
-  
-  // Optional: Rotate lever for visual feedback
-  // r3.lever.rotation.z = Math.PI / 4; // Rotate 45 degrees (optional)
-  
-  console.log("🧩 [RIDDLE #3] Lever pressed! Step 1 complete!");
-  console.log("🧩 [RIDDLE #3] Movable block and oak block should now appear!");
-  
-  // Create movable block and oak block if they don't exist
-  if (!r3.movableBlock || !r3.oakBlock) {
-    // Try to get spawn data from existing elements
-    const spawnData = riddleState.unlockableBlock ? {
-      x: Math.floor(riddleState.unlockableBlock.position.x),
-      y: Math.floor(riddleState.unlockableBlock.position.y),
-      z: Math.floor(riddleState.unlockableBlock.position.z)
-    } : { x: 60, y: 1, z: 15 }; // Default spawn if block doesn't exist
-    
-    if (!r3.movableBlock) {
-      createRiddle3MovableBlock(spawnData, 1);
-    }
-    if (!r3.oakBlock) {
-      createRiddle3OakBlock(spawnData, 1);
-    }
-  }
-  
-  // Make movable block and oak block visible
-  if (r3.movableBlock) {
-    r3.movableBlock.visible = true;
-    console.log("🧩 [RIDDLE #3] Movable block is now visible!");
-  }
-  if (r3.oakBlock) {
-    r3.oakBlock.visible = true;
-    console.log("🧩 [RIDDLE #3] Oak block is now visible!");
-  }
-}
-
-// Handle Riddle #4 (Hidden Secret) lever clicks
-function handleRiddle4LeverClick() {
-  // Safety check: ensure riddle4 state exists
-  if (!riddleState || !riddleState.riddle4) {
-    return;
-  }
-  
-  const r4 = riddleState.riddle4;
-  
-  // Check if riddle is already complete
-  if (r4.complete) {
-    return;
-  }
-  
-  // Check each lever
-  const levers = [
-    { lever: r4.lever1, state: 'lever1State', number: 1 },
-    { lever: r4.lever2, state: 'lever2State', number: 2 },
-    { lever: r4.lever3, state: 'lever3State', number: 3 }
-  ];
-  
-  for (const leverData of levers) {
-    const lever = leverData.lever;
-    if (!lever || !lever.visible) continue;
-    
-    // Check if player is within click distance
-    const leverPos = lever.position;
-    const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-    const distanceToLever = playerPos.distanceTo(leverPos);
-    
-    if (distanceToLever <= RIDDLE4_LEVER_CLICK_DISTANCE) {
-      // Toggle lever state
-      const currentState = r4[leverData.state];
-      r4[leverData.state] = !currentState;
-      lever.userData.leverState = r4[leverData.state] ? 'on' : 'off';
-      
-      // Play lever sound
-      playLeverSound();
-      
-      // Update lever texture
-      const texture = r4[leverData.state] ? lever.userData.textureOn : lever.userData.textureOff;
-      if (texture) {
-        lever.material.map = texture;
-        lever.material.emissive = new THREE.Color(r4[leverData.state] ? 0x00ff00 : 0x000000);
-        lever.material.emissiveIntensity = r4[leverData.state] ? 0.3 : 0.0;
-        lever.material.needsUpdate = true;
-      }
-      
-      console.log(`🧩 [RIDDLE #4] Lever ${leverData.number} toggled to:`, r4[leverData.state] ? 'ON' : 'OFF');
-      
-      // Check combination after toggle
-      checkRiddle4Combination();
-      
-      return; // Only handle one lever per click
-    }
-  }
-}
-
-// Check if Riddle #4 combination is correct
-function checkRiddle4Combination() {
-  // Safety check: ensure riddle4 state exists
-  if (!riddleState || !riddleState.riddle4) {
-    return;
-  }
-  
-  const r4 = riddleState.riddle4;
-  
-  // Check if riddle is already complete
-  if (r4.complete) {
-    return;
-  }
-  
-  // Increment attempt count
-  r4.attemptCount++;
-  const currentTime = Date.now();
-  
-  // SEQUENCE-BASED COMBINATION:
-  // Step 1: All levers ON (lever1State && lever2State && lever3State)
-  // Step 2: All levers OFF (!lever1State && !lever2State && !lever3State)
-  // Step 3: Middle lever ON (lever2State && !lever1State && !lever3State)
-  
-  let sequenceMatched = false;
-  
-  if (r4.sequenceStep === 0) {
-    // Step 0 → Step 1: Check if all levers are ON
-    if (r4.lever1State && r4.lever2State && r4.lever3State) {
-      r4.sequenceStep = 1;
-      console.log("🧩 [RIDDLE #4] ✅ Step 1 complete: All levers ON");
-      sequenceMatched = true;
-    }
-  } else if (r4.sequenceStep === 1) {
-    // Step 1 → Step 2: Check if all levers are OFF
-    if (!r4.lever1State && !r4.lever2State && !r4.lever3State) {
-      r4.sequenceStep = 2;
-      console.log("🧩 [RIDDLE #4] ✅ Step 2 complete: All levers OFF");
-      sequenceMatched = true;
-    } else {
-      // In step 1, player should be turning levers OFF (moving from all ON to all OFF)
-      // Only reset if all levers are back ON (player went backwards)
-      // Allow player to turn levers OFF one by one without resetting
-      if (r4.lever1State && r4.lever2State && r4.lever3State) {
-        // All levers are ON again - player went backwards, reset
-        r4.sequenceStep = 0;
-        console.log("🧩 [RIDDLE #4] ❌ Sequence reset: Player turned all levers back ON (should be turning OFF)");
-      }
-      // Otherwise, player is in the process of turning levers OFF - this is correct, don't reset
-    }
-  } else if (r4.sequenceStep === 2) {
-    // Step 2 → Step 3 (SOLVED): Check if only middle lever is ON
-    if (r4.lever2State && !r4.lever1State && !r4.lever3State) {
-      r4.sequenceStep = 3;
-      r4.complete = true;
-      console.log("🧩 [RIDDLE #4] ✅ SECRET RIDDLE SOLVED! Sequence complete!");
-      
-      // Play hidden slever riddle solved sound FIRST (before any UI that might throw errors)
-      console.log("🔊 [RIDDLE #4] Attempting to play hidden slever sound...");
-      console.log("🔊 [RIDDLE #4] Sound state:", {
-        soundFxEnabled,
-        hiddenSleverAudioReady,
-        hasSound: !!hiddenSleverSound
-      });
-      playHiddenSleverSound();
-      
-      // Then show success message and unlock reward (wrap in try-catch so sound still plays if these fail)
-      try {
-        unlockRiddle4Reward();
-        showRiddle4SuccessMessage();
-      } catch (error) {
-        console.error("❌ [RIDDLE #4] Error showing success/reward (sound should have played):", error);
-      }
-      
-      sequenceMatched = true;
-    } else {
-      // In step 2, player should only turn lever2 ON (from all OFF to only middle ON)
-      // Only reset if player turns lever1 or lever3 ON (wrong levers)
-      // Allow player to turn lever2 ON (correct action)
-      if (r4.lever1State || r4.lever3State) {
-        // Player turned wrong lever ON - reset
-        r4.sequenceStep = 0;
-        console.log("🧩 [RIDDLE #4] ❌ Sequence reset: Player turned wrong lever ON (should only turn middle lever ON)");
-      }
-      // If all levers are still OFF, player might be about to turn lever2 ON - don't reset yet
-    }
-  }
-  
-  // If sequence didn't match and riddle not solved, show hint if needed
-  if (!sequenceMatched && !r4.complete) {
-    const timeSinceLastAttempt = currentTime - r4.lastAttemptTime;
-    if (r4.attemptCount >= RIDDLE4_HINT_ATTEMPT_THRESHOLD && timeSinceLastAttempt >= RIDDLE4_HINT_COOLDOWN) {
-      showRiddle4HintMessage();
-      r4.lastAttemptTime = currentTime;
-    }
-    console.log(`🧩 [RIDDLE #4] ❌ Wrong sequence step. Current step: ${r4.sequenceStep}, Attempts: ${r4.attemptCount}`);
-  }
-}
-
-// Unlock Riddle #4 reward (1000 DSPOINC)
-async function unlockRiddle4Reward() {
-  const rewardAmount = 1000;
-  const rewardId = "CHEESE_TEMPLE_RIDDLE_04_SECRET";
-  const rewardDescription = "Secret Riddle #4 - Hidden Lever Combination";
-  
-  const discordId = resolvedDiscordId;
-  if (!discordId) {
-    console.warn(`🧩 [RIDDLE #4] Skipping DSPOINC reward — no Discord ID.`);
-    return;
-  }
-  
-  try {
-    const rewardPayload = {
-      discord_id: discordId,
-      discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
-      riddle_id: rewardId,
-      level_id: 'CHEESE_TEMPLE_LVL1',
-      base_reward: rewardAmount, // 1000 DSPOINC fixed reward (no role multiplier)
-      session_id: cheeseSessionId
-    };
-    
-    const rewardResponse = await fetch(RIDDLE_REWARD_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(rewardPayload)
-    });
-    
-    const rewardResult = await rewardResponse.json();
-    
-    if (rewardResponse.ok && rewardResult.success) {
-      const dsPoincAwarded = rewardResult.data?.ds_poinc_awarded || 0;
-      const totalDspoinc = rewardResult.data?.total_ds_poinc || 0;
-      
-      // Update HUD with new DSPOINC balance
-      if (typeof totalDspoinc === "number") {
-        currentTotalDspoinc = totalDspoinc;
-        window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
-        if (isGamePaused) updatePausePlayerInfo();
-      }
-      
-      // Show reward notification
-      showRiddleRewardNotification(dsPoincAwarded, rewardResult.data?.multiplier || 1.0);
-      
-      console.log(`🧩 [RIDDLE #4] 🎁 DSPOINC reward awarded successfully!`, {
-        dsPoincAwarded,
-        totalDspoinc,
-        multiplier: rewardResult.data?.multiplier
-      });
-    } else {
-      // Check if riddle was already completed (409 Conflict)
-      if (rewardResponse.status === 409) {
-        console.warn(`🧩 [RIDDLE #4] Riddle already completed - no reward awarded`);
-        showRiddleRewardNotification(0, 1.0, true); // Show "already completed" message
-      } else {
-        console.warn(`🧩 [RIDDLE #4] DSPOINC reward failed:`, rewardResult.error);
-      }
-    }
-  } catch (error) {
-    console.error(`🧩 [RIDDLE #4] Error awarding DSPOINC reward:`, error);
-  }
-}
-
-// Show success message when riddle is solved
-function showRiddle4SuccessMessage() {
-  const message = "🎉 You found a hidden riddle! 🎉\n\n+1,000 DSPOINC";
-  
-  showRiddleToast(message, {
-    duration: 5000,
-    backgroundColor: "rgba(0, 255, 0, 0.9)",
-    color: "#000",
-    fontSize: "18px",
-    fontWeight: "bold"
-  });
-}
-
-// Show hint message when player tries too often
-function showRiddle4HintMessage() {
-  const messages = [
-    "🔍 You need more information to solve this riddle...",
-    "🧠 This riddle requires more skills...",
-    "💡 Keep exploring to find clues...",
-    "🔎 The answer lies elsewhere in the temple..."
-  ];
-  
-  const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-  
-  showRiddleToast(randomMessage, {
-    duration: 4000,
-    backgroundColor: "rgba(255, 200, 0, 0.9)",
-    color: "#000",
-    fontSize: "16px",
-    fontWeight: "600"
-  });
-}
-
-function setLevel2LeverState(isOn) {
-  const lever = level2RiddleState.lever;
-  if (!lever) return;
-  const texture = isOn ? lever.userData.textureOn : lever.userData.textureOff;
-  if (texture) {
-    lever.material.map = texture;
-    lever.material.needsUpdate = true;
-  }
-  lever.material.emissive = new THREE.Color(isOn ? 0x00ff99 : 0x000000);
-  lever.material.emissiveIntensity = isOn ? 0.35 : 0;
-}
-
-function handleLevel2LeverClick() {
-  if (
-    !level2RiddleState.step0Complete ||
-    !level2RiddleState.lever ||
-    !level2RiddleState.lever.visible ||
-    level2RiddleState.leverPressed
-  ) {
-    return false;
-  }
-  const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-  const distance = playerPos.distanceTo(level2RiddleState.lever.position);
-  if (distance > LEVEL2_LEVER_DISTANCE) {
-    console.log("🧩 [LEVEL 2] Lever out of reach:", distance.toFixed(2));
-    return false;
-  }
-  level2RiddleState.leverPressed = true;
-  setLevel2LeverState(true);
-  playLeverSound();
-  unlockLevel2WeaponGallery();
-  showLevel2LeverHint();
-  if (!level2RiddleState.step1TraitUnlocked) {
-    unlockLevel2Trait(LEVEL2_STEP1_TRAIT, "Level 2 Step 1");
-  }
-  awardLevel2DspoincReward("CHEESE_TEMPLE_LEVEL2_STEP1", 100, "Level 2 Step 1");
-  console.log("🧩 [LEVEL 2] Lever pulled — gallery unlocked.");
-  return true;
-}
-
-function unlockLevel2WeaponGallery() {
-  if (level2RiddleState.galleryUnlocked) return;
-  level2RiddleState.galleryUnlocked = true;
-  
-  // Create weapon gallery pedestals first
-  if (!level2State.weaponGalleryAnchors) {
-    createLevel2WeaponGallery();
-  }
-  
-  // Spawn all 3 weapons
-  LEVEL2_WEAPON_LIBRARY.forEach((weaponEntry) => {
-    spawnLevel2WeaponDisplay(weaponEntry);
-  });
-  
-  showLevel2LeverToast("Gallery unlocked — inspect the weapons.");
-  
-  // Teleport player to weapon gallery area after Step 1
-  const { galleryStartZ } = getLevel2GalleryLayout();
-  const weaponGalleryZ = galleryStartZ;
-  const endFloorPosition = new THREE.Vector3(
-    level2Config.origin.x,
-    level2Config.origin.y + 1.0,
-    weaponGalleryZ - 2 // Position player 2 units before the weapon gallery
-  );
-  setPlayerFeetPosition(endFloorPosition);
-  console.log("🚀 [LEVEL 2] Player teleported to weapon gallery area after Step 1 completion.");
-}
-
-function createLevel2WeaponGallery() {
-  // Safety check
-  if (!level2State || !level2State.group) {
-    console.error("❌ [LEVEL 2] level2State not initialized!");
-    return;
-  }
-  if (!level2RiddleState || !Array.isArray(level2RiddleState.weaponDisplays)) {
-    console.error("❌ [LEVEL 2] level2RiddleState not initialized!");
-    return;
-  }
-  if (!level2State.anchorLabels) {
-    level2State.anchorLabels = [];
-  }
-  
-  // Create weapon gallery shelves similar to monster shelves, after the lever
-  const { galleryStartZ, leverFinalZ } = getLevel2GalleryLayout();
-  
-  const origin = level2Config.origin;
-  const pedestalGeometry = new THREE.BoxGeometry(0.95, 0.28, 0.95);
-  const pedestalMaterial = new THREE.MeshStandardMaterial({ color: 0xf7f5f5, emissive: 0xffffff, emissiveIntensity: 0.12 });
-  const pedestalHeight = 0.16;
-  
-  // Create weapon shelves in a single row, centered
-  const config = LEVEL2_WEAPON_GALLERY_CONFIG;
-  const totalWidth = (config.weaponsPerRow - 1) * config.weaponSpacing;
-  const baseX = origin.x - totalWidth / 2;
-  const weaponZ = galleryStartZ;
-  
-  // (2025-11-17) Removed the tall backdrop block above the weapon pedestals.
-  // We only want the individual pedestals/labels visible so the screenshot
-  // configuration stays clean – skip adding the oversized shelf mesh here.
-  
-  // Create pedestals for each weapon with numbered shelves
-  const weaponAnchors = [];
-  LEVEL2_WEAPON_LIBRARY.forEach((weapon) => {
-    const col = weapon.weaponShelfNumber - 1; // Convert shelf number to 0-based index
-    const weaponX = baseX + col * config.weaponSpacing;
-    
-    // Create pedestal (same as monster pedestals)
-    const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
-    pedestal.position.set(weaponX, origin.y + pedestalHeight, weaponZ);
-    pedestal.castShadow = false;
-    pedestal.receiveShadow = false;
-    level2State.group.add(pedestal);
-    level2RiddleState.weaponDisplays.push(pedestal);
-    
-    // Store anchor with shelf number
-    weaponAnchors.push({
-      type: "weapon",
-      position: pedestal.position.clone(),
-      shelfNumber: weapon.weaponShelfNumber
-    });
-  });
-  
-  level2State.weaponGalleryAnchors = weaponAnchors;
-  
-  // Create shelf labels for weapons (similar to monster shelves)
-  if (SHOW_LEVEL2_ANCHOR_LABELS) {
-    weaponAnchors.forEach((anchor) => {
-      const createWeaponLabelSprite = (text, anchorPos) => {
-        const canvas = document.createElement("canvas");
-        canvas.width = 256;
-        canvas.height = 128;
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "rgba(255, 224, 102, 0.65)";
-        ctx.lineWidth = 4;
-        ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-        ctx.fillStyle = "#ffe066";
-        ctx.font = "bold 22px 'Montserrat', Arial, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-        
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-        sprite.scale.set(1.2, 0.6, 1);
-        sprite.position.copy(anchorPos.clone().add(new THREE.Vector3(0, 0.35, 0)));
-        level2State.group.add(sprite);
-        level2State.anchorLabels.push(sprite);
-      };
-      
-      createWeaponLabelSprite(`Shelf ${anchor.shelfNumber}`, anchor.position);
-    });
-  }
-  
-  // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-  if (DEBUG_SETTINGS.logLevel2Weapons) {
-    console.log("🔫 [LEVEL 2] Weapon gallery created:", {
-      shelves: 1,
-      pedestals: weaponAnchors.length,
-      startZ: galleryStartZ,
-      leverZ: leverFinalZ
-    });
-  }
-}
-
-function spawnLevel2WeaponDisplay(entry) {
-  if (!entry) return;
-  
-  // Use weapon gallery anchors with shelf numbers
-  const weaponAnchor = level2State.weaponGalleryAnchors?.find(
-    (a) => a.shelfNumber === entry.weaponShelfNumber
-  );
-  
-  if (!weaponAnchor) {
-    console.error("❌ [LEVEL 2] Weapon gallery anchor not found for:", entry.id, "shelf:", entry.weaponShelfNumber);
-    return;
-  }
-  
-  const offset = entry.offset || {};
-  const transformOverride = entry.category ? getWeaponRowTransform(entry.category) : null;
-  const scaleValue = entry.scale ?? transformOverride?.scale ?? PRIMARY_RING_DEFAULT_TRANSFORM.scale;
-  const offsetY =
-    (Object.prototype.hasOwnProperty.call(offset, "y") ? offset.y : null) ??
-    transformOverride?.offsetY ??
-    PRIMARY_RING_DEFAULT_TRANSFORM.offsetY;
-  const rotationY =
-    (entry.rotation && Object.prototype.hasOwnProperty.call(entry.rotation, "y") ? entry.rotation.y : null) ??
-    transformOverride?.rotationY ??
-    PRIMARY_RING_DEFAULT_TRANSFORM.rotationY;
-  const rotationX = entry.rotation?.x ?? 0;
-  const rotationZ = entry.rotation?.z ?? 0;
-  const basePosition = weaponAnchor.position.clone().add(new THREE.Vector3(offset.x || 0, 0, offset.z || 0));
-  basePosition.y += offsetY;
-
-  // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-  if (DEBUG_SETTINGS.logLevel2Weapons) {
-    console.log("🔫 [LEVEL 2] Loading weapon:", entry.id, entry.assetPath);
-  }
-  
-  loadModel(entry.assetPath)
-    .then(({ scene, isFBX }) => {
-      // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-      if (DEBUG_SETTINGS.logLevel2Weapons) {
-        console.log("✅ [LEVEL 2] Weapon model loaded:", entry.id, {
-          isFBX,
-          children: scene.children.length,
-          sceneType: scene.constructor.name
-        });
-      }
-      
-      // FBX files often return a Group - ensure it's properly configured
-      if (isFBX) {
-        // FBX scenes might need special handling
-        scene.visible = true;
-        scene.frustumCulled = false; // Disable frustum culling for visibility
-        
-        // Ensure all children are visible
-        scene.traverse((child) => {
-          child.visible = true;
-          if (child.isMesh) {
-            child.visible = true;
-            child.frustumCulled = false;
-            child.castShadow = false;
-            child.receiveShadow = false;
-            
-            // Handle FBX materials - they might be Phong or Lambert
-            if (child.material) {
-              // Handle material arrays
-              const materials = Array.isArray(child.material) ? child.material : [child.material];
-              const processedMaterials = materials.map((mat) => {
-                // Try to clone if possible, otherwise use original
-                let processedMat = mat;
-                if (mat && typeof mat.clone === 'function') {
-                  try {
-                    processedMat = mat.clone();
-                  } catch (e) {
-                    console.warn("🔫 [LEVEL 2] Material clone failed, using original:", e);
-                    processedMat = mat;
-                  }
-                }
-                
-                // Convert to MeshStandardMaterial if needed for better rendering
-                if (!(processedMat instanceof THREE.MeshStandardMaterial)) {
-                  const oldMat = processedMat;
-                  processedMat = new THREE.MeshStandardMaterial({
-                    color: oldMat.color || 0xffffff,
-                    map: oldMat.map || null,
-                    normalMap: oldMat.normalMap || null,
-                    metalness: 0.3,
-                    roughness: 0.4,
-                    emissive: oldMat.emissive || new THREE.Color(0x000000),
-                    emissiveIntensity: oldMat.emissiveIntensity || 0
-                  });
-                } else {
-                  // Already MeshStandardMaterial - just tune it
-                  processedMat.metalness = 0.3;
-                  processedMat.roughness = 0.4;
-                }
-                
-                // Ensure material is visible
-                processedMat.visible = true;
-                processedMat.transparent = false;
-                processedMat.opacity = 1.0;
-                
-                return processedMat;
-              });
-              
-              // Assign processed material(s)
-              child.material = Array.isArray(child.material) ? processedMaterials : processedMaterials[0];
-            }
-          }
-        });
-      } else {
-        // GLTF/GLB handling (same as before)
-        scene.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = false;
-            child.receiveShadow = false;
-            child.material = child.material?.clone?.() || child.material;
-            if (child.material) {
-              child.material.metalness = 0.3;
-              child.material.roughness = 0.4;
-            }
-          }
-        });
-      }
-      
-      // Apply scale, rotation, and position
-      scene.scale.setScalar(scaleValue);
-      scene.rotation.set(rotationX, rotationY, rotationZ);
-      scene.position.copy(basePosition);
-      scene.visible = true;
-      
-      // Update matrix to ensure proper rendering
-      scene.updateMatrixWorld(true);
-      
-      // Add to scene
-      level2State.group.add(scene);
-      level2RiddleState.weaponDisplays.push(scene);
-      
-      // Create label
-      createLevel2WeaponLabel(entry, basePosition);
-      
-      // CRITICAL: Disabled debug logging for performance (was causing FPS drops in Level 2)
-      if (DEBUG_SETTINGS.logLevel2Weapons) {
-        console.log("✅ [LEVEL 2] Weapon spawned successfully:", entry.id, {
-          position: basePosition,
-          scale: scaleValue,
-          rotation: { x: rotationX, y: rotationY, z: rotationZ },
-          visible: scene.visible,
-          inScene: level2State.group.children.includes(scene)
-        });
-      }
-    })
-    .catch((error) => {
-      console.error("❌ [LEVEL 2] Failed to load weapon model:", entry.assetPath, error);
-      console.error("❌ [LEVEL 2] Error details:", error.message, error.stack);
-    });
-}
-
-function createLevel2WeaponLabel(entry, worldPosition) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 128;
-  canvas.height = 64;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#ffe066";
-  ctx.font = "bold 20px 'Montserrat', Arial, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(entry.id, canvas.width / 2, canvas.height / 2); // Just show ID (W1, W2, W3)
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-  sprite.scale.set(0.6, 0.3, 1); // Reduced size so weapons stay readable
-  sprite.position.copy(worldPosition.clone().add(new THREE.Vector3(0, 1.5, 0)));
-  level2State.group.add(sprite);
-  level2RiddleState.weaponDisplays.push(sprite);
-}
-
-function clearLevel2WeaponDisplays() {
-  level2RiddleState.weaponDisplays.forEach((mesh) => {
-    if (mesh.material) {
-      if (mesh.material.map) {
-        mesh.material.map.dispose();
-      }
-      mesh.material.dispose();
-    }
-    if (mesh.geometry) {
-      mesh.geometry.dispose();
-    }
-    if (mesh.parent) {
-      mesh.parent.remove(mesh);
-    }
-  });
-  level2RiddleState.weaponDisplays.length = 0;
-}
-
-function showLevel2LeverToast(message) {
-  const toast = document.createElement("div");
-  toast.textContent = message;
-  Object.assign(toast.style, {
-    position: "fixed",
-    top: "32px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    padding: "18px 32px",
-    borderRadius: "16px",
-    background: "rgba(15, 23, 42, 0.92)",
-    border: "1px solid rgba(255, 224, 102, 0.35)",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "15px",
-    fontWeight: "600",
-    zIndex: "100001",
-    boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
-    letterSpacing: "0.4px",
-    textTransform: "uppercase",
-    textAlign: "center"
-  });
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.style.opacity = "0";
-    toast.style.transition = "opacity 0.6s ease-out";
-    setTimeout(() => {
-      if (document.body.contains(toast)) {
-        document.body.removeChild(toast);
-      }
-    }, 600);
-  }, 4500);
-}
-
-// ==================== LEVEL 1: BEAR TRAP (DEADLY) ====================
-
-// Create bear trap in Level 1 (starts open, closes when player steps on it - instant death)
-function createLevel1BearTrap(spawnData, blockSize) {
-  // Place trap at a visible location in Level 1 (near spawn area for visibility)
-  // Position: x=65, z=25 (adjustable - visible but not blocking main path)
-  // Use spawn position as reference if available
-  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
-  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
-  const trapX = spawnX + 5; // 5 blocks to the right of spawn
-  const trapZ = spawnZ + 10; // 10 blocks forward from spawn
-  const trapY = 1.0; // Ground level (will be adjusted by transform offsetY)
-  
-  // CRITICAL: Reset bear trap state before creating (prevent duplicates)
-  if (level1State.bearTrap && level1State.bearTrap.parent) {
-    scene.remove(level1State.bearTrap);
-    level1State.bearTrap = null;
-  }
-  
-  level1State.bearTrapPosition = new THREE.Vector3(trapX, trapY, trapZ);
-  level1State.bearTrapTriggered = false;
-  
-  console.log("🐻 [LEVEL 1] Creating bear trap at:", level1State.bearTrapPosition, {
-    spawnX: spawnX,
-    spawnZ: spawnZ,
-    trapX: trapX,
-    trapZ: trapZ,
-    trapY: trapY
-  });
-  
-  // Load open bear trap model (SP08)
-  const openTrapPath = "/public/three.js/public/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx";
-  const closedTrapPath = "/public/three.js/public/textures/3d models/Survival Pack/FBX/BearTrap_Closed.fbx";
-  
-  loadModel(openTrapPath)
-    .then((result) => {
-      // CRITICAL: FBX models need to be cloned (like in cache) to ensure proper rendering
-      // For FBX: result = { scene: fbx, animations: [], isFBX: true }
-      // For GLTF: result = { scene: gltf.scene, animations: [], ... }
-      const loadedScene = result.scene || result;
-      const trap = result.isFBX ? loadedScene.clone(true) : loadedScene;
-      
-      // Get transform from Level 2 (same as how traps are displayed in Level 2)
-      const transform = getAccessoryTransform("trap");
-      
-      trap.position.copy(level1State.bearTrapPosition);
-      // For Level 1, place trap directly on ground (offsetY is for pedestals in Level 2)
-      trap.position.y = level1State.bearTrapPosition.y; // Keep at ground level (1.0)
-      
-      // CRITICAL: Use same scale as Level 2 for consistency (0.008)
-      // Level 2 uses 0.008 on pedestal, Level 1 uses same scale on ground
-      trap.scale.setScalar(0.008);
-      trap.rotation.y = transform.rotationY || 0;
-      
-      // Store both model paths for switching
-      trap.userData.isOpen = true;
-      trap.userData.openPath = openTrapPath;
-      trap.userData.closedPath = closedTrapPath;
-      
-      // Process materials and make trap visible (ensure all children are visible)
-      // CRITICAL: Process materials AFTER cloning to ensure they're properly initialized
-      let meshCount = 0;
-      let materialCount = 0;
-      trap.traverse((child) => {
-        if (child.isMesh) {
-          meshCount++;
-          child.castShadow = true;
-          child.receiveShadow = true;
-          child.visible = true;
-          child.frustumCulled = false; // CRITICAL: Ensure all children are visible
-          
-          // CRITICAL: Log material state before processing
-          const hasMaterial = !!child.material;
-          const materialType = child.material ? child.material.type : 'none';
-          const hasColor = child.material && child.material.color;
-          const materialColor = hasColor ? child.material.color.getHexString() : 'none';
-          
-          // CRITICAL: Always process materials - create default if missing
-          if (!child.material) {
-            // No material - create a visible default material
-            child.material = new THREE.MeshStandardMaterial({
-              color: 0x888888, // Medium gray for visibility
-              metalness: 0.35,
-              roughness: 0.45,
-              side: THREE.DoubleSide
-            });
-            child.material.needsUpdate = true;
-            materialCount++;
-            console.log("🐻 [LEVEL 1] Created default material for bear trap mesh:", {
-              meshName: child.name,
-              materialType: child.material.type,
-              color: child.material.color.getHexString()
-            });
-          } else {
-            // Process existing materials
-            materialCount++;
-            console.log("🐻 [LEVEL 1] Processing bear trap material:", {
-              meshName: child.name,
-              originalType: materialType,
-              hasColor: hasColor,
-              originalColor: materialColor,
-              isArray: Array.isArray(child.material)
-            });
-            
-            if (Array.isArray(child.material)) {
-              child.material = child.material.map(mat => {
-                const processed = processWeaponMaterial(mat);
-                if (processed) {
-                  processed.needsUpdate = true;
-                  processed.side = THREE.DoubleSide; // Ensure double-sided
-                  // Brighten material if too dark
-                  if (processed.color) {
-                    const brightness = (processed.color.r + processed.color.g + processed.color.b) / 3;
-                    if (brightness < 0.3) {
-                      processed.color.setRGB(
-                        Math.min(1.0, processed.color.r * 2.0),
-                        Math.min(1.0, processed.color.g * 2.0),
-                        Math.min(1.0, processed.color.b * 2.0)
-                      );
-                    }
-                  }
-                }
-                return processed;
-              });
-            } else {
-              child.material = processWeaponMaterial(child.material);
-              if (child.material) {
-                child.material.needsUpdate = true;
-                child.material.side = THREE.DoubleSide; // Ensure double-sided
-                // Brighten material if too dark
-                if (child.material.color) {
-                  const brightness = (child.material.color.r + child.material.color.g + child.material.color.b) / 3;
-                  if (brightness < 0.3) {
-                    child.material.color.setRGB(
-                      Math.min(1.0, child.material.color.r * 2.0),
-                      Math.min(1.0, child.material.color.g * 2.0),
-                      Math.min(1.0, child.material.color.b * 2.0)
-                    );
-                  }
-                }
-                console.log("🐻 [LEVEL 1] Processed bear trap material:", {
-                  meshName: child.name,
-                  newType: child.material.type,
-                  newColor: child.material.color ? child.material.color.getHexString() : 'none',
-                  needsUpdate: child.material.needsUpdate,
-                  side: child.material.side
-                });
-              }
-            }
-          }
-        }
-      });
-      
-      console.log("🐻 [LEVEL 1] Bear trap material processing complete:", {
-        totalMeshes: meshCount,
-        totalMaterials: materialCount,
-        trapVisible: trap.visible,
-        trapFrustumCulled: trap.frustumCulled
-      });
-      
-      // CRITICAL: Disable frustum culling to ensure bear trap is always visible
-      trap.frustumCulled = false;
-      trap.visible = true;
-      trap.updateMatrixWorld(true);
-      
-      // CRITICAL: Double-check all children are visible (traverse again after material processing)
-      trap.traverse((child) => {
-        if (child.isMesh) {
-          child.visible = true;
-          child.frustumCulled = false;
-          if (child.material) {
-            child.material.needsUpdate = true;
-            // Ensure material is not too dark
-            if (child.material.color) {
-              const brightness = (child.material.color.r + child.material.color.g + child.material.color.b) / 3;
-              if (brightness < 0.2) {
-                child.material.color.setRGB(
-                  Math.min(1.0, child.material.color.r * 2.0),
-                  Math.min(1.0, child.material.color.g * 2.0),
-                  Math.min(1.0, child.material.color.b * 2.0)
-                );
-              }
-            }
-          }
-        }
-      });
-      
-      scene.add(trap); // Add to main game scene
-      level1State.bearTrap = trap;
-      
-      // Double-check visibility after a short delay
-      setTimeout(() => {
-        if (level1State.bearTrap) {
-          level1State.bearTrap.visible = true;
-          level1State.bearTrap.frustumCulled = false;
-          level1State.bearTrap.updateMatrixWorld(true);
-          // Ensure all children are still visible
-          level1State.bearTrap.traverse((child) => {
-            if (child.isMesh) {
-              child.visible = true;
-              child.frustumCulled = false;
-            }
-          });
-          console.log("🔍 [LEVEL 1] Bear trap visibility verified:", {
-            visible: level1State.bearTrap.visible,
-            inScene: scene.children.includes(level1State.bearTrap),
-            position: level1State.bearTrap.position,
-            scale: level1State.bearTrap.scale,
-            frustumCulled: level1State.bearTrap.frustumCulled,
-            childrenCount: level1State.bearTrap.children.length
-          });
-        }
-      }, 500);
-      
-      console.log("✅ [LEVEL 1] Bear trap created (open state) at:", trap.position, "scale:", trap.scale, "transform:", transform);
-    })
-    .catch((error) => {
-      console.error("❌ [LEVEL 1] Failed to load bear trap model:", error);
-      console.error("❌ [LEVEL 1] Bear trap path attempted:", openTrapPath);
-      console.error("❌ [LEVEL 1] Full error:", error.message, error.stack);
-      // Reset state on error
-      level1State.bearTrap = null;
-      level1State.bearTrapPosition = null;
-    });
-}
-
-// CRITICAL: Verify and fix chest positions in Level 1
-// This function should be called whenever entering Level 1 to ensure chests are at correct positions
-// 🔧 Verify and fix Level 1 chest positions
-//
-// 📝 CHEST VERIFICATION NOTES (December 18, 2025):
-// ================================================
-// This function ensures ground-level chests stay at Y=1.0 (flush with ground)
-// and prevents them from drifting or being mispositioned.
-//
-// VERIFICATION RULES:
-// ===================
-//
-// 1. GROUND-LEVEL CHESTS (chest_001, chest_002):
-//    - Verify bottom at Y=1.0 (world space)
-//    - Fix X/Z if drifted from expected position
-//    - Recalculate Y if userData is missing
-//
-// 2. ELEVATED CHESTS (chest_003):
-//    - SKIP ALL VERIFICATION (early return at line ~29540)
-//    - Never touch Y position (stays at Y=29.0 tower top)
-//    - Triple protection prevents forced Y=1.0 positioning
-//
-// HOW TO ADD NEW ELEVATED CHESTS:
-// ================================
-// Add chest ID to the skip check at line ~29540:
-//   if (chestId === 'chest_003' || chestId === 'chest_custom') {
-//     console.log(`Chest ${chestId} on custom elevation - skipping verification`);
-//     return;
-//   }
-//
-// WHY THIS FUNCTION EXISTS:
-// =========================
-// - Prevents chests from floating or sinking into ground
-// - Ensures consistent Y=1.0 positioning for ground chests
-// - Fixes position drift from loading/unloading cycles
-// - Runs multiple times (500ms, 1000ms) to catch late-loading chests
-//
-// GRASS EXCLUSION INTEGRATION:
-// ============================
-// - This function runs BEFORE grass regeneration
-// - Ensures chests are at correct positions before exclusion zones register
-// - Grass system reads chest positions after this verification
-// - Exclusion zones created from verified chest positions
-//
 function verifyAndFixLevel1ChestPositions() {
   if (!chestSystem || currentLevel !== LEVEL_IDS.LEVEL1) {
     return; // Only run in Level 1
@@ -32803,4631 +26259,186 @@ function verifyAndFixLevel1ChestPositions() {
           child.frustumCulled = false;
         }
       });
-    } else if (chest.isLoaded && !chest.mesh) {
-      // Chest is marked as loaded but has no mesh - this is a problem
-      console.error(`❌ [LEVEL 1] Chest ${chestId} is marked as loaded but has no mesh! Recreating...`);
-      // Recreate the chest
-      const spawnX = 60; // Default spawn X
-      const spawnZ = 15; // Default spawn Z
-      const chestY = 1.0;
-      
-      let chestX, chestZ;
-      if (chestId === 'chest_001') {
-        chestX = spawnX - 5;
-        chestZ = spawnZ + 10;
-      } else if (chestId === 'chest_002') {
-        chestX = 35;
-        chestZ = 50;
-      } else {
-        return; // Unknown chest
-      }
-      
-      // Dispose and recreate
-      chest.dispose();
-      level1Chests.delete(chestId);
-      
-      chestSystem.addChest(LEVEL_IDS.LEVEL1, {
-        id: chestId,
-        type: 'chest2', // Standardized: All chests use chest2 (has animation)
-        position: new THREE.Vector3(chestX, chestY, chestZ),
-        dspoincAmount: chestId === 'chest_001' ? 100 : 250,
-        levelId: 'CHEESE_TEMPLE_LEVEL1'
-      });
     }
   });
   
-  // Check if chest 2 is missing
-  if (!level1Chests.has('chest_002')) {
-    console.error(`❌ [LEVEL 1] Chest 2 (chest_002) missing! Recreating...`);
-    const spawnX = 60;
-    const spawnZ = 15;
-    const chest2X = 35;
-    const chest2Z = 50;
-    const chest2Y = 1.0;
-    chestSystem.addChest(LEVEL_IDS.LEVEL1, {
-      id: 'chest_002',
-      type: 'chest2',
-      position: new THREE.Vector3(chest2X, chest2Y, chest2Z),
-      dspoincAmount: 250,
-      levelId: 'CHEESE_TEMPLE_LEVEL1'
-    });
-  }
+  console.log("✅ [LEVEL 1] Chest position verification complete");
 }
 
-// 🎁 Create chests in Level 1 (3 chests: 2 ground-level, 1 on tower)
-//
-// 📝 CHEST PLACEMENT SYSTEM NOTES (December 18, 2025):
-// ====================================================
-// Level 1 demonstrates 3 different chest placement scenarios:
-//
-// CHEST POSITIONING GUIDE:
-// ========================
-//
-// 1. GROUND-LEVEL CHESTS (chest_001, chest_002):
-//    Position: Y = 1.0 (ground level, same as bear trap)
-//    - chest-system.js automatically positions bottom at Y=1.0
-//    - No special handling needed
-//    - verifyAndFixLevel1ChestPositions() ensures they stay at Y=1.0
-//
-// 2. ELEVATED CHESTS (chest_003):
-//    Position: Y = 29.0 (tower top, custom elevation)
-//    - Pass Y > 5.0 in position Vector3
-//    - chest-system.js detects: useCustomY = true (line 615)
-//    - verifyAndFixLevel1ChestPositions() skips chest_003 (won't force to Y=1)
-//    - Triple protection: early return + skip Y check + skip recalc
-//
-// HOW TO ADD ELEVATED CHESTS:
-// ============================
-// Step 1: Create chest with custom Y position
-//    chestSystem.addChest(LEVEL_ID, {
-//      id: 'chest_custom',
-//      position: new THREE.Vector3(x, customY, z),  // Y > 5.0 triggers custom mode
-//      type: 'chest2',
-//      dspoincAmount: 500
-//    });
-//
-// Step 2: Add chest ID to skip list in verifyAndFixLevel1ChestPositions()
-//    if (chestId === 'chest_custom') { return; }
-//
-// Step 3: Done! Chest will stay at custom Y position
-//
-// GRASS EXCLUSION SYSTEM:
-// =======================
-// - All chests automatically register exclusion zones (chest-system.js line 2160)
-// - Exclusion zone = chest bounding box + 0.5 unit padding
-// - Works at ANY Y position (ground or elevated)
-// - Prevents grass from spawning near chests
-// - checkAndRegenerateGrass() waits for all chests to load and register zones
-// - Grass regenerates once with all exclusion zones applied
-//
-// CHEST STATE & REWARDS:
-// ======================
-// - chest_001: 100 DSPOINC (ground level, near spawn)
-// - chest_002: 250 DSPOINC (ground level, left side)
-// - chest_003: 500 DSPOINC (tower top at Y=29)
-// - State persists in localStorage
-// - Once opened, stays open permanently
-// - Reward given only once
-//
-// TIMING & DELAYS:
-// ================
-// - Chest 1: Created immediately
-// - Chest 2: 50ms delay (prevents race conditions)
-// - Chest 3: 100ms delay (ensures chest 2 loads first)
-// - Verification runs at 500ms, 1000ms (multiple passes)
-//
-function createLevel1Chests(spawnData, blockSize) {
-  if (!chestSystem) {
-    console.warn("⚠️ [LEVEL 1] Chest system not initialized");
+// ============================================================================
+// GAME LOOP - ANIMATE FUNCTION
+// ============================================================================
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (stats) stats.begin();
+
+  const delta = Math.min(clock.getDelta(), 0.1);
+  
+  if (delta > 0.2) {
+    if (stats) stats.end();
     return;
   }
-  
-  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
-  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
-  
-  // CRITICAL: Use the EXACT same Y position as the bear trap (1.0) for ground-level chests
-  // Bear trap uses: trapY = 1.0 (see createLevel1BearTrap function)
-  // chest_003 overrides this with Y=29.0 for tower placement
-  const chestY = 1.0; // Ground level for chest_001 and chest_002
-  
-  console.log("🎁 [LEVEL 1] Creating chests...", {
-    spawnX: spawnX,
-    spawnZ: spawnZ,
-    chestY: chestY,
-    note: "Chest Y matches bear trap Y (1.0)"
-  });
-  
-  // Chest 1: Near spawn area (chest2 type - standardized)
-  // Position: Left of spawn, forward from spawn
-  const chest1X = spawnX - 5;
-  const chest1Z = spawnZ + 10;
-  const chest1Position = new THREE.Vector3(chest1X, chestY, chest1Z);
-  
-  console.log("🎁 [LEVEL 1] Adding chest 1:", {
-    id: 'chest_001',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest1Position,
-    x: chest1X,
-    y: chestY,
-    z: chest1Z,
-    bearTrapY: 1.0
-  });
-  
-  chestSystem.addChest(LEVEL_IDS.LEVEL1, {
-    id: 'chest_001',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest1Position,
-    dspoincAmount: 100,
-    levelId: 'CHEESE_TEMPLE_LEVEL1'
-  });
-  
-  console.log("✅ [LEVEL 1] Chest 1 creation initiated");
-  
-  // CRITICAL: Small delay between chest 1 and chest 2 to prevent race conditions
-  // This ensures chest 1 is fully added before chest 2 is added
-  setTimeout(() => {
-    // Chest 2: Left side area, away from center platform (chest2 type)
-    // MOVED: Away from center platform (x: 60, z: 60) to avoid being blocked
-    // New position: Left side of level, away from center platform and spawn area
-    // Position: x: 35 (left side, away from center), z: 50 (forward from spawn, not in center)
-    const chest2X = 35; // Left side, well away from center platform (60, 60)
-    const chest2Z = 50; // Forward from spawn, but not in center platform area
-    // CRITICAL: Use same Y as bear trap
-    const chest2Y = chestY; // 1.0 - matches bear trap Y exactly
-    
-    // CRITICAL: Ensure chest 2 is added with proper position
-    // Use chestY (1.0) to match bear trap Y position exactly
-    const chest2Position = new THREE.Vector3(chest2X, chest2Y, chest2Z);
-    
-    console.log("🎁 [LEVEL 1] Adding chest 2 at left side (away from center platform):", {
-      id: 'chest_002',
-      type: 'chest2',
-      x: chest2X,
-      y: chest2Y,
-      z: chest2Z,
-      spawnX: spawnX,
-      spawnZ: spawnZ,
-      position: chest2Position,
-      bearTrapY: 1.0,
-      note: "Moved to left side, away from center platform, Y matches bear trap"
-    });
-    
-    // Chest 2: Add with small delay to ensure chest 1 is processed first
-    chestSystem.addChest(LEVEL_IDS.LEVEL1, {
-      id: 'chest_002',
-      type: 'chest2',
-      position: chest2Position,
-      dspoincAmount: 250,
-      levelId: 'CHEESE_TEMPLE_LEVEL1'
-    });
-    
-    console.log("✅ [LEVEL 1] Chest 2 creation initiated");
-    
-    // CRITICAL: Small delay between chest 2 and chest 3 to prevent race conditions
-    // This ensures chest 2 is fully added before chest 3 is added
-    setTimeout(() => {
-      // 🏰 Chest 3: Tower top position (ELEVATED CHEST EXAMPLE)
-      //
-      // 📝 ELEVATED CHEST IMPLEMENTATION (December 18, 2025):
-      // ====================================================
-      // This chest demonstrates how to place chests at custom Y positions
-      //
-      // KEY SETTINGS FOR ELEVATED CHESTS:
-      // ==================================
-      // 1. Y Position: 29.0 (tower top, NOT ground level Y=1.0)
-      // 2. chest-system.js detects: |29 - 1| > 5.0 → useCustomY = true
-      // 3. verifyAndFixLevel1ChestPositions() skips chest_003 (line ~29580)
-      // 4. Result: Chest stays at Y=29, won't be forced to Y=1
-      //
-      // GRASS EXCLUSION:
-      // ================
-      // - Still registers exclusion zone (keeps grass away from tower base)
-      // - Exclusion zone uses chest position at Y=29
-      // - Grass system respects exclusion at any Y height
-      //
-      // COPY THIS PATTERN FOR NEW ELEVATED CHESTS:
-      // ===========================================
-      // const customChestY = 50; // Any Y > 5.0 triggers custom mode
-      // chestSystem.addChest(LEVEL_ID, {
-      //   id: 'chest_custom',
-      //   position: new THREE.Vector3(x, customChestY, z),
-      //   type: 'chest2',
-      //   dspoincAmount: 500
-      // });
-      // Then add skip check in verifyAndFixLevel1ChestPositions()
-      //
-      const chest3X = 82; // Tower top X position
-      const chest3Z = 39; // Tower top Z position
-      const chest3Y = 29; // Tower top Y position (ELEVATED - triggers useCustomY mode)
-      
-      const chest3Position = new THREE.Vector3(chest3X, chest3Y, chest3Z);
-      
-      console.log("🎁 [LEVEL 1] Adding chest 3 at tower top (ELEVATED CHEST):", {
-        id: 'chest_003',
-        type: 'chest2',
-        x: chest3X,
-        y: chest3Y, // Y=29 (custom elevation)
-        z: chest3Z,
-        spawnX: spawnX,
-        spawnZ: spawnZ,
-        position: chest3Position,
-        note: "Tower top at Y=29 (elevated chest example) - useCustomY = true"
-      });
-      
-      // Chest 3: Add with delay to ensure chest 2 is processed first
-      chestSystem.addChest(LEVEL_IDS.LEVEL1, {
-        id: 'chest_003',
-        type: 'chest2',
-        position: chest3Position,
-        dspoincAmount: 500,
-        levelId: 'CHEESE_TEMPLE_LEVEL1'
-      });
-      
-      console.log("✅ [LEVEL 1] Chest 3 creation initiated");
-    }, 100); // Small delay to ensure chest 2 is processed
-    
-    // 🌱 GRASS EXCLUSION ZONE: Wait for all chests to load, then regenerate grass
-    //
-    // 📝 GRASS REGENERATION WITH CHEST EXCLUSION NOTES (December 18, 2025):
-    // ======================================================================
-    // This system ensures grass doesn't spawn near chests (keeps area clear)
-    //
-    // HOW IT WORKS:
-    // =============
-    // 1. Chests are created (chest_001, chest_002, chest_003)
-    // 2. Each chest registers exclusion zone when mesh loads (chest-system.js line 2160)
-    // 3. This function waits for ALL chests to load and register zones
-    // 4. Once all zones registered, grass regenerates ONCE with all exclusions
-    // 5. Grass system reads exclusion zones and skips those areas
-    //
-    // EXCLUSION ZONE DETAILS:
-    // =======================
-    // - Size: Chest bounding box + 0.5 unit padding
-    // - Height: Any Y position (ground or elevated)
-    // - Registration: Automatic when chest mesh loads
-    // - Zone ID: chest_001, chest_002, chest_003 (matches chest ID)
-    //
-    // RETRY SYSTEM:
-    // =============
-    // - Attempts: 5 retries (500ms apart)
-    // - Checks: All chests loaded AND all exclusion zones registered
-    // - Success: Regenerates grass once all conditions met
-    // - Failure: Logs warning after 5 attempts (but game continues)
-    //
-    // WHY MULTIPLE RETRIES:
-    // =====================
-    // - Chest loading is asynchronous (takes time)
-    // - Exclusion zone registration happens after mesh loads
-    // - Need to wait for ALL 3 chests to finish loading
-    // - Prevents grass spawning on chests if regenerated too early
-    //
-    // GRASS REGENERATION TRIGGER:
-    // ===========================
-    // - Called from: chest-system.js line 2178 (after each chest registers)
-    // - Also called from: this retry system (ensures all chests done)
-    // - Only regenerates ONCE when all conditions met
-    // - Subsequent calls are no-ops (grass already regenerated)
-    //
-    const checkAndRegenerateGrass = (attempt = 1, maxAttempts = 5) => {
-      const level1Chests = chestSystem.getChestsForLevel(LEVEL_IDS.LEVEL1);
-      const allChestsLoaded = level1Chests.size > 0 && Array.from(level1Chests.values()).every(chest => chest.isLoaded && chest.mesh);
-      
-      // Check if exclusion zones are registered
-      const exclusionZones = grassSystem ? grassSystem.getExclusionZones() : [];
-      const chestExclusionZones = exclusionZones.filter(zone => zone.id.startsWith('chest_'));
-      
-      console.log(`🔍 [LEVEL 1] Grass regeneration check (attempt ${attempt}/${maxAttempts}):`, {
-        totalChests: level1Chests.size,
-        allChestsLoaded: allChestsLoaded,
-        exclusionZonesRegistered: chestExclusionZones.length,
-        chestIds: Array.from(level1Chests.keys()),
-        exclusionZoneIds: chestExclusionZones.map(z => z.id)
-      });
-      
-      if (allChestsLoaded && grassSystem && chestExclusionZones.length === level1Chests.size) {
-        // All chests loaded AND all exclusion zones registered
-        console.log("🌱 [LEVEL 1] All chests loaded and exclusion zones registered, regenerating grass...");
-        // 🚨 CRITICAL PERFORMANCE FIX: Defer grass regeneration to next frame to prevent blocking
-        // Grass regeneration creates hundreds of thousands of blades - this prevents 2-second freeze
-        requestAnimationFrame(() => {
-          grassSystem.regenerateGrass().then(() => {
-            console.log("✅ [LEVEL 1] Grass regenerated with chest exclusion zones applied");
-          }).catch(err => {
-            console.warn("⚠️ [LEVEL 1] Grass regeneration failed:", err);
-          });
-        });
-      } else if (attempt < maxAttempts) {
-        // Retry after delay
-        const delay = attempt * 500; // Increasing delay: 500ms, 1000ms, 1500ms, etc.
-        setTimeout(() => checkAndRegenerateGrass(attempt + 1, maxAttempts), delay);
-      } else {
-        // Final attempt - regenerate even if not all zones registered (they might register during regeneration)
-        if (grassSystem && level1Chests.size > 0) {
-          console.log("🌱 [LEVEL 1] Final attempt - regenerating grass (some exclusion zones may register during regeneration)...");
-          // 🚨 CRITICAL PERFORMANCE FIX: Defer grass regeneration to next frame to prevent blocking
-          requestAnimationFrame(() => {
-            grassSystem.regenerateGrass().then(() => {
-              console.log("✅ [LEVEL 1] Grass regenerated (final attempt)");
-            }).catch(err => {
-              console.warn("⚠️ [LEVEL 1] Grass regeneration failed (final attempt):", err);
-            });
-          });
-        }
-      }
-    };
-    
-    // Start checking after initial delay
-    setTimeout(() => checkAndRegenerateGrass(1, 5), 2000); // First check after 2 seconds
-    
-    // CRITICAL: Verify both chests were added
-    setTimeout(() => {
-      const level1Chests = chestSystem.getChestsForLevel(LEVEL_IDS.LEVEL1);
-      console.log("🔍 [LEVEL 1] Chest creation verification:", {
-        totalChests: level1Chests.size,
-        chestIds: Array.from(level1Chests.keys()),
-        chest1Exists: level1Chests.has('chest_001'),
-        chest2Exists: level1Chests.has('chest_002'),
-        chestsStatus: Array.from(level1Chests.entries()).map(([id, chest]) => ({
-          id: id,
-          isLoaded: chest.isLoaded,
-          hasMesh: !!chest.mesh,
-          isLoading: chest.isLoading,
-          position: chest.position
-        }))
-      });
-      
-      // If chest 2 is missing, recreate it
-      if (!level1Chests.has('chest_002')) {
-        console.error(`❌ [LEVEL 1] Chest 2 (chest_002) missing! Recreating...`);
-        chestSystem.addChest(LEVEL_IDS.LEVEL1, {
-          id: 'chest_002',
-          type: 'chest2',
-          position: chest2Position,
-          dspoincAmount: 250,
-          levelId: 'CHEESE_TEMPLE_LEVEL1'
-        });
-      }
-    }, 100); // Check after 100ms
-  }, 50); // Small delay between chest 1 and chest 2
-  
-  console.log("✅ [LEVEL 1] Both chests creation initiated (with delays)");
-}
 
-function createLevel2Chests() {
-  if (!chestSystem) {
-    console.warn("⚠️ [LEVEL 2] Chest system not initialized");
-    return;
-  }
-  
-  // CRITICAL: Clear existing Level 2 chests first to ensure clean state (prevents duplicates after warp/respawn)
-  console.log("🎁 [LEVEL 2] Clearing existing chests before recreation (ensuring clean state)...");
-  chestSystem.clearLevel(LEVEL_IDS.LEVEL2);
-  
-  // Level 2 chest Y position (ground level - Level 2 ground is at Y: 0, not Y: 1.0) (January 4, 2026)
-  // CRITICAL FIX: Level 2 uses Y: 0 for ground level (level2Config.origin.y = 0, spawnPosition.y = 0)
-  // Previous code used Y: 1.0 which caused chests to appear 1 unit too high
-  const chestY = level2Config.origin.y; // 0.0 - Level 2 ground level
-  
-  console.log("🎁 [LEVEL 2] Creating chests...", {
-    chestY: chestY,
-    originY: level2Config.origin.y,
-    spawnY: level2Config.spawnPosition.y,
-    note: "Chest Y matches Level 2 ground level (0.0) - FIXED from 1.0 (January 4, 2026)"
-  });
-  
-  // Chest 4: First chest in Level 2 (chest_004 in the whole system)
-  // Position: X: 22.8, Y: 1, Z: 589
-  const chest4X = 22.8;
-  const chest4Z = 589;
-  const chest4Y = chestY; // 1.0 - ground level
-  const chest4Position = new THREE.Vector3(chest4X, chest4Y, chest4Z);
-  
-  console.log("🎁 [LEVEL 2] Adding chest 4 (first chest in Level 2):", {
-    id: 'chest_004',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest4Position,
-    x: chest4X,
-    y: chest4Y,
-    z: chest4Z
-  });
-  
-  chestSystem.addChest(LEVEL_IDS.LEVEL2, {
-    id: 'chest_004',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest4Position,
-    dspoincAmount: 150,
-    levelId: 'CHEESE_TEMPLE_LEVEL2'
-  });
-  
-  console.log("✅ [LEVEL 2] Chest 4 (chest_004) creation initiated");
-  
-  // DEBUG: Verify chest is in scene after a delay
-  setTimeout(() => {
-    const chest = chestSystem.getChest(LEVEL_IDS.LEVEL2, 'chest_004');
-    if (chest && chest.mesh) {
-      console.log("🔍 [LEVEL 2 DEBUG] Chest 4 verification:", {
-        id: 'chest_004',
-        hasMesh: !!chest.mesh,
-        meshVisible: chest.mesh.visible,
-        inScene: scene.children.includes(chest.mesh),
-        position: chest.mesh.position,
-        frustumCulled: chest.mesh.frustumCulled,
-        isLoaded: chest.isLoaded,
-        childrenCount: chest.mesh.children.length
-      });
-      
-      // Force visibility
-      chest.mesh.visible = true;
-      chest.mesh.frustumCulled = false;
-      chest.mesh.traverse((child) => {
-        if (child.isMesh) {
-          child.visible = true;
-          child.frustumCulled = false;
-        }
-      });
-      chest.mesh.updateMatrixWorld(true);
-    } else {
-      console.warn("⚠️ [LEVEL 2 DEBUG] Chest 4 not found or has no mesh:", { chest: !!chest, hasMesh: chest && !!chest.mesh });
-    }
-  }, 500);
-  
-  // CRITICAL: Small delay between chest 4 and chest 5 to prevent race conditions
-  // This ensures chest 4 is fully added before chest 5 is added
-  setTimeout(() => {
-    // Chest 5: Second chest in Level 2 (chest_005 in the whole system)
-    // Position: X: 9.72, Y: 1, Z: 648
-    const chest5X = 9.72;
-    const chest5Z = 648;
-    const chest5Y = chestY; // 1.0 - ground level
-    const chest5Position = new THREE.Vector3(chest5X, chest5Y, chest5Z);
-    
-    console.log("🎁 [LEVEL 2] Adding chest 5 (second chest in Level 2):", {
-      id: 'chest_005',
-      type: 'chest2', // Standardized: All chests use chest2 (has animation)
-      position: chest5Position,
-      x: chest5X,
-      y: chest5Y,
-      z: chest5Z
-    });
-    
-    chestSystem.addChest(LEVEL_IDS.LEVEL2, {
-      id: 'chest_005',
-      type: 'chest2', // Standardized: All chests use chest2 (has animation)
-      position: chest5Position,
-      dspoincAmount: 200,
-      levelId: 'CHEESE_TEMPLE_LEVEL2'
-    });
-    
-    console.log("✅ [LEVEL 2] Chest 5 (chest_005) creation initiated");
-    
-    // DEBUG: Verify chest is in scene after a delay
-    setTimeout(() => {
-      const chest = chestSystem.getChest(LEVEL_IDS.LEVEL2, 'chest_005');
-      if (chest && chest.mesh) {
-        console.log("🔍 [LEVEL 2 DEBUG] Chest 5 verification:", {
-          id: 'chest_005',
-          hasMesh: !!chest.mesh,
-          meshVisible: chest.mesh.visible,
-          inScene: scene.children.includes(chest.mesh),
-          position: chest.mesh.position,
-          frustumCulled: chest.mesh.frustumCulled,
-          isLoaded: chest.isLoaded,
-          childrenCount: chest.mesh.children.length
-        });
-        
-        // Force visibility
-        chest.mesh.visible = true;
-        chest.mesh.frustumCulled = false;
-        chest.mesh.traverse((child) => {
-          if (child.isMesh) {
-            child.visible = true;
-            child.frustumCulled = false;
-          }
-        });
-        chest.mesh.updateMatrixWorld(true);
-      } else {
-        console.warn("⚠️ [LEVEL 2 DEBUG] Chest 5 not found or has no mesh:", { chest: !!chest, hasMesh: chest && !!chest.mesh });
-      }
-    }, 550); // Slightly longer delay to ensure chest 5 loads
-  }, 50); // Small delay to ensure chest 4 is processed first
-}
-
-function createLevel3Chests() {
-  if (!chestSystem) {
-    console.warn("⚠️ [LEVEL 3] Chest system not initialized");
-    return;
-  }
-  
-  // CRITICAL: Clear existing Level 3 chests first to ensure clean state (prevents duplicates after warp/respawn)
-  console.log("🎁 [LEVEL 3] Clearing existing chests before recreation (ensuring clean state)...");
-  chestSystem.clearLevel(LEVEL_IDS.LEVEL3);
-  
-  // Level 3 chest Y position - use spawn position Y (same approach as Level 5)
-  // Level 3 uses spawn position from level3Config.spawnPosition (Y: 0.0 - ground level)
-  const spawnY = (level3Config && level3Config.spawnPosition) ? level3Config.spawnPosition.y : 0;
-  const chestY = spawnY; // Use spawn position Y directly (this is the ground level where player spawns)
-  
-  console.log("🎁 [LEVEL 3] Creating chests...", {
-    spawnY: spawnY,
-    chestY: chestY,
-    hasSpawnPosition: !!(level3Config && level3Config.spawnPosition),
-    note: "Chest Y matches spawn position Y (same approach as Level 5 - uses player's ground level)"
-  });
-  
-  // Chest 6: First chest in Level 3 (chest_006 in the whole system)
-  // Position: X: 77, Y: spawnY (spawn position Y), Z: 724
-  const chest6X = 77;
-  const chest6Z = 724;
-  const chest6Y = chestY; // spawnY (spawn position Y - ground level)
-  const chest6Position = new THREE.Vector3(chest6X, chest6Y, chest6Z);
-  
-  console.log("🎁 [LEVEL 3] Adding chest 6 (first chest in Level 3):", {
-    id: 'chest_006',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest6Position,
-    x: chest6X,
-    y: chest6Y,
-    z: chest6Z
-  });
-  
-  chestSystem.addChest(LEVEL_IDS.LEVEL3, {
-    id: 'chest_006',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest6Position,
-    dspoincAmount: 180, // Level 3 chest reward (scaled up from Level 2)
-    levelId: 'CHEESE_TEMPLE_LEVEL3'
-  });
-  
-  console.log("✅ [LEVEL 3] Chest 6 (chest_006) creation initiated");
-  
-  // CRITICAL: Small delay between chest 6 and chest 7 to prevent race conditions
-  // This ensures chest 6 is fully added before chest 7 is added
-  setTimeout(() => {
-    // Chest 7: Second chest in Level 3 (chest_007 in the whole system)
-    // Position: X: 55, Y: spawnY (spawn position Y), Z: 805
-    const chest7X = 55;
-    const chest7Z = 805;
-    const chest7Y = chestY; // spawnY (spawn position Y - ground level)
-    const chest7Position = new THREE.Vector3(chest7X, chest7Y, chest7Z);
-    
-    console.log("🎁 [LEVEL 3] Adding chest 7 (second chest in Level 3):", {
-      id: 'chest_007',
-      type: 'chest2', // Standardized: All chests use chest2 (has animation)
-      position: chest7Position,
-      x: chest7X,
-      y: chest7Y,
-      z: chest7Z
-    });
-    
-    chestSystem.addChest(LEVEL_IDS.LEVEL3, {
-      id: 'chest_007',
-      type: 'chest2', // Standardized: All chests use chest2 (has animation)
-      position: chest7Position,
-      dspoincAmount: 200, // Level 3 chest reward (scaled up from chest_006)
-      levelId: 'CHEESE_TEMPLE_LEVEL3'
-    });
-    
-    console.log("✅ [LEVEL 3] Chest 7 (chest_007) creation initiated");
-  }, 50); // Small delay to ensure chest 6 is processed first
-}
-
-function createLevel4Chests() {
-  if (!chestSystem) {
-    console.warn("⚠️ [LEVEL 4] Chest system not initialized");
-    return;
-  }
-  
-  // CRITICAL: Clear existing Level 4 chests first to ensure clean state (prevents duplicates after warp/respawn)
-  console.log("🎁 [LEVEL 4] Clearing existing chests before recreation (ensuring clean state)...");
-  chestSystem.clearLevel(LEVEL_IDS.LEVEL4);
-  
-  // Level 4 chest Y position (ground level - Level 4 uses Y: 0.0, same as Level 3)
-  const chestY = 0.0; // Level 4 ground is at Y: 0, not Y: 1 like Level 1/2
-  
-  console.log("🎁 [LEVEL 4] Creating chests...", {
-    chestY: chestY,
-    note: "Chest Y matches Level 4 ground level (0.0) - different from Level 1/2"
-  });
-  
-  // Chest 8: First chest in Level 4 (chest_008 in the whole system)
-  // Position: X: 75, Y: 0, Z: 923
-  const chest8X = 75;
-  const chest8Z = 923;
-  const chest8Y = chestY; // 0.0 - Level 4 ground level
-  const chest8Position = new THREE.Vector3(chest8X, chest8Y, chest8Z);
-  
-  console.log("🎁 [LEVEL 4] Adding chest 8 (first chest in Level 4):", {
-    id: 'chest_008',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest8Position,
-    x: chest8X,
-    y: chest8Y,
-    z: chest8Z
-  });
-  
-  chestSystem.addChest(LEVEL_IDS.LEVEL4, {
-    id: 'chest_008',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest8Position,
-    dspoincAmount: 220, // Level 4 chest reward (scaled up from Level 3)
-    levelId: 'CHEESE_TEMPLE_LEVEL4'
-  });
-  
-  console.log("✅ [LEVEL 4] Chest 8 (chest_008) creation initiated");
-  
-  // CRITICAL: Small delay between chest 8 and chest 9 to prevent race conditions
-  // This ensures chest 8 is fully added before chest 9 is added
-  setTimeout(() => {
-    // Chest 9: Second chest in Level 4 (chest_009 in the whole system)
-    // Position: X: 54, Y: 0, Z: 1050
-    const chest9X = 54;
-    const chest9Z = 1050;
-    const chest9Y = chestY; // 0.0 - Level 4 ground level
-    const chest9Position = new THREE.Vector3(chest9X, chest9Y, chest9Z);
-    
-    console.log("🎁 [LEVEL 4] Adding chest 9 (second chest in Level 4):", {
-      id: 'chest_009',
-      type: 'chest2', // Standardized: All chests use chest2 (has animation)
-      position: chest9Position,
-      x: chest9X,
-      y: chest9Y,
-      z: chest9Z
-    });
-    
-    chestSystem.addChest(LEVEL_IDS.LEVEL4, {
-      id: 'chest_009',
-      type: 'chest2', // Standardized: All chests use chest2 (has animation)
-      position: chest9Position,
-      dspoincAmount: 250, // Level 4 chest reward (scaled up from chest_008)
-      levelId: 'CHEESE_TEMPLE_LEVEL4'
-    });
-    
-    console.log("✅ [LEVEL 4] Chest 9 (chest_009) creation initiated");
-  }, 50); // Small delay to ensure chest 8 is processed first
-}
-
-function createLevel5Chests() {
-  if (!chestSystem) {
-    console.warn("⚠️ [LEVEL 5] Chest system not initialized");
-    return;
-  }
-  
-  // CRITICAL: Clear existing Level 5 chests first to ensure clean state (prevents duplicates after warp/respawn)
-  console.log("🎁 [LEVEL 5] Clearing existing chests before recreation (ensuring clean state)...");
-  chestSystem.clearLevel(LEVEL_IDS.LEVEL5);
-  
-  // Level 5 chest Y position - CRITICAL: Use raycast at chest position, not spawn position (January 4, 2026)
-  // Level 5 uses dynamic ground detection via raycast, but ground level may vary at different X/Z positions
-  // The chest is at (33, -41), so we need to detect ground level at that specific position, not spawn (0, 0)
-  const spawnY = (level5State && level5State.spawnPosition) ? level5State.spawnPosition.y : 0;
-  
-  // Chest 10: First chest in Level 5 (chest_010 in the whole system)
-  // Position: X: 33, Y: detected ground level at chest position, Z: -41
-  const chest10X = 33;
-  const chest10Z = -41;
-  
-  // CRITICAL: Raycast at chest position to find ground level at (33, -41) (January 4, 2026)
-  // Since Level 5 is a city map with uneven terrain, ground level may differ from spawn position
-  let chest10Y = spawnY; // Fallback to spawn Y if raycast fails
-  if (level5State && level5State.mapMesh && scene) {
-    try {
-      const raycaster = new THREE.Raycaster();
-      // Start raycast well above the map (use spawn Y + 50 as estimate for max height)
-      const rayStartY = Math.max(spawnY + 50, 100); // At least 50 units above spawn, or 100 minimum
-      const rayStart = new THREE.Vector3(chest10X, rayStartY, chest10Z);
-      const rayDirection = new THREE.Vector3(0, -1, 0); // Cast downward
-      
-      raycaster.set(rayStart, rayDirection);
-      raycaster.far = 200; // Cast through enough distance to hit ground
-      
-      // Raycast against the Level 5 map mesh
-      const intersects = raycaster.intersectObject(level5State.mapMesh, true); // Recursive
-      
-      if (intersects.length > 0) {
-        // Find intersections near chest position (within 1 unit)
-        const chestRadius = 1.0;
-        const nearbyIntersects = intersects.filter(intersect => {
-          const dx = intersect.point.x - chest10X;
-          const dz = intersect.point.z - chest10Z;
-          const distance = Math.sqrt(dx * dx + dz * dz);
-          return distance <= chestRadius;
-        });
-        
-        if (nearbyIntersects.length > 0) {
-          // Use the highest (top) intersection near chest position - this is the walkable surface
-          nearbyIntersects.sort((a, b) => b.point.y - a.point.y);
-          chest10Y = nearbyIntersects[0].point.y;
-          console.log(`✅ [LEVEL 5 CHEST] Found ground surface at chest position (${chest10X}, ${chest10Z}): Y=${chest10Y.toFixed(2)} (from ${nearbyIntersects.length} nearby intersections)`);
-        } else {
-          // Fallback: use the highest intersection overall
-          const sortedIntersects = [...intersects].sort((a, b) => b.point.y - a.point.y);
-          chest10Y = sortedIntersects[0].point.y;
-          console.warn(`⚠️ [LEVEL 5 CHEST] No intersections near chest position, using highest intersection: Y=${chest10Y.toFixed(2)}`);
-        }
-      } else {
-        // Fallback to spawn Y if no intersections found
-        console.warn(`⚠️ [LEVEL 5 CHEST] Raycast found no intersections at chest position (${chest10X}, ${chest10Z}), using spawn Y: ${spawnY.toFixed(2)}`);
-      }
-    } catch (raycastError) {
-      // Fallback to spawn Y if raycast fails
-      console.error(`❌ [LEVEL 5 CHEST] Raycast error at chest position:`, raycastError);
-      console.warn(`   Using fallback chest Y: ${spawnY.toFixed(2)} (spawn position Y)`);
-    }
-  } else {
-    console.warn(`⚠️ [LEVEL 5 CHEST] Level 5 map mesh not available, using spawn Y: ${spawnY.toFixed(2)}`);
-  }
-  
-  console.log("🎁 [LEVEL 5] Creating chests...", {
-    spawnY: spawnY,
-    chest10Y: chest10Y,
-    chest10X: chest10X,
-    chest10Z: chest10Z,
-    hasMapMesh: !!(level5State && level5State.mapMesh),
-    note: "Chest Y detected via raycast at chest position (Level 5 uses dynamic ground detection per position)"
-  });
-  
-  const chest10Position = new THREE.Vector3(chest10X, chest10Y, chest10Z);
-  
-  console.log("🎁 [LEVEL 5] Adding chest 10 (first chest in Level 5):", {
-    id: 'chest_010',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest10Position,
-    x: chest10X,
-    y: chest10Y,
-    z: chest10Z,
-    spawnY: spawnY,
-    detectedChestY: chest10Y,
-    note: "Chest Y detected via raycast at chest position (Level 5 uses dynamic ground detection per position)"
-  });
-  
-  chestSystem.addChest(LEVEL_IDS.LEVEL5, {
-    id: 'chest_010',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest10Position,
-    dspoincAmount: 280, // Level 5 chest reward (scaled up from Level 4)
-    levelId: 'CHEESE_TEMPLE_LEVEL5'
-  });
-  
-  console.log("✅ [LEVEL 5] Chest 10 (chest_010) creation initiated");
-}
-
-function createLevel6Chests() {
-  if (!chestSystem) {
-    console.warn("⚠️ [LEVEL 6] Chest system not initialized");
-    return;
-  }
-  
-  // CRITICAL: Clear existing Level 6 chests first to ensure clean state (prevents duplicates after warp/respawn)
-  console.log("🎁 [LEVEL 6] Clearing existing chests before recreation (ensuring clean state)...");
-  chestSystem.clearLevel(LEVEL_IDS.LEVEL6);
-  
-  // Level 6 chest Y position - use fixed Y: 0.0 (ground level, same as Level 3/4)
-  // Level 6 uses blank ground plane, ground level is at Y: 0.0 (spawn position Y: 0)
-  const chestY = 0.0; // Fixed Y: 0.0 for Level 6 ground level (same as Level 3/4)
-  
-  console.log("🎁 [LEVEL 6] Creating chests...", {
-    chestY: chestY,
-    note: "Level 6 ground is at Y: 0.0 (ground plane at Y: 0, same as Level 3/4)"
-  });
-  
-  // Chest 11: First chest in Level 6 (chest_011 in the whole system)
-  // Position: X: 79, Y: 0.0 (ground level), Z: -98
-  const chest11X = 79;
-  const chest11Z = -98;
-  const chest11Y = chestY; // Fixed Y: 0.0 (Level 6 ground is at Y: 0.0, same as Level 3/4)
-  const chest11Position = new THREE.Vector3(chest11X, chest11Y, chest11Z);
-  
-  console.log("🎁 [LEVEL 6] Adding chest 11 (first chest in Level 6):", {
-    id: 'chest_011',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest11Position,
-    x: chest11X,
-    y: chest11Y,
-    z: chest11Z,
-    note: "Level 6 ground is at Y: 0.0 (ground plane at Y: 0, same as Level 3/4)"
-  });
-  
-  chestSystem.addChest(LEVEL_IDS.LEVEL6, {
-    id: 'chest_011',
-    type: 'chest2', // Standardized: All chests use chest2 (has animation)
-    position: chest11Position,
-    dspoincAmount: 300, // Level 6 chest reward (scaled up from Level 5)
-    levelId: 'CHEESE_TEMPLE_LEVEL6'
-  });
-  
-  console.log("✅ [LEVEL 6] Chest 11 (chest_011) creation initiated");
-}
-
-// Check if player is stepping on bear trap and trigger death
-// ☠️ Check collision with Level 1 bear trap (deadly trap that triggers death)
-//
-// 📝 BEAR TRAP COLLISION NOTES (December 18, 2025):
-// ==================================================
-// Bear trap is a DEADLY obstacle - different from trees/plants/chests!
-//
-// COLLISION BEHAVIOR:
-// ===================
-// - Triggers instant death sequence (not push-away)
-// - Only triggers once (level1State.bearTrapTriggered prevents multiple deaths)
-// - Shows special death screen with bear trap context
-// - Respawns player at Level 1 spawn point
-//
-// COLLISION DETECTION:
-// ====================
-// - Trigger radius: 0.8 units (player must step directly on trap)
-// - Uses player FEET position (playerCollider.start, not center)
-// - Uses horizontal distance only (X and Z)
-// - Y check: playerFeet.y < trapPos.y + 0.5 (must be at ground level)
-//
-// VISUAL FEEDBACK:
-// ================
-// - Trap switches from open (SP08) to closed (SP07) model
-// - Model swap happens on trigger
-// - Uses same scale (0.008) and position for both models
-//
-// STATE MANAGEMENT:
-// =================
-// - level1State.bearTrap: The 3D model reference
-// - level1State.bearTrapPosition: Position Vector3 for collision
-// - level1State.bearTrapTriggered: Boolean flag (prevents re-trigger)
-// - trap.userData.closedPath: Path to closed trap model
-//
-// HOW THIS DIFFERS FROM OTHER COLLISIONS:
-// ========================================
-// - Trees/Plants: Push player away (obstacle collision)
-// - Chests: Open and give reward (proximity interaction, 5.0 units)
-// - Bear Trap: Kill player (deadly hazard, 0.8 units)
-//
-function checkLevel1BearTrapCollision() {
-  if (!level1State.bearTrap || !level1State.bearTrapPosition || level1State.bearTrapTriggered) {
-    return;
-  }
-  
-  // Get player feet position (not center - we want to detect when they step ON the trap)
-  const playerFeet = playerCollider.start;
-  const trapPos = level1State.bearTrapPosition;
-  
-  // Calculate horizontal distance (ignore Y for trigger detection)
-  const dx = playerFeet.x - trapPos.x;
-  const dz = playerFeet.z - trapPos.z;
-  const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
-  
-  // Trigger radius: 0.8 units (player steps on trap)
-  const TRAP_TRIGGER_RADIUS = 0.8;
-  
-  if (horizontalDistance < TRAP_TRIGGER_RADIUS && playerFeet.y < trapPos.y + 0.5) {
-    // Player stepped on trap! Switch to closed model and trigger death
-    level1State.bearTrapTriggered = true;
-    console.warn("💥 [LEVEL 1] Player stepped on bear trap! Triggering death...");
-    
-    // Switch to closed trap model
-    const closedTrapPath = level1State.bearTrap.userData.closedPath;
-    loadModel(closedTrapPath)
-      .then(({ scene: closedTrap }) => {
-        // Remove open trap
-        if (level1State.bearTrap.parent) {
-          level1State.bearTrap.parent.remove(level1State.bearTrap);
-        }
-        
-        // Add closed trap at same position (use same transform as open trap)
-        const transform = getAccessoryTransform("trap");
-        closedTrap.position.copy(level1State.bearTrapPosition);
-        // For Level 1, place trap directly on ground
-        closedTrap.position.y = level1State.bearTrapPosition.y; // Keep at ground level (1.0)
-        closedTrap.scale.setScalar(0.008); // Use same scale as Level 2 and open trap
-        closedTrap.rotation.y = transform.rotationY || 0;
-        
-        // Process materials - Level 1: Keep normal color (no green glow)
-        closedTrap.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-            if (child.material) {
-              child.material = processWeaponMaterial(child.material);
-              // Ensure no emissive glow (normal color)
-              if (child.material && child.material.emissive) {
-                child.material.emissive.set(0x000000);
-                child.material.emissiveIntensity = 0;
-              }
-            }
-          }
-        });
-        
-        closedTrap.visible = true;
-        closedTrap.updateMatrixWorld(true);
-        scene.add(closedTrap); // Add to main game scene
-        level1State.bearTrap = closedTrap;
-        
-        console.log("💥 [LEVEL 1] Bear trap closed! Player crushed!");
-        
-        // Play bear trap closing sound
-        if (bearTrapAudioReady && bearTrapSound) {
-          if (bearTrapSound.isPlaying) {
-            bearTrapSound.stop();
-          }
-          bearTrapSound.play();
-          console.log("🔊 [LEVEL 1] Bear trap sound played");
-        } else {
-          console.warn("⚠️ [LEVEL 1] Bear trap sound not ready:", { bearTrapAudioReady, hasSound: !!bearTrapSound });
-        }
-        
-        // CRITICAL: Trigger death animation IMMEDIATELY when trap closes
-        // This makes the animation play during the trap movement for better visual effect
-        // The animation will play for 1.5 seconds before game over screen appears
-        triggerLevel1BearTrapDeath();
-      })
-      .catch((error) => {
-        console.error("❌ [LEVEL 1] Failed to load closed bear trap model:", error);
-        // Still trigger death even if model switch fails (trigger immediately)
-        triggerLevel1BearTrapDeath();
-      });
-  }
-}
-
-// Check collision with chests (prevents player from walking through chests)
-// Works for all levels - automatically checks chests for current level
-// 🎁 Check collision with chests (solid obstacle with reward interaction)
-//
-// 📝 CHEST COLLISION NOTES (December 18, 2025):
-// ==============================================
-// Chests act as SOLID OBSTACLES (push-away) with reward interaction!
-//
-// COLLISION BEHAVIOR:
-// ===================
-// - Chests are solid obstacles (push player away like trees/plants)
-// - But also give DSPOINC reward when approached (proximity check in chest-system.js)
-// - Chest collision is handled in TWO parts:
-//   1. This function: Physical collision (push-away)
-//   2. chest-system.js: Proximity check for opening (5.0 units)
-//
-// COLLISION DETECTION:
-// ====================
-// - Uses chest-system.js collision detection
-// - Returns: { overlap, pushDirection } if collision detected
-// - Push-away mechanics identical to trees/plants
-// - Uses player center position and PLAYER_RADIUS
-//
-// CHEST SYSTEM INTEGRATION:
-// ==========================
-// - chestSystem manages all chest logic (loading, animation, rewards)
-// - Chests are added via chestSystem.addChest()
-// - Each chest has: id, type, position, dspoincAmount, levelId
-// - Chest state persists across level changes (tracked in localStorage)
-//
-// VISUAL FEEDBACK:
-// ================
-// - Physical push-away when walking into chest
-// - Chest lid opens when within 5.0 units (handled by chest-system.js)
-// - Floating "+X DSPOINC" text on reward collection
-// - Permanent state (once opened, stays open)
-//
-// HOW THIS DIFFERS FROM OTHER COLLISIONS:
-// ========================================
-// - Trees/Plants: Only push-away (no interaction)
-// - Bear Trap: Death trigger (no push-away)
-// - Chests: Push-away AND reward interaction (dual behavior)
-//
-function checkChestCollision() {
-  if (!chestSystem) {
-    return;
-  }
-  
-  // Get player position (center of capsule)
-  const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-  const playerRadius = PLAYER_RADIUS;
-  
-  // Check collision with chests in current level (returns push data if colliding)
-  const collision = chestSystem.checkChestCollision(currentLevel, playerCollider.start, playerCollider.end, playerRadius);
-  
-  if (collision) {
-    // Player is colliding with chest - push them away
-    const pushAmount = collision.overlap + 0.1; // Add small buffer to prevent getting stuck
-    const pushVector = collision.pushDirection.multiplyScalar(pushAmount);
-    
-    // Apply push to player position
-    playerCollider.start.x += pushVector.x;
-    playerCollider.start.z += pushVector.z;
-    playerCollider.end.x += pushVector.x;
-    playerCollider.end.z += pushVector.z;
-    
-    // Cancel velocity in the direction of the chest to prevent sliding
-    const velocityDirection = new THREE.Vector3(playerVelocity.x, 0, playerVelocity.z).normalize();
-    const dotProduct = velocityDirection.dot(collision.pushDirection);
-    if (dotProduct < 0) {
-      // Player is moving towards chest - cancel that component of velocity
-      const cancelVector = collision.pushDirection.multiplyScalar(-dotProduct * Math.sqrt(playerVelocity.x * playerVelocity.x + playerVelocity.z * playerVelocity.z));
-      playerVelocity.x += cancelVector.x * 0.5; // Dampen to prevent jitter
-      playerVelocity.z += cancelVector.z * 0.5;
-    }
-  }
-}
-
-// Check collision with trees in Level 1 (prevents player from walking through trees)
-// STANDARD PATTERN: Can be copied to other levels for tree collision
-// 🚧 Check collision with Level 1 trees and plants
-//
-// 📝 LEVEL 1 COLLISION SYSTEM NOTES (December 18, 2025):
-// ======================================================
-// This function handles collision for all solid obstacles in Level 1:
-// - Trees (4 total: tree, tree2, tree3, tree4)
-// - Plants (2 total: plant, plant2)
-//
-// COLLISION DETECTION METHODS:
-// ============================
-// 
-// 1. TREES: Calculate collision radius from bounding box
-//    - Uses THREE.Box3().setFromObject(tree)
-//    - Takes larger of X or Z dimension * 0.5
-//    - Dynamic sizing based on actual model size
-//    - No userData.collision needed
-//
-// 2. PLANTS: Use pre-calculated collision radius from userData
-//    - Set during plant creation: plant.userData.collision.radius
-//    - Plant 1: radius 1.5 (full size plant, scale 0.015)
-//    - Plant 2: radius 0.8 (half size plant, scale 0.0075)
-//    - More predictable and performant than bounding box calculation
-//
-// 3. BEAR TRAP: Has its own collision function (checkLevel1BearTrapCollision)
-//    - Different behavior: triggers death instead of push-away
-//    - Uses level1State.bearTrapPosition
-//    - Collision radius: ~2.0 units
-//
-// 4. CHESTS: Have their own collision system (checkChestCollision)
-//    - Different behavior: opens chest and gives rewards
-//    - Uses chest.mesh and chest.position
-//    - Collision distance: 5.0 units (proximity-based, not touch-based)
-//
-// COLLISION RESPONSE:
-// ===================
-// - Push player away from obstacle (prevents walking through)
-// - Cancel velocity component towards obstacle (prevents sliding)
-// - Uses horizontal distance only (ignores Y axis)
-// - Smooth push-away with small buffer (0.1) to prevent stuck state
-//
-// PERFORMANCE OPTIMIZATION:
-// =========================
-// - Early return if object doesn't exist or isn't visible
-// - Uses forEach for clean iteration
-// - Collision radius cached (trees calculate once per frame, plants use stored value)
-// - Only checks Level 1 obstacles (early return if not Level 1)
-//
-// HOW TO ADD NEW OBSTACLES:
-// =========================
-// 1. Add to level1State (e.g., level1State.rock, level1State.rockPosition)
-// 2. Add to obstacles array with type: { tree: level1State.rock, position: level1State.rockPosition, name: "Rock", type: "rock" }
-// 3. Set userData.collision.radius during creation OR let bounding box calculate it
-// 4. Add to cleanupAllLevels() function for proper disposal
-function checkLevel1TreeCollision() {
-  if (currentLevel !== LEVEL_IDS.LEVEL1) {
-    return;
-  }
-  
-  // Get player position (center of capsule)
-  const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-  const playerRadius = PLAYER_RADIUS;
-  
-  // Check collision with all trees and plants (both act as obstacles)
-  const obstacles = [
-    { tree: level1State.tree, position: level1State.treePosition, name: "Tree 1", type: "tree" },
-    { tree: level1State.tree2, position: level1State.tree2Position, name: "Tree 2", type: "tree" },
-    { tree: level1State.tree3, position: level1State.tree3Position, name: "Tree 3", type: "tree" },
-    { tree: level1State.tree4, position: level1State.tree4Position, name: "Tree 4", type: "tree" },
-    { tree: level1State.plant, position: level1State.plantPosition, name: "Plant 1", type: "plant" },
-    { tree: level1State.plant2, position: level1State.plant2Position, name: "Plant 2", type: "plant" }
-  ];
-  
-  obstacles.forEach(({ tree, position, name, type }) => {
-    if (!tree || !position || !tree.visible) {
-      return; // Skip if tree doesn't exist or isn't visible
-    }
-    
-    // Get collision radius from userData if available, otherwise calculate from bounding box
-    let objectRadius;
-    if (tree.userData && tree.userData.collision && tree.userData.collision.radius) {
-      // Use pre-calculated radius from userData (plants use this)
-      objectRadius = tree.userData.collision.radius;
-    } else {
-      // Calculate collision radius from bounding box (trees use this)
-    const box = new THREE.Box3().setFromObject(tree);
-    const size = box.getSize(new THREE.Vector3());
-      // Use the larger of X or Z dimension as collision radius (roughly circular)
-      objectRadius = Math.max(size.x, size.z) * 0.5; // Half of the larger dimension
-    }
-    
-    // Calculate horizontal distance from player to object center
-    const dx = playerPos.x - position.x;
-    const dz = playerPos.z - position.z;
-    const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
-    
-    // Collision occurs when player is within object radius + player radius
-    const collisionDistance = objectRadius + playerRadius;
-    
-    if (horizontalDistance < collisionDistance) {
-      // Player is colliding with object - push them away
-      // Calculate direction from object to player
-      const pushDirection = new THREE.Vector3(dx, 0, dz).normalize();
-      
-      // Calculate how far inside the collision we are
-      const overlap = collisionDistance - horizontalDistance;
-      
-      // Push player away from tree
-      const pushAmount = overlap + 0.1; // Add small buffer to prevent getting stuck
-      const pushVector = pushDirection.multiplyScalar(pushAmount);
-      
-      // Apply push to player position
-      playerCollider.start.x += pushVector.x;
-      playerCollider.start.z += pushVector.z;
-      playerCollider.end.x += pushVector.x;
-      playerCollider.end.z += pushVector.z;
-      
-      // Cancel velocity in the direction of the tree to prevent sliding
-      const velocityDirection = new THREE.Vector3(playerVelocity.x, 0, playerVelocity.z).normalize();
-      const dotProduct = velocityDirection.dot(pushDirection);
-      if (dotProduct < 0) {
-        // Player is moving towards object - cancel that component of velocity
-        const cancelVector = pushDirection.multiplyScalar(-dotProduct * playerVelocity.length());
-        playerVelocity.x += cancelVector.x * 0.5; // Dampen to prevent jitter
-        playerVelocity.z += cancelVector.z * 0.5;
-      }
-    }
-  });
-}
-
-// Create tree in Level 1 (huge tree with arms - decorative element)
-function createLevel1Tree(spawnData, blockSize) {
-  // Position: Place tree near spawn area but offset to avoid blocking riddle mechanics
-  // Spawn is at x: 60, z: 15
-  // Bear trap is at x: 65, z: 25
-  // Center platform (with plate/levers) is around x: 60, z: 60
-  // Place tree at x: 50, z: 35 (left of spawn, between spawn and center, away from bear trap)
-  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
-  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
-  const treeX = spawnX - 10; // 10 blocks to the left of spawn
-  const treeZ = spawnZ + 20; // 20 blocks forward from spawn (between spawn and center platform)
-  
-  // Ground level calculation: Ground blocks are at y: 0, block top is at y: 1.0
-  // Place tree base at ground level (y: 1.0) - same as bear trap
-  const floorTopY = 0 * blockSize + blockSize; // Floor top = 1.0
-  const treeY = floorTopY; // Ground level (1.0)
-  
-  level1State.treePosition = new THREE.Vector3(treeX, treeY, treeZ);
-  
-  console.log("🌳 [LEVEL 1] Creating tree at:", level1State.treePosition);
-  
-  // Load tree model (GLB format)
-  const treePath = "/public/three.js/public/textures/3d models/tree-with-arms/tree-with-arms.glb";
-  
-  loadModel(treePath)
-    .then((gltf) => {
-      const tree = gltf.scene;
-      
-      // Calculate bounding box to center tree properly on ground
-      const box = new THREE.Box3().setFromObject(tree);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-      
-      console.log("🌳 [LEVEL 1] Tree model loaded:", {
-        size: size,
-        center: center,
-        children: tree.children.length
-      });
-      
-      // Position tree - adjust Y so base is at ground level
-      // If model center is not at base, we need to offset
-      tree.position.set(treeX, treeY, treeZ);
-      
-      // If model's bounding box center is not at the base, adjust Y position
-      // Most tree models have center at middle, so we need to move down by half the height
-      // But if the model is already positioned with base at origin, we don't need to adjust
-      // For now, place at ground level and adjust if needed
-      if (size.y > 0) {
-        // If model center is at middle, move down by half height to place base on ground
-        // tree.position.y = treeY - (size.y / 2);
-        // Actually, let's try placing it directly at ground level first
-        tree.position.y = treeY;
-      }
-      
-      // Scale tree appropriately - since it's a "huge tree", make it 3 units big
-      // Minimum 3 units as requested (increased from 1.0)
-      tree.scale.setScalar(9.0);
-      
-      // Rotate tree if needed (optional - adjust based on model orientation)
-      tree.rotation.y = 0; // Adjust rotation if needed
-      
-      // Process materials to ensure proper rendering
-      tree.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-          if (child.material) {
-            // Process material similar to other models
-            if (Array.isArray(child.material)) {
-              child.material = child.material.map(mat => processWeaponMaterial(mat));
-            } else {
-              child.material = processWeaponMaterial(child.material);
-            }
-          }
-        }
-      });
-      
-      // Ensure tree is visible
-      tree.visible = true;
-      tree.frustumCulled = false; // Ensure it's always rendered
-      tree.updateMatrixWorld(true);
-      
-      // Add to scene
-      scene.add(tree);
-      level1State.tree = tree;
-      
-      // Store collision data in tree userData for collision detection
-      tree.userData.collisionRadius = Math.max(size.x, size.z) * 0.5; // Half of larger dimension
-      tree.userData.collisionPosition = new THREE.Vector3(treeX, treeY, treeZ);
-      
-      // Log detailed information
-      console.log("✅ [LEVEL 1] Tree created successfully:", {
-        position: tree.position,
-        scale: tree.scale,
-        visible: tree.visible,
-        inScene: scene.children.includes(tree),
-        boundingBox: { size: size, center: center },
-        collisionRadius: tree.userData.collisionRadius,
-        children: tree.children.length
-      });
-      
-      // Double-check visibility after a short delay
-      setTimeout(() => {
-        if (level1State.tree) {
-          level1State.tree.visible = true;
-          level1State.tree.updateMatrixWorld(true);
-          console.log("🌳 [LEVEL 1] Tree visibility verified:", {
-            visible: level1State.tree.visible,
-            inScene: scene.children.includes(level1State.tree),
-            position: level1State.tree.position
-          });
-        }
-      }, 100);
-    })
-    .catch((error) => {
-      console.error("❌ [LEVEL 1] Failed to load tree model:", error);
-      console.error("❌ [LEVEL 1] Tree path attempted:", treePath);
-      console.error("❌ [LEVEL 1] Full error:", error.message, error.stack);
-    });
-}
-
-// Create second tree in Level 1 (huge tree with arms - decorative element)
-// Position: Left front of spawn, more in the back area
-function createLevel1Tree2(spawnData, blockSize) {
-  // Position: Place tree left front of spawn, more in the back area
-  // Spawn is at x: 60, z: 15
-  // First tree is at x: 50, z: 35 (left, forward)
-  // Second tree: left front of spawn, more in back (further forward in Z)
-  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
-  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
-  const treeX = spawnX - 30; // 30 blocks to the left of spawn (more left than first tree)
-  const treeZ = spawnZ + 40; // 40 blocks forward from spawn (more in back area than first tree)
-  
-  // Ground level calculation: Ground blocks are at y: 0, block top is at y: 1.0
-  const floorTopY = 0 * blockSize + blockSize; // Floor top = 1.0
-  const treeY = floorTopY; // Ground level (1.0)
-  
-  level1State.tree2Position = new THREE.Vector3(treeX, treeY, treeZ);
-  
-  console.log("🌳 [LEVEL 1] Creating second tree at:", level1State.tree2Position);
-  
-  // Load tree model (GLB format) - same model as first tree
-  const treePath = "./public/textures/3d models/tree-with-arms/tree-with-arms.glb";
-  
-  loadModel(treePath)
-    .then((gltf) => {
-      const tree = gltf.scene.clone(true); // Clone the model for variety
-      
-      // Calculate bounding box to center tree properly on ground
-      const box = new THREE.Box3().setFromObject(tree);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-      
-      console.log("🌳 [LEVEL 1] Second tree model loaded:", {
-        size: size,
-        center: center,
-        children: tree.children.length
-      });
-      
-      // Position tree
-      tree.position.set(treeX, treeY, treeZ);
-      
-      if (size.y > 0) {
-        tree.position.y = treeY;
-      }
-      
-      // Scale tree - a little bigger than first tree (10 instead of 9)
-      tree.scale.setScalar(10.0);
-      
-      // Rotate tree differently to make it feel like a different tree
-      // Rotate 45 degrees (Math.PI / 4) for variety
-      tree.rotation.y = Math.PI / 4; // 45 degrees rotation
-      
-      // Process materials to ensure proper rendering
-      tree.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-          if (child.material) {
-            // Process material similar to other models
-            if (Array.isArray(child.material)) {
-              child.material = child.material.map(mat => processWeaponMaterial(mat));
-            } else {
-              child.material = processWeaponMaterial(child.material);
-            }
-          }
-        }
-      });
-      
-      // Ensure tree is visible
-      tree.visible = true;
-      tree.frustumCulled = false; // Ensure it's always rendered
-      tree.updateMatrixWorld(true);
-      
-      // Add to scene
-      scene.add(tree);
-      level1State.tree2 = tree;
-      
-      // Store collision data in tree userData for collision detection
-      tree.userData.collisionRadius = Math.max(size.x, size.z) * 0.5; // Half of larger dimension
-      tree.userData.collisionPosition = new THREE.Vector3(treeX, treeY, treeZ);
-      
-      // Log detailed information
-      console.log("✅ [LEVEL 1] Second tree created successfully:", {
-        position: tree.position,
-        scale: tree.scale,
-        rotation: tree.rotation.y,
-        visible: tree.visible,
-        inScene: scene.children.includes(tree),
-        boundingBox: { size: size, center: center },
-        collisionRadius: tree.userData.collisionRadius,
-        children: tree.children.length
-      });
-      
-      // Double-check visibility after a short delay
-      setTimeout(() => {
-        if (level1State.tree2) {
-          level1State.tree2.visible = true;
-          level1State.tree2.updateMatrixWorld(true);
-          console.log("🌳 [LEVEL 1] Second tree visibility verified:", {
-            visible: level1State.tree2.visible,
-            inScene: scene.children.includes(level1State.tree2),
-            position: level1State.tree2.position
-          });
-        }
-      }, 100);
-    })
-    .catch((error) => {
-      console.error("❌ [LEVEL 1] Failed to load second tree model:", error);
-      console.error("❌ [LEVEL 1] Tree path attempted:", treePath);
-      console.error("❌ [LEVEL 1] Full error:", error.message, error.stack);
-    });
-}
-
-// Create third tree in Level 1 (tree dead lians - decorative element)
-// Position: Right of spawn (mirrored from left side)
-function createLevel1Tree3(spawnData, blockSize) {
-  // Position: Place tree right of spawn (mirrored from left side)
-  // Spawn is at x: 60, z: 15
-  // Position tree at right of spawn area (mirrored)
-  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
-  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
-  const treeX = spawnX + 20; // 20 blocks to the right of spawn (mirrored from left)
-  const treeZ = spawnZ + 10; // 10 blocks forward from spawn (same as original)
-  
-  // Ground level calculation: Ground blocks are at y: 0, block top is at y: 1.0
-  const floorTopY = 0 * blockSize + blockSize; // Floor top = 1.0
-  const treeY = floorTopY; // Ground level (1.0)
-  
-  level1State.tree3Position = new THREE.Vector3(treeX, treeY, treeZ);
-  
-  console.log("🌳 [LEVEL 1] Creating third tree (dead lians) at:", level1State.tree3Position);
-  
-  // Load tree model (GLB format) - tree dead lians model
-  const treePath = "/public/three.js/public/textures/3d models/tree dead lians/tree dead lians.glb";
-  
-  loadModel(treePath)
-    .then((gltf) => {
-      const tree = gltf.scene;
-      
-      // Calculate bounding box to center tree properly on ground
-      const box = new THREE.Box3().setFromObject(tree);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-      
-      console.log("🌳 [LEVEL 1] Third tree model loaded:", {
-        size: size,
-        center: center,
-        children: tree.children.length
-      });
-      
-      // Position tree
-      tree.position.set(treeX, treeY, treeZ);
-      
-      if (size.y > 0) {
-        tree.position.y = treeY;
-      }
-      
-      // Scale tree - medium size (7.0 units)
-      tree.scale.setScalar(7.0);
-      
-      // Rotate tree for variety
-      tree.rotation.y = Math.PI / 6; // 30 degrees rotation
-      
-      // Process materials to ensure proper rendering
-      tree.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-          if (child.material) {
-            // Process material similar to other models
-            if (Array.isArray(child.material)) {
-              child.material = child.material.map(mat => processWeaponMaterial(mat));
-            } else {
-              child.material = processWeaponMaterial(child.material);
-            }
-          }
-        }
-      });
-      
-      // Ensure tree is visible
-      tree.visible = true;
-      tree.frustumCulled = false; // Ensure it's always rendered
-      tree.updateMatrixWorld(true);
-      
-      // Add to scene
-      scene.add(tree);
-      level1State.tree3 = tree;
-      
-      // Store collision data in tree userData for collision detection
-      tree.userData.collisionRadius = Math.max(size.x, size.z) * 0.5; // Half of larger dimension
-      tree.userData.collisionPosition = new THREE.Vector3(treeX, treeY, treeZ);
-      
-      // Log detailed information
-      console.log("✅ [LEVEL 1] Third tree created successfully:", {
-        position: tree.position,
-        scale: tree.scale,
-        rotation: tree.rotation.y,
-        visible: tree.visible,
-        inScene: scene.children.includes(tree),
-        boundingBox: { size: size, center: center },
-        collisionRadius: tree.userData.collisionRadius,
-        children: tree.children.length
-      });
-      
-      // Double-check visibility after a short delay
-      setTimeout(() => {
-        if (level1State.tree3) {
-          level1State.tree3.visible = true;
-          level1State.tree3.updateMatrixWorld(true);
-          console.log("🌳 [LEVEL 1] Third tree visibility verified:", {
-            visible: level1State.tree3.visible,
-            inScene: scene.children.includes(level1State.tree3),
-            position: level1State.tree3.position
-          });
-        }
-      }, 100);
-    })
-    .catch((error) => {
-      console.error("❌ [LEVEL 1] Failed to load third tree model:", error);
-      console.error("❌ [LEVEL 1] Tree path attempted:", treePath);
-      console.error("❌ [LEVEL 1] Full error:", error.message, error.stack);
-    });
-}
-
-// Create fourth tree in Level 1 (tree dead lians - decorative element)
-// Position: Back right area (mirrored from back left)
-function createLevel1Tree4(spawnData, blockSize) {
-  // Position: Place tree back right area (mirrored from back left)
-  // Spawn is at x: 60, z: 15
-  // Position tree at back right area (mirrored)
-  const spawnX = spawnData ? spawnData.x * blockSize + blockSize / 2 : 60;
-  const spawnZ = spawnData ? spawnData.z * blockSize + blockSize / 2 : 15;
-  const treeX = spawnX + 25; // 25 blocks to the right of spawn (mirrored from left)
-  const treeZ = spawnZ + 50; // 50 blocks forward from spawn (same as original)
-  
-  // Ground level calculation: Ground blocks are at y: 0, block top is at y: 1.0
-  const floorTopY = 0 * blockSize + blockSize; // Floor top = 1.0
-  const treeY = floorTopY; // Ground level (1.0)
-  
-  level1State.tree4Position = new THREE.Vector3(treeX, treeY, treeZ);
-  
-  console.log("🌳 [LEVEL 1] Creating fourth tree (dead lians) at:", level1State.tree4Position);
-  
-  // Load tree model (GLB format) - tree dead lians model
-  const treePath = "/public/three.js/public/textures/3d models/tree dead lians/tree dead lians.glb";
-  
-  loadModel(treePath)
-    .then((gltf) => {
-      const tree = gltf.scene.clone(true); // Clone for variety
-      
-      // Calculate bounding box to center tree properly on ground
-      const box = new THREE.Box3().setFromObject(tree);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-      
-      console.log("🌳 [LEVEL 1] Fourth tree model loaded:", {
-        size: size,
-        center: center,
-        children: tree.children.length
-      });
-      
-      // Position tree
-      tree.position.set(treeX, treeY, treeZ);
-      
-      if (size.y > 0) {
-        tree.position.y = treeY;
-      }
-      
-      // Scale tree - larger size (8.5 units) - different from tree 3
-      tree.scale.setScalar(8.5);
-      
-      // Rotate tree differently for variety
-      tree.rotation.y = -Math.PI / 3; // -60 degrees rotation (opposite direction)
-      
-      // Process materials to ensure proper rendering
-      tree.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-          if (child.material) {
-            // Process material similar to other models
-            if (Array.isArray(child.material)) {
-              child.material = child.material.map(mat => processWeaponMaterial(mat));
-            } else {
-              child.material = processWeaponMaterial(child.material);
-            }
-          }
-        }
-      });
-      
-      // Ensure tree is visible
-      tree.visible = true;
-      tree.frustumCulled = false; // Ensure it's always rendered
-      tree.updateMatrixWorld(true);
-      
-      // Add to scene
-      scene.add(tree);
-      level1State.tree4 = tree;
-      
-      // Store collision data in tree userData for collision detection
-      tree.userData.collisionRadius = Math.max(size.x, size.z) * 0.5; // Half of larger dimension
-      tree.userData.collisionPosition = new THREE.Vector3(treeX, treeY, treeZ);
-      
-      // Log detailed information
-      console.log("✅ [LEVEL 1] Fourth tree created successfully:", {
-        position: tree.position,
-        scale: tree.scale,
-        rotation: tree.rotation.y,
-        visible: tree.visible,
-        inScene: scene.children.includes(tree),
-        boundingBox: { size: size, center: center },
-        collisionRadius: tree.userData.collisionRadius,
-        children: tree.children.length
-      });
-      
-      // Double-check visibility after a short delay
-      setTimeout(() => {
-        if (level1State.tree4) {
-          level1State.tree4.visible = true;
-          level1State.tree4.updateMatrixWorld(true);
-          console.log("🌳 [LEVEL 1] Fourth tree visibility verified:", {
-            visible: level1State.tree4.visible,
-            inScene: scene.children.includes(level1State.tree4),
-            position: level1State.tree4.position
-          });
-        }
-      }, 100);
-    })
-    .catch((error) => {
-      console.error("❌ [LEVEL 1] Failed to load fourth tree model:", error);
-      console.error("❌ [LEVEL 1] Tree path attempted:", treePath);
-      console.error("❌ [LEVEL 1] Full error:", error.message, error.stack);
-    });
-}
-
-// 🦋 Create butterfly in Level 1
-function createLevel1Butterfly(spawnData, blockSize) {
-  console.log("🦋 [LEVEL 1] Creating butterfly at center of field...");
-  
-  // Load butterfly model
-  const butterflyModelPath = "/public/three.js/public/textures/3d models/Butterfly1/butterfly.glb";
-  
-  loadModel(butterflyModelPath)
-    .then((gltf) => {
-      const butterfly = gltf.scene.clone(true);
-      
-      // Calculate bounding box for scaling
-      const butterflyBox = new THREE.Box3().setFromObject(butterfly);
-      const butterflySize = butterflyBox.getSize(new THREE.Vector3());
-      
-      console.log("🦋 [LEVEL 1] Butterfly model loaded:", {
-        originalSize: butterflySize,
-        children: butterfly.children.length
-      });
-      
-      // Scale butterfly to normal size (was 10x, now normal size)
-      const normalScale = 1.0; // Normal size
-      butterfly.scale.set(normalScale, normalScale, normalScale);
-      
-      // Position butterfly at center of field (updated from 67, 2, 100 to center)
-      butterfly.position.set(butterflyCenterX, butterflyCenterY, butterflyCenterZ);
-      
-      // Configure materials and shadows, and find wing meshes for animation
-      butterflyWingMeshes = []; // Reset wing meshes array
-      const allMeshes = [];
-      const allObjects = [];
-      
-      butterfly.traverse((child) => {
-        allObjects.push({ type: child.type, name: child.name, isMesh: child.isMesh });
-        
-        if (child.isMesh) {
-          allMeshes.push(child);
-          child.castShadow = true;
-          child.receiveShadow = true;
-          child.frustumCulled = false; // Keep visible even if off-screen
-          
-          // Process materials if needed
-          if (child.material) {
-            if (Array.isArray(child.material)) {
-              child.material = child.material.map(mat => processWeaponMaterial(mat));
-            } else {
-              child.material = processWeaponMaterial(child.material);
-            }
-          }
-          
-          // Find wing meshes by name (common names: wing, Wing, leftWing, rightWing, etc.)
-          const meshName = child.name.toLowerCase();
-          if (meshName.includes('wing') || meshName.includes('flap') || meshName.includes('left') || meshName.includes('right')) {
-            butterflyWingMeshes.push(child);
-            console.log("🦋 [LEVEL 1] Found potential wing mesh:", child.name);
-          }
-        }
-      });
-      
-      // Log all objects for debugging
-      console.log("🦋 [LEVEL 1] Butterfly model structure:", {
-        totalObjects: allObjects.length,
-        totalMeshes: allMeshes.length,
-        objectTypes: allObjects.map(o => `${o.type}:${o.name || 'unnamed'}`).slice(0, 10), // First 10
-        meshNames: allMeshes.map(m => m.name || 'unnamed')
-      });
-      
-      // If no wings found by name, use all meshes (butterfly might be single mesh or simple structure)
-      if (butterflyWingMeshes.length === 0 && allMeshes.length > 0) {
-        console.log("🦋 [LEVEL 1] No wing meshes found by name, using all meshes for animation");
-        butterflyWingMeshes = allMeshes;
-      }
-      
-      console.log("🦋 [LEVEL 1] Final wing meshes for animation:", {
-        count: butterflyWingMeshes.length,
-        names: butterflyWingMeshes.map(m => m.name || 'unnamed')
-      });
-      
-      // Set up animation mixer if model has animations
-      if (gltf.animations && gltf.animations.length > 0) {
-        level1State.butterflyMixer = new THREE.AnimationMixer(butterfly);
-        
-        gltf.animations.forEach((clip) => {
-          const action = level1State.butterflyMixer.clipAction(clip);
-          action.setLoop(THREE.LoopRepeat, Infinity);
-          action.play();
-          console.log("🦋 [LEVEL 1] Playing butterfly animation:", clip.name);
-        });
-      }
-      
-      // Ensure butterfly is visible
-      butterfly.visible = true;
-      butterfly.updateMatrixWorld(true);
-      
-      // Add to scene
-      scene.add(butterfly);
-      level1State.butterfly = butterfly;
-      
-      // Reset flight parameters to start position
-      butterflyAngle = 0;
-      butterflyUnpredictability = 0;
-      butterflyUnpredictabilityTimer = 0;
-      butterflyCurrentSpeed = 0.25;
-      butterflyTargetSpeed = 0.25;
-      level1State.butterfly.userData.prevPosition = new THREE.Vector3(butterflyCenterX, butterflyCenterY, butterflyCenterZ);
-      
-      console.log("✅ [LEVEL 1] Butterfly created successfully:", {
-        position: butterfly.position,
-        scale: butterfly.scale,
-        visible: butterfly.visible,
-        inScene: scene.children.includes(butterfly),
-        hasAnimations: gltf.animations && gltf.animations.length > 0,
-        animationsCount: gltf.animations ? gltf.animations.length : 0,
-        wingMeshesFound: butterflyWingMeshes.length,
-        wingMeshNames: butterflyWingMeshes.map(m => m.name)
-      });
-      
-    })
-    .catch((error) => {
-      console.error("❌ [LEVEL 1] Failed to load butterfly model:", error);
-      console.error("❌ [LEVEL 1] Butterfly path attempted:", butterflyModelPath);
-    });
-}
-
-// 🌿 Create Phormium plant in Level 1 (decorative FBX plant at position 40, 1, 100)
-//
-// 📝 PLANT RENDERING NOTES (December 18, 2025):
-// ============================================
-// FBX Plant Implementation - Successfully working with these critical settings:
-//
-// 1. SCALE: FBX models are typically exported in centimeters and are HUGE
-//    - Use scale: 0.015 (1.5% of original size)
-//    - Adjust between 0.01-0.05 depending on desired size
-//
-// 2. MATERIALS: FBX materials need special handling
-//    - Use MeshStandardMaterial (NOT processWeaponMaterial!)
-//    - Base color: 0xffffff (white) to allow textures to show
-//    - Emissive: 0x1a3810 (green glow for visibility in shadows)
-//    - Side: THREE.DoubleSide (critical for plant leaves!)
-//    - If no texture map exists, use solid green: 0x3a7a2a
-//
-// 3. POSITION: Ground level placement
-//    - Y position: 1.0 (ground level, same as other Level 1 objects)
-//    - frustumCulled: false (ensures always rendered)
-//
-// 4. COLLISION: Plants use userData.collision for solid obstacles
-//    - Set collision.enabled = true
-//    - Set collision.radius (1.5 for full-size plant, 0.8 for half-size)
-//    - Set collision.position as Vector3
-//    - Collision is handled by checkLevel1TreeCollision() function
-//    - Players cannot walk through plants (push-away system)
-//
-// 5. CLEANUP: Always add plant to cleanupAllLevels() function
-//    - Reset level1State.plant to null on level change
-//    - Dispose geometries and materials properly
-//
-// 6. LOADING: Use loadModel() function (handles both FBX and GLB)
-//    - Returns: { scene, animations, isFBX: true }
-//    - FBXLoader is already imported and initialized
-//
-// 7. MULTIPLE PLANTS: Can create multiple plants with different scales
-//    - Plant 1: scale 0.015, collision radius 1.5 (full size)
-//    - Plant 2: scale 0.0075, collision radius 0.8 (half size)
-//    - Each needs its own level1State entry (plant, plant2, etc.)
-//
-function createLevel1Plant(spawnData, blockSize) {
-  // Position: Place plant at x: 40, y: 1, z: 100 (user-specified location)
-  const plantX = 40;
-  const plantY = 1;  // Ground level
-  const plantZ = 100;
-  
-  level1State.plantPosition = new THREE.Vector3(plantX, plantY, plantZ);
-  
-  console.log("🌿 [LEVEL 1] Creating Phormium plant at:", level1State.plantPosition);
-  
-  // Load Phormium FBX plant model
-  const plantPath = "/public/three.js/public/textures/plants/Phormium_FBX/phormium_tenax_1.fbx";
-  
-  loadModel(plantPath)
-    .then((modelData) => {
-      const plant = modelData.scene;
-      
-      // Calculate bounding box to understand the model size
-      const box = new THREE.Box3().setFromObject(plant);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-      
-      console.log("🌿 [LEVEL 1] Plant model loaded:", {
-        size: size,
-        center: center,
-        children: plant.children.length,
-        isFBX: modelData.isFBX
-      });
-      
-      // Position plant at specified location
-      plant.position.set(plantX, plantY, plantZ);
-      
-      // Scale plant appropriately - FBX models are often huge, use tiny scale
-      // Start with 0.015 (1.5% of original size) and adjust based on results
-      plant.scale.setScalar(0.015);
-      
-      // Rotate plant if needed (optional - adjust based on desired orientation)
-      plant.rotation.y = 0; // Adjust rotation as needed
-      
-      // Process materials with simple approach for FBX plants
-      let meshCount = 0;
-      let materialCount = 0;
-      plant.traverse((child) => {
-        if (child.isMesh) {
-          meshCount++;
-          child.castShadow = true;
-          child.receiveShadow = true;
-          if (child.material) {
-            materialCount++;
-            const originalMat = child.material;
-            console.log("🌿 [LEVEL 1] Original mesh material:", {
-              meshName: child.name,
-              materialType: originalMat.type,
-              hasMap: originalMat.map ? true : false,
-              hasColor: originalMat.color ? true : false,
-              opacity: originalMat.opacity,
-              transparent: originalMat.transparent
-            });
-            
-            // Create a clean MeshStandardMaterial for plants (better than processWeaponMaterial)
-            // Use texture if available, otherwise use green color
-            const plantMaterial = new THREE.MeshStandardMaterial({
-              color: 0xffffff, // White to allow texture colors to show through
-              map: originalMat.map || null, // Keep texture if it exists
-              metalness: 0.0,
-              roughness: 0.8,
-              side: THREE.DoubleSide, // Render both sides for plant leaves
-              transparent: false,
-              opacity: 1.0,
-              emissive: 0x1a3810, // Slight green emissive for visibility even in shadow
-              emissiveIntensity: 0.3
-            });
-            
-            // If no texture map, apply a visible green color directly
-            if (!originalMat.map) {
-              plantMaterial.color.setHex(0x3a7a2a); // Bright green color
-              console.log("🌿 [LEVEL 1] No texture map found, using solid green color");
-            }
-            
-            child.material = plantMaterial;
-            
-            console.log("🌿 [LEVEL 1] Applied new plant material:", {
-              meshName: child.name,
-              color: plantMaterial.color.getHexString(),
-              hasMap: plantMaterial.map ? true : false,
-              metalness: plantMaterial.metalness,
-              roughness: plantMaterial.roughness,
-              side: plantMaterial.side === THREE.DoubleSide ? 'DoubleSide' : 'FrontSide'
-            });
-          }
-        }
-      });
-      console.log("🌿 [LEVEL 1] Plant material processing complete:", { 
-        meshCount: meshCount, 
-        materialCount: materialCount 
-      });
-      
-      // Ensure plant is visible
-      plant.visible = true;
-      plant.frustumCulled = false; // Ensure it's always rendered
-      plant.updateMatrixWorld(true);
-      
-      // Add to scene
-      scene.add(plant);
-      level1State.plant = plant;
-      
-      // Store collision data for plant 1
-      plant.userData.collision = {
-        enabled: true,
-        radius: 1.5, // Collision radius around plant center
-        position: new THREE.Vector3(plantX, plantY, plantZ)
-      };
-      
-      // Log detailed information
-      console.log("✅ [LEVEL 1] Phormium plant created successfully:", {
-        position: { x: plant.position.x, y: plant.position.y, z: plant.position.z },
-        scale: { x: plant.scale.x, y: plant.scale.y, z: plant.scale.z },
-        visible: plant.visible,
-        inScene: scene.children.includes(plant),
-        boundingBox: { 
-          size: { x: size.x, y: size.y, z: size.z }, 
-          center: { x: center.x, y: center.y, z: center.z } 
-        },
-        children: plant.children.length,
-        actualWorldPosition: plant.getWorldPosition(new THREE.Vector3()),
-        collisionRadius: 1.5
-      });
-      
-      // Double-check visibility after a short delay
-      setTimeout(() => {
-        if (level1State.plant) {
-          level1State.plant.visible = true;
-          level1State.plant.updateMatrixWorld(true);
-          console.log("🌿 [LEVEL 1] Plant visibility verified:", {
-            visible: level1State.plant.visible,
-            inScene: scene.children.includes(level1State.plant),
-            position: { 
-              x: level1State.plant.position.x, 
-              y: level1State.plant.position.y, 
-              z: level1State.plant.position.z 
-            },
-            scale: {
-              x: level1State.plant.scale.x,
-              y: level1State.plant.scale.y,
-              z: level1State.plant.scale.z
-            },
-            frustumCulled: level1State.plant.frustumCulled,
-            renderOrder: level1State.plant.renderOrder,
-            layers: level1State.plant.layers.mask
-          });
-        }
-      }, 100);
-    })
-    .catch((error) => {
-      console.error("❌ [LEVEL 1] Failed to load plant model:", error);
-      console.error("❌ [LEVEL 1] Plant path attempted:", plantPath);
-      console.error("❌ [LEVEL 1] Full error:", error.message, error.stack);
-    });
-}
-
-// 🌿 Create Phormium plant 2 in Level 1 (smaller decorative plant at position 71, 1, 91)
-//
-// 📝 SECOND PLANT NOTES (December 18, 2025):
-// ==========================================
-// This is an example of creating multiple plants with different sizes:
-//
-// 1. SCALE: Half the size of plant 1 (0.0075 vs 0.015)
-//    - Same model, different scale
-//    - Creates variety in the level
-//
-// 2. COLLISION RADIUS: Proportional to scale (0.8 vs 1.5)
-//    - Smaller plant = smaller collision radius
-//    - Maintains realistic collision boundaries
-//
-// 3. STATE MANAGEMENT: Each plant needs its own state entry
-//    - level1State.plant2 (separate from level1State.plant)
-//    - level1State.plant2Position (separate position tracking)
-//    - Both are cleaned up independently in cleanupAllLevels()
-//
-// 4. SAME COLLISION SYSTEM: Uses checkLevel1TreeCollision()
-//    - Both plants are added to the obstacles array
-//    - Same push-away and velocity cancellation logic
-//    - No special handling needed - works automatically
-//
-// 5. MATERIAL SETTINGS: Identical to plant 1
-//    - Same MeshStandardMaterial configuration
-//    - Same DoubleSide rendering for leaves
-//    - Same emissive green glow
-//
-function createLevel1Plant2(spawnData, blockSize) {
-  // Position: Place plant at x: 71, y: 1, z: 91 (user-specified location)
-  const plantX = 71;
-  const plantY = 1;  // Ground level
-  const plantZ = 91;
-  
-  level1State.plant2Position = new THREE.Vector3(plantX, plantY, plantZ);
-  
-  console.log("🌿 [LEVEL 1] Creating Phormium plant 2 (smaller) at:", level1State.plant2Position);
-  
-  // Load Phormium FBX plant model (same model, different scale)
-  const plantPath = "/public/three.js/public/textures/plants/Phormium_FBX/phormium_tenax_1.fbx";
-  
-  loadModel(plantPath)
-    .then((modelData) => {
-      const plant = modelData.scene;
-      
-      // Position plant at specified location
-      plant.position.set(plantX, plantY, plantZ);
-      
-      // Scale plant to HALF the size of plant 1 (0.0075 instead of 0.015)
-      plant.scale.setScalar(0.0075);
-      
-      // Rotate plant if needed
-      plant.rotation.y = 0;
-      
-      // Process materials with simple approach for FBX plants
-      plant.traverse((child) => {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
-          if (child.material) {
-            const originalMat = child.material;
-            
-            // Create a clean MeshStandardMaterial for plants
-            const plantMaterial = new THREE.MeshStandardMaterial({
-              color: 0xffffff,
-              map: originalMat.map || null,
-              metalness: 0.0,
-              roughness: 0.8,
-              side: THREE.DoubleSide,
-              transparent: false,
-              opacity: 1.0,
-              emissive: 0x1a3810,
-              emissiveIntensity: 0.3
-            });
-            
-            if (!originalMat.map) {
-              plantMaterial.color.setHex(0x3a7a2a);
-            }
-            
-            child.material = plantMaterial;
-          }
-        }
-      });
-      
-      // Ensure plant is visible
-      plant.visible = true;
-      plant.frustumCulled = false;
-      plant.updateMatrixWorld(true);
-      
-      // Add to scene
-      scene.add(plant);
-      level1State.plant2 = plant;
-      
-      // Store collision data for plant 2
-      plant.userData.collision = {
-        enabled: true,
-        radius: 0.8, // Smaller radius due to smaller plant (half of plant 1's ~1.5 radius)
-        position: new THREE.Vector3(plantX, plantY, plantZ)
-      };
-      
-      console.log("✅ [LEVEL 1] Phormium plant 2 created successfully:", {
-        position: { x: plant.position.x, y: plant.position.y, z: plant.position.z },
-        scale: { x: plant.scale.x, y: plant.scale.y, z: plant.scale.z },
-        visible: plant.visible,
-        inScene: scene.children.includes(plant),
-        collisionRadius: 0.8
-      });
-      
-      // Verify visibility after a short delay
-      setTimeout(() => {
-        if (level1State.plant2) {
-          level1State.plant2.visible = true;
-          level1State.plant2.updateMatrixWorld(true);
-          console.log("🌿 [LEVEL 1] Plant 2 visibility verified:", {
-            visible: level1State.plant2.visible,
-            inScene: scene.children.includes(level1State.plant2),
-            position: { 
-              x: level1State.plant2.position.x, 
-              y: level1State.plant2.position.y, 
-              z: level1State.plant2.position.z 
-            }
-          });
-        }
-      }, 100);
-    })
-    .catch((error) => {
-      console.error("❌ [LEVEL 1] Failed to load plant 2 model:", error);
-      console.error("❌ [LEVEL 1] Plant 2 path attempted:", plantPath);
-    });
-}
-
-// Trigger death sequence for bear trap (uses Level 3 game over screen but with Level 1 context)
-function triggerLevel1BearTrapDeath() {
-  console.warn("💥 [LEVEL 1] Bear trap death triggered!");
-  
-  // Set flag so game over screen knows this is from Level 1 bear trap
-  level1State.bearTrapDeathActive = true;
-  
-  // Trigger death animation if player model is loaded (Mouse character only)
-  console.log("🔍 [LEVEL 1] Death animation check:", {
-    playerModelModule: !!playerModelModule,
-    isLoaded: playerModelModule ? playerModelModule.isLoaded() : false,
-    isMouseCharacter: playerModelModule ? playerModelModule.isMouseCharacter() : false,
-    legacyModel: !!playerCharacterModel,
-    useGLTFCharacter: useGLTFCharacter,
-    hasDeathAnim: !!playerCharacterAnimations['death'],
-    availableAnims: Object.keys(playerCharacterAnimations)
-  });
-  
-  if (playerModelModule && playerModelModule.isLoaded() && playerModelModule.isMouseCharacter()) {
-    const deathTriggered = playerModelModule.triggerAnimation('death', true);
-    if (deathTriggered) {
-      console.log("💀 [LEVEL 1] Death animation triggered (PlayerModel module)");
-    } else {
-      console.warn("⚠️ [LEVEL 1] Failed to trigger death animation via PlayerModel module");
-    }
-  } else if (playerCharacterModel && useGLTFCharacter && playerCharacterAnimations['death']) {
-    // Fallback: Use legacy animation system if PlayerModel module not available
-    const deathAction = playerCharacterAnimations['death'];
-    if (deathAction) {
-      // Stop all other animations
-      Object.keys(playerCharacterAnimations).forEach(animKey => {
-        const action = playerCharacterAnimations[animKey];
-        if (action && action !== deathAction && action.isRunning()) {
-          action.setEffectiveWeight(0.0);
-          action.stop();
-        }
-      });
-      
-      // Play death animation
-      deathAction.reset();
-      deathAction.setEffectiveTimeScale(1.0);
-      deathAction.setLoop(THREE.LoopOnce, 1);
-      deathAction.clampWhenFinished = true;
-      deathAction.enabled = true;
-      deathAction.setEffectiveWeight(1.0);
-      deathAction.play();
-      window.currentCharacterAnimation = 'death';
-      console.log("💀 [LEVEL 1] Death animation triggered (legacy system)", {
-        action: !!deathAction,
-        enabled: deathAction.enabled,
-        weight: deathAction.getEffectiveWeight(),
-        isRunning: deathAction.isRunning(),
-        mixer: !!playerCharacterMixer,
-        clipDuration: deathAction.getClip().duration
-      });
-      
-      // CRITICAL: Ensure mixer continues updating even after game pause
-      // The mixer update in updatePlayerCharacter should handle this, but verify it's working
-      if (playerCharacterMixer) {
-        console.log("🎬 [LEVEL 1] Mixer available for death animation update");
-      }
-    }
-  }
-  
-  // CRITICAL: Delay game over screen to let death animation play first
-  // Death animation needs time to be visible before pause
-  // Increased delay for smoother animation ending
-  setTimeout(() => {
-    // Use Level 3 game over screen (same death sequence)
-    showLevel3GameOverScreen();
-  }, 2000); // 2.0 second delay to show death animation smoothly (was 1.5s)
-  
-  // Note: Bear trap sound is already played when trap closes (before this function is called)
-}
-
-// ==================== LEVEL 2: BEAR TRAP (DEADLY) ====================
-
-// Check if player is stepping on bear trap and trigger death
-function checkLevel2BearTrapCollision() {
-  if (!level2State.bearTrap || !level2State.bearTrapPosition || level2State.bearTrapTriggered) {
-    // Debug: Log why collision check is skipped
-    if (!level2State.bearTrap && Math.random() < 0.01) {
-      console.log("🐻 [LEVEL 2] Bear trap collision skipped: no bearTrap");
-    }
-    if (!level2State.bearTrapPosition && Math.random() < 0.01) {
-      console.log("🐻 [LEVEL 2] Bear trap collision skipped: no bearTrapPosition");
-    }
-    if (level2State.bearTrapTriggered && Math.random() < 0.01) {
-      console.log("🐻 [LEVEL 2] Bear trap collision skipped: already triggered");
-    }
-    return;
-  }
-  
-  // Get player feet position
-  const playerFeet = playerCollider.start;
-  const trapPos = level2State.bearTrapPosition;
-  
-  // Calculate horizontal distance (ignore Y for trigger detection)
-  const dx = playerFeet.x - trapPos.x;
-  const dz = playerFeet.z - trapPos.z;
-  const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
-  
-  // Trigger radius: 1.0 units (slightly larger than Level 1 for easier trigger)
-  const TRAP_TRIGGER_RADIUS = 1.0;
-  
-  // Debug logging (when player is close to trap)
-  if (horizontalDistance < TRAP_TRIGGER_RADIUS * 1.5) { // Log when close to trap
-    console.log("🐻 [LEVEL 2] Bear trap check - Player near trap:", {
-      distance: horizontalDistance.toFixed(2),
-      triggerRadius: TRAP_TRIGGER_RADIUS,
-      playerY: playerFeet.y.toFixed(2),
-      trapY: trapPos.y.toFixed(2),
-      yDiff: (playerFeet.y - trapPos.y).toFixed(2),
-      withinHorizontal: horizontalDistance < TRAP_TRIGGER_RADIUS,
-      withinY: playerFeet.y < trapPos.y + 0.8
-    });
-  }
-  
-  // Check if player is on the trap (similar to Level 1 but account for pedestal)
-  // The trap is on a pedestal, so we check if player is near the trap position
-  // Allow player to be slightly below (on ground) or at/above the trap level
-  const Y_MIN = trapPos.y - 0.5; // Allow slightly below trap (on ground near pedestal)
-  const Y_MAX = trapPos.y + 0.8; // Allow slightly above trap
-  const isWithinYRange = playerFeet.y >= Y_MIN && playerFeet.y < Y_MAX;
-  
-  if (horizontalDistance < TRAP_TRIGGER_RADIUS && isWithinYRange) {
-    // Player stepped on trap! Switch to closed model and trigger death
-    level2State.bearTrapTriggered = true;
-    console.warn("💥 [LEVEL 2] Player stepped on bear trap! Triggering death...");
-    
-    // Switch to closed trap model
-    const closedTrapPath = level2State.bearTrap.userData.closedPath;
-    if (!closedTrapPath) {
-      console.error("❌ [LEVEL 2] Closed trap path not found!");
-      // Still trigger death even if path not found
-      setTimeout(() => {
-        triggerLevel2BearTrapDeath();
-      }, 1000);
-      return;
-    }
-    
-    loadModel(closedTrapPath)
-      .then(({ scene: closedTrap }) => {
-        // Get transform from Survival Pack (same as how traps are displayed)
-        const transform = getSurvivalPackTransform("trap");
-        
-        // Save open trap data BEFORE removing it (preserve for reset)
-        const openTrap = level2State.bearTrap;
-        const openTrapPosition = openTrap.position.clone();
-        const openTrapRotation = openTrap.rotation.clone();
-        const openTrapScale = openTrap.scale.x;
-        const openTrapPath = openTrap.userData.openPath || "./public/textures/3d models/Survival Pack/FBX/BearTrap_Open.fbx";
-        
-        // Remove open trap
-        if (openTrap.parent) {
-          openTrap.parent.remove(openTrap);
-        }
-        
-        // Add closed trap at same position (on pedestal)
-        closedTrap.position.copy(openTrapPosition);
-        closedTrap.scale.setScalar(openTrapScale);
-        closedTrap.rotation.copy(openTrapRotation);
-        
-        // Process materials - Level 2: Add green glow (to mark item as used)
-        closedTrap.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = false;
-            child.receiveShadow = false;
-            child.material = processWeaponMaterial(child.material);
-            // Add green glow to mark trap as used (Level 2 convention)
-            if (child.material) {
-              child.material.emissive = new THREE.Color(0x00ff00); // Green
-              child.material.emissiveIntensity = 0.8; // Strong green glow
-              child.material.needsUpdate = true;
-            }
-          }
-        });
-        
-        // Preserve userData from open trap for reset
-        closedTrap.userData = {
-          isOpen: false,
-          openPath: openTrapPath, // Preserve open path for reset
-          closedPath: closedTrapPath
-        };
-        
-        closedTrap.visible = true;
-        closedTrap.updateMatrixWorld(true);
-        level2State.group.add(closedTrap); // Add to Level 2 group
-        level2State.bearTrap = closedTrap;
-        
-        console.log("💥 [LEVEL 2] Bear trap closed! Player crushed!");
-        
-        // Play bear trap closing sound
-        if (bearTrapAudioReady && bearTrapSound) {
-          if (bearTrapSound.isPlaying) {
-            bearTrapSound.stop();
-          }
-          bearTrapSound.play();
-          console.log("🔊 [LEVEL 2] Bear trap sound played");
-        } else {
-          console.warn("⚠️ [LEVEL 2] Bear trap sound not ready:", { bearTrapAudioReady, hasSound: !!bearTrapSound });
-        }
-        
-        // CRITICAL: Trigger death animation IMMEDIATELY when trap closes
-        // This makes the animation play during the trap movement for better visual effect
-        // The animation will play for 1.5 seconds before game over screen appears
-        triggerLevel2BearTrapDeath();
-      })
-      .catch((error) => {
-        console.error("❌ [LEVEL 2] Failed to load closed bear trap model:", error);
-        // Still trigger death even if model switch fails (trigger immediately)
-        triggerLevel2BearTrapDeath();
-      });
-  }
-}
-
-// Trigger death sequence for bear trap (uses Level 3 game over screen but with Level 2 context)
-function triggerLevel2BearTrapDeath() {
-  console.warn("💥 [LEVEL 2] Bear trap death triggered!");
-  
-  // Set flag so game over screen knows this is from Level 2 bear trap
-  level2State.bearTrapDeathActive = true;
-  
-  // Trigger death animation if player model is loaded (Mouse character only)
-  if (playerModelModule && playerModelModule.isLoaded() && playerModelModule.isMouseCharacter()) {
-    const deathTriggered = playerModelModule.triggerAnimation('death', true);
-    if (deathTriggered) {
-      console.log("💀 [LEVEL 2] Death animation triggered for bear trap death");
-    }
-  } else if (playerCharacterModel && useGLTFCharacter && playerCharacterAnimations['death']) {
-    // Fallback: Use legacy animation system if PlayerModel module not available
-    const deathAction = playerCharacterAnimations['death'];
-    if (deathAction) {
-      // Stop all other animations
-      Object.keys(playerCharacterAnimations).forEach(animKey => {
-        const action = playerCharacterAnimations[animKey];
-        if (action && action !== deathAction && action.isRunning()) {
-          action.setEffectiveWeight(0.0);
-          action.stop();
-        }
-      });
-      
-      // Play death animation
-      deathAction.reset();
-      deathAction.setEffectiveTimeScale(1.0);
-      deathAction.setLoop(THREE.LoopOnce, 1);
-      deathAction.clampWhenFinished = true;
-      deathAction.enabled = true;
-      deathAction.setEffectiveWeight(1.0);
-      deathAction.play();
-      window.currentCharacterAnimation = 'death';
-      console.log("💀 [LEVEL 2] Death animation triggered (legacy system)", {
-        action: !!deathAction,
-        enabled: deathAction.enabled,
-        weight: deathAction.getEffectiveWeight(),
-        isRunning: deathAction.isRunning(),
-        mixer: !!playerCharacterMixer,
-        clipDuration: deathAction.getClip().duration
-      });
-    }
-  }
-  
-  // CRITICAL: Delay game over screen to let death animation play first
-  // Death animation needs time to be visible before pause
-  // Increased delay for smoother animation ending
-  setTimeout(() => {
-    // Use Level 3 game over screen (same death sequence)
-    showLevel3GameOverScreen();
-  }, 2000); // 2.0 second delay to show death animation smoothly (was 1.5s)
-  
-  // Note: Bear trap sound is already played when trap closes (before this function is called)
-}
-
-async function unlockLevel2Trait(traitName, contextLabel = "") {
-  if (!traitName) return;
-  if (!resolvedDiscordId) {
-    console.warn(`🧩 [LEVEL 2] Trait ${traitName} skipped (no Discord ID)`);
-    return;
-  }
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/user/unlock-trait.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: resolvedDiscordId,
-        trait_name: traitName,
-        trait_value: "true"
-      })
-    });
-    const result = await response.json();
-    if (result.success) {
-      console.log(`🧩 [LEVEL 2] Trait unlocked (${traitName})`, contextLabel);
-      if (traitName === LEVEL2_STEP0_TRAIT) level2RiddleState.step0TraitUnlocked = true;
-      if (traitName === LEVEL2_STEP1_TRAIT) level2RiddleState.step1TraitUnlocked = true;
-      if (traitName === LEVEL2_STEP2_TRAIT) level2RiddleState.step2TraitUnlocked = true;
-    } else {
-      console.warn(`🧩 [LEVEL 2] Trait unlock failed (${traitName}):`, result.error);
-    }
-  } catch (error) {
-    console.error(`🧩 [LEVEL 2] Error unlocking trait (${traitName}):`, error);
-  }
-}
-
-function showRiddleRewardNotification(dsPoincAwarded, multiplier, alreadyCompleted = false) {
-  const notification = document.createElement("div");
-  
-  // Different styling for "already completed" vs normal reward
-  if (alreadyCompleted) {
-    // Smaller, less intrusive notification for "already completed" - top right corner
-    Object.assign(notification.style, {
-      position: "fixed",
-      top: "20px",
-      right: "20px",
-      padding: "8px 16px",
-      backgroundColor: "rgba(255, 193, 7, 0.9)",
-      color: "#000",
-      borderRadius: "6px",
-      fontSize: "14px",
-      fontWeight: "600",
-      zIndex: "10000",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.25)",
-      textAlign: "center",
-      minWidth: "180px",
-      opacity: "0",
-      transition: "opacity 0.3s ease-in"
-    });
-    notification.textContent = "🧩 Already Completed";
-  } else {
-    // Normal reward notification - BOTTOM RIGHT CORNER to avoid blocking HUD elements
-    // OPTIMIZED POSITION FOR ALL LEVELS - Unified HUD layout
-    // This position doesn't interfere with:
-    // - Level 4 HUD (top center at 20px)
-    // - HP bar (top left at 20px)
-    // - Monster wave counter (top right)
-    // - Crosshair (center)
-    // - Mobile joysticks (bottom left/center, 80-120px from bottom)
-    // Position: Bottom-right, 100px from bottom (clear of mobile controls)
-    Object.assign(notification.style, {
-      position: "fixed",
-      bottom: "100px",  // Optimized: 100px from bottom (clear of mobile joysticks at ~80px)
-      right: "20px",    // 20px from right edge
-      padding: "12px 18px",
-      backgroundColor: "rgba(34, 197, 94, 0.95)",
-      color: "#000",
-      borderRadius: "8px",
-      fontSize: "15px",  // Optimized: 15px (was 18px, then 16px) - less intrusive
-      fontWeight: "700",
-      zIndex: "10000",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3), 0 0 20px rgba(34, 197, 94, 0.3)",
-      textAlign: "center",
-      minWidth: "240px",
-      maxWidth: "300px",
-      opacity: "0",
-      transition: "opacity 0.3s ease-in, transform 0.3s ease-in",
-      transform: "translateY(10px)",  // Start slightly below, animate up
-      backdropFilter: "blur(4px)"  // Subtle blur for better visibility
-    });
-    const multiplierText = multiplier > 1.0 ? ` (×${multiplier.toFixed(1)})` : "";
-    notification.textContent = `🎉 +${dsPoincAwarded.toLocaleString()} DSPOINC${multiplierText}! 🧀`;
-  }
-
-  document.body.appendChild(notification);
-  setTimeout(() => {
-    notification.style.opacity = "1";
-    if (!alreadyCompleted) {
-      notification.style.transform = "translateY(0)";  // Animate up
-    }
-  }, 10);
-  // Shorter duration for "already completed" notifications
-  const displayDuration = alreadyCompleted ? 2500 : 4000;
-  setTimeout(() => {
-    notification.style.opacity = "0";
-    if (!alreadyCompleted) {
-      notification.style.transform = "translateY(10px)";  // Animate down on fade out
-    }
-    setTimeout(() => {
-      if (document.body.contains(notification)) {
-        document.body.removeChild(notification);
-      }
-    }, 500);
-  }, displayDuration);
-}
-
-async function awardLevel2DspoincReward(stepId, baseReward, contextLabel = "") {
-  if (!resolvedDiscordId) {
-    console.warn(`🧀 [LEVEL 2] Skipping DSPOINC reward (${stepId}) — no Discord ID.`);
-    return;
-  }
-  try {
-    const payload = {
-      discord_id: resolvedDiscordId,
-      discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
-      riddle_id: stepId,
-      level_id: "CHEESE_TEMPLE_LEVEL2",
-      base_reward: baseReward,
-      session_id: cheeseSessionId
-    };
-    const response = await fetch(RIDDLE_REWARD_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload)
-    });
-    const result = await response.json().catch(() => ({ success: false, error: "Invalid JSON" }));
-    if (response.ok && result.success) {
-      const dsPoincAwarded = result.data?.ds_poinc_awarded || 0;
-      const totalDspoinc = result.data?.total_ds_poinc;
-      if (typeof totalDspoinc === "number") {
-        currentTotalDspoinc = totalDspoinc;
-        window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
-        if (isGamePaused) updatePausePlayerInfo();
-      }
-      showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
-      console.log(`🧀 [LEVEL 2] DSPOINC reward granted (${stepId})`, {
-        baseReward,
-        dsPoincAwarded,
-        totalDspoinc,
-        contextLabel
-      });
-    } else if (response.status === 409) {
-      console.warn(`🧀 [LEVEL 2] Reward already claimed for ${stepId}`);
-      showRiddleRewardNotification(0, 1.0, true);
-    } else {
-      console.warn(`🧀 [LEVEL 2] DSPOINC reward failed (${stepId}):`, result.error);
-    }
-  } catch (error) {
-    console.error(`🧀 [LEVEL 2] Error awarding DSPOINC reward (${stepId}):`, error);
-  }
-}
-
-// Update Riddle #3: Lever interaction, block movement, portal appearance
-function updateRiddle3(delta) {
-  if (!isGamePaused && riddleState.riddle2.step2Complete) { // Only active after Riddle #2 is complete
-    const r3 = riddleState.riddle3;
-    
-    // Make lever visible after Riddle #2 is complete (if not already visible)
-    if (r3.lever && !r3.lever.visible) {
-      r3.lever.visible = true;
-      console.log("🧩 [RIDDLE #3] Lever is now visible!");
-    }
-    
-    // Update progress UI for Riddle #3
-    invokeRiddleProgressUIUpdate("updateRiddle3");
-    
-    // Step 2: Block movement physics (only if lever is pressed)
-    if (r3.step1Complete && r3.movableBlock && !r3.step2Complete) {
-      // Make movable block and oak block visible after lever is pressed (ensure they're visible)
-      if (!r3.movableBlock.visible) {
-        r3.movableBlock.visible = true;
-        console.log("🧩 [RIDDLE #3] Movable block made visible in updateRiddle3");
-      }
-      if (r3.oakBlock && !r3.oakBlock.visible) {
-        r3.oakBlock.visible = true;
-        console.log("🧩 [RIDDLE #3] Oak block made visible in updateRiddle3");
-      }
-      
-      // Ensure block exists and is in scene
-      if (!scene.children.includes(r3.movableBlock)) {
-        console.warn("🧩 [RIDDLE #3] Movable block not in scene! Adding it now...");
-        scene.add(r3.movableBlock);
-      }
-      
-      // Ensure velocity vector exists (should already be initialized, but safety check)
-      if (!r3.movableBlockVelocity) {
-        console.warn("🧩 [RIDDLE #3] Velocity vector missing! Initializing...");
-        r3.movableBlockVelocity = new THREE.Vector3(0, 0, 0);
-      }
-      
-      // Block movement physics (same as Riddle #2 - exactly copied for consistency)
-      const blockPos = r3.movableBlock.position;
-      const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-      const distanceToBlock = playerPos.distanceTo(blockPos);
-      const pushDistance = 2.0; // Push distance threshold (increased from 1.5 to 2.0)
-      
-      // Debug: Log block state when player is near (more frequent)
-      if (distanceToBlock < pushDistance && (Math.random() < 0.1)) { // 10% chance per frame when near block
-        console.log("🧩 [RIDDLE #3 DEBUG] Block physics (near block):", {
-          blockVisible: r3.movableBlock.visible,
-          blockPosition: { x: blockPos.x.toFixed(2), y: blockPos.y.toFixed(2), z: blockPos.z.toFixed(2) },
-          playerPosition: { x: playerPos.x.toFixed(2), y: playerPos.y.toFixed(2), z: playerPos.z.toFixed(2) },
-          distanceToBlock: distanceToBlock.toFixed(2),
-          pushDistance: pushDistance,
-          blockVelocity: { x: r3.movableBlockVelocity.x.toFixed(3), y: r3.movableBlockVelocity.y.toFixed(3), z: r3.movableBlockVelocity.z.toFixed(3) },
-          velocityLength: r3.movableBlockVelocity.length().toFixed(3),
-          playerMoving: movement.forward || movement.backward || movement.left || movement.right,
-          movementState: { forward: movement.forward, backward: movement.backward, left: movement.left, right: movement.right },
-          step1Complete: r3.step1Complete,
-          step2Complete: r3.step2Complete
-        });
-      }
-      
-      if (distanceToBlock < pushDistance) {
-        // Player is near block - apply push force based on player movement
-        // Get player movement direction (from player movement input, not velocity)
-        const playerMovement = new THREE.Vector3();
-        if (movement.forward) playerMovement.z += 1;
-        if (movement.backward) playerMovement.z -= 1;
-        if (movement.left) playerMovement.x -= 1;
-        if (movement.right) playerMovement.x += 1;
-        
-        // Calculate direction from player to block (used for fallback push)
-        const toBlock = new THREE.Vector3().subVectors(blockPos, playerPos);
-        toBlock.y = 0; // Only horizontal
-        const distanceToBlockNorm = toBlock.length();
-        
-        // Only proceed if player has movement input OR is very close to block (allow pushing by proximity)
-        // CRITICAL: This matches Riddle #2's approach - allows pushing even when very close without movement input
-        const hasMovementInput = playerMovement.lengthSq() > 0.01;
-        const isVeryClose = distanceToBlockNorm < 1.0; // Within 1 unit = touching or very close
-        
-        if (hasMovementInput || isVeryClose) {
-          let pushDirection = new THREE.Vector3();
-          let useFallback = false;
-          
-          // Try to calculate world movement direction (preferred method)
-          if (hasMovementInput) {
-            playerMovement.normalize();
-            
-            try {
-              // Get forward and side vectors (same as player movement)
-              const forward = getForwardVector();
-              const side = getSideVector();
-              
-              // Calculate actual movement direction in world space
-              const worldMoveDir = new THREE.Vector3();
-              worldMoveDir.addScaledVector(forward, playerMovement.z);
-              worldMoveDir.addScaledVector(side, playerMovement.x);
-              worldMoveDir.y = 0; // Only horizontal
-              
-              // Only use world movement direction if it's valid
-              if (worldMoveDir.lengthSq() > 0.01) {
-                worldMoveDir.normalize();
-                
-                // Primary push: block moves in player's movement direction
-                pushDirection.copy(worldMoveDir);
-                
-                // Secondary push: add component from player to block (so block moves away from player)
-                if (distanceToBlockNorm > 0.01) {
-                  const toBlockNorm = toBlock.clone().normalize();
-                  pushDirection.addScaledVector(toBlockNorm, 0.3);
-                }
-                pushDirection.y = 0;
-              } else {
-                // World movement direction is invalid - use fallback
-                useFallback = true;
-              }
-            } catch (error) {
-              // Error calculating world movement direction - use fallback
-              console.warn("🧩 [RIDDLE #3] Error calculating world movement direction, using fallback:", error);
-              useFallback = true;
-            }
-          } else {
-            // No movement input but very close - use fallback push
-            useFallback = true;
-          }
-          
-          // Fallback: Push block away from player (works even without movement input when very close)
-          if (useFallback && distanceToBlockNorm > 0.01) {
-            pushDirection.copy(toBlock).normalize();
-            pushDirection.y = 0;
-          }
-          
-          // Apply push if we have a valid direction
-          if (pushDirection.lengthSq() > 0.01) {
-            pushDirection.normalize();
-            
-            // Apply push force (stronger when player is closer, and stronger overall)
-            const pushStrength = Math.max(0, 1 - (distanceToBlockNorm / pushDistance)); // 1.0 when touching, 0.0 when at max distance
-            const pushForce = 30.0 * pushStrength; // Increased from 25.0 to 30.0 to match Riddle #2
-            
-            const pushVector = pushDirection.clone().multiplyScalar(pushForce * delta);
-            r3.movableBlockVelocity.add(pushVector);
-            
-            // Debug: Log when significant push is applied (occasionally)
-            if (pushVector.length() > 0.05 && Math.random() < 0.15) { // 15% chance when pushing significantly
-              console.log("🧩 [RIDDLE #3] Push applied:", {
-                method: useFallback ? "fallback" : "world-movement",
-                pushForce: pushForce.toFixed(2),
-                pushStrength: pushStrength.toFixed(2),
-                pushVector: { x: pushVector.x.toFixed(3), y: pushVector.y.toFixed(3), z: pushVector.z.toFixed(3) },
-                pushDirection: { x: pushDirection.x.toFixed(2), y: pushDirection.y.toFixed(2), z: pushDirection.z.toFixed(2) },
-                velocityAfter: r3.movableBlockVelocity.length().toFixed(3),
-                distanceToBlock: distanceToBlockNorm.toFixed(2),
-                hasMovementInput: hasMovementInput,
-                isVeryClose: isVeryClose
-              });
-            }
-          } else if (hasMovementInput && Math.random() < 0.05) {
-            // Debug: Log when push fails (occasionally)
-            console.warn("🧩 [RIDDLE #3] Push failed - invalid push direction:", {
-              playerMovement: { x: playerMovement.x.toFixed(2), z: playerMovement.z.toFixed(2) },
-              distanceToBlock: distanceToBlockNorm.toFixed(2),
-              pushDirectionLength: pushDirection.lengthSq().toFixed(3)
-            });
-          }
-        }
-      }
-      
-      // Apply friction to block velocity (same as Riddle #2)
-      const friction = 0.95; // 5% reduction per frame (very responsive)
-      r3.movableBlockVelocity.multiplyScalar(Math.pow(friction, delta * 60));
-      
-      // Apply velocity to block position (same as Riddle #2)
-      if (r3.movableBlockVelocity.lengthSq() > 0.001) { // Only move if velocity is significant
-        const nextPosition = r3.movableBlock.position.clone();
-        const moveDelta = r3.movableBlockVelocity.clone().multiplyScalar(delta);
-        nextPosition.add(moveDelta);
-        
-        // Clamp block Y position (prevent falling below ground)
-        if (nextPosition.y < 1.5) {
-          nextPosition.y = 1.5;
-          r3.movableBlockVelocity.y = 0;
-        }
-        
-        // Clamp block to reasonable level bounds
-        const minX = -10;
-        const maxX = 130;
-        const minZ = -10;
-        const maxZ = 130;
-        
-        // Stop horizontal movement if block hits bounds
-        if (nextPosition.x < minX) {
-          nextPosition.x = minX;
-          r3.movableBlockVelocity.x = 0;
-        } else if (nextPosition.x > maxX) {
-          nextPosition.x = maxX;
-          r3.movableBlockVelocity.x = 0;
-        }
-        
-        if (nextPosition.z < minZ) {
-          nextPosition.z = minZ;
-          r3.movableBlockVelocity.z = 0;
-        } else if (nextPosition.z > maxZ) {
-          nextPosition.z = maxZ;
-          r3.movableBlockVelocity.z = 0;
-        }
-        
-        // Apply movement
-        r3.movableBlock.position.copy(nextPosition);
-        
-        // Update block matrix for raycasting
-        r3.movableBlock.updateMatrix();
-        r3.movableBlock.updateMatrixWorld(true);
-        
-        // Debug: Log when block is moving (occasionally)
-        if (Math.random() < 0.05) { // 5% chance when block is moving
-          console.log("🧩 [RIDDLE #3] Block movement:", {
-            blockVelocity: { x: r3.movableBlockVelocity.x.toFixed(3), y: r3.movableBlockVelocity.y.toFixed(3), z: r3.movableBlockVelocity.z.toFixed(3) },
-            velocityLength: r3.movableBlockVelocity.length().toFixed(3),
-            moveDelta: { x: moveDelta.x.toFixed(3), y: moveDelta.y.toFixed(3), z: moveDelta.z.toFixed(3) },
-            oldPosition: { x: r3.movableBlock.position.x.toFixed(2), y: r3.movableBlock.position.y.toFixed(2), z: r3.movableBlock.position.z.toFixed(2) },
-            newPosition: { x: nextPosition.x.toFixed(2), y: nextPosition.y.toFixed(2), z: nextPosition.z.toFixed(2) }
-          });
-        }
-        
-        // CRITICAL: Prevent player from entering the block - push player away if too close
-        // This runs AFTER block movement (same as Riddle #2) to prevent player from going through moving block
-        const playerPosCollision = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-        const blockPosCollision = r3.movableBlock.position;
-        const playerToBlockCollision = new THREE.Vector3().subVectors(blockPosCollision, playerPosCollision);
-        playerToBlockCollision.y = 0; // Only horizontal
-        const playerBlockDistanceCollision = playerToBlockCollision.length();
-        const blockRadius = 0.6; // Block is 1x1, so radius is 0.5, add small buffer
-        const minPlayerDistance = blockRadius + 0.4; // Minimum distance between player and block center (1.0 units total)
-        
-        // If player is too close to block, push player away (prevents going through)
-        if (playerBlockDistanceCollision < minPlayerDistance && playerBlockDistanceCollision > 0.01) {
-          const pushDistance = minPlayerDistance - playerBlockDistanceCollision;
-          const pushDirection = playerToBlockCollision.clone().normalize().negate(); // Push player away from block
-          const pushVector = pushDirection.multiplyScalar(pushDistance);
-          
-          // Apply push to player collider
-          playerCollider.start.add(pushVector);
-          playerCollider.end.add(pushVector);
-          
-          // Debug: Log when player is pushed away (occasionally)
-          if (Math.random() < 0.05) {
-            console.log("🧩 [RIDDLE #3] Pushing player away from block:", {
-              playerBlockDistance: playerBlockDistanceCollision.toFixed(3),
-              minPlayerDistance: minPlayerDistance.toFixed(3),
-              pushDistance: pushDistance.toFixed(3)
-            });
-          }
-        }
-      }
-      
-      // Check proximity to oak block (Step 2 completion)
-      if (r3.oakBlock && !r3.step2Complete) {
-        const blockPos = r3.movableBlock.position;
-        const oakPos = r3.oakBlock.position;
-        const distance = blockPos.distanceTo(oakPos);
-        
-        // Check if block is on oak block (within threshold)
-        if (distance < RIDDLE3_PROXIMITY_THRESHOLD) {
-          // Block is on oak block - complete Step 2
-          // OPTIMIZATION: Use requestAnimationFrame to defer heavy operations and prevent lag
-          if (!r3.step2Complete) {
-            r3.step2Complete = true;
-            console.log("🧩 [RIDDLE #3] Step 2 complete! Block moved to oak block!");
-            playBlockMovedSound();
-            
-            // Lock block in place (stop movement) - immediate
-            r3.movableBlockVelocity.set(0, 0, 0);
-            
-            // Snap block to oak block position (exact alignment) - immediate
-            r3.movableBlock.position.copy(oakPos);
-            r3.movableBlock.updateMatrix();
-            r3.movableBlock.updateMatrixWorld(true);
-            
-            // Defer heavy operations to next frame to prevent lag
-            requestAnimationFrame(() => {
-              // Make oak block glow permanently (completion indicator)
-              if (r3.oakBlock && r3.oakBlock.material) {
-                r3.oakBlock.material.emissive = new THREE.Color(0xffe066); // Golden glow
-                r3.oakBlock.material.emissiveIntensity = 0.3; // Reduced intensity so texture is visible
-              }
-              
-              // Create portal if it doesn't exist (deferred to prevent lag)
-              if (!r3.portal) {
-                const spawnData = riddleState.unlockableBlock ? {
-                  x: Math.floor(riddleState.unlockableBlock.position.x),
-                  y: Math.floor(riddleState.unlockableBlock.position.y),
-                  z: Math.floor(riddleState.unlockableBlock.position.z)
-                } : { x: 60, y: 1, z: 15 };
-                console.log("🧩 [RIDDLE #3] Creating portal after Step 2 complete:", {
-                  spawnData: spawnData,
-                  step2Complete: r3.step2Complete
-                });
-                createRiddle3Portal(spawnData, 1);
-              }
-              
-              // Make portal visible and complete riddle (deferred)
-              if (r3.portal) {
-                // FIX: Force portal to be visible and ensure it's in scene
-                if (!r3.portal.visible || !scene.children.includes(r3.portal)) {
-                  // Make sure portal is in scene
-                  if (!scene.children.includes(r3.portal)) {
-                    console.warn("🧩 [RIDDLE #3] Portal not in scene! Adding it now...");
-                    scene.add(r3.portal);
-                  }
-                  
-                  // Make portal visible
-                  r3.portal.visible = true;
-                  
-                  // Force update matrix to ensure visibility
-                  r3.portal.updateMatrixWorld(true);
-              
-              // Make portal material very bright for visibility
-              if (r3.portal.material) {
-                // FIX: Portal should show texture correctly - no emissive overlay
-                // r3.portal.material.emissiveIntensity = RIDDLE3_PORTAL_BRIGHTNESS; // Removed - texture shows correctly without emissive
-                r3.portal.material.needsUpdate = true;
-              }
-              
-                  console.log("🧩 [RIDDLE #3] Portal is now visible! Position:", {
-                    x: r3.portal.position.x.toFixed(2),
-                    y: r3.portal.position.y.toFixed(2),
-                    z: r3.portal.position.z.toFixed(2),
-                    visible: r3.portal.visible,
-                    inScene: scene.children.includes(r3.portal),
-                    scale: { x: r3.portal.scale.x.toFixed(2), y: r3.portal.scale.y.toFixed(2), z: r3.portal.scale.z.toFixed(2) },
-                    renderOrder: r3.portal.renderOrder,
-                    material: r3.portal.material ? {
-                      emissiveIntensity: r3.portal.material.emissiveIntensity,
-                      side: r3.portal.material.side
-                    } : null,
-                    note: "Portal should be visible at north wall (z=10, x=60, y=5) - accessible from spawn"
-                  });
-                }
-                
-                // Complete riddle (only once)
-                if (!r3.step3Complete) {
-                  console.log("🧩 [RIDDLE #3] Completing riddle...");
-                  completeRiddle3(); // This will set step3Complete internally
-                }
-              } else {
-                console.error("🧩 [RIDDLE #3] ERROR: Portal does not exist after Step 2 complete!");
-                console.error("🧩 [RIDDLE #3] Debug info:", {
-                  step2Complete: r3.step2Complete,
-                  portalExists: !!r3.portal,
-                  riddleState: riddleState.riddle3
-                });
-              }
-            });
-          }
-        }
-      }
-    }
-    
-    // Check portal proximity (Level 1 completion) - MOVED OUTSIDE step2Complete block
-    // This must run continuously after portal is visible and step3Complete, regardless of step2Complete state
-    if (r3.portal && r3.portal.visible && r3.step3Complete && !level1Completed && !isGamePaused) {
-      const portalPos = r3.portal.position;
-      const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-      
-      // Check if player is near portal (within threshold)
-      // Portal is in front of north wall at z=10, at ground level (y=5), so check 3D distance (include Y for vertical range)
-      // Use full 3D distance for more accurate detection
-      const distanceToPortal = playerPos.distanceTo(portalPos);
-      
-      // Also check horizontal distance for easier approach (player can be at different heights)
-      const horizontalDistance = Math.sqrt(
-        Math.pow(playerPos.x - portalPos.x, 2) + 
-        Math.pow(playerPos.z - portalPos.z, 2)
-      );
-      
-      // Require player to be almost touching the portal (jump into it)
-      const verticalDistance = Math.abs(playerPos.y - portalPos.y);
-      const canEnter = horizontalDistance < RIDDLE3_PORTAL_ENTER_DISTANCE && verticalDistance < 3.0;
-      
-      // Debug: Log portal proximity (occasionally, but more frequent when close)
-      const suctionRadius = 5.0;
-      const suctionStrength = 18.0;
-      if (!canEnter && horizontalDistance < suctionRadius && verticalDistance < 4.0) {
-        const pullDir = new THREE.Vector3().subVectors(portalPos, playerPos);
-        pullDir.y = 0;
-        if (pullDir.lengthSq() > 0.0001) {
-          pullDir.normalize();
-          playerVelocity.addScaledVector(pullDir, suctionStrength * delta);
-          const pullOffset = pullDir.clone().multiplyScalar(delta * 1.2);
-          playerCollider.start.add(pullOffset);
-          playerCollider.end.add(pullOffset);
-        }
-      }
-      
-      if (canEnter || (distanceToPortal < RIDDLE3_PORTAL_ENTER_DISTANCE * 2 && Math.random() < 0.1)) { // 10% chance when within 2x threshold
-        console.log("🎉 [LEVEL 1] Portal proximity check:", {
-          distanceToPortal: distanceToPortal.toFixed(2),
-          horizontalDistance: horizontalDistance.toFixed(2),
-          verticalDistance: verticalDistance.toFixed(2),
-          threshold: RIDDLE3_PORTAL_ENTER_DISTANCE,
-          canEnter: canEnter,
-          portalVisible: r3.portal.visible,
-          step3Complete: r3.step3Complete,
-          level1Completed: level1Completed,
-          playerPos: { x: playerPos.x.toFixed(2), y: playerPos.y.toFixed(2), z: playerPos.z.toFixed(2) },
-          portalPos: { x: portalPos.x.toFixed(2), y: portalPos.y.toFixed(2), z: portalPos.z.toFixed(2) }
-        });
-      }
-      
-      if (canEnter) {
-        console.log("🎉 [LEVEL 1] Player reached portal! Level 1 complete!", {
-          horizontalDistance: horizontalDistance.toFixed(2),
-          verticalDistance: verticalDistance.toFixed(2),
-          distanceToPortal: distanceToPortal.toFixed(2),
-          threshold: RIDDLE3_PORTAL_ENTER_DISTANCE,
-          playerPos: { x: playerPos.x.toFixed(2), y: playerPos.y.toFixed(2), z: playerPos.z.toFixed(2) },
-          portalPos: { x: portalPos.x.toFixed(2), y: portalPos.y.toFixed(2), z: portalPos.z.toFixed(2) }
-        });
-        playLevelUpSound();
-        warpToLevel2();
-        level1Completed = true;
-      }
-    }
-  }
-}
-
-// Complete Riddle #3: Unlock trait and award DSPOINC
-let riddle3Completed = false; // Flag to prevent duplicate completion
-async function completeRiddle3() {
-  // Only complete once (prevent duplicate API calls)
-  if (riddle3Completed) {
-    console.log("🧩 [RIDDLE #3] Already completed - skipping duplicate completion");
-    return;
-  }
-  
-  // Check if riddle is actually complete (portal visible, step2 complete)
-  const r3 = riddleState.riddle3;
-  if (!r3.step2Complete || !r3.portal || !r3.portal.visible) {
-    console.log("🧩 [RIDDLE #3] Not ready to complete yet:", {
-      step2Complete: r3.step2Complete,
-      portalExists: !!r3.portal,
-      portalVisible: r3.portal ? r3.portal.visible : false
-    });
-    return;
-  }
-  
-  // Mark as completed immediately to prevent duplicate calls
-  riddle3Completed = true;
-  r3.step3Complete = true;
-  
-  console.log("🧩 [RIDDLE #3] Completing riddle...");
-  
-  // Show completion message
-  showRiddle3CompletionMessage();
-  
-  // Unlock trait and award DSPOINC via API
-  const discordId = resolvedDiscordId;
-  // Allow LOCAL_TEST_DISCORD for local testing (will create test data in database)
-  if (discordId) {
-    // Step 1: Unlock trait via API
-    try {
-      const traitResponse = await fetch(`${API_BASE_URL}/api/user/unlock-trait.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          user_id: discordId,
-          trait_name: 'CHEESE_TEMPLE_RIDDLE_03_SOLVED',
-          trait_value: 'true'
-        })
-      });
-      
-      const traitResult = await traitResponse.json();
-      if (traitResult.success) {
-        console.log("🧩 [RIDDLE #3] Trait unlocked successfully!");
-      } else {
-        console.warn("🧩 [RIDDLE #3] Trait unlock failed:", traitResult.error);
-      }
-    } catch (error) {
-      console.error("🧩 [RIDDLE #3] Error unlocking trait:", error);
-    }
-    
-    // Step 2: Award DSPOINC reward via API
-    try {
-      const rewardPayload = {
-        discord_id: discordId,
-        discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
-        riddle_id: 'CHEESE_TEMPLE_RIDDLE_03',
-        level_id: 'CHEESE_TEMPLE_LVL1',
-        base_reward: 750, // 750 DSPOINC base reward for riddle completion
-        session_id: cheeseSessionId
-      };
-      
-      const rewardResponse = await fetch(RIDDLE_REWARD_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(rewardPayload)
-      });
-      
-      const rewardResult = await rewardResponse.json();
-      
-      if (rewardResponse.ok && rewardResult.success) {
-        const dsPoincAwarded = rewardResult.data?.ds_poinc_awarded || 0;
-        const totalDspoinc = rewardResult.data?.total_ds_poinc || 0;
-        
-        // Update HUD with new DSPOINC balance
-        if (typeof totalDspoinc === "number") {
-          currentTotalDspoinc = totalDspoinc;
-          window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
-          if (isGamePaused) updatePausePlayerInfo();
-        }
-        
-        // Show reward notification
-        showRiddleRewardNotification(dsPoincAwarded, rewardResult.data?.multiplier || 1.0);
-        
-        console.log("🧩 [RIDDLE #3] DSPOINC reward awarded successfully!", {
-          dsPoincAwarded,
-          totalDspoinc,
-          multiplier: rewardResult.data?.multiplier,
-          multiplierSource: rewardResult.data?.multiplier_source
-        });
-      } else {
-        // Check if riddle was already completed (409 Conflict)
-        if (rewardResponse.status === 409) {
-          console.warn("🧩 [RIDDLE #3] Riddle already completed - no reward awarded");
-          showRiddleRewardNotification(0, 1.0, true); // Show "already completed" message
-        } else {
-          console.warn("🧩 [RIDDLE #3] DSPOINC reward failed:", rewardResult.error);
-        }
-      }
-    } catch (error) {
-      console.error("🧩 [RIDDLE #3] Error awarding DSPOINC reward:", error);
-    }
-  } else {
-    console.warn("🧩 [RIDDLE #3] No Discord ID found - trait unlock and DSPOINC reward skipped");
-  }
-}
-
-// Show Riddle #3 completion message
-function showRiddle3CompletionMessage() {
-  const message = document.createElement("div");
-  Object.assign(message.style, {
-    position: "fixed",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    padding: "24px 32px",
-    background: "linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))",
-    border: "3px solid #ffe066",
-    borderRadius: "15px",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "20px",
-    fontWeight: "700",
-    textAlign: "center",
-    zIndex: "10000",
-    boxShadow: "0 0 30px rgba(255, 224, 102, 0.5)"
-  });
-  message.textContent = "🧩 RIDDLE #3 SOLVED! 🧀 PORTAL ACTIVATED! 🚀";
-  
-  document.body.appendChild(message);
-  
-  // Fade out after 3 seconds
-  setTimeout(() => {
-    message.style.opacity = "0";
-    message.style.transition = "opacity 0.5s ease-out";
-    setTimeout(() => {
-      if (document.body.contains(message)) {
-        document.body.removeChild(message);
-      }
-    }, 500);
-  }, 3000);
-}
-
-// Show Level 1 completion screen
-function showLevel1CompletionScreen() {
-  // Use GUI System if available
-  if (guiSystem && typeof guiSystem.showLevel1CompletionScreen === 'function') {
-    guiSystem.showLevel1CompletionScreen();
-    return;
-  }
-  
-  // Legacy fallback
-  // Pause the game
-  if (!isGamePaused) {
-    togglePause(true);
-  }
-  
-  // Remove existing completion screen if any
-  if (level1CompletionScreen && document.body.contains(level1CompletionScreen)) {
-    document.body.removeChild(level1CompletionScreen);
-  }
-  
-  // Create completion screen (similar to options menu style)
-  level1CompletionScreen = document.createElement("div");
-  Object.assign(level1CompletionScreen.style, {
-    position: "fixed",
-    top: "0",
-    left: "0",
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "column",
-    gap: "18px",
-    background: "rgba(5, 7, 16, 0.95)",
-    backdropFilter: "blur(8px)",
-    zIndex: "1003",
-    color: "#fef3c7",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    pointerEvents: "auto",
-    cursor: "default"
-  });
-  
-  const panel = document.createElement("div");
-  Object.assign(panel.style, {
-    background: "linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    borderRadius: "16px",
-    padding: "40px 48px",
-    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 224, 102, 0.3)",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    minWidth: "320px",
-    maxWidth: "90vw",
-    textAlign: "center"
-  });
-  
-  // Title
-  const title = document.createElement("div");
-  title.textContent = "🎉 LEVEL 1 COMPLETE! 🎉";
-  Object.assign(title.style, {
-    fontSize: "clamp(24px, 5vw, 32px)",
-    fontWeight: "700",
-    color: "#ffe066",
-    marginBottom: "12px",
-    textShadow: "0 0 20px rgba(255, 224, 102, 0.6)"
-  });
-  panel.appendChild(title);
-  
-  // Subtitle
-  const subtitle = document.createElement("div");
-  subtitle.textContent = "Cheese Temple - Level 1";
-  Object.assign(subtitle.style, {
-    fontSize: "clamp(14px, 3vw, 18px)",
-    color: "#cbd5f5",
-    marginBottom: "32px"
-  });
-  panel.appendChild(subtitle);
-  
-  // Completion message
-  const message = document.createElement("div");
-  message.textContent = "Congratulations! You've solved all three riddles and activated the portal!";
-  Object.assign(message.style, {
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    color: "#e2e8f0",
-    marginBottom: "32px",
-    lineHeight: "1.6",
-    maxWidth: "500px"
-  });
-  panel.appendChild(message);
-  
-  // Button container
-  const buttonContainer = document.createElement("div");
-  Object.assign(buttonContainer.style, {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    width: "100%",
-    alignItems: "stretch"
-  });
-  
-  // Next Level button
-  const nextLevelBtn = document.createElement("button");
-  nextLevelBtn.textContent = "🚀 Next Level (Level 2)";
-  Object.assign(nextLevelBtn.style, {
-    padding: "14px 24px",
-    borderRadius: "10px",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    background: "rgba(255, 224, 102, 0.15)",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s",
-    textShadow: "0 0 10px rgba(255, 224, 102, 0.5)"
-  });
-  nextLevelBtn.addEventListener("mouseenter", () => {
-    nextLevelBtn.style.background = "rgba(255, 224, 102, 0.3)";
-    nextLevelBtn.style.borderColor = "rgba(255, 224, 102, 0.8)";
-    nextLevelBtn.style.transform = "scale(1.05)";
-  });
-  nextLevelBtn.addEventListener("mouseleave", () => {
-    nextLevelBtn.style.background = "rgba(255, 224, 102, 0.15)";
-    nextLevelBtn.style.borderColor = "rgba(255, 224, 102, 0.5)";
-    nextLevelBtn.style.transform = "scale(1)";
-  });
-  nextLevelBtn.addEventListener("click", () => {
-    console.log("🚀 [LEVEL 1] Next Level button clicked.");
-    if (level1CompletionScreen && document.body.contains(level1CompletionScreen)) {
-      document.body.removeChild(level1CompletionScreen);
-      level1CompletionScreen = null;
-    }
-    if (isGamePaused) {
-      togglePause(false);
-    }
-    warpToLevel2();
-  });
-  buttonContainer.appendChild(nextLevelBtn);
-  
-  // Replay Level 1 button
-  const replayBtn = document.createElement("button");
-  replayBtn.textContent = "🔄 Replay Level 1";
-  Object.assign(replayBtn.style, {
-    padding: "14px 24px",
-    borderRadius: "10px",
-    border: "2px solid rgba(203, 213, 245, 0.4)",
-    background: "rgba(203, 213, 245, 0.1)",
-    color: "#cbd5f5",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "clamp(14px, 2.5vw, 16px)",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.3s"
-  });
-  replayBtn.addEventListener("mouseenter", () => {
-    replayBtn.style.background = "rgba(203, 213, 245, 0.2)";
-    replayBtn.style.borderColor = "rgba(203, 213, 245, 0.6)";
-    replayBtn.style.transform = "scale(1.05)";
-  });
-  replayBtn.addEventListener("mouseleave", () => {
-    replayBtn.style.background = "rgba(203, 213, 245, 0.1)";
-    replayBtn.style.borderColor = "rgba(203, 213, 245, 0.4)";
-    replayBtn.style.transform = "scale(1)";
-  });
-  replayBtn.addEventListener("click", () => {
-    console.log("🔄 [LEVEL 1] Replay Level 1 button clicked");
-    restartLevel1();
-  });
-  buttonContainer.appendChild(replayBtn);
-  
-  panel.appendChild(buttonContainer);
-  level1CompletionScreen.appendChild(panel);
-  document.body.appendChild(level1CompletionScreen);
-  
-  console.log("🎉 [LEVEL 1] Completion screen displayed");
-}
-
-// Warp to Level 1 (for GOD mode menu - ensures complete reset)
-function warpToLevel1() {
-  if (currentLevel === LEVEL_IDS.LEVEL1) return;
-  
-  warpToLevelWithLoading(LEVEL_IDS.LEVEL1, "Level 1", () => {
-    return new Promise((resolve, reject) => {
-      console.log("🚀 [LEVEL 1] Warping to Level 1 from GOD mode...");
-      
-      // CRITICAL: Resolve Promise IMMEDIATELY to prevent loading screen from hanging
-      // All heavy operations (cleanup, buildLevel) will happen asynchronously in background
-      resolve();
-      
-      // CRITICAL: Run all heavy operations asynchronously to prevent blocking main thread
-      setTimeout(() => {
-        try {
-          // CRITICAL: Cleanup ALL levels first to ensure clean state
-          cleanupAllLevels();
-          console.log("✅ [LEVEL 1] Cleanup complete");
-        } catch (error) {
-          console.error("❌ [LEVEL 1] Error in cleanupAllLevels:", error);
-          // Continue anyway
-        }
-        
-        // Hide completion screen if showing
-        if (level1CompletionScreen && document.body.contains(level1CompletionScreen)) {
-          document.body.removeChild(level1CompletionScreen);
-          level1CompletionScreen = null;
-        }
-        
-        // Yield to browser before fetching level data
-        setTimeout(() => {
-          // CRITICAL: Rebuild Level 1 completely to ensure clean state
-          // Fetch level data and rebuild everything (trees, chests, etc.)
-          fetch("./public/models/cheese-temple/level1.json")
-            .then((res) => {
-              if (!res.ok) {
-                console.error(`❌ [LEVEL 1] Failed to fetch level1.json: HTTP ${res.status} ${res.statusText}`);
-                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-              }
-              return res.json();
-            })
-            .catch((error) => {
-              console.error("❌ [LEVEL 1] Failed to load level1.json:", error);
-              return; // Don't block - level might still work
-            })
-            .then((mapData) => {
-              if (!mapData) return; // Skip if fetch failed
-              
-              // CRITICAL: Get blockSize from mapData (used for spawn position calculation)
-              const blockSize = mapData.blockSize || 1.0; // Default to 1.0 if not specified
-              
-              // Yield to browser before buildLevel
-              setTimeout(() => {
-                try {
-                  // Rebuild Level 1 completely
-                  buildLevel(mapData);
-                  console.log("✅ [LEVEL 1] Level built successfully");
-                } catch (error) {
-                  console.error("❌ [LEVEL 1] Error in buildLevel:", error);
-                  // Continue anyway - don't block
-                }
-                
-                // Yield to browser after buildLevel
-                setTimeout(() => {
-                  currentLevel = LEVEL_IDS.LEVEL1;
-                  
-                  // CRITICAL: Reset player position to spawn point (prevents player being in sky)
-                  // Get spawn position from mapData (used in buildLevel)
-                  if (mapData && mapData.spawn) {
-                    const spawnX = mapData.spawn.x * blockSize + blockSize / 2;
-                    const spawnY = mapData.spawn.y * blockSize + blockSize / 2;
-                    const spawnZ = mapData.spawn.z * blockSize + blockSize / 2;
-                    
-                    // Reset player collider to spawn position
-                    // playerCollider is a Capsule with .start (bottom) and .end (top) Vector3 properties
-                    // Capsule height is 1.4 (from 0.3 to 1.7), so we place bottom at spawnY + 0.3
-                    playerCollider.start.set(spawnX, spawnY + 0.3, spawnZ);
-                    playerCollider.end.set(spawnX, spawnY + 1.7, spawnZ);
-                    
-                    // Reset player velocity to zero (prevents falling/gliding)
-                    playerVelocity.set(0, 0, 0);
-                    playerDirection.set(0, 0, 0);
-                    onGround = false; // Will be recalculated in next frame
-                    
-                    // Reset camera position to spawn
-                    if (camera) {
-                      camera.position.set(spawnX, spawnY + 1.6, spawnZ);
-                      camera.rotation.set(0, 0, 0);
-                    }
-                    
-                    console.log("✅ [LEVEL 1] Player position reset to spawn:", {
-                      spawnX: spawnX,
-                      spawnY: spawnY,
-                      spawnZ: spawnZ,
-                      playerColliderStart: playerCollider.start,
-                      playerColliderEnd: playerCollider.end,
-                      cameraPosition: camera ? camera.position : null
-                    });
-                  } else {
-                    console.warn("⚠️ [LEVEL 1] No spawn data found in mapData, using default position");
-                    // Fallback: Use default spawn position (60, 0.5, 15)
-                    playerCollider.start.set(60, 0.8, 15);
-                    playerCollider.end.set(60, 2.2, 15);
-                    playerVelocity.set(0, 0, 0);
-                    if (camera) {
-                      camera.position.set(60, 1.6, 15);
-                      camera.rotation.set(0, 0, 0);
-                    }
-                  }
-                  
-                  // CRITICAL: Clean up weapon system from Level 4 (Level 1 has no weapons)
-                  if (typeof weaponSystem !== 'undefined' && weaponSystem) {
-                    try {
-                      // Hide weapon viewmodel if it exists
-                      if (weaponSystem.weaponViewmodel) {
-                        weaponSystem.weaponViewmodel.visible = false;
-                        // Remove from camera if attached
-                        if (camera && camera.children.includes(weaponSystem.weaponViewmodel)) {
-                          camera.remove(weaponSystem.weaponViewmodel);
-                        }
-                        // Remove from scene if attached
-                        if (scene && scene.children.includes(weaponSystem.weaponViewmodel)) {
-                          scene.remove(weaponSystem.weaponViewmodel);
-                        }
-                        console.log("✅ [LEVEL 1] Weapon viewmodel hidden and removed from camera/scene");
-                      }
-                      // Clear current weapon slot
-                      if (typeof weaponSystem.clearCurrentWeapon === 'function') {
-                        weaponSystem.clearCurrentWeapon();
-                      }
-                      // Reset weapon system state
-                      if (weaponSystem.currentSlot !== undefined) {
-                        weaponSystem.currentSlot = null;
-                      }
-                      console.log("✅ [LEVEL 1] Weapon system cleaned up (Level 1 has no weapons)");
-                    } catch (error) {
-                      console.error("❌ [LEVEL 1] Error cleaning up weapon system:", error);
-                    }
-                  }
-                  
-                                  // ========================================================================
-                                  // CRITICAL: Apply Level 1 environment (background color and fog)
-                                  // ========================================================================
-                                  // 
-                                  // ⚠️ WARNING - DO NOT ADD initializeGrassSystem() OR initializeSkySystem() AFTER THIS!
-                                  // 
-                                  // applyLevelEnvironment() ALREADY calls both functions internally:
-                                  // - initializeSkySystem(levelId)
-                                  // - initializeGrassSystem(levelId)
-                                  // - chestSystem.setGrassSystem(grassSystem)
-                                  // 
-                                  // BUG FIX (December 16, 2025):
-                                  // Calling initializeGrassSystem() AGAIN was destroying the grass exclusion zones!
-                                  // Exclusion zones prevent grass from rendering inside chests/trees/etc.
-                                  // The duplicate call recreated the grass system, wiping out all exclusion zones.
-                                  // 
-                                  // ========================================================================
-                                  applyLevelEnvironment(LEVEL_IDS.LEVEL1);
-                                  console.log("✅ [LEVEL 1] Environment applied (grass + sky systems initialized)");
-                                  
-                                  // CRITICAL: Reset camera to first-person mode for Level 1
-                                  setCameraMode(0); // 0 = first-person
-                                  
-                                  // CRITICAL: Verify and fix chest positions when entering Level 1
-                                  // This ensures chests are at correct positions after warp
-                                  setTimeout(() => {
-                                    verifyAndFixLevel1ChestPositions();
-                                  }, 500); // First check after 500ms
-                                  
-                                  setTimeout(() => {
-                                    verifyAndFixLevel1ChestPositions();
-                                  }, 1500); // Second check after 1500ms
-                                  
-                                  setTimeout(() => {
-                                    verifyAndFixLevel1ChestPositions();
-                                  }, 3000); // Final check after 3000ms
-                                  
-                                  // CRITICAL: Set up periodic verification while in Level 1
-                                  // This ensures chests stay at correct positions even if something resets them
-                                  if (window.level1ChestVerificationInterval) {
-                                    clearInterval(window.level1ChestVerificationInterval);
-                                  }
-                                  window.level1ChestVerificationInterval = setInterval(() => {
-                                    if (currentLevel === LEVEL_IDS.LEVEL1) {
-                                      verifyAndFixLevel1ChestPositions();
-                                    } else {
-                                      // Stop verification when leaving Level 1
-                                      clearInterval(window.level1ChestVerificationInterval);
-                                      window.level1ChestVerificationInterval = null;
-                                    }
-                                  }, 5000); // Check every 5 seconds while in Level 1
-                  
-                  // CRITICAL: Ensure game is not paused
-                  if (window.isGamePaused) {
-                    window.isGamePaused = false;
-                    if (typeof togglePause === 'function') {
-                      togglePause(false);
-                    }
-                  }
-                  
-                  // CRITICAL: Ensure playerControls is initialized before enabling
-                  if (!playerControls && typeof initializePlayerControls === 'function') {
-                    try {
-                      initializePlayerControls();
-                      console.log("✅ [LEVEL 1] Player controls initialized in warpToLevel1");
-                    } catch (error) {
-                      console.error("❌ [LEVEL 1] Failed to initialize player controls:", error);
-                    }
-                  }
-                  
-                  // Enable player controls
-                  if (playerControls && typeof playerControls.setEnabled === 'function') {
-                    playerControls.setEnabled(true);
-                    console.log("✅ [LEVEL 1] Player controls enabled in warpToLevel1");
-                  } else {
-                    console.error("❌ [LEVEL 1] Player controls not available:", {
-                      playerControls: !!playerControls,
-                      hasSetEnabled: playerControls && typeof playerControls.setEnabled === 'function'
-                    });
-                  }
-                  
-                  // Request pointer lock for first-person controls
-                  if (playerControls && playerControls.getPointerLockControls) {
-                    const pointerLockControls = playerControls.getPointerLockControls();
-                    if (pointerLockControls && !pointerLockControls.isLocked) {
-                      setTimeout(() => {
-                        try {
-                          pointerLockControls.lock();
-                          console.log("✅ [LEVEL 1] Pointer lock requested");
-                        } catch (err) {
-                          console.warn("⚠️ [LEVEL 1] Pointer lock failed:", err);
-                        }
-                      }, 200);
-                    }
-                  }
-                  
-                  console.log("✅ [LEVEL 1] Warp to Level 1 complete - player reset, weapons cleaned, level rebuilt");
-                }, 0); // Yield to browser after buildLevel
-              }, 0); // Yield to browser before buildLevel
-            });
-        }, 0); // Yield to browser before fetch
-      }, 0); // Yield to browser before cleanup
-    });
-  
-  // CRITICAL: Ensure Level 1 instanced meshes are visible (they're added directly to scene, not in a group)
-  scene.children.forEach(child => {
-    if (child instanceof THREE.InstancedMesh && child.visible === false) {
-      console.log("🔧 [LEVEL 1] Re-enabling Level 1 instanced mesh:", child);
-      child.visible = true;
-    }
-  });
-  
-  // CRITICAL: Verify collision mesh is present, valid, and in scene
-  if (!collisionMesh || !collisionMesh.geometry || !collisionMesh.geometry.boundsTree) {
-    console.error("❌ [LEVEL 1] Collision mesh is missing or invalid! Rebuilding...", {
-      exists: !!collisionMesh,
-      hasGeometry: !!collisionMesh?.geometry,
-      hasBoundsTree: !!collisionMesh?.geometry?.boundsTree,
-      inScene: collisionMesh ? scene.children.includes(collisionMesh) : false
-    });
-    // Try to rebuild collision mesh (this should be rare)
-    fetch("./public/models/cheese-temple/level1.json")
-      .then(res => res.json())
-      .then(mapData => {
-        console.log("🔄 [LEVEL 1] Rebuilding collision mesh...");
-        // Rebuild collision geometry
-        if (mapData.blocks && mapData.blocks.length > 0) {
-          const blockSize = 1;
-          const baseCollisionGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize).toNonIndexed();
-          const basePositions = baseCollisionGeometry.attributes.position.array;
-          const positionsPerBlock = basePositions.length;
-          const totalBlocks = mapData.blocks.length;
-          const collisionPositions = new Float32Array(positionsPerBlock * totalBlocks);
-          let collisionPositionOffset = 0;
-          
-          mapData.blocks.forEach((block) => {
-            const offsetX = block.x * blockSize + blockSize / 2;
-            const offsetY = block.y * blockSize + blockSize / 2;
-            const offsetZ = block.z * blockSize + blockSize / 2;
-            for (let i = 0; i < positionsPerBlock; i += 3) {
-              collisionPositions[collisionPositionOffset + i] = basePositions[i] + offsetX;
-              collisionPositions[collisionPositionOffset + i + 1] = basePositions[i + 1] + offsetY;
-              collisionPositions[collisionPositionOffset + i + 2] = basePositions[i + 2] + offsetZ;
-            }
-            collisionPositionOffset += positionsPerBlock;
-          });
-          
-          const collisionGeometry = new THREE.BufferGeometry();
-          collisionGeometry.setAttribute("position", new THREE.BufferAttribute(collisionPositions, 3));
-          collisionGeometry.computeBoundingBox();
-          collisionGeometry.boundsTree = new MeshBVH(collisionGeometry);
-          collisionMesh = new THREE.Mesh(collisionGeometry, new THREE.MeshBasicMaterial({ visible: false }));
-          collisionMesh.visible = false;
-          collisionMesh.name = 'level1_collision_mesh';
-          scene.add(collisionMesh);
-          console.log("✅ [LEVEL 1] Collision mesh rebuilt successfully:", {
-            hasGeometry: !!collisionMesh.geometry,
-            hasBoundsTree: !!collisionMesh.geometry?.boundsTree,
-            geometryVertices: collisionMesh.geometry?.attributes?.position?.count || 0,
-            inScene: scene.children.includes(collisionMesh),
-            meshName: collisionMesh.name
-          });
-        } else {
-          console.error("❌ [LEVEL 1] No blocks found in level1.json - cannot rebuild collision mesh!");
-        }
-      })
-      .catch(error => {
-        console.error("❌ [LEVEL 1] Failed to rebuild collision mesh:", error);
-      });
-  } else {
-    // Verify collision mesh is in scene
-    if (!scene.children.includes(collisionMesh)) {
-      console.warn("⚠️ [LEVEL 1] Collision mesh exists but not in scene! Re-adding...");
-      scene.add(collisionMesh);
-    }
-    
-    // Verify collision mesh has valid geometry
-    if (!collisionMesh.geometry || !collisionMesh.geometry.boundsTree) {
-      console.error("❌ [LEVEL 1] Collision mesh exists but has invalid geometry! This will cause player to fall through ground.");
-      // Try to rebuild it immediately
-      console.log("🔄 [LEVEL 1] Attempting to rebuild invalid collision mesh...");
-      fetch("./public/models/cheese-temple/level1.json")
-        .then(res => res.json())
-        .then(mapData => {
-          if (mapData.blocks && mapData.blocks.length > 0) {
-            const blockSize = 1;
-            const baseCollisionGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize).toNonIndexed();
-            const basePositions = baseCollisionGeometry.attributes.position.array;
-            const positionsPerBlock = basePositions.length;
-            const totalBlocks = mapData.blocks.length;
-            const collisionPositions = new Float32Array(positionsPerBlock * totalBlocks);
-            let collisionPositionOffset = 0;
-            
-            mapData.blocks.forEach((block) => {
-              const offsetX = block.x * blockSize + blockSize / 2;
-              const offsetY = block.y * blockSize + blockSize / 2;
-              const offsetZ = block.z * blockSize + blockSize / 2;
-              for (let i = 0; i < positionsPerBlock; i += 3) {
-                collisionPositions[collisionPositionOffset + i] = basePositions[i] + offsetX;
-                collisionPositions[collisionPositionOffset + i + 1] = basePositions[i + 1] + offsetY;
-                collisionPositions[collisionPositionOffset + i + 2] = basePositions[i + 2] + offsetZ;
-              }
-              collisionPositionOffset += positionsPerBlock;
-            });
-            
-            // Remove old invalid mesh
-            if (collisionMesh && scene.children.includes(collisionMesh)) {
-              scene.remove(collisionMesh);
-              if (collisionMesh.geometry) {
-                if (collisionMesh.geometry.boundsTree && typeof collisionMesh.geometry.boundsTree.dispose === 'function') {
-                  collisionMesh.geometry.boundsTree.dispose();
-                }
-                collisionMesh.geometry.dispose();
-              }
-            }
-            
-            // Create new valid mesh
-            const collisionGeometry = new THREE.BufferGeometry();
-            collisionGeometry.setAttribute("position", new THREE.BufferAttribute(collisionPositions, 3));
-            collisionGeometry.computeBoundingBox();
-            collisionGeometry.boundsTree = new MeshBVH(collisionGeometry);
-            collisionMesh = new THREE.Mesh(collisionGeometry, new THREE.MeshBasicMaterial({ visible: false }));
-            collisionMesh.visible = false;
-            collisionMesh.name = 'level1_collision_mesh';
-            scene.add(collisionMesh);
-            console.log("✅ [LEVEL 1] Collision mesh rebuilt from invalid state:", {
-              hasGeometry: !!collisionMesh.geometry,
-              hasBoundsTree: !!collisionMesh.geometry?.boundsTree,
-              geometryVertices: collisionMesh.geometry?.attributes?.position?.count || 0,
-              inScene: scene.children.includes(collisionMesh)
-            });
-          }
-        })
-        .catch(error => {
-          console.error("❌ [LEVEL 1] Failed to rebuild invalid collision mesh:", error);
-        });
-    } else {
-      console.log("✅ [LEVEL 1] Collision mesh verified:", {
-        inScene: scene.children.includes(collisionMesh),
-        hasGeometry: !!collisionMesh.geometry,
-        hasBoundsTree: !!collisionMesh.geometry?.boundsTree,
-        geometryVertices: collisionMesh.geometry?.attributes?.position?.count || 0,
-        meshName: collisionMesh.name || 'unnamed'
-      });
-    }
-  }
-  
-  // Reset all Level 1 state (same as restartLevel1)
-  // Reset bear trap
-  if (level1State.bearTrap && level1State.bearTrap.parent) {
-    level1State.bearTrap.parent.remove(level1State.bearTrap);
-    level1State.bearTrap = null;
-  }
-  level1State.bearTrapTriggered = false;
-  level1State.bearTrapPosition = null;
-  level1State.bearTrapDeathActive = false;
-  
-  // Recreate bear trap
-  const spawnData = initialSpawnPosition ? {
-    x: Math.floor(initialSpawnPosition.x),
-    y: Math.floor(initialSpawnPosition.y),
-    z: Math.floor(initialSpawnPosition.z)
-  } : { x: 60, y: 1, z: 15 };
-  if (!level1State.bearTrap) {
-    createLevel1BearTrap(spawnData, 1);
-  }
-  
-  level1Completed = false;
-  resetLevel2Progress(); // Reset Level 2 progress (shared state)
-  
-  if (floatingCheese && floatingCheese.mesh) {
-    floatingCheese.mesh.visible = true;
-  }
-  
-  // Reset player position
-  const spawnTarget = initialSpawnPosition ? initialSpawnPosition.clone() : new THREE.Vector3(60, 1, 15);
-  setPlayerFeetPosition(spawnTarget);
-  
-  // Reset camera to first-person view
-  setCameraMode(0);
-  
-  // CRITICAL: Verify and fix chest positions when entering Level 1
-  // This ensures chests are at correct positions after warp/respawn
-  setTimeout(() => {
-    verifyAndFixLevel1ChestPositions();
-  }, 500); // First check after 500ms
-  
-  setTimeout(() => {
-    verifyAndFixLevel1ChestPositions();
-  }, 1500); // Second check after 1500ms
-  
-  setTimeout(() => {
-    verifyAndFixLevel1ChestPositions();
-  }, 3000); // Final check after 3000ms
-  
-  // CRITICAL: Set up periodic verification while in Level 1
-  // This ensures chests stay at correct positions even if something resets them
-  if (window.level1ChestVerificationInterval) {
-    clearInterval(window.level1ChestVerificationInterval);
-  }
-  window.level1ChestVerificationInterval = setInterval(() => {
-    if (currentLevel === LEVEL_IDS.LEVEL1) {
-      verifyAndFixLevel1ChestPositions();
-    } else {
-      // Stop verification when leaving Level 1
-      clearInterval(window.level1ChestVerificationInterval);
-      window.level1ChestVerificationInterval = null;
-    }
-  }, 5000); // Check every 5 seconds while in Level 1
-  
-  // Reset riddle state
-  riddleState.step0Complete = false;
-  riddleState.step0StandingSoundPlayed = false;
-  riddleState.step1Complete = false;
-  riddleState.step2Complete = false;
-  riddleState.triggerBlockTimer = 0;
-  riddleState.cheeseAimTimer = 0;
-  riddleState.blockAimTimer = 0;
-  
-  // Reset trigger block visual position
-  if (riddleState.triggerBlockVisual) {
-    riddleState.triggerBlockVisual.visible = true;
-    const restY = riddleState.triggerBlockVisual.userData?.restY ?? riddleState.triggerBlockVisual.position.y;
-    riddleState.triggerBlockVisual.position.y = restY;
-    riddleState.triggerBlockTargetY = restY;
-  }
-  if (riddleState.triggerBlock) {
-    riddleState.triggerBlock.visible = false; // Collider is hidden
-  }
-  
-  // Reset unlockable block
-  if (riddleState.unlockableBlock) {
-    riddleState.unlockableBlock.visible = false;
-  }
-  
-  // Reset Riddle #2 state
-  riddleState.riddle2.step1Complete = false;
-  riddleState.riddle2.step2Complete = false;
-  riddleState.riddle2.oakStoneBlinkTimer = 0;
-  riddleState.riddle2.cheeseAimTimer = 0;
-  if (riddleState.riddle2.oakStone) {
-    riddleState.riddle2.oakStone.visible = true;
-  }
-  
-  // Reset Riddle #3 state
-  riddleState.riddle3.step1Complete = false;
-  riddleState.riddle3.step2Complete = false;
-  riddleState.riddle3.step3Complete = false;
-  riddleState.riddle3.leverPressed = false;
-  if (riddleState.riddle3.lever) {
-    riddleState.riddle3.lever.visible = true;
-  }
-  if (riddleState.riddle3.movableBlock) {
-    riddleState.riddle3.movableBlock.visible = false;
-  }
-  if (riddleState.riddle3.oakBlock) {
-    riddleState.riddle3.oakBlock.visible = false;
-  }
-  if (riddleState.riddle3.portal) {
-    riddleState.riddle3.portal.visible = false;
-  }
-  
-  // Reset Riddle #4 state (Hidden Secret Riddle)
-  if (riddleState.riddle4) {
-    riddleState.riddle4.complete = false;
-    riddleState.riddle4.lever1State = false;
-    riddleState.riddle4.lever2State = false;
-    riddleState.riddle4.lever3State = false;
-    riddleState.riddle4.sequenceStep = 0;
-    riddleState.riddle4.attemptCount = 0;
-    riddleState.riddle4.lastAttemptTime = 0;
-    // Reset lever textures to OFF state
-    if (riddleState.riddle4.lever1 && riddleState.riddle4.lever1.userData.textureOff) {
-      riddleState.riddle4.lever1.material.map = riddleState.riddle4.lever1.userData.textureOff;
-      riddleState.riddle4.lever1.material.needsUpdate = true;
-    }
-    if (riddleState.riddle4.lever2 && riddleState.riddle4.lever2.userData.textureOff) {
-      riddleState.riddle4.lever2.material.map = riddleState.riddle4.lever2.userData.textureOff;
-      riddleState.riddle4.lever2.material.needsUpdate = true;
-    }
-    if (riddleState.riddle4.lever3 && riddleState.riddle4.lever3.userData.textureOff) {
-      riddleState.riddle4.lever3.material.map = riddleState.riddle4.lever3.userData.textureOff;
-      riddleState.riddle4.lever3.material.needsUpdate = true;
-    }
-  }
-  
-  ensureBackgroundMusicForCurrentLevel(true);
-  
-  // CRITICAL: Restore game state after warp (unpause and request pointer lock)
-  restoreGameStateAfterWarp();
-  
-  console.log("✅ [LEVEL 1] Warped to Cheese Temple. All state reset.");
-  });
-}
-
-// Helper function to restore game state after warp/restart/pause
-// Ensures player can move and control after level changes or pause menu
-function restoreGameStateAfterWarp() {
-  // Unpause game if paused
-  if (isGamePaused) {
-    isGamePaused = false;
-    console.log("🎮 [RESTORE] Game unpaused");
-  }
-  
-  // Re-apply the currently selected camera mode so HUD, joysticks, and pointer-lock state
-  // always match the player's last choice after resuming.
-  setCameraMode(cameraMode);
-  
-  // Show mobile joysticks when unpaused (if needed)
-  const shouldShowJoysticks = (isMobile && window.innerWidth > window.innerHeight) || window.enableDesktopJoysticks || isJoystickView();
-  if (shouldShowJoysticks) {
-    if (mobileJoystick) {
-      mobileJoystick.style.display = "flex";
-    }
-    if (mobileCameraJoystick && !isFirstPerson()) {
-      mobileCameraJoystick.style.display = "flex";
-    }
-  }
-  
-  // Request pointer lock restoration
-  const expectsPointerLock = !isMobile && !isJoystickView();
-  if (expectsPointerLock && playerControls && !playerControls.getPointerLockControls().isLocked) {
-    window.needsPointerLockAfterPause = true;
-    console.log("🎮 [RESTORE] Pointer lock will be restored on next click");
-    
-    // Try to lock immediately if possible (works if triggered by user interaction)
-    setTimeout(() => {
-      if (window.needsPointerLockAfterPause && !isGamePaused && playerControls && !playerControls.getPointerLockControls().isLocked) {
-        try {
-          renderer.domElement.requestPointerLock();
-        } catch (e) {
-          console.log("🎮 [RESTORE] Pointer lock requires user gesture - will lock on next click");
-        }
-      }
-    }, 100);
-  }
-  
-  // Clear pointer lock state flag
-  pointerWasLockedBeforePause = false;
-  
-  // Refresh debug overlay
-  if (typeof refreshDebugOverlay === 'function') {
-    refreshDebugOverlay();
-  }
-  
-  // CRITICAL: Ensure WASD controls work immediately
-  // The playerControls module should already be handling keyboard input,
-  // but we ensure it's not blocked by checking isGamePaused
   if (playerControls) {
-    console.log("🎮 [RESTORE] Controls restored - WASD should work now");
-  }
-}
-
-// Restart Level 1 (calls warpToLevel1 for consistent reset logic)
-function restartLevel1() {
-  console.log("🔄 [LEVEL 1] Restarting Level 1...");
-  
-  // Use warpToLevel1() which has all the reset logic - ensures consistent behavior
-  // But temporarily allow it even if already in Level 1 (for restart functionality)
-  const wasInLevel1 = (currentLevel === LEVEL_IDS.LEVEL1);
-  if (wasInLevel1) {
-    // Temporarily set to different level so warpToLevel1 will execute
-    currentLevel = LEVEL_IDS.LEVEL2;
+    playerControls.update(delta);
   }
   
-  warpToLevel1();
+  if (playerModelModule && playerModelModule.isLoaded()) {
+    playerModelModule.update(delta);
+  }
   
-  // Note: restoreGameStateAfterWarp() is already called in warpToLevel1()
+  if (guiSystem) {
+    guiSystem.update(delta);
+  }
   
-  console.log("🔄 [LEVEL 1] Restarted from beginning.");
-}
-
-// Complete Riddle #2: Unlock trait and award DSPOINC
-async function completeRiddle2() {
-  if (riddleState.riddle2.step2Complete) {
-    // Show completion message
-    showRiddle2CompletionMessage();
-    
-    // Make lever visible for Riddle #3 (lever should already be created in buildLevel)
-    if (riddleState.riddle3.lever && !riddleState.riddle3.lever.visible) {
-      riddleState.riddle3.lever.visible = true;
-      console.log("🧩 [RIDDLE #3] Lever is now visible after Riddle #2 completion!");
-    } else if (!riddleState.riddle3.lever) {
-      // Lever doesn't exist yet - create it immediately
-      // Try to get spawn data from existing elements
-      const spawnData = riddleState.unlockableBlock ? {
-        x: Math.floor(riddleState.unlockableBlock.position.x),
-        y: Math.floor(riddleState.unlockableBlock.position.y),
-        z: Math.floor(riddleState.unlockableBlock.position.z)
-      } : { x: 60, y: 1, z: 15 }; // Default spawn if block doesn't exist
-      
-      createRiddle3Lever(spawnData, 1);
-      if (riddleState.riddle3.lever) {
-        riddleState.riddle3.lever.visible = true;
-        console.log("🧩 [RIDDLE #3] Lever created and made visible after Riddle #2 completion!");
-      }
+  if (playerCharacterMixer && (useGLTFCharacter || window.currentCharacterAnimation === 'death')) {
+    try {
+      const animationDelta = Math.min(delta, 0.1);
+      playerCharacterMixer.update(animationDelta);
+    } catch (error) {
+      // Silent fail
     }
-    
-    // Unlock trait and award DSPOINC via API
-    const discordId = resolvedDiscordId;
-    // Allow LOCAL_TEST_DISCORD for local testing (will create test data in database)
-    if (discordId) {
-      // Step 1: Unlock trait via API
-      try {
-        const traitResponse = await fetch(`${API_BASE_URL}/api/user/unlock-trait.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            user_id: discordId,
-            trait_name: 'CHEESE_TEMPLE_RIDDLE_02_SOLVED',
-            trait_value: 'true'
-          })
-        });
-        
-        const traitResult = await traitResponse.json();
-        if (traitResult.success) {
-          console.log("🧩 [RIDDLE #2] Trait unlocked successfully!");
-        } else {
-          console.warn("🧩 [RIDDLE #2] Trait unlock failed:", traitResult.error);
-        }
-      } catch (error) {
-        console.error("🧩 [RIDDLE #2] Error unlocking trait:", error);
-      }
-      
-      // Step 2: Award DSPOINC reward via API
-      try {
-        const rewardPayload = {
-          discord_id: discordId,
-          discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
-          riddle_id: 'CHEESE_TEMPLE_RIDDLE_02',
-          level_id: 'CHEESE_TEMPLE_LVL1',
-          base_reward: 500, // 500 DSPOINC base reward for riddle completion
-          session_id: cheeseSessionId
-        };
-        
-        const rewardResponse = await fetch(RIDDLE_REWARD_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(rewardPayload)
-        });
-        
-        const rewardResult = await rewardResponse.json();
-        
-        if (rewardResponse.ok && rewardResult.success) {
-          const dsPoincAwarded = rewardResult.data?.ds_poinc_awarded || 0;
-          const totalDspoinc = rewardResult.data?.total_ds_poinc || 0;
-          
-          // Update HUD with new DSPOINC balance
-          if (typeof totalDspoinc === "number") {
-            currentTotalDspoinc = totalDspoinc;
-            window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
-            if (isGamePaused) updatePausePlayerInfo();
-          }
-          
-          // Show reward notification
-          showRiddleRewardNotification(dsPoincAwarded, rewardResult.data?.multiplier || 1.0);
-          
-          console.log("🧩 [RIDDLE #2] DSPOINC reward awarded successfully!", {
-            dsPoincAwarded,
-            totalDspoinc,
-            multiplier: rewardResult.data?.multiplier,
-            multiplierSource: rewardResult.data?.multiplier_source
-          });
-        } else {
-          // Check if riddle was already completed (409 Conflict)
-          if (rewardResponse.status === 409) {
-            console.warn("🧩 [RIDDLE #2] Riddle already completed - no reward awarded");
-            showRiddleRewardNotification(0, 1.0, true); // Show "already completed" message
-          } else {
-            console.warn("🧩 [RIDDLE #2] DSPOINC reward failed:", rewardResult.error);
-          }
-        }
-      } catch (error) {
-        console.error("🧩 [RIDDLE #2] Error awarding DSPOINC reward:", error);
-      }
+  }
+
+  if (!isGamePaused) {
+    if (isClimbing) {
+      // No gravity when climbing
+    } else if (!godMode) {
+      playerVelocity.y -= 30 * delta;
     } else {
-      console.warn("🧩 [RIDDLE #2] No Discord ID found - trait unlock and DSPOINC reward skipped");
-    }
-  }
-}
-
-// Show Riddle #2 completion message
-function showRiddle2CompletionMessage() {
-  const message = document.createElement("div");
-  Object.assign(message.style, {
-    position: "fixed",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    padding: "24px 32px",
-    background: "linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))",
-    border: "3px solid #ffe066",
-    borderRadius: "15px",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "20px",
-    fontWeight: "700",
-    textAlign: "center",
-    zIndex: "10000",
-    boxShadow: "0 0 30px rgba(255, 224, 102, 0.5)"
-  });
-  message.textContent = "🧩 RIDDLE #2 SOLVED! 🧀";
-  
-  document.body.appendChild(message);
-  
-  // Fade out after 3 seconds
-  setTimeout(() => {
-    message.style.opacity = "0";
-    message.style.transition = "opacity 0.5s ease-out";
-    setTimeout(() => {
-      if (document.body.contains(message)) {
-        document.body.removeChild(message);
+      const currentMovement = playerControls ? playerControls.getMovementState() : movement;
+      const flySpeed = 20;
+      if (currentMovement.flyUp) {
+        playerVelocity.y += flySpeed * delta;
       }
-    }, 500);
-  }, 3000);
-}
-
-// Unlock the special block (make it visible)
-function unlockRiddleBlock() {
-  if (riddleState.unlockableBlock) {
-    riddleState.unlockableBlock.visible = true;
-    
-    // Ensure block is in scene
-    if (!scene.children.includes(riddleState.unlockableBlock)) {
-      scene.add(riddleState.unlockableBlock);
-      console.log("🧩 [RIDDLE] Re-added unlockable block to scene");
-    }
-    
-    // Update matrix for proper raycasting
-    riddleState.unlockableBlock.updateMatrix();
-    riddleState.unlockableBlock.updateMatrixWorld(true);
-    
-    // Add a pulsing glow effect
-    const material = riddleState.unlockableBlock.material;
-    if (material) {
-      // FIX: Don't add emissive glow - texture should show correctly
-      // material.emissiveIntensity = 0.8; // Removed - texture shows correctly without emissive
-      // material.emissive = new THREE.Color(0xffe066); // Removed - texture shows correctly without emissive
-    }
-    
-    // Make block stand out more - scale it up slightly
-    riddleState.unlockableBlock.scale.set(1.1, 1.1, 1.1);
-    
-    // Ensure frustum culling is disabled so it's always rendered
-    riddleState.unlockableBlock.frustumCulled = false;
-    
-    console.log("🧩 [RIDDLE] Block is now visible and ready!");
-    console.log("🧩 [RIDDLE] Block position:", {
-      x: riddleState.unlockableBlock.position.x.toFixed(2),
-      y: riddleState.unlockableBlock.position.y.toFixed(2),
-      z: riddleState.unlockableBlock.position.z.toFixed(2)
-    });
-    console.log("🧩 [RIDDLE] Block in scene:", scene.children.includes(riddleState.unlockableBlock));
-    console.log("🧩 [RIDDLE] Block visible:", riddleState.unlockableBlock.visible);
-    console.log("🧩 [RIDDLE] Block scale:", riddleState.unlockableBlock.scale);
-    console.log("🧩 [RIDDLE] Block userData:", riddleState.unlockableBlock.userData);
-    playCheesePlatformSound();
-  } else {
-    console.error("🧩 [RIDDLE ERROR] unlockableBlock is null!");
-  }
-}
-
-// Complete the riddle and unlock trait + award DSPOINC
-async function completeRiddle() {
-  if (riddleState.step2Complete) {
-    // Show completion message
-    showRiddleCompletionMessage();
-    
-    // Unlock trait and award DSPOINC via API
-    const discordId = resolvedDiscordId;
-    // Allow LOCAL_TEST_DISCORD for local testing (will create test data in database)
-    if (discordId) {
-      // Step 1: Unlock trait via API
-      try {
-        const traitResponse = await fetch(`${API_BASE_URL}/api/user/unlock-trait.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            user_id: discordId,
-            trait_name: 'CHEESE_TEMPLE_RIDDLE_SOLVED',
-            trait_value: 'true'
-          })
-        });
-        
-        const traitResult = await traitResponse.json();
-        if (traitResult.success) {
-          console.log("🧩 [RIDDLE] Trait unlocked successfully!");
-        } else {
-          console.warn("🧩 [RIDDLE] Trait unlock failed:", traitResult.error);
-        }
-      } catch (error) {
-        console.error("🧩 [RIDDLE] Error unlocking trait:", error);
+      if (currentMovement.flyDown) {
+        playerVelocity.y -= flySpeed * delta;
       }
-      
-      // Step 2: Award DSPOINC reward via API
-      try {
-        const rewardPayload = {
-          discord_id: discordId,
-          discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
-          riddle_id: 'CHEESE_TEMPLE_RIDDLE_01',
-          level_id: 'CHEESE_TEMPLE_LVL1',
-          base_reward: 500, // 500 DSPOINC base reward for riddle completion
-          session_id: cheeseSessionId
-        };
-        
-        const rewardResponse = await fetch(RIDDLE_REWARD_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(rewardPayload)
-        });
-        
-        const rewardResult = await rewardResponse.json();
-        
-        if (rewardResponse.ok && rewardResult.success) {
-          const dsPoincAwarded = rewardResult.data?.ds_poinc_awarded || 0;
-          const totalDspoinc = rewardResult.data?.total_ds_poinc || 0;
-          
-          // Update HUD with new DSPOINC balance
-          if (typeof totalDspoinc === "number") {
-            currentTotalDspoinc = totalDspoinc;
-            window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
-            if (isGamePaused) updatePausePlayerInfo();
-          }
-          
-          // Show reward notification
-          showRiddleRewardNotification(dsPoincAwarded, rewardResult.data?.multiplier || 1.0);
-          
-          console.log("🧩 [RIDDLE] DSPOINC reward awarded successfully!", {
-            dsPoincAwarded,
-            totalDspoinc,
-            multiplier: rewardResult.data?.multiplier,
-            multiplierSource: rewardResult.data?.multiplier_source
-          });
+      if (!currentMovement.flyUp && !currentMovement.flyDown) {
+        playerVelocity.y *= Math.exp(-8 * delta);
+      }
+    }
+
+    const currentMovement = playerControls ? playerControls.getMovementState() : movement;
+    const damping = Math.exp(-4 * delta) - 1;
+    if (godMode && (currentMovement.flyUp || currentMovement.flyDown)) {
+      const yVelocity = playerVelocity.y;
+      playerVelocity.addScaledVector(playerVelocity, damping);
+      playerVelocity.y = yVelocity;
     } else {
-          // Check if riddle was already completed (409 Conflict)
-          if (rewardResponse.status === 409) {
-            console.warn("🧩 [RIDDLE] Riddle already completed - no reward awarded");
-            showRiddleRewardNotification(0, 1.0, true); // Show "already completed" message
-          } else {
-            console.warn("🧩 [RIDDLE] DSPOINC reward failed:", rewardResult.error);
-          }
-        }
-      } catch (error) {
-        console.error("🧩 [RIDDLE] Error awarding DSPOINC reward:", error);
+      playerVelocity.addScaledVector(playerVelocity, damping);
+    }
+
+    // Movement calculation
+    if (currentMovement && (currentMovement.forward || currentMovement.backward || currentMovement.left || currentMovement.right)) {
+      const moveSpeed = godMode ? 12 : 6; // Fixed: Much slower movement speed (was 168/96, now 12/6)
+      const sprintMultiplier = currentMovement.sprint ? 1.75 : 1;
+      const effectiveSpeed = moveSpeed * sprintMultiplier;
+      
+      const forwardVector = getForwardVector();
+      const sideVector = getSideVector();
+      
+      playerVelocity.x = 0;
+      playerVelocity.z = 0;
+      
+      if (currentMovement.forward) {
+        playerVelocity.x += forwardVector.x * effectiveSpeed;
+        playerVelocity.z += forwardVector.z * effectiveSpeed;
       }
-    } else {
-      console.warn("🧩 [RIDDLE] No Discord ID found - trait unlock and DSPOINC reward skipped");
-    }
-  }
-}
-
-// Show riddle reward notification
-
-// Create progress UI for riddle
-function createRiddleProgressUI() {
-  if (riddleProgressUI) return riddleProgressUI;
-  
-  riddleProgressUI = document.createElement("div");
-  riddleProgressUI.id = "riddleProgress";
-  Object.assign(riddleProgressUI.style, {
-    position: "fixed",
-    bottom: "100px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: "300px",
-    padding: "12px 16px",
-    background: "rgba(14, 12, 20, 0.9)",
-    border: "2px solid rgba(255, 224, 102, 0.5)",
-    borderRadius: "10px",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "14px",
-    zIndex: "1001",
-    display: "none",
-    flexDirection: "column",
-    gap: "8px"
-  });
-  
-  const title = document.createElement("div");
-  title.textContent = "🧩 Cheese Temple Riddle";
-  title.style.fontWeight = "700";
-  title.style.marginBottom = "4px";
-  riddleProgressUI.appendChild(title);
-  
-  const step1Div = document.createElement("div");
-  step1Div.id = "riddleStep1";
-  step1Div.style.display = "flex";
-  step1Div.style.flexDirection = "column";
-  step1Div.style.gap = "4px";
-  riddleProgressUI.appendChild(step1Div);
-  
-  const step2Div = document.createElement("div");
-  step2Div.id = "riddleStep2";
-  step2Div.style.display = "none";
-  step2Div.style.flexDirection = "column";
-  step2Div.style.gap = "4px";
-  riddleProgressUI.appendChild(step2Div);
-  
-  document.body.appendChild(riddleProgressUI);
-  return riddleProgressUI;
-}
-
-// Update progress UI
-function updateRiddleProgressUI() {
-  if (!riddleProgressUI) {
-    createRiddleProgressUI();
-  }
-  
-  const step1Div = document.getElementById("riddleStep1");
-  const step2Div = document.getElementById("riddleStep2");
-  
-  if (!step1Div || !step2Div) return;
-  
-  // Step 1: Aim at cheese
-  // Step 0: Hidden trigger block discovery (only show if player is standing on it)
-  if (!riddleState.step0Complete) {
-    const isStandingOnTrigger = checkTriggerBlockStanding();
-    if (isStandingOnTrigger) {
-      riddleProgressUI.style.display = "flex";
-      step1Div.style.display = "flex";
-      step2Div.style.display = "none";
-      
-      const progress = Math.min(riddleState.triggerBlockTimer / RIDDLE_AIM_TIME, 1);
-      const timeRemaining = Math.max(0, RIDDLE_AIM_TIME - riddleState.triggerBlockTimer);
-      
-      step1Div.innerHTML = `
-        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-          <span>🔍 Step 0: Stand on Golden Stone</span>
-          <span>${timeRemaining.toFixed(1)}s</span>
-        </div>
-        <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden;">
-          <div style="width: ${progress * 100}%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066); transition: width 0.1s ease;"></div>
-        </div>
-      `;
-    } else {
-      // Hide UI if not standing on trigger block
-      riddleProgressUI.style.display = "none";
-    }
-    return;
-  }
-  
-  // Step 1: Aim at cheese (only shown after Step 0 is complete)
-  if (riddleState.step0Complete && !riddleState.step1Complete) {
-    riddleProgressUI.style.display = "flex";
-    step1Div.style.display = "flex";
-    step2Div.style.display = "none";
-    
-    const progress = Math.min(riddleState.cheeseAimTimer / RIDDLE_AIM_TIME, 1);
-    const timeRemaining = Math.max(0, RIDDLE_AIM_TIME - riddleState.cheeseAimTimer);
-    
-    step1Div.innerHTML = `
-      <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-        <span>Step 1: Aim at Cheese</span>
-        <span>${timeRemaining.toFixed(1)}s</span>
-      </div>
-      <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px; overflow: hidden;">
-        <div style="width: ${progress * 100}%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066); transition: width 0.1s;"></div>
-      </div>
-    `;
-  } else if (riddleState.step1Complete && !riddleState.step2Complete) {
-    // Step 2: Aim at block
-    riddleProgressUI.style.display = "flex";
-    step1Div.style.display = "none";
-    step2Div.style.display = "flex";
-    
-    const progress = Math.min(riddleState.blockAimTimer / RIDDLE_AIM_TIME, 1);
-    const timeRemaining = Math.max(0, RIDDLE_AIM_TIME - riddleState.blockAimTimer);
-    
-    step2Div.innerHTML = `
-      <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-        <span>✅ Step 1 Complete</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-        <span>Step 2: Aim at Unlockable Block</span>
-        <span>${timeRemaining.toFixed(1)}s</span>
-      </div>
-      <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px; overflow: hidden;">
-        <div style="width: ${progress * 100}%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066); transition: width 0.1s;"></div>
-      </div>
-    `;
-  } else if (riddleState.step2Complete && !riddleState.riddle2.step2Complete) {
-    // Riddle #2 is active (Riddle #1 complete, Riddle #2 not complete)
-    // Show Riddle #2 progress UI
-    riddleProgressUI.style.display = "flex";
-    
-    // Update title for Riddle #2
-    const title = riddleProgressUI.querySelector("div");
-    if (title) {
-      title.textContent = "🧩 Cheese Temple Riddle #2";
-    }
-    
-    // Step 1: Move cheese stone to oak stone
-    if (!riddleState.riddle2.step1Complete) {
-      step1Div.style.display = "flex";
-      step2Div.style.display = "none";
-      
-      // Show distance to oak stone and blinking status
-      const r2 = riddleState.riddle2;
-      let distanceText = "Searching...";
-      if (riddleState.unlockableBlock && r2.oakStone) {
-        const distance = riddleState.unlockableBlock.position.distanceTo(r2.oakStone.position);
-        distanceText = `${distance.toFixed(1)} units away`;
+      if (currentMovement.backward) {
+        playerVelocity.x -= forwardVector.x * effectiveSpeed;
+        playerVelocity.z -= forwardVector.z * effectiveSpeed;
       }
-      
-      // Check if oak stone is blinking
-      const isBlinking = r2.oakStoneBlinkTimer <= RIDDLE2_OAK_STONE_BLINK_DURATION;
-      const blinkText = isBlinking ? " ⚡ BLINKING!" : "";
-      
-      step1Div.innerHTML = `
-        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-          <span>Step 1: Move Cheese Stone to Oak Stone${blinkText}</span>
-        </div>
-        <div style="font-size: 12px; color: rgba(255, 224, 102, 0.8); margin-bottom: 4px;">
-          ${distanceText}
-        </div>
-        <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden;">
-          <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066); opacity: ${isBlinking ? '1' : '0.3'}; transition: opacity 0.3s;"></div>
-        </div>
-      `;
-    } else if (riddleState.riddle2.step1Complete && !riddleState.riddle2.step2Complete) {
-      // Step 2: Aim at cheese
-      step1Div.style.display = "none";
-      step2Div.style.display = "flex";
-      
-      const progress = Math.min(riddleState.riddle2.cheeseAimTimer / RIDDLE_AIM_TIME, 1);
-      const timeRemaining = Math.max(0, RIDDLE_AIM_TIME - riddleState.riddle2.cheeseAimTimer);
-      
-      step2Div.innerHTML = `
-        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-          <span>✅ Step 1 Complete</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-          <span>Step 2: Aim at Cheese</span>
-        <span>${timeRemaining.toFixed(1)}s</span>
-      </div>
-      <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px; overflow: hidden;">
-        <div style="width: ${progress * 100}%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066); transition: width 0.1s;"></div>
-      </div>
-    `;
-  } else {
-      // Riddle #2 complete - check if Riddle #3 is active
-      if (riddleState.riddle2.step2Complete && !riddleState.riddle3.step3Complete) {
-        // Riddle #3 is active (Riddle #2 complete, Riddle #3 not complete)
-        // Show Riddle #3 progress UI
-        riddleProgressUI.style.display = "flex";
-        
-        // Update title for Riddle #3
-        const title = riddleProgressUI.querySelector("div");
-        if (title) {
-          title.textContent = "🧩 Cheese Temple Riddle #3";
-        }
-        
-        // Step 1: Find and press the lever
-        if (!riddleState.riddle3.step1Complete) {
-          step1Div.style.display = "flex";
-          step2Div.style.display = "none";
-          
-          // Show distance to lever
-          const r3 = riddleState.riddle3;
-          let distanceText = "Searching...";
-          if (r3.lever && r3.lever.visible) {
-            const leverPos = r3.lever.position;
-            const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-            const distance = playerPos.distanceTo(leverPos);
-            distanceText = `${distance.toFixed(1)} units away`;
-          }
-          
-          step1Div.innerHTML = `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>Step 1: Find and Press the Lever (E key)</span>
-            </div>
-            <div style="font-size: 12px; color: rgba(255, 224, 102, 0.8); margin-bottom: 4px;">
-              ${distanceText}
-            </div>
-            <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden;">
-              <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066); opacity: 0.3;"></div>
-            </div>
-          `;
-        } else if (riddleState.riddle3.step1Complete && !riddleState.riddle3.step2Complete) {
-          // Step 2: Move block to oak block
-          step1Div.style.display = "none";
-          step2Div.style.display = "flex";
-          
-          // Show distance to oak block
-          const r3 = riddleState.riddle3;
-          let distanceText = "Searching...";
-          if (r3.movableBlock && r3.oakBlock && r3.movableBlock.visible && r3.oakBlock.visible) {
-            const distance = r3.movableBlock.position.distanceTo(r3.oakBlock.position);
-            distanceText = `${distance.toFixed(1)} units away`;
-          }
-          
-          step2Div.innerHTML = `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>✅ Step 1 Complete</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>Step 2: Move Block to Oak Block</span>
-            </div>
-            <div style="font-size: 12px; color: rgba(255, 224, 102, 0.8); margin-bottom: 4px;">
-              ${distanceText}
-            </div>
-            <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px; overflow: hidden;">
-              <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066); opacity: 0.5;"></div>
-            </div>
-          `;
-        } else if (riddleState.riddle3.step2Complete && !riddleState.riddle3.step3Complete) {
-          // Step 3: Portal activated
-          step1Div.style.display = "none";
-          step2Div.style.display = "flex";
-          
-          step2Div.innerHTML = `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>✅ Step 2 Complete</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>Step 3: Portal Activated!</span>
-            </div>
-            <div style="font-size: 12px; color: rgba(255, 224, 102, 0.8); margin-bottom: 4px;">
-              Portal Active - Enter Level 2
-            </div>
-            <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px; overflow: hidden;">
-              <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066);"></div>
-            </div>
-          `;
-        } else {
-          // Riddle #3 complete - hide progress UI
-    riddleProgressUI.style.display = "none";
-  }
-      } else {
-        // All riddles complete - hide progress UI
-        riddleProgressUI.style.display = "none";
+      if (currentMovement.left) {
+        playerVelocity.x -= sideVector.x * effectiveSpeed;
+        playerVelocity.z -= sideVector.z * effectiveSpeed;
+      }
+      if (currentMovement.right) {
+        playerVelocity.x += sideVector.x * effectiveSpeed;
+        playerVelocity.z += sideVector.z * effectiveSpeed;
       }
     }
-  } else {
-    // Riddle #1 not complete - check if Riddle #3 is active (skip mode)
-    if (riddleState.riddle2.step2Complete && !riddleState.riddle3.step3Complete) {
-      // Riddle #3 is active (skip mode)
-      // Show Riddle #3 progress UI
-      riddleProgressUI.style.display = "flex";
-      
-      // Update title for Riddle #3
-      const title = riddleProgressUI.querySelector("div");
-      if (title) {
-        title.textContent = "🧩 Cheese Temple Riddle #3";
-      }
-      
-      // Step 1: Find and press the lever
-      if (!riddleState.riddle3.step1Complete) {
-        step1Div.style.display = "flex";
-        step2Div.style.display = "none";
-        
-        // Show distance to lever
-        const r3 = riddleState.riddle3;
-        let distanceText = "Searching...";
-        if (r3.lever && r3.lever.visible) {
-          const leverPos = r3.lever.position;
-          const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-          const distance = playerPos.distanceTo(leverPos);
-          distanceText = `${distance.toFixed(1)} units away`;
-        }
-        
-        step1Div.innerHTML = `
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <span>Step 1: Find and Press the Lever (E key)</span>
-          </div>
-          <div style="font-size: 12px; color: rgba(255, 224, 102, 0.8); margin-bottom: 4px;">
-            ${distanceText}
-          </div>
-          <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden;">
-            <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066); opacity: 0.3;"></div>
-          </div>
-        `;
-      } else if (riddleState.riddle3.step1Complete && !riddleState.riddle3.step2Complete) {
-        // Step 2: Move block to oak block
-        step1Div.style.display = "none";
-        step2Div.style.display = "flex";
-        
-        // Show distance to oak block
-        const r3 = riddleState.riddle3;
-        let distanceText = "Searching...";
-        if (r3.movableBlock && r3.oakBlock && r3.movableBlock.visible && r3.oakBlock.visible) {
-          const distance = r3.movableBlock.position.distanceTo(r3.oakBlock.position);
-          distanceText = `${distance.toFixed(1)} units away`;
-        }
-        
-        step2Div.innerHTML = `
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <span>✅ Step 1 Complete</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <span>Step 2: Move Block to Oak Block</span>
-          </div>
-          <div style="font-size: 12px; color: rgba(255, 224, 102, 0.8); margin-bottom: 4px;">
-            ${distanceText}
-          </div>
-          <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px; overflow: hidden;">
-            <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066); opacity: 0.5;"></div>
-          </div>
-        `;
-      } else if (riddleState.riddle3.step2Complete && !riddleState.riddle3.step3Complete) {
-        // Step 3: Portal activated
-        step1Div.style.display = "none";
-        step2Div.style.display = "flex";
-        
-        step2Div.innerHTML = `
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <span>✅ Step 2 Complete</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <span>Step 3: Portal Activated!</span>
-          </div>
-          <div style="font-size: 12px; color: rgba(255, 224, 102, 0.8); margin-bottom: 4px;">
-            Portal Active - Enter Level 2
-          </div>
-          <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px; overflow: hidden;">
-            <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #fbbf24, #ffe066);"></div>
-          </div>
-        `;
-      } else {
-        // Riddle #3 complete - hide progress UI
-        riddleProgressUI.style.display = "none";
-      }
-    } else {
-      // All riddles complete - hide progress UI
-      riddleProgressUI.style.display = "none";
+    
+    // Update player collisions and physics
+    if (typeof playerCollisions === 'function') {
+      playerCollisions();
+    }
+    
+    // Update player position based on velocity
+    playerCollider.start.addScaledVector(playerVelocity, delta);
+    playerCollider.end.addScaledVector(playerVelocity, delta);
+  }
+  
+  // Update camera position (handles both first-person and third-person modes)
+  if (typeof updateCameraPosition === 'function') {
+    updateCameraPosition(delta);
+  } else if (camera && playerCollider) {
+    // Fallback: simple first-person camera positioning
+    if (isFirstPerson()) {
+      camera.position.copy(playerCollider.end);
     }
   }
-}
-
-if (typeof window !== "undefined") {
-  window.updateRiddleProgressUI = updateRiddleProgressUI;
-}
-
-// Show riddle completion message
-function showRiddleCompletionMessage() {
-  const message = document.createElement("div");
-  Object.assign(message.style, {
-    position: "fixed",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    padding: "24px 32px",
-    background: "linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))",
-    border: "3px solid #ffe066",
-    borderRadius: "15px",
-    color: "#ffe066",
-    fontFamily: "Montserrat, Arial, sans-serif",
-    fontSize: "20px",
-    fontWeight: "700",
-    textAlign: "center",
-    zIndex: "10000",
-    boxShadow: "0 0 30px rgba(255, 224, 102, 0.5)"
-  });
-  message.textContent = "🧩 RIDDLE SOLVED! 🧀";
   
-  document.body.appendChild(message);
+  // Update player model/character
+  if (typeof updatePlayerCharacter === 'function') {
+    updatePlayerCharacter(delta);
+  } else if (playerModel && typeof playerModel.update === 'function') {
+    playerModel.update(delta);
+  } else if (playerModelModule && typeof playerModelModule.update === 'function') {
+    playerModelModule.update(delta);
+  }
   
-  setTimeout(() => {
-    message.style.opacity = "0";
-    message.style.transition = "opacity 0.5s";
-    setTimeout(() => {
-      document.body.removeChild(message);
-    }, 500);
-  }, 3000);
-}
-
-function queueCheeseCapture(payload) {
-  cheeseCaptureQueue.push(payload);
-  debugState.pending = cheeseCaptureQueue.length + (cheeseCaptureInFlight ? 1 : 0);
-  refreshDebugOverlay();
-  console.debug("🧀 Queue capture", { pending: cheeseCaptureQueue.length, payload });
-  processCheeseCaptureQueue();
-}
-
-async function processCheeseCaptureQueue() {
-  if (cheeseCaptureInFlight || cheeseCaptureQueue.length === 0) return;
-
-  cheeseCaptureInFlight = true;
-  const payload = cheeseCaptureQueue.shift();
-  debugState.pending = cheeseCaptureQueue.length + 1;
-  refreshDebugOverlay();
-
-  try {
-    const response = await fetch(CHEESE_CAPTURE_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json().catch(() => ({ success: false, error: "Invalid JSON" }));
-
-    if (!response.ok || !result.success) {
-      console.warn("Cheese Hunt capture rejected", result);
-      debugState.lastResponse = { success: false, details: result };
-    } else if (result.data && typeof result.data.total_captures === "number") {
-      playerScore = result.data.total_captures;
-      updateCheeseHud(playerScore);
-      debugState.lastResponse = { success: true, total: playerScore };
-      if (typeof result.data.total_ds_poinc === "number") {
-        currentTotalDspoinc = result.data.total_ds_poinc;
-        window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
-        if (isGamePaused) updatePausePlayerInfo();
-      }
-    }
-  } catch (error) {
-    console.error("Cheese Hunt capture failed", error);
-    debugState.lastResponse = { success: false, error: error?.message || error };
-  } finally {
-    cheeseCaptureInFlight = false;
-    debugState.pending = cheeseCaptureQueue.length;
-    refreshDebugOverlay();
-    if (cheeseCaptureQueue.length > 0) {
-      setTimeout(processCheeseCaptureQueue, 200);
+  // Update footstep sound state (must be called after movement updates)
+  if (typeof updateFootstepSoundState === 'function') {
+    updateFootstepSoundState();
+  }
+  
+  // Update floating cheese entity (Level 1 cheese hunting)
+  if (floatingCheese && floatingCheese.mesh) {
+    const playerPosition = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+    floatingCheese.update(delta, playerPosition, awardCheesePoints);
+  }
+  
+  // Update weapon system
+  if (weaponSystem && typeof weaponSystem.update === 'function') {
+    weaponSystem.update(delta);
+  }
+  
+  // Update sky system
+  if (skySystem && typeof skySystem.update === 'function') {
+    skySystem.update(delta);
+  }
+  
+  // Update grass system
+  if (grassSystem && typeof grassSystem.update === 'function') {
+    grassSystem.update(delta);
+  }
+  
+  // Update level-specific systems
+  if (currentLevel === LEVEL_IDS.LEVEL3) {
+    if (typeof updateLevel3Monsters === 'function') {
+      updateLevel3Monsters(delta);
     }
   }
+  
+  if (currentLevel === LEVEL_IDS.LEVEL6) {
+    if (typeof level6State !== 'undefined' && level6State.phoenixBoss && typeof level6State.phoenixBoss.update === 'function') {
+      level6State.phoenixBoss.update(delta);
+    }
+    if (typeof level6State !== 'undefined' && level6State.alienSpiderBoss && typeof level6State.alienSpiderBoss.update === 'function') {
+      level6State.alienSpiderBoss.update(delta);
+    }
+  }
+  
+  // Render the scene
+  if (renderer && scene && camera) {
+    renderer.render(scene, camera);
+  }
+  
+  if (stats) stats.end();
 }
 
+// Start the game loop
+animate();

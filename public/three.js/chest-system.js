@@ -175,7 +175,7 @@
  * 
  * Chest Models:
  * - GLTF format (chest2.gltf - has animation)
- * - Path: ./public/textures/3d models/chest2/chest2.gltf
+ * - Path: /textures/3d models/chest2/chest2.gltf
  * 
  * Audio:
  * - Opening sound: /audio/gameplay/chest_open.ogg
@@ -885,9 +885,11 @@ class Chest {
     }
     
     if (this.type === 'chest2') {
+      // FIXED (January 6, 2026): Resolve path for production
       // Try both possible paths for chest2 (case sensitivity)
       // First try with capital C (Chest2.glb)
-      modelPath = "./public/textures/3d models/chest2/Chest2.glb";
+      const resolvePath = window.resolveAssetPath || ((p) => p);
+      modelPath = resolvePath("/public/textures/3d models/chest2/Chest2.glb");
       // If that fails, will try lowercase in catch block
     } else {
       this.loadError = new Error(`Unknown chest type: ${this.type}`);
@@ -1460,7 +1462,7 @@ class Chest {
       if (this.type === 'chest2' && modelPath && modelPath.includes('Chest2.glb')) {
         console.log(`🔄 [CHEST] ${this.id} failed with capital C, trying lowercase...`);
         try {
-          const lowercasePath = "/public/three.js/public/textures/3d models/chest2/chest2.glb";
+          const lowercasePath = "/textures/3d models/chest2/chest2.glb";
           const gltf = await this.loadModel(lowercasePath);
           const chest = gltf.scene;
           
@@ -1560,7 +1562,7 @@ class Chest {
         } catch (lowercaseError) {
           console.error(`❌ [CHEST] Both paths failed for ${this.id}:`, {
             capitalPath: modelPath,
-            lowercasePath: "./public/textures/3d models/chest2/chest2.glb",
+            lowercasePath: "/textures/3d models/chest2/chest2.glb",
             error: lowercaseError
           });
         }
@@ -2366,7 +2368,7 @@ class Chest {
       const isDevServer = window.location.hostname === 'localhost' && window.location.port !== '';
       const audioPath = isDevServer 
         ? './public/sounds/SFX/chest.mp3'  // Dev server (Vite) - relative to HTML
-        : './public/sounds/SFX/chest.mp3';  // Production - absolute from web root
+        : '/sounds/SFX/chest.mp3';  // Production - absolute from web root
       
       const audio = new Audio(audioPath);
       audio.volume = 0.6;

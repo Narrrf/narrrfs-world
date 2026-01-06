@@ -271,9 +271,12 @@ export class AudioSystem {
   loadCharacterAudio() {
     console.log("🎵 [AUDIO] Starting to load character audio files...");
     
+    // FIXED (January 6, 2026): Resolve all audio paths for production
+    const resolvePath = window.resolveAssetPath || ((p) => p);
+    
     // Footstep Sound
     this.audioLoader.load(
-      CHARACTER_FOOTSTEP_AUDIO,
+      resolvePath(CHARACTER_FOOTSTEP_AUDIO),
       (buffer) => {
         this.footstepSound = new THREE.Audio(this.audioListener);
         this.footstepSound.setBuffer(buffer);
@@ -291,7 +294,7 @@ export class AudioSystem {
 
     // Jump Sound
     this.audioLoader.load(
-      CHARACTER_JUMP_AUDIO,
+      resolvePath(CHARACTER_JUMP_AUDIO),
       (buffer) => {
         this.jumpSound = new THREE.Audio(this.audioListener);
         this.jumpSound.setBuffer(buffer);
@@ -308,7 +311,7 @@ export class AudioSystem {
 
     // Cheese Platform Sound
     this.audioLoader.load(
-      CHEESE_PLATFORM_AUDIO,
+      resolvePath(CHEESE_PLATFORM_AUDIO),
       (buffer) => {
         this.cheesePlatformSound = new THREE.Audio(this.audioListener);
         this.cheesePlatformSound.setBuffer(buffer);
@@ -324,7 +327,7 @@ export class AudioSystem {
 
     // Cheese Aim Clear Sound
     this.audioLoader.load(
-      CHEESE_AIM_CLEAR_AUDIO,
+      resolvePath(CHEESE_AIM_CLEAR_AUDIO),
       (buffer) => {
         this.cheeseAimClearSound = new THREE.Audio(this.audioListener);
         this.cheeseAimClearSound.setBuffer(buffer);
@@ -340,7 +343,7 @@ export class AudioSystem {
 
     // Lever Sound
     this.audioLoader.load(
-      LEVER_AUDIO,
+      resolvePath(LEVER_AUDIO),
       (buffer) => {
         this.leverSound = new THREE.Audio(this.audioListener);
         this.leverSound.setBuffer(buffer);
@@ -356,7 +359,7 @@ export class AudioSystem {
 
     // Block Moved Sound
     this.audioLoader.load(
-      BLOCK_MOVED_AUDIO,
+      resolvePath(BLOCK_MOVED_AUDIO),
       (buffer) => {
         this.blockMovedSound = new THREE.Audio(this.audioListener);
         this.blockMovedSound.setBuffer(buffer);
@@ -372,7 +375,7 @@ export class AudioSystem {
 
     // Level Up Sound
     this.audioLoader.load(
-      LEVEL_UP_AUDIO,
+      resolvePath(LEVEL_UP_AUDIO),
       (buffer) => {
         this.levelUpSound = new THREE.Audio(this.audioListener);
         this.levelUpSound.setBuffer(buffer);
@@ -388,7 +391,7 @@ export class AudioSystem {
 
     // Level 4 Shooting Sound (Space Invaders normal_shoot.wav)
     this.audioLoader.load(
-      LEVEL4_SHOOT_AUDIO,
+      resolvePath(LEVEL4_SHOOT_AUDIO),
       (buffer) => {
         this.level4ShootSound = new THREE.Audio(this.audioListener);
         this.level4ShootSound.setBuffer(buffer);
@@ -405,7 +408,7 @@ export class AudioSystem {
 
     // SF13 Triple-Shot Sound (SF13-Gun-future.mp3)
     this.audioLoader.load(
-      "./public/sounds/SFX/SF13-Gun-future.mp3",
+      resolvePath("/public/sounds/SFX/SF13-Gun-future.mp3"),
       (buffer) => {
         this.level4SF13ShootSound = new THREE.Audio(this.audioListener);
         this.level4SF13ShootSound.setBuffer(buffer);
@@ -422,7 +425,7 @@ export class AudioSystem {
 
     // Bear Trap Sound (bear-trap-103800.mp3)
     this.audioLoader.load(
-      "./public/sounds/SFX/bear-trap-103800.mp3",
+      "/sounds/SFX/bear-trap-103800.mp3",
       (buffer) => {
         this.bearTrapSound = new THREE.Audio(this.audioListener);
         this.bearTrapSound.setBuffer(buffer);
@@ -439,7 +442,7 @@ export class AudioSystem {
 
     // Hidden Slever Riddle Sound (hidden-slever.mp3)
     this.audioLoader.load(
-      "./public/sounds/SFX/hidden-slever.mp3",
+      "/sounds/SFX/hidden-slever.mp3",
       (buffer) => {
         this.hiddenSleverSound = new THREE.Audio(this.audioListener);
         this.hiddenSleverSound.setBuffer(buffer);
@@ -451,7 +454,7 @@ export class AudioSystem {
       undefined,
       (error) => {
         console.error("❌ [AUDIO] Failed to load hidden slever riddle sound:", error);
-        console.error("❌ [AUDIO] Sound path attempted: ./public/sounds/SFX/hidden-slever.mp3");
+        console.error("❌ [AUDIO] Sound path attempted: /sounds/SFX/hidden-slever.mp3");
         this.hiddenSleverAudioReady = false;
       }
     );
@@ -799,15 +802,19 @@ export class AudioSystem {
       return this.backgroundMusicObjects[levelId];
     }
 
+    // FIXED (January 6, 2026): Resolve music path for production
+    const resolvePath = window.resolveAssetPath || ((p) => p);
+    const resolvedMusicPath = resolvePath(musicPath);
+
     // Create new music object
     const music = new THREE.Audio(this.audioListener);
     music.userData = music.userData || {};
     music.userData.levelId = levelId;
     this.backgroundMusicObjects[levelId] = music;
 
-    console.log(`📂 [AUDIO] Loading background music for ${levelId} from: ${musicPath}`);
+    console.log(`📂 [AUDIO] Loading background music for ${levelId} from: ${resolvedMusicPath}`);
     this.audioLoader.load(
-      musicPath,
+      resolvedMusicPath,
       (buffer) => {
         music.setBuffer(buffer);
         music.setLoop(true); // Loop the music

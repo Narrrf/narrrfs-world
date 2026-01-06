@@ -505,6 +505,7 @@ export class WeaponSystem {
     }
 
     // Load normal shoot sound
+    // FIXED (January 6, 2026): Path is already resolved in main.js
     if (this.shootAudioPath) {
       this.audioLoader.load(
         this.shootAudioPath,
@@ -1788,8 +1789,8 @@ export class WeaponSystem {
     const bulletGeometry = new THREE.SphereGeometry(this.bulletSize, 8, 8);
 
     // Load cheese bullet texture
-    const primaryTexturePath = "./public/textures/blocks/cheese-bullet-small.png";
-    const fallbackTexturePath = "./public/textures/blocks/yellow-cheese.png";
+    const primaryTexturePath = "/textures/blocks/cheese-bullet-small.png";
+    const fallbackTexturePath = "/textures/blocks/yellow-cheese.png";
 
     let cheeseTexture = null;
     if (this.textureCache && this.textureCache.has(primaryTexturePath)) {

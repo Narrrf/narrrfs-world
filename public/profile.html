@@ -579,6 +579,54 @@ require_once 'discord-invite.php';
   </div>
 </div>
 
+<!-- 🧠 NERD LAB ENTRY - Green Themed (Holder & VIP Holder Only) -->
+<div id="nerd-lab-entry" class="hidden mb-6 mt-4">
+  <div class="max-w-4xl mx-auto px-4">
+    <a href="nerd-lab.html" 
+       class="block group relative overflow-hidden rounded-2xl shadow-2xl transform transition-all duration-300 hover:scale-105">
+      <!-- Green Gradient Background -->
+      <div class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 p-8 border-4 border-green-300 shadow-lg">
+        <!-- Animated Background Pattern -->
+        <div class="absolute inset-0 opacity-20">
+          <div class="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxLjUiLz48L2c+PC9nPjwvc3ZnPg==')]"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="relative z-10 text-center">
+          <!-- Icon and Title -->
+          <div class="flex items-center justify-center mb-4">
+            <span class="text-6xl mr-4 group-hover:animate-spin transition-transform duration-300">🧠</span>
+            <h2 class="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
+              NERD LAB
+            </h2>
+            <span class="text-6xl ml-4 group-hover:animate-pulse transition-opacity duration-300">🔬</span>
+          </div>
+          
+          <!-- Subtitle -->
+          <p class="text-xl md:text-2xl text-green-100 font-semibold mb-4 drop-shadow-md">
+            Complete Technical Documentation Hub
+          </p>
+          
+          <!-- Description -->
+          <p class="text-base md:text-lg text-green-50 mb-6 max-w-2xl mx-auto">
+            Exclusive access to the Narrrf's World Cheese Engine system • All 7 games • Admin Interface • Discord Bot • Database • Frontend • Agent System
+          </p>
+          
+          <!-- CTA Button -->
+          <div class="inline-block bg-white/20 backdrop-blur-sm border-3 border-white/50 rounded-xl px-8 py-4 group-hover:bg-white/30 transition-all duration-300">
+            <span class="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">
+              🚀 ENTER LAB →
+            </span>
+          </div>
+          
+          <!-- Glow Effect on Hover -->
+          <div class="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/20 to-green-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
 <script>
 // Role-gate: show tester collab button when user has allowed roles
 // Load stored wallet and traits on page load
@@ -619,13 +667,35 @@ document.addEventListener('DOMContentLoaded', async function() {
     const roles = Array.isArray(data.roles) ? data.roles.map(r => String(r).toLowerCase()) : [];
     const roleIds = Array.isArray(data.role_ids) ? data.role_ids.map(String)
                   : Array.isArray(data.roleIds) ? data.roleIds.map(String) : [];
+    
+    // Check for Game Tester role
     const allowedByName = roles.some(r => ['admin','administrator','moderator','mod','owner','founder','game tester'].some(a => r.includes(a)));
     const allowedById = roleIds.includes('1428901285754830858'); // Game Tester role ID
     if (allowedByName || allowedById) {
       const el = document.getElementById('bug-collab-wrapper');
       if (el) el.style.display = '';
     }
-  } catch (e) { /* ignore */ }
+    
+    // Check for Holder and VIP Holder roles (Nerd Lab access)
+    const holderRoleId = '1402668301414563971'; // 🏆 Holder
+    const vipHolderRoleId = '1332016526848692345'; // 🎴 VIP Holder
+    const isHolder = roleIds.includes(holderRoleId);
+    const isVIPHolder = roleIds.includes(vipHolderRoleId);
+    
+    // Also check by role name (case-insensitive)
+    const isHolderByName = roles.some(r => r.includes('holder') && !r.includes('vip'));
+    const isVIPHolderByName = roles.some(r => r.includes('vip') && r.includes('holder'));
+    
+    if (isHolder || isVIPHolder || isHolderByName || isVIPHolderByName) {
+      const nerdLabEl = document.getElementById('nerd-lab-entry');
+      if (nerdLabEl) {
+        nerdLabEl.classList.remove('hidden');
+        console.log('🧠 Nerd Lab access granted for Holder/VIP Holder');
+      }
+    }
+  } catch (e) { 
+    console.error('Error checking roles:', e);
+  }
 });
 </script>
 

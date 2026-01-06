@@ -143,30 +143,30 @@ export const LEVEL_MAP_CONFIG = {
 
 /**
  * Audio File Paths
- * CRITICAL: Use absolute paths from web root (/public/three.js/public/) for production compatibility
+ * FIXED (January 6, 2026): Added /public/ prefix for correct asset resolution
  */
-export const CHARACTER_FOOTSTEP_AUDIO = "/public/three.js/public/audio/character/footstep_cheese.ogg";
-export const CHARACTER_JUMP_AUDIO = "/public/three.js/public/audio/character/jump_cheese.ogg";
-export const CHEESE_PLATFORM_AUDIO = "/public/three.js/public/audio/gameplay/cheese_platform_active.ogg";
-export const CHEESE_AIM_CLEAR_AUDIO = "/public/three.js/public/audio/gameplay/cheese_aim_clear.wav";
-export const LEVER_AUDIO = "/public/three.js/public/audio/gameplay/slever.ogg";
-export const BLOCK_MOVED_AUDIO = "/public/three.js/public/audio/gameplay/block_moved_correct.ogg";
-export const LEVEL_UP_AUDIO = "/public/three.js/public/audio/gameplay/LEVEL%20UP!.wav";
-export const LEVEL4_SHOOT_AUDIO = "/public/three.js/public/sounds/invaders/weapons/normal_shoot.wav";
-export const LEVEL4_SF13_SHOOT_AUDIO = "/public/three.js/public/sounds/invaders/weapons/normal_shoot.wav"; // SF13 uses same sound (triple burst)
+export const CHARACTER_FOOTSTEP_AUDIO = "/public/audio/character/footstep_cheese.ogg";
+export const CHARACTER_JUMP_AUDIO = "/public/audio/character/jump_cheese.ogg";
+export const CHEESE_PLATFORM_AUDIO = "/public/audio/gameplay/cheese_platform_active.ogg";
+export const CHEESE_AIM_CLEAR_AUDIO = "/public/audio/gameplay/cheese_aim_clear.wav";
+export const LEVER_AUDIO = "/public/audio/gameplay/slever.ogg";
+export const BLOCK_MOVED_AUDIO = "/public/audio/gameplay/block_moved_correct.ogg";
+export const LEVEL_UP_AUDIO = "/public/audio/gameplay/LEVEL%20UP!.wav";
+export const LEVEL4_SHOOT_AUDIO = "/public/sounds/invaders/weapons/normal_shoot.wav";
+export const LEVEL4_SF13_SHOOT_AUDIO = "/public/sounds/invaders/weapons/normal_shoot.wav"; // SF13 uses same sound (triple burst)
 
 /**
  * Background Music Paths
  * Initialize after LEVEL_IDS is defined
- * CRITICAL: Use absolute paths from web root (/public/three.js/public/) for production compatibility
+ * FIXED (January 6, 2026): Added /public/ prefix for correct asset resolution
  */
 export const BACKGROUND_MUSIC_PATHS = {
-  [LEVEL_IDS.LEVEL1]: "/public/three.js/public/sounds/music/level1.mp3",
-  [LEVEL_IDS.LEVEL2]: "/public/three.js/public/sounds/music/level2.mp3",
-  [LEVEL_IDS.LEVEL3]: "/public/three.js/public/sounds/music/level3.mp3",
-  [LEVEL_IDS.LEVEL4]: "/public/three.js/public/sounds/music/level4.mp3",
-  [LEVEL_IDS.LEVEL5]: "/public/three.js/public/sounds/music/level5.mp3", // Use level5.mp3 if available, otherwise will fallback
-  [LEVEL_IDS.LEVEL6]: "/public/three.js/public/sounds/music/level6.mp3" // Level 6 boss fight music
+  [LEVEL_IDS.LEVEL1]: "/public/sounds/music/level1.mp3",
+  [LEVEL_IDS.LEVEL2]: "/public/sounds/music/level2.mp3",
+  [LEVEL_IDS.LEVEL3]: "/public/sounds/music/level3.mp3",
+  [LEVEL_IDS.LEVEL4]: "/public/sounds/music/level4.mp3",
+  [LEVEL_IDS.LEVEL5]: "/public/sounds/music/level5.mp3", // Use level5.mp3 if available, otherwise will fallback
+  [LEVEL_IDS.LEVEL6]: "/public/sounds/music/level6.mp3" // Level 6 boss fight music
 };
 
 /**

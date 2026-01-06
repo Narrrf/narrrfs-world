@@ -191,16 +191,17 @@ export class PlayerModel {
     this.characterOptions = {
       mouse: {
         name: "Mouse",
-        path: "./public/textures/3d models/Mouse/glb/glb/character/character.glb",
+        // FIXED (January 6, 2026): Added /public/ prefix for correct asset resolution
+        path: "/public/textures/3d models/Mouse/glb/glb/character/character.glb",
         heightOffset: 0.95,
         rotationOffset: -Math.PI / 2, // -90 degrees
         animations: {
-          idle: './public/textures/3d models/Mouse/glb/glb/animation/idle.glb',
-          run: './public/textures/3d models/Mouse/glb/glb/animation/run.glb',
-          jump: './public/textures/3d models/Mouse/glb/glb/animation/jump.glb',
-          climb: './public/textures/3d models/Mouse/glb/glb/animation/climb.glb',
-          death: './public/textures/3d models/Mouse/glb/glb/animation/death.glb',
-          somersoult: './public/textures/3d models/Mouse/glb/glb/animation/somersoult.glb'
+          idle: '/public/textures/3d models/Mouse/glb/glb/animation/idle.glb',
+          run: '/public/textures/3d models/Mouse/glb/glb/animation/run.glb',
+          jump: '/public/textures/3d models/Mouse/glb/glb/animation/jump.glb',
+          climb: '/public/textures/3d models/Mouse/glb/glb/animation/climb.glb',
+          death: '/public/textures/3d models/Mouse/glb/glb/animation/death.glb',
+          somersoult: '/public/textures/3d models/Mouse/glb/glb/animation/somersoult.glb'
         },
         loopAnimations: ['idle', 'run', 'climb'], // These animations loop continuously
         animationPriorities: {
@@ -214,7 +215,7 @@ export class PlayerModel {
       },
       animation_library: {
         name: "Animation Library",
-        path: "./public/textures/3d models/Animation Libary/Animation Library[Standard]/Godot/AnimationLibrary_Godot_Standard.glb",
+        path: "/textures/3d models/Animation Libary/Animation Library[Standard]/Godot/AnimationLibrary_Godot_Standard.glb",
         heightOffset: 0.85, // Multiplied by scale
         rotationOffset: 0,
         animations: 'embedded', // All animations embedded in the model file
@@ -586,37 +587,37 @@ export class PlayerModel {
    * 
    * ANIMATION LIST:
    * 1. idle - Default idle animation (LOOPS)
-   *    - Path: './public/textures/3d models/Mouse/glb/glb/animation/idle.glb'
+   *    - Path: '/textures/3d models/Mouse/glb/glb/animation/idle.glb'
    *    - Priority: IDLE (-1)
    *    - Loop: Yes (LoopRepeat, Infinity)
    *    - Usage: Plays when player is not moving
    * 
    * 2. run - Running animation (LOOPS)
-   *    - Path: './public/textures/3d models/Mouse/glb/glb/animation/run.glb'
+   *    - Path: '/textures/3d models/Mouse/glb/glb/animation/run.glb'
    *    - Priority: MOVEMENT (0)
    *    - Loop: Yes (LoopRepeat, Infinity)
    *    - Usage: Plays when player is moving at normal/sprint speed
    * 
    * 3. jump - Jumping animation (ONE-TIME)
-   *    - Path: './public/textures/3d models/Mouse/glb/glb/animation/jump.glb'
+   *    - Path: '/textures/3d models/Mouse/glb/glb/animation/jump.glb'
    *    - Priority: JUMP (60)
    *    - Loop: No (LoopOnce, 1)
    *    - Usage: Plays when player jumps
    * 
    * 4. climb - Climbing animation (LOOPS)
-   *    - Path: './public/textures/3d models/Mouse/glb/glb/animation/climb.glb'
+   *    - Path: '/textures/3d models/Mouse/glb/glb/animation/climb.glb'
    *    - Priority: CLIMB (55)
    *    - Loop: Yes (LoopRepeat, Infinity)
    *    - Usage: Plays when player is climbing
    * 
    * 5. death - Death animation (ONE-TIME)
-   *    - Path: './public/textures/3d models/Mouse/glb/glb/animation/death.glb'
+   *    - Path: '/textures/3d models/Mouse/glb/glb/animation/death.glb'
    *    - Priority: DEATH (100) - HIGHEST PRIORITY
    *    - Loop: No (LoopOnce, 1)
    *    - Usage: Plays when player dies (interrupts all other animations)
    * 
    * 6. somersoult - Somersault animation (ONE-TIME)
-   *    - Path: './public/textures/3d models/Mouse/glb/glb/animation/somersoult.glb'
+   *    - Path: '/textures/3d models/Mouse/glb/glb/animation/somersoult.glb'
    *    - Priority: SOMERSAULT (40)
    *    - Loop: No (LoopOnce, 1)
    *    - Usage: Special move (space bar in GOD mode)
@@ -737,7 +738,7 @@ export class PlayerModel {
    * ====================================================================
    * 
    * Loading Method: Embedded in GLB model file (all animations in one file)
-   * Model Path: './public/textures/3d models/Animation Libary/Animation Library[Standard]/Godot/AnimationLibrary_Godot_Standard.glb'
+   * Model Path: '/textures/3d models/Animation Libary/Animation Library[Standard]/Godot/AnimationLibrary_Godot_Standard.glb'
    * 
    * ANIMATION DETECTION:
    * - All animations are embedded in the model file

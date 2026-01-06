@@ -40,13 +40,13 @@
  * 
  * Model:
  * - File: Dragons1.glb
- * - Path: ./public/textures/3d models/phoenix2/Dragons1.glb
+ * - Path: /textures/3d models/phoenix2/Dragons1.glb
  * - Format: GLB (binary GLTF)
  * - Animations: 61 embedded animations
  * 
  * Textures:
- * - Color variations: ./public/textures/3d models/phoenix2/{Color}/Dragon1_BaseColor.png
- * - Eye textures: ./public/textures/3d models/phoenix2/Eye/{Color}/Eye_BaseColor.png
+ * - Color variations: /textures/3d models/phoenix2/{Color}/Dragon1_BaseColor.png
+ * - Eye textures: /textures/3d models/phoenix2/Eye/{Color}/Eye_BaseColor.png
  * - Normal maps, metallic, roughness maps per color variation
  * 
  * Dependencies:
@@ -79,7 +79,7 @@
  *    });
  * 
  * 3. Load model:
- *    await phoenixBoss.loadModel("./public/textures/3d models/phoenix2/Dragons1.glb");
+ *    await phoenixBoss.loadModel("/textures/3d models/phoenix2/Dragons1.glb");
  * 
  * 4. Update in game loop:
  *    if (phoenixBoss) {
@@ -619,10 +619,14 @@ export class PhoenixBoss2 {
    */
   async loadModel(modelPath) {
     return new Promise((resolve, reject) => {
+      // FIXED (January 6, 2026): Resolve model path for production
+      const resolvePath = window.resolveAssetPath || ((p) => p);
+      const resolvedPath = resolvePath(modelPath);
+      
       const loader = new GLTFLoader();
       
       loader.load(
-        modelPath,
+        resolvedPath,
         (gltf) => {
           console.log("✅ [PHOENIX2] Model loaded:", modelPath);
           
@@ -2852,12 +2856,15 @@ export class PhoenixBoss2 {
     if (eyeColorName) this.eyeColor = eyeColorName;
     if (enableGlow !== null) this.emissiveGlow = enableGlow;
     
+    // FIXED (January 6, 2026): Resolve texture paths for production
+    const resolvePath = window.resolveAssetPath || ((p) => p);
+    
     // Color variations available: Black, Blue, Brown, Gold, Green, Red, White
-    const colorPath = `./public/textures/3d models/phoenix2/${colorName}/Dragon1_BaseColor.png`;
-    const basePath = `./public/textures/3d models/phoenix2/${colorName}/`;
+    const colorPath = resolvePath(`/public/textures/3d models/phoenix2/${colorName}/Dragon1_BaseColor.png`);
+    const basePath = resolvePath(`/public/textures/3d models/phoenix2/${colorName}/`);
     
     // Eye texture paths (if eye color is specified)
-    const eyeBasePath = eyeColorName ? `./public/textures/3d models/phoenix2/Eye/${eyeColorName}/` : null;
+    const eyeBasePath = eyeColorName ? resolvePath(`/public/textures/3d models/phoenix2/Eye/${eyeColorName}/`) : null;
     
     console.log(`🔥 [PHOENIX2] Applying color variation: ${colorName}${eyeColorName ? ` with ${eyeColorName} eyes` : ''}${this.emissiveGlow ? ' (glow enabled)' : ''}`);
     

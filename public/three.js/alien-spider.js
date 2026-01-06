@@ -30,7 +30,7 @@
  * 
  * Main Model:
  * - File: AFC_03.fbx
- * - Path: ./public/textures/3d models/Alien Spider 1/AFC_03/AFC_03.fbx
+ * - Path: /textures/3d models/Alien Spider 1/AFC_03/AFC_03.fbx
  * - Format: FBX
  * - Scale: 4 units (target size)
  * 
@@ -88,7 +88,7 @@
  * });
  * 
  * // Load model
- * await alienSpiderBoss.loadModel("./public/textures/3d models/Alien Spider 1/AFC_03/AFC_03.fbx");
+ * await alienSpiderBoss.loadModel("/textures/3d models/Alien Spider 1/AFC_03/AFC_03.fbx");
  * 
  * // Update in game loop
  * if (alienSpiderBoss) {
@@ -199,15 +199,15 @@ export class AlienSpiderBoss {
       damage: ['Damage_taken']
     };
     
-    // Animation file paths (FBX files) - Use absolute paths from web root
+    // Animation file paths (FBX files)
     this.animationPaths = {
-      idle_1: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Idle_1.fbx",
-      idle_2: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Idle_2.fbx",
-      walk: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Walk.fbx",
-      run: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Run.fbx",
-      attack_1: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Attack_1.fbx",
-      attack_2: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Attack_2.fbx",
-      damage: "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Damage_taken.fbx"
+      idle_1: "/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Idle_1.fbx",
+      idle_2: "/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Idle_2.fbx",
+      walk: "/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Walk.fbx",
+      run: "/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Run.fbx",
+      attack_1: "/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Attack_1.fbx",
+      attack_2: "/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Attack_2.fbx",
+      damage: "/textures/3d models/Alien Spider 1/AFC_03/AFC_03@Damage_taken.fbx"
     };
     
     // Texture loaders - TGALoader for TGA files, TextureLoader for other formats
@@ -238,7 +238,7 @@ export class AlienSpiderBoss {
     this.textureVariation = variationName;
     console.log(`🕷️ [ALIEN_SPIDER] Applying texture variation: ${variationName}`);
     
-    const basePath = "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/";
+    const basePath = "/textures/3d models/Alien Spider 1/AFC_03/";
     
     // Determine which color texture to use based on variation
     let colorTextureFile = 'AFC_03_color.tga'; // Default
@@ -338,7 +338,7 @@ export class AlienSpiderBoss {
     
     console.log(`🕷️ [ALIEN_SPIDER] Applying textures (brightness: ${this.brightness}x, variation: ${this.textureVariation})`);
     
-    const basePath = "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/";
+    const basePath = "/textures/3d models/Alien Spider 1/AFC_03/";
     
     // Load and apply textures to all meshes
     this.model.traverse((child) => {
@@ -554,12 +554,16 @@ export class AlienSpiderBoss {
       // Use LoadingManager with TGA handler so FBXLoader can load TGA textures
       const loader = new FBXLoader(this.loadingManager);
       
+      // FIXED (January 6, 2026): Resolve paths for production
+      const resolvePath = window.resolveAssetPath || ((p) => p);
+      const resolvedModelPath = resolvePath(modelPath);
+      
       // Set resource path so FBXLoader knows where to find textures
-      const basePath = "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/";
+      const basePath = resolvePath("/public/textures/3d models/Alien Spider 1/AFC_03/");
       loader.setResourcePath(basePath);
       
       loader.load(
-        modelPath,
+        resolvedModelPath,
         (fbx) => {
           console.log("✅ [ALIEN_SPIDER] Model loaded:", modelPath);
           
@@ -743,7 +747,7 @@ export class AlienSpiderBoss {
   async loadAllAnimations() {
     // Use LoadingManager with TGA handler for animation files too (in case they have textures)
     const loader = new FBXLoader(this.loadingManager);
-    const basePath = "/public/three.js/public/textures/3d models/Alien Spider 1/AFC_03/";
+    const basePath = "/textures/3d models/Alien Spider 1/AFC_03/";
     loader.setResourcePath(basePath);
     
     const animationPromises = [];
