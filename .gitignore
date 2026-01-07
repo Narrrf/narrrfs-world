@@ -117,3 +117,6 @@ public/three.js/public/audio/
 
 # 📋 Rules - Local Development Only (DO NOT COMMIT TO PRODUCTION)
 12.0/RULES/
+
+# 🧩 Glyph 3D Development - Local Only
+glyph 3d/

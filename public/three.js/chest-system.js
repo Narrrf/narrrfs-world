@@ -2360,13 +2360,19 @@ class Chest {
   playOpeningSound() {
     try {
       // Create audio element for chest opening sound
-      // Path: three.js/public/sounds/SFX/chest.mp3
-      // Using path that matches /sounds/music/ pattern in main.js
-      // If HTML is served from three.js/, use relative path; otherwise use absolute
-      const isDevServer = window.location.hostname === 'localhost' && window.location.port !== '';
-      const audioPath = isDevServer 
-        ? './public/sounds/SFX/chest.mp3'  // Dev server (Vite) - relative to HTML
-        : '/sounds/SFX/chest.mp3';  // Production - absolute from web root
+      // Use resolveAssetPath if available (passed from main.js), otherwise fallback to old logic
+      let audioPath;
+      if (this.resolveAssetPath) {
+        audioPath = this.resolveAssetPath("sounds/SFX/chest.mp3");
+        console.log(`🎁 [CHEST SOUND] Resolved path: "${audioPath}" (from "sounds/SFX/chest.mp3")`);
+      } else {
+        // Fallback: Old environment detection logic (for backward compatibility)
+        const isDevServer = window.location.hostname === 'localhost' && window.location.port !== '';
+        audioPath = isDevServer 
+          ? './public/sounds/SFX/chest.mp3'  // Dev server (Vite) - relative to HTML
+          : '/sounds/SFX/chest.mp3';  // Production - absolute from web root
+        console.warn(`🎁 [CHEST SOUND] resolveAssetPath not available, using fallback: "${audioPath}"`);
+      }
       
       const audio = new Audio(audioPath);
       audio.volume = 0.6;
@@ -2544,11 +2550,12 @@ class Chest {
  * Performance: O(1) lookup, no degradation
  */
 export class ChestSystem {
-  constructor(scene, loadModel, processWeaponMaterial, grassSystem = null) {
+  constructor(scene, loadModel, processWeaponMaterial, grassSystem = null, resolveAssetPath = null) {
     this.scene = scene;
     this.loadModel = loadModel;
     this.processWeaponMaterial = processWeaponMaterial;
     this.grassSystem = grassSystem; // Reference to grass system for exclusion zones
+    this.resolveAssetPath = resolveAssetPath || ((path) => path); // Path resolver function
     
     // CRITICAL: Multi-level chest organization
     // Map<levelId, Map<chestId, Chest>>

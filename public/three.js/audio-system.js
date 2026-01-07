@@ -140,12 +140,16 @@ export class AudioSystem {
       getIsGamePaused,
       getOptionsMenu,
       getPlayerVelocity,
-      getOnGround
+      getOnGround,
+      resolveAssetPath
     } = options;
 
     if (!audioListener || !audioLoader) {
       throw new Error("AudioSystem requires audioListener and audioLoader");
     }
+    
+    // Store resolveAssetPath for path resolution
+    this.resolveAssetPath = resolveAssetPath || ((path) => path);
 
     this.audioListener = audioListener;
     this.audioLoader = audioLoader;
@@ -405,7 +409,7 @@ export class AudioSystem {
 
     // SF13 Triple-Shot Sound (SF13-Gun-future.mp3)
     this.audioLoader.load(
-      "/sounds/SFX/SF13-Gun-future.mp3",
+      this.resolveAssetPath("sounds/SFX/SF13-Gun-future.mp3"),
       (buffer) => {
         this.level4SF13ShootSound = new THREE.Audio(this.audioListener);
         this.level4SF13ShootSound.setBuffer(buffer);
@@ -422,7 +426,7 @@ export class AudioSystem {
 
     // Bear Trap Sound (bear-trap-103800.mp3)
     this.audioLoader.load(
-      "/sounds/SFX/bear-trap-103800.mp3",
+      this.resolveAssetPath("sounds/SFX/bear-trap-103800.mp3"),
       (buffer) => {
         this.bearTrapSound = new THREE.Audio(this.audioListener);
         this.bearTrapSound.setBuffer(buffer);
@@ -439,7 +443,7 @@ export class AudioSystem {
 
     // Hidden Slever Riddle Sound (hidden-slever.mp3)
     this.audioLoader.load(
-      "/sounds/SFX/hidden-slever.mp3",
+      this.resolveAssetPath("sounds/SFX/hidden-slever.mp3"),
       (buffer) => {
         this.hiddenSleverSound = new THREE.Audio(this.audioListener);
         this.hiddenSleverSound.setBuffer(buffer);

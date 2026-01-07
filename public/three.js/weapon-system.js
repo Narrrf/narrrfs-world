@@ -1792,9 +1792,9 @@ export class WeaponSystem {
   _createCheeseBullet(startPos, direction, targetPos) {
     const bulletGeometry = new THREE.SphereGeometry(this.bulletSize, 8, 8);
 
-    // Load cheese bullet texture
-    const primaryTexturePath = "/textures/blocks/cheese-bullet-small.png";
-    const fallbackTexturePath = "/textures/blocks/yellow-cheese.png";
+    // Load cheese bullet texture - use resolveAssetPath if available
+    const primaryTexturePath = this.resolveAssetPath("textures/blocks/cheese-bullet-small.png");
+    const fallbackTexturePath = this.resolveAssetPath("textures/blocks/yellow-cheese.png");
 
     let cheeseTexture = null;
     if (this.textureCache && this.textureCache.has(primaryTexturePath)) {

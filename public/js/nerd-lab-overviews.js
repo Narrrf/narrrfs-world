@@ -4,9 +4,9 @@
 const NERD_LAB_OVERVIEWS = {
   masterIndex: {
     title: "📚 Master Index - Complete Technical Documentation",
-    summary: "Welcome to the Narrrf's World technical documentation hub! This is your complete guide to all 7 games, systems, and the Cheese Engine 13.0 Agent System we've built in 2025. This documentation represents thousands of hours of development, testing, and refinement.",
+    summary: "Welcome to the Narrrf's World technical documentation hub! This is your complete guide to all 8 games, systems, and the Cheese Engine 13.0 Agent System we've built in 2025. This documentation represents thousands of hours of development, testing, and refinement.",
     achievements: [
-      "✅ 7 Complete Games - Fully documented and integrated (Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race, Cheese Rumble, 3D Riddle Game)",
+      "✅ 8 Complete Games - Fully documented and integrated (Tetris, Snake, Space Invaders, Cheese Hunt, Discord Race, Cheese Rumble, 3D Riddle Game, Glyph Memory)",
       "✅ Admin Interface - Enterprise-level management system with 17 tabs and 90+ API endpoints",
       "✅ Discord Bot - 50+ commands for complete community management and game integration",
       "✅ Database System - 67 tables managing all user data, scores, achievements, and system state",
@@ -20,9 +20,9 @@ const NERD_LAB_OVERVIEWS = {
     ],
     description: "Navigate through all technical documentation using the tabs above. Each section provides comprehensive details about our game systems, architecture, API integrations, database schemas, and implementation guides. This documentation is designed to serve developers for decades, with complete code examples and architectural explanations.",
     stats: {
-      totalGames: 7,
+      totalGames: 8,
       totalSystems: 6,
-      totalDocuments: 13,
+      totalDocuments: 14,
       totalTables: 67,
       totalAPIs: 119,
       totalAchievements: 100,
@@ -143,6 +143,31 @@ const NERD_LAB_OVERVIEWS = {
       "✅ Audio System - Complete sound integration"
     ],
     description: "Our flagship 3D game built with Three.js, featuring advanced 3D mechanics, boss battles, puzzle solving, and full integration with our reward systems."
+  },
+
+  glyphMemory: {
+    title: "🧩 Glyph Memory - Complete Technical Documentation",
+    summary: "Classic memory matching game where players flip cards to find matching glyph pairs. Features three difficulty levels (Easy, Medium, Hard), best time tracking per difficulty, dynamic background images, and smooth card flip animations.",
+    achievements: [
+      "✅ Three Difficulty Levels - Easy (6 pairs), Medium (8 pairs), Hard (12 pairs)",
+      "✅ Best Time Tracking - Per-difficulty best times stored in localStorage",
+      "✅ Dynamic Backgrounds - Unique background image per difficulty level",
+      "✅ Smooth Animations - Card flip animations with opacity transitions",
+      "✅ Glyph Image Normalization - Auto-centers non-transparent pixels for consistent display",
+      "✅ Sound Effects - Match and mismatch audio feedback",
+      "✅ Responsive Design - Mobile-optimized with touch-friendly controls",
+      "✅ Timer System - Real-time completion time tracking",
+      "✅ Win Overlay - Completion screen with best time display and NEW BEST badge"
+    ],
+    description: "Glyph Memory is a standalone client-side memory matching game featuring 36 glyphs (numbers 0-9 and letters A-Z), three difficulty levels, best time tracking, and smooth gameplay. The game is fully functional and ready for future backend integration with score tracking, leaderboards, and achievements.",
+    techStack: "HTML5, Vanilla JavaScript (ES6+), CSS3, Browser localStorage",
+    fileSize: "~3.1KB HTML + ~16KB JavaScript + ~9.3KB CSS",
+    url: "https://narrrfs.world/glyph/glyph.html",
+    difficultyLevels: {
+      easy: "6 pairs (12 cards) - 3×4 grid",
+      medium: "8 pairs (16 cards) - 4×4 grid",
+      hard: "12 pairs (24 cards) - 4×6 grid"
+    }
   },
 
   adminInterface: {

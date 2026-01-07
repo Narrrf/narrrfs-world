@@ -1441,6 +1441,14 @@ function getGroundConfigForLevel(levelId) {
     console.log(`🌱 [GROUND] Using merged config for ${levelId} (saved settings + defaults):`, mergedConfig);
   }
   
+  // CRITICAL: Set gltfMapPath from LEVEL_MAP_CONFIG if available (resolved for production)
+  const mapFileName = LEVEL_MAP_CONFIG[levelId];
+  if (mapFileName && mergedConfig.groundType === 'gltf') {
+    // Resolve the map path using resolveAssetPath
+    mergedConfig.gltfMapPath = resolveAssetPath(`textures/3d models/Maps/${mapFileName}`);
+    console.log(`🗺️ [GROUND] Set gltfMapPath for ${levelId}: ${mergedConfig.gltfMapPath}`);
+  }
+  
   // FIX: For Level 5, use detected ground level from spawn position
   // This ensures grass is positioned at the same level as the player
   if (levelId === LEVEL_IDS.LEVEL5 && level5State && level5State.spawnPosition) {
@@ -4114,8 +4122,8 @@ function createLevel4CheeseBullet(startPos, direction, targetPos) {
   const bulletGeometry = new THREE.SphereGeometry(LEVEL4_BULLET_SIZE, 8, 8);
   
   // Try to load cheese-bullet-small.png first, fallback to yellow-cheese.png
-  const primaryTexturePath = "/textures/blocks/cheese-bullet-small.png";
-  const fallbackTexturePath = "/textures/blocks/yellow-cheese.png";
+  const primaryTexturePath = resolveAssetPath("textures/blocks/cheese-bullet-small.png");
+  const fallbackTexturePath = resolveAssetPath("textures/blocks/yellow-cheese.png");
   
   // Check if primary texture is already in cache and loaded
   let cheeseTexture = null;
@@ -5224,7 +5232,12 @@ async function loadPlayerCharacter(modelPath = null) {
       playerCharacterModel.rotation.y = 0; // Animation Library character uses standard +Z forward
     }
     
-    playerCharacterModel.visible = !isFirstPerson(); // Visible in 3rd person only
+    // CRITICAL: Set visibility based on current camera mode
+    // If camera mode is 3rd person, show character; if 1st person, hide it
+    const currentCameraMode = typeof getCameraMode === 'function' ? getCameraMode() : (typeof cameraMode !== 'undefined' ? cameraMode : 0);
+    playerCharacterModel.visible = (currentCameraMode === 1); // 1 = third-person
+    
+    console.log(`🎮 [CHARACTER] Player model visibility set based on camera mode: ${playerCharacterModel.visible} (camera mode: ${currentCameraMode})`);
     
     // CRITICAL: Update world matrices after positioning
     playerCharacterModel.updateMatrixWorld(true);
@@ -7551,20 +7564,20 @@ function startGame(startLevelId = null) {
     return new Promise((resolve, reject) => {
   // Load level after character selection
   const level1Path = resolveAssetPath("models/cheese-temple/level1.json");
-  console.log("🚀 [DEBUG] Starting game, fetching level1.json from", level1Path);
+  console.log("🔍 [LEVEL 1] Step 1: Starting game, fetching level1.json from", level1Path);
   console.log(`🔍 [PATH DEBUG] resolveAssetPath("models/cheese-temple/level1.json") returned: "${level1Path}"`);
   console.log(`🔍 [PATH DEBUG] Full URL would be: ${window.location.origin}${level1Path}`);
   fetch(level1Path)
     .then((res) => {
       if (!res.ok) {
-        console.error(`❌ [ERROR] Failed to fetch level1.json: HTTP ${res.status} ${res.statusText}`);
+        console.error(`❌ [LEVEL 1] Step 1 FAILED: Failed to fetch level1.json: HTTP ${res.status} ${res.statusText}`);
         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }
-      console.log("✅ [DEBUG] level1.json fetched successfully");
+      console.log("✅ [LEVEL 1] Step 1 COMPLETE: level1.json fetched successfully");
       return res.json();
     })
     .catch((error) => {
-      console.error("❌ [ERROR] Failed to load level1.json:", error);
+      console.error("❌ [LEVEL 1] Step 1 ERROR: Failed to load level1.json:", error);
       console.error("🔍 [DEBUG] Error details:", {
         message: error.message,
         stack: error.stack,
@@ -7581,18 +7594,24 @@ function startGame(startLevelId = null) {
       // This ensures loading screen shows 100% only when everything is actually loaded
       try {
         // Phase 1: Cleanup
+        console.log("🔍 [LEVEL 1] Step 2: Cleaning up all levels...");
         cleanupAllLevels();
         await yieldToBrowser();
+        console.log("✅ [LEVEL 1] Step 2 COMPLETE: Cleanup done");
         
         // Phase 2: Build level
+        console.log("🔍 [LEVEL 1] Step 3: Building level geometry...");
         buildLevel(mapData);
         await yieldToBrowser();
+        console.log("✅ [LEVEL 1] Step 3 COMPLETE: Level geometry built");
         
         // Phase 3: Initialize environment (grass + sky systems) - WAIT for completion
         // applyLevelEnvironment is async and awaits grass system initialization
         // This includes: grass generation, sky system, chest exclusion zone registration
+        console.log("🔍 [LEVEL 1] Step 4: Applying level environment (grass + sky)...");
         await applyLevelEnvironment(LEVEL_IDS.LEVEL1);
         await yieldToBrowser();
+        console.log("✅ [LEVEL 1] Step 4 COMPLETE: Environment applied");
         
         // CRITICAL: Initialize shadow camera helper if enabled (January 4, 2026)
         setTimeout(() => {
@@ -7605,6 +7624,7 @@ function startGame(startLevelId = null) {
         await yieldToBrowser();
         
         // Phase 5: Final setup
+        console.log("🔍 [LEVEL 1] Step 5: Setting up camera and UI...");
         setCameraMode(0); // 0 = first-person
         hideCharacterSelectionMenu();
         
@@ -7612,18 +7632,21 @@ function startGame(startLevelId = null) {
         if (backgroundMusicEnabled) {
           playBackgroundMusic(LEVEL_IDS.LEVEL1);
         }
+        console.log("✅ [LEVEL 1] Step 5 COMPLETE: Camera and UI setup done");
         
         // Phase 6: Load player character model - WAIT for completion (including animations)
         // CRITICAL: Wait for character to load before resolving, so loading screen doesn't hide too early
+        console.log("🔍 [LEVEL 1] Step 6: Loading player character model...");
         try {
           await loadPlayerCharacter();
-          console.log("✅ [GAME START] Player character loaded and ready (all animations loaded)");
+          console.log("✅ [LEVEL 1] Step 6 COMPLETE: Player character loaded and ready (all animations loaded)");
         } catch (error) {
-          console.error("❌ [GAME START] Error loading player character:", error);
+          console.error("❌ [LEVEL 1] Step 6 ERROR: Error loading player character:", error);
           // Continue anyway - don't block game start if character fails
         }
         
         // CRITICAL: Only resolve after everything is loaded (grass, sky, level built, items rendered, character loaded)
+        console.log("✅ [LEVEL 1] ALL STEPS COMPLETE: Level 1 fully loaded!");
         resolve();
       } catch (error) {
         console.error("❌ [GAME START] Error during level loading:", error);
@@ -8766,6 +8789,8 @@ function initializeGUISystem() {
       getAPIBaseURL: () => API_BASE_URL || '',
       getIsProduction: () => isProduction || false,
       getChestSystem: () => chestSystem || null,
+      // Path resolution function for asset paths
+      resolveAssetPath: resolveAssetPath,
       // Player position callback for XYZ display in debug overlay
       getPlayerPosition: () => {
         // Use camera position (most accurate for first-person view)
@@ -9175,7 +9200,7 @@ function initializeWeaponSystem() {
     });
     
     // Initialize Chest System
-    chestSystem = new ChestSystem(scene, loadModel, processWeaponMaterial, grassSystem);
+    chestSystem = new ChestSystem(scene, loadModel, processWeaponMaterial, grassSystem, resolveAssetPath);
     console.log("✅ [CHEST SYSTEM] Initialized successfully");
 
   } catch (error) {
@@ -14065,6 +14090,7 @@ function setCameraMode(mode) {
     // Hide GLTF character in first-person
     if (playerCharacterModel && useGLTFCharacter) {
       playerCharacterModel.visible = false; // Hide in first-person
+      console.log("🎮 [CAMERA] First-person mode: GLTF character visibility set to false");
       // Hide all meshes in first-person
       playerCharacterModel.traverse((child) => {
         if (child.isMesh) {
@@ -14148,6 +14174,7 @@ function setCameraMode(mode) {
       // Show GLTF character
       if (playerCharacterModel) {
         playerCharacterModel.visible = true;
+        console.log("🎮 [CAMERA] Third-person mode: GLTF character visibility set to true");
         // FIX: Force all meshes to be visible
         playerCharacterModel.traverse((child) => {
           if (child.isMesh) {
@@ -18261,8 +18288,10 @@ async function buildLevel5TheWalk() {
   try {
     const loader = new GLTFLoader();
     const gltf = await new Promise((resolve, reject) => {
+      const mapPath = resolveAssetPath("textures/3d models/Maps/klagenfurt.gltf");
+      console.log("🗺️ [LEVEL 5] Loading Klagenfurt map from:", mapPath);
       loader.load(
-        "/textures/3d models/Maps/klagenfurt.gltf",
+        mapPath,
         (gltf) => {
           console.log("✅ [LEVEL 5] GLTF file loaded successfully");
           resolve(gltf);
@@ -19046,7 +19075,7 @@ async function buildLevel6PhoenixArena() {
   
   // Legacy: If ground system didn't load map AND groundType is 'gltf', try loading directly (fallback)
   const mapFileName = LEVEL_MAP_CONFIG[LEVEL_IDS.LEVEL6];
-  const mapPath = mapFileName ? `/textures/3d models/Maps/${mapFileName}` : null;
+  const mapPath = mapFileName ? resolveAssetPath(`textures/3d models/Maps/${mapFileName}`) : null;
   
   if (!mapLoaded && mapPath && shouldLoadGLTF) {
     console.log("🗺️ [LEVEL 6] Ground type is 'gltf', attempting to load GLTF map directly...");
@@ -22683,32 +22712,61 @@ async function warpToLevel5() {
     initializeShadowCameraHelperAtLevelStart();
   }, 100);
   
-  // FIX: Update grass system position to match detected ground level
-  // This must happen AFTER applyLevelEnvironment initializes the grass system
-  if (level5State.spawnPosition && grassSystem && grassSystem.groundMesh) {
-    const groundY = level5State.spawnPosition.y; // This is the detected ground level (top surface)
-    const currentPos = grassSystem.groundMesh.position;
-    
-    // Update both mesh position and options.position for consistency
-    grassSystem.groundMesh.position.set(currentPos.x, groundY, currentPos.z);
-    if (grassSystem.options) {
-      grassSystem.options.position.y = groundY;
+  // CRITICAL: Remove grass system underground mesh - Level 5 uses GLTF map for ground
+  // The GLTF map provides the ground geometry, so we don't need the grass system's underground plane
+  // We keep the grass blades (groundMesh for 'grass' type IS the grass blades, not a ground plane)
+  // We completely REMOVE the undergroundMesh which is the ground plane beneath the grass
+  // This prevents double ground rendering (GLTF map ground + grass system underground plane)
+  if (grassSystem && grassSystem.undergroundMesh) {
+    console.log("🗑️ [LEVEL 5] Removing grass system underground mesh (using GLTF map ground instead)...");
+    if (scene.children.includes(grassSystem.undergroundMesh)) {
+      scene.remove(grassSystem.undergroundMesh);
+      console.log("✅ [LEVEL 5] Grass system underground mesh removed from scene - GLTF map ground will be used");
     }
-    
-    console.log(`🌱 [LEVEL 5] Updated grass position to ground level: Y=${groundY.toFixed(2)} (was ${currentPos.y.toFixed(2)})`);
-    console.log(`🌱 [LEVEL 5] Grass mesh position:`, {
-      x: grassSystem.groundMesh.position.x.toFixed(2),
-      y: grassSystem.groundMesh.position.y.toFixed(2),
-      z: grassSystem.groundMesh.position.z.toFixed(2)
-    });
-  } else if (level5State.spawnPosition) {
-    console.warn(`⚠️ [LEVEL 5] Could not update grass position:`, {
-      hasSpawnPosition: !!level5State.spawnPosition,
-      spawnY: level5State.spawnPosition.y,
-      hasGrassSystem: !!grassSystem,
-      hasGroundMesh: !!(grassSystem && grassSystem.groundMesh),
-      groundMeshType: grassSystem?.groundMesh?.userData?.isGrassMesh ? 'grass' : 'other'
-    });
+    // Dispose of resources
+    if (grassSystem.undergroundMesh.geometry) {
+      grassSystem.undergroundMesh.geometry.dispose();
+    }
+    if (grassSystem.undergroundMesh.material) {
+      if (Array.isArray(grassSystem.undergroundMesh.material)) {
+        grassSystem.undergroundMesh.material.forEach(mat => mat.dispose());
+      } else {
+        grassSystem.undergroundMesh.material.dispose();
+      }
+    }
+    grassSystem.undergroundMesh = null; // Clear reference
+  }
+  
+  // Also remove any other ground meshes (colorMesh, blankMesh) that might exist
+  if (grassSystem && grassSystem.colorMesh) {
+    console.log("🗑️ [LEVEL 5] Removing grass system color mesh...");
+    if (scene.children.includes(grassSystem.colorMesh)) {
+      scene.remove(grassSystem.colorMesh);
+      if (grassSystem.colorMesh.geometry) grassSystem.colorMesh.geometry.dispose();
+      if (grassSystem.colorMesh.material) {
+        if (Array.isArray(grassSystem.colorMesh.material)) {
+          grassSystem.colorMesh.material.forEach(mat => mat.dispose());
+        } else {
+          grassSystem.colorMesh.material.dispose();
+        }
+      }
+      grassSystem.colorMesh = null;
+    }
+  }
+  if (grassSystem && grassSystem.blankMesh) {
+    console.log("🗑️ [LEVEL 5] Removing grass system blank mesh...");
+    if (scene.children.includes(grassSystem.blankMesh)) {
+      scene.remove(grassSystem.blankMesh);
+      if (grassSystem.blankMesh.geometry) grassSystem.blankMesh.geometry.dispose();
+      if (grassSystem.blankMesh.material) {
+        if (Array.isArray(grassSystem.blankMesh.material)) {
+          grassSystem.blankMesh.material.forEach(mat => mat.dispose());
+        } else {
+          grassSystem.blankMesh.material.dispose();
+        }
+      }
+      grassSystem.blankMesh = null;
+    }
   }
   
   // Load background music
@@ -22861,10 +22919,11 @@ async function warpToLevel5() {
 
 async function warpToLevel6() {
   await warpToLevelWithLoading(LEVEL_IDS.LEVEL6, "Level 6", async () => {
-  console.log("🔥 [LEVEL 6] Warping to Phoenix Boss Arena...");
+  console.log("🔍 [LEVEL 6] Step 1: Starting warp to Phoenix Boss Arena...");
   
   // CRITICAL: Cleanup ALL levels first to ensure clean state
   cleanupAllLevels();
+  console.log("🔍 [LEVEL 6] Step 2: Cleanup complete");
   
   // Hide everything except Level 6
   let hiddenCount = 0;
@@ -22904,7 +22963,7 @@ async function warpToLevel6() {
   
   // Set current level BEFORE applying environment
   currentLevel = LEVEL_IDS.LEVEL6;
-  console.log("🎯 [LEVEL 6] Current level set to:", currentLevel);
+  console.log("🔍 [LEVEL 6] Step 3: Current level set to:", currentLevel);
   
   // CRITICAL: Verify weapon system can see the current level
   if (weaponSystem && typeof weaponSystem.getCurrentLevel === 'function') {
@@ -22916,7 +22975,9 @@ async function warpToLevel6() {
   }
   
   // Apply environment FIRST (this will load GLTF map via ground system)
+  console.log("🔍 [LEVEL 6] Step 4: Applying level environment...");
   await applyLevelEnvironment(LEVEL_IDS.LEVEL6);
+  console.log("🔍 [LEVEL 6] Step 5: Environment applied");
   
   // CRITICAL: Ensure sky system is visible after environment is applied
   if (skySystem) {
@@ -22931,9 +22992,9 @@ async function warpToLevel6() {
   
   // Build Level 6 if not built (after environment is applied so GLTF map is loaded)
   if (!level6State.built) {
-    console.log("📦 [LEVEL 6] Building level (first time)...");
+    console.log("🔍 [LEVEL 6] Step 6: Building level (first time)...");
     await buildLevel6PhoenixArena();
-    console.log("✅ [LEVEL 6] Level build complete!");
+    console.log("🔍 [LEVEL 6] Step 7: Level build complete!");
   } else {
     // CRITICAL: Recreate chests when warping back to an already-built level (January 4, 2026)
     // cleanupAllLevels() clears all chests, so we must recreate them even if level is already built
@@ -23059,7 +23120,9 @@ async function warpToLevel6() {
   }
   
   // Restore game state after warp
+  console.log("🔍 [LEVEL 6] Step 8: Restoring game state...");
   restoreGameStateAfterWarp();
+  console.log("🔍 [LEVEL 6] Step 9: Game state restored");
   
   // CRITICAL: After restoreGameStateAfterWarp(), ensure weapon is still attached and visible
   // (restoreGameStateAfterWarp() calls setCameraMode which might have removed the weapon)
@@ -23316,7 +23379,16 @@ async function warpToLevel6() {
     
     console.log("🔥 [LEVEL 6] Loading Dragon GLB model from:", modelPath);
     
-    await phoenixBoss.loadModel(modelPath);
+    // CRITICAL: Add timeout protection to prevent hanging (30 seconds max)
+    const phoenixLoadPromise = phoenixBoss.loadModel(modelPath);
+    const phoenixTimeout = new Promise((resolve) => {
+      setTimeout(() => {
+        console.warn("⏱️ [LEVEL 6] Phoenix boss loading timeout (30s) - continuing without Phoenix");
+        resolve();
+      }, 30000); // 30 seconds
+    });
+    
+    await Promise.race([phoenixLoadPromise, phoenixTimeout]);
     
     // Show boss health bar (only in Level 6, only when Phoenix is alive)
     // CRITICAL: Only show in Level 6 (January 4, 2026)
@@ -23435,7 +23507,16 @@ async function warpToLevel6() {
     const spiderModelPath = resolveAssetPath("textures/3d models/Alien Spider 1/AFC_03/AFC_03.fbx");
     console.log("🕷️ [LEVEL 6] Loading Alien Spider FBX model from:", spiderModelPath);
     
-    await alienSpiderBoss.loadModel(spiderModelPath);
+    // CRITICAL: Add timeout protection to prevent hanging (30 seconds max)
+    const spiderLoadPromise = alienSpiderBoss.loadModel(spiderModelPath);
+    const spiderTimeout = new Promise((resolve) => {
+      setTimeout(() => {
+        console.warn("⏱️ [LEVEL 6] Alien Spider boss loading timeout (30s) - continuing without Spider");
+        resolve();
+      }, 30000); // 30 seconds
+    });
+    
+    await Promise.race([spiderLoadPromise, spiderTimeout]);
     
     console.log("✅ [LEVEL 6] Alien Spider boss ready!");
   } catch (error) {
@@ -23527,7 +23608,7 @@ async function warpToLevel6() {
     }
   }
   
-  console.log("✅ [LEVEL 6] Warped to Phoenix Boss Arena. Phoenix boss loaded and ready!");
+  console.log("✅ [LEVEL 6] ALL STEPS COMPLETE: Warped to Phoenix Boss Arena. Phoenix boss loaded and ready!");
   });
 }
 
@@ -24143,12 +24224,12 @@ async function warpToLevel3() {
   }
   
   await warpToLevelWithLoading(LEVEL_IDS.LEVEL3, "Level 3", async () => {
-  console.log("🚀 [LEVEL 3] Starting warp to Level 3...");
+  console.log("🔍 [LEVEL 3] Step 1: Starting warp to Level 3...");
   
   try {
     // CRITICAL: Cleanup ALL levels first to ensure clean state
     cleanupAllLevels();
-    console.log("✅ [LEVEL 3] Cleanup complete");
+    console.log("🔍 [LEVEL 3] Step 2: Cleanup complete");
     
     // CRITICAL: Hide Level 1 instanced meshes (they're added directly to scene, not in a group)
     // This prevents Level 1 blocks from being visible in the distance
@@ -24163,16 +24244,16 @@ async function warpToLevel3() {
     
     // Build level if not already built
     if (!level3State.built) {
-      console.log("🔨 [LEVEL 3] Building Level 3 arena...");
+      console.log("🔍 [LEVEL 3] Step 3: Building Level 3 arena...");
       try {
         buildLevel3HuntArena();
-        console.log("✅ [LEVEL 3] Arena built successfully, built flag:", level3State.built);
+        console.log("🔍 [LEVEL 3] Step 4: Arena built successfully, built flag:", level3State.built);
       } catch (buildError) {
         console.error("❌ [LEVEL 3] CRITICAL ERROR building arena:", buildError);
         throw buildError; // Re-throw to prevent continuing with broken level
       }
     } else {
-      console.log("✅ [LEVEL 3] Arena already built, skipping build");
+      console.log("🔍 [LEVEL 3] Step 3: Arena already built, skipping build");
       // CRITICAL: Recreate chests when warping back to an already-built level (January 4, 2026)
       // cleanupAllLevels() clears all chests, so we must recreate them even if level is already built
       console.log("🎁 [LEVEL 3] Level already built, recreating chests after cleanup...");
@@ -24203,12 +24284,12 @@ async function warpToLevel3() {
     
     resetLevel3Progress();
     currentLevel = LEVEL_IDS.LEVEL3;
-    console.log("✅ [LEVEL 3] Current level set to LEVEL3");
+    console.log("🔍 [LEVEL 3] Step 5: Current level set to LEVEL3");
     
     // CRITICAL: Ensure group is in scene before making it visible
     if (!scene.children.includes(level3State.group)) {
       scene.add(level3State.group);
-      console.log("✅ [LEVEL 3] Added level3State.group to scene during warp");
+      console.log("🔍 [LEVEL 3] Step 6: Added level3State.group to scene during warp");
     }
     
     // Verify group exists
@@ -24218,10 +24299,12 @@ async function warpToLevel3() {
     }
     
     level3State.group.visible = true;
-    console.log("✅ [LEVEL 3] Group made visible");
+    console.log("🔍 [LEVEL 3] Step 7: Group made visible");
     
     // CRITICAL: Await environment initialization (grass + sky systems)
+    console.log("🔍 [LEVEL 3] Step 8: Applying level environment...");
     await applyLevelEnvironment(LEVEL_IDS.LEVEL3);
+    console.log("🔍 [LEVEL 3] Step 9: Environment applied");
     
     // CRITICAL: Ensure sky system is visible after environment is applied
     if (skySystem) {
@@ -24234,6 +24317,7 @@ async function warpToLevel3() {
       initializeShadowCameraHelperAtLevelStart();
     }, 100);
     
+    console.log("🔍 [LEVEL 3] Step 10: Positioning player and setting camera...");
     setPlayerFeetPosition(level3Config.spawnPosition.clone());
     // Reset camera to first-person view (no weapon, no joysticks)
     setCameraMode(0); // 0 = first-person
@@ -24243,9 +24327,11 @@ async function warpToLevel3() {
   console.log(`🏹 [LEVEL 3] Entered THE HUNT. Find the hidden cheese stone to begin hunting ${totalMonsters} monsters!`);
   
   // CRITICAL: Restore game state after restart
+  console.log("🔍 [LEVEL 3] Step 11: Restoring game state...");
   restoreGameStateAfterWarp();
+  console.log("🔍 [LEVEL 3] Step 12: Game state restored");
   
-  console.log("✅ [LEVEL 3] Restart complete!");
+  console.log("✅ [LEVEL 3] ALL STEPS COMPLETE: Restart complete!");
   } catch (error) {
     console.error("❌ [LEVEL 3] CRITICAL ERROR during warp:", error);
     console.error("❌ [LEVEL 3] Error stack:", error.stack);
@@ -35646,7 +35732,7 @@ function warpToLevel1() {
       inScene: collisionMesh ? scene.children.includes(collisionMesh) : false
     });
     // Try to rebuild collision mesh (this should be rare)
-    fetch("/models/cheese-temple/level1.json")
+    fetch(resolveAssetPath("models/cheese-temple/level1.json"))
       .then(res => res.json())
       .then(mapData => {
         console.log("🔄 [LEVEL 1] Rebuilding collision mesh...");
@@ -35706,7 +35792,7 @@ function warpToLevel1() {
       console.error("❌ [LEVEL 1] Collision mesh exists but has invalid geometry! This will cause player to fall through ground.");
       // Try to rebuild it immediately
       console.log("🔄 [LEVEL 1] Attempting to rebuild invalid collision mesh...");
-      fetch("/models/cheese-temple/level1.json")
+      fetch(resolveAssetPath("models/cheese-temple/level1.json"))
         .then(res => res.json())
         .then(mapData => {
           if (mapData.blocks && mapData.blocks.length > 0) {
@@ -35974,7 +36060,29 @@ function restoreGameStateAfterWarp() {
   // The playerControls module should already be handling keyboard input,
   // but we ensure it's not blocked by checking isGamePaused
   if (playerControls) {
+    // Explicitly enable player controls
+    if (typeof playerControls.setEnabled === 'function') {
+      playerControls.setEnabled(true);
+      console.log("✅ [RESTORE] Player controls enabled via setEnabled()");
+    }
+    if (typeof playerControls.enable === 'function') {
+      playerControls.enable();
+      console.log("✅ [RESTORE] Player controls enabled via enable()");
+    }
     console.log("🎮 [RESTORE] Controls restored - WASD should work now");
+  } else {
+    console.warn("⚠️ [RESTORE] Player controls not available!");
+  }
+  
+  // CRITICAL: Reset movement flags to ensure clean state
+  onGround = false; // Will be set to true on first collision check
+  if (typeof keyboardMovement !== 'undefined') {
+    keyboardMovement.forward = false;
+    keyboardMovement.backward = false;
+    keyboardMovement.left = false;
+    keyboardMovement.right = false;
+    keyboardMovement.sprint = false;
+    console.log("🔄 [RESTORE] Movement flags reset");
   }
 }
 

@@ -272,7 +272,7 @@ require_once 'discord-invite.php';
         </p>
         <div class="bg-green-900/30 border border-green-500/50 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
           <p class="text-green-100 text-sm">
-            <strong>2025 Complete Documentation:</strong> All 7 games + Admin Interface + Discord Bot + Database + Frontend + Cheese Engine 13.0 Agent System + DSPOINC Staking System
+            <strong>2025 Complete Documentation:</strong> All 8 games + Admin Interface + Discord Bot + Database + Frontend + Cheese Engine 13.0 Agent System + DSPOINC Staking System
           </p>
         </div>
       </div>
@@ -314,6 +314,10 @@ require_once 'discord-invite.php';
             <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
                     data-tab="hytopia3d">
               🧩 3D Riddle Game
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
+                    data-tab="glyphMemory">
+              🧩 Glyph Memory
             </button>
             <button class="tab-btn px-4 py-2 rounded-lg border border-yellow-400/30 font-semibold text-sm whitespace-nowrap" 
                     data-tab="adminInterface">
@@ -438,6 +442,17 @@ require_once 'discord-invite.php';
           </div>
         </div>
 
+        <div id="tab-glyphMemory" class="tab-content">
+          <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
+            <div id="glyphMemoryContent" class="markdown-content">
+              <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+                <p class="mt-4 text-gray-400">Loading Glyph Memory documentation...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- System Documentation Tabs -->
         <div id="tab-adminInterface" class="tab-content">
           <div class="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-yellow-400/30">
@@ -541,6 +556,7 @@ require_once 'discord-invite.php';
       discordRace: 'GAME_05_DISCORD_RACE_COMPLETE_TECHNICAL.md',
       cheeseRumble: 'GAME_06_CHEESE_RUMBLE_COMPLETE_TECHNICAL.md',
       hytopia3d: 'GAME_07_3D_HYTOPIA_COMPLETE_TECHNICAL.md',
+      glyphMemory: 'GAME_08_GLYPH_MEMORY_COMPLETE_TECHNICAL.md',
       adminInterface: 'ADMIN_INTERFACE_COMPLETE_TECHNICAL.md',
       discordBot: 'DISCORD_BOT_COMPLETE_TECHNICAL.md',
       database: 'DATABASE_COMPLETE_TECHNICAL.md',
@@ -790,6 +806,7 @@ require_once 'discord-invite.php';
         discordRace: '🏁 Discord Race - Complete Technical Documentation',
         cheeseRumble: '⚔️ Cheese Rumble - Complete Technical Documentation',
         hytopia3d: '🧩 3D Riddle Game - Complete Technical Documentation',
+        glyphMemory: '🧩 Glyph Memory - Complete Technical Documentation',
         adminInterface: '🖥️ Admin Interface - Complete Technical Documentation',
         discordBot: '🤖 Discord Bot - Complete Technical Documentation',
         database: '🗄️ Database System - Complete Technical Documentation',

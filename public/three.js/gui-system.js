@@ -12,7 +12,8 @@
  * ============================================================================
  * 
  * Manages ALL DOM-based UI elements for the game:
- * - Main menu (first screen - Welcome screen with New Game/Options/Exit)
+ * - Main menu (first screen - Welcome screen with New Game/Options/Controls/Exit)
+ * - Controls menu (keyboard controls reference - January 6, 2026)
  * - Score HUD display
  * - Debug overlay
  * - Toast notifications
@@ -130,6 +131,8 @@
  * Menus:
  * - showMainMenu() - Show main menu (first screen - January 3, 2026)
  * - hideMainMenu() - Hide main menu
+ * - showControlsMenu() - Show controls menu (keyboard controls reference - January 6, 2026)
+ * - hideControlsMenu() - Hide controls menu
  * - showPauseMenu() - Show pause menu
  * - hidePauseMenu() - Hide pause menu
  * - showOptionsMenu() - Show options menu
@@ -219,8 +222,14 @@ export class GUISystem {
       // Profile URL
       PROFILE_URL: config.PROFILE_URL || '/profile.html',
       
+      // Path resolution function (for asset paths)
+      resolveAssetPath: config.resolveAssetPath || ((path) => path),
+      
       ...config
     };
+    
+    // Store resolveAssetPath for easy access
+    this.resolveAssetPath = this.config.resolveAssetPath;
     
     // DOM container
     this.container = document.body;
@@ -2016,7 +2025,7 @@ export class GUISystem {
     Object.assign(this.level1CompletionScreen.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2097,7 +2106,7 @@ export class GUISystem {
     Object.assign(this.level2CompletionScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2188,7 +2197,7 @@ export class GUISystem {
     Object.assign(this.level3CompletionScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2311,7 +2320,7 @@ export class GUISystem {
     Object.assign(this.level4CompletionScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2405,7 +2414,7 @@ export class GUISystem {
     Object.assign(this.levelSelectorScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2604,7 +2613,7 @@ export class GUISystem {
     Object.assign(this.mainMenu.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "24px",
-      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2662,6 +2671,15 @@ export class GUISystem {
     });
     buttonsContainer.appendChild(optionsBtn);
     
+    // Controls button
+    const controlsBtn = this._createCompletionButton("Controls", () => {
+      this.showControlsMenu();
+    }, false);
+    Object.assign(controlsBtn.style, {
+      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)"
+    });
+    buttonsContainer.appendChild(controlsBtn);
+    
     // Exit button
     const exitBtn = this._createCompletionButton("Exit", () => {
       if (this.config.onBackToPortal) {
@@ -2704,6 +2722,190 @@ export class GUISystem {
   }
   
   // ========================================
+  // CONTROLS MENU
+  // ========================================
+  
+  /**
+   * Show controls menu (keyboard controls reference)
+   */
+  showControlsMenu() {
+    // If menu already exists and is in DOM, just show it
+    if (this.controlsMenu && this.container && this.container.contains(this.controlsMenu)) {
+      this.controlsMenu.style.display = "flex";
+      return;
+    }
+    
+    // Clean up any existing menu first
+    if (this.controlsMenu) {
+      this.hideControlsMenu();
+    }
+    
+    // Create new menu
+    this.controlsMenu = document.createElement("div");
+    Object.assign(this.controlsMenu.style, {
+      position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
+      display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column",
+      backgroundColor: "rgba(5, 7, 16, 0.92)", backdropFilter: "blur(8px)", zIndex: "1004",
+      color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", pointerEvents: "auto",
+      cursor: "default", overflowY: "auto", padding: "20px"
+    });
+    
+    const panel = document.createElement("div");
+    Object.assign(panel.style, {
+      background: "linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(17, 24, 39, 0.98))",
+      border: "1px solid rgba(255, 224, 102, 0.4)", borderRadius: "16px", padding: "40px 48px",
+      boxShadow: "0 24px 72px rgba(0, 0, 0, 0.6)", display: "flex", flexDirection: "column",
+      alignItems: "stretch", minWidth: "500px", maxWidth: "90vw", maxHeight: "90vh",
+      overflowY: "auto", textAlign: "left"
+    });
+    
+    // Title
+    const title = document.createElement("div");
+    title.textContent = "Game Controls";
+    Object.assign(title.style, {
+      fontSize: "clamp(28px, 5vw, 36px)", fontWeight: "700", color: "#ffe066",
+      marginBottom: "32px", textAlign: "center", textShadow: "0 0 20px rgba(255, 224, 102, 0.5)"
+    });
+    panel.appendChild(title);
+    
+    // Controls sections
+    const sections = [
+      {
+        title: "🎮 Movement",
+        controls: [
+          { key: "W / A / S / D", desc: "Move forward / left / backward / right" },
+          { key: "Mouse", desc: "Rotate camera view" },
+          { key: "Space", desc: "Jump (normal mode) or Fly Up (God Mode)" },
+          { key: "Shift", desc: "Run (normal mode) or Fly Down (God Mode)" }
+        ]
+      },
+      {
+        title: "🎯 Interaction",
+        controls: [
+          { key: "E", desc: "Interact with chests (when near)" },
+          { key: "P", desc: "Pause / Unpause game" }
+        ]
+      },
+      {
+        title: "⚔️ Combat (Level 4+)",
+        controls: [
+          { key: "Left Click", desc: "Shoot weapon" },
+          { key: "Right Click", desc: "Triple shot (if available)" }
+        ]
+      },
+      {
+        title: "🔧 God Mode Controls",
+        note: "These only work when God Mode is enabled",
+        controls: [
+          { key: "L", desc: "Open level selector menu" },
+          { key: "G", desc: "Cycle through riddle jumps (Levels 1-4)" },
+          { key: "N", desc: "Cycle Alien Spider behavior patterns (Level 6 only)" },
+          { key: "B", desc: "Cycle Phoenix behavior patterns (Level 6 only)" }
+        ]
+      }
+    ];
+    
+    // Create sections
+    sections.forEach((section, sectionIndex) => {
+      // Section title
+      const sectionTitle = document.createElement("div");
+      sectionTitle.textContent = section.title;
+      Object.assign(sectionTitle.style, {
+        fontSize: "clamp(18px, 3vw, 22px)", fontWeight: "600", color: "#ffe066",
+        marginTop: sectionIndex > 0 ? "28px" : "0", marginBottom: "16px",
+        paddingBottom: "8px", borderBottom: "1px solid rgba(255, 224, 102, 0.2)"
+      });
+      panel.appendChild(sectionTitle);
+      
+      // Section note (if any)
+      if (section.note) {
+        const note = document.createElement("div");
+        note.textContent = section.note;
+        Object.assign(note.style, {
+          fontSize: "clamp(12px, 2vw, 14px)", color: "rgba(254, 243, 199, 0.7)",
+          marginBottom: "12px", fontStyle: "italic"
+        });
+        panel.appendChild(note);
+      }
+      
+      // Controls list
+      const controlsList = document.createElement("div");
+      Object.assign(controlsList.style, {
+        display: "flex", flexDirection: "column", gap: "12px"
+      });
+      
+      section.controls.forEach(control => {
+        const controlItem = document.createElement("div");
+        Object.assign(controlItem.style, {
+          display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+          padding: "10px 12px", backgroundColor: "rgba(255, 224, 102, 0.08)",
+          borderRadius: "8px", gap: "20px"
+        });
+        
+        // Key badge
+        const keyBadge = document.createElement("div");
+        keyBadge.textContent = control.key;
+        Object.assign(keyBadge.style, {
+          fontSize: "clamp(13px, 2.5vw, 16px)", fontWeight: "600", color: "#ffe066",
+          backgroundColor: "rgba(255, 224, 102, 0.15)", padding: "6px 14px",
+          borderRadius: "6px", border: "1px solid rgba(255, 224, 102, 0.3)",
+          whiteSpace: "nowrap", minWidth: "120px", textAlign: "center",
+          fontFamily: "'Courier New', monospace"
+        });
+        
+        // Description
+        const desc = document.createElement("div");
+        desc.textContent = control.desc;
+        Object.assign(desc.style, {
+          fontSize: "clamp(13px, 2.5vw, 16px)", color: "#fef3c7",
+          flex: "1", lineHeight: "1.5"
+        });
+        
+        controlItem.appendChild(keyBadge);
+        controlItem.appendChild(desc);
+        controlsList.appendChild(controlItem);
+      });
+      
+      panel.appendChild(controlsList);
+    });
+    
+    // Close button
+    const closeBtn = this._createCompletionButton("Close", () => {
+      this.hideControlsMenu();
+    }, false);
+    Object.assign(closeBtn.style, {
+      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)",
+      marginTop: "32px"
+    });
+    panel.appendChild(closeBtn);
+    
+    this.controlsMenu.appendChild(panel);
+    this.container.appendChild(this.controlsMenu);
+  }
+  
+  /**
+   * Hide controls menu
+   */
+  hideControlsMenu() {
+    if (this.controlsMenu) {
+      // Hide via display first (immediate visual removal)
+      this.controlsMenu.style.display = "none";
+      this.controlsMenu.style.pointerEvents = "none";
+      this.controlsMenu.style.zIndex = "-1";
+      
+      // Remove from DOM completely
+      if (this.container && this.container.contains(this.controlsMenu)) {
+        this.container.removeChild(this.controlsMenu);
+      } else if (this.controlsMenu.parentNode) {
+        this.controlsMenu.parentNode.removeChild(this.controlsMenu);
+      }
+      
+      // Clear reference
+      this.controlsMenu = null;
+    }
+  }
+  
+  // ========================================
   // CHARACTER SELECTION MENU
   // ========================================
   
@@ -2727,7 +2929,7 @@ export class GUISystem {
     Object.assign(this.characterSelectionMenu.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: "url('/textures/backgrounds/cheesetemple1.png')",
+      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -3352,7 +3554,7 @@ export class GUISystem {
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: url('/textures/backgrounds/cheesetemple1.png');
+      background-image: url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
