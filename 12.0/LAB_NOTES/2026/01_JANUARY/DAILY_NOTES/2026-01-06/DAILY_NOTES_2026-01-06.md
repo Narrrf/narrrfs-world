@@ -240,13 +240,44 @@
 - **Documentation Created:**
   - `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-06/DOCUMENTATION_SYNC_2026-01-06.md` - Complete sync documentation
 
+---
+
+## 🔧 **JANUARY 6, 2026 - LEVEL 4/6 WARNING FIXES (EVENING)**
+
+### **✅ updateRiddleAiming Warning Fix (COMPLETE)**
+- **Issue:** "Trigger block visual not created yet!" warning appearing on Level 4 and Level 6 (should only show on Level 1)
+- **Root Cause:** `updateRiddleAiming()` function was being called in the animate loop for all levels, but it's only needed for Level 1
+- **Fix Applied:**
+  - Added `if (currentLevel === LEVEL_IDS.LEVEL1)` check before calling `updateRiddleAiming()` in the animate loop
+  - Prevents function from executing on levels where it's not needed (Level 4, Level 6, etc.)
+- **Status:** ✅ **FIXED** - Warning only appears on Level 1 now
+- **Files Modified:**
+  - `public/three.js/main.js` (line ~29112) - Added level check in animate loop
+
+### **✅ Grass Texture Loading Fix for Non-Grass Ground Types (COMPLETE)**
+- **Issue:** Grass system attempting to load grass textures for Level 4 (groundType: 'color') and Level 6 (groundType: 'blank'), causing "2 texture(s) failed to load" warnings
+- **Root Cause:** `loadTextures()` was being called even when ground type was not 'grass'
+- **Fix Applied:**
+  - Added early return in `loadTextures()` function to skip texture loading if `groundType !== 'grass'`
+  - Added check in `setGroundType()` to only call `loadTextures()` when ground type is 'grass'
+  - Prevents unnecessary texture loading attempts for color and blank ground types
+- **Status:** ✅ **FIXED** - Grass textures only load for grass ground types
+- **Files Modified:**
+  - `public/three.js/grass-system.js` (lines ~952, ~975) - Added ground type checks
+
+### **✅ Cache-Busting Version Update (COMPLETE)**
+- **Issue:** Browser cache preventing new fixes from loading on production
+- **Fix Applied:**
+  - Updated cache-busting query parameter in `3d-riddle-game.html` from `?v=2026-01-04-path-fix` to `?v=2026-01-06-level-fixes`
+  - Ensures browsers load fresh code after deployment
+- **Status:** ✅ **FIXED** - New version will load after push
+- **Files Modified:**
+  - `public/three.js/3d-riddle-game.html` (line 39) - Updated cache-busting version
+
 **Next Steps:**
-- ⏳ **LEVEL 5 GROUND FINE-TUNING** - User confirmed ground working, needs minor adjustments
-- ⏳ **CHEST SOUND VERIFICATION** - Verify resolved path from debug logs and fix if needed
-- ⏳ **CODE REVIEW** - Review all changes before final push
-- ⏳ **PRODUCTION DEPLOYMENT** - Ready to push stable version 1.0 after review
-- ⏳ **AWAITING USER TESTING** - All fixes applied, ready for verification
-- Test mobile joysticks on actual mobile device
-- Verify all keyboard controls work in production
-- Verify all assets load correctly in production environment
+- ⏳ **PRODUCTION DEPLOYMENT** - Ready to push fixes
+- ⏳ **AWAITING USER TESTING** - Verify fixes on production after push
+- Test Level 4 - should no longer show grass texture warnings
+- Test Level 6 - should no longer show grass texture warnings or trigger block warnings
+- Verify all levels load correctly on production
 

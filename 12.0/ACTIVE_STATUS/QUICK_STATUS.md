@@ -150,6 +150,9 @@ Complete backup of entire Narrrf's World and Three.js system created. This repre
 - **🐛 Three.js Level JSON Path Fix:** ✅ **COMPLETE** - Fixed level1.json path from `/public/three.js/...` to `/three.js/...` for production
 - **🌍 Level 5 Double Ground Fix:** ✅ **COMPLETE** - Fixed double ground rendering issue (removed grass system undergroundMesh, GLTF map ground now displays correctly) - User confirmed working, needs fine-tuning
 - **🎁 Chest Sound 404 Error Fix:** ⏳ **IN PROGRESS** - Added debug logging to verify resolved path for chest opening sound (`/sounds/SFX/chest.mp3`)
+- **🧩 Level 4/6 Riddle Warning Fix:** ✅ **COMPLETE** - Fixed "Trigger block visual not created yet!" warning appearing on Level 4 and Level 6 (added Level 1 check in animate loop)
+- **🌱 Grass Texture Loading Fix:** ✅ **COMPLETE** - Fixed grass system loading textures for non-grass ground types (Level 4 color, Level 6 blank) - added ground type checks to prevent unnecessary texture loading
+- **🔄 Cache-Busting Update:** ✅ **COMPLETE** - Updated version to `?v=2026-01-06-level-fixes` to ensure fresh code loads after deployment
 - **📝 Documentation:** ✅ **COMPLETE** - Created daily notes and updated quick status
 
 ### **✅ JANUARY 4, 2026 - PREVIOUS WORK (COMPLETE):**

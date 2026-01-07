@@ -1185,7 +1185,12 @@ export class GUISystem {
         justifyContent: "center",
         flexDirection: "column",
         gap: "18px",
-        background: "rgba(5, 7, 16, 0.88)",
+        // FIX: Add background image like other menus (same pattern as main menu and loading screen)
+        backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundColor: "rgba(5, 7, 16, 0.88)", // Overlay for readability (use backgroundColor, not background shorthand)
         backdropFilter: "blur(6px)",
         zIndex: "99999", // CRITICAL: Very high z-index to be above EVERYTHING
         color: "#fef3c7",
@@ -1728,7 +1733,12 @@ export class GUISystem {
       justifyContent: "center",
       flexDirection: "column",
       gap: "18px",
-      background: "rgba(0, 0, 0, 0.95)",
+      // FIX: Add background image like other menus
+      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      backgroundColor: "rgba(0, 0, 0, 0.95)", // Overlay for readability (use backgroundColor, not background shorthand)
       backdropFilter: "blur(12px)",
       zIndex: "1005",
       color: "#fef3c7",
@@ -2745,6 +2755,11 @@ export class GUISystem {
     Object.assign(this.controlsMenu.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column",
+      // FIX: Add background image like other menus
+      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
       backgroundColor: "rgba(5, 7, 16, 0.92)", backdropFilter: "blur(8px)", zIndex: "1004",
       color: "#fef3c7", fontFamily: "Montserrat, Arial, sans-serif", pointerEvents: "auto",
       cursor: "default", overflowY: "auto", padding: "20px"

@@ -187,6 +187,13 @@ export class PlayerModel {
     // 
     // Both models work correctly with the animation system and are production-ready.
     // 
+    // PATH RESOLUTION NOTE (January 6, 2026):
+    // - All model and animation paths below use `/textures/...` format
+    // - Paths are automatically resolved by loadModelHelper() (from main.js)
+    // - loadModelHelper() uses resolveAssetPath() which converts:
+    //   `/textures/...` → `/public/three.js/public/textures/...`
+    // - This works correctly for both local and production (Render) environments
+    // 
     // ============================================================================
     this.characterOptions = {
       mouse: {

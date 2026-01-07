@@ -701,6 +701,8 @@ class GrassChunk {
 export class GrassSystem {
   constructor(scene, options = {}) {
     this.scene = scene;
+    // FIX: Store resolveAssetPath function if provided in options
+    this.resolveAssetPath = options.resolveAssetPath || ((path) => path);
     this.options = {
       groundType: options.groundType || 'grass',  // 'grass', 'blank', 'color', 'gltf'
       planeSize: options.planeSize || 60,          // Field size
@@ -946,8 +948,10 @@ export class GrassSystem {
     // Generate wind noise texture (NEW: Phase 1 - Noise-Based Wind)
     this.windNoiseTexture = this.generateNoiseTexture(256);
     
-    // Load textures for grass mode
-    await this.loadTextures();
+    // Load textures ONLY for grass mode (skip for 'blank', 'gltf', etc.)
+    if (this.options.groundType === 'grass') {
+      await this.loadTextures();
+    }
     
     // Create ground based on type
     // For grass mode, wait for textures to load before creating
@@ -971,6 +975,12 @@ export class GrassSystem {
   }
   
   async loadTextures() {
+    // FIX: Only load textures if ground type is 'grass' (skip for blank, gltf, etc.)
+    if (this.options.groundType !== 'grass') {
+      console.log("🌱 [GRASS] Skipping texture loading - ground type is not 'grass'");
+      return Promise.resolve();
+    }
+    
     if (this.texturesLoaded) return;
     
     return new Promise((resolve, reject) => {
@@ -997,8 +1007,8 @@ export class GrassSystem {
         onLoad(); // Continue anyway with fallback
       };
       
-      // Load grass texture - use absolute path from web root
-      const grassPath = '/public/three.js/public/textures/grass/grass.jpg';
+      // FIX: Load grass texture using resolveAssetPath for proper path resolution
+      const grassPath = this.resolveAssetPath('textures/grass/grass.jpg');
       console.log(`🔍 [GRASS] Loading grass texture from: ${grassPath}`);
       this.grassTexture = loader.load(
         grassPath,
@@ -1013,8 +1023,8 @@ export class GrassSystem {
         (error) => {
           console.error(`❌ [GRASS] Failed to load grass texture from ${grassPath}:`, error);
           console.error(`🔍 [GRASS] Full URL attempted: ${window.location.origin}${grassPath}`);
-          // Try alternative path (fallback)
-          const altPath = '/public/three.js/public/textures/grass/grass.jpg';
+          // Try alternative path (fallback) - also use resolveAssetPath
+          const altPath = this.resolveAssetPath('textures/grass/grass.jpg');
           console.log(`🔄 [GRASS] Trying alternative path: ${altPath}`);
           this.grassTexture = loader.load(
             altPath,
@@ -1034,8 +1044,8 @@ export class GrassSystem {
         }
       );
       
-      // Load cloud texture - use public/textures path for three.js folder structure
-      const cloudPath = '/public/three.js/public/textures/grass/cloud.jpg';
+      // FIX: Load cloud texture using resolveAssetPath for proper path resolution
+      const cloudPath = this.resolveAssetPath('textures/grass/cloud.jpg');
       console.log(`🔍 [GRASS] Loading cloud texture from: ${cloudPath}`);
       this.cloudTexture = loader.load(
         cloudPath,
@@ -1050,8 +1060,8 @@ export class GrassSystem {
         (error) => {
           console.error(`❌ [GRASS] Failed to load cloud texture from ${cloudPath}:`, error);
           console.error(`🔍 [GRASS] Full URL attempted: ${window.location.origin}${cloudPath}`);
-          // Try alternative path (fallback)
-          const altPath = '/public/three.js/public/textures/grass/cloud.jpg';
+          // Try alternative path (fallback) - also use resolveAssetPath
+          const altPath = this.resolveAssetPath('textures/grass/cloud.jpg');
           console.log(`🔄 [GRASS] Trying alternative path: ${altPath}`);
           this.cloudTexture = loader.load(
             altPath,

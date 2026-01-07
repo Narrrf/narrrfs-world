@@ -1519,7 +1519,12 @@ async function initializeGrassSystem(levelId) {
   
   // Initialize grass system with level-specific configuration
   try {
-    grassSystem = new GrassSystem(scene, groundConfig);
+    // FIX: Pass resolveAssetPath to GrassSystem for texture loading
+    const grassSystemConfig = {
+      ...groundConfig,
+      resolveAssetPath: resolveAssetPath
+    };
+    grassSystem = new GrassSystem(scene, grassSystemConfig);
     console.log("🌱 [GROUND SYSTEM] Initialized for", levelId, groundConfig);
     
     // CRITICAL: Update chestSystem's grassSystem reference when grassSystem is recreated
@@ -5053,23 +5058,32 @@ let playerModelModule = null;
 const CHARACTER_OPTIONS = {
   2: {
     name: "Mouse",
-    path: "/textures/3d models/Mouse/glb/glb/character/character.glb",
+    // FIX: Use relative path - resolveAssetPath will handle it in loadPlayerCharacter
+    path: "textures/3d models/Mouse/glb/glb/character/character.glb",
     description: "Mouse Character"
   },
   3: {
     name: "Animation Library",
-    path: "/textures/3d models/Animation Libary/Animation Library[Standard]/Godot/AnimationLibrary_Godot_Standard.glb",
+    // FIX: Use relative path - resolveAssetPath will handle it in loadPlayerCharacter
+    path: "textures/3d models/Animation Libary/Animation Library[Standard]/Godot/AnimationLibrary_Godot_Standard.glb",
     description: "Animation Library [Standard]"
   }
 };
 
 // Load and display player character model from GLTF/GLB file (for third-person view)
 async function loadPlayerCharacter(modelPath = null) {
-  // Use selected character path if provided, otherwise use default
-  const pathToLoad = modelPath || selectedCharacterPath || CHARACTER_OPTIONS[3].path;
+  // Use selected character path if provided, otherwise use default MOUSE (not robot)
+  // FIX: Default to Mouse (index 2) instead of Animation Library (index 3)
+  const defaultPath = selectedCharacterPath || CHARACTER_OPTIONS[2].path; // Mouse is default
+  const pathToLoad = modelPath || defaultPath;
+  // FIX: Resolve path using resolveAssetPath if it doesn't start with http:// or https://
+  const resolvedPath = pathToLoad.startsWith('http://') || pathToLoad.startsWith('https://') 
+    ? pathToLoad 
+    : resolveAssetPath(pathToLoad);
   try {
-    console.log("🎮 [CHARACTER] Loading player character model:", pathToLoad);
-    const gltf = await loadModel(pathToLoad);
+    console.log("🎮 [CHARACTER] Loading player character model:", resolvedPath);
+    console.log("🔍 [CHARACTER] Original path:", pathToLoad, "→ Resolved:", resolvedPath);
+    const gltf = await loadModel(resolvedPath);
     
     // CRITICAL FIX: Don't clone - use the original scene directly
     // Cloning can break material references and texture loading
@@ -7470,6 +7484,30 @@ function startGame(startLevelId = null) {
   // Clear pending flag if it was set
   gameStartPendingLevel = null;
   
+  // FIX: Auto-force landscape mode for mobile players on game start
+  if (isMobile) {
+    window.forceLandscapeMode = true;
+    console.log("📱 [GAME START] Mobile detected - forcing landscape mode");
+    
+    // Try to lock screen orientation to landscape
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').then(() => {
+        console.log("📱 [GAME START] Screen locked to landscape mode");
+        // Update joysticks after orientation lock
+        setTimeout(checkAndCreateJoystick, 100);
+      }).catch((err) => {
+        console.warn("⚠️ [GAME START] Failed to lock screen to landscape:", err);
+        console.log("💡 [GAME START] User may need to manually rotate device to landscape");
+        // Still update joysticks - they'll show when device is rotated
+        setTimeout(checkAndCreateJoystick, 100);
+      });
+    } else {
+      console.log("💡 [GAME START] Screen orientation lock API not available - user should rotate device manually");
+      // Force joysticks to show anyway for mobile (they'll work once device is rotated)
+      setTimeout(checkAndCreateJoystick, 100);
+    }
+  }
+  
   // CRITICAL: Show canvas when game starts (it was hidden initially)
   // This ensures users don't see level preview before main menu
   if (renderer && renderer.domElement) {
@@ -8371,7 +8409,8 @@ function createDebugHelpersMenu() {
   Object.assign(menu.style, {
     position: "fixed",
     bottom: "20px",
-    right: "20px",
+    left: "50%", // FIX: Center horizontally instead of right-aligned
+    transform: "translateX(-50%)", // Center the menu
     padding: "12px 16px",
     background: "rgba(10, 12, 24, 0.85)",
     color: "#cbd5f5",
@@ -8380,7 +8419,7 @@ function createDebugHelpersMenu() {
     border: "1px solid rgba(148, 163, 184, 0.3)",
     borderRadius: "8px",
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-    zIndex: "10001", // Higher than stats (10000) to ensure it's on top
+    zIndex: "998", // Lower than joysticks (999) so joysticks are on top
     minWidth: "200px",
     display: "flex",
     flexDirection: "column",
@@ -15222,7 +15261,8 @@ function buildLevel(mapData) {
     }
     
     // Create new cheese entity for Level 1
-    const cheeseTexture = loadTexture("textures/blocks/cheese-stone.png");
+    // FIX: Use resolveAssetPath for texture path
+    const cheeseTexture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
     const center = new THREE.Vector3(
       mapData.spawn.x * blockSize + blockSize / 2,
       playerCollider.end.y - 0.5,
@@ -16641,7 +16681,8 @@ function createLevel3MovingWalls() {
     const wallColor = wallColors[index] || 0x1d2338;
     
     // Load texture for water effect (each wall gets its own texture instance)
-    const texture = loadTexture("textures/blocks/cheese-stone.png");
+    // FIX: Use resolveAssetPath for texture path
+    const texture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(2, 2); // Repeat texture for better effect
@@ -17497,8 +17538,8 @@ function evaluateLevel3CornerCrush(crushX, crushZ, playerBounds) {
 function createLevel3TriggerBlock() {
   const blockSize = 1;
   const geometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-  // Use normal cheese-stone.png texture (not yellow-cheese.png)
-  const texture = loadTexture("textures/blocks/cheese-stone.png");
+  // FIX: Use resolveAssetPath for cheese-stone.png texture
+  const texture = loadTexture(resolveAssetPath("textures/blocks/cheese-stone.png"));
   // Use MeshLambertMaterial like Level 2 trigger block (but without yellow emissive)
   const material = new THREE.MeshLambertMaterial({
     map: texture,
@@ -22439,7 +22480,19 @@ async function warpToLevel4() {
   }
   
   // CRITICAL: Await environment initialization (grass + sky systems)
-  await applyLevelEnvironment(LEVEL_IDS.LEVEL4);
+  // FIX: Add timeout protection to prevent hanging (30s timeout)
+  const envTimeout4 = new Promise((resolve) => {
+    setTimeout(() => {
+      console.warn("⏱️ [LEVEL 4] Environment initialization timeout (30s) - continuing anyway");
+      resolve();
+    }, 30000);
+  });
+  try {
+    await Promise.race([applyLevelEnvironment(LEVEL_IDS.LEVEL4), envTimeout4]);
+  } catch (error) {
+    console.error("❌ [LEVEL 4] Error in applyLevelEnvironment:", error);
+    // Continue anyway - don't block level loading
+  }
   
   // CRITICAL: Ensure sky system is visible after environment is applied
   if (skySystem) {
@@ -22699,7 +22752,19 @@ async function warpToLevel5() {
   console.log("🎯 [LEVEL 5] Current level set to:", currentLevel);
   
   // CRITICAL: Await environment initialization (grass + sky systems)
-  await applyLevelEnvironment(LEVEL_IDS.LEVEL5);
+  // FIX: Add timeout protection to prevent hanging (30s timeout)
+  const envTimeout5 = new Promise((resolve) => {
+    setTimeout(() => {
+      console.warn("⏱️ [LEVEL 5] Environment initialization timeout (30s) - continuing anyway");
+      resolve();
+    }, 30000);
+  });
+  try {
+    await Promise.race([applyLevelEnvironment(LEVEL_IDS.LEVEL5), envTimeout5]);
+  } catch (error) {
+    console.error("❌ [LEVEL 5] Error in applyLevelEnvironment:", error);
+    // Continue anyway - don't block level loading
+  }
   
   // CRITICAL: Ensure sky system is visible after environment is applied
   if (skySystem) {
@@ -24303,8 +24368,20 @@ async function warpToLevel3() {
     
     // CRITICAL: Await environment initialization (grass + sky systems)
     console.log("🔍 [LEVEL 3] Step 8: Applying level environment...");
-    await applyLevelEnvironment(LEVEL_IDS.LEVEL3);
-    console.log("🔍 [LEVEL 3] Step 9: Environment applied");
+    // FIX: Add timeout protection to prevent hanging (30s timeout)
+    const envTimeout3 = new Promise((resolve) => {
+      setTimeout(() => {
+        console.warn("⏱️ [LEVEL 3] Environment initialization timeout (30s) - continuing anyway");
+        resolve();
+      }, 30000);
+    });
+    try {
+      await Promise.race([applyLevelEnvironment(LEVEL_IDS.LEVEL3), envTimeout3]);
+      console.log("🔍 [LEVEL 3] Step 9: Environment applied");
+    } catch (error) {
+      console.error("❌ [LEVEL 3] Error in applyLevelEnvironment:", error);
+      // Continue anyway - don't block level loading
+    }
     
     // CRITICAL: Ensure sky system is visible after environment is applied
     if (skySystem) {
@@ -29032,7 +29109,8 @@ function animate() {
     }
     
     
-    if (floatingCheese) {
+    // FIX: Only update Level 1 riddles when in Level 1
+    if (floatingCheese && currentLevel === LEVEL_IDS.LEVEL1) {
       const playerPosition = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
       floatingCheese.update(delta, playerPosition, awardCheesePoints);
       if (typeof updateCrosshairAim === 'function') {
@@ -29068,6 +29146,10 @@ function animate() {
           updateRiddle3(delta);
         }
       }
+    } else if (floatingCheese) {
+      // Level 2-6: Only update floating cheese, no riddle logic
+      const playerPosition = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+      floatingCheese.update(delta, playerPosition, awardCheesePoints);
     } else if (currentLevel === LEVEL_IDS.LEVEL2) {
       updateLevel2(delta);
     } else if (currentLevel === LEVEL_IDS.LEVEL3) {
@@ -29378,8 +29460,10 @@ crosshairElement = createCrosshair();
 
 // Mobile Joystick (for landscape mode or desktop testing)
 function createMobileJoystick() {
-  const shouldShow = (isMobileLandscape || window.enableDesktopJoysticks) && !mobileJoystick;
-  if (!shouldShow) return;
+  // FIX: Always create on mobile, or if desktop testing enabled
+  const shouldShow = isMobile || (isMobileLandscape || window.enableDesktopJoysticks) && !mobileJoystick;
+  if (!shouldShow && mobileJoystick) return; // Don't recreate if exists
+  if (mobileJoystick) return; // Already exists
   
   const joystickContainer = document.createElement("div");
   Object.assign(joystickContainer.style, {
@@ -29563,11 +29647,14 @@ function createMobileJoystick() {
 
 // Mobile Camera Control Joystick (right side, for third-person camera rotation only)
 function createMobileCameraJoystick() {
-  const shouldShow = (isMobileLandscape || window.enableDesktopJoysticks) && !mobileCameraJoystick;
-  if (!shouldShow) return;
+  // FIX: Always create on mobile, or if desktop testing enabled
+  const shouldShow = isMobile || (isMobileLandscape || window.enableDesktopJoysticks) && !mobileCameraJoystick;
+  if (!shouldShow && mobileCameraJoystick) return; // Don't recreate if exists
+  if (mobileCameraJoystick) return; // Already exists
   
-  // Only show in third-person or joystick view mode
-  if (isFirstPerson()) return;
+  // FIX: On mobile, show camera joystick even in first-person (some players prefer it)
+  // Only skip on desktop if first-person
+  if (!isMobile && isFirstPerson()) return;
   
   const joystickContainer = document.createElement("div");
   Object.assign(joystickContainer.style, {
@@ -29576,7 +29663,7 @@ function createMobileCameraJoystick() {
     right: "30px",
     width: "120px",
     height: "120px",
-    zIndex: "999",
+    zIndex: "10000", // FIX: Higher than debug helpers (998) so joysticks are always on top
     pointerEvents: "auto",
     display: "flex",
     alignItems: "center",
@@ -29750,30 +29837,42 @@ function createMobileCameraJoystick() {
 // Initialize mobile joysticks if in landscape mode or desktop testing enabled
 function checkAndCreateJoystick() {
   const newIsLandscape = isMobile && window.innerWidth > window.innerHeight;
-  const forceLandscape = window.forceLandscapeMode || false;
+  // FIX: Force landscape mode for mobile - always enable joysticks on mobile
+  const forceLandscape = isMobile ? true : (window.forceLandscapeMode || false);
   const desktopTestEnabled = window.enableDesktopJoysticks || false;
   const joystickViewMode = isJoystickView();
-  const shouldShow = newIsLandscape || forceLandscape || desktopTestEnabled || joystickViewMode;
+  // FIX: Always show joysticks on mobile (they're essential for mobile play)
+  const shouldShow = isMobile || newIsLandscape || forceLandscape || desktopTestEnabled || joystickViewMode;
   
   if (shouldShow) {
-    // Create movement joystick if needed
+    // Create movement joystick if needed (always create on mobile)
     if (!mobileJoystick) {
       createMobileJoystick();
     }
     // Create camera joystick if needed (only in third-person or joystick view)
-    if (!mobileCameraJoystick && !isFirstPerson()) {
+    // FIX: Also create on mobile even if first-person (some mobile players prefer it)
+    if (!mobileCameraJoystick && (!isFirstPerson() || isMobile)) {
       createMobileCameraJoystick();
     }
     // Update visibility based on camera mode and pause state
+    // FIX: On mobile, always show movement joystick when not paused
     if (mobileJoystick) {
       mobileJoystick.style.display = (isGamePaused) ? "none" : "flex";
     }
+    // FIX: On mobile, show camera joystick in third-person/joystick view, or always if mobile prefers it
     if (mobileCameraJoystick) {
-      mobileCameraJoystick.style.display = (isFirstPerson() || isGamePaused) ? "none" : "flex";
+      if (isMobile) {
+        // Mobile: Show in third-person/joystick view, hide in first-person (unless forced)
+        mobileCameraJoystick.style.display = (isFirstPerson() && !window.forceLandscapeMode) || isGamePaused ? "none" : "flex";
+      } else {
+        // Desktop: Original logic
+        mobileCameraJoystick.style.display = (isFirstPerson() || isGamePaused) ? "none" : "flex";
+      }
     }
   } else {
     // Only remove if not in joystick view mode (which always needs joysticks)
-    if (!joystickViewMode) {
+    // FIX: Never remove joysticks on mobile
+    if (!joystickViewMode && !isMobile) {
       if (mobileJoystick) {
         mobileJoystick.remove();
         mobileJoystick = null;
@@ -30626,6 +30725,11 @@ function invokeRiddleProgressUIUpdate(context = "general") {
 }
 
 function updateRiddleAiming(delta, aimingAtCheese, aimingAtBlock) {
+  // FIX: Only update Level 1 riddle - Level 3 has its own updateLevel3Step0 function
+  if (currentLevel !== LEVEL_IDS.LEVEL1) {
+    return; // Skip for other levels (Level 3 uses updateLevel3Step0, Level 2 uses updateRiddle2, etc.)
+  }
+  
   if (!isGamePaused) {
     // Step 0: Stand on hidden trigger block for 10 seconds
     if (!riddleState.step0Complete) {
@@ -35504,7 +35608,8 @@ function warpToLevel1() {
         setTimeout(() => {
           // CRITICAL: Rebuild Level 1 completely to ensure clean state
           // Fetch level data and rebuild everything (trees, chests, etc.)
-          fetch(resolveAssetPath("/public/models/cheese-temple/level1.json"))
+          // FIX: Remove /public/ prefix - resolveAssetPath will handle it correctly
+          fetch(resolveAssetPath("models/cheese-temple/level1.json"))
             .then((res) => {
               if (!res.ok) {
                 console.error(`❌ [LEVEL 1] Failed to fetch level1.json: HTTP ${res.status} ${res.statusText}`);
@@ -35517,7 +35622,23 @@ function warpToLevel1() {
               return; // Don't block - level might still work
             })
             .then((mapData) => {
-              if (!mapData) return; // Skip if fetch failed
+              // CRITICAL: Even if fetch failed, set currentLevel and apply environment
+              // This ensures Level 1 is at least initialized even without map data
+              if (!mapData) {
+                console.warn("⚠️ [LEVEL 1] No map data loaded - initializing Level 1 with default settings");
+                currentLevel = LEVEL_IDS.LEVEL1;
+                // Apply environment even without map data
+                setTimeout(async () => {
+                  try {
+                    await applyLevelEnvironment(LEVEL_IDS.LEVEL1);
+                    restoreGameStateAfterWarp();
+                    console.log("✅ [LEVEL 1] Level initialized (without map data)");
+                  } catch (error) {
+                    console.error("❌ [LEVEL 1] Error applying environment:", error);
+                  }
+                }, 100);
+                return; // Exit early if no map data
+              }
               
               // CRITICAL: Get blockSize from mapData (used for spawn position calculation)
               const blockSize = mapData.blockSize || 1.0; // Default to 1.0 if not specified
@@ -35534,8 +35655,23 @@ function warpToLevel1() {
                 }
                 
                 // Yield to browser after buildLevel
-                setTimeout(() => {
+                setTimeout(async () => {
                   currentLevel = LEVEL_IDS.LEVEL1;
+                  
+                  // FIX: Apply environment after level is built
+                  try {
+                    await applyLevelEnvironment(LEVEL_IDS.LEVEL1);
+                  } catch (error) {
+                    console.error("❌ [LEVEL 1] Error applying environment:", error);
+                  }
+                  
+                  // FIX: Restore game state after warp
+                  try {
+                    restoreGameStateAfterWarp();
+                    console.log("✅ [LEVEL 1] Game state restored");
+                  } catch (error) {
+                    console.error("❌ [LEVEL 1] Error restoring game state:", error);
+                  }
                   
                   // CRITICAL: Reset player position to spawn point (prevents player being in sky)
                   // Get spawn position from mapData (used in buildLevel)
