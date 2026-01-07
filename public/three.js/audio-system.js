@@ -271,12 +271,9 @@ export class AudioSystem {
   loadCharacterAudio() {
     console.log("🎵 [AUDIO] Starting to load character audio files...");
     
-    // FIXED (January 6, 2026): Resolve all audio paths for production
-    const resolvePath = window.resolveAssetPath || ((p) => p);
-    
     // Footstep Sound
     this.audioLoader.load(
-      resolvePath(CHARACTER_FOOTSTEP_AUDIO),
+      CHARACTER_FOOTSTEP_AUDIO,
       (buffer) => {
         this.footstepSound = new THREE.Audio(this.audioListener);
         this.footstepSound.setBuffer(buffer);
@@ -294,7 +291,7 @@ export class AudioSystem {
 
     // Jump Sound
     this.audioLoader.load(
-      resolvePath(CHARACTER_JUMP_AUDIO),
+      CHARACTER_JUMP_AUDIO,
       (buffer) => {
         this.jumpSound = new THREE.Audio(this.audioListener);
         this.jumpSound.setBuffer(buffer);
@@ -311,7 +308,7 @@ export class AudioSystem {
 
     // Cheese Platform Sound
     this.audioLoader.load(
-      resolvePath(CHEESE_PLATFORM_AUDIO),
+      CHEESE_PLATFORM_AUDIO,
       (buffer) => {
         this.cheesePlatformSound = new THREE.Audio(this.audioListener);
         this.cheesePlatformSound.setBuffer(buffer);
@@ -327,7 +324,7 @@ export class AudioSystem {
 
     // Cheese Aim Clear Sound
     this.audioLoader.load(
-      resolvePath(CHEESE_AIM_CLEAR_AUDIO),
+      CHEESE_AIM_CLEAR_AUDIO,
       (buffer) => {
         this.cheeseAimClearSound = new THREE.Audio(this.audioListener);
         this.cheeseAimClearSound.setBuffer(buffer);
@@ -343,7 +340,7 @@ export class AudioSystem {
 
     // Lever Sound
     this.audioLoader.load(
-      resolvePath(LEVER_AUDIO),
+      LEVER_AUDIO,
       (buffer) => {
         this.leverSound = new THREE.Audio(this.audioListener);
         this.leverSound.setBuffer(buffer);
@@ -359,7 +356,7 @@ export class AudioSystem {
 
     // Block Moved Sound
     this.audioLoader.load(
-      resolvePath(BLOCK_MOVED_AUDIO),
+      BLOCK_MOVED_AUDIO,
       (buffer) => {
         this.blockMovedSound = new THREE.Audio(this.audioListener);
         this.blockMovedSound.setBuffer(buffer);
@@ -375,7 +372,7 @@ export class AudioSystem {
 
     // Level Up Sound
     this.audioLoader.load(
-      resolvePath(LEVEL_UP_AUDIO),
+      LEVEL_UP_AUDIO,
       (buffer) => {
         this.levelUpSound = new THREE.Audio(this.audioListener);
         this.levelUpSound.setBuffer(buffer);
@@ -391,7 +388,7 @@ export class AudioSystem {
 
     // Level 4 Shooting Sound (Space Invaders normal_shoot.wav)
     this.audioLoader.load(
-      resolvePath(LEVEL4_SHOOT_AUDIO),
+      LEVEL4_SHOOT_AUDIO,
       (buffer) => {
         this.level4ShootSound = new THREE.Audio(this.audioListener);
         this.level4ShootSound.setBuffer(buffer);
@@ -408,7 +405,7 @@ export class AudioSystem {
 
     // SF13 Triple-Shot Sound (SF13-Gun-future.mp3)
     this.audioLoader.load(
-      resolvePath("/public/sounds/SFX/SF13-Gun-future.mp3"),
+      "/sounds/SFX/SF13-Gun-future.mp3",
       (buffer) => {
         this.level4SF13ShootSound = new THREE.Audio(this.audioListener);
         this.level4SF13ShootSound.setBuffer(buffer);
@@ -802,19 +799,15 @@ export class AudioSystem {
       return this.backgroundMusicObjects[levelId];
     }
 
-    // FIXED (January 6, 2026): Resolve music path for production
-    const resolvePath = window.resolveAssetPath || ((p) => p);
-    const resolvedMusicPath = resolvePath(musicPath);
-
     // Create new music object
     const music = new THREE.Audio(this.audioListener);
     music.userData = music.userData || {};
     music.userData.levelId = levelId;
     this.backgroundMusicObjects[levelId] = music;
 
-    console.log(`📂 [AUDIO] Loading background music for ${levelId} from: ${resolvedMusicPath}`);
+    console.log(`📂 [AUDIO] Loading background music for ${levelId} from: ${musicPath}`);
     this.audioLoader.load(
-      resolvedMusicPath,
+      musicPath,
       (buffer) => {
         music.setBuffer(buffer);
         music.setLoop(true); // Loop the music

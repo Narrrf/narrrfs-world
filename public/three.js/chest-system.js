@@ -885,11 +885,9 @@ class Chest {
     }
     
     if (this.type === 'chest2') {
-      // FIXED (January 6, 2026): Resolve path for production
       // Try both possible paths for chest2 (case sensitivity)
       // First try with capital C (Chest2.glb)
-      const resolvePath = window.resolveAssetPath || ((p) => p);
-      modelPath = resolvePath("/public/textures/3d models/chest2/Chest2.glb");
+      modelPath = "/textures/3d models/chest2/Chest2.glb";
       // If that fails, will try lowercase in catch block
     } else {
       this.loadError = new Error(`Unknown chest type: ${this.type}`);

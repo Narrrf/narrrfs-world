@@ -427,6 +427,7 @@ export class PhoenixBoss2 {
     this.camera = config.camera;
     this.levelGroup = config.levelGroup || null;
     this.player = config.player || null; // Player object for tracking (Pattern 15)
+    this.resolveAssetPath = config.resolveAssetPath || ((path) => path); // Path resolver function
     
     // Model
     this.model = null;
@@ -619,14 +620,10 @@ export class PhoenixBoss2 {
    */
   async loadModel(modelPath) {
     return new Promise((resolve, reject) => {
-      // FIXED (January 6, 2026): Resolve model path for production
-      const resolvePath = window.resolveAssetPath || ((p) => p);
-      const resolvedPath = resolvePath(modelPath);
-      
       const loader = new GLTFLoader();
       
       loader.load(
-        resolvedPath,
+        modelPath,
         (gltf) => {
           console.log("✅ [PHOENIX2] Model loaded:", modelPath);
           
@@ -2856,15 +2853,13 @@ export class PhoenixBoss2 {
     if (eyeColorName) this.eyeColor = eyeColorName;
     if (enableGlow !== null) this.emissiveGlow = enableGlow;
     
-    // FIXED (January 6, 2026): Resolve texture paths for production
-    const resolvePath = window.resolveAssetPath || ((p) => p);
-    
     // Color variations available: Black, Blue, Brown, Gold, Green, Red, White
-    const colorPath = resolvePath(`/public/textures/3d models/phoenix2/${colorName}/Dragon1_BaseColor.png`);
-    const basePath = resolvePath(`/public/textures/3d models/phoenix2/${colorName}/`);
+    const resolvePath = this.resolveAssetPath || ((path) => path); // Use provided resolver or fallback
+    const colorPath = resolvePath(`textures/3d models/phoenix2/${colorName}/Dragon1_BaseColor.png`);
+    const basePath = resolvePath(`textures/3d models/phoenix2/${colorName}/`);
     
     // Eye texture paths (if eye color is specified)
-    const eyeBasePath = eyeColorName ? resolvePath(`/public/textures/3d models/phoenix2/Eye/${eyeColorName}/`) : null;
+    const eyeBasePath = eyeColorName ? resolvePath(`textures/3d models/phoenix2/Eye/${eyeColorName}/`) : null;
     
     console.log(`🔥 [PHOENIX2] Applying color variation: ${colorName}${eyeColorName ? ` with ${eyeColorName} eyes` : ''}${this.emissiveGlow ? ' (glow enabled)' : ''}`);
     

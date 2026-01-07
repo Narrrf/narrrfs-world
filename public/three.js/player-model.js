@@ -191,17 +191,16 @@ export class PlayerModel {
     this.characterOptions = {
       mouse: {
         name: "Mouse",
-        // FIXED (January 6, 2026): Added /public/ prefix for correct asset resolution
-        path: "/public/textures/3d models/Mouse/glb/glb/character/character.glb",
+        path: "/textures/3d models/Mouse/glb/glb/character/character.glb",
         heightOffset: 0.95,
         rotationOffset: -Math.PI / 2, // -90 degrees
         animations: {
-          idle: '/public/textures/3d models/Mouse/glb/glb/animation/idle.glb',
-          run: '/public/textures/3d models/Mouse/glb/glb/animation/run.glb',
-          jump: '/public/textures/3d models/Mouse/glb/glb/animation/jump.glb',
-          climb: '/public/textures/3d models/Mouse/glb/glb/animation/climb.glb',
-          death: '/public/textures/3d models/Mouse/glb/glb/animation/death.glb',
-          somersoult: '/public/textures/3d models/Mouse/glb/glb/animation/somersoult.glb'
+          idle: '/textures/3d models/Mouse/glb/glb/animation/idle.glb',
+          run: '/textures/3d models/Mouse/glb/glb/animation/run.glb',
+          jump: '/textures/3d models/Mouse/glb/glb/animation/jump.glb',
+          climb: '/textures/3d models/Mouse/glb/glb/animation/climb.glb',
+          death: '/textures/3d models/Mouse/glb/glb/animation/death.glb',
+          somersoult: '/textures/3d models/Mouse/glb/glb/animation/somersoult.glb'
         },
         loopAnimations: ['idle', 'run', 'climb'], // These animations loop continuously
         animationPriorities: {

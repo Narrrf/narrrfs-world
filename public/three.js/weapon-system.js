@@ -465,6 +465,7 @@ export class WeaponSystem {
     this.loadTexture = config.loadTexture || null; // Texture loader
     this.textureCache = config.textureCache || null; // Texture cache
     this.resumeAudioContextIfNeeded = config.resumeAudioContextIfNeeded || (() => {}); // Audio context resumer
+    this.resolveAssetPath = config.resolveAssetPath || ((path) => path); // Path resolver function
 
     // Callbacks (from config)
     this.onWeaponSwitched = config.onWeaponSwitched || (() => {});
@@ -505,10 +506,11 @@ export class WeaponSystem {
     }
 
     // Load normal shoot sound
-    // FIXED (January 6, 2026): Path is already resolved in main.js
     if (this.shootAudioPath) {
+      const resolvedShootPath = this.resolveAssetPath(this.shootAudioPath);
+      console.log(`🔍 [WEAPON AUDIO DEBUG] Loading shoot sound: "${this.shootAudioPath}" → "${resolvedShootPath}"`);
       this.audioLoader.load(
-        this.shootAudioPath,
+        resolvedShootPath,
         (buffer) => {
           this.shootSound = new THREE.Audio(this.audioListener);
           this.shootSound.setBuffer(buffer);
@@ -526,8 +528,10 @@ export class WeaponSystem {
 
     // Load triple shot sound
     if (this.tripleShotAudioPath) {
+      const resolvedTripleShotPath = this.resolveAssetPath(this.tripleShotAudioPath);
+      console.log(`🔍 [WEAPON AUDIO DEBUG] Loading triple shot sound: "${this.tripleShotAudioPath}" → "${resolvedTripleShotPath}"`);
       this.audioLoader.load(
-        this.tripleShotAudioPath,
+        resolvedTripleShotPath,
         (buffer) => {
           this.tripleShotSound = new THREE.Audio(this.audioListener);
           this.tripleShotSound.setBuffer(buffer);

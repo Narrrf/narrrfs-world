@@ -143,30 +143,31 @@ export const LEVEL_MAP_CONFIG = {
 
 /**
  * Audio File Paths
- * FIXED (January 6, 2026): Added /public/ prefix for correct asset resolution
+ * Note: These paths are relative (no leading /) so resolveAssetPath() can process them
+ * They will be resolved to /public/three.js/public/audio/... or ./public/audio/... depending on environment
  */
-export const CHARACTER_FOOTSTEP_AUDIO = "/public/audio/character/footstep_cheese.ogg";
-export const CHARACTER_JUMP_AUDIO = "/public/audio/character/jump_cheese.ogg";
-export const CHEESE_PLATFORM_AUDIO = "/public/audio/gameplay/cheese_platform_active.ogg";
-export const CHEESE_AIM_CLEAR_AUDIO = "/public/audio/gameplay/cheese_aim_clear.wav";
-export const LEVER_AUDIO = "/public/audio/gameplay/slever.ogg";
-export const BLOCK_MOVED_AUDIO = "/public/audio/gameplay/block_moved_correct.ogg";
-export const LEVEL_UP_AUDIO = "/public/audio/gameplay/LEVEL%20UP!.wav";
-export const LEVEL4_SHOOT_AUDIO = "/public/sounds/invaders/weapons/normal_shoot.wav";
-export const LEVEL4_SF13_SHOOT_AUDIO = "/public/sounds/invaders/weapons/normal_shoot.wav"; // SF13 uses same sound (triple burst)
+export const CHARACTER_FOOTSTEP_AUDIO = "audio/character/footstep_cheese.ogg";
+export const CHARACTER_JUMP_AUDIO = "audio/character/jump_cheese.ogg";
+export const CHEESE_PLATFORM_AUDIO = "audio/gameplay/cheese_platform_active.ogg";
+export const CHEESE_AIM_CLEAR_AUDIO = "audio/gameplay/cheese_aim_clear.wav";
+export const LEVER_AUDIO = "audio/gameplay/slever.ogg";
+export const BLOCK_MOVED_AUDIO = "audio/gameplay/block_moved_correct.ogg";
+export const LEVEL_UP_AUDIO = "audio/gameplay/LEVEL%20UP!.wav";
+export const LEVEL4_SHOOT_AUDIO = "sounds/invaders/weapons/normal_shoot.wav";
+export const LEVEL4_SF13_SHOOT_AUDIO = "sounds/invaders/weapons/normal_shoot.wav"; // SF13 uses same sound (triple burst)
 
 /**
  * Background Music Paths
  * Initialize after LEVEL_IDS is defined
- * FIXED (January 6, 2026): Added /public/ prefix for correct asset resolution
+ * Note: These paths are relative (no leading /) so resolveAssetPath() can process them
  */
 export const BACKGROUND_MUSIC_PATHS = {
-  [LEVEL_IDS.LEVEL1]: "/public/sounds/music/level1.mp3",
-  [LEVEL_IDS.LEVEL2]: "/public/sounds/music/level2.mp3",
-  [LEVEL_IDS.LEVEL3]: "/public/sounds/music/level3.mp3",
-  [LEVEL_IDS.LEVEL4]: "/public/sounds/music/level4.mp3",
-  [LEVEL_IDS.LEVEL5]: "/public/sounds/music/level5.mp3", // Use level5.mp3 if available, otherwise will fallback
-  [LEVEL_IDS.LEVEL6]: "/public/sounds/music/level6.mp3" // Level 6 boss fight music
+  [LEVEL_IDS.LEVEL1]: "sounds/music/level1.mp3",
+  [LEVEL_IDS.LEVEL2]: "sounds/music/level2.mp3",
+  [LEVEL_IDS.LEVEL3]: "sounds/music/level3.mp3",
+  [LEVEL_IDS.LEVEL4]: "sounds/music/level4.mp3",
+  [LEVEL_IDS.LEVEL5]: "sounds/music/level5.mp3", // Use level5.mp3 if available, otherwise will fallback
+  [LEVEL_IDS.LEVEL6]: "sounds/music/level6.mp3" // Level 6 boss fight music
 };
 
 /**

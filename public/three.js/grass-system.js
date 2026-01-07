@@ -1,4 +1,11 @@
 /**
+ * 🚨 VERSION MARKER - PATH FIX VERSION
+ * Date: January 4, 2026
+ * Version: 2026-01-04-PATH-FIX
+ * Path fixes: Updated texture paths to use /public/three.js/public/...
+ */
+console.log("🚨 [VERSION CHECK] grass-system.js v2026-01-04-PATH-FIX loaded!");
+/**
  * ============================================================================
  * GRASS SYSTEM - Procedural Grass Generation with Wind Animation
  * ============================================================================
@@ -990,8 +997,9 @@ export class GrassSystem {
         onLoad(); // Continue anyway with fallback
       };
       
-      // Load grass texture - FIXED (January 6, 2026): Use resolveAssetPath for production
-      const grassPath = window.resolveAssetPath ? window.resolveAssetPath('/public/textures/grass/grass.jpg') : '/public/textures/grass/grass.jpg';
+      // Load grass texture - use absolute path from web root
+      const grassPath = '/public/three.js/public/textures/grass/grass.jpg';
+      console.log(`🔍 [GRASS] Loading grass texture from: ${grassPath}`);
       this.grassTexture = loader.load(
         grassPath,
         (texture) => {
@@ -1004,12 +1012,31 @@ export class GrassSystem {
         undefined,
         (error) => {
           console.error(`❌ [GRASS] Failed to load grass texture from ${grassPath}:`, error);
-          onError();
+          console.error(`🔍 [GRASS] Full URL attempted: ${window.location.origin}${grassPath}`);
+          // Try alternative path (fallback)
+          const altPath = '/public/three.js/public/textures/grass/grass.jpg';
+          console.log(`🔄 [GRASS] Trying alternative path: ${altPath}`);
+          this.grassTexture = loader.load(
+            altPath,
+            (texture) => {
+              texture.wrapS = THREE.RepeatWrapping;
+              texture.wrapT = THREE.RepeatWrapping;
+              texture.needsUpdate = true;
+              console.log("🌱 [GRASS] Grass texture loaded from alternative path:", altPath);
+              onLoad();
+            },
+            undefined,
+            (error2) => {
+              console.error(`❌ [GRASS] Failed to load from alternative path ${altPath}:`, error2);
+              onError();
+            }
+          );
         }
       );
       
-      // Load cloud texture - FIXED (January 6, 2026): Use resolveAssetPath for production
-      const cloudPath = window.resolveAssetPath ? window.resolveAssetPath('/public/textures/grass/cloud.jpg') : '/public/textures/grass/cloud.jpg';
+      // Load cloud texture - use public/textures path for three.js folder structure
+      const cloudPath = '/public/three.js/public/textures/grass/cloud.jpg';
+      console.log(`🔍 [GRASS] Loading cloud texture from: ${cloudPath}`);
       this.cloudTexture = loader.load(
         cloudPath,
         (texture) => {
@@ -1022,7 +1049,25 @@ export class GrassSystem {
         undefined,
         (error) => {
           console.error(`❌ [GRASS] Failed to load cloud texture from ${cloudPath}:`, error);
-          onError();
+          console.error(`🔍 [GRASS] Full URL attempted: ${window.location.origin}${cloudPath}`);
+          // Try alternative path (fallback)
+          const altPath = '/public/three.js/public/textures/grass/cloud.jpg';
+          console.log(`🔄 [GRASS] Trying alternative path: ${altPath}`);
+          this.cloudTexture = loader.load(
+            altPath,
+            (texture) => {
+              texture.wrapS = THREE.RepeatWrapping;
+              texture.wrapT = THREE.RepeatWrapping;
+              texture.needsUpdate = true;
+              console.log("🌱 [GRASS] Cloud texture loaded from alternative path:", altPath);
+              onLoad();
+            },
+            undefined,
+            (error2) => {
+              console.error(`❌ [GRASS] Failed to load from alternative path ${altPath}:`, error2);
+              onError();
+            }
+          );
         }
       );
     });
