@@ -846,9 +846,28 @@ export class AlienSpiderBoss {
     // Only skip if model doesn't exist
     if (!this.model) return;
     
-    // Update animation mixer
-    if (this.mixer) {
-      this.mixer.update(delta);
+    // CRITICAL FIX (January 6, 2026): Debug mixer update to verify animations are running
+    if (!this.mixer) {
+      console.warn("⚠️ [ALIEN_SPIDER] update() called but mixer not initialized yet");
+      return; // Can't update animations without mixer
+    }
+    
+    // Update animation mixer (CRITICAL: This makes animations play!)
+    this.mixer.update(delta);
+    
+    // Debug: Log mixer update every 60 frames (~1 second) when animations not playing
+    if (!window.spiderMixerDebugShown) {
+      const currentActionRunning = this.currentAction && this.currentAction.isRunning();
+      if (!currentActionRunning && this.currentAction) {
+        console.warn("⚠️ [ALIEN_SPIDER] Mixer updating but current action not running:", {
+          actionName: this.currentAction.getClip().name,
+          isRunning: currentActionRunning,
+          delta: delta.toFixed(4),
+          behaviorMode: this.behaviorMode
+        });
+        window.spiderMixerDebugShown = true;
+        setTimeout(() => { window.spiderMixerDebugShown = false; }, 2000);
+      }
     }
     
     // Update behavior based on current mode

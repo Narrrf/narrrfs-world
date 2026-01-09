@@ -2,8 +2,9 @@
 # 🚀 RENDER STARTUP SCRIPT - PERMANENT PARTNER & ASSET PERSISTENCE
 # Created: October 31, 2025
 # Updated: January 6, 2026 - Added three.js asset symlinks
+# Updated: January 9, 2026 - Added glyph asset symlinks
 # Purpose: Auto-restore database and symlinks on every deployment
-# This script ensures partner images and three.js assets persist across all deployments forever
+# This script ensures partner images, three.js assets, and glyph assets persist across all deployments forever
 
 echo "🚀 Narrrf's World - Render Startup Script"
 echo "=========================================="
@@ -45,33 +46,83 @@ echo "🎮 Setting up three.js asset symlinks..."
 DATA_BASE="/data/public/three.js/public"
 WEB_BASE="/var/www/html/public/three.js/public"
 
-# Ensure persistent directories exist
+# Ensure persistent directories exist (all directories needed for game)
 mkdir -p "$DATA_BASE/textures/3d models/"
+mkdir -p "$DATA_BASE/textures/grass/"
+mkdir -p "$DATA_BASE/textures/backgrounds/"
+mkdir -p "$DATA_BASE/textures/blocks/"
+mkdir -p "$DATA_BASE/textures/plants/"
 mkdir -p "$DATA_BASE/sounds/"
 mkdir -p "$DATA_BASE/audio/"
+mkdir -p "$DATA_BASE/models/"
+mkdir -p "$DATA_BASE/videos/"
 chmod -R 755 "$DATA_BASE/"
 chown -R www-data:www-data "$DATA_BASE/"
 
 # Remove any existing directories/broken symlinks
 rm -rf "$WEB_BASE/textures/3d models/"
+rm -rf "$WEB_BASE/textures/grass/"
+rm -rf "$WEB_BASE/textures/backgrounds/"
+rm -rf "$WEB_BASE/textures/blocks/"
+rm -rf "$WEB_BASE/textures/plants/"
 rm -rf "$WEB_BASE/sounds/"
 rm -rf "$WEB_BASE/audio/"
+rm -rf "$WEB_BASE/models/"
+rm -rf "$WEB_BASE/videos/"
 
 # Create parent directories in /var/www/html/ (if needed for symlinks)
 mkdir -p "$WEB_BASE/textures/"
 mkdir -p "$WEB_BASE/"
 
-# Create symlinks from /var/www/html/ to /data/
+# Create symlinks from /var/www/html/ to /data/ (ALL directories needed)
 ln -s "$DATA_BASE/textures/3d models" "$WEB_BASE/textures/3d models"
+ln -s "$DATA_BASE/textures/grass" "$WEB_BASE/textures/grass"
+ln -s "$DATA_BASE/textures/backgrounds" "$WEB_BASE/textures/backgrounds"
+ln -s "$DATA_BASE/textures/blocks" "$WEB_BASE/textures/blocks"
+ln -s "$DATA_BASE/textures/plants" "$WEB_BASE/textures/plants"
 ln -s "$DATA_BASE/sounds" "$WEB_BASE/sounds"
 ln -s "$DATA_BASE/audio" "$WEB_BASE/audio"
+ln -s "$DATA_BASE/models" "$WEB_BASE/models"
+ln -s "$DATA_BASE/videos" "$WEB_BASE/videos"
 
 # Set symlink permissions
 chown -h www-data:www-data "$WEB_BASE/textures/3d models" 2>/dev/null || true
+chown -h www-data:www-data "$WEB_BASE/textures/grass" 2>/dev/null || true
+chown -h www-data:www-data "$WEB_BASE/textures/backgrounds" 2>/dev/null || true
+chown -h www-data:www-data "$WEB_BASE/textures/blocks" 2>/dev/null || true
+chown -h www-data:www-data "$WEB_BASE/textures/plants" 2>/dev/null || true
 chown -h www-data:www-data "$WEB_BASE/sounds" 2>/dev/null || true
 chown -h www-data:www-data "$WEB_BASE/audio" 2>/dev/null || true
+chown -h www-data:www-data "$WEB_BASE/models" 2>/dev/null || true
+chown -h www-data:www-data "$WEB_BASE/videos" 2>/dev/null || true
 
-echo "✅ Three.js asset symlinks created"
+echo "✅ Three.js asset symlinks created (all directories: 3d models, grass, backgrounds, blocks, plants, sounds, audio, models, videos)"
+
+# STEP 3.5: Create Glyph Asset Symlinks
+echo "🎮 Setting up glyph asset symlinks..."
+
+# Define glyph paths
+GLYPH_DATA_BASE="/data/public/glyph"
+GLYPH_WEB_BASE="/var/www/html/public/glyph"
+
+# Ensure persistent directory exists
+mkdir -p "$GLYPH_DATA_BASE/glyph3d"
+chmod -R 755 "$GLYPH_DATA_BASE/"
+chown -R www-data:www-data "$GLYPH_DATA_BASE/"
+
+# Remove any existing directory/broken symlink
+rm -rf "$GLYPH_WEB_BASE/glyph3d"
+
+# Create parent directories in /var/www/html/ (if needed)
+mkdir -p "$GLYPH_WEB_BASE/"
+
+# Create symlink from /var/www/html/ to /data/
+ln -s "$GLYPH_DATA_BASE/glyph3d" "$GLYPH_WEB_BASE/glyph3d"
+
+# Set symlink permissions
+chown -h www-data:www-data "$GLYPH_WEB_BASE/glyph3d" 2>/dev/null || true
+
+echo "✅ Glyph asset symlinks created"
 
 # STEP 4: Verify Setup
 echo ""
@@ -79,11 +130,19 @@ echo "🔍 Verification:"
 echo "  Partner Symlink: $(ls -la /var/www/html/img/partners 2>/dev/null | grep -o '/var/www/html/img/partners -> /data/img/partners' || echo 'MISSING')"
 echo "  Partner Files: $(ls /data/img/partners 2>/dev/null | wc -l) partner files"
 echo "  3D Models Symlink: $(ls -la "$WEB_BASE/textures/" 2>/dev/null | grep -o "3d models -> /data" || echo 'MISSING')"
+echo "  Grass Symlink: $(ls -la "$WEB_BASE/textures/" 2>/dev/null | grep -o "grass -> /data" || echo 'MISSING')"
+echo "  Backgrounds Symlink: $(ls -la "$WEB_BASE/textures/" 2>/dev/null | grep -o "backgrounds -> /data" || echo 'MISSING')"
 echo "  Sounds Symlink: $(ls -la "$WEB_BASE/" 2>/dev/null | grep -o "sounds -> /data" || echo 'MISSING')"
 echo "  Audio Symlink: $(ls -la "$WEB_BASE/" 2>/dev/null | grep -o "audio -> /data" || echo 'MISSING')"
+echo "  Models Symlink: $(ls -la "$WEB_BASE/" 2>/dev/null | grep -o "models -> /data" || echo 'MISSING')"
+echo "  Glyph3d Symlink: $(ls -la "$GLYPH_WEB_BASE/" 2>/dev/null | grep -o "glyph3d -> /data" || echo 'MISSING')"
 echo "  3D Models Files: $(find "$DATA_BASE/textures/3d models/" -type f 2>/dev/null | wc -l) files"
+echo "  Grass Files: $(find "$DATA_BASE/textures/grass/" -type f 2>/dev/null | wc -l) files"
+echo "  Background Files: $(find "$DATA_BASE/textures/backgrounds/" -type f 2>/dev/null | wc -l) files"
 echo "  Sounds Files: $(find "$DATA_BASE/sounds/" -type f 2>/dev/null | wc -l) files"
 echo "  Audio Files: $(find "$DATA_BASE/audio/" -type f 2>/dev/null | wc -l) files"
+echo "  Model Files: $(find "$DATA_BASE/models/" -type f 2>/dev/null | wc -l) files"
+echo "  Glyph3d Files: $(find "$GLYPH_DATA_BASE/glyph3d/" -type f 2>/dev/null | wc -l) files"
 echo "  Database: $([ -f /var/www/html/db/narrrf_world.sqlite ] && echo 'EXISTS' || echo 'MISSING')"
 
 echo ""

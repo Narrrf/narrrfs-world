@@ -20659,7 +20659,26 @@ function updateLevel6(delta) {
   }
   
   // 🔥 PHOENIX BOSS: Update Phoenix boss (AI, animations, movement, attacks)
-  if (phoenixBoss && phoenixBoss.isAlive && typeof phoenixBoss.update === 'function') {
+  // CRITICAL FIX (January 6, 2026): Remove isAlive check - update() needs to run for animations even when dead
+  // The update() method handles death animations internally, so we must call it regardless of isAlive state
+  if (phoenixBoss && typeof phoenixBoss.update === 'function') {
+    // Debug: Log mixer status every 60 frames (~1 second) to verify updates are happening
+    if (!window.phoenixUpdateLogShown) {
+      const hasModel = !!phoenixBoss.model;
+      const hasMixer = !!phoenixBoss.mixer;
+      const isAlive = phoenixBoss.isAlive !== undefined ? phoenixBoss.isAlive : 'undefined';
+      const currentAction = phoenixBoss.currentAction ? phoenixBoss.currentAction.getClip().name : 'none';
+      console.log("🔥 [LEVEL 6] Phoenix update() called:", {
+        hasModel: hasModel,
+        hasMixer: hasMixer,
+        isAlive: isAlive,
+        currentAction: currentAction,
+        delta: delta.toFixed(4)
+      });
+      window.phoenixUpdateLogShown = true;
+      setTimeout(() => { window.phoenixUpdateLogShown = false; }, 2000); // Reset after 2 seconds
+    }
+    
     phoenixBoss.update(delta);
     
     // CRITICAL: Hide boss health bar when Phoenix HP reaches 0 (January 4, 2026)
@@ -20677,11 +20696,44 @@ function updateLevel6(delta) {
         guiSystem.hideBossHealthBar();
       }
     }
+  } else if (phoenixBoss && !phoenixBoss.update) {
+    // Debug: Phoenix exists but update method not found
+    console.warn("⚠️ [LEVEL 6] Phoenix boss exists but update() method not found:", {
+      hasModel: !!phoenixBoss.model,
+      hasMixer: !!phoenixBoss.mixer,
+      typeofUpdate: typeof phoenixBoss.update
+    });
   }
   
   // 🕷️ ALIEN SPIDER BOSS: Update Alien Spider boss (AI, animations, movement, attacks)
-  if (alienSpiderBoss && alienSpiderBoss.isAlive && typeof alienSpiderBoss.update === 'function') {
+  // CRITICAL FIX (January 6, 2026): Remove isAlive check - update() needs to run for animations even when dead
+  // The update() method handles death animations internally, so we must call it regardless of isAlive state
+  if (alienSpiderBoss && typeof alienSpiderBoss.update === 'function') {
+    // Debug: Log mixer status every 60 frames (~1 second) to verify updates are happening
+    if (!window.spiderUpdateLogShown) {
+      const hasModel = !!alienSpiderBoss.model;
+      const hasMixer = !!alienSpiderBoss.mixer;
+      const isAlive = alienSpiderBoss.isAlive !== undefined ? alienSpiderBoss.isAlive : 'undefined';
+      const currentAction = alienSpiderBoss.currentAction ? alienSpiderBoss.currentAction.getClip().name : 'none';
+      console.log("🕷️ [LEVEL 6] Alien Spider update() called:", {
+        hasModel: hasModel,
+        hasMixer: hasMixer,
+        isAlive: isAlive,
+        currentAction: currentAction,
+        delta: delta.toFixed(4)
+      });
+      window.spiderUpdateLogShown = true;
+      setTimeout(() => { window.spiderUpdateLogShown = false; }, 2000); // Reset after 2 seconds
+    }
+    
     alienSpiderBoss.update(delta);
+  } else if (alienSpiderBoss && !alienSpiderBoss.update) {
+    // Debug: Alien Spider exists but update method not found
+    console.warn("⚠️ [LEVEL 6] Alien Spider boss exists but update() method not found:", {
+      hasModel: !!alienSpiderBoss.model,
+      hasMixer: !!alienSpiderBoss.mixer,
+      typeofUpdate: typeof alienSpiderBoss.update
+    });
   }
   
   // CRITICAL: Ensure boss health bar is only visible in Level 6 (January 4, 2026)

@@ -762,9 +762,28 @@ export class PhoenixBoss2 {
     // Only skip if model doesn't exist
     if (!this.model) return;
     
-    // Update animation mixer
-    if (this.mixer) {
-      this.mixer.update(delta);
+    // CRITICAL FIX (January 6, 2026): Debug mixer update to verify animations are running
+    if (!this.mixer) {
+      console.warn("⚠️ [PHOENIX2] update() called but mixer not initialized yet");
+      return; // Can't update animations without mixer
+    }
+    
+    // Update animation mixer (CRITICAL: This makes animations play!)
+    this.mixer.update(delta);
+    
+    // Debug: Log mixer update every 60 frames (~1 second) when animations not playing
+    if (!window.phoenixMixerDebugShown) {
+      const currentActionRunning = this.currentAction && this.currentAction.isRunning();
+      if (!currentActionRunning && this.currentAction) {
+        console.warn("⚠️ [PHOENIX2] Mixer updating but current action not running:", {
+          actionName: this.currentAction.getClip().name,
+          isRunning: currentActionRunning,
+          delta: delta.toFixed(4),
+          behaviorMode: this.behaviorMode
+        });
+        window.phoenixMixerDebugShown = true;
+        setTimeout(() => { window.phoenixMixerDebugShown = false; }, 2000);
+      }
     }
     
     // Update phase system (if enabled)

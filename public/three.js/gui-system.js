@@ -231,6 +231,17 @@ export class GUISystem {
     // Store resolveAssetPath for easy access
     this.resolveAssetPath = this.config.resolveAssetPath;
     
+    // Helper function to resolve background image paths for CSS (needs absolute URLs in production)
+    this.resolveBackgroundImagePath = (relativePath) => {
+      let resolvedPath = this.resolveAssetPath(relativePath);
+      const isProduction = this.config.getIsProduction ? this.config.getIsProduction() : false;
+      // For CSS background-image URLs in production, use absolute URLs (Render symlinks /data/ → /var/www/html/)
+      if (isProduction && resolvedPath.startsWith('/')) {
+        resolvedPath = `${window.location.origin}${resolvedPath}`;
+      }
+      return resolvedPath;
+    };
+    
     // DOM container
     this.container = document.body;
     
@@ -2035,7 +2046,7 @@ export class GUISystem {
     Object.assign(this.level1CompletionScreen.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+      backgroundImage: `url('${this.resolveBackgroundImagePath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2116,7 +2127,7 @@ export class GUISystem {
     Object.assign(this.level2CompletionScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+      backgroundImage: `url('${this.resolveBackgroundImagePath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2207,7 +2218,7 @@ export class GUISystem {
     Object.assign(this.level3CompletionScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+      backgroundImage: `url('${this.resolveBackgroundImagePath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2330,7 +2341,7 @@ export class GUISystem {
     Object.assign(this.level4CompletionScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+      backgroundImage: `url('${this.resolveBackgroundImagePath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2420,11 +2431,14 @@ export class GUISystem {
       this.config.onTogglePause(true);
     }
     
+    // CRITICAL: For CSS background-image URLs, use helper function for absolute URLs in production
+    const levelSelectorBgPath = this.resolveBackgroundImagePath("textures/backgrounds/cheesetemple1.png");
+    
     this.levelSelectorScreen = document.createElement("div");
     Object.assign(this.levelSelectorScreen.style, {
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+      backgroundImage: `url('${levelSelectorBgPath}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2618,12 +2632,21 @@ export class GUISystem {
       this.hideMainMenu();
     }
     
+    // CRITICAL: For CSS background-image URLs, use absolute URLs in production
+    // Assets stored in /data/ on Render, symlinked to /var/www/html/
+    let mainMenuBgPath = this.resolveAssetPath("textures/backgrounds/cheesetemple1.png");
+    const isProduction = this.config.getIsProduction ? this.config.getIsProduction() : false;
+    if (isProduction && mainMenuBgPath.startsWith('/')) {
+      mainMenuBgPath = `${window.location.origin}${mainMenuBgPath}`;
+    }
+    console.log(`🎨 [GUI] Main menu background image path: ${mainMenuBgPath} (production: ${isProduction})`);
+    
     // Create new menu
     this.mainMenu = document.createElement("div");
     Object.assign(this.mainMenu.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "24px",
-      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+      backgroundImage: `url('${mainMenuBgPath}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2750,13 +2773,16 @@ export class GUISystem {
       this.hideControlsMenu();
     }
     
+    // CRITICAL: For CSS background-image URLs, use helper function for absolute URLs in production
+    const controlsMenuBgPath = this.resolveBackgroundImagePath("textures/backgrounds/cheesetemple1.png");
+    
     // Create new menu
     this.controlsMenu = document.createElement("div");
     Object.assign(this.controlsMenu.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column",
       // FIX: Add background image like other menus
-      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+      backgroundImage: `url('${controlsMenuBgPath}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -2944,7 +2970,7 @@ export class GUISystem {
     Object.assign(this.characterSelectionMenu.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "18px",
-      backgroundImage: `url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}')`,
+      backgroundImage: `url('${this.resolveBackgroundImagePath("textures/backgrounds/cheesetemple1.png")}')`,
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
@@ -3560,6 +3586,9 @@ export class GUISystem {
       existing.remove();
     }
     
+    // CRITICAL: For CSS background-image URLs, use helper function for absolute URLs in production
+    const backgroundImagePath = this.resolveBackgroundImagePath("textures/backgrounds/cheesetemple1.png");
+    
     // Create loading screen container
     const loadingScreen = document.createElement('div');
     loadingScreen.id = 'loadingScreen';
@@ -3569,7 +3598,7 @@ export class GUISystem {
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: url('${this.resolveAssetPath("textures/backgrounds/cheesetemple1.png")}');
+      background-image: url('${backgroundImagePath}');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;

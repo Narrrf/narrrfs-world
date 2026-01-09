@@ -1,7 +1,9 @@
 <?php
-// === THREE.JS ASSET UPLOAD ENDPOINT ===
+// === GAME ASSET UPLOAD ENDPOINT ===
 // Allows Discord bot or authenticated requests to upload assets to /data/ (persistent storage)
+// Supports: Three.js assets (/data/public/three.js/public/) and Glyph assets (/data/public/glyph/)
 // Date: January 4, 2026
+// Updated: January 9, 2026 - Added glyph path support
 
 // Increase PHP upload limits for large asset uploads (up to 500MB)
 // Fallback if .htaccess doesn't work
@@ -74,24 +76,45 @@ if ($_FILES['file']['error'] !== UPLOAD_ERR_OK) {
 $uploadedFile = $_FILES['file'];
 $targetPath = $_POST['target_path'] ?? '';
 
-// Validate target path (security: only allow paths under /data/public/three.js/public/)
+// Validate target path (security: only allow paths under /data/public/three.js/public/ or /data/public/glyph/)
 if (empty($targetPath)) {
     http_response_code(400);
     outputJson(['success' => false, 'error' => 'target_path parameter required']);
 }
 
-// Normalize path and ensure it's under /data/public/three.js/public/
+// Normalize path and ensure it's under allowed base paths
 $targetPath = str_replace('\\', '/', $targetPath);
-$basePath = '/data/public/three.js/public/';
+$allowedBasePaths = [
+    '/data/public/three.js/public/',
+    '/data/public/glyph/'
+];
 
 // Security: Ensure path is within allowed directory
-if (strpos($targetPath, $basePath) !== 0) {
-    // If relative path, prepend base path
+$pathValid = false;
+$matchedBasePath = null;
+
+foreach ($allowedBasePaths as $basePath) {
+    if (strpos($targetPath, $basePath) === 0) {
+        $pathValid = true;
+        $matchedBasePath = $basePath;
+        break;
+    }
+}
+
+if (!$pathValid) {
+    // If relative path, try to prepend appropriate base path
     if (strpos($targetPath, '/') !== 0) {
-        $targetPath = $basePath . ltrim($targetPath, '/');
+        // Try to determine base path from context or default to three.js
+        // For now, default to three.js if no base path specified
+        $targetPath = $allowedBasePaths[0] . ltrim($targetPath, '/');
+        $matchedBasePath = $allowedBasePaths[0];
     } else {
         http_response_code(400);
-        outputJson(['success' => false, 'error' => 'Invalid target path - must be under /data/public/three.js/public/']);
+        outputJson([
+            'success' => false, 
+            'error' => 'Invalid target path - must be under /data/public/three.js/public/ or /data/public/glyph/',
+            'provided_path' => $targetPath
+        ]);
     }
 }
 
