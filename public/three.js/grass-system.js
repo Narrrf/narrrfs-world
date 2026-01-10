@@ -2343,11 +2343,138 @@ export class GrassSystem {
   }
   
   setBladeCount(count) {
-    this.options.bladeCount = Math.max(0, Math.min(2000000, count)); // Increased to 2M for testing
-    if (this.options.groundType === 'grass') {
-      // Recreate grass field with new count
-      this.setGroundType('grass');
+    try {
+      const newCount = Math.max(0, Math.min(2000000, count)); // Increased to 2M for testing
+      const oldCount = this.options.bladeCount;
+      
+      // Update the option immediately (for UI display)
+      this.options.bladeCount = newCount;
+      
+      // 🔧 FIX (January 9, 2026): Force recreation if blade count changed and we're already in grass mode
+      // This ensures the grass field is regenerated with the new blade count immediately
+      // BUT: Don't regenerate on every slider move (only when slider is released or when count actually changes significantly)
+      // This prevents crashes from too many simultaneous regenerations
+      
+      if (this.options.groundType === 'grass' && newCount !== oldCount) {
+        // 🔧 FIX (January 9, 2026): Prevent multiple simultaneous regenerations (causes crashes)
+        // Clear any pending regeneration timeout
+        if (this._bladeCountRegenTimeout) {
+          clearTimeout(this._bladeCountRegenTimeout);
+          this._bladeCountRegenTimeout = null;
+        }
+        
+        // Debounce regeneration: wait 300ms after last slider change before regenerating
+        // This prevents regenerating on every slider move (which causes crashes)
+        this._bladeCountRegenTimeout = setTimeout(() => {
+          try {
+            this._bladeCountRegenTimeout = null;
+            
+            // Double-check that count still differs (might have changed during timeout)
+            const currentCount = this.options.bladeCount;
+            if (currentCount !== oldCount && this.options.groundType === 'grass') {
+              console.log(`🌱 [GRASS] Blade count changed from ${oldCount.toLocaleString()} to ${currentCount.toLocaleString()}, regenerating grass field`);
+              
+              // Check if we're already regenerating (prevent concurrent regenerations)
+              if (this.isInitializing) {
+                console.warn(`⚠️ [GRASS] Grass system is already initializing, skipping regeneration`);
+                return;
+              }
+              
+              // CRITICAL: Use regenerateGrass() if available (handles both single mesh and chunked grass)
+              // This is the cleanest way to regenerate with new blade count
+              if (typeof this.regenerateGrass === 'function') {
+                // Wrap in try-catch to prevent crashes
+                this.regenerateGrass().then(() => {
+                  console.log(`✅ [GRASS] Grass field regenerated with ${currentCount.toLocaleString()} blades`);
+                }).catch(err => {
+                  console.error(`❌ [GRASS] Failed to regenerate grass:`, err);
+                  // Fallback: Use setGroundType approach (but only if not initializing)
+                  if (!this.isInitializing) {
+                    try {
+                      this._forceRecreateGrass();
+                    } catch (fallbackErr) {
+                      console.error(`❌ [GRASS] Fallback regeneration also failed:`, fallbackErr);
+                    }
+                  }
+                });
+              } else {
+                // Fallback: Force recreation by disposing meshes (but only if not initializing)
+                if (!this.isInitializing) {
+                  try {
+                    this._forceRecreateGrass();
+                  } catch (fallbackErr) {
+                    console.error(`❌ [GRASS] Fallback regeneration failed:`, fallbackErr);
+                  }
+                }
+              }
+            }
+          } catch (timeoutErr) {
+            console.error(`❌ [GRASS] Error in blade count regeneration timeout:`, timeoutErr);
+          }
+        }, 300); // Wait 300ms after last slider change before regenerating
+      }
+    } catch (err) {
+      console.error(`❌ [GRASS] Error in setBladeCount:`, err);
+      // Don't crash - just log the error
     }
+  }
+  
+  /**
+   * Internal helper to force grass recreation by disposing meshes
+   * Used when regenerateGrass() is not available
+   */
+  _forceRecreateGrass() {
+    // CRITICAL: Dispose BOTH groundMesh AND undergroundMesh to force recreation
+    // setGroundType('grass') checks if both exist and skips if they do
+    
+    // Dispose groundMesh (grass blades)
+    if (this.groundMesh) {
+      if (this.scene.children.includes(this.groundMesh)) {
+        this.scene.remove(this.groundMesh);
+      }
+      if (this.groundMesh.geometry) {
+        this.groundMesh.geometry.dispose();
+      }
+      if (this.groundMesh.material) {
+        if (Array.isArray(this.groundMesh.material)) {
+          this.groundMesh.material.forEach(mat => mat.dispose());
+        } else {
+          this.groundMesh.material.dispose();
+        }
+      }
+      this.groundMesh = null;
+    }
+    
+    // CRITICAL FIX: Also dispose undergroundMesh (setGroundType checks for this too!)
+    if (this.undergroundMesh) {
+      if (this.scene.children.includes(this.undergroundMesh)) {
+        this.scene.remove(this.undergroundMesh);
+      }
+      if (this.undergroundMesh.geometry) {
+        this.undergroundMesh.geometry.dispose();
+      }
+      if (this.undergroundMesh.material) {
+        if (Array.isArray(this.undergroundMesh.material)) {
+          this.undergroundMesh.material.forEach(mat => mat.dispose());
+        } else {
+          this.undergroundMesh.material.dispose();
+        }
+      }
+      this.undergroundMesh = null;
+    }
+    
+    // Also dispose chunks if using chunked grass
+    if (this.useChunkedGrass) {
+      this.disposeAllChunks();
+    }
+    
+    // CRITICAL: Reset _isSettingGroundType flag to ensure setGroundType can proceed
+    // (In case it was set by a previous call)
+    this._isSettingGroundType = false;
+    
+    // Now call setGroundType('grass') which will recreate the grass field with new count
+    // Since both groundMesh and undergroundMesh are now null, setGroundType won't skip recreation
+    this.setGroundType('grass');
   }
   
   setGroundColor(color) {
@@ -2516,51 +2643,93 @@ export class GrassSystem {
    * @returns {Promise<void>} - Resolves when grass regeneration is complete
    */
   async regenerateGrass() {
-    const currentGroundType = this.options.groundType;
-    
-    if (currentGroundType !== 'grass') {
-      console.warn("🌱 [GRASS] Cannot regenerate - ground type is not 'grass'");
-      return;
-    }
-    
-    console.log("🌱 [GRASS] Regenerating grass with exclusion zones...", {
-      exclusionZones: this.exclusionZones.size,
-      useChunkedGrass: this.useChunkedGrass
-    });
-    
-    // Regenerate based on current mode
-    if (this.useChunkedGrass) {
-      // Chunked mode: Dispose all chunks and regenerate
-      this.disposeAllChunks();
-      this.isInitializing = true;
-      // generateInitialChunks uses callback, wrap in Promise
-      await new Promise((resolve) => {
-        this.generateInitialChunks(() => {
-          this.isInitializing = false;
-          console.log("✅ [GRASS] Chunked grass regenerated with exclusion zones");
-          resolve();
-        });
-      });
-    } else {
-      // Single mesh mode: Regenerate the single mesh
-      if (this.groundMesh) {
-        this.scene.remove(this.groundMesh);
-        if (this.groundMesh.geometry) this.groundMesh.geometry.dispose();
-        if (this.groundMesh.material) this.groundMesh.material.dispose();
+    try {
+      const currentGroundType = this.options.groundType;
+      
+      if (currentGroundType !== 'grass') {
+        console.warn("🌱 [GRASS] Cannot regenerate - ground type is not 'grass'");
+        return;
       }
       
-      if (this.grassTexture && this.cloudTexture) {
-        this.groundMesh = this.generateGrassField();
-        // Update uniforms with textures
-        if (this.groundMesh.userData.grassUniforms) {
-          this.groundMesh.userData.grassUniforms.grassTexture.value = this.grassTexture;
-          this.groundMesh.userData.grassUniforms.cloudTexture.value = this.cloudTexture;
-        }
-        this.scene.add(this.groundMesh);
-        console.log("✅ [GRASS] Single mesh grass regenerated with exclusion zones");
-      } else {
-        console.warn("🌱 [GRASS] Cannot regenerate - textures not loaded");
+      // 🔧 FIX (January 9, 2026): Prevent concurrent regenerations
+      if (this.isInitializing) {
+        console.warn("⚠️ [GRASS] Grass system is already initializing, skipping regeneration");
+        return;
       }
+      
+      console.log("🌱 [GRASS] Regenerating grass with exclusion zones...", {
+        exclusionZones: this.exclusionZones.size,
+        useChunkedGrass: this.useChunkedGrass,
+        bladeCount: this.options.bladeCount
+      });
+      
+      // Regenerate based on current mode
+      if (this.useChunkedGrass) {
+        // Chunked mode: Dispose all chunks and regenerate
+        this.disposeAllChunks();
+        this.isInitializing = true;
+        try {
+          // generateInitialChunks uses callback, wrap in Promise
+          await new Promise((resolve, reject) => {
+            try {
+              if (typeof this.generateInitialChunks !== 'function') {
+                reject(new Error('generateInitialChunks is not a function'));
+                return;
+              }
+              this.generateInitialChunks(() => {
+                this.isInitializing = false;
+                console.log("✅ [GRASS] Chunked grass regenerated with exclusion zones");
+                resolve();
+              });
+            } catch (err) {
+              this.isInitializing = false;
+              reject(err);
+            }
+          });
+        } catch (err) {
+          this.isInitializing = false;
+          throw err; // Re-throw to be caught by outer catch
+        }
+      } else {
+        // Single mesh mode: Regenerate the single mesh
+        if (this.groundMesh) {
+          if (this.scene && this.scene.children.includes(this.groundMesh)) {
+            this.scene.remove(this.groundMesh);
+          }
+          if (this.groundMesh.geometry) this.groundMesh.geometry.dispose();
+          if (this.groundMesh.material) {
+            if (Array.isArray(this.groundMesh.material)) {
+              this.groundMesh.material.forEach(mat => mat.dispose());
+            } else {
+              this.groundMesh.material.dispose();
+            }
+          }
+        }
+        
+        if (this.grassTexture && this.cloudTexture) {
+          // 🔧 FIX (January 9, 2026): Check if generateGrassField exists before calling
+          if (typeof this.generateGrassField !== 'function') {
+            throw new Error('generateGrassField is not a function');
+          }
+          this.groundMesh = this.generateGrassField();
+          // Update uniforms with textures
+          if (this.groundMesh && this.groundMesh.userData && this.groundMesh.userData.grassUniforms) {
+            this.groundMesh.userData.grassUniforms.grassTexture.value = this.grassTexture;
+            this.groundMesh.userData.grassUniforms.cloudTexture.value = this.cloudTexture;
+          }
+          if (this.scene && this.groundMesh) {
+            this.scene.add(this.groundMesh);
+          }
+          console.log("✅ [GRASS] Single mesh grass regenerated with exclusion zones");
+        } else {
+          console.warn("🌱 [GRASS] Cannot regenerate - textures not loaded");
+        }
+      }
+    } catch (err) {
+      // 🔧 FIX (January 9, 2026): Ensure isInitializing is reset on error
+      this.isInitializing = false;
+      console.error("❌ [GRASS] Error in regenerateGrass:", err);
+      throw err; // Re-throw so caller can handle it
     }
   }
   
