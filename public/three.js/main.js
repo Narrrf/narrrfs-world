@@ -1,20 +1,34 @@
 /**
- * 🚨 VERSION MARKER - PATH FIX VERSION
- * Date: January 4, 2026
- * Version: 2026-01-04-PATH-FIX
- * This version includes comprehensive path resolution fixes for local development
+ * 🚨 VERSION MARKER - STABLE PRODUCTION VERSION
+ * Date: January 9, 2026
+ * Version: 2026-01-09-STABLE-PRODUCTION
+ * Status: ✅ STABLE - PRODUCTION READY
+ * 
+ * This is the STABLE PRODUCTION VERSION with:
+ * - ✅ All path resolution fixes (unified for local and production)
+ * - ✅ All critical assets uploaded and verified (123 files)
+ * - ✅ Level 1 loading correctly in production
+ * - ✅ Asset management system working (API upload, persistent storage, symlinks)
+ * - ✅ All modules verified and working
+ * - ✅ Production tested and confirmed stable
+ * 
  * If you don't see this message in console, you're using cached code!
  */
-console.log("🚨 [VERSION CHECK] main.js v2026-01-04-PATH-FIX loaded - Path resolution fixes active!");
+console.log("✅ [STABLE VERSION] main.js v2026-01-09-STABLE-PRODUCTION loaded - Production verified stable!");
 /**
  * ============================================================================
  * 3D RIDDLE GAME - MAIN GAME LOOP
  * ============================================================================
  * 
- * 🎯 STABLE VERSION STATUS - December 20, 2025
+ * 🎯 STABLE VERSION STATUS - January 9, 2026
  * ============================================================================
  * 
- * ✅ **STABLE VERSION - PRODUCTION READY**
+ * ✅ **STABLE PRODUCTION VERSION - VERIFIED WORKING**
+ * 
+ * **MILESTONE:** First stable production version confirmed working!
+ * **Date:** January 9, 2026
+ * **Production URL:** https://narrrfs.world/public/three.js/3d-riddle-game.html
+ * **Level 1:** ✅ VERIFIED WORKING - Loads correctly without errors
  * 
  * This game has reached a stable, production-ready state with:
  * - ✅ All 6 levels working correctly (Level 1-6)
@@ -860,6 +874,129 @@ let resolvedDiscordId =
   null;
 
 console.log("✅ [DEBUG] Initial resolvedDiscordId:", resolvedDiscordId);
+
+// 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026)
+// Store user roles from Discord API
+let userRoles = [];
+let hasGodModeAccess = false; // Whether user has access to God Mode
+let userAvatarUrl = null; // User's Discord avatar URL
+const GOD_MODE_ROLES = ["admin", "moderator"]; // Discord role names (case-insensitive)
+const GOD_MODE_ROLE_ID = "1428901285754830858"; // Game Tester role ID
+
+// Role multipliers (matching api/dev/riddle-reward.php)
+const ROLE_MULTIPLIERS_BY_ID = {
+  '1332016526848692345': { multiplier: 2.0, name: '🎴 VIP Holder' },
+  '1402668301414563971': { multiplier: 1.5, name: '🏆 Holder' },
+  '1332017420591697972': { multiplier: 1.4, name: 'Champion' },
+  '1332108350518857842': { multiplier: 1.3, name: 'WL' },
+  '1417279348989497532': { multiplier: 1.3, name: 'Season Tester' },
+  '1332017614108758148': { multiplier: 1.2, name: 'Early Bird' },
+  '1399651053682692208': { multiplier: 1.1, name: '🧀 Cheese Hunter' }
+};
+
+const ROLE_MULTIPLIERS_BY_NAME = {
+  '🎴 VIP Holder': { multiplier: 2.0, name: '🎴 VIP Holder' },
+  'VIP Holder': { multiplier: 2.0, name: '🎴 VIP Holder' },
+  '🏆 Holder': { multiplier: 1.5, name: '🏆 Holder' },
+  'Holder': { multiplier: 1.5, name: '🏆 Holder' },
+  'Champion': { multiplier: 1.4, name: 'Champion' },
+  'WL': { multiplier: 1.3, name: 'WL' },
+  'Season Tester': { multiplier: 1.3, name: 'Season Tester' },
+  'Early Bird': { multiplier: 1.2, name: 'Early Bird' },
+  '🧀 Cheese Hunter': { multiplier: 1.1, name: '🧀 Cheese Hunter' },
+  'Cheese Hunter': { multiplier: 1.1, name: '🧀 Cheese Hunter' }
+};
+
+const ROLE_PRIORITY = [
+  '1332016526848692345', // VIP Holder (highest priority)
+  '1402668301414563971', // Holder
+  '1332017420591697972', // Champion
+  '1332108350518857842', // WL
+  '1417279348989497532', // Season Tester
+  '1332017614108758148', // Early Bird
+  '1399651053682692208'  // Cheese Hunter
+];
+
+/**
+ * Check if user has God Mode access based on roles
+ * @returns {boolean} True if user has Admin, Moderator, or Game Tester role
+ */
+function checkGodModeAccess() {
+  if (!userRoles || userRoles.length === 0) {
+    return false;
+  }
+  
+  // Check for role names (case-insensitive)
+  const hasRoleByName = userRoles.some(role => {
+    const roleLower = typeof role === 'string' ? role.toLowerCase() : '';
+    return GOD_MODE_ROLES.some(allowedRole => roleLower === allowedRole.toLowerCase());
+  });
+  
+  // Check for Game Tester role ID
+  const hasRoleById = userRoles.some(role => {
+    const roleStr = String(role);
+    return roleStr === GOD_MODE_ROLE_ID;
+  });
+  
+  return hasRoleByName || hasRoleById;
+}
+
+/**
+ * Calculate highest role multiplier from user roles
+ * @returns {Object} { multiplier: number, roleName: string } or { multiplier: 1.0, roleName: 'Default' }
+ */
+function getHighestRoleMultiplier() {
+  if (!userRoles || userRoles.length === 0) {
+    return { multiplier: 1.0, roleName: 'Default' };
+  }
+  
+  let highestMultiplier = 1.0;
+  let highestRoleName = 'Default';
+  let highestPriority = -1;
+  
+  // Check roles in priority order
+  for (const role of userRoles) {
+    const roleStr = String(role);
+    let roleInfo = null;
+    let priority = -1;
+    
+    // Check by ID first
+    if (ROLE_MULTIPLIERS_BY_ID[roleStr]) {
+      roleInfo = ROLE_MULTIPLIERS_BY_ID[roleStr];
+      priority = ROLE_PRIORITY.indexOf(roleStr);
+    } else {
+      // Check by name (case-insensitive)
+      const roleLower = roleStr.toLowerCase();
+      for (const [key, value] of Object.entries(ROLE_MULTIPLIERS_BY_NAME)) {
+        if (key.toLowerCase() === roleLower) {
+          roleInfo = value;
+          // Find priority by ID if possible
+          for (const [id, info] of Object.entries(ROLE_MULTIPLIERS_BY_ID)) {
+            if (info.name === value.name) {
+              priority = ROLE_PRIORITY.indexOf(id);
+              break;
+            }
+          }
+          break;
+        }
+      }
+    }
+    
+    if (roleInfo) {
+      // Higher multiplier OR same multiplier but higher priority (earlier in priority list = better)
+      if (roleInfo.multiplier > highestMultiplier || 
+          (roleInfo.multiplier === highestMultiplier && (priority >= 0 && (highestPriority < 0 || priority < highestPriority)))) {
+        highestMultiplier = roleInfo.multiplier;
+        highestRoleName = roleInfo.name;
+        if (priority >= 0) {
+          highestPriority = priority;
+        }
+      }
+    }
+  }
+  
+  return { multiplier: highestMultiplier, roleName: highestRoleName };
+}
 
 // Debug: Log all potential player name sources
 const playerNameSources = {
@@ -8830,6 +8967,12 @@ function initializeGUISystem() {
       getChestSystem: () => chestSystem || null,
       // Path resolution function for asset paths
       resolveAssetPath: resolveAssetPath,
+      // 🔐 ROLE-BASED ACCESS & USER PROFILE (January 9, 2026)
+      getResolvedDiscordId: () => resolvedDiscordId || null,
+      getUserAvatarUrl: () => userAvatarUrl || null,
+      getHighestRoleMultiplier: () => getHighestRoleMultiplier(),
+      fetchPlayerDetails: fetchPlayerDetails, // Allow GUI to refresh player details
+      PROFILE_URL: PROFILE_URL, // Profile page URL for login link
       // Player position callback for XYZ display in debug overlay
       getPlayerPosition: () => {
         // Use camera position (most accurate for first-person view)
@@ -10199,11 +10342,13 @@ function getOptionsMenu() {
     }
 
     // 🚀 GOD MODE Toggle (Double Speed + Fly Mode)
+    // 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026)
+    // Only show God Mode toggle if user has access (Admin, Moderator, or Game Tester)
     const godModeSection = document.createElement("div");
     Object.assign(godModeSection.style, {
       width: "100%",
       marginBottom: "20px",
-      display: "flex",
+      display: hasGodModeAccess ? "flex" : "none", // Hide if no access
       flexDirection: "column",
       gap: "8px",
       alignItems: "center"
@@ -10219,6 +10364,9 @@ function getOptionsMenu() {
       fontWeight: "600"
     });
     godModeSection.appendChild(godModeLabel);
+    
+    // Store reference to God Mode section for later updates
+    optionsMenu._godModeSection = godModeSection;
 
     const godModeToggle = document.createElement("div");
     Object.assign(godModeToggle.style, {
@@ -10245,6 +10393,11 @@ function getOptionsMenu() {
       color: !godMode ? "#ffe066" : "#cbd5f5"
     });
     godModeOffBtn.addEventListener("click", () => {
+      // 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026)
+      if (!hasGodModeAccess) {
+        console.warn("🔐 [GOD MODE] Access denied - user does not have permission");
+        return;
+      }
       godMode = false;
       // Reset fly states when disabling GOD mode
       movement.flyUp = false;
@@ -10286,6 +10439,11 @@ function getOptionsMenu() {
       color: godMode ? "#22c55e" : "#cbd5f5"
     });
     godModeOnBtn.addEventListener("click", () => {
+      // 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026)
+      if (!hasGodModeAccess) {
+        console.warn("🔐 [GOD MODE] Access denied - user does not have permission");
+        return;
+      }
       godMode = true;
       // Reset fly states when enabling GOD mode (start fresh)
       movement.flyUp = false;
@@ -14367,6 +14525,26 @@ function updateLandscapeButtons() {
 
 function updateGodModeButtons() {
   if (!optionsMenu) return;
+  
+  // 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026)
+  // Update God Mode section visibility based on access
+  if (optionsMenu._godModeSection) {
+    optionsMenu._godModeSection.style.display = hasGodModeAccess ? "flex" : "none";
+  }
+  
+  // If user doesn't have access, disable God Mode and don't show buttons
+  if (!hasGodModeAccess) {
+    if (godMode) {
+      godMode = false;
+      try {
+        localStorage.setItem("cheese_temple_god_mode", "false");
+      } catch (e) {
+        console.warn("⚠️ [GOD MODE] Failed to save God Mode setting:", e);
+      }
+    }
+    return; // Don't update buttons if section is hidden
+  }
+  
   const godModeOffBtn = optionsMenu._godModeOffBtn;
   const godModeOnBtn = optionsMenu._godModeOnBtn;
   if (godModeOffBtn && godModeOnBtn) {
@@ -14860,6 +15038,64 @@ async function fetchPlayerDetails() {
       } else {
         console.warn("⚠️ [DEBUG] Balance not a number:", data.user.balance);
       }
+      
+      // 🎨 USER PROFILE (January 9, 2026)
+      // Store avatar URL from API response
+      if (data.user.avatar_url) {
+        userAvatarUrl = data.user.avatar_url;
+        console.log("✅ [DEBUG] Avatar URL updated:", userAvatarUrl);
+      } else {
+        userAvatarUrl = null;
+        console.log("⚠️ [DEBUG] No avatar URL in API response");
+      }
+      
+      // 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026)
+      // Store user roles from API response
+      if (Array.isArray(data.user.roles)) {
+        userRoles = data.user.roles;
+        console.log("🔐 [ROLES] User roles loaded:", userRoles);
+        const roleMultiplier = getHighestRoleMultiplier();
+        console.log("🔐 [ROLES] Highest role multiplier:", roleMultiplier);
+      } else {
+        userRoles = [];
+        console.log("🔐 [ROLES] No roles found in API response");
+      }
+      
+      // Check if user has God Mode access
+      const previousGodModeAccess = hasGodModeAccess;
+      hasGodModeAccess = checkGodModeAccess();
+      console.log("🔐 [GOD MODE] Access check:", {
+        hasAccess: hasGodModeAccess,
+        roles: userRoles
+      });
+      
+      // Disable God Mode if user doesn't have access
+      if (!hasGodModeAccess && godMode) {
+        console.log("🔐 [GOD MODE] Disabling God Mode - user does not have access");
+        godMode = false;
+        try {
+          localStorage.setItem("cheese_temple_god_mode", "false");
+        } catch (e) {
+          console.warn("⚠️ [GOD MODE] Failed to save God Mode setting:", e);
+        }
+        // Update UI if options menu is already created
+        if (typeof updateGodModeButtons === 'function') {
+          updateGodModeButtons();
+        }
+        // Update visibility of God Mode sections
+        if (optionsMenu && optionsMenu._godModeSection) {
+          // Will be handled in showOptionsMenu when menu is opened
+        }
+      }
+      
+      // Update God Mode access status in UI
+      if (previousGodModeAccess !== hasGodModeAccess) {
+        console.log("🔐 [GOD MODE] Access status changed:", {
+          previous: previousGodModeAccess,
+          current: hasGodModeAccess
+        });
+      }
+      
       updatePausePlayerInfo();
     } else {
       console.warn("⚠️ [DEBUG] API response not successful:", data);
@@ -15591,6 +15827,8 @@ function refreshJoystickMovementFlags() {
 const clock = new THREE.Clock();
 
 // 🚀 GOD MODE - Double speed + Fly mode (like Minecraft)
+// 🔐 ROLE-BASED ACCESS CONTROL (January 9, 2026): Access is checked in fetchPlayerDetails()
+// God Mode is automatically disabled if user doesn't have Admin, Moderator, or Game Tester role
 let godMode = false;
 try {
   const savedGodMode = localStorage.getItem("cheese_temple_god_mode");

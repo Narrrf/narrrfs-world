@@ -6,13 +6,28 @@
 
 param(
     [Parameter(Mandatory=$false)]
-    [string]$BotSecret = ""
+    [string]$BotSecret = "",
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$Skip3DModels = $false,
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$Force = $false
 )
 
-Write-Host "🚀 URGENT: UPLOADING ALL THREE.JS ASSETS TO RENDER" -ForegroundColor Green
+Write-Host "URGENT: UPLOADING THREE.JS ASSETS TO RENDER" -ForegroundColor Green
 Write-Host "===================================================" -ForegroundColor Green
-Write-Host "⚠️  This will upload ALL files (1,499+ files)" -ForegroundColor Yellow
-Write-Host "⚠️  Estimated time: 30-60 minutes depending on file sizes" -ForegroundColor Yellow
+if ($Skip3DModels) {
+    Write-Host "Skipping 3D models (already uploaded - 1,355 files)" -ForegroundColor Green
+    Write-Host "Uploading NEW files only (~122 files, ~68 MB)" -ForegroundColor Yellow
+    Write-Host "Estimated time: 5-10 minutes" -ForegroundColor Yellow
+} else {
+    Write-Host "This will upload ALL files (1,477 files)" -ForegroundColor Yellow
+    Write-Host "Includes already uploaded 3D models (will be overwritten)" -ForegroundColor Yellow
+    Write-Host "Estimated time: 30-60 minutes depending on file sizes" -ForegroundColor Yellow
+}
+Write-Host ""
+Write-Host "Tip: Use -Skip3DModels to skip already uploaded 3D models (faster upload)" -ForegroundColor Cyan
 Write-Host ""
 
 # Get bot secret
@@ -48,14 +63,14 @@ if ([string]::IsNullOrEmpty($BotSecret)) {
 }
 
 if ([string]::IsNullOrEmpty($BotSecret)) {
-    Write-Host "❌ ERROR: Discord bot secret not found!" -ForegroundColor Red
+    Write-Host "ERROR: Discord bot secret not found!" -ForegroundColor Red
     Write-Host "   Please provide -BotSecret parameter or set DISCORD_BOT_SECRET environment variable" -ForegroundColor Yellow
     exit 1
 }
 
 $projectRoot = Get-Location
-Write-Host "📁 Project root: $projectRoot" -ForegroundColor Cyan
-Write-Host "🔑 Using bot secret: $($BotSecret.Substring(0, [Math]::Min(10, $BotSecret.Length)))..." -ForegroundColor Cyan
+Write-Host "Project root: $projectRoot" -ForegroundColor Cyan
+Write-Host "Using bot secret: $($BotSecret.Substring(0, [Math]::Min(10, $BotSecret.Length)))..." -ForegroundColor Cyan
 Write-Host ""
 
 $uploadUrl = "https://narrrfs.world/api/discord/upload-assets.php"
@@ -65,11 +80,11 @@ $localBaseDir = "public\three.js\public"
 $remoteBaseDir = "/data/public/three.js/public"
 
 if (-not (Test-Path $localBaseDir)) {
-    Write-Host "❌ ERROR: Local directory not found: $localBaseDir" -ForegroundColor Red
+    Write-Host "ERROR: Local directory not found: $localBaseDir" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "📦 Scanning local assets..." -ForegroundColor Cyan
+Write-Host "Scanning local assets..." -ForegroundColor Cyan
 # Exclude archive files and non-essential files
 $allFiles = Get-ChildItem -Path $localBaseDir -Recurse -File | Where-Object { 
     $_.FullName -notmatch "\.tar\.gz$" -and 
@@ -77,26 +92,33 @@ $allFiles = Get-ChildItem -Path $localBaseDir -Recurse -File | Where-Object {
     $_.FullName -notmatch "\.pdf$" -and 
     $_.FullName -notmatch "\.url$" -and
     $_.FullName -notmatch "License\.txt" -and
-    $_.FullName -notmatch "Preview\.ogg"
+    $_.FullName -notmatch "Preview\.ogg" -and
+    $_.FullName -notmatch "\.zip$" -and
+    ($Skip3DModels -eq $false -or $_.FullName -notmatch "\\textures\\3d models\\")
 }
 $totalFiles = $allFiles.Count
-Write-Host "✅ Found $totalFiles files to upload" -ForegroundColor Green
+Write-Host "Found $totalFiles files to upload" -ForegroundColor Green
 Write-Host ""
 
 # Calculate total size
 $totalSizeMB = [math]::Round(($allFiles | Measure-Object -Property Length -Sum).Sum / 1MB, 2)
-Write-Host "📊 Total size: $totalSizeMB MB" -ForegroundColor Cyan
+Write-Host "Total size: $totalSizeMB MB" -ForegroundColor Cyan
 Write-Host ""
 
-# Confirm before proceeding
-$confirmation = Read-Host "Continue with upload? (Y/N)"
-if ($confirmation -ne "Y" -and $confirmation -ne "y") {
-    Write-Host "❌ Upload cancelled by user" -ForegroundColor Yellow
-    exit 0
+# Confirm before proceeding (skip if Force flag is set)
+if (-not $Force) {
+    $confirmation = Read-Host "Continue with upload? (Y/N)"
+    if ($confirmation -ne "Y" -and $confirmation -ne "y") {
+        Write-Host "Upload cancelled by user" -ForegroundColor Yellow
+        exit 0
+    }
+} else {
+    Write-Host "Force flag set - skipping confirmation prompt" -ForegroundColor Yellow
+    Write-Host ""
 }
 
 Write-Host ""
-Write-Host "🚀 Starting upload..." -ForegroundColor Green
+Write-Host "Starting upload..." -ForegroundColor Green
 Write-Host ""
 
 # Track statistics
@@ -115,7 +137,7 @@ function Upload-File {
     $fileName = $File.Name
     $fileSizeMB = [math]::Round($File.Length / 1MB, 2)
     
-    Write-Host "  📤 Uploading: $fileName" -ForegroundColor Yellow
+    Write-Host "  Uploading: $fileName" -ForegroundColor Yellow
     Write-Host "     Size: $fileSizeMB MB | To: $RemotePath" -ForegroundColor Gray
     
     try {
@@ -129,16 +151,16 @@ function Upload-File {
         $responseString = $response -join "`n"
         
         if ($responseString -match '"success"\s*:\s*true') {
-            Write-Host "     ✅ SUCCESS" -ForegroundColor Green
+            Write-Host "     SUCCESS" -ForegroundColor Green
             return $true
         } else {
-            Write-Host "     ❌ FAILED: $responseString" -ForegroundColor Red
-            $script:errors += "$fileName: $responseString"
+            Write-Host "     FAILED: $responseString" -ForegroundColor Red
+            $script:errors += "${fileName}: $responseString"
             return $false
         }
     } catch {
-        Write-Host "     ❌ ERROR: $($_.Exception.Message)" -ForegroundColor Red
-        $script:errors += "$fileName: $($_.Exception.Message)"
+        Write-Host "     ERROR: $($_.Exception.Message)" -ForegroundColor Red
+        $script:errors += "${fileName}: $($_.Exception.Message)"
         return $false
     }
 }
@@ -156,7 +178,7 @@ foreach ($file in $allFiles) {
     $remainingFiles = $totalFiles - $processed
     $estimatedRemaining = [TimeSpan]::FromSeconds($avgTimePerFile * $remainingFiles)
     
-    Write-Host "[$processed/$totalFiles] ($progressPercent%) | ✅ $uploadedCount | ❌ $failedCount | Elapsed: $($elapsed.ToString('mm\:ss')) | Est: $($estimatedRemaining.ToString('mm\:ss'))" -ForegroundColor Cyan
+    Write-Host "[$processed/$totalFiles] ($progressPercent%) | OK: $uploadedCount | FAIL: $failedCount | Elapsed: $($elapsed.ToString('mm\:ss')) | Est: $($estimatedRemaining.ToString('mm\:ss'))" -ForegroundColor Cyan
     
     # Upload file
     $result = Upload-File -File $file -RemotePath $remotePath
@@ -175,7 +197,7 @@ foreach ($file in $allFiles) {
     # Progress update every 25 files
     if ($processed % 25 -eq 0) {
         Write-Host ""
-        Write-Host "📊 Progress: ✅ $uploadedCount uploaded | ❌ $failedCount failed | Elapsed: $($elapsed.ToString('mm\:ss'))" -ForegroundColor Cyan
+        Write-Host "Progress: OK: $uploadedCount uploaded | FAIL: $failedCount failed | Elapsed: $($elapsed.ToString('mm\:ss'))" -ForegroundColor Cyan
         Write-Host ""
     }
 }
@@ -184,15 +206,15 @@ $totalTime = (Get-Date) - $startTime
 
 Write-Host ""
 Write-Host "========================================================" -ForegroundColor Green
-Write-Host "📊 UPLOAD SUMMARY" -ForegroundColor Cyan
+Write-Host "UPLOAD SUMMARY" -ForegroundColor Cyan
 Write-Host "   Total Files: $totalFiles" -ForegroundColor White
-Write-Host "   ✅ Uploaded: $uploadedCount files" -ForegroundColor Green
-Write-Host "   ❌ Failed: $failedCount files" -ForegroundColor $(if ($failedCount -gt 0) { "Red" } else { "Green" })
-Write-Host "   ⏱️  Total Time: $($totalTime.ToString('mm\:ss'))" -ForegroundColor White
+Write-Host "   Uploaded: $uploadedCount files" -ForegroundColor Green
+Write-Host "   Failed: $failedCount files" -ForegroundColor $(if ($failedCount -gt 0) { "Red" } else { "Green" })
+Write-Host "   Total Time: $($totalTime.ToString('mm\:ss'))" -ForegroundColor White
 Write-Host ""
 
 if ($errors.Count -gt 0 -and $errors.Count -le 20) {
-    Write-Host "❌ ERRORS (first 20):" -ForegroundColor Red
+    Write-Host "ERRORS (first 20):" -ForegroundColor Red
     foreach ($error in $errors[0..([Math]::Min(19, $errors.Count-1))]) {
         Write-Host "   - $error" -ForegroundColor Red
     }
@@ -203,17 +225,16 @@ if ($errors.Count -gt 0 -and $errors.Count -le 20) {
 }
 
 if ($failedCount -eq 0) {
-    Write-Host "✅ ALL FILES UPLOADED SUCCESSFULLY!" -ForegroundColor Green
+    Write-Host "ALL FILES UPLOADED SUCCESSFULLY!" -ForegroundColor Green
     Write-Host ""
     Write-Host "Next steps:" -ForegroundColor Yellow
-    Write-Host "1. Deploy updated 'scripts/render-startup.sh' to Render (if not already deployed)" -ForegroundColor Yellow
-    Write-Host "2. Run startup script on Render to create symlinks:" -ForegroundColor Yellow
+    Write-Host "1. Run startup script on Render to create symlinks (if not already done):" -ForegroundColor Yellow
     Write-Host "   bash /var/www/html/scripts/render-startup.sh" -ForegroundColor Cyan
-    Write-Host "3. Verify files on Render:" -ForegroundColor Yellow
+    Write-Host "2. Verify files on Render:" -ForegroundColor Yellow
     Write-Host "   ls -la /data/public/three.js/public/ | head -20" -ForegroundColor Cyan
     Write-Host "   find /data/public/three.js/public/ -type f | wc -l" -ForegroundColor Cyan
-    Write-Host "4. Test game: https://narrrfs.world/public/three.js/3d-riddle-game.html" -ForegroundColor Cyan
+    Write-Host "3. Test game: https://narrrfs.world/public/three.js/3d-riddle-game.html" -ForegroundColor Cyan
 } else {
-    Write-Host "⚠️ Some files failed to upload ($failedCount/$totalFiles)" -ForegroundColor Yellow
+    Write-Host "Some files failed to upload ($failedCount/$totalFiles)" -ForegroundColor Yellow
     Write-Host "   Check errors above and retry failed files" -ForegroundColor Yellow
 }

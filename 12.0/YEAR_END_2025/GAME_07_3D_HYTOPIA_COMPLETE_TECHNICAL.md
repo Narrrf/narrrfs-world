@@ -1,9 +1,9 @@
 # 🎮 GAME 7: 3D HYTOPIA GAME - COMPLETE TECHNICAL DOCUMENTATION 2025
 
 **Created:** December 20, 2025  
-**Last Updated:** January 6, 2026  
-**Status:** ✅ **PRODUCTION READY - STABLE VERSION 1.0**  
-**Version:** 1.0.0 - Modular Architecture  
+**Last Updated:** January 9, 2026  
+**Status:** ✅ **STABLE PRODUCTION VERSION - LEVEL 1 VERIFIED WORKING**  
+**Version:** 2026-01-09-STABLE-PRODUCTION  
 **Purpose:** Complete technical reference for 3D Riddle Game integration in Narrrfs World
 
 ---
@@ -22,6 +22,8 @@
 10. [Shop System Integration (Future)](#shop-system-integration-future)
 11. [Achievement System Integration (Future)](#achievement-system-integration-future)
 12. [Discord Integration](#discord-integration)
+    - [Discord Login & Authentication System](#1-discord-login--authentication-system--working---production-ready)
+    - [Discord Role-Based Multipliers](#2-discord-role-based-multipliers)
 13. [Code Examples](#code-examples)
 14. [Future Implementation Plans](#future-implementation-plans)
 
@@ -46,10 +48,13 @@ The 3D Riddle Game is a Three.js-based 3D adventure game featuring 6 levels, rid
 - ✅ **Unified Path Resolution** (Local + Production compatibility)
 - ✅ **Asset Persistence System** (via `/data/` persistent storage + symlinks)
 - ✅ **Production-Ready Path System** (all assets resolve correctly)
+- ✅ **Stable Production Version** (Level 1 verified working - January 9, 2026)
+- ✅ **Complete Asset Upload System** (API endpoint operational - 123+ files uploaded)
 
 ### **Integration Status:**
 - ✅ **Database:** `tbl_cheese_hunt_captures`, `tbl_riddle_completions`, `tbl_user_traits`
-- ✅ **APIs:** `/api/dev/cheese-hunt-capture.php`, `/api/dev/riddle-reward.php`, `/api/user/traits.php`
+- ✅ **APIs:** `/api/dev/cheese-hunt-capture.php`, `/api/dev/riddle-reward.php`, `/api/user/traits.php`, `/api/user/details.php`
+- ✅ **Discord Login:** ✅ **WORKING PERFECTLY** - User authentication and profile display in GUI (verified January 9, 2026)
 - ✅ **Profile.html:** Partial integration (DSPOINC display)
 - ⏳ **Admin Interface:** Pending integration
 - ⏳ **Shop System:** Future implementation
@@ -634,7 +639,204 @@ CREATE TABLE tbl_hytopia_achievements (
 
 ## 🔗 **DISCORD INTEGRATION**
 
-### **Role-Based Multipliers:**
+### **1. Discord Login & Authentication System (✅ WORKING - PRODUCTION READY)**
+
+**Status:** ✅ **WORKING PERFECTLY** - Verified January 9, 2026  
+**Purpose:** User authentication and player profile management in the 3D game GUI
+
+#### **Overview:**
+The Discord login system allows users to authenticate via Discord OAuth (handled on `profile.html`) and see their personalized information (username, DSPOINC balance) in the game's pause menu. Non-logged-in users see "Guest" with 0 balance.
+
+#### **Authentication Flow:**
+1. **Discord OAuth Login:** Users log in via Discord on `public/profile.html`
+2. **Session Storage:** Discord ID stored in PHP session (`$_SESSION['discord_id']`)
+3. **Profile Fetching:** Game fetches player details on page load and when pause menu opens
+4. **GUI Display:** Username and balance displayed in pause menu (logged-in users) or "Guest" (non-logged-in users)
+
+#### **API Endpoint: `/api/user/details.php`**
+
+**Request Methods:**
+- **With Discord ID:** `GET /api/user/details.php?user_id={discord_id}`
+- **Without Discord ID:** `GET /api/user/details.php` (uses session fallback)
+
+**Request Headers:**
+```
+Content-Type: application/json
+Accept: application/json
+Credentials: include (for session cookies)
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "user": {
+    "discord_id": "328601656659017732",
+    "username": "Narrrf",
+    "avatar_url": "https://cdn.discordapp.com/avatars/...",
+    "member_since": "2024-01-01 00:00:00",
+    "balance": 12345,
+    "roles": ["admin", "premium"],
+    "traits": ["CHEESE_LOVER", "RIDDLE_MASTER"]
+  }
+}
+```
+
+**Error Response (Not Logged In):**
+```json
+{
+  "success": false,
+  "error": "User ID required and no active session found."
+}
+```
+
+**Database Queries Performed:**
+1. **User Lookup:** `SELECT discord_id, username, avatar_url, created_at FROM tbl_users WHERE discord_id = ?`
+2. **Balance Calculation:** `SELECT COALESCE(SUM(score), 0) AS total FROM tbl_user_scores WHERE user_id = ?`
+3. **Roles Retrieval:** `SELECT role_name FROM tbl_user_roles WHERE user_id = ?`
+4. **Traits Retrieval:** `SELECT trait FROM tbl_user_traits WHERE user_id = ?`
+
+#### **Frontend Implementation:**
+
+**Location:** `public/three.js/main.js` (lines ~14801-14905)
+
+**Key Functions:**
+- **`fetchPlayerDetails()`** - Fetches player details from API
+- **`hydratePlayerProfile()`** - Called on page load to fetch initial profile
+- **`showPauseMenu()`** - Calls `fetchPlayerDetails()` before showing pause menu
+
+**Function: `fetchPlayerDetails()`**
+```javascript
+async function fetchPlayerDetails() {
+  // Determine Discord ID from:
+  // 1. URL parameter (user_id)
+  // 2. Session (via API fallback)
+  // 3. Local storage (development/testing)
+  
+  const url = resolvedDiscordId
+    ? `${API_BASE_URL}/api/user/details.php?user_id=${encodeURIComponent(resolvedDiscordId)}`
+    : `${API_BASE_URL}/api/user/details.php`;
+  
+  const response = await fetch(url, {
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    }
+  });
+  
+  if (response.ok) {
+    const data = await response.json();
+    if (data.success && data.user) {
+      // Update global variables
+      resolvedDiscordId = data.user.discord_id || resolvedDiscordId;
+      playerDisplayName = data.user.username || "Guest";
+      currentTotalDspoinc = data.user.balance || 0;
+      
+      // Update pause menu subtitle
+      const subtitle = document.getElementById("pause-subtitle");
+      if (subtitle) {
+        subtitle.textContent = `Take a breather, ${playerDisplayName}.`;
+      }
+      
+      // Refresh GUI
+      updatePausePlayerInfo();
+    }
+  } else {
+    // Fallback to "Guest"
+    playerDisplayName = "Guest";
+    currentTotalDspoinc = 0;
+    updatePausePlayerInfo();
+  }
+}
+```
+
+**Function: `hydratePlayerProfile()`**
+```javascript
+// Called on page load
+async function hydratePlayerProfile() {
+  console.log("🚀 [DEBUG] hydratePlayerProfile called on page load");
+  await fetchPlayerDetails();
+}
+
+// Execute on page load
+hydratePlayerProfile();
+```
+
+**Function: `showPauseMenu()` Integration**
+```javascript
+async function showPauseMenu() {
+  // ... menu setup code ...
+  
+  // Fetch player details before showing menu (ensures up-to-date info)
+  await fetchPlayerDetails();
+  
+  // ... show menu ...
+}
+```
+
+**Error Handling:**
+- If API fails, defaults to "Guest" with 0 balance
+- Logs errors to console for debugging
+- Falls back to local storage values for development/testing
+- Graceful degradation ensures game works for both logged-in and guest users
+
+#### **GUI Display:**
+
+**Pause Menu Integration:**
+- **Logged-In Users:**
+  - Subtitle: `"Take a breather, {username}."`
+  - Balance: Current DSPOINC balance displayed
+  - Discord ID: Stored in `resolvedDiscordId` variable
+  
+- **Guest Users (Not Logged In):**
+  - Subtitle: `"Take a breather, Guest."`
+  - Balance: `0`
+  - Discord ID: `null` (falls back gracefully)
+
+**Location:** `public/three.js/main.js` (lines ~14907-14936)
+
+#### **Global Variables:**
+```javascript
+// Player information (updated by fetchPlayerDetails)
+let resolvedDiscordId = null;        // Discord ID from session/API
+let playerDisplayName = "Guest";     // Username or "Guest"
+let currentTotalDspoinc = 0;         // DSPOINC balance
+```
+
+#### **Verification Checklist:**
+- [x] Discord OAuth login works on profile page
+- [x] Session stores Discord ID correctly
+- [x] API endpoint returns user data for logged-in users
+- [x] API endpoint returns error for non-logged-in users
+- [x] Frontend fetches player details on page load
+- [x] Frontend fetches player details when pause menu opens
+- [x] Username displays correctly in pause menu (logged-in users)
+- [x] Balance displays correctly in pause menu (logged-in users)
+- [x] "Guest" displays correctly for non-logged-in users
+- [x] Error handling works correctly (graceful fallback)
+- [x] Database queries return correct data
+
+#### **Related Files:**
+- `api/user/details.php` - API endpoint for player details
+- `public/three.js/main.js` - Frontend implementation (`fetchPlayerDetails()`, `hydratePlayerProfile()`, `showPauseMenu()`)
+- `public/three.js/gui-system.js` - GUI system (pause menu display via `updatePausePlayerInfo()`)
+- `public/profile.html` - Discord OAuth login page
+
+#### **Future Enhancements (Optional):**
+- Add avatar display in pause menu
+- Add member since date display
+- Add roles/traits display in pause menu
+- Cache player details to reduce API calls
+- Add refresh button to manually update player info
+
+---
+
+### **2. Discord Role-Based Multipliers**
+
+**Status:** ✅ **WORKING** - Applied server-side to DSPOINC rewards
+
+#### **Multiplier Table:**
 - **VIP Holder:** ×2.0
 - **Holder:** ×1.5
 - **Champion:** ×1.4
@@ -643,10 +845,33 @@ CREATE TABLE tbl_hytopia_achievements (
 - **Cheese Hunter:** ×1.1
 - **Default:** ×1.0
 
-### **Discord Role API:**
+#### **Discord Role API:**
 - **Endpoint:** `/api/user/roles.php`
 - **Returns:** User's Discord roles with IDs
-- **Multipliers:** Applied to DSPOINC rewards server-side
+- **Multipliers:** Applied to DSPOINC rewards server-side (in `riddle-reward.php` and `cheese-hunt-capture.php`)
+
+#### **Implementation:**
+Role multipliers are automatically applied when awarding DSPOINC rewards via:
+- `/api/dev/riddle-reward.php` - Riddle completions
+- `/api/dev/cheese-hunt-capture.php` - Cheese captures
+
+**Server-Side Logic:**
+```php
+// Get user's Discord roles
+$rolesStmt = $db->prepare("SELECT role_name FROM tbl_user_roles WHERE user_id = ?");
+$rolesStmt->execute([$discordId]);
+$roles = $rolesStmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Calculate multiplier based on roles
+$multiplier = 1.0;
+if (in_array('VIP Holder', $roles)) {
+    $multiplier = 2.0;
+} elseif (in_array('Holder', $roles)) {
+    $multiplier = 1.5;
+} // ... etc
+
+$totalReward = (int)($baseReward * $multiplier);
+```
 
 ---
 
@@ -883,11 +1108,16 @@ chown -R www-data:www-data /var/www/html/public/three.js/public/
 
 ### **Upload Methods:**
 
-**✅ RECOMMENDED: API Upload (PowerShell Script):**
+**✅ RECOMMENDED: Comprehensive API Upload (PowerShell Script - January 9, 2026):**
 ```powershell
 cd C:\xampp-server\htdocs\narrrfs-world
-.\12.0\LAB_NOTES\2026\01_JANUARY\DAILY_NOTES\2026-01-04\UPLOAD_ASSETS_VIA_API.ps1 -BotSecret "YOUR_DISCORD_BOT_SECRET"
+.\12.0\LAB_NOTES\2026\01_JANUARY\DAILY_NOTES\2026-01-09\UPLOAD_ALL_ASSETS_URGENT.ps1 -BotSecret "YOUR_DISCORD_BOT_SECRET"
+
+# Or to upload only new assets (skip 3D models):
+.\12.0\LAB_NOTES\2026\01_JANUARY\DAILY_NOTES\2026-01-09\UPLOAD_NEW_ASSETS_ONLY.ps1
 ```
+
+**Complete Upload Guide:** See `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-09/COMPLETE_DEPLOYMENT_PROCESS.md`
 
 **Alternative: Manual curl Commands:**
 ```powershell
@@ -900,27 +1130,42 @@ curl.exe -X POST -H "Authorization: $BOT_SECRET" -F "file=@path\to\file.glb" -F 
 scp -r "public\three.js\public\textures\3d models" root@RENDER_HOST:/data/public/three.js/public/textures/
 ```
 
-### **Post-Upload: Recreate Symlinks (CRITICAL)**
+### **Automated Symlink Creation (January 9, 2026)**
 
-**After each Git push, symlinks are wiped. Must recreate:**
-```bash
-# In Render shell
-bash 12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/RECREATE_SYMLINKS.sh
-```
+**✅ Symlinks are now automatically created by `scripts/render-startup.sh` on every deployment!**
+
+The startup script automatically creates symlinks for all required asset directories:
+- `textures/3d models/`
+- `textures/grass/`
+- `textures/backgrounds/`
+- `textures/blocks/`
+- `textures/plants/`
+- `sounds/`
+- `audio/`
+- `models/`
+- `videos/`
+
+**No manual intervention required** - the startup script runs on every Render deployment.
 
 ### **Related Documentation:**
 - **Rule:** `12.0/RULES/11_THREE_JS_RULE.md` §13 (Production Asset Upload System) & §14 (Asset Path Resolution System)
 - **Rule:** `12.0/RULES/22_ASSET_UPLOAD_API_RULE.md` (Complete API upload guide)
 - **Lab Note:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/RENDER_PERSISTENT_ASSETS_SOLUTION.md`
 - **Upload Guide:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/LARGE_FILE_UPLOAD_SETUP.md`
+- **Complete Deployment Process:** `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-09/COMPLETE_DEPLOYMENT_PROCESS.md`
+- **Stable Version Milestone:** `12.0/MILESTONE_DOCUMENTATION/2026-01-09_STABLE_PRODUCTION_VERSION.md`
+- **Daily Status:** `12.0/ACTIVE_STATUS/DAILY_STATUS_2026-01-09.md`
+- **Stable Version Marker:** `12.0/ACTIVE_STATUS/STABLE_VERSION_MARKER.md`
 
 ### **Important Notes:**
-- ⚠️ **Assets are NOT in Git** - They're excluded via `.gitignore`
-- ✅ **API Upload System:** Operational via `/api/discord/upload-assets.php`
+- ⚠️ **Assets are NOT in Git** - They're excluded via `.gitignore` (except `narrrf3d` and `glyph3d` which are uploaded directly to `/data/`)
+- ✅ **API Upload System:** Operational via `/api/discord/upload-assets.php` (supports both `/data/public/three.js/public/` and `/data/public/glyph/`)
 - ✅ **Path Resolution:** All paths use unified `/public/three.js/public/...` structure
-- ✅ **Symlink System:** Symlinks provide web access from `/data/` persistent storage
-- ⚠️ **Symlinks Wiped on Deploy:** Must recreate after each Git push
-- ✅ **System Status:** Production-ready, path resolution working correctly (January 6, 2026)
+- ✅ **Symlink System:** Symlinks provide web access from `/data/` persistent storage (automatically created by `render-startup.sh`)
+- ✅ **Automated Symlink Creation:** Startup script automatically creates all required symlinks on deployment
+- ✅ **System Status:** STABLE PRODUCTION VERSION - Level 1 verified working (January 9, 2026)
+- ✅ **Critical Files Verified:** `grass.jpg`, `cloud.jpg`, `cheesetemple1.png`, `level1.json` confirmed present in `/data/` and accessible via symlinks
+- ✅ **Complete Asset Upload:** 123+ files successfully uploaded to Render persistent storage
 
 ---
 
@@ -948,30 +1193,42 @@ bash 12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-04/RECREATE_SYMLINKS.sh
 
 ---
 
-## ✅ **STABLE VERSION 1.0 STATUS (January 6, 2026)**
+## ✅ **STABLE PRODUCTION VERSION STATUS (January 9, 2026)**
 
 ### **Production Readiness:**
 - ✅ **Path Resolution System:** Unified path resolution working for both local and production
 - ✅ **Asset Persistence:** `/data/` persistent storage + symlink system operational
-- ✅ **Asset Upload System:** API endpoint ready for asset uploads
+- ✅ **Asset Upload System:** API endpoint operational - 123+ files successfully uploaded
+- ✅ **Automated Symlink Creation:** `render-startup.sh` automatically creates all required symlinks on deployment
 - ✅ **Module Integration:** All modules use `resolveAssetPath()` correctly
-- ✅ **Recent Fixes:** Level 5 ground, chest sounds, boss models, level maps all working
+- ✅ **All Fixes Complete:** Level 5 ground, chest sounds, boss models, level maps, CSS backgrounds all working
 - ✅ **Local Testing:** Game starts correctly, all assets load (no 404 errors)
-- ⏳ **Production Testing:** Ready for deployment verification
+- ✅ **Production Testing:** ✅ **LEVEL 1 VERIFIED WORKING** - No 404 errors, all assets loading correctly
 
 ### **Key Accomplishments:**
 - ✅ **Unified Path Structure:** `/public/three.js/public/...` works for both environments
 - ✅ **Asset Persistence:** Symlink strategy maintains path consistency
 - ✅ **Module System:** All 12 modules properly integrated with path resolution
 - ✅ **Bug Fixes:** All critical path-related bugs resolved
-- ✅ **Documentation:** Complete rules and technical documentation updated
+- ✅ **CSS Background Fixes:** Background images resolve correctly in production (absolute URLs)
+- ✅ **Critical Assets Verified:** All critical files (`grass.jpg`, `cloud.jpg`, `cheesetemple1.png`, `level1.json`) confirmed present in `/data/`
+- ✅ **Documentation:** Complete rules and technical documentation updated and synchronized
+- ✅ **Version Markers:** All modules marked with stable version markers
 
-### **Ready for Production Deployment:**
-- ✅ Code stable and tested locally
-- ✅ Path resolution system production-ready
-- ✅ Asset persistence system documented and operational
-- ✅ All modules updated and verified
-- ✅ Documentation synchronized
+### **Stable Production Confirmation:**
+- ✅ **Level 1 Loading:** Verified working in production browser - no 404 errors
+- ✅ **Asset Access:** All critical assets accessible via symlinks from `/data/`
+- ✅ **Path Resolution:** All asset paths resolve correctly in production environment
+- ✅ **Symlink System:** Automated symlink creation working via startup script
+- ✅ **Code Stability:** All changes tested and verified before deployment
+- ✅ **Complete Asset Upload:** All local assets successfully uploaded to Render persistent storage
 
-**🎮 Complete technical documentation for 3D Riddle Game v1.0 - Production Ready! 🎮**
+### **Production Systems Operational:**
+- ✅ **Code Deployment:** Git push → Render deployment working correctly
+- ✅ **Asset Management:** API upload system operational for all asset types
+- ✅ **Path Resolution:** Production environment detection and path resolution working
+- ✅ **Symlink Automation:** Startup script creates all required symlinks automatically
+- ✅ **Asset Verification:** All critical files confirmed present and accessible
+
+**🎮 Complete technical documentation for 3D Riddle Game v2026-01-09-STABLE-PRODUCTION - STABLE PRODUCTION VERSION CONFIRMED! 🎮**
 

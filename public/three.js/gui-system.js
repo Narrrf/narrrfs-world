@@ -5,7 +5,9 @@
  * 
  * ✅ STATUS: STABLE - PRODUCTION READY
  * 📅 CREATED: December 2025
- * 📅 LAST UPDATED: January 4, 2026
+ * 📅 LAST UPDATED: January 9, 2026
+ * 🎯 MILESTONE: Stable Production Version - Level 1 verified working
+ * ✅ Version: 2026-01-09-STABLE-PRODUCTION
  * 
  * ============================================================================
  * 🎯 PURPOSE
@@ -2620,10 +2622,26 @@ export class GUISystem {
   /**
    * Show main menu (first screen when game loads)
    */
-  showMainMenu() {
-    // If menu already exists and is in DOM, just show it
+  async showMainMenu() {
+    // 🔐 ROLE-BASED ACCESS & USER PROFILE (January 9, 2026)
+    // Fetch player details before showing menu to ensure up-to-date info
+    if (this.config.fetchPlayerDetails && typeof this.config.fetchPlayerDetails === 'function') {
+      await this.config.fetchPlayerDetails();
+    }
+    
+    // 🔧 FIX: Unlock controls and show cursor so menu buttons are clickable
+    if (this.config.onUnlockControls) {
+      this.config.onUnlockControls();
+    }
+    document.body.style.cursor = "default";
+    
+    // If menu already exists and is in DOM, just show it (but refresh user info)
     if (this.mainMenu && this.container && this.container.contains(this.mainMenu)) {
       this.mainMenu.style.display = "flex";
+      this.mainMenu.style.pointerEvents = "auto"; // 🔧 FIX: Ensure pointer events are enabled for clicks
+      this.mainMenu.style.zIndex = "1002"; // 🔧 FIX: Ensure z-index is high enough
+      // Refresh user info if panel exists
+      this._updateMainMenuUserInfo();
       return;
     }
     
@@ -2660,7 +2678,10 @@ export class GUISystem {
       background: "linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(17, 24, 39, 0.95))",
       border: "1px solid rgba(255, 224, 102, 0.35)", borderRadius: "14px", padding: "48px 56px",
       boxShadow: "0 20px 60px rgba(0, 0, 0, 0.45)", display: "flex", flexDirection: "column",
-      alignItems: "center", minWidth: "400px", maxWidth: "90vw", textAlign: "center"
+      alignItems: "center", minWidth: "400px", maxWidth: "90vw", textAlign: "center",
+      pointerEvents: "auto", // 🔧 FIX: Ensure panel can receive clicks
+      position: "relative", // 🔧 FIX: Ensure panel is positioned correctly
+      zIndex: "1003" // 🔧 FIX: Ensure panel is above menu background
     });
     
     // Title
@@ -2672,10 +2693,30 @@ export class GUISystem {
     });
     panel.appendChild(title);
     
+    // 🔐 ROLE-BASED ACCESS & USER PROFILE (January 9, 2026)
+    // Check if user is logged in
+    const resolvedDiscordId = this.config.getResolvedDiscordId ? this.config.getResolvedDiscordId() : null;
+    const isLoggedIn = resolvedDiscordId && resolvedDiscordId !== null;
+    
+    // User Info Panel (for logged-in users) or Login Advice Banner (for guests)
+    if (isLoggedIn) {
+      // USER INFO PANEL - Show PFP, DSPOINC, Role/Multiplier
+      const userInfoPanel = this._createUserInfoPanel();
+      panel.appendChild(userInfoPanel);
+    } else {
+      // LOGIN ADVICE BANNER - Encourage Discord login
+      const loginAdviceBanner = this._createLoginAdviceBanner();
+      panel.appendChild(loginAdviceBanner);
+    }
+    
     // Buttons container
     const buttonsContainer = document.createElement("div");
     Object.assign(buttonsContainer.style, {
-      display: "flex", flexDirection: "column", gap: "16px", width: "100%", minWidth: "280px"
+      display: "flex", flexDirection: "column", gap: "16px", width: "100%", minWidth: "280px",
+      marginTop: "24px", // Add spacing above buttons
+      pointerEvents: "auto", // 🔧 FIX: Ensure buttons container can receive clicks
+      zIndex: "1004", // 🔧 FIX: Ensure buttons are above other elements
+      position: "relative" // 🔧 FIX: Ensure proper stacking context
     });
     
     // New Game button
@@ -2687,7 +2728,11 @@ export class GUISystem {
       }, 50);
     }, true);
     Object.assign(newGameBtn.style, {
-      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)"
+      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)",
+      pointerEvents: "auto", // 🔧 FIX: Ensure button can receive clicks
+      cursor: "pointer", // 🔧 FIX: Ensure cursor shows pointer on hover
+      zIndex: "1005", // 🔧 FIX: Ensure button is above other elements
+      position: "relative" // 🔧 FIX: Ensure proper stacking context
     });
     buttonsContainer.appendChild(newGameBtn);
     
@@ -2700,7 +2745,11 @@ export class GUISystem {
       }
     }, false);
     Object.assign(optionsBtn.style, {
-      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)"
+      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)",
+      pointerEvents: "auto", // 🔧 FIX: Ensure button can receive clicks
+      cursor: "pointer", // 🔧 FIX: Ensure cursor shows pointer on hover
+      zIndex: "1005", // 🔧 FIX: Ensure button is above other elements
+      position: "relative" // 🔧 FIX: Ensure proper stacking context
     });
     buttonsContainer.appendChild(optionsBtn);
     
@@ -2709,7 +2758,11 @@ export class GUISystem {
       this.showControlsMenu();
     }, false);
     Object.assign(controlsBtn.style, {
-      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)"
+      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)",
+      pointerEvents: "auto", // 🔧 FIX: Ensure button can receive clicks
+      cursor: "pointer", // 🔧 FIX: Ensure cursor shows pointer on hover
+      zIndex: "1005", // 🔧 FIX: Ensure button is above other elements
+      position: "relative" // 🔧 FIX: Ensure proper stacking context
     });
     buttonsContainer.appendChild(controlsBtn);
     
@@ -2723,13 +2776,230 @@ export class GUISystem {
       }
     }, false);
     Object.assign(exitBtn.style, {
-      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)"
+      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)",
+      pointerEvents: "auto", // 🔧 FIX: Ensure button can receive clicks
+      cursor: "pointer", // 🔧 FIX: Ensure cursor shows pointer on hover
+      zIndex: "1005", // 🔧 FIX: Ensure button is above other elements
+      position: "relative" // 🔧 FIX: Ensure proper stacking context
     });
     buttonsContainer.appendChild(exitBtn);
     
     panel.appendChild(buttonsContainer);
     this.mainMenu.appendChild(panel);
     this.container.appendChild(this.mainMenu);
+  }
+  
+  /**
+   * Create user info panel (PFP, DSPOINC, Role/Multiplier) - Phase 2 (January 9, 2026)
+   * @returns {HTMLElement} User info panel element
+   */
+  _createUserInfoPanel() {
+    const userInfoPanel = document.createElement("div");
+    Object.assign(userInfoPanel.style, {
+      width: "100%",
+      background: "linear-gradient(135deg, rgba(255, 224, 102, 0.1), rgba(251, 191, 36, 0.05))",
+      border: "1px solid rgba(255, 224, 102, 0.3)",
+      borderRadius: "12px",
+      padding: "20px 24px",
+      marginBottom: "24px",
+      display: "flex",
+      alignItems: "center",
+      gap: "16px",
+      flexWrap: "wrap",
+      justifyContent: "center"
+    });
+    
+    // Profile Picture
+    const avatarUrl = this.config.getUserAvatarUrl ? this.config.getUserAvatarUrl() : null;
+    const avatarContainer = document.createElement("div");
+    Object.assign(avatarContainer.style, {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    });
+    
+    const avatarImg = document.createElement("img");
+    avatarImg.src = avatarUrl || "https://cdn.discordapp.com/embed/avatars/0.png"; // Default Discord avatar
+    avatarImg.alt = "Profile Picture";
+    Object.assign(avatarImg.style, {
+      width: "64px",
+      height: "64px",
+      borderRadius: "50%",
+      border: "2px solid rgba(255, 224, 102, 0.5)",
+      boxShadow: "0 4px 12px rgba(255, 224, 102, 0.3)",
+      objectFit: "cover"
+    });
+    avatarContainer.appendChild(avatarImg);
+    userInfoPanel.appendChild(avatarContainer);
+    
+    // User Info (Name, DSPOINC, Role/Multiplier)
+    const infoContainer = document.createElement("div");
+    Object.assign(infoContainer.style, {
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
+      flex: "1",
+      minWidth: "200px"
+    });
+    
+    // Username
+    const playerName = this.config.getPlayerName ? this.config.getPlayerName() : "Guest";
+    const usernameDiv = document.createElement("div");
+    usernameDiv.textContent = playerName;
+    Object.assign(usernameDiv.style, {
+      fontSize: "20px",
+      fontWeight: "700",
+      color: "#ffe066",
+      textShadow: "0 0 10px rgba(255, 224, 102, 0.5)"
+    });
+    infoContainer.appendChild(usernameDiv);
+    
+    // DSPOINC Balance
+    const dspoinc = this.config.getDSPOINC ? this.config.getDSPOINC() : 0;
+    const dspoincDiv = document.createElement("div");
+    dspoincDiv.textContent = `DSPOINC: ${typeof dspoinc === 'number' && Number.isFinite(dspoinc) ? dspoinc.toLocaleString() : '0'}`;
+    Object.assign(dspoincDiv.style, {
+      fontSize: "16px",
+      fontWeight: "600",
+      color: "#fcd34d"
+    });
+    infoContainer.appendChild(dspoincDiv);
+    
+    // Role/Multiplier
+    const roleMultiplier = this.config.getHighestRoleMultiplier ? this.config.getHighestRoleMultiplier() : { multiplier: 1.0, roleName: 'Default' };
+    const roleDiv = document.createElement("div");
+    roleDiv.innerHTML = `<span style="color: #cbd5f5;">Role:</span> <span style="color: #ffe066; font-weight: 600;">${roleMultiplier.roleName}</span> <span style="color: #cbd5f5;">×${roleMultiplier.multiplier.toFixed(1)}</span>`;
+    Object.assign(roleDiv.style, {
+      fontSize: "14px",
+      color: "#cbd5f5"
+    });
+    infoContainer.appendChild(roleDiv);
+    
+    userInfoPanel.appendChild(infoContainer);
+    
+    // Store reference for updates
+    this.mainMenu._userInfoPanel = userInfoPanel;
+    this.mainMenu._avatarImg = avatarImg;
+    this.mainMenu._usernameDiv = usernameDiv;
+    this.mainMenu._dspoincDiv = dspoincDiv;
+    this.mainMenu._roleDiv = roleDiv;
+    
+    return userInfoPanel;
+  }
+  
+  /**
+   * Create login advice banner - Phase 2 (January 9, 2026)
+   * @returns {HTMLElement} Login advice banner element
+   */
+  _createLoginAdviceBanner() {
+    const loginBanner = document.createElement("div");
+    Object.assign(loginBanner.style, {
+      width: "100%",
+      background: "linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1))",
+      border: "1px solid rgba(59, 130, 246, 0.4)",
+      borderRadius: "12px",
+      padding: "20px 24px",
+      marginBottom: "24px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "12px",
+      alignItems: "center",
+      textAlign: "center"
+    });
+    
+    // Icon/Title
+    const titleDiv = document.createElement("div");
+    titleDiv.textContent = "🔐 Log in with Discord";
+    Object.assign(titleDiv.style, {
+      fontSize: "18px",
+      fontWeight: "700",
+      color: "#60a5fa",
+      textShadow: "0 0 10px rgba(96, 165, 250, 0.5)"
+    });
+    loginBanner.appendChild(titleDiv);
+    
+    // Message
+    const messageDiv = document.createElement("div");
+    messageDiv.textContent = "Log in to earn DSPOINC and unlock prizes!";
+    Object.assign(messageDiv.style, {
+      fontSize: "14px",
+      color: "#cbd5f5",
+      marginBottom: "8px"
+    });
+    loginBanner.appendChild(messageDiv);
+    
+    // Login Button
+    const loginBtn = document.createElement("button");
+    loginBtn.textContent = "Go to Login";
+    Object.assign(loginBtn.style, {
+      padding: "10px 24px",
+      fontSize: "14px",
+      fontWeight: "600",
+      color: "#1e293b",
+      background: "linear-gradient(135deg, #60a5fa, #3b82f6)",
+      border: "none",
+      borderRadius: "8px",
+      cursor: "pointer",
+      transition: "all 0.2s",
+      boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)"
+    });
+    
+    // Hover effect
+    loginBtn.addEventListener("mouseenter", () => {
+      loginBtn.style.background = "linear-gradient(135deg, #3b82f6, #2563eb)";
+      loginBtn.style.boxShadow = "0 6px 16px rgba(59, 130, 246, 0.4)";
+      loginBtn.style.transform = "translateY(-1px)";
+    });
+    loginBtn.addEventListener("mouseleave", () => {
+      loginBtn.style.background = "linear-gradient(135deg, #60a5fa, #3b82f6)";
+      loginBtn.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.3)";
+      loginBtn.style.transform = "translateY(0)";
+    });
+    
+    // Navigate to profile page on click
+    loginBtn.addEventListener("click", () => {
+      const profileUrl = this.config.PROFILE_URL || '/profile.html';
+      window.location.href = profileUrl;
+    });
+    
+    loginBanner.appendChild(loginBtn);
+    
+    return loginBanner;
+  }
+  
+  /**
+   * Update user info panel with latest data - Phase 2 (January 9, 2026)
+   */
+  _updateMainMenuUserInfo() {
+    if (!this.mainMenu || !this.mainMenu._userInfoPanel) {
+      return; // Panel doesn't exist yet
+    }
+    
+    // Update avatar
+    if (this.mainMenu._avatarImg) {
+      const avatarUrl = this.config.getUserAvatarUrl ? this.config.getUserAvatarUrl() : null;
+      if (avatarUrl) {
+        this.mainMenu._avatarImg.src = avatarUrl;
+      }
+    }
+    
+    // Update username
+    if (this.mainMenu._usernameDiv) {
+      const playerName = this.config.getPlayerName ? this.config.getPlayerName() : "Guest";
+      this.mainMenu._usernameDiv.textContent = playerName;
+    }
+    
+    // Update DSPOINC
+    if (this.mainMenu._dspoincDiv) {
+      const dspoinc = this.config.getDSPOINC ? this.config.getDSPOINC() : 0;
+      this.mainMenu._dspoincDiv.textContent = `DSPOINC: ${typeof dspoinc === 'number' && Number.isFinite(dspoinc) ? dspoinc.toLocaleString() : '0'}`;
+    }
+    
+    // Update role/multiplier
+    if (this.mainMenu._roleDiv) {
+      const roleMultiplier = this.config.getHighestRoleMultiplier ? this.config.getHighestRoleMultiplier() : { multiplier: 1.0, roleName: 'Default' };
+      this.mainMenu._roleDiv.innerHTML = `<span style="color: #cbd5f5;">Role:</span> <span style="color: #ffe066; font-weight: 600;">${roleMultiplier.roleName}</span> <span style="color: #cbd5f5;">×${roleMultiplier.multiplier.toFixed(1)}</span>`;
+    }
   }
   
   /**
