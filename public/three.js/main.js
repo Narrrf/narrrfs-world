@@ -5124,7 +5124,8 @@ const DEBUG_SETTINGS = {
   logLevel2Previews: false, // CRITICAL: Disable Level 2 monster preview spawn logs for performance
   logLevel2Weapons: false, // CRITICAL: Disable Level 2 weapon loading logs for performance (was causing FPS drops)
   logLevel2Zones: false, // CRITICAL: Disable Level 2 zone inspection logs for performance
-  logLevel3Monsters: false // CRITICAL: Disable Level 3 monster spawn logs for performance (was causing continuous loading)
+  logLevel3Monsters: false, // CRITICAL: Disable Level 3 monster spawn logs for performance (was causing continuous loading)
+  logModelCacheStats: false // Phase 1 (Jan 10, 2026): Model cache hit/miss + clone/load timing logs
 };
 
 const stats = DEBUG_SETTINGS.enableStatsOverlay ? new Stats() : null;
@@ -5176,6 +5177,88 @@ const fbxLoader = new FBXLoader();
 // - Better performance (no disk I/O, no reprocessing)
 const textureCache = new Map(); // Cache for processed textures (key: resolvedPath, value: THREE.Texture)
 const modelCache = new Map(); // Cache for processed models (key: resolvedPath, value: GLTF/FBX scene)
+
+// 📈 MODEL CACHE METRICS (Phase 1 - Jan 10, 2026)
+// Track cache hits/misses and clone/load timing so we can prove performance gains
+// when we implement "processed Object3D cache" (Phase 2).
+if (typeof window !== "undefined" && !window.__narrrfsModelCacheStats) {
+  window.__narrrfsModelCacheStats = {
+    hits: 0,
+    misses: 0,
+    errors: 0,
+    clones: 0,
+    byPath: new Map(), // key: resolvedPath -> { hits, misses, errors, clones, cloneMsTotal, loadMsTotal, lastMs }
+    startedAt: Date.now()
+  };
+}
+
+function _nowMs() {
+  try {
+    return typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+  } catch (e) {
+    return Date.now();
+  }
+}
+
+function _getModelStatBucket(resolvedPath) {
+  const stats = typeof window !== "undefined" ? window.__narrrfsModelCacheStats : null;
+  if (!stats || !stats.byPath) return null;
+  if (!stats.byPath.has(resolvedPath)) {
+    stats.byPath.set(resolvedPath, {
+      hits: 0,
+      misses: 0,
+      errors: 0,
+      clones: 0,
+      cloneMsTotal: 0,
+      loadMsTotal: 0,
+      lastMs: 0
+    });
+  }
+  return stats.byPath.get(resolvedPath);
+}
+
+function _recordModelCacheEvent(resolvedPath, eventType, ms = 0) {
+  if (typeof window === "undefined" || !window.__narrrfsModelCacheStats) return;
+  const stats = window.__narrrfsModelCacheStats;
+  const bucket = _getModelStatBucket(resolvedPath);
+  if (!bucket) return;
+
+  if (eventType === "hit") {
+    stats.hits += 1;
+    bucket.hits += 1;
+  } else if (eventType === "miss") {
+    stats.misses += 1;
+    bucket.misses += 1;
+  } else if (eventType === "error") {
+    stats.errors += 1;
+    bucket.errors += 1;
+  } else if (eventType === "clone") {
+    stats.clones += 1;
+    bucket.clones += 1;
+    bucket.cloneMsTotal += ms;
+    bucket.lastMs = ms;
+  } else if (eventType === "load") {
+    bucket.loadMsTotal += ms;
+    bucket.lastMs = ms;
+  }
+
+  if (DEBUG_SETTINGS && DEBUG_SETTINGS.logModelCacheStats) {
+    // Keep logs readable; avoid spam.
+    if (eventType === "error" || Math.random() < 0.05) {
+      const safeMs = typeof ms === "number" ? Number(ms.toFixed(2)) : ms;
+      console.log("📈 [MODEL CACHE]", eventType.toUpperCase(), {
+        path: resolvedPath,
+        ms: safeMs,
+        totals: {
+          hits: stats.hits,
+          misses: stats.misses,
+          errors: stats.errors,
+          clones: stats.clones
+        }
+      });
+    }
+  }
+}
 
 function loadTexture(path) {
   // Resolve asset path for environment (local vs production)
@@ -5277,10 +5360,14 @@ function loadModel(path) {
   const lowerPath = resolvedPath.toLowerCase();
   const isFBX = lowerPath.endsWith(".fbx");
   return new Promise((resolve, reject) => {
+    const loadStartMs = _nowMs();
     if (modelCache.has(resolvedPath)) {
+      _recordModelCacheEvent(resolvedPath, "hit", 0);
       const cached = modelCache.get(resolvedPath);
       if (cached.isFBX) {
+        const cloneStartMs = _nowMs();
         const clonedScene = cached.scene.clone(true);
+        _recordModelCacheEvent(resolvedPath, "clone", _nowMs() - cloneStartMs);
         resolve({
           scene: clonedScene,
           animations: cached.animations || [],
@@ -5288,7 +5375,9 @@ function loadModel(path) {
         });
         return;
       }
+      const cloneStartMs = _nowMs();
       const cloned = cached.scene.clone(true);
+      _recordModelCacheEvent(resolvedPath, "clone", _nowMs() - cloneStartMs);
       resolve({
         scene: cloned,
         animations: cached.animations,
@@ -5298,6 +5387,8 @@ function loadModel(path) {
       });
       return;
     }
+
+    _recordModelCacheEvent(resolvedPath, "miss", 0);
 
     const onProgress = (progress) => {
       if (progress.lengthComputable) {
@@ -5315,11 +5406,13 @@ function loadModel(path) {
           });
           const payload = { scene: fbx, animations: fbx.animations || [], isFBX: true };
           modelCache.set(resolvedPath, payload);
+          _recordModelCacheEvent(resolvedPath, "load", _nowMs() - loadStartMs);
           resolve(payload);
         },
         onProgress,
         (error) => {
           console.error("❌ [MODEL] Error loading FBX:", resolvedPath, error);
+          _recordModelCacheEvent(resolvedPath, "error", _nowMs() - loadStartMs);
           reject(error);
         }
       );
@@ -5335,11 +5428,13 @@ function loadModel(path) {
           meshes: gltf.scene.children.length
         });
         modelCache.set(resolvedPath, gltf);
+        _recordModelCacheEvent(resolvedPath, "load", _nowMs() - loadStartMs);
         resolve(gltf);
       },
       onProgress,
       (error) => {
         console.error("❌ [MODEL] Error loading model:", resolvedPath, error);
+        _recordModelCacheEvent(resolvedPath, "error", _nowMs() - loadStartMs);
         reject(error);
       }
     );

@@ -2,6 +2,7 @@
 
 **Professional Press Kit & Documentation Package**  
 **Prepared:** October 11, 2025  
+**Updated:** 2026-01-10 (synced to current project state)  
 **Version:** 12.0  
 **Classification:** Media & Press Release  
 
@@ -25,13 +26,13 @@ We've prepared **three detailed documents** to accommodate different review styl
 **Best For:** In-depth features, technical deep-dives, comprehensive reviews
 
 **Contents:**
-- Complete 5-game detailed breakdowns
+- Complete 7-game detailed breakdowns (including Discord-native games + 3D Riddle Game)
 - Technical architecture documentation
 - Admin interface comprehensive guide
 - Discord integration full specifications
 - Season management system explanation
 - NFT holder benefits overview
-- Future Hytopia 3D game vision
+- 3D Riddle Game (Three.js) overview (live) + expansion roadmap notes
 - Database architecture and API structure
 - Security and anti-cheat systems
 - Community statistics and achievements
@@ -54,7 +55,7 @@ We've prepared **three detailed documents** to accommodate different review styl
 
 **Contents:**
 - One-page quick reference format
-- All 5 games at-a-glance table
+- All 7 games at-a-glance table
 - Key features highlighted
 - Technical stack overview
 - Unique selling points
@@ -108,7 +109,7 @@ We've prepared **three detailed documents** to accommodate different review styl
 
 ### **For Detailed Features (3-5 hours):**
 1. Read **Comprehensive Handover** cover-to-cover
-2. Test all 5 games thoroughly
+2. Test all 7 games thoroughly
 3. Request admin panel demo access
 4. Join Discord to test integration
 5. Use **Quick Reference Card** for fact-checking
@@ -132,7 +133,7 @@ We've prepared **three detailed documents** to accommodate different review styl
 ### **STEP 1: QUICK EXPERIENCE (30 minutes)**
 1. Visit narrrfs.world
 2. Connect Discord account
-3. Play each of the 5 games for 5 minutes each
+3. Play the core web games (Tetris/Snake/Space Invaders) for 5 minutes each
 4. Check Mission Status page
 5. Note DSPOINC earned
 
@@ -140,7 +141,7 @@ We've prepared **three detailed documents** to accommodate different review styl
 - ✅ Smooth 60 FPS gameplay on all games
 - ✅ Instant score synchronization
 - ✅ Achievement popups for milestones
-- ✅ Mission Status showing all 5 games
+- ✅ Mission Status reflecting ecosystem engagement
 - ✅ DSPOINC balance updating in real-time
 
 ### **STEP 2: EXPLORE FEATURES (30 minutes)**
@@ -163,10 +164,11 @@ We've prepared **three detailed documents** to accommodate different review styl
 
 **What to Explore:**
 1. Dashboard overview with system statistics
-2. Game Management tabs (all 5 games)
+2. Game Management tabs (all integrated games)
 3. Season management controls
 4. User management interface
 5. Database overview tab
+6. Partners tab (Partner Portal management)
 
 **What You'll Appreciate:**
 - ✅ Professional-grade management tools
@@ -216,7 +218,7 @@ We've identified several strong angles for your review:
 
 ### **🔮 FUTURE ANGLE**
 **"The Evolution of Cross-Platform Gaming"**
-- Explain Hytopia 3D integration vision
+- Explain the live 3D Riddle Game vision and expansion roadmap
 - Discuss trait-guided progression
 - Explore web3 gaming potential
 - Cover NFT holder benefits (without requirements)
@@ -232,7 +234,7 @@ We've identified several strong angles for your review:
 - Why should readers care?
 - What makes it unique?
 
-**The 5 Games (500-800 words)**
+**The 7 Games (500-900 words)**
 - Brief overview of each game
 - Standout features
 - Gameplay experience
@@ -251,8 +253,8 @@ We've identified several strong angles for your review:
 - Security measures
 
 **The Future (200-300 words)**
-- Hytopia 3D game vision
-- Trait-guided system
+- 3D Riddle Game expansion roadmap (new levels, bosses, events)
+- Trait-guided progression (already live via rewards/achievements + ongoing expansion)
 - Development roadmap
 - Community growth
 
@@ -269,7 +271,7 @@ We've identified several strong angles for your review:
 If your publication uses review scores, consider these aspects:
 
 ### **Gameplay (Score: /10)**
-- Quality of 5 games
+- Quality and variety across the ecosystem’s games
 - Variety of experiences
 - Achievement systems
 - Replay value
@@ -299,7 +301,7 @@ If your publication uses review scores, consider these aspects:
 - Content amount
 
 ### **Future Potential (Score: /10)**
-- Hytopia 3D game plans
+- 3D Riddle Game expansion plans (levels, bosses, events)
 - Development roadmap
 - Community growth
 - Long-term vision
@@ -392,7 +394,7 @@ Ready to begin your review? Here's how to get started:
 **3. Start Playing**
    - Visit narrrfs.world
    - Connect Discord account
-   - Play all 5 games
+   - Play the games (core web games + Discord games + 3D)
    - Track your progress
 
 **4. Ask Questions**
@@ -406,11 +408,11 @@ Ready to begin your review? Here's how to get started:
 
 ### **It's Innovative**
 - First truly Discord-native multi-game platform
-- Revolutionary trait-guided 3D game concept
-- Unified progression system across 5 games
+- Live 3D Riddle Game (Three.js) + ongoing expansion roadmap
+- Unified progression system across the ecosystem
 
 ### **It's Complete**
-- All 5 games fully operational
+- All 7 games integrated and operational
 - Professional admin interface live
 - Comprehensive achievement systems
 - Active community (500+ daily)
@@ -428,7 +430,7 @@ Ready to begin your review? Here's how to get started:
 - Active developer engagement
 
 ### **It Has Vision**
-- Hytopia 3D game in development
+- 3D Riddle Game is live; additional levels/bosses/events in roadmap
 - Long-term roadmap
 - Web3 readiness
 - Sustainable growth model
@@ -495,7 +497,7 @@ Use this checklist to ensure comprehensive coverage:
 
 **Before Writing:**
 - [ ] Read at least the Executive Summary
-- [ ] Play all 5 games (minimum 5 minutes each)
+- [ ] Play the games (minimum 5 minutes each for the core web games)
 - [ ] Check Mission Status page
 - [ ] Join Discord server
 - [ ] Try Discord commands

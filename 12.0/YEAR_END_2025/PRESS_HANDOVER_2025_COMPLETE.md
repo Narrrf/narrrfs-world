@@ -1,6 +1,7 @@
 # 📰 NARRRFS WORLD - COMPLETE PRESS HANDOVER 2025
 
 **Created:** December 30, 2025  
+**Updated:** 2026-01-10 (sync to current project state)  
 **Purpose:** Complete non-technical handover document for press and marketing teams  
 **Audience:** Non-developers, press, marketing, content creators  
 **Status:** ✅ **COMPLETE - READY FOR PRESS USE**
@@ -19,6 +20,7 @@ Narrrfs World is a comprehensive gaming ecosystem featuring **7 interactive game
 - **Staking System:** Players can freeze DSPOINC tokens for rewards
 - **Store System:** In-game purchases with inventory management
 - **Achievement System:** 73+ achievements across multiple games
+- **Partner Portal:** Public partner showcase + relationship management workflow (`partners.html`) — 14 active contract partners listed (database-driven)
 
 ---
 
@@ -58,7 +60,7 @@ The Nerd Lab is the central control panel for managing all aspects of Narrrfs Wo
 ---
 
 ### **🎯 TAB 3: Missions Status**
-**What it does:** Track player progress across all 5 mission-based games.
+**What it does:** Track player progress across the ecosystem’s games (including all core web games + integrations).
 
 **What you'll see:**
 - Overview of all player missions
