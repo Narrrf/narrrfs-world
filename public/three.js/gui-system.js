@@ -2661,6 +2661,7 @@ export class GUISystem {
     
     // Create new menu
     this.mainMenu = document.createElement("div");
+    this.mainMenu.className = "main-menu"; // Add class for click handler detection (January 11, 2026)
     Object.assign(this.mainMenu.style, {
       position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "24px",
@@ -2735,6 +2736,26 @@ export class GUISystem {
       position: "relative" // 🔧 FIX: Ensure proper stacking context
     });
     buttonsContainer.appendChild(newGameBtn);
+    
+    // Glyph Memory button (January 11, 2026)
+    const glyphMemoryBtn = this._createCompletionButton("🧠 Glyph Memory", () => {
+      // Navigate to Glyph Memory game
+      // Discord auth should work automatically via shared cookies/session (same domain)
+      // CRITICAL: Local uses /public/ subdirectory, Production does NOT
+      const isProduction = this.config.getIsProduction ? this.config.getIsProduction() : (window.location.origin === 'https://narrrfs.world');
+      const glyphUrl = isProduction
+        ? 'https://narrrfs.world/glyph/glyph.html' // Production: NO /public/
+        : '/public/glyph/glyph.html'; // Local: WITH /public/ subdirectory
+      window.location.href = glyphUrl;
+    }, false);
+    Object.assign(glyphMemoryBtn.style, {
+      width: "100%", padding: "16px 28px", fontSize: "clamp(16px, 3vw, 20px)",
+      pointerEvents: "auto", // 🔧 FIX: Ensure button can receive clicks
+      cursor: "pointer", // 🔧 FIX: Ensure cursor shows pointer on hover
+      zIndex: "1005", // 🔧 FIX: Ensure button is above other elements
+      position: "relative" // 🔧 FIX: Ensure proper stacking context
+    });
+    buttonsContainer.appendChild(glyphMemoryBtn);
     
     // Options button
     const optionsBtn = this._createCompletionButton("Options", () => {

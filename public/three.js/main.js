@@ -534,8 +534,17 @@ function checkCanClimb() {
       // Check if it's a potential climbable object (has geometry and reasonable size)
       if (child.geometry && child.material) {
         // Get bounding box to check if it's tall enough to climb
-        const box = new THREE.Box3().setFromObject(child);
-        const size = box.getSize(new THREE.Vector3());
+        // NOTE: GLTF models with skeletons may throw errors during bounding box computation
+        // These errors are non-critical and can be safely ignored (they don't affect gameplay)
+        let box, size;
+        try {
+          box = new THREE.Box3().setFromObject(child);
+          size = box.getSize(new THREE.Vector3());
+        } catch (bboxError) {
+          // Skip this object if bounding box computation fails (known GLTF skeleton issue)
+          // Error: "Cannot read properties of undefined (reading 'matrixWorld')" - non-critical
+          return; // Skip this mesh
+        }
         // Must be at least 0.5 units tall and 0.3 units wide (tower/wall dimensions)
         const isTallBlock = size.y > 0.5 && (size.x > 0.3 || size.z > 0.3);
         
@@ -763,6 +772,13 @@ function resolveAssetPath(path) {
   // If path already starts with /three.js/public/ or /public/three.js/public/, return as-is
   if (path.startsWith('/three.js/public/') || path.startsWith('/public/three.js/public/')) {
     console.log(`🔍 [PATH RESOLVE] Already resolved, returning as-is: "${path}"`);
+    return path;
+  }
+  
+  // 🔧 FIX: If path starts with /public/glyph/, return as-is (glyph3d files are absolute paths from web root)
+  // These files are stored at /public/glyph/glyph3d/ and don't need three.js path resolution (January 11, 2026)
+  if (path.startsWith('/public/glyph/')) {
+    console.log(`🔍 [PATH RESOLVE] Glyph path (absolute from web root), returning as-is: "${path}"`);
     return path;
   }
   
@@ -2780,7 +2796,11 @@ const level5State = {
   mapMesh: null, // Reference to loaded Klagenfurt map
   mapScale: 5.0, // Scale multiplier to make it 5x larger
   spawnPosition: new THREE.Vector3(0, 0, 0), // Player spawn position (ground level, feet at y=0)
-  borderWalls: null // References to the 4 cheese border walls (north, south, east, west)
+  borderWalls: null, // References to the 4 cheese border walls (north, south, east, west)
+  glyphs: [], // Array of glyph model references (January 11, 2026)
+  glyphPositions: [], // Array of glyph positions (for collision tracking, if needed)
+  monsters: [], // Array of active monster instances (January 11, 2026 - Step 1 monster hunt)
+  explosionParticles: [] // Array of explosion particle objects (January 11, 2026 - for sparkling effects)
 };
 scene.add(level5State.group);
 level5State.group.visible = false;
@@ -2873,6 +2893,29 @@ const level4RiddleState = {
 const LEVEL4_STEP0_TRAIT = "CHEESE_TEMPLE_LEVEL4_STEP0";
 const LEVEL4_STEP1_TRAIT = "CHEESE_TEMPLE_LEVEL4_STEP1";
 const LEVEL4_STEP2_TRAIT = "CHEESE_TEMPLE_LEVEL4_STEP2"; // Monster waves trait
+const LEVEL5_STEP0_TRAIT = "CHEESE_TEMPLE_LEVEL5_STEP0";
+const LEVEL5_STEP1_TRAIT = "CHEESE_TEMPLE_LEVEL5_STEP1";
+
+// Level 5 Riddle State (January 11, 2026)
+const level5RiddleState = {
+  step0Complete: false,
+  step0StandingSoundPlayed: false,
+  triggerBlockTimer: 0,
+  triggerBlock: null,
+  triggerBlockVisual: null,
+  triggerBlockTargetY: 0,
+  step0TraitUnlocked: false,
+  weaponsEnabled: false, // Weapons activate after Step 0
+  step1Active: false, // Monster hunt active
+  step1Complete: false,
+  step1TraitUnlocked: false,
+  step1Timer: 600, // 10 minutes in seconds
+  step1TimerActive: false,
+  monstersDefeated: 0,
+  totalMonsters: 50, // Target: ~50-60 monsters (will be set during spawn)
+  lastShotTime: 0, // Shooting cooldown (January 11, 2026)
+  shotCooldown: 0.2 // 200ms between shots (January 11, 2026)
+};
 const LEVEL4_STEP3_TRAIT = "CHEESE_TEMPLE_LEVEL4_STEP3"; // NEW: Portal completion trait
 const LEVEL4_CHEESES_TO_CATCH = 50; // Total cheeses to catch
 const LEVEL4_WAVES_COUNT = 12; // 12 waves of 4 cheeses each = 48 cheeses
@@ -4645,24 +4688,25 @@ function updateLevel4Heat(delta) {
   }
 }
 
-// Level 4 Shooting System
+// Level 4 & 5 Shooting System
 function handleLevel4Shooting() {
-  // Only allow shooting in Level 4, Step 1 (cheese) or Step 2 (monster) active, and first-person view
-  if (currentLevel !== LEVEL_IDS.LEVEL4) {
-    if (Math.random() < 0.01) console.log("🔫 [LEVEL 4] Shooting blocked: wrong level", currentLevel);
+  // Allow shooting in Level 4 (Step 1 or Step 2 active) or Level 5 (Step 1 active), and first-person view
+  const isLevel4 = currentLevel === LEVEL_IDS.LEVEL4 && (level4RiddleState.step1Active || level4RiddleState.step2Active);
+  const isLevel5 = currentLevel === LEVEL_IDS.LEVEL5 && level5RiddleState.step1Active && level5RiddleState.weaponsEnabled;
+  
+  if (!isLevel4 && !isLevel5) {
+    if (Math.random() < 0.01) console.log("🔫 [SHOOTING] Shooting blocked:", { currentLevel, level4Step1: level4RiddleState?.step1Active, level4Step2: level4RiddleState?.step2Active, level5Step1: level5RiddleState?.step1Active, level5WeaponsEnabled: level5RiddleState?.weaponsEnabled });
     return;
   }
-  if (!level4RiddleState.step1Active && !level4RiddleState.step2Active) {
-    if (Math.random() < 0.01) console.log("🔫 [LEVEL 4] Shooting blocked: step not active", { step1: level4RiddleState.step1Active, step2: level4RiddleState.step2Active });
-    return;
-  }
+  // Level 4 step check is now handled above (isLevel4 check)
+  // Level 5 step check is also handled above (isLevel5 check)
   if (!isFirstPerson()) {
     if (Math.random() < 0.01) console.log("🔫 [LEVEL 4] Shooting blocked: not first person", { cameraMode: cameraMode });
     return;
   }
   
-  // Check for overheating FIRST (before any shooting logic)
-  if (level4State.isOverheated) {
+  // Check for overheating FIRST (before any shooting logic) - Level 4 only
+  if (currentLevel === LEVEL_IDS.LEVEL4 && level4State.isOverheated) {
     console.log('🚫 [LEVEL 4] Cannot shoot - weapon is overheated!');
     return; // Don't allow shooting when overheated
   }
@@ -4699,17 +4743,28 @@ function handleLevel4Shooting() {
     return; // Triple shot system will handle the rest
   } else {
     // Normal weapon (slot 1): Single shot
-    // Check cooldown
+    // Check cooldown (Level 4 uses level4State, Level 5 uses level5RiddleState)
     const currentTime = performance.now() / 1000; // Convert to seconds
-    if (currentTime - level4State.lastShotTime < level4State.shotCooldown) {
-      return; // Still on cooldown
+    if (currentLevel === LEVEL_IDS.LEVEL4) {
+      if (currentTime - level4State.lastShotTime < level4State.shotCooldown) {
+        return; // Still on cooldown
+      }
+    } else if (currentLevel === LEVEL_IDS.LEVEL5) {
+      // Level 5 cooldown (use level5RiddleState)
+      if (!level5RiddleState.lastShotTime) level5RiddleState.lastShotTime = 0;
+      if (!level5RiddleState.shotCooldown) level5RiddleState.shotCooldown = 0.2;
+      if (currentTime - level5RiddleState.lastShotTime < level5RiddleState.shotCooldown) {
+        return; // Still on cooldown
+      }
     }
     
     // Fire single shot
     fireLevel4SingleShot(false); // false = yellow bullet
     
-    // Add heat for single shot
-    addLevel4Heat(level4State.heatPerShot);
+    // Add heat for single shot (Level 4 only)
+    if (currentLevel === LEVEL_IDS.LEVEL4) {
+      addLevel4Heat(level4State.heatPerShot);
+    }
     
     // Play shooting sound (Space Invaders normal_shoot.wav) for weapon 1
     if (level4ShootAudioReady && level4ShootSound) {
@@ -4720,14 +4775,19 @@ function handleLevel4Shooting() {
         level4ShootSound.stop();
       }
       level4ShootSound.play();
-      console.log("🔫 [LEVEL 4] Weapon 1 shot sound played");
+      console.log(`🔫 [${currentLevel === LEVEL_IDS.LEVEL5 ? 'LEVEL 5' : 'LEVEL 4'}] Weapon 1 shot sound played`);
     } else {
-      console.warn("⚠️ [LEVEL 4] Weapon 1 sound not ready:", { level4ShootAudioReady, hasSound: !!level4ShootSound });
+      console.warn(`⚠️ [${currentLevel === LEVEL_IDS.LEVEL5 ? 'LEVEL 5' : 'LEVEL 4'}] Weapon 1 sound not ready:`, { level4ShootAudioReady, hasSound: !!level4ShootSound });
     }
     
     // Update cooldown
-    level4State.lastShotTime = currentTime;
-    level4State.shotCooldown = 0.2; // 200ms between shots
+    if (currentLevel === LEVEL_IDS.LEVEL4) {
+      level4State.lastShotTime = currentTime;
+      level4State.shotCooldown = 0.2; // 200ms between shots
+    } else if (currentLevel === LEVEL_IDS.LEVEL5) {
+      level5RiddleState.lastShotTime = currentTime;
+      level5RiddleState.shotCooldown = 0.2; // 200ms between shots
+    }
   }
 }
 
@@ -4766,9 +4826,59 @@ function fireLevel4SingleShot(isPurple = false) {
   let hitDistance = Infinity;
   let hitIndex = -1;
   let monsterHitIndex = -1;
+  let level5MonsterHitIndex = -1;
+  
+  // Level 5 monsters take priority (if in Level 5 and Step 1 active)
+  if (currentLevel === LEVEL_IDS.LEVEL5 && level5RiddleState.step1Active) {
+    const cameraPos = camera.position.clone();
+    const rayDir = raycaster.ray.direction.clone();
+    
+    level5State.monsters.forEach((monster, index) => {
+      if (!monster || !monster.mesh || !monster.mesh.visible || monster.defeated) return;
+      
+      // Get monster world position
+      const monsterWorldPos = new THREE.Vector3();
+      monster.mesh.getWorldPosition(monsterWorldPos);
+      
+      // Calculate distance from camera to monster
+      const distToMonster = cameraPos.distanceTo(monsterWorldPos);
+      
+      // Raycast against monster mesh (recursive=true to check all nested meshes in GLTF)
+      const intersects = raycaster.intersectObject(monster.mesh, true);
+      
+      // Debug: Log raycast results occasionally (like Level 4)
+      if (Math.random() < 0.05 && intersects.length === 0) {
+        console.log(`🔍 [LEVEL 5] Raycast miss - Monster ${index}:`, {
+          monsterPos: monsterWorldPos.toArray().map(n => n.toFixed(2)),
+          cameraPos: cameraPos.toArray().map(n => n.toFixed(2)),
+          distance: distToMonster.toFixed(2),
+          rayDir: rayDir.toArray().map(n => n.toFixed(2)),
+          meshVisible: monster.mesh.visible,
+          meshInScene: level5State.group.children.includes(monster.mesh),
+          meshChildren: monster.mesh.children.length,
+          groupVisible: level5State.group.visible,
+          groupInScene: scene.children.includes(level5State.group)
+        });
+      }
+      
+      if (intersects.length > 0) {
+        const distance = intersects[0].distance;
+        if (distance < hitDistance) {
+          hitDistance = distance;
+          hitMonster = monster; // Store monster reference
+          hitCheese = null; // Clear cheese hit if monster is closer
+          hitIndex = -1;
+          monsterHitIndex = -1;
+          level5MonsterHitIndex = index;
+          targetPos.copy(intersects[0].point); // Use actual hit point
+          console.log(`🎯 [LEVEL 5] Monster ${index} HIT! Distance: ${distance.toFixed(2)}`);
+        }
+      }
+    });
+  }
   
   // Step 2 (monsters) takes priority over Step 1 (cheese) - check monsters first
-  if (level4RiddleState.step2Active) {
+  if (level4RiddleState.step2Active && !hitMonster) {
     // Debug: Log raycast setup
     const cameraPos = camera.position.clone();
     const rayDir = raycaster.ray.direction.clone();
@@ -4841,12 +4951,26 @@ function fireLevel4SingleShot(isPurple = false) {
   }
   
   // Instant hit detection (for responsive gameplay)
-  if (hitMonster && monsterHitIndex >= 0) {
-    // Monster hit (Step 2 takes priority)
+  if (hitMonster && level5MonsterHitIndex >= 0 && currentLevel === LEVEL_IDS.LEVEL5) {
+    // Level 5 monster hit
+    const currentIndex = level5State.monsters.indexOf(hitMonster);
+    if (currentIndex >= 0) {
+      console.log("🎯 [LEVEL 5] Monster hit detected! Index:", currentIndex, "Distance:", hitDistance.toFixed(2), "Monster:", hitMonster.path?.split('/').pop());
+      defeatLevel5Monster(currentIndex);
+    } else {
+      console.warn(`⚠️ [LEVEL 5] Hit monster not found in array (was already removed?)`, {
+        hitMonster: hitMonster?.path,
+        level5MonsterHitIndex,
+        monstersCount: level5State.monsters.length
+      });
+    }
+    showLevel4HitIndicator(); // Reuse Level 4 hit indicator
+  } else if (hitMonster && monsterHitIndex >= 0) {
+    // Level 4 Monster hit (Step 2 takes priority)
     // CRITICAL: Use monster reference to find current index (array might have shifted)
     const currentIndex = level4State.monsters.indexOf(hitMonster);
     if (currentIndex >= 0) {
-      console.log("🎯 [LEVEL 4] Monster hit! Index:", currentIndex, "Monster:", hitMonster.path.split('/').pop(), "Distance:", hitDistance.toFixed(2));
+      console.log("🎯 [LEVEL 4] Monster hit! Index:", currentIndex, "Monster:", hitMonster.path?.split('/').pop(), "Distance:", hitDistance.toFixed(2));
       defeatLevel4Monster(currentIndex); // Use current index, not stale one
     } else {
       console.warn(`⚠️ [LEVEL 4] Hit monster not found in array (was already removed?)`);
@@ -4918,9 +5042,9 @@ document.addEventListener("click", (event) => {
     return;
   }
   
-  // Don't lock if clicking on pause menu, options menu, or other UI elements
+  // Don't lock if clicking on pause menu, options menu, main menu, or other UI elements
   const target = event.target;
-  if (target.closest('.pause-menu') || target.closest('.options-menu') || target.closest('button')) {
+  if (target.closest('.pause-menu') || target.closest('.options-menu') || target.closest('.main-menu') || target.closest('button')) {
     return;
   }
   
@@ -9946,6 +10070,8 @@ function initializeWeaponSystem() {
       getCurrentLevel: () => currentLevel || LEVEL_IDS.LEVEL1,
       getLevel4State: () => level4State || {},
       getLevel4RiddleState: () => level4RiddleState || {},
+      getLevel5State: () => level5State || {}, // Level 5 state getter (January 11, 2026)
+      getLevel5RiddleState: () => level5RiddleState || {}, // Level 5 riddle state getter (January 11, 2026)
       isFirstPerson: () => isFirstPerson(),
       isGamePaused: () => isGamePaused || false,
       isPointerLocked: () => {
@@ -9998,9 +10124,15 @@ function initializeWeaponSystem() {
         }
       },
       onMonsterHit: (index) => {
-        // Monster hit - call existing function
+        // Level 4 Monster hit - call existing function
         if (typeof defeatLevel4Monster === 'function') {
           defeatLevel4Monster(index);
+        }
+      },
+      onLevel5MonsterHit: (index) => {
+        // Level 5 Monster hit - call Level 5 defeat function (January 11, 2026)
+        if (typeof defeatLevel5Monster === 'function') {
+          defeatLevel5Monster(index);
         }
       },
       onCheeseHit: (index) => {
@@ -19549,6 +19681,10 @@ async function buildLevel5TheWalk() {
     
     console.log(`🚶 [LEVEL 5] 'The Walk' level built successfully. Spawn position:`, level5State.spawnPosition);
     
+    // Create glyph stone monuments (January 11, 2026)
+    console.log("🎨 [LEVEL 5] Creating glyph stone monuments...");
+    await createLevel5Glyphs();
+    
     // Create collision mesh from Level 5 GLTF map geometry
     // This is essential for ground detection and wall collision
     try {
@@ -19906,6 +20042,9 @@ async function buildLevel5TheWalk() {
       createLevel5Chests();
     }, 100);
     
+    // Create Level 5 trigger plate (for riddle system)
+    createLevel5TriggerPlate();
+    
     level5State.built = true;
     level5State.group.visible = false; // Hidden until level is active
     
@@ -19921,6 +20060,719 @@ async function buildLevel5TheWalk() {
     level5State.built = true;
     console.warn("⚠️ [LEVEL 5] Using fallback placeholder due to loading error");
   }
+}
+
+// ==================== LEVEL 5: GLYPH STONE MONUMENTS ====================
+
+// Create glyph stone monuments in Level 5 (January 11, 2026)
+// Places huge glyph models as decorative stone monuments near spawn for inspection
+async function createLevel5Glyphs() {
+  if (!level5State.mapMesh) {
+    console.warn("⚠️ [LEVEL 5] Cannot create glyphs - map not loaded yet");
+    return;
+  }
+  
+  console.log("🎨 [LEVEL 5] Creating glyph stone monuments...");
+  
+  // Get map ground level (from level5State.spawnPosition.y)
+  const groundY = level5State.spawnPosition.y || 0;
+  
+  // Glyph selection: First 5 glyphs "LEVEL" (L, E, V, E, L) - placed near spawn for inspection
+  // Positioned in a circle pattern surrounding spawn point (January 11, 2026)
+  // Distance from spawn: 25 units (within 20-30 unit range)
+  // Distance between glyphs: ~30 units (circle pattern with 72° spacing)
+  // Y position: ✅ CORRECT (15.0 elevation offset above ground)
+  const spawnDistance = 45.0; // Distance from spawn (20-30 units range)
+  const angleStep = (Math.PI * 2) / 5; // Divide circle into 5 segments (72 degrees each)
+  
+  const glyphConfigs = [
+    // Position glyphs in a circle around spawn (0, groundY, 0)
+    // Each glyph is 25 units from spawn, spaced 72 degrees apart
+    // Distance between adjacent glyphs: 2 × 25 × sin(36°) ≈ 29.4 units (close to 30 units minimum)
+    { file: "L 3d.glb", position: new THREE.Vector3(Math.cos(0 * angleStep) * spawnDistance, groundY, Math.sin(0 * angleStep) * spawnDistance), rotationY: 0 },
+    { file: "E 3d.glb", position: new THREE.Vector3(Math.cos(1 * angleStep) * spawnDistance, groundY, Math.sin(1 * angleStep) * spawnDistance), rotationY: 0 },
+    { file: "V 3d.glb", position: new THREE.Vector3(Math.cos(2 * angleStep) * spawnDistance, groundY, Math.sin(2 * angleStep) * spawnDistance), rotationY: 0 },
+    { file: "E 3d.glb", position: new THREE.Vector3(Math.cos(3 * angleStep) * spawnDistance, groundY, Math.sin(3 * angleStep) * spawnDistance), rotationY: 0 },
+    { file: "L 3d.glb", position: new THREE.Vector3(Math.cos(4 * angleStep) * spawnDistance, groundY, Math.sin(4 * angleStep) * spawnDistance), rotationY: 0 }
+  ];
+  
+  // Scale for huge stone monuments (20 units tall)
+  const glyphScale = 20.0;
+  
+  // Load and create each glyph
+  for (const config of glyphConfigs) {
+    try {
+      // CRITICAL: Use absolute path from web root (see 18_3D_MODEL_RENDERING_RULE.md)
+      const modelPath = `/public/glyph/glyph3d/${config.file}`;
+      console.log(`🎨 [LEVEL 5] Loading glyph: ${config.file} from ${modelPath}`);
+      
+      const result = await loadModel(modelPath);
+      const glyphModel = result.scene.clone(true); // Clone for multiple instances (L and E reused)
+      
+      // Calculate bounding box for positioning
+      const box = new THREE.Box3().setFromObject(glyphModel);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      
+      console.log(`🎨 [LEVEL 5] Glyph "${config.file}" loaded:`, {
+        size: size,
+        center: center,
+        children: glyphModel.children.length
+      });
+      
+      // Position glyph (adjust Y so base is elevated above ground)
+      glyphModel.position.copy(config.position);
+      
+      // Elevate glyphs significantly above ground (user request - January 11, 2026)
+      // Increased to 15 units to prevent glyphs from being partially in the ground
+      const elevationOffset = 15.0; // Increased from 10.0 to 15.0 for better visibility above ground
+      
+      // If model center is not at base, adjust Y position
+      // For models with center at middle, move down by the distance from center to base
+      // Then add elevation offset to raise them above ground
+      if (size.y > 0) {
+        glyphModel.position.y = config.position.y - (center.y - box.min.y) + elevationOffset;
+      } else {
+        glyphModel.position.y = config.position.y + elevationOffset;
+      }
+      
+      // Scale to huge stone size (20 units tall)
+      glyphModel.scale.setScalar(glyphScale);
+      
+      // Rotation
+      glyphModel.rotation.y = config.rotationY || 0;
+      
+      // Process materials (GLB models - recommended material processing)
+      // 🔧 PERFORMANCE: Disable shadows for large glyph models to reduce lag
+      // Large models (15-37MB each) with shadows cause significant frame drops
+      glyphModel.traverse((child) => {
+        if (child.isMesh) {
+          // Disable shadows for performance (large models cause lag with shadows enabled)
+          child.castShadow = false; // Performance optimization (January 11, 2026)
+          child.receiveShadow = false; // Performance optimization (January 11, 2026)
+          if (child.material) {
+            // Process material (handles dark materials, converts to MeshStandardMaterial)
+            if (Array.isArray(child.material)) {
+              child.material = child.material.map(mat => processWeaponMaterial(mat));
+            } else {
+              child.material = processWeaponMaterial(child.material);
+            }
+          }
+        }
+      });
+      
+      // Ensure visibility
+      glyphModel.visible = true;
+      // 🔧 PERFORMANCE: Enable frustum culling for large glyph models (reduces lag when approaching)
+      // Large models (15-37MB each) cause frame drops when always rendered - culling improves performance
+      glyphModel.frustumCulled = true; // Enable culling to improve performance (January 11, 2026)
+      
+      // 🔧 PERFORMANCE: Disable matrix auto-update for static glyph models (reduces frame drops when approaching)
+      // Static monuments don't need matrix updates every frame - only update once after positioning
+      // IMPORTANT: Set matrixAutoUpdate = false BEFORE calling updateMatrixWorld() to ensure matrix is calculated correctly
+      glyphModel.matrixAutoUpdate = false; // Static objects - no per-frame matrix updates (January 11, 2026)
+      
+      // Add to Level 5 group (not scene directly) BEFORE updating matrix
+      level5State.group.add(glyphModel);
+      
+      // Update matrix AFTER adding to scene/group (ensures parent transforms are applied correctly)
+      glyphModel.updateMatrix(); // Update local matrix
+      glyphModel.updateMatrixWorld(true); // Update world matrix (recursive update of children)
+      
+      // Store reference
+      level5State.glyphs.push(glyphModel);
+      level5State.glyphPositions.push(config.position);
+      
+      console.log(`✅ [LEVEL 5] Glyph "${config.file}" created at:`, glyphModel.position);
+    } catch (error) {
+      console.error(`❌ [LEVEL 5] Failed to load glyph ${config.file}:`, error);
+      console.error(`❌ [LEVEL 5] Error details:`, error.message, error.stack);
+    }
+  }
+  
+  console.log(`✅ [LEVEL 5] Created ${level5State.glyphs.length} glyph stone monuments`);
+}
+
+// ==================== LEVEL 5: RIDDLE SYSTEM ====================
+
+// Level 5 Trigger Plate (Step 0) - Creates cheese-stone plate near spawn
+// Follows Level 4 pattern (createLevel4TriggerBlock)
+function createLevel5TriggerPlate() {
+  const blockSize = 1;
+  const geometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+  // Use normal cheese-stone.png texture
+  const texture = loadTexture("textures/blocks/cheese-stone.png");
+  // Use MeshLambertMaterial like Level 4 trigger block
+  const material = new THREE.MeshLambertMaterial({
+    map: texture,
+    emissive: new THREE.Color(0x000000), // No yellow glow - normal texture
+    emissiveIntensity: 0.0
+  });
+  const triggerBlock = new THREE.Mesh(geometry, material);
+  triggerBlock.scale.set(1.4, 0.35, 1.4); // Same scale as Level 4
+  
+  // Position block near spawn (Level 5 spawn is at 0, 0, 0)
+  const blockHeight = blockSize * 0.35; // Scaled height = 0.35
+  const floorY = level5State.spawnPosition.y || 0; // Ground level
+  const blockCenterY = floorY + (blockHeight / 2) + 0.05; // Center at 0.225, top at 0.4
+  
+  // Position plate near spawn (5 units forward, 0 units side)
+  triggerBlock.position.set(
+    level5State.spawnPosition.x + 0, // Same X as spawn
+    blockCenterY,
+    level5State.spawnPosition.z + 5 // 5 units forward from spawn
+  );
+  triggerBlock.visible = true;
+  triggerBlock.userData.isTrigger = true;
+  level5State.group.add(triggerBlock);
+  level5RiddleState.triggerBlock = triggerBlock;
+
+  // Visual clone for animation (same as Level 4)
+  const visualMaterial = material.clone();
+  const visualBlock = new THREE.Mesh(geometry.clone(), visualMaterial);
+  visualBlock.scale.copy(triggerBlock.scale);
+  visualBlock.position.copy(triggerBlock.position);
+  visualBlock.userData.restY = visualBlock.position.y;
+  visualBlock.userData.pressedY = visualBlock.position.y - 0.2;
+  visualBlock.userData.lerpSpeed = 6;
+  level5State.group.add(visualBlock);
+  level5RiddleState.triggerBlockVisual = visualBlock;
+  level5RiddleState.triggerBlockTargetY = visualBlock.userData.restY;
+
+  // Hide the collider block, show only the visual
+  triggerBlock.visible = false;
+  console.log("🧩 [LEVEL 5] Cheese stone trigger plate created at:", {
+    x: triggerBlock.position.x.toFixed(2),
+    y: triggerBlock.position.y.toFixed(2),
+    z: triggerBlock.position.z.toFixed(2),
+    blockTopY: (triggerBlock.position.y + blockHeight / 2).toFixed(2),
+    floorY: floorY.toFixed(2)
+  });
+}
+
+// Check if player is standing on Level 5 trigger plate
+function checkLevel5TriggerBlockStanding() {
+  if (!level5RiddleState.triggerBlock) return false;
+  const block = level5RiddleState.triggerBlock;
+  const blockTopY = block.position.y + (block.scale.y * 0.5);
+  const playerFeet = playerCollider.start;
+  const horizontalDistance = Math.sqrt(
+    Math.pow(playerFeet.x - block.position.x, 2) + Math.pow(playerFeet.z - block.position.z, 2)
+  );
+  const verticalDistance = Math.abs(playerFeet.y - blockTopY);
+  return horizontalDistance < 1.2 && verticalDistance < 0.8;
+}
+
+// Update Level 5 trigger block visual animation
+function updateLevel5TriggerBlockVisual(delta) {
+  const visual = level5RiddleState.triggerBlockVisual;
+  if (!visual || !visual.visible) return;
+  const targetY = level5RiddleState.triggerBlockTargetY ?? visual.position.y;
+  const speed = visual.userData?.lerpSpeed ?? 6;
+  const t = Math.min(1, delta * speed);
+  const newY = THREE.MathUtils.lerp(visual.position.y, targetY, t);
+  visual.position.y = newY;
+}
+
+// Unlock Level 5 trait (helper function)
+async function unlockLevel5Trait(traitKey, description) {
+  try {
+    const discordId = localStorage.getItem("discord_id") || localStorage.getItem("DISCORD_ID") || localStorage.getItem("narrrfs_last_discord_id");
+    if (!discordId) {
+      console.warn("🎯 [LEVEL 5] No Discord ID found, skipping trait unlock");
+      return;
+    }
+    const response = await fetch(`${API_BASE_URL}/api/user/unlock-trait.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: discordId,
+        trait_name: traitKey,
+        trait_value: 'true',
+        description: description
+      })
+    });
+    const result = await response.json();
+    if (result.success) {
+      console.log(`🎯 [LEVEL 5] Trait unlocked: ${traitKey}`);
+    } else {
+      console.warn(`🎯 [LEVEL 5] Trait unlock failed (${traitKey}):`, result.error);
+    }
+  } catch (error) {
+    console.error(`🎯 [LEVEL 5] Error unlocking trait (${traitKey}):`, error);
+  }
+}
+
+// Award Level 5 DSPOINC reward (helper function)
+async function awardLevel5DspoincReward(stepId, baseReward, contextLabel = "") {
+  const resolvedDiscordId = localStorage.getItem("discord_id") || localStorage.getItem("DISCORD_ID") || localStorage.getItem("narrrfs_last_discord_id");
+  if (!resolvedDiscordId) {
+    console.warn(`🎯 [LEVEL 5] Skipping DSPOINC reward (${stepId}) — no Discord ID.`);
+    return;
+  }
+  try {
+    const playerDisplayName = localStorage.getItem("discord_name") || localStorage.getItem("DISCORD_NAME") || "Guest";
+    const payload = {
+      discord_id: resolvedDiscordId,
+      discord_name: playerDisplayName && playerDisplayName !== "Guest" ? playerDisplayName : null,
+      riddle_id: stepId,
+      level_id: "CHEESE_TEMPLE_LEVEL5",
+      base_reward: baseReward,
+      session_id: cheeseSessionId || null
+    };
+    const response = await fetch(RIDDLE_REWARD_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json().catch(() => ({ success: false, error: "Invalid JSON" }));
+    if (response.ok && result.success) {
+      const dsPoincAwarded = result.data?.ds_poinc_awarded || 0;
+      const totalDspoinc = result.data?.total_ds_poinc;
+      if (typeof totalDspoinc === "number") {
+        currentTotalDspoinc = totalDspoinc;
+        window.localStorage.setItem("narrrfs_last_ds_balance", String(currentTotalDspoinc));
+        if (isGamePaused) updatePausePlayerInfo();
+      }
+      showRiddleRewardNotification(dsPoincAwarded, result.data?.multiplier || 1.0);
+      console.log(`🎯 [LEVEL 5] DSPOINC reward granted (${stepId})`, {
+        baseReward,
+        dsPoincAwarded,
+        totalDspoinc,
+        contextLabel
+      });
+    } else if (response.status === 409) {
+      console.warn(`🎯 [LEVEL 5] Reward already claimed for ${stepId}`);
+      showRiddleRewardNotification(0, 1.0, true);
+    } else {
+      console.warn(`🎯 [LEVEL 5] DSPOINC reward failed (${stepId}):`, result.error);
+    }
+  } catch (error) {
+    console.error(`🎯 [LEVEL 5] Error awarding DSPOINC reward (${stepId}):`, error);
+  }
+}
+
+// Update Level 5 Step 0 (trigger plate detection)
+async function updateLevel5Step0(delta) {
+  const isStandingOnTrigger = checkLevel5TriggerBlockStanding();
+  
+  if (isStandingOnTrigger) {
+    if (!level5RiddleState.step0StandingSoundPlayed) {
+      playCheesePlatformSound();
+      level5RiddleState.step0StandingSoundPlayed = true;
+    }
+    level5RiddleState.triggerBlockTimer += delta;
+    if (level5RiddleState.triggerBlockTimer >= RIDDLE_AIM_TIME && !level5RiddleState.step0Complete) {
+      level5RiddleState.step0Complete = true;
+      level5RiddleState.triggerBlockTimer = RIDDLE_AIM_TIME;
+      if (level5RiddleState.triggerBlock) {
+        level5RiddleState.triggerBlock.visible = false;
+      }
+      if (level5RiddleState.triggerBlockVisual) {
+        level5RiddleState.triggerBlockVisual.visible = false;
+      }
+      showRiddleToast("Step 1 begins! Monster hunt starts...", {
+        id: "level5_step1_start",
+        duration: 5000
+      });
+      if (!level5RiddleState.step0TraitUnlocked) {
+        unlockLevel5Trait(LEVEL5_STEP0_TRAIT, "Level 5 Step 0");
+      }
+      awardLevel5DspoincReward("CHEESE_TEMPLE_LEVEL5_STEP0", 100, "Level 5 Step 0");
+      // Start Step 1 - Spawn monsters and activate timer
+      level5RiddleState.step1Active = true;
+      level5RiddleState.step1TimerActive = true;
+      level5RiddleState.weaponsEnabled = true;
+      // Spawn monsters (simplified - spawn a few monsters for testing)
+      spawnLevel5Step1Monsters();
+      console.log("🎯 [LEVEL 5] Step 0 complete! Step 1 active - monster hunt begins!");
+    }
+  } else {
+    level5RiddleState.triggerBlockTimer = Math.max(0, level5RiddleState.triggerBlockTimer - delta * 0.5);
+    level5RiddleState.step0StandingSoundPlayed = false;
+  }
+  
+  // Update visual block animation
+  const targetY = isStandingOnTrigger && level5RiddleState.triggerBlockVisual
+    ? level5RiddleState.triggerBlockVisual.userData?.pressedY ?? level5RiddleState.triggerBlockVisual.position.y
+    : level5RiddleState.triggerBlockVisual?.userData?.restY ?? level5RiddleState.triggerBlockVisual?.position.y;
+  level5RiddleState.triggerBlockTargetY = targetY;
+  updateLevel5TriggerBlockVisual(delta);
+}
+
+// Spawn Level 5 Step 1 Monsters (simplified for testing - spawn 10 monsters near spawn)
+async function spawnLevel5Step1Monsters() {
+  console.log("🐉 [LEVEL 5] Spawning Step 1 monsters...");
+  
+  // Simplified spawning: spawn 10 monsters in a circle around spawn for testing
+  const spawnCount = 10; // Start with 10 for testing
+  const spawnRadius = 30; // 30 units from spawn
+  const angleStep = (Math.PI * 2) / spawnCount;
+  
+  // Use Level 4 monster paths (reuse proven models)
+  const monsterPaths = [
+    "/textures/3d models/Monster 1/Big/glTF/Demon.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Frog.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Orc.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Bunny.gltf",
+    "/textures/3d models/Monster 1/Big/glTF/Cactoro.gltf"
+  ];
+  
+  for (let i = 0; i < spawnCount; i++) {
+    const angle = i * angleStep;
+    const spawnX = level5State.spawnPosition.x + Math.cos(angle) * spawnRadius;
+    const spawnZ = level5State.spawnPosition.z + Math.sin(angle) * spawnRadius;
+    const spawnY = (level5State.spawnPosition.y || 0) + 0.2; // Ground level + 0.2 (fixed: was 1.2, too high)
+    
+    // Pick random monster path
+    const monsterPath = monsterPaths[Math.floor(Math.random() * monsterPaths.length)];
+    
+    try {
+      await spawnLevel5Monster(monsterPath, new THREE.Vector3(spawnX, spawnY, spawnZ));
+    } catch (error) {
+      console.error(`❌ [LEVEL 5] Failed to spawn monster ${i + 1}:`, error);
+    }
+  }
+  
+  level5RiddleState.totalMonsters = level5State.monsters.length;
+  
+  // Assign unique monster IDs (0-based index for unique reward IDs)
+  level5State.monsters.forEach((monster, index) => {
+    monster.monsterId = index; // Unique ID: 0, 1, 2, ... (for reward system)
+  });
+  
+  console.log(`✅ [LEVEL 5] Spawned ${level5State.monsters.length} monsters for Step 1`);
+}
+
+// Spawn individual Level 5 Monster (reuses Level 4 pattern)
+async function spawnLevel5Monster(monsterPath, spawnPosition) {
+  try {
+    const gltf = await loadModel(monsterPath);
+    
+    // CRITICAL: Use SkeletonUtils.clone() for GLTF models with skinned meshes (animations)
+    let monsterMesh;
+    try {
+      monsterMesh = SkeletonUtils.clone(gltf.scene);
+    } catch (cloneError) {
+      console.error(`❌ [LEVEL 5] SkeletonUtils.clone() failed for ${monsterPath}:`, cloneError);
+      monsterMesh = gltf.scene.clone(true);
+    }
+    
+    // Validate skeleton after cloning
+    monsterMesh.traverse((child) => {
+      if (child.isSkinnedMesh && child.skeleton) {
+        if (!child.skeleton.bones || child.skeleton.bones.length === 0) {
+          console.warn(`⚠️ [LEVEL 5] Invalid skeleton for ${monsterPath} - skeleton has no bones`);
+        }
+      }
+    });
+    
+    // Apply scale (1.0 = normal size)
+    const sizeMultiplier = 1.0 + (Math.random() * 0.5); // 1.0-1.5x variation
+    monsterMesh.scale.setScalar(sizeMultiplier);
+    
+    // Determine if flying monster
+    const isFlying = monsterPath.includes('/Flying/');
+    
+    // Set spawn position
+    // CRITICAL: Store baseY like Level 4 does (prevents falling/standing issues)
+    let baseY;
+    if (isFlying) {
+      baseY = spawnPosition.y + 3 + Math.random() * 9; // 3-12 units above ground
+    } else {
+      // Ground monsters: Use spawn Y directly (already adjusted in spawnLevel5Step1Monsters)
+      baseY = spawnPosition.y;
+    }
+    monsterMesh.position.copy(spawnPosition);
+    monsterMesh.position.y = baseY;
+    
+    // Random rotation
+    monsterMesh.rotation.y = Math.random() * Math.PI * 2;
+    
+    // Set up animations
+    let mixer = null;
+    const animations = {};
+    if (gltf.animations && gltf.animations.length > 0) {
+      try {
+        mixer = new THREE.AnimationMixer(monsterMesh);
+        gltf.animations.forEach((clip) => {
+          try {
+            const action = mixer.clipAction(clip);
+            if (action) {
+              animations[clip.name] = action;
+            }
+          } catch (actionError) {
+            console.warn(`⚠️ [LEVEL 5] Failed to create animation action for ${clip.name}:`, actionError);
+          }
+        });
+        // Play walk animation if available
+        if (animations['Walk'] || animations['walk']) {
+          const walkAnim = animations['Walk'] || animations['walk'];
+          walkAnim.reset().fadeIn(0.2).play().setLoop(THREE.LoopRepeat);
+        } else if (animations['Run'] || animations['run']) {
+          const runAnim = animations['Run'] || animations['run'];
+          runAnim.reset().fadeIn(0.2).play().setLoop(THREE.LoopRepeat);
+        } else if (Object.keys(animations).length > 0) {
+          // Play first available animation
+          const firstAnim = animations[Object.keys(animations)[0]];
+          firstAnim.reset().fadeIn(0.2).play().setLoop(THREE.LoopRepeat);
+        }
+      } catch (mixerError) {
+        console.error(`❌ [LEVEL 5] Failed to create animation mixer:`, mixerError);
+      }
+    }
+    
+    // Ensure visibility
+    monsterMesh.visible = true;
+    monsterMesh.frustumCulled = true;
+    
+    // Make sure all children are visible and raycastable (like Level 4)
+    monsterMesh.traverse((child) => {
+      if (child.isMesh) {
+        child.visible = true;
+        
+        // Ensure geometry is ready for rendering (like Level 4)
+        if (child.geometry) {
+          child.geometry.computeBoundingBox();
+          child.geometry.computeBoundingSphere();
+        }
+        
+        // Ensure materials are properly set (like Level 4)
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(mat => {
+              if (mat) mat.visible = true;
+            });
+          } else {
+            child.material.visible = true;
+          }
+        }
+      }
+    });
+    
+    // Add to scene
+    level5State.group.add(monsterMesh);
+    
+    // CRITICAL: Ensure group is in scene and visible (like Level 4)
+    if (!scene.children.includes(level5State.group)) {
+      scene.add(level5State.group);
+      console.log("🐉 [LEVEL 5] Added level5State.group to scene");
+    }
+    level5State.group.visible = true;
+    
+    // Calculate initial target position (random position on map)
+    // Level 5 map is huge (~1500x960 units), so pick random target
+    const mapBounds = 300; // Approximate map bounds (half of 600 units)
+    const targetX = level5State.spawnPosition.x + (Math.random() - 0.5) * mapBounds;
+    const targetZ = level5State.spawnPosition.z + (Math.random() - 0.5) * mapBounds;
+    const targetY = isFlying ? baseY : baseY;
+    const targetPosition = new THREE.Vector3(targetX, targetY, targetZ);
+    
+    // Monster speed (simple movement speed)
+    const speed = isFlying ? 4.0 : 3.0;
+    
+    // Store monster reference (includes movement properties like Level 4)
+    const monster = {
+      mesh: monsterMesh,
+      mixer: mixer,
+      animations: animations,
+      defeated: false,
+      isFlying: isFlying,
+      sizeMultiplier: sizeMultiplier,
+      spawnPosition: spawnPosition.clone(),
+      path: monsterPath, // Store path for logging
+      targetPosition: targetPosition, // For movement
+      speed: speed, // Movement speed
+      baseY: baseY // Store baseY for consistent Y positioning (like Level 4)
+    };
+    
+    level5State.monsters.push(monster);
+    
+    console.log(`🐉 [LEVEL 5] Monster spawned:`, {
+      path: monsterPath,
+      position: spawnPosition,
+      isFlying: isFlying,
+      scale: sizeMultiplier,
+      totalMonsters: level5State.monsters.length
+    });
+    
+  } catch (error) {
+    console.error("❌ [LEVEL 5] Failed to spawn monster:", error);
+    throw error;
+  }
+}
+
+// Defeat Level 5 Monster (called when player shoots a monster)
+function defeatLevel5Monster(monsterIndex) {
+  if (!level5RiddleState.step1Active) return;
+  
+  // Validate monster exists
+  if (monsterIndex < 0 || monsterIndex >= level5State.monsters.length) {
+    console.warn(`⚠️ [LEVEL 5] Invalid monster index ${monsterIndex}, array length: ${level5State.monsters.length}`);
+    return;
+  }
+  
+  const monster = level5State.monsters[monsterIndex];
+  if (!monster || monster.defeated) {
+    console.warn(`⚠️ [LEVEL 5] Monster at index ${monsterIndex} doesn't exist or already defeated`);
+    return;
+  }
+  
+  // Check if mesh exists and is in scene
+  if (!monster.mesh || !monster.mesh.parent) {
+    console.warn(`⚠️ [LEVEL 5] Monster mesh missing or removed from scene, marking as defeated`);
+    monster.defeated = true;
+    const index = level5State.monsters.indexOf(monster);
+    if (index >= 0) {
+      level5State.monsters.splice(index, 1);
+    }
+    return;
+  }
+  
+  // Monster defeated!
+  monster.defeated = true;
+  level5RiddleState.monstersDefeated++;
+  
+  // Award DSPOINC reward (50 DSPOINC per monster)
+  // Use unique monsterId instead of sequential counter to prevent duplicate reward conflicts
+  const monsterId = monster.monsterId !== undefined ? monster.monsterId : level5RiddleState.monstersDefeated - 1;
+  awardLevel5DspoincReward(`CHEESE_TEMPLE_LEVEL5_MONSTER_${monsterId}`, 50, `Level 5 Monster Defeated (#${level5RiddleState.monstersDefeated})`);
+  
+  // Create explosion effect (reuse Level 4 function)
+  const monsterPos = monster.mesh.position.clone();
+  if (typeof createMonsterExplosionEffect === 'function') {
+    createMonsterExplosionEffect(monsterPos, monster.sizeMultiplier);
+  }
+  
+  // Remove the defeated monster
+  const actualIndex = level5State.monsters.indexOf(monster);
+  if (actualIndex >= 0) {
+    // Remove from scene first
+    if (monster.mesh && monster.mesh.parent) {
+      monster.mesh.parent.remove(monster.mesh);
+    }
+    if (monster.mixer) {
+      monster.mixer.stopAllAction();
+    }
+    // Remove from array
+    level5State.monsters.splice(actualIndex, 1);
+  } else {
+    console.warn(`⚠️ [LEVEL 5] Monster not found in array during removal`);
+    // Still try to remove from scene
+    if (monster.mesh && monster.mesh.parent) {
+      monster.mesh.parent.remove(monster.mesh);
+    }
+  }
+  
+  console.log(`✅ [LEVEL 5] Monster defeated! Remaining: ${level5State.monsters.length}/${level5RiddleState.totalMonsters}`);
+  
+  // Check for completion (all monsters defeated)
+  if (level5State.monsters.length === 0) {
+    completeLevel5Step1();
+  }
+}
+
+// Update Level 5 Monsters Movement (reuses Level 4 pattern)
+function updateLevel5Monsters(delta) {
+  if (!level5RiddleState.step1Active || !level5State.monsters) return;
+  
+  const playerPosition = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+  const spawnPos = level5State.spawnPosition;
+  const mapBounds = 300; // Approximate map bounds
+  
+  level5State.monsters.forEach((monster, index) => {
+    if (!monster || monster.defeated) return;
+    
+    // Simple validation
+    if (!monster.mesh || !monster.mesh.parent) return;
+    
+    // Update animation mixer
+    if (monster.mixer) {
+      monster.mixer.update(delta);
+    }
+    
+    // Update monster movement (like Level 4 pattern)
+    const monsterPos = monster.mesh.position.clone();
+    const targetPos = monster.targetPosition.clone();
+    
+    // For ground monsters, ignore Y when calculating direction
+    if (!monster.isFlying) {
+      monsterPos.y = 0;
+      targetPos.y = 0;
+    }
+    
+    const direction = new THREE.Vector3().subVectors(targetPos, monsterPos).normalize();
+    
+    // Calculate horizontal distance
+    const horizontalDistance = new THREE.Vector2(monster.mesh.position.x, monster.mesh.position.z)
+      .distanceTo(new THREE.Vector2(monster.targetPosition.x, monster.targetPosition.z));
+    
+    if (horizontalDistance > 2.0) {
+      // Move towards target
+      const moveDistance = monster.speed * delta;
+      monster.mesh.position.x += direction.x * moveDistance;
+      monster.mesh.position.z += direction.z * moveDistance;
+      
+      // Use stored baseY for Y position (prevents falling/standing issues)
+      if (monster.isFlying) {
+        // Flying monsters: interpolate Y to target Y
+        const currentY = monster.mesh.position.y;
+        const targetY = monster.targetPosition.y;
+        if (Math.abs(currentY - targetY) > 0.5) {
+          monster.mesh.position.y += Math.sign(targetY - currentY) * moveDistance * 0.5;
+        }
+      } else {
+        // Ground monsters: ALWAYS use baseY
+        monster.mesh.position.y = monster.baseY;
+      }
+      
+      // Rotate to face movement direction
+      if (direction.lengthSq() > 0.01) {
+        const targetRotation = Math.atan2(direction.x, direction.z);
+        monster.mesh.rotation.y = targetRotation;
+      }
+    } else {
+      // Reached target, pick new random target
+      if (monster.isFlying) {
+        // Flying monsters: full 3D movement
+        const newX = spawnPos.x + (Math.random() - 0.5) * mapBounds;
+        const newZ = spawnPos.z + (Math.random() - 0.5) * mapBounds;
+        const newY = monster.baseY + 3 + Math.random() * 9; // Random height 3-12
+        monster.targetPosition.set(newX, newY, newZ);
+      } else {
+        // Ground monsters: 2D movement (ALWAYS use stored baseY)
+        const newX = spawnPos.x + (Math.random() - 0.5) * mapBounds;
+        const newZ = spawnPos.z + (Math.random() - 0.5) * mapBounds;
+        const newY = monster.baseY; // ALWAYS use stored baseY
+        monster.targetPosition.set(newX, newY, newZ);
+      }
+    }
+    
+    monster.mesh.updateMatrixWorld(true);
+  });
+}
+
+// Complete Level 5 Step 1 (all monsters defeated)
+async function completeLevel5Step1() {
+  if (level5RiddleState.step1Complete) return;
+  
+  level5RiddleState.step1Complete = true;
+  level5RiddleState.step1TimerActive = false;
+  
+  // Award DSPOINC reward (2,500 base)
+  if (!level5RiddleState.step1TraitUnlocked) {
+    unlockLevel5Trait(LEVEL5_STEP1_TRAIT, "Level 5 Step 1 - All Monsters Defeated");
+  }
+  awardLevel5DspoincReward("CHEESE_TEMPLE_LEVEL5_STEP1", 2500, "Level 5 Step 1 - Monster Hunt Complete");
+  
+  // Show completion message
+  showRiddleToast("🎉 All monsters defeated! Step 1 complete!", {
+    id: "level5_step1_complete",
+    duration: 5000
+  });
+  
+  console.log("✅ [LEVEL 5] Step 1 complete! All monsters defeated!");
 }
 
 // ==================== LEVEL 6: PHOENIX BOSS ARENA ====================
@@ -21560,7 +22412,59 @@ function updateLevel5(delta) {
   // NOTE: Phoenix boss removed from Level 5 - now only in Level 6
   // No Phoenix boss updates needed in Level 5
   
-  // TODO: Add Level 5 specific updates here (riddles, objectives, etc.)
+  // Update explosion particles (sparkling effects when monsters are defeated)
+  if (level5State.explosionParticles && level5State.explosionParticles.length > 0) {
+    level5State.explosionParticles = level5State.explosionParticles.filter(particle => {
+      if (!particle.parent) return false; // Already removed
+      
+      particle.userData.age += delta;
+      if (particle.userData.age >= particle.userData.lifetime) {
+        level5State.group.remove(particle);
+        return false; // Remove from array
+      }
+      
+      // Update position
+      particle.position.addScaledVector(particle.userData.velocity, delta);
+      particle.userData.velocity.y += particle.userData.gravity * delta;
+      
+      // Fade out
+      const opacity = 1 - (particle.userData.age / particle.userData.lifetime);
+      if (particle.material) {
+        particle.material.opacity = opacity;
+      }
+      
+      // Rotate for visual effect
+      particle.rotation.x += delta * 5;
+      particle.rotation.y += delta * 5;
+      
+      return true; // Keep in array
+    });
+  }
+  
+  // Level 5 Riddle System Updates
+  if (!level5RiddleState.step0Complete) {
+    updateLevel5Step0(delta);
+  }
+  
+  // Update Step 1 timer if active
+  if (level5RiddleState.step1Active && level5RiddleState.step1TimerActive) {
+    level5RiddleState.step1Timer -= delta;
+    if (level5RiddleState.step1Timer <= 0) {
+      level5RiddleState.step1Timer = 0;
+      level5RiddleState.step1TimerActive = false;
+      // Game Over - timer expired
+      console.log("⏰ [LEVEL 5] Timer expired - Game Over!");
+      showRiddleToast("Time's up! Game Over.", {
+        id: "level5_timer_expired",
+        duration: 5000
+      });
+    }
+  }
+  
+  // Update monster animations and movement if Step 1 is active
+  if (level5RiddleState.step1Active) {
+    updateLevel5Monsters(delta);
+  }
 }
 
 function updateLevel6(delta) {
@@ -22043,8 +22947,19 @@ function defeatLevel4Monster(monsterIndex) {
   }
 }
 
-// NEW: Monster explosion effect
+// Monster explosion effect (sparkling particles when monsters are defeated)
+// ISSUE FIXED: Sparkling effects weren't showing when Level 5 monsters were defeated (January 11, 2026)
+// SOLUTION: Made function level-agnostic by detecting current level and using appropriate state
+// - Detects if currentLevel === LEVEL_IDS.LEVEL5
+// - Uses level5State.group and level5State.explosionParticles for Level 5
+// - Uses level4State.group and level4State.explosionParticles for Level 4
+// - Creates 15 colorful particles that explode outward, fade out, and rotate
+// - Particles are updated in updateLevel4() and updateLevel5() functions
 function createMonsterExplosionEffect(position, sizeMultiplier) {
+  // Detect which level we're in and use the appropriate state (Level 4 or Level 5)
+  const isLevel5 = currentLevel === LEVEL_IDS.LEVEL5;
+  const targetState = isLevel5 ? level5State : level4State;
+  
   const particleCount = 15;
   const particleSize = 0.4 * sizeMultiplier;
   
@@ -22070,8 +22985,8 @@ function createMonsterExplosionEffect(position, sizeMultiplier) {
     particle.userData.lifetime = 1.0;
     particle.userData.age = 0;
     
-    level4State.group.add(particle);
-    level4State.explosionParticles.push(particle);
+    targetState.group.add(particle);
+    targetState.explosionParticles.push(particle);
   }
 }
 

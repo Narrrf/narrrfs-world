@@ -470,7 +470,7 @@ try {
         ];
 
         foreach ($raceSeasonFilters as $filter) {
-            // Only match by season column - NO timestamp fallback for current season stats
+            // Try season column match first
             $stmt = $db->prepare("
                 SELECT 
                     COUNT(*) as total_races,
@@ -495,10 +495,43 @@ try {
             }
         }
         
-        // Fallback: if no races are detected for the active season, aggregate all-time values
+        // 🔧 FIX: Timestamp fallback for recent races (January 11, 2026)
+        // Some races may have old season names but were created during current season
+        // Check timestamp as fallback (similar to Cheese Hunt pattern)
         if (!$raceData || (int)$raceData['total_races'] === 0) {
-            error_log("ℹ️ DISCORD RACE DEBUG: No Season $currentSeason data found for user $discordId (no fallback applied)");
-            $raceData = null;
+            if ($currentSeasonStart && $currentSeasonEnd) {
+                error_log("🔍 DISCORD RACE: Trying timestamp fallback for Season $currentSeason (from $currentSeasonStart to $currentSeasonEnd)");
+                $timestampStmt = $db->prepare("
+                    SELECT 
+                        COUNT(*) as total_races,
+                        COUNT(CASE WHEN finished_at IS NOT NULL THEN 1 END) as completed_races,
+                        COUNT(CASE WHEN position = 1 THEN 1 END) as wins,
+                        COUNT(CASE WHEN position <= 3 THEN 1 END) as podiums,
+                        MIN(position) as best_position,
+                        SUM(COALESCE(dspoinc_earned, 0)) as total_dspoinc_earned
+                    FROM tbl_race_participants 
+                    WHERE user_id = ?
+                    AND finished_at >= ?
+                    AND finished_at <= ?
+                ");
+                $timestampStmt->execute([
+                    $discordId,
+                    $currentSeasonStart,
+                    $currentSeasonEnd
+                ]);
+                $timestampData = $timestampStmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($timestampData && (int)$timestampData['total_races'] > 0) {
+                    error_log("✅ DISCORD RACE: Timestamp fallback found " . $timestampData['total_races'] . " races for $discordId");
+                    $raceData = $timestampData;
+                } else {
+                    error_log("ℹ️ DISCORD RACE: No Season $currentSeason data found for user $discordId (no timestamp matches either)");
+                    $raceData = null;
+                }
+            } else {
+                error_log("ℹ️ DISCORD RACE DEBUG: No Season $currentSeason data found for user $discordId (no timestamp fallback - missing dates)");
+                $raceData = null;
+            }
         }
         
         if ($raceData) {

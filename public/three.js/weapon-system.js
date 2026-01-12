@@ -474,7 +474,15 @@ export class WeaponSystem {
     this.onWeaponFired = config.onWeaponFired || (() => {});
     this.onOverheated = config.onOverheated || (() => {});
     this.onHeatChanged = config.onHeatChanged || (() => {});
-    this.onMonsterHit = config.onMonsterHit || ((index) => {});
+    this.onMonsterHit = config.onMonsterHit || ((index) => {}); // Level 4 monster hit
+    // Level 5 monster hit callback (January 11, 2026)
+    // Used when player shoots and hits a Level 5 monster during Step 1 (monster hunt)
+    // Calls defeatLevel5Monster(index) which handles:
+    // - Awarding 50 DSPOINC per monster (with role multipliers)
+    // - Creating sparkling explosion particles
+    // - Removing monster from scene
+    // - Checking for Step 1 completion (all monsters defeated)
+    this.onLevel5MonsterHit = config.onLevel5MonsterHit || ((index) => {});
     this.onCheeseHit = config.onCheeseHit || ((index) => {});
     this.onHitIndicator = config.onHitIndicator || (() => {});
 
@@ -482,6 +490,8 @@ export class WeaponSystem {
     this.getCurrentLevel = config.getCurrentLevel || (() => null);
     this.getLevel4State = config.getLevel4State || (() => ({}));
     this.getLevel4RiddleState = config.getLevel4RiddleState || (() => ({}));
+    this.getLevel5State = config.getLevel5State || (() => ({})); // Level 5 state getter (January 11, 2026)
+    this.getLevel5RiddleState = config.getLevel5RiddleState || (() => ({})); // Level 5 riddle state getter (January 11, 2026)
     this.isFirstPerson = config.isFirstPerson || (() => false);
     this.isGamePaused = config.isGamePaused || (() => false);
     this.isPointerLocked = config.isPointerLocked || (() => false);
@@ -1291,6 +1301,7 @@ export class WeaponSystem {
     let hitDistance = Infinity;
     let hitIndex = -1;
     let monsterHitIndex = -1;
+    let level5MonsterHitIndex = -1; // Level 5 monster hit index (January 11, 2026)
 
     // 🔥 PHOENIX BOSS: Check for Phoenix hit (Level 5 or Level 6) - takes highest priority
     let hitPhoenix = false;
@@ -1309,11 +1320,94 @@ export class WeaponSystem {
             hitCheese = null;
             hitIndex = -1;
             monsterHitIndex = -1;
+            level5MonsterHitIndex = -1;
             targetPos.copy(intersects[0].point);
             console.log(`🔥 [WEAPON] Phoenix HIT! Distance: ${distance.toFixed(2)}`);
           }
         }
       }
+    }
+    
+    // 🎯 LEVEL 5 MONSTERS: Check for Level 5 monster hits (takes priority over Level 4 monsters) - January 11, 2026
+    // ISSUE FIXED: Bullet detection wasn't working for Level 5 monsters
+    // SOLUTION: Added Level 5 monster raycasting loop with state getters and callback system
+    // - State getters: getLevel5State() and getLevel5RiddleState() provide access to Level 5 state
+    // - Raycasting: Uses raycaster.intersectObject(monster.mesh, true) with recursive=true for GLTF models
+    // - Callback: onLevel5MonsterHit() callback triggers defeatLevel5Monster() function in main.js
+    // - Priority: Level 5 detection happens BEFORE Level 4 (priority order in hit processing)
+    // - Validation: Checks step1Active, monster visibility, and defeated status
+    // STATUS: ✅ WORKING - Monsters can now be shot and defeated with proper hit detection
+    const level5RiddleState = this.getLevel5RiddleState();
+    const level5State = this.getLevel5State();
+    
+    // Debug: ALWAYS log Level 5 detection check (to diagnose why detection isn't working)
+    if (currentLevel === "LEVEL5") {
+      console.log("🔍 [WEAPON] Level 5 detection check (ALWAYS LOG):", {
+        currentLevel,
+        currentLevelType: typeof currentLevel,
+        step1Active: level5RiddleState?.step1Active,
+        hasMonsters: !!level5State?.monsters,
+        monstersCount: level5State?.monsters?.length || 0,
+        hitPhoenix,
+        conditionMet: !!(currentLevel === "LEVEL5" && level5RiddleState?.step1Active && level5State?.monsters && !hitPhoenix),
+        level5RiddleStateType: typeof level5RiddleState,
+        level5StateType: typeof level5State,
+        level5RiddleStateKeys: level5RiddleState ? Object.keys(level5RiddleState) : [],
+        level5StateKeys: level5State ? Object.keys(level5State) : []
+      });
+    }
+    
+    // Level 5 Monster Detection (January 11, 2026)
+    // ISSUE FIXED: Bullet detection wasn't working for Level 5 monsters
+    // SOLUTION: Added Level 5 monster raycasting logic similar to Level 4
+    // - Checks if currentLevel === "LEVEL5" and step1Active
+    // - Iterates through level5State.monsters array
+    // - Uses raycast.intersectObject(monster.mesh, true) for hit detection
+    // - Stores hit in level5MonsterHitIndex and calls onLevel5MonsterHit callback
+    // NOTE: Level 5 detection happens BEFORE Level 4 detection (priority order)
+    if (currentLevel === "LEVEL5" && level5RiddleState?.step1Active && level5State?.monsters && !hitPhoenix) {
+      const cameraPos = this.camera.position.clone();
+      
+      if (Math.random() < 0.05) {
+        console.log("🔍 [WEAPON] Checking Level 5 monsters, count:", level5State.monsters.length);
+      }
+      
+      level5State.monsters.forEach((monster, index) => {
+        if (!monster || !monster.mesh || !monster.mesh.visible || monster.defeated) return;
+        
+        // Get monster world position
+        const monsterWorldPos = new THREE.Vector3();
+        monster.mesh.getWorldPosition(monsterWorldPos);
+        
+        // Raycast against monster mesh (recursive=true to check all nested meshes in GLTF)
+        const intersects = raycaster.intersectObject(monster.mesh, true);
+        
+        if (intersects.length > 0) {
+          const distance = intersects[0].distance;
+          if (distance < hitDistance) {
+            hitDistance = distance;
+            hitMonster = monster; // Store monster reference
+            hitCheese = null;
+            hitIndex = -1;
+            monsterHitIndex = -1; // Clear Level 4 monster hit
+            level5MonsterHitIndex = index; // Store Level 5 monster index
+            targetPos.copy(intersects[0].point);
+            console.log(`🎯 [WEAPON] Level 5 Monster ${index} HIT! Distance: ${distance.toFixed(2)}`);
+          }
+        } else {
+          // Debug: Log raycast misses occasionally (like Level 4)
+          if (Math.random() < 0.05) {
+            const distToMonster = cameraPos.distanceTo(monsterWorldPos);
+            console.log(`🔍 [WEAPON] Level 5 Raycast missed monster ${index}:`, {
+              distance: distToMonster.toFixed(2),
+              visible: monster.mesh.visible,
+              defeated: monster.defeated,
+              meshInScene: level5State.group?.children.includes(monster.mesh),
+              groupVisible: level5State.group?.visible
+            });
+          }
+        }
+      });
     }
     
     // Step 2 (monsters) takes priority over Step 1 (cheese)
@@ -1398,6 +1492,24 @@ export class WeaponSystem {
       this.onHitIndicator();
       const health = phoenixBossInstance.getHealth();
       console.log(`🔥 [WEAPON] Phoenix hit! Damage: ${damage}, Health: ${health.current}/${health.max}`);
+    } else if (hitMonster && level5MonsterHitIndex >= 0 && (currentLevel === "LEVEL5" || currentLevel === LEVEL_IDS?.LEVEL5)) {
+      // Level 5 Monster hit processing (January 11, 2026)
+      // Called after raycast detects a hit on a Level 5 monster
+      // Finds current index in monsters array (may have shifted) and calls defeatLevel5Monster
+      const level5State = this.getLevel5State();
+      const currentIndex = level5State.monsters.indexOf(hitMonster);
+      if (currentIndex >= 0 && currentIndex < level5State.monsters.length) {
+        const targetMonster = level5State.monsters[currentIndex];
+        if (targetMonster && !targetMonster.defeated) {
+          console.log("🎯 [WEAPON] Level 5 Monster hit! Index:", currentIndex, "Monster:", hitMonster.path?.split('/').pop() || 'Unknown');
+          this.onLevel5MonsterHit(currentIndex);
+          this.onHitIndicator();
+        } else {
+          console.warn(`⚠️ [WEAPON] Level 5 Monster at index ${currentIndex} already defeated or doesn't exist`);
+        }
+      } else {
+        console.warn(`⚠️ [WEAPON] Invalid Level 5 monster index ${currentIndex}, array length: ${level5State.monsters.length}`);
+      }
     } else if (hitMonster && monsterHitIndex >= 0) {
       // CRITICAL: Use the index from the loop (monsterHitIndex) as primary, 
       // but verify the monster still exists in the array

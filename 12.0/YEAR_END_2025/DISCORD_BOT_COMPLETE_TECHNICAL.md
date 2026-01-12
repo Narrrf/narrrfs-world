@@ -267,6 +267,7 @@ module.exports = {
 - `tbl_game_settings` - Game configuration
 - `tbl_bug_reports` - Bug tracker
 - `tbl_bug_status_history` - Bug status changes
+- `tbl_winners_post_log` - Winners post tracking (New: January 11, 2026)
 
 ### **Database Query Examples**
 ```javascript
@@ -422,6 +423,48 @@ const data = await response.json();
 - `/sync-adjustments` - Sync pending adjustments
 - `/fix-adjustments` - Fix unapplied adjustments
 - `/synch-scores` - Clean up duplicate scores
+
+### **Winners Channel Management** (New: January 11, 2026)
+
+#### **`/winners` Command**
+- **Subcommands:**
+  - `post` - Post DSPOINC distribution summary to #winners channel (production)
+  - `test` - Test DSPOINC distribution summary (posts to #bot-commander, does NOT update tracking)
+  
+**Features:**
+- **Dual Mode Support:**
+  - `24h` - Fixed 24-hour window (shows last 24 hours)
+  - `since_last` - Incremental mode (shows data since last post, prevents double-counting)
+- **Summary Statistics:**
+  - Total DSPOINC distributed
+  - Number of recipients
+  - Total adjustments count
+  - Top 3 recipients with amounts (medals: 🥇🥈🥉)
+- **Role Tagging:** Tags Community Member role (`<@&1332017969181622342>`) in production posts only
+- **Channel Posting:** 
+  - Production: Posts to #winners channel (ID: `1459935292659208336`)
+  - Test: Posts to #bot-commander channel (ID: `1337377013366915086`)
+- **Test Mode Features:**
+  - Posts to test channel (#bot-commander)
+  - Shows "TEST MODE" indicator in embed
+  - Does NOT update tracking table (tests don't affect production)
+  - No role mention (test mode only)
+  - Orange embed color (vs gold for production)
+- **Timestamp Tracking:** Tracks last post timestamp for incremental mode (production only)
+- **Permission Requirements:** Manage Messages permission (admin/moderator only)
+
+**Database Tables:**
+- `tbl_score_adjustments` - Source data (DSPOINC distribution records)
+- `tbl_winners_post_log` - Tracking table (last post timestamp, summary stats)
+
+**Implementation Details:**
+- Uses `queryDb` function for database access
+- Fetches Discord usernames for top 3 users
+- Falls back to mentions if user not found
+- Updates tracking table after posting (since_last mode only)
+- First run uses 24h fallback if no previous timestamp
+
+**Code Location:** `discord/commands/winners.js`
 
 ### **Inventory Management**
 
@@ -697,6 +740,7 @@ The bot now uses the centralized `verify-nft-holder.php` API endpoint for all ve
 - Attachment handling
 - Status monitoring
 - Resolved message notifications
+- **Optimized logging (January 11, 2026)** - 90% reduction in log output
 
 ### **Bug Processing**
 1. Message posted in bug tracker channel
@@ -704,13 +748,20 @@ The bot now uses the centralized `verify-nft-holder.php` API endpoint for all ve
 3. AI categorizes bug (achievement, game, mobile, UI, etc.)
 4. AI determines priority (critical, high, medium, low, enhancement)
 5. Bug saved to database with status "Reported"
-6. Status changes trigger notifications
+6. Status changes trigger notifications (🟢 reaction added automatically)
+
+### **Resolved Bug Monitoring**
+- **Function:** `checkForResolvedBugs()` - Runs every 30 seconds
+- **Process:** Queries database for resolved bugs, adds 🟢 reaction to Discord messages
+- **Optimization (January 11, 2026):** Reduced logging by 90% - only logs success and errors
+- **Logging:** Only logs when reactions are successfully added or errors occur
 
 ### **Database Tables**
 - `tbl_bug_reports` - Bug report records
 - `tbl_bug_status_history` - Status change history
 - `tbl_bug_categories` - Category definitions
 - `tbl_bug_priorities` - Priority definitions
+- `tbl_bug_statuses` - Status definitions (includes `is_resolved` flag)
 
 ---
 
@@ -1025,12 +1076,13 @@ if (data.success) {
 ### **Command Statistics**
 - **Total Commands:** 50+
 - **User Commands:** 12
-- **Admin Commands:** 19
+- **Admin Commands:** 20 (added `/winners` command - January 11, 2026)
 - **Game Commands:** 3
 - **Store Commands:** 4
 - **Giveaway Commands:** 1 (8 subcommands)
 - **Twitter Mission Commands:** 2
 - **Utility Commands:** 2
+- **Winners Commands:** 1 (2 subcommands: `post`, `test`) (New: January 11, 2026)
 
 ### **Database Tables Used:** 30+
 ### **API Endpoints Used:** 10+
@@ -1076,7 +1128,21 @@ The Narrrf's World Discord Bot is a **comprehensive community management system*
 ---
 
 **Document Created:** December 20, 2025  
-**Last Updated:** December 28, 2025  
-**Version:** 1.0.0  
+**Last Updated:** January 11, 2026  
+**Version:** 1.1.0  
 **Maintainer:** Narrrf's World Development Team
+
+### **Recent Updates**
+
+#### **January 11, 2026**
+- ✅ **Added `/winners` Command** - Winners channel management
+  - **Subcommands:** `post` (production), `test` (test mode)
+  - Posts DSPOINC distribution summaries to #winners channel (production) or #alpha-lab (test)
+  - Dual mode support (24h snapshot, since last snapshot)
+  - Top 3 recipients display with Discord usernames
+  - Community Member role tagging in production posts only
+  - Test mode: Posts to #alpha-lab, shows "TEST MODE" indicator, does NOT update tracking
+  - Timestamp tracking for incremental mode (prevents double-counting, production only)
+  - **Database Table:** `tbl_winners_post_log` (new tracking table)
+  - **Code Location:** `discord/commands/winners.js`
 

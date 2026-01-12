@@ -89,6 +89,137 @@
 
 ---
 
+## 🎨 **LEVEL 5 GLYPH INTEGRATION (January 11, 2026 - Evening)**
+
+### **Implementation:**
+- ✅ **Path Confirmed:** `/public/glyph/glyph3d/` works correctly (symlink from `/data/public/glyph/glyph3d/`)
+- ✅ **Phase 1 Complete:** 5 glyphs implemented and placed near spawn
+- ✅ **Glyph Selection:** "LEVEL" (L, E, V, E, L) - 5 glyphs total
+- ✅ **Placement:** Horizontal line north of spawn (Z = 15, X positions: 0, 12, 24, 36, 48)
+- ✅ **Scale:** 20.0 units (huge stone monuments)
+- ✅ **Integration:** Added to `level5State.group`, called in `buildLevel5TheWalk()`
+
+### **Code Changes:**
+- ✅ Added `glyphs: []` and `glyphPositions: []` to `level5State`
+- ✅ Created `createLevel5Glyphs()` function (after `buildLevel5TheWalk()`)
+- ✅ Integrated function call in `buildLevel5TheWalk()` (after border walls)
+- ✅ Used absolute paths: `/public/glyph/glyph3d/[FILE].glb`
+- ✅ Material processing: `processWeaponMaterial()` for all materials
+- ✅ Visibility: `frustumCulled = false` (important monuments)
+
+### **Files Modified:**
+- ✅ `public/three.js/main.js` - Glyph system implementation
+
+### **Documentation:**
+- ✅ `LEVEL5_GLYPH3D_INTEGRATION_PLAN.md` - Updated with implementation status
+
+### **Next Steps:**
+- [ ] Test glyphs in Level 5 (verify they appear correctly)
+- [ ] Verify positions are correct (near spawn, visible from spawn)
+- [ ] Check scale is appropriate (20.0 units - adjust if needed)
+- [ ] Verify materials are visible and properly lit
+- [ ] Test performance (5 glyphs should be fine, but verify)
+- [ ] Expand to more glyphs if successful (up to 10-12 total)
+
+---
+
+## 🎯 **LEVEL 5 RIDDLE SYSTEM IMPLEMENTATION (January 11, 2026 - Evening)**
+
+### **Status:** 🔄 **IN PROGRESS - FOUNDATION COMPLETE**
+
+**User Request:** "ok lets implement the plate and the monster hunt for the level 5"
+
+**Implementation Progress:**
+
+#### **✅ COMPLETED (Foundation Layer):**
+1. **State Objects:**
+   - ✅ Added `monsters: []` array to `level5State` object (line 2793)
+   - ✅ Created `level5RiddleState` object (lines 2890-2906)
+     - Step 0 state: step0Complete, triggerBlockTimer, triggerBlock, triggerBlockVisual
+     - Step 1 state: step1Active, step1Timer (600s), monstersDefeated, totalMonsters
+     - Weapons: weaponsEnabled flag
+     - Traits: step0TraitUnlocked, step1TraitUnlocked
+
+2. **Constants:**
+   - ✅ LEVEL5_STEP0_TRAIT = "CHEESE_TEMPLE_LEVEL5_STEP0" (line 2886)
+   - ✅ LEVEL5_STEP1_TRAIT = "CHEESE_TEMPLE_LEVEL5_STEP1" (line 2887)
+
+#### **❌ NOT YET IMPLEMENTED (Required for Testing):**
+1. **Trigger Plate System:**
+   - ❌ createLevel5TriggerPlate() function
+   - ❌ Integration in buildLevel5TheWalk()
+
+2. **Step 0 Detection:**
+   - ❌ updateLevel5Step0(delta) function
+   - ❌ checkLevel5TriggerBlockStanding() function
+   - ❌ updateLevel5TriggerBlockVisual(delta) function
+
+3. **Helper Functions:**
+   - ❌ unlockLevel5Trait() function
+   - ❌ awardLevel5DspoincReward() function
+
+4. **Monster Spawning:**
+   - ❌ spawnLevel5Step1Monsters() function (grid-based system)
+   - ❌ spawnLevel5Monster() function (reuse Level 4 pattern)
+
+5. **Timer & Counter:**
+   - ❌ updateLevel5Step1Timer(delta) function
+   - ❌ updateLevel5MonsterCounter() function
+   - ❌ Timer/Counter HUD display
+
+6. **Completion System:**
+   - ❌ completeLevel5Step1() function
+   - ❌ defeatLevel5Monster() function
+   - ❌ Completion notifications
+
+7. **Shooting Integration:**
+   - ❌ Level 5 monster hit detection in fireLevel4SingleShot()
+
+8. **Update Loop:**
+   - ❌ Integration into updateLevel5() function
+
+**Code Changes:**
+- ✅ Modified `level5State` object: Added `monsters: []` array
+- ✅ Created `level5RiddleState` object with all state variables
+- ✅ Added trait constants (LEVEL5_STEP0_TRAIT, LEVEL5_STEP1_TRAIT)
+
+**Files Modified:**
+- ✅ `public/three.js/main.js` - State objects and constants added (lines 2793, 2886-2906)
+
+**Documentation:**
+- ✅ Created `LEVEL5_RIDDLE_IMPLEMENTATION_STATUS.md` - Complete implementation status tracking
+
+**Next Steps:**
+1. Create trigger plate function (following Level 4 pattern)
+2. Create Step 0 detection functions (following Level 4 pattern)
+3. Create helper functions (unlockLevel5Trait, awardLevel5DspoincReward)
+4. Create monster spawning system (grid-based, following documentation plan)
+5. Create timer/counter systems (10-minute timer, monster counter)
+6. Create completion system (defeatLevel5Monster, completeLevel5Step1)
+7. Integrate shooting (add Level 5 checks to fireLevel4SingleShot)
+8. Integrate all into updateLevel5() (call all update functions)
+
+**Reference Documentation:**
+- Implementation Plan: `LEVEL_5_STEP1_MONSTER_HUNT_PLAN.md`
+- Status Document: `LEVEL5_RIDDLE_IMPLEMENTATION_STATUS.md`
+- Investigation: `LEVEL1_LEVEL5_RIDDLE_SUMMARY.md`
+
+**Ready for Testing?** ✅ **READY FOR TESTING** - Core functions implemented!
+
+**Implementation Complete:**
+- ✅ Trigger plate creation (createLevel5TriggerPlate)
+- ✅ Step 0 detection (updateLevel5Step0)
+- ✅ Helper functions (unlockLevel5Trait, awardLevel5DspoincReward)
+- ✅ Monster spawning (spawnLevel5Step1Monsters - 10 monsters in circle for testing)
+- ✅ Monster defeat (defeatLevel5Monster)
+- ✅ Completion system (completeLevel5Step1)
+- ✅ Shooting integration (Level 5 monster checks in fireLevel4SingleShot)
+- ✅ Update loop integration (updateLevel5)
+
+**Testing Ready:** ✅ Core functionality complete - can test trigger plate, monster spawning, and shooting!
+
+---
+
 ## 🔗 **RELATED WORK FROM PREVIOUS DAYS**
 
 ### **January 9, 2026 - Asset Caching System:**
