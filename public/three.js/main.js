@@ -20051,11 +20051,29 @@ async function buildLevel5TheWalk() {
       // Remove old collision mesh if it exists (from other levels)
       // Wrap in try-catch to prevent cleanup errors from blocking collision mesh creation
       if (collisionMesh) {
-        // Only remove if it's not already Level 5's collision mesh (avoid recreating if already valid)
+        // Only reuse if it's Level 5's collision mesh AND it is verified to include Level 5 colliders.
+        // Why: If we reuse an older Level 5 BVH that was built without the border walls (or without glyph colliders),
+        // the player will be able to walk through those objects even though they visually exist.
         if (collisionMesh.name === "Level5_CollisionMesh" && collisionMesh.geometry && collisionMesh.geometry.boundsTree) {
-          console.log("✅ [LEVEL 5] Level 5 collision mesh already exists and is valid, reusing it");
-          // Don't recreate - collision mesh is already set up correctly
-          return; // Exit early - collision mesh already exists
+          const includesBorderWalls = collisionMesh.userData && collisionMesh.userData.includesBorderWalls === true;
+          const includesGlyphProxies = collisionMesh.userData && collisionMesh.userData.includesGlyphProxies === true;
+          const glyphsExist = Array.isArray(level5State.glyphs) && level5State.glyphs.length > 0;
+          
+          if (includesBorderWalls && (!glyphsExist || includesGlyphProxies)) {
+            console.log("✅ [LEVEL 5] Level 5 collision mesh already exists and is verified, reusing it", {
+              includesBorderWalls,
+              includesGlyphProxies,
+              glyphsExist
+            });
+            // Don't recreate - collision mesh is already set up correctly
+            return; // Exit early - collision mesh already exists and includes required colliders
+          }
+          
+          console.warn("⚠️ [LEVEL 5] Existing Level 5 collision mesh missing required colliders; rebuilding it now...", {
+            includesBorderWalls,
+            includesGlyphProxies,
+            glyphsExist
+          });
         }
         
         try {
@@ -20193,6 +20211,9 @@ async function buildLevel5TheWalk() {
           geometriesToMerge.push(geometry);
         });
         
+        // Track Level 5 extra collider counts for verification/reuse logic
+        let glyphProxiesAdded = 0;
+        
         // Add border walls to collision mesh
         if (level5State.borderWalls) {
           console.log("🧀 [LEVEL 5] Adding border walls to collision mesh...");
@@ -20234,6 +20255,55 @@ async function buildLevel5TheWalk() {
           console.log(`✅ [LEVEL 5] Total walls added to collision mesh: ${wallsAdded}/4`);
         } else {
           console.error("❌ [LEVEL 5] CRITICAL: level5State.borderWalls is null/undefined - walls not added to collision mesh!");
+        }
+
+        // Add glyph collision to Level 5 (cheap collision proxies, NOT full glyph geometry)
+        // Goal: prevent walking through the huge glyph stone monuments without building an enormous BVH.
+        // Implementation: build an axis-aligned BoxGeometry collider per glyph based on its world-space bounding box.
+        if (Array.isArray(level5State.glyphs) && level5State.glyphs.length > 0) {
+          console.log(`🗿 [LEVEL 5] Adding glyph collision proxies to collision mesh... (glyphs=${level5State.glyphs.length})`);
+          level5State.glyphs.forEach((glyphModel, index) => {
+            try {
+              if (!glyphModel) return;
+              
+              // Ensure world matrices are correct (glyphs use matrixAutoUpdate = false)
+              glyphModel.updateMatrixWorld(true);
+              
+              const box = new THREE.Box3().setFromObject(glyphModel);
+              const size = box.getSize(new THREE.Vector3());
+              const center = box.getCenter(new THREE.Vector3());
+              
+              // Guard: skip invalid boxes
+              if (!Number.isFinite(size.x) || !Number.isFinite(size.y) || !Number.isFinite(size.z)) return;
+              if (size.x <= 0.001 || size.y <= 0.001 || size.z <= 0.001) return;
+              
+              // Slightly expand the collider so we don't clip through due to capsule radius / ray offsets
+              const expand = 0.75;
+              const sx = Math.max(1.0, size.x + expand);
+              const sy = Math.max(2.0, size.y + expand);
+              const sz = Math.max(1.0, size.z + expand);
+              
+              const proxy = new THREE.BoxGeometry(sx, sy, sz);
+              proxy.translate(center.x, center.y, center.z);
+              normalizeGeometryAttributes(proxy);
+              
+              geometriesToMerge.push(proxy);
+              glyphProxiesAdded++;
+              
+              // Optional debug logging (disabled by default)
+              if (DEBUG_SETTINGS && DEBUG_SETTINGS.logCollisionChecks && Math.random() < 0.1) {
+                console.log(`🗿 [LEVEL 5] Added glyph collision proxy #${index + 1}`, {
+                  size: { x: sx.toFixed(2), y: sy.toFixed(2), z: sz.toFixed(2) },
+                  center: { x: center.x.toFixed(2), y: center.y.toFixed(2), z: center.z.toFixed(2) }
+                });
+              }
+            } catch (glyphColliderError) {
+              console.warn(`⚠️ [LEVEL 5] Failed to add glyph collision proxy #${index + 1}:`, glyphColliderError.message);
+            }
+          });
+          console.log(`✅ [LEVEL 5] Glyph collision proxies added: ${glyphProxiesAdded}/${level5State.glyphs.length}`);
+        } else {
+          console.log("🗿 [LEVEL 5] No glyphs found for collision proxies (skipping)");
         }
         
         // Merge all geometries into one using BufferGeometryUtils
@@ -20329,6 +20399,14 @@ async function buildLevel5TheWalk() {
           collisionMesh = new THREE.Mesh(mergedGeometry, new THREE.MeshBasicMaterial({ visible: false }));
           collisionMesh.visible = false;
           collisionMesh.name = "Level5_CollisionMesh";
+          
+          // Mark what this Level 5 BVH contains (used to avoid reusing an incomplete cached BVH later)
+          collisionMesh.userData = collisionMesh.userData || {};
+          collisionMesh.userData.levelId = LEVEL_IDS.LEVEL5;
+          collisionMesh.userData.includesBorderWalls = !!level5State.borderWalls;
+          collisionMesh.userData.includesGlyphProxies = glyphProxiesAdded > 0;
+          collisionMesh.userData.createdAt = Date.now();
+          
           scene.add(collisionMesh);
           
           const vertexCount = mergedGeometry.attributes.position.count;
@@ -20344,6 +20422,7 @@ async function buildLevel5TheWalk() {
             faces: indexCount > 0 ? indexCount / 3 : 'unknown',
             mapMeshes: meshes.length,
             wallsIncluded: wallsCount,
+            glyphProxiesIncluded: glyphProxiesAdded,
             totalGeometries: geometriesToMerge.length,
             hasBoundsTree: hasBoundsTree,
             collisionMeshInScene: scene.children.includes(collisionMesh),
@@ -20382,6 +20461,25 @@ async function buildLevel5TheWalk() {
           hasGeometry: !!collisionMesh?.geometry,
           hasBoundsTree: !!collisionMesh?.geometry?.boundsTree
         });
+        
+        // Ground safety net: if BVH creation failed for any reason, at least provide a flat collision plane
+        // so the player won't randomly fall forever when not in GOD mode.
+        try {
+          const groundY = (level5State && level5State.spawnPosition) ? level5State.spawnPosition.y : 0;
+          const fallbackSize = 5000;
+          const collisionGeometry = new THREE.BoxGeometry(fallbackSize, 2, fallbackSize);
+          collisionGeometry.translate(0, groundY - 1, 0);
+          collisionGeometry.boundsTree = new MeshBVH(collisionGeometry);
+          
+          collisionMesh = new THREE.Mesh(collisionGeometry, new THREE.MeshBasicMaterial({ visible: false }));
+          collisionMesh.visible = false;
+          collisionMesh.name = "Level5_FallbackGroundCollisionMesh";
+          scene.add(collisionMesh);
+          
+          console.log("✅ [LEVEL 5] Fallback ground collision plane created", { groundY, fallbackSize });
+        } catch (fallbackCollisionError) {
+          console.error("❌ [LEVEL 5] Failed to create fallback ground collision plane:", fallbackCollisionError);
+        }
       }
     } catch (collisionError) {
       console.error("❌ [LEVEL 5] Failed to create collision mesh:", collisionError);
@@ -32321,20 +32419,27 @@ function animate() {
           updateRiddle3(delta);
         }
       }
-    } else if (floatingCheese) {
-      // Level 2-6: Only update floating cheese, no riddle logic
-      const playerPosition = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
-      floatingCheese.update(delta, playerPosition, awardCheesePoints);
-    } else if (currentLevel === LEVEL_IDS.LEVEL2) {
-      if (typeof updateLevel2 === 'function') updateLevel2(delta);
-    } else if (currentLevel === LEVEL_IDS.LEVEL3) {
-      if (typeof updateLevel3 === 'function') updateLevel3(delta);
-    } else if (currentLevel === LEVEL_IDS.LEVEL4) {
-      updateLevel4(delta);
-    } else if (currentLevel === LEVEL_IDS.LEVEL5) {
-      updateLevel5(delta);
-    } else if (currentLevel === LEVEL_IDS.LEVEL6) {
-      updateLevel6(delta);
+    } else {
+      // Levels 2–6:
+      // IMPORTANT: Do NOT let floatingCheese short-circuit per-level logic.
+      // A previous refactor made Level 2–6 only run floatingCheese.update(), which prevented
+      // updateLevel2/3/4/5 from running and broke trigger plates + riddle step progression.
+      if (floatingCheese) {
+        const playerPosition = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+        floatingCheese.update(delta, playerPosition, awardCheesePoints);
+      }
+
+      if (currentLevel === LEVEL_IDS.LEVEL2) {
+        if (typeof updateLevel2 === 'function') updateLevel2(delta);
+      } else if (currentLevel === LEVEL_IDS.LEVEL3) {
+        if (typeof updateLevel3 === 'function') updateLevel3(delta);
+      } else if (currentLevel === LEVEL_IDS.LEVEL4) {
+        updateLevel4(delta);
+      } else if (currentLevel === LEVEL_IDS.LEVEL5) {
+        updateLevel5(delta);
+      } else if (currentLevel === LEVEL_IDS.LEVEL6) {
+        updateLevel6(delta);
+      }
     }
     
     // 🐭 UNIVERSAL CHARACTER RENDERING - Works for ALL levels (1, 2, 3, 4, and all future levels)
