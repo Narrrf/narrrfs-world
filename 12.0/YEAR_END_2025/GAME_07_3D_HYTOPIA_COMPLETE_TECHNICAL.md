@@ -53,6 +53,7 @@ The 3D Riddle Game is a Three.js-based 3D adventure game featuring 6 levels, rid
 - ✅ **Complete Asset Upload System** (API endpoint operational - 123+ files uploaded)
 - ✅ **God Mode Settings Persistence** (Grass, sky, and boss settings save/load working in production - January 9, 2026)
 - ✅ **Asset Caching System** (Two-level caching strategy with preloading - mobile/desktop optimized - January 9, 2026)
+- ✅ **Unified Riddle HUD System** (All levels 1-5 use consistent persistent HUD with step hints - January 12, 2026)
 
 ### **Integration Status:**
 - ✅ **Database:** `tbl_cheese_hunt_captures`, `tbl_riddle_completions`, `tbl_user_traits`
@@ -543,6 +544,90 @@ These functions are called from the main animate loop when the respective level 
 2. **Step 1+ (Main Challenge):** Complete main riddle objective(s)
 3. **Step N (Portal):** Portal activation after all steps complete
 4. **Completion Screen:** Show completion options (restart, next level, return to other levels)
+
+### **Riddle GUI/HUD System (✅ UNIFIED ACROSS ALL LEVELS - January 12, 2026)**
+
+**Status:** ✅ **PRODUCTION READY** - All levels (1-5) use unified persistent HUD system  
+**Last Updated:** January 12, 2026  
+**Function:** `updateRiddleProgressUI()` in `main.js` (lines ~38593-39209)
+
+#### **Unified HUD System:**
+
+All riddle levels (Levels 1-5) now use the same persistent `riddleProgressUI` HUD system that displays:
+- ✅ **Step Instructions** - Clear step descriptions (e.g., "Step 0: Stand on Platform")
+- ✅ **Progress Bars** - Visual progress indicators with timers/counters
+- ✅ **Completion Messages** - Step completion confirmations
+- ✅ **Level Titles** - Level name displayed in HUD (e.g., "🧩 Level 2: The Spawn")
+
+#### **Level-Specific HUD Display:**
+
+**Level 1: Cheese Temple**
+- Uses existing riddle system (3 main riddles + 1 secret)
+- Shows riddle-specific step hints for Riddle #1, #2, #3
+- HUD display logic preserved from original implementation
+
+**Level 2: The Spawn**
+- Step 0: "Stand on Platform" with timer (5 seconds)
+- Step 1: "Pull the Lever (E key)" with distance display
+- Step 2: HUD hidden (uses inspection HUD system instead)
+
+**Level 3: The Hunt**
+- Step 0: "Stand on Platform" with timer (5 seconds)
+- Step 1: "Hunt 5 Monsters (X/5 caught)" with progress bar
+- Step 2: "Hunt 5 More Monsters (X/10 total)" with progress bar
+- Step 3: "Portal Activated!" message
+
+**Level 4: The Arena**
+- Step 0: "Stand on Platform" with timer (5 seconds)
+- Step 1: "Catch 50 Cheeses (X/50)" with progress bar
+- Step 2: "Defeat 30 Monsters (X/30)" with progress bar
+
+**Level 5: The Walk**
+- Step 0: "Stand on Platform" with timer (5 seconds)
+- Step 1: "Defeat 10 Monsters (X/10)" with progress bar
+
+**Level 6: Phoenix Boss Arena**
+- HUD hidden (boss arena, no riddle steps)
+- Uses boss health bar system instead
+
+#### **Implementation Details:**
+
+**Function:** `updateRiddleProgressUI()`
+- **Location:** `public/three.js/main.js` (lines ~38593-39209)
+- **Level Detection:** Routes to level-specific handlers based on `currentLevel`
+- **State Variables:** Uses `level2RiddleState`, `level3RiddleState`, `level4RiddleState`, `level5RiddleState`
+- **Display Elements:** Updates `step1Div` and `step2Div` within `riddleProgressUI`
+- **Calling:** Invoked via `invokeRiddleProgressUIUpdate()` (throttled for performance)
+
+**Key Features:**
+- ✅ **Persistent Display** - HUD remains visible during riddle progression
+- ✅ **Progress Tracking** - Shows timers, counters, and completion status
+- ✅ **Consistent Styling** - Same visual style across all levels
+- ✅ **Level-Specific Content** - Each level shows appropriate step instructions
+- ✅ **Automatic Hiding** - HUD hides when no active riddle steps
+
+**Technical Pattern:**
+```javascript
+// Level detection at start of function
+if (currentLevel === LEVEL_IDS.LEVEL6) {
+  riddleProgressUI.style.display = "none";
+  return;
+}
+
+// Level-specific handlers
+if (currentLevel === LEVEL_IDS.LEVEL2) {
+  // Level 2 specific display logic
+  // Updates step1Div/step2Div with step instructions
+}
+// ... similar for Levels 3, 4, 5
+```
+
+**Future Levels:**
+- ✅ **All future levels** should follow this unified HUD pattern
+- ✅ **Add level detection** in `updateRiddleProgressUI()` function
+- ✅ **Use level state variables** (e.g., `level7RiddleState`, `level8RiddleState`)
+- ✅ **Display step instructions** with progress bars and timers
+- ✅ **Note:** This pattern ensures consistent user experience across all levels
 
 ### **Trait Unlocking Pattern**
 
@@ -1656,4 +1741,36 @@ The startup script automatically creates symlinks for all required asset directo
 - ✅ **Asset Verification:** All critical files confirmed present and accessible
 
 **🎮 Complete technical documentation for 3D Riddle Game v2026-01-09-STABLE-PRODUCTION - STABLE PRODUCTION VERSION CONFIRMED! 🎮**
+
+---
+
+## 🧪 **TESTING & HOTFIX LOG (January 12, 2026)**
+
+### ✅ Level 5 → Level 6 Completion Flow Stabilization
+
+**Problem Observed (Level 5):**
+- Multiple monster GLTF types were **invisible but still hittable**, causing wave progression to stall.
+- Portal completion screen could be **unclickable** due to pointer lock capturing mouse input.
+- After clicking “Proceed to Level 6”, Level 6 could load to 100% but the **pause overlay** could remain visible on top while Level 6 audio/weapon ran behind it.
+
+**Fixes Implemented (Local Testing Focus):**
+- **Emergency “Quick Mode” for Level 5**
+  - Temporarily reduced Level 5 to **1 wave / 5 monsters total** so testers can reliably reach the portal and continue testing Level 6.
+- **Completion screen clickability**
+  - Explicitly **exit pointer lock** when the completion screen appears.
+  - Use “completion pause” (pause state without opening pause menu UI).
+  - Add completion screen background styling consistent with Level 2–4 completion screens.
+- **Pause overlay sticking during Level 6 warp**
+  - Fixed pause state desync: ensure `window.isGamePaused` stays synced with `isGamePaused` in `togglePause()`.
+  - `warpToLevelWithLoading()` now force-hides pause menu at warp start and after loading completes.
+  - Warp finalization unpauses if **either** `window.isGamePaused` or `isGamePaused` is true.
+
+**Primary Code Location:**
+- `public/three.js/main.js`
+
+**Related Daily Notes (2026-01-12):**
+- `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-12/LEVEL5_QUICK_MODE_PORTAL_WARP_FIX_2026-01-12.md`
+- `12.0/LAB_NOTES/2026/01_JANUARY/DAILY_NOTES/2026-01-12/LEVEL5_HUD_TESTING_INSTRUCTIONS_2026-01-12.md` (updated with Quick Mode notes)
+
+---
 

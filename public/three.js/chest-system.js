@@ -1383,7 +1383,17 @@ class Chest {
           
           // CRITICAL: Re-verify Y position matches calculated Y
           // Sometimes the position can be lost during scene operations or warp
-          const boundingBoxBottom = this.mesh.userData.boundingBoxBottom;
+          // CRITICAL FIX (Jan 12, 2026): Use SCALED bounding box bottom for any bottom-Y checks.
+          // The initial placement uses scaledBoundingBoxBottom (accounts for 2.0x chest scale).
+          // Using the unscaled boundingBoxBottom here will "correct" the chest into the wrong Y,
+          // which is exactly what caused LEVEL6 chest_011 to end up at y ≈ -7.01 (invisible / wrong height).
+          const boundingBoxBottom = (this.mesh.userData.scaledBoundingBoxBottom !== undefined)
+            ? this.mesh.userData.scaledBoundingBoxBottom
+            : (
+              this.mesh.userData.boundingBoxBottom !== undefined
+                ? (this.mesh.userData.boundingBoxBottom * (this.mesh.userData.chestScale || 1))
+                : undefined
+            );
           const expectedY = this.mesh.userData.calculatedY;
           
           if (boundingBoxBottom !== undefined && expectedY !== undefined) {
@@ -1404,33 +1414,19 @@ class Chest {
             const useCustomY = this.mesh.userData.useCustomY === true;
             const targetBottomY = this.mesh.userData.targetBottomY !== undefined ? this.mesh.userData.targetBottomY : 1.0;
             
-            if (!useCustomY) {
-              // Only enforce 1.0 for ground-level chests
-              const finalBottomY = this.mesh.position.y + boundingBoxBottom;
-              if (Math.abs(finalBottomY - 1.0) > 0.01) {
-                console.warn(`🔧 [CHEST] ${this.id} bottom Y not at 1.0, adjusting:`, {
-                  currentBottomY: finalBottomY,
-                  targetBottomY: 1.0,
-                  adjustment: 1.0 - finalBottomY
-                });
-                const adjustment = 1.0 - finalBottomY;
-                this.mesh.position.y += adjustment;
-                this.mesh.updateMatrixWorld(true);
-              }
-            } else {
-              // For custom Y positioning (e.g., tower top), verify it matches requested Y
-              const finalBottomY = this.mesh.position.y + boundingBoxBottom;
-              if (Math.abs(finalBottomY - targetBottomY) > 0.01) {
-                console.warn(`🔧 [CHEST] ${this.id} bottom Y not at target ${targetBottomY}, adjusting:`, {
-                  currentBottomY: finalBottomY,
-                  targetBottomY: targetBottomY,
-                  adjustment: targetBottomY - finalBottomY,
-                  useCustomY: true
-                });
-                const adjustment = targetBottomY - finalBottomY;
-                this.mesh.position.y += adjustment;
-                this.mesh.updateMatrixWorld(true);
-              }
+            // Always verify against stored targetBottomY (ground-level chests store 1.0, custom store requested Y).
+            // NOTE: useCustomY flag is still logged below for debugging, but the math is identical now.
+            const finalBottomY = this.mesh.position.y + boundingBoxBottom;
+            if (Math.abs(finalBottomY - targetBottomY) > 0.01) {
+              console.warn(`🔧 [CHEST] ${this.id} bottom Y not at target ${targetBottomY}, adjusting:`, {
+                currentBottomY: finalBottomY,
+                targetBottomY: targetBottomY,
+                adjustment: targetBottomY - finalBottomY,
+                useCustomY: useCustomY
+              });
+              const adjustment = targetBottomY - finalBottomY;
+              this.mesh.position.y += adjustment;
+              this.mesh.updateMatrixWorld(true);
             }
           }
           
@@ -3004,8 +3000,10 @@ export class ChestSystem {
     
     // Check collision with all chests
     chests.forEach((chest, chestId) => {
-      // Skip if chest doesn't exist, isn't loaded, or is opened
-      if (!chest || !chest.mesh || !chest.isLoaded || chest.opened) {
+      // Skip if chest doesn't exist or isn't loaded
+      // NOTE (Jan 12, 2026): We keep chest collision enabled even if the chest is already opened,
+      // so players can't walk through chest meshes in Level 6 (and future levels).
+      if (!chest || !chest.mesh || !chest.isLoaded) {
         return;
       }
       

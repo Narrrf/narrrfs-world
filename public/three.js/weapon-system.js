@@ -1373,14 +1373,27 @@ export class WeaponSystem {
       }
       
       level5State.monsters.forEach((monster, index) => {
-        if (!monster || !monster.mesh || !monster.mesh.visible || monster.defeated) return;
+        if (!monster || monster.defeated) return;
+        if (!monster.mesh || !monster.mesh.visible) return;
         
         // Get monster world position
         const monsterWorldPos = new THREE.Vector3();
         monster.mesh.getWorldPosition(monsterWorldPos);
         
-        // Raycast against monster mesh (recursive=true to check all nested meshes in GLTF)
-        const intersects = raycaster.intersectObject(monster.mesh, true);
+        // CRITICAL STABILITY FIX (Jan 12, 2026):
+        // Do NOT raycast bullets directly against SkinnedMesh geometry (can crash in applyBoneTransform).
+        // Level 5 monsters now provide an invisible sphere hitbox in main.js (monster.hitbox).
+        const raycastTarget = monster.hitbox || monster.mesh;
+        let intersects = [];
+        try {
+          // Use recursive=false for hitboxes (faster), true only as fallback for legacy meshes.
+          const recursive = !monster.hitbox;
+          intersects = raycaster.intersectObject(raycastTarget, recursive);
+        } catch (raycastError) {
+          // Never allow an uncaught raycast crash to kill shooting/bullets.
+          console.warn(`⚠️ [WEAPON] Level 5 raycast error on monster ${index} (${monster.path?.split('/').pop() || 'Unknown'}):`, raycastError);
+          intersects = [];
+        }
         
         if (intersects.length > 0) {
           const distance = intersects[0].distance;
