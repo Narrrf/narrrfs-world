@@ -43,27 +43,27 @@ let isTetrisMobileDevice = false;
 // 🛑 Pause Logic — Global variable for touch controls
 let isTetrisPaused = false;
 
-// 🏆 ROLE ID-BASED GAMEPLAY SYSTEM - Season 4 Feature
-let userRoleIDs = [];
-let roleMultipliersByID = {
-  '1332016526848692345': 2.0,  // 🎴 VIP Holder
-  '1402668301414563971': 1.5,  // 🏆 Holder
-  '1332017420591697972': 1.4,  // Champion
-  '1417279348989497532': 1.3,  // Season Tester
-  '1332017614108758148': 1.2,  // Early Bird
-  '1399651053682692208': 1.1,  // 🧀 Cheese Hunter
-  '1332108350518857842': 1.3   // WL
+// 🏆 ROLE NAME-BASED GAMEPLAY SYSTEM - Phase 2 Security (role IDs removed)
+let userRoleNames = [];
+let roleMultipliersByName = {
+  '🎴 VIP Holder': 2.0,
+  '🏆 Holder': 1.5,
+  'Champion': 1.4,
+  'WL': 1.3,
+  'Season Tester': 1.3,
+  'Early Bird': 1.2,
+  '🧀 Cheese Hunter': 1.1
 };
 
-// Priority order (highest multiplier first)
-const rolePriorityByID = [
-  '1332016526848692345',  // 🎴 VIP Holder (2.0x) - HIGHEST
-  '1402668301414563971',  // 🏆 Holder (1.5x)
-  '1332017420591697972',  // Champion (1.4x)
-  '1332108350518857842',  // WL (1.3x)
-  '1417279348989497532',  // Season Tester (1.3x)
-  '1332017614108758148',  // Early Bird (1.2x)
-  '1399651053682692208'   // 🧀 Cheese Hunter (1.1x) - LOWEST
+// Priority order (highest multiplier first) - using role names
+const rolePriorityByName = [
+  '🎴 VIP Holder',  // 2.0x - HIGHEST
+  '🏆 Holder',      // 1.5x
+  'Champion',       // 1.4x
+  'WL',             // 1.3x
+  'Season Tester',  // 1.3x
+  'Early Bird',     // 1.2x
+  '🧀 Cheese Hunter' // 1.1x - LOWEST
 ];
 
 // 🎨 Role-based visual themes
@@ -96,32 +96,32 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
   console.log('🖥️ Desktop device detected - touch controls still enabled');
 }
 
-// 🏆 ROLE ID DETECTION SYSTEM - Fetch user Discord role IDs
-async function fetchUserRoleIDs() {
+// 🏆 ROLE NAME DETECTION SYSTEM - Fetch user Discord role names (Phase 2 security)
+async function fetchUserRoleNames() {
   try {
-    // 🌍 Local development bypass - use test role IDs
+    // 🌍 Local development bypass - use test role names
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
     
     if (isLocalDevelopment) {
-      userRoleIDs = [
-        "1332016526848692345",  // 🎴 VIP Holder
-        "1402668301414563971",  // 🏆 Holder
-        "1332017420591697972",  // Champion
-        "1417279348989497532",  // Season Tester
-        "1332017614108758148",  // Early Bird
-        "1399651053682692208"   // 🧀 Cheese Hunter
+      userRoleNames = [
+        "🎴 VIP Holder",
+        "🏆 Holder",
+        "Champion",
+        "Season Tester",
+        "Early Bird",
+        "🧀 Cheese Hunter"
       ];
       
       // Apply role-based theme on load
       applyRoleTheme();
       
-      return userRoleIDs;
+      return userRoleNames;
     }
     
     const isProduction = window.location.hostname === 'narrrfs.world';
     const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
     
-    // Fetch role IDs from Discord API via sync-role.php
+    // Fetch role names from Discord API via sync-role.php (Phase 2: role IDs removed)
     const response = await fetch(`${API_BASE_URL}/api/auth/sync-role.php`, {
       method: 'GET',
       credentials: 'include'
@@ -129,12 +129,12 @@ async function fetchUserRoleIDs() {
     
     if (response.ok) {
       const data = await response.json();
-      userRoleIDs = data.role_ids || [];
+      userRoleNames = data.roles || [];
       
       // Apply role-based theme on load
       applyRoleTheme();
       
-      return userRoleIDs;
+      return userRoleNames;
     } else {
       return [];
     }
@@ -143,24 +143,26 @@ async function fetchUserRoleIDs() {
   }
 }
 
-// 🎨 Apply role-based visual theme using role IDs
+// 🎨 Apply role-based visual theme using role names (Phase 2 security)
 function applyRoleTheme() {
-  const primaryRoleID = getUserPrimaryRoleID();
+  const primaryRoleName = getUserPrimaryRoleName();
   let theme = 'default';
   
-  if (primaryRoleID) {
-    // Map role IDs to themes
-    const roleIDToTheme = {
-      '1332016526848692345': 'golden',    // 🎴 VIP Holder
-      '1402668301414563971': 'silver',    // 🏆 Holder
-      '1332017420591697972': 'red',       // Champion
-      '1417279348989497532': 'rainbow',   // Season Tester
-      '1332017614108758148': 'blue',      // Early Bird
-      '1399651053682692208': 'cheese',    // 🧀 Cheese Hunter
-      '1332108350518857842': 'blue'       // WL (blue theme)
-    };
+  if (primaryRoleName) {
+    // Use existing roleThemes object (already uses role names)
+    theme = roleThemes[primaryRoleName] || 'default';
     
-    theme = roleIDToTheme[primaryRoleID] || 'default';
+    // Also check for emoji variations
+    if (theme === 'default') {
+      const roleNameLower = primaryRoleName.toLowerCase();
+      if (roleNameLower.includes('vip') && roleNameLower.includes('holder')) theme = 'golden';
+      else if (roleNameLower.includes('holder') && !roleNameLower.includes('vip')) theme = 'silver';
+      else if (roleNameLower.includes('cheese') && roleNameLower.includes('hunter')) theme = 'cheese';
+      else if (roleNameLower.includes('season') && roleNameLower.includes('tester')) theme = 'rainbow';
+      else if (roleNameLower.includes('early') && roleNameLower.includes('bird')) theme = 'blue';
+      else if (roleNameLower.includes('champion')) theme = 'red';
+      else if (roleNameLower === 'wl') theme = 'blue';
+    }
   }
   
   // Add theme class to canvas or game container
@@ -189,24 +191,24 @@ function applyRoleTheme() {
   }
 }
 
-// 🏆 Get user's primary role ID (highest priority role)
-function getUserPrimaryRoleID() {
+// 🏆 Get user's primary role name (highest priority role) - Phase 2 security
+function getUserPrimaryRoleName() {
   // Check roles in priority order (highest multiplier first)
-  for (const roleID of rolePriorityByID) {
-    if (userRoleIDs.includes(roleID)) {
-      return roleID;
+  for (const roleName of rolePriorityByName) {
+    if (userRoleNames.includes(roleName)) {
+      return roleName;
     }
   }
   
   return null; // No premium role found
 }
 
-// ⚡ Calculate role-based score multiplier using role IDs
+// ⚡ Calculate role-based score multiplier using role names (Phase 2 security)
 function getRoleScoreMultiplier() {
-  const primaryRoleID = getUserPrimaryRoleID();
+  const primaryRoleName = getUserPrimaryRoleName();
   
-  if (primaryRoleID) {
-    return roleMultipliersByID[primaryRoleID] || 1.0;
+  if (primaryRoleName) {
+    return roleMultipliersByName[primaryRoleName] || 1.0;
   }
   
   return 1.0;
@@ -726,13 +728,13 @@ class CheeseParticleSystem {
   createCheeseParticles(clearedLines, canvasWidth, canvasHeight) {
     let baseParticleCount = clearedLines * 4; // Base particles per line
     
-    // Role-based particle enhancement using role IDs
-    const primaryRoleID = getUserPrimaryRoleID();
-    if (primaryRoleID === '1332016526848692345') { // VIP Holder
+    // Role-based particle enhancement using role names (Phase 2 security)
+    const primaryRoleName = getUserPrimaryRoleName();
+    if (primaryRoleName === '🎴 VIP Holder' || primaryRoleName === 'VIP Holder') {
       baseParticleCount *= 2; // Double particles for VIP
-    } else if (primaryRoleID === '1402668301414563971' || primaryRoleID === '1332017420591697972') { // Holder or Champion
+    } else if (primaryRoleName === '🏆 Holder' || primaryRoleName === 'Holder' || primaryRoleName === 'Champion') {
       baseParticleCount = Math.floor(baseParticleCount * 1.5); // 1.5x particles for Holder/Champion
-    } else if (primaryRoleID === '1399651053682692208') { // Cheese Hunter
+    } else if (primaryRoleName === '🧀 Cheese Hunter' || primaryRoleName === 'Cheese Hunter') {
       baseParticleCount = Math.floor(baseParticleCount * 1.3); // Extra particles for Cheese Hunter
     }
     
@@ -758,12 +760,12 @@ class CheeseParticleSystem {
     // Particles created successfully
   }
 
-  // Get random cheese-themed colors with role-based enhancement
+  // Get random cheese-themed colors with role-based enhancement (Phase 2 security)
   getRandomCheeseColor() {
-    const primaryRoleID = getUserPrimaryRoleID();
+    const primaryRoleName = getUserPrimaryRoleName();
     
-    // Role-based color themes using role IDs
-    if (primaryRoleID === '1332016526848692345') { // VIP Holder
+    // Role-based color themes using role names
+    if (primaryRoleName === '🎴 VIP Holder' || primaryRoleName === 'VIP Holder') {
       const vipColors = [
         '#FFD700', // Golden yellow
         '#FFA500', // Cheddar orange
@@ -772,7 +774,7 @@ class CheeseParticleSystem {
         '#DAA520'  // Goldenrod
       ];
       return vipColors[Math.floor(Math.random() * vipColors.length)];
-    } else if (primaryRoleID === '1402668301414563971') { // Holder
+    } else if (primaryRoleName === '🏆 Holder' || primaryRoleName === 'Holder') {
       const holderColors = [
         '#C0C0C0', // Silver
         '#D3D3D3', // Light gray
@@ -781,7 +783,7 @@ class CheeseParticleSystem {
         '#F5F5F5'  // White smoke
       ];
       return holderColors[Math.floor(Math.random() * holderColors.length)];
-    } else if (primaryRoleID === '1399651053682692208') { // Cheese Hunter
+    } else if (primaryRoleName === '🧀 Cheese Hunter' || primaryRoleName === 'Cheese Hunter') {
       const cheeseHunterColors = [
         '#FFA500', // Cheddar orange
         '#FF8C00', // Dark orange
@@ -790,7 +792,7 @@ class CheeseParticleSystem {
         '#FF4500'  // Orange red
       ];
       return cheeseHunterColors[Math.floor(Math.random() * cheeseHunterColors.length)];
-    } else if (primaryRoleID === '1417279348989497532') { // Season Tester
+    } else if (primaryRoleName === 'Season Tester') {
       const seasonTesterColors = [
         '#8A2BE2', // Blue violet
         '#9932CC', // Dark orchid
@@ -799,7 +801,7 @@ class CheeseParticleSystem {
         '#9400D3'  // Violet
       ];
       return seasonTesterColors[Math.floor(Math.random() * seasonTesterColors.length)];
-    } else if (primaryRoleID === '1332017420591697972') { // Champion
+    } else if (primaryRoleName === 'Champion') {
       const championColors = [
         '#FF4500', // Orange red
         '#FF6347', // Tomato
@@ -808,7 +810,7 @@ class CheeseParticleSystem {
         '#B22222'  // Fire brick
       ];
       return championColors[Math.floor(Math.random() * championColors.length)];
-    } else if (primaryRoleID === '1332017614108758148') { // Early Bird
+    } else if (primaryRoleName === 'Early Bird') {
       const earlyBirdColors = [
         '#00BFFF', // Deep sky blue
         '#1E90FF', // Dodger blue
@@ -952,11 +954,11 @@ window.testCheeseParticles = function() {
   }
 };
 
-// 🏆 TEST FUNCTION - Test role-based features
+// 🏆 TEST FUNCTION - Test role-based features (Phase 2 security - uses role names)
 window.testRoleFeatures = function() {
   console.log('🏆 Testing role-based features...');
-  console.log('Current role IDs:', userRoleIDs);
-  console.log('Primary role ID:', getUserPrimaryRoleID());
+  console.log('Current role names:', userRoleNames);
+  console.log('Primary role name:', getUserPrimaryRoleName());
   console.log('Score multiplier:', getRoleScoreMultiplier());
   console.log('Theme applied:', document.getElementById('tetris-canvas')?.className);
   
@@ -973,8 +975,8 @@ async function startTetris() {
   const context = canvas.getContext("2d");
   tetrisScoreDisplay = document.getElementById("tetris-score");
   
-  // 🏆 Fetch user role IDs for role-based gameplay (CRITICAL: await this!)
-  await fetchUserRoleIDs();
+  // 🏆 Fetch user role names for role-based gameplay (CRITICAL: await this!) - Phase 2 security
+  await fetchUserRoleNames();
   
   // 🧀 Clear cheese particles when starting new game
   cheeseParticles.clear();
@@ -2064,17 +2066,17 @@ window.reinitializeTetrisTouch = function() {
   }
 };
 
-// 🧪 GLOBAL TEST FUNCTION - Test role ID system specifically
+// 🧪 GLOBAL TEST FUNCTION - Test role name system (Phase 2 security - role IDs removed)
 window.testRoleIDSystem = function() {
-  console.log('🧪 Testing Role ID System...');
+  console.log('🧪 Testing Role Name System...');
   console.log('Hostname:', window.location.hostname);
   console.log('Is Local Development:', window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '');
-  console.log('User Role IDs:', userRoleIDs);
-  console.log('Role Multipliers By ID:', roleMultipliersByID);
-  console.log('Role Priority By ID:', rolePriorityByID);
+  console.log('User Role Names:', userRoleNames);
+  console.log('Role Multipliers By Name:', roleMultipliersByName);
+  console.log('Role Priority By Name:', rolePriorityByName);
   
   // Test each function
-  console.log('Testing getUserPrimaryRoleID():', getUserPrimaryRoleID());
+  console.log('Testing getUserPrimaryRoleName():', getUserPrimaryRoleName());
   console.log('Testing getRoleScoreMultiplier():', getRoleScoreMultiplier());
   
   // Test score calculation
@@ -2105,18 +2107,18 @@ window.testTetrisGame = function() {
   }
 };
 
-// 🧪 GLOBAL TEST FUNCTION - Force load test roles
+// 🧪 GLOBAL TEST FUNCTION - Force load test roles (Phase 2 security - uses role names)
 window.forceLoadTestRoles = function() {
   console.log('🧪 Force loading test roles...');
-  userRoleIDs = [
-    "1332016526848692345",  // 🎴 VIP Holder
-    "1402668301414563971",  // 🏆 Holder
-    "1332017420591697972",  // Champion
-    "1417279348989497532",  // Season Tester
-    "1332017614108758148",  // Early Bird
-    "1399651053682692208"   // 🧀 Cheese Hunter
+  userRoleNames = [
+    "🎴 VIP Holder",
+    "🏆 Holder",
+    "Champion",
+    "Season Tester",
+    "Early Bird",
+    "🧀 Cheese Hunter"
   ];
-  console.log('🏆 Test role IDs forced:', userRoleIDs);
+  console.log('🏆 Test role names forced:', userRoleNames);
   applyRoleTheme();
   updateTetrisScoreDisplay();
   console.log('🏆 Role theme and score display updated');

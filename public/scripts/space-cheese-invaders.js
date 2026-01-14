@@ -167,27 +167,27 @@ let hasPlayerMovedMouse = false; // 🚀 NEW: Prevent ship jumping until player 
 let pressedKeys = new Set(); // Track which keys are currently pressed
 let continuousMovementEnabled = true; // Enable continuous movement on key hold
 
-// 🏆 ROLE ID-BASED GAMEPLAY SYSTEM - Season 4 Feature
-let spaceInvadersUserRoleIDs = [];
-let spaceInvadersRoleMultipliersByID = {
-  '1332016526848692345': 2.0,  // 🎴 VIP Holder
-  '1402668301414563971': 1.5,  // 🏆 Holder
-  '1332017420591697972': 1.4,  // Champion
-  '1417279348989497532': 1.3,  // Season Tester
-  '1332017614108758148': 1.2,  // Early Bird
-  '1399651053682692208': 1.1,  // 🧀 Cheese Hunter
-  '1332108350518857842': 1.3   // WL
+// 🏆 ROLE NAME-BASED GAMEPLAY SYSTEM - Phase 2 Security (role IDs removed)
+let spaceInvadersUserRoleNames = [];
+let spaceInvadersRoleMultipliersByName = {
+  '🎴 VIP Holder': 2.0,
+  '🏆 Holder': 1.5,
+  'Champion': 1.4,
+  'WL': 1.3,
+  'Season Tester': 1.3,
+  'Early Bird': 1.2,
+  '🧀 Cheese Hunter': 1.1
 };
 
-// Priority order (highest multiplier first)
-const spaceInvadersRolePriorityByID = [
-  '1332016526848692345',  // 🎴 VIP Holder (2.0x) - HIGHEST
-  '1402668301414563971',  // 🏆 Holder (1.5x)
-  '1332017420591697972',  // Champion (1.4x)
-  '1332108350518857842',  // WL (1.3x)
-  '1417279348989497532',  // Season Tester (1.3x)
-  '1332017614108758148',  // Early Bird (1.2x)
-  '1399651053682692208'   // 🧀 Cheese Hunter (1.1x) - LOWEST
+// Priority order (highest multiplier first) - using role names
+const spaceInvadersRolePriorityByName = [
+  '🎴 VIP Holder',  // 2.0x - HIGHEST
+  '🏆 Holder',      // 1.5x
+  'Champion',       // 1.4x
+  'WL',             // 1.3x
+  'Season Tester',  // 1.3x
+  'Early Bird',     // 1.2x
+  '🧀 Cheese Hunter' // 1.1x - LOWEST
 ];
 
 // 🎨 Role-based visual themes
@@ -203,23 +203,23 @@ let spaceInvadersRoleThemes = {
   'Champion': 'red'
 };
 
-// 🏆 ROLE ID DETECTION SYSTEM - Fetch user Discord role IDs
-async function fetchSpaceInvadersUserRoleIDs() {
+// 🏆 ROLE NAME DETECTION SYSTEM - Fetch user Discord role names (Phase 2 security)
+async function fetchSpaceInvadersUserRoleNames() {
   try {
-    // 🌍 Local development bypass - use test role IDs
+    // 🌍 Local development bypass - use test role names
     const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     
     if (isLocalDevelopment) {
-      console.log('🏠 Local environment detected - using test role IDs for Space Invaders');
-      spaceInvadersUserRoleIDs = [
-        "1332016526848692345",  // 🎴 VIP Holder
-        "1402668301414563971",  // 🏆 Holder
-        "1332017420591697972",  // Champion
-        "1417279348989497532",  // Season Tester
-        "1332017614108758148",  // Early Bird
-        "1399651053682692208"   // 🧀 Cheese Hunter
+      console.log('🏠 Local environment detected - using test role names for Space Invaders');
+      spaceInvadersUserRoleNames = [
+        "🎴 VIP Holder",
+        "🏆 Holder",
+        "Champion",
+        "Season Tester",
+        "Early Bird",
+        "🧀 Cheese Hunter"
       ];
-      console.log('🏆 Local test role IDs loaded for Space Invaders:', spaceInvadersUserRoleIDs);
+      console.log('🏆 Local test role names loaded for Space Invaders:', spaceInvadersUserRoleNames);
       
       // Apply role-based theme on load
       applySpaceInvadersRoleTheme();
@@ -227,13 +227,13 @@ async function fetchSpaceInvadersUserRoleIDs() {
       // Update score display to show role multiplier
       updateSpaceInvadersScoreDisplay();
       
-      return spaceInvadersUserRoleIDs;
+      return spaceInvadersUserRoleNames;
     }
     
     const isProduction = window.location.hostname === 'narrrfs.world';
     const API_BASE_URL = isProduction ? 'https://narrrfs.world' : 'http://localhost';
     
-    // Fetch role IDs from Discord API via sync-role.php
+    // Fetch role names from Discord API via sync-role.php (Phase 2: role IDs removed)
     const response = await fetch(`${API_BASE_URL}/api/auth/sync-role.php`, {
       method: 'GET',
       credentials: 'include'
@@ -241,8 +241,8 @@ async function fetchSpaceInvadersUserRoleIDs() {
     
     if (response.ok) {
       const data = await response.json();
-      spaceInvadersUserRoleIDs = data.role_ids || [];
-      console.log('🏆 Space Invaders user role IDs loaded from Discord API:', spaceInvadersUserRoleIDs);
+      spaceInvadersUserRoleNames = data.roles || [];
+      console.log('🏆 Space Invaders user role names loaded from Discord API:', spaceInvadersUserRoleNames);
       
       // Apply role-based theme on load
       applySpaceInvadersRoleTheme();
@@ -250,7 +250,7 @@ async function fetchSpaceInvadersUserRoleIDs() {
       // Update score display to show role multiplier
       updateSpaceInvadersScoreDisplay();
       
-      return spaceInvadersUserRoleIDs;
+      return spaceInvadersUserRoleNames;
     } else {
       console.log('🏆 No roles found or not logged in for Space Invaders');
       return [];
@@ -261,25 +261,28 @@ async function fetchSpaceInvadersUserRoleIDs() {
   }
 }
 
-// 🎨 Apply role-based visual theme to Space Invaders canvas using role IDs
+// 🎨 Apply role-based visual theme to Space Invaders canvas using role names (Phase 2 security)
 function applySpaceInvadersRoleTheme() {
-  const primaryRoleID = getSpaceInvadersPrimaryRoleID();
+  const primaryRoleName = getSpaceInvadersPrimaryRoleName();
   let theme = 'default';
   
-  if (primaryRoleID) {
-    // Map role IDs to themes
-    const roleIDToTheme = {
-      '1332016526848692345': 'golden',    // 🎴 VIP Holder
-      '1402668301414563971': 'silver',    // 🏆 Holder
-      '1332017420591697972': 'red',       // Champion
-      '1417279348989497532': 'green',     // Season Tester
-      '1332017614108758148': 'blue',      // Early Bird
-      '1399651053682692208': 'cheese',    // 🧀 Cheese Hunter
-      '1332108350518857842': 'blue'       // WL (blue theme)
-    };
+  if (primaryRoleName) {
+    // Use existing spaceInvadersRoleThemes object (already uses role names)
+    theme = spaceInvadersRoleThemes[primaryRoleName] || 'default';
     
-    theme = roleIDToTheme[primaryRoleID] || 'default';
-    console.log(`🎨 Applying ${theme} theme for Space Invaders role ID: ${primaryRoleID}`);
+    // Also check for emoji variations
+    if (theme === 'default') {
+      const roleNameLower = primaryRoleName.toLowerCase();
+      if (roleNameLower.includes('vip') && roleNameLower.includes('holder')) theme = 'golden';
+      else if (roleNameLower.includes('holder') && !roleNameLower.includes('vip')) theme = 'silver';
+      else if (roleNameLower.includes('cheese') && roleNameLower.includes('hunter')) theme = 'cheese';
+      else if (roleNameLower.includes('season') && roleNameLower.includes('tester')) theme = 'green';
+      else if (roleNameLower.includes('early') && roleNameLower.includes('bird')) theme = 'blue';
+      else if (roleNameLower.includes('champion')) theme = 'red';
+      else if (roleNameLower === 'wl') theme = 'blue';
+    }
+    
+    console.log(`🎨 Applying ${theme} theme for Space Invaders role name: ${primaryRoleName}`);
   } else {
     console.log('🎨 No premium role found for Space Invaders - using default theme');
   }
@@ -319,24 +322,24 @@ function applySpaceInvadersRoleTheme() {
   }
 }
 
-// 🏆 Get user's primary role ID (highest priority role)
-function getSpaceInvadersPrimaryRoleID() {
+// 🏆 Get user's primary role name (highest priority role) - Phase 2 security
+function getSpaceInvadersPrimaryRoleName() {
   // Check roles in priority order (highest multiplier first)
-  for (const roleID of spaceInvadersRolePriorityByID) {
-    if (spaceInvadersUserRoleIDs.includes(roleID)) {
-      return roleID;
+  for (const roleName of spaceInvadersRolePriorityByName) {
+    if (spaceInvadersUserRoleNames.includes(roleName)) {
+      return roleName;
     }
   }
   
   return null; // No premium role found
 }
 
-// ⚡ Calculate role-based score multiplier using role IDs
+// ⚡ Calculate role-based score multiplier using role names (Phase 2 security)
 function getSpaceInvadersRoleScoreMultiplier() {
-  const primaryRoleID = getSpaceInvadersPrimaryRoleID();
-  if (primaryRoleID) {
-    const multiplier = spaceInvadersRoleMultipliersByID[primaryRoleID] || 1.0;
-    console.log(`🏆 Space Invaders role multiplier applied: ${multiplier}x for role ID ${primaryRoleID}`);
+  const primaryRoleName = getSpaceInvadersPrimaryRoleName();
+  if (primaryRoleName) {
+    const multiplier = spaceInvadersRoleMultipliersByName[primaryRoleName] || 1.0;
+    console.log(`🏆 Space Invaders role multiplier applied: ${multiplier}x for role name ${primaryRoleName}`);
     return multiplier;
   }
   
@@ -352,7 +355,7 @@ function updateSpaceInvadersScoreDisplay() {
   
   if (topScoreDisplay && roleMultiplierDisplay) {
     const roleMultiplier = getSpaceInvadersRoleScoreMultiplier();
-    const primaryRoleID = getSpaceInvadersPrimaryRoleID();
+    const primaryRoleName = getSpaceInvadersPrimaryRoleName();
     const baseDSPOINC = spaceInvadersScore * 1.0; // 1 point = 1 DSPOINC base
     const roleBonusDSPOINC = Math.floor(baseDSPOINC * (roleMultiplier - 1));
     const beforeConversion = Math.round((baseDSPOINC + roleBonusDSPOINC) * 100) / 100;
@@ -360,8 +363,8 @@ function updateSpaceInvadersScoreDisplay() {
     // 🎯 SEASON 5: Apply 10:1 conversion (2,000 → 200)
     const totalDSPOINC = Math.floor(beforeConversion / 10);
     
-    // Debug logging
-    console.log(`🏆 Space Invaders score display update: Role ID=${primaryRoleID}, Multiplier=${roleMultiplier}x, Score=${totalDSPOINC} DSPOINC (10:1)`);
+    // Debug logging (Phase 2 security - uses role names)
+    console.log(`🏆 Space Invaders score display update: Role Name=${primaryRoleName}, Multiplier=${roleMultiplier}x, Score=${totalDSPOINC} DSPOINC (10:1)`);
     
     // Update top score display
     topScoreDisplay.textContent = `💰 Score: $${totalDSPOINC} DSPOINC`;
@@ -5493,10 +5496,10 @@ let reloadButtonInterval = null;
   async function initSpaceInvaders() {
     console.log('🚀 Initializing Space Invaders...');
     
-    // 🏆 Initialize role detection for Space Invaders (CRITICAL: await this!)
-    console.log('🏆 Fetching user role IDs before Space Invaders initialization...');
-    await fetchSpaceInvadersUserRoleIDs();
-    console.log('🏆 Space Invaders role IDs loaded:', spaceInvadersUserRoleIDs);
+    // 🏆 Initialize role detection for Space Invaders (CRITICAL: await this!) - Phase 2 security
+    console.log('🏆 Fetching user role names before Space Invaders initialization...');
+    await fetchSpaceInvadersUserRoleNames();
+    console.log('🏆 Space Invaders role names loaded:', spaceInvadersUserRoleNames);
     
     // Get canvas and context
     const canvas = document.getElementById('space-invaders-canvas');

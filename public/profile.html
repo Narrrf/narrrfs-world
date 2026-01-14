@@ -665,28 +665,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (!res.ok) return;
     const data = await res.json();
     const roles = Array.isArray(data.roles) ? data.roles.map(r => String(r).toLowerCase()) : [];
-    const roleIds = Array.isArray(data.role_ids) ? data.role_ids.map(String)
-                  : Array.isArray(data.roleIds) ? data.roleIds.map(String) : [];
     
-    // Check for Game Tester role
+    // Check for Game Tester role (name-based only - Phase 2 security)
     const allowedByName = roles.some(r => ['admin','administrator','moderator','mod','owner','founder','game tester'].some(a => r.includes(a)));
-    const allowedById = roleIds.includes('1428901285754830858'); // Game Tester role ID
-    if (allowedByName || allowedById) {
+    if (allowedByName) {
       const el = document.getElementById('bug-collab-wrapper');
       if (el) el.style.display = '';
     }
     
-    // Check for Holder and VIP Holder roles (Nerd Lab access)
-    const holderRoleId = '1402668301414563971'; // 🏆 Holder
-    const vipHolderRoleId = '1332016526848692345'; // 🎴 VIP Holder
-    const isHolder = roleIds.includes(holderRoleId);
-    const isVIPHolder = roleIds.includes(vipHolderRoleId);
-    
-    // Also check by role name (case-insensitive)
+    // Check for Holder and VIP Holder roles (Nerd Lab access) - name-based only (Phase 2 security)
     const isHolderByName = roles.some(r => r.includes('holder') && !r.includes('vip'));
     const isVIPHolderByName = roles.some(r => r.includes('vip') && r.includes('holder'));
     
-    if (isHolder || isVIPHolder || isHolderByName || isVIPHolderByName) {
+    if (isHolderByName || isVIPHolderByName) {
       const nerdLabEl = document.getElementById('nerd-lab-entry');
       if (nerdLabEl) {
         nerdLabEl.classList.remove('hidden');
@@ -2528,12 +2519,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       console.log('❌ No user roles found - cannot render trophy shelf');
     }
 
-     // VIP/Golden Cheese logic check on top menu
+     // VIP/Golden Cheese logic check on top menu (name-based only - Phase 2 security)
      console.log('🔍 VIP Detection - User roles:', user.roles);
-     console.log('🔍 VIP Detection - User role IDs:', user.roleIds);
      
-     // Check for various VIP role variations (name-based)
-     const hasVIPRoleName = user.roles && (
+     // Check for various VIP role variations (name-based only)
+     const hasVIPRole = user.roles && (
        user.roles.includes("VIP Holder") || 
        user.roles.includes("🎴 VIP Holder") ||
        user.roles.includes("VIP_pass") ||
@@ -2541,14 +2531,7 @@ document.addEventListener("DOMContentLoaded", async function () {
        user.roles.some(role => role.toLowerCase().includes('vip'))
      );
      
-     // Check for VIP role ID (1332016526848692345)
-     const hasVIPRoleId = user.roleIds && user.roleIds.includes('1332016526848692345');
-     
-     const hasVIPRole = hasVIPRoleName || hasVIPRoleId;
-     
-     console.log('🔍 VIP Detection - Has VIP role (name):', hasVIPRoleName);
-     console.log('🔍 VIP Detection - Has VIP role (ID):', hasVIPRoleId);
-     console.log('🔍 VIP Detection - Has VIP role (combined):', hasVIPRole);
+     console.log('🔍 VIP Detection - Has VIP role (name-based):', hasVIPRole);
      
      if (hasVIPRole) {
        console.log('✅ VIP Access granted - showing VIP section');

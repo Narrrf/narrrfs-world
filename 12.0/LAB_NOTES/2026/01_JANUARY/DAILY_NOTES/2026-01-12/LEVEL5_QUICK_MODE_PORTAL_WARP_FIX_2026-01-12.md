@@ -130,3 +130,21 @@ Console logs showed `chest_011` was created/loaded, yet players could not find i
 **Created:** 2026-01-12  
 **Maintainer:** Narrrf’s World Lab Tech Council (Cursor session sync)  
 
+---
+
+## ⚠️ Addendum — Collision + Debug Helpers Toggle Attempt (2026-01-12)
+
+### **What was attempted**
+- Add **Level 5 wall collision** and **glyph model collision** improvements.
+- Add a **Pause → Options → General** toggle to show/hide the **Debug Helpers** panel.
+
+### **What went wrong**
+- The changes caused a **game start regression** where selecting **Level 5** on the start screen would **not start correctly** and the game would effectively fall back to **Level 1** behavior.
+
+### **Resolution**
+- The collision/debug-toggle changes were **reverted intentionally** and a commit was pushed to restore stable start + level selection behavior.
+
+### **Next steps (future revisit)**
+- Re-introduce Level 5 collision improvements in a way that **cannot impact start flow** (guard against missing globals, ensure no early runtime errors).
+- Add the Debug Helpers toggle back as a **pure UI toggle** with safe initialization ordering.
+

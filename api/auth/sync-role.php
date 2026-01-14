@@ -101,8 +101,7 @@ try {
         echo json_encode([
             'success' => true,
             'message' => 'Roles synced successfully',
-            'roles' => $userRoles,        // Role names (existing)
-            'role_ids' => $discordRoleIds, // Role IDs (NEW!)
+            'roles' => $userRoles,        // Role names only (role IDs removed for security - Phase 2)
             'user_id' => $discordId
         ]);
     }

@@ -896,19 +896,7 @@ console.log("✅ [DEBUG] Initial resolvedDiscordId:", resolvedDiscordId);
 let userRoles = [];
 let hasGodModeAccess = false; // Whether user has access to God Mode
 let userAvatarUrl = null; // User's Discord avatar URL
-const GOD_MODE_ROLES = ["admin", "moderator"]; // Discord role names (case-insensitive)
-const GOD_MODE_ROLE_ID = "1428901285754830858"; // Game Tester role ID
-
-// Role multipliers (matching api/dev/riddle-reward.php)
-const ROLE_MULTIPLIERS_BY_ID = {
-  '1332016526848692345': { multiplier: 2.0, name: '🎴 VIP Holder' },
-  '1402668301414563971': { multiplier: 1.5, name: '🏆 Holder' },
-  '1332017420591697972': { multiplier: 1.4, name: 'Champion' },
-  '1332108350518857842': { multiplier: 1.3, name: 'WL' },
-  '1417279348989497532': { multiplier: 1.3, name: 'Season Tester' },
-  '1332017614108758148': { multiplier: 1.2, name: 'Early Bird' },
-  '1399651053682692208': { multiplier: 1.1, name: '🧀 Cheese Hunter' }
-};
+const GOD_MODE_ROLES = ["admin", "moderator", "game tester"]; // Discord role names (case-insensitive)
 
 const ROLE_MULTIPLIERS_BY_NAME = {
   '🎴 VIP Holder': { multiplier: 2.0, name: '🎴 VIP Holder' },
@@ -923,15 +911,8 @@ const ROLE_MULTIPLIERS_BY_NAME = {
   'Cheese Hunter': { multiplier: 1.1, name: '🧀 Cheese Hunter' }
 };
 
-const ROLE_PRIORITY = [
-  '1332016526848692345', // VIP Holder (highest priority)
-  '1402668301414563971', // Holder
-  '1332017420591697972', // Champion
-  '1332108350518857842', // WL
-  '1417279348989497532', // Season Tester
-  '1332017614108758148', // Early Bird
-  '1399651053682692208'  // Cheese Hunter
-];
+// ROLE_PRIORITY removed - priority determined by multiplier value (higher multiplier = higher priority)
+// Role names are checked in ROLE_MULTIPLIERS_BY_NAME order
 
 /**
  * Check if user has God Mode access based on roles
@@ -942,19 +923,11 @@ function checkGodModeAccess() {
     return false;
   }
   
-  // Check for role names (case-insensitive)
-  const hasRoleByName = userRoles.some(role => {
+  // Check for role names (case-insensitive) - no role IDs exposed
+  return userRoles.some(role => {
     const roleLower = typeof role === 'string' ? role.toLowerCase() : '';
     return GOD_MODE_ROLES.some(allowedRole => roleLower === allowedRole.toLowerCase());
   });
-  
-  // Check for Game Tester role ID
-  const hasRoleById = userRoles.some(role => {
-    const roleStr = String(role);
-    return roleStr === GOD_MODE_ROLE_ID;
-  });
-  
-  return hasRoleByName || hasRoleById;
 }
 
 /**
@@ -968,45 +941,21 @@ function getHighestRoleMultiplier() {
   
   let highestMultiplier = 1.0;
   let highestRoleName = 'Default';
-  let highestPriority = -1;
   
-  // Check roles in priority order
+  // Check roles by name only (case-insensitive) - no role IDs used
   for (const role of userRoles) {
     const roleStr = String(role);
-    let roleInfo = null;
-    let priority = -1;
+    const roleLower = roleStr.toLowerCase();
     
-    // Check by ID first
-    if (ROLE_MULTIPLIERS_BY_ID[roleStr]) {
-      roleInfo = ROLE_MULTIPLIERS_BY_ID[roleStr];
-      priority = ROLE_PRIORITY.indexOf(roleStr);
-    } else {
-      // Check by name (case-insensitive)
-      const roleLower = roleStr.toLowerCase();
-      for (const [key, value] of Object.entries(ROLE_MULTIPLIERS_BY_NAME)) {
-        if (key.toLowerCase() === roleLower) {
-          roleInfo = value;
-          // Find priority by ID if possible
-          for (const [id, info] of Object.entries(ROLE_MULTIPLIERS_BY_ID)) {
-            if (info.name === value.name) {
-              priority = ROLE_PRIORITY.indexOf(id);
-              break;
-            }
-          }
-          break;
+    // Check by name (case-insensitive) in ROLE_MULTIPLIERS_BY_NAME
+    for (const [key, value] of Object.entries(ROLE_MULTIPLIERS_BY_NAME)) {
+      if (key.toLowerCase() === roleLower) {
+        // Found matching role - use if multiplier is higher
+        if (value.multiplier > highestMultiplier) {
+          highestMultiplier = value.multiplier;
+          highestRoleName = value.name;
         }
-      }
-    }
-    
-    if (roleInfo) {
-      // Higher multiplier OR same multiplier but higher priority (earlier in priority list = better)
-      if (roleInfo.multiplier > highestMultiplier || 
-          (roleInfo.multiplier === highestMultiplier && (priority >= 0 && (highestPriority < 0 || priority < highestPriority)))) {
-        highestMultiplier = roleInfo.multiplier;
-        highestRoleName = roleInfo.name;
-        if (priority >= 0) {
-          highestPriority = priority;
-        }
+        break; // Found match, move to next role
       }
     }
   }
