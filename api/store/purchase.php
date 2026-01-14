@@ -1,4 +1,10 @@
 <?php
+// 🔧 CRITICAL FIX: Turn off error display to prevent HTML output breaking JSON response
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't display errors (prevents HTML in JSON response)
+ini_set('log_errors', 1); // Log errors instead
+ini_set('error_log', __DIR__ . '/../../error_log.txt'); // Log to file
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
@@ -176,6 +182,7 @@ try {
     // Commit transaction
     $db->exec('COMMIT');
     
+    // 🔧 CRITICAL FIX: Use $available_balance (balance before purchase) instead of undefined $current_balance
     echo json_encode([
         'success' => true,
         'message' => 'Purchase successful',
@@ -186,16 +193,36 @@ try {
         'quantity' => $quantity,
         'total_price' => $total_cost,
         'new_balance' => $final_balance,
-        'balance_before' => $current_balance
+        'balance_before' => $available_balance // 🔧 FIXED: Was $current_balance (undefined), now uses $available_balance (calculated before purchase)
     ]);
     
 } catch (Exception $e) {
-    $db->exec('ROLLBACK');
+    // 🔧 CRITICAL FIX: Ensure ROLLBACK only if transaction is active, and always return JSON
+    if (isset($db)) {
+        try {
+            $db->exec('ROLLBACK');
+        } catch (Exception $rollbackError) {
+            // Ignore rollback errors (transaction might not be active)
+        }
+    }
+    
+    // 🔧 CRITICAL FIX: Always return valid JSON, even on errors (prevents HTML error output)
+    // Log error to file instead of outputting
+    error_log('[STORE PURCHASE ERROR] ' . $e->getMessage() . ' | Stack: ' . $e->getTraceAsString());
+    
     echo json_encode([
         'success' => false,
         'error' => 'Database error: ' . $e->getMessage()
     ]);
+    exit; // 🔧 CRITICAL FIX: Exit after error to prevent any additional output
 }
 
-$db->close();
+// 🔧 CRITICAL FIX: Close database connection safely
+if (isset($db)) {
+    try {
+        $db->close();
+    } catch (Exception $closeError) {
+        // Ignore close errors (connection might already be closed)
+    }
+}
 ?> 

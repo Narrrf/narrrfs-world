@@ -1227,16 +1227,21 @@ require_once 'discord-invite.php';
 <header class="bg-black text-white py-3 px-6 shadow-md sticky top-10 z-30 w-full nav-header">
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <a href="index.html" class="text-xl font-bold tracking-tight">🧠 Narrrf's World</a>
-    <nav class="space-x-3 text-sm md:text-base flex items-center flex-wrap justify-end">
+    <nav class="space-x-2 md:space-x-3 text-sm md:text-base flex items-center flex-wrap justify-end">
       <a href="index.html" class="text-pink-400 font-semibold">Home</a>
       <a href="mint.html" class="hover:text-pink-400">Mint</a>
       <a href="whitepaper.html" class="hover:text-pink-400">Whitepaper</a>
       <a href="get-roles.html" class="hover:text-pink-400">Get Roles</a>
       <a href="partners.html" class="hover:text-pink-400">Partners</a>
       <a href="project-updates.html" class="hover:text-pink-400">Updates</a>
+      <!-- 🏆 Leaderboard Button - Mobile Friendly -->
+      <a href="leaderboard.html" 
+         class="bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 text-black font-bold py-1.5 px-3 md:px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 border-2 border-yellow-400 hover:border-yellow-300 text-xs md:text-sm whitespace-nowrap">
+        🏆 Leaderboard
+      </a>
       <a href="stake-lab.html" class="hover:text-pink-400">🧊 Stake Lab</a>
       <a href="faq.html" class="hover:text-pink-400">FAQ</a>
-      <button id="connect-wallet-btn" onclick="connectWallet()" class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-4 rounded-xl shadow text-xs">
+      <button id="connect-wallet-btn" onclick="connectWallet()" class="ml-2 mt-2 md:mt-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 px-3 md:px-4 rounded-xl shadow text-xs">
         🔌 Connect
       </button>
       <img id="user-avatar" src="img/cheese.png" alt="PFP" class="hidden w-8 h-8 rounded-full border-2 border-white ml-2 shadow-lg" />
@@ -1303,10 +1308,18 @@ require_once 'discord-invite.php';
   <div class="mb-3">
     <span class="text-green-100 text-sm font-semibold">🎯 Season 7 is LIVE! • Play now and compete! • Leaderboards active!</span>
   </div>
-  <a href="/profile.html"
-     class="inline-block bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-gray-900 text-lg md:text-xl font-extrabold px-8 py-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-yellow-300">
-    🎮 PLAY SEASON 7 NOW! 🎮
-  </a>
+  <!-- 🏆 Leaderboard & Play Buttons Row -->
+  <div class="flex flex-col sm:flex-row gap-3 justify-center items-center mb-3 px-4">
+    <a href="/profile.html"
+       class="inline-block bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-gray-900 text-base md:text-lg lg:text-xl font-extrabold px-6 md:px-8 py-3 md:py-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-yellow-300 whitespace-nowrap">
+      🎮 PLAY SEASON 7 NOW! 🎮
+    </a>
+    <!-- 🏆 Leaderboard Button - Mobile Friendly -->
+    <a href="leaderboard.html"
+       class="inline-block bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:via-yellow-600 hover:to-amber-700 text-gray-900 text-base md:text-lg font-bold px-5 md:px-7 py-3 md:py-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-amber-300 hover:border-amber-200 whitespace-nowrap">
+      🏆 View Leaderboard
+    </a>
+  </div>
   <div class="mt-3">
     <span class="text-white text-xs font-bold">🐛 Found Bugs? Report Them! • 🏆 Compete for Top Spots • 💰 Earn $DSPOINC Rewards! 🚀</span>
   </div>

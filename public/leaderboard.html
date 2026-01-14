@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🏆 Leaderboard - Narrrf's World</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="favicon-phantom.png" type="image/png">
+  
+  <style>
+    :root {
+      --primary-color: #f472b6;
+      --secondary-color: #3b82f6;
+      --accent-color: #fcd34d;
+      --dark-bg: #0f0f23;
+      --card-bg: #1a1a2e;
+      --border-color: #374151;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #0f0f23 100%);
+      min-height: 100vh;
+      color: #fff;
+    }
+    
+    .leaderboard-card {
+      background: rgba(26, 26, 46, 0.8);
+      border: 2px solid rgba(124, 58, 237, 0.5);
+      backdrop-filter: blur(10px);
+    }
+    
+    .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-weight: bold; }
+    .rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; font-weight: bold; }
+    .rank-3 { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 border-b-2 border-yellow-400/30 sticky top-0 z-50 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-bold tracking-wide text-green-400">🏆 Narrrf's World Leaderboard</h1>
+        <div id="season-status" class="text-xs text-blue-300 animate-pulse mt-1">
+          Loading season status...
+        </div>
+      </div>
+      <nav class="space-x-4 text-sm md:text-base flex items-center">
+        <a href="index.html" class="hover:text-yellow-400 transition-colors">Home</a>
+        <a href="profile.html" class="hover:text-yellow-400 transition-colors">Profile</a>
+        <a href="tetris.html" class="hover:text-yellow-400 transition-colors">Games</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Season Status Banner -->
+    <div id="season-banner" class="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white text-center py-4 rounded-xl mb-8 shadow-lg">
+      <div class="text-lg font-bold" id="season-title">🏆 Leaderboard</div>
+      <div class="text-sm mt-2" id="season-subtitle">Loading...</div>
+      <!-- 🎮 Game Section Link -->
+      <div class="mt-4">
+        <a href="profile.html#game-section" 
+           class="inline-block bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 text-gray-900 font-bold px-5 md:px-7 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-yellow-400 hover:border-yellow-300 text-sm md:text-base whitespace-nowrap">
+          🎮 Play Games Now
+        </a>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+      <p class="mt-4 text-gray-400">Loading leaderboard...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error" class="hidden bg-red-900/30 border border-red-500 rounded-lg p-6 mb-8">
+      <div class="text-red-300 font-bold mb-2">❌ Error Loading Leaderboard</div>
+      <div id="error-message" class="text-red-200 text-sm"></div>
+    </div>
+
+    <!-- Leaderboard Content -->
+    <div id="leaderboard-content" class="hidden">
+      <!-- Tetris Leaderboard -->
+      <div class="leaderboard-card rounded-xl p-6 mb-6">
+        <h2 class="text-2xl font-bold text-purple-300 mb-4 flex items-center gap-2">
+          <span>🧩</span>
+          <span>Tetris Leaderboard</span>
+        </h2>
+        <div id="tetris-leaderboard" class="space-y-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Snake Leaderboard -->
+      <div class="leaderboard-card rounded-xl p-6 mb-6">
+        <h2 class="text-2xl font-bold text-green-300 mb-4 flex items-center gap-2">
+          <span>🐍</span>
+          <span>Snake Leaderboard</span>
+        </h2>
+        <div id="snake-leaderboard" class="space-y-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Space Invaders Leaderboard -->
+      <div class="leaderboard-card rounded-xl p-6 mb-6">
+        <h2 class="text-2xl font-bold text-pink-300 mb-4 flex items-center gap-2">
+          <span>👾</span>
+          <span>Space Invaders Leaderboard</span>
+        </h2>
+        <div id="space-invaders-leaderboard" class="space-y-2">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 🍩 Footer -->
+  <footer class="text-center mt-16 mb-8 px-4 text-xs text-yellow-600 relative z-10">
+    <div class="max-w-7xl mx-auto">
+      <p class="mb-2">
+        Powered by 🧀 Cheese Architect <b>12.0</b> · Genesis Protocol · Discord + Game + Wallet Sync Engine 🌍
+      </p>
+      <p class="opacity-70 text-xs">
+        Vault Synced | 2025 | Scroll-Safe for 100 Years of Cheese | 
+        <a id="discord-link-footer" href="https://discord.gg/narrrfsworld" target="_blank" class="underline text-pink-500 hover:text-pink-600 transition-colors">Join Discord</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Discord Config Script for Footer Link -->
+  <script src="discord-config.js"></script>
+  <script>
+    // Update Discord link in footer if config is available
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof DISCORD_CONFIG !== 'undefined' && DISCORD_CONFIG.inviteUrl) {
+        const footerLink = document.getElementById('discord-link-footer');
+        if (footerLink) {
+          footerLink.href = DISCORD_CONFIG.inviteUrl;
+        }
+      }
+    });
+  </script>
+
+  <script>
+    // Environment detection
+    const isProduction = window.location.hostname === 'narrrfs.world' || window.location.hostname === 'narrrfs-world.onrender.com';
+    const API_BASE_URL = isProduction ? 'https://narrrfs.world' : '';
+
+    // Load leaderboard data
+    async function loadLeaderboard() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/dev/get-leaderboard.php`, {
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to load leaderboard');
+        }
+
+        // Hide loading, show content
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('leaderboard-content').classList.remove('hidden');
+
+        // Update season status
+        const seasonTitle = document.getElementById('season-title');
+        const seasonSubtitle = document.getElementById('season-subtitle');
+        const seasonStatus = document.getElementById('season-status');
+
+        if (data.is_frozen) {
+          seasonTitle.textContent = `⏸️ ${data.display_season} Leaderboard (Frozen)`;
+          seasonSubtitle.textContent = `🎮 ${data.current_season} is active! Play now to appear on the leaderboard.`;
+          seasonStatus.textContent = `⏸️ ${data.display_season} Frozen • 🎮 ${data.current_season} Active`;
+        } else {
+          seasonTitle.textContent = `🎮 ${data.display_season} Leaderboard (Active)`;
+          seasonSubtitle.textContent = `🏆 Compete for the top spots!`;
+          seasonStatus.textContent = `🎮 ${data.display_season} Active`;
+        }
+
+        // Display leaderboards (use correct game keys from API response)
+        displayLeaderboard('tetris', data.tetris || [], data.is_frozen);
+        displayLeaderboard('snake', data.snake || [], data.is_frozen);
+        displayLeaderboard('space-invaders', data.space_invaders || [], data.is_frozen);
+        
+        // 🔧 CRITICAL FIX: Log API response for debugging
+        console.log('🏆 Leaderboard data loaded:', {
+          current_season: data.current_season,
+          display_season: data.display_season,
+          is_frozen: data.is_frozen,
+          tetris_count: (data.tetris || []).length,
+          snake_count: (data.snake || []).length,
+          space_invaders_count: (data.space_invaders || []).length
+        });
+
+      } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('error').classList.remove('hidden');
+        document.getElementById('error-message').textContent = error.message;
+      }
+    }
+
+    // Display leaderboard for a game
+    function displayLeaderboard(game, leaderboard, isFrozen) {
+      const containerId = `${game}-leaderboard`;
+      const container = document.getElementById(containerId);
+      
+      if (!container) {
+        console.error(`Container not found: ${containerId}`);
+        return;
+      }
+
+      if (!leaderboard || leaderboard.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-gray-400">
+            ${isFrozen ? '⏸️ No scores available for frozen season' : '🎮 No scores yet! Be the first to play!'}
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = leaderboard.map((entry, index) => {
+        const rank = index + 1;
+        const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+        
+        // Format score with commas
+        const formattedScore = entry.score ? Number(entry.score).toLocaleString() : '0';
+        
+        return `
+          <div class="flex items-center justify-between p-4 rounded-lg ${rankClass || 'bg-gray-800/50'} border border-gray-600 hover:border-yellow-400 transition-all">
+            <div class="flex items-center gap-4">
+              <div class="text-2xl font-bold w-12 text-center">${medal}</div>
+              <div>
+                <div class="font-semibold text-lg">${entry.discord_name || entry.discord_id || 'Unknown'}</div>
+                <div class="text-xs text-gray-400">${entry.discord_id || ''}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-xl font-bold text-yellow-300">${formattedScore}</div>
+              <div class="text-xs text-gray-400">${game === 'space-invaders' ? 'kills' : 'score'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Load leaderboard on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadLeaderboard();
+    });
+  </script>
+</body>
+</html>
