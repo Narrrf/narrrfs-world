@@ -61,6 +61,11 @@
 - **Status:** ✅ **FIXED** - Glyphs highly visible with strong glow effects
 - **Files:** `public/glyph/styles.css`
 
+#### **✅ 3b. Glyph Memory - Flip Works But Glyph Hidden (HOTFIX - FIXED):**
+- **Problem:** Cards flipped + sound worked, but glyph images were invisible (back diamond layer stayed on top).
+- **Fix:** Force-hide `.cardBack` on flip in `public/glyph/game.js` and enforce final z-index overrides in `public/glyph/styles.css`.
+- **Status:** ✅ **FIXED** - Confirmed working locally (glyphs render on flip again).
+
 #### **✅ 4. Cheese Hunt Display (FIXED):**
 - **Problems:** Display stuck at "2/3", wrong cheese count, no close button
 - **Solution:** Persistent display system, correct quest config usage, close button added
@@ -73,10 +78,16 @@
 - **Status:** ✅ **FIXED** - Popup positioned correctly, close button visible
 - **Files:** `public/index.html`
 
+#### **✅ 6. Level 4 Cheese Bosses - Collision (ADDED):**
+- **Request:** Add collision to the 4 decorative Cheese Boss models in Level 4 (like Level 1 plants/trees).
+- **Fix:** Added `checkLevel4CheeseBossCollision()` (push-away capsule collision) and call it in `updateLevel4(delta)`.
+- **Status:** ✅ **WORKING CONFIRMED LOCALLY**
+- **Files:** `public/three.js/main.js`
+
 ---
 
 ### **📊 BUG FIX SUMMARY:**
-- **Total Bugs Fixed:** 5 major bugs
+- **Total Bugs Fixed:** 5 major bugs (+ 1 gameplay collision improvement)
 - **Files Modified:** 7 files
 - **New APIs Created:** 1 (`get-cheese-hunt-stats.php`)
 - **Status:** ✅ **ALL BUGS RESOLVED - READY FOR TESTING**

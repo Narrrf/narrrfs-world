@@ -530,6 +530,8 @@ border-radius: 16px;
   place-items: center; 
   opacity: 0;
   position: relative;
+  /* Ensure glyph face is above the card back */
+  z-index: 2;
   /* STRONG background to help glyphs stand out against dark stone backgrounds */
   background: 
     radial-gradient(circle at center, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.25) 40%, rgba(255, 255, 255, 0.1) 70%, transparent 100%),
@@ -540,6 +542,11 @@ border-radius: 16px;
   box-shadow: 
     inset 0 0 20px rgba(255, 255, 255, 0.2),
     0 0 15px rgba(255, 255, 255, 0.15);
+}
+
+.cardBack{
+  /* Ensure the back is behind the front when flipped */
+  z-index: 1;
 }
 
 .card.is-flipped .cardFront { 
@@ -764,6 +771,15 @@ border-radius: 16px;
   user-select: none;
   pointer-events: none;
 }
+
+/* ---------------------------------------------------------------------------
+   GLYPH VISIBILITY FIX (January 2026)
+   Ensure the front face (glyph) ALWAYS renders above the back face.
+   There are multiple `.cardBack` style blocks in this file; final overrides
+   here avoid accidental stacking regressions from theming edits.
+--------------------------------------------------------------------------- */
+.card .cardInner.cardFront { z-index: 2 !important; }
+.card .cardInner.cardBack { z-index: 1 !important; }
 
 
 /* Fallback styling if a glyph image is missing */

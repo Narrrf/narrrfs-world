@@ -287,7 +287,8 @@ import { GUISystem } from "./gui-system.js";
 import { WeaponSystem } from "./weapon-system.js";
 import { PhoenixBoss2 } from "./phoenix2.js"; // New clean implementation
 import { AlienSpiderBoss } from "./alien-spider.js"; // Alien Spider boss
-import { ChestSystem } from "./chest-system.js";
+// Cache-bust chest system to avoid stale module during rapid iteration.
+import { ChestSystem } from "./chest-system.js?v=2026-01-15-chest3-dual-model";
 import { AudioSystem } from "./audio-system.js";
 import {
   CHARACTER_FOOTSTEP_AUDIO,
@@ -2786,6 +2787,11 @@ const level4State = {
   completionScreenShown: false,
   cheeses: [], // Array of 2 FloatingCheese instances
   monsters: [], // NEW: Array of active monster instances
+  // Level 4 Decorative Bosses (Cheese Boss statues) - January 15, 2026
+  // These are non-interactive "showcase" models placed in arena corners to validate asset loading.
+  cheeseBosses: {}, // bossKey -> THREE.Object3D
+  cheeseBossBasePositions: {}, // bossKey -> THREE.Vector3 (base position before bounce)
+  cheeseBossBounceTimers: {}, // bossKey -> number (phase accumulator)
   weaponViewmodel: null, // 3D weapon model in first-person view
   weaponBobPhase: 0, // For weapon bobbing animation
   weaponRecoilOffset: 0, // For recoil animation
@@ -5667,7 +5673,22 @@ function loadTexture(path) {
 // Load GLTF/GLB model
 function loadModel(path) {
   // Resolve asset path for environment (local vs production)
-  const resolvedPath = resolveAssetPath(path);
+  const resolvedPathRaw = resolveAssetPath(path);
+  // IMPORTANT (Jan 2026):
+  // Many asset folders/files contain spaces (e.g. "3d models/Monster 1/...").
+  // Some loaders will fail silently or request bad URLs without encoding.
+  // VERIFIED (Jan 15, 2026): This affects bosses, chests, plants, glyphs, and monster waves (Levels 3–5).
+  // CRITICAL: Some callsites already pass encoded URLs (encodeURI) for space-heavy paths.
+  // If we encode an already-encoded URL, "%20" becomes "%2520" and assets 404.
+  // Normalize by decoding once (best-effort) then encoding.
+  let normalizedPathRaw = resolvedPathRaw;
+  try {
+    normalizedPathRaw = decodeURI(resolvedPathRaw);
+  } catch {
+    // If decode fails (malformed), keep the raw string and encode it as-is below.
+  }
+  // Always encode the final URL we give to loaders AND use the same encoded string as cache key.
+  const resolvedPath = encodeURI(normalizedPathRaw);
   const lowerPath = resolvedPath.toLowerCase();
   const isFBX = lowerPath.endsWith(".fbx");
   return new Promise((resolve, reject) => {
@@ -5686,8 +5707,13 @@ function loadModel(path) {
         });
         return;
       }
+      // CRITICAL (Jan 2026): GLTF models with skinned meshes MUST be cloned with SkeletonUtils,
+      // otherwise clones can render invisible (broken skeleton bindings).
+      // This is especially important for Level 4/5 monster waves where we spawn many instances.
+      // VERIFIED (Jan 15, 2026): Fixes Level 5 “invisible monsters” caused by cache-hit clone(true).
       const cloneStartMs = _nowMs();
-      const cloned = cached.scene.clone(true);
+      const hasSkinnedMeshes = !!cached.__hasSkinnedMesh;
+      const cloned = hasSkinnedMeshes ? SkeletonUtils.clone(cached.scene) : cached.scene.clone(true);
       _recordModelCacheEvent(resolvedPath, "clone", _nowMs() - cloneStartMs);
       resolve({
         scene: cloned,
@@ -5738,6 +5764,15 @@ function loadModel(path) {
           animations: gltf.animations?.length || 0,
           meshes: gltf.scene.children.length
         });
+        // Detect skinned meshes once and store on the cached GLTF object.
+        // Used to choose SkeletonUtils.clone() on cache hits.
+        let hasSkinnedMesh = false;
+        try {
+          gltf.scene.traverse((child) => {
+            if (child && child.isSkinnedMesh) hasSkinnedMesh = true;
+          });
+        } catch {}
+        gltf.__hasSkinnedMesh = hasSkinnedMesh;
         modelCache.set(resolvedPath, gltf);
         _recordModelCacheEvent(resolvedPath, "load", _nowMs() - loadStartMs);
         resolve(gltf);
@@ -10394,7 +10429,12 @@ function initializeWeaponSystem() {
     });
     
     // Initialize Chest System
-    chestSystem = new ChestSystem(scene, loadModel, processWeaponMaterial, grassSystem, resolveAssetPath);
+    // Dual-model chest system (Jan 2026): new GLBs with no embedded animation.
+    // Stored under `three.js/public/textures/3d models/chest3/` (symlinked from /data on Render).
+    chestSystem = new ChestSystem(scene, loadModel, processWeaponMaterial, grassSystem, resolveAssetPath, {
+      closedModelPath: "/textures/3d models/chest3/chest-closed.glb",
+      openedModelPath: "/textures/3d models/chest3/chest-opened.glb",
+    });
     console.log("✅ [CHEST SYSTEM] Initialized successfully");
 
   } catch (error) {
@@ -19012,6 +19052,8 @@ async function spawnLevel3Monster(monsterPath) {
       scene.add(level3State.group);
       console.log("✅ [LEVEL 3] Added level3State.group to scene");
     } else {
+      // CRITICAL: Clear spawning flag on early exit (prevents spawn lock)
+      isSpawningLevel3Monster = false;
       return;
     }
   }
@@ -19049,6 +19091,8 @@ async function spawnLevel3Monster(monsterPath) {
       console.log("🏹 [LEVEL 3] Valid monster already active, skipping spawn", {
         remainingMonsters: level3State.monsters.length
       });
+      // CRITICAL: Clear spawning flag on early exit (prevents spawn lock)
+      isSpawningLevel3Monster = false;
       return;
     }
   }
@@ -19658,6 +19702,14 @@ function buildLevel4FirstShotArena() {
   // Create hidden cheese stone trigger block
   createLevel4TriggerBlock();
 
+  // Create 4 huge Cheese Bosses (decorative) in the arena corners
+  // Uses resolveAssetPath() (same system Level 6 relies on) + encodeURI() for spaces in filenames.
+  try {
+    createLevel4CheeseBosses(origin);
+  } catch (e) {
+    console.error("❌ [LEVEL 4] Failed to create Cheese Bosses:", e);
+  }
+
   level4State.built = true;
   
   // Create Level 4 chests (after built flag set, ensure chestSystem is initialized)
@@ -19674,6 +19726,140 @@ function buildLevel4FirstShotArena() {
   
   resetLevel4Progress();
   console.log("🎯 [LEVEL 4] First Shot Arena built - 160x160 cheese stone floor ready.");
+}
+
+// Create 4 huge Cheese Bosses in Level 4 arena corners (with a subtle idle bounce)
+function createLevel4CheeseBosses(origin) {
+  console.log("🧀👑 [LEVEL 4] Creating Cheese Boss showcase models...");
+
+  // Corner offsets for 160x160 arena
+  // Tuned (January 15, 2026):
+  // - Pull bosses slightly inward so they sit clearly inside arena bounds (±70 instead of ±80)
+  // - Raise bosses up by +3 units vs previous placement (spawnY = origin.y + 4.0)
+  const cornerOffset = 70;
+  // Raised again by +3 units (Jan 15, 2026): bosses were still too low in Level 4 corners.
+  const bossYOffset = 7.0; // was 4.0
+  const cornerPositions = [
+    {
+      bossKey: "boss1",
+      name: "Cheese Destroyer",
+      x: origin.x + cornerOffset,
+      z: origin.z + cornerOffset,
+      // file verified on Render: /data/public/three.js/public/textures/3d models/Cheese Destroyer/cheese destroyer blanc.glb
+      relativePath: "textures/3d models/Cheese Destroyer/cheese destroyer blanc.glb",
+    },
+    {
+      bossKey: "boss2",
+      name: "Cheese Emperor",
+      x: origin.x - cornerOffset,
+      z: origin.z + cornerOffset,
+      // file verified on Render: /data/public/three.js/public/textures/3d models/cheese emporer/cheese emporer.glb
+      relativePath: "textures/3d models/cheese emporer/cheese emporer.glb",
+    },
+    {
+      bossKey: "boss3",
+      name: "Cheese God Cake",
+      x: origin.x + cornerOffset,
+      z: origin.z - cornerOffset,
+      // file verified on Render: /data/public/three.js/public/textures/3d models/cheese god cake/cheese god cake.glb
+      relativePath: "textures/3d models/cheese god cake/cheese god cake.glb",
+    },
+    {
+      bossKey: "boss4",
+      name: "Cheese King",
+      x: origin.x - cornerOffset,
+      z: origin.z - cornerOffset,
+      // file verified on Render: /data/public/three.js/public/textures/3d models/Cheese king/cheese-king.glb
+      relativePath: "textures/3d models/Cheese king/cheese-king.glb",
+    },
+  ];
+
+  for (const corner of cornerPositions) {
+    // If already created, skip (protect against rebuild calls)
+    if (level4State.cheeseBosses[corner.bossKey]) continue;
+
+    const bossY = origin.y + bossYOffset;
+    const bossPosition = new THREE.Vector3(corner.x, bossY, corner.z);
+    level4State.cheeseBossBasePositions[corner.bossKey] = bossPosition.clone();
+    level4State.cheeseBossBounceTimers[corner.bossKey] = Math.random() * Math.PI * 2;
+
+    const resolved = resolveAssetPath(corner.relativePath);
+    const urlForLoader = encodeURI(resolved); // IMPORTANT: folders/files contain spaces
+    console.log(`🧀👑 [LEVEL 4] Loading ${corner.name} from:`, urlForLoader);
+
+    if (typeof loadModel === "function") {
+      loadModel(urlForLoader)
+        .then((result) => {
+          const loadedScene = result.scene || result;
+          const model = loadedScene;
+
+          // Ensure visibility (these are big showcase models)
+          model.visible = true;
+          model.frustumCulled = false;
+
+          // Position + scale
+          model.position.copy(bossPosition);
+          model.scale.setScalar(8.0);
+
+          // Face toward arena center
+          const dx = origin.x - corner.x;
+          const dz = origin.z - corner.z;
+          model.rotation.y = Math.atan2(dx, dz);
+
+          level4State.group.add(model);
+          level4State.cheeseBosses[corner.bossKey] = model;
+
+          console.log(`✅ [LEVEL 4] ${corner.name} spawned`, {
+            bossKey: corner.bossKey,
+            position: { x: model.position.x, y: model.position.y, z: model.position.z },
+          });
+        })
+        .catch((err) => {
+          console.error(`❌ [LEVEL 4] Failed to load ${corner.name}:`, err);
+        });
+    } else {
+      // Fallback: direct GLTFLoader (should rarely be needed, but prevents silent failures)
+      const loader = new GLTFLoader();
+      loader.load(
+        urlForLoader,
+        (gltf) => {
+          const model = gltf.scene;
+          model.visible = true;
+          model.frustumCulled = false;
+          model.position.copy(bossPosition);
+          model.scale.setScalar(8.0);
+          const dx = origin.x - corner.x;
+          const dz = origin.z - corner.z;
+          model.rotation.y = Math.atan2(dx, dz);
+          level4State.group.add(model);
+          level4State.cheeseBosses[corner.bossKey] = model;
+          console.log(`✅ [LEVEL 4] ${corner.name} spawned (GLTFLoader fallback)`);
+        },
+        undefined,
+        (err) => console.error(`❌ [LEVEL 4] GLTFLoader failed for ${corner.name}:`, err)
+      );
+    }
+  }
+}
+
+// Subtle left-right idle bounce for the 4 corner bosses (visual only)
+function updateLevel4CheeseBossBounce(delta) {
+  const keys = Object.keys(level4State.cheeseBosses || {});
+  if (keys.length === 0) return;
+
+  const bounceSpeed = 1.2; // radians/sec
+  const bounceAmount = 1.0; // units left-right
+
+  for (const bossKey of keys) {
+    const boss = level4State.cheeseBosses[bossKey];
+    const base = level4State.cheeseBossBasePositions[bossKey];
+    if (!boss || !base) continue;
+
+    const t = (level4State.cheeseBossBounceTimers[bossKey] || 0) + delta * bounceSpeed;
+    level4State.cheeseBossBounceTimers[bossKey] = t;
+
+    boss.position.x = base.x + Math.sin(t) * bounceAmount;
+  }
 }
 
 // ==================== LEVEL 5: THE WALK ====================
@@ -22913,6 +23099,9 @@ function updateLevel4TriggerBlockVisual(delta) {
 
 function updateLevel4(delta) {
   if (!level4State.built || currentLevel !== LEVEL_IDS.LEVEL4) return;
+  // Decorative corner bosses (visual only)
+  updateLevel4CheeseBossBounce(delta);
+  checkLevel4CheeseBossCollision();
   updateLevel4Step0(delta);
   
   // Update wave countdown if active
@@ -23125,6 +23314,77 @@ function updateLevel4(delta) {
   
   // Update riddle progress UI for Level 4
   invokeRiddleProgressUIUpdate("updateLevel4");
+}
+
+// Collision for Level 4 Cheese Boss showcase models (same push-away pattern as Level 1 trees/plants)
+// Prevents the player capsule from walking through the decorative boss meshes.
+function checkLevel4CheeseBossCollision() {
+  if (currentLevel !== LEVEL_IDS.LEVEL4) return;
+  if (!playerCollider || !playerCollider.start || !playerCollider.end) return;
+
+  const bosses = level4State.cheeseBosses || {};
+  const basePositions = level4State.cheeseBossBasePositions || {};
+  const bossKeys = Object.keys(bosses);
+  if (bossKeys.length === 0) return;
+
+  // Player capsule center + radius
+  const playerPos = new THREE.Vector3().lerpVectors(playerCollider.start, playerCollider.end, 0.5);
+  const playerRadius = PLAYER_RADIUS;
+
+  // Boss collision sizing: use bounding box if available, otherwise a safe fallback.
+  // These models are huge, so even a slightly conservative radius is OK.
+  const fallbackBossRadius = 6.0;
+
+  for (const bossKey of bossKeys) {
+    const boss = bosses[bossKey];
+    const position = basePositions[bossKey] || boss?.position;
+    if (!boss || !position || !boss.visible) continue;
+
+    let bossRadius = fallbackBossRadius;
+    try {
+      const box = new THREE.Box3().setFromObject(boss);
+      const size = box.getSize(new THREE.Vector3());
+      if (Number.isFinite(size.x) && Number.isFinite(size.z) && (size.x > 0 || size.z > 0)) {
+        // Use half of larger horizontal dimension, but clamp to keep it reasonable.
+        bossRadius = Math.max(2.5, Math.min(18.0, Math.max(size.x, size.z) * 0.5));
+      }
+    } catch {
+      // If bounding box fails for any reason, keep fallback radius
+    }
+
+    const dx = playerPos.x - position.x;
+    const dz = playerPos.z - position.z;
+    const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+    const collisionDistance = bossRadius + playerRadius;
+
+    if (horizontalDistance < collisionDistance) {
+      const pushDirection = new THREE.Vector3(dx, 0, dz);
+      if (pushDirection.lengthSq() < 0.000001) continue; // avoid NaN normalize at center
+      pushDirection.normalize();
+
+      const overlap = collisionDistance - horizontalDistance;
+      const pushAmount = overlap + 0.1; // small buffer to prevent sticking
+      const pushVector = pushDirection.multiplyScalar(pushAmount);
+
+      // Apply push to capsule
+      playerCollider.start.x += pushVector.x;
+      playerCollider.start.z += pushVector.z;
+      playerCollider.end.x += pushVector.x;
+      playerCollider.end.z += pushVector.z;
+
+      // Cancel velocity component toward the boss (prevents sliding through)
+      const velocityDirection = new THREE.Vector3(playerVelocity.x, 0, playerVelocity.z);
+      if (velocityDirection.lengthSq() > 0.000001) {
+        velocityDirection.normalize();
+        const dotProduct = velocityDirection.dot(pushDirection);
+        if (dotProduct < 0) {
+          const cancelVector = pushDirection.multiplyScalar(-dotProduct * playerVelocity.length());
+          playerVelocity.x += cancelVector.x * 0.5;
+          playerVelocity.z += cancelVector.z * 0.5;
+        }
+      }
+    }
+  }
 }
 
 // Level 5 "The Walk" - Update function
@@ -25443,22 +25703,6 @@ async function warpToLevel4() {
   
   if (!level4State.built) {
     buildLevel4FirstShotArena();
-  } else {
-    // CRITICAL: Recreate chests when warping back to an already-built level (January 4, 2026)
-    // cleanupAllLevels() clears all chests, so we must recreate them even if level is already built
-    console.log("🎁 [LEVEL 4] Level already built, recreating chests after cleanup...");
-    setTimeout(async () => {
-      // Load opened chests from database before creating chests
-      if (resolvedDiscordId && chestSystem) {
-        console.log("📥 [LEVEL 4] Loading opened chests from database...");
-        await chestSystem.loadOpenedChests(resolvedDiscordId, API_BASE_URL);
-      }
-      // CRITICAL: Explicitly clear Level 4 chests before creating (extra safety layer)
-      if (chestSystem) {
-        chestSystem.clearLevel(LEVEL_IDS.LEVEL4);
-      }
-      createLevel4Chests();
-    }, 100);
   }
   resetLevel4Progress();
   // Reset heat/overload system (same as restart for consistency)
@@ -25493,6 +25737,25 @@ async function warpToLevel4() {
     console.error("❌ [LEVEL 4] Error in applyLevelEnvironment:", error);
     // Continue anyway - don't block level loading
   }
+
+  // CRITICAL (Jan 15, 2026): Recreate chests AFTER environment is applied.
+  // Reason: applyLevelEnvironment can recreate/adjust ground + systems; warping fast (GOD mode) could cause racey Y placement.
+  // This pass is safe: createLevel4Chests() clears Level 4 chests internally before re-adding.
+  setTimeout(async () => {
+    if (currentLevel !== LEVEL_IDS.LEVEL4) return;
+    try {
+      if (resolvedDiscordId && chestSystem) {
+        await chestSystem.loadOpenedChests(resolvedDiscordId, API_BASE_URL);
+      }
+      if (chestSystem) {
+        chestSystem.clearLevel(LEVEL_IDS.LEVEL4);
+      }
+      createLevel4Chests();
+      console.log("🎁 [LEVEL 4] Post-environment chest recreation complete (stabilize Y after warp).");
+    } catch (err) {
+      console.warn("⚠️ [LEVEL 4] Post-environment chest recreation failed:", err);
+    }
+  }, 150);
   
   // CRITICAL: Ensure sky system is visible after environment is applied
   if (skySystem) {
@@ -25768,6 +26031,24 @@ async function warpToLevel5() {
     console.error("❌ [LEVEL 5] Error in applyLevelEnvironment:", error);
     // Continue anyway - don't block level loading
   }
+
+  // CRITICAL (Jan 15, 2026): Recreate Level 5 chests AFTER environment is applied.
+  // Level 5 uses raycast ground detection at the chest position; doing this before env/map is ready can intermittently pick a wrong Y.
+  setTimeout(async () => {
+    if (currentLevel !== LEVEL_IDS.LEVEL5) return;
+    try {
+      if (resolvedDiscordId && chestSystem) {
+        await chestSystem.loadOpenedChests(resolvedDiscordId, API_BASE_URL);
+      }
+      if (chestSystem) {
+        chestSystem.clearLevel(LEVEL_IDS.LEVEL5);
+      }
+      createLevel5Chests();
+      console.log("🎁 [LEVEL 5] Post-environment chest recreation complete (stabilize Y after warp).");
+    } catch (err) {
+      console.warn("⚠️ [LEVEL 5] Post-environment chest recreation failed:", err);
+    }
+  }, 200);
   
   // CRITICAL: Ensure sky system is visible after environment is applied
   if (skySystem) {
@@ -27387,6 +27668,24 @@ async function warpToLevel3() {
       console.error("❌ [LEVEL 3] Error in applyLevelEnvironment:", error);
       // Continue anyway - don't block level loading
     }
+
+    // CRITICAL (Jan 15, 2026): Recreate Level 3 chests AFTER environment is applied.
+    // Prevents intermittent wrong chest Y during fast GOD-mode warps (environment/map systems can race chest placement).
+    setTimeout(async () => {
+      if (currentLevel !== LEVEL_IDS.LEVEL3) return;
+      try {
+        if (resolvedDiscordId && chestSystem) {
+          await chestSystem.loadOpenedChests(resolvedDiscordId, API_BASE_URL);
+        }
+        if (chestSystem) {
+          chestSystem.clearLevel(LEVEL_IDS.LEVEL3);
+        }
+        createLevel3Chests();
+        console.log("🎁 [LEVEL 3] Post-environment chest recreation complete (stabilize Y after warp).");
+      } catch (err) {
+        console.warn("⚠️ [LEVEL 3] Post-environment chest recreation failed:", err);
+      }
+    }, 150);
     
     // CRITICAL: Ensure sky system is visible after environment is applied
     if (skySystem) {
@@ -29676,6 +29975,21 @@ async function warpToLevel2() {
   
   // CRITICAL: Await environment initialization (grass + sky systems)
   await applyLevelEnvironment(LEVEL_IDS.LEVEL2);
+
+  // CRITICAL (Jan 15, 2026): Recreate Level 2 chests AFTER environment is applied.
+  // This stabilizes any rare Y drift during fast warps (GOD mode) by ensuring ground/env is settled first.
+  setTimeout(async () => {
+    if (currentLevel !== LEVEL_IDS.LEVEL2) return;
+    try {
+      if (resolvedDiscordId && chestSystem) {
+        await chestSystem.loadOpenedChests(resolvedDiscordId, API_BASE_URL);
+      }
+      createLevel2Chests(); // safe: clears Level 2 chests internally
+      console.log("🎁 [LEVEL 2] Post-environment chest recreation complete (stabilize Y after warp).");
+    } catch (err) {
+      console.warn("⚠️ [LEVEL 2] Post-environment chest recreation failed:", err);
+    }
+  }, 150);
   
   // CRITICAL: Ensure sky system is visible after environment is applied
   if (skySystem) {

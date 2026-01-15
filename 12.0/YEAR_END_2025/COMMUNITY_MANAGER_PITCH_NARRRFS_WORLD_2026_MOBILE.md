@@ -173,7 +173,7 @@ Weekly hygiene:
 
 ---
 
-## 🧯 What you run (daily/weekly/season)
+## 🧯 What to do (daily/weekly/season)
 
 Daily:
 - keep Discord safe (scams, impersonation, tone)

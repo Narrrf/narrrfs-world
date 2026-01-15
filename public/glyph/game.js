@@ -155,6 +155,13 @@ Glyph Memory — Phase 1 JS
   // Cache for normalized glyph images (centers non-transparent pixels onto a square canvas)
   const glyphNormalizeCache = new Map(); // src -> Promise<string> (dataURL)
 
+  // 🚨 IMPORTANT (January 2026):
+  // Normalization replaces `img.src` with a `data:image/...` URL.
+  // If the site uses a Content-Security-Policy that blocks `img-src data:`,
+  // glyphs will appear missing in-game even though the original PNG URLs load fine.
+  // Keep this OFF by default for maximum compatibility across local + production.
+  const ENABLE_GLYPH_NORMALIZATION = false;
+
   function normalizeGlyphImage(src, size = 512, alphaThreshold = 8) {
     if (glyphNormalizeCache.has(src)) return glyphNormalizeCache.get(src);
 
@@ -490,7 +497,9 @@ Glyph Memory — Phase 1 JS
 
       const img = document.createElement('img');
       img.alt = 'Glyph';
-      img.loading = 'lazy';
+      // Use eager loading so glyphs are visible immediately on flip
+      img.loading = 'eager';
+      img.decoding = 'async';
       img.src = card.glyphSrc;
       // If a glyph file is missing or fails to load, show a clear fallback + log it
       img.addEventListener('error', () => {
@@ -499,10 +508,13 @@ Glyph Memory — Phase 1 JS
         front.classList.add('missing');
       }, { once: true });
       img.draggable = false;
-      // Auto-center glyph pixels so they look consistent at all card sizes
-      normalizeGlyphImage(card.glyphSrc).then((dataUrl) => {
-        if (!front.classList.contains('missing')) img.src = dataUrl;
-      });
+      // Optional: Auto-center glyph pixels so they look consistent at all card sizes.
+      // Disabled by default because it uses data: URLs which may be blocked by CSP.
+      if (ENABLE_GLYPH_NORMALIZATION) {
+        normalizeGlyphImage(card.glyphSrc).then((dataUrl) => {
+          if (!front.classList.contains('missing')) img.src = dataUrl;
+        });
+      }
 
       front.appendChild(img);
       btn.appendChild(back);
@@ -636,11 +648,37 @@ Glyph Memory — Phase 1 JS
     el.setAttribute('aria-label', 'Revealed card');
     // Play flip sound when card is revealed
     playSound('flip');
+
+    // Force-hide the back face to avoid any CSS stacking regressions
+    // (Some theming edits added additional `.cardBack` rules that can override flip visuals.)
+    const back = el.querySelector('.cardBack');
+    if (back) back.style.display = 'none';
+    
+    // Debug help (January 2026): verify glyph image actually loaded
+    // This logs only ~5% of flips to avoid console spam.
+    if (Math.random() < 0.05) {
+      const img = el.querySelector('.cardFront img');
+      if (img) {
+        // Delay a tick so layout/image state is updated
+        window.setTimeout(() => {
+          console.log('🧩 [GLYPH] Flip debug:', {
+            src: img.currentSrc || img.src,
+            complete: img.complete,
+            naturalWidth: img.naturalWidth,
+            naturalHeight: img.naturalHeight,
+          });
+        }, 0);
+      }
+    }
   }
 
   function flipCardDown(el) {
     el.classList.remove('is-flipped');
     el.setAttribute('aria-label', 'Hidden card');
+
+    // Restore back face (paired with flipCardUp override above)
+    const back = el.querySelector('.cardBack');
+    if (back) back.style.display = '';
   }
 
   function checkWin() {

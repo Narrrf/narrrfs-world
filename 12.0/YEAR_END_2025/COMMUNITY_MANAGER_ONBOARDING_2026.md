@@ -105,7 +105,7 @@ The Nerd Lab is the centralized operations panel for:
 
 ---
 
-## 🤝 Partner Portal (your new responsibility)
+## 🤝 Partner Portal
 
 ### What “Partners” means in our system
 The Partner Portal is a **database-driven** partners page used for:

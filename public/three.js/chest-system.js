@@ -61,6 +61,9 @@
  * - ✅ Scale factor positioning fix (Y position calculation accounts for 2.0x scale factor) (January 4, 2026)
  * - ✅ Final Y position fix (added 1.0 offset to compensate for underground issue) (January 4, 2026) - All chests now correctly positioned on ground
  * - ✅ Enhanced chest clearing system (improved logging, level isolation guarantee, triple-clearing safety) (January 4, 2026)
+ * - ✅ Warp duplicate prevention (async load cancellation + disposed-chest guards) (January 15, 2026)
+ *   - Fixes: “double chests stacked” and “chests from other levels appear” during fast GOD-mode warps
+ *   - Implementation: `Chest.isDisposed`, `_loadTimeoutId`, and guards in `ChestSystem.addChest()` delayed loader
  * 
  * **CHEST PERSISTENCE ON LEVEL WARPING (January 4, 2026):**
  * ==========================================================
@@ -856,11 +859,29 @@ class Chest {
     this.scene = config.scene;               // Three.js scene reference
     this.loadModel = config.loadModel;      // Model loading function
     this.processWeaponMaterial = config.processWeaponMaterial; // Material processing function
+    this.resolveAssetPath = config.resolveAssetPath || ((path) => path);
+    
+    // Dual-model chest support (Jan 2026):
+    // If provided, this chest uses two GLBs (no embedded animation):
+    // - closedModelPath: visible initially
+    // - openedModelPath: swapped in after opening / for restored-opened state
+    this.closedModelPath = config.closedModelPath || null;
+    this.openedModelPath = config.openedModelPath || null;
+    this.closedMesh = null;
+    this.openedMesh = null;
+    this.openedMeshLoaded = false;
+    this.openedMeshLoading = false;
     
     // State tracking
     this.isLoading = false;
     this.isLoaded = false;
     this.loadError = null;
+    
+    // CRITICAL (Jan 2026): Async load cancellation / disposal safety.
+    // Chests are created with delayed async loads, but levels can be cleared while those loads are pending.
+    // Without guarding, "ghost" chests from other levels can appear and duplicates can stack.
+    this.isDisposed = false;
+    this._loadTimeoutId = null;
     
     // Interaction state
     this.playerNearby = false;
@@ -871,6 +892,9 @@ class Chest {
    * Load chest model from file
    */
   async load() {
+    if (this.isDisposed) {
+      return;
+    }
     if (this.isLoading || this.isLoaded) {
       return; // Already loading or loaded
     }
@@ -878,8 +902,8 @@ class Chest {
     this.isLoading = true;
     this.loadError = null;
     
-    // Determine model path based on type
-    // STANDARDIZED: All chests use chest2 (has animation support)
+    // Determine model path based on type or dual-model override.
+    // If dual-model paths are provided, we load the CLOSED model here.
     let modelPath;
     if (this.type === 'chest1') {
       // Legacy support: chest1 now uses chest2 model
@@ -887,7 +911,9 @@ class Chest {
       this.type = 'chest2'; // Update type to chest2
     }
     
-    if (this.type === 'chest2') {
+    if (this.closedModelPath && this.openedModelPath) {
+      modelPath = this.closedModelPath;
+    } else if (this.type === 'chest2') {
       // Try both possible paths for chest2 (case sensitivity)
       // First try with capital C (Chest2.glb)
       modelPath = "/textures/3d models/chest2/Chest2.glb";
@@ -907,7 +933,16 @@ class Chest {
     
     try {
       // Use provided loadModel function (from main.js)
-      const gltf = await this.loadModel(modelPath);
+      // NOTE: We always run through resolveAssetPath + encodeURI because our asset paths
+      // contain spaces and must work on Render where textures are symlinked from /data.
+      const resolvedModelPath = encodeURI(this.resolveAssetPath(modelPath));
+      const gltf = await this.loadModel(resolvedModelPath);
+      
+      // If this chest was disposed while the model was loading, do not attach it to the scene.
+      if (this.isDisposed) {
+        this.isLoading = false;
+        return;
+      }
       const chest = gltf.scene;
       
       // DEBUG: Inspect GLB structure for animations
@@ -1085,129 +1120,126 @@ class Chest {
       // CRITICAL: Position chest at requested X and Z first
       chest.position.x = this.position.x;
       chest.position.z = this.position.z;
-      
-      // CRITICAL: Calculate Y position to place chest bottom at target Y (1.0 for ground level, or requested Y for elevated chests)
-      // The bear trap uses: trap.position.y = 1.0 directly (no offset)
-      // To match this, we need the chest's BOTTOM to be at Y = 1.0 in world space
+            
+      // =====================================================================
+      // GLOBAL CHEST GROUND PLACEMENT (Raycast) - January 15, 2026
+      // =====================================================================
+      // We now raycast DOWN at the chest X/Z to find the actual surface (works in ALL levels),
+      // then place the CHEST BOTTOM flush on that surface.
       //
-      // In model space:
-      // - min.y is the Y coordinate of the bottom of the bounding box
-      // - max.y is the Y coordinate of the top of the bounding box
-      // - The model origin is at (0, 0, 0) in model space
+      // ✅ VERIFIED WORKING (Jan 15, 2026):
+      // - Levels 1-6: chests spawn flush on the ground (no more "1 unit under" / "top only visible")
+      // - GOD-mode warps: if floor/map isn’t ready yet, chest will retry-align shortly after load
+      // - Works with BOTH chest systems:
+      //   - Legacy `chest2` single-GLB (with internal lid meshes)
+      //   - New `chest3` dual-GLB (closed + opened) with instant swap animation
       //
-      // To place the chest's bottom at Y = 1.0 in world space (or at requested Y if significantly different):
-      // chest.position.y + min.y = targetY
-      // Therefore: chest.position.y = targetY - min.y
+      // Implementation details:
+      // - Raycast filters:
+      //   - ignores chest meshes (`userData.isChest`) including hidden opened meshes
+      //   - ignores decorative Level 4 bosses (`userData.isCheeseBoss`)
+      //   - ignores invisible objects (walks up parents; any `visible === false` => skip)
+      // - Placement math:
+      //   - uses a post-scale world-space Box3 (`Box3().setFromObject(chest).min.y`)
+      //   - shifts mesh by `desiredBottomY - box.min.y` (epsilon ~ 0.03) for perfect alignment
+      // - Retries:
+      //   - if raycast hits nothing during fast warp, `_scheduleGroundAlignRetry()` re-aligns
+      //     once the floor exists in the scene.
       //
-      // Check if requested Y is significantly different from 1.0 (e.g., tower top placement)
-      // If so, use requested Y as target; otherwise use 1.0 (standard ground level)
-      // SPECIAL CASE: Level 3 uses Y: 0.1 as ground level (small offset - was 0.0 underground, 1.0 floating)
-      // Level 4/6 use Y: 0.0, Level 1/2 use Y: 1.0
+      // This replaces the old per-level Y heuristics that could drift during warps and cause
+      // "chests under the ground" reports.
       const requestedY = this.position.y;
-      // If Y is > 5.0, < -4.0, exactly 0.0 (Level 4/6), or between 0 and 0.5 (Level 3 special offset), use custom positioning
-      const useCustomY = Math.abs(requestedY - 1.0) > 5.0 || requestedY === 0.0 || (requestedY > 0 && requestedY < 0.5);
-      const targetBottomY = useCustomY ? requestedY : 1.0; // Use requested Y for elevated chests or Level 3/4/6, 1.0 for standard ground level
+      let raycastGroundY = null;
+      // If a chest is intentionally elevated/underground (large offsets), keep its requested Y.
+      // This preserves special placements like tower-top chests.
+      const shouldRaycastGround = Number.isFinite(requestedY) ? (requestedY <= 5.0 && requestedY >= -4.0) : true;
+      try {
+        const raycaster = new THREE.Raycaster();
+        const rayOriginY = (Number.isFinite(requestedY) ? requestedY : 1.0) + 300;
+        const origin = new THREE.Vector3(this.position.x, rayOriginY, this.position.z);
+        const direction = new THREE.Vector3(0, -1, 0);
+        raycaster.set(origin, direction);
+        raycaster.far = 2000;
+        
+        // Intersect the whole scene; InstancedMesh raycast works in Three.js.
+        // We filter out obvious non-ground items like other chests and boss statues.
+        const hits = shouldRaycastGround ? raycaster.intersectObjects(this.scene.children, true) : [];
+        const isActuallyVisible = (obj) => {
+          // Raycaster can hit objects even if they are invisible via parent visibility.
+          // For ground placement we ONLY want real visible world geometry (floor/map).
+          let cur = obj;
+          while (cur) {
+            if (cur.visible === false) return false;
+            cur = cur.parent;
+          }
+          return true;
+        };
+
+        const filtered = hits.filter((hit) => {
+          const obj = hit.object;
+          if (!obj) return false;
+          if (!isActuallyVisible(obj)) return false;
+          if (obj.userData?.isChest) return false;
+          if (obj.userData?.isCheeseBoss) return false;
+          return true;
+        });
+        if (filtered.length > 0 && filtered[0].point && Number.isFinite(filtered[0].point.y)) {
+          raycastGroundY = filtered[0].point.y;
+        }
+      } catch (e) {
+        // If raycast fails for any reason, we fall back to legacy math below.
+      }
       
-      console.log(`🔍 [CHEST] ${this.id} Y positioning check:`, {
-        requestedY: requestedY,
-        useCustomY: useCustomY,
-        targetBottomY: targetBottomY,
-        differenceFrom1: Math.abs(requestedY - 1.0)
+      // If raycast succeeded, this is the target surface Y where chest bottom should sit.
+      const targetBottomY = (raycastGroundY !== null) ? raycastGroundY : requestedY;
+      const useCustomY = raycastGroundY === null; // legacy info for logs
+      console.log(`🔍 [CHEST] ${this.id} ground raycast:`, {
+        x: this.position.x,
+        z: this.position.z,
+        requestedY,
+        shouldRaycastGround,
+        raycastGroundY,
+        targetBottomY
       });
       
-      // This ensures the chest's bottom (min.y in model space) is at target Y in world space
-      if (size.y > 0 && min.y !== undefined) {
-        // Use min.y directly (this is the Y coordinate of the bottom in model space)
-        const boundingBoxBottom = min.y; // This is the actual Y coordinate, not a distance
-        
-        // 🚨 CRITICAL FIX: If bounding box bottom is > 10, the model origin is wrong
-        // In this case, treat the model as if it's centered at origin (boundingBoxBottom = 0)
-        // This handles models with incorrect origin offsets (e.g., min.y = 29 instead of ~0)
-        let adjustedBoundingBoxBottom = boundingBoxBottom;
-        if (Math.abs(boundingBoxBottom) > 10) {
-          console.warn(`🔧 [CHEST] ${this.id} Model has unusual bounding box bottom (${boundingBoxBottom.toFixed(2)}), treating as centered at origin`);
-          adjustedBoundingBoxBottom = 0; // Treat as if model is centered at origin
-        }
-        
-        // CRITICAL FIX: Account for chest scale (2.0x) when calculating Y position (January 4, 2026)
-        // In Three.js, when a mesh is scaled, the bounding box is scaled relative to the mesh's origin
-        // If model bottom is min.y = -0.5 in model space, after 2.0x scale it becomes -1.0 relative to origin
-        // Bottom in world space = position.y + (min.y * scale)
-        // To place bottom at targetBottomY: position.y + (min.y * scale) = targetBottomY
-        // Therefore: position.y = targetBottomY - (min.y * scale)
-        const CHEST_SCALE = 2.0; // Chests are scaled to 2.0x (standardized)
-        
-        // Calculate Y position so chest bottom (after scaling) is at target Y
-        // Formula: chest.position.y + (adjustedBoundingBoxBottom * CHEST_SCALE) = targetBottomY
-        // Therefore: chest.position.y = targetBottomY - (adjustedBoundingBoxBottom * CHEST_SCALE)
-        // CRITICAL: min.y is usually negative (bottom below origin), so subtracting makes position.y higher
-        const scaledBoundingBoxBottom = adjustedBoundingBoxBottom * CHEST_SCALE;
-        // CRITICAL FIX: Add 1.0 to compensate for 1 unit too low issue (January 4, 2026)
-        // Chests were appearing 1 unit underground, so we add 1.0 to bring them up to correct position
-        let calculatedY = targetBottomY - scaledBoundingBoxBottom + 1.0;
-        
-        // CRITICAL: Verify the chest's bottom will be at exactly target Y (after scaling)
-        // After scaling, bottom = calculatedY + scaledBoundingBoxBottom
-        const expectedBottomY = calculatedY + scaledBoundingBoxBottom;
-        if (Math.abs(expectedBottomY - targetBottomY) > 0.001) {
-          // Adjust to ensure bottom is exactly at target Y
-          const adjustment = targetBottomY - expectedBottomY;
-          calculatedY += adjustment;
-          console.warn(`🔧 [CHEST] ${this.id} Y position adjusted to ensure bottom at ${targetBottomY}:`, {
-            originalCalculatedY: calculatedY - adjustment,
-            adjustment: adjustment,
-            newCalculatedY: calculatedY,
-            scaledBoundingBoxBottom: scaledBoundingBoxBottom,
-            expectedBottomY: calculatedY + scaledBoundingBoxBottom,
-            targetBottomY: targetBottomY,
-            useCustomY: useCustomY
-          });
-        }
-        
-        // CRITICAL: Set Y position directly - ensure it's exactly as calculated
-        chest.position.y = calculatedY;
-        
-        // CRITICAL: Store boundingBoxBottom and calculatedY in userData for later verification
-        // This allows us to restore Y position if it gets lost during warp/respawn
-        chest.userData.boundingBoxBottom = adjustedBoundingBoxBottom;
-        chest.userData.scaledBoundingBoxBottom = scaledBoundingBoxBottom; // Store scaled version (January 4, 2026)
-        chest.userData.originalBoundingBoxBottom = boundingBoxBottom; // Store original for reference
-        chest.userData.requestedY = requestedY; // Store actual requested Y (not always 1.0)
-        chest.userData.targetBottomY = targetBottomY; // Store target bottom Y (1.0 or requested Y)
-        chest.userData.useCustomY = useCustomY; // Flag to skip 1.0 enforcement check
-        chest.userData.calculatedY = calculatedY;
-        chest.userData.chestScale = CHEST_SCALE; // Store scale for verification (January 4, 2026)
-        
-        // CRITICAL: Set position BEFORE scaling (position calculation accounts for scale)
-        chest.position.y = calculatedY;
-        
-        // CRITICAL: Scale chest AFTER position is set (standardized: 2.0x for all chests)
-        // NOTE: Position calculation above already accounts for this scale
+      // Place chest using a post-scale world-space bounding box so all GLBs (old chest2 + new chest3)
+      // align correctly, even if their origin/min.y differs by ~1 unit.
+      if (size.y > 0) {
+        const CHEST_SCALE = 2.0; // standardized size (matches prior system)
+        const epsilon = 0.03; // tiny lift to avoid z-fighting / clipping
+
+        // Apply scale first, then measure world-space bottom.
         chest.scale.setScalar(CHEST_SCALE);
-        
-        // CRITICAL: Force update matrix to ensure position and scale are applied immediately
+        chest.position.y = 0;
         chest.updateMatrixWorld(true);
-        
-        // VERIFICATION: Final check that chest bottom (after scaling) is at target Y
-        const finalBottomY = chest.position.y + scaledBoundingBoxBottom;
-        const matchesTarget = Math.abs(finalBottomY - targetBottomY) < 0.01;
-        
-        console.log(`🎁 [CHEST] ${this.id} Y position calculated (target bottom Y = ${targetBottomY}, accounting for ${CHEST_SCALE}x scale):`, {
-          requestedY: requestedY,
-          targetBottomY: targetBottomY,
-          useCustomY: useCustomY,
-          modelHeight: size.y,
-          modelMinY: min.y,
-          modelMaxY: max.y,
-          originalBoundingBoxBottom: boundingBoxBottom,
-          adjustedBoundingBoxBottom: adjustedBoundingBoxBottom,
-          scaledBoundingBoxBottom: scaledBoundingBoxBottom,
-          calculatedY: calculatedY,
+
+        const scaledBox = new THREE.Box3().setFromObject(chest);
+        const worldMinY = scaledBox.min.y;
+        const desiredBottomY = targetBottomY + (shouldRaycastGround ? epsilon : 0);
+        const deltaY = desiredBottomY - worldMinY;
+        chest.position.y += deltaY;
+        chest.updateMatrixWorld(true);
+
+        // Recompute to store a reliable bottom offset for later retries/verification.
+        const finalBox = new THREE.Box3().setFromObject(chest);
+        const finalWorldMinY = finalBox.min.y;
+        const scaledBoundingBoxBottom = finalWorldMinY - chest.position.y; // offset relative to origin
+
+        chest.userData.requestedY = requestedY;
+        chest.userData.targetBottomY = desiredBottomY;
+        chest.userData.useCustomY = useCustomY;
+        chest.userData.calculatedY = chest.position.y;
+        chest.userData.chestScale = CHEST_SCALE;
+        chest.userData.shouldRaycastGround = shouldRaycastGround;
+        chest.userData.raycastGroundY = raycastGroundY;
+        chest.userData.scaledBoundingBoxBottom = scaledBoundingBoxBottom;
+
+        console.log(`🎁 [CHEST] ${this.id} Y aligned via scaled world Box3:`, {
+          desiredBottomY,
+          finalWorldMinY,
+          deltaY,
           finalY: chest.position.y,
-          chestScale: CHEST_SCALE,
-          finalBottomY: finalBottomY, // Should be exactly targetBottomY after scaling
-          matchesTarget: matchesTarget,
-          difference: Math.abs(finalBottomY - targetBottomY)
+          chestScale: CHEST_SCALE
         });
       } else {
         // If no size, use requested position directly
@@ -1281,6 +1313,19 @@ class Chest {
       // Add to scene
       this.scene.add(chest);
       this.mesh = chest;
+      this.closedMesh = chest;
+
+      // If the ground raycast did not hit anything (common during fast level warp while
+      // the environment/floor is still being created), retry alignment a few times.
+      // This makes Level 2-6 reliable and prevents "chest under ground" even if load() ran early.
+      if (chest.userData && chest.userData.shouldRaycastGround === true && chest.userData.raycastGroundY === null) {
+        this._scheduleGroundAlignRetry(6);
+      }
+      // Dual-model: start preloading the opened mesh in the background (so swaps feel instant).
+      if (this.closedModelPath && this.openedModelPath) {
+        this._ensureOpenedMeshLoaded().catch(() => {});
+      }
+
       
       // Check for animations in GLB
       if (gltf.animations && gltf.animations.length > 0) {
@@ -1455,12 +1500,13 @@ class Chest {
       }, 300); // Increased delay for reliability
       
     } catch (error) {
-      // If chest2 failed with capital C, try lowercase
-      if (this.type === 'chest2' && modelPath && modelPath.includes('Chest2.glb')) {
+      // If chest2 failed with capital C, try lowercase (dual-model does not use this path)
+      if (!this.closedModelPath && this.type === 'chest2' && modelPath && modelPath.includes('Chest2.glb')) {
         console.log(`🔄 [CHEST] ${this.id} failed with capital C, trying lowercase...`);
         try {
           const lowercasePath = "/textures/3d models/chest2/chest2.glb";
-          const gltf = await this.loadModel(lowercasePath);
+          const resolvedLowercasePath = encodeURI(this.resolveAssetPath(lowercasePath));
+          const gltf = await this.loadModel(resolvedLowercasePath);
           const chest = gltf.scene;
           
           // Use same positioning logic as above
@@ -1505,6 +1551,7 @@ class Chest {
           
           this.scene.add(chest);
           this.mesh = chest;
+          this.closedMesh = chest;
           
           // Check for animations in GLB (lowercase path fallback)
           if (gltf.animations && gltf.animations.length > 0) {
@@ -1583,9 +1630,15 @@ class Chest {
       return false; // Can't interact if not loaded, no mesh, or already opened
     }
     
-    // Calculate horizontal distance from player to chest
-    const dx = playerPosition.x - this.position.x;
-    const dz = playerPosition.z - this.position.z;
+    // Calculate horizontal distance from player to chest.
+    // IMPORTANT: Use the actual mesh world position, because chest Y/position can be corrected
+    // after load() based on bounding box + scale, and relying on the original config.position
+    // can break interaction distance checks.
+    const chestPos = new THREE.Vector3();
+    this.mesh.getWorldPosition(chestPos);
+    
+    const dx = playerPosition.x - chestPos.x;
+    const dz = playerPosition.z - chestPos.z;
     const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
     
     // Check if player is within interaction radius
@@ -1653,6 +1706,13 @@ class Chest {
     if (!this.mesh) return;
     
     console.log(`🎁 [CHEST] ${this.id} opening animation with visual effects`);
+    
+    // Dual-model animation: no embedded GLB animation, so we do a small pop/pulse + sparkle,
+    // then swap to the opened model.
+    if (this.closedModelPath && this.openedModelPath) {
+      this._playDualModelSwapAnimation();
+      return;
+    }
     
     // Try to play GLB animation if available
     if (this.openingAnimation && this.mesh.userData.animations && this.mesh.userData.animations.length > 0) {
@@ -1851,6 +1911,205 @@ class Chest {
       }
     });
   }
+
+  /**
+   * Dual-model helper: ensure opened mesh is loaded (hidden by default).
+   * This is required because our new chest GLBs have no internal animations/states.
+   */
+  async _ensureOpenedMeshLoaded() {
+    if (!this.closedModelPath || !this.openedModelPath) return;
+    if (this.openedMeshLoaded || this.openedMeshLoading) return;
+    if (!this.scene) return;
+    
+    this.openedMeshLoading = true;
+    try {
+      const resolvedOpenedPath = encodeURI(this.resolveAssetPath(this.openedModelPath));
+      const gltf = await this.loadModel(resolvedOpenedPath);
+      const opened = gltf.scene;
+
+      // Mark as chest so ground raycasts never consider this geometry.
+      // IMPORTANT: We keep openedMesh in the scene (hidden) to make swaps instant.
+      // Without this tag, the global ground raycast can hit hidden opened meshes
+      // and place other chests on top of them (stacked chest bug).
+      opened.userData = opened.userData || {};
+      opened.userData.isChest = true;
+      opened.traverse((node) => {
+        node.userData = node.userData || {};
+        node.userData.isChest = true;
+      });
+      
+      // Copy transforms from closed mesh so both models align perfectly.
+      // This avoids subtle bottom-Y mismatches and prevents "sinking" during swaps/warps.
+      if (this.closedMesh) {
+        opened.position.copy(this.closedMesh.position);
+        opened.rotation.copy(this.closedMesh.rotation);
+        opened.scale.copy(this.closedMesh.scale);
+      } else {
+        opened.position.copy(this.position);
+      }
+      
+      // Process materials and ensure visibility flags
+      opened.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          child.visible = true;
+          child.frustumCulled = false;
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material = child.material.map((mat) => this.processWeaponMaterial(mat));
+            } else {
+              child.material = this.processWeaponMaterial(child.material);
+            }
+          }
+        }
+      });
+      
+      opened.visible = false; // Hidden until we swap state
+      opened.frustumCulled = false;
+      opened.updateMatrixWorld(true);
+      
+      this.scene.add(opened);
+      this.openedMesh = opened;
+      this.openedMeshLoaded = true;
+    } finally {
+      this.openedMeshLoading = false;
+    }
+  }
+
+  /**
+   * Dual-model open animation:
+   * - Create sparkle + sound immediately
+   * - Animate the CLOSED mesh with a small Y pop + scale pulse
+   * - Swap to OPENED mesh at the end (loaded lazily if needed)
+   */
+  _playDualModelSwapAnimation() {
+    const closed = this.closedMesh || this.mesh;
+    if (!closed) return;
+    
+    // Effects
+    this.createSparklingGlow();
+    this.playOpeningSound();
+    
+    // Start loading opened mesh in parallel, then animate and swap
+    this._ensureOpenedMeshLoaded()
+      .then(() => {
+        const opened = this.openedMesh;
+        if (!opened) return;
+        
+        const startY = closed.position.y;
+        const startScale = closed.scale.clone();
+        const popHeight = 0.25; // subtle
+        const durationMs = 650;
+        const startTime = performance.now();
+        
+        const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+        
+        const tick = (now) => {
+          const tRaw = Math.min(1, (now - startTime) / durationMs);
+          const t = easeOutCubic(tRaw);
+          
+          // Pop up then settle
+          const pop = Math.sin(t * Math.PI) * popHeight;
+          closed.position.y = startY + pop;
+          
+          // Small pulse (scale up then back)
+          const pulse = 1 + Math.sin(t * Math.PI) * 0.06;
+          closed.scale.set(startScale.x * pulse, startScale.y * pulse, startScale.z * pulse);
+          closed.updateMatrixWorld(true);
+          
+          if (tRaw < 1) {
+            requestAnimationFrame(tick);
+            return;
+          }
+          
+          // Finalize: reset closed transform, swap visibility
+          closed.position.y = startY;
+          closed.scale.copy(startScale);
+          closed.updateMatrixWorld(true);
+          
+          closed.visible = false;
+          opened.visible = true;
+          opened.updateMatrixWorld(true);
+          
+          // Collision + interaction should now point at the opened mesh.
+          this.mesh = opened;
+        };
+        
+        requestAnimationFrame(tick);
+      })
+      .catch((err) => {
+        console.warn(`⚠️ [CHEST] ${this.id} dual-model opened mesh load failed, staying on closed mesh:`, err);
+      });
+  }
+
+  /**
+   * Retry aligning this chest to ground a few times.
+   * Used when load() ran before the level's floor/map geometry was ready.
+   */
+  _scheduleGroundAlignRetry(attemptsLeft = 4) {
+    if (!this.mesh || !this.scene) return;
+    if (attemptsLeft <= 0) return;
+    const delayMs = 120;
+    setTimeout(() => {
+      try {
+        // Only retry if still not aligned (we keep the last known raycast in userData).
+        const requestedY = this.position?.y;
+        const shouldRaycastGround = Number.isFinite(requestedY) ? (requestedY <= 5.0 && requestedY >= -4.0) : true;
+        if (!shouldRaycastGround) return;
+        
+        const raycaster = new THREE.Raycaster();
+        const rayOriginY = (Number.isFinite(requestedY) ? requestedY : 1.0) + 300;
+        const origin = new THREE.Vector3(this.position.x, rayOriginY, this.position.z);
+        raycaster.set(origin, new THREE.Vector3(0, -1, 0));
+        raycaster.far = 2000;
+        
+        const hits = raycaster.intersectObjects(this.scene.children, true);
+        const isActuallyVisible = (obj) => {
+          let cur = obj;
+          while (cur) {
+            if (cur.visible === false) return false;
+            cur = cur.parent;
+          }
+          return true;
+        };
+        const filtered = hits.filter((hit) => {
+          const obj = hit.object;
+          if (!obj) return false;
+          if (!isActuallyVisible(obj)) return false;
+          if (obj.userData?.isChest) return false;
+          if (obj.userData?.isCheeseBoss) return false;
+          return true;
+        });
+        
+        if (filtered.length === 0 || !filtered[0].point || !Number.isFinite(filtered[0].point.y)) {
+          this._scheduleGroundAlignRetry(attemptsLeft - 1);
+          return;
+        }
+        
+        const groundY = filtered[0].point.y;
+        // Align using a fresh world-space Box3 measurement (robust for any GLB origin).
+        const epsilon = 0.03;
+        const targetBottomY = groundY + epsilon;
+        const currentBox = new THREE.Box3().setFromObject(this.mesh);
+        const currentMinY = currentBox.min.y;
+        const deltaY = targetBottomY - currentMinY;
+        
+        this.mesh.position.y += deltaY;
+        this.mesh.updateMatrixWorld(true);
+        if (this.openedMesh) {
+          this.openedMesh.position.y += deltaY;
+          this.openedMesh.updateMatrixWorld(true);
+        }
+        
+        this.mesh.userData = this.mesh.userData || {};
+        this.mesh.userData.raycastGroundY = groundY;
+        this.mesh.userData.targetBottomY = targetBottomY;
+      } catch {
+        this._scheduleGroundAlignRetry(attemptsLeft - 1);
+      }
+    }, delayMs);
+  }
   
   /**
    * Play manual lid rotation animation (if no GLB animation available)
@@ -1969,6 +2228,24 @@ class Chest {
    */
   switchToOpenedState() {
     console.log(`🎁 [CHEST] ${this.id} switching to opened state`);
+    
+    // Dual-model chests: swap visibility between two independent GLBs.
+    // This path intentionally bypasses the chest2 duplicate-lid logic below.
+    if (this.closedModelPath && this.openedModelPath) {
+      this._ensureOpenedMeshLoaded()
+        .then(() => {
+          if (this.closedMesh) this.closedMesh.visible = false;
+          if (this.openedMesh) {
+            this.openedMesh.visible = true;
+            this.openedMesh.updateMatrixWorld(true);
+            this.mesh = this.openedMesh;
+          }
+        })
+        .catch((err) => {
+          console.warn(`⚠️ [CHEST] ${this.id} failed to switch to opened model:`, err);
+        });
+      return;
+    }
     
     // CRITICAL: Hide duplicate lid/top meshes first (closed state versions)
     // These are the duplicate closed tops that need to be hidden
@@ -2428,6 +2705,29 @@ class Chest {
    * Dispose of chest resources
    */
   dispose() {
+    // Mark disposed first so any pending async work bails out safely
+    this.isDisposed = true;
+    if (this._loadTimeoutId) {
+      clearTimeout(this._loadTimeoutId);
+      this._loadTimeoutId = null;
+    }
+    // Dual-model cleanup: if we swapped mesh to openedMesh, ensure both are removed.
+    if (this.openedMesh && this.openedMesh !== this.mesh) {
+      if (this.openedMesh.parent) {
+        this.openedMesh.parent.remove(this.openedMesh);
+      }
+      this.openedMesh.traverse((child) => {
+        if (child.isMesh) {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) child.material.forEach((mat) => mat.dispose());
+            else child.material.dispose();
+          }
+        }
+      });
+      this.openedMesh = null;
+    }
+
     if (this.mesh) {
       // Remove from scene
       if (this.mesh.parent) {
@@ -2452,6 +2752,8 @@ class Chest {
       
       this.mesh = null;
     }
+    
+    this.closedMesh = null;
     
     if (this.openMesh) {
       if (this.openMesh.parent) {
@@ -2549,12 +2851,15 @@ class Chest {
  * Performance: O(1) lookup, no degradation
  */
 export class ChestSystem {
-  constructor(scene, loadModel, processWeaponMaterial, grassSystem = null, resolveAssetPath = null) {
+  constructor(scene, loadModel, processWeaponMaterial, grassSystem = null, resolveAssetPath = null, chestModelConfig = null) {
     this.scene = scene;
     this.loadModel = loadModel;
     this.processWeaponMaterial = processWeaponMaterial;
     this.grassSystem = grassSystem; // Reference to grass system for exclusion zones
     this.resolveAssetPath = resolveAssetPath || ((path) => path); // Path resolver function
+    // Optional: global chest model override (e.g., dual-model closed/opened GLBs).
+    // This lets us switch ALL chests to new models without rewriting every createLevelXChests() callsite.
+    this.chestModelConfig = chestModelConfig;
     
     // CRITICAL: Multi-level chest organization
     // Map<levelId, Map<chestId, Chest>>
@@ -2571,6 +2876,8 @@ export class ChestSystem {
     // Opened chests cache - stores which chests player has already opened
     this.openedChestsCache = new Set(); // Set of chest IDs (e.g., 'chest_001', 'chest_002')
     this.openedChestsLoaded = false; // Flag to track if opened chests have been loaded
+    // Track which user this cache belongs to (prevents cross-user leakage on the same browser).
+    this.openedChestsLoadedForDiscordId = null;
   }
   
   /**
@@ -2630,8 +2937,19 @@ export class ChestSystem {
       return new Set();
     }
     
-    if (this.openedChestsLoaded) {
-      // Already loaded, return cached data
+    // If we already loaded for a DIFFERENT user, reset and reload.
+    if (this.openedChestsLoaded && this.openedChestsLoadedForDiscordId && this.openedChestsLoadedForDiscordId !== discordId) {
+      console.warn("⚠️ [CHEST SYSTEM] Discord ID changed since last load; resetting opened chest cache.", {
+        previousDiscordId: this.openedChestsLoadedForDiscordId,
+        newDiscordId: discordId
+      });
+      this.openedChestsCache.clear();
+      this.openedChestsLoaded = false;
+      this.openedChestsLoadedForDiscordId = null;
+    }
+    
+    if (this.openedChestsLoaded && this.openedChestsLoadedForDiscordId === discordId) {
+      // Already loaded for this user, return cached data
       return this.openedChestsCache;
     }
     
@@ -2655,6 +2973,7 @@ export class ChestSystem {
         
         this.openedChestsCache = new Set(chestIds);
         this.openedChestsLoaded = true;
+        this.openedChestsLoadedForDiscordId = discordId;
         
         console.log(`✅ [CHEST SYSTEM] Loaded ${chestIds.length} opened chests:`, chestIds);
         return this.openedChestsCache;
@@ -2762,8 +3081,9 @@ export class ChestSystem {
       return;
     }
     
-    // Validate chest type
-    // STANDARDIZED: All chests use chest2 (has animation support)
+    // Validate chest type.
+    // NOTE (Jan 2026): We still accept config.type = 'chest2' everywhere, but if a global
+    // dual-model config is provided, we will render with the dual models instead of chest2.
     if (config.type === 'chest1') {
       // Legacy support: automatically convert chest1 to chest2
       console.log(`🔄 [CHEST SYSTEM] Converting chest1 to chest2 (standardized)`);
@@ -2801,7 +3121,12 @@ export class ChestSystem {
       ...config,
       scene: this.scene,
       loadModel: this.loadModel,
-      processWeaponMaterial: this.processWeaponMaterial
+      processWeaponMaterial: this.processWeaponMaterial,
+      resolveAssetPath: this.resolveAssetPath,
+      
+      // Apply global model override if provided (dual-model chest system).
+      closedModelPath: this.chestModelConfig?.closedModelPath || config.closedModelPath || null,
+      openedModelPath: this.chestModelConfig?.openedModelPath || config.openedModelPath || null
     });
     
     // Add to level chest map
@@ -2818,8 +3143,12 @@ export class ChestSystem {
     // Load chest model (async, will complete in background)
     // Use setTimeout to ensure it loads after scene is ready
     // CRITICAL: Reduced delay to 50ms for faster loading, but still allows scene to be ready
-    setTimeout(async () => {
+    chest._loadTimeoutId = setTimeout(async () => {
       try {
+        // If this chest was cleared/disposed before its delayed load runs, skip.
+        if (chest.isDisposed) return;
+        const stillCurrent = this.chests.get(levelId)?.get(config.id) === chest;
+        if (!stillCurrent) return;
         await chest.load();
         console.log(`✅ [CHEST SYSTEM] Chest ${config.id} loaded successfully:`, {
           id: config.id,
@@ -2829,6 +3158,10 @@ export class ChestSystem {
           hasMesh: !!chest.mesh,
           inScene: chest.mesh ? this.scene.children.includes(chest.mesh) : false
         });
+        
+        // Guard again after await in case a level clear happened mid-load.
+        if (chest.isDisposed) return;
+        if (this.chests.get(levelId)?.get(config.id) !== chest) return;
         
         // CHEST PERSISTENCE: Restore opened state if chest was previously opened (January 4, 2026)
         // CRITICAL: This ensures chests appear as opened when warping back to a level

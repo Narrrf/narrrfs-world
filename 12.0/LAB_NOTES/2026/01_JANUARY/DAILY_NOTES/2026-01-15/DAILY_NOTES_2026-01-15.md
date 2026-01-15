@@ -157,6 +157,32 @@
 - **Files:** `public/glyph/glyph.html`, `public/glyph/styles.css`, `public/glyph/game.js`
 - **Reference:** 3D Riddle Game GUI (`public/three.js/gui-system.js`)
 
+### **✅ 7. Glyph Memory Game - Cards Flipped But Glyphs Invisible (HOTFIX - COMPLETE):**
+- **Symptom:** Card flip sound worked, deck validated, shimmer/white glow visible, but *no glyph image* appeared when flipping cards (both local and production).
+- **Root Cause:** CSS stacking/theming regressions caused `.cardBack` (the diamond/back layer) to remain above the `.cardFront` face on flip. So the glyph image existed but was visually covered.
+- **Fix (Bulletproof):**
+  - ✅ **JavaScript force-hide card back on flip:** `flipCardUp()` now sets `.cardBack { display: none }` and `flipCardDown()` restores it.
+  - ✅ **CSS safety override added:** enforce `.cardFront` above `.cardBack` using `z-index` overrides.
+- **Status:** ✅ **WORKING CONFIRMED** - Glyphs now show correctly when flipping cards locally.
+- **Files:**
+  - `public/glyph/game.js` (`flipCardUp`, `flipCardDown`)
+  - `public/glyph/styles.css` (final z-index overrides)
+- **Notes:**
+  - Kept leaderboard + local bypass user intact (no API path changes).
+  - `ENABLE_GLYPH_NORMALIZATION` remains **OFF** by default to avoid CSP `img-src data:` issues in production.
+
+---
+
+### **✅ 8. Level 4 Cheese Bosses - Collision (COMPLETE):**
+- **Request:** Add collision to the 4 decorative Cheese Boss showcase models in Level 4 (same behavior as Level 1 trees/plants).
+- **Solution:** Added a push-away capsule collision check that runs every frame while in Level 4.
+  - Uses player capsule center (`playerCollider`) + `PLAYER_RADIUS`
+  - For each boss in `level4State.cheeseBosses`, computes a collision radius (bbox-based, with a safe fallback)
+  - Pushes player away and cancels velocity component toward the boss (prevents sliding through)
+- **Status:** ✅ **WORKING CONFIRMED LOCALLY**
+- **File:** `public/three.js/main.js`
+- **Code:** `checkLevel4CheeseBossCollision()` called inside `updateLevel4(delta)`
+
 ---
 
 ## 📋 **ALL FILES MODIFIED TODAY:**

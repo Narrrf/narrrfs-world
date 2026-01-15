@@ -580,3 +580,77 @@ When creating hundreds of chests:
 - `public/profile.html` - Added 409 Conflict error handling
 
 **Status:** ✅ **FIXED - PRODUCTION READY**
+
+---
+
+## ✅ **GLOBAL CHEST GROUND RAYCAST PLACEMENT (January 15, 2026) - VERIFIED WORKING**
+
+### **Problem**
+- Some chests (especially Levels 3-6) could spawn **~1 unit under the ground** (only the top visible), especially after GOD-mode warps.
+- Root cause: **model-origin/bounding-box offsets** differed between chest models (legacy `chest2` vs new `chest3`), and level build timing could cause raycast to run before the floor existed.
+
+### **Solution (Now Standard for ALL Levels)**
+- **ALWAYS raycast DOWN at the chest’s X/Z** to find the real surface Y.
+- **ALWAYS align using a post-scale world-space bounding box**:
+  - Scale chest first (standard: **2.0x**).
+  - Compute `worldMinY = new THREE.Box3().setFromObject(chest).min.y`.
+  - Shift by `deltaY = (groundY + epsilon) - worldMinY` (epsilon ≈ **0.03**) so the chest bottom sits flush.
+- **Retry-align after load** if the level floor/map isn’t ready yet (common during fast warps):
+  - `_scheduleGroundAlignRetry()` runs several times until ground becomes hittable.
+
+### **Dual-Model Safety (chest3)**
+- The opened GLB is kept in the scene (hidden) for instant swapping; **it MUST be tagged**:
+  - `userData.isChest = true` on the opened mesh and all descendants
+  - This prevents ground raycasts from “hitting hidden opened chests” and creating stacked/duplicate placements.
+
+### **Scope**
+- ✅ Verified working: **Levels 1–6**
+- ✅ Works with:
+  - Legacy `chest2` (single GLB with lid rotation)
+  - New `chest3` (dual GLB closed+opened)
+
+### **Files**
+- `public/three.js/chest-system.js`
+
+---
+
+## ✅ **WARP / ASYNC DUPLICATE PREVENTION (January 15, 2026) - VERIFIED WORKING**
+
+### **Problem**
+- During fast warps (especially GOD mode), chests could appear **stacked** or **from the wrong level**.
+- Root cause: `ChestSystem.addChest()` loads models on a small delay and async `await`.
+  - A level can be cleared while a chest load is still pending.
+  - The async completion would still add meshes, creating “ghost” chests.
+
+### **Solution (Now Standard)**
+- Chests must be **cancelable** and **guarded** against async completion after cleanup:
+  - `Chest.isDisposed = true` on dispose
+  - `Chest._loadTimeoutId` tracked so pending delayed loads can be canceled
+  - `ChestSystem.addChest()` delayed load must early-return if:
+    - the chest was disposed, or
+    - the chest is no longer the current chest instance in `this.chests.get(levelId)`
+
+### **Files**
+- `public/three.js/chest-system.js`
+
+---
+
+## ✅ **MONSTER WAVES: SKINNED GLTF + CACHE CLONING (January 15, 2026) - VERIFIED WORKING**
+
+### **Problem**
+- Level 5 monsters could spawn but be **invisible**.
+- Root cause: `loadModel()` cache hits were cloning GLTF scenes using `clone(true)` even for **skinned meshes**.
+  - Skinned GLTFs require skeleton-preserving cloning.
+  - Cache-hit cloning was breaking skeleton bindings → invisible render.
+
+### **Solution (Now Standard)**
+- `loadModel()` must:
+  - Normalize URL encoding: `decodeURI()` → `encodeURI()` (prevents `%20` → `%2520` 404s)
+  - Detect whether the loaded GLTF contains `SkinnedMesh` and store a flag on the cached GLTF
+  - On cache hits:
+    - Use `SkeletonUtils.clone(cached.scene)` when skinned meshes exist
+    - Use `cached.scene.clone(true)` only for non-skinned GLTFs
+
+### **Files**
+- `public/three.js/main.js` (`loadModel()` caching + clone strategy)
+
